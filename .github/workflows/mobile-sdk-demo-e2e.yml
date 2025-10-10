@@ -1,0 +1,425 @@
+name: Mobile SDK Demo E2E
+
+env:
+  # Build environment versions
+  JAVA_VERSION: 17
+  ANDROID_API_LEVEL: 33
+  ANDROID_NDK_VERSION: 27.0.12077973
+  XCODE_VERSION: 16.4
+  # Cache versions
+  GH_CACHE_VERSION: v1
+  GH_GEMS_CACHE_VERSION: v1
+  # Performance optimizations
+  GRADLE_OPTS: -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
+  CI: true
+  # Disable Maestro analytics in CI
+  MAESTRO_CLI_NO_ANALYTICS: true
+  MAESTRO_VERSION: 1.41.0
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - staging
+      - main
+    paths:
+      - "packages/mobile-sdk-demo/**"
+      - "packages/mobile-sdk-alpha/**"
+      - ".github/workflows/mobile-sdk-e2e.yml"
+
+jobs:
+  android-e2e:
+    # Currently build-only for Android. E2E steps are preserved but skipped (if: false).
+    # To re-enable full E2E: change `if: false` to `if: true` on emulator steps.
+    concurrency:
+      group: ${{ github.workflow }}-android-${{ github.ref }}
+      cancel-in-progress: true
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: corepack enable
+      - run: corepack prepare yarn@4.6.0 --activate
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            .yarn/install-state.gz
+            .yarn/unplugged
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+      - name: Toggle Yarn hardened mode for trusted PRs
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+      - name: Install deps (internal PRs and protected branches)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        run: yarn install --immutable --silent
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+      - name: Install deps (forked PRs - no secrets)
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+        run: yarn install --immutable --silent
+      - name: Validate Maestro test file
+        if: false # Skip for build-only test - keep logic for future E2E
+        run: |
+          [ -f packages/mobile-sdk-demo/tests/e2e/launch.android.flow.yaml ] || { echo "❌ Android E2E test file missing"; exit 1; }
+      - name: Cache Maestro
+        if: false # Skip for build-only test - keep logic for future E2E
+        id: cache-maestro
+        uses: actions/cache@v4
+        with:
+          path: ~/.maestro
+          key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
+      - name: Install Maestro
+        if: false # Skip for build-only test - keep logic for future E2E
+        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+      - name: Add Maestro to path
+        if: false # Skip for build-only test - keep logic for future E2E
+        run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Setup Java environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: Cache Gradle packages
+        uses: ./.github/actions/cache-gradle
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+      - name: Install NDK
+        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Build dependencies
+        run: |
+          echo "Building dependencies..."
+          echo "📦 Building @selfxyz/common to refresh shared types..."
+          yarn workspace @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
+          echo "✅ @selfxyz/common build succeeded"
+          yarn workspace mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
+          echo "✅ Dependencies built successfully"
+      - name: Build Android APK
+        run: |
+          echo "Building Android APK..."
+          chmod +x packages/mobile-sdk-demo/android/gradlew
+          (cd packages/mobile-sdk-demo/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
+          echo "✅ Android build succeeded"
+      - name: Verify APK build
+        run: |
+          echo "🔍 Verifying build artifacts..."
+          APK_PATH="packages/mobile-sdk-demo/android/app/build/outputs/apk/debug/app-debug.apk"
+          [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
+          echo "✅ APK found at $APK_PATH"
+
+          # Check APK size
+          APK_SIZE=$(stat -c%s "$APK_PATH" 2>/dev/null || echo "unknown")
+          echo "📱 APK size: $APK_SIZE bytes"
+
+          echo "🎉 Build verification completed successfully!"
+          echo "ℹ️  Emulator testing is temporarily disabled - build testing only"
+      - name: Run Maestro tests on Android
+        if: false # Skip emulator/E2E for build-only test - keep logic for future E2E
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          arch: x86_64
+          target: google_apis
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
+          disable-animations: true
+          script: |
+            echo "Installing app on emulator..."
+            APK_PATH="packages/mobile-sdk-demo/android/app/build/outputs/apk/debug/app-debug.apk"
+            [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
+            adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
+            echo "✅ App installed successfully"
+
+            echo "⏰ Giving the emulator a moment to settle..."
+            sleep 5
+
+            echo "🎭 Running Maestro tests..."
+            export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
+            maestro test packages/mobile-sdk-demo/tests/e2e/launch.android.flow.yaml --format junit --output packages/mobile-sdk-demo/maestro-results-android.xml
+      - name: Upload Android test results
+        if: false # Skip for build-only test - keep logic for future E2E
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-results-android
+          path: packages/mobile-sdk-demo/maestro-results-android.xml
+          if-no-files-found: warn
+
+  ios-e2e:
+    timeout-minutes: 60
+    runs-on: macos-latest-large
+    concurrency:
+      group: ${{ github.workflow }}-ios-${{ github.ref }}
+      cancel-in-progress: true
+    env:
+      IOS_WORKSPACE_PATH: packages/mobile-sdk-demo/ios/SelfDemoApp.xcworkspace
+      IOS_PROJECT_SCHEME: SelfDemoApp
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: corepack enable
+      - run: corepack prepare yarn@4.6.0 --activate
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            .yarn/install-state.gz
+            .yarn/unplugged
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+      - name: Toggle Yarn hardened mode for trusted PRs
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+      - name: Install deps (internal PRs and protected branches)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        run: yarn install --immutable --silent
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+      - name: Install deps (forked PRs - no secrets)
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+        run: yarn install --immutable --silent
+      - name: Validate Maestro test file
+        run: |
+          [ -f packages/mobile-sdk-demo/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }
+      - name: Cache Maestro
+        id: cache-maestro
+        uses: actions/cache@v4
+        with:
+          path: ~/.maestro
+          key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
+      - name: Install Maestro
+        if: steps.cache-maestro.outputs.cache-hit != 'true'
+        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+      - name: Add Maestro to path
+        run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+      - name: Configure Xcode path
+        run: |
+          echo "🔧 Configuring Xcode path to fix iOS SDK issues..."
+          sudo xcode-select --switch /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+          echo "✅ Xcode path configured"
+          echo "Xcode version:"
+          xcodebuild -version
+          echo "Xcode path:"
+          xcode-select -p
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.job }}-${{ runner.os }}
+      - name: Add ccache to PATH
+        run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+      - name: Cache Pods
+        uses: ./.github/actions/cache-pods
+        with:
+          path: |
+            packages/mobile-sdk-demo/ios/Pods
+            ~/Library/Caches/CocoaPods
+          lock-file: packages/mobile-sdk-demo/ios/Podfile.lock
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: packages/mobile-sdk-demo/ios/build
+          key: ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-${{ env.XCODE_VERSION }}-${{ hashFiles('packages/mobile-sdk-demo/ios/Podfile.lock', 'yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-${{ env.XCODE_VERSION }}-
+            ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-
+      - name: Verify iOS Runtime
+        run: |
+          echo "📱 Verifying iOS Runtime availability..."
+          echo "Available iOS runtimes:"
+          xcrun simctl list runtimes | grep iOS
+      - name: Build dependencies
+        run: |
+          echo "Building dependencies..."
+          echo "📦 Building @selfxyz/common to refresh shared types..."
+          yarn workspace @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
+          echo "✅ @selfxyz/common build succeeded"
+          yarn workspace mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
+          echo "✅ Dependencies built successfully"
+      - name: Install iOS dependencies
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          GIT_TERMINAL_PROMPT: 0
+        run: |
+          echo "Installing iOS dependencies..."
+          if [ -n "${SELFXYZ_INTERNAL_REPO_PAT}" ]; then
+            echo "🔑 Using SELFXYZ_INTERNAL_REPO_PAT for private pod access"
+            echo "::add-mask::${SELFXYZ_INTERNAL_REPO_PAT}"
+          fi
+          cd packages/mobile-sdk-demo/ios
+          pod install
+      - name: Setup iOS Simulator
+        run: |
+          echo "Setting up iOS Simulator..."
+          echo "Available simulators:"
+          xcrun simctl list devices available || {
+            echo "❌ Failed to list available devices"
+            echo "Trying to list all devices:"
+            xcrun simctl list devices || {
+              echo "❌ Failed to list any devices"
+              exit 1
+            }
+          }
+
+          echo "Finding iPhone SE (3rd generation) simulator..."
+          AVAILABLE_SIMULATOR=$(xcrun simctl list devices available | grep "iPhone SE (3rd generation)" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+
+          if [ -z "$AVAILABLE_SIMULATOR" ]; then
+            echo "iPhone SE (3rd generation) not found, trying any iPhone SE..."
+            AVAILABLE_SIMULATOR=$(xcrun simctl list devices available | grep "iPhone SE" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          fi
+
+          if [ -z "$AVAILABLE_SIMULATOR" ]; then
+            echo "No iPhone SE found, trying any iPhone..."
+            AVAILABLE_SIMULATOR=$(xcrun simctl list devices available | grep "iPhone" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          fi
+
+          if [ -z "$AVAILABLE_SIMULATOR" ]; then
+            echo "❌ No available iPhone simulator found"
+            echo "Creating a new iPhone SE (3rd generation) simulator..."
+            xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" || {
+              echo "❌ Failed to create simulator"
+              exit 1
+            }
+            AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "iPhone SE (3rd generation)" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          fi
+
+          if [ -z "$AVAILABLE_SIMULATOR" ]; then
+            echo "❌ Unable to determine simulator ID"
+            exit 1
+          fi
+
+          SIMULATOR_NAME=$(xcrun simctl list devices | grep "$AVAILABLE_SIMULATOR" | sed -E 's/^\s*([^()]+) \(.*/\1/' | head -1)
+          echo "Using simulator: $SIMULATOR_NAME ($AVAILABLE_SIMULATOR)"
+
+          echo "Booting simulator..."
+          xcrun simctl boot "$AVAILABLE_SIMULATOR" || true
+          echo "Waiting for simulator to be ready..."
+          xcrun simctl bootstatus "$AVAILABLE_SIMULATOR" -b
+          echo "Waiting for simulator to be fully ready..."
+          sleep 15
+          echo "Simulator status:"
+          xcrun simctl list devices | grep "$AVAILABLE_SIMULATOR"
+
+          echo "IOS_SIMULATOR_ID=$AVAILABLE_SIMULATOR" >> $GITHUB_ENV
+          echo "IOS_SIMULATOR_NAME=$SIMULATOR_NAME" >> $GITHUB_ENV
+      - name: Build iOS App
+        run: |
+          echo "Building iOS app..."
+          WORKSPACE_PATH="${{ env.IOS_WORKSPACE_PATH }}"
+          echo "Workspace: $WORKSPACE_PATH, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
+
+          if [ -z "$WORKSPACE_PATH" ]; then
+            echo "❌ IOS_WORKSPACE_PATH is not set"
+            exit 1
+          fi
+          if [ ! -d "$WORKSPACE_PATH" ]; then
+            echo "❌ Workspace not found at: $WORKSPACE_PATH"
+            find packages/mobile-sdk-demo/ios -name "*.xcworkspace" -type d
+            exit 1
+          fi
+
+          echo "Verifying scheme availability..."
+          AVAILABLE_SCHEMES=$(xcodebuild -list -workspace "$WORKSPACE_PATH" 2>/dev/null | grep -A 200 "Schemes:" | grep -v "Schemes:" | xargs)
+          echo "Available schemes (first 20): $(echo $AVAILABLE_SCHEMES | cut -d' ' -f1-20)..."
+
+          if [[ ! "$AVAILABLE_SCHEMES" =~ ${{ env.IOS_PROJECT_SCHEME }} ]]; then
+            echo "❌ Scheme '${{ env.IOS_PROJECT_SCHEME }}' not found"
+            xcodebuild -list -workspace "$WORKSPACE_PATH" 2>/dev/null | grep -A 200 "Schemes:" | grep -v "Schemes:" | head -50
+            exit 1
+          fi
+
+          FORCE_BUNDLING=1 RCT_NO_LAUNCH_PACKAGER=1 \
+            xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Debug -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath packages/mobile-sdk-demo/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule || { echo "❌ iOS build failed"; exit 1; }
+          echo "✅ iOS build succeeded"
+      - name: Install and Test on iOS
+        run: |
+          echo "Installing app on simulator..."
+          APP_PATH=$(find packages/mobile-sdk-demo/ios/build/Build/Products/Debug-iphonesimulator -name "*.app" | head -1)
+          [ -z "$APP_PATH" ] && { echo "❌ Could not find built iOS app"; exit 1; }
+          echo "Found app at: $APP_PATH"
+
+          IOS_BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP_PATH/Info.plist")
+          [ -z "$IOS_BUNDLE_ID" ] && { echo "❌ Could not determine bundle ID"; exit 1; }
+          echo "✅ App Bundle ID: $IOS_BUNDLE_ID"
+
+          SIMULATOR_ID="${IOS_SIMULATOR_ID:-iPhone SE (3rd generation)}"
+          echo "Installing on simulator: $SIMULATOR_ID"
+
+          echo "Removing any existing app installation..."
+          xcrun simctl uninstall "$SIMULATOR_ID" "$IOS_BUNDLE_ID" 2>/dev/null || true
+
+          echo "Installing app..."
+          xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
+          if [ $? -ne 0 ]; then
+            echo "❌ iOS app installation failed"
+            exit 1
+          fi
+
+          echo "Verifying app installation..."
+          if xcrun simctl get_app_container "$SIMULATOR_ID" "$IOS_BUNDLE_ID" app >/dev/null 2>&1; then
+            echo "✅ App successfully installed"
+          else
+            echo "❌ App installation verification failed"
+            exit 1
+          fi
+
+          echo "🚀 Testing app launch capability..."
+          xcrun simctl launch "$SIMULATOR_ID" "$IOS_BUNDLE_ID" || {
+            echo "⚠️ Direct app launch test failed - continuing regardless."
+          }
+
+          echo "⏰ Checking simulator readiness..."
+          sleep 10
+          xcrun simctl get_app_container "$SIMULATOR_ID" "$IOS_BUNDLE_ID" app >/dev/null 2>&1 || sleep 5
+
+          echo "Running Maestro tests..."
+          maestro test packages/mobile-sdk-demo/tests/e2e/launch.ios.flow.yaml --format junit --output packages/mobile-sdk-demo/maestro-results-ios.xml
+      - name: Upload iOS test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-results-ios
+          path: packages/mobile-sdk-demo/maestro-results-ios.xml
+          if-no-files-found: warn

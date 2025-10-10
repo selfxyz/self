@@ -3,7 +3,12 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import type { GestureResponderEvent, PressableProps, ViewStyle } from 'react-native';
+import type {
+  GestureResponderEvent,
+  LayoutChangeEvent,
+  PressableProps,
+  ViewStyle,
+} from 'react-native';
 import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 
 import { useSelfClient } from '../../context';
@@ -15,6 +20,7 @@ export interface ButtonProps extends PressableProps {
   animatedComponent?: React.ReactNode;
   trackEvent?: string;
   borderWidth?: number;
+  onLayout?: (event: LayoutChangeEvent) => void;
 }
 
 interface AbstractButtonProps extends ButtonProps {

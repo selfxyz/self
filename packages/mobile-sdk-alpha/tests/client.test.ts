@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, NFCScannerAdapter } from '../src';
 import { createListenersMap, createSelfClient, SdkEvents } from '../src/index';
-import { AuthAdapter } from '../src/types/public';
+import type { AuthAdapter } from '../src/types/public';
 
 describe('createSelfClient', () => {
   // Test eager validation during client creation

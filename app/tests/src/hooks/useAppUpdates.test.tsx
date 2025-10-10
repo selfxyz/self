@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { checkVersion } from 'react-native-check-version';
 import { useNavigation } from '@react-navigation/native';
 import { act, renderHook, waitFor } from '@testing-library/react-native';

@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
 
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 
+import type { RootStackParamList } from '@/navigation';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import type { ProofHistory } from '@/stores/proofTypes';
 import { ProofStatus } from '@/stores/proofTypes';
@@ -63,7 +65,8 @@ export const ProofHistoryList: React.FC<ProofHistoryListProps> = ({
     hasMore,
   } = useProofHistoryStore();
   const [refreshing, setRefreshing] = useState(false);
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     initDatabase();

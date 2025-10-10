@@ -11,28 +11,35 @@ const originalConsole = {
   debug: console.debug,
 };
 
-const interceptConsole = (appLogger: any) => {
-  console.log = (...args: any[]) => {
+type LoggerMethods = {
+  debug: (...args: unknown[]) => void;
+  info: (...args: unknown[]) => void;
+  warn: (...args: unknown[]) => void;
+  error: (...args: unknown[]) => void;
+};
+
+const interceptConsole = (appLogger: LoggerMethods) => {
+  console.log = (...args: unknown[]) => {
     appLogger.info(...args);
     originalConsole.log(...args);
   };
 
-  console.info = (...args: any[]) => {
+  console.info = (...args: unknown[]) => {
     appLogger.info(...args);
     originalConsole.info(...args);
   };
 
-  console.warn = (...args: any[]) => {
+  console.warn = (...args: unknown[]) => {
     appLogger.warn(...args);
     originalConsole.warn(...args);
   };
 
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     appLogger.error(...args);
     originalConsole.error(...args);
   };
 
-  console.debug = (...args: any[]) => {
+  console.debug = (...args: unknown[]) => {
     appLogger.debug(...args);
     originalConsole.debug(...args);
   };

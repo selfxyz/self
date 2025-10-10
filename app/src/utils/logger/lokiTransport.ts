@@ -135,7 +135,7 @@ registerDocumentChangeCallback((isMock: boolean) => {
   isCurrentPassportMockFlag = isMock;
 });
 
-export const cleanupLokiTransport = () => {
+const cleanupLokiTransport = () => {
   try {
     appStateSubscription.remove?.();
   } catch {}
@@ -143,7 +143,7 @@ export const cleanupLokiTransport = () => {
 };
 
 // Export flush function for manual flushing if needed
-export const flushLokiTransport = () => {
+const flushLokiTransport = () => {
   if (batch.length > 0) {
     sendBatch([...batch], 'default');
     batch = [];
@@ -165,8 +165,10 @@ const appStateSubscription = AppState.addEventListener(
   handleAppStateChange,
 );
 
+type LokiTransportOptions = Record<string, never>;
+
 // Create react-native-logs transport function
-export const lokiTransport: transportFunctionType<any> = props => {
+const lokiTransport: transportFunctionType<LokiTransportOptions> = props => {
   const { msg, rawMsg, level, extension } = props;
 
   if (isCurrentPassportMockFlag) {
@@ -189,7 +191,12 @@ export const lokiTransport: transportFunctionType<any> = props => {
   }
 
   // Create the log object
-  const logObject: any = {
+  const logObject: {
+    level: string;
+    message: string;
+    timestamp: string;
+    data?: unknown;
+  } = {
     level: level.text,
     message: actualMessage,
     timestamp,
@@ -208,4 +215,11 @@ export const lokiTransport: transportFunctionType<any> = props => {
   };
 
   addToBatch(entry, namespace);
+};
+
+export {
+  type LokiTransportOptions,
+  cleanupLokiTransport,
+  flushLokiTransport,
+  lokiTransport,
 };

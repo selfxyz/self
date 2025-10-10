@@ -8,7 +8,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 
 import { useSelfClient } from '../../context';
-import { NFCScanResult } from '../../types/public';
+import type { NFCScanResult } from '../../types/public';
 import type { ScreenProps } from '../../types/ui';
 
 export const NFCScannerScreen = ({ onSuccess, onFailure }: ScreenProps) => {

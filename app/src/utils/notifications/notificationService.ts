@@ -3,12 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { PermissionsAndroid, Platform } from 'react-native';
+import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import messaging from '@react-native-firebase/messaging';
 
-import type {
-  DeviceTokenRegistration,
-  RemoteMessage,
-} from '@/utils/notifications/notificationService.shared';
+import type { DeviceTokenRegistration } from '@/utils/notifications/notificationService.shared';
 import {
   API_URL,
   API_URL_STAGING,
@@ -121,13 +119,13 @@ export async function requestNotificationPermission(): Promise<boolean> {
 
 export function setupNotifications(): () => void {
   messaging().setBackgroundMessageHandler(
-    async (remoteMessage: RemoteMessage) => {
+    async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
       log('Message handled in the background!', remoteMessage);
     },
   );
 
   const unsubscribeForeground = messaging().onMessage(
-    async (remoteMessage: RemoteMessage) => {
+    async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
       log('Foreground message received:', remoteMessage);
     },
   );

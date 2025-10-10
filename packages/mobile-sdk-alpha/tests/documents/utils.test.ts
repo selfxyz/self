@@ -7,7 +7,8 @@ import { describe, expect, it } from 'vitest';
 import type { DocumentCatalog } from '@selfxyz/common/types';
 import type { PassportData } from '@selfxyz/common/types/passport';
 
-import { createSelfClient, defaultConfig, DocumentsAdapter, loadSelectedDocument, SelfClient } from '../../src';
+import type { DocumentsAdapter, SelfClient } from '../../src';
+import { createSelfClient, defaultConfig, loadSelectedDocument } from '../../src';
 
 const createMockSelfClientWithDocumentsAdapter = (documentsAdapter: DocumentsAdapter): SelfClient => {
   return createSelfClient({
