@@ -682,6 +682,54 @@ jest.mock('./src/utils/notifications/notificationService', () =>
   require('./tests/__setup__/notificationServiceMock.js'),
 );
 
+// Mock react-native-svg
+jest.mock('react-native-svg', () => {
+  const React = require('react');
+  return {
+    Svg: props => React.createElement('Svg', props, props.children),
+    Circle: props => React.createElement('Circle', props, props.children),
+    Path: props => React.createElement('Path', props, props.children),
+    G: props => React.createElement('G', props, props.children),
+    Rect: props => React.createElement('Rect', props, props.children),
+    Defs: props => React.createElement('Defs', props, props.children),
+    LinearGradient: props =>
+      React.createElement('LinearGradient', props, props.children),
+    Stop: props => React.createElement('Stop', props, props.children),
+    ClipPath: props => React.createElement('ClipPath', props, props.children),
+    Polygon: props => React.createElement('Polygon', props, props.children),
+    Polyline: props => React.createElement('Polyline', props, props.children),
+    Line: props => React.createElement('Line', props, props.children),
+    Text: props => React.createElement('Text', props, props.children),
+    TSpan: props => React.createElement('TSpan', props, props.children),
+  };
+});
+
+// Mock mobile-sdk-alpha's react-native-svg
+jest.mock(
+  '../packages/mobile-sdk-alpha/node_modules/react-native-svg',
+  () => {
+    const React = require('react');
+    return {
+      Svg: props => React.createElement('Svg', props, props.children),
+      Circle: props => React.createElement('Circle', props, props.children),
+      Path: props => React.createElement('Path', props, props.children),
+      G: props => React.createElement('G', props, props.children),
+      Rect: props => React.createElement('Rect', props, props.children),
+      Defs: props => React.createElement('Defs', props, props.children),
+      LinearGradient: props =>
+        React.createElement('LinearGradient', props, props.children),
+      Stop: props => React.createElement('Stop', props, props.children),
+      ClipPath: props => React.createElement('ClipPath', props, props.children),
+      Polygon: props => React.createElement('Polygon', props, props.children),
+      Polyline: props => React.createElement('Polyline', props, props.children),
+      Line: props => React.createElement('Line', props, props.children),
+      Text: props => React.createElement('Text', props, props.children),
+      TSpan: props => React.createElement('TSpan', props, props.children),
+    };
+  },
+  { virtual: true },
+);
+
 // Mock React Navigation
 jest.mock('@react-navigation/native', () => {
   const actualNav = jest.requireActual('@react-navigation/native');
