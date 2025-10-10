@@ -1960,7 +1960,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNLocalize (3.5.2):
+  - RNLocalize (3.5.3):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2558,7 +2558,7 @@ SPEC CHECKSUMS:
   RNFBRemoteConfig: a569bacaa410acfcaba769370e53a787f80fd13b
   RNGestureHandler: a63b531307e5b2e6ea21d053a1a7ad4cf9695c57
   RNKeychain: 471ceef8c13f15a5534c3cd2674dbbd9d0680e52
-  RNLocalize: a2c93da4b4afae4630d4b3be79320c11c4342d1f
+  RNLocalize: 7683e450496a5aea9a2dab3745bfefa7341d3f5e
   RNReactNativeHapticFeedback: e526ac4a7ca9fb23c7843ea4fd7d823166054c73
   RNScreens: 806e1449a8ec63c2a4e4cf8a63cc80203ccda9b8
   RNSentry: 6ad982be2c8e32dab912afb4132b6a0d88484ea0

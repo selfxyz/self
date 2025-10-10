@@ -2,13 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
-import type {
-  GestureResponderEvent,
-  LayoutChangeEvent,
-  PressableProps,
-  ViewStyle,
-} from 'react-native';
+import type React from 'react';
+import type { GestureResponderEvent, LayoutChangeEvent, PressableProps, ViewStyle } from 'react-native';
 import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 
 import { useSelfClient } from '../../context';
