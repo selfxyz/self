@@ -3,6 +3,25 @@ name: Mobile Deploy
 # 1. Manual trigger (workflow_dispatch) with configurable options
 # 2. When PRs are merged to staging (auto-deploy to internal track)
 # 3. DISABLED: When called by other workflows (workflow_call)
+#
+# === WORKFLOW LOGIC ===
+# Build Branch: Always builds from the branch that triggered the workflow
+#   - PR merges: Builds from 'staging' branch (the branch being merged into)
+#   - Manual dispatch: Builds from the branch where workflow was manually triggered
+#   - This allows testing from feature branches before merging to dev/staging
+#
+# Version Bump PR: After successful build, creates PR to bump version
+#   - Default target: 'dev' branch (can be overridden with bump_target_branch input)
+#   - Workflow checks out the target branch, applies version changes, and creates PR
+#   - This separates the build source from the version bump destination
+#
+# Example flows:
+#   1. Normal production flow:
+#      - Merge PR to staging → builds from staging → creates version bump PR to dev
+#   2. Testing from feature branch:
+#      - Manually trigger from feature branch → builds from feature branch → creates version bump PR to dev
+#   3. Custom version bump target:
+#      - Set bump_target_branch input → creates version bump PR to specified branch instead of dev
 
 env:
   # Build environment versions
@@ -77,7 +96,7 @@ on:
         type: boolean
         default: false
       bump_target_branch:
-        description: "Branch to bump and build from (default: dev)"
+        description: "Target branch for version bump PR (default: dev). NOTE: This is where the version bump PR will be created, NOT the branch to build from. The workflow always builds from the triggering branch."
         required: false
         type: string
         default: "dev"
@@ -123,6 +142,7 @@ concurrency:
 
 jobs:
   # Bump version atomically before platform builds to avoid race conditions
+  # NOTE: Checks out the triggering branch (staging for PR merges, or the branch where manually triggered)
   bump-version:
     runs-on: ubuntu-latest
     if: |
@@ -137,7 +157,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ inputs.bump_target_branch || 'dev' }}
+          # Build from the branch that triggered the workflow (staging, feature branch, etc.)
+          ref: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Determine version bump from PR labels or input
@@ -207,6 +228,7 @@ jobs:
           echo ""
 
           # Use version-manager script to calculate bump
+          # NOTE: Using absolute path to ensure script is found regardless of CWD
           node ${{ env.APP_PATH }}/scripts/version-manager.cjs bump "$VERSION_BUMP" "$PLATFORM"
 
           echo ""
@@ -240,8 +262,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Checkout dev branch to apply version bump locally
-          ref: ${{ inputs.bump_target_branch || 'dev' }}
+          # Checkout the branch that triggered the workflow
+          ref: ${{ github.ref_name }}
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -263,20 +285,21 @@ jobs:
           echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
           echo "Current commit: $(git rev-parse HEAD)"
           echo "Current commit message: $(git log -1 --pretty=format:'%s')"
-          TARGET_BRANCH="${{ inputs.bump_target_branch || 'staging' }}"
-          echo "Target HEAD commit: $(git rev-parse origin/$TARGET_BRANCH)"
-          echo "Target HEAD message: $(git log -1 --pretty=format:'%s' origin/$TARGET_BRANCH)"
+          BUILD_BRANCH="${{ github.ref_name }}"
+          echo "Building from branch: $BUILD_BRANCH"
+          echo "Target HEAD commit: $(git rev-parse origin/$BUILD_BRANCH)"
+          echo "Target HEAD message: $(git log -1 --pretty=format:'%s' origin/$BUILD_BRANCH)"
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "📌 Building from merge commit on staging (includes source + conflict resolutions)"
             echo "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
             echo "Merge commit includes version.json from source branch with bumped build numbers"
-          elif [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/$TARGET_BRANCH)" ]; then
-            echo "⚠️ WARNING: Current commit differs from latest staging commit"
-            echo "This might indicate we're not building from the latest staging branch"
-            git log --oneline HEAD..origin/$TARGET_BRANCH || true
+          elif [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/$BUILD_BRANCH)" ]; then
+            echo "⚠️ WARNING: Current commit differs from latest $BUILD_BRANCH commit"
+            echo "This might indicate we're not building from the latest $BUILD_BRANCH branch"
+            git log --oneline HEAD..origin/$BUILD_BRANCH || true
           else
-            echo "✅ Building from latest staging commit"
+            echo "✅ Building from latest $BUILD_BRANCH commit"
           fi
 
       - name: Apply version bump for build
@@ -800,8 +823,8 @@ jobs:
         if: inputs.platform != 'ios'
         with:
           fetch-depth: 0
-          # Checkout dev branch to apply version bump locally
-          ref: ${{ inputs.bump_target_branch || 'dev' }}
+          # Checkout the branch that triggered the workflow
+          ref: ${{ github.ref_name }}
       - uses: "google-github-actions/auth@v2"
         with:
           project_id: "plucky-tempo-454713-r0"
@@ -885,16 +908,17 @@ jobs:
           echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
           echo "Current commit: $(git rev-parse HEAD)"
           echo "Current commit message: $(git log -1 --pretty=format:'%s')"
-          TARGET_BRANCH="${{ inputs.bump_target_branch || 'staging' }}"
-          echo "Target HEAD commit: $(git rev-parse origin/$TARGET_BRANCH)"
-          echo "Target HEAD message: $(git log -1 --pretty=format:'%s' origin/$TARGET_BRANCH)"
+          BUILD_BRANCH="${{ github.ref_name }}"
+          echo "Building from branch: $BUILD_BRANCH"
+          echo "Target HEAD commit: $(git rev-parse origin/$BUILD_BRANCH)"
+          echo "Target HEAD message: $(git log -1 --pretty=format:'%s' origin/$BUILD_BRANCH)"
 
-          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/$TARGET_BRANCH)" ]; then
-            echo "⚠️ WARNING: Current commit differs from latest staging commit"
-            echo "This might indicate we're not building from the latest staging branch"
-            git log --oneline HEAD..origin/$TARGET_BRANCH || true
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/$BUILD_BRANCH)" ]; then
+            echo "⚠️ WARNING: Current commit differs from latest $BUILD_BRANCH commit"
+            echo "This might indicate we're not building from the latest $BUILD_BRANCH branch"
+            git log --oneline HEAD..origin/$BUILD_BRANCH || true
           else
-            echo "✅ Building from latest staging commit"
+            echo "✅ Building from latest $BUILD_BRANCH commit"
           fi
 
       - name: Apply version bump for build
@@ -1193,6 +1217,9 @@ jobs:
           echo "💡 GitHub Actions cache limit: 10GB per repository"
 
   # Consolidated version bump PR - runs after both platforms complete
+  # NOTE: This job checks out the TARGET branch for version bump (default: dev)
+  # This is DIFFERENT from the build branch - we build from staging/feature branch,
+  # but create the version bump PR to dev so it can be reviewed before merging to staging
   create-version-bump-pr:
     runs-on: ubuntu-latest
     needs: [bump-version, build-ios, build-android]
@@ -1206,7 +1233,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Checkout dev branch to apply version changes
+          # Checkout target branch for version bump PR (default: dev, override with bump_target_branch input)
           ref: ${{ inputs.bump_target_branch || 'dev' }}
 
       - name: Setup Node.js
@@ -1268,6 +1295,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ needs.bump-version.outputs.version }}"
+          TARGET_BRANCH="${{ inputs.bump_target_branch || 'dev' }}"
           # Use version-based branch name for idempotency
           BRANCH_NAME="ci/bump-mobile-version-${VERSION}"
           PR_TITLE="${{ steps.platforms.outputs.pr_title }}"
@@ -1294,15 +1322,16 @@ jobs:
 
           git commit -m "chore: bump mobile app version to $VERSION [skip ci]"
 
-          # Create new branch from current HEAD (dev with version bump)
+          # Create new branch from current HEAD (bump target branch with version bump)
           git checkout -b ${BRANCH_NAME}
 
           # Push the branch
           git push --set-upstream origin ${BRANCH_NAME}
 
-          # Create PR to dev
+          # Create PR to target branch (usually dev)
+          echo "Creating PR to ${TARGET_BRANCH}..."
           gh pr create \
-            --base dev \
+            --base ${TARGET_BRANCH} \
             --head ${BRANCH_NAME} \
             --title "${PR_TITLE}" \
             --body "🤖 Automated version bump after successful deployment
@@ -1311,11 +1340,13 @@ jobs:
           **iOS Build:** ${{ needs.bump-version.outputs.ios_build }}
           **Android Build:** ${{ needs.bump-version.outputs.android_build }}
           **Platforms Built:** ${{ steps.platforms.outputs.platforms }}
+          **Build Branch:** ${{ github.ref_name }}
+          **Target Branch:** ${TARGET_BRANCH}
 
           This PR was automatically created by the mobile deployment workflow." \
             --label "automated"
 
-          echo "✅ Version bump PR created successfully"
+          echo "✅ Version bump PR created successfully to ${TARGET_BRANCH}"
 
   # Create git tags after successful deployment
   create-release-tags:
@@ -1331,7 +1362,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Checkout dev branch for tagging
+          # Checkout target branch for tagging (usually dev)
           ref: ${{ inputs.bump_target_branch || 'dev' }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
