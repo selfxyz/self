@@ -306,10 +306,10 @@ const ProveScreen: React.FC = () => {
                           fontSize: 14,
                           color: black,
                           lineHeight: 20,
-                          fontFamily:
-                            showFullAddress && selectedApp?.userIdType === 'hex'
-                              ? 'monospace'
-                              : 'normal',
+                          ...(showFullAddress &&
+                          selectedApp?.userIdType === 'hex'
+                            ? { fontFamily: 'monospace' }
+                            : {}),
                           flexWrap: showFullAddress ? 'wrap' : 'nowrap',
                         }}
                       >

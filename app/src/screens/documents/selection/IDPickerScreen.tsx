@@ -166,7 +166,7 @@ const IDPickerScreen: React.FC = () => {
                     style={{
                       fontSize: 14,
                       fontFamily: dinot,
-                      color: '#9193A2',
+                      color: slate400,
                     }}
                   >
                     {getDocumentDescription(docType)}

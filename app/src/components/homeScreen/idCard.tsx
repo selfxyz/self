@@ -142,7 +142,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
               </Text>
               <Text
                 fontSize={fontSize.small}
-                color={'#9193A2'}
+                color={slate400}
                 fontFamily={dinot}
               >
                 Verified{' '}
