@@ -1,23 +1,30 @@
 name: Release Calendar
 
-# Goal: automatically create release pull requests when the clock hits 17:00 UTC (5:00 PM).
-# For reference, 17:00 UTC corresponds to:
-#   • 10:30 PM IST (India)
-#   • 10:00 AM PT (San Francisco)
-#   • 6:00 PM CET / 7:00 PM CEST (Paris)
-#   • 12:00 PM EST / 1:00 PM EDT (New York)
-#   • 6:00 PM CET / 7:00 PM CEST (Warsaw)
-# Adjust locally if daylight saving time is in effect.
+# Creates release PRs on a schedule or manually via workflow_dispatch.
 #
-# Testing: This workflow automatically runs when merged to dev (when the workflow file itself
-# is modified), allowing you to test changes immediately. You can also manually trigger it via
-# workflow_dispatch and choose which job(s) to run (staging or production).
+# HOW IT WORKS:
+# 1. Creates snapshot branches (release/staging-YYYY-MM-DD or release/production-YYYY-MM-DD)
+# 2. Opens PRs from these branches (NOT directly from dev/staging)
+# 3. New commits to dev/staging won't auto-update the PR - you control what's released
+#
+# SCHEDULE:
+# • Friday 17:00 UTC (10am PT): Creates release/staging-* branch from dev → staging PR
+# • Sunday 17:00 UTC (10am PT): Creates release/production-* branch from staging → main PR
+#
+# MANUAL TRIGGER:
+# Run via workflow_dispatch from main branch:
+#   - staging: Creates dev snapshot → staging PR
+#   - production: Creates staging snapshot → main PR
+#
+# REQUIREMENTS:
+# • Scheduled cron only runs when this file exists on the default branch (main)
+# • Manual triggers work from any branch, but should run from main for consistency
 
 on:
   workflow_dispatch:
     inputs:
       job_to_run:
-        description: "Which job to run (staging or production)"
+        description: "Which job to run (staging: dev→staging, production: staging→main)"
         required: false
         type: choice
         options:
@@ -101,10 +108,12 @@ jobs:
         run: |
           set -euo pipefail
           PR_DATE=$(date +%Y-%m-%d)
+          BRANCH_NAME="release/staging-${PR_DATE}"
           echo "date=${PR_DATE}" >> "$GITHUB_OUTPUT"
+          echo "branch_name=${BRANCH_NAME}" >> "$GITHUB_OUTPUT"
 
-          echo "Checking for existing pull requests from dev to staging..."
-          EXISTING_PR=$(gh pr list --base staging --head dev --state open --limit 1 --json number --jq '.[0].number // ""')
+          echo "Checking for existing pull requests from ${BRANCH_NAME} to staging..."
+          EXISTING_PR=$(gh pr list --base staging --head "${BRANCH_NAME}" --state open --limit 1 --json number --jq '.[0].number // ""')
           echo "existing_pr=${EXISTING_PR}" >> "$GITHUB_OUTPUT"
 
           if [ -n "$EXISTING_PR" ]; then
@@ -135,26 +144,51 @@ jobs:
             fi
           done
 
+      - name: Create release branch from dev
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr == '' }}
+        env:
+          BRANCH_NAME: ${{ steps.check_dev_staging.outputs.branch_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Creating release branch ${BRANCH_NAME} from dev"
+          git fetch origin dev
+          git checkout -b "${BRANCH_NAME}" origin/dev
+          git push origin "${BRANCH_NAME}"
+
       - name: Create dev to staging release PR
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr == '' }}
         env:
           GH_TOKEN: ${{ github.token }}
           PR_DATE: ${{ steps.check_dev_staging.outputs.date }}
+          BRANCH_NAME: ${{ steps.check_dev_staging.outputs.branch_name }}
         shell: bash
         run: |
           set -euo pipefail
 
           python <<'PY'
+          import os
           import pathlib
           import textwrap
+          from datetime import datetime
 
-          pathlib.Path("pr_body.md").write_text(textwrap.dedent("""\
+          pr_date = os.environ["PR_DATE"]
+          branch_name = os.environ["BRANCH_NAME"]
+          formatted_date = datetime.strptime(pr_date, "%Y-%m-%d").strftime("%B %d, %Y")
+
+          pathlib.Path("pr_body.md").write_text(textwrap.dedent(f"""\
           ## 🚀 Weekly Release to Staging
 
-          This automated PR promotes all changes from `dev` to `staging` for testing.
+          **Release Date:** {formatted_date}
+          **Release Branch:** `{branch_name}`
+
+          This automated PR promotes a snapshot of `dev` to `staging` for testing.
 
           ### What's Included
-          All commits merged to `dev` since the last staging release.
+          All commits merged to `dev` up to the branch creation time.
+
+          **Note:** This PR uses a dedicated release branch, so new commits to `dev` will NOT automatically appear here.
 
           ### Review Checklist
           - [ ] All CI checks pass
@@ -166,16 +200,16 @@ jobs:
           After merging, the staging environment will be updated. A production release PR will be created on Sunday.
 
           ---
-          *This PR was automatically created by the Release Calendar workflow*
+          *This PR was automatically created by the Release Calendar workflow on {formatted_date}*
           """))
           PY
 
           TITLE="Release to Staging - ${PR_DATE}"
-          echo "Creating PR with title: ${TITLE}"
+          echo "Creating PR with title: ${TITLE} from branch ${BRANCH_NAME}"
 
           gh pr create \
             --base staging \
-            --head dev \
+            --head "${BRANCH_NAME}" \
             --title "${TITLE}" \
             --label release \
             --label automated \
@@ -237,6 +271,11 @@ jobs:
         run: |
           set -euo pipefail
 
+          PR_DATE=$(date +%Y-%m-%d)
+          BRANCH_NAME="release/production-${PR_DATE}"
+          echo "date=${PR_DATE}" >> "$GITHUB_OUTPUT"
+          echo "branch_name=${BRANCH_NAME}" >> "$GITHUB_OUTPUT"
+
           echo "Fetching latest branches..."
           git fetch origin main staging
 
@@ -251,8 +290,8 @@ jobs:
 
           echo "staging_not_ahead=false" >> "$GITHUB_OUTPUT"
 
-          echo "Checking for existing pull requests from staging to main..."
-          EXISTING_PR=$(gh pr list --base main --head staging --state open --limit 1 --json number --jq '.[0].number // ""')
+          echo "Checking for existing pull requests from ${BRANCH_NAME} to main..."
+          EXISTING_PR=$(gh pr list --base main --head "${BRANCH_NAME}" --state open --limit 1 --json number --jq '.[0].number // ""')
           echo "existing_pr=${EXISTING_PR}" >> "$GITHUB_OUTPUT"
 
           if [ -n "$EXISTING_PR" ]; then
@@ -260,9 +299,6 @@ jobs:
           else
             echo "No existing production release PR found. Ready to create a new one."
           fi
-
-          PR_DATE=$(date +%Y-%m-%d)
-          echo "date=${PR_DATE}" >> "$GITHUB_OUTPUT"
 
       - name: Log staging up to date
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead == 'true' }}
@@ -291,11 +327,25 @@ jobs:
             fi
           done
 
+      - name: Create release branch from staging
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead != 'true' && steps.production_status.outputs.existing_pr == '' }}
+        env:
+          BRANCH_NAME: ${{ steps.production_status.outputs.branch_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Creating release branch ${BRANCH_NAME} from staging"
+          git fetch origin staging
+          git checkout -b "${BRANCH_NAME}" origin/staging
+          git push origin "${BRANCH_NAME}"
+
       - name: Create staging to main release PR
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead != 'true' && steps.production_status.outputs.existing_pr == '' }}
         env:
           GH_TOKEN: ${{ github.token }}
           PR_DATE: ${{ steps.production_status.outputs.date }}
+          BRANCH_NAME: ${{ steps.production_status.outputs.branch_name }}
           COMMITS_AHEAD: ${{ steps.production_status.outputs.commits }}
         shell: bash
         run: |
@@ -305,18 +355,26 @@ jobs:
           import os
           import pathlib
           import textwrap
+          from datetime import datetime
 
           commits_ahead = os.environ["COMMITS_AHEAD"]
+          pr_date = os.environ["PR_DATE"]
+          branch_name = os.environ["BRANCH_NAME"]
+          formatted_date = datetime.strptime(pr_date, "%Y-%m-%d").strftime("%B %d, %Y")
 
           pathlib.Path("pr_body.md").write_text(textwrap.dedent(f"""\
           ## 🎯 Production Release
+
+          **Release Date:** {formatted_date}
+          **Release Branch:** `{branch_name}`
+          **Commits ahead**: {commits_ahead}
 
           This automated PR promotes tested changes from `staging` to `main` for production deployment.
 
           ### What's Included
           All changes that have been verified in the staging environment.
 
-          **Commits ahead**: {commits_ahead}
+          **Note:** This PR uses a dedicated release branch, so new commits to `staging` will NOT automatically appear here.
 
           ### Pre-Deployment Checklist
           - [ ] All staging tests passed
@@ -329,16 +387,16 @@ jobs:
           Merging this PR will trigger production deployment.
 
           ---
-          *This PR was automatically created by the Release Calendar workflow*
+          *This PR was automatically created by the Release Calendar workflow on {formatted_date}*
           """))
           PY
 
           TITLE="Release to Production - ${PR_DATE}"
-          echo "Creating PR with title: ${TITLE} and ${COMMITS_AHEAD} commits ahead."
+          echo "Creating PR with title: ${TITLE} from branch ${BRANCH_NAME} with ${COMMITS_AHEAD} commits ahead."
 
           gh pr create \
             --base main \
-            --head staging \
+            --head "${BRANCH_NAME}" \
             --title "${TITLE}" \
             --label release \
             --label automated \
