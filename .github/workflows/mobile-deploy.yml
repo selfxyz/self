@@ -1320,18 +1320,21 @@ jobs:
         run: |
           VERSION="${{ needs.bump-version.outputs.version }}"
           TARGET_BRANCH="${{ inputs.bump_target_branch || 'dev' }}"
-          # Use version-based branch name for idempotency
-          BRANCH_NAME="ci/bump-mobile-version-${VERSION}"
+          # Add timestamp to branch name to avoid collisions
+          TIMESTAMP=$(date +%s%N | cut -b1-13)  # Milliseconds since epoch (13 digits)
+          BRANCH_NAME="ci/bump-mobile-version-${VERSION}-${TIMESTAMP}"
           PR_TITLE="${{ steps.platforms.outputs.pr_title }}"
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Check if branch already exists (idempotent PR creation)
-          if git ls-remote --heads origin "${BRANCH_NAME}" | grep -q "${BRANCH_NAME}"; then
-            echo "⚠️  Branch ${BRANCH_NAME} already exists"
-            echo "ℹ️  Version bump PR may already exist for version ${VERSION}"
+          # Check if a PR already exists for this version (avoid duplicate PRs)
+          EXISTING_PR=$(gh pr list --base "${TARGET_BRANCH}" --state open --json number,title,headRefName --jq ".[] | select(.title | contains(\"${VERSION}\")) | .number" | head -1)
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "⚠️  PR #${EXISTING_PR} already exists for version ${VERSION}"
             echo "ℹ️  Skipping PR creation to avoid duplicates"
+            echo "ℹ️  Existing PR: https://github.com/${{ github.repository }}/pull/${EXISTING_PR}"
             exit 0
           fi
 
