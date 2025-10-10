@@ -3,6 +3,30 @@ name: Mobile Deploy
 # 1. Manual trigger (workflow_dispatch) with configurable options
 # 2. When PRs are merged to staging (auto-deploy to internal track)
 # 3. DISABLED: When called by other workflows (workflow_call)
+#
+# === PR LABELS ===
+# - skip-deploy: Skip deployment entirely (no version bump, no builds)
+# - version:major/minor/patch: Control version bump type
+# - ios-only/android-only: Build only one platform
+#
+# === WORKFLOW LOGIC ===
+# Build Branch: Always builds from the branch that triggered the workflow
+#   - PR merges: Builds from 'staging' branch (the branch being merged into)
+#   - Manual dispatch: Builds from the branch where workflow was manually triggered
+#   - This allows testing from feature branches before merging to dev/staging
+#
+# Version Bump PR: After successful build, creates PR to bump version
+#   - Default target: 'dev' branch (can be overridden with bump_target_branch input)
+#   - Workflow checks out the target branch, applies version changes, and creates PR
+#   - This separates the build source from the version bump destination
+#
+# Example flows:
+#   1. Normal production flow:
+#      - Merge PR to staging → builds from staging → creates version bump PR to dev
+#   2. Testing from feature branch:
+#      - Manually trigger from feature branch → builds from feature branch → creates version bump PR to dev
+#   3. Custom version bump target:
+#      - Set bump_target_branch input → creates version bump PR to specified branch instead of dev
 
 env:
   # Build environment versions
@@ -71,6 +95,16 @@ on:
           - patch
           - minor
           - major
+      dry_run:
+        description: "Do not commit/push or create PR/tags"
+        required: false
+        type: boolean
+        default: false
+      bump_target_branch:
+        description: "Target branch for version bump PR (default: dev). NOTE: This is where the version bump PR will be created, NOT the branch to build from. The workflow always builds from the triggering branch."
+        required: false
+        type: string
+        default: "dev"
 
   pull_request:
     types: [closed]
@@ -105,11 +139,110 @@ on:
         default: false
 
 concurrency:
+  # Group by deployment track or ref name to allow different tracks to run in parallel
+  # cancel-in-progress: false ensures we don't cancel ongoing deployments
+  # Branch-locking in create-version-bump-pr prevents duplicate PRs for same version
   group: mobile-deploy-${{ inputs.deployment_track || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
+  # Bump version atomically before platform builds to avoid race conditions
+  # NOTE: Checks out the triggering branch (staging for PR merges, or the branch where manually triggered)
+  bump-version:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-deploy')
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      ios_build: ${{ steps.bump.outputs.ios_build }}
+      android_build: ${{ steps.bump.outputs.android_build }}
+      version_bump_type: ${{ steps.determine-bump.outputs.version_bump }}
+      platform: ${{ steps.determine-platform.outputs.platform }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Build from the branch that triggered the workflow (staging, feature branch, etc.)
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine version bump from PR labels or input
+        id: determine-bump
+        run: |
+          VERSION_BUMP="${{ inputs.version_bump || 'build' }}"
+
+          # Override with PR label if present
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            LABELS='${{ toJSON(github.event.pull_request.labels.*.name) }}'
+            if echo "$LABELS" | grep -q "version:major"; then
+              VERSION_BUMP="major"
+            elif echo "$LABELS" | grep -q "version:minor"; then
+              VERSION_BUMP="minor"
+            elif echo "$LABELS" | grep -q "version:patch"; then
+              VERSION_BUMP="patch"
+            fi
+          fi
+
+          echo "version_bump=$VERSION_BUMP" >> $GITHUB_OUTPUT
+          echo "📦 Version bump type: $VERSION_BUMP"
+
+      - name: Determine platform from labels or input
+        id: determine-platform
+        run: |
+          PLATFORM="both"
+
+          # Check workflow input first
+          if [ -n "${{ inputs.platform }}" ]; then
+            INPUT_PLATFORM="${{ inputs.platform }}"
+            if [ "$INPUT_PLATFORM" = "ios" ]; then
+              PLATFORM="ios"
+            elif [ "$INPUT_PLATFORM" = "android" ]; then
+              PLATFORM="android"
+            fi
+          fi
+
+          # Override with PR labels if present
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            LABELS='${{ toJSON(github.event.pull_request.labels.*.name) }}'
+            if echo "$LABELS" | grep -q "ios-only"; then
+              PLATFORM="ios"
+            elif echo "$LABELS" | grep -q "android-only"; then
+              PLATFORM="android"
+            fi
+          fi
+
+          echo "platform=$PLATFORM" >> $GITHUB_OUTPUT
+          echo "📱 Platform to deploy: $PLATFORM"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Bump version using version-manager script
+        id: bump
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          VERSION_BUMP="${{ steps.determine-bump.outputs.version_bump }}"
+          PLATFORM="${{ steps.determine-platform.outputs.platform }}"
+
+          echo "🔄 Calculating version bump..."
+          echo "  Type: $VERSION_BUMP"
+          echo "  Platform: $PLATFORM"
+          echo ""
+
+          # Use version-manager script to calculate bump
+          # NOTE: Using absolute path to ensure script is found regardless of CWD
+          node ${{ env.APP_PATH }}/scripts/version-manager.cjs bump "$VERSION_BUMP" "$PLATFORM"
+
+          echo ""
+          echo "✅ Version bump calculated successfully"
+          echo "⚠️  Note: Changes are local only. Will be committed in PR after successful builds."
+
   build-ios:
+    needs: [bump-version]
     runs-on: macos-latest-large
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
@@ -135,9 +268,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # When triggered by PR merge, use the merge commit on staging
-          # This ensures we deploy exactly what landed on staging (including version.json from source + any conflict resolutions)
-          ref: ${{ github.event.pull_request.merge_commit_sha || 'staging' }}
+          # Checkout the branch that triggered the workflow
+          ref: ${{ github.ref_name }}
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -152,26 +284,6 @@ jobs:
           echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
-      - name: Determine version bump from PR labels or input
-        id: version-bump
-        run: |
-          VERSION_BUMP="${{ inputs.version_bump || 'build' }}"
-
-          # Override with PR label if present
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            LABELS='${{ toJSON(github.event.pull_request.labels.*.name) }}'
-            if echo "$LABELS" | grep -q "version:major"; then
-              VERSION_BUMP="major"
-            elif echo "$LABELS" | grep -q "version:minor"; then
-              VERSION_BUMP="minor"
-            elif echo "$LABELS" | grep -q "version:patch"; then
-              VERSION_BUMP="patch"
-            fi
-          fi
-
-          echo "version_bump=$VERSION_BUMP" >> $GITHUB_OUTPUT
-          echo "📦 Version bump type: $VERSION_BUMP"
-
       - name: Verify branch and commit (iOS)
         if: inputs.platform != 'android'
         run: |
@@ -179,20 +291,36 @@ jobs:
           echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
           echo "Current commit: $(git rev-parse HEAD)"
           echo "Current commit message: $(git log -1 --pretty=format:'%s')"
-          echo "Staging HEAD commit: $(git rev-parse origin/staging)"
-          echo "Staging HEAD message: $(git log -1 --pretty=format:'%s' origin/staging)"
+          BUILD_BRANCH="${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}"
+          echo "Building from branch: $BUILD_BRANCH"
+          echo "Target HEAD commit: $(git rev-parse origin/$BUILD_BRANCH)"
+          echo "Target HEAD message: $(git log -1 --pretty=format:'%s' origin/$BUILD_BRANCH)"
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "📌 Building from merge commit on staging (includes source + conflict resolutions)"
             echo "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
             echo "Merge commit includes version.json from source branch with bumped build numbers"
-          elif [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/staging)" ]; then
-            echo "⚠️ WARNING: Current commit differs from latest staging commit"
-            echo "This might indicate we're not building from the latest staging branch"
-            git log --oneline HEAD..origin/staging || true
+          elif [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/$BUILD_BRANCH)" ]; then
+            echo "⚠️ WARNING: Current commit differs from latest $BUILD_BRANCH commit"
+            echo "This might indicate we're not building from the latest $BUILD_BRANCH branch"
+            git log --oneline HEAD..origin/$BUILD_BRANCH || true
           else
-            echo "✅ Building from latest staging commit"
+            echo "✅ Building from latest $BUILD_BRANCH commit"
           fi
+
+      - name: Apply version bump for build
+        if: inputs.platform != 'android'
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          VERSION="${{ needs.bump-version.outputs.version }}"
+          IOS_BUILD="${{ needs.bump-version.outputs.ios_build }}"
+          ANDROID_BUILD="${{ needs.bump-version.outputs.android_build }}"
+
+          echo "📝 Applying version bump for iOS build: $VERSION (iOS Build: $IOS_BUILD, Android Build: $ANDROID_BUILD)"
+
+          # Use version-manager script to apply versions
+          node ${{ env.APP_PATH }}/scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
 
       - name: Set up Xcode
         if: inputs.platform != 'android'
@@ -510,6 +638,9 @@ jobs:
       - name: Build and upload to App Store Connect/TestFlight
         if: inputs.platform != 'android' && !env.ACT
         env:
+          CI_VERSION: ${{ needs.bump-version.outputs.version }}
+          CI_IOS_BUILD: ${{ needs.bump-version.outputs.ios_build }}
+          CI_ANDROID_BUILD: ${{ needs.bump-version.outputs.android_build }}
           ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
           GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
           GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
@@ -546,28 +677,61 @@ jobs:
 
           # Determine deployment track and version bump
           DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
-          VERSION_BUMP="${{ steps.version-bump.outputs.version_bump }}"
+          VERSION_BUMP="${{ needs.bump-version.outputs.version_bump_type }}"
           TEST_MODE="${{ inputs.test_mode || false }}"
 
           echo "📱 Deployment Configuration:"
           echo "  - Track: $DEPLOYMENT_TRACK"
-          echo "  - Version Bump: $VERSION_BUMP"
+          echo "  - Version Bump: $VERSION_BUMP (already applied in bump-version job)"
+          echo "  - Version: ${{ needs.bump-version.outputs.version }}"
+          echo "  - iOS Build: ${{ needs.bump-version.outputs.ios_build }}"
           echo "  - Test Mode: $TEST_MODE"
 
           if [ "$TEST_MODE" = "true" ]; then
             echo "🧪 Running in TEST MODE - will skip upload to TestFlight"
             bundle exec fastlane ios deploy_auto \
               deployment_track:$DEPLOYMENT_TRACK \
-              version_bump:$VERSION_BUMP \
+              version_bump:skip \
               test_mode:true \
               --verbose
           else
             echo "🚀 Deploying to App Store Connect..."
             bundle exec fastlane ios deploy_auto \
               deployment_track:$DEPLOYMENT_TRACK \
-              version_bump:$VERSION_BUMP \
+              version_bump:skip \
               --verbose
           fi
+
+      - name: Verify iOS build output
+        if: inputs.platform != 'android'
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          echo "🔍 Verifying iOS build artifacts..."
+
+          # Find the IPA file
+          IPA_PATH=$(find ios/build -name "*.ipa" 2>/dev/null | head -1)
+
+          if [ -z "$IPA_PATH" ]; then
+            echo "❌ ERROR: No IPA file found in ios/build directory"
+            echo "Build may have failed silently. Check Fastlane logs above."
+            exit 1
+          fi
+
+          echo "✅ Found IPA: $IPA_PATH"
+
+          # Check file size (should be at least 10MB for a real app)
+          IPA_SIZE=$(stat -f%z "$IPA_PATH" 2>/dev/null || stat -c%s "$IPA_PATH")
+          IPA_SIZE_MB=$((IPA_SIZE / 1024 / 1024))
+
+          echo "📦 IPA size: ${IPA_SIZE_MB}MB"
+
+          if [ "$IPA_SIZE" -lt 10485760 ]; then
+            echo "⚠️  WARNING: IPA file is suspiciously small (< 10MB)"
+            echo "This may indicate a build problem."
+          fi
+
+          echo "✅ iOS build output verification passed"
 
       # Version updates moved to separate job to avoid race conditions
 
@@ -624,8 +788,8 @@ jobs:
             echo "Node modules: $NODE_SIZE"
           fi
 
-          if [ -d "${{ env.APP_PATH }}/ios/vendor/bundle" ]; then
-            GEMS_SIZE=$(du -sh "${{ env.APP_PATH }}/ios/vendor/bundle" | cut -f1)
+          if [ -d "${{ env.APP_PATH }}/vendor/bundle" ]; then
+            GEMS_SIZE=$(du -sh "${{ env.APP_PATH }}/vendor/bundle" | cut -f1)
             echo "Ruby gems: $GEMS_SIZE"
           fi
 
@@ -638,6 +802,7 @@ jobs:
           echo "💡 GitHub Actions cache limit: 10GB per repository"
 
   build-android:
+    needs: [bump-version]
     runs-on: ubuntu-latest
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
@@ -664,9 +829,8 @@ jobs:
         if: inputs.platform != 'ios'
         with:
           fetch-depth: 0
-          # When triggered by PR merge, use the merge commit on staging
-          # This ensures we deploy exactly what landed on staging (including version.json from source + any conflict resolutions)
-          ref: ${{ github.event.pull_request.merge_commit_sha || 'staging' }}
+          # Checkout the branch that triggered the workflow
+          ref: ${{ github.ref_name }}
       - uses: "google-github-actions/auth@v2"
         with:
           project_id: "plucky-tempo-454713-r0"
@@ -743,26 +907,6 @@ jobs:
           echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
-      - name: Determine version bump from PR labels or input
-        id: version-bump
-        run: |
-          VERSION_BUMP="${{ inputs.version_bump || 'build' }}"
-
-          # Override with PR label if present
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            LABELS='${{ toJSON(github.event.pull_request.labels.*.name) }}'
-            if echo "$LABELS" | grep -q "version:major"; then
-              VERSION_BUMP="major"
-            elif echo "$LABELS" | grep -q "version:minor"; then
-              VERSION_BUMP="minor"
-            elif echo "$LABELS" | grep -q "version:patch"; then
-              VERSION_BUMP="patch"
-            fi
-          fi
-
-          echo "version_bump=$VERSION_BUMP" >> $GITHUB_OUTPUT
-          echo "📦 Version bump type: $VERSION_BUMP"
-
       - name: Verify branch and commit (Android)
         if: inputs.platform != 'ios'
         run: |
@@ -770,16 +914,32 @@ jobs:
           echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
           echo "Current commit: $(git rev-parse HEAD)"
           echo "Current commit message: $(git log -1 --pretty=format:'%s')"
-          echo "Staging HEAD commit: $(git rev-parse origin/staging)"
-          echo "Staging HEAD message: $(git log -1 --pretty=format:'%s' origin/staging)"
+          BUILD_BRANCH="${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}"
+          echo "Building from branch: $BUILD_BRANCH"
+          echo "Target HEAD commit: $(git rev-parse origin/$BUILD_BRANCH)"
+          echo "Target HEAD message: $(git log -1 --pretty=format:'%s' origin/$BUILD_BRANCH)"
 
-          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/staging)" ]; then
-            echo "⚠️ WARNING: Current commit differs from latest staging commit"
-            echo "This might indicate we're not building from the latest staging branch"
-            git log --oneline HEAD..origin/staging || true
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/$BUILD_BRANCH)" ]; then
+            echo "⚠️ WARNING: Current commit differs from latest $BUILD_BRANCH commit"
+            echo "This might indicate we're not building from the latest $BUILD_BRANCH branch"
+            git log --oneline HEAD..origin/$BUILD_BRANCH || true
           else
-            echo "✅ Building from latest staging commit"
+            echo "✅ Building from latest $BUILD_BRANCH commit"
           fi
+
+      - name: Apply version bump for build
+        if: inputs.platform != 'ios'
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          VERSION="${{ needs.bump-version.outputs.version }}"
+          IOS_BUILD="${{ needs.bump-version.outputs.ios_build }}"
+          ANDROID_BUILD="${{ needs.bump-version.outputs.android_build }}"
+
+          echo "📝 Applying version bump for Android build: $VERSION (iOS Build: $IOS_BUILD, Android Build: $ANDROID_BUILD)"
+
+          # Use version-manager script to apply versions
+          node ${{ env.APP_PATH }}/scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
 
       - name: Cache Yarn artifacts
         id: yarn-cache
@@ -795,7 +955,7 @@ jobs:
         id: gems-cache
         uses: ./.github/actions/cache-bundler
         with:
-          path: ${{ env.APP_PATH }}/ios/vendor/bundle
+          path: ${{ env.APP_PATH }}/vendor/bundle
           lock-file: app/Gemfile.lock
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
 
@@ -843,8 +1003,8 @@ jobs:
 
           echo "✅ Lock files exist"
 
-      - name: Install Mobile Dependencies
-        if: inputs.platform != 'ios'
+      - name: Install Mobile Dependencies (main repo)
+        if: inputs.platform != 'ios' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
         uses: ./.github/actions/mobile-setup
         with:
           app_path: ${{ env.APP_PATH }}
@@ -853,6 +1013,17 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          PLATFORM: ${{ inputs.platform }}
+
+      - name: Install Mobile Dependencies (forked PRs - no secrets)
+        if: inputs.platform != 'ios' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true
+        uses: ./.github/actions/mobile-setup
+        with:
+          app_path: ${{ env.APP_PATH }}
+          node_version: ${{ env.NODE_VERSION }}
+          ruby_version: ${{ env.RUBY_VERSION }}
+          workspace: ${{ env.WORKSPACE }}
+        env:
           PLATFORM: ${{ inputs.platform }}
 
       # android specific steps
@@ -938,6 +1109,9 @@ jobs:
       - name: Build AAB with Fastlane
         if: inputs.platform != 'ios'
         env:
+          CI_VERSION: ${{ needs.bump-version.outputs.version }}
+          CI_IOS_BUILD: ${{ needs.bump-version.outputs.ios_build }}
+          CI_ANDROID_BUILD: ${{ needs.bump-version.outputs.android_build }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
@@ -957,19 +1131,52 @@ jobs:
 
           # Determine deployment track and version bump
           DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
-          VERSION_BUMP="${{ steps.version-bump.outputs.version_bump }}"
+          VERSION_BUMP="${{ needs.bump-version.outputs.version_bump_type }}"
           TEST_MODE="${{ inputs.test_mode || false }}"
 
           echo "🤖 Build Configuration:"
           echo "  - Track: $DEPLOYMENT_TRACK"
-          echo "  - Version Bump: $VERSION_BUMP"
+          echo "  - Version Bump: $VERSION_BUMP (already applied in bump-version job)"
+          echo "  - Version: ${{ needs.bump-version.outputs.version }}"
+          echo "  - Android Build: ${{ needs.bump-version.outputs.android_build }}"
           echo "  - Test Mode: $TEST_MODE"
 
           echo "🔨 Building AAB with Fastlane..."
           bundle exec fastlane android build_only \
             deployment_track:$DEPLOYMENT_TRACK \
-            version_bump:$VERSION_BUMP \
+            version_bump:skip \
             --verbose
+
+      - name: Verify Android build output
+        if: inputs.platform != 'ios'
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          echo "🔍 Verifying Android build artifacts..."
+
+          # Check for AAB file
+          AAB_PATH="android/app/build/outputs/bundle/release/app-release.aab"
+
+          if [ ! -f "$AAB_PATH" ]; then
+            echo "❌ ERROR: AAB file not found at $AAB_PATH"
+            echo "Build may have failed silently. Check Fastlane logs above."
+            exit 1
+          fi
+
+          echo "✅ Found AAB: $AAB_PATH"
+
+          # Check file size (should be at least 5MB for a real app)
+          AAB_SIZE=$(stat -c%s "$AAB_PATH" 2>/dev/null || stat -f%z "$AAB_PATH")
+          AAB_SIZE_MB=$((AAB_SIZE / 1024 / 1024))
+
+          echo "📦 AAB size: ${AAB_SIZE_MB}MB"
+
+          if [ "$AAB_SIZE" -lt 5242880 ]; then
+            echo "⚠️  WARNING: AAB file is suspiciously small (< 5MB)"
+            echo "This may indicate a build problem."
+          fi
+
+          echo "✅ Android build output verification passed"
 
       - name: Upload to Google Play Store using WIF
         if: inputs.platform != 'ios' && inputs.test_mode != true
@@ -1016,9 +1223,12 @@ jobs:
           echo "💡 GitHub Actions cache limit: 10GB per repository"
 
   # Consolidated version bump PR - runs after both platforms complete
+  # NOTE: This job checks out the TARGET branch for version bump (default: dev)
+  # This is DIFFERENT from the build branch - we build from staging/feature branch,
+  # but create the version bump PR to dev so it can be reviewed before merging to staging
   create-version-bump-pr:
     runs-on: ubuntu-latest
-    needs: [build-ios, build-android]
+    needs: [bump-version, build-ios, build-android]
     if: |
       always() &&
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
@@ -1029,46 +1239,145 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Checkout staging where the builds ran
-          ref: ${{ github.event.pull_request.merge_commit_sha || 'staging' }}
+          # Checkout target branch for version bump PR (default: dev, override with bump_target_branch input)
+          ref: ${{ inputs.bump_target_branch || 'dev' }}
 
-      - name: Get version from package.json
-        id: get-version
-        uses: ./.github/actions/get-version
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          app_path: ${{ env.APP_PATH }}
+          node-version-file: .nvmrc
 
-      - name: Determine platforms that succeeded
+      - name: Apply version bump from outputs
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          VERSION="${{ needs.bump-version.outputs.version }}"
+          IOS_BUILD="${{ needs.bump-version.outputs.ios_build }}"
+          ANDROID_BUILD="${{ needs.bump-version.outputs.android_build }}"
+
+          echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD, Android: $ANDROID_BUILD)"
+
+          # Update package.json version
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            console.log('✅ Updated package.json');
+          "
+
+          # Update version.json build numbers
+          node -e "
+            const fs = require('fs');
+            const version = JSON.parse(fs.readFileSync('version.json', 'utf8'));
+            version.ios.build = $IOS_BUILD;
+            version.android.build = $ANDROID_BUILD;
+            fs.writeFileSync('version.json', JSON.stringify(version, null, 2) + '\n');
+            console.log('✅ Updated version.json');
+          "
+
+          echo "✅ Versions applied successfully"
+
+      - name: Determine platforms that succeeded and PR title
         id: platforms
         run: |
-          PLATFORMS=""
-          if [ "${{ needs.build-ios.result }}" = "success" ]; then
-            PLATFORMS="${PLATFORMS}iOS "
-          fi
-          if [ "${{ needs.build-android.result }}" = "success" ]; then
-            PLATFORMS="${PLATFORMS}Android"
-          fi
-          echo "platforms=${PLATFORMS}" >> $GITHUB_OUTPUT
-          echo "📱 Successful builds: $PLATFORMS"
+          VERSION="${{ needs.bump-version.outputs.version }}"
+          PLATFORM="${{ needs.bump-version.outputs.platform }}"
+          IOS_RESULT="${{ needs.build-ios.result }}"
+          ANDROID_RESULT="${{ needs.build-android.result }}"
 
-      - name: Create consolidated version bump PR
-        uses: ./.github/actions/create-version-bump-pr
-        with:
-          platform: mobile
-          version: ${{ steps.get-version.outputs.version }}
-          file_paths: |
-            app/version.json
-            app/package.json
-            app/ios/Self.xcodeproj/project.pbxproj
-            app/ios/OpenPassport/Info.plist
-            app/android/app/build.gradle
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Determine what was actually built
+          PLATFORMS_BUILT=""
+          if [ "$IOS_RESULT" = "success" ]; then
+            PLATFORMS_BUILT="iOS"
+          fi
+          if [ "$ANDROID_RESULT" = "success" ]; then
+            if [ -n "$PLATFORMS_BUILT" ]; then
+              PLATFORMS_BUILT="${PLATFORMS_BUILT} & Android"
+            else
+              PLATFORMS_BUILT="Android"
+            fi
+          fi
+
+          # Generate PR title based on what was bumped
+          if [ "$PLATFORM" = "ios" ]; then
+            PR_TITLE="chore: bump iOS version to $VERSION"
+          elif [ "$PLATFORM" = "android" ]; then
+            PR_TITLE="chore: bump Android version to $VERSION"
+          else
+            PR_TITLE="chore: bump mobile app version to $VERSION"
+          fi
+
+          echo "platforms=${PLATFORMS_BUILT}" >> $GITHUB_OUTPUT
+          echo "pr_title=${PR_TITLE}" >> $GITHUB_OUTPUT
+          echo "📱 Successful builds: $PLATFORMS_BUILT"
+          echo "📝 PR title: $PR_TITLE"
+
+      - name: Create version bump PR
+        if: inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.bump-version.outputs.version }}"
+          TARGET_BRANCH="${{ inputs.bump_target_branch || 'dev' }}"
+          # Use version-based branch name for idempotency
+          BRANCH_NAME="ci/bump-mobile-version-${VERSION}"
+          PR_TITLE="${{ steps.platforms.outputs.pr_title }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if branch already exists (idempotent PR creation)
+          if git ls-remote --heads origin "${BRANCH_NAME}" | grep -q "${BRANCH_NAME}"; then
+            echo "⚠️  Branch ${BRANCH_NAME} already exists"
+            echo "ℹ️  Version bump PR may already exist for version ${VERSION}"
+            echo "ℹ️  Skipping PR creation to avoid duplicates"
+            exit 0
+          fi
+
+          # Commit the version changes
+          cd ${{ env.APP_PATH }}
+          git add package.json version.json
+
+          if git diff --cached --quiet; then
+            echo "⚠️  No version changes to commit"
+            exit 0
+          fi
+
+          git commit -m "chore: bump mobile app version to $VERSION [skip ci]"
+
+          # Create new branch from current HEAD (bump target branch with version bump)
+          git checkout -b ${BRANCH_NAME}
+
+          # Push the branch
+          git push --set-upstream origin ${BRANCH_NAME}
+
+          # Create PR to target branch (usually dev)
+          echo "Creating PR to ${TARGET_BRANCH}..."
+          gh pr create \
+            --base ${TARGET_BRANCH} \
+            --head ${BRANCH_NAME} \
+            --title "${PR_TITLE}" \
+            --body "🤖 Automated version bump after successful deployment
+
+          **Version:** $VERSION
+          **iOS Build:** ${{ needs.bump-version.outputs.ios_build }}
+          **Android Build:** ${{ needs.bump-version.outputs.android_build }}
+          **Platforms Built:** ${{ steps.platforms.outputs.platforms }}
+          **Build Branch:** ${{ github.ref_name }}
+          **Target Branch:** ${TARGET_BRANCH}
+
+          This PR was automatically created by the mobile deployment workflow." \
+            --label "automated"
+
+          echo "✅ Version bump PR created successfully to ${TARGET_BRANCH}"
 
   # Create git tags after successful deployment
   create-release-tags:
-    needs: [build-ios, build-android, create-version-bump-pr]
+    needs: [bump-version, build-ios, build-android, create-version-bump-pr]
     if: |
       always() &&
+      (inputs.dry_run != true) &&
       needs.create-version-bump-pr.result == 'success' &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
       (inputs.deployment_track == 'production')
@@ -1077,9 +1386,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # When triggered by PR merge, use the merge commit on staging
-          # This ensures we tag exactly what landed on staging (including version.json from source + any conflict resolutions)
-          ref: ${{ github.event.pull_request.merge_commit_sha || 'staging' }}
+          # Checkout target branch for tagging (usually dev)
+          ref: ${{ inputs.bump_target_branch || 'dev' }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
@@ -1091,46 +1399,74 @@ jobs:
         run: |
           cd ${{ env.APP_PATH }}
 
-          # Read current version info
-          VERSION=$(cat package.json | jq -r .version)
-          IOS_BUILD=$(cat version.json | jq -r .ios.build)
-          ANDROID_BUILD=$(cat version.json | jq -r .android.build)
+          # Use version info from bump-version outputs
+          VERSION="${{ needs.bump-version.outputs.version }}"
+          IOS_BUILD="${{ needs.bump-version.outputs.ios_build }}"
+          ANDROID_BUILD="${{ needs.bump-version.outputs.android_build }}"
 
           echo "📦 Creating tags for version $VERSION"
 
-          # Create main version tag
-          if ! git tag -l | grep -q "^v${VERSION}$"; then
-            git tag -a "v${VERSION}" -m "Release ${VERSION}"
+          # Create main version tag (idempotent)
+          if git tag -a "v${VERSION}" -m "Release ${VERSION}" 2>/dev/null; then
             echo "✅ Created tag: v${VERSION}"
           else
-            echo "⏭️  Tag v${VERSION} already exists"
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 128 ]; then
+              echo "⏭️  Tag v${VERSION} already exists"
+            else
+              echo "❌ Failed to create tag v${VERSION} with exit code $EXIT_CODE"
+              exit 1
+            fi
           fi
 
-          # Create platform-specific tags if deployments succeeded
+          # Create platform-specific tags if deployments succeeded (idempotent)
           if [ "${{ needs.build-ios.result }}" = "success" ]; then
             TAG_NAME="v${VERSION}-ios-${IOS_BUILD}"
-            if ! git tag -l | grep -q "^${TAG_NAME}$"; then
-              git tag -a "${TAG_NAME}" -m "iOS Release ${VERSION} (Build ${IOS_BUILD})"
+            if git tag -a "${TAG_NAME}" -m "iOS Release ${VERSION} (Build ${IOS_BUILD})" 2>/dev/null; then
               echo "✅ Created tag: ${TAG_NAME}"
+            else
+              EXIT_CODE=$?
+              if [ $EXIT_CODE -eq 128 ]; then
+                echo "⏭️  Tag ${TAG_NAME} already exists"
+              else
+                echo "❌ Failed to create tag ${TAG_NAME} with exit code $EXIT_CODE"
+                exit 1
+              fi
             fi
           fi
 
           if [ "${{ needs.build-android.result }}" = "success" ]; then
             TAG_NAME="v${VERSION}-android-${ANDROID_BUILD}"
-            if ! git tag -l | grep -q "^${TAG_NAME}$"; then
-              git tag -a "${TAG_NAME}" -m "Android Release ${VERSION} (Build ${ANDROID_BUILD})"
+            if git tag -a "${TAG_NAME}" -m "Android Release ${VERSION} (Build ${ANDROID_BUILD})" 2>/dev/null; then
               echo "✅ Created tag: ${TAG_NAME}"
+            else
+              EXIT_CODE=$?
+              if [ $EXIT_CODE -eq 128 ]; then
+                echo "⏭️  Tag ${TAG_NAME} already exists"
+              else
+                echo "❌ Failed to create tag ${TAG_NAME} with exit code $EXIT_CODE"
+                exit 1
+              fi
             fi
           fi
 
-          # Push all tags
-          git push origin --tags
-          echo "🚀 Tags pushed to repository"
+          # Push all tags (force to handle any conflicts)
+          if git push origin --tags 2>/dev/null; then
+            echo "🚀 Tags pushed to repository"
+          else
+            echo "⚠️  Some tags may already exist on remote, trying force push..."
+            git push origin --tags --force
+            echo "🚀 Tags force-pushed to repository"
+          fi
 
       - name: Generate changelog for release
         id: changelog
         run: |
           cd ${{ env.APP_PATH }}
+
+          VERSION="${{ needs.bump-version.outputs.version }}"
+          IOS_BUILD="${{ needs.bump-version.outputs.ios_build }}"
+          ANDROID_BUILD="${{ needs.bump-version.outputs.android_build }}"
 
           # Find the previous version tag
           PREV_TAG=$(git tag -l "v*" | grep -v "-" | sort -V | tail -2 | head -1 || echo "")

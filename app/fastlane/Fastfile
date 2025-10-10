@@ -95,27 +95,14 @@ platform :ios do
     UI.message("  Version bump: #{version_bump}")
     UI.message("  Test mode: #{test_mode}")
 
-    # Handle version bumping
-    if !test_mode
-      require_relative "helpers/version_manager"
-
-      case version_bump
-      when "major", "minor", "patch"
-        # Use Node.js with semver to bump version
-        sh("cd .. && node -e \"const fs = require('fs'); const pkg = require('./package.json'); const semver = require('semver'); pkg.version = semver.inc(pkg.version, '#{version_bump}'); fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\\n');\"")
-        UI.success("✅ Bumped #{version_bump} version")
-
-        # Sync the new version to iOS project files
-        sync_version
-        UI.success("✅ Synced MARKETING_VERSION to iOS project")
-      when "build"
-        # Build number is handled in prepare_ios_build
-        UI.message("📦 Build number will be incremented during build")
-      end
+    # In CI, version should already be set by version-manager.cjs
+    # Verify it matches expected values
+    if is_ci && version_bump == "skip"
+      Fastlane::Helpers.verify_ci_version_match
     end
 
-    # Prepare and build
-    result = prepare_ios_build(prod_release: deployment_track == "production")
+    # Prepare and build (no version bumping inside)
+    result = prepare_ios_build(prod_release: deployment_track == "production", version_bump: version_bump)
 
     # Handle deployment based on track
     if test_mode
@@ -146,6 +133,8 @@ platform :ios do
   end
 
   private_lane :prepare_ios_build do |options|
+    version_bump = options[:version_bump] || "build"
+
     if local_development
       # app breaks with Xcode 16.3
       xcode_select "/Applications/Xcode.app"
@@ -183,10 +172,11 @@ platform :ios do
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
 
-    # Get build number from version.json and increment it
-    build_number = Fastlane::Helpers.bump_ios_build_number
+    # Read build number from version.json (already set by CI or local version-manager.cjs)
+    build_number = Fastlane::Helpers.get_ios_build_number
+    UI.message("📦 Using iOS build number: #{build_number}")
 
-    # Update Xcode project with new build number
+    # Update Xcode project with build number
     increment_build_number(
       build_number: build_number,
       xcodeproj: "ios/#{ENV["IOS_PROJECT_NAME"]}.xcodeproj",
@@ -234,7 +224,7 @@ platform :ios do
       workspace: "#{workspace_path}",
       scheme: PROJECT_SCHEME,
       export_method: "app-store",
-      output_directory: "build",
+      output_directory: "ios/build",
       clean: true,
       export_options: {
         method: "app-store",
@@ -298,37 +288,24 @@ platform :android do
     UI.message("  Version bump: #{version_bump}")
     UI.message("  Test mode: #{test_mode}")
 
-    # Handle version bumping
-    if !test_mode
-      require_relative "helpers/version_manager"
-
-      case version_bump
-      when "major", "minor", "patch"
-        # Use Node.js with semver to bump version
-        sh("cd .. && node -e \"const fs = require('fs'); const pkg = require('./package.json'); const semver = require('semver'); pkg.version = semver.inc(pkg.version, '#{version_bump}'); fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\\n');\"")
-        UI.success("✅ Bumped #{version_bump} version")
-        # Get the new version and sync to build.gradle
-        new_version = Fastlane::Helpers::VersionManager.get_current_version
-        android_set_version_name(
-          version_name: new_version,
-          gradle_file: android_gradle_file_path.gsub("../", ""),
-        )
-      when "build"
-        # Build number is automatically incremented during build
-        UI.message("📦 Build number will be incremented")
-      end
+    # In CI, version should already be set by version-manager.cjs
+    # Verify it matches expected values
+    if is_ci && version_bump == "skip"
+      Fastlane::Helpers.verify_ci_version_match
     end
 
     # Map deployment track to Play Store track
     play_store_track = deployment_track == "production" ? "production" : "internal"
 
     # Build and deploy
-    upload_android_build(track: play_store_track, test_mode: test_mode, deployment_track: deployment_track)
+    upload_android_build(track: play_store_track, test_mode: test_mode, deployment_track: deployment_track, version_bump: version_bump)
   end
 
   private_lane :upload_android_build do |options|
     test_mode = options[:test_mode] == true || options[:test_mode] == "true"
     skip_upload = options[:skip_upload] == true || options[:skip_upload] == "true"
+    version_bump = options[:version_bump] || "build"
+
     if local_development
       if ENV["ANDROID_KEYSTORE_PATH"].nil?
         ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.android_create_keystore(android_keystore_path)
@@ -352,10 +329,11 @@ platform :android do
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
 
-    # Get version code from version.json and increment it
-    version_code = Fastlane::Helpers.bump_android_build_number
+    # Read version code from version.json (already set by CI or local version-manager.cjs)
+    version_code = Fastlane::Helpers.get_android_build_number
+    UI.message("📦 Using Android build number: #{version_code}")
 
-    # Update build.gradle with new version code
+    # Update build.gradle with version code
     increment_version_code(
       version_code: version_code,
       gradle_file_path: android_gradle_file_path.gsub("../", ""),

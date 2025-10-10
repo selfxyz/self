@@ -7,11 +7,18 @@ inputs:
     description: "Path to the app directory"
     required: true
 
+outputs:
+  version:
+    description: "Extracted app version from package.json"
+    value: ${{ steps.get-version.outputs.version }}
+
 runs:
   using: "composite"
   steps:
     - name: Get version from package.json
+      id: get-version
       shell: bash
       run: |
         VERSION=$(node -p "require('${{ inputs.app_path }}/package.json').version")
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "VERSION=$VERSION" >> $GITHUB_ENV
