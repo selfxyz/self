@@ -89,6 +89,7 @@
     "android",
     "ios",
     "svgs",
+    "assets",
     "mobile-sdk-alpha.podspec",
     "react-native.config.cjs"
   ],
