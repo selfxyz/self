@@ -43,9 +43,9 @@ on:
     - cron: "0 17 * * 0"
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
-  issues: write # Required for creating labels
+  issues: write
 
 jobs:
   release_to_staging:
