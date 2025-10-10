@@ -685,7 +685,29 @@ jest.mock('./src/utils/notifications/notificationService', () =>
 // Mock react-native-svg
 jest.mock('react-native-svg', () => {
   const React = require('react');
+
+  // Mock SvgXml component that handles XML strings
+  const SvgXml = React.forwardRef(
+    ({ xml, width, height, style, ...props }, ref) => {
+      return React.createElement('div', {
+        ref,
+        style: {
+          width: width || 'auto',
+          height: height || 'auto',
+          display: 'inline-block',
+          ...style,
+        },
+        dangerouslySetInnerHTML: { __html: xml },
+        ...props,
+      });
+    },
+  );
+  SvgXml.displayName = 'SvgXml';
+
   return {
+    __esModule: true,
+    default: SvgXml,
+    SvgXml,
     Svg: props => React.createElement('Svg', props, props.children),
     Circle: props => React.createElement('Circle', props, props.children),
     Path: props => React.createElement('Path', props, props.children),
