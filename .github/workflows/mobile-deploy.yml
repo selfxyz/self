@@ -207,7 +207,7 @@ jobs:
           echo ""
 
           # Use version-manager script to calculate bump
-          node scripts/version-manager.cjs bump "$VERSION_BUMP" "$PLATFORM"
+          node ${{ env.APP_PATH }}/scripts/version-manager.cjs bump "$VERSION_BUMP" "$PLATFORM"
 
           echo ""
           echo "✅ Version bump calculated successfully"
@@ -291,7 +291,7 @@ jobs:
           echo "📝 Applying version bump for iOS build: $VERSION (iOS Build: $IOS_BUILD, Android Build: $ANDROID_BUILD)"
 
           # Use version-manager script to apply versions
-          node scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
+          node ${{ env.APP_PATH }}/scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
 
       - name: Set up Xcode
         if: inputs.platform != 'android'
@@ -909,7 +909,7 @@ jobs:
           echo "📝 Applying version bump for Android build: $VERSION (iOS Build: $IOS_BUILD, Android Build: $ANDROID_BUILD)"
 
           # Use version-manager script to apply versions
-          node scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
+          node ${{ env.APP_PATH }}/scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
 
       - name: Cache Yarn artifacts
         id: yarn-cache
@@ -1225,7 +1225,7 @@ jobs:
           echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD, Android: $ANDROID_BUILD)"
 
           # Use version-manager script to apply versions
-          node scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
+          node ${{ env.APP_PATH }}/scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
 
       - name: Determine platforms that succeeded and PR title
         id: platforms
