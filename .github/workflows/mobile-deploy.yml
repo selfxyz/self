@@ -1252,7 +1252,7 @@ jobs:
           echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD, Android: $ANDROID_BUILD)"
 
           # Use version-manager script to apply versions
-          node ${{ env.APP_PATH }}/scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
+          node scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
 
       - name: Determine platforms that succeeded and PR title
         id: platforms
