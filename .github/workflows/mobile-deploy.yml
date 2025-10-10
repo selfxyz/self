@@ -57,7 +57,6 @@ env:
 
 permissions:
   contents: read
-  id-token: write
 
 on:
   workflow_dispatch:
@@ -261,7 +260,6 @@ jobs:
     runs-on: macos-latest-large
     permissions:
       contents: read
-      id-token: write
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
       (

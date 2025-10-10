@@ -10,8 +10,12 @@ module.exports = {
   ],
   setupFiles: ['<rootDir>/jest.setup.js'],
   testMatch: [
-    '**/__tests__/**/*.(js|jsx|ts|tsx|cjs)',
-    '**/*.(test|spec).(js|jsx|ts|tsx|cjs)',
+    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx,cjs}',
+    '<rootDir>/**/?(*.)+(spec|test).{js,jsx,ts,tsx,cjs}',
+  ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/scripts/tests/', // Node.js native test runner tests
   ],
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
