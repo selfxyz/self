@@ -24,7 +24,7 @@ jobs:
     # WORKFLOW DISABLED
     # Maybe it's my understanding, but it doesn't work as expected. disabled for now.
     if: false
-    # if: github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'no-deploy')
+    # if: github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'deploy:skip')
     runs-on: ubuntu-latest
     outputs:
       should_deploy: ${{ steps.check.outputs.should_deploy }}
@@ -38,11 +38,11 @@ jobs:
         run: |
           echo "🔍 Checking deployment conditions..."
 
-          # Skip if PR has skip-deploy in title or body
-          if [[ "${{ github.event.pull_request.title }}" =~ \[skip-deploy\] ]] ||
-             [[ "${{ github.event.pull_request.body }}" =~ \[skip-deploy\] ]]; then
+          # Skip if PR has deploy:skip label
+          labels="${{ join(github.event.pull_request.labels.*.name, ',') }}"
+          if [[ "$labels" =~ deploy:skip ]]; then
             echo "should_deploy=false" >> $GITHUB_OUTPUT
-            echo "⏭️ Skipping deployment due to [skip-deploy] flag"
+            echo "⏭️ Skipping deployment due to deploy:skip label"
             exit 0
           fi
 

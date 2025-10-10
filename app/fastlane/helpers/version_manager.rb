@@ -44,22 +44,37 @@ module Fastlane
         data["android"]["build"]
       end
 
-      def bump_ios_build_number
-        data = read_version_file
-        current = data["ios"]["build"]
-        data["ios"]["build"] = current + 1
-        write_version_file(data)
-        UI.success("iOS build number bumped from #{current} to #{data["ios"]["build"]}")
-        data["ios"]["build"]
-      end
+      def verify_ci_version_match
+        # Verify that versions were pre-set by CI
+        unless ENV["CI_VERSION"] && ENV["CI_IOS_BUILD"] && ENV["CI_ANDROID_BUILD"]
+          UI.user_error!("CI must set CI_VERSION, CI_IOS_BUILD, and CI_ANDROID_BUILD environment variables")
+        end
 
-      def bump_android_build_number
-        data = read_version_file
-        current = data["android"]["build"]
-        data["android"]["build"] = current + 1
-        write_version_file(data)
-        UI.success("Android build number bumped from #{current} to #{data["android"]["build"]}")
-        data["android"]["build"]
+        pkg_version = get_current_version
+        ios_build = get_ios_build_number
+        android_build = get_android_build_number
+
+        expected_version = ENV["CI_VERSION"]
+        expected_ios_build = ENV["CI_IOS_BUILD"].to_i
+        expected_android_build = ENV["CI_ANDROID_BUILD"].to_i
+
+        version_matches = pkg_version == expected_version
+        ios_matches = ios_build == expected_ios_build
+        android_matches = android_build == expected_android_build
+
+        unless version_matches && ios_matches && android_matches
+          UI.error("Version mismatch detected!")
+          UI.error("Expected: v#{expected_version} (iOS: #{expected_ios_build}, Android: #{expected_android_build})")
+          UI.error("Actual:   v#{pkg_version} (iOS: #{ios_build}, Android: #{android_build})")
+          UI.user_error!("Version mismatch! CI version-manager script should have set these correctly.")
+        end
+
+        UI.success("✅ Version verification passed:")
+        UI.message("   Version: #{pkg_version}")
+        UI.message("   iOS Build: #{ios_build}")
+        UI.message("   Android Build: #{android_build}")
+
+        { version: pkg_version, ios_build: ios_build, android_build: android_build }
       end
 
       def update_deployment_timestamp(platform)
