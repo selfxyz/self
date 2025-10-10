@@ -224,7 +224,7 @@ platform :ios do
       workspace: "#{workspace_path}",
       scheme: PROJECT_SCHEME,
       export_method: "app-store",
-      output_directory: "build",
+      output_directory: "ios/build",
       clean: true,
       export_options: {
         method: "app-store",
