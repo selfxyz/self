@@ -204,10 +204,33 @@ function bumpVersion(bumpType, platform = 'both') {
  * Apply version changes to files
  */
 function applyVersions(version, iosBuild, androidBuild) {
+  // Validate version format (semver X.Y.Z)
+  if (
+    !version ||
+    typeof version !== 'string' ||
+    !/^\d+\.\d+\.\d+$/.test(version)
+  ) {
+    throw new Error(`Invalid version format: ${version}. Expected X.Y.Z`);
+  }
+
+  // Validate and coerce build numbers
+  const iosNum = Number(iosBuild);
+  const androidNum = Number(androidBuild);
+
+  if (!Number.isInteger(iosNum) || iosNum < 1) {
+    throw new Error(`Invalid iOS build: ${iosBuild}. Must be positive integer`);
+  }
+
+  if (!Number.isInteger(androidNum) || androidNum < 1) {
+    throw new Error(
+      `Invalid Android build: ${androidBuild}. Must be positive integer`,
+    );
+  }
+
   console.log(`📝 Applying versions to files...`);
   console.log(`   Version: ${version}`);
-  console.log(`   iOS Build: ${iosBuild}`);
-  console.log(`   Android Build: ${androidBuild}`);
+  console.log(`   iOS Build: ${iosNum}`);
+  console.log(`   Android Build: ${androidNum}`);
 
   // Update package.json
   const pkg = readPackageJson();
@@ -217,8 +240,8 @@ function applyVersions(version, iosBuild, androidBuild) {
 
   // Update version.json
   const versionData = readVersionJson();
-  versionData.ios.build = iosBuild;
-  versionData.android.build = androidBuild;
+  versionData.ios.build = iosNum;
+  versionData.android.build = androidNum;
   writeVersionJson(versionData);
   console.log(`✅ Updated version.json`);
 }

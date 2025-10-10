@@ -56,8 +56,7 @@ env:
   IOS_PROV_PROFILE_DIRECTORY: "~/Library/MobileDevice/Provisioning\ Profiles/"
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
   id-token: write
 
 on:
@@ -150,6 +149,8 @@ jobs:
   # NOTE: Checks out the triggering branch (staging for PR merges, or the branch where manually triggered)
   bump-version:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
       !contains(github.event.pull_request.labels.*.name, 'skip-deploy')
@@ -241,9 +242,26 @@ jobs:
           echo "✅ Version bump calculated successfully"
           echo "⚠️  Note: Changes are local only. Will be committed in PR after successful builds."
 
+      - name: Verify bump outputs were set
+        run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          IOS_BUILD="${{ steps.bump.outputs.ios_build }}"
+          ANDROID_BUILD="${{ steps.bump.outputs.android_build }}"
+
+          if [ -z "$VERSION" ] || [ -z "$IOS_BUILD" ] || [ -z "$ANDROID_BUILD" ]; then
+            echo "❌ Version bump failed to set required outputs"
+            echo "version='$VERSION', ios_build='$IOS_BUILD', android_build='$ANDROID_BUILD'"
+            exit 1
+          fi
+
+          echo "✅ All version outputs verified"
+
   build-ios:
     needs: [bump-version]
     runs-on: macos-latest-large
+    permissions:
+      contents: read
+      id-token: write
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
       (
@@ -804,6 +822,9 @@ jobs:
   build-android:
     needs: [bump-version]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
       (
@@ -1228,6 +1249,9 @@ jobs:
   # but create the version bump PR to dev so it can be reviewed before merging to staging
   create-version-bump-pr:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     needs: [bump-version, build-ios, build-android]
     if: |
       always() &&
@@ -1278,6 +1302,20 @@ jobs:
 
           echo "✅ Versions applied successfully"
 
+      - name: Verify version changes
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          # Check that version files actually changed
+          if ! git diff --quiet package.json version.json; then
+            echo "✅ Version changes detected"
+            git diff package.json version.json
+          else
+            echo "⚠️  No version changes detected in package.json or version.json"
+            echo "This may indicate a problem with version application"
+            exit 1
+          fi
+
       - name: Determine platforms that succeeded and PR title
         id: platforms
         run: |
@@ -1327,11 +1365,19 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Check if branch already exists (idempotent PR creation)
+          # Check if branch already exists (prevents race condition)
           if git ls-remote --heads origin "${BRANCH_NAME}" | grep -q "${BRANCH_NAME}"; then
             echo "⚠️  Branch ${BRANCH_NAME} already exists"
             echo "ℹ️  Version bump PR may already exist for version ${VERSION}"
             echo "ℹ️  Skipping PR creation to avoid duplicates"
+            exit 0
+          fi
+
+          # Check if PR already exists for this version (additional safety)
+          EXISTING_PR=$(gh pr list --base ${TARGET_BRANCH} --head ${BRANCH_NAME} --json number --jq '.[0].number' || echo "")
+          if [ -n "$EXISTING_PR" ]; then
+            echo "⚠️  PR #${EXISTING_PR} already exists for version ${VERSION}"
+            echo "ℹ️  Skipping PR creation"
             exit 0
           fi
 
@@ -1374,6 +1420,9 @@ jobs:
 
   # Create git tags after successful deployment
   create-release-tags:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: [bump-version, build-ios, build-android, create-version-bump-pr]
     if: |
       always() &&
@@ -1381,7 +1430,6 @@ jobs:
       needs.create-version-bump-pr.result == 'success' &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
       (inputs.deployment_track == 'production')
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
