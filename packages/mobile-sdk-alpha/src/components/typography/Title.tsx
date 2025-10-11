@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
+import { useMemo } from 'react';
 import type { StyleProp, TextProps, TextStyle } from 'react-native';
 import { StyleSheet, Text } from 'react-native';
 
@@ -30,7 +31,7 @@ export const Title: React.FC<TitleProps> = ({ size, style, children, ...rest }) 
         }
       : {};
 
-  const flattenedStyle = StyleSheet.flatten([baseStyle, largeStyle, style]);
+  const flattenedStyle = useMemo(() => StyleSheet.flatten([baseStyle, largeStyle, style]), [size, style]);
 
   return (
     <Text style={flattenedStyle} {...rest}>
