@@ -6,8 +6,9 @@ import type React from 'react';
 import type { TextProps } from 'react-native';
 import { Text } from 'react-native';
 
+import { slate500 } from '../../constants/colors';
 import { dinot } from '../../utils/fonts';
 
 export const BodyText: React.FC<TextProps> = ({ style, ...props }) => (
-  <Text style={[{ fontFamily: dinot }, style]} {...props} />
+  <Text style={[{ fontFamily: dinot, color: slate500 }, style]} {...props} />
 );
