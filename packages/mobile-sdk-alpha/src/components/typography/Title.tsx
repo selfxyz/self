@@ -4,8 +4,9 @@
 
 import type React from 'react';
 import type { StyleProp, TextProps, TextStyle } from 'react-native';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
+import { black } from '../../constants/colors';
 import { advercase } from '../../utils/fonts';
 
 type TitleProps = TextProps & {
@@ -18,6 +19,7 @@ export const Title: React.FC<TitleProps> = ({ size, style, children, ...rest }) 
     fontSize: 28,
     lineHeight: 35,
     fontFamily: advercase,
+    color: black,
   };
 
   const largeStyle: TextStyle =
@@ -28,8 +30,10 @@ export const Title: React.FC<TitleProps> = ({ size, style, children, ...rest }) 
         }
       : {};
 
+  const flattenedStyle = StyleSheet.flatten([baseStyle, largeStyle, style]);
+
   return (
-    <Text style={[baseStyle, largeStyle, style]} {...rest}>
+    <Text style={flattenedStyle} {...rest}>
       {children}
     </Text>
   );
