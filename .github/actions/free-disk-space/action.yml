@@ -1,0 +1,20 @@
+name: Free Disk Space
+
+description: Free up disk space on GitHub Actions runners by removing unnecessary pre-installed tools.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Free up disk space
+      shell: bash
+      run: |
+        echo "Disk usage before cleanup:"
+        df -h
+        # Remove unnecessary pre-installed tools to free up space
+        # These are commonly available on GitHub runners but not needed for most builds
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /usr/local/share/boost
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        echo "Disk usage after cleanup:"
+        df -h

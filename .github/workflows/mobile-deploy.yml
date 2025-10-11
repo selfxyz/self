@@ -836,6 +836,8 @@ jobs:
           project_id: "plucky-tempo-454713-r0"
           workload_identity_provider: "projects/852920390127/locations/global/workloadIdentityPools/gh-self/providers/github-by-repos"
           service_account: "self-xyz@plucky-tempo-454713-r0.iam.gserviceaccount.com"
+      - name: Free up disk space
+        uses: ./.github/actions/free-disk-space
       # Fail fast: set up JDK for keytool and verify Android secrets early
       - name: Setup Java environment
         if: inputs.platform != 'ios'
@@ -1177,6 +1179,10 @@ jobs:
           fi
 
           echo "✅ Android build output verification passed"
+
+      - name: Clean up Gradle build artifacts
+        if: inputs.platform != 'ios'
+        uses: ./.github/actions/cleanup-gradle-artifacts
 
       - name: Upload to Google Play Store using WIF
         if: inputs.platform != 'ios' && inputs.test_mode != true
