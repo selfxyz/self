@@ -11,6 +11,11 @@ import { renderHook } from '@testing-library/react-native';
 
 import { useBackupMnemonic } from '@/utils/cloudBackup';
 import { createGDrive } from '@/utils/cloudBackup/google';
+import {
+  exportDocumentStorageSnapshot,
+  restoreDocumentStorageSnapshotIfEmpty,
+} from '@/providers/passportDataProvider';
+import '@/utils/ethers';
 
 // Mock dependencies
 jest.mock('react-native-cloud-storage', () => ({
@@ -45,12 +50,9 @@ jest.mock('@/utils/cloudBackup/google', () => {
   };
 });
 
-jest.mock('ethers', () => ({
-  ethers: {
-    Mnemonic: {
-      isValidMnemonic: jest.fn(),
-    },
-  },
+jest.mock('@/providers/passportDataProvider', () => ({
+  exportDocumentStorageSnapshot: jest.fn(),
+  restoreDocumentStorageSnapshotIfEmpty: jest.fn(),
 }));
 
 // Mock implementations
@@ -77,9 +79,19 @@ const mockMnemonic = {
   entropy: '0x00000000000000000000000000000000',
 };
 
+const mockExportSnapshot =
+  exportDocumentStorageSnapshot as jest.MockedFunction<
+    typeof exportDocumentStorageSnapshot
+  >;
+const mockRestoreSnapshot =
+  restoreDocumentStorageSnapshotIfEmpty as jest.MockedFunction<
+    typeof restoreDocumentStorageSnapshotIfEmpty
+  >;
+
 describe('cloudBackup', () => {
   let originalPlatform: any;
   let consoleSpy: jest.SpyInstance;
+  let mnemonicSpy: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -87,24 +99,31 @@ describe('cloudBackup', () => {
     // Suppress console.error during tests to avoid cluttering output
     consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     (GDrive as jest.Mock).mockImplementation(() => mockGDriveInstance);
-    (ethers.Mnemonic.isValidMnemonic as jest.Mock).mockReturnValue(true);
+    mnemonicSpy = jest
+      .spyOn(ethers.Mnemonic, 'isValidMnemonic')
+      .mockReturnValue(true);
+    mockExportSnapshot.mockResolvedValue(null);
+    mockRestoreSnapshot.mockResolvedValue(false);
   });
 
   afterEach(() => {
     Platform.OS = originalPlatform;
     consoleSpy.mockRestore();
+    mnemonicSpy.mockRestore();
   });
 
   describe('useBackupMnemonic hook', () => {
-    it('should return upload, download, and disableBackup functions', () => {
+    it('should return upload, download, disableBackup, and restore functions', () => {
       const { result } = renderHook(() => useBackupMnemonic());
 
       expect(result.current).toHaveProperty('upload');
       expect(result.current).toHaveProperty('download');
       expect(result.current).toHaveProperty('disableBackup');
+      expect(result.current).toHaveProperty('restoreDocumentsFromBackup');
       expect(typeof result.current.upload).toBe('function');
       expect(typeof result.current.download).toBe('function');
       expect(typeof result.current.disableBackup).toBe('function');
+      expect(typeof result.current.restoreDocumentsFromBackup).toBe('function');
     });
   });
 
@@ -126,8 +145,12 @@ describe('cloudBackup', () => {
       expect(CloudStorage.mkdir).toHaveBeenCalledWith('/@selfxyz/mobile-app');
       expect(CloudStorage.writeFile).toHaveBeenCalledWith(
         '//@selfxyz/mobile-app/encrypted-private-key',
-        JSON.stringify(mockMnemonic),
+        expect.any(String),
       );
+      const payloadString = (CloudStorage.writeFile as jest.Mock).mock.calls[0][1];
+      const payload = JSON.parse(payloadString);
+      expect(payload.mnemonic).toEqual(mockMnemonic);
+      expect(payload.documents).toBeUndefined();
     });
 
     it('should handle folder already exists error gracefully', async () => {
@@ -143,8 +166,12 @@ describe('cloudBackup', () => {
 
       expect(CloudStorage.writeFile).toHaveBeenCalledWith(
         '//@selfxyz/mobile-app/encrypted-private-key',
-        JSON.stringify(mockMnemonic),
+        expect.any(String),
       );
+      const payloadString = (CloudStorage.writeFile as jest.Mock).mock.calls[0][1];
+      const payload = JSON.parse(payloadString);
+      expect(payload.mnemonic).toEqual(mockMnemonic);
+      expect(payload.documents).toBeUndefined();
     });
 
     it('should throw error for empty mnemonic', async () => {
@@ -180,6 +207,55 @@ describe('cloudBackup', () => {
         'permission denied',
       );
     });
+
+    it('should encrypt and restore document snapshots when available', async () => {
+      const snapshot = {
+        catalog: {
+          documents: [
+            {
+              id: 'doc1',
+              documentType: 'passport',
+              documentCategory: 'PASSPORT',
+              data: 'MRZ',
+              mock: false,
+              isRegistered: false,
+            },
+          ],
+          selectedDocumentId: 'doc1',
+        },
+        documents: {
+          doc1: {
+            documentType: 'passport',
+            documentCategory: 'PASSPORT',
+            mrz: 'MRZ',
+            mock: false,
+          },
+        },
+      };
+      mockExportSnapshot.mockResolvedValueOnce(snapshot as any);
+      (CloudStorage.mkdir as jest.Mock).mockResolvedValue(undefined);
+      (CloudStorage.writeFile as jest.Mock).mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(
+        result.current.upload(mockMnemonic),
+      ).resolves.toBeUndefined();
+
+      const payloadString = (CloudStorage.writeFile as jest.Mock).mock.calls[0][1];
+      const payload = JSON.parse(payloadString);
+      expect(payload.documents).toBeDefined();
+      expect(payload.documents.version).toBe(1);
+      expect(typeof payload.documents.cipherText).toBe('string');
+      mockRestoreSnapshot.mockResolvedValue(true);
+      await expect(
+        result.current.restoreDocumentsFromBackup(
+          payload.mnemonic,
+          payload.documents,
+        ),
+      ).resolves.toBe(true);
+      expect(mockRestoreSnapshot).toHaveBeenCalledWith(snapshot as any);
+    });
   });
 
   describe('upload function - Android', () => {
@@ -202,7 +278,12 @@ describe('cloudBackup', () => {
       expect(createGDrive).toHaveBeenCalled();
       expect(
         mockGDriveInstance.files.newMultipartUploader().setData,
-      ).toHaveBeenCalledWith(JSON.stringify(mockMnemonic));
+      ).toHaveBeenCalledWith(expect.any(String));
+      const payloadString =
+        mockGDriveInstance.files.newMultipartUploader().setData.mock.calls[0][0];
+      const payload = JSON.parse(payloadString);
+      expect(payload.mnemonic).toEqual(mockMnemonic);
+      expect(payload.documents).toBeUndefined();
       expect(
         mockGDriveInstance.files.newMultipartUploader().execute,
       ).toHaveBeenCalled();
@@ -227,7 +308,7 @@ describe('cloudBackup', () => {
     it('should download and parse mnemonic from iCloud successfully', async () => {
       (CloudStorage.exists as jest.Mock).mockResolvedValue(true);
       (CloudStorage.readFile as jest.Mock).mockResolvedValue(
-        JSON.stringify(mockMnemonic),
+        JSON.stringify({ mnemonic: mockMnemonic }),
       );
 
       const { result } = renderHook(() => useBackupMnemonic());
@@ -240,7 +321,8 @@ describe('cloudBackup', () => {
       expect(CloudStorage.readFile).toHaveBeenCalledWith(
         '//@selfxyz/mobile-app/encrypted-private-key',
       );
-      expect(downloaded).toEqual(mockMnemonic);
+      expect(downloaded.mnemonic).toEqual(mockMnemonic);
+      expect(downloaded.documents).toBeUndefined();
       expect(ethers.Mnemonic.isValidMnemonic).toHaveBeenCalledWith(
         mockMnemonic.phrase,
       );
@@ -271,9 +353,9 @@ describe('cloudBackup', () => {
       const invalidMnemonic = { ...mockMnemonic, phrase: 'invalid phrase' };
       (CloudStorage.exists as jest.Mock).mockResolvedValue(true);
       (CloudStorage.readFile as jest.Mock).mockResolvedValue(
-        JSON.stringify(invalidMnemonic),
+        JSON.stringify({ mnemonic: invalidMnemonic }),
       );
-      (ethers.Mnemonic.isValidMnemonic as jest.Mock).mockReturnValue(false);
+      mnemonicSpy.mockReturnValueOnce(false);
 
       const { result } = renderHook(() => useBackupMnemonic());
 
@@ -286,7 +368,7 @@ describe('cloudBackup', () => {
       const incompleteMnemonic = { phrase: 'valid phrase', password: '' }; // missing wordlist and entropy
       (CloudStorage.exists as jest.Mock).mockResolvedValue(true);
       (CloudStorage.readFile as jest.Mock).mockResolvedValue(
-        JSON.stringify(incompleteMnemonic),
+        JSON.stringify({ mnemonic: incompleteMnemonic }),
       );
 
       const { result } = renderHook(() => useBackupMnemonic());
@@ -308,7 +390,7 @@ describe('cloudBackup', () => {
         files: [{ id: 'file-id', name: 'encrypted-private-key' }],
       });
       mockGDriveInstance.files.getText.mockResolvedValue(
-        JSON.stringify(mockMnemonic),
+        JSON.stringify({ mnemonic: mockMnemonic }),
       );
 
       const { result } = renderHook(() => useBackupMnemonic());
@@ -321,7 +403,8 @@ describe('cloudBackup', () => {
         q: "name = 'encrypted-private-key'",
       });
       expect(mockGDriveInstance.files.getText).toHaveBeenCalledWith('file-id');
-      expect(downloaded).toEqual(mockMnemonic);
+      expect(downloaded.mnemonic).toEqual(mockMnemonic);
+      expect(downloaded.documents).toBeUndefined();
       expect(ethers.Mnemonic.isValidMnemonic).toHaveBeenCalledWith(
         mockMnemonic.phrase,
       );
@@ -370,9 +453,11 @@ describe('cloudBackup', () => {
         files: [{ id: 'file-id', name: 'encrypted-private-key' }],
       });
       mockGDriveInstance.files.getText.mockResolvedValue(
-        JSON.stringify({ ...mockMnemonic, phrase: 'invalid phrase' }),
+        JSON.stringify({
+          mnemonic: { ...mockMnemonic, phrase: 'invalid phrase' },
+        }),
       );
-      (ethers.Mnemonic.isValidMnemonic as jest.Mock).mockReturnValue(false);
+      mnemonicSpy.mockReturnValueOnce(false);
 
       const { result } = renderHook(() => useBackupMnemonic());
 
@@ -388,7 +473,7 @@ describe('cloudBackup', () => {
         files: [{ id: 'file-id', name: 'encrypted-private-key' }],
       });
       mockGDriveInstance.files.getText.mockResolvedValue(
-        JSON.stringify(incompleteMnemonic),
+        JSON.stringify({ mnemonic: incompleteMnemonic }),
       );
 
       const { result } = renderHook(() => useBackupMnemonic());

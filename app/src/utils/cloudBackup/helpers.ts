@@ -35,7 +35,52 @@ export function isMnemonic(obj: unknown): obj is Mnemonic {
   );
 }
 
-export function parseMnemonic(mnemonicString: string): Mnemonic {
+export interface EncryptedDocumentBackup {
+  version: number;
+  nonce: string;
+  cipherText: string;
+  authTag: string;
+}
+
+export interface CloudBackupPayload {
+  mnemonic: Mnemonic;
+  documents?: EncryptedDocumentBackup;
+}
+
+function isEncryptedDocumentBackup(
+  value: unknown,
+): value is EncryptedDocumentBackup {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+
+  return (
+    typeof candidate.version === 'number' &&
+    typeof candidate.nonce === 'string' &&
+    typeof candidate.cipherText === 'string' &&
+    typeof candidate.authTag === 'string'
+  );
+}
+
+function validateMnemonic(candidate: unknown): Mnemonic {
+  if (!isMnemonic(candidate)) {
+    throw new Error(
+      'Invalid mnemonic structure: missing required properties (phrase, password, wordlist, entropy)',
+    );
+  }
+
+  if (!candidate.phrase || !ethers.Mnemonic.isValidMnemonic(candidate.phrase)) {
+    throw new Error('Invalid mnemonic phrase: not a valid BIP39 mnemonic');
+  }
+
+  return candidate;
+}
+
+export function parseBackupPayload(
+  mnemonicString: string,
+): CloudBackupPayload {
   let parsed: unknown;
 
   try {
@@ -44,17 +89,37 @@ export function parseMnemonic(mnemonicString: string): Mnemonic {
     throw new Error('Invalid JSON format in mnemonic backup');
   }
 
-  if (!isMnemonic(parsed)) {
-    throw new Error(
-      'Invalid mnemonic structure: missing required properties (phrase, password, wordlist, entropy)',
-    );
+  if (isMnemonic(parsed)) {
+    return { mnemonic: validateMnemonic(parsed) };
   }
 
-  if (!parsed.phrase || !ethers.Mnemonic.isValidMnemonic(parsed.phrase)) {
-    throw new Error('Invalid mnemonic phrase: not a valid BIP39 mnemonic');
+  if (parsed && typeof parsed === 'object') {
+    const candidate = parsed as Record<string, unknown>;
+    if ('mnemonic' in candidate) {
+      const mnemonic = validateMnemonic(candidate.mnemonic);
+      let documents: EncryptedDocumentBackup | undefined;
+
+      if ('documents' in candidate) {
+        const rawDocuments = candidate.documents;
+        if (
+          rawDocuments !== null &&
+          rawDocuments !== undefined &&
+          !isEncryptedDocumentBackup(rawDocuments)
+        ) {
+          throw new Error('Invalid encrypted document backup structure');
+        }
+        documents = rawDocuments === null ? undefined : rawDocuments;
+      }
+
+      return { mnemonic, documents };
+    }
   }
 
-  return parsed;
+  throw new Error('Invalid backup structure: missing mnemonic');
+}
+
+export function parseMnemonic(mnemonicString: string): Mnemonic {
+  return parseBackupPayload(mnemonicString).mnemonic;
 }
 
 export async function withRetries<T>(

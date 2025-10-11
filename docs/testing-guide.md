@@ -198,6 +198,10 @@ describe('Error handling', () => {
 ## E2E Testing
 
 ### Platform-Specific Flows
+
+## Manual QA
+
+- **Android reinstall + recover:** Delete the app, reinstall it, sign in with the recovery phrase or cloud backup, and confirm that saved documents reappear without re-registration prompts.
 - Separate test files for iOS and Android
 - Maestro for cross-platform E2E testing
 - Platform-specific build commands before E2E tests

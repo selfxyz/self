@@ -115,6 +115,11 @@ const notifyDocumentChange = (isMock: boolean) => {
   });
 };
 
+export interface DocumentStorageSnapshot {
+  catalog: DocumentCatalog;
+  documents: Record<string, PassportData | AadhaarData>;
+}
+
 // ===== NEW STORAGE IMPLEMENTATION =====
 
 // Global flag to track if native modules are ready
@@ -882,3 +887,131 @@ export const getAllDocumentsDirectlyFromKeychain = async (): Promise<{
 
   return allDocs;
 };
+
+export async function exportDocumentStorageSnapshot(): Promise<
+  DocumentStorageSnapshot | null
+> {
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
+  if (catalog.documents.length === 0) {
+    return null;
+  }
+
+  const allDocs = await getAllDocumentsDirectlyFromKeychain();
+  if (Object.keys(allDocs).length === 0) {
+    return null;
+  }
+
+  const documents: DocumentStorageSnapshot['documents'] = {};
+  for (const [documentId, { data }] of Object.entries(allDocs)) {
+    documents[documentId] = data;
+  }
+
+  const sanitizedCatalog: DocumentCatalog = {
+    ...catalog,
+    documents: catalog.documents.filter(metadata =>
+      Object.prototype.hasOwnProperty.call(documents, metadata.id),
+    ),
+  };
+
+  if (sanitizedCatalog.documents.length === 0) {
+    return null;
+  }
+
+  if (
+    sanitizedCatalog.selectedDocumentId &&
+    !documents[sanitizedCatalog.selectedDocumentId]
+  ) {
+    sanitizedCatalog.selectedDocumentId =
+      sanitizedCatalog.documents[0]?.id ?? undefined;
+  }
+
+  if (!sanitizedCatalog.selectedDocumentId) {
+    sanitizedCatalog.selectedDocumentId =
+      sanitizedCatalog.documents[0]?.id ?? undefined;
+  }
+
+  return { catalog: sanitizedCatalog, documents };
+}
+
+export async function restoreDocumentStorageSnapshotIfEmpty(
+  snapshot: DocumentStorageSnapshot | null,
+): Promise<boolean> {
+  if (!snapshot) {
+    console.warn('No document snapshot provided for restoration');
+    return false;
+  }
+
+  if (!nativeModulesReady) {
+    const modulesReady = await initializeNativeModules();
+    if (!modulesReady) {
+      console.warn(
+        'Native modules unavailable, cannot restore document snapshot',
+      );
+      return false;
+    }
+  }
+
+  const existingCatalog = await loadDocumentCatalogDirectlyFromKeychain();
+  if (existingCatalog.documents.length > 0) {
+    console.log('Document catalog already populated, skipping restore');
+    return false;
+  }
+
+  const { catalog, documents } = snapshot;
+  const documentEntries = Object.entries(documents ?? {});
+  if (documentEntries.length === 0 || catalog.documents.length === 0) {
+    console.warn('Snapshot missing catalog or document data, skipping restore');
+    return false;
+  }
+
+  const sanitizedCatalog: DocumentCatalog = {
+    ...catalog,
+    documents: catalog.documents.filter(metadata =>
+      Object.prototype.hasOwnProperty.call(documents, metadata.id),
+    ),
+  };
+
+  if (sanitizedCatalog.documents.length === 0) {
+    console.warn('No documents matched snapshot metadata, skipping restore');
+    return false;
+  }
+
+  if (
+    sanitizedCatalog.selectedDocumentId &&
+    !documents[sanitizedCatalog.selectedDocumentId]
+  ) {
+    sanitizedCatalog.selectedDocumentId =
+      sanitizedCatalog.documents[0]?.id ?? undefined;
+  }
+
+  if (!sanitizedCatalog.selectedDocumentId) {
+    sanitizedCatalog.selectedDocumentId =
+      sanitizedCatalog.documents[0]?.id ?? undefined;
+  }
+
+  try {
+    for (const [documentId, data] of documentEntries) {
+      await storeDocumentDirectlyToKeychain(documentId, data);
+    }
+
+    await saveDocumentCatalogDirectlyToKeychain(sanitizedCatalog);
+
+    if (sanitizedCatalog.selectedDocumentId) {
+      const selectedMetadata = sanitizedCatalog.documents.find(
+        metadata => metadata.id === sanitizedCatalog.selectedDocumentId,
+      );
+      if (selectedMetadata) {
+        notifyDocumentChange(selectedMetadata.mock);
+      }
+    }
+
+    console.log(
+      `Restored document snapshot with ${sanitizedCatalog.documents.length} documents`,
+    );
+
+    return true;
+  } catch (error) {
+    console.warn('Failed to restore document snapshot', error);
+    return false;
+  }
+}

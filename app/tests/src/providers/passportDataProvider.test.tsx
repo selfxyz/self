@@ -11,6 +11,9 @@ import { SelfClientProvider } from '@selfxyz/mobile-sdk-alpha';
 // Import after mocking
 import {
   PassportProvider,
+  exportDocumentStorageSnapshot,
+  initializeNativeModules,
+  restoreDocumentStorageSnapshotIfEmpty,
   usePassport,
 } from '@/providers/passportDataProvider';
 
@@ -26,6 +29,13 @@ const mockKeychain = {
 const listeners = new Map();
 
 jest.mock('react-native-keychain', () => mockKeychain);
+
+jest.mock('@/utils/keychainSecurity', () => ({
+  createKeychainOptions: jest.fn().mockResolvedValue({
+    setOptions: {},
+    getOptions: {},
+  }),
+}));
 
 // Mock the auth provider
 const mockAuthProvider = {
@@ -695,6 +705,167 @@ describe('PassportDataProvider', () => {
       );
 
       consoleLogSpy.mockRestore();
+    });
+  });
+
+  describe('document storage snapshot helpers', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return null when there are no documents to export', async () => {
+      mockKeychain.getGenericPassword.mockImplementation(async ({ service }) => {
+        if (service === 'test-availability') {
+          return false;
+        }
+        if (service === 'documentCatalog') {
+          return { password: JSON.stringify({ documents: [] }) };
+        }
+        return false;
+      });
+
+      await initializeNativeModules();
+
+      const snapshot = await exportDocumentStorageSnapshot();
+      expect(snapshot).toBeNull();
+    });
+
+    it('should export catalog and document data when available', async () => {
+      const catalog = {
+        documents: [
+          {
+            id: 'doc1',
+            documentType: 'passport',
+            documentCategory: 'PASSPORT',
+            data: 'MRZ',
+            mock: false,
+            isRegistered: true,
+          },
+        ],
+        selectedDocumentId: 'doc1',
+      };
+      const documentData = {
+        documentType: 'passport',
+        documentCategory: 'PASSPORT',
+        mrz: 'MRZ',
+        mock: false,
+      };
+
+      mockKeychain.getGenericPassword.mockImplementation(async ({ service }) => {
+        if (service === 'test-availability') {
+          return false;
+        }
+        if (service === 'documentCatalog') {
+          return { password: JSON.stringify(catalog) };
+        }
+        if (service === 'document-doc1') {
+          return { password: JSON.stringify(documentData) };
+        }
+        return false;
+      });
+
+      await initializeNativeModules();
+
+      const snapshot = await exportDocumentStorageSnapshot();
+      expect(snapshot).toEqual({
+        catalog,
+        documents: { doc1: documentData },
+      });
+    });
+
+    it('should restore snapshot when local catalog is empty', async () => {
+      const snapshot = {
+        catalog: {
+          documents: [
+            {
+              id: 'doc1',
+              documentType: 'passport',
+              documentCategory: 'PASSPORT',
+              data: 'MRZ',
+              mock: false,
+              isRegistered: false,
+            },
+          ],
+          selectedDocumentId: 'doc1',
+        },
+        documents: {
+          doc1: {
+            documentType: 'passport',
+            documentCategory: 'PASSPORT',
+            mrz: 'MRZ',
+            mock: false,
+          },
+        },
+      };
+
+      mockKeychain.getGenericPassword.mockImplementation(async ({ service }) => {
+        if (service === 'test-availability') {
+          return false;
+        }
+        if (service === 'documentCatalog') {
+          return false;
+        }
+        return false;
+      });
+      mockKeychain.setGenericPassword.mockResolvedValue(true as any);
+
+      await initializeNativeModules();
+
+      const restored = await restoreDocumentStorageSnapshotIfEmpty(snapshot as any);
+      expect(restored).toBe(true);
+      expect(mockKeychain.setGenericPassword).toHaveBeenCalledWith(
+        'doc1',
+        JSON.stringify(snapshot.documents.doc1),
+        expect.objectContaining({ service: 'document-doc1' }),
+      );
+      expect(mockKeychain.setGenericPassword).toHaveBeenCalledWith(
+        'catalog',
+        JSON.stringify(snapshot.catalog),
+        expect.objectContaining({ service: 'documentCatalog' }),
+      );
+    });
+
+    it('should not restore when catalog already contains documents', async () => {
+      mockKeychain.getGenericPassword.mockImplementation(async ({ service }) => {
+        if (service === 'test-availability') {
+          return false;
+        }
+        if (service === 'documentCatalog') {
+          return { password: JSON.stringify({ documents: [{ id: 'existing' }] }) };
+        }
+        return false;
+      });
+
+      await initializeNativeModules();
+
+      const restored = await restoreDocumentStorageSnapshotIfEmpty({
+        catalog: { documents: [], selectedDocumentId: undefined },
+        documents: {},
+      });
+
+      expect(restored).toBe(false);
+      expect(mockKeychain.setGenericPassword).not.toHaveBeenCalled();
+    });
+
+    it('should return false when snapshot is missing documents', async () => {
+      mockKeychain.getGenericPassword.mockImplementation(async ({ service }) => {
+        if (service === 'test-availability') {
+          return false;
+        }
+        if (service === 'documentCatalog') {
+          return false;
+        }
+        return false;
+      });
+
+      await initializeNativeModules();
+
+      const restored = await restoreDocumentStorageSnapshotIfEmpty({
+        catalog: { documents: [], selectedDocumentId: undefined },
+        documents: {},
+      });
+
+      expect(restored).toBe(false);
     });
   });
 });

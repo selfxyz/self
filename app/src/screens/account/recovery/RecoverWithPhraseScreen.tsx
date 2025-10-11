@@ -33,13 +33,14 @@ import {
   slate700,
   white,
 } from '@/utils/colors';
+import { restoreDocumentsFromBackup } from '@/utils/cloudBackup';
 
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
   const { useProtocolStore } = selfClient;
-  const { restoreAccountFromMnemonic } = useAuth();
+  const { restoreAccountFromMnemonic, getOrCreateMnemonic } = useAuth();
   const { trackEvent } = useSelfClient();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
@@ -63,6 +64,19 @@ const RecoverWithPhraseScreen: React.FC = () => {
     if (!result) {
       console.warn('Failed to restore account');
       navigation.navigate('Launch');
+      setRestoring(false);
+      return;
+    }
+
+    const storedMnemonic = await getOrCreateMnemonic();
+    const restoredFromBackup = await restoreDocumentsFromBackup(
+      storedMnemonic?.data,
+      undefined,
+    );
+
+    if (!restoredFromBackup) {
+      console.warn('No encrypted document backup found, starting re-registration');
+      navigation.navigate('CountryPicker');
       setRestoring(false);
       return;
     }

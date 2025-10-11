@@ -4,11 +4,11 @@
 
 import { CloudStorage } from 'react-native-cloud-storage';
 
-import type { Mnemonic } from '@/types/mnemonic';
+import type { CloudBackupPayload } from '@/utils/cloudBackup/helpers';
 import {
   ENCRYPTED_FILE_PATH,
   FOLDER,
-  parseMnemonic,
+  parseBackupPayload,
   withRetries,
 } from '@/utils/cloudBackup/helpers';
 
@@ -22,7 +22,7 @@ export async function download() {
       CloudStorage.readFile(ENCRYPTED_FILE_PATH),
     );
     try {
-      return parseMnemonic(mnemonicString);
+      return parseBackupPayload(mnemonicString);
     } catch (e) {
       throw new Error(
         `Failed to parse mnemonic backup: ${(e as Error).message}`,
@@ -35,7 +35,7 @@ export async function download() {
   );
 }
 
-export async function upload(mnemonic: Mnemonic) {
+export async function upload(payload: CloudBackupPayload) {
   try {
     await CloudStorage.mkdir(FOLDER);
   } catch (e) {
@@ -45,6 +45,6 @@ export async function upload(mnemonic: Mnemonic) {
     }
   }
   await withRetries(() =>
-    CloudStorage.writeFile(ENCRYPTED_FILE_PATH, JSON.stringify(mnemonic)),
+    CloudStorage.writeFile(ENCRYPTED_FILE_PATH, JSON.stringify(payload)),
   );
 }

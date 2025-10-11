@@ -40,7 +40,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   const [restoring, setRestoring] = useState(false);
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
-  const { download } = useBackupMnemonic();
+  const { download, restoreDocumentsFromBackup } = useBackupMnemonic();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -50,13 +50,28 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   const onRestoreFromCloudPress = useCallback(async () => {
     setRestoring(true);
     try {
-      const mnemonic = await download();
-      const result = await restoreAccountFromMnemonic(mnemonic.phrase);
+      const backupPayload = await download();
+      const result = await restoreAccountFromMnemonic(
+        backupPayload.mnemonic.phrase,
+      );
 
       if (!result) {
         console.warn('Failed to restore account');
         trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
         navigation.navigate('Launch');
+        setRestoring(false);
+        return;
+      }
+
+      const restoredFromBackup = await restoreDocumentsFromBackup(
+        backupPayload.mnemonic,
+        backupPayload.documents,
+      );
+
+      if (!restoredFromBackup) {
+        console.warn('No encrypted document backup found, starting re-registration');
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
+        navigation.navigate('CountryPicker');
         setRestoring(false);
         return;
       }
@@ -94,10 +109,10 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         setRestoring(false);
         return;
       }
+      reStorePassportDataWithRightCSCA(passportData, csca as string);
       if (!cloudBackupEnabled) {
         toggleCloudBackupEnabled();
       }
-      reStorePassportDataWithRightCSCA(passportData, csca as string);
       trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS);
       trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
       onRestoreFromCloudNext();
