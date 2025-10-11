@@ -21,7 +21,70 @@ Alpha SDK for registering and proving. Adapters-first, React Native-first with w
 
 - The `browser` build replaces the scanner with `webNFCScannerShim`, which throws for NFC scanning (not supported on web).
 
-## Quick start (local, monorepo)
+## Installation & Setup
+
+### 1. Install the package
+
+```bash
+npm install @selfxyz/mobile-sdk-alpha
+# or
+yarn add @selfxyz/mobile-sdk-alpha
+```
+
+### 2. Link native dependencies and assets
+
+The SDK includes custom fonts that need to be linked to your app:
+
+#### Automatic Linking (Recommended)
+
+If your app uses React Native autolinking (RN 0.60+), run:
+
+```bash
+npx react-native-asset
+# or
+yarn react-native-asset
+```
+
+This will automatically copy the font files to your iOS and Android projects.
+
+#### Manual Linking
+
+If autolinking doesn't work or you need manual control:
+
+**iOS:**
+
+1. Add fonts to your Xcode project:
+   - Open your Xcode workspace
+   - Drag the font files from `node_modules/@selfxyz/mobile-sdk-alpha/assets/fonts/` to your project
+   - Ensure "Copy items if needed" is checked
+   - Add to your app target
+
+2. Update `Info.plist` to include the fonts:
+   ```xml
+   <key>UIAppFonts</key>
+   <array>
+     <string>Advercase-Regular.otf</string>
+     <string>DINOT-Medium.otf</string>
+     <string>IBMPlexMono-Regular.otf</string>
+   </array>
+   ```
+
+**Android:**
+
+1. Copy font files to your Android project:
+
+   ```bash
+   cp node_modules/@selfxyz/mobile-sdk-alpha/assets/fonts/* android/app/src/main/assets/fonts/
+   ```
+
+2. If the `fonts` directory doesn't exist, create it:
+   ```bash
+   mkdir -p android/app/src/main/assets/fonts
+   ```
+
+The fonts will be automatically available to your app.
+
+### 3. Initialize the SDK
 
 Provide `scanner`, `network`, and `crypto` adapters. `storage`, `clock`, and `logger` default to no-ops.
 

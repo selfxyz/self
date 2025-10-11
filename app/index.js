@@ -13,19 +13,17 @@ import 'react-native-get-random-values';
 import { Buffer } from 'buffer';
 import React from 'react';
 import { AppRegistry, LogBox } from 'react-native';
-import { createTamagui, TamaguiProvider } from 'tamagui';
+import { TamaguiProvider } from 'tamagui';
 
 import App from './App';
 import { name as appName } from './app.json';
+import tamaguiConfig from './tamagui.config';
 
 import './src/utils/ethers';
 import 'react-native-gesture-handler';
-import { config } from '@tamagui/config/v2-native';
 
 // Set global Buffer before any other imports
 global.Buffer = Buffer;
-
-const tamaguiConfig = createTamagui(config);
 
 LogBox.ignoreLogs([
   /bad setState/,

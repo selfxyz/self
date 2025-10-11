@@ -7416,7 +7416,6 @@ __metadata:
     react-native-screens: "npm:4.15.3"
     react-native-sqlite-storage: "npm:^6.0.1"
     react-native-svg: "npm:15.12.1"
-    react-native-svg-circle-country-flags: "npm:^0.2.2"
     react-native-svg-transformer: "npm:^1.5.1"
     react-native-svg-web: "npm:^1.0.9"
     react-native-web: "npm:^0.19.0"
@@ -7443,12 +7442,12 @@ __metadata:
   dependencies:
     "@babel/runtime": "npm:^7.28.3"
     "@selfxyz/common": "workspace:^"
-    "@tamagui/types": "npm:1.126.14"
     "@testing-library/react": "npm:^14.1.2"
     "@types/react": "npm:^18.3.4"
     "@types/react-dom": "npm:^18.3.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.0.0"
     "@typescript-eslint/parser": "npm:^8.0.0"
+    "@xstate/react": "npm:^5.0.5"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^10.1.8"
     eslint-import-resolver-typescript: "npm:^4.4.4"
@@ -7464,9 +7463,9 @@ __metadata:
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.9"
     react-native-localize: "npm:^3.5.2"
+    react-native-svg-circle-country-flags: "npm:^0.2.2"
     react-native-web: "npm:^0.21.1"
     socket.io-client: "npm:^4.8.1"
-    tamagui: "npm:1.126.14"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.2"
     uuid: "npm:^11.1.0"
@@ -7477,10 +7476,7 @@ __metadata:
     react: ^18.3.1
     react-native: 0.76.9
     react-native-localize: "*"
-    tamagui: 1.126.x
-  peerDependenciesMeta:
-    tamagui:
-      optional: false
+    react-native-svg: "*"
   languageName: unknown
   linkType: soft
 
@@ -12914,7 +12910,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xstate/react@npm:^5.0.3":
+"@xstate/react@npm:^5.0.3, @xstate/react@npm:^5.0.5":
   version: 5.0.5
   resolution: "@xstate/react@npm:5.0.5"
   dependencies:

@@ -36,15 +36,17 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import {
+  BodyText,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';
 import TextsContainer from '@/components/TextsContainer';
-import { BodyText } from '@/components/typography/BodyText';
-import { Title } from '@/components/typography/Title';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import NFC_IMAGE from '@/images/nfc.png';
@@ -546,7 +548,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           <>
             <TextsContainer>
               <Title children="Ready to scan" />
-              <BodyText textAlign="center">
+              <BodyText style={{ textAlign: 'center' }}>
                 {nfcMessage && nfcMessage.trim().length > 0 ? (
                   nfcMessage
                 ) : (
@@ -588,24 +590,22 @@ const DocumentNFCScanScreen: React.FC = () => {
               </GestureDetector>
               {isNfcEnabled ? (
                 <>
-                  <Title style={styles.title} marginTop="$2">
+                  <Title style={[styles.title, { marginTop: 8 }]}>
                     Find the RFID chip in your ID
                   </Title>
                   <BodyText
-                    style={styles.bodyText}
-                    marginTop="$2"
-                    marginBottom="$2"
+                    style={[styles.bodyText, { marginTop: 8, marginBottom: 8 }]}
                   >
                     Place your phone against the chip and keep it still until
                     the sensor reads it.
                   </BodyText>
-                  <BodyText style={styles.disclaimer} marginTop="$2">
+                  <BodyText style={[styles.disclaimer, { marginTop: 16 }]}>
                     SELF DOES NOT STORE THIS INFORMATION.
                   </BodyText>
                 </>
               ) : (
                 <>
-                  <BodyText style={styles.disclaimer} marginTop="$2">
+                  <BodyText style={[styles.disclaimer, { marginTop: 16 }]}>
                     {dialogMessage}
                   </BodyText>
                 </>

@@ -8,10 +8,12 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import {
+  Description,
+  PrimaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import analytics from '@/utils/analytics';
@@ -41,13 +43,15 @@ const DocumentDataNotFoundScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <Title textAlign="center" style={{ color: white }}>
+        <Title style={{ textAlign: 'center', color: white }}>
           ✨ Are you new here?
         </Title>
         <Description
-          marginTop={8}
-          textAlign="center"
-          style={{ color: slate200 }}
+          style={{
+            marginTop: 8,
+            textAlign: 'center',
+            color: slate200,
+          }}
         >
           It seems like you need to go through the registration flow first.
         </Description>

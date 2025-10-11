@@ -4,9 +4,10 @@
 
 import React, { useEffect } from 'react';
 
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
-import { Caption } from '@/components/typography/Caption';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Activity from '@/images/icons/activity.svg';
 import PassportCameraBulb from '@/images/icons/passport_camera_bulb.svg';
@@ -60,12 +61,12 @@ const DocumentCameraTroubleScreen: React.FC = () => {
       title="Having trouble scanning your ID?"
       onDismiss={go}
       header={
-        <Caption size="large" color={slate500} marginBottom={18}>
+        <Caption style={{ fontSize: 16, color: slate500, marginBottom: 18 }}>
           Here are a few tips that might help:
         </Caption>
       }
       footer={
-        <Caption size="large" color={slate500}>
+        <Caption size="large" style={{ color: slate500 }}>
           Following these steps should help your phone's camera capture the ID
           page quickly and clearly!
         </Caption>

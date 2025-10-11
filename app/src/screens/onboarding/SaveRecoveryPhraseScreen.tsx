@@ -4,12 +4,15 @@
 
 import React, { useCallback, useState } from 'react';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import {
+  Caption,
+  Description,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
+
 import Mnemonic from '@/components/Mnemonic';
-import { Caption } from '@/components/typography/Caption';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import useMnemonic from '@/hooks/useMnemonic';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
@@ -42,10 +45,10 @@ const SaveRecoveryPhraseScreen: React.FC = () => {
         justifyContent="space-between"
         gap={10}
       >
-        <Title paddingTop={20} textAlign="center">
+        <Title style={{ paddingTop: 20, textAlign: 'center' }}>
           Save your recovery phrase
         </Title>
-        <Description paddingBottom={10}>
+        <Description style={{ paddingBottom: 10 }}>
           This phrase is the only way to recover your account. Keep it secret,
           keep it safe.
         </Description>
@@ -56,7 +59,7 @@ const SaveRecoveryPhraseScreen: React.FC = () => {
         backgroundColor={white}
       >
         <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
-        <Caption color={slate400}>
+        <Caption style={{ color: slate400 }}>
           You can reveal your recovery phrase in settings.
         </Caption>
         <PrimaryButton onPress={onCloudBackupPress}>

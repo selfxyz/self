@@ -32,7 +32,7 @@ export const DocumentFlowNavBar = ({
       justifyContent="space-between"
     >
       <NavBar.LeftAction component="back" onPress={() => navigation.goBack()} />
-      <NavBar.Title fontFamily={titleFontFamily} fontSize={fontSize}>
+      <NavBar.Title style={{ fontFamily: titleFontFamily, fontSize: fontSize }}>
         {title}
       </NavBar.Title>
       <NavBar.RightAction

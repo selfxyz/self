@@ -5,7 +5,8 @@
 import React from 'react';
 import { Text, View } from 'tamagui';
 
-import { Caption } from '@/components/typography/Caption';
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+
 import { slate500 } from '@/utils/colors';
 
 export interface TipProps {
@@ -39,7 +40,7 @@ function Tip({ title, body, icon }: TipProps) {
         </View>
       )}
       <View flex={1}>
-        <Caption size="large" color={slate500}>
+        <Caption size="large" style={{ color: slate500 }}>
           <Text fontWeight={'bold'}>
             {title}
             {': '}

@@ -39,6 +39,7 @@ const entry = {
   browser: 'src/browser.ts',
   'constants/analytics': 'src/constants/analytics.ts',
   'constants/colors': 'src/constants/colors.ts',
+  'components/index': 'src/components/index.ts',
   stores: 'src/stores/index.ts',
   ...flowEntries,
 };
@@ -69,6 +70,7 @@ export default defineConfig([
       '@react-native-async-storage/async-storage',
       'react-native-keychain',
       'react-native-sqlite-storage',
+      // State management (xstate included in bundle)
     ],
     esbuildOptions(options) {
       options.supported = {
@@ -113,6 +115,7 @@ export default defineConfig([
       '@react-native-async-storage/async-storage',
       'react-native-keychain',
       'react-native-sqlite-storage',
+      // State management (xstate included in bundle)
     ],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
     esbuildOptions(options) {

@@ -13,8 +13,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bug, FileText } from '@tamagui/lucide-icons';
 
-import { pressedStyle } from '@/components/buttons/pressedStyle';
-import { BodyText } from '@/components/typography/BodyText';
+import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
+
 import {
   appStoreUrl,
   gitHubUrl,
@@ -119,7 +119,7 @@ const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
     hitSlop={4}
   >
     <Icon height={24} width={21} color={white} />
-    <BodyText color={white} fontSize={18} lineHeight={23}>
+    <BodyText style={{ color: white, fontSize: 18, lineHeight: 23 }}>
       {children}
     </BodyText>
   </Button>
@@ -262,14 +262,16 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
                 pressStyle={pressedStyle}
                 onPress={goToStore}
               >
-                <BodyText color={white}>Leave an app store review</BodyText>
+                <BodyText style={{ color: white }}>
+                  Leave an app store review
+                </BodyText>
               </Button>
               <XStack gap={32}>
                 {social.map(([Icon, href], i) => (
                   <SocialButton key={i} Icon={Icon} href={href} />
                 ))}
               </XStack>
-              <BodyText color={amber500} fontSize={15}>
+              <BodyText style={{ color: amber500, fontSize: 15 }}>
                 SELF
               </BodyText>
               {/* Dont remove if not viewing on ios */}

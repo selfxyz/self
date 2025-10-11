@@ -7,10 +7,13 @@ import { styled, View, XStack, YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
+import {
+  Description,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
+
 import ModalClose from '@/images/icons/modal_close.svg';
 import LogoInversed from '@/images/logo_inversed.svg';
 import { white } from '@/utils/colors';
@@ -112,9 +115,11 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
             {params?.preventDismiss ? null : <ModalClose onPress={onClose} />}
           </XStack>
           <YStack gap={20}>
-            <Title textAlign="left">{params?.titleText}</Title>
+            <Title style={{ textAlign: 'left' }}>
+              {params?.titleText as React.ReactNode}
+            </Title>
             <Description style={{ textAlign: 'left' }}>
-              {params?.bodyText}
+              {params?.bodyText as React.ReactNode}
             </Description>
           </YStack>
           <YStack gap={12}>

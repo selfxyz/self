@@ -8,10 +8,9 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { BodyText } from '@/components/typography/BodyText';
 import BlueCheckIcon from '@/images/blue_check.svg';
 import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
 import type { RootStackParamList } from '@/navigation';
@@ -45,14 +44,16 @@ const AadhaarUploadedSuccessScreen: React.FC = () => {
         borderBlockWidth={1}
         borderBlockColor={slate200}
       >
-        <BodyText fontSize={19} textAlign="center" color={black}>
+        <BodyText style={{ fontSize: 19, textAlign: 'center', color: black }}>
           QR code upload successful
         </BodyText>
         <BodyText
-          marginTop={6}
-          fontSize={17}
-          textAlign="center"
-          color={slate500}
+          style={{
+            marginTop: 6,
+            fontSize: 17,
+            textAlign: 'center',
+            color: slate500,
+          }}
         >
           You are ready to register your Aadhaar card with Self.
         </BodyText>

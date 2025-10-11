@@ -2,22 +2,15 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { LayoutChangeEvent } from 'react-native';
 import { Animated, StyleSheet, useAnimatedValue } from 'react-native';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import type { HeldPrimaryButtonProps } from '@/components/buttons/PrimaryButtonLongHold.shared';
-import {
-  ACTION_TIMER,
-  COLORS,
-} from '@/components/buttons/PrimaryButtonLongHold.shared';
+import { PrimaryButton } from './PrimaryButton';
+import type { HeldPrimaryButtonProps } from './PrimaryButtonLongHold.shared';
+import { ACTION_TIMER, COLORS } from './PrimaryButtonLongHold.shared';
 
-export function HeldPrimaryButton({
-  children,
-  onLongPress,
-  ...props
-}: HeldPrimaryButtonProps) {
+export function HeldPrimaryButton({ children, onLongPress, ...props }: HeldPrimaryButtonProps) {
   const [hasTriggered, setHasTriggered] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
 

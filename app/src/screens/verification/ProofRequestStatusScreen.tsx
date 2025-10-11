@@ -11,16 +11,18 @@ import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  BodyText,
+  Description,
+  PrimaryButton,
+  Title,
+  typography,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import loadingAnimation from '@/assets/animations/loading/misc.json';
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { BodyText } from '@/components/typography/BodyText';
-import Description from '@/components/typography/Description';
-import { typography } from '@/components/typography/styles';
-import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';

@@ -12,10 +12,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  Description,
+  SecondaryButton,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import Description from '@/components/typography/Description';
 import Paste from '@/images/icons/paste.svg';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
@@ -115,7 +117,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
       paddingBottom="$2.5"
       style={styles.layout}
     >
-      <Description color={slate300}>
+      <Description style={{ color: slate300 }}>
         Your recovery phrase has 24 words. Enter the words in the correct order,
         separated by spaces.
       </Description>

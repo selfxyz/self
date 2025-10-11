@@ -8,8 +8,8 @@ import { XStack, YStack } from 'tamagui';
 import type { Country3LetterCode } from '@selfxyz/common/constants';
 import { countryCodes } from '@selfxyz/common/constants';
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils';
+import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 
-import { BodyText } from '@/components/typography/BodyText';
 import CheckMark from '@/images/icons/checkmark.svg';
 import { slate200, slate500 } from '@/utils/colors';
 
@@ -115,7 +115,7 @@ const DisclosureItem: React.FC<DisclosureItemProps> = ({
       paddingHorizontal={10}
     >
       <CheckMark width={22} />
-      <BodyText textBreakStrategy="balanced" color={slate500}>
+      <BodyText textBreakStrategy="balanced" style={{ color: slate500 }}>
         {text}
       </BodyText>
     </XStack>

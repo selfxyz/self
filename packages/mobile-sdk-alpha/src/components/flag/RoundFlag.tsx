@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import * as CountryFlags from 'react-native-svg-circle-country-flags';
 
 import { alpha3ToAlpha2 } from '@selfxyz/common/constants/countries';
 
-import { slate300 } from '@/utils/colors';
+import { slate300 } from '../../constants/colors';
 
 type CountryFlagComponent = React.ComponentType<{
   width: number;
@@ -22,16 +22,15 @@ interface RoundFlagProps {
   size: number;
 }
 
-const findFlagComponent = (formattedCode: string) => {
+const findFlagComponent = (CountryFlags: CountryFlagsRecord, formattedCode: string) => {
   const patterns = [
     formattedCode,
     formattedCode.toLowerCase(),
-    formattedCode.charAt(0).toUpperCase() +
-      formattedCode.charAt(1).toLowerCase(),
+    formattedCode.charAt(0).toUpperCase() + formattedCode.charAt(1).toLowerCase(),
   ];
 
   for (const pattern of patterns) {
-    const component = (CountryFlags as unknown as CountryFlagsRecord)[pattern];
+    const component = CountryFlags[pattern];
     if (component) {
       return component;
     }
@@ -48,7 +47,7 @@ const getCountryFlag = (countryCode: string): CountryFlagComponent | null => {
     }
 
     const formattedCode = iso2.toUpperCase();
-    return findFlagComponent(formattedCode);
+    return findFlagComponent(CountryFlags as unknown as CountryFlagsRecord, formattedCode);
   } catch (error) {
     console.error('Error getting country flag:', error);
     return null;
@@ -64,6 +63,7 @@ export const RoundFlag: React.FC<RoundFlagProps> = ({ countryCode, size }) => {
         style={{
           width: size,
           height: size,
+          borderRadius: size / 2,
           backgroundColor: slate300,
         }}
       />
