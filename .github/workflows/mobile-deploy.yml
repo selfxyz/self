@@ -1347,7 +1347,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: bump mobile app version to $VERSION [skip ci]"
+          git commit -m "chore: bump mobile app version to $VERSION"
 
           # Create new branch from current HEAD (bump target branch with version bump)
           git checkout -b ${BRANCH_NAME}
