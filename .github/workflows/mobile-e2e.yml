@@ -110,6 +110,9 @@ jobs:
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
+          # Ensure Yarn 4.6.0 is active
+          corepack enable
+          corepack prepare yarn@4.6.0 --activate
           yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Clone android-passport-nfc-reader
