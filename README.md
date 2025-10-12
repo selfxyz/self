@@ -64,7 +64,7 @@ The International Civil Aviation Organization (ICAO) is a specialized agency of 
 - Allow DeFi protocols to check if the nationality of a user is included in a set of forbidden states.
 - Gate an adult content website to a specific age.
 - Create a petition system or a survey portal.
-- Passport Wallet: use [active authentication](<https://en.wikipedia.org/wiki/Biometric_passport#:~:text=Active%20Authentication%20(AA),Using%20AA%20is%20optional.>) to build a wallet, a multisig or a recovery module using passport signatures
+- Passport Wallet: use [active authentication](https://en.wikipedia.org/wiki/Biometric_passport#:~:text=Active%20Authentication%20(AA),Using%20AA%20is%20optional.) to build a wallet, a multisig or a recovery module using passport signatures
 
 We provide bounties for new and interesting applications using Self.
 
@@ -82,8 +82,6 @@ For detailed development patterns and conventions, see:
 - **[Development Patterns](docs/development-patterns.md)** - React Native architecture, navigation, state management, and code organization
 - **[Testing Guide](docs/testing-guide.md)** - Jest configuration, mock patterns, testing strategies, and E2E testing
 
-These guides provide comprehensive context for AI-assisted development with ChatGPT Codex, Cursor, and CodeRabbit AI.
-
 ## Contributing
 
 We are actively looking for contributors. Please check the [open issues](https://github.com/selfxyz/self/issues) if you don't know where to start! We offer bounties for significant contributions.
@@ -97,3 +95,4 @@ We are actively looking for contributors. Please check the [open issues](https:/
 Thanks [Rémi](https://github.com/remicolin), [Florent](https://github.com/0xturboblitz), [Ayman](https://github.com/Nesopie), [Justin](https://github.com/transphorm), [Seshanth](https://github.com/seshanthS), [Nico](https://github.com/motemotech) and all other contributors for building Self.
 
 Thanks [Aayush](https://twitter.com/yush_g), [Vivek](https://twitter.com/viv_boop), [Andy](https://twitter.com/AndyGuzmanEth) and [Vitalik](https://github.com/vbuterin) for contributing ideas and inspiring us to build this technology, and [PSE](https://pse.dev/) for supporting the initial work through grants!
+Copyright © 2025 Self Developers
