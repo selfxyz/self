@@ -9,12 +9,13 @@ import { CloudStorage } from 'react-native-cloud-storage';
 import { GDrive } from '@robinbobin/react-native-google-drive-api-wrapper';
 import { renderHook } from '@testing-library/react-native';
 
-import { useBackupMnemonic } from '@/utils/cloudBackup';
-import { createGDrive } from '@/utils/cloudBackup/google';
 import {
   exportDocumentStorageSnapshot,
   restoreDocumentStorageSnapshotIfEmpty,
 } from '@/providers/passportDataProvider';
+import { useBackupMnemonic } from '@/utils/cloudBackup';
+import { createGDrive } from '@/utils/cloudBackup/google';
+
 import '@/utils/ethers';
 
 // Mock dependencies
@@ -79,10 +80,9 @@ const mockMnemonic = {
   entropy: '0x00000000000000000000000000000000',
 };
 
-const mockExportSnapshot =
-  exportDocumentStorageSnapshot as jest.MockedFunction<
-    typeof exportDocumentStorageSnapshot
-  >;
+const mockExportSnapshot = exportDocumentStorageSnapshot as jest.MockedFunction<
+  typeof exportDocumentStorageSnapshot
+>;
 const mockRestoreSnapshot =
   restoreDocumentStorageSnapshotIfEmpty as jest.MockedFunction<
     typeof restoreDocumentStorageSnapshotIfEmpty
@@ -147,7 +147,8 @@ describe('cloudBackup', () => {
         '//@selfxyz/mobile-app/encrypted-private-key',
         expect.any(String),
       );
-      const payloadString = (CloudStorage.writeFile as jest.Mock).mock.calls[0][1];
+      const payloadString = (CloudStorage.writeFile as jest.Mock).mock
+        .calls[0][1];
       const payload = JSON.parse(payloadString);
       expect(payload.mnemonic).toEqual(mockMnemonic);
       expect(payload.documents).toBeUndefined();
@@ -168,7 +169,8 @@ describe('cloudBackup', () => {
         '//@selfxyz/mobile-app/encrypted-private-key',
         expect.any(String),
       );
-      const payloadString = (CloudStorage.writeFile as jest.Mock).mock.calls[0][1];
+      const payloadString = (CloudStorage.writeFile as jest.Mock).mock
+        .calls[0][1];
       const payload = JSON.parse(payloadString);
       expect(payload.mnemonic).toEqual(mockMnemonic);
       expect(payload.documents).toBeUndefined();
@@ -242,7 +244,8 @@ describe('cloudBackup', () => {
         result.current.upload(mockMnemonic),
       ).resolves.toBeUndefined();
 
-      const payloadString = (CloudStorage.writeFile as jest.Mock).mock.calls[0][1];
+      const payloadString = (CloudStorage.writeFile as jest.Mock).mock
+        .calls[0][1];
       const payload = JSON.parse(payloadString);
       expect(payload.documents).toBeDefined();
       expect(payload.documents.version).toBe(1);
@@ -280,7 +283,8 @@ describe('cloudBackup', () => {
         mockGDriveInstance.files.newMultipartUploader().setData,
       ).toHaveBeenCalledWith(expect.any(String));
       const payloadString =
-        mockGDriveInstance.files.newMultipartUploader().setData.mock.calls[0][0];
+        mockGDriveInstance.files.newMultipartUploader().setData.mock
+          .calls[0][0];
       const payload = JSON.parse(payloadString);
       expect(payload.mnemonic).toEqual(mockMnemonic);
       expect(payload.documents).toBeUndefined();

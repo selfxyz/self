@@ -2,28 +2,30 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { Buffer } from 'buffer';
+import { ethers } from 'ethers';
+import forge from 'node-forge';
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
-import { Buffer } from 'buffer';
-import forge from 'node-forge';
-import { ethers } from 'ethers';
 import {
   APP_DATA_FOLDER_ID,
   MIME_TYPES,
 } from '@robinbobin/react-native-google-drive-api-wrapper';
 
-import '@/utils/ethers';
 import { encryptAES256GCM } from '@selfxyz/common/utils/proving';
+
 import {
+  type DocumentStorageSnapshot,
   exportDocumentStorageSnapshot,
   restoreDocumentStorageSnapshotIfEmpty,
-  type DocumentStorageSnapshot,
 } from '@/providers/passportDataProvider';
 import type { Mnemonic } from '@/types/mnemonic';
 import { createGDrive } from '@/utils/cloudBackup/google';
-import {
+import type {
   CloudBackupPayload,
   EncryptedDocumentBackup,
+} from '@/utils/cloudBackup/helpers';
+import {
   FILE_NAME,
   parseBackupPayload,
   withRetries,
@@ -33,6 +35,8 @@ import {
   download as iosDownload,
   upload as iosUpload,
 } from '@/utils/cloudBackup/ios';
+
+import '@/utils/ethers';
 
 export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
 
@@ -218,6 +222,28 @@ export async function download(): Promise<CloudBackupPayload> {
   }
 }
 
+export async function restoreDocumentsFromBackup(
+  mnemonic: Mnemonic | undefined,
+  encrypted?: EncryptedDocumentBackup | null,
+): Promise<boolean> {
+  if (!mnemonic) {
+    console.warn('Cannot restore documents without mnemonic payload');
+    return false;
+  }
+
+  if (!encrypted) {
+    return false;
+  }
+
+  try {
+    const snapshot = decryptSnapshot(encrypted, mnemonic);
+    return await restoreDocumentStorageSnapshotIfEmpty(snapshot);
+  } catch (error) {
+    console.warn('Failed to restore encrypted document backup', error);
+    return false;
+  }
+}
+
 export async function upload(mnemonic: Mnemonic) {
   if (!mnemonic || !mnemonic.phrase) {
     throw new Error(
@@ -240,28 +266,6 @@ export async function upload(mnemonic: Mnemonic) {
         .setRequestBody({ name: FILE_NAME, parents: [APP_DATA_FOLDER_ID] })
         .execute(),
     );
-  }
-}
-
-export async function restoreDocumentsFromBackup(
-  mnemonic: Mnemonic | undefined,
-  encrypted?: EncryptedDocumentBackup | null,
-): Promise<boolean> {
-  if (!mnemonic) {
-    console.warn('Cannot restore documents without mnemonic payload');
-    return false;
-  }
-
-  if (!encrypted) {
-    return false;
-  }
-
-  try {
-    const snapshot = decryptSnapshot(encrypted, mnemonic);
-    return await restoreDocumentStorageSnapshotIfEmpty(snapshot);
-  } catch (error) {
-    console.warn('Failed to restore encrypted document backup', error);
-    return false;
   }
 }
 

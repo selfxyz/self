@@ -10,9 +10,9 @@ import { SelfClientProvider } from '@selfxyz/mobile-sdk-alpha';
 
 // Import after mocking
 import {
-  PassportProvider,
   exportDocumentStorageSnapshot,
   initializeNativeModules,
+  PassportProvider,
   restoreDocumentStorageSnapshotIfEmpty,
   usePassport,
 } from '@/providers/passportDataProvider';
@@ -714,15 +714,17 @@ describe('PassportDataProvider', () => {
     });
 
     it('should return null when there are no documents to export', async () => {
-      mockKeychain.getGenericPassword.mockImplementation(async ({ service }) => {
-        if (service === 'test-availability') {
+      mockKeychain.getGenericPassword.mockImplementation(
+        async ({ service }) => {
+          if (service === 'test-availability') {
+            return false;
+          }
+          if (service === 'documentCatalog') {
+            return { password: JSON.stringify({ documents: [] }) };
+          }
           return false;
-        }
-        if (service === 'documentCatalog') {
-          return { password: JSON.stringify({ documents: [] }) };
-        }
-        return false;
-      });
+        },
+      );
 
       await initializeNativeModules();
 
@@ -751,18 +753,20 @@ describe('PassportDataProvider', () => {
         mock: false,
       };
 
-      mockKeychain.getGenericPassword.mockImplementation(async ({ service }) => {
-        if (service === 'test-availability') {
+      mockKeychain.getGenericPassword.mockImplementation(
+        async ({ service }) => {
+          if (service === 'test-availability') {
+            return false;
+          }
+          if (service === 'documentCatalog') {
+            return { password: JSON.stringify(catalog) };
+          }
+          if (service === 'document-doc1') {
+            return { password: JSON.stringify(documentData) };
+          }
           return false;
-        }
-        if (service === 'documentCatalog') {
-          return { password: JSON.stringify(catalog) };
-        }
-        if (service === 'document-doc1') {
-          return { password: JSON.stringify(documentData) };
-        }
-        return false;
-      });
+        },
+      );
 
       await initializeNativeModules();
 
@@ -798,20 +802,24 @@ describe('PassportDataProvider', () => {
         },
       };
 
-      mockKeychain.getGenericPassword.mockImplementation(async ({ service }) => {
-        if (service === 'test-availability') {
+      mockKeychain.getGenericPassword.mockImplementation(
+        async ({ service }) => {
+          if (service === 'test-availability') {
+            return false;
+          }
+          if (service === 'documentCatalog') {
+            return false;
+          }
           return false;
-        }
-        if (service === 'documentCatalog') {
-          return false;
-        }
-        return false;
-      });
+        },
+      );
       mockKeychain.setGenericPassword.mockResolvedValue(true as any);
 
       await initializeNativeModules();
 
-      const restored = await restoreDocumentStorageSnapshotIfEmpty(snapshot as any);
+      const restored = await restoreDocumentStorageSnapshotIfEmpty(
+        snapshot as any,
+      );
       expect(restored).toBe(true);
       expect(mockKeychain.setGenericPassword).toHaveBeenCalledWith(
         'doc1',
@@ -826,15 +834,19 @@ describe('PassportDataProvider', () => {
     });
 
     it('should not restore when catalog already contains documents', async () => {
-      mockKeychain.getGenericPassword.mockImplementation(async ({ service }) => {
-        if (service === 'test-availability') {
+      mockKeychain.getGenericPassword.mockImplementation(
+        async ({ service }) => {
+          if (service === 'test-availability') {
+            return false;
+          }
+          if (service === 'documentCatalog') {
+            return {
+              password: JSON.stringify({ documents: [{ id: 'existing' }] }),
+            };
+          }
           return false;
-        }
-        if (service === 'documentCatalog') {
-          return { password: JSON.stringify({ documents: [{ id: 'existing' }] }) };
-        }
-        return false;
-      });
+        },
+      );
 
       await initializeNativeModules();
 
@@ -848,15 +860,17 @@ describe('PassportDataProvider', () => {
     });
 
     it('should return false when snapshot is missing documents', async () => {
-      mockKeychain.getGenericPassword.mockImplementation(async ({ service }) => {
-        if (service === 'test-availability') {
+      mockKeychain.getGenericPassword.mockImplementation(
+        async ({ service }) => {
+          if (service === 'test-availability') {
+            return false;
+          }
+          if (service === 'documentCatalog') {
+            return false;
+          }
           return false;
-        }
-        if (service === 'documentCatalog') {
-          return false;
-        }
-        return false;
-      });
+        },
+      );
 
       await initializeNativeModules();
 

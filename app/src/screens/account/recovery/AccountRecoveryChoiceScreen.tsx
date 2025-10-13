@@ -69,7 +69,9 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       );
 
       if (!restoredFromBackup) {
-        console.warn('No encrypted document backup found, starting re-registration');
+        console.warn(
+          'No encrypted document backup found, starting re-registration',
+        );
         trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
         navigation.navigate('CountryPicker');
         setRestoring(false);

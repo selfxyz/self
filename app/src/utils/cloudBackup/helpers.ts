@@ -78,9 +78,7 @@ function validateMnemonic(candidate: unknown): Mnemonic {
   return candidate;
 }
 
-export function parseBackupPayload(
-  mnemonicString: string,
-): CloudBackupPayload {
+export function parseBackupPayload(mnemonicString: string): CloudBackupPayload {
   let parsed: unknown;
 
   try {

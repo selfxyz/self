@@ -888,9 +888,7 @@ export const getAllDocumentsDirectlyFromKeychain = async (): Promise<{
   return allDocs;
 };
 
-export async function exportDocumentStorageSnapshot(): Promise<
-  DocumentStorageSnapshot | null
-> {
+export async function exportDocumentStorageSnapshot(): Promise<DocumentStorageSnapshot | null> {
   const catalog = await loadDocumentCatalogDirectlyFromKeychain();
   if (catalog.documents.length === 0) {
     return null;

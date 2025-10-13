@@ -25,6 +25,7 @@ import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
+import { restoreDocumentsFromBackup } from '@/utils/cloudBackup';
 import {
   black,
   slate300,
@@ -33,7 +34,6 @@ import {
   slate700,
   white,
 } from '@/utils/colors';
-import { restoreDocumentsFromBackup } from '@/utils/cloudBackup';
 
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation =
@@ -75,7 +75,9 @@ const RecoverWithPhraseScreen: React.FC = () => {
     );
 
     if (!restoredFromBackup) {
-      console.warn('No encrypted document backup found, starting re-registration');
+      console.warn(
+        'No encrypted document backup found, starting re-registration',
+      );
       navigation.navigate('CountryPicker');
       setRestoring(false);
       return;
