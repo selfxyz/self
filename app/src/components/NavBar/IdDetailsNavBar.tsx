@@ -30,7 +30,7 @@ export const IdDetailsNavBar = (props: NativeStackHeaderProps) => {
             unstyled
             marginLeft={'$3.5'}
             padding={'$3'}
-            width={'$10'}
+            width={104}
             onPress={() => {
               buttonTap();
               props.navigation.goBack();
