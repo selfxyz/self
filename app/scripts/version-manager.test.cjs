@@ -1,69 +1,81 @@
-#!/usr/bin/env node
-
 // SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /**
- * Unit tests for version-manager.cjs
+ * @jest-environment node
+ *
+ * SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+ * SPDX-License-Identifier: BUSL-1.1
+ * NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
  */
 
-const fs = require('fs');
+/**
+ * Unit tests for version-manager.cjs
+ *
+ * This file is only meant to be run with Jest.
+ */
+
 const path = require('path');
 
-// Mock file system operations
+// Mock file system operations - data
 const mockPackageJson = { version: '1.2.3' };
 const mockVersionJson = {
   ios: { build: 100, lastDeployed: '2024-01-01T00:00:00Z' },
   android: { build: 200, lastDeployed: '2024-01-01T00:00:00Z' },
 };
 
-// Store original functions
+// Use manual mocking instead of jest.mock to avoid hoisting issues
+const fs = require('fs');
+
+// Store originals for restore
 const originalReadFileSync = fs.readFileSync;
 const originalWriteFileSync = fs.writeFileSync;
 const originalExistsSync = fs.existsSync;
+const originalAppendFileSync = fs.appendFileSync;
 
-// Mock fs functions
+// Setup mocks before importing the module
 function setupMocks() {
-  fs.readFileSync = jest.fn(filePath => {
+  fs.readFileSync = function (filePath, encoding) {
     if (filePath.includes('package.json')) {
       return JSON.stringify(mockPackageJson);
     }
     if (filePath.includes('version.json')) {
       return JSON.stringify(mockVersionJson);
     }
-    return originalReadFileSync(filePath);
-  });
+    return originalReadFileSync(filePath, encoding);
+  };
 
-  fs.writeFileSync = jest.fn();
-  fs.existsSync = jest.fn(() => true);
+  fs.writeFileSync = function () {};
+  fs.existsSync = function () {
+    return true;
+  };
+  fs.appendFileSync = function () {};
 }
 
 function restoreMocks() {
   fs.readFileSync = originalReadFileSync;
   fs.writeFileSync = originalWriteFileSync;
   fs.existsSync = originalExistsSync;
+  fs.appendFileSync = originalAppendFileSync;
 }
 
-// Import module after setting up mocks
-let versionManager;
+// Setup mocks before requiring the module
+setupMocks();
+
+// Import module after mocks are set up
+const versionManager = require('./version-manager.cjs');
 
 describe('version-manager', () => {
-  beforeAll(() => {
-    setupMocks();
-    versionManager = require('./version-manager.cjs');
-  });
-
-  afterAll(() => {
-    restoreMocks();
-  });
-
   beforeEach(() => {
-    jest.clearAllMocks();
     // Reset mock data
     mockPackageJson.version = '1.2.3';
     mockVersionJson.ios.build = 100;
     mockVersionJson.android.build = 200;
+  });
+
+  afterAll(() => {
+    restoreMocks();
   });
 
   describe('getVersionInfo', () => {
@@ -226,7 +238,6 @@ describe('version-manager', () => {
       expect(() =>
         versionManager.applyVersions('1.2.3', '100', '200'),
       ).not.toThrow();
-      expect(fs.writeFileSync).toHaveBeenCalled();
     });
 
     it('should accept large build numbers', () => {
@@ -236,29 +247,31 @@ describe('version-manager', () => {
     });
 
     it('should write correct values to files', () => {
+      // Track write calls
+      const writeCalls = [];
+      fs.writeFileSync = function (filePath, content) {
+        writeCalls.push({ filePath, content });
+      };
+
       versionManager.applyVersions('2.0.0', 150, 250);
 
-      // Check that writeFileSync was called
-      expect(fs.writeFileSync).toHaveBeenCalledTimes(2);
+      // Verify writes occurred
+      expect(writeCalls.length).toBe(2);
 
-      // Verify the writes contain correct data
-      const calls = fs.writeFileSync.mock.calls;
-      const packageJsonCall = calls.find(call =>
-        call[0].includes('package.json'),
+      // Find and verify package.json write
+      const packageWrite = writeCalls.find(call =>
+        call.filePath.includes('package.json'),
       );
-      const versionJsonCall = calls.find(call =>
-        call[0].includes('version.json'),
-      );
-
-      expect(packageJsonCall).toBeDefined();
-      expect(versionJsonCall).toBeDefined();
-
-      // Parse and verify package.json update
-      const updatedPackage = JSON.parse(packageJsonCall[1]);
+      expect(packageWrite).toBeDefined();
+      const updatedPackage = JSON.parse(packageWrite.content);
       expect(updatedPackage.version).toBe('2.0.0');
 
-      // Parse and verify version.json update
-      const updatedVersion = JSON.parse(versionJsonCall[1]);
+      // Find and verify version.json write
+      const versionWrite = writeCalls.find(call =>
+        call.filePath.includes('version.json'),
+      );
+      expect(versionWrite).toBeDefined();
+      const updatedVersion = JSON.parse(versionWrite.content);
       expect(updatedVersion.ios.build).toBe(150);
       expect(updatedVersion.android.build).toBe(250);
     });
@@ -271,11 +284,14 @@ describe('version-manager', () => {
     });
 
     it('should throw error if file does not exist', () => {
-      fs.existsSync = jest.fn(() => false);
+      const originalExists = fs.existsSync;
+      fs.existsSync = function () {
+        return false;
+      };
       expect(() => versionManager.readPackageJson()).toThrow(
         /package.json not found/,
       );
-      fs.existsSync = jest.fn(() => true); // restore
+      fs.existsSync = originalExists;
     });
   });
 
@@ -287,11 +303,14 @@ describe('version-manager', () => {
     });
 
     it('should throw error if file does not exist', () => {
-      fs.existsSync = jest.fn(() => false);
+      const originalExists = fs.existsSync;
+      fs.existsSync = function () {
+        return false;
+      };
       expect(() => versionManager.readVersionJson()).toThrow(
         /version.json not found/,
       );
-      fs.existsSync = jest.fn(() => true); // restore
+      fs.existsSync = originalExists;
     });
   });
 });
