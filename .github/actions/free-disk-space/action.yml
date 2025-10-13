@@ -1,0 +1,26 @@
+name: Free Disk Space
+
+description: Free up disk space on GitHub Actions runners by removing unnecessary pre-installed tools.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Free up disk space
+      shell: bash
+      run: |
+        echo "Disk usage before cleanup:"
+        df -h
+        # Remove unnecessary pre-installed tools to free up space
+        # These are commonly available on GitHub runners but not needed for most builds
+        # DO NOT remove $AGENT_TOOLSDIRECTORY as it contains active tools like Node.js
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /usr/local/share/boost
+        # Remove unused languages from hostedtoolcache to save space
+        # but preserve the directory structure and Node.js
+        sudo rm -rf /opt/hostedtoolcache/CodeQL 2>/dev/null || true
+        sudo rm -rf /opt/hostedtoolcache/PyPy 2>/dev/null || true
+        sudo rm -rf /opt/hostedtoolcache/go 2>/dev/null || true
+        sudo rm -rf /opt/hostedtoolcache/Ruby 2>/dev/null || true
+        echo "Disk usage after cleanup:"
+        df -h

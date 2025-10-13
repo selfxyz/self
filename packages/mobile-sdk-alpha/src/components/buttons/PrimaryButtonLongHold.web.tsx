@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { LayoutChangeEvent } from 'react-native';
 import { Animated } from 'react-native';
 
@@ -14,7 +14,8 @@ export function HeldPrimaryButton({ children, onLongPress, ...props }: HeldPrima
   const [hasTriggered, setHasTriggered] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [isPressed, setIsPressed] = useState(false);
-  const animationValue = new Animated.Value(0);
+  const animationValueRef = useRef(new Animated.Value(0));
+  const animationValue = animationValueRef.current;
 
   const onPressIn = () => {
     setHasTriggered(false);
