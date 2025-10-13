@@ -301,7 +301,7 @@ jobs:
           echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - name: Verify branch and commit (iOS)
-        if: inputs.platform != 'android'
+        if: needs.bump-version.outputs.platform != 'android'
         run: |
           echo "🔍 Verifying we're building from the correct branch and commit..."
           echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
@@ -325,7 +325,7 @@ jobs:
           fi
 
       - name: Apply version bump for build
-        if: inputs.platform != 'android'
+        if: needs.bump-version.outputs.platform != 'android'
         run: |
           cd ${{ env.APP_PATH }}
 
@@ -929,7 +929,7 @@ jobs:
           echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - name: Verify branch and commit (Android)
-        if: inputs.platform != 'ios'
+        if: needs.bump-version.outputs.platform != 'ios'
         run: |
           echo "🔍 Verifying we're building from the correct branch and commit..."
           echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
@@ -949,7 +949,7 @@ jobs:
           fi
 
       - name: Apply version bump for build
-        if: inputs.platform != 'ios'
+        if: needs.bump-version.outputs.platform != 'ios'
         run: |
           cd ${{ env.APP_PATH }}
 

@@ -160,7 +160,7 @@ jobs:
       - name: Create dev to staging release PR
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr == '' }}
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
           PR_DATE: ${{ steps.check_dev_staging.outputs.date }}
           BRANCH_NAME: ${{ steps.check_dev_staging.outputs.branch_name }}
         shell: bash
@@ -328,7 +328,7 @@ jobs:
       - name: Create staging to main release PR
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead != 'true' && steps.production_status.outputs.existing_pr == '' }}
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
           PR_DATE: ${{ steps.production_status.outputs.date }}
           COMMITS_AHEAD: ${{ steps.production_status.outputs.commits }}
         shell: bash
