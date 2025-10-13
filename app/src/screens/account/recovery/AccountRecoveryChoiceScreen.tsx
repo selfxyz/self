@@ -129,6 +129,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
     trackEvent,
     download,
     restoreAccountFromMnemonic,
+    restoreDocumentsFromBackup,
     cloudBackupEnabled,
     onRestoreFromCloudNext,
     navigation,

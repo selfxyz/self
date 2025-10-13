@@ -122,6 +122,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
     mnemonic,
     navigation,
     restoreAccountFromMnemonic,
+    getOrCreateMnemonic,
     trackEvent,
     useProtocolStore,
   ]);
