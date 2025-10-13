@@ -3,13 +3,14 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useMemo } from 'react';
+import type { TextProps } from 'react-native';
 import type { SystemBarStyle } from 'react-native-edge-to-edge';
 import { SystemBars } from 'react-native-edge-to-edge';
-import type { TextProps, ViewProps, XStackProps } from 'tamagui';
+import type { ViewProps, XStackProps } from 'tamagui';
 import { Button, View, XStack } from 'tamagui';
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 
-import { Title } from '@/components/typography/Title';
+import { Title } from '@selfxyz/mobile-sdk-alpha/components';
 
 interface NavBarProps extends XStackProps {
   children: React.ReactNode;

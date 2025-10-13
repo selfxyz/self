@@ -61,10 +61,12 @@ export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
         />
 
         <NavBar.Title
-          fontSize={16}
-          color={black}
-          fontWeight="600"
-          fontFamily={dinot}
+          style={{
+            fontSize: 16,
+            color: black,
+            fontWeight: '600',
+            fontFamily: dinot,
+          }}
         >
           AADHAAR REGISTRATION
         </NavBar.Title>

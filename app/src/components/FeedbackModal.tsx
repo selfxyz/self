@@ -6,7 +6,8 @@ import React, { useState } from 'react';
 import { Alert, Modal, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, XStack, YStack } from 'tamagui';
 
-import { Caption } from '@/components/typography/Caption';
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+
 import { black, slate400, white, zinc800, zinc900 } from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 

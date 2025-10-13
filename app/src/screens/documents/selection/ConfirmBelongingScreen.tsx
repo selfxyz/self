@@ -9,16 +9,18 @@ import { usePreventRemove } from '@react-navigation/native';
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
+  Description,
+  PrimaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
+import {
   PassportEvents,
   ProofEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { getPreRegistrationDescription } from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
 import successAnimation from '@/assets/animations/loading/success.json';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { DelayedLottieView } from '@/components/DelayedLottieView';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/verification/ProofRequestStatusScreen';
@@ -144,8 +146,8 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
           paddingBottom={20}
           backgroundColor={white}
         >
-          <Title textAlign="center">Confirm your identity</Title>
-          <Description textAlign="center" paddingBottom={20}>
+          <Title style={{ textAlign: 'center' }}>Confirm your identity</Title>
+          <Description style={{ textAlign: 'center', paddingBottom: 20 }}>
             {getPreRegistrationDescription()}
           </Description>
           <PrimaryButton

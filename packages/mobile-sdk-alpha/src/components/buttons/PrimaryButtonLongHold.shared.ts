@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { ButtonProps } from '@/components/buttons/AbstractButton';
+import type { ButtonProps } from './AbstractButton';
 
 export interface HeldPrimaryButtonProps extends ButtonProps {
   onLongPress: () => void;

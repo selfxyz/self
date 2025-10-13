@@ -9,14 +9,16 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  Caption,
+  Description,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import BackupDocumentationLink from '@/components/BackupDocumentationLink';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import { Caption } from '@/components/typography/Caption';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
 import { useModal } from '@/hooks/useModal';
 import Cloud from '@/images/icons/logo_cloud_backup.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';

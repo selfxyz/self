@@ -2,16 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { assign, createMachine } from 'xstate';
+
+import { ProofEvents } from '../../constants/analytics';
+import { black } from '../../constants/colors';
+import Description from '../typography/Description';
+import { HeldPrimaryButton } from './PrimaryButtonLongHold';
+
 import { useMachine } from '@xstate/react';
-
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-
-import { HeldPrimaryButton } from '@/components/buttons/PrimaryButtonLongHold';
-import Description from '@/components/typography/Description';
-import { black } from '@/utils/colors';
 
 interface HeldPrimaryButtonProveScreenProps {
   onVerify: () => void;
@@ -184,9 +185,7 @@ const buttonMachine = createMachine(
   },
 );
 
-export const HeldPrimaryButtonProveScreen: React.FC<
-  HeldPrimaryButtonProveScreenProps
-> = ({
+export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreenProps> = ({
   onVerify,
   selectedAppSessionId,
   hasScrolledToBottom,

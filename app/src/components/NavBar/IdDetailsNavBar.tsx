@@ -41,7 +41,7 @@ export const IdDetailsNavBar = (props: NativeStackHeaderProps) => {
           </Button>
         }
       />
-      <NavBar.Title size="large" color={black}>
+      <NavBar.Title style={{ fontSize: 24, color: black }}>
         {props.options.title}
       </NavBar.Title>
       <NavBar.RightAction

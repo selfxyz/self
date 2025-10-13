@@ -12,10 +12,9 @@ import {
   useCountries,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import { BodyText, RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
 
-import { RoundFlag } from '@/components/flag/RoundFlag';
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
-import { BodyText } from '@/components/typography/BodyText';
 import { black, slate100, slate500 } from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap } from '@/utils/haptic';
@@ -45,7 +44,7 @@ const CountryItem = memo<{
     >
       <XStack alignItems="center" gap={16}>
         <RoundFlag countryCode={countryCode} size={FLAG_SIZE} />
-        <BodyText fontSize={16} color={black} flex={1}>
+        <BodyText style={{ fontSize: 16, color: black, flex: 1 }}>
           {countryName}
         </BodyText>
       </XStack>
@@ -126,10 +125,10 @@ const CountryPickerScreen: React.FC = () => {
       <DocumentFlowNavBar title="GETTING STARTED" />
       <YStack flex={1} paddingTop="$4" paddingHorizontal="$4">
         <YStack marginTop="$4" marginBottom="$6">
-          <BodyText fontSize={29} fontFamily={advercase}>
+          <BodyText style={{ fontSize: 29, fontFamily: advercase }}>
             Select the country that issued your ID
           </BodyText>
-          <BodyText fontSize={16} color={slate500} marginTop="$3">
+          <BodyText style={{ fontSize: 16, color: slate500, marginTop: 20 }}>
             Self has support for over 300 ID types. You can select the type of
             ID in the next step
           </BodyText>
@@ -141,11 +140,13 @@ const CountryPickerScreen: React.FC = () => {
             {showSuggestion && (
               <YStack marginBottom="$2">
                 <BodyText
-                  fontSize={16}
-                  color={black}
-                  fontFamily={dinot}
-                  letterSpacing={0.8}
-                  marginBottom="$1"
+                  style={{
+                    fontSize: 16,
+                    color: black,
+                    fontFamily: dinot,
+                    letterSpacing: 0.8,
+                    marginBottom: 8,
+                  }}
                 >
                   SUGGESTION
                 </BodyText>
@@ -156,11 +157,13 @@ const CountryPickerScreen: React.FC = () => {
                   onSelect={onPressCountry}
                 />
                 <BodyText
-                  fontSize={16}
-                  color={black}
-                  fontFamily={dinot}
-                  letterSpacing={0.8}
-                  marginTop="$4"
+                  style={{
+                    fontSize: 16,
+                    color: black,
+                    fontFamily: dinot,
+                    letterSpacing: 0.8,
+                    marginTop: 20,
+                  }}
                 >
                   SELECT AN ISSUING COUNTRY
                 </BodyText>

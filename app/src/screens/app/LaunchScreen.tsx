@@ -8,11 +8,13 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
 
+import {
+  AbstractButton,
+  BodyText,
+  Caption,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import AbstractButton from '@/components/buttons/AbstractButton';
-import { BodyText } from '@/components/typography/BodyText';
-import { Caption } from '@/components/typography/Caption';
 import { privacyUrl, termsUrl } from '@/consts/links';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
@@ -64,11 +66,13 @@ const LaunchScreen: React.FC = () => {
           Take control of your digital identity
         </Text>
         <BodyText
-          color={slate300}
-          fontSize={16}
-          textAlign="center"
-          marginHorizontal={40}
-          marginBottom={40}
+          style={{
+            color: slate300,
+            fontSize: 16,
+            textAlign: 'center',
+            marginHorizontal: 40,
+            marginBottom: 40,
+          }}
         >
           Self is the easiest way to verify your identity safely wherever you
           are.

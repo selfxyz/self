@@ -9,13 +9,15 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import {
+  BodyText,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';
 import TextsContainer from '@/components/TextsContainer';
-import { BodyText } from '@/components/typography/BodyText';
-import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
@@ -48,7 +50,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         <>
           <TextsContainer>
             <Title children="Ready to scan" />
-            <BodyText textAlign="center">TODO implement</BodyText>
+            <BodyText style={{ textAlign: 'center' }}>TODO implement</BodyText>
           </TextsContainer>
           <Image
             height="$8"

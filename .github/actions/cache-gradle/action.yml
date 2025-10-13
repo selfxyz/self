@@ -7,7 +7,9 @@ inputs:
     description: Paths to cache
     required: false
     default: |
-      ~/.gradle/caches
+      ~/.gradle/caches/modules-*
+      ~/.gradle/caches/jars-*
+      ~/.gradle/caches/build-cache-*
       ~/.gradle/wrapper
   cache-version:
     description: Additional cache version segment

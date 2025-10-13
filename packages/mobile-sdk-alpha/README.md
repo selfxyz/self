@@ -21,7 +21,98 @@ Alpha SDK for registering and proving. Adapters-first, React Native-first with w
 
 - The `browser` build replaces the scanner with `webNFCScannerShim`, which throws for NFC scanning (not supported on web).
 
-## Quick start (local, monorepo)
+## Installation & Setup
+
+### 1. Install the package
+
+```bash
+npm install @selfxyz/mobile-sdk-alpha
+# or
+yarn add @selfxyz/mobile-sdk-alpha
+```
+
+### 2. Link native dependencies and assets
+
+The SDK includes custom fonts that need to be linked to your app:
+
+#### Automatic Linking (Recommended)
+
+React Native autolinking (RN 0.60+) does not link assets by default. First, configure your app's assets:
+
+Create or update `react-native.config.js` at the app root:
+
+```js
+module.exports = {
+  assets: ['./node_modules/@selfxyz/mobile-sdk-alpha/assets/fonts'],
+};
+```
+
+Then run:
+
+```bash
+npx react-native-asset
+# or (Yarn 2+)
+yarn dlx react-native-asset
+```
+
+This copies the font files to your iOS and Android projects.
+
+#### Manual Linking
+
+If autolinking doesn't work or you need manual control:
+
+**iOS:**
+
+1. Add fonts to your Xcode project:
+   - Open your Xcode workspace
+   - Drag the font files from `node_modules/@selfxyz/mobile-sdk-alpha/assets/fonts/` to your project
+   - Ensure "Copy items if needed" is checked
+   - Add to your app target
+
+2. Update `Info.plist` to include the fonts:
+   ```xml
+   <key>UIAppFonts</key>
+   <array>
+     <string>Advercase-Regular.otf</string>
+     <string>DINOT-Medium.otf</string>
+     <string>IBMPlexMono-Regular.otf</string>
+   </array>
+   ```
+
+**Android:**
+
+1. Ensure the `fonts` directory exists:
+
+   ```bash
+   mkdir -p android/app/src/main/assets/fonts
+   ```
+
+2. Copy font files to your Android project:
+   ```bash
+   cp node_modules/@selfxyz/mobile-sdk-alpha/assets/fonts/* android/app/src/main/assets/fonts/
+   ```
+
+The fonts will be automatically available to your app.
+
+### 3. Install peer dependencies
+
+This SDK requires `react-native-svg` as a peer dependency. Install it in your app:
+
+```bash
+npm install react-native-svg
+# or
+yarn add react-native-svg
+```
+
+**Minimum required version:** `react-native-svg@*` (any version compatible with your React Native version)
+
+For iOS, run `pod install` after installation:
+
+```bash
+cd ios && pod install && cd ..
+```
+
+### 4. Initialize the SDK
 
 Provide `scanner`, `network`, and `crypto` adapters. `storage`, `clock`, and `logger` default to no-ops.
 
@@ -36,6 +127,67 @@ const sdk = createSelfClient({
   },
 });
 ```
+
+## Migration from Tamagui
+
+If you're upgrading from a Tamagui-based version of this SDK, please note the following breaking changes:
+
+### Breaking Changes
+
+**1. UI Component System**
+
+- **Removed:** Tamagui dependency and Tamagui-based components
+- **Added:** Custom React Native components with direct styling
+- **Impact:** Any custom theme overrides or Tamagui-specific configurations will need to be replaced
+
+**2. Font System**
+
+- **Changed:** Fonts are now bundled directly with the package
+- **Required:** Manual font linking step (see installation section above)
+- **Impact:** You must run `react-native-asset` or manually link fonts
+
+**3. Peer Dependencies**
+
+- **Added:** `react-native-svg` is now a required peer dependency
+- **Required:** Install `react-native-svg` in your app
+- **Impact:** SVG-based UI components now use `react-native-svg` directly
+
+### Upgrade Steps
+
+1. **Remove Tamagui dependencies** (if you installed them specifically for this SDK):
+
+   ```bash
+   # Only if these were installed solely for the SDK
+   npm uninstall @tamagui/core @tamagui/config
+   ```
+
+2. **Install required peer dependencies:**
+
+   ```bash
+   npm install react-native-svg
+   cd ios && pod install && cd ..
+   ```
+
+3. **Link fonts** following the asset linking instructions in the installation section above
+
+4. **Update your imports** - Component imports remain the same, but internal implementation has changed:
+
+   ```ts
+   // These imports still work
+   import { PrimaryButton, Title, Body } from '@selfxyz/mobile-sdk-alpha/components';
+   ```
+
+5. **Remove Tamagui configuration** - If you had Tamagui config specifically for this SDK, it's no longer needed
+
+6. **Test your UI** - Components now use platform-native styling instead of Tamagui
+
+### Style Customization
+
+Component styling is no longer customizable via Tamagui themes. The SDK now uses fixed styles optimized for the verification flow. If you need to customize UI:
+
+- Use the component composition patterns provided by the SDK
+- Wrap SDK components with your own styled containers
+- Use the `style` prop where available
 
 ## SDK Events
 

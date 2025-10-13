@@ -29,11 +29,10 @@ import {
   signatureAlgorithmToStrictSignatureAlgorithm,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import { Caption, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';
-import { Caption } from '@/components/typography/Caption';
 import { useMockDataForm } from '@/hooks/useMockDataForm';
 import SelfDevCard from '@/images/card-dev.svg';
 import IdIcon from '@/images/icons/id_icon.svg';
@@ -88,7 +87,7 @@ const MockDocumentTitleCard = () => {
         <Text fontFamily={dinot} fontWeight={500} fontSize="$6" color={white}>
           Generate mock document data
         </Text>
-        <Caption fontFamily={dinot} fontSize="$5" color={zinc400}>
+        <Caption style={{ fontFamily: dinot, fontSize: 20, color: zinc400 }}>
           Configure data parameters to generate a mock document for testing
           purposes on the Self Protocol.
         </Caption>

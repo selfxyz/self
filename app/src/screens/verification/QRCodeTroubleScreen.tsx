@@ -4,9 +4,10 @@
 
 import React, { useEffect } from 'react';
 
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
-import { Caption } from '@/components/typography/Caption';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/utils/analytics';
@@ -55,7 +56,7 @@ const QRCodeTrouble: React.FC = () => {
       title="Having trouble scanning the QR code?"
       onDismiss={go}
     >
-      <Caption size="large" color={slate500}>
+      <Caption size="large" style={{ color: slate500 }}>
         Here are some tips to help you successfully scan the QR code:
       </Caption>
       <Tips items={tips} />
