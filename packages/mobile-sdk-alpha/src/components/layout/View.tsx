@@ -55,7 +55,11 @@ interface PressableViewProps {
   disabled?: boolean;
 }
 
-export interface ViewProps extends Omit<RNViewProps, 'hitSlop'>, SpacingProps, LayoutProps, PressableViewProps {}
+export interface ViewProps
+  extends Omit<RNViewProps, 'hitSlop'>,
+    SpacingProps,
+    LayoutProps,
+    Omit<PressableProps, 'children'> {}
 
 const convertSpacingValue = (value: string | number | undefined): number | undefined => {
   if (value === undefined) return undefined;

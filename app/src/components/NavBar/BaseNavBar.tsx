@@ -100,10 +100,10 @@ const Container: React.FC<NavBarProps> = ({
   children,
   backgroundColor,
   barStyle,
-  justifyContent = "flex-start",
-  alignItems = "center",
+  justifyContent = 'flex-start',
+  alignItems = 'center',
   flexShrink = 0,
-  flexDirection = "row",
+  flexDirection = 'row',
   ...props
 }) => {
   return (
