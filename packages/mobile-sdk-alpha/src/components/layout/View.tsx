@@ -52,7 +52,7 @@ interface PressableViewProps {
   onPress?: PressableProps['onPress'];
   pressStyle?: ViewStyle;
   hitSlop?: CustomHitSlop | number;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 export interface ViewProps extends Omit<RNViewProps, 'hitSlop'>, SpacingProps, LayoutProps, PressableViewProps {}
