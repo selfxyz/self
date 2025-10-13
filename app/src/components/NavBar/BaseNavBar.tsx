@@ -100,6 +100,10 @@ const Container: React.FC<NavBarProps> = ({
   children,
   backgroundColor,
   barStyle,
+  justifyContent = "flex-start",
+  alignItems = "center",
+  flexShrink = 0,
+  flexDirection = "row",
   ...props
 }) => {
   return (
@@ -107,9 +111,10 @@ const Container: React.FC<NavBarProps> = ({
       <SystemBars style={barStyle} />
       <XStack
         backgroundColor={backgroundColor}
-        justifyContent="flex-start"
-        alignItems="center"
-        flexShrink={0}
+        justifyContent={justifyContent}
+        alignItems={alignItems}
+        flexShrink={flexShrink}
+        flexDirection={flexDirection}
         {...props}
       >
         {children}

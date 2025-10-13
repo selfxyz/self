@@ -52,6 +52,7 @@ interface PressableViewProps {
   onPress?: PressableProps['onPress'];
   pressStyle?: ViewStyle;
   hitSlop?: CustomHitSlop | number;
+  disabled: boolean;
 }
 
 export interface ViewProps extends Omit<RNViewProps, 'hitSlop'>, SpacingProps, LayoutProps, PressableViewProps {}
@@ -121,6 +122,7 @@ export const View: React.FC<ViewProps> = ({
   elevation,
   gap,
   onPress,
+  disabled,
   pressStyle,
   hitSlop,
   ...props
@@ -183,6 +185,7 @@ export const View: React.FC<ViewProps> = ({
         {...(props as PressableProps)}
         onPress={onPress}
         hitSlop={processedHitSlop}
+        disabled={disabled}
         style={({ pressed }) => [viewStyle, pressed && pressStyle, style]}
       >
         {children}

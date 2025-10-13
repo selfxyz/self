@@ -20,15 +20,9 @@ export { DescriptionTitle } from './typography/DescriptionTitle';
 
 export { HeldPrimaryButton } from './buttons/PrimaryButtonLongHold';
 
-export { Text } from './layout/Text';
-
 export { HeldPrimaryButtonProveScreen } from './buttons/HeldPrimaryButtonProveScreen';
 
-export { View } from './layout/View';
-
 export { MRZScannerView } from './MRZScannerView';
-
-export { XStack } from './layout/XStack';
 
 // Button components
 export { PrimaryButton } from './buttons/PrimaryButton';
@@ -36,14 +30,20 @@ export { PrimaryButton } from './buttons/PrimaryButton';
 // Flag components
 export { RoundFlag } from './flag/RoundFlag';
 
-// Export types
-export { YStack } from './layout/YStack';
-
 export { SecondaryButton } from './buttons/SecondaryButton';
 
 export { SubHeader } from './typography/SubHeader';
 
+export { Text } from './layout/Text';
+
 export { Title } from './typography/Title';
+
+export { View } from './layout/View';
+
+export { XStack } from './layout/XStack';
+
+// Export types
+export { YStack } from './layout/YStack';
 
 export { pressedStyle } from './buttons/pressedStyle';
 
