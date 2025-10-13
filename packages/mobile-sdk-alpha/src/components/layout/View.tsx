@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
-import { View as RNView, Pressable } from 'react-native';
-import type { ViewProps as RNViewProps, ViewStyle, PressableProps, DimensionValue } from 'react-native';
+import type React from 'react';
+import type { DimensionValue, PressableProps, ViewProps as RNViewProps, ViewStyle } from 'react-native';
+import { Pressable, View as RNView } from 'react-native';
 
 interface SpacingProps {
   padding?: string | number;
@@ -59,7 +59,7 @@ export interface ViewProps extends Omit<RNViewProps, 'hitSlop'>, SpacingProps, L
 const convertSpacingValue = (value: string | number | undefined): number | undefined => {
   if (value === undefined) return undefined;
   if (typeof value === 'number') return value;
-  
+
   // Handle tamagui spacing tokens like '$4', '$2.5'
   if (typeof value === 'string') {
     if (value.startsWith('$')) {
@@ -68,14 +68,14 @@ const convertSpacingValue = (value: string | number | undefined): number | undef
     }
     return parseFloat(value) || 0;
   }
-  
+
   return 0;
 };
 
 const convertBorderRadius = (value: string | number | undefined): number | undefined => {
   if (value === undefined) return undefined;
   if (typeof value === 'number') return value;
-  
+
   // Handle tamagui radius tokens like '$2', '$5'
   if (typeof value === 'string') {
     if (value.startsWith('$')) {
@@ -84,7 +84,7 @@ const convertBorderRadius = (value: string | number | undefined): number | undef
     }
     return parseFloat(value) || 0;
   }
-  
+
   return 0;
 };
 
@@ -140,56 +140,50 @@ export const View: React.FC<ViewProps> = ({
     ...(borderWidth !== undefined && { borderWidth }),
     ...(borderColor && { borderColor }),
     ...(elevation !== undefined && { elevation }),
-    ...(gap !== undefined && { 
-      rowGap: convertSpacingValue(gap),
-      columnGap: convertSpacingValue(gap)
+    ...(gap !== undefined && {
+      gap: convertSpacingValue(gap),
     }),
-    
+
     // Handle spacing
     ...(padding !== undefined && { padding: convertSpacingValue(padding) }),
     ...(paddingTop !== undefined && { paddingTop: convertSpacingValue(paddingTop) }),
     ...(paddingBottom !== undefined && { paddingBottom: convertSpacingValue(paddingBottom) }),
     ...(paddingLeft !== undefined && { paddingLeft: convertSpacingValue(paddingLeft) }),
     ...(paddingRight !== undefined && { paddingRight: convertSpacingValue(paddingRight) }),
-    ...(paddingHorizontal !== undefined && { 
+    ...(paddingHorizontal !== undefined && {
       paddingLeft: convertSpacingValue(paddingHorizontal),
-      paddingRight: convertSpacingValue(paddingHorizontal)
+      paddingRight: convertSpacingValue(paddingHorizontal),
     }),
-    ...(paddingVertical !== undefined && { 
+    ...(paddingVertical !== undefined && {
       paddingTop: convertSpacingValue(paddingVertical),
-      paddingBottom: convertSpacingValue(paddingVertical)
+      paddingBottom: convertSpacingValue(paddingVertical),
     }),
     ...(margin !== undefined && { margin: convertSpacingValue(margin) }),
     ...(marginTop !== undefined && { marginTop: convertSpacingValue(marginTop) }),
     ...(marginBottom !== undefined && { marginBottom: convertSpacingValue(marginBottom) }),
     ...(marginLeft !== undefined && { marginLeft: convertSpacingValue(marginLeft) }),
     ...(marginRight !== undefined && { marginRight: convertSpacingValue(marginRight) }),
-    ...(marginHorizontal !== undefined && { 
+    ...(marginHorizontal !== undefined && {
       marginLeft: convertSpacingValue(marginHorizontal),
-      marginRight: convertSpacingValue(marginHorizontal)
+      marginRight: convertSpacingValue(marginHorizontal),
     }),
-    ...(marginVertical !== undefined && { 
+    ...(marginVertical !== undefined && {
       marginTop: convertSpacingValue(marginVertical),
-      marginBottom: convertSpacingValue(marginVertical)
+      marginBottom: convertSpacingValue(marginVertical),
     }),
   };
 
   if (onPress) {
     // Convert numeric hitSlop to proper format
-    const processedHitSlop = typeof hitSlop === 'number' 
-      ? { top: hitSlop, bottom: hitSlop, left: hitSlop, right: hitSlop }
-      : hitSlop;
+    const processedHitSlop =
+      typeof hitSlop === 'number' ? { top: hitSlop, bottom: hitSlop, left: hitSlop, right: hitSlop } : hitSlop;
 
     return (
       <Pressable
         {...(props as PressableProps)}
         onPress={onPress}
         hitSlop={processedHitSlop}
-        style={({ pressed }) => [
-          viewStyle,
-          pressed && pressStyle,
-          style
-        ]}
+        style={({ pressed }) => [viewStyle, pressed && pressStyle, style]}
       >
         {children}
       </Pressable>

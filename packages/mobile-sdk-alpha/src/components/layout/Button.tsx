@@ -14,10 +14,7 @@ interface ButtonProps extends ViewProps {
   disabled?: boolean;
   unstyled?: boolean;
   size?: string;
-  scaleIcon?: number;
-  spaceFlex?: number | boolean;
   scaleSpace?: number;
-  noTextWrap?: boolean;
 }
 
 export const Button: React.FC<ButtonProps> = props => {
@@ -28,10 +25,7 @@ export const Button: React.FC<ButtonProps> = props => {
     disabled = false,
     unstyled = false,
     size,
-    scaleIcon = 1,
-    spaceFlex,
     scaleSpace = 0.66,
-    noTextWrap,
     onPress,
     ...viewProps
   } = props;
@@ -62,15 +56,15 @@ export const Button: React.FC<ButtonProps> = props => {
 
   // Build children array with proper spacing
   const buttonChildren = [];
-  
+
   if (icon) {
     buttonChildren.push(icon);
   }
-  
+
   if (children) {
     buttonChildren.push(children);
   }
-  
+
   if (iconAfter) {
     buttonChildren.push(iconAfter);
   }
@@ -85,12 +79,7 @@ export const Button: React.FC<ButtonProps> = props => {
   }, []);
 
   return (
-    <View 
-      {...styledDefaults} 
-      {...viewProps} 
-      onPress={handlePress} 
-      {...(disabled && { opacity: 0.5 })}
-    >
+    <View {...styledDefaults} {...viewProps} onPress={handlePress} aria-disabled={disabled}>
       {spacedChildren}
     </View>
   );

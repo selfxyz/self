@@ -8,6 +8,7 @@ import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { ChevronLeft, HelpCircle } from '@tamagui/lucide-icons';
 
 import { Button, XStack, YStack } from '@selfxyz/mobile-sdk-alpha/components';
+
 import { NavBar } from '@/components/NavBar/BaseNavBar';
 import { black, slate100, slate300 } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
