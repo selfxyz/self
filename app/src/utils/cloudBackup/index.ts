@@ -56,13 +56,14 @@ function deriveBackupKeyBytes(mnemonic: Mnemonic): Uint8Array {
   const secret = `${mnemonic.phrase}|${mnemonic.password ?? ''}`;
   const saltBytes = ethers.toUtf8Bytes(DOCUMENT_BACKUP_KDF_SALT);
 
-  return ethers.pbkdf2(
+  const keyHex = ethers.pbkdf2(
     ethers.toUtf8Bytes(secret),
     saltBytes,
     DOCUMENT_BACKUP_KDF_ITERATIONS,
     32,
     'sha256',
   );
+  return ethers.getBytes(keyHex);
 }
 
 function forgeBufferFromBytes(bytes: Uint8Array) {
@@ -129,9 +130,9 @@ function decryptSnapshot(
   decipher.start({
     iv,
     tagLength: 128,
-    tag: forge.util.createBuffer(authTag, 'binary'),
+    tag: forge.util.createBuffer(authTag),
   });
-  decipher.update(forge.util.createBuffer(cipherText, 'binary'));
+  decipher.update(forge.util.createBuffer(cipherText));
 
   if (!decipher.finish()) {
     throw new Error('Failed to decrypt document backup payload');
@@ -139,7 +140,7 @@ function decryptSnapshot(
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(decipher.output.toString('utf8'));
+    parsed = JSON.parse(decipher.output.toString());
   } catch {
     throw new Error('Invalid document backup payload: malformed JSON');
   }
