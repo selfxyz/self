@@ -3,8 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { memo, useCallback } from 'react';
-import { FlatList, TouchableOpacity, View } from 'react-native';
-import { Spinner, XStack, YStack } from 'tamagui';
+import { ActivityIndicator, FlatList, TouchableOpacity, View } from 'react-native';
 
 import { commonNames } from '@selfxyz/common/constants/countries';
 import {
@@ -12,7 +11,7 @@ import {
   useCountries,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { BodyText, RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
+import { BodyText, RoundFlag, XStack, YStack } from '@selfxyz/mobile-sdk-alpha/components';
 
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
 import { black, slate100, slate500 } from '@/utils/colors';
@@ -107,7 +106,7 @@ const CountryPickerScreen: React.FC = () => {
 
   const renderLoadingState = () => (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Spinner size="small" />
+      <ActivityIndicator size="small" />
     </View>
   );
 

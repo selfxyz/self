@@ -4,12 +4,17 @@
 
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { View, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 
 import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { BodyText, RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  BodyText,
+  RoundFlag,
+  View,
+  XStack,
+  YStack,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import AadhaarLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
 import EPassportLogoRounded from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport_rounded.svg';
 import PlusIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/plus.svg';
@@ -151,7 +156,10 @@ const IDPickerScreen: React.FC = () => {
               elevation={4}
               borderRadius={'$5'}
               padding={'$3'}
-              pressStyle={{ scale: 0.97, backgroundColor: slate100 }}
+              pressStyle={{
+                transform: [{ scale: 0.97 }],
+                backgroundColor: slate100,
+              }}
               onPress={() => onSelectDocumentType(docType)}
             >
               <XStack alignItems="center" gap={'$3'} flex={1}>

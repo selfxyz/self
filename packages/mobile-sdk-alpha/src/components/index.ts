@@ -9,6 +9,16 @@ export { default as Additional } from './typography/Additional';
 // Typography components
 export { BodyText } from './typography/BodyText';
 
+// Layout components
+export { Button } from './layout/Button';
+export { Text } from './layout/Text';
+export { View } from './layout/View';
+export { XStack } from './layout/XStack';
+export { YStack } from './layout/YStack';
+
+// Export types
+export type { ViewProps } from './layout/View';
+
 export { Caption } from './typography/Caption';
 
 export { default as Caution } from './typography/Caution';
