@@ -142,16 +142,16 @@ const convertBorderRadius = (
   if (value === undefined) return undefined;
   if (typeof value === 'number') return value;
 
-  if (value instanceof Animated.AnimatedNode) {
-    return value;
-  }
-
   // Handle tamagui radius tokens
   if (typeof value === 'string') {
     if (value.startsWith('$') && radiusTokens[value] !== undefined) {
       return radiusTokens[value];
     }
     return parseFloat(value) || 0;
+  }
+
+  if (typeof value === 'object' && value instanceof Animated.AnimatedNode) {
+    return value;
   }
 
   return 0;
@@ -278,7 +278,7 @@ export const View: React.FC<ViewProps> = ({
     if (Object.keys(props).length > 0) {
       console.debug('other props not handled:', props);
     }
-  }, []);
+  }, [Object.keys(props).length]);
 
   if (onPress) {
     // Convert numeric hitSlop to proper format
