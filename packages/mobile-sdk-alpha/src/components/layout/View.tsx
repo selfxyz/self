@@ -3,8 +3,14 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import type { DimensionValue, PressableProps, ViewProps as RNViewProps, ViewStyle } from 'react-native';
-import { Pressable, View as RNView } from 'react-native';
+import type {
+  AnimatableNumericValue,
+  DimensionValue,
+  PressableProps,
+  ViewProps as RNViewProps,
+  ViewStyle,
+} from 'react-native';
+import { Animated, Pressable, View as RNView } from 'react-native';
 
 type DimensionValueWithToken = DimensionValue | `$${string}`;
 
@@ -25,28 +31,6 @@ interface SpacingProps {
   marginVertical?: DimensionValueWithToken;
 }
 
-interface LayoutProps {
-  flex?: ViewStyle['flex'];
-  flexGrow?: number;
-  flexShrink?: number;
-  width?: DimensionValue;
-  height?: DimensionValue;
-  flexDirection?: ViewStyle['flexDirection'];
-  justifyContent?: ViewStyle['justifyContent'];
-  alignItems?: ViewStyle['alignItems'];
-  alignSelf?: ViewStyle['alignSelf'];
-  backgroundColor?: string;
-  borderRadius?: string | number;
-  borderWidth?: number;
-  borderBottomWidth?: ViewStyle['borderBottomWidth'];
-  borderTopWidth?: ViewStyle['borderTopWidth'];
-  borderLeftWidth?: ViewStyle['borderLeftWidth'];
-  borderRightWidth?: ViewStyle['borderRightWidth'];
-  borderColor?: string;
-  elevation?: number;
-  gap?: string | number;
-}
-
 interface CustomHitSlop {
   top?: number;
   bottom?: number;
@@ -61,7 +45,11 @@ interface PressableViewProps {
   disabled?: boolean;
 }
 
-export interface ViewProps extends Omit<RNViewProps, 'hitSlop'>, SpacingProps, LayoutProps, PressableViewProps {}
+export interface ViewProps
+  extends Omit<RNViewProps, 'hitSlop'>,
+    SpacingProps,
+    Omit<ViewStyle, keyof SpacingProps>,
+    PressableViewProps {}
 
 const sizeTokens: Record<string, number> = {
   $0: 0,
@@ -147,9 +135,15 @@ const convertSpacingValue = (value: DimensionValueWithToken): DimensionValue | u
   return value as DimensionValue;
 };
 
-const convertBorderRadius = (value: string | number | undefined): number | undefined => {
+const convertBorderRadius = (
+  value: AnimatableNumericValue | string | undefined,
+): AnimatableNumericValue | undefined => {
   if (value === undefined) return undefined;
   if (typeof value === 'number') return value;
+
+  if (value instanceof Animated.AnimatedNode) {
+    return value;
+  }
 
   // Handle tamagui radius tokens
   if (typeof value === 'string') {
