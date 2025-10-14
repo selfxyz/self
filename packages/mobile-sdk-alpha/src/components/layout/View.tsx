@@ -6,25 +6,27 @@ import type React from 'react';
 import type { DimensionValue, PressableProps, ViewProps as RNViewProps, ViewStyle } from 'react-native';
 import { Pressable, View as RNView } from 'react-native';
 
+type DimensionValueWithToken = DimensionValue | `$${string}`;
+
 interface SpacingProps {
-  padding?: string | number;
-  paddingTop?: string | number;
-  paddingBottom?: string | number;
-  paddingLeft?: string | number;
-  paddingRight?: string | number;
-  paddingHorizontal?: string | number;
-  paddingVertical?: string | number;
-  margin?: string | number;
-  marginTop?: string | number;
-  marginBottom?: string | number;
-  marginLeft?: string | number;
-  marginRight?: string | number;
-  marginHorizontal?: string | number;
-  marginVertical?: string | number;
+  padding?: DimensionValueWithToken;
+  paddingTop?: DimensionValueWithToken;
+  paddingBottom?: DimensionValueWithToken;
+  paddingLeft?: DimensionValueWithToken;
+  paddingRight?: DimensionValueWithToken;
+  paddingHorizontal?: DimensionValueWithToken;
+  paddingVertical?: DimensionValueWithToken;
+  margin?: DimensionValueWithToken;
+  marginTop?: DimensionValueWithToken;
+  marginBottom?: DimensionValueWithToken;
+  marginLeft?: DimensionValueWithToken;
+  marginRight?: DimensionValueWithToken;
+  marginHorizontal?: DimensionValueWithToken;
+  marginVertical?: DimensionValueWithToken;
 }
 
 interface LayoutProps {
-  flex?: number;
+  flex?: ViewStyle['flex'];
   flexGrow?: number;
   flexShrink?: number;
   width?: DimensionValue;
@@ -36,6 +38,10 @@ interface LayoutProps {
   backgroundColor?: string;
   borderRadius?: string | number;
   borderWidth?: number;
+  borderBottomWidth?: ViewStyle['borderBottomWidth'];
+  borderTopWidth?: ViewStyle['borderTopWidth'];
+  borderLeftWidth?: ViewStyle['borderLeftWidth'];
+  borderRightWidth?: ViewStyle['borderRightWidth'];
   borderColor?: string;
   elevation?: number;
   gap?: string | number;
@@ -57,15 +63,98 @@ interface PressableViewProps {
 
 export interface ViewProps extends Omit<RNViewProps, 'hitSlop'>, SpacingProps, LayoutProps, PressableViewProps {}
 
-const convertSpacingValue = (value: string | number | undefined): number | undefined => {
+const sizeTokens: Record<string, number> = {
+  $0: 0,
+  '$0.25': 2,
+  '$0.5': 4,
+  '$0.75': 8,
+  $1: 20,
+  '$1.5': 24,
+  $2: 28,
+  '$2.5': 32,
+  $3: 36,
+  '$3.5': 40,
+  $4: 44,
+  $true: 44,
+  '$4.5': 48,
+  $5: 52,
+  $6: 64,
+  $7: 74,
+  $8: 84,
+  $9: 94,
+  $10: 104,
+  $11: 124,
+  $12: 144,
+  $13: 164,
+  $14: 184,
+  $15: 204,
+  $16: 224,
+  $17: 224,
+  $18: 244,
+  $19: 264,
+  $20: 284,
+};
+const radiusTokens: Record<string, number> = {
+  $0: 0,
+  $1: 3,
+  $2: 5,
+  $3: 7,
+  $4: 9,
+  $true: 9,
+  $5: 10,
+  $6: 16,
+  $7: 19,
+  $8: 22,
+  $9: 26,
+  $10: 34,
+  $11: 42,
+  $12: 50,
+};
+
+// Tamagui sizeToSpace function (from utils.ts)
+function sizeToSpace(v: number): number {
+  if (v === 0) return 0;
+  if (v === 2) return 0.5;
+  if (v === 4) return 1;
+  if (v === 8) return 1.5;
+  if (v <= 16) return Math.round(v * 0.333);
+  return Math.floor(v * 0.7 - 12);
+}
+
+// Calculate space tokens from size tokens
+const spaceTokens: Record<string, number> = {};
+Object.entries(sizeTokens).forEach(([key, sizeValue]) => {
+  spaceTokens[key] = sizeToSpace(sizeValue);
+});
+
+const convertSpacingValue = (value: DimensionValueWithToken): DimensionValue | undefined => {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'number') return value;
+
+  // Handle tamagui spacing tokens
+  if (typeof value === 'string') {
+    if (value.startsWith('$') && spaceTokens[value] !== undefined) {
+      return spaceTokens[value];
+    }
+    // Pass through percentage strings and other valid CSS values
+    if (value.includes('%') || value === 'auto') {
+      return value as DimensionValue;
+    }
+    const parsed = parseFloat(value);
+    return isNaN(parsed) ? (value as DimensionValue) : parsed;
+  }
+
+  return value as DimensionValue;
+};
+
+const convertBorderRadius = (value: string | number | undefined): number | undefined => {
   if (value === undefined) return undefined;
   if (typeof value === 'number') return value;
 
-  // Handle tamagui spacing tokens like '$4', '$2.5'
+  // Handle tamagui radius tokens
   if (typeof value === 'string') {
-    if (value.startsWith('$')) {
-      const numValue = parseFloat(value.slice(1));
-      return numValue * 8; // Convert to actual pixels (approximate tamagui spacing)
+    if (value.startsWith('$') && radiusTokens[value] !== undefined) {
+      return radiusTokens[value];
     }
     return parseFloat(value) || 0;
   }
@@ -73,17 +162,21 @@ const convertSpacingValue = (value: string | number | undefined): number | undef
   return 0;
 };
 
-const convertBorderRadius = (value: string | number | undefined): number | undefined => {
-  if (value === undefined) return undefined;
+const convertGapValue = (value: string | number | undefined): string | number | undefined => {
+  if (value === undefined || value === null) return undefined;
   if (typeof value === 'number') return value;
 
-  // Handle tamagui radius tokens like '$2', '$5'
+  // Handle tamagui spacing tokens
   if (typeof value === 'string') {
-    if (value.startsWith('$')) {
-      const numValue = parseFloat(value.slice(1));
-      return numValue * 4; // Convert to actual pixels (approximate tamagui radius)
+    if (value.startsWith('$') && spaceTokens[value] !== undefined) {
+      return spaceTokens[value];
     }
-    return parseFloat(value) || 0;
+    // Pass through percentage strings for gap
+    if (value.includes('%')) {
+      return value;
+    }
+    const parsed = parseFloat(value);
+    return isNaN(parsed) ? 0 : parsed;
   }
 
   return 0;
@@ -118,6 +211,10 @@ export const View: React.FC<ViewProps> = ({
   backgroundColor,
   borderRadius,
   borderWidth,
+  borderBottomWidth,
+  borderTopWidth,
+  borderLeftWidth,
+  borderRightWidth,
   borderColor,
   elevation,
   gap,
@@ -139,11 +236,15 @@ export const View: React.FC<ViewProps> = ({
     ...(alignSelf && { alignSelf }),
     ...(backgroundColor && { backgroundColor }),
     ...(borderRadius !== undefined && { borderRadius: convertBorderRadius(borderRadius) }),
+    ...(borderBottomWidth !== undefined && { borderBottomWidth }),
+    ...(borderTopWidth !== undefined && { borderTopWidth }),
+    ...(borderLeftWidth !== undefined && { borderLeftWidth }),
+    ...(borderRightWidth !== undefined && { borderRightWidth }),
     ...(borderWidth !== undefined && { borderWidth }),
     ...(borderColor && { borderColor }),
     ...(elevation !== undefined && { elevation }),
     ...(gap !== undefined && {
-      gap: convertSpacingValue(gap),
+      gap: convertGapValue(gap),
     }),
 
     // Handle spacing
@@ -186,7 +287,7 @@ export const View: React.FC<ViewProps> = ({
         onPress={onPress}
         hitSlop={processedHitSlop}
         disabled={disabled}
-        style={({ pressed }) => [viewStyle, pressed && pressStyle, style]}
+        style={({ pressed }) => [viewStyle, style, pressed && pressStyle]}
       >
         {children}
       </Pressable>
