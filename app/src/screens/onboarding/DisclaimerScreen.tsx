@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -27,6 +27,14 @@ const DisclaimerScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { dismissPrivacyNote } = useSettingStore();
+  const { height } = useWindowDimensions();
+  const isCompactHeight = height < 760;
+  const animationSize = useMemo(
+    () => (isCompactHeight ? '110%' : '125%'),
+    [isCompactHeight],
+  );
+  const buttonMargin = isCompactHeight ? 20 : 30;
+  const cautionSpacing = isCompactHeight ? 6 : 10;
 
   useEffect(() => {
     notificationWarning();
@@ -39,7 +47,7 @@ const DisclaimerScreen: React.FC = () => {
           autoPlay
           loop={false}
           source={warningAnimation}
-          style={styles.animation}
+          style={[styles.animation, { width: animationSize, height: animationSize }]}
           cacheComposition={true}
           renderMode="HARDWARE"
         />
@@ -54,12 +62,12 @@ const DisclaimerScreen: React.FC = () => {
             (like passwords, Social Security numbers, or financial details)
             should be trusted only if they're secure and necessary.
           </Caution>
-          <Caution style={{ marginTop: 10 }}>
+          <Caution style={{ marginTop: cautionSpacing }}>
             Always verify an app's legitimacy before sharing your data.
           </Caution>
           <PrimaryButton
             trackEvent={AppEvents.DISMISS_PRIVACY_DISCLAIMER}
-            style={{ marginVertical: 30 }}
+            style={{ marginVertical: buttonMargin }}
             onPress={() => {
               confirmTap();
               dismissPrivacyNote();

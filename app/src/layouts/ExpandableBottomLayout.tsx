@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Dimensions,
   PixelRatio,
   Platform,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
 } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -57,7 +58,17 @@ const TopSection: React.FC<TopSectionProps> = ({
   ...props
 }) => {
   const { top } = useSafeAreaInsets();
-  const { roundTop, ...restProps } = props;
+  const { roundTop, style: incomingStyle, ...restProps } = props;
+  const { width, height } = useWindowDimensions();
+  const isCompactWidth = width < 360;
+  const isShortHeight = height < 760;
+  const spacingStyle = useMemo(
+    () => ({
+      paddingHorizontal: isCompactWidth ? 16 : 20,
+      paddingVertical: isShortHeight ? 16 : 20,
+    }),
+    [isCompactWidth, isShortHeight],
+  );
   return (
     <View
       {...restProps}
@@ -66,7 +77,9 @@ const TopSection: React.FC<TopSectionProps> = ({
         styles.topSection,
         roundTop && styles.roundTop,
         roundTop ? { marginTop: top } : { paddingTop: top },
+        spacingStyle,
         { backgroundColor },
+        incomingStyle,
       ]}
     >
       {children}
@@ -108,6 +121,16 @@ const BottomSection: React.FC<BottomSectionProps> = ({
   const minBottom = safeAreaBottom + extraYPadding;
   const totalBottom =
     typeof incomingBottom === 'number' ? minBottom + incomingBottom : minBottom;
+  const { width, height } = useWindowDimensions();
+  const isCompactWidth = width < 360;
+  const isShortHeight = height < 760;
+  const spacingStyle = useMemo(
+    () => ({
+      paddingHorizontal: isCompactWidth ? 16 : 20,
+      paddingTop: isShortHeight ? 18 : 30,
+    }),
+    [isCompactWidth, isShortHeight],
+  );
 
   let panelHeight: number | 'auto' = 'auto';
   // set bottom section height to 38% of screen height
@@ -129,7 +152,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({
     <View
       {...props}
       height={panelHeight}
-      style={[styles.bottomSection, style]}
+      style={[styles.bottomSection, spacingStyle, style]}
       paddingBottom={totalBottom}
     >
       {children}

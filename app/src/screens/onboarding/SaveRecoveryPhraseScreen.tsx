@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useWindowDimensions } from 'react-native';
 
 import {
   Caption,
@@ -24,6 +25,29 @@ const SaveRecoveryPhraseScreen: React.FC = () => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
   const { mnemonic, loadMnemonic } = useMnemonic();
   const { cloudBackupEnabled } = useSettingStore();
+  const { width, height } = useWindowDimensions();
+  const isCompactWidth = width < 360;
+  const isShortHeight = height < 780;
+  const topPadding = isShortHeight ? 12 : 20;
+  const bottomPadding = isShortHeight ? 6 : 10;
+  const sectionGap = isShortHeight ? 6 : 10;
+  const titleStyle = useMemo(
+    () => ({
+      paddingTop: topPadding,
+      textAlign: 'center',
+      fontSize: isCompactWidth ? 26 : 28,
+      lineHeight: isCompactWidth ? 32 : 35,
+    }),
+    [isCompactWidth, topPadding],
+  );
+  const descriptionStyle = useMemo(
+    () => ({
+      paddingBottom: bottomPadding,
+      fontSize: isCompactWidth ? 16 : 18,
+      lineHeight: isCompactWidth ? 21 : 23,
+    }),
+    [bottomPadding, isCompactWidth],
+  );
 
   const onRevealWords = useCallback(async () => {
     await loadMnemonic();
@@ -43,12 +67,12 @@ const SaveRecoveryPhraseScreen: React.FC = () => {
         roundTop
         backgroundColor={white}
         justifyContent="space-between"
-        gap={10}
+        gap={sectionGap}
       >
-        <Title style={{ paddingTop: 20, textAlign: 'center' }}>
+        <Title style={titleStyle}>
           Save your recovery phrase
         </Title>
-        <Description style={{ paddingBottom: 10 }}>
+        <Description style={descriptionStyle}>
           This phrase is the only way to recover your account. Keep it secret,
           keep it safe.
         </Description>
