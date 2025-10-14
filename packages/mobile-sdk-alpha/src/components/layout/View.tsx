@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
+import { useEffect } from 'react';
 import type {
   AnimatableNumericValue,
   DimensionValue,
@@ -206,6 +207,8 @@ export const View: React.FC<ViewProps> = ({
   borderRadius,
   borderWidth,
   borderBottomWidth,
+  borderBottomColor,
+  borderTopColor,
   borderTopWidth,
   borderLeftWidth,
   borderRightWidth,
@@ -236,6 +239,8 @@ export const View: React.FC<ViewProps> = ({
     ...(borderRightWidth !== undefined && { borderRightWidth }),
     ...(borderWidth !== undefined && { borderWidth }),
     ...(borderColor && { borderColor }),
+    ...(borderBottomColor && { borderBottomColor }),
+    ...(borderTopColor && { borderTopColor }),
     ...(elevation !== undefined && { elevation }),
     ...(gap !== undefined && {
       gap: convertGapValue(gap),
@@ -269,6 +274,11 @@ export const View: React.FC<ViewProps> = ({
       marginBottom: convertSpacingValue(marginVertical),
     }),
   };
+  useEffect(() => {
+    if (Object.keys(props).length > 0) {
+      console.debug('other props not handled:', props);
+    }
+  }, []);
 
   if (onPress) {
     // Convert numeric hitSlop to proper format
