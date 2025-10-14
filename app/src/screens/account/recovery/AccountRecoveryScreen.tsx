@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
+import { useWindowDimensions } from 'react-native';
 import { View, YStack } from 'tamagui';
 
 import {
@@ -12,6 +13,7 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import RestoreAccountSvg from '@/images/icons/restore_account.svg';
@@ -25,6 +27,19 @@ const AccountRecoveryScreen: React.FC = () => {
       nextScreen: 'SaveRecoveryPhrase',
     },
   });
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { bottom } = useSafeAreaInsets();
+
+  const isCompact = screenWidth < 360 || screenHeight < 720;
+  const iconSize = isCompact ? 64 : 80;
+  const iconPadding = isCompact ? '$4' : '$5';
+  const contentGap = isCompact ? '$2' : '$2.5';
+  const descriptionSize = isCompact ? 15 : 16;
+  const titleSize = isCompact ? 26 : 32;
+  const buttonStackGap = isCompact ? '$2' : '$2.5';
+  const buttonPaddingTop = isCompact ? '$4' : '$6';
+  const horizontalPadding = Math.max(16, screenWidth * 0.06);
+  const bottomPadding = bottom + (isCompact ? 16 : 24);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
@@ -33,20 +48,28 @@ const AccountRecoveryScreen: React.FC = () => {
           borderColor={slate600}
           borderWidth="$1"
           borderRadius="$10"
-          padding="$5"
+          padding={iconPadding}
         >
-          <RestoreAccountSvg height={80} width={80} color={white} />
+          <RestoreAccountSvg height={iconSize} width={iconSize} color={white} />
         </View>
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack alignItems="center" gap="$2.5" paddingBottom="$2.5">
-          <Title>Restore your Self account</Title>
-          <Description>
+      <ExpandableBottomLayout.BottomSection
+        backgroundColor={white}
+        paddingBottom={bottomPadding}
+        paddingHorizontal={horizontalPadding}
+      >
+        <YStack alignItems="center" gap={contentGap} paddingBottom="$2">
+          <Title style={{ fontSize: titleSize, textAlign: 'center' }}>
+            Restore your Self account
+          </Title>
+          <Description
+            style={{ fontSize: descriptionSize, textAlign: 'center' }}
+          >
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.
           </Description>
 
-          <YStack gap="$2.5" width="100%" paddingTop="$6">
+          <YStack gap={buttonStackGap} width="100%" paddingTop={buttonPaddingTop}>
             <PrimaryButton
               trackEvent={BackupEvents.ACCOUNT_RECOVERY_STARTED}
               onPress={onRestoreAccountPress}
