@@ -8,6 +8,7 @@ import {
   FlatList,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
 import { commonNames } from '@selfxyz/common/constants/countries';
@@ -65,6 +66,13 @@ CountryItem.displayName = 'CountryItem';
 
 const CountryPickerScreen: React.FC = () => {
   const selfClient = useSelfClient();
+  const { width: screenWidth } = useWindowDimensions();
+  const isCompact = screenWidth < 360;
+  const headingSize = isCompact ? 22 : 29;
+  const subheadingSize = isCompact ? 15 : 16;
+  const verticalSpacing = isCompact ? 16 : 24;
+  const sectionSpacing = isCompact ? '$4' : '$6';
+  const paddingHorizontal = Math.max(16, screenWidth * 0.05);
 
   const { countryData, countryList, loading, userCountryCode, showSuggestion } =
     useCountries();
@@ -132,12 +140,22 @@ const CountryPickerScreen: React.FC = () => {
   return (
     <YStack flex={1} backgroundColor={slate100}>
       <DocumentFlowNavBar title="GETTING STARTED" />
-      <YStack flex={1} paddingTop="$4" paddingHorizontal="$4">
-        <YStack marginTop="$4" marginBottom="$6">
-          <BodyText style={{ fontSize: 29, fontFamily: advercase }}>
+      <YStack
+        flex={1}
+        paddingTop="$4"
+        paddingHorizontal={paddingHorizontal}
+      >
+        <YStack marginTop="$4" marginBottom={sectionSpacing}>
+          <BodyText style={{ fontSize: headingSize, fontFamily: advercase }}>
             Select the country that issued your ID
           </BodyText>
-          <BodyText style={{ fontSize: 16, color: slate500, marginTop: 20 }}>
+          <BodyText
+            style={{
+              fontSize: subheadingSize,
+              color: slate500,
+              marginTop: verticalSpacing,
+            }}
+          >
             Self has support for over 300 ID types. You can select the type of
             ID in the next step
           </BodyText>
@@ -150,7 +168,7 @@ const CountryPickerScreen: React.FC = () => {
               <YStack marginBottom="$2">
                 <BodyText
                   style={{
-                    fontSize: 16,
+                    fontSize: subheadingSize,
                     color: black,
                     fontFamily: dinot,
                     letterSpacing: 0.8,
@@ -167,11 +185,11 @@ const CountryPickerScreen: React.FC = () => {
                 />
                 <BodyText
                   style={{
-                    fontSize: 16,
+                    fontSize: subheadingSize,
                     color: black,
                     fontFamily: dinot,
                     letterSpacing: 0.8,
-                    marginTop: 20,
+                    marginTop: verticalSpacing,
                   }}
                 >
                   SELECT AN ISSUING COUNTRY

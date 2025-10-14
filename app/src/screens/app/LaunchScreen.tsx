@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
@@ -34,6 +34,18 @@ const LaunchScreen: React.FC = () => {
   const onPress = useHapticNavigation('CountryPicker');
   const createMock = useHapticNavigation('CreateMock');
   const { bottom } = useSafeAreaInsets();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+
+  const isCompactWidth = screenWidth < 360;
+  const cardWidth = Math.min(screenWidth * 0.8, 320);
+  const cardHeight = cardWidth * (180 / 300);
+  const titleSize = isCompactWidth ? 30 : 38;
+  const bodySize = isCompactWidth ? 15 : 16;
+  const bodyHorizontalMargin = Math.max(20, screenWidth * 0.08);
+  const heroSpacing = isCompactWidth ? 24 : 40;
+  const topPadding = Math.max(screenHeight * 0.08, isCompactWidth ? 32 : 60);
+  const ctaPaddingHorizontal = Math.max(16, screenWidth * 0.07);
+  const ctaPaddingTop = isCompactWidth ? 20 : 30;
 
   const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
@@ -43,7 +55,7 @@ const LaunchScreen: React.FC = () => {
 
   return (
     <YStack backgroundColor={black} flex={1} alignItems="center">
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: topPadding }]}>
         <YStack flex={1} justifyContent="center" alignItems="center">
           <GestureDetector gesture={devModeTap}>
             <YStack
@@ -51,13 +63,13 @@ const LaunchScreen: React.FC = () => {
               borderRadius={14}
               overflow="hidden"
             >
-              <IDCardPlaceholder width={300} height={180} />
+              <IDCardPlaceholder width={cardWidth} height={cardHeight} />
             </YStack>
           </GestureDetector>
         </YStack>
         <Text
           color={white}
-          fontSize={38}
+          fontSize={titleSize}
           fontFamily={advercase}
           fontWeight="500"
           textAlign="center"
@@ -68,10 +80,10 @@ const LaunchScreen: React.FC = () => {
         <BodyText
           style={{
             color: slate300,
-            fontSize: 16,
+            fontSize: bodySize,
             textAlign: 'center',
-            marginHorizontal: 40,
-            marginBottom: 40,
+            marginHorizontal: bodyHorizontalMargin,
+            marginBottom: heroSpacing,
           }}
         >
           Self is the easiest way to verify your identity safely wherever you
@@ -83,9 +95,9 @@ const LaunchScreen: React.FC = () => {
         gap="$3"
         width="100%"
         alignItems="center"
-        paddingHorizontal={20}
-        paddingBottom={bottom}
-        paddingTop={30}
+        paddingHorizontal={ctaPaddingHorizontal}
+        paddingBottom={bottom + 12}
+        paddingTop={ctaPaddingTop}
         backgroundColor={zinc800}
       >
         <AbstractButton
@@ -122,7 +134,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '102%',
-    paddingTop: '30%',
   },
   card: {
     width: '100%',

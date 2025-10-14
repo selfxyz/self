@@ -4,7 +4,15 @@
 
 import { ethers } from 'ethers';
 import React, { useCallback, useState } from 'react';
-import { Keyboard, StyleSheet } from 'react-native';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
@@ -43,6 +51,9 @@ const RecoverWithPhraseScreen: React.FC = () => {
   const { trackEvent } = useSelfClient();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
+  const { bottom } = useSafeAreaInsets();
+  const { height: screenHeight } = useWindowDimensions();
+  const textAreaMinHeight = Math.max(160, screenHeight * 0.3);
   const onPaste = useCallback(async () => {
     const clipboard = (await Clipboard.getString()).trim();
     if (ethers.Mnemonic.isValidMnemonic(clipboard)) {
@@ -111,67 +122,79 @@ const RecoverWithPhraseScreen: React.FC = () => {
   ]);
 
   return (
-    <YStack
-      alignItems="center"
-      gap="$6"
-      paddingBottom="$2.5"
-      style={styles.layout}
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
     >
-      <Description style={{ color: slate300 }}>
-        Your recovery phrase has 24 words. Enter the words in the correct order,
-        separated by spaces.
-      </Description>
-      <View width="100%" position="relative">
-        <TextArea
-          borderColor={slate600}
-          backgroundColor={slate700}
-          color={slate400}
-          borderWidth="$1"
-          borderRadius="$5"
-          placeholder="Enter or paste your recovery phrase"
-          width="100%"
-          minHeight={230}
-          verticalAlign="top"
-          value={mnemonic}
-          onKeyPress={key =>
-            key.nativeEvent.key === 'Enter' && mnemonic && Keyboard.dismiss()
-          }
-          onChangeText={setMnemonic}
-        />
-        <XStack
-          gap="$2"
-          position="absolute"
-          bottom={0}
-          width="100%"
-          alignItems="flex-end"
-          justifyContent="center"
-          paddingBottom="$4"
-          onPress={onPaste}
-        >
-          <Paste color={white} height={20} width={20} />
-          <Text style={styles.pasteText}>PASTE</Text>
-        </XStack>
-      </View>
-
-      <SecondaryButton
-        disabled={!mnemonic || restoring}
-        onPress={restoreAccount}
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={[
+          styles.layout,
+          { paddingBottom: bottom + 24 },
+        ]}
+        keyboardShouldPersistTaps="handled"
       >
-        Continue
-      </SecondaryButton>
-    </YStack>
+        <YStack alignItems="center" gap="$6">
+          <Description style={{ color: slate300 }}>
+            Your recovery phrase has 24 words. Enter the words in the correct
+            order, separated by spaces.
+          </Description>
+          <View width="100%" position="relative">
+            <TextArea
+              borderColor={slate600}
+              backgroundColor={slate700}
+              color={slate400}
+              borderWidth="$1"
+              borderRadius="$5"
+              placeholder="Enter or paste your recovery phrase"
+              width="100%"
+              minHeight={textAreaMinHeight}
+              verticalAlign="top"
+              value={mnemonic}
+              onKeyPress={key =>
+                key.nativeEvent.key === 'Enter' && mnemonic && Keyboard.dismiss()
+              }
+              onChangeText={setMnemonic}
+            />
+            <XStack
+              gap="$2"
+              position="absolute"
+              bottom={0}
+              width="100%"
+              alignItems="flex-end"
+              justifyContent="center"
+              paddingBottom="$4"
+              onPress={onPaste}
+            >
+              <Paste color={white} height={20} width={20} />
+              <Text style={styles.pasteText}>PASTE</Text>
+            </XStack>
+          </View>
+
+          <SecondaryButton
+            disabled={!mnemonic || restoring}
+            onPress={restoreAccount}
+          >
+            Continue
+          </SecondaryButton>
+        </YStack>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 export default RecoverWithPhraseScreen;
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   layout: {
     paddingTop: 30,
     paddingLeft: 20,
     paddingRight: 20,
     backgroundColor: black,
-    height: '100%',
   },
   pasteText: {
     lineHeight: 20,

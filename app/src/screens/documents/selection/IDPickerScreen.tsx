@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
+import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
@@ -85,7 +86,16 @@ const IDPickerScreen: React.FC = () => {
   const route = useRoute<IDPickerScreenRouteProp>();
   const { countryCode = '', documentTypes = [] } = route.params || {};
   const bottom = useSafeAreaInsets().bottom;
+  const { width: screenWidth } = useWindowDimensions();
   const selfClient = useSelfClient();
+
+  const isCompact = screenWidth < 360;
+  const heroSpacing = isCompact ? 32 : 48;
+  const headingSize = isCompact ? 24 : 29;
+  const cardTitleSize = isCompact ? 20 : 24;
+  const descriptionSize = isCompact ? 13 : 14;
+  const helperTextSize = isCompact ? 16 : 18;
+  const paddingHorizontal = Math.max(16, screenWidth * 0.05);
 
   const onSelectDocumentType = (docType: string) => {
     buttonTap();
@@ -110,10 +120,10 @@ const IDPickerScreen: React.FC = () => {
       <YStack
         flex={1}
         paddingTop="$4"
-        paddingHorizontal="$4"
+        paddingHorizontal={paddingHorizontal}
         justifyContent="center"
       >
-        <YStack marginTop="$4" marginBottom="$6">
+        <YStack marginTop="$4" marginBottom={isCompact ? '$4' : '$6'}>
           <XStack
             justifyContent="center"
             alignItems="center"
@@ -137,8 +147,8 @@ const IDPickerScreen: React.FC = () => {
           </XStack>
           <BodyText
             style={{
-              marginTop: 48,
-              fontSize: 29,
+              marginTop: heroSpacing,
+              fontSize: headingSize,
               fontFamily: advercase,
               textAlign: 'center',
             }}
@@ -166,13 +176,17 @@ const IDPickerScreen: React.FC = () => {
                 {getDocumentLogo(docType)}
                 <YStack gap={'$1'}>
                   <BodyText
-                    style={{ fontSize: 24, fontFamily: dinot, color: black }}
+                    style={{
+                      fontSize: cardTitleSize,
+                      fontFamily: dinot,
+                      color: black,
+                    }}
                   >
                     {getDocumentName(docType)}
                   </BodyText>
                   <BodyText
                     style={{
-                      fontSize: 14,
+                      fontSize: descriptionSize,
                       fontFamily: dinot,
                       color: slate400,
                     }}
@@ -185,7 +199,7 @@ const IDPickerScreen: React.FC = () => {
           ))}
           <BodyText
             style={{
-              fontSize: 18,
+              fontSize: helperTextSize,
               fontFamily: dinot,
               color: slate400,
               textAlign: 'center',

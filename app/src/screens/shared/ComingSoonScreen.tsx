@@ -3,8 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect, useMemo } from 'react';
+import { useWindowDimensions } from 'react-native';
 import { XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import type { DocumentCategory } from '@selfxyz/common/types';
@@ -48,6 +50,15 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
   const selfClient = useSelfClient();
   const navigateToLaunch = useHapticNavigation('Launch');
   const navigateToHome = useHapticNavigation('Home');
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { bottom } = useSafeAreaInsets();
+
+  const isCompact = screenWidth < 360 || screenHeight < 720;
+  const topMargin = isCompact ? 48 : 100;
+  const headlineSize = isCompact ? 26 : 32;
+  const bodyFontSize = isCompact ? 15 : 17;
+  const supportingSpacing = isCompact ? 24 : 40;
+  const sidePadding = Math.max(16, screenWidth * 0.06);
 
   const { countryName, countryCode, documentTypeText } = useMemo(() => {
     try {
@@ -124,7 +135,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
           flex={1}
           justifyContent="center"
           alignItems="center"
-          marginTop={100}
+          marginTop={topMargin}
         >
           <XStack
             justifyContent="center"
@@ -138,7 +149,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
           </XStack>
           <Title
             style={{
-              fontSize: 32,
+              fontSize: headlineSize,
               textAlign: 'center',
               color: black,
               marginBottom: 16,
@@ -148,11 +159,11 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
           </Title>
           <BodyText
             style={{
-              fontSize: 17,
+              fontSize: bodyFontSize,
               textAlign: 'center',
               color: black,
               marginBottom: 10,
-              paddingHorizontal: 10,
+              paddingHorizontal: sidePadding,
             }}
           >
             {documentTypeText
@@ -161,11 +172,11 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
           </BodyText>
           <BodyText
             style={{
-              fontSize: 17,
+              fontSize: bodyFontSize,
               textAlign: 'center',
               color: slate500,
-              marginBottom: 40,
-              paddingHorizontal: 10,
+              marginBottom: supportingSpacing,
+              paddingHorizontal: sidePadding,
             }}
           >
             Sign up for live updates.
@@ -175,8 +186,9 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
       <ExpandableBottomLayout.BottomSection
         gap={16}
         backgroundColor={white}
-        paddingHorizontal={20}
-        paddingVertical={20}
+        paddingHorizontal={sidePadding}
+        paddingTop={20}
+        paddingBottom={bottom + 20}
       >
         <PrimaryButton
           onPress={onNotifyMe}
