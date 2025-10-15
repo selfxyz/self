@@ -56,16 +56,16 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
   const [revealWords, setRevealWords] = useState(false);
   const [copied, setCopied] = useState(false);
   const { setHasViewedRecoveryPhrase } = useSettingStore();
-  const { isCompactWidth } = useCompactLayout();
+  const { isCompactWidth, selectResponsiveValue } = useCompactLayout();
   const containerSpacing = useMemo(
     () => ({
-      paddingHorizontal: isCompactWidth ? 18 : 26,
-      paddingVertical: isCompactWidth ? 22 : 28,
-      gap: isCompactWidth ? 10 : 12,
+      paddingHorizontal: selectResponsiveValue(18, 26, 'width'),
+      paddingVertical: selectResponsiveValue(22, 28, 'width'),
+      gap: selectResponsiveValue(10, 12, 'width'),
     }),
-    [isCompactWidth],
+    [selectResponsiveValue],
   );
-  const buttonPadding = isCompactWidth ? 12 : 16;
+  const buttonPadding = selectResponsiveValue(12, 16, 'width');
   const copyToClipboardOrReveal = useCallback(async () => {
     confirmTap();
     if (!revealWords) {

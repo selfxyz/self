@@ -28,13 +28,13 @@ const DisclaimerScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { dismissPrivacyNote } = useSettingStore();
-  const { isCompactHeight } = useCompactLayout({ compactHeight: 760 });
+  const { selectResponsiveValue } = useCompactLayout({ compactHeight: 760 });
   const animationSize = useMemo(
-    () => (isCompactHeight ? '110%' : '125%'),
-    [isCompactHeight],
+    () => selectResponsiveValue('110%', '125%', 'height'),
+    [selectResponsiveValue],
   );
-  const buttonMargin = isCompactHeight ? 20 : 30;
-  const cautionSpacing = isCompactHeight ? 6 : 10;
+  const buttonMargin = selectResponsiveValue(20, 30, 'height');
+  const cautionSpacing = selectResponsiveValue(6, 10, 'height');
 
   useEffect(() => {
     notificationWarning();

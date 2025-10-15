@@ -27,17 +27,17 @@ import { buttonTap } from '@/utils/haptic';
 const AccountVerifiedSuccessScreen: React.FC = ({}) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { width: screenWidth, isCompact } = useCompactLayout();
+  const { selectResponsiveValue, getResponsiveHorizontalPadding } = useCompactLayout();
   const { bottom } = useSafeAreaInsets();
 
-  const topPadding = isCompact ? 24 : 40;
-  const gap = isCompact ? 8 : 10;
-  const stackMarginBottom = isCompact ? 12 : 20;
-  const titleSize = isCompact ? 28 : 32;
-  const descriptionSize = isCompact ? 15 : 16;
-  const horizontalPadding = Math.max(16, screenWidth * 0.06);
-  const bottomPadding = bottom + (isCompact ? 16 : 24);
-  const contentBottomPadding = isCompact ? 12 : 20;
+  const topPadding = selectResponsiveValue(24, 40);
+  const gap = selectResponsiveValue(8, 10);
+  const stackMarginBottom = selectResponsiveValue(12, 20);
+  const titleSize = selectResponsiveValue(28, 32);
+  const descriptionSize = selectResponsiveValue(15, 16);
+  const horizontalPadding = getResponsiveHorizontalPadding({ percent: 0.06 });
+  const bottomPadding = bottom + selectResponsiveValue(16, 24);
+  const contentBottomPadding = selectResponsiveValue(12, 20);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>

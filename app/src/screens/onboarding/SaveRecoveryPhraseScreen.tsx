@@ -25,29 +25,28 @@ const SaveRecoveryPhraseScreen: React.FC = () => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
   const { mnemonic, loadMnemonic } = useMnemonic();
   const { cloudBackupEnabled } = useSettingStore();
-  const { isCompactWidth, isCompactHeight } = useCompactLayout({
+  const { selectResponsiveValue } = useCompactLayout({
     compactHeight: 780,
   });
-  const isShortHeight = isCompactHeight;
-  const topPadding = isShortHeight ? 12 : 20;
-  const bottomPadding = isShortHeight ? 6 : 10;
-  const sectionGap = isShortHeight ? 6 : 10;
+  const topPadding = selectResponsiveValue(12, 20, 'height');
+  const bottomPadding = selectResponsiveValue(6, 10, 'height');
+  const sectionGap = selectResponsiveValue(6, 10, 'height');
   const titleStyle = useMemo(
     () => ({
       paddingTop: topPadding,
       textAlign: 'center',
-      fontSize: isCompactWidth ? 26 : 28,
-      lineHeight: isCompactWidth ? 32 : 35,
+      fontSize: selectResponsiveValue(26, 28, 'width'),
+      lineHeight: selectResponsiveValue(32, 35, 'width'),
     }),
-    [isCompactWidth, topPadding],
+    [selectResponsiveValue, topPadding],
   );
   const descriptionStyle = useMemo(
     () => ({
       paddingBottom: bottomPadding,
-      fontSize: isCompactWidth ? 16 : 18,
-      lineHeight: isCompactWidth ? 21 : 23,
+      fontSize: selectResponsiveValue(16, 18, 'width'),
+      lineHeight: selectResponsiveValue(21, 23, 'width'),
     }),
-    [bottomPadding, isCompactWidth],
+    [bottomPadding, selectResponsiveValue],
   );
 
   const onRevealWords = useCallback(async () => {

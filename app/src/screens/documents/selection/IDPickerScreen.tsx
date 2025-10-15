@@ -86,16 +86,19 @@ const IDPickerScreen: React.FC = () => {
   const route = useRoute<IDPickerScreenRouteProp>();
   const { countryCode = '', documentTypes = [] } = route.params || {};
   const bottom = useSafeAreaInsets().bottom;
-  const { width: screenWidth, isCompactWidth } = useCompactLayout();
+  const {
+    selectResponsiveValue,
+    getResponsiveHorizontalPadding,
+  } = useCompactLayout();
   const selfClient = useSelfClient();
 
-  const isCompact = isCompactWidth;
-  const heroSpacing = isCompact ? 32 : 48;
-  const headingSize = isCompact ? 24 : 29;
-  const cardTitleSize = isCompact ? 20 : 24;
-  const descriptionSize = isCompact ? 13 : 14;
-  const helperTextSize = isCompact ? 16 : 18;
-  const paddingHorizontal = Math.max(16, screenWidth * 0.05);
+  const heroSpacing = selectResponsiveValue(32, 48, 'width');
+  const headingSize = selectResponsiveValue(24, 29, 'width');
+  const cardTitleSize = selectResponsiveValue(20, 24, 'width');
+  const descriptionSize = selectResponsiveValue(13, 14, 'width');
+  const helperTextSize = selectResponsiveValue(16, 18, 'width');
+  const sectionMarginBottom = selectResponsiveValue('$4', '$6', 'width');
+  const paddingHorizontal = getResponsiveHorizontalPadding({ percent: 0.05 });
 
   const onSelectDocumentType = (docType: string) => {
     buttonTap();
@@ -116,14 +119,14 @@ const IDPickerScreen: React.FC = () => {
       backgroundColor={slate100}
       paddingBottom={bottom + extraYPadding + 24}
     >
-      <DocumentFlowNavBar title="GETTING STARTED" />
-      <YStack
-        flex={1}
-        paddingTop="$4"
-        paddingHorizontal={paddingHorizontal}
-        justifyContent="center"
-      >
-        <YStack marginTop="$4" marginBottom={isCompact ? '$4' : '$6'}>
+        <DocumentFlowNavBar title="GETTING STARTED" />
+        <YStack
+          flex={1}
+          paddingTop="$4"
+          paddingHorizontal={paddingHorizontal}
+          justifyContent="center"
+        >
+          <YStack marginTop="$4" marginBottom={sectionMarginBottom}>
           <XStack
             justifyContent="center"
             alignItems="center"

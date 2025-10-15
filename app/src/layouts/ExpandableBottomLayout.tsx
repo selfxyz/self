@@ -59,15 +59,15 @@ const TopSection: React.FC<TopSectionProps> = ({
 }) => {
   const { top } = useSafeAreaInsets();
   const { roundTop, style: incomingStyle, ...restProps } = props;
-  const { isCompactWidth, isCompactHeight } = useCompactLayout({
+  const { selectResponsiveValue } = useCompactLayout({
     compactHeight: 760,
   });
   const spacingStyle = useMemo(
     () => ({
-      paddingHorizontal: isCompactWidth ? 16 : 20,
-      paddingVertical: isCompactHeight ? 16 : 20,
+      paddingHorizontal: selectResponsiveValue(16, 20, 'width'),
+      paddingVertical: selectResponsiveValue(16, 20, 'height'),
     }),
-    [isCompactWidth, isCompactHeight],
+    [selectResponsiveValue],
   );
   return (
     <View
@@ -121,15 +121,15 @@ const BottomSection: React.FC<BottomSectionProps> = ({
   const minBottom = safeAreaBottom + extraYPadding;
   const totalBottom =
     typeof incomingBottom === 'number' ? minBottom + incomingBottom : minBottom;
-  const { isCompactWidth, isCompactHeight } = useCompactLayout({
+  const { selectResponsiveValue } = useCompactLayout({
     compactHeight: 760,
   });
   const spacingStyle = useMemo(
     () => ({
-      paddingHorizontal: isCompactWidth ? 16 : 20,
-      paddingTop: isCompactHeight ? 18 : 30,
+      paddingHorizontal: selectResponsiveValue(16, 20, 'width'),
+      paddingTop: selectResponsiveValue(18, 30, 'height'),
     }),
-    [isCompactWidth, isCompactHeight],
+    [selectResponsiveValue],
   );
 
   let panelHeight: number | 'auto' = 'auto';

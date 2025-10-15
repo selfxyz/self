@@ -61,13 +61,15 @@ CountryItem.displayName = 'CountryItem';
 
 const CountryPickerScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const { width: screenWidth, isCompactWidth } = useCompactLayout();
-  const isCompact = isCompactWidth;
-  const headingSize = isCompact ? 22 : 29;
-  const subheadingSize = isCompact ? 15 : 16;
-  const verticalSpacing = isCompact ? 16 : 24;
-  const sectionSpacing = isCompact ? '$4' : '$6';
-  const paddingHorizontal = Math.max(16, screenWidth * 0.05);
+  const {
+    selectResponsiveValue,
+    getResponsiveHorizontalPadding,
+  } = useCompactLayout();
+  const headingSize = selectResponsiveValue(22, 29, 'width');
+  const subheadingSize = selectResponsiveValue(15, 16, 'width');
+  const verticalSpacing = selectResponsiveValue(16, 24, 'width');
+  const sectionSpacing = selectResponsiveValue('$4', '$6', 'width');
+  const paddingHorizontal = getResponsiveHorizontalPadding({ percent: 0.05 });
 
   const { countryData, countryList, loading, userCountryCode, showSuggestion } =
     useCountries();

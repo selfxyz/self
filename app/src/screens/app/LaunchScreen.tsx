@@ -38,17 +38,24 @@ const LaunchScreen: React.FC = () => {
   const {
     width: screenWidth,
     height: screenHeight,
-    isCompactWidth,
+    selectResponsiveValue,
+    getResponsiveHorizontalPadding,
   } = useCompactLayout();
   const cardWidth = Math.min(screenWidth * 0.8, 320);
   const cardHeight = cardWidth * (180 / 300);
-  const titleSize = isCompactWidth ? 30 : 38;
-  const bodySize = isCompactWidth ? 15 : 16;
-  const bodyHorizontalMargin = Math.max(20, screenWidth * 0.08);
-  const heroSpacing = isCompactWidth ? 24 : 40;
-  const topPadding = Math.max(screenHeight * 0.08, isCompactWidth ? 32 : 60);
-  const ctaPaddingHorizontal = Math.max(16, screenWidth * 0.07);
-  const ctaPaddingTop = isCompactWidth ? 20 : 30;
+  const titleSize = selectResponsiveValue(30, 38, 'width');
+  const bodySize = selectResponsiveValue(15, 16, 'width');
+  const bodyHorizontalMargin = getResponsiveHorizontalPadding({
+    percent: 0.08,
+    min: 20,
+  });
+  const heroSpacing = selectResponsiveValue(24, 40, 'width');
+  const topPadding = Math.max(
+    screenHeight * 0.08,
+    selectResponsiveValue(32, 60, 'width'),
+  );
+  const ctaPaddingHorizontal = getResponsiveHorizontalPadding({ percent: 0.07 });
+  const ctaPaddingTop = selectResponsiveValue(20, 30, 'width');
 
   const devModeTap = Gesture.Tap()
     .numberOfTaps(5)

@@ -50,14 +50,14 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
   const selfClient = useSelfClient();
   const navigateToLaunch = useHapticNavigation('Launch');
   const navigateToHome = useHapticNavigation('Home');
-  const { width: screenWidth, isCompact } = useCompactLayout();
+  const { selectResponsiveValue, getResponsiveHorizontalPadding } = useCompactLayout();
   const { bottom } = useSafeAreaInsets();
 
-  const topMargin = isCompact ? 48 : 100;
-  const headlineSize = isCompact ? 26 : 32;
-  const bodyFontSize = isCompact ? 15 : 17;
-  const supportingSpacing = isCompact ? 24 : 40;
-  const sidePadding = Math.max(16, screenWidth * 0.06);
+  const topMargin = selectResponsiveValue(48, 100);
+  const headlineSize = selectResponsiveValue(26, 32);
+  const bodyFontSize = selectResponsiveValue(15, 17);
+  const supportingSpacing = selectResponsiveValue(24, 40);
+  const sidePadding = getResponsiveHorizontalPadding({ percent: 0.06 });
 
   const { countryName, countryCode, documentTypeText } = useMemo(() => {
     try {

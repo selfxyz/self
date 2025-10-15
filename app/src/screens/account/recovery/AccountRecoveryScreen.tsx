@@ -27,18 +27,18 @@ const AccountRecoveryScreen: React.FC = () => {
       nextScreen: 'SaveRecoveryPhrase',
     },
   });
-  const { width: screenWidth, isCompact } = useCompactLayout();
+  const { selectResponsiveValue, getResponsiveHorizontalPadding } = useCompactLayout();
   const { bottom } = useSafeAreaInsets();
 
-  const iconSize = isCompact ? 64 : 80;
-  const iconPadding = isCompact ? '$4' : '$5';
-  const contentGap = isCompact ? '$2' : '$2.5';
-  const descriptionSize = isCompact ? 15 : 16;
-  const titleSize = isCompact ? 26 : 32;
-  const buttonStackGap = isCompact ? '$2' : '$2.5';
-  const buttonPaddingTop = isCompact ? '$4' : '$6';
-  const horizontalPadding = Math.max(16, screenWidth * 0.06);
-  const bottomPadding = bottom + (isCompact ? 16 : 24);
+  const iconSize = selectResponsiveValue(64, 80);
+  const iconPadding = selectResponsiveValue('$4', '$5');
+  const contentGap = selectResponsiveValue('$2', '$2.5');
+  const descriptionSize = selectResponsiveValue(15, 16);
+  const titleSize = selectResponsiveValue(26, 32);
+  const buttonStackGap = selectResponsiveValue('$2', '$2.5');
+  const buttonPaddingTop = selectResponsiveValue('$4', '$6');
+  const horizontalPadding = getResponsiveHorizontalPadding({ percent: 0.06 });
+  const bottomPadding = bottom + selectResponsiveValue(16, 24);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
