@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
@@ -18,6 +18,7 @@ import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { privacyUrl, termsUrl } from '@/consts/links';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import useCompactLayout from '@/hooks/useCompactLayout';
 import IDCardPlaceholder from '@/images/icons/id_card_placeholder.svg';
 import {
   black,
@@ -34,9 +35,11 @@ const LaunchScreen: React.FC = () => {
   const onPress = useHapticNavigation('CountryPicker');
   const createMock = useHapticNavigation('CreateMock');
   const { bottom } = useSafeAreaInsets();
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-
-  const isCompactWidth = screenWidth < 360;
+  const {
+    width: screenWidth,
+    height: screenHeight,
+    isCompactWidth,
+  } = useCompactLayout();
   const cardWidth = Math.min(screenWidth * 0.8, 320);
   const cardHeight = cardWidth * (180 / 300);
   const titleSize = isCompactWidth ? 30 : 38;

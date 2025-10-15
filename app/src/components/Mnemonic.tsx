@@ -3,11 +3,11 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { useWindowDimensions } from 'react-native';
 import { Button, Text, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import { useSettingStore } from '@/stores/settingStore';
+import useCompactLayout from '@/hooks/useCompactLayout';
 import {
   black,
   slate50,
@@ -56,8 +56,7 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
   const [revealWords, setRevealWords] = useState(false);
   const [copied, setCopied] = useState(false);
   const { setHasViewedRecoveryPhrase } = useSettingStore();
-  const { width } = useWindowDimensions();
-  const isCompactWidth = width < 360;
+  const { isCompactWidth } = useCompactLayout();
   const containerSpacing = useMemo(
     () => ({
       paddingHorizontal: isCompactWidth ? 18 : 26,

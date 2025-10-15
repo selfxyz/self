@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
@@ -22,6 +21,7 @@ import PlusIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/plus.svg';
 import SelfLogo from '@selfxyz/mobile-sdk-alpha/svgs/logo.svg';
 
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
+import useCompactLayout from '@/hooks/useCompactLayout';
 import type { RootStackParamList } from '@/navigation';
 import { black, slate100, slate300, slate400, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
@@ -86,10 +86,10 @@ const IDPickerScreen: React.FC = () => {
   const route = useRoute<IDPickerScreenRouteProp>();
   const { countryCode = '', documentTypes = [] } = route.params || {};
   const bottom = useSafeAreaInsets().bottom;
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, isCompactWidth } = useCompactLayout();
   const selfClient = useSelfClient();
 
-  const isCompact = screenWidth < 360;
+  const isCompact = isCompactWidth;
   const heroSpacing = isCompact ? 32 : 48;
   const headingSize = isCompact ? 24 : 29;
   const cardTitleSize = isCompact ? 20 : 24;

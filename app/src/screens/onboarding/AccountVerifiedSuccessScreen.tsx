@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { useWindowDimensions } from 'react-native';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -19,6 +18,7 @@ import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
 import { DelayedLottieView } from '@/components/DelayedLottieView';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import useCompactLayout from '@/hooks/useCompactLayout';
 import type { RootStackParamList } from '@/navigation';
 import { styles } from '@/screens/verification/ProofRequestStatusScreen';
 import { black, white } from '@/utils/colors';
@@ -27,10 +27,9 @@ import { buttonTap } from '@/utils/haptic';
 const AccountVerifiedSuccessScreen: React.FC = ({}) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { width: screenWidth, isCompact } = useCompactLayout();
   const { bottom } = useSafeAreaInsets();
 
-  const isCompact = screenWidth < 360 || screenHeight < 720;
   const topPadding = isCompact ? 24 : 40;
   const gap = isCompact ? 8 : 10;
   const stackMarginBottom = isCompact ? 12 : 20;

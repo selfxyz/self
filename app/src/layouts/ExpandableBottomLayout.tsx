@@ -9,7 +9,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  useWindowDimensions,
 } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +17,7 @@ import { View } from 'tamagui';
 
 import { black, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
+import useCompactLayout from '@/hooks/useCompactLayout';
 
 // Get the current font scale factor
 const fontScale = PixelRatio.getFontScale();
@@ -59,15 +59,15 @@ const TopSection: React.FC<TopSectionProps> = ({
 }) => {
   const { top } = useSafeAreaInsets();
   const { roundTop, style: incomingStyle, ...restProps } = props;
-  const { width, height } = useWindowDimensions();
-  const isCompactWidth = width < 360;
-  const isShortHeight = height < 760;
+  const { isCompactWidth, isCompactHeight } = useCompactLayout({
+    compactHeight: 760,
+  });
   const spacingStyle = useMemo(
     () => ({
       paddingHorizontal: isCompactWidth ? 16 : 20,
-      paddingVertical: isShortHeight ? 16 : 20,
+      paddingVertical: isCompactHeight ? 16 : 20,
     }),
-    [isCompactWidth, isShortHeight],
+    [isCompactWidth, isCompactHeight],
   );
   return (
     <View
@@ -121,15 +121,15 @@ const BottomSection: React.FC<BottomSectionProps> = ({
   const minBottom = safeAreaBottom + extraYPadding;
   const totalBottom =
     typeof incomingBottom === 'number' ? minBottom + incomingBottom : minBottom;
-  const { width, height } = useWindowDimensions();
-  const isCompactWidth = width < 360;
-  const isShortHeight = height < 760;
+  const { isCompactWidth, isCompactHeight } = useCompactLayout({
+    compactHeight: 760,
+  });
   const spacingStyle = useMemo(
     () => ({
       paddingHorizontal: isCompactWidth ? 16 : 20,
-      paddingTop: isShortHeight ? 18 : 30,
+      paddingTop: isCompactHeight ? 18 : 30,
     }),
-    [isCompactWidth, isShortHeight],
+    [isCompactWidth, isCompactHeight],
   );
 
   let panelHeight: number | 'auto' = 'auto';

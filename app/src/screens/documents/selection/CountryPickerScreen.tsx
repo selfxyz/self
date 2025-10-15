@@ -3,13 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { memo, useCallback } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  TouchableOpacity,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { ActivityIndicator, FlatList, TouchableOpacity, View } from 'react-native';
 
 import { commonNames } from '@selfxyz/common/constants/countries';
 import {
@@ -25,6 +19,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/components';
 
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
+import useCompactLayout from '@/hooks/useCompactLayout';
 import { black, slate100, slate500 } from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap } from '@/utils/haptic';
@@ -66,8 +61,8 @@ CountryItem.displayName = 'CountryItem';
 
 const CountryPickerScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const { width: screenWidth } = useWindowDimensions();
-  const isCompact = screenWidth < 360;
+  const { width: screenWidth, isCompactWidth } = useCompactLayout();
+  const isCompact = isCompactWidth;
   const headingSize = isCompact ? 22 : 29;
   const subheadingSize = isCompact ? 15 : 16;
   const verticalSpacing = isCompact ? 16 : 24;

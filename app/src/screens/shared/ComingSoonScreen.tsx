@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect, useMemo } from 'react';
-import { useWindowDimensions } from 'react-native';
 import { XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,6 +24,7 @@ import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import useCompactLayout from '@/hooks/useCompactLayout';
 import analytics from '@/utils/analytics';
 import { black, slate500, white } from '@/utils/colors';
 import { sendCountrySupportNotification } from '@/utils/email';
@@ -50,10 +50,9 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
   const selfClient = useSelfClient();
   const navigateToLaunch = useHapticNavigation('Launch');
   const navigateToHome = useHapticNavigation('Home');
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { width: screenWidth, isCompact } = useCompactLayout();
   const { bottom } = useSafeAreaInsets();
 
-  const isCompact = screenWidth < 360 || screenHeight < 720;
   const topMargin = isCompact ? 48 : 100;
   const headlineSize = isCompact ? 26 : 32;
   const bodyFontSize = isCompact ? 15 : 17;

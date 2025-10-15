@@ -10,7 +10,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextArea, View, XStack, YStack } from 'tamagui';
@@ -27,6 +26,7 @@ import {
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import Paste from '@/images/icons/paste.svg';
+import useCompactLayout from '@/hooks/useCompactLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import {
@@ -52,7 +52,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
   const { bottom } = useSafeAreaInsets();
-  const { height: screenHeight } = useWindowDimensions();
+  const { height: screenHeight } = useCompactLayout();
   const textAreaMinHeight = Math.max(160, screenHeight * 0.3);
   const onPaste = useCallback(async () => {
     const clipboard = (await Clipboard.getString()).trim();

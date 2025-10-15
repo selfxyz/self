@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { useWindowDimensions } from 'react-native';
 import { View, YStack } from 'tamagui';
 
 import {
@@ -18,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import RestoreAccountSvg from '@/images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import useCompactLayout from '@/hooks/useCompactLayout';
 import { black, slate600, white } from '@/utils/colors';
 
 const AccountRecoveryScreen: React.FC = () => {
@@ -27,10 +27,9 @@ const AccountRecoveryScreen: React.FC = () => {
       nextScreen: 'SaveRecoveryPhrase',
     },
   });
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { width: screenWidth, isCompact } = useCompactLayout();
   const { bottom } = useSafeAreaInsets();
 
-  const isCompact = screenWidth < 360 || screenHeight < 720;
   const iconSize = isCompact ? 64 : 80;
   const iconPadding = isCompact ? '$4' : '$5';
   const contentGap = isCompact ? '$2' : '$2.5';

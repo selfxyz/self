@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { useWindowDimensions } from 'react-native';
 
 import {
   Caption,
@@ -17,6 +16,7 @@ import Mnemonic from '@/components/Mnemonic';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import useMnemonic from '@/hooks/useMnemonic';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import useCompactLayout from '@/hooks/useCompactLayout';
 import { useSettingStore } from '@/stores/settingStore';
 import { STORAGE_NAME } from '@/utils/cloudBackup';
 import { black, slate400, white } from '@/utils/colors';
@@ -25,9 +25,10 @@ const SaveRecoveryPhraseScreen: React.FC = () => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
   const { mnemonic, loadMnemonic } = useMnemonic();
   const { cloudBackupEnabled } = useSettingStore();
-  const { width, height } = useWindowDimensions();
-  const isCompactWidth = width < 360;
-  const isShortHeight = height < 780;
+  const { isCompactWidth, isCompactHeight } = useCompactLayout({
+    compactHeight: 780,
+  });
+  const isShortHeight = isCompactHeight;
   const topPadding = isShortHeight ? 12 : 20;
   const bottomPadding = isShortHeight ? 6 : 10;
   const sectionGap = isShortHeight ? 6 : 10;
