@@ -104,3 +104,5 @@ export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
 export { useCountries } from './documents/useCountries';
 
 export { webNFCScannerShim } from './adapters/web/shims';
+
+export { DocumentCameraScreen } from './screens/DocumentCameraScreen';

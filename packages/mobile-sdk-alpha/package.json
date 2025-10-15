@@ -137,6 +137,7 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sort-exports": "^0.9.1",
     "jsdom": "^25.0.1",
+    "lottie-react-native": "7.2.2",
     "prettier": "^3.5.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -148,6 +149,7 @@
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
+    "lottie-react-native": "7.2.2",
     "react": "^18.3.1",
     "react-native": "0.76.9",
     "react-native-localize": "*",

@@ -71,6 +71,8 @@ export default defineConfig([
       'react-native-keychain',
       'react-native-sqlite-storage',
       // State management (xstate included in bundle)
+      // SVG files should be handled by Metro's svg-transformer
+      /\.svg$/,
     ],
     esbuildOptions(options) {
       options.supported = {
@@ -116,6 +118,8 @@ export default defineConfig([
       'react-native-keychain',
       'react-native-sqlite-storage',
       // State management (xstate included in bundle)
+      // SVG files should be handled by Metro's svg-transformer
+      /\.svg$/,
     ],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
     esbuildOptions(options) {
