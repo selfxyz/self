@@ -15,7 +15,7 @@ yarn add @selfxyz/qrcode
 ### 1. Import the SelfQRcodeWrapper component
 
 ```tsx
-import SelfQRcodeWrapper, { SelfAppBuilder } from '@selfxyz/qrcode';
+import { SelfQRcodeWrapper, SelfAppBuilder } from '@selfxyz/qrcode';
 import type { SelfApp } from '@selfxyz/qrcode';
 import { v4 as uuidv4 } from 'uuid';
 ```
