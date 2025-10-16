@@ -4,10 +4,10 @@
 
 import type React from 'react';
 import { Dimensions, PixelRatio, Platform, ScrollView, StyleSheet } from 'react-native';
-import type { ViewProps } from 'src/components';
-import { View } from 'src/components';
-import { black, white } from 'src/constants/colors';
-import { extraYPadding } from 'src/constants/layout';
+import type { ViewProps } from '../components';
+import { View } from '../components';
+import { black, white } from '../constants/colors';
+import { extraYPadding } from '../constants/layout';
 
 const SAFE_AREA_TOP_DEFAULT = 0;
 const SAFE_AREA_BOTTOM_DEFAULT = 0;
