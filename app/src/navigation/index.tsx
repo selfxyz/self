@@ -25,9 +25,9 @@ import homeScreens from '@/navigation/home';
 import onboardingScreens from '@/navigation/onboarding';
 import sharedScreens from '@/navigation/shared';
 import verificationScreens from '@/navigation/verification';
+import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
 import analytics from '@/utils/analytics';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
-import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
 
 export const navigationScreens = {
   ...appScreens,
@@ -41,7 +41,7 @@ export const navigationScreens = {
 };
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
-  initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
+  initialRouteName: Platform.OS === 'web' ? 'Home' : 'WebView',
   screenOptions: {
     header: DefaultNavBar,
   },

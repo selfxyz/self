@@ -4,8 +4,9 @@
 
 import React, { useMemo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, XStack } from '@selfxyz/mobile-sdk-alpha/components';
 import { ExternalLink, Share2 } from '@tamagui/lucide-icons';
+
+import { Button, XStack } from '@selfxyz/mobile-sdk-alpha/components';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
 import { charcoal, slate300, white } from '@/utils/colors';
@@ -118,4 +119,3 @@ export const WebViewNavBar: React.FC<WebViewNavBarProps> = ({
     </NavBar.Container>
   );
 };
-

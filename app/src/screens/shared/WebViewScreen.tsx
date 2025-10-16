@@ -12,15 +12,15 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import WebView from 'react-native-webview';
 import type { WebView as WebViewType } from 'react-native-webview';
+import WebView from 'react-native-webview';
 import type { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
+import { useFocusEffect } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { WebViewNavBar } from '@/components/NavBar/WebViewNavBar';
 import { WebViewFooter } from '@/components/WebView/WebViewFooter';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import type { RootStackScreenProps } from '@/navigation';
 import { charcoal, slate200, white } from '@/utils/colors';
 
 export interface WebViewScreenParams {
@@ -31,22 +31,33 @@ export interface WebViewScreenParams {
   shareUrl?: string;
 }
 
-type WebViewScreenProps = RootStackScreenProps<'WebView'>;
+type WebViewNavParamList = { WebView: WebViewScreenParams };
+type WebViewScreenProps = NativeStackScreenProps<
+  WebViewNavParamList,
+  'WebView'
+>;
+
+const defaultUrl = 'https://self.xyz';
 
 export const WebViewScreen: React.FC<WebViewScreenProps> = ({
   navigation,
   route,
 }) => {
-  const { url, title, shareMessage, shareTitle, shareUrl } = route.params;
+  const params = route?.params as WebViewScreenParams | undefined;
+  const safeParams: WebViewScreenParams = params ?? { url: defaultUrl };
+  const { url, title, shareMessage, shareTitle, shareUrl } = safeParams;
   const webViewRef = useRef<WebViewType>(null);
   const [canGoBackInWebView, setCanGoBackInWebView] = useState(false);
   const [canGoForwardInWebView, setCanGoForwardInWebView] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentUrl, setCurrentUrl] = useState(url);
+  const [currentUrl, setCurrentUrl] = useState(url || defaultUrl);
   const [pageTitle, setPageTitle] = useState<string | undefined>(title);
 
   const derivedTitle = pageTitle || title || currentUrl;
-  const stackCanGoBack = navigation.canGoBack();
+  const stackCanGoBack =
+    typeof navigation?.canGoBack === 'function'
+      ? navigation.canGoBack()
+      : false;
 
   const openUrl = useCallback(async (targetUrl: string) => {
     try {
@@ -100,7 +111,7 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
       webViewRef.current?.goBack();
       return;
     }
-    if (navigation.canGoBack()) {
+    if (typeof navigation?.canGoBack === 'function' && navigation.canGoBack()) {
       navigation.goBack();
     }
   }, [canGoBackInWebView, navigation]);
@@ -156,7 +167,7 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
           )}
           <WebView
             ref={webViewRef}
-            source={{ uri: url }}
+            source={{ uri: url || defaultUrl }}
             onNavigationStateChange={(event: WebViewNavigation) => {
               setCanGoBackInWebView(event.canGoBack);
               setCanGoForwardInWebView(event.canGoForward);
@@ -209,6 +220,3 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.5)',
   },
 });
-
-export default WebViewScreen;
-

@@ -7419,6 +7419,7 @@ __metadata:
     react-native-svg-transformer: "npm:^1.5.1"
     react-native-svg-web: "npm:^1.0.9"
     react-native-web: "npm:^0.19.0"
+    react-native-webview: "npm:^13.16.0"
     react-qr-barcode-scanner: "npm:^2.1.8"
     react-test-renderer: "npm:^18.3.1"
     rollup-plugin-visualizer: "npm:^6.0.3"
@@ -26557,6 +26558,19 @@ __metadata:
     react: ^18.0.0 || ^19.0.0
     react-dom: ^18.0.0 || ^19.0.0
   checksum: 10c0/6a72f32c30909d2e76f721f8257f6bf32d83ec8dec480aebefc549a479b9c87e4ef019d5dadc9d0d21703a9b1801803d51a25227f54cd4ad330ca14676dd5956
+  languageName: node
+  linkType: hard
+
+"react-native-webview@npm:^13.16.0":
+  version: 13.16.0
+  resolution: "react-native-webview@npm:13.16.0"
+  dependencies:
+    escape-string-regexp: "npm:^4.0.0"
+    invariant: "npm:2.2.4"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/813c3cb176effd65f8d9b45eb00732ac87bfab2d0b1c4016f0d43e95f9a287e495913540ebe4f47da868c804f6fdcb2246a2156d6e31712bd426b43bcecc8e7f
   languageName: node
   linkType: hard
 
