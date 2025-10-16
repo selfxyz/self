@@ -2,20 +2,44 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
+import React, { useRef } from 'react';
+import { StyleSheet } from 'react-native';
+import { View, XStack, YStack } from 'tamagui';
+import { useIsFocused } from '@react-navigation/native';
 
 import {
+  DelayedLottieView,
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import {
+  Additional,
+  Description,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
+import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  mrzReadInstructions,
+  useReadMRZ,
+} from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
+import passportScanAnimation from '@/assets/animations/passport_scan.json';
+import { PassportCamera } from '@/components/native/PassportCamera';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DocumentCameraScreen as SDKDocumentCameraScreen } from '@selfxyz/mobile-sdk-alpha/onboarding/document-camera-screen';
+import Scan from '@/images/icons/passport_camera_scan.svg';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { black, slate400, slate800, white } from '@/utils/colors';
+import { dinot } from '@/utils/fonts';
 
 const DocumentCameraScreen: React.FC = () => {
-  const safeAreaInsets = useSafeAreaInsets();
   const client = useSelfClient();
+  const isFocused = useIsFocused();
+
+  // Add a ref to track when the camera screen is mounted
+  const scanStartTimeRef = useRef(Date.now());
+  const { onPassportRead } = useReadMRZ(scanStartTimeRef);
+
   const navigateToLaunch = useHapticNavigation('Launch', {
     action: 'cancel',
   });
@@ -33,13 +57,79 @@ const DocumentCameraScreen: React.FC = () => {
   };
 
   return (
-    <SDKDocumentCameraScreen
-      // no need to pass onSuccess prop as it will be handled by listening
-      // to the SdkEvents.DOCUMENT_MRZ_READ_SUCCESS event
-      onBack={onCancelPress}
-      safeAreaInsets={safeAreaInsets}
-    />
+    <ExpandableBottomLayout.Layout backgroundColor={white}>
+      <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
+        <PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
+        <DelayedLottieView
+          autoPlay
+          loop
+          source={passportScanAnimation}
+          style={styles.animation}
+          cacheComposition={true}
+          renderMode="HARDWARE"
+        />
+      </ExpandableBottomLayout.TopSection>
+      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
+        <YStack alignItems="center" gap="$2.5">
+          <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
+            <Title>Scan your ID</Title>
+            <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
+              <View paddingTop="$2">
+                <Scan height={40} width={40} color={slate800} />
+              </View>
+              <View maxWidth="75%">
+                <Description style={styles.subheader}>
+                  Open to the photograph page
+                </Description>
+                <Additional style={styles.description}>
+                  {mrzReadInstructions()}
+                </Additional>
+              </View>
+            </XStack>
+          </YStack>
+
+          <Additional style={styles.disclaimer}>
+            SELF WILL NOT CAPTURE AN IMAGE OF YOUR PASSPORT.
+          </Additional>
+
+          <SecondaryButton
+            trackEvent={PassportEvents.CAMERA_SCREEN_CLOSED}
+            onPress={onCancelPress}
+          >
+            Cancel
+          </SecondaryButton>
+        </YStack>
+      </ExpandableBottomLayout.BottomSection>
+    </ExpandableBottomLayout.Layout>
   );
 };
 
 export default DocumentCameraScreen;
+
+const styles = StyleSheet.create({
+  animation: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  subheader: {
+    color: slate800,
+    textAlign: 'left',
+    textAlignVertical: 'top',
+  },
+  description: {
+    textAlign: 'left',
+  },
+  disclaimer: {
+    fontFamily: dinot,
+    textAlign: 'center',
+    fontSize: 11,
+    color: slate400,
+    textTransform: 'uppercase',
+    width: '100%',
+    alignSelf: 'center',
+    letterSpacing: 0.44,
+    marginTop: 0,
+    marginBottom: 10,
+  },
+});
