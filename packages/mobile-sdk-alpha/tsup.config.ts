@@ -23,8 +23,8 @@ function findFlowFiles(dir: string, basePath = ''): Record<string, string> {
 
     if (item.isDirectory()) {
       Object.assign(entries, findFlowFiles(itemPath, relativePath));
-    } else if (item.isFile() && item.name.endsWith('.ts')) {
-      const key = path.join('flows', relativePath).replace(/\.ts$/, '');
+    } else if (item.isFile() && (item.name.endsWith('.ts') || item.name.endsWith('.tsx'))) {
+      const key = path.join('flows', relativePath).replace(/\.tsx?$/, '');
       entries[key] = path.join('src', 'flows', relativePath);
     }
   }

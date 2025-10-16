@@ -4,7 +4,7 @@
 
 import React from 'react';
 
-import { DocumentCameraScreen } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentCameraScreen } from '@selfxyz/mobile-sdk-alpha/onboarding/document-camera-screen';
 
 type Props = {
   onBack: () => void;

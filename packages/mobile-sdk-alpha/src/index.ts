@@ -118,7 +118,4 @@ export { useCountries } from './documents/useCountries';
 
 export { webNFCScannerShim } from './adapters/web/shims';
 
-// TODO: move to mrz flow package
-export { DocumentCameraScreen } from './screens/DocumentCameraScreen';
-
 export { DelayedLottieView } from './components/DelayedLottieView';
