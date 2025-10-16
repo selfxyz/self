@@ -144,7 +144,6 @@
     "react-native": "0.76.9",
     "react-native-haptic-feedback": "^2.3.3",
     "react-native-localize": "^3.5.2",
-    "react-native-svg": "^15.14.0",
     "react-native-web": "^0.21.1",
     "tsup": "^8.0.1",
     "typescript": "^5.9.2",

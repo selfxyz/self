@@ -70,10 +70,14 @@ const config = {
         'packages/mobile-sdk-alpha/node_modules/lottie-react-native(/|$)',
       ),
       new RegExp('packages/mobile-sdk-alpha/node_modules/scheduler(/|$)'),
+      new RegExp(
+        'packages/mobile-sdk-alpha/node_modules/react-native-svg(/|$)',
+      ),
       new RegExp('packages/mobile-sdk-demo/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-native(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/scheduler(/|$)'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/react-native-svg(/|$)'),
     ],
     // Enable automatic workspace package resolution
     enableGlobalPackages: true,
@@ -98,6 +102,10 @@ const config = {
       assert: require.resolve('assert'),
       events: require.resolve('events'),
       process: require.resolve('process'),
+      'react-native-svg': path.resolve(
+        projectRoot,
+        'node_modules/react-native-svg',
+      ),
       // App-specific alias
       '@': path.join(__dirname, 'src'),
     },
