@@ -36,6 +36,8 @@ export type { DG1, DG2, ParsedNFCResponse } from './nfc';
 
 export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
 
+export type { HapticOptions, HapticType } from './haptic/shared';
+
 export type { MRZScanOptions } from './mrz';
 
 // QR module
@@ -45,9 +47,19 @@ export type { SDKEvent, SDKEventMap } from './types/events';
 
 // Error handling
 export type { SdkErrorCategory } from './errors';
-
 // Screen Components (React Native-based)
 export type { provingMachineCircuitType } from './proving/provingMachine';
+
+export {
+  type BottomSectionProps,
+  ExpandableBottomLayout,
+  type FullSectionProps,
+  type LayoutProps,
+  type TopSectionProps,
+} from './layouts/ExpandableBottomLayout';
+
+export { DelayedLottieView } from './components/DelayedLottieView';
+
 export {
   InitError,
   LivenessError,
@@ -58,18 +70,38 @@ export {
   notImplemented,
   sdkError,
 } from './errors';
+
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
-export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
 
-// Context and Client
 export { type ProvingStateType } from './proving/provingMachine';
-
-export { QRCodeScreen } from './components/screens/QRCodeScreen';
 // Components
-export { SdkEvents } from './types/events';
+export { QRCodeScreen } from './components/screens/QRCodeScreen';
 // Documents utils
+export { SdkEvents } from './types/events';
+
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
+// Haptic feedback utilities
+export { advercase, dinot, plexMono } from './constants/fonts';
+
+export {
+  buttonTap,
+  cancelTap,
+  confirmTap,
+  feedbackProgress,
+  feedbackSuccess,
+  feedbackUnsuccessful,
+  impactLight,
+  impactMedium,
+  loadingScreenProgress,
+  notificationError,
+  notificationSuccess,
+  notificationWarning,
+  selectionChange,
+  triggerFeedback,
+} from './haptic';
+
+/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export {
   clearPassportData,
   getAllDocuments,
@@ -79,20 +111,21 @@ export {
   reStorePassportDataWithRightCSCA,
 } from './documents/utils';
 
-/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { createListenersMap, createSelfClient } from './client';
 
+// Document utils
 export { defaultConfig } from './config/defaults';
 
-// Document utils
+export { defaultOptions } from './haptic/shared';
+
 export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
+// Core functions
 export { extractNameFromDocument } from './documents/utils';
 
-// Core functions
+// Document validation
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
-// Document validation
 export { isPassportDataValid } from './validation/document';
 
 export { mergeConfig } from './config/merge';
@@ -100,7 +133,5 @@ export { mergeConfig } from './config/merge';
 export { parseNFCResponse, scanNFC } from './nfc';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
-
 export { useCountries } from './documents/useCountries';
-
 export { webNFCScannerShim } from './adapters/web/shims';

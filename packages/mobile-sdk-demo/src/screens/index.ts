@@ -6,7 +6,15 @@ import type { ComponentType } from 'react';
 
 import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/utils/types';
 
-export type ScreenId = 'generate' | 'register' | 'prove' | 'camera' | 'nfc' | 'documents';
+export type ScreenId =
+  | 'generate'
+  | 'register'
+  | 'prove'
+  | 'camera'
+  | 'nfc'
+  | 'documents'
+  | 'country-selection'
+  | 'id-selection';
 
 export type ScreenContext = {
   navigate: (next: ScreenRoute) => void;
@@ -66,7 +74,10 @@ export const screenDescriptors: ScreenDescriptor[] = [
     sectionTitle: '📸 Scanning',
     status: 'placeholder',
     load: () => require('./DocumentCamera').default,
-    getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
+    getProps: ({ navigate }) => ({
+      onBack: () => navigate('home'),
+      onSuccess: () => navigate('nfc'),
+    }),
   },
   {
     id: 'nfc',
@@ -84,6 +95,30 @@ export const screenDescriptors: ScreenDescriptor[] = [
     sectionTitle: '📋 Your Data',
     status: 'working',
     load: () => require('./DocumentsList').default,
+    getProps: ({ navigate, documentCatalog }) => ({
+      onBack: () => navigate('home'),
+      catalog: documentCatalog,
+    }),
+  },
+  {
+    id: 'country-selection',
+    title: 'Country Selection',
+    subtitle: 'Select the country that issued your ID',
+    sectionTitle: '📋 Selection',
+    status: 'working',
+    load: () => require('./CountrySelection').default,
+    getProps: ({ navigate, documentCatalog }) => ({
+      onBack: () => navigate('home'),
+      catalog: documentCatalog,
+    }),
+  },
+  {
+    id: 'id-selection',
+    title: 'ID Selection',
+    subtitle: 'Choose the type of ID you want to verify',
+    sectionTitle: '📋 Selection',
+    status: 'working',
+    load: () => require('./IDSelection').default,
     getProps: ({ navigate, documentCatalog }) => ({
       onBack: () => navigate('home'),
       catalog: documentCatalog,

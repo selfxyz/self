@@ -13,6 +13,7 @@ import {
   type TrackEventParams,
   type WsConn,
   webNFCScannerShim,
+  SdkEvents,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { persistentDocumentsAdapter } from '../utils/documentStore';
@@ -153,7 +154,11 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
   );
 
   const listeners = useMemo(() => {
-    const { map } = createListenersMap();
+    const { map, addListener } = createListenersMap();
+
+    addListener(SdkEvents.DOCUMENT_COUNTRY_SELECTED, event => {
+      console.info('go to id picker', event);
+    });
     return map;
   }, []);
 

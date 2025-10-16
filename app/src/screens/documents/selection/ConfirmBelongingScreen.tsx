@@ -7,7 +7,11 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
-import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  DelayedLottieView,
+  loadSelectedDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   Description,
   PrimaryButton,
@@ -20,7 +24,6 @@ import {
 import { getPreRegistrationDescription } from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
 import successAnimation from '@/assets/animations/loading/success.json';
-import { DelayedLottieView } from '@/components/DelayedLottieView';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/verification/ProofRequestStatusScreen';

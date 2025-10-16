@@ -7,7 +7,8 @@ import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, XStack, YStack } from 'tamagui';
 
-import { DelayedLottieView } from '@/components/DelayedLottieView';
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
+
 import CloseWarningIcon from '@/images/icons/close-warning.svg';
 import Plus from '@/images/icons/plus_slate600.svg';
 import {
