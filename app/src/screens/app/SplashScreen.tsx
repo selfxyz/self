@@ -13,7 +13,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 
 import splashAnimation from '@/assets/animations/splash.json';
-import { DelayedLottieView } from '@/components/DelayedLottieView';
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import type { RootStackParamList } from '@/navigation';
 import { migrateToSecureKeychain, useAuth } from '@/providers/authProvider';
 import {

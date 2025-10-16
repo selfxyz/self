@@ -24,7 +24,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
-import { DelayedLottieView } from '@/components/DelayedLottieView';
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import { PassportCamera } from '@/components/native/PassportCamera';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Scan from '@/images/icons/passport_camera_scan.svg';

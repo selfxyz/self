@@ -48,6 +48,15 @@ export type { SdkErrorCategory } from './errors';
 
 // Screen Components (React Native-based)
 export type { provingMachineCircuitType } from './proving/provingMachine';
+
+export {
+  type BottomSectionProps,
+  ExpandableBottomLayout,
+  type FullSectionProps,
+  type LayoutProps,
+  type TopSectionProps,
+} from './layouts/ExpandableBottomLayout';
+
 export {
   InitError,
   LivenessError,
@@ -58,15 +67,19 @@ export {
   notImplemented,
   sdkError,
 } from './errors';
+
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
+
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
 
 // Context and Client
 export { type ProvingStateType } from './proving/provingMachine';
 
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
+
 // Components
 export { SdkEvents } from './types/events';
+
 // Documents utils
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
@@ -105,4 +118,7 @@ export { useCountries } from './documents/useCountries';
 
 export { webNFCScannerShim } from './adapters/web/shims';
 
+// TODO: move to mrz flow package
 export { DocumentCameraScreen } from './screens/DocumentCameraScreen';
+
+export { DelayedLottieView } from './components/DelayedLottieView';

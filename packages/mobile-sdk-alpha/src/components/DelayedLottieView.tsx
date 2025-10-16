@@ -4,7 +4,8 @@
 
 import type { LottieViewProps } from 'lottie-react-native';
 import LottieView from 'lottie-react-native';
-import React, { forwardRef, useEffect, useRef } from 'react';
+import type React from 'react';
+import { forwardRef, useEffect, useRef } from 'react';
 
 /**
  * Wrapper around LottieView that fixes iOS native module initialization timing.
@@ -20,34 +21,30 @@ import React, { forwardRef, useEffect, useRef } from 'react';
  * @example
  * <DelayedLottieView autoPlay loop source={animation} style={styles.animation} />
  */
-export const DelayedLottieView = forwardRef<LottieView, LottieViewProps>(
-  (props, forwardedRef) => {
-    // If LottieView is undefined (peer dependency not installed), return null
-    if (typeof LottieView === 'undefined') {
-      return null;
+export const DelayedLottieView = forwardRef<LottieView, LottieViewProps>((props, forwardedRef) => {
+  // If LottieView is undefined (peer dependency not installed), return null
+  if (typeof LottieView === 'undefined') {
+    return null;
+  }
+
+  const internalRef = useRef<LottieView>(null);
+  const ref = (forwardedRef as React.RefObject<LottieView>) || internalRef;
+
+  useEffect(() => {
+    // Only auto-trigger for autoPlay animations
+    if (props.autoPlay) {
+      const timer = setTimeout(() => {
+        ref.current?.play();
+      }, 100);
+
+      return () => clearTimeout(timer);
     }
+  }, [props.autoPlay, ref]);
 
-    const internalRef = useRef<LottieView>(null);
-    const ref = (forwardedRef as React.RefObject<LottieView>) || internalRef;
+  // For autoPlay animations, disable native autoPlay and control it ourselves
+  const modifiedProps = props.autoPlay ? { ...props, autoPlay: false } : props;
 
-    useEffect(() => {
-      // Only auto-trigger for autoPlay animations
-      if (props.autoPlay) {
-        const timer = setTimeout(() => {
-          ref.current?.play();
-        }, 100);
-
-        return () => clearTimeout(timer);
-      }
-    }, [props.autoPlay, ref]);
-
-    // For autoPlay animations, disable native autoPlay and control it ourselves
-    const modifiedProps = props.autoPlay
-      ? { ...props, autoPlay: false }
-      : props;
-
-    return <LottieView ref={ref} {...modifiedProps} />;
-  },
-);
+  return <LottieView ref={ref} {...modifiedProps} />;
+});
 
 DelayedLottieView.displayName = 'DelayedLottieView';

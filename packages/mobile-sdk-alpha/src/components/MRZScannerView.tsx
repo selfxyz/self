@@ -4,7 +4,7 @@
 
 import { useCallback, useRef } from 'react';
 import type { DimensionValue, NativeSyntheticEvent, ViewProps, ViewStyle } from 'react-native';
-import { NativeModules, PixelRatio, Platform, requireNativeComponent, StyleSheet, View } from 'react-native';
+import { NativeModules, PixelRatio, Platform, requireNativeComponent, View } from 'react-native';
 
 import { extractMRZInfo, formatDateToYYMMDD } from '../mrz';
 import type { MRZInfo } from '../types/public';

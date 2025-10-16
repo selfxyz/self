@@ -16,7 +16,7 @@ import {
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import warningAnimation from '@/assets/animations/warning.json';
-import { DelayedLottieView } from '@/components/DelayedLottieView';
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useSettingStore } from '@/stores/settingStore';

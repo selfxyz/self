@@ -20,7 +20,7 @@ import {
 import { getPreRegistrationDescription } from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
 import successAnimation from '@/assets/animations/loading/success.json';
-import { DelayedLottieView } from '@/components/DelayedLottieView';
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/verification/ProofRequestStatusScreen';

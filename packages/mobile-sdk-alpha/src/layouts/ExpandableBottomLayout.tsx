@@ -2,50 +2,40 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
-import {
-  Dimensions,
-  PixelRatio,
-  Platform,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
-import { View, ViewProps } from 'src/components';
+import type React from 'react';
+import { Dimensions, PixelRatio, Platform, ScrollView, StyleSheet } from 'react-native';
+import type { ViewProps } from 'src/components';
+import { View } from 'src/components';
 import { black, white } from 'src/constants/colors';
 import { extraYPadding } from 'src/constants/layout';
 
-const SAFE_AREA_TOP_DEFAULT = 20;
-const SAFE_AREA_BOTTOM_DEFAULT = 20;
+const SAFE_AREA_TOP_DEFAULT = 0;
+const SAFE_AREA_BOTTOM_DEFAULT = 0;
 
 // Get the current font scale factor
 const fontScale = PixelRatio.getFontScale();
 // fontScale > 1 means the user has increased text size in accessibility settings
 const isLargerTextEnabled = fontScale > 1.3;
 
-interface ExpandableBottomLayoutProps extends ViewProps {
+export interface BottomSectionProps extends ViewProps {
+  children: React.ReactNode;
+  backgroundColor: string;
+  safeAreaBottom?: number;
+}
+
+export type FullSectionProps = ViewProps & {
+  safeAreaTop?: number;
+  safeAreaBottom?: number;
+};
+
+export interface LayoutProps extends ViewProps {
   children: React.ReactNode;
   backgroundColor: string;
   safeAreaTop?: number;
   safeAreaBottom?: number;
 }
 
-interface TopSectionProps extends ViewProps {
-  children: React.ReactNode;
-  backgroundColor: string;
-  roundTop?: boolean;
-  safeAreaTop?: number;
-}
-
-interface BottomSectionProps extends ViewProps {
-  children: React.ReactNode;
-  backgroundColor: string;
-  safeAreaBottom?: number;
-}
-
-const Layout: React.FC<ExpandableBottomLayoutProps> = ({
-  children,
-  backgroundColor,
-}) => {
+const Layout: React.FC<LayoutProps> = ({ children, backgroundColor }) => {
   return (
     <View flex={1} flexDirection="column" backgroundColor={backgroundColor}>
       {children}
@@ -53,11 +43,7 @@ const Layout: React.FC<ExpandableBottomLayoutProps> = ({
   );
 };
 
-const TopSection: React.FC<TopSectionProps> = ({
-  children,
-  backgroundColor,
-  ...props
-}) => {
+const TopSection: React.FC<TopSectionProps> = ({ children, backgroundColor, ...props }) => {
   const { safeAreaTop = SAFE_AREA_TOP_DEFAULT } = props;
   const { roundTop, ...restProps } = props;
 
@@ -77,19 +63,17 @@ const TopSection: React.FC<TopSectionProps> = ({
   );
 };
 
-type FullSectionProps = ViewProps & {
+export interface TopSectionProps extends ViewProps {
+  children: React.ReactNode;
+  backgroundColor: string;
+  roundTop?: boolean;
   safeAreaTop?: number;
-  safeAreaBottom?: number;
-};
+}
 /*
  * Rather than using a top and bottom section, this component is te entire thing.
  * It leave space for the safe area insets and provides basic padding
  */
-const FullSection: React.FC<FullSectionProps> = ({
-  children,
-  backgroundColor,
-  ...props
-}: FullSectionProps) => {
+const FullSection: React.FC<FullSectionProps> = ({ children, backgroundColor, ...props }: FullSectionProps) => {
   const { safeAreaTop = SAFE_AREA_TOP_DEFAULT, safeAreaBottom = SAFE_AREA_BOTTOM_DEFAULT } = props;
   return (
     <View
@@ -104,16 +88,11 @@ const FullSection: React.FC<FullSectionProps> = ({
   );
 };
 
-const BottomSection: React.FC<BottomSectionProps> = ({
-  children,
-  style,
-  ...props
-}) => {
+const BottomSection: React.FC<BottomSectionProps> = ({ children, style, ...props }) => {
   const incomingBottom = props.paddingBottom ?? 0;
   const { safeAreaBottom = SAFE_AREA_BOTTOM_DEFAULT } = props;
   const minBottom = safeAreaBottom + extraYPadding;
-  const totalBottom =
-    typeof incomingBottom === 'number' ? minBottom + incomingBottom : minBottom;
+  const totalBottom = typeof incomingBottom === 'number' ? minBottom + incomingBottom : minBottom;
 
   let panelHeight: number | 'auto' = 'auto';
   // set bottom section height to 38% of screen height
@@ -122,22 +101,14 @@ const BottomSection: React.FC<BottomSectionProps> = ({
     const windowHeight = Dimensions.get('window').height;
     panelHeight = windowHeight * 0.38;
     children = (
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1 }}
-      >
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
         {children}
       </ScrollView>
     );
   }
 
   return (
-    <View
-      {...props}
-      height={panelHeight}
-      style={[styles.bottomSection, style]}
-      paddingBottom={totalBottom}
-    >
+    <View {...props} height={panelHeight} style={[styles.bottomSection, style]} paddingBottom={totalBottom}>
       {children}
     </View>
   );

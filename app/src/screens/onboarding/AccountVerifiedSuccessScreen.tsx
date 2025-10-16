@@ -15,7 +15,7 @@ import {
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
-import { DelayedLottieView } from '@/components/DelayedLottieView';
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { styles } from '@/screens/verification/ProofRequestStatusScreen';
