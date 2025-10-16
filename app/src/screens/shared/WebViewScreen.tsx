@@ -189,6 +189,7 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
         borderTopRightRadius={30}
         borderTopWidth={1}
         borderColor={slate200}
+        style={{ paddingTop: 0 }}
       >
         <WebViewFooter
           canGoBack={canGoBackInWebView}

@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
 import { ArrowLeft, ArrowRight, RotateCcw } from '@tamagui/lucide-icons';
 
 import { Button, XStack, YStack } from '@selfxyz/mobile-sdk-alpha/components';
@@ -21,7 +20,7 @@ export interface WebViewFooterProps {
 }
 
 const iconSize = 22;
-const buttonSize = 42;
+const buttonSize = 36;
 
 export const WebViewFooter: React.FC<WebViewFooterProps> = ({
   canGoBack,
@@ -59,13 +58,8 @@ export const WebViewFooter: React.FC<WebViewFooterProps> = ({
   );
 
   return (
-    <YStack gap={12} paddingTop={12} paddingHorizontal={20} width="100%">
-      <XStack
-        justifyContent="space-between"
-        alignItems="center"
-        paddingHorizontal={10}
-        width="100%"
-      >
+    <YStack gap={12} paddingVertical={12} width="100%">
+      <XStack justifyContent="space-between" alignItems="center" width="100%">
         {renderIconButton(
           'back',
           <ArrowLeft size={iconSize} color={canGoBack ? black : slate400} />,
@@ -87,29 +81,6 @@ export const WebViewFooter: React.FC<WebViewFooterProps> = ({
           !canGoForward,
         )}
       </XStack>
-
-      {/* Home Indicator - only on iOS */}
-      {Platform.OS === 'ios' && (
-        <View style={styles.homeIndicatorContainer}>
-          <View style={styles.homeIndicator} />
-        </View>
-      )}
     </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  homeIndicatorContainer: {
-    height: 21,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingBottom: 8,
-  },
-  homeIndicator: {
-    width: 139,
-    height: 5,
-    backgroundColor: black,
-    borderRadius: 100,
-  },
-});
