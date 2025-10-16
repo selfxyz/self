@@ -5,14 +5,14 @@
 import type React from 'react';
 
 import { BodyText, RoundFlag, View, XStack, YStack } from '../../components';
-// import AadhaarLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
-// import EPassportLogoRounded from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport_rounded.svg';
-// import PlusIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/plus.svg';
-// import SelfLogo from '@selfxyz/mobile-sdk-alpha/svgs/logo.svg';
 import { black, slate100, slate300, slate400, white } from '../../constants/colors';
 import { advercase, dinot } from '../../constants/fonts';
 import { useSelfClient } from '../../context';
 import { buttonTap } from '../../haptic';
+import AadhaarLogo from '../../../svgs/icons/aadhaar.svg';
+import EPassportLogoRounded from '../../../svgs/icons/epassport_rounded.svg';
+import PlusIcon from '../../../svgs/icons/plus.svg';
+import SelfLogo from '../../../svgs/logo.svg';
 import { SdkEvents } from '../../types/events';
 
 const getDocumentName = (docType: string): string => {
@@ -57,11 +57,11 @@ const getDocumentDescription = (docType: string): string => {
 const getDocumentLogo = (docType: string): React.ReactNode => {
   switch (docType) {
     case 'p':
-      return; //<EPassportLogoRounded />;
+      return <EPassportLogoRounded />;
     case 'i':
-      return; //<EPassportLogoRounded />;
+      return <EPassportLogoRounded />;
     case 'a':
-      return; //<AadhaarLogo />;
+      return <AadhaarLogo />;
     default:
       return null;
   }
@@ -93,7 +93,7 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
           <View width={48} height={48}>
             <RoundFlag countryCode={countryCode} size={48} />
           </View>
-          {/* <PlusIcon width={18} height={18} color={slate400} /> */}
+          <PlusIcon width={18} height={18} color={slate400} />
           <YStack
             backgroundColor={black}
             borderRadius={'$2'}
@@ -102,7 +102,7 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
             justifyContent="center"
             alignItems="center"
           >
-            {/* <SelfLogo width={24} height={24} /> */}
+            <SelfLogo width={24} height={24} />
           </YStack>
         </XStack>
         <BodyText
