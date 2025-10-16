@@ -41,7 +41,7 @@ export const navigationScreens = {
 };
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
-  initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
+  initialRouteName: Platform.OS === 'web' ? 'Home' : 'WebView',
   screenOptions: {
     header: DefaultNavBar,
   },

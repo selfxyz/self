@@ -19,7 +19,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { WebViewNavBar } from '@/components/NavBar/WebViewNavBar';
-import { WebViewFooter } from '@/components/WebView/WebViewFooter';
+import { WebViewFooter } from '@/components/WebViewFooter';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { charcoal, slate200, white } from '@/utils/colors';
 
