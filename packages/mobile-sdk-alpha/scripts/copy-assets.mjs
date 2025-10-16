@@ -1,8 +1,9 @@
+#!/usr/bin/env node
 // SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-#!/usr/bin/env node
+
 
 import { cpSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
