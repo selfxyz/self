@@ -3,28 +3,29 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { ComponentType } from 'react';
-import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import type {
+  NativeStackNavigationOptions,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 
+import type { SharedRoutesParamList } from '@/navigation/types';
 import ComingSoonScreen from '@/screens/shared/ComingSoonScreen';
 import { WebViewScreen } from '@/screens/shared/WebViewScreen';
 
-type ScreenConfig = {
-  // Using ComponentType to avoid importing RootStack types and prevent cycles
-  screen: ComponentType<unknown>;
+type ScreenName = keyof SharedRoutesParamList;
+
+type ScreenConfig<Name extends ScreenName> = {
+  screen: ComponentType<NativeStackScreenProps<SharedRoutesParamList, Name>>;
   options?: NativeStackNavigationOptions;
-  initialParams?: Record<string, unknown>;
+  initialParams?: SharedRoutesParamList[Name];
 };
 
-const sharedScreens: Record<string, ScreenConfig> = {
+const sharedScreens: { [K in ScreenName]: ScreenConfig<K> } = {
   ComingSoon: {
     screen: ComingSoonScreen,
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
-    initialParams: {
-      countryCode: null,
-      documentCategory: null,
-    },
   },
   WebView: {
     screen: WebViewScreen,

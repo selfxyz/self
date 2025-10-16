@@ -12,8 +12,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import type { WebView as WebViewType } from 'react-native-webview';
-import WebView from 'react-native-webview';
+import WebView, { type WebView as WebViewType } from 'react-native-webview';
 import type { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -21,6 +20,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { WebViewNavBar } from '@/components/NavBar/WebViewNavBar';
 import { WebViewFooter } from '@/components/WebViewFooter';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { SharedRoutesParamList } from '@/navigation/types';
 import { charcoal, slate200, white } from '@/utils/colors';
 
 export interface WebViewScreenParams {
@@ -31,9 +31,8 @@ export interface WebViewScreenParams {
   shareUrl?: string;
 }
 
-type WebViewNavParamList = { WebView: WebViewScreenParams };
 type WebViewScreenProps = NativeStackScreenProps<
-  WebViewNavParamList,
+  SharedRoutesParamList,
   'WebView'
 >;
 
