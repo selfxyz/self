@@ -34,8 +34,6 @@ export type { PassportValidationCallbacks } from './validation/document';
 export type { SDKEvent, SDKEventMap } from './types/events';
 export type { SdkErrorCategory } from './errors';
 
-export { type ProvingStateType } from './proving/provingMachine';
-
 export {
   type BottomSectionProps,
   ExpandableBottomLayout,
@@ -45,6 +43,8 @@ export {
 } from './layouts/ExpandableBottomLayout';
 
 export { DelayedLottieView } from './components/DelayedLottieView.web';
+
+export { type ProvingStateType } from './proving/provingMachine';
 
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 

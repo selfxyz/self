@@ -6,5 +6,5 @@
  * DelayedLottieView for web placeholder component.
  */
 export const DelayedLottieView = () => {
-  return <div />
+  return <div />;
 };
