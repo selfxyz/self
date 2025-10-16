@@ -35,6 +35,17 @@ export type { SDKEvent, SDKEventMap } from './types/events';
 export type { SdkErrorCategory } from './errors';
 
 export { type ProvingStateType } from './proving/provingMachine';
+
+export {
+  type BottomSectionProps,
+  ExpandableBottomLayout,
+  type FullSectionProps,
+  type LayoutProps,
+  type TopSectionProps,
+} from './layouts/ExpandableBottomLayout';
+
+export { DelayedLottieView } from './components/DelayedLottieView.web';
+
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 
 export { SdkEvents } from './types/events';
