@@ -4,15 +4,15 @@
 
 import type React from 'react';
 
+import AadhaarLogo from '../../../svgs/icons/aadhaar.svg';
+import EPassportLogoRounded from '../../../svgs/icons/epassport_rounded.svg';
+import PlusIcon from '../../../svgs/icons/plus.svg';
+import SelfLogo from '../../../svgs/logo.svg';
 import { BodyText, RoundFlag, View, XStack, YStack } from '../../components';
 import { black, slate100, slate300, slate400, white } from '../../constants/colors';
 import { advercase, dinot } from '../../constants/fonts';
 import { useSelfClient } from '../../context';
 import { buttonTap } from '../../haptic';
-import AadhaarLogo from '../../../svgs/icons/aadhaar.svg';
-import EPassportLogoRounded from '../../../svgs/icons/epassport_rounded.svg';
-import PlusIcon from '../../../svgs/icons/plus.svg';
-import SelfLogo from '../../../svgs/logo.svg';
 import { SdkEvents } from '../../types/events';
 
 const getDocumentName = (docType: string): string => {
