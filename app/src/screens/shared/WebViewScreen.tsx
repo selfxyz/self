@@ -1,0 +1,214 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  BackHandler,
+  Linking,
+  Platform,
+  Share,
+  StyleSheet,
+  View,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import WebView from 'react-native-webview';
+import type { WebView as WebViewType } from 'react-native-webview';
+import type { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
+
+import { WebViewNavBar } from '@/components/NavBar/WebViewNavBar';
+import { WebViewFooter } from '@/components/WebView/WebViewFooter';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackScreenProps } from '@/navigation';
+import { charcoal, slate200, white } from '@/utils/colors';
+
+export interface WebViewScreenParams {
+  url: string;
+  title?: string;
+  shareTitle?: string;
+  shareMessage?: string;
+  shareUrl?: string;
+}
+
+type WebViewScreenProps = RootStackScreenProps<'WebView'>;
+
+export const WebViewScreen: React.FC<WebViewScreenProps> = ({
+  navigation,
+  route,
+}) => {
+  const { url, title, shareMessage, shareTitle, shareUrl } = route.params;
+  const webViewRef = useRef<WebViewType>(null);
+  const [canGoBackInWebView, setCanGoBackInWebView] = useState(false);
+  const [canGoForwardInWebView, setCanGoForwardInWebView] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUrl, setCurrentUrl] = useState(url);
+  const [pageTitle, setPageTitle] = useState<string | undefined>(title);
+
+  const derivedTitle = pageTitle || title || currentUrl;
+  const stackCanGoBack = navigation.canGoBack();
+
+  const openUrl = useCallback(async (targetUrl: string) => {
+    try {
+      const supported = await Linking.canOpenURL(targetUrl);
+      if (supported) {
+        await Linking.openURL(targetUrl);
+      }
+    } catch (error) {
+      console.error('Failed to open URL externally', error);
+    }
+  }, []);
+
+  const handleShare = useCallback(async () => {
+    const sharePayloadUrl = shareUrl ?? currentUrl;
+    const sharePayloadMessage = shareMessage ?? sharePayloadUrl;
+    const payloadTitle = shareTitle ?? derivedTitle ?? sharePayloadUrl;
+
+    try {
+      await Share.share(
+        Platform.select({
+          ios: {
+            title: payloadTitle,
+            url: sharePayloadUrl,
+            message: sharePayloadMessage,
+          },
+          default: {
+            title: payloadTitle,
+            message: sharePayloadMessage,
+          },
+        }) ?? {
+          title: payloadTitle,
+          message: sharePayloadMessage,
+        },
+      );
+    } catch (error) {
+      console.error('Failed to share WebView URL', error);
+    }
+  }, [currentUrl, derivedTitle, shareMessage, shareTitle, shareUrl]);
+
+  const handleOpenExternal = useCallback(async () => {
+    await openUrl(currentUrl);
+  }, [currentUrl, openUrl]);
+
+  const handleReload = useCallback(() => {
+    setIsLoading(true);
+    webViewRef.current?.reload();
+  }, []);
+
+  const handleGoBack = useCallback(() => {
+    if (canGoBackInWebView) {
+      webViewRef.current?.goBack();
+      return;
+    }
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    }
+  }, [canGoBackInWebView, navigation]);
+
+  const handleGoForward = useCallback(() => {
+    if (canGoForwardInWebView) {
+      webViewRef.current?.goForward();
+    }
+  }, [canGoForwardInWebView]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        () => {
+          if (canGoBackInWebView) {
+            webViewRef.current?.goBack();
+            return true;
+          }
+          return false;
+        },
+      );
+
+      return () => subscription.remove();
+    }, [canGoBackInWebView]),
+  );
+
+  const isShareAvailable = useMemo(() => {
+    return Boolean(shareMessage || shareUrl || currentUrl);
+  }, [currentUrl, shareMessage, shareUrl]);
+
+  return (
+    <ExpandableBottomLayout.Layout backgroundColor={white}>
+      <ExpandableBottomLayout.TopSection
+        backgroundColor={white}
+        alignItems="stretch"
+        justifyContent="flex-start"
+        padding={0}
+      >
+        <WebViewNavBar
+          title={derivedTitle}
+          canGoBack={stackCanGoBack}
+          onBackPress={handleGoBack}
+          onSharePress={isShareAvailable ? handleShare : undefined}
+          onOpenExternalPress={handleOpenExternal}
+          isShareDisabled={!isShareAvailable}
+        />
+        <View style={styles.webViewContainer}>
+          {isLoading && (
+            <View pointerEvents="none" style={styles.loadingOverlay}>
+              <ActivityIndicator size="small" color={charcoal} />
+            </View>
+          )}
+          <WebView
+            ref={webViewRef}
+            source={{ uri: url }}
+            onNavigationStateChange={(event: WebViewNavigation) => {
+              setCanGoBackInWebView(event.canGoBack);
+              setCanGoForwardInWebView(event.canGoForward);
+              setCurrentUrl(event.url);
+              if (!title && event.title) {
+                setPageTitle(event.title);
+              }
+            }}
+            onLoadStart={() => setIsLoading(true)}
+            onLoadEnd={() => setIsLoading(false)}
+            startInLoadingState
+            style={styles.webView}
+          />
+        </View>
+      </ExpandableBottomLayout.TopSection>
+      <ExpandableBottomLayout.BottomSection
+        backgroundColor={white}
+        borderTopLeftRadius={30}
+        borderTopRightRadius={30}
+        borderTopWidth={1}
+        borderColor={slate200}
+      >
+        <WebViewFooter
+          canGoBack={canGoBackInWebView}
+          canGoForward={canGoForwardInWebView}
+          onGoBack={handleGoBack}
+          onGoForward={handleGoForward}
+          onReload={handleReload}
+          onOpenInBrowser={handleOpenExternal}
+        />
+      </ExpandableBottomLayout.BottomSection>
+    </ExpandableBottomLayout.Layout>
+  );
+};
+
+const styles = StyleSheet.create({
+  webViewContainer: {
+    flex: 1,
+    alignSelf: 'stretch',
+    backgroundColor: white,
+  },
+  webView: {
+    flex: 1,
+    backgroundColor: white,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.5)',
+  },
+});
+
+export default WebViewScreen;
+

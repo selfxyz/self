@@ -6,3 +6,4 @@ export { AadhaarNavBar } from '@/components/NavBar/AadhaarNavBar';
 export { DefaultNavBar } from '@/components/NavBar/DefaultNavBar';
 export { HomeNavBar } from '@/components/NavBar/HomeNavBar';
 export { IdDetailsNavBar } from '@/components/NavBar/IdDetailsNavBar';
+export { WebViewNavBar } from '@/components/NavBar/WebViewNavBar';

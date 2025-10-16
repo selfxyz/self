@@ -27,6 +27,7 @@ import sharedScreens from '@/navigation/shared';
 import verificationScreens from '@/navigation/verification';
 import analytics from '@/utils/analytics';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
+import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
 
 export const navigationScreens = {
   ...appScreens,
@@ -69,6 +70,7 @@ export type RootStackParamList = Omit<
   AadhaarUploadError: {
     errorType: string;
   };
+  WebView: WebViewScreenParams;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

@@ -5,6 +5,7 @@
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import ComingSoonScreen from '@/screens/shared/ComingSoonScreen';
+import WebViewScreen from '@/screens/shared/WebViewScreen';
 
 const sharedScreens = {
   ComingSoon: {
@@ -16,6 +17,12 @@ const sharedScreens = {
       countryCode: null,
       documentCategory: null,
     },
+  },
+  WebView: {
+    screen: WebViewScreen,
+    options: {
+      headerShown: false,
+    } as NativeStackNavigationOptions,
   },
 };
 
