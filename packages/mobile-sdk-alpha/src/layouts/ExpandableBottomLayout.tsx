@@ -4,6 +4,7 @@
 
 import type React from 'react';
 import { Dimensions, PixelRatio, Platform, ScrollView, StyleSheet } from 'react-native';
+
 import type { ViewProps } from '../components';
 import { View } from '../components';
 import { black, white } from '../constants/colors';
@@ -63,12 +64,28 @@ const TopSection: React.FC<TopSectionProps> = ({ children, backgroundColor, ...p
   );
 };
 
-export interface TopSectionProps extends ViewProps {
-  children: React.ReactNode;
-  backgroundColor: string;
-  roundTop?: boolean;
-  safeAreaTop?: number;
-}
+/**
+ * This component is a layout that has a top and bottom section. Bottom section
+ * automatically expands to as much space as it needs while the top section
+ * takes up the remaining space.
+ *
+ * Usage:
+ *
+ * import { ExpandableBottomLayout } from '../components/ExpandableBottomLayout';
+ *
+ * <ExpandableBottomLayout.Layout>
+ *   <ExpandableBottomLayout.TopSection>
+ *     <...top section content...>
+ *   </ExpandableBottomLayout.TopSection>
+ *   <ExpandableBottomLayout.BottomSection>
+ *     <...bottom section content...>
+ *   </ExpandableBottomLayout.BottomSection>
+ * </ExpandableBottomLayout.Layout>
+ */
+export type SafeAreaInsets = {
+  top: number;
+  bottom: number;
+};
 /*
  * Rather than using a top and bottom section, this component is te entire thing.
  * It leave space for the safe area insets and provides basic padding
@@ -114,35 +131,19 @@ const BottomSection: React.FC<BottomSectionProps> = ({ children, style, ...props
   );
 };
 
-/**
- * This component is a layout that has a top and bottom section. Bottom section
- * automatically expands to as much space as it needs while the top section
- * takes up the remaining space.
- *
- * Usage:
- *
- * import { ExpandableBottomLayout } from '../components/ExpandableBottomLayout';
- *
- * <ExpandableBottomLayout.Layout>
- *   <ExpandableBottomLayout.TopSection>
- *     <...top section content...>
- *   </ExpandableBottomLayout.TopSection>
- *   <ExpandableBottomLayout.BottomSection>
- *     <...bottom section content...>
- *   </ExpandableBottomLayout.BottomSection>
- * </ExpandableBottomLayout.Layout>
- */
+export interface TopSectionProps extends ViewProps {
+  children: React.ReactNode;
+  backgroundColor: string;
+  roundTop?: boolean;
+  safeAreaTop?: number;
+}
+
 export const ExpandableBottomLayout = {
   Layout,
   TopSection,
   FullSection,
   BottomSection,
 };
-
-export type SafeAreaInsets = {
-  top: number;
-  bottom: number;
-}
 
 // TODO: compare styles with the original
 const styles = StyleSheet.create({

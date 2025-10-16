@@ -12,12 +12,13 @@ import { PassportEvents } from 'src/constants/analytics';
 import { black, slate400, slate800, white } from 'src/constants/colors';
 import { useSelfClient } from 'src/context';
 import { mrzReadInstructions, useReadMRZ } from 'src/flows/onboarding/read-mrz';
-import { ExpandableBottomLayout, SafeAreaInsets } from 'src/layouts/ExpandableBottomLayout';
+import type { SafeAreaInsets } from 'src/layouts/ExpandableBottomLayout';
+import { ExpandableBottomLayout } from 'src/layouts/ExpandableBottomLayout';
 import { SdkEvents } from 'src/types/events';
 import type { MRZInfo } from 'src/types/public';
-import { dinot } from '../../constants/fonts';
 
 import Scan from '../../../svgs/icons/passport_camera_scan.svg';
+import { dinot } from '../../constants/fonts';
 
 type Props = {
   onBack?: () => void;
@@ -47,7 +48,11 @@ export const DocumentCameraScreen = ({ onBack, onSuccess, safeAreaInsets }: Prop
   );
 
   return (
-    <ExpandableBottomLayout.Layout backgroundColor={white} safeAreaTop={safeAreaInsets?.top} safeAreaBottom={safeAreaInsets?.bottom}>
+    <ExpandableBottomLayout.Layout
+      backgroundColor={white}
+      safeAreaTop={safeAreaInsets?.top}
+      safeAreaBottom={safeAreaInsets?.bottom}
+    >
       <ExpandableBottomLayout.TopSection backgroundColor={black} safeAreaTop={safeAreaInsets?.top}>
         <MRZScannerView onMRZDetected={handleMRZDetected} onError={handleScannerError} />
         <DelayedLottieView

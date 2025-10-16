@@ -73,7 +73,6 @@ export {
 
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 
-
 export { type ProvingStateType } from './proving/provingMachine';
 // Components
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
