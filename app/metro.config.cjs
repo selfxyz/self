@@ -66,7 +66,9 @@ const config = {
       new RegExp('packages/mobile-sdk-alpha/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/|$)'),
-      new RegExp('packages/mobile-sdk-alpha/node_modules/lottie-react-native(/|$)'),
+      new RegExp(
+        'packages/mobile-sdk-alpha/node_modules/lottie-react-native(/|$)',
+      ),
       new RegExp('packages/mobile-sdk-alpha/node_modules/scheduler(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/|$)'),

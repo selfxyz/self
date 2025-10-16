@@ -8,13 +8,13 @@ import { Platform } from 'react-native';
 
 import {
   type Adapters,
-  type TrackEventParams,
-  type WsConn,
   createListenersMap,
   reactNativeScannerAdapter,
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
+  type TrackEventParams,
   webNFCScannerShim,
+  type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import type { RootStackParamList } from '@/navigation';

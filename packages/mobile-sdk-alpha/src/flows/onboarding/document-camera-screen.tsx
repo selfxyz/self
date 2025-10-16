@@ -17,7 +17,7 @@ import { SdkEvents } from 'src/types/events';
 import type { MRZInfo } from 'src/types/public';
 import { dinot } from 'src/utils/fonts';
 
-import Scan from '../../svgs/passport_camera_scan.svg';
+import Scan from '../../../svgs/passport_camera_scan.svg';
 
 type Props = {
   onBack: () => void;

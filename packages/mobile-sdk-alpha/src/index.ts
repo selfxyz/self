@@ -57,6 +57,8 @@ export {
   type TopSectionProps,
 } from './layouts/ExpandableBottomLayout';
 
+export { DelayedLottieView } from './components/DelayedLottieView';
+
 export {
   InitError,
   LivenessError,
@@ -117,5 +119,3 @@ export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
 export { useCountries } from './documents/useCountries';
 
 export { webNFCScannerShim } from './adapters/web/shims';
-
-export { DelayedLottieView } from './components/DelayedLottieView';

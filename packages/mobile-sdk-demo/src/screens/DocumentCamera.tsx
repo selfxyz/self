@@ -12,10 +12,9 @@ type Props = {
 };
 
 export default function DocumentCamera({ onBack, onSuccess }: Props) {
-  return <>
-    <DocumentCameraScreen
-      onBack={onBack}
-      onSuccess={onSuccess}
-    />
-  </>
+  return (
+    <>
+      <DocumentCameraScreen onBack={onBack} onSuccess={onSuccess} />
+    </>
+  );
 }

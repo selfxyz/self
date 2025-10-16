@@ -6,19 +6,30 @@ import React from 'react';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { black } from '@/utils/colors';
-import { BottomSectionProps, FullSectionProps, LayoutProps, TopSectionProps } from '@selfxyz/mobile-sdk-alpha';
+import type {
+  BottomSectionProps,
+  FullSectionProps,
+  LayoutProps,
+  TopSectionProps,
+} from '@selfxyz/mobile-sdk-alpha';
 import { ExpandableBottomLayout as BaseExpandableBottomLayout } from '@selfxyz/mobile-sdk-alpha';
+
+import { black } from '@/utils/colors';
 
 const Layout: React.FC<LayoutProps> = ({
   children,
   backgroundColor,
   ...props
 }) => {
-  return <BaseExpandableBottomLayout.Layout backgroundColor={backgroundColor} {...props}>
-    <SystemBars style={backgroundColor === black ? 'light' : 'dark'} />
-    {children}
-  </BaseExpandableBottomLayout.Layout>
+  return (
+    <BaseExpandableBottomLayout.Layout
+      backgroundColor={backgroundColor}
+      {...props}
+    >
+      <SystemBars style={backgroundColor === black ? 'light' : 'dark'} />
+      {children}
+    </BaseExpandableBottomLayout.Layout>
+  );
 };
 
 const TopSection: React.FC<TopSectionProps> = ({
@@ -28,9 +39,15 @@ const TopSection: React.FC<TopSectionProps> = ({
 }) => {
   const { top } = useSafeAreaInsets();
 
-  return <BaseExpandableBottomLayout.TopSection backgroundColor={backgroundColor} safeAreaTop={top} {...props}>
-    {children}
-  </BaseExpandableBottomLayout.TopSection>
+  return (
+    <BaseExpandableBottomLayout.TopSection
+      backgroundColor={backgroundColor}
+      safeAreaTop={top}
+      {...props}
+    >
+      {children}
+    </BaseExpandableBottomLayout.TopSection>
+  );
 };
 
 /*
@@ -44,14 +61,16 @@ const FullSection: React.FC<FullSectionProps> = ({
 }: FullSectionProps) => {
   const { top, bottom } = useSafeAreaInsets();
 
-  return <BaseExpandableBottomLayout.FullSection
-    backgroundColor={backgroundColor}
-    safeAreaTop={top}
-    safeAreaBottom={bottom}
-    {...props}
-  >
-    {children}
-  </BaseExpandableBottomLayout.FullSection>
+  return (
+    <BaseExpandableBottomLayout.FullSection
+      backgroundColor={backgroundColor}
+      safeAreaTop={top}
+      safeAreaBottom={bottom}
+      {...props}
+    >
+      {children}
+    </BaseExpandableBottomLayout.FullSection>
+  );
 };
 
 const BottomSection: React.FC<BottomSectionProps> = ({
@@ -60,9 +79,14 @@ const BottomSection: React.FC<BottomSectionProps> = ({
 }) => {
   const { bottom: safeAreaBottom } = useSafeAreaInsets();
 
-  return <BaseExpandableBottomLayout.BottomSection safeAreaBottom={safeAreaBottom} {...props}>
-    {children}
-  </BaseExpandableBottomLayout.BottomSection>
+  return (
+    <BaseExpandableBottomLayout.BottomSection
+      safeAreaBottom={safeAreaBottom}
+      {...props}
+    >
+      {children}
+    </BaseExpandableBottomLayout.BottomSection>
+  );
 };
 
 /**
