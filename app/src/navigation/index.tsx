@@ -39,9 +39,10 @@ export const navigationScreens = {
   ...sharedScreens,
   ...devScreens, // allow in production for testing
 };
+
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
-  initialRouteName: Platform.OS === 'web' ? 'Home' : 'WebView',
+  initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
   screenOptions: {
     header: DefaultNavBar,
   },
