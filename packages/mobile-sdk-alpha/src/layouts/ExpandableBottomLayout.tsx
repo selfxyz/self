@@ -145,7 +145,6 @@ export const ExpandableBottomLayout = {
   BottomSection,
 };
 
-// TODO: compare styles with the original
 const styles = StyleSheet.create({
   roundTop: {
     marginTop: 12,
