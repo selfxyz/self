@@ -12,7 +12,7 @@ import {
   type WsConn,
   createListenersMap,
   reactNativeScannerAdapter,
-  type SdkEvents,
+  SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
   webNFCScannerShim,
 } from '@selfxyz/mobile-sdk-alpha';
