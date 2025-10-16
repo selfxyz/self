@@ -7463,6 +7463,7 @@ __metadata:
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.9"
+    react-native-haptic-feedback: "npm:^2.3.3"
     react-native-localize: "npm:^3.5.2"
     react-native-svg-circle-country-flags: "npm:^0.2.2"
     react-native-web: "npm:^0.21.1"
@@ -7477,6 +7478,7 @@ __metadata:
     lottie-react-native: 7.2.2
     react: ^18.3.1
     react-native: 0.76.9
+    react-native-haptic-feedback: "*"
     react-native-localize: "*"
     react-native-svg: "*"
   languageName: unknown
@@ -23827,6 +23829,7 @@ __metadata:
     react-native: "npm:0.76.9"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-keychain: "npm:^10.0.0"
+    react-native-localize: "npm:^3.5.4"
     react-native-safe-area-context: "npm:^5.6.1"
     react-native-svg: "npm:15.12.1"
     react-native-svg-transformer: "npm:^1.5.1"
@@ -26379,6 +26382,23 @@ __metadata:
     react-native-macos:
       optional: true
   checksum: 10c0/2ba31bb08dd723f6fca3712d04cbbd5ab05d72e5ecf8b7c094afda187a17c839d8fa0ae7eb29a955e90ea3f7ecccfb64a8020bb73fd55840f06cb0aeffaab481
+  languageName: node
+  linkType: hard
+
+"react-native-localize@npm:^3.5.4":
+  version: 3.5.4
+  resolution: "react-native-localize@npm:3.5.4"
+  peerDependencies:
+    "@expo/config-plugins": ^9.0.0 || ^10.0.0
+    react: "*"
+    react-native: "*"
+    react-native-macos: "*"
+  peerDependenciesMeta:
+    "@expo/config-plugins":
+      optional: true
+    react-native-macos:
+      optional: true
+  checksum: 10c0/b1366c2cce740163f5337e842b537a7e5132e0914d9023f1cf07861ea141b0a6d4e7b360b6bb6d8af16860ef56f1d9ca7a59508dcc4619f42991123298207f1b
   languageName: node
   linkType: hard
 

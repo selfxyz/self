@@ -71,7 +71,7 @@ export default defineConfig([
       'react-native-keychain',
       'react-native-sqlite-storage',
       // State management (xstate included in bundle)
-      // SVG files should be handled by Metro's svg-transformer
+      // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
     ],
     esbuildOptions(options) {
@@ -100,6 +100,7 @@ export default defineConfig([
     splitting: true,
     clean: false,
     outDir: 'dist/cjs',
+    onSuccess: 'node ./scripts/copy-assets.mjs',
     tsconfig: './tsconfig.cjs.json',
     target: 'es2020',
     external: [
@@ -118,7 +119,7 @@ export default defineConfig([
       'react-native-keychain',
       'react-native-sqlite-storage',
       // State management (xstate included in bundle)
-      // SVG files should be handled by Metro's svg-transformer
+      // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
     ],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
