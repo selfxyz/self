@@ -12,19 +12,20 @@ import { PassportEvents } from 'src/constants/analytics';
 import { black, slate400, slate800, white } from 'src/constants/colors';
 import { useSelfClient } from 'src/context';
 import { mrzReadInstructions, useReadMRZ } from 'src/flows/onboarding/read-mrz';
-import { ExpandableBottomLayout } from 'src/layouts/ExpandableBottomLayout';
+import { ExpandableBottomLayout, SafeAreaInsets } from 'src/layouts/ExpandableBottomLayout';
 import { SdkEvents } from 'src/types/events';
 import type { MRZInfo } from 'src/types/public';
 import { dinot } from 'src/utils/fonts';
 
-import Scan from '../../../svgs/passport_camera_scan.svg';
+import Scan from '../../../svgs/icons/passport_camera_scan.svg';
 
 type Props = {
-  onBack: () => void;
-  onSuccess: () => void;
+  onBack?: () => void;
+  onSuccess?: () => void;
+  safeAreaInsets?: SafeAreaInsets;
 };
 
-export const DocumentCameraScreen = ({ onBack }: Props) => {
+export const DocumentCameraScreen = ({ onBack, onSuccess, safeAreaInsets }: Props) => {
   const scanStartTimeRef = useRef(Date.now());
   const selfClient = useSelfClient();
   const { onPassportRead } = useReadMRZ(scanStartTimeRef);
@@ -32,6 +33,8 @@ export const DocumentCameraScreen = ({ onBack }: Props) => {
   const handleMRZDetected = useCallback(
     (mrzData: MRZInfo) => {
       onPassportRead(null, mrzData);
+
+      onSuccess?.();
     },
     [onPassportRead],
   );
@@ -44,8 +47,8 @@ export const DocumentCameraScreen = ({ onBack }: Props) => {
   );
 
   return (
-    <ExpandableBottomLayout.Layout backgroundColor={white}>
-      <ExpandableBottomLayout.TopSection backgroundColor={black}>
+    <ExpandableBottomLayout.Layout backgroundColor={white} safeAreaTop={safeAreaInsets?.top} safeAreaBottom={safeAreaInsets?.bottom}>
+      <ExpandableBottomLayout.TopSection backgroundColor={black} safeAreaTop={safeAreaInsets?.top}>
         <MRZScannerView onMRZDetected={handleMRZDetected} onError={handleScannerError} />
         <DelayedLottieView
           autoPlay
@@ -56,7 +59,7 @@ export const DocumentCameraScreen = ({ onBack }: Props) => {
           renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
+      <ExpandableBottomLayout.BottomSection backgroundColor={white} safeAreaBottom={safeAreaInsets?.bottom}>
         <YStack alignItems="center" gap="$2.5">
           <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
             <Title>Scan your ID</Title>
@@ -73,7 +76,7 @@ export const DocumentCameraScreen = ({ onBack }: Props) => {
 
           <Additional style={styles.disclaimer}>SELF WILL NOT CAPTURE AN IMAGE OF YOUR PASSPORT.</Additional>
 
-          <SecondaryButton trackEvent={PassportEvents.CAMERA_SCREEN_CLOSED} onPress={onBack}>
+          <SecondaryButton trackEvent={PassportEvents.CAMERA_SCREEN_CLOSED} onPress={onBack ?? (() => {})}>
             Cancel
           </SecondaryButton>
         </YStack>

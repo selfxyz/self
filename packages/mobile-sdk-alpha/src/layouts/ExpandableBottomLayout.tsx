@@ -139,6 +139,11 @@ export const ExpandableBottomLayout = {
   BottomSection,
 };
 
+export type SafeAreaInsets = {
+  top: number;
+  bottom: number;
+}
+
 // TODO: compare styles with the original
 const styles = StyleSheet.create({
   roundTop: {
