@@ -76,10 +76,22 @@ export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 export { type ProvingStateType } from './proving/provingMachine';
 // Components
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
+
 // Documents utils
 export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
+
+// WebView components
+export {
+  WebViewFooter,
+  type WebViewFooterProps,
+  WebViewNavBar,
+  type WebViewNavBarProps,
+  WebViewScreen,
+  type WebViewScreenParams,
+  type WebViewScreenProps,
+} from './components';
 
 // Haptic feedback utilities
 export { advercase, dinot, plexMono } from './constants/fonts';

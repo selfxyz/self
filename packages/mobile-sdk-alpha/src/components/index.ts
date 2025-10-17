@@ -3,6 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 export type { ViewProps } from './layout/View';
+export type { WebViewFooterProps } from './webview/WebViewFooter';
+export type { WebViewNavBarProps } from './webview/WebViewNavBar';
+export type { WebViewScreenParams, WebViewScreenProps } from './webview/WebViewScreen';
 
 export { default as AbstractButton } from './buttons/AbstractButton';
 
@@ -39,6 +42,11 @@ export { Text } from './layout/Text';
 export { Title } from './typography/Title';
 
 export { View } from './layout/View';
+
+// WebView components
+export { WebViewFooter } from './webview/WebViewFooter';
+export { WebViewNavBar } from './webview/WebViewNavBar';
+export { WebViewScreen } from './webview/WebViewScreen';
 
 export { XStack } from './layout/XStack';
 

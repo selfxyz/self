@@ -25,7 +25,6 @@ import homeScreens from '@/navigation/home';
 import onboardingScreens from '@/navigation/onboarding';
 import sharedScreens from '@/navigation/shared';
 import verificationScreens from '@/navigation/verification';
-import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
 import analytics from '@/utils/analytics';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
@@ -55,7 +54,7 @@ type BaseRootStackParamList = StaticParamList<typeof AppNavigation>;
 // Explicitly declare route params that are not inferred from initialParams
 export type RootStackParamList = Omit<
   BaseRootStackParamList,
-  'ComingSoon' | 'IDPicker' | 'AadhaarUpload' | 'AadhaarUploadError'
+  'ComingSoon' | 'IDPicker' | 'AadhaarUpload' | 'AadhaarUploadError' | 'WebView'
 > & {
   ComingSoon: {
     countryCode?: string;
@@ -71,7 +70,13 @@ export type RootStackParamList = Omit<
   AadhaarUploadError: {
     errorType: string;
   };
-  WebView: WebViewScreenParams;
+  WebView: {
+    url: string;
+    title?: string;
+    shareTitle?: string;
+    shareMessage?: string;
+    shareUrl?: string;
+  };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

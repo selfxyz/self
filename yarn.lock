@@ -7476,12 +7476,15 @@ __metadata:
     xstate: "npm:^5.20.2"
     zustand: "npm:^4.5.2"
   peerDependencies:
+    "@tamagui/lucide-icons": "*"
     lottie-react-native: 7.2.2
     react: ^18.3.1
     react-native: 0.76.9
     react-native-haptic-feedback: "*"
     react-native-localize: "*"
+    react-native-safe-area-context: "*"
     react-native-svg: "*"
+    react-native-webview: "*"
   languageName: unknown
   linkType: soft
 
