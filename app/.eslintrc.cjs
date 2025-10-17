@@ -151,7 +151,7 @@ module.exports = {
     '@typescript-eslint/no-namespace': 'off',
     'no-case-declarations': 'off',
     'react/no-children-prop': 'off',
-    'import/no-unresolved': 'error',
+    'import/no-unresolved': 'off', // TypeScript handles this
     '@typescript-eslint/ban-ts-comment': 'off',
     'no-empty': 'off',
 
