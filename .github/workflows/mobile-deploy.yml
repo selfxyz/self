@@ -260,6 +260,7 @@ jobs:
     runs-on: macos-latest-large
     permissions:
       contents: read
+      actions: write
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
       (
@@ -822,6 +823,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: write
       id-token: write
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
