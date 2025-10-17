@@ -15,11 +15,8 @@ import { buttonTap } from '@/utils/haptic';
 
 export interface WebViewNavBarProps {
   title?: string;
-  canGoBack?: boolean;
   onBackPress: () => void;
-  onSharePress?: () => void;
   onOpenExternalPress?: () => void;
-  isShareDisabled?: boolean;
   isOpenExternalDisabled?: boolean;
 }
 

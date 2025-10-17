@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   BackHandler,
   Linking,
-  Platform,
-  Share,
   StyleSheet,
   View,
 } from 'react-native';
@@ -44,7 +42,7 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
 }) => {
   const params = route?.params as WebViewScreenParams | undefined;
   const safeParams: WebViewScreenParams = params ?? { url: defaultUrl };
-  const { url, title, shareMessage, shareTitle, shareUrl } = safeParams;
+  const { url, title } = safeParams;
   const webViewRef = useRef<WebViewType>(null);
   const [canGoBackInWebView, setCanGoBackInWebView] = useState(false);
   const [canGoForwardInWebView, setCanGoForwardInWebView] = useState(false);
@@ -53,10 +51,6 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
   const [pageTitle, setPageTitle] = useState<string | undefined>(title);
 
   const derivedTitle = pageTitle || title || currentUrl;
-  const stackCanGoBack =
-    typeof navigation?.canGoBack === 'function'
-      ? navigation.canGoBack()
-      : false;
 
   const openUrl = useCallback(async (targetUrl: string) => {
     try {
@@ -68,36 +62,6 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
       console.error('Failed to open URL externally', error);
     }
   }, []);
-
-  const handleShare = useCallback(async () => {
-    const sharePayloadUrl = shareUrl ?? currentUrl;
-    const sharePayloadMessage = shareMessage ?? sharePayloadUrl;
-    const payloadTitle = shareTitle ?? derivedTitle ?? sharePayloadUrl;
-
-    try {
-      await Share.share(
-        Platform.select({
-          ios: {
-            title: payloadTitle,
-            url: sharePayloadUrl,
-            message: sharePayloadMessage,
-          },
-          default: {
-            title: payloadTitle,
-            message: sharePayloadMessage,
-          },
-        }) ?? {
-          title: payloadTitle,
-          message: sharePayloadMessage,
-        },
-      );
-    } catch (error) {
-      console.error(
-        'Failed to share',
-        error instanceof Error ? error.message : 'Unknown error',
-      );
-    }
-  }, [currentUrl, derivedTitle, shareMessage, shareTitle, shareUrl]);
 
   const handleOpenExternal = useCallback(async () => {
     await openUrl(currentUrl);
@@ -141,10 +105,6 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
     }, [canGoBackInWebView]),
   );
 
-  const isShareAvailable = useMemo(() => {
-    return Boolean(shareMessage || shareUrl || currentUrl);
-  }, [currentUrl, shareMessage, shareUrl]);
-
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.TopSection
@@ -155,11 +115,8 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
       >
         <WebViewNavBar
           title={derivedTitle}
-          canGoBack={stackCanGoBack}
           onBackPress={handleGoBack}
-          onSharePress={isShareAvailable ? handleShare : undefined}
           onOpenExternalPress={handleOpenExternal}
-          isShareDisabled={!isShareAvailable}
         />
         <View style={styles.webViewContainer}>
           {isLoading && (
