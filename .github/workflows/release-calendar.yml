@@ -131,11 +131,16 @@ jobs:
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr == '' }}
         env:
           BRANCH_NAME: ${{ steps.check_dev_staging.outputs.branch_name }}
+          GH_TOKEN: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
         shell: bash
         run: |
           set -euo pipefail
 
           echo "Creating release branch ${BRANCH_NAME} from dev"
+
+          # Configure git to use the PAT for authentication
+          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic $(echo -n x-access-token:${GH_TOKEN} | base64)"
+
           git fetch origin dev
           git checkout -b "${BRANCH_NAME}" origin/dev
           git push origin "${BRANCH_NAME}"
