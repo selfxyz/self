@@ -49,7 +49,7 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
   });
 
   it('sanitizes initial non-http(s) url and uses default', () => {
-    render(<WebViewScreen {...createProps('ftp://example.com')} />);
+    render(<WebViewScreen {...createProps('intent://foo')} />);
     const webview = screen.getByTestId('webview');
     expect(webview.props.source).toEqual({ uri: 'https://self.xyz' });
 
@@ -59,7 +59,7 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
   });
 
   it('keeps currentUrl unchanged on non-http(s) navigation update', () => {
-    render(<WebViewScreen {...createProps('ftp://example.com')} />);
+    render(<WebViewScreen {...createProps('http://example.com')} />);
     const webview = screen.getByTestId('webview');
     // simulate a navigation update with disallowed scheme
     webview.props.onNavigationStateChange?.({
@@ -69,8 +69,8 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
       navigationType: 'other',
       title: undefined,
     });
-    // currentUrl should remain as initial default self.xyz; we infer via not changing source
-    expect(webview.props.source).toEqual({ uri: 'https://self.xyz' });
+    // Source remains the initial http URL since non-http(s) updates are ignored for currentUrl
+    expect(webview.props.source).toEqual({ uri: 'http://example.com' });
   });
 
   it('allows http(s) navigation via onShouldStartLoadWithRequest', () => {
@@ -94,13 +94,15 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
       url: 'mailto:test@example.com',
     });
     expect(resultMailto).toBe(false);
-    expect(openSpy).toHaveBeenCalledWith('mailto:test@example.com');
+    await waitFor(() =>
+      expect(openSpy).toHaveBeenCalledWith('mailto:test@example.com'),
+    );
 
     const resultTel = await webview.props.onShouldStartLoadWithRequest?.({
       url: 'tel:+123456789',
     });
     expect(resultTel).toBe(false);
-    expect(openSpy).toHaveBeenCalledWith('tel:+123456789');
+    await waitFor(() => expect(openSpy).toHaveBeenCalledWith('tel:+123456789'));
   });
 
   it('blocks disallowed external schemes and does not attempt to open', async () => {
