@@ -138,8 +138,8 @@ jobs:
 
           echo "Creating release branch ${BRANCH_NAME} from dev"
 
-          # Configure git to use the PAT for authentication
-          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic $(echo -n x-access-token:${GH_TOKEN} | base64)"
+          # Configure git to use the PAT for pushing
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/selfxyz/self.git
 
           git fetch origin dev
           git checkout -b "${BRANCH_NAME}" origin/dev
