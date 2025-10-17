@@ -92,7 +92,10 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
         },
       );
     } catch (error) {
-      console.error('Failed to share WebView URL', error);
+      console.error(
+        'Failed to share',
+        error instanceof Error ? error.message : 'Unknown error',
+      );
     }
   }, [currentUrl, derivedTitle, shareMessage, shareTitle, shareUrl]);
 
