@@ -5,13 +5,13 @@
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { HomeNavBar } from '@/components/NavBar';
-import HomeScreen from '@/screens/home/HomeScreen';
+import NewHomeScreen from '@/screens/home/NewHomeScreen';
 import ProofHistoryDetailScreen from '@/screens/home/ProofHistoryDetailScreen';
 import ProofHistoryScreen from '@/screens/home/ProofHistoryScreen';
 
 const homeScreens = {
   Home: {
-    screen: HomeScreen,
+    screen: NewHomeScreen,
     options: {
       title: 'Self',
       header: HomeNavBar,
