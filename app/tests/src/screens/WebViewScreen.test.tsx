@@ -49,7 +49,7 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
   });
 
   it('sanitizes initial non-http(s) url and uses default', () => {
-    render(<WebViewScreen {...createProps('http://example.com')} />);
+    render(<WebViewScreen {...createProps('ftp://example.com')} />);
     const webview = screen.getByTestId('webview');
     expect(webview.props.source).toEqual({ uri: 'https://self.xyz' });
 
@@ -59,7 +59,7 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
   });
 
   it('keeps currentUrl unchanged on non-http(s) navigation update', () => {
-    render(<WebViewScreen {...createProps('http://example.com')} />);
+    render(<WebViewScreen {...createProps('ftp://example.com')} />);
     const webview = screen.getByTestId('webview');
     // simulate a navigation update with disallowed scheme
     webview.props.onNavigationStateChange?.({
