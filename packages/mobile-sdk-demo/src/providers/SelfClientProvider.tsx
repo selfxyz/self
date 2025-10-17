@@ -18,6 +18,7 @@ import {
 
 import { persistentDocumentsAdapter } from '../utils/documentStore';
 import { getOrCreateSecret } from '../utils/secureStorage';
+import { useNavigation } from '../navigation/NavigationProvider';
 
 const createFetch = () => {
   const fetchImpl = globalThis.fetch;
@@ -113,6 +114,7 @@ const hash = (data: Uint8Array): Uint8Array => sha256(data);
 
 export function SelfClientProvider({ children }: PropsWithChildren) {
   const config = useMemo(() => ({}), []);
+  const navigation = useNavigation();
 
   const adapters: Adapters = useMemo(
     () => ({
@@ -157,10 +159,39 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
     const { map, addListener } = createListenersMap();
 
     addListener(SdkEvents.DOCUMENT_COUNTRY_SELECTED, event => {
-      console.info('go to id picker', event);
+      navigation.navigate('IDSelection', {
+        countryCode: event.countryCode,
+        countryName: event.countryName,
+        documentTypes: event.documentTypes,
+      });
     });
+
+    addListener(SdkEvents.DOCUMENT_TYPE_SELECTED, ({ documentType, countryCode }) => {
+      switch (documentType) {
+        case 'p':
+          navigation.navigate('Mrz');
+          break;
+        case 'i':
+          navigation.navigate('Mrz');
+          break;
+        case 'a':
+          if (countryCode) {
+            // navigation.navigate('AadhaarUpload', { countryCode });
+          }
+          break;
+        default:
+          if (countryCode) {
+            // navigation.navigate('ComingSoon', { countryCode });
+          }
+          break;
+      }
+    });
+    addListener(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS, () => {
+      // navigate('DocumentNFCScan');
+    });
+
     return map;
-  }, []);
+  }, [navigation]);
 
   return (
     <SdkSelfClientProvider config={config} adapters={adapters} listeners={listeners}>

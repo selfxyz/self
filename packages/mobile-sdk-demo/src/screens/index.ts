@@ -7,10 +7,10 @@ import type { ComponentType } from 'react';
 import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/utils/types';
 
 export type ScreenId =
+  | 'home'
   | 'generate'
   | 'register'
-  | 'prove'
-  | 'camera'
+  | 'mrz'
   | 'nfc'
   | 'documents'
   | 'country-selection'
@@ -68,7 +68,7 @@ export const screenDescriptors: ScreenDescriptor[] = [
     }),
   },
   {
-    id: 'camera',
+    id: 'mrz',
     title: 'Document MRZ',
     subtitle: 'Scan passport or ID card using your device camera',
     sectionTitle: '📸 Scanning',

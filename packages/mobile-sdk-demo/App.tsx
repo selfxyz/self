@@ -8,9 +8,10 @@ import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/com
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import HomeScreen from './src/screens/HomeScreen';
-import type { ScreenContext, ScreenRoute } from './src/screens';
+import type { ScreenContext, ScreenId, ScreenRoute } from './src/screens';
 import { screenMap } from './src/screens';
 import SelfClientProvider from './src/providers/SelfClientProvider';
+import { NavigationProvider, useNavigation, type ScreenName } from './src/navigation/NavigationProvider';
 
 type SelectedDocumentState = {
   data: IDDocument;
@@ -19,8 +20,8 @@ type SelectedDocumentState = {
 
 function DemoApp() {
   const selfClient = useSelfClient();
+  const navigation = useNavigation();
 
-  const [screen, setScreen] = useState<ScreenRoute>('home');
   const [catalog, setCatalog] = useState<DocumentCatalog>({ documents: [] });
   const [selectedDocument, setSelectedDocument] = useState<SelectedDocumentState | null>(null);
 
@@ -37,47 +38,81 @@ function DemoApp() {
     }
   }, [selfClient]);
 
-  const navigate = (next: ScreenRoute) => setScreen(next);
+  const navigate = useCallback(
+    (next: ScreenRoute) => {
+      if (next === 'home') {
+        navigation.navigate('Home');
+      } else {
+        const routeMap: Record<ScreenId, ScreenName> = {
+          generate: 'Generate',
+          register: 'Register',
+          mrz: 'Mrz',
+          home: 'Home',
+          nfc: 'NFC',
+          documents: 'Documents',
+          'country-selection': 'CountrySelection',
+          'id-selection': 'IDSelection',
+        };
+        const routeName = routeMap[next];
+        if (routeName) {
+          navigation.navigate(routeName);
+        }
+      }
+    },
+    [navigation],
+  );
 
   const screenContext: ScreenContext = {
     navigate,
-    goHome: () => setScreen('home'),
+    goHome: () => navigation.navigate('Home'),
     documentCatalog: catalog,
     selectedDocument,
     refreshDocuments,
   };
 
   useEffect(() => {
-    if (screen !== 'home' && !screenMap[screen]) {
-      setScreen('home');
-    }
-  }, [screen]);
-
-  useEffect(() => {
     refreshDocuments();
   }, [refreshDocuments]);
 
-  if (screen === 'home') {
+  const renderCurrentScreen = () => {
+    const { currentScreen } = navigation;
+
+    if (currentScreen === 'Home') {
+      return <HomeScreen screenContext={screenContext} />;
+    }
+
+    const routeMap: Record<ScreenName, ScreenRoute> = {
+      Home: 'home',
+      Generate: 'generate',
+      Register: 'register',
+      Mrz: 'mrz',
+      NFC: 'nfc',
+      Documents: 'documents',
+      CountrySelection: 'country-selection',
+      IDSelection: 'id-selection',
+    };
+
+    const screenRoute = routeMap[currentScreen];
+    if (screenRoute && screenMap[screenRoute]) {
+      const descriptor = screenMap[screenRoute];
+      const ScreenComponent = descriptor.load();
+      const props = descriptor.getProps?.(screenContext) ?? {};
+      return <ScreenComponent {...props} />;
+    }
+
     return <HomeScreen screenContext={screenContext} />;
-  }
+  };
 
-  const descriptor = screenMap[screen];
-
-  if (!descriptor) {
-    return null;
-  }
-
-  const ScreenComponent = descriptor.load();
-  const props = descriptor.getProps?.(screenContext) ?? {};
-
-  return <ScreenComponent {...props} />;
+  return renderCurrentScreen();
 }
 
 function App() {
   return (
-    <SelfClientProvider>
-      <DemoApp />
-    </SelfClientProvider>
+    <NavigationProvider>
+      <SelfClientProvider>
+        <DemoApp />
+      </SelfClientProvider>
+    </NavigationProvider>
   );
 }
 
