@@ -227,7 +227,7 @@ jobs:
         run: |
           yarn config set npmScopes.selfxyz.npmAuthToken ${{ secrets.NPM_TOKEN }}
           yarn config set npmPublishAccess restricted
-          yarn npm publish --access restricted
+          yarn npm publish --access restricted --tag alpha
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
