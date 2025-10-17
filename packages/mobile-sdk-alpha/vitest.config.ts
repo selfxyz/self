@@ -12,4 +12,7 @@ export default defineConfig({
     include: ['tests/**/*.test.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
     exclude: ['node_modules/**'],
   },
+  ssr: {
+    noExternal: ['react', 'react-dom'],
+  },
 });
