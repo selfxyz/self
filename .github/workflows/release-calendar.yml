@@ -31,11 +31,6 @@ on:
           - staging
           - production
         default: staging
-  push:
-    branches:
-      - dev
-    paths:
-      - ".github/workflows/release-calendar.yml"
   schedule:
     # Friday 17:00 UTC (see timezone conversions above) to prepare the weekend staging PR.
     - cron: "0 17 * * 5"
@@ -57,18 +52,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
-          # Allow push events (when workflow file is modified) to run
-          if [ "${{ github.event_name }}" == "push" ]; then
-            if [ "${{ github.ref_name }}" == "dev" ]; then
-              echo "Triggered by push event on dev. Running staging job."
-              echo "continue=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "Triggered by push event on non-dev. Skipping staging job."
-              echo "continue=false" >> "$GITHUB_OUTPUT"
-            fi
-            exit 0
-          fi
 
           # Allow workflow_dispatch based on input
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
@@ -225,13 +208,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
-          # Skip production job on push events (we only test on dev)
-          if [ "${{ github.event_name }}" == "push" ]; then
-            echo "Push event: skipping production job."
-            echo "continue=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
 
           # Allow workflow_dispatch based on input
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
