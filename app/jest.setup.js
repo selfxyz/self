@@ -125,6 +125,26 @@ jest.mock(
   { virtual: true },
 );
 
+// Also mock PixelRatio in the main React Native module for bundled SDK code
+jest.mock('react-native/Libraries/Utilities/PixelRatio', () => ({
+  get: jest.fn(() => 2),
+  getFontScale: jest.fn(() => 1),
+  getPixelSizeForLayoutSize: jest.fn(layoutSize => layoutSize * 2),
+  roundToNearestPixel: jest.fn(layoutSize => Math.round(layoutSize * 2) / 2),
+  startDetecting: jest.fn(),
+}));
+
+// Ensure PixelRatio is available in React Native exports for bundled SDK code
+const RN = require('react-native');
+
+RN.PixelRatio = {
+  get: jest.fn(() => 2),
+  getFontScale: jest.fn(() => 1),
+  getPixelSizeForLayoutSize: jest.fn(layoutSize => layoutSize * 2),
+  roundToNearestPixel: jest.fn(layoutSize => Math.round(layoutSize * 2) / 2),
+  startDetecting: jest.fn(),
+};
+
 // Mock mobile-sdk-alpha's StyleSheet module directly
 jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/StyleSheet/StyleSheet',
@@ -858,6 +878,9 @@ jest.mock('@tamagui/lucide-icons', () => {
     __esModule: true,
     ExternalLink: makeIcon('external-link'),
     X: makeIcon('x'),
+    ArrowLeft: makeIcon('arrow-left'),
+    ArrowRight: makeIcon('arrow-right'),
+    RotateCcw: makeIcon('rotate-ccw'),
   };
 });
 

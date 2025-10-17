@@ -13,10 +13,10 @@ import { extraYPadding } from '../constants/layout';
 const SAFE_AREA_TOP_DEFAULT = 0;
 const SAFE_AREA_BOTTOM_DEFAULT = 0;
 
-// Get the current font scale factor
-const fontScale = PixelRatio.getFontScale();
+// Get the current font scale factor lazily to avoid accessing PixelRatio at module load time
+const getFontScale = () => PixelRatio.getFontScale();
 // fontScale > 1 means the user has increased text size in accessibility settings
-const isLargerTextEnabled = fontScale > 1.3;
+const getIsLargerTextEnabled = () => getFontScale() > 1.3;
 
 export interface BottomSectionProps extends ViewProps {
   children: React.ReactNode;
@@ -114,7 +114,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({ children, style, ...props
   let panelHeight: number | 'auto' = 'auto';
   // set bottom section height to 38% of screen height
   // and wrap children in a scroll view if larger text is enabled
-  if (isLargerTextEnabled) {
+  if (getIsLargerTextEnabled()) {
     const windowHeight = Dimensions.get('window').height;
     panelHeight = windowHeight * 0.38;
     children = (

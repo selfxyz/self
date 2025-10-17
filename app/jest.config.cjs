@@ -6,7 +6,7 @@ module.exports = {
   preset: 'react-native',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|react-native-svg|react-native-svg-circle-country-flags)/)',
+    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|react-native-svg|react-native-svg-circle-country-flags|react-native-webview|react-native-safe-area-context|react-native-haptic-feedback|react-native-localize|lottie-react-native|@tamagui)/)',
   ],
   setupFiles: ['<rootDir>/jest.setup.js'],
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$',
@@ -19,6 +19,13 @@ module.exports = {
     '^@tests$': '<rootDir>/tests/src',
     // Map react-native-svg to app's node_modules for all packages
     '^react-native-svg$': '<rootDir>/node_modules/react-native-svg',
+    // Map Tamagui icons to app's node_modules (peer dependency of mobile-sdk-alpha)
+    '^@tamagui/lucide-icons$': '<rootDir>/node_modules/@tamagui/lucide-icons',
+    // Map react-native-webview to app's node_modules (peer dependency of mobile-sdk-alpha)
+    '^react-native-webview$': '<rootDir>/node_modules/react-native-webview',
+    // Mock PixelRatio for React Native (needed by StyleSheet and SDK components)
+    '^react-native/Libraries/Utilities/PixelRatio$':
+      '<rootDir>/tests/__setup__/pixelRatioMock.js',
     '^@selfxyz/mobile-sdk-alpha$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/index.cjs',
     '^@selfxyz/mobile-sdk-alpha/components$':

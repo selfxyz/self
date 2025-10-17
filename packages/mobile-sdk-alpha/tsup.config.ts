@@ -70,6 +70,14 @@ export default defineConfig([
       '@react-native-async-storage/async-storage',
       'react-native-keychain',
       'react-native-sqlite-storage',
+      // Tamagui dependencies (peer dependencies)
+      '@tamagui/lucide-icons',
+      'react-native-haptic-feedback',
+      'react-native-localize',
+      'react-native-safe-area-context',
+      'react-native-svg',
+      'react-native-webview',
+      'lottie-react-native',
       // State management (xstate included in bundle)
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
@@ -118,6 +126,14 @@ export default defineConfig([
       '@react-native-async-storage/async-storage',
       'react-native-keychain',
       'react-native-sqlite-storage',
+      // Tamagui dependencies (peer dependencies)
+      '@tamagui/lucide-icons',
+      'react-native-haptic-feedback',
+      'react-native-localize',
+      'react-native-safe-area-context',
+      'react-native-svg',
+      'react-native-webview',
+      'lottie-react-native',
       // State management (xstate included in bundle)
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
