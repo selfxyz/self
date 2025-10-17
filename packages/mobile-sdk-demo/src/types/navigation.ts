@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { ScreenId } from '../screens';
-import type { ScreenName } from '../navigation/NavigationProvider';
 
 export type ScreenIdToRouteName = {
   [K in ScreenId]: K extends 'generate'

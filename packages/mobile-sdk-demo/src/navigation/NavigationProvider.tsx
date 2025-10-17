@@ -28,7 +28,7 @@ interface NavigationContextValue {
   params?: NavigationParams[keyof NavigationParams];
   navigate: <T extends ScreenName>(
     screen: T,
-    ...args: T extends keyof NavigationParams 
+    ...args: T extends keyof NavigationParams
       ? NavigationParams[T] extends undefined
         ? []
         : [params: NavigationParams[T]]
@@ -49,7 +49,7 @@ export function NavigationProvider({ children }: PropsWithChildren) {
   const navigate = useCallback(
     <T extends ScreenName>(
       screen: T,
-      ...args: T extends keyof NavigationParams 
+      ...args: T extends keyof NavigationParams
         ? NavigationParams[T] extends undefined
           ? []
           : [params: NavigationParams[T]]
