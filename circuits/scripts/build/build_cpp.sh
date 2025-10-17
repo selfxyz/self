@@ -69,6 +69,7 @@ REGISTER_ID_CIRCUITS=(
     "register_id_sha512_sha512_sha512_ecdsa_secp521r1:true"
     "register_id_sha512_sha512_sha512_rsa_65537_4096:true"
     "register_id_sha512_sha512_sha512_rsapss_65537_64_2048:true"
+    "register_id_sha512_sha512_sha256_rsapss_65537_32_2048:true"
 )
 
 REGISTER_AADHAAR_CIRCUITS=(

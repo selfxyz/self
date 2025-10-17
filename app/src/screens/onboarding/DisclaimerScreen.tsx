@@ -8,6 +8,7 @@ import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import {
   Caution,
   PrimaryButton,
@@ -16,7 +17,6 @@ import {
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import warningAnimation from '@/assets/animations/warning.json';
-import { DelayedLottieView } from '@/components/DelayedLottieView';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useSettingStore } from '@/stores/settingStore';

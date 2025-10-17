@@ -6,13 +6,17 @@ import React, { useMemo } from 'react';
 import type { TextProps } from 'react-native';
 import type { SystemBarStyle } from 'react-native-edge-to-edge';
 import { SystemBars } from 'react-native-edge-to-edge';
-import type { ViewProps, XStackProps } from 'tamagui';
-import { Button, View, XStack } from 'tamagui';
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+import type { ViewProps } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  Button,
+  Title,
+  View,
+  XStack,
+} from '@selfxyz/mobile-sdk-alpha/components';
 
-interface NavBarProps extends XStackProps {
+interface NavBarProps extends ViewProps {
   children: React.ReactNode;
   backgroundColor?: string;
   barStyle?: SystemBarStyle;
@@ -96,6 +100,10 @@ const Container: React.FC<NavBarProps> = ({
   children,
   backgroundColor,
   barStyle,
+  justifyContent = 'flex-start',
+  alignItems = 'center',
+  flexShrink = 0,
+  flexDirection = 'row',
   ...props
 }) => {
   return (
@@ -103,8 +111,10 @@ const Container: React.FC<NavBarProps> = ({
       <SystemBars style={barStyle} />
       <XStack
         backgroundColor={backgroundColor}
-        justifyContent="flex-start"
-        alignItems="center"
+        justifyContent={justifyContent}
+        alignItems={alignItems}
+        flexShrink={flexShrink}
+        flexDirection={flexDirection}
         {...props}
       >
         {children}

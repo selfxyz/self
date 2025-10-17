@@ -109,6 +109,13 @@ module.exports = {
       },
     },
     {
+      // Disable export sorting for files with dependency issues
+      files: ['src/haptic/index.ts'],
+      rules: {
+        'sort-exports/sort-exports': 'off',
+      },
+    },
+    {
       // Allow require imports only in the NFC decoder shim that conditionally imports node:util
       files: ['src/processing/nfc.ts'],
       rules: {

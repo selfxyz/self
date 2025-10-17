@@ -74,6 +74,12 @@ yarn-error.log
 # testing
 /coverage
 
+# linting cache
+.eslintcache
+
+# prettier cache
+.cache/
+
 .env
 **/Pods/
 

@@ -3,8 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
+import type { TextStyle, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { TextStyle, ViewStyle } from 'tamagui';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';

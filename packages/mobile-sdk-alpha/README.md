@@ -209,8 +209,8 @@ selfClient.on(SdkEvents.DOCUMENT_COUNTRY_SELECTED, payload => {
 
 ```ts
 selfClient.on(SdkEvents.DOCUMENT_TYPE_SELECTED, payload => {
-  // payload: { documentType: string, documentName: string, countryCode: string, countryName: string }
-  console.log(`Document selected: ${payload.documentName} from ${payload.countryName}`);
+  // payload: { documentType: string, documentName: string, countryCode: string }
+  console.log(`Document selected: ${payload.documentName} from ${payload.countryCode}`);
 });
 ```
 
