@@ -52,6 +52,7 @@ describe('navigation', () => {
       'Settings',
       'ShowRecoveryPhrase',
       'Splash',
+      'WebView',
     ]);
   });
 });

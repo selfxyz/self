@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   BackHandler,
@@ -43,23 +43,37 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
   const params = route?.params as WebViewScreenParams | undefined;
   const safeParams: WebViewScreenParams = params ?? { url: defaultUrl };
   const { url, title } = safeParams;
+  const isHttpUrl = useCallback((value?: string) => {
+    return typeof value === 'string' && /^https?:\/\//i.test(value);
+  }, []);
+  const initialUrl = useMemo(
+    () => (isHttpUrl(url) ? url : defaultUrl),
+    [isHttpUrl, url],
+  );
   const webViewRef = useRef<WebViewType>(null);
   const [canGoBackInWebView, setCanGoBackInWebView] = useState(false);
   const [canGoForwardInWebView, setCanGoForwardInWebView] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentUrl, setCurrentUrl] = useState(url || defaultUrl);
+  const [currentUrl, setCurrentUrl] = useState(initialUrl);
   const [pageTitle, setPageTitle] = useState<string | undefined>(title);
 
   const derivedTitle = pageTitle || title || currentUrl;
 
   const openUrl = useCallback(async (targetUrl: string) => {
+    // Allow only safe external schemes
+    if (!/^(https?|mailto|tel):/i.test(targetUrl)) {
+      return;
+    }
     try {
       const supported = await Linking.canOpenURL(targetUrl);
       if (supported) {
         await Linking.openURL(targetUrl);
       }
     } catch (error) {
-      console.error('Failed to open URL externally', error);
+      console.error(
+        'Failed to open externally',
+        error instanceof Error ? error.message : 'Unknown error',
+      );
     }
   }, []);
 
@@ -126,11 +140,19 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
           )}
           <WebView
             ref={webViewRef}
-            source={{ uri: url || defaultUrl }}
+            onShouldStartLoadWithRequest={req => {
+              // Open non-http(s) externally, block in WebView
+              if (!/^https?:\/\//i.test(req.url)) {
+                openUrl(req.url);
+                return false;
+              }
+              return true;
+            }}
+            source={{ uri: initialUrl }}
             onNavigationStateChange={(event: WebViewNavigation) => {
               setCanGoBackInWebView(event.canGoBack);
               setCanGoForwardInWebView(event.canGoForward);
-              setCurrentUrl(event.url);
+              setCurrentUrl(prev => (isHttpUrl(event.url) ? event.url : prev));
               if (!title && event.title) {
                 setPageTitle(event.title);
               }
