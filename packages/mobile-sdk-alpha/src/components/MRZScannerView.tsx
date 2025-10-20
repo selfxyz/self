@@ -4,7 +4,7 @@
 
 import { useCallback, useRef } from 'react';
 import type { DimensionValue, NativeSyntheticEvent, ViewProps, ViewStyle } from 'react-native';
-import { NativeModules, PixelRatio, Platform, requireNativeComponent, StyleSheet, View } from 'react-native';
+import { NativeModules, PixelRatio, Platform, requireNativeComponent, View } from 'react-native';
 
 import { extractMRZInfo, formatDateToYYMMDD } from '../mrz';
 import type { MRZInfo } from '../types/public';
@@ -99,7 +99,6 @@ export const MRZScannerView: React.FC<MRZScannerViewProps> = ({
   );
 
   const containerStyle = [
-    styles.container,
     height !== undefined && { height },
     width !== undefined && { width },
     aspectRatio !== undefined && { aspectRatio },
@@ -112,8 +111,8 @@ export const MRZScannerView: React.FC<MRZScannerViewProps> = ({
         <NativeMRZScannerView
           ref={viewRef}
           style={{
-            width: '100%',
-            height: '100%',
+            width: '130%',
+            height: '130%',
           }}
           onPassportRead={handleMRZDetected}
           onError={handleError}
@@ -129,7 +128,7 @@ export const MRZScannerView: React.FC<MRZScannerViewProps> = ({
           isMounted={true}
           style={{
             height: PixelRatio.getPixelSizeForLayoutSize(800),
-            width: PixelRatio.getPixelSizeForLayoutSize(800),
+            width: PixelRatio.getPixelSizeForLayoutSize(400),
           }}
           onError={handleError}
           onPassportRead={handleMRZDetected}
@@ -138,19 +137,5 @@ export const MRZScannerView: React.FC<MRZScannerViewProps> = ({
     );
   }
 };
-
-// TODO Check this
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    minHeight: 200,
-    aspectRatio: 1,
-  },
-  scanner: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-});
 
 export const SelfMRZScannerModule = NativeModules.SelfMRZScannerModule;

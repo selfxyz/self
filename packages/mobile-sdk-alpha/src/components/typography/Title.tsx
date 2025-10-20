@@ -8,7 +8,7 @@ import type { StyleProp, TextProps, TextStyle } from 'react-native';
 import { StyleSheet, Text } from 'react-native';
 
 import { black } from '../../constants/colors';
-import { advercase } from '../../utils/fonts';
+import { advercase } from '../../constants/fonts';
 
 type TitleProps = TextProps & {
   size?: 'large';

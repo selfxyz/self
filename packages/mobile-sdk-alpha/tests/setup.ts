@@ -67,6 +67,12 @@ vi.mock('react-native', () => ({
   Dimensions: {
     get: vi.fn(() => ({ width: 375, height: 667 })),
   },
+  PixelRatio: {
+    get: vi.fn(() => 2),
+    getFontScale: vi.fn(() => 1),
+    getPixelSizeForLayoutSize: vi.fn((size: number) => size * 2),
+    roundToNearestPixel: vi.fn((size: number) => Math.round(size)),
+  },
   StatusBar: {
     setBarStyle: vi.fn(),
   },
@@ -191,4 +197,57 @@ vi.mock('react-native-localize', () => ({
     languageTag: 'en-US',
     isRTL: false,
   }),
+}));
+
+// Mock react-native-svg
+vi.mock('react-native-svg', () => ({
+  default: 'svg',
+  Svg: 'svg',
+  Circle: 'circle',
+  Ellipse: 'ellipse',
+  G: 'g',
+  Text: 'text',
+  TSpan: 'tspan',
+  TextPath: 'textPath',
+  Path: 'path',
+  Polygon: 'polygon',
+  Polyline: 'polyline',
+  Line: 'line',
+  Rect: 'rect',
+  Use: 'use',
+  Image: 'image',
+  Symbol: 'symbol',
+  Defs: 'defs',
+  LinearGradient: 'linearGradient',
+  RadialGradient: 'radialGradient',
+  Stop: 'stop',
+  ClipPath: 'clipPath',
+  Pattern: 'pattern',
+  Mask: 'mask',
+}));
+
+// Mock react-native-svg-circle-country-flags
+vi.mock('react-native-svg-circle-country-flags', () => ({
+  default: {},
+}));
+
+// Mock lottie-react-native
+vi.mock('lottie-react-native', () => ({
+  default: 'div',
+}));
+
+// Mock react-native-haptic-feedback
+vi.mock('react-native-haptic-feedback', () => ({
+  default: {
+    trigger: vi.fn(),
+  },
+  HapticFeedbackTypes: {
+    impactLight: 'impactLight',
+    impactMedium: 'impactMedium',
+    impactHeavy: 'impactHeavy',
+    notificationSuccess: 'notificationSuccess',
+    notificationWarning: 'notificationWarning',
+    notificationError: 'notificationError',
+    selection: 'selection',
+  },
 }));

@@ -38,6 +38,50 @@ export async function getFCMToken(): Promise<string | null> {
 // TODO: web handle notifications better. this file is more or less a fancy placeholder
 export { getStateMessage };
 
+/**
+ * Check if notifications are ready (web stub)
+ * @returns readiness status
+ */
+export async function isNotificationSystemReady(): Promise<{
+  ready: boolean;
+  message: string;
+}> {
+  try {
+    if (!('Notification' in window)) {
+      return {
+        ready: false,
+        message: 'This browser does not support notifications',
+      };
+    }
+
+    if (Notification.permission === 'granted') {
+      return {
+        ready: true,
+        message: 'Notification system is ready',
+      };
+    }
+
+    if (Notification.permission === 'denied') {
+      return {
+        ready: false,
+        message:
+          'Notification permissions denied. Please enable them in browser settings.',
+      };
+    }
+
+    return {
+      ready: false,
+      message: 'Notification permissions not requested yet',
+    };
+  } catch (error) {
+    console.error('Failed to check notification readiness:', error);
+    return {
+      ready: false,
+      message: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
 export async function registerDeviceToken(
   sessionId: string,
   deviceToken?: string,
@@ -142,5 +186,51 @@ export function setupNotifications(): () => void {
   // For now, we'll return a no-op unsubscribe function
   return () => {
     console.log('Web notification service cleanup');
+  };
+}
+
+/**
+ * Subscribe to FCM topics client-side (web stub)
+ * @param topics Array of topic names to subscribe to
+ * @returns Object with successes and failures arrays
+ */
+export async function subscribeToTopics(topics: string[]): Promise<{
+  successes: string[];
+  failures: Array<{ topic: string; error: string }>;
+}> {
+  console.warn(
+    'FCM topic subscription is not fully implemented for web. Topics:',
+    topics,
+  );
+  // For web, you might want to implement this by calling your backend API
+  // or using Firebase Web SDK
+  return {
+    successes: [],
+    failures: topics.map(topic => ({
+      topic,
+      error: 'Web topic subscription not implemented',
+    })),
+  };
+}
+
+/**
+ * Unsubscribe from FCM topics client-side (web stub)
+ * @param topics Array of topic names to unsubscribe from
+ * @returns Object with successes and failures arrays
+ */
+export async function unsubscribeFromTopics(topics: string[]): Promise<{
+  successes: string[];
+  failures: Array<{ topic: string; error: string }>;
+}> {
+  console.warn(
+    'FCM topic unsubscription is not fully implemented for web. Topics:',
+    topics,
+  );
+  return {
+    successes: [],
+    failures: topics.map(topic => ({
+      topic,
+      error: 'Web topic unsubscription not implemented',
+    })),
   };
 }

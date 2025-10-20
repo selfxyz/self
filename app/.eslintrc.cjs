@@ -34,24 +34,6 @@ module.exports = {
   ],
   settings: {
     react: { version: 'detect' },
-    'import/resolver': {
-      typescript: {
-        alwaysTryTypes: true,
-        project: './tsconfig.json',
-        extensions: [
-          '.ts',
-          '.tsx',
-          '.native.ts',
-          '.native.tsx',
-          '.web.ts',
-          '.web.tsx',
-          '.ios.ts',
-          '.ios.tsx',
-          '.android.ts',
-          '.android.tsx',
-        ],
-      },
-    },
     'import/ignore': ['react-native'],
   },
   rules: {
@@ -169,7 +151,7 @@ module.exports = {
     '@typescript-eslint/no-namespace': 'off',
     'no-case-declarations': 'off',
     'react/no-children-prop': 'off',
-    'import/no-unresolved': 'error',
+    'import/no-unresolved': 'off', // TypeScript handles this
     '@typescript-eslint/ban-ts-comment': 'off',
     'no-empty': 'off',
 
@@ -188,6 +170,14 @@ module.exports = {
     '@typescript-eslint/indent': 'off',
   },
   overrides: [
+    {
+      // Enable TypeScript project service for source files for faster parsing
+      files: ['src/**/*.{ts,tsx}'],
+      parserOptions: {
+        project: true,
+        EXPERIMENTAL_useProjectService: true,
+      },
+    },
     {
       files: ['docs/examples/**/*.ts'],
       rules: {
@@ -218,6 +208,7 @@ module.exports = {
       },
       parserOptions: {
         project: './tsconfig.test.json',
+        EXPERIMENTAL_useProjectService: true,
       },
       rules: {
         // Allow console logging and relaxed typing in tests

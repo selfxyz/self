@@ -2,29 +2,5 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { HapticOptions, HapticType } from '@/utils/haptic/shared';
-import { defaultOptions } from '@/utils/haptic/shared';
-
-/**
- * Triggers haptic feedback or vibration based on platform.
- * @param type - The haptic feedback type. (only here for compatibility, not used in web)
- * @param options - Custom options (optional).
- */
-export const triggerFeedback = (
-  _type: HapticType | 'custom',
-  options: HapticOptions = {},
-) => {
-  const mergedOptions = { ...defaultOptions, ...options };
-
-  // Check if Vibration API is available
-  if (!navigator.vibrate) {
-    console.warn('Vibration API not supported in this browser');
-    return;
-  }
-
-  if (mergedOptions.pattern) {
-    navigator.vibrate(mergedOptions.pattern);
-  } else {
-    navigator.vibrate(100);
-  }
-};
+// Re-export triggerFeedback from the mobile SDK
+export { triggerFeedback } from '@selfxyz/mobile-sdk-alpha';

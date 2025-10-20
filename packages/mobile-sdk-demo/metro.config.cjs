@@ -67,8 +67,11 @@ const config = {
     unstable_conditionNames: ['react-native', 'import', 'require'],
     unstable_enableSymlinks: true,
     nodeModulesPaths: [path.resolve(projectRoot, 'node_modules'), path.resolve(workspaceRoot, 'node_modules')],
+
+    // SVG support
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg'],
+
     extraNodeModules: {
       // Add workspace packages for proper resolution
       '@selfxyz/common': path.resolve(workspaceRoot, 'common'),

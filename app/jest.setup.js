@@ -167,6 +167,19 @@ jest.mock('react-native-gesture-handler', () => {
   };
 });
 
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    SafeAreaProvider: ({ children }) =>
+      React.createElement(View, null, children),
+    SafeAreaView: ({ children }) => React.createElement(View, null, children),
+    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  };
+});
+
 // Mock NativeEventEmitter to prevent null argument errors
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter', () => {
   return class MockNativeEventEmitter {
@@ -731,6 +744,10 @@ jest.mock('@react-navigation/native', () => {
   const actualNav = jest.requireActual('@react-navigation/native');
   return {
     ...actualNav,
+    useFocusEffect: jest.fn(callback => {
+      // Immediately invoke the effect for testing without requiring a container
+      return callback();
+    }),
     useNavigation: jest.fn(() => ({
       navigate: jest.fn(),
       goBack: jest.fn(),
@@ -751,3 +768,104 @@ jest.mock('@react-navigation/native-stack', () => ({
   })),
   createNavigatorFactory: jest.fn(),
 }));
+
+// Mock core navigation to avoid requiring a NavigationContainer for hooks
+jest.mock('@react-navigation/core', () => {
+  const actualCore = jest.requireActual('@react-navigation/core');
+  return {
+    ...actualCore,
+    useNavigation: jest.fn(() => ({
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      canGoBack: jest.fn(() => true),
+      dispatch: jest.fn(),
+    })),
+  };
+});
+
+// Mock react-native-webview globally to avoid ESM parsing and native behaviors
+jest.mock('react-native-webview', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const MockWebView = React.forwardRef((props, ref) => {
+    return React.createElement(View, { ref, testID: 'webview', ...props });
+  });
+  MockWebView.displayName = 'MockWebView';
+  return {
+    __esModule: true,
+    default: MockWebView,
+    WebView: MockWebView,
+  };
+});
+
+// Mock ExpandableBottomLayout to simple containers to avoid SDK internals in tests
+jest.mock('@/layouts/ExpandableBottomLayout', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const Layout = ({ children }) => React.createElement(View, null, children);
+  const TopSection = ({ children }) =>
+    React.createElement(View, null, children);
+  const BottomSection = ({ children }) =>
+    React.createElement(View, null, children);
+  const FullSection = ({ children }) =>
+    React.createElement(View, null, children);
+  return {
+    __esModule: true,
+    ExpandableBottomLayout: { Layout, TopSection, BottomSection, FullSection },
+  };
+});
+
+// Mock mobile-sdk-alpha components used by NavBar (Button, XStack)
+jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
+  const React = require('react');
+  const { View, Text, TouchableOpacity } = require('react-native');
+  const Button = ({ children, onPress, icon, ...props }) =>
+    React.createElement(
+      TouchableOpacity,
+      { onPress, ...props, testID: 'msdk-button' },
+      icon
+        ? React.createElement(View, { testID: 'msdk-button-icon' }, icon)
+        : null,
+      children,
+    );
+  const XStack = ({ children, ...props }) =>
+    React.createElement(View, { ...props, testID: 'msdk-xstack' }, children);
+  return {
+    __esModule: true,
+    Button,
+    XStack,
+    // Provide minimal Text to satisfy potential usages
+    Text,
+  };
+});
+
+// Mock Tamagui lucide icons to simple components to avoid theme context
+jest.mock('@tamagui/lucide-icons', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const makeIcon = name => {
+    const Icon = ({ size, color, opacity }) =>
+      React.createElement(View, {
+        testID: `icon-${name}`,
+        size,
+        color,
+        opacity,
+      });
+    Icon.displayName = `MockIcon(${name})`;
+    return Icon;
+  };
+  return {
+    __esModule: true,
+    ExternalLink: makeIcon('external-link'),
+    X: makeIcon('x'),
+  };
+});
+
+// Mock WebViewFooter to avoid SDK rendering complexity
+jest.mock('@/components/WebViewFooter', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const WebViewFooter = () =>
+    React.createElement(View, { testID: 'webview-footer' });
+  return { __esModule: true, WebViewFooter };
+});

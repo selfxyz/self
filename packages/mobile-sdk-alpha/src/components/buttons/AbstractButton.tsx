@@ -6,8 +6,8 @@ import type React from 'react';
 import type { GestureResponderEvent, LayoutChangeEvent, PressableProps, ViewStyle } from 'react-native';
 import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 
+import { dinot } from '../../constants/fonts';
 import { useSelfClient } from '../../context';
-import { dinot } from '../../utils/fonts';
 import { pressedStyle } from './pressedStyle';
 
 export interface ButtonProps extends PressableProps {

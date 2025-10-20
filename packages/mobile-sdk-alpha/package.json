@@ -70,14 +70,14 @@
       "require": "./dist/cjs/hooks/index.cjs"
     },
     "./svgs/*.svg": {
-      "react-native": "./svgs/*.svg",
-      "import": "./svgs/*.svg",
-      "require": "./svgs/*.svg"
+      "react-native": "./dist/svgs/*.svg",
+      "import": "./dist/svgs/*.svg",
+      "require": "./dist/svgs/*.svg"
     },
     "./svgs/icons/*.svg": {
-      "react-native": "./svgs/icons/*.svg",
-      "import": "./svgs/icons/*.svg",
-      "require": "./svgs/icons/*.svg"
+      "react-native": "./dist/svgs/icons/*.svg",
+      "import": "./dist/svgs/icons/*.svg",
+      "require": "./dist/svgs/icons/*.svg"
     }
   },
   "main": "./dist/cjs/index.cjs",
@@ -137,10 +137,12 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sort-exports": "^0.9.1",
     "jsdom": "^25.0.1",
+    "lottie-react-native": "7.2.2",
     "prettier": "^3.5.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-native": "0.76.9",
+    "react-native-haptic-feedback": "^2.3.3",
     "react-native-localize": "^3.5.2",
     "react-native-web": "^0.21.1",
     "tsup": "^8.0.1",
@@ -148,8 +150,10 @@
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
+    "lottie-react-native": "7.2.2",
     "react": "^18.3.1",
     "react-native": "0.76.9",
+    "react-native-haptic-feedback": "*",
     "react-native-localize": "*",
     "react-native-svg": "*"
   },
