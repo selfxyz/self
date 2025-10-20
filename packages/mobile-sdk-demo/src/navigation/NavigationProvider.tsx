@@ -12,7 +12,7 @@ export type ScreenName =
   | 'Home'
   | 'Generate'
   | 'Register'
-  | 'Mrz'
+  | 'MRZ'
   | 'NFC'
   | 'Documents'
   | 'CountrySelection'
@@ -40,6 +40,8 @@ interface NavigationContextValue {
 
 const NavigationContext = createContext<NavigationContextValue | null>(null);
 
+const MAX_HISTORY = 25;
+
 export function NavigationProvider({ children }: PropsWithChildren) {
   const [navigationState, setNavigationState] = useState<NavigationState>({
     currentScreen: 'Home',
@@ -55,7 +57,11 @@ export function NavigationProvider({ children }: PropsWithChildren) {
           : [params: NavigationParams[T]]
         : []
     ) => {
-      setHistory(prev => [...prev, navigationState]);
+      setHistory(prev => {
+        const newHistory = [...prev, navigationState];
+        return newHistory.length > MAX_HISTORY ? newHistory.slice(-MAX_HISTORY) : newHistory;
+      });
+
       const params = args.length > 0 ? args[0] : undefined;
       setNavigationState({ currentScreen: screen, params });
     },

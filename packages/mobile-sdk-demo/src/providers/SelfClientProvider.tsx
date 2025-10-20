@@ -169,10 +169,10 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
     addListener(SdkEvents.DOCUMENT_TYPE_SELECTED, ({ documentType, countryCode }) => {
       switch (documentType) {
         case 'p':
-          navigation.navigate('Mrz');
+          navigation.navigate('MRZ');
           break;
         case 'i':
-          navigation.navigate('Mrz');
+          navigation.navigate('MRZ');
           break;
         case 'a':
           if (countryCode) {

@@ -18,6 +18,25 @@ type SelectedDocumentState = {
   metadata: DocumentMetadata;
 };
 
+const routeMap: Record<ScreenId, ScreenName> = {
+  generate: 'Generate',
+  register: 'Register',
+  mrz: 'MRZ',
+  home: 'Home',
+  nfc: 'NFC',
+  documents: 'Documents',
+  'country-selection': 'CountrySelection',
+  'id-selection': 'IDSelection',
+};
+
+const screenToRoute = Object.entries(routeMap).reduce(
+  (acc, [key, value]) => {
+    acc[value as unknown as ScreenName] = key as unknown as ScreenId;
+    return acc;
+  },
+  {} as Record<ScreenName, ScreenId>,
+);
+
 function DemoApp() {
   const selfClient = useSelfClient();
   const navigation = useNavigation();
@@ -40,23 +59,9 @@ function DemoApp() {
 
   const navigate = useCallback(
     (next: ScreenRoute) => {
-      if (next === 'home') {
-        navigation.navigate('Home');
-      } else {
-        const routeMap: Record<ScreenId, ScreenName> = {
-          generate: 'Generate',
-          register: 'Register',
-          mrz: 'Mrz',
-          home: 'Home',
-          nfc: 'NFC',
-          documents: 'Documents',
-          'country-selection': 'CountrySelection',
-          'id-selection': 'IDSelection',
-        };
-        const routeName = routeMap[next];
-        if (routeName) {
-          navigation.navigate(routeName);
-        }
+      const routeName = routeMap[next];
+      if (routeName) {
+        navigation.navigate(routeName);
       }
     },
     [navigation],
@@ -81,18 +86,7 @@ function DemoApp() {
       return <HomeScreen screenContext={screenContext} />;
     }
 
-    const routeMap: Record<ScreenName, ScreenRoute> = {
-      Home: 'home',
-      Generate: 'generate',
-      Register: 'register',
-      Mrz: 'mrz',
-      NFC: 'nfc',
-      Documents: 'documents',
-      CountrySelection: 'country-selection',
-      IDSelection: 'id-selection',
-    };
-
-    const screenRoute = routeMap[currentScreen];
+    const screenRoute = screenToRoute[currentScreen];
     if (screenRoute && screenMap[screenRoute]) {
       const descriptor = screenMap[screenRoute];
       const ScreenComponent = descriptor.load();
