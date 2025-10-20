@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
@@ -10,6 +10,7 @@ import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import {
   DelayedLottieView,
   loadSelectedDocument,
+  SdkEvents,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -24,7 +25,6 @@ import {
 import { getPreRegistrationDescription } from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
 import successAnimation from '@/assets/animations/loading/success.json';
-import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/verification/ProofRequestStatusScreen';
 import { useSettingStore } from '@/stores/settingStore';
@@ -39,81 +39,79 @@ import {
 type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
-  const selfClient = useSelfClient();
-  const [documentMetadata, setDocumentMetadata] = useState<{
-    documentCategory?: DocumentCategory;
-    signatureAlgorithm?: string;
-    curveOrExponent?: string;
-  }>({});
-  const { trackEvent } = selfClient;
-  const navigate = useHapticNavigation('Loading', {
-    params: {
-      documentCategory: documentMetadata.documentCategory,
-      signatureAlgorithm: documentMetadata.signatureAlgorithm,
-      curveOrExponent: documentMetadata.curveOrExponent,
-    },
-  });
-  const [_requestingPermission, setRequestingPermission] = useState(false);
+  // Prevents back navigation
+  usePreventRemove(true, () => {});
+
   const setFcmToken = useSettingStore(state => state.setFcmToken);
+
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
+
+  const grantNotificationsPermission = useCallback(async () => {
+    trackEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
+    trackNfcEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
+
+    // Request notification permission
+    const permissionGranted = await requestNotificationPermission();
+    if (permissionGranted) {
+      const token = await getFCMToken();
+      if (token) {
+        setFcmToken(token);
+        trackEvent(ProofEvents.FCM_TOKEN_STORED);
+      }
+    }
+  }, [trackEvent, setFcmToken]);
 
   useEffect(() => {
     notificationSuccess();
+  }, []);
 
-    const initializeProving = async () => {
-      try {
-        const selectedDocument = await loadSelectedDocument(selfClient);
-        let metadata: {
-          documentCategory?: DocumentCategory;
-          signatureAlgorithm?: string;
-          curveOrExponent?: string;
-        };
-        if (selectedDocument?.data?.documentCategory === 'aadhaar') {
-          metadata = {
-            documentCategory: 'aadhaar',
-            signatureAlgorithm: 'rsa',
-            curveOrExponent: '65537',
-          };
-        } else {
-          const passportData = selectedDocument?.data;
-          metadata = {
-            documentCategory: passportData?.documentCategory,
-            signatureAlgorithm:
-              passportData?.passportMetadata?.cscaSignatureAlgorithm,
-            curveOrExponent:
-              passportData?.passportMetadata?.cscaCurveOrExponent,
-          };
-        }
-        setDocumentMetadata(metadata);
-      } catch {
-        // setting defaults on error
-        setDocumentMetadata({
-          documentCategory: 'passport',
+  const getDocumentMetadata = useCallback(async () => {
+    try {
+      console.time('Load Selected Document Metadata');
+      const selectedDocument = await loadSelectedDocument(selfClient);
+      let metadata: {
+        documentCategory?: DocumentCategory;
+        signatureAlgorithm?: string;
+        curveOrExponent?: string;
+      };
+      if (selectedDocument?.data?.documentCategory === 'aadhaar') {
+        metadata = {
+          documentCategory: 'aadhaar',
           signatureAlgorithm: 'rsa',
           curveOrExponent: '65537',
-        });
+        } as const;
+      } else {
+        const passportData = selectedDocument?.data;
+        metadata = {
+          documentCategory: passportData?.documentCategory,
+          signatureAlgorithm:
+            passportData?.passportMetadata?.cscaSignatureAlgorithm,
+          curveOrExponent: passportData?.passportMetadata?.cscaCurveOrExponent,
+        } as const;
       }
-    };
-
-    initializeProving();
+      console.timeEnd('Load Selected Document Metadata');
+      return metadata;
+    } catch {
+      // setting defaults on error
+      return {
+        documentCategory: 'passport' as const,
+        signatureAlgorithm: 'rsa',
+        curveOrExponent: '65537',
+      };
+    }
   }, [selfClient]);
 
   const onOkPress = async () => {
     try {
-      setRequestingPermission(true);
-      trackEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
-      trackNfcEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
+      await grantNotificationsPermission();
+      const documentMetadata = await getDocumentMetadata();
 
-      // Request notification permission
-      const permissionGranted = await requestNotificationPermission();
-      if (permissionGranted) {
-        const token = await getFCMToken();
-        if (token) {
-          setFcmToken(token);
-          trackEvent(ProofEvents.FCM_TOKEN_STORED);
-        }
-      }
-
-      navigate();
+      selfClient.emit(SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED, {
+        documentCategory: documentMetadata.documentCategory,
+        signatureAlgorithm: documentMetadata.signatureAlgorithm,
+        curveOrExponent: documentMetadata.curveOrExponent,
+      });
     } catch (error: unknown) {
       console.error('Error navigating:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -127,9 +125,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
       flushAllAnalytics();
     }
   };
-
-  // Prevents back navigation
-  usePreventRemove(true, () => {});
 
   return (
     <>

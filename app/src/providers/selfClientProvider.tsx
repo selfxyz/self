@@ -9,6 +9,7 @@ import { Platform } from 'react-native';
 import {
   type Adapters,
   createListenersMap,
+  impactLight,
   type LogLevel,
   type NFCScanContext,
   reactNativeScannerAdapter,
@@ -227,21 +228,15 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('DocumentNFCScan');
-      }
+      navigateIfReady('DocumentNFCScan');
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('DocumentCameraTrouble');
-      }
+      navigateIfReady('DocumentCameraTrouble');
     });
 
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('AadhaarUploadSuccess');
-      }
+      navigateIfReady('AadhaarUploadSuccess');
     });
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
       navigateIfReady('AadhaarUploadError', { errorType });
@@ -256,9 +251,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         countryCode: string;
         documentTypes: string[];
       }) => {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('IDPicker', { countryCode, documentTypes });
-        }
+        navigateIfReady('IDPicker', { countryCode, documentTypes });
       },
     );
     addListener(
@@ -284,6 +277,18 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               break;
           }
         }
+      },
+    );
+
+    addListener(
+      SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED,
+      ({ documentCategory, signatureAlgorithm, curveOrExponent }) => {
+        impactLight();
+        navigateIfReady('Loading', {
+          documentCategory,
+          signatureAlgorithm,
+          curveOrExponent,
+        });
       },
     );
 
