@@ -6,17 +6,15 @@ import type { PropsWithChildren } from 'react';
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
 
-import type {
-  Adapters,
-  TrackEventParams,
-  WsConn,
-} from '@selfxyz/mobile-sdk-alpha';
 import {
+  type Adapters,
   createListenersMap,
   reactNativeScannerAdapter,
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
+  type TrackEventParams,
   webNFCScannerShim,
+  type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import type { RootStackParamList } from '@/navigation';

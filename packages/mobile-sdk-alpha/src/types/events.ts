@@ -160,7 +160,6 @@ export interface SDKEventMap {
     documentType: string;
     documentName: string;
     countryCode: string;
-    countryName: string;
   };
   [SdkEvents.PROVING_BEGIN_GENERATION]: {
     uuid: string;

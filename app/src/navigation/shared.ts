@@ -2,19 +2,42 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import type { ComponentType } from 'react';
+import type {
+  NativeStackNavigationOptions,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 
+import type { SharedRoutesParamList } from '@/navigation/types';
 import ComingSoonScreen from '@/screens/shared/ComingSoonScreen';
+import { WebViewScreen } from '@/screens/shared/WebViewScreen';
 
-const sharedScreens = {
+type ScreenName = keyof SharedRoutesParamList;
+
+type ScreenConfig<Name extends ScreenName> = {
+  screen: ComponentType<NativeStackScreenProps<SharedRoutesParamList, Name>>;
+  options?: NativeStackNavigationOptions;
+  initialParams?: SharedRoutesParamList[Name];
+};
+
+const sharedScreens: { [K in ScreenName]: ScreenConfig<K> } = {
   ComingSoon: {
     screen: ComingSoonScreen,
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
+  },
+  WebView: {
+    screen: WebViewScreen,
+    options: {
+      headerShown: false,
+    } as NativeStackNavigationOptions,
     initialParams: {
-      countryCode: null,
-      documentCategory: null,
+      url: 'https://self.xyz',
+      title: undefined,
+      shareTitle: undefined,
+      shareMessage: undefined,
+      shareUrl: undefined,
     },
   },
 };

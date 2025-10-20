@@ -4,12 +4,19 @@
 
 module.exports = {
   preset: 'react-native',
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'cjs', 'json', 'node'],
   transformIgnorePatterns: [
     'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|react-native-svg|react-native-svg-circle-country-flags)/)',
   ],
   setupFiles: ['<rootDir>/jest.setup.js'],
-  testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$',
+  testMatch: [
+    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx,cjs}',
+    '<rootDir>/**/?(*.)+(spec|test).{js,jsx,ts,tsx,cjs}',
+  ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/scripts/tests/', // Node.js native test runner tests
+  ],
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
     '\\.svg$': '<rootDir>/tests/__setup__/svgMock.js',

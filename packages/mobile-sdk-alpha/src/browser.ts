@@ -27,17 +27,49 @@ export type {
 } from './types/public';
 
 export type { DG1, DG2, ParsedNFCResponse } from './nfc';
+export type { HapticOptions, HapticType } from './haptic/shared';
 export type { MRZScanOptions } from './mrz';
 export type { PassportValidationCallbacks } from './validation/document';
-export type { SDKEvent, SDKEventMap } from './types/events';
 
+export type { SDKEvent, SDKEventMap } from './types/events';
 export type { SdkErrorCategory } from './errors';
+
+export {
+  type BottomSectionProps,
+  ExpandableBottomLayout,
+  type FullSectionProps,
+  type LayoutProps,
+  type TopSectionProps,
+} from './layouts/ExpandableBottomLayout';
+
+export { DelayedLottieView } from './components/DelayedLottieView.web';
+
 export { type ProvingStateType } from './proving/provingMachine';
 
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
+
 export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
+
+export { advercase, dinot, plexMono } from './constants/fonts';
+
+export {
+  buttonTap,
+  cancelTap,
+  confirmTap,
+  feedbackProgress,
+  feedbackSuccess,
+  feedbackUnsuccessful,
+  impactLight,
+  impactMedium,
+  loadingScreenProgress,
+  notificationError,
+  notificationSuccess,
+  notificationWarning,
+  selectionChange,
+  triggerFeedback,
+} from './haptic';
 
 export {
   clearPassportData,
@@ -56,6 +88,7 @@ export { defaultConfig } from './config/defaults';
 export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+
 // Core functions
 export { isPassportDataValid } from './validation/document';
 
@@ -64,6 +97,5 @@ export { mergeConfig } from './config/merge';
 export { parseNFCResponse, scanNFC } from './nfc';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
-
 export { useCountries } from './documents/useCountries';
 export { webNFCScannerShim } from './adapters/web/shims';

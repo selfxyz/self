@@ -33,7 +33,6 @@ import Star from '@/images/icons/star.svg';
 import Telegram from '@/images/icons/telegram.svg';
 import Web from '@/images/icons/webpage.svg';
 import X from '@/images/icons/x.svg';
-import type { RootStackParamList } from '@/navigation';
 import { useSettingStore } from '@/stores/settingStore';
 import { amber500, black, neutral700, slate800, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
@@ -41,6 +40,8 @@ import { impactLight } from '@/utils/haptic';
 import { getCountry, getLocales, getTimeZone } from '@/utils/locale';
 
 import { version } from '../../../../package.json';
+// Avoid importing RootStackParamList to prevent type cycles; use minimal typing
+type MinimalRootStackParamList = Record<string, object | undefined>;
 
 interface MenuButtonProps extends PropsWithChildren {
   Icon: React.FC<SvgProps>;
@@ -52,11 +53,8 @@ interface SocialButtonProps {
 }
 
 const emailFeedback = 'support@self.xyz';
-type RouteOption =
-  | keyof RootStackParamList
-  | 'share'
-  | 'email_feedback'
-  | 'ManageDocuments';
+// Avoid importing RootStackParamList; we only need string route names plus a few literals
+type RouteOption = string | 'share' | 'email_feedback' | 'ManageDocuments';
 
 const storeURL = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 
@@ -144,7 +142,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
 const SettingsScreen: React.FC = () => {
   const { isDevMode, setDevModeOn } = useSettingStore();
   const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    useNavigation<NativeStackNavigationProp<MinimalRootStackParamList>>();
 
   const screenRoutes = useMemo(() => {
     return isDevMode ? [...routes, ...DEBUG_MENU] : routes;
@@ -230,9 +228,11 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
                 justifyContent="flex-start"
                 width="100%"
               >
-                {screenRoutes.map(([Icon, menuText, menuRoute]) => (
+                {screenRoutes.map(([Icon, menuText, menuRoute], idx) => (
                   <MenuButton
-                    key={menuRoute}
+                    key={
+                      typeof menuRoute === 'string' ? menuRoute : String(idx)
+                    }
                     Icon={Icon}
                     onPress={onMenuPress(menuRoute)}
                   >

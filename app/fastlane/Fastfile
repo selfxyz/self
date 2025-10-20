@@ -49,12 +49,12 @@ ios_xcode_profile_path = "../ios/#{PROJECT_NAME}.xcodeproj"
 default_platform(:ios)
 
 platform :ios do
-  desc "Sync ios version"
+  desc "Sync ios version (DEPRECATED)"
   lane :sync_version do
-    increment_version_number(
-      xcodeproj: "ios/#{PROJECT_NAME}.xcodeproj",
-      version_number: package_version,
-    )
+    UI.error("⛔ This lane is deprecated!")
+    UI.error("Version management is now centralized in CI.")
+    UI.error("Use: node scripts/version-manager.cjs apply <version> <ios> <android>")
+    UI.user_error!("sync_version lane is deprecated - use version-manager.cjs instead")
   end
 
   desc "Push a new build to TestFlight Internal Testing"
@@ -247,12 +247,12 @@ platform :ios do
 end
 
 platform :android do
-  desc "Sync android version"
+  desc "Sync android version (DEPRECATED)"
   lane :sync_version do
-    android_set_version_name(
-      version_name: package_version,
-      gradle_file: android_gradle_file_path.gsub("../", ""),
-    )
+    UI.error("⛔ This lane is deprecated!")
+    UI.error("Version management is now centralized in CI.")
+    UI.error("Use: node scripts/version-manager.cjs apply <version> <ios> <android>")
+    UI.user_error!("sync_version lane is deprecated - use version-manager.cjs instead")
   end
 
   desc "Push a new build to Google Play Internal Testing"
