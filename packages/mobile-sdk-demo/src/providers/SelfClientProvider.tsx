@@ -191,7 +191,7 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
     });
 
     return map;
-  }, [navigation]);
+  }, [navigation.navigate]);
 
   return (
     <SdkSelfClientProvider config={config} adapters={adapters} listeners={listeners}>
