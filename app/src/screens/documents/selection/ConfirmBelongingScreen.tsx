@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   DelayedLottieView,
   loadSelectedDocument,
@@ -66,52 +67,10 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
     notificationSuccess();
   }, []);
 
-  const getDocumentMetadata = useCallback(async () => {
-    try {
-      console.time('Load Selected Document Metadata');
-      const selectedDocument = await loadSelectedDocument(selfClient);
-      let metadata: {
-        documentCategory?: DocumentCategory;
-        signatureAlgorithm?: string;
-        curveOrExponent?: string;
-      };
-      if (selectedDocument?.data?.documentCategory === 'aadhaar') {
-        metadata = {
-          documentCategory: 'aadhaar',
-          signatureAlgorithm: 'rsa',
-          curveOrExponent: '65537',
-        } as const;
-      } else {
-        const passportData = selectedDocument?.data;
-        metadata = {
-          documentCategory: passportData?.documentCategory,
-          signatureAlgorithm:
-            passportData?.passportMetadata?.cscaSignatureAlgorithm,
-          curveOrExponent: passportData?.passportMetadata?.cscaCurveOrExponent,
-        } as const;
-      }
-      console.timeEnd('Load Selected Document Metadata');
-      return metadata;
-    } catch {
-      // setting defaults on error
-      return {
-        documentCategory: 'passport' as const,
-        signatureAlgorithm: 'rsa',
-        curveOrExponent: '65537',
-      };
-    }
-  }, [selfClient]);
-
   const onOkPress = async () => {
     try {
       await grantNotificationsPermission();
-      const documentMetadata = await getDocumentMetadata();
-
-      selfClient.emit(SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED, {
-        documentCategory: documentMetadata.documentCategory,
-        signatureAlgorithm: documentMetadata.signatureAlgorithm,
-        curveOrExponent: documentMetadata.curveOrExponent,
-      });
+      await onConfirm(selfClient);
     } catch (error: unknown) {
       console.error('Error navigating:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -161,3 +120,46 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
 };
 
 export default ConfirmBelongingScreen;
+
+const getDocumentMetadata = async (selfClient: SelfClient) => {
+  try {
+    const selectedDocument = await loadSelectedDocument(selfClient);
+    let metadata: {
+      documentCategory?: DocumentCategory;
+      signatureAlgorithm?: string;
+      curveOrExponent?: string;
+    };
+    if (selectedDocument?.data?.documentCategory === 'aadhaar') {
+      metadata = {
+        documentCategory: 'aadhaar',
+        signatureAlgorithm: 'rsa',
+        curveOrExponent: '65537',
+      } as const;
+    } else {
+      const passportData = selectedDocument?.data;
+      metadata = {
+        documentCategory: passportData?.documentCategory,
+        signatureAlgorithm:
+          passportData?.passportMetadata?.cscaSignatureAlgorithm,
+        curveOrExponent: passportData?.passportMetadata?.cscaCurveOrExponent,
+      } as const;
+    }
+    return metadata;
+  } catch {
+    // setting defaults on error
+    return {
+      documentCategory: 'passport' as const,
+      signatureAlgorithm: 'rsa',
+      curveOrExponent: '65537',
+    };
+  }
+};
+async function onConfirm(selfClient: SelfClient) {
+  const documentMetadata = await getDocumentMetadata(selfClient);
+
+  selfClient.emit(SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED, {
+    documentCategory: documentMetadata.documentCategory,
+    signatureAlgorithm: documentMetadata.signatureAlgorithm,
+    curveOrExponent: documentMetadata.curveOrExponent,
+  });
+}

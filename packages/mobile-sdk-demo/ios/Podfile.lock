@@ -8,6 +8,29 @@ PODS:
   - hermes-engine (0.76.9):
     - hermes-engine/Pre-built (= 0.76.9)
   - hermes-engine/Pre-built (0.76.9)
+  - lottie-ios (4.5.0)
+  - lottie-react-native (7.2.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - lottie-ios (= 4.5.0)
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - Mixpanel-swift (5.0.0):
     - Mixpanel-swift/Complete (= 5.0.0)
   - Mixpanel-swift/Complete (5.0.0)
@@ -1659,6 +1682,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNGestureHandler (2.28.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNKeychain (10.0.0):
     - DoubleConversion
     - glog
@@ -1776,8 +1820,9 @@ DEPENDENCIES:
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - lottie-react-native (from `../node_modules/lottie-react-native`)
   - "mobile-sdk-alpha (from `../node_modules/@selfxyz/mobile-sdk-alpha`)"
-  - "NFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `04ede227cbfd377e2b4bc9b38f9a89eebdcab52f`)"
+  - NFCPassportReader (from `https://github.com/selfxyz/NFCPassportReader.git`, commit `04ede227cbfd377e2b4bc9b38f9a89eebdcab52f`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -1839,6 +1884,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
+  - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -1847,6 +1893,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - lottie-ios
     - Mixpanel-swift
     - OpenSSL-Universal
     - QKMRZParser
@@ -1868,11 +1915,13 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2024-11-12-RNv0.76.2-5b4aa20c719830dcf5684832b89a6edb95ac3d64
+  lottie-react-native:
+    :path: "../node_modules/lottie-react-native"
   mobile-sdk-alpha:
     :path: "../node_modules/@selfxyz/mobile-sdk-alpha"
   NFCPassportReader:
     :commit: 04ede227cbfd377e2b4bc9b38f9a89eebdcab52f
-    :git: "git@github.com:selfxyz/NFCPassportReader.git"
+    :git: https://github.com/selfxyz/NFCPassportReader.git
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -1991,6 +2040,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
+  RNGestureHandler:
+    :path: "../node_modules/react-native-gesture-handler"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
   RNReactNativeHapticFeedback:
@@ -2005,7 +2056,7 @@ EXTERNAL SOURCES:
 CHECKOUT OPTIONS:
   NFCPassportReader:
     :commit: 04ede227cbfd377e2b4bc9b38f9a89eebdcab52f
-    :git: "git@github.com:selfxyz/NFCPassportReader.git"
+    :git: https://github.com/selfxyz/NFCPassportReader.git
 
 SPEC CHECKSUMS:
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
@@ -2015,6 +2066,8 @@ SPEC CHECKSUMS:
   fmt: 01b82d4ca6470831d1cc0852a1af644be019e8f6
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   hermes-engine: 9e868dc7be781364296d6ee2f56d0c1a9ef0bb11
+  lottie-ios: a881093fab623c467d3bce374367755c272bdd59
+  lottie-react-native: cf02eef1b7d48972f9422cf24f2f7b9a49235a32
   Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
   mobile-sdk-alpha: 126edf71b65b5a9e294725e4353c2705fa0fd20d
   NFCPassportReader: 48873f856f91215dbfa1eaaec20eae639672862e
@@ -2079,6 +2132,7 @@ SPEC CHECKSUMS:
   ReactCodegen: f853a20cc9125c5521c8766b4b49375fec20648b
   ReactCommon: 300d8d9c5cb1a6cd79a67cf5d8f91e4d477195f9
   RNCAsyncStorage: 87a74d13ba0128f853817e45e21c4051e1f2cd45
+  RNGestureHandler: dcd23bd4a198b9be5ab494c5a026f0b7a85e71cc
   RNKeychain: 850638785745df5f70c37251130617a66ec82102
   RNReactNativeHapticFeedback: a4429a7c923cdd31d44c74417b8330d8e93737bd
   RNSVG: 8dd938fb169dd81009b74c2334780d7d2a04a373
