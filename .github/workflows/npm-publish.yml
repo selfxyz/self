@@ -59,7 +59,7 @@ jobs:
           fi
 
           if git diff HEAD^ HEAD -- sdk/mobile-sdk-alpha/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "msdk_changed_changed=true" >> $GITHUB_OUTPUT
+            echo "msdk_changed=true" >> $GITHUB_OUTPUT
           fi
 
   publish-core:
