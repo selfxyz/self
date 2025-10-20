@@ -1,6 +1,8 @@
 contracts/contracts/RegisterASCII.txt
 sdk/.env
 .DS_Store
+# Exception: Include mobile-sdk-alpha AAR files
+!packages/mobile-sdk-alpha/dist/android/*.aar
 dist
 **/node_modules
 **/node_modules/

@@ -41,6 +41,7 @@ android {
 
     buildFeatures {
         buildConfig true
+        viewBinding true
     }
 
     packaging {
@@ -59,7 +60,8 @@ dependencies {
         implementation("com.facebook.react:react-android-codegen:0.76.9")
     }
 
-    // Manually add mobile-sdk-alpha dependency
-    implementation project(':mobile-sdk-alpha')
+    // Use mobile-sdk-alpha with all dependencies via BOM
+    apply from: '../../../mobile-sdk-alpha/android/mobile-sdk-alpha-bom.gradle'
+
     implementation 'com.google.android.material:material:1.12.0'
 }

@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+# SPDX-License-Identifier: BUSL-1.1
+# NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
+android/src/
+android/build.gradle.source
+android/gradle.properties
+android/proguard-rules.pro
+android/libs/
+
+# Exclude build artifacts
+android/build/
+
+# Keep only:
+# - android/build.gradle (prebuilt wrapper)
+# - dist/android/*.aar (prebuilt AAR files)
