@@ -86,7 +86,10 @@
   "types": "./dist/esm/index.d.ts",
   "files": [
     "dist",
-    "android",
+    "android/mobile-sdk-alpha-bom.gradle",
+    "android/build.gradle",
+    "android/gradle.properties",
+    "android/proguard-rules.pro",
     "ios",
     "svgs",
     "assets",
@@ -94,7 +97,9 @@
     "react-native.config.cjs"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsup && yarn postbuild",
+    "build": "yarn build:android && tsup && yarn postbuild",
+    "build:ts-only": "tsup && yarn postbuild",
+    "build:android": "sh ./scripts/build-android.sh",
     "postbuild": "node ./scripts/postBuild.mjs",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
