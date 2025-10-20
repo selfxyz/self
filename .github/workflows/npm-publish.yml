@@ -205,7 +205,7 @@ jobs:
 
   publish-msdk:
     needs: detect-changes
-    if: needs.detect-changes.outputs.qrcode_angular_changed == 'true'
+    if: needs.detect-changes.outputs.msdk_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
