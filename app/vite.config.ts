@@ -106,7 +106,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   optimizeDeps: {
-    include: ['buffer'],
+    include: ['buffer', 'lottie-react'],
     exclude: ['fs', 'path', 'child_process', '@zk-email/helpers'],
     esbuildOptions: {
       // Optimize minification
