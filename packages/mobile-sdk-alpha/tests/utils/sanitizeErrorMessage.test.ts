@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { sanitizeErrorMessage } from '@/utils/utils';
+import { sanitizeErrorMessage } from '../../src/utils/utils';
 
 describe('sanitizeErrorMessage', () => {
   it('redacts sequences of 9+ digits', () => {

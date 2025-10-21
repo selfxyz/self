@@ -5,7 +5,7 @@
 import { Linking, Platform } from 'react-native';
 import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 
-import { sanitizeErrorMessage } from '@/utils/utils';
+import { sanitizeErrorMessage } from '@selfxyz/mobile-sdk-alpha';
 
 import { version } from '../../package.json';
 

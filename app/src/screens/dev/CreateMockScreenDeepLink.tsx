@@ -19,10 +19,10 @@ import {
   Description,
   PrimaryButton,
   Title,
+  ButtonsContainer,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import ButtonsContainer from '@/components/ButtonsContainer';
 import type { RootStackParamList } from '@/navigation';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';

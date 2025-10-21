@@ -15,9 +15,9 @@ import {
   PrimaryButton,
   SecondaryButton,
   Title,
+  ButtonsContainer,
 } from '@selfxyz/mobile-sdk-alpha/components';
 
-import ButtonsContainer from '@/components/ButtonsContainer';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { white } from '@/utils/colors';
