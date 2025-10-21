@@ -24,6 +24,7 @@ import { Eye, EyeOff } from '@tamagui/lucide-icons';
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import miscAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
 import {
   BodyText,
   Caption,
@@ -31,7 +32,6 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import miscAnimation from '@/assets/animations/loading/misc.json';
 import Disclosures from '@/components/Disclosures';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';

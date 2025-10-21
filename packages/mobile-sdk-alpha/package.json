@@ -78,6 +78,16 @@
       "react-native": "./dist/svgs/icons/*.svg",
       "import": "./dist/svgs/icons/*.svg",
       "require": "./dist/svgs/icons/*.svg"
+    },
+    "./animations/*.json": {
+      "react-native": "./dist/animations/*.json",
+      "import": "./dist/animations/*.json",
+      "require": "./dist/animations/*.json"
+    },
+    "./animations/loading/*.json": {
+      "react-native": "./dist/animations/loading/*.json",
+      "import": "./dist/animations/loading/*.json",
+      "require": "./dist/animations/loading/*.json"
     }
   },
   "main": "./dist/cjs/index.cjs",

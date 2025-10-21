@@ -2,36 +2,16 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
-import type { DocumentCategory } from '@selfxyz/common/utils/types';
-import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
-import {
-  DelayedLottieView,
-  loadSelectedDocument,
-  SdkEvents,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
-import {
-  Description,
-  PrimaryButton,
-  Title,
-} from '@selfxyz/mobile-sdk-alpha/components';
-import {
-  PassportEvents,
-  ProofEvents,
-} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { getPreRegistrationDescription } from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { ConfirmIdentificationScreen } from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
-import successAnimation from '@/assets/animations/loading/success.json';
-import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { styles } from '@/screens/verification/ProofRequestStatusScreen';
 import { useSettingStore } from '@/stores/settingStore';
 import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
-import { black, white } from '@/utils/colors';
-import { notificationSuccess } from '@/utils/haptic';
 import {
   getFCMToken,
   requestNotificationPermission,
@@ -39,10 +19,10 @@ import {
 
 type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
+// TODO -- need to set safe area insets for this screen.
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   // Prevents back navigation
   usePreventRemove(true, () => {});
-
   const setFcmToken = useSettingStore(state => state.setFcmToken);
 
   const selfClient = useSelfClient();
@@ -50,7 +30,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
 
   const grantNotificationsPermission = useCallback(async () => {
     trackEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
-    trackNfcEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
 
     // Request notification permission
     const permissionGranted = await requestNotificationPermission();
@@ -63,14 +42,9 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
     }
   }, [trackEvent, setFcmToken]);
 
-  useEffect(() => {
-    notificationSuccess();
-  }, []);
-
-  const onOkPress = async () => {
+  const onOkPress = useCallback(async () => {
     try {
       await grantNotificationsPermission();
-      await onConfirm(selfClient);
     } catch (error: unknown) {
       console.error('Error navigating:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -83,83 +57,8 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
 
       flushAllAnalytics();
     }
-  };
-
-  return (
-    <>
-      <ExpandableBottomLayout.Layout backgroundColor={black}>
-        <ExpandableBottomLayout.TopSection backgroundColor={black}>
-          <DelayedLottieView
-            autoPlay
-            loop={false}
-            source={successAnimation}
-            style={styles.animation}
-            cacheComposition={true}
-            renderMode="HARDWARE"
-          />
-        </ExpandableBottomLayout.TopSection>
-        <ExpandableBottomLayout.BottomSection
-          gap={20}
-          paddingBottom={20}
-          backgroundColor={white}
-        >
-          <Title style={{ textAlign: 'center' }}>Confirm your identity</Title>
-          <Description style={{ textAlign: 'center', paddingBottom: 20 }}>
-            {getPreRegistrationDescription()}
-          </Description>
-          <PrimaryButton
-            trackEvent={PassportEvents.OWNERSHIP_CONFIRMED}
-            onPress={onOkPress}
-          >
-            Confirm
-          </PrimaryButton>
-        </ExpandableBottomLayout.BottomSection>
-      </ExpandableBottomLayout.Layout>
-    </>
-  );
+  }, [grantNotificationsPermission, trackEvent]);
+  return <ConfirmIdentificationScreen onBeforeConfirm={onOkPress} />;
 };
 
 export default ConfirmBelongingScreen;
-
-const getDocumentMetadata = async (selfClient: SelfClient) => {
-  try {
-    const selectedDocument = await loadSelectedDocument(selfClient);
-    let metadata: {
-      documentCategory?: DocumentCategory;
-      signatureAlgorithm?: string;
-      curveOrExponent?: string;
-    };
-    if (selectedDocument?.data?.documentCategory === 'aadhaar') {
-      metadata = {
-        documentCategory: 'aadhaar',
-        signatureAlgorithm: 'rsa',
-        curveOrExponent: '65537',
-      } as const;
-    } else {
-      const passportData = selectedDocument?.data;
-      metadata = {
-        documentCategory: passportData?.documentCategory,
-        signatureAlgorithm:
-          passportData?.passportMetadata?.cscaSignatureAlgorithm,
-        curveOrExponent: passportData?.passportMetadata?.cscaCurveOrExponent,
-      } as const;
-    }
-    return metadata;
-  } catch {
-    // setting defaults on error
-    return {
-      documentCategory: 'passport' as const,
-      signatureAlgorithm: 'rsa',
-      curveOrExponent: '65537',
-    };
-  }
-};
-async function onConfirm(selfClient: SelfClient) {
-  const documentMetadata = await getDocumentMetadata(selfClient);
-
-  selfClient.emit(SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED, {
-    documentCategory: documentMetadata.documentCategory,
-    signatureAlgorithm: documentMetadata.signatureAlgorithm,
-    curveOrExponent: documentMetadata.curveOrExponent,
-  });
-}

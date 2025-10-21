@@ -10,10 +10,10 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
+import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
 import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
 
-import failAnimation from '@/assets/animations/loading/fail.json';
-import proveLoadingAnimation from '@/assets/animations/loading/prove.json';
 import LoadingUI from '@/components/loading/LoadingUI';
 import { useSettingStore } from '@/stores/settingStore';
 import { black, slate400, white, zinc900 } from '@/utils/colors';
