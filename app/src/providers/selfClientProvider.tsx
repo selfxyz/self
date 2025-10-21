@@ -9,6 +9,8 @@ import { Platform } from 'react-native';
 import {
   type Adapters,
   createListenersMap,
+  LogLevel,
+  NFCScanContext,
   reactNativeScannerAdapter,
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
@@ -23,7 +25,7 @@ import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import { logNFCEvent, logProofEvent } from '@/Sentry';
 import { useSettingStore } from '@/stores/settingStore';
-import analytics from '@/utils/analytics';
+import analytics, { trackNfcEvent } from '@/utils/analytics';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
 /**
@@ -111,6 +113,17 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       analytics: {
         trackEvent: (event: string, data?: TrackEventParams) => {
           analytics().trackEvent(event, data);
+        },
+        trackNfcEvent: (name: string, data?: Record<string, unknown>) => {
+          trackNfcEvent(name, data);
+        },
+        logNFCEvent: (
+          level: LogLevel,
+          message: string,
+          context: NFCScanContext,
+          details?: Record<string, unknown>,
+        ) => {
+          logNFCEvent(level, message, context, details);
         },
       },
       auth: {

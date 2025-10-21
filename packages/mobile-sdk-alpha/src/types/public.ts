@@ -6,7 +6,7 @@ import type { create } from 'zustand';
 
 import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common';
 
-import type { ProofContext } from '../proving/internal/logging';
+import type { NFCScanContext, ProofContext } from '../proving/internal/logging';
 import type { ProvingState } from '../proving/provingMachine';
 import type { MRZState } from '../stores/mrzStore';
 import type { ProtocolState } from '../stores/protocolStore';
@@ -66,7 +66,9 @@ export interface TrackEventParams {
 }
 
 export interface AnalyticsAdapter {
-  trackEvent(event: string, payload?: TrackEventParams): void;
+  trackEvent?(event: string, payload?: TrackEventParams): void;
+  trackNfcEvent?(name: string, properties?: Record<string, unknown>): void;
+  logNFCEvent?(level: LogLevel, message: string, context: NFCScanContext, details?: Record<string, unknown>): void;
 }
 
 export interface AuthAdapter {
@@ -152,7 +154,11 @@ export interface DocumentsAdapter {
 export interface SelfClient {
   scanNFC(opts: NFCScanOpts & { signal?: AbortSignal }): Promise<NFCScanResult>;
   extractMRZInfo(mrz: string): MRZInfo;
+
   trackEvent(event: string, payload?: TrackEventParams): void;
+  trackNfcEvent(name: string, properties?: Record<string, unknown>): void;
+  logNFCEvent(level: LogLevel, message: string, context: NFCScanContext, details?: Record<string, unknown>): void;
+
   getPrivateKey(): Promise<string | null>;
   hasPrivateKey(): Promise<boolean>;
   on<E extends SDKEvent>(event: E, cb: (payload?: SDKEventMap[E]) => void): Unsubscribe;

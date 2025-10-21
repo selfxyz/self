@@ -138,6 +138,14 @@ export enum SdkEvents {
    * **Recommended:** This event is triggered when MRZ data validation fails (invalid format, missing fields, etc.).
    */
   DOCUMENT_MRZ_READ_FAILURE = 'DOCUMENT_MRZ_READ_FAILURE',
+
+  /**
+   * Emitted when document NFC scan is successful and ready for confirmation.
+   *
+   * **Required:** Navigate to the DocumentNFCConfirmation screen to continue the verification process.
+   * **Recommended:** This event is triggered after successful NFC data extraction and validation.
+   */
+  DOCUMENT_NFC_SCAN_SUCCESS = 'DOCUMENT_NFC_SCAN_SUCCESS',
 }
 
 export interface SDKEventMap {
@@ -185,6 +193,7 @@ export interface SDKEventMap {
   };
   [SdkEvents.DOCUMENT_MRZ_READ_SUCCESS]: undefined;
   [SdkEvents.DOCUMENT_MRZ_READ_FAILURE]: undefined;
+  [SdkEvents.DOCUMENT_NFC_SCAN_SUCCESS]: undefined;
 }
 
 export type SDKEvent = keyof SDKEventMap;

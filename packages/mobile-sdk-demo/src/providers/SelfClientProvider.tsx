@@ -13,7 +13,7 @@ import {
   type Adapters,
   type TrackEventParams,
   type WsConn,
-  reactNativeScannerAdapter
+  reactNativeScannerAdapter,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { persistentDocumentsAdapter } from '../utils/documentStore';
@@ -168,7 +168,7 @@ export function SelfClientProvider({ children, onNavigate }: SelfClientProviderP
     addListener(SdkEvents.DOCUMENT_COUNTRY_SELECTED, event => {
       console.info('go to id picker', event);
     });
-    
+
     return map;
   }, [onNavigate]);
 
