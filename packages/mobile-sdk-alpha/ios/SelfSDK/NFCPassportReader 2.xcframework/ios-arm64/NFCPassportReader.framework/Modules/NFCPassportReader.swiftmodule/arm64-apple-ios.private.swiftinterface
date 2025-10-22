@@ -1,0 +1,1120 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.0.19.9 clang-1700.3.19.1)
+// swift-module-flags: -target arm64-apple-ios15.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -module-name NFCPassportReader
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2
+import CommonCrypto
+import CoreHaptics
+import CoreNFC
+import CryptoKit
+import CryptoTokenKit
+import Foundation
+import OSLog
+import OpenSSL
+import Swift
+import UIKit
+import _Concurrency
+import _CoreNFC_UIKit
+import _StringProcessing
+import _SwiftConcurrencyShims
+@available(iOS 13, macOS 10.15, *)
+public func AESEncrypt(key: [Swift.UInt8], message: [Swift.UInt8], iv: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func AESDecrypt(key: [Swift.UInt8], message: [Swift.UInt8], iv: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func AESECBEncrypt(key: [Swift.UInt8], message: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func tripleDESEncrypt(key: [Swift.UInt8], message: [Swift.UInt8], iv: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func tripleDESDecrypt(key: [Swift.UInt8], message: [Swift.UInt8], iv: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func DESEncrypt(key: [Swift.UInt8], message: [Swift.UInt8], iv: [Swift.UInt8], options: Swift.UInt32 = 0) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func DESDecrypt(key: [Swift.UInt8], message: [Swift.UInt8], iv: [Swift.UInt8], options: Swift.UInt32 = 0) -> [Swift.UInt8]
+open class Analytics {
+  public init(token: Swift.String, enableDebugLogs: Swift.Bool = false, trackAutomaticEvents: Swift.Bool = false)
+  #if compiler(>=5.3) && $NonescapableTypes
+  open func trackEvent(_ name: Swift.String, properties: [Swift.String : Any]? = nil)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  open func trackDebugEvent(_ name: Swift.String, properties: [Swift.String : Any]? = nil)
+  #endif
+  open func trackError(_ error: any Swift.Error, context: Swift.String)
+  @objc deinit
+}
+@available(iOS 15, *)
+public class BACHandler {
+  public var ksenc: [Swift.UInt8]
+  public var ksmac: [Swift.UInt8]
+  public var kifd: [Swift.UInt8]
+  public init()
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(tagReader: NFCPassportReader.TagReader, analytics: NFCPassportReader.Analytics? = nil)
+  #endif
+  public func performBACAndGetSessionKeys(mrzKey: Swift.String) async throws
+  public func sessionKeys(data: [Swift.UInt8]) throws -> ([Swift.UInt8], [Swift.UInt8], [Swift.UInt8])
+  @objc deinit
+}
+@available(iOS 13, macOS 10.15, *)
+public struct DataGroupHash {
+  public var id: Swift.String
+  public var sodHash: Swift.String
+  public var computedHash: Swift.String
+  public var match: Swift.Bool
+}
+@_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class ActiveAuthenticationInfo : NFCPassportReader.SecurityInfo {
+  override public func getObjectIdentifier() -> Swift.String
+  override public func getProtocolOIDString() -> Swift.String
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getSignatureAlgorithmOIDString() -> Swift.String?
+  #endif
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class COM : NFCPassportReader.DataGroup {
+  public var version: Swift.String {
+    get
+  }
+  public var unicodeVersion: Swift.String {
+    get
+  }
+  public var dataGroupsPresent: [Swift.String] {
+    get
+  }
+  override public var datagroupType: NFCPassportReader.DataGroupId {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class CardAccess {
+  public var securityInfos: [NFCPassportReader.SecurityInfo] {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class ChipAuthenticationInfo : NFCPassportReader.SecurityInfo {
+  override public func getObjectIdentifier() -> Swift.String
+  override public func getProtocolOIDString() -> Swift.String
+  public func getKeyId() -> Swift.Int
+  public static func toKeyAgreementAlgorithm(oid: Swift.String) throws -> Swift.String
+  public static func toCipherAlgorithm(oid: Swift.String) throws -> Swift.String
+  public static func toKeyLength(oid: Swift.String) throws -> Swift.Int
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class ChipAuthenticationPublicKeyInfo : NFCPassportReader.SecurityInfo {
+  override public func getObjectIdentifier() -> Swift.String
+  override public func getProtocolOIDString() -> Swift.String
+  public func getKeyId() -> Swift.Int
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class DataGroup {
+  public var datagroupType: NFCPassportReader.DataGroupId {
+    get
+  }
+  public var body: [Swift.UInt8] {
+    get
+  }
+  public var data: [Swift.UInt8] {
+    get
+  }
+  public func hash(_ hashAlgorythm: Swift.String) -> [Swift.UInt8]
+  public func verifyTag(_ tag: Swift.Int, equals expectedTag: Swift.Int) throws
+  public func verifyTag(_ tag: Swift.Int, oneOf expectedTags: [Swift.Int]) throws
+  @objc deinit
+}
+@available(iOS 13, macOS 10.15, *)
+public enum DocTypeEnum : Swift.String {
+  case TD1
+  case TD2
+  case OTHER
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  @available(iOS 13, macOS 10.15, *)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class DataGroup1 : NFCPassportReader.DataGroup {
+  public var elements: [Swift.String : Swift.String] {
+    get
+  }
+  override public var datagroupType: NFCPassportReader.DataGroupId {
+    get
+  }
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class DataGroup11 : NFCPassportReader.DataGroup {
+  public var fullName: Swift.String? {
+    get
+  }
+  public var personalNumber: Swift.String? {
+    get
+  }
+  public var dateOfBirth: Swift.String? {
+    get
+  }
+  public var placeOfBirth: Swift.String? {
+    get
+  }
+  public var address: Swift.String? {
+    get
+  }
+  public var telephone: Swift.String? {
+    get
+  }
+  public var profession: Swift.String? {
+    get
+  }
+  public var title: Swift.String? {
+    get
+  }
+  public var personalSummary: Swift.String? {
+    get
+  }
+  public var proofOfCitizenship: Swift.String? {
+    get
+  }
+  public var tdNumbers: Swift.String? {
+    get
+  }
+  public var custodyInfo: Swift.String? {
+    get
+  }
+  override public var datagroupType: NFCPassportReader.DataGroupId {
+    get
+  }
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class DataGroup12 : NFCPassportReader.DataGroup {
+  public var issuingAuthority: Swift.String? {
+    get
+  }
+  public var dateOfIssue: Swift.String? {
+    get
+  }
+  public var otherPersonsDetails: Swift.String? {
+    get
+  }
+  public var endorsementsOrObservations: Swift.String? {
+    get
+  }
+  public var taxOrExitRequirements: Swift.String? {
+    get
+  }
+  public var frontImage: [Swift.UInt8]? {
+    get
+  }
+  public var rearImage: [Swift.UInt8]? {
+    get
+  }
+  public var personalizationTime: Swift.String? {
+    get
+  }
+  public var personalizationDeviceSerialNr: Swift.String? {
+    get
+  }
+  override public var datagroupType: NFCPassportReader.DataGroupId {
+    get
+  }
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class DataGroup14 : NFCPassportReader.DataGroup {
+  public var securityInfos: [NFCPassportReader.SecurityInfo] {
+    get
+  }
+  override public var datagroupType: NFCPassportReader.DataGroupId {
+    get
+  }
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class DataGroup15 : NFCPassportReader.DataGroup {
+  public var rsaPublicKey: Swift.OpaquePointer? {
+    get
+  }
+  public var ecdsaPublicKey: Swift.OpaquePointer? {
+    get
+  }
+  override public var datagroupType: NFCPassportReader.DataGroupId {
+    get
+  }
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class DataGroup2 : NFCPassportReader.DataGroup {
+  public var nrImages: Swift.Int {
+    get
+  }
+  public var versionNumber: Swift.Int {
+    get
+  }
+  public var lengthOfRecord: Swift.Int {
+    get
+  }
+  public var numberOfFacialImages: Swift.Int {
+    get
+  }
+  public var facialRecordDataLength: Swift.Int {
+    get
+  }
+  public var nrFeaturePoints: Swift.Int {
+    get
+  }
+  public var gender: Swift.Int {
+    get
+  }
+  public var eyeColor: Swift.Int {
+    get
+  }
+  public var hairColor: Swift.Int {
+    get
+  }
+  public var featureMask: Swift.Int {
+    get
+  }
+  public var expression: Swift.Int {
+    get
+  }
+  public var poseAngle: Swift.Int {
+    get
+  }
+  public var poseAngleUncertainty: Swift.Int {
+    get
+  }
+  public var faceImageType: Swift.Int {
+    get
+  }
+  public var imageDataType: Swift.Int {
+    get
+  }
+  public var imageWidth: Swift.Int {
+    get
+  }
+  public var imageHeight: Swift.Int {
+    get
+  }
+  public var imageColorSpace: Swift.Int {
+    get
+  }
+  public var sourceType: Swift.Int {
+    get
+  }
+  public var deviceType: Swift.Int {
+    get
+  }
+  public var quality: Swift.Int {
+    get
+  }
+  public var imageData: [Swift.UInt8] {
+    get
+  }
+  override public var datagroupType: NFCPassportReader.DataGroupId {
+    get
+  }
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class DataGroup7 : NFCPassportReader.DataGroup {
+  public var imageData: [Swift.UInt8] {
+    get
+  }
+  override public var datagroupType: NFCPassportReader.DataGroupId {
+    get
+  }
+  @objc deinit
+}
+@available(iOS 13, macOS 10.15, *)
+public enum DataGroupId : Swift.Int, Swift.CaseIterable {
+  case COM
+  case DG1
+  case DG2
+  case DG3
+  case DG4
+  case DG5
+  case DG6
+  case DG7
+  case DG8
+  case DG9
+  case DG10
+  case DG11
+  case DG12
+  case DG13
+  case DG14
+  case DG15
+  case DG16
+  case SOD
+  case Unknown
+  public func getName() -> Swift.String
+  public static func getIDFromName(name: Swift.String) -> NFCPassportReader.DataGroupId
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.Int)
+  #endif
+  @available(iOS 13, macOS 10.15, *)
+  public typealias AllCases = [NFCPassportReader.DataGroupId]
+  @available(iOS 13, macOS 10.15, *)
+  public typealias RawValue = Swift.Int
+  nonisolated public static var allCases: [NFCPassportReader.DataGroupId] {
+    get
+  }
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class NotImplementedDG : NFCPassportReader.DataGroup {
+  override public var datagroupType: NFCPassportReader.DataGroupId {
+    get
+  }
+  @objc deinit
+}
+public enum PACEMappingType {
+  case GM
+  case IM
+  case CAM
+  public static func == (a: NFCPassportReader.PACEMappingType, b: NFCPassportReader.PACEMappingType) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class PACEInfo : NFCPassportReader.SecurityInfo {
+  public static let PARAM_ID_GFP_1024_160: Swift.Int
+  public static let PARAM_ID_GFP_2048_224: Swift.Int
+  public static let PARAM_ID_GFP_2048_256: Swift.Int
+  public static let PARAM_ID_ECP_NIST_P192_R1: Swift.Int
+  public static let PARAM_ID_ECP_BRAINPOOL_P192_R1: Swift.Int
+  public static let PARAM_ID_ECP_NIST_P224_R1: Swift.Int
+  public static let PARAM_ID_ECP_BRAINPOOL_P224_R1: Swift.Int
+  public static let PARAM_ID_ECP_NIST_P256_R1: Swift.Int
+  public static let PARAM_ID_ECP_BRAINPOOL_P256_R1: Swift.Int
+  public static let PARAM_ID_ECP_BRAINPOOL_P320_R1: Swift.Int
+  public static let PARAM_ID_ECP_NIST_P384_R1: Swift.Int
+  public static let PARAM_ID_ECP_BRAINPOOL_P384_R1: Swift.Int
+  public static let PARAM_ID_ECP_BRAINPOOL_P512_R1: Swift.Int
+  public static let PARAM_ID_ECP_NIST_P521_R1: Swift.Int
+  override public func getObjectIdentifier() -> Swift.String
+  override public func getProtocolOIDString() -> Swift.String
+  public func getVersion() -> Swift.Int
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getParameterId() -> Swift.Int?
+  #endif
+  public func getParameterSpec() throws -> Swift.Int32
+  public func getMappingType() throws -> NFCPassportReader.PACEMappingType
+  public func getKeyAgreementAlgorithm() throws -> Swift.String
+  public func getCipherAlgorithm() throws -> Swift.String
+  public func getDigestAlgorithm() throws -> Swift.String
+  public func getKeyLength() throws -> Swift.Int
+  public func createMappingKey() throws -> Swift.OpaquePointer
+  public static func getParameterSpec(stdDomainParam: Swift.Int) throws -> Swift.Int32
+  public static func toMappingType(oid: Swift.String) throws -> NFCPassportReader.PACEMappingType
+  public static func toKeyAgreementAlgorithm(oid: Swift.String) throws -> Swift.String
+  public static func toCipherAlgorithm(oid: Swift.String) throws -> Swift.String
+  public static func toDigestAlgorithm(oid: Swift.String) throws -> Swift.String
+  public static func toKeyLength(oid: Swift.String) throws -> Swift.Int
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class SOD : NFCPassportReader.DataGroup {
+  public var pkcs7CertificateData: [Swift.UInt8] {
+    get
+  }
+  override public var datagroupType: NFCPassportReader.DataGroupId {
+    get
+  }
+  @objc deinit
+  public func getPublicKey() throws -> Swift.OpaquePointer
+  public func getEncapsulatedContent() throws -> Foundation.Data
+  public func getEncapsulatedContentDigestAlgorithm() throws -> Swift.String
+  public func getSignedAttributes() throws -> Foundation.Data
+  public func getMessageDigestFromSignedAttributes() throws -> Foundation.Data
+  public func getSignature() throws -> Foundation.Data
+  public func getSignatureAlgorithm() throws -> Swift.String
+}
+@_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class SecurityInfo {
+  public func getObjectIdentifier() -> Swift.String
+  public func getProtocolOIDString() -> Swift.String
+  @objc deinit
+}
+@available(iOS 13, macOS 10.15, *)
+public enum NFCPassportReaderError : Swift.Error {
+  case ResponseError(Swift.String, Swift.UInt8, Swift.UInt8)
+  case InvalidResponse(dataGroupId: NFCPassportReader.DataGroupId, expectedTag: Swift.Int, actualTag: Swift.Int)
+  case UnexpectedError
+  case NFCNotSupported
+  case NoConnectedTag
+  case D087Malformed
+  case InvalidResponseChecksum
+  case MissingMandatoryFields
+  case CannotDecodeASN1Length
+  case InvalidASN1Value
+  case UnableToProtectAPDU
+  case UnableToUnprotectAPDU
+  case UnsupportedDataGroup
+  case DataGroupNotRead
+  case UnknownTag
+  case UnknownImageFormat
+  case NotImplemented
+  case TagNotValid
+  case ConnectionError
+  case UserCanceled
+  case InvalidMRZKey
+  case MoreThanOneTagFound
+  case InvalidHashAlgorithmSpecified
+  case UnsupportedCipherAlgorithm
+  case UnsupportedMappingType
+  case PACEError(Swift.String, Swift.String)
+  case ChipAuthenticationFailed
+  case InvalidDataPassed(Swift.String)
+  case NotYetSupported(Swift.String)
+  case Unknown(any Swift.Error)
+}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.NFCPassportReaderError : Foundation.LocalizedError {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var errorDescription: Swift.String? {
+    get
+  }
+  #endif
+}
+@available(iOS 13, macOS 10.15, *)
+public enum OpenSSLError : Swift.Error {
+  case UnableToGetX509CertificateFromPKCS7(Swift.String)
+  case UnableToVerifyX509CertificateForSOD(Swift.String)
+  case VerifyAndReturnSODEncapsulatedData(Swift.String)
+  case UnableToReadECPublicKey(Swift.String)
+  case UnableToExtractSignedDataFromPKCS7(Swift.String)
+  case VerifySignedAttributes(Swift.String)
+  case UnableToParseASN1(Swift.String)
+  case UnableToDecryptRSASignature(Swift.String)
+}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.OpenSSLError : Foundation.LocalizedError {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var errorDescription: Swift.String? {
+    get
+  }
+  #endif
+}
+public enum PassiveAuthenticationError : Swift.Error {
+  case UnableToParseSODHashes(Swift.String)
+  case InvalidDataGroupHash(Swift.String)
+  case SODMissing(Swift.String)
+}
+extension NFCPassportReader.PassiveAuthenticationError : Foundation.LocalizedError {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var errorDescription: Swift.String? {
+    get
+  }
+  #endif
+}
+public struct FaceImageInfo : Swift.Equatable {
+  public enum Expression : Swift.Int {
+    case unspecified
+    case neutral
+    case smileClosed
+    case smileOpen
+    case raisedEyebrows
+    case eyesLookingAway
+    case squinting
+    case frowning
+    #if compiler(>=5.3) && $NonescapableTypes
+    public static func from(_ code: Swift.Int) -> NFCPassportReader.FaceImageInfo.Expression?
+    #endif
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.Int)
+    #endif
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public enum EyeColor : Swift.Int {
+    case unspecified
+    case black
+    case blue
+    case brown
+    case gray
+    case green
+    case multiColored
+    case pink
+    case unknown
+    #if compiler(>=5.3) && $NonescapableTypes
+    public static func from(_ code: Swift.Int) -> NFCPassportReader.FaceImageInfo.EyeColor?
+    #endif
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.Int)
+    #endif
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public enum FaceImageType : Swift.Int {
+    case basic
+    case fullFrontal
+    case tokenFrontal
+    #if compiler(>=5.3) && $NonescapableTypes
+    public static func from(_ code: Swift.Int) -> NFCPassportReader.FaceImageInfo.FaceImageType?
+    #endif
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.Int)
+    #endif
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public enum Features : Swift.Int {
+    case featuresAreSpecified
+    case glasses
+    case moustache
+    case beard
+    case teethVisible
+    case blink
+    case mouthOpen
+    case leftEyePatch
+    case rightEyePath
+    case darkGlasses
+    case distortingMedicalCondition
+    #if compiler(>=5.3) && $NonescapableTypes
+    public static func from(_ code: Swift.Int) -> NFCPassportReader.FaceImageInfo.Features?
+    #endif
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.Int)
+    #endif
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public enum HairColor : Swift.Int {
+    case unspecified
+    case bald
+    case black
+    case blonde
+    case brown
+    case gray
+    case white
+    case red
+    case green
+    case blue
+    case unknown
+    #if compiler(>=5.3) && $NonescapableTypes
+    public static func from(_ code: Swift.Int) -> NFCPassportReader.FaceImageInfo.HairColor?
+    #endif
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.Int)
+    #endif
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public enum ImageColorSpace : Swift.Int {
+    case unspecified
+    case rgb24
+    case yuv422
+    case gray8
+    case other
+    #if compiler(>=5.3) && $NonescapableTypes
+    public static func from(_ code: Swift.Int) -> NFCPassportReader.FaceImageInfo.ImageColorSpace?
+    #endif
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.Int)
+    #endif
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public enum ImageDataType : Swift.Int {
+    case jpeg
+    case jpeg2000
+    #if compiler(>=5.3) && $NonescapableTypes
+    public static func from(_ code: Swift.Int) -> NFCPassportReader.FaceImageInfo.ImageDataType?
+    #endif
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.Int)
+    #endif
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public enum SourceType : Swift.Int {
+    case unspecified
+    case staticPhotoUnknownSource
+    case staticPhotoDigitalCam
+    case staticPhotoScanner
+    case videoFrameUnknownSource
+    case videoFrameAnalogCam
+    case videoFrameDigitalCam
+    case unknown
+    #if compiler(>=5.3) && $NonescapableTypes
+    public static func from(_ code: Swift.Int) -> NFCPassportReader.FaceImageInfo.SourceType?
+    #endif
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.Int)
+    #endif
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public static func == (a: NFCPassportReader.FaceImageInfo, b: NFCPassportReader.FaceImageInfo) -> Swift.Bool
+}
+public enum PACEPasswordType {
+  case mrz
+  case can
+  public static func == (a: NFCPassportReader.PACEPasswordType, b: NFCPassportReader.PACEPasswordType) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public enum PassportAuthenticationStatus {
+  case notDone
+  case success
+  case failed
+  public static func == (a: NFCPassportReader.PassportAuthenticationStatus, b: NFCPassportReader.PassportAuthenticationStatus) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(iOS 13, macOS 10.15, *)
+public class NFCPassportModel {
+  public var documentType: Swift.String {
+    get
+  }
+  public var documentSubType: Swift.String {
+    get
+  }
+  public var documentNumber: Swift.String {
+    get
+  }
+  public var issuingAuthority: Swift.String {
+    get
+  }
+  public var documentExpiryDate: Swift.String {
+    get
+  }
+  public var dateOfBirth: Swift.String {
+    get
+  }
+  public var gender: Swift.String {
+    get
+  }
+  public var nationality: Swift.String {
+    get
+  }
+  public var lastName: Swift.String {
+    get
+  }
+  public var firstName: Swift.String {
+    get
+  }
+  public var passportMRZ: Swift.String {
+    get
+  }
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var placeOfBirth: Swift.String? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var residenceAddress: Swift.String? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var phoneNumber: Swift.String? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var personalNumber: Swift.String? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var faceImageInfo: NFCPassportReader.FaceImageInfo? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var documentSigningCertificate: NFCPassportReader.X509Wrapper? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var countrySigningCertificate: NFCPassportReader.X509Wrapper? {
+    get
+  }
+  #endif
+  public var LDSVersion: Swift.String {
+    get
+  }
+  public var dataGroupsPresent: [Swift.String] {
+    get
+  }
+  public var dataGroupsAvailable: [NFCPassportReader.DataGroupId] {
+    get
+  }
+  public var dataGroupsRead: [NFCPassportReader.DataGroupId : NFCPassportReader.DataGroup] {
+    get
+  }
+  public var dataGroupHashes: [NFCPassportReader.DataGroupId : NFCPassportReader.DataGroupHash] {
+    get
+  }
+  public var cardAccess: NFCPassportReader.CardAccess? {
+    get
+  }
+  public var BACStatus: NFCPassportReader.PassportAuthenticationStatus {
+    get
+  }
+  public var PACEStatus: NFCPassportReader.PassportAuthenticationStatus {
+    get
+  }
+  public var chipAuthenticationStatus: NFCPassportReader.PassportAuthenticationStatus {
+    get
+  }
+  public var passportCorrectlySigned: Swift.Bool {
+    get
+  }
+  public var documentSigningCertificateVerified: Swift.Bool {
+    get
+  }
+  public var passportDataNotTampered: Swift.Bool {
+    get
+  }
+  public var activeAuthenticationPassed: Swift.Bool {
+    get
+  }
+  public var activeAuthenticationChallenge: [Swift.UInt8] {
+    get
+  }
+  public var activeAuthenticationSignature: [Swift.UInt8] {
+    get
+  }
+  public var verificationErrors: [any Swift.Error] {
+    get
+  }
+  public var isPACESupported: Swift.Bool {
+    get
+  }
+  public var isChipAuthenticationSupported: Swift.Bool {
+    get
+  }
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var passportImage: UIKit.UIImage? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var signatureImage: UIKit.UIImage? {
+    get
+  }
+  #endif
+  public var activeAuthenticationSupported: Swift.Bool {
+    get
+  }
+  public var certificateSigningGroups: [NFCPassportReader.CertificateType : NFCPassportReader.X509Wrapper]
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var passportDataElements: [Swift.String : Swift.String]? {
+    get
+  }
+  #endif
+  public init()
+  public init(from dump: [Swift.String : Swift.String])
+  public func addDataGroup(_ id: NFCPassportReader.DataGroupId, dataGroup: NFCPassportReader.DataGroup)
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getDataGroup(_ id: NFCPassportReader.DataGroupId) -> NFCPassportReader.DataGroup?
+  #endif
+  public func dumpPassportData(selectedDataGroups: [NFCPassportReader.DataGroupId], includeActiveAuthenticationData: Swift.Bool = false) -> [Swift.String : Swift.String]
+  public func getHashesForDatagroups(hashAlgorythm: Swift.String) -> [NFCPassportReader.DataGroupId : [Swift.UInt8]]
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func verifyPassport(masterListURL: Foundation.URL?, useCMSVerification: Swift.Bool = false)
+  #endif
+  public func verifyActiveAuthentication(challenge: [Swift.UInt8], signature: [Swift.UInt8])
+  @objc deinit
+}
+@available(iOS 13, macOS 10.15, *)
+public enum NFCViewDisplayMessage {
+  case requestPresentPassport
+  case authenticatingWithPassport(Swift.Int)
+  case readingDataGroupProgress(NFCPassportReader.DataGroupId, Swift.Int)
+  case error(NFCPassportReader.NFCPassportReaderError)
+  case activeAuthentication
+  case successfulRead
+  case tagDetected
+  case paceSuccess
+  case paceFailed
+  case bacSuccess
+  case bacStarted
+}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.NFCViewDisplayMessage {
+  public var description: Swift.String {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @available(iOS 13, macOS 10.15, *)
+public class OpenSSLUtils {
+  public static func getOpenSSLError() -> Swift.String
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 13, macOS 10.15, *)
+  public static func getPublicKeyData(from key: Swift.OpaquePointer) -> [Swift.UInt8]?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 13, macOS 10.15, *)
+  public static func decodePublicKeyFromBytes(pubKeyData: [Swift.UInt8], params: Swift.OpaquePointer) -> Swift.OpaquePointer?
+  #endif
+  public static func computeSharedSecret(privateKeyPair: Swift.OpaquePointer, publicKey: Swift.OpaquePointer) -> [Swift.UInt8]
+  @objc deinit
+}
+@available(iOS 15, *)
+public class PACEHandler {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(cardAccess: NFCPassportReader.CardAccess, tagReader: NFCPassportReader.TagReader, analytics: NFCPassportReader.Analytics? = nil) throws
+  #endif
+  public func doPACE(password: Swift.String, type: NFCPassportReader.PACEPasswordType) async throws
+  @objc deinit
+}
+@objc @available(iOS 15, *)
+public class PassportReader : ObjectiveC.NSObject {
+  public var passiveAuthenticationUsesOpenSSL: Swift.Bool
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(masterListURL: Foundation.URL? = nil, analytics: NFCPassportReader.Analytics? = nil)
+  #endif
+  public func setMasterListURL(_ masterListURL: Foundation.URL)
+  public func overrideNFCDataAmountToRead(amount: Swift.Int)
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func readPassport(password: Swift.String, type: NFCPassportReader.PACEPasswordType = .mrz, tags: [NFCPassportReader.DataGroupId] = [], skipSecureElements: Swift.Bool = true, skipCA: Swift.Bool = false, skipPACE: Swift.Bool = false, useExtendedMode: Swift.Bool = false, usePacePolling: Swift.Bool = false, customDisplayMessage: ((NFCPassportReader.NFCViewDisplayMessage) -> Swift.String?)? = nil) async throws -> NFCPassportReader.NFCPassportModel
+  #endif
+  @objc deinit
+}
+@available(iOS 15, *)
+extension NFCPassportReader.PassportReader : CoreNFC.NFCTagReaderSessionDelegate {
+  public func tagReaderSessionDidBecomeActive(_ session: CoreNFC.NFCTagReaderSession)
+  public func tagReaderSession(_ session: CoreNFC.NFCTagReaderSession, didInvalidateWithError error: any Swift.Error)
+  public func tagReaderSession(_ session: CoreNFC.NFCTagReaderSession, didDetect tags: [CoreNFC.NFCTag])
+}
+@available(iOS 13, *)
+public struct ResponseAPDU {
+  public var data: [Swift.UInt8]
+  public var sw1: Swift.UInt8
+  public var sw2: Swift.UInt8
+  public init(data: [Swift.UInt8], sw1: Swift.UInt8, sw2: Swift.UInt8)
+}
+public enum SecureMessagingSupportedAlgorithms {
+  case DES
+  case AES
+  public static func == (a: NFCPassportReader.SecureMessagingSupportedAlgorithms, b: NFCPassportReader.SecureMessagingSupportedAlgorithms) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(iOS 13, *)
+public class SecureMessaging {
+  public init(encryptionAlgorithm: NFCPassportReader.SecureMessagingSupportedAlgorithms = .DES, ksenc: [Swift.UInt8], ksmac: [Swift.UInt8], ssc: [Swift.UInt8])
+  @objc deinit
+}
+@available(iOS 13, macOS 10.15, *)
+public class ASN1Item : Swift.CustomDebugStringConvertible {
+  public init(line: Swift.String)
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getChild(_ child: Swift.Int) -> NFCPassportReader.ASN1Item?
+  #endif
+  public func getNumberOfChildren() -> Swift.Int
+  public var debugDescription: Swift.String {
+    get
+  }
+  @objc deinit
+}
+@available(iOS 13, macOS 10.15, *)
+public class SimpleASN1DumpParser {
+  public init()
+  public func parse(data: Foundation.Data) throws -> NFCPassportReader.ASN1Item
+  public func test()
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @available(iOS 15, *)
+public class TagReader {
+  @objc deinit
+}
+public func binToHexRep(_ val: [Swift.UInt8], asArray: Swift.Bool = false) -> Swift.String
+public func binToHexRep(_ val: Swift.UInt8) -> Swift.String
+public func binToHex(_ val: Swift.UInt8) -> Swift.Int
+public func binToHex(_ val: [Swift.UInt8]) -> Swift.UInt64
+public func binToHex(_ val: Swift.ArraySlice<Swift.UInt8>) -> Swift.UInt64
+public func hexToBin(_ val: Swift.UInt64) -> [Swift.UInt8]
+public func binToInt(_ val: Swift.ArraySlice<Swift.UInt8>) -> Swift.Int
+public func binToInt(_ val: [Swift.UInt8]) -> Swift.Int
+public func intToBin(_ data: Swift.Int, pad: Swift.Int = 2) -> [Swift.UInt8]
+public func hexRepToBin(_ val: Swift.String) -> [Swift.UInt8]
+public func xor(_ kifd: [Swift.UInt8], _ response_kicc: [Swift.UInt8]) -> [Swift.UInt8]
+public func generateRandomUInt8Array(_ size: Swift.Int) -> [Swift.UInt8]
+public func pad(_ toPad: [Swift.UInt8], blockSize: Swift.Int) -> [Swift.UInt8]
+public func unpad(_ tounpad: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func mac(algoName: NFCPassportReader.SecureMessagingSupportedAlgorithms, key: [Swift.UInt8], msg: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func desMAC(key: [Swift.UInt8], msg: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func aesMAC(key: [Swift.UInt8], msg: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func wrapDO(b: Swift.UInt8, arr: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func unwrapDO(tag: Swift.UInt8, wrappedData: [Swift.UInt8]) throws -> [Swift.UInt8]
+public func intToBytes(val: Swift.Int, removePadding: Swift.Bool) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func oidToBytes(oid: Swift.String, replaceTag: Swift.Bool) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func asn1Length(_ data: Swift.ArraySlice<Swift.UInt8>) throws -> (Swift.Int, Swift.Int)
+@available(iOS 13, macOS 10.15, *)
+public func asn1Length(_ data: [Swift.UInt8]) throws -> (Swift.Int, Swift.Int)
+@available(iOS 13, macOS 10.15, *)
+public func toAsn1Length(_ data: Swift.Int) throws -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func calcHash(data: [Swift.UInt8], hashAlgorithm: Swift.String) throws -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func calcSHA1Hash(_ data: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func calcSHA224Hash(_ data: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func calcSHA256Hash(_ data: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func calcSHA512Hash(_ data: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public func calcSHA384Hash(_ data: [Swift.UInt8]) -> [Swift.UInt8]
+@available(iOS 13, macOS 10.15, *)
+public enum CertificateType {
+  case documentSigningCertificate
+  case issuerSigningCertificate
+  public static func == (a: NFCPassportReader.CertificateType, b: NFCPassportReader.CertificateType) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(iOS 13, macOS 10.15, *)
+public enum CertificateItem : Swift.String {
+  case fingerprint
+  case issuerName
+  case subjectName
+  case serialNumber
+  case signatureAlgorithm
+  case publicKeyAlgorithm
+  case notBefore
+  case notAfter
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  @available(iOS 13, macOS 10.15, *)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+@available(iOS 13, macOS 10.15, *)
+public class X509Wrapper {
+  final public let cert: Swift.OpaquePointer
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(with cert: Swift.OpaquePointer?)
+  #endif
+  public func getItemsAsDict() -> [NFCPassportReader.CertificateItem : Swift.String]
+  public func certToPEM() -> Swift.String
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getFingerprint() -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getNotBeforeDate() -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getNotAfterDate() -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getSerialNumber() -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getSignatureAlgorithm() -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getPublicKeyAlgorithm() -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getIssuerName() -> Swift.String?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func getSubjectName() -> Swift.String?
+  #endif
+  @objc deinit
+}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.DocTypeEnum : Swift.Equatable {}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.DocTypeEnum : Swift.Hashable {}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.DocTypeEnum : Swift.RawRepresentable {}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.DataGroupId : Swift.Equatable {}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.DataGroupId : Swift.Hashable {}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.DataGroupId : Swift.RawRepresentable {}
+extension NFCPassportReader.PACEMappingType : Swift.Equatable {}
+extension NFCPassportReader.PACEMappingType : Swift.Hashable {}
+extension NFCPassportReader.FaceImageInfo.Expression : Swift.Equatable {}
+extension NFCPassportReader.FaceImageInfo.Expression : Swift.Hashable {}
+extension NFCPassportReader.FaceImageInfo.Expression : Swift.RawRepresentable {}
+extension NFCPassportReader.FaceImageInfo.EyeColor : Swift.Equatable {}
+extension NFCPassportReader.FaceImageInfo.EyeColor : Swift.Hashable {}
+extension NFCPassportReader.FaceImageInfo.EyeColor : Swift.RawRepresentable {}
+extension NFCPassportReader.FaceImageInfo.FaceImageType : Swift.Equatable {}
+extension NFCPassportReader.FaceImageInfo.FaceImageType : Swift.Hashable {}
+extension NFCPassportReader.FaceImageInfo.FaceImageType : Swift.RawRepresentable {}
+extension NFCPassportReader.FaceImageInfo.Features : Swift.Equatable {}
+extension NFCPassportReader.FaceImageInfo.Features : Swift.Hashable {}
+extension NFCPassportReader.FaceImageInfo.Features : Swift.RawRepresentable {}
+extension NFCPassportReader.FaceImageInfo.HairColor : Swift.Equatable {}
+extension NFCPassportReader.FaceImageInfo.HairColor : Swift.Hashable {}
+extension NFCPassportReader.FaceImageInfo.HairColor : Swift.RawRepresentable {}
+extension NFCPassportReader.FaceImageInfo.ImageColorSpace : Swift.Equatable {}
+extension NFCPassportReader.FaceImageInfo.ImageColorSpace : Swift.Hashable {}
+extension NFCPassportReader.FaceImageInfo.ImageColorSpace : Swift.RawRepresentable {}
+extension NFCPassportReader.FaceImageInfo.ImageDataType : Swift.Equatable {}
+extension NFCPassportReader.FaceImageInfo.ImageDataType : Swift.Hashable {}
+extension NFCPassportReader.FaceImageInfo.ImageDataType : Swift.RawRepresentable {}
+extension NFCPassportReader.FaceImageInfo.SourceType : Swift.Equatable {}
+extension NFCPassportReader.FaceImageInfo.SourceType : Swift.Hashable {}
+extension NFCPassportReader.FaceImageInfo.SourceType : Swift.RawRepresentable {}
+extension NFCPassportReader.PACEPasswordType : Swift.Equatable {}
+extension NFCPassportReader.PACEPasswordType : Swift.Hashable {}
+extension NFCPassportReader.PassportAuthenticationStatus : Swift.Equatable {}
+extension NFCPassportReader.PassportAuthenticationStatus : Swift.Hashable {}
+extension NFCPassportReader.SecureMessagingSupportedAlgorithms : Swift.Equatable {}
+extension NFCPassportReader.SecureMessagingSupportedAlgorithms : Swift.Hashable {}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.CertificateType : Swift.Equatable {}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.CertificateType : Swift.Hashable {}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.CertificateItem : Swift.Equatable {}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.CertificateItem : Swift.Hashable {}
+@available(iOS 13, macOS 10.15, *)
+extension NFCPassportReader.CertificateItem : Swift.RawRepresentable {}

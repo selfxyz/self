@@ -1,0 +1,80 @@
+{
+  "ABIRoot": {
+    "kind": "Root",
+    "name": "SelfSDK",
+    "printedName": "SelfSDK",
+    "children": [
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "SelfSDK",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "NFCPassportReader",
+        "printedName": "NFCPassportReader",
+        "declKind": "Import",
+        "moduleName": "SelfSDK",
+        "declAttributes": [
+          "Exported"
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "NFCPassportReaderShim",
+        "printedName": "NFCPassportReaderShim",
+        "declKind": "Enum",
+        "usr": "s:7SelfSDK21NFCPassportReaderShimO",
+        "mangledName": "$s7SelfSDK21NFCPassportReaderShimO",
+        "moduleName": "SelfSDK",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          }
+        ]
+      },
+      {
+        "kind": "Function",
+        "name": "_keepNFCPassportReaderLinked",
+        "printedName": "_keepNFCPassportReaderLinked()",
+        "children": [
+          {
+            "kind": "TypeNominal",
+            "name": "Void",
+            "printedName": "()"
+          }
+        ],
+        "declKind": "Func",
+        "usr": "s:7SelfSDK28_keepNFCPassportReaderLinkedyyF",
+        "mangledName": "$s7SelfSDK28_keepNFCPassportReaderLinkedyyF",
+        "moduleName": "SelfSDK",
+        "declAttributes": [
+          "AccessControl",
+          "Inlinable"
+        ],
+        "funcSelfKind": "NonMutating"
+      }
+    ],
+    "json_format_version": 8
+  },
+  "ConstValues": []
+}

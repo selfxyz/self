@@ -48,5 +48,11 @@
 	<array>
 		<string>Ionicons.ttf</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Needed to scan the passport MRZ.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Needed to secure the secret</string>
+	<key>NFCReaderUsageDescription</key>
+	<string>Needed to read passport NFC chip for identity verification</string>
 </dict>
 </plist>

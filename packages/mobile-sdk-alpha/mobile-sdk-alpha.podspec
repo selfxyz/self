@@ -24,14 +24,31 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,swift}"
   s.public_header_files = "ios/**/*.h"
 
+  # Vendored prebuilt XCFrameworks
+  # NFCPassportReader.xcframework contains SelfSDK.framework which re-exports NFCPassportReader
+  s.vendored_frameworks = "ios/Frameworks/NFCPassportReader.xcframework", "ios/Frameworks/OpenSSL.xcframework"
+
   s.dependency "React-Core"
   s.dependency "QKMRZParser"
-  s.dependency "NFCPassportReader"
+
+  # Preserve binary frameworks
+  s.preserve_paths = "ios/Frameworks/**/*"
+
+  # s.pod_target_xcconfig = {
+  #   "HEADER_SEARCH_PATHS" => '"$(PODS_ROOT)/Headers/Public/React-Core"',
+  #   "DEFINES_MODULE" => "YES",
+  #   "FRAMEWORK_SEARCH_PATHS" => "$(inherited) $(PODS_ROOT)/mobile-sdk-alpha/ios/Frameworks",
+  #   "SWIFT_INCLUDE_PATHS" => "$(inherited) $(PODS_ROOT)/mobile-sdk-alpha/ios",
+  # }
 
   s.pod_target_xcconfig = {
     "HEADER_SEARCH_PATHS" => '"$(PODS_ROOT)/Headers/Public/React-Core"',
     "DEFINES_MODULE" => "YES",
-    "SWIFT_INCLUDE_PATHS" => "$(PODS_ROOT)/mobile-sdk-alpha/ios",
+    "FRAMEWORK_SEARCH_PATHS" => "$(inherited) $(PODS_ROOT)/../mobile-sdk-alpha/ios/Frameworks",
+  }
+
+  s.user_target_xcconfig = {
+    "FRAMEWORK_SEARCH_PATHS" => "$(inherited) $(PODS_ROOT)/../mobile-sdk-alpha/ios/Frameworks",
   }
 
   # Ensure iOS files are properly linked
