@@ -142,7 +142,7 @@ export enum SdkEvents {
   /**
    * Emitted when document NFC scan is successful and ready for confirmation.
    *
-   * **Required:** Navigate to the DocumentNFCConfirmation screen to continue the verification process.
+   * **Required:** Navigate to the ConfirmIdentification screen to continue the verification process.
    * **Recommended:** This event is triggered after successful NFC data extraction and validation.
    */
   DOCUMENT_NFC_SCAN_SUCCESS = 'DOCUMENT_NFC_SCAN_SUCCESS',
