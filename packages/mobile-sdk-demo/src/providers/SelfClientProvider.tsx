@@ -195,8 +195,9 @@ export function SelfClientProvider({ children, onNavigate }: SelfClientProviderP
           break;
       }
     });
-    addListener(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS, () => {
-      // navigate('DocumentNFCScan');
+
+    addListener(SdkEvents.DOCUMENT_NFC_SCAN_SUCCESS, () => {
+      onNavigate?.('success');
     });
 
     return map;

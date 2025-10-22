@@ -27,6 +27,7 @@ const routeMap: Record<ScreenId, ScreenName> = {
   documents: 'Documents',
   'country-selection': 'CountrySelection',
   'id-selection': 'IDSelection',
+  success: 'Success',
 };
 
 const screenToRoute = Object.entries(routeMap).reduce(

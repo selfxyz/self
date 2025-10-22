@@ -13,6 +13,7 @@ export type ScreenId =
   | 'mrz'
   | 'nfc'
   | 'documents'
+  | 'success'
   | 'country-selection'
   | 'id-selection';
 

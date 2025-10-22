@@ -24,7 +24,8 @@ export type ScreenName =
   | 'NFC'
   | 'Documents'
   | 'CountrySelection'
-  | 'IDSelection';
+  | 'IDSelection'
+  | 'Success';
 
 interface NavigationState {
   currentScreen: ScreenName;
