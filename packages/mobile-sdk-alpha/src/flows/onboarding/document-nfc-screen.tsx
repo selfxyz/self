@@ -14,12 +14,13 @@ import TextsContainer from 'src/components/TextsContainer';
 import { PassportEvents } from 'src/constants/analytics';
 import { black, slate100, slate400, slate500, white } from 'src/constants/colors';
 import { dinot } from 'src/constants/fonts';
+import { NFC_IMAGE } from 'src/constants/images';
 import { useSelfClient } from 'src/context';
 import { storePassportData } from 'src/documents/utils';
 import { buttonTap, feedbackSuccess, feedbackUnsuccessful, impactLight } from 'src/haptic/index';
-import NFC_IMAGE from 'src/images/nfc.png';
 import type { SafeAreaInsets } from 'src/layouts/ExpandableBottomLayout';
 import { ExpandableBottomLayout } from 'src/layouts/ExpandableBottomLayout';
+import { scanNFC } from 'src/nfc';
 import { SdkEvents } from 'src/types/events';
 import { sanitizeErrorMessage } from 'src/utils/utils';
 import { v4 as uuidv4 } from 'uuid';
@@ -202,6 +203,7 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
         clearTimeout(scanTimeoutRef.current);
         scanTimeoutRef.current = null;
       }
+
       scanTimeoutRef.current = setTimeout(() => {
         scanCancelledRef.current = true;
         trackEvent(PassportEvents.NFC_SCAN_FAILED, {
@@ -225,7 +227,7 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
       try {
         const { canNumber, useCan, skipPACE, skipCA, extendedMode } = props ?? {};
 
-        const scanResponse = await selfClient.scanNFC({
+        const scanResponse = await scanNFC(selfClient, {
           passportNumber,
           dateOfBirth,
           dateOfExpiry,
@@ -237,6 +239,7 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
           usePacePolling: isPacePolling,
           sessionId: sessionIdRef.current,
         });
+
 
         // Check if scan was cancelled by timeout
         if (scanCancelledRef.current) {
@@ -288,6 +291,7 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
         if (scanCancelledRef.current) {
           return;
         }
+
         const scanDurationSeconds = ((Date.now() - scanStartTime) / 1000).toFixed(2);
         console.error('NFC Scan Unsuccessful:', e);
         const message = e instanceof Error ? e.message : String(e);
@@ -394,6 +398,7 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
         }
       };
     }, [baseContext, checkNfcSupport]),
+    [],
   );
 
   return (
@@ -431,10 +436,10 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
                 )}
               </BodyText>
             </TextsContainer>
-            {/* TODO: fix image */}
+            {/* TODO: fix image to use src/images/nfc.png instead of inline data url */}
             <Image
-              height={32}
-              width={32}
+              height={128}
+              width={128}
               borderRadius={1000}
               source={NFC_IMAGE}
               style={{ margin: 20, alignSelf: 'center' }}
