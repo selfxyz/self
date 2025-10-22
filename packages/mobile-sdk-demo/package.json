@@ -50,8 +50,7 @@
     "react-native-svg": "15.12.1",
     "react-native-vector-icons": "^10.3.0",
     "stream-browserify": "^3.0.0",
-    "util": "^0.12.5",
-    "uuid": "^13.0.0"
+    "util": "^0.12.5"
   },
   "devDependencies": {
     "@babel/core": "^7.28.3",
