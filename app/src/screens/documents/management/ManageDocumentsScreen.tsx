@@ -16,9 +16,9 @@ import type {
 } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
+  ButtonsContainer,
   PrimaryButton,
   SecondaryButton,
-  ButtonsContainer,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 

@@ -29,7 +29,11 @@ import {
   signatureAlgorithmToStrictSignatureAlgorithm,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { ButtonsContainer, Caption, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  ButtonsContainer,
+  Caption,
+  PrimaryButton,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { useMockDataForm } from '@/hooks/useMockDataForm';
