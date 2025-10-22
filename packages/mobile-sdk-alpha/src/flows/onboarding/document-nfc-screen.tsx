@@ -240,7 +240,6 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
           sessionId: sessionIdRef.current,
         });
 
-
         // Check if scan was cancelled by timeout
         if (scanCancelledRef.current) {
           return;
