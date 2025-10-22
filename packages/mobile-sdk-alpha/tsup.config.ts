@@ -50,7 +50,7 @@ export default defineConfig([
     format: ['esm'],
     dts: true,
     sourcemap: true,
-    splitting: true,
+    splitting: false,
     clean: true,
     outDir: 'dist/esm',
     tsconfig: './tsconfig.json',
@@ -58,6 +58,8 @@ export default defineConfig([
     external: [
       'react',
       'react-native',
+      // Externalize all React Native sub-modules and internals
+      /^react-native\/.*/,
       '@selfxyz/common',
       // Common crypto dependencies (already in main app)
       'elliptic',
@@ -97,7 +99,7 @@ export default defineConfig([
     format: ['cjs'],
     dts: false,
     sourcemap: true,
-    splitting: true,
+    splitting: false,
     clean: false,
     outDir: 'dist/cjs',
     onSuccess: 'node ./scripts/copy-assets.mjs',
@@ -106,6 +108,8 @@ export default defineConfig([
     external: [
       'react',
       'react-native',
+      // Externalize all React Native sub-modules and internals
+      /^react-native\/.*/,
       '@selfxyz/common',
       // Common crypto dependencies (already in main app)
       'elliptic',
