@@ -36,6 +36,12 @@ paths-ignore:
   - "**/generated/**/*.crt"
   - "**/generated/**/*.pem"
 
+  # iOS frameworks and build artifacts
+  - "**/*.xcframework"
+  - "**/NFCPassportReader.xcframework/**"
+  - "**/OpenSSL.xcframework/**"
+  - "**/SelfSDK.xcframework/**"
+
 # Ignore specific secret types for mock files
 secrets-ignore:
   - "Generic Private Key" # For mock certificate keys
