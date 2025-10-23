@@ -69,19 +69,19 @@ target "SelfDemoApp" do
     )
 
     # Add Swift module search paths for NFCPassportReader embedded in SelfSDK
-    installer.pods_project.targets.each do |target|
-      if target.name == 'mobile-sdk-alpha'
-        target.build_configurations.each do |config|
-          xcframework_path = "$(PODS_ROOT)/../../mobile-sdk-alpha/ios/Frameworks/NFCPassportReader.xcframework"
-          modules_path_device = "#{xcframework_path}/ios-arm64/SelfSDK.framework/Modules"
-          modules_path_sim = "#{xcframework_path}/ios-arm64_x86_64-simulator/SelfSDK.framework/Modules"
+    # installer.pods_project.targets.each do |target|
+    #   if target.name == 'mobile-sdk-alpha'
+    #     target.build_configurations.each do |config|
+    #       xcframework_path = "$(PODS_ROOT)/../../mobile-sdk-alpha/ios/Frameworks/NFCPassportReader.xcframework"
+    #       modules_path_device = "#{xcframework_path}/ios-arm64/SelfSDK.framework/Modules"
+    #       modules_path_sim = "#{xcframework_path}/ios-arm64_x86_64-simulator/SelfSDK.framework/Modules"
 
-          # Add module search paths
-          config.build_settings['OTHER_SWIFT_FLAGS'] ||= ['$(inherited)']
-          config.build_settings['OTHER_SWIFT_FLAGS'] << "-I#{modules_path_device}"
-          config.build_settings['OTHER_SWIFT_FLAGS'] << "-I#{modules_path_sim}"
-        end
-      end
-    end
+    #       # Add module search paths
+    #       config.build_settings['OTHER_SWIFT_FLAGS'] ||= ['$(inherited)']
+    #       config.build_settings['OTHER_SWIFT_FLAGS'] << "-I#{modules_path_device}"
+    #       config.build_settings['OTHER_SWIFT_FLAGS'] << "-I#{modules_path_sim}"
+    #     end
+    #   end
+    # end
   end
 end
