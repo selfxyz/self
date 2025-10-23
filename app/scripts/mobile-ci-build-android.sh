@@ -123,15 +123,15 @@ else
   log "📁 android-passport-nfc-reader already exists - preserving existing directory"
 fi
 
-# Build and package the SDK with timeout
-log "Building SDK..."
+# Build and package the SDK with timeout (including dependencies)
+log "Building SDK and dependencies..."
 if is_ci; then
-  timeout 300 yarn workspace @selfxyz/mobile-sdk-alpha build || {
+  timeout 300 yarn workspaces foreach --from @selfxyz/mobile-sdk-alpha --topological --recursive run build || {
     log "SDK build timed out after 5 minutes"
     exit 1
   }
 else
-  yarn workspace @selfxyz/mobile-sdk-alpha build
+  yarn workspaces foreach --from @selfxyz/mobile-sdk-alpha --topological --recursive run build
 fi
 
 log "Creating SDK tarball..."
