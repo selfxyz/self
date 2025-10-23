@@ -26,8 +26,6 @@ async function scanIOS(opts: NFCScanOpts): Promise<NFCScanResult> {
   }
 
   try {
-    SelfPassportReader.reset();
-
     const {
       passportNumber,
       dateOfBirth,
