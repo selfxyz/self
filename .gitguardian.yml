@@ -41,7 +41,8 @@ paths-ignore:
   - "**/NFCPassportReader.xcframework/**"
   - "**/OpenSSL.xcframework/**"
   - "**/SelfSDK.xcframework/**"
-
+  - "**/packages/mobile-sdk-alpha/ios/Frameworks/**"
+  - "**/packages/mobile-sdk-alpha/ios/SelfSDK/**"
 # Ignore specific secret types for mock files
 secrets-ignore:
   - "Generic Private Key" # For mock certificate keys
