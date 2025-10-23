@@ -347,7 +347,6 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
     props.onBack?.();
   }, [props.onBack]);
 
-  // TODO: check if there are implications of not using useFocusEffect here
   useEffect(
     useCallback(() => {
       logNFCEvent('info', 'screen_focus', { ...baseContext, stage: 'focus' });
