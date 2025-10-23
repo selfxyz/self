@@ -193,30 +193,8 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
           ...baseContext,
           stage: 'timeout',
         });
-        handleNFCError('Scan timed out. Please try again.');
-        setIsNfcSheetOpen(false);
-        logNFCEvent('info', 'sheet_close', {
-          ...baseContext,
-          stage: 'ui',
-        });
-      }, 30000);
-
-      if (scanTimeoutRef.current) {
-        clearTimeout(scanTimeoutRef.current);
-        scanTimeoutRef.current = null;
-      }
-
-      scanTimeoutRef.current = setTimeout(() => {
-        scanCancelledRef.current = true;
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: 'timeout',
-        });
         trackNfcEvent(PassportEvents.NFC_SCAN_FAILED, {
           error: 'timeout',
-        });
-        logNFCEvent('warn', 'scan_timeout', {
-          ...baseContext,
-          stage: 'timeout',
         });
         handleNFCError('Scan timed out. Please try again.');
         setIsNfcSheetOpen(false);
