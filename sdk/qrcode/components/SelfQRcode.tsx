@@ -95,7 +95,7 @@ const SelfQRcode = ({
               return <BounceLoader loading={true} size={200} color="#94FBAB" />;
             case QRcodeSteps.PROOF_GENERATION_FAILED:
               return (
-                <Lottie
+                <Lottie.default
                   animationData={X_ANIMATION}
                   style={{ width: 200, height: 200 }}
                   onComplete={() => {
@@ -106,7 +106,7 @@ const SelfQRcode = ({
               );
             case QRcodeSteps.PROOF_VERIFIED:
               return (
-                <Lottie
+                <Lottie.default
                   animationData={CHECK_ANIMATION}
                   style={{ width: 200, height: 200 }}
                   onComplete={() => {
