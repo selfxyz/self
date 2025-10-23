@@ -94,6 +94,8 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
 
   const handleNFCError = useCallback(
     (message: string) => {
+      const sanitizedErrorMessage = sanitizeErrorMessage(message);
+
       logNFCEvent(
         'error',
         'nfc_error_modal',
@@ -101,10 +103,10 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
           ...baseContext,
           stage: 'error',
         },
-        { message: sanitizeErrorMessage(message) },
+        { message: sanitizedErrorMessage },
       );
 
-      props.onError?.(message);
+      props.onError?.(sanitizedErrorMessage);
     },
     [baseContext, props.onError],
   );
