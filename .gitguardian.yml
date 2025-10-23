@@ -49,3 +49,37 @@ secrets-ignore:
   - "Generic Certificate" # For mock certificates
   - "RSA Private Key" # For mock RSA keys
   - "EC Private Key" # For mock EC keys
+
+
+secret:
+  ignored_paths:
+  - '**/packages/mobile-sdk-alpha/ios/Frameworks/**'
+  - '**/OpenSSL.xcframework/**'
+  - '**/demo-app/**/mock/**'
+  - common/src/mock_certificates/aadhaar/mockAadhaarCert.ts
+  - '**/NFCPassportReader.xcframework/**'
+  - common/src/utils/passports/genMockIdDoc.ts
+  - '**/tests/**/*.crt'
+  - '**/mock_certificates/**/*.crt'
+  - '**/mock_certificates/**/*.key'
+  - '**/demo-app/**/test-data/**'
+  - '**/generated/**/*.key'
+  - '**/SelfSDK.xcframework/**'
+  - '**/mock/**/*.crt'
+  - '**/generated/**/*.crt'
+  - '**/test/**/*.key'
+  - '**/mock/**/*.key'
+  - '**/test/**/*.crt'
+  - '**/test/**/*.pem'
+  - '**/constants/mockCertificates.ts'
+  - '**/mock/**/*.pem'
+  - '**/mock_certificates/**/*.pem'
+  - '**/mock-data/**'
+  - '**/packages/mobile-sdk-alpha/ios/SelfSDK/**'
+  - '**/tests/**/*.key'
+  - '**/generated/**/*.pem'
+  - '**/tests/**/*.pem'
+  - '**/test-data/**'
+  - common/src/mock_certificates/**
+  - '**/*.xcframework'
+version: 2
