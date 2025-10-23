@@ -39,11 +39,11 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
+  ButtonsContainer,
   PrimaryButton,
   SecondaryButton,
-  Title,
-  ButtonsContainer,
   TextsContainer,
+  Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 

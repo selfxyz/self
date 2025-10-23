@@ -8,24 +8,39 @@ import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/com
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import HomeScreen from './src/screens/HomeScreen';
-import type { ScreenContext, ScreenRoute } from './src/screens';
+import type { ScreenContext, ScreenId, ScreenRoute } from './src/screens';
 import { screenMap } from './src/screens';
 import SelfClientProvider from './src/providers/SelfClientProvider';
+import { NavigationProvider, useNavigation, type ScreenName } from './src/navigation/NavigationProvider';
 
 type SelectedDocumentState = {
   data: IDDocument;
   metadata: DocumentMetadata;
 };
 
-type NavigationState = {
-  screen: ScreenRoute;
-  setScreen: (screen: ScreenRoute, params?: any) => void;
-  screenParams: any;
+const routeMap: Record<ScreenId, ScreenName> = {
+  generate: 'Generate',
+  register: 'Register',
+  mrz: 'MRZ',
+  home: 'Home',
+  nfc: 'NFC',
+  documents: 'Documents',
+  'country-selection': 'CountrySelection',
+  'id-selection': 'IDSelection',
+  success: 'Success',
 };
 
-function DemoApp({ navigationState }: { navigationState: NavigationState }) {
+const screenToRoute = Object.entries(routeMap).reduce(
+  (acc, [key, value]) => {
+    acc[value as unknown as ScreenName] = key as unknown as ScreenId;
+    return acc;
+  },
+  {} as Record<ScreenName, ScreenId>,
+);
+
+function DemoApp() {
   const selfClient = useSelfClient();
-  const { screen, setScreen, screenParams } = navigationState;
+  const navigation = useNavigation();
 
   const [catalog, setCatalog] = useState<DocumentCatalog>({ documents: [] });
   const [selectedDocument, setSelectedDocument] = useState<SelectedDocumentState | null>(null);
@@ -43,55 +58,56 @@ function DemoApp({ navigationState }: { navigationState: NavigationState }) {
     }
   }, [selfClient]);
 
-  const navigate = useCallback((next: ScreenRoute, params?: any) => setScreen(next, params), [setScreen]);
+  const navigate = useCallback(
+    (next: ScreenRoute) => {
+      const routeName = routeMap[next];
+      if (routeName) {
+        navigation.navigate(routeName);
+      }
+    },
+    [navigation],
+  );
 
   const screenContext: ScreenContext = {
     navigate,
-    goHome: () => setScreen('home'),
+    goHome: () => navigation.navigate('Home'),
     documentCatalog: catalog,
     selectedDocument,
     refreshDocuments,
   };
 
   useEffect(() => {
-    if (screen !== 'home' && !screenMap[screen]) {
-      setScreen('home');
-    }
-  }, [screen]);
-
-  useEffect(() => {
     refreshDocuments();
   }, [refreshDocuments]);
 
-  if (screen === 'home') {
+  const renderCurrentScreen = () => {
+    const { currentScreen } = navigation;
+
+    if (currentScreen === 'Home') {
+      return <HomeScreen screenContext={screenContext} />;
+    }
+
+    const screenRoute = screenToRoute[currentScreen];
+    if (screenRoute && screenMap[screenRoute]) {
+      const descriptor = screenMap[screenRoute];
+      const ScreenComponent = descriptor.load();
+      const props = descriptor.getProps?.(screenContext) ?? {};
+      return <ScreenComponent {...props} />;
+    }
+
     return <HomeScreen screenContext={screenContext} />;
-  }
+  };
 
-  const descriptor = screenMap[screen];
-
-  if (!descriptor) {
-    return null;
-  }
-
-  const ScreenComponent = descriptor.load();
-  const props = descriptor.getProps?.(screenContext, screenParams) ?? {};
-
-  return <ScreenComponent {...props} />;
+  return renderCurrentScreen();
 }
 
 function App() {
-  const [screen, setScreen] = useState<ScreenRoute>('home');
-  const [screenParams, setScreenParams] = useState<any>(undefined);
-
-  const handleSetScreen = useCallback((nextScreen: ScreenRoute, params?: any) => {
-    setScreen(nextScreen);
-    setScreenParams(params);
-  }, []);
-
   return (
-    <SelfClientProvider onNavigate={screenId => handleSetScreen(screenId as ScreenRoute)}>
-      <DemoApp navigationState={{ screen, setScreen: handleSetScreen, screenParams }} />
-    </SelfClientProvider>
+    <NavigationProvider>
+      <SelfClientProvider>
+        <DemoApp />
+      </SelfClientProvider>
+    </NavigationProvider>
   );
 }
 

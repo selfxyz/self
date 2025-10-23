@@ -11,10 +11,10 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
-  SecondaryButton,
-  Title,
   ButtonsContainer,
+  SecondaryButton,
   TextsContainer,
+  Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 

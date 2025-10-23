@@ -9,8 +9,8 @@ import { Platform } from 'react-native';
 import {
   type Adapters,
   createListenersMap,
-  LogLevel,
-  NFCScanContext,
+  type LogLevel,
+  type NFCScanContext,
   reactNativeScannerAdapter,
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,

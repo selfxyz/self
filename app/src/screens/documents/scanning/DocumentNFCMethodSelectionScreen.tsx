@@ -11,11 +11,11 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
+  ButtonsContainer,
   Description,
   PrimaryButton,
   SecondaryButton,
   Title,
-  ButtonsContainer,
 } from '@selfxyz/mobile-sdk-alpha/components';
 
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';

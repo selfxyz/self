@@ -16,10 +16,10 @@ import type { IdDocInput } from '@selfxyz/common/utils';
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports';
 import {
   BodyText,
+  ButtonsContainer,
   Description,
   PrimaryButton,
   Title,
-  ButtonsContainer,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
