@@ -7,4 +7,9 @@ export default defineConfig({
     include: ['**/*.test.ts'],
     setupFiles: ['./tests/setup.ts'],
   },
+  resolve: {
+    alias: {
+      '@noble/curves/ed25519': '@noble/curves/ed25519.js',
+    },
+  },
 });

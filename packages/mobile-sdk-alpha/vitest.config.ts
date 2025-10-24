@@ -5,6 +5,11 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@noble/curves/ed25519': '@noble/curves/ed25519.js',
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

@@ -160,6 +160,10 @@ export const ProofEvents = {
   PAYLOAD_GEN_STARTED: 'Proof: Payload Generation Started',
   PAYLOAD_SENT: 'Proof: Payload Sent',
   POST_PROVING_CHAIN_STEP: 'Proof: Post Proving Chain Step',
+  /// Event fired when PQXDH key exchange completes.
+  PQXDH_KEY_EXCHANGE_COMPLETE: 'Proof: PQXDH Key Exchange Complete',
+  /// Event fired when Kyber ciphertext is sent to TEE.
+  PQXDH_KEY_EXCHANGE_SENT: 'Proof: PQXDH Key Exchange Sent',
   POST_PROVING_COMPLETED: 'Proof: Post Proving Completed',
   POST_PROVING_STARTED: 'Proof: Post Proving Started',
   PROOF_COMPLETED: 'Proof: Proof Completed',

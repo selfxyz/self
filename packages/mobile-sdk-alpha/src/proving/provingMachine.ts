@@ -39,7 +39,13 @@ import {
   encryptAES256GCM,
   getPayload,
   getWSDbRelayerUrl,
+  x25519Keys,
+  getSupportedSuites,
+  kyberEncapsulate,
+  computeX25519SharedSecret,
+  deriveSessionKey,
 } from '@selfxyz/common/utils/proving';
+import type { CryptoSuite, HelloResponse } from '@selfxyz/common/utils/proving';
 import type { IDDocument } from '@selfxyz/common/utils/types';
 
 import { PassportEvents, ProofEvents } from '../constants/analytics';
@@ -221,6 +227,10 @@ export interface ProvingState {
   reason: string | null;
   endpointType: EndpointType | null;
   env: 'prod' | 'stg' | null;
+  /// Cryptographic suite selected by TEE (PQXDH or legacy P-256).
+  selectedSuite: CryptoSuite | null;
+  /// Kyber ciphertext generated during PQXDH key exchange.
+  kyberCiphertext: Uint8Array | null;
   init: (
     selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
@@ -503,6 +513,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     error_code: null,
     reason: null,
     endpointType: null,
+    selectedSuite: null,
+    kyberCiphertext: null,
     _handleWebSocketMessage: async (event: MessageEvent, selfClient: SelfClient) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
@@ -519,10 +531,22 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient?.trackEvent(ProofEvents.ATTESTATION_RECEIVED);
           selfClient.logProofEvent('info', 'Attestation received', context);
 
-          const attestationData = result.result.attestation;
-          set({ attestation: attestationData });
-          const attestationToken = Buffer.from(attestationData).toString('utf-8');
+          const helloResponse = result.result as HelloResponse;
+          const attestationData = helloResponse.attestation;
+          // extracting the selected suite from TEE response, defaulting to legacy for backward compatibility
+          const selectedSuite = helloResponse.selected_suite || 'legacy-p256';
 
+          // storing attestation data and suite selection in state
+          set({
+            attestation: attestationData,
+            selectedSuite,
+          });
+
+          selfClient.logProofEvent('info', 'Suite selected by TEE', context, {
+            selected_suite: selectedSuite,
+          });
+
+          const attestationToken = Buffer.from(attestationData).toString('utf-8');
           const { userPubkey, serverPubkey, imageHash, verified } = validatePKIToken(attestationToken, __DEV__);
 
           const pcr0Mapping = await checkPCR0Mapping(imageHash);
@@ -533,7 +557,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             return;
           }
 
-          if (clientPublicKeyHex !== userPubkey.toString('hex')) {
+          // verifying that the user public key in the attestation matches the expected key for the selected suite
+          let userPubkeyMatches = false;
+          if (selectedSuite === 'legacy-p256') {
+            // for legacy P-256 suite, verifying against the P-256 public key
+            userPubkeyMatches = clientPublicKeyHex === userPubkey.toString('hex');
+          } else if (selectedSuite === 'Self-PQXDH-1') {
+            // for PQXDH suite, verifying against the X25519 public key
+            const expectedPubkey = Buffer.from(x25519Keys.publicKey).toString('hex');
+            userPubkeyMatches = expectedPubkey === userPubkey.toString('hex');
+          }
+
+          if (!userPubkeyMatches) {
             console.error('User public key does not match');
             actor!.send({ type: 'CONNECT_ERROR' });
             return;
@@ -552,16 +587,85 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient?.trackEvent(ProofEvents.ATTESTATION_VERIFIED);
           selfClient.logProofEvent('info', 'Attestation verified', context);
 
-          const serverKey = ec.keyFromPublic(serverPubkey, 'hex');
-          const derivedKey = clientKey.derive(serverKey.getPublic());
+          // handling key derivation based on the selected cryptographic suite
+          if (selectedSuite === 'legacy-p256') {
+            // using legacy P-256 ECDH for backward compatibility
+            const serverKey = ec.keyFromPublic(serverPubkey, 'hex');
+            // deriving the shared secret using P-256 elliptic curve Diffie-Hellman
+            const derivedKey = clientKey.derive(serverKey.getPublic());
 
-          set({
-            serverPublicKey: serverKey.getPublic(true, 'hex'),
-            sharedKey: Buffer.from(derivedKey.toArray('be', 32)),
-          });
-          selfClient?.trackEvent(ProofEvents.SHARED_KEY_DERIVED);
-          selfClient.logProofEvent('info', 'Shared key derived', context);
+            // storing the server public key and derived shared key
+            set({
+              serverPublicKey: serverKey.getPublic(true, 'hex'),
+              sharedKey: Buffer.from(derivedKey.toArray('be', 32)),
+            });
+            selfClient?.trackEvent(ProofEvents.SHARED_KEY_DERIVED);
+            selfClient.logProofEvent('info', 'Shared key derived (legacy P-256)', context);
 
+            // legacy flow is complete, transitioning to connected state
+            actor!.send({ type: 'CONNECT_SUCCESS' });
+          } else if (selectedSuite === 'Self-PQXDH-1') {
+            // using post-quantum PQXDH protocol with X25519 and Kyber KEM
+            // validating that TEE provided both required public keys for PQXDH
+            if (!helloResponse.x25519_pubkey || !helloResponse.kyber_pubkey) {
+              console.error('Missing X25519 or Kyber public keys for PQXDH');
+              actor!.send({ type: 'CONNECT_ERROR' });
+              return;
+            }
+
+            selfClient.logProofEvent('info', 'Starting PQXDH key exchange', context);
+
+            // performing Kyber ML-KEM-768 encapsulation to generate shared secret and ciphertext
+            const kyberPubkey = new Uint8Array(helloResponse.kyber_pubkey);
+            const { sharedSecret: kyberShared, ciphertext } = kyberEncapsulate(kyberPubkey);
+
+            // computing X25519 ECDH shared secret with server's public key
+            const serverX25519Pubkey = new Uint8Array(helloResponse.x25519_pubkey);
+            const x25519Shared = computeX25519SharedSecret(x25519Keys.privateKey, serverX25519Pubkey);
+
+            // deriving final session key by combining both shared secrets using HKDF
+            const sessionKey = deriveSessionKey(x25519Shared, kyberShared);
+
+            // storing derived session key and Kyber ciphertext
+            set({
+              serverPublicKey: Buffer.from(serverX25519Pubkey).toString('hex'),
+              sharedKey: sessionKey,
+              kyberCiphertext: ciphertext,
+            });
+
+            selfClient?.trackEvent(ProofEvents.SHARED_KEY_DERIVED);
+            selfClient.logProofEvent('info', 'Session key derived (PQXDH)', context);
+
+            // sending Kyber ciphertext to TEE to complete the key exchange
+            const ws = get().wsConnection;
+            if (!ws) {
+              console.error('WebSocket connection lost');
+              actor!.send({ type: 'CONNECT_ERROR' });
+              return;
+            }
+
+            // constructing key exchange message with Kyber ciphertext
+            const keyExchangeBody = {
+              jsonrpc: '2.0',
+              method: 'openpassport_key_exchange',
+              id: 3,
+              params: {
+                uuid: get().uuid,
+                kyber_ciphertext: Array.from(ciphertext),
+              },
+            };
+
+            ws.send(JSON.stringify(keyExchangeBody));
+            selfClient.logProofEvent('info', 'Kyber ciphertext sent', context);
+            selfClient?.trackEvent(ProofEvents.PQXDH_KEY_EXCHANGE_SENT);
+
+            // waiting for TEE acknowledgment before transitioning to connected state
+          }
+        } else if (result.id === 3 && result.result === 'key_exchange_complete') {
+          // receiving acknowledgment that PQXDH key exchange was successful
+          selfClient.logProofEvent('info', 'Key exchange complete', context);
+          selfClient?.trackEvent(ProofEvents.PQXDH_KEY_EXCHANGE_COMPLETE);
+          // key exchange complete, transitioning to connected state
           actor!.send({ type: 'CONNECT_SUCCESS' });
         } else if (result.id === 2 && typeof result.result === 'string' && !result.error) {
           selfClient?.trackEvent(ProofEvents.WS_HELLO_ACK);
@@ -772,18 +876,25 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       });
       selfClient.logProofEvent('info', 'WebSocket open', context);
       set({ uuid: connectionUuid });
+      // constructing the initial hello message with suite negotiation
       const helloBody = {
         jsonrpc: '2.0',
         method: 'openpassport_hello',
         id: 1,
         params: {
+          // sending P-256 public key for backward compatibility
           user_pubkey: [...Array.from(Buffer.from(clientPublicKeyHex, 'hex'))],
           uuid: connectionUuid,
+          // advertising supported cryptographic suites (PQXDH and legacy P-256)
+          supported_suites: getSupportedSuites(),
         },
       };
       selfClient.trackEvent(ProofEvents.WS_HELLO_SENT);
+      // sending hello message to initiate suite negotiation with TEE
       ws.send(JSON.stringify(helloBody));
-      selfClient.logProofEvent('info', 'WS hello sent', context);
+      selfClient.logProofEvent('info', 'WS hello sent', context, {
+        supported_suites: getSupportedSuites(),
+      });
     },
 
     _handleWsError: (error: Event, selfClient: SelfClient) => {
@@ -865,6 +976,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType,
         endpointType: null,
         env: null,
+        selectedSuite: null,
+        kyberCiphertext: null,
       });
 
       actor = createActor(provingMachine);
@@ -1415,6 +1528,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         sharedKey: null,
         uuid: null,
         endpointType: null,
+        selectedSuite: null,
+        kyberCiphertext: null,
       });
     },
 
