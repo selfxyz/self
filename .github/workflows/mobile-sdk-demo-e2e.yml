@@ -15,6 +15,8 @@ env:
   # Disable Maestro analytics in CI
   MAESTRO_CLI_NO_ANALYTICS: true
   MAESTRO_VERSION: 1.41.0
+  # E2E Testing flag for conditional compilation
+  E2E_TESTING: 1
 
 on:
   pull_request:

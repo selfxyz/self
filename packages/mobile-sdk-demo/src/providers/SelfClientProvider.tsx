@@ -9,15 +9,16 @@ import React, { useMemo } from 'react';
 import {
   SelfClientProvider as SdkSelfClientProvider,
   createListenersMap,
+  SdkEvents,
   type Adapters,
   type TrackEventParams,
   type WsConn,
-  webNFCScannerShim,
-  SdkEvents,
+  reactNativeScannerAdapter,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { persistentDocumentsAdapter } from '../utils/documentStore';
 import { getOrCreateSecret } from '../utils/secureStorage';
+import { useNavigation } from '../navigation/NavigationProvider';
 
 const createFetch = () => {
   const fetchImpl = globalThis.fetch;
@@ -111,12 +112,17 @@ const createWsAdapter = () => {
 
 const hash = (data: Uint8Array): Uint8Array => sha256(data);
 
-export function SelfClientProvider({ children }: PropsWithChildren) {
+type SelfClientProviderProps = PropsWithChildren<{
+  onNavigate?: (screen: string) => void;
+}>;
+
+export function SelfClientProvider({ children, onNavigate }: SelfClientProviderProps) {
   const config = useMemo(() => ({}), []);
+  const navigation = useNavigation();
 
   const adapters: Adapters = useMemo(
     () => ({
-      scanner: webNFCScannerShim,
+      scanner: reactNativeScannerAdapter,
       network: {
         http: {
           fetch: createFetch(),
@@ -156,11 +162,46 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
   const listeners = useMemo(() => {
     const { map, addListener } = createListenersMap();
 
-    addListener(SdkEvents.DOCUMENT_COUNTRY_SELECTED, event => {
-      console.info('go to id picker', event);
+    // Auto-navigate from MRZ scan to NFC scan
+    addListener(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS, () => {
+      onNavigate?.('nfc');
     });
+
+    addListener(SdkEvents.DOCUMENT_COUNTRY_SELECTED, event => {
+      navigation.navigate('IDSelection', {
+        countryCode: event.countryCode,
+        countryName: event.countryName,
+        documentTypes: event.documentTypes,
+      });
+    });
+
+    addListener(SdkEvents.DOCUMENT_TYPE_SELECTED, ({ documentType, countryCode }) => {
+      switch (documentType) {
+        case 'p':
+          navigation.navigate('MRZ');
+          break;
+        case 'i':
+          navigation.navigate('MRZ');
+          break;
+        case 'a':
+          if (countryCode) {
+            // navigation.navigate('AadhaarUpload', { countryCode });
+          }
+          break;
+        default:
+          if (countryCode) {
+            // navigation.navigate('ComingSoon', { countryCode });
+          }
+          break;
+      }
+    });
+
+    addListener(SdkEvents.DOCUMENT_NFC_SCAN_SUCCESS, () => {
+      onNavigate?.('success');
+    });
+
     return map;
-  }, []);
+  }, [navigation.navigate]);
 
   return (
     <SdkSelfClientProvider config={config} adapters={adapters} listeners={listeners}>

@@ -12,8 +12,10 @@ export { default as Additional } from './typography/Additional';
 // Layout components
 export { BodyText } from './typography/BodyText';
 export { Button } from './layout/Button';
+export { default as ButtonsContainer } from './ButtonsContainer';
 export { Caption } from './typography/Caption';
 export { default as Caution } from './typography/Caution';
+
 export { default as Description } from './typography/Description';
 
 export { DescriptionTitle } from './typography/DescriptionTitle';
@@ -35,6 +37,8 @@ export { SecondaryButton } from './buttons/SecondaryButton';
 export { SubHeader } from './typography/SubHeader';
 
 export { Text } from './layout/Text';
+
+export { default as TextsContainer } from './TextsContainer';
 
 export { Title } from './typography/Title';
 

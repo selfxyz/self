@@ -18,7 +18,7 @@ export default defineConfig({
     // Skip checking node_modules for faster testing
     server: {
       deps: {
-        inline: ['react-native', '@react-native'],
+        inline: ['react-native', '@react-native', '@selfxyz/mobile-sdk-alpha'],
       },
     },
   },
@@ -33,6 +33,14 @@ export default defineConfig({
       {
         find: 'react-native',
         replacement: resolve(__dirname, './tests/mocks/react-native.ts'),
+      },
+      {
+        find: '@selfxyz/mobile-sdk-alpha/onboarding/scan-nfc',
+        replacement: resolve(__dirname, './tests/__mocks__/@selfxyz/mobile-sdk-alpha/onboarding/scan-nfc.ts'),
+      },
+      {
+        find: /^@selfxyz\/mobile-sdk-alpha$/,
+        replacement: resolve(__dirname, './tests/__mocks__/@selfxyz/mobile-sdk-alpha/index.ts'),
       },
     ],
   },

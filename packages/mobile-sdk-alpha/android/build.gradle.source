@@ -1,0 +1,186 @@
+buildscript {
+    ext {
+        buildToolsVersion = "35.0.0"
+        minSdkVersion = 23
+        compileSdkVersion = 35
+        targetSdkVersion = 35
+        ndkVersion = "27.0.12077973"
+        kotlinVersion = "1.9.24"
+    }
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.1.0")
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven {
+            // When building from SDK: ../../../node_modules
+            // $rootDir is packages/mobile-sdk-alpha/android
+            url("$rootDir/../../../node_modules/react-native/android")
+        }
+        maven {
+            url("$rootDir/../../../node_modules/jsc-android/dist")
+        }
+    }
+    configurations.configureEach {
+        resolutionStrategy.dependencySubstitution {
+            substitute(platform(module('com.gemalto.jp2:jp2-android'))) using module('com.github.Tgo1014:JP2ForAndroid:1.0.4')
+        }
+        resolutionStrategy.force 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    ndkVersion rootProject.ext.ndkVersion
+
+    namespace "com.selfxyz.selfSDK"
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // Configure AAR generation for split AAB support
+    splits {
+        abi {
+            enable true
+            reset()
+            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            universalApk false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+        // sourceCompatibility JavaVersion.VERSION_17
+        // targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+        // jvmTarget = '1.8'
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java']
+            res.srcDirs = ['src/main/res']
+        }
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    packagingOptions {
+        exclude 'META-INF/proguard/androidx-annotations.pro'
+        exclude 'META-INF/androidx.exifinterface_exifinterface.version'
+        pickFirst '**/libc++_shared.so'
+        pickFirst '**/libjsc.so'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+
+    // React Native
+    implementation 'com.facebook.react:react-native:+'
+
+    // NFC and Passport Reading dependencies
+    // implementation 'org.jmrtd:jmrtd:1.7.4'
+    implementation 'org.jmrtd:jmrtd:0.7.35'
+
+    implementation 'net.sf.scuba:scuba-sc-android:0.0.23'
+
+    // Bouncy Castle for cryptography
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
+    implementation 'org.bouncycastle:bcpkix-jdk18on:1.78.1'
+
+    // Commons IO for utilities
+    implementation 'commons-io:commons-io:2.11.0'
+
+    // OkHttp for network operations
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // Gson for JSON handling
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.2'
+    implementation "com.github.fotoapparat:fotoapparat:2.7.0"
+
+    implementation 'androidx.multidex:multidex:2.0.1'
+
+    // RxJava dependencies
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+
+    // React Native dependencies
+    implementation 'com.facebook.react:react-android'
+    implementation 'com.facebook.react:react-native:+'
+
+    // MLKit dependencies
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.2'
+    implementation 'com.google.mlkit:text-recognition:16.0.0'
+
+    // Camera dependencies
+    implementation "androidx.camera:camera-core:1.3.2"
+    implementation "androidx.camera:camera-camera2:1.3.2"
+    implementation "androidx.camera:camera-lifecycle:1.3.2"
+    implementation "androidx.camera:camera-view:1.3.2"
+
+    // Utility dependencies
+    implementation 'com.google.guava:guava:31.1-android'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'com.google.android.material:material:1.9.0'
+
+    implementation 'com.github.mhshams:jnbis:2.0.2'
+}
+
+
+// Task to copy AAR files to dist directory for prebuilt distribution
+task copyAarToDist(type: Copy) {
+    from 'build/outputs/aar'
+    into '../dist/android'
+    include '*.aar'
+}
+
+// Ensure AAR is copied after assembleRelease
+afterEvaluate {
+    tasks.named('assembleRelease').configure {
+        finalizedBy copyAarToDist
+    }
+}

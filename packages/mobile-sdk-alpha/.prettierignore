@@ -1,2 +1,7 @@
 dist
 node_modules
+src/animations/
+**/*.xcframework/**
+**/.build/**
+**/OpenSSL.xcframework/**
+**/SelfSDK.xcframework/**

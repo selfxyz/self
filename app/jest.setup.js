@@ -4,6 +4,33 @@
 
 /* global jest */
 /** @jest-environment jsdom */
+
+// Mock React Native PixelRatio globally before anything else loads
+const mockPixelRatio = {
+  get: jest.fn(() => 2),
+  getFontScale: jest.fn(() => 1),
+  getPixelSizeForLayoutSize: jest.fn(layoutSize => layoutSize * 2),
+  roundToNearestPixel: jest.fn(layoutSize => Math.round(layoutSize * 2) / 2),
+  startDetecting: jest.fn(),
+};
+
+global.PixelRatio = mockPixelRatio;
+
+// Also make it available for require() calls
+const Module = require('module');
+
+const originalRequire = Module.prototype.require;
+Module.prototype.require = function (id) {
+  if (id === 'react-native') {
+    const RN = originalRequire.apply(this, arguments);
+    if (!RN.PixelRatio || !RN.PixelRatio.getFontScale) {
+      RN.PixelRatio = mockPixelRatio;
+    }
+    return RN;
+  }
+  return originalRequire.apply(this, arguments);
+};
+
 require('react-native-gesture-handler/jestSetup');
 
 // Mock NativeAnimatedHelper - using virtual mock during RN 0.76.9 prep phase
@@ -64,7 +91,50 @@ jest.mock('react-native/Libraries/TurboModule/TurboModuleRegistry', () => ({
   get: jest.fn(() => null),
 }));
 
-// Mock the mobile-sdk-alpha's React Native instance separately
+// Mock main React Native PixelRatio module
+jest.mock('react-native/Libraries/Utilities/PixelRatio', () => ({
+  get: jest.fn(() => 2),
+  getFontScale: jest.fn(() => 1),
+  getPixelSizeForLayoutSize: jest.fn(layoutSize => layoutSize * 2),
+  roundToNearestPixel: jest.fn(layoutSize => Math.round(layoutSize * 2) / 2),
+  startDetecting: jest.fn(),
+}));
+
+// Mock mobile-sdk-alpha to use the main React Native instance instead of its own
+jest.mock(
+  '../packages/mobile-sdk-alpha/node_modules/react-native',
+  () => {
+    // Create the PixelRatio mock first
+    const PixelRatio = {
+      get: jest.fn(() => 2),
+      getFontScale: jest.fn(() => 1),
+      getPixelSizeForLayoutSize: jest.fn(layoutSize => layoutSize * 2),
+      roundToNearestPixel: jest.fn(
+        layoutSize => Math.round(layoutSize * 2) / 2,
+      ),
+      startDetecting: jest.fn(),
+    };
+
+    const RN = jest.requireActual('react-native');
+    // Override the PixelRatio immediately
+    RN.PixelRatio = PixelRatio;
+
+    // Make sure both the default and named exports work
+    const mockedRN = {
+      ...RN,
+      PixelRatio,
+      default: {
+        ...RN,
+        PixelRatio,
+      },
+    };
+
+    return mockedRN;
+  },
+  { virtual: true },
+);
+
+// Mock the mobile-sdk-alpha's TurboModuleRegistry to prevent native module errors
 jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/TurboModule/TurboModuleRegistry',
   () => ({
@@ -112,7 +182,7 @@ jest.mock(
   { virtual: true },
 );
 
-// Mock mobile-sdk-alpha's PixelRatio module
+// Mock mobile-sdk-alpha's PixelRatio module directly since it's still needed by StyleSheet
 jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/Utilities/PixelRatio',
   () => ({
@@ -125,7 +195,7 @@ jest.mock(
   { virtual: true },
 );
 
-// Mock mobile-sdk-alpha's StyleSheet module directly
+// Mock mobile-sdk-alpha's StyleSheet module directly since it's still needed
 jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/StyleSheet/StyleSheet',
   () => ({
@@ -143,6 +213,21 @@ jest.mock(
   }),
   { virtual: true },
 );
+
+// Mock main React Native StyleSheet module
+jest.mock('react-native/Libraries/StyleSheet/StyleSheet', () => ({
+  create: jest.fn(styles => styles),
+  flatten: jest.fn(style => style),
+  hairlineWidth: 1,
+  absoluteFillObject: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  roundToNearestPixel: jest.fn(layoutSize => Math.round(layoutSize * 2) / 2),
+}));
 
 // Mock NativeDeviceInfo specs for both main app and mobile-sdk-alpha
 jest.mock('react-native/src/private/specs/modules/NativeDeviceInfo', () => ({

@@ -2,6 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+// Mock ConfirmIdentificationScreen to avoid PixelRatio issues
+jest.mock(
+  '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification',
+  () => ({
+    ConfirmIdentificationScreen: ({ children }: any) => children,
+  }),
+);
+
 describe('navigation', () => {
   it('should have the correct navigation screens', () => {
     const navigationScreens = require('@/navigation').navigationScreens;

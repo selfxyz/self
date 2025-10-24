@@ -96,3 +96,9 @@ yarn-error.log
 
 # Maestro
 maestro-results.xml
+
+# Exception: Include AAR files in dist/android/
+!dist/android/*.aar
+
+android/src
+android/libs

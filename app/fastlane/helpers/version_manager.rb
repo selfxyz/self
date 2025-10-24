@@ -63,10 +63,26 @@ module Fastlane
         android_matches = android_build == expected_android_build
 
         unless version_matches && ios_matches && android_matches
-          UI.error("Version mismatch detected!")
+          UI.error("❌ Version mismatch detected!")
           UI.error("Expected: v#{expected_version} (iOS: #{expected_ios_build}, Android: #{expected_android_build})")
           UI.error("Actual:   v#{pkg_version} (iOS: #{ios_build}, Android: #{android_build})")
-          UI.user_error!("Version mismatch! CI version-manager script should have set these correctly.")
+          UI.error("")
+
+          # Add specific diagnostics
+          UI.error("Mismatched fields:")
+          UI.error("  • package.json version") unless version_matches
+          UI.error("  • version.json iOS build") unless ios_matches
+          UI.error("  • version.json Android build") unless android_matches
+          UI.error("")
+
+          UI.error("💡 Common causes:")
+          UI.error("  1. version-manager.cjs 'apply' command didn't run in workflow")
+          UI.error("  2. Files were modified after version bump was applied")
+          UI.error("  3. CI_VERSION, CI_IOS_BUILD, or CI_ANDROID_BUILD env vars are incorrect")
+          UI.error("")
+          UI.error("🔍 Debug: Check workflow logs for 'Apply version bump' step")
+
+          UI.user_error!("Version verification failed")
         end
 
         UI.success("✅ Version verification passed:")

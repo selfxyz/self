@@ -1,0 +1,4 @@
+[submodule "packages/mobile-sdk-alpha/mobile-sdk-native"]
+	path = packages/mobile-sdk-alpha/mobile-sdk-native
+	url = git@github.com:selfxyz/mobile-sdk-native.git
+	branch = main

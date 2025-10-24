@@ -10,16 +10,16 @@ import { useNavigation } from '@react-navigation/native';
 
 import {
   Additional,
+  ButtonsContainer,
   Description,
   PrimaryButton,
   SecondaryButton,
+  TextsContainer,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
-import ButtonsContainer from '@/components/ButtonsContainer';
-import TextsContainer from '@/components/TextsContainer';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '@/utils/colors';

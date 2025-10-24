@@ -7466,6 +7466,7 @@ __metadata:
     react-native: "npm:0.76.9"
     react-native-haptic-feedback: "npm:^2.3.3"
     react-native-localize: "npm:^3.5.2"
+    react-native-nfc-manager: "npm:^3.17.1"
     react-native-svg-circle-country-flags: "npm:^0.2.2"
     react-native-web: "npm:^0.21.1"
     socket.io-client: "npm:^4.8.1"
@@ -23829,6 +23830,7 @@ __metadata:
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.9"
     react-native-get-random-values: "npm:^1.11.0"
+    react-native-haptic-feedback: "npm:^2.3.3"
     react-native-keychain: "npm:^10.0.0"
     react-native-localize: "npm:^3.5.4"
     react-native-safe-area-context: "npm:^5.6.1"
@@ -26419,6 +26421,18 @@ __metadata:
     "@expo/config-plugins":
       optional: true
   checksum: 10c0/11f86b564cbd9b2cc8d8f54b069d2985b2eb491cf815136583641c8d10fcf19fc3c49b2c467de40a5324ba24daf83aed587b32bb04975e795ede0a76bd718e74
+  languageName: node
+  linkType: hard
+
+"react-native-nfc-manager@npm:^3.17.1":
+  version: 3.17.1
+  resolution: "react-native-nfc-manager@npm:3.17.1"
+  peerDependencies:
+    "@expo/config-plugins": "*"
+  peerDependenciesMeta:
+    "@expo/config-plugins":
+      optional: true
+  checksum: 10c0/528cf5248834751e150a5d5a5bb0c6b9b5b74a742f8fcb069c4c200441d47170f09ef0eef0d22362527819709bd844724cd21d033a75d40e040c0d8d3d107889
   languageName: node
   linkType: hard
 

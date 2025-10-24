@@ -58,19 +58,22 @@ export default defineConfig([
     external: [
       'react',
       'react-native',
+      // Externalize all React Native sub-modules and internals
+      /^react-native\/.*/,
       '@selfxyz/common',
       // Common crypto dependencies (already in main app)
       'elliptic',
       'js-sha256',
       'js-sha1',
       'js-sha512',
+      'xstate',
       'node-forge',
       'ethers',
       // React Native dependencies
-      '@react-native-async-storage/async-storage',
-      'react-native-keychain',
-      'react-native-sqlite-storage',
-      // State management (xstate included in bundle)
+      'react-native-svg-circle-country-flags',
+      'lottie-react-native',
+      'react-native-haptic-feedback',
+      'react-native-localize',
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
     ],
@@ -106,6 +109,8 @@ export default defineConfig([
     external: [
       'react',
       'react-native',
+      // Externalize all React Native sub-modules and internals
+      /^react-native\/.*/,
       '@selfxyz/common',
       // Common crypto dependencies (already in main app)
       'elliptic',
@@ -113,12 +118,13 @@ export default defineConfig([
       'js-sha1',
       'js-sha512',
       'node-forge',
+      'xstate',
       'ethers',
       // React Native dependencies
-      '@react-native-async-storage/async-storage',
-      'react-native-keychain',
-      'react-native-sqlite-storage',
-      // State management (xstate included in bundle)
+      'react-native-svg-circle-country-flags',
+      'lottie-react-native',
+      'react-native-haptic-feedback',
+      'react-native-localize',
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
     ],

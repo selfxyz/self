@@ -26,6 +26,8 @@ allprojects {
         mavenCentral()
         maven { url 'https://jitpack.io' }
         maven {
+            // When building from SDK: ../../../node_modules
+            // $rootDir is packages/mobile-sdk-alpha/android
             url("$rootDir/../../../node_modules/react-native/android")
         }
         maven {
@@ -61,6 +63,16 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // Configure AAR generation for split AAB support
+    splits {
+        abi {
+            enable true
+            reset()
+            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            universalApk false
         }
     }
 
@@ -109,13 +121,17 @@ dependencies {
 
     // NFC and Passport Reading dependencies
     // implementation 'org.jmrtd:jmrtd:1.7.4'
-    implementation 'org.jmrtd:jmrtd:0.7.35'
+    // implementation 'org.jmrtd:jmrtd:0.7.35'
+    implementation 'org.jmrtd:jmrtd:0.8.3'
 
     implementation 'net.sf.scuba:scuba-sc-android:0.0.23'
 
     // Bouncy Castle for cryptography
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
-    implementation 'org.bouncycastle:bcpkix-jdk18on:1.78.1'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.82'
+    implementation 'org.bouncycastle:bcpkix-jdk18on:1.82'
+    implementation ('org.ejbca.cvc:cert-cvc:1.4.13'){
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+    }
 
     // Commons IO for utilities
     implementation 'commons-io:commons-io:2.11.0'
@@ -153,6 +169,22 @@ dependencies {
     implementation 'com.google.guava:guava:31.1-android'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'com.google.android.material:material:1.9.0'
 
     implementation 'com.github.mhshams:jnbis:2.0.2'
+}
+
+
+// Task to copy AAR files to dist directory for prebuilt distribution
+task copyAarToDist(type: Copy) {
+    from 'build/outputs/aar'
+    into '../dist/android'
+    include '*.aar'
+}
+
+// Ensure AAR is copied after assembleRelease
+afterEvaluate {
+    tasks.named('assembleRelease').configure {
+        finalizedBy copyAarToDist
+    }
 }

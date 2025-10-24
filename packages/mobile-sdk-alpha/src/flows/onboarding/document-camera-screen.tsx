@@ -4,21 +4,21 @@
 
 import { useCallback, useRef } from 'react';
 import { StyleSheet } from 'react-native';
-import passportScanAnimation from 'src/animations/passport_scan.json';
-import { Additional, Description, SecondaryButton, Title, View, XStack, YStack } from 'src/components';
-import { DelayedLottieView } from 'src/components/DelayedLottieView';
-import { MRZScannerView } from 'src/components/MRZScannerView';
-import { PassportEvents } from 'src/constants/analytics';
-import { black, slate400, slate800, white } from 'src/constants/colors';
-import { useSelfClient } from 'src/context';
-import { mrzReadInstructions, useReadMRZ } from 'src/flows/onboarding/read-mrz';
-import type { SafeAreaInsets } from 'src/layouts/ExpandableBottomLayout';
-import { ExpandableBottomLayout } from 'src/layouts/ExpandableBottomLayout';
-import { SdkEvents } from 'src/types/events';
 import type { MRZInfo } from 'src/types/public';
 
 import Scan from '../../../svgs/icons/passport_camera_scan.svg';
+import passportScanAnimation from '../../animations/passport_scan.json';
+import { Additional, Description, SecondaryButton, Title, View, XStack, YStack } from '../../components';
+import { DelayedLottieView } from '../../components/DelayedLottieView';
+import { MRZScannerView } from '../../components/MRZScannerView';
+import { PassportEvents } from '../../constants/analytics';
+import { black, slate400, slate800, white } from '../../constants/colors';
 import { dinot } from '../../constants/fonts';
+import { useSelfClient } from '../../context';
+import { mrzReadInstructions, useReadMRZ } from '../../flows/onboarding/read-mrz';
+import type { SafeAreaInsets } from '../../layouts/ExpandableBottomLayout';
+import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { SdkEvents } from '../../types/events';
 
 type Props = {
   onBack?: () => void;

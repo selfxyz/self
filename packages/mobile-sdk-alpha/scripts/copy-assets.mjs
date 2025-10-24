@@ -12,24 +12,44 @@ const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
 function copyAssets() {
-  const sourceDir = join(rootDir, 'svgs');
+  // Copy SVGs
+  const sourceSvgDir = join(rootDir, 'svgs');
   const targetSvgDir = join(rootDir, 'dist/svgs');
 
-  if (!existsSync(sourceDir)) {
-    console.log('No svgs directory found, skipping asset copy');
-    return;
+  if (existsSync(sourceSvgDir)) {
+    // Create target directory if it doesn't exist
+    mkdirSync(targetSvgDir, { recursive: true });
+
+    // Copy SVGs to single shared location in dist
+    try {
+      cpSync(sourceSvgDir, targetSvgDir, { recursive: true });
+      console.log('✅ SVG assets copied to dist/svgs');
+    } catch (error) {
+      console.error('❌ Failed to copy SVG assets:', error.message);
+      process.exit(1);
+    }
+  } else {
+    console.log('No svgs directory found, skipping SVG copy');
   }
 
-  // Create target directory if it doesn't exist
-  mkdirSync(targetSvgDir, { recursive: true });
+  // Copy animations
+  const sourceAnimationsDir = join(rootDir, 'src/animations');
+  const targetAnimationsDir = join(rootDir, 'dist/animations');
 
-  // Copy SVGs to single shared location in dist
-  try {
-    cpSync(sourceDir, targetSvgDir, { recursive: true });
-    console.log('✅ SVG assets copied to dist/svgs');
-  } catch (error) {
-    console.error('❌ Failed to copy SVG assets:', error.message);
-    process.exit(1);
+  if (existsSync(sourceAnimationsDir)) {
+    // Create target directory if it doesn't exist
+    mkdirSync(targetAnimationsDir, { recursive: true });
+
+    // Copy animation JSONs to single shared location in dist
+    try {
+      cpSync(sourceAnimationsDir, targetAnimationsDir, { recursive: true });
+      console.log('✅ Animation assets copied to dist/animations');
+    } catch (error) {
+      console.error('❌ Failed to copy animation assets:', error.message);
+      process.exit(1);
+    }
+  } else {
+    console.log('No src/animations directory found, skipping animation copy');
   }
 }
 

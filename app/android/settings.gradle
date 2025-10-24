@@ -10,3 +10,5 @@ include ':react-native-passport-reader'
 project(':react-native-passport-reader').projectDir = new File(rootProject.projectDir, './react-native-passport-reader/android')
 include ':passportreader'
 project(':passportreader').projectDir = new File(rootProject.projectDir, './android-passport-nfc-reader/app')
+include ':mobile-sdk-alpha'
+project(':mobile-sdk-alpha').projectDir = new File(rootProject.projectDir, '../../packages/mobile-sdk-alpha/android')

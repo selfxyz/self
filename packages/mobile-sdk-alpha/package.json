@@ -1,7 +1,7 @@
 {
   "name": "@selfxyz/mobile-sdk-alpha",
-  "version": "0.0.1",
-  "description": "Self SDK (alpha) for registering and proving. Adapters-first, RN-first with web shims.",
+  "version": "0.0.1-alpha.0",
+  "description": "Self SDK (alpha) for registering and proving",
   "keywords": [
     "self",
     "react-native",
@@ -78,6 +78,16 @@
       "react-native": "./dist/svgs/icons/*.svg",
       "import": "./dist/svgs/icons/*.svg",
       "require": "./dist/svgs/icons/*.svg"
+    },
+    "./animations/*.json": {
+      "react-native": "./dist/animations/*.json",
+      "import": "./dist/animations/*.json",
+      "require": "./dist/animations/*.json"
+    },
+    "./animations/loading/*.json": {
+      "react-native": "./dist/animations/loading/*.json",
+      "import": "./dist/animations/loading/*.json",
+      "require": "./dist/animations/loading/*.json"
     }
   },
   "main": "./dist/cjs/index.cjs",
@@ -86,15 +96,23 @@
   "types": "./dist/esm/index.d.ts",
   "files": [
     "dist",
-    "android",
+    "android/mobile-sdk-alpha-bom.gradle",
+    "android/build.gradle",
+    "android/gradle.properties",
+    "android/proguard-rules.pro",
     "ios",
+    "ios/Frameworks/NFCPassportReader.xcframework",
+    "ios/Frameworks/OpenSSL.xcframework",
     "svgs",
     "assets",
     "mobile-sdk-alpha.podspec",
     "react-native.config.cjs"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsup && yarn postbuild",
+    "build": "yarn build:android && yarn build:ios && tsup && yarn postbuild",
+    "build:ts-only": "tsup && yarn postbuild",
+    "build:android": "sh ./scripts/build-android.sh",
+    "build:ios": "sh ./scripts/build-ios.sh",
     "postbuild": "node ./scripts/postBuild.mjs",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
@@ -116,6 +134,7 @@
     "@selfxyz/common": "workspace:^",
     "@xstate/react": "^5.0.5",
     "node-forge": "^1.3.1",
+    "react-native-nfc-manager": "^3.17.1",
     "react-native-svg-circle-country-flags": "^0.2.2",
     "socket.io-client": "^4.8.1",
     "uuid": "^11.1.0",
@@ -159,6 +178,6 @@
   },
   "packageManager": "yarn@4.6.0",
   "publishConfig": {
-    "access": "public"
+    "access": "restricted"
   }
 }
