@@ -3,6 +3,8 @@ import forge from 'node-forge';
 import { WS_DB_RELAYER, WS_DB_RELAYER_STAGING } from '../constants/index.js';
 import { initElliptic } from '../utils/certificate_parsing/elliptic.js';
 import type { EndpointType } from './appType.js';
+import { generateX25519Keypair } from './proving/pqxdh-crypto.js';
+import type { CryptoSuite, X25519Keypair } from './proving/pqxdh-types.js';
 
 const elliptic = initElliptic();
 const { ec: EC } = elliptic;
@@ -31,6 +33,9 @@ export type TEEPayloadDisclose = TEEPayloadBase & {
 export const ec = new EC('p256');
 // eslint-disable-next-line -- clientKey is created from ec so must be second
 export const clientKey = ec.genKeyPair();
+
+/// Client's X25519 keypair for post-quantum key exchange.
+export const x25519Keys: X25519Keypair = generateX25519Keypair();
 
 type RegisterSuffixes = '' | '_id' | '_aadhaar';
 type DscSuffixes = '' | '_id';
@@ -106,3 +111,16 @@ export function getWSDbRelayerUrl(endpointType: EndpointType) {
     ? WS_DB_RELAYER
     : WS_DB_RELAYER_STAGING;
 }
+
+/// PQXDH types for post-quantum key exchange.
+export type { CryptoSuite, HelloParams, HelloResponse, KeyExchangeParams, SessionKeyMaterial, X25519Keypair } from './proving/pqxdh-types.js';
+
+/// PQXDH cryptographic functions.
+export {
+  generateX25519Keypair,
+  kyberEncapsulate,
+  computeX25519SharedSecret,
+  deriveSessionKey,
+  getSupportedSuites,
+  ml_kem768,
+} from './proving/pqxdh-crypto.js';
