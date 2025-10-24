@@ -219,8 +219,9 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
-      - name: Build package
+      - name: Build package dependencies
         run: |
+          yarn workspace @selfxyz/common build
           yarn workspace @selfxyz/mobile-sdk-alpha build
 
       - name: Publish to npm
