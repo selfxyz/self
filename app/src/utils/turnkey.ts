@@ -1,0 +1,113 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
+import { useCallback, useMemo } from 'react';
+import { AuthState, useTurnkey } from '@turnkey/react-native-wallet-kit';
+
+import { useSettingStore } from '@/stores/settingStore';
+
+export function useTurnkeyUtils() {
+  const turnkey = useTurnkey();
+  const {
+    handleGoogleOauth,
+    fetchWallets,
+    exportWallet,
+    importWallet,
+    authState,
+    wallets,
+  } = turnkey;
+
+  const setBackedUpWithTurnKey = useSettingStore(
+    state => state.setBackedUpWithTurnKey,
+  );
+  const backedUpWithTurnKey = useSettingStore(
+    state => state.backedUpWithTurnKey,
+  );
+
+  const authenticateIfNeeded = useCallback(
+    async (authenticate: boolean = true): Promise<void> => {
+      if (!authenticate || authState !== AuthState.Unauthenticated) {
+        return;
+      }
+      await handleGoogleOauth();
+    },
+    [authState, handleGoogleOauth],
+  );
+
+  return useMemo(
+    () => ({
+      isAuthenticated: (): boolean => {
+        return authState === AuthState.Authenticated;
+      },
+
+      restoreAccount: async (
+        authenticate: boolean = true,
+      ): Promise<{
+        message: string;
+        error?: string;
+      }> => {
+        try {
+          await authenticateIfNeeded(authenticate);
+          const fetchedWallets = await fetchWallets();
+          if (fetchedWallets.length > 0) {
+            if (!backedUpWithTurnKey) {
+              setBackedUpWithTurnKey(true);
+            }
+            return { message: 'Wallet restored successfully' };
+          }
+          return { message: 'No wallets found' };
+        } catch (error) {
+          console.error('restoreAccount error:', error);
+          return {
+            message: 'Failed to restore wallet',
+            error: error instanceof Error ? error.message : 'Unknown error',
+          };
+        }
+      },
+
+      backupAccount: async (
+        mnemonic: string,
+        authenticate: boolean = true,
+      ): Promise<void> => {
+        await authenticateIfNeeded(authenticate);
+        const fetchedWallets = await fetchWallets();
+        if (fetchedWallets.length > 0) {
+          if (!backedUpWithTurnKey) {
+            setBackedUpWithTurnKey(true);
+          }
+          throw new Error('already_exists');
+        }
+        await importWallet({
+          mnemonic,
+          walletName: `Self-${new Date().toISOString()}`,
+        });
+        setBackedUpWithTurnKey(true);
+      },
+
+      getMnemonic: async (authenticate: boolean = true): Promise<string> => {
+        await authenticateIfNeeded(authenticate);
+        const fetchedWallets = await fetchWallets();
+        if (fetchedWallets.length === 0) {
+          throw new Error('No wallets found');
+        }
+        const exportedWallet = await exportWallet({
+          walletId: fetchedWallets[0].walletId,
+          decrypt: true,
+        });
+        return exportedWallet;
+      },
+      wallets,
+    }),
+    [
+      wallets,
+      authState,
+      authenticateIfNeeded,
+      fetchWallets,
+      backedUpWithTurnKey,
+      setBackedUpWithTurnKey,
+      importWallet,
+      exportWallet,
+    ],
+  );
+}

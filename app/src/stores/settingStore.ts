@@ -24,6 +24,8 @@ interface PersistedSettingsState {
   setKeychainMigrationCompleted: () => void;
   fcmToken: string | null;
   setFcmToken: (token: string | null) => void;
+  backedUpWithTurnKey: boolean;
+  setBackedUpWithTurnKey: (backedUpWithTurnKey: boolean) => void;
 }
 
 interface NonPersistedSettingsState {
@@ -78,6 +80,10 @@ export const useSettingStore = create<SettingsState>()(
         set({ hasCompletedKeychainMigration: true }),
       fcmToken: null,
       setFcmToken: (token: string | null) => set({ fcmToken: token }),
+
+      backedUpWithTurnKey: false,
+      setBackedUpWithTurnKey: (backedUpWithTurnKey: boolean) =>
+        set({ backedUpWithTurnKey }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,

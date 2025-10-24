@@ -162,6 +162,9 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
   } else if (Platform.OS === 'web') {
     // TODO: web handle links if we need to idk if we do
     // For web, we can handle the URL some other way if we dont do this loading app in web always navigates to QRCodeTrouble
+  } else if (!selfAppStr) {
+    //TODO:turnkey check
+    return;
   } else {
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
       console.error('No sessionId or selfApp found in the data');

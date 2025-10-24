@@ -6,7 +6,17 @@
 import { Buffer } from 'buffer';
 import React from 'react';
 import { YStack } from 'tamagui';
+import type {
+  TurnkeyCallbacks,
+  TurnkeyProviderConfig,
+} from '@turnkey/react-native-wallet-kit';
+import { TurnkeyProvider } from '@turnkey/react-native-wallet-kit';
 
+import {
+  TURNKEY_AUTH_PROXY_CONFIG_ID,
+  TURNKEY_GOOGLE_CLIENT_ID,
+  TURNKEY_ORGANIZATION_ID,
+} from './env';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import AppNavigation from './src/navigation';
 import { AuthProvider } from './src/providers/authProvider';
@@ -18,10 +28,51 @@ import { PassportProvider } from './src/providers/passportDataProvider';
 import { RemoteConfigProvider } from './src/providers/remoteConfigProvider';
 import { SelfClientProvider } from './src/providers/selfClientProvider';
 import { initSentry, wrapWithSentry } from './src/Sentry';
+import { OAUTH_REDIRECT_URI } from './src/utils/constants';
+
+import 'react-native-get-random-values';
+import 'react-native-url-polyfill/auto';
+import '@walletconnect/react-native-compat';
+import '@noble/curves/p256';
+import 'sha256-uint8array';
+import '@turnkey/encoding';
+import '@turnkey/api-key-stamper';
 
 initSentry();
 
 global.Buffer = Buffer;
+
+export const TURNKEY_CALLBACKS: TurnkeyCallbacks = {
+  beforeSessionExpiry: ({ sessionKey }) => {
+    console.log('[Turnkey] Session nearing expiry:', sessionKey);
+  },
+  onSessionExpired: ({ sessionKey }) => {
+    console.log('[Turnkey] Session expired:', sessionKey);
+  },
+  onAuthenticationSuccess: ({ action, method, identifier }) => {
+    console.log('[Turnkey] Auth success:', { action, method, identifier });
+  },
+  onError: error => {
+    console.error('[Turnkey] Error:', error);
+  },
+};
+
+export const TURNKEY_CONFIG: TurnkeyProviderConfig = {
+  organizationId: TURNKEY_ORGANIZATION_ID!,
+  authProxyConfigId: TURNKEY_AUTH_PROXY_CONFIG_ID!,
+  autoRefreshManagedState: false,
+  auth: {
+    passkey: false,
+    oauth: {
+      appScheme: 'https',
+      redirectUri: OAUTH_REDIRECT_URI,
+      google: {
+        clientId: TURNKEY_GOOGLE_CLIENT_ID!,
+        redirectUri: OAUTH_REDIRECT_URI,
+      },
+    },
+  },
+};
 
 function App(): React.JSX.Element {
   return (
@@ -35,7 +86,12 @@ function App(): React.JSX.Element {
                   <DatabaseProvider>
                     <NotificationTrackingProvider>
                       <FeedbackProvider>
-                        <AppNavigation />
+                        <TurnkeyProvider
+                          config={TURNKEY_CONFIG}
+                          callbacks={TURNKEY_CALLBACKS}
+                        >
+                          <AppNavigation />
+                        </TurnkeyProvider>
                       </FeedbackProvider>
                     </NotificationTrackingProvider>
                   </DatabaseProvider>
