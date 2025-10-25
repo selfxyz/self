@@ -1284,6 +1284,8 @@ jobs:
           VERSION="${{ needs.bump-version.outputs.version }}"
           IOS_BUILD="${{ needs.bump-version.outputs.ios_build }}"
           ANDROID_BUILD="${{ needs.bump-version.outputs.android_build }}"
+          IOS_SUCCESS="${{ needs.build-ios.result }}"
+          ANDROID_SUCCESS="${{ needs.build-android.result }}"
 
           echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD, Android: $ANDROID_BUILD)"
 
@@ -1296,12 +1298,25 @@ jobs:
             console.log('✅ Updated package.json');
           "
 
-          # Update version.json build numbers
+          # Update version.json build numbers and deployment timestamps
           node -e "
             const fs = require('fs');
             const version = JSON.parse(fs.readFileSync('version.json', 'utf8'));
+            const timestamp = new Date().toISOString();
+
             version.ios.build = $IOS_BUILD;
             version.android.build = $ANDROID_BUILD;
+
+            // Update lastDeployed timestamp for successful builds
+            if ('$IOS_SUCCESS' === 'success') {
+              version.ios.lastDeployed = timestamp;
+              console.log('✅ Updated iOS lastDeployed timestamp');
+            }
+            if ('$ANDROID_SUCCESS' === 'success') {
+              version.android.lastDeployed = timestamp;
+              console.log('✅ Updated Android lastDeployed timestamp');
+            }
+
             fs.writeFileSync('version.json', JSON.stringify(version, null, 2) + '\n');
             console.log('✅ Updated version.json');
           "
@@ -1391,7 +1406,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: bump mobile app version to $VERSION"
+          git commit -m "chore: bump mobile app version to $VERSION" -m "Update build numbers and deployment timestamps after successful deployment."
 
           # Create new branch from current HEAD (bump target branch with version bump)
           git checkout -b ${BRANCH_NAME}
@@ -1413,6 +1428,10 @@ jobs:
           **Platforms Built:** ${{ steps.platforms.outputs.platforms }}
           **Build Branch:** ${{ github.ref_name }}
           **Target Branch:** ${TARGET_BRANCH}
+
+          This PR updates:
+          - Build numbers for deployed platforms
+          - Deployment timestamps (\`lastDeployed\`) for successful builds
 
           This PR was automatically created by the mobile deployment workflow." \
             --label "automated"
