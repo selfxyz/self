@@ -38,6 +38,8 @@ paths-ignore:
 
   # iOS frameworks and build artifacts
   - "**/*.xcframework"
+  - "**/*.xcframework/**"
+  - "**/*.swiftinterface"
   - "**/NFCPassportReader.xcframework/**"
   - "**/OpenSSL.xcframework/**"
   - "**/SelfSDK.xcframework/**"
@@ -56,6 +58,8 @@ secret:
   - match: 2036b4e50ad3042969b290e354d9864465107a14de6f5a36d49f81ea8290def8
     name: prebuilt-ios-arm64-apple-ios.private.swiftinterface
   ignored_paths:
+  - '**/*.swiftinterface'
+  - '**/*.xcframework/**'
   - '**/packages/mobile-sdk-alpha/ios/Frameworks/**'
   - '**/OpenSSL.xcframework/**'
   - '**/demo-app/**/mock/**'
