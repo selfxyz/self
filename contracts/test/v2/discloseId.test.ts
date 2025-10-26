@@ -300,7 +300,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const TestSelfVerificationRootFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
       const differentScopeContract = await TestSelfVerificationRootFactory.deploy(
         deployedActors.hub.target,
-        "different-test-scope" // Different scopeSeed
+        "different-test-scope", // Different scopeSeed
       );
       await differentScopeContract.waitForDeployment();
 
@@ -658,7 +658,6 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
       // Use the existing commitment and merkle root instead of creating new ones
@@ -718,7 +717,6 @@ describe("Self Verification Flow V2 - ID Card", () => {
 
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
-
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
@@ -781,7 +779,6 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
       // Use the existing commitment and merkle root instead of creating new ones
@@ -842,7 +839,6 @@ describe("Self Verification Flow V2 - ID Card", () => {
 
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
-
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 

@@ -180,9 +180,7 @@ describe("CircuitAttributeHandler", function () {
         "InsufficientCharcodeLen",
       );
 
-      expect(() => CircuitAttributeHandler.extractStringAttribute(shortMRZ, 0, 5)).to.throw(
-        "InsufficientCharcodeLen",
-      );
+      expect(() => CircuitAttributeHandler.extractStringAttribute(shortMRZ, 0, 5)).to.throw("InsufficientCharcodeLen");
     });
 
     it("should match contract and ts implementation for empty range", async function () {

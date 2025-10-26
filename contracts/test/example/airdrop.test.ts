@@ -96,11 +96,9 @@ describe("Airdrop", () => {
 
     // Deploy TestAirdrop contract (which allows setting PoseidonT3 address)
     const airdropFactory = await ethers.getContractFactory("TestAirdrop");
-    airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
-      deployedActors.hub.target,
-      "test-scope",
-      token.target,
-    );
+    airdrop = await airdropFactory
+      .connect(deployedActors.owner)
+      .deploy(deployedActors.hub.target, "test-scope", token.target);
     await airdrop.waitForDeployment();
 
     // Set the proper scope using the deployed PoseidonT3
@@ -160,7 +158,9 @@ describe("Airdrop", () => {
     };
 
     // Register the config in the hub and get the config ID
-    const configId = await deployedActors.hub.connect(deployedActors.owner).setVerificationConfigV2(verificationConfigV2);
+    const configId = await deployedActors.hub
+      .connect(deployedActors.owner)
+      .setVerificationConfigV2(verificationConfigV2);
     const receipt = await configId.wait();
 
     // Extract the actual config ID from the transaction receipt
@@ -413,7 +413,7 @@ describe("Airdrop", () => {
 
     await expect(airdrop.connect(user1).verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(
       deployedActors.hub,
-      "AttestationIdMismatch"
+      "AttestationIdMismatch",
     );
   });
 
@@ -459,9 +459,7 @@ describe("Airdrop", () => {
     const newPoseidonT3Address = await newPoseidonT3.getAddress();
 
     const airdropFactory = await ethers.getContractFactory("TestAirdrop");
-    const newAirdrop = await airdropFactory
-      .connect(owner)
-      .deploy(hub.target, "test-scope-2", token.target);
+    const newAirdrop = await airdropFactory.connect(owner).deploy(hub.target, "test-scope-2", token.target);
     await newAirdrop.waitForDeployment();
 
     // Set the proper scope for the new airdrop using the deployed PoseidonT3
@@ -756,5 +754,4 @@ describe("Airdrop", () => {
       .to.be.revertedWithCustomError(airdrop, "OwnableUnauthorizedAccount")
       .withArgs(await user1.getAddress());
   });
-
 });

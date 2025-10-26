@@ -86,9 +86,11 @@ As an example, please refer to the following contract.
 
 ### Prerequisites
 
-Before building contracts, you must install these **system-level dependencies manually** or ensure they are already installed.
+Before building contracts, you must install these **system-level dependencies manually** or ensure they are already
+installed.
 
 #### 1. Node.js and Yarn
+
 We use yarn 4. If you haven't already, it can be enabled with:
 
 ```bash
@@ -98,6 +100,7 @@ corepack enable yarn
 _corepack_ is a built-in nodejs command
 
 #### 2. Rust (for Circom)
+
 Install Rust using rustup:
 
 ```bash
@@ -106,6 +109,7 @@ source ~/.cargo/env
 ```
 
 #### 3. Circom 2.1.9
+
 Install the specific version of Circom required:
 
 ```bash
@@ -117,13 +121,16 @@ cp ./target/release/circom ~/.cargo/bin/
 ```
 
 Verify installation:
+
 ```bash
 circom --version
 # Should output: circom compiler 2.1.9
 ```
 
 #### 4. wget
+
 Install wget using your system's package manager:
+
 - **macOS**: `brew install wget`
 - **Ubuntu/Debian**: `apt-get install wget`
 

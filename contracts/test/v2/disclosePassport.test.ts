@@ -286,7 +286,7 @@ describe("Self Verification Flow V2", () => {
       const TestSelfVerificationRootFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
       const differentScopeContract = await TestSelfVerificationRootFactory.deploy(
         deployedActors.hub.target,
-        "different-test-scope" // Different scopeSeed
+        "different-test-scope", // Different scopeSeed
       );
       await differentScopeContract.waitForDeployment();
 
@@ -391,7 +391,6 @@ describe("Self Verification Flow V2", () => {
 
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
-
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
@@ -677,7 +676,6 @@ describe("Self Verification Flow V2", () => {
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
       // Use the existing commitment and merkle root instead of creating new ones
@@ -751,7 +749,6 @@ describe("Self Verification Flow V2", () => {
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
       // Generate proof with the original forbidden countries list (this will create a mismatch) using existing commitment
@@ -809,7 +806,6 @@ describe("Self Verification Flow V2", () => {
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
       // Generate proof with age 20 (which is less than required 25) using existing commitment
@@ -866,7 +862,6 @@ describe("Self Verification Flow V2", () => {
 
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
-
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 

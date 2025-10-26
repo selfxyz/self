@@ -63,7 +63,6 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
     nameAndDob_smt = getSMTs().nameDobAadhar_smt;
     nameAndYob_smt = getSMTs().nameYobAadhar_smt;
 
-
     const destChainId = 31337;
     const user1Address = await deployedActors.user1.getAddress();
     const userData = "test-user-data-for-verification";
@@ -328,7 +327,7 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       const TestSelfVerificationRootFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
       const differentScopeContract = await TestSelfVerificationRootFactory.deploy(
         deployedActors.hubImplV2.target,
-        "different-test-scope" // Different scopeSeed
+        "different-test-scope", // Different scopeSeed
       );
       await differentScopeContract.waitForDeployment();
 
