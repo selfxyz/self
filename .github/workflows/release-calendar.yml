@@ -119,12 +119,8 @@ jobs:
           set -euo pipefail
 
           for LABEL in release automated staging; do
-            if ! gh label list --json name --jq '.[].name' | grep -q "^${LABEL}$"; then
-              echo "Creating missing label: ${LABEL}"
-              gh label create "${LABEL}" --color BFD4F2
-            else
-              echo "Label ${LABEL} already exists."
-            fi
+            echo "Ensuring label exists: ${LABEL}"
+            gh label create "${LABEL}" --color BFD4F2 --force || true
           done
 
       - name: Create release branch from dev
@@ -293,12 +289,8 @@ jobs:
           set -euo pipefail
 
           for LABEL in release automated production; do
-            if ! gh label list --json name --jq '.[].name' | grep -q "^${LABEL}$"; then
-              echo "Creating missing label: ${LABEL}"
-              gh label create "${LABEL}" --color BFD4F2
-            else
-              echo "Label ${LABEL} already exists."
-            fi
+            echo "Ensuring label exists: ${LABEL}"
+            gh label create "${LABEL}" --color BFD4F2 --force || true
           done
 
       - name: Create staging to main release PR
