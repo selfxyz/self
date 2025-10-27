@@ -8,6 +8,11 @@ import "solidity-coverage";
 import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
 
+// Use a dummy private key for CI/local development (not used for actual deployments)
+const DUMMY_PRIVATE_KEY =
+  "0x0000000000000000000000000000000000000000000000000000000000000001";
+const PRIVATE_KEY = process.env.PRIVATE_KEY || DUMMY_PRIVATE_KEY;
+
 const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.28",
@@ -40,22 +45,22 @@ const config: HardhatUserConfig = {
     mainnet: {
       chainId: 1,
       url: process.env.MAINNET_RPC_URL || "https://eth.llamarpc.com",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: [PRIVATE_KEY],
     },
     sepolia: {
       chainId: 11155111,
       url: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.public.blastapi.io",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: [PRIVATE_KEY],
     },
     celo: {
       chainId: 42220,
       url: process.env.CELO_RPC_URL || "https://forno.celo.org",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: [PRIVATE_KEY],
     },
     "celo-sepolia": {
       chainId: 11142220,
       url: process.env.CELO_SEPOLIA_RPC_URL || "https://rpc.ankr.com/celo_sepolia",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: [PRIVATE_KEY],
     },
   },
   etherscan: {
