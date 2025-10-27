@@ -9,8 +9,7 @@ import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
 
 // Use a dummy private key for CI/local development (not used for actual deployments)
-const DUMMY_PRIVATE_KEY =
-  "0x0000000000000000000000000000000000000000000000000000000000000001";
+const DUMMY_PRIVATE_KEY = "0x0000000000000000000000000000000000000000000000000000000000000001";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || DUMMY_PRIVATE_KEY;
 
 const config: HardhatUserConfig = {
