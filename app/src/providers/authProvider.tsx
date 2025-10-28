@@ -278,7 +278,7 @@ export const AuthProvider = ({
         keychainOptions => loadOrCreateMnemonic(keychainOptions),
         str => JSON.parse(str),
         {
-          requireAuth: false,
+          requireAuth: true,
         },
       ),
     [],
