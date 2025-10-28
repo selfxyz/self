@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+
 import {IPoseidonT3} from "../interfaces/IPoseidonT3.sol";
 import {IIdentityVerificationHubV2} from "../interfaces/IIdentityVerificationHubV2.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
@@ -10,12 +13,12 @@ import {SelfUtils} from "../libraries/SelfUtils.sol";
 import {Formatter} from "../libraries/Formatter.sol";
 
 /**
- * @title SelfVerificationRoot
- * @notice Abstract base contract to be integrated with self's verification infrastructure
- * @dev Provides base functionality for verifying and disclosing identity credentials
+ * @title SelfVerificationRootUpgradeable
+ * @notice Abstract upgradeable base contract to be integrated with self's verification infrastructure
+ * @dev Provides base functionality for verifying and disclosing identity credentials with proxy upgrades enabled
  * @author Self Team
  */
-abstract contract SelfVerificationRoot is ISelfVerificationRoot {
+abstract contract SelfVerificationRootUpgradeable is Initializable, ContextUpgradeable, ISelfVerificationRoot {
     // ====================================================
     // Constants
     // ====================================================
@@ -25,16 +28,33 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     uint8 constant CONTRACT_VERSION = 2;
 
     // ====================================================
-    // Storage Variables
+    // UUPS Pattern Storage
     // ====================================================
 
-    /// @notice The scope value that proofs must match
-    /// @dev Used to validate that submitted proofs match the expected scope
-    uint256 internal _scope;
+    /// @notice The storage struct used to hold contract state according to the UUPSUpgradeable pattern
+    /// @dev Used to maintain storage state across contract upgrades
+    struct SelfVerificationRootStorage {
+        /// @notice The scope value that proofs must match
+        /// @dev Used to validate that submitted proofs match the expected scope
+        uint256 _scope;
+        /// @notice Reference to the identity verification hub V2 contract
+        /// @dev Immutable reference used for bytes-based proof verification
+        IIdentityVerificationHubV2 _identityVerificationHubV2;
+    }
 
-    /// @notice Reference to the identity verification hub V2 contract
-    /// @dev Immutable reference used for bytes-based proof verification
-    IIdentityVerificationHubV2 internal immutable _identityVerificationHubV2;
+    /// @notice The internal storage address for contract state.
+    /// @dev keccak256(abi.encode(uint256(keccak256("self.storage.SelfVerificationRoot")) - 1)) & ~bytes32(uint256(0xff));
+    bytes32 private constant SELFVERIFICATIONROOT_STORAGE_LOCATION =
+        0xf820f28194b303d8b69b0749376f133a581f592812c2022c414f0f3d6b6eba00;
+
+    /// @notice The access method for internal storage
+    /// @dev Called to retrieve and use contract state
+    /// @return $ The storage struct reference.
+    function _getSelfVerificationRootStorage() private pure returns (SelfVerificationRootStorage storage $) {
+        assembly {
+            $.slot := SELFVERIFICATIONROOT_STORAGE_LOCATION
+        }
+    }
 
     // ====================================================
     // Errors
@@ -57,14 +77,40 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // ====================================================
 
     /**
-     * @notice Initializes the SelfVerificationRoot contract
+     * @dev Prevents the implementation contract from being initialized.
+     * @dev The actual initialization will be done via the proxy using the `initialize()` function
+     * in the derived contract.
+     * @custom:oz-upgrades-unsafe-allow constructor
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
+    // ====================================================
+    // Initializer
+    // ====================================================
+
+    // Implementing contracts must define an initialize function like this:
+    // function initialize(address hubAddress, string memory scopeSeed) public initializer {
+    //     __SelfVerificationRoot_init(hubAddress, scopeSeed);
+    //     // Add your own initialization logic here
+    // }
+
+    /**
+     * @notice Initializes the SelfVerificationRootUpgradeable contract
      * @dev Sets up the immutable reference to the hub contract and generates scope automatically
+     * @dev Must be called from the public `initialize()` function in your derived contract
      * @param identityVerificationHubV2Address The address of the Identity Verification Hub V2
      * @param scopeSeed The scope seed string to be hashed with contract address to generate the scope
      */
-    constructor(address identityVerificationHubV2Address, string memory scopeSeed) {
-        _identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
-        _scope = _calculateScope(address(this), scopeSeed, _getPoseidonAddress());
+    function __SelfVerificationRoot_init(
+        address identityVerificationHubV2Address,
+        string memory scopeSeed
+    ) internal onlyInitializing {
+        SelfVerificationRootStorage storage $ = _getSelfVerificationRootStorage();
+
+        $._identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
+        $._scope = _calculateScope(address(this), scopeSeed, _getPoseidonAddress());
     }
 
     // ====================================================
@@ -77,7 +123,9 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @return The scope value that proofs must match
      */
     function scope() public view returns (uint256) {
-        return _scope;
+        SelfVerificationRootStorage storage $ = _getSelfVerificationRootStorage();
+
+        return $._scope;
     }
 
     /**
@@ -90,6 +138,8 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @custom:data-format hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
      */
     function verifySelfProof(bytes calldata proofPayload, bytes calldata userContextData) public {
+        SelfVerificationRootStorage storage $ = _getSelfVerificationRootStorage();
+
         // Minimum expected length for proofData: 32 bytes attestationId + proof data
         if (proofPayload.length < 32) {
             revert InvalidDataFormat();
@@ -119,12 +169,12 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             // 31 bytes buffer (all zeros)
             bytes31(0),
             // 32 bytes scope
-            _scope,
+            $._scope,
             proofPayload
         );
 
         // Call hub V2 verification
-        _identityVerificationHubV2.verify(baseVerificationInput, bytes.concat(configId, userContextData));
+        $._identityVerificationHubV2.verify(baseVerificationInput, bytes.concat(configId, userContextData));
     }
 
     /**
@@ -136,8 +186,10 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @custom:flow This function decodes the output and calls the customizable verification hook
      */
     function onVerificationSuccess(bytes memory output, bytes memory userData) public {
+        SelfVerificationRootStorage storage $ = _getSelfVerificationRootStorage();
+
         // Only allow the identity verification hub V2 to call this function
-        if (msg.sender != address(_identityVerificationHubV2)) {
+        if (msg.sender != address($._identityVerificationHubV2)) {
             revert UnauthorizedCaller();
         }
 
@@ -167,10 +219,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         revert("SelfVerificationRoot: getConfigId must be overridden");
     }
 
-    // ====================================================
-    // Internal Functions
-    // ====================================================
-
     /**
      * @notice Custom verification hook that can be overridden by implementing contracts
      * @dev This function is called after successful verification and hub address validation
@@ -185,6 +233,10 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     ) internal virtual {
         // Default implementation is empty - override in derived contracts to add custom logic
     }
+
+    // ====================================================
+    // Internal Functions
+    // ====================================================
 
     /**
      * @notice Gets the PoseidonT3 library address for the current chain
