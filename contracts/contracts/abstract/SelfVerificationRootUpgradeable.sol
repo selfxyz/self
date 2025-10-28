@@ -14,7 +14,7 @@ import {Formatter} from "../libraries/Formatter.sol";
 
 /**
  * @title SelfVerificationRootUpgradeable
- * @notice Abstract upgradeable contract to be integrated with self's verification infrastructure
+ * @notice Abstract upgradeable base contract to be integrated with self's verification infrastructure
  * @dev Provides base functionality for verifying and disclosing identity credentials with proxy upgrades enabled
  * @author Self Team
  */
@@ -64,6 +64,20 @@ abstract contract SelfVerificationRootUpgradeable is
     }
 
     // ====================================================
+    // Constructor
+    // ====================================================
+
+    /**
+     * @dev Prevents the implementation contract from being initialized.
+     * @dev The actual initialization will be done via the proxy using the `initialize()` function
+     * in the derived contract.
+     * @custom:oz-upgrades-unsafe-allow constructor
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
+    // ====================================================
     // Errors
     // ====================================================
 
@@ -79,9 +93,16 @@ abstract contract SelfVerificationRootUpgradeable is
     // Events
     // ====================================================
 
+    // Implementing contracts must define an initialize function like this:
+    // function initialize(address hubAddress, string memory scopeSeed) public initializer {
+    //     __SelfVerificationRoot_init(hubAddress, scopeSeed);
+    //     // Add your own initialization logic here
+    // }
+
     /**
      * @notice Initializes the SelfVerificationRootUpgradeable contract
      * @dev Sets up the immutable reference to the hub contract and generates scope automatically
+     * @dev Must be called from the public `initialize()` function in your derived contract
      * @param identityVerificationHubV2Address The address of the Identity Verification Hub V2
      * @param scopeSeed The scope seed string to be hashed with contract address to generate the scope
      */
