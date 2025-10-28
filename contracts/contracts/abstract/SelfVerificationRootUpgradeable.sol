@@ -18,11 +18,7 @@ import {Formatter} from "../libraries/Formatter.sol";
  * @dev Provides base functionality for verifying and disclosing identity credentials with proxy upgrades enabled
  * @author Self Team
  */
-abstract contract SelfVerificationRootUpgradeable is
-    Initializable,
-    ContextUpgradeable,
-    ISelfVerificationRoot
-{
+abstract contract SelfVerificationRootUpgradeable is Initializable, ContextUpgradeable, ISelfVerificationRoot {
     // ====================================================
     // Constants
     // ====================================================
@@ -38,15 +34,12 @@ abstract contract SelfVerificationRootUpgradeable is
     /// @notice The storage struct used to hold contract state according to the UUPSUpgradeable pattern
     /// @dev Used to maintain storage state across contract upgrades
     struct SelfVerificationRootStorage {
-
         /// @notice The scope value that proofs must match
         /// @dev Used to validate that submitted proofs match the expected scope
         uint256 _scope;
-
         /// @notice Reference to the identity verification hub V2 contract
         /// @dev Immutable reference used for bytes-based proof verification
         IIdentityVerificationHubV2 _identityVerificationHubV2;
-
     }
 
     /// @notice The internal storage address for contract state.
@@ -113,10 +106,7 @@ abstract contract SelfVerificationRootUpgradeable is
     function __SelfVerificationRoot_init(
         address identityVerificationHubV2Address,
         string memory scopeSeed
-    )
-        internal
-        onlyInitializing
-    {
+    ) internal onlyInitializing {
         SelfVerificationRootStorage storage $ = _getSelfVerificationRootStorage();
 
         $._identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
