@@ -64,6 +64,22 @@ abstract contract SelfVerificationRootUpgradeable is
     }
 
     // ====================================================
+    // Errors
+    // ====================================================
+
+    /// @notice Error thrown when the data format is invalid
+    /// @dev Triggered when the provided bytes data doesn't have the expected format
+    error InvalidDataFormat();
+
+    /// @notice Error thrown when onVerificationSuccess is called by an unauthorized address
+    /// @dev Only the identity verification hub V2 contract can call onVerificationSuccess
+    error UnauthorizedCaller();
+
+    // ====================================================
+    // Events
+    // ====================================================
+
+    // ====================================================
     // Constructor
     // ====================================================
 
@@ -78,19 +94,7 @@ abstract contract SelfVerificationRootUpgradeable is
     }
 
     // ====================================================
-    // Errors
-    // ====================================================
-
-    /// @notice Error thrown when the data format is invalid
-    /// @dev Triggered when the provided bytes data doesn't have the expected format
-    error InvalidDataFormat();
-
-    /// @notice Error thrown when onVerificationSuccess is called by an unauthorized address
-    /// @dev Only the identity verification hub V2 contract can call onVerificationSuccess
-    error UnauthorizedCaller();
-
-    // ====================================================
-    // Events
+    // Initializer
     // ====================================================
 
     // Implementing contracts must define an initialize function like this:
@@ -118,6 +122,10 @@ abstract contract SelfVerificationRootUpgradeable is
         $._identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
         $._scope = _calculateScope(address(this), scopeSeed, _getPoseidonAddress());
     }
+
+    // ====================================================
+    // Public Functions
+    // ====================================================
 
     /**
      * @notice Returns the current scope value
@@ -235,6 +243,10 @@ abstract contract SelfVerificationRootUpgradeable is
     ) internal virtual {
         // Default implementation is empty - override in derived contracts to add custom logic
     }
+
+    // ====================================================
+    // Internal Functions
+    // ====================================================
 
     /**
      * @notice Gets the PoseidonT3 library address for the current chain
