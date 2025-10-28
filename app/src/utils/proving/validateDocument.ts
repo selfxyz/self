@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
-import { isUserRegistered } from '@selfxyz/common/utils/passports/validate';
+import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import type {
   PassportValidationCallbacks,
   SelfClient,
@@ -19,6 +19,7 @@ import {
   getAllDocumentsDirectlyFromKeychain,
   loadPassportDataAndSecret,
   loadSelectedDocumentDirectlyFromKeychain,
+  reStorePassportDataWithRightCSCA,
   setSelectedDocument,
   storePassportData,
   updateDocumentRegistrationState,
@@ -26,6 +27,24 @@ import {
 import analytics from '@/utils/analytics';
 
 const { trackEvent } = analytics();
+
+/**
+ * Helper function to get alternative CSCA or public keys for a document category.
+ * For Aadhaar documents, returns public keys. For passports/ID cards, returns alternative CSCAs.
+ */
+function getAlternativeCSCA(
+  useProtocolStore: SelfClient['useProtocolStore'],
+  docCategory: DocumentCategory,
+) {
+  if (docCategory === 'aadhaar') {
+    const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
+    // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+    return publicKeys
+      ? Object.fromEntries(publicKeys.map(key => [key, key]))
+      : {};
+  }
+  return useProtocolStore.getState()[docCategory].alternative_csca;
+}
 
 /**
  * This function checks and updates registration states for all documents and updates the `isRegistered`.
@@ -138,17 +157,29 @@ export async function checkAndUpdateRegistrationStates(
       }
 
       const { secret } = JSON.parse(passportDataAndSecret);
-      const isRegistered = await isUserRegistered(
+      const { useProtocolStore } = selfClient;
+
+      // Check if user is registered with alternative CSCA
+      const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
         migratedPassportData,
         secret,
-        (docCategory: DocumentCategory) =>
-          getCommitmentTree(selfClient, docCategory),
+        {
+          getCommitmentTree: docCategory =>
+            getCommitmentTree(selfClient, docCategory),
+          getAltCSCA: docCategory =>
+            getAlternativeCSCA(useProtocolStore, docCategory),
+        },
       );
 
       // Update the registration state in the document metadata
       await updateDocumentRegistrationState(documentId, isRegistered);
 
       if (isRegistered) {
+        // Update passport data with the correct CSCA if one was found
+        if (csca) {
+          await reStorePassportDataWithRightCSCA(migratedPassportData, csca);
+        }
+
         trackEvent(DocumentEvents.DOCUMENT_VALIDATED, {
           documentId,
           documentCategory,
