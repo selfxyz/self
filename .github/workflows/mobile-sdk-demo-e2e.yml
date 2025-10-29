@@ -71,12 +71,54 @@ jobs:
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        run: yarn install --immutable --silent
+        run: |
+          # Retry up to 3 times with exponential backoff for transient Yarn Berry issues
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            if yarn install --immutable --silent; then
+              echo "✓ Dependencies installed successfully"
+              exit 0
+            else
+              exit_code=$?
+              if [ $attempt -lt $max_attempts ]; then
+                wait_time=$((2 ** attempt))
+                echo "✗ Install failed with exit code $exit_code. Retrying in ${wait_time}s..."
+                sleep $wait_time
+              else
+                echo "✗ Install failed after $max_attempts attempts"
+                exit $exit_code
+              fi
+            fi
+            attempt=$((attempt + 1))
+          done
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
-        run: yarn install --immutable --silent
+        run: |
+          # Retry up to 3 times with exponential backoff for transient Yarn Berry issues
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            if yarn install --immutable --silent; then
+              echo "✓ Dependencies installed successfully"
+              exit 0
+            else
+              exit_code=$?
+              if [ $attempt -lt $max_attempts ]; then
+                wait_time=$((2 ** attempt))
+                echo "✗ Install failed with exit code $exit_code. Retrying in ${wait_time}s..."
+                sleep $wait_time
+              else
+                echo "✗ Install failed after $max_attempts attempts"
+                exit $exit_code
+              fi
+            fi
+            attempt=$((attempt + 1))
+          done
       - name: Validate Maestro test file
         if: false # Skip for build-only test - keep logic for future E2E
         run: |
@@ -216,12 +258,54 @@ jobs:
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        run: yarn install --immutable --silent
+        run: |
+          # Retry up to 3 times with exponential backoff for transient Yarn Berry issues
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            if yarn install --immutable --silent; then
+              echo "✓ Dependencies installed successfully"
+              exit 0
+            else
+              exit_code=$?
+              if [ $attempt -lt $max_attempts ]; then
+                wait_time=$((2 ** attempt))
+                echo "✗ Install failed with exit code $exit_code. Retrying in ${wait_time}s..."
+                sleep $wait_time
+              else
+                echo "✗ Install failed after $max_attempts attempts"
+                exit $exit_code
+              fi
+            fi
+            attempt=$((attempt + 1))
+          done
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
-        run: yarn install --immutable --silent
+        run: |
+          # Retry up to 3 times with exponential backoff for transient Yarn Berry issues
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            if yarn install --immutable --silent; then
+              echo "✓ Dependencies installed successfully"
+              exit 0
+            else
+              exit_code=$?
+              if [ $attempt -lt $max_attempts ]; then
+                wait_time=$((2 ** attempt))
+                echo "✗ Install failed with exit code $exit_code. Retrying in ${wait_time}s..."
+                sleep $wait_time
+              else
+                echo "✗ Install failed after $max_attempts attempts"
+                exit $exit_code
+              fi
+            fi
+            attempt=$((attempt + 1))
+          done
       - name: Validate Maestro test file
         run: |
           [ -f packages/mobile-sdk-demo/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }

@@ -28,4 +28,25 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: yarn install --immutable
+      run: |
+        # Retry up to 3 times with exponential backoff for transient Yarn Berry issues
+        max_attempts=3
+        attempt=1
+        while [ $attempt -le $max_attempts ]; do
+          echo "Attempt $attempt of $max_attempts..."
+          if yarn install --immutable; then
+            echo "✓ Dependencies installed successfully"
+            exit 0
+          else
+            exit_code=$?
+            if [ $attempt -lt $max_attempts ]; then
+              wait_time=$((2 ** attempt))
+              echo "✗ Install failed with exit code $exit_code. Retrying in ${wait_time}s..."
+              sleep $wait_time
+            else
+              echo "✗ Install failed after $max_attempts attempts"
+              exit $exit_code
+            fi
+          fi
+          attempt=$((attempt + 1))
+        done
