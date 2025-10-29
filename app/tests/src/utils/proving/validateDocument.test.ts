@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PassportData } from '@selfxyz/common/types';
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
 
 // Import functions to test AFTER mocks are set up
@@ -56,32 +57,35 @@ jest.mock('@/providers/passportDataProvider', () => ({
   ),
 }));
 
+// Reusable default deployed circuits for initial store state
+const defaultDeployedCircuits: {
+  REGISTER: string[];
+  REGISTER_ID: string[];
+  DSC: string[];
+  DSC_ID: string[];
+} = {
+  REGISTER: ['test_register'],
+  REGISTER_ID: ['test_register_id'],
+  DSC: ['test_dsc'],
+  DSC_ID: ['test_dsc_id'],
+};
+
 // Mock the protocol store to avoid complex state management
 const mockGetState = jest.fn(() => ({
   passport: {
     fetch_all: jest.fn(),
-    deployed_circuits: {
-      REGISTER: ['test_register'],
-      REGISTER_ID: ['test_register_id'],
-      DSC: ['test_dsc'],
-      DSC_ID: ['test_dsc_id'],
-    },
+    deployed_circuits: { ...defaultDeployedCircuits },
     commitment_tree: 'test_tree',
     alternative_csca: {},
   },
   id_card: {
     fetch_all: jest.fn(),
-    deployed_circuits: {
-      REGISTER: ['test_register'],
-      REGISTER_ID: ['test_register_id'],
-      DSC: ['test_dsc'],
-      DSC_ID: ['test_dsc_id'],
-    },
+    deployed_circuits: { ...defaultDeployedCircuits },
     commitment_tree: 'test_tree',
     alternative_csca: {},
   },
   aadhaar: {
-    public_keys: [],
+    public_keys: [] as string[] | null,
     commitment_tree: 'test_tree',
   },
 }));
@@ -91,7 +95,7 @@ const mockGetCommitmentTree = jest.fn();
 
 jest.mock('@selfxyz/mobile-sdk-alpha/stores', () => ({
   useProtocolStore: {
-    getState: jest.fn((...args: unknown[]) => mockGetState(...args)),
+    getState: jest.fn(() => mockGetState()),
   },
   fetchAllTreesAndCircuits: jest.fn((...args: unknown[]) =>
     mockFetchAllTreesAndCircuits(...args),
@@ -100,6 +104,52 @@ jest.mock('@selfxyz/mobile-sdk-alpha/stores', () => ({
     mockGetCommitmentTree(...args),
   ),
 }));
+
+// DRY helpers for repeated protocol state shapes in tests
+const emptyDeployedCircuits = {
+  REGISTER: [] as string[],
+  REGISTER_ID: [] as string[],
+  DSC: [] as string[],
+  DSC_ID: [] as string[],
+};
+
+function buildModuleState(alternative: Record<string, unknown> = {}) {
+  return {
+    fetch_all: jest.fn(),
+    deployed_circuits: { ...emptyDeployedCircuits },
+    commitment_tree: 'test_tree',
+    alternative_csca: alternative,
+  };
+}
+
+function buildState(params?: {
+  passportAlt?: Record<string, unknown>;
+  idAlt?: Record<string, unknown>;
+  aadhaarKeys?: string[] | null;
+}) {
+  return {
+    passport: buildModuleState(params?.passportAlt ?? {}),
+    id_card: buildModuleState(params?.idAlt ?? {}),
+    aadhaar: {
+      public_keys: (params?.aadhaarKeys ?? []) as string[] | null,
+      commitment_tree: 'test_tree',
+    },
+  };
+}
+
+// DRY helper for isPassportDataValid callback object
+function createValidationCallbacks() {
+  return {
+    onPassportDataNull: jest.fn(),
+    onPassportMetadataNull: jest.fn(),
+    onDg1HashFunctionNull: jest.fn(),
+    onEContentHashFunctionNull: jest.fn(),
+    onSignedAttrHashFunctionNull: jest.fn(),
+    onDg1HashMismatch: jest.fn(),
+    onUnsupportedHashAlgorithm: jest.fn(),
+    onDg1HashMissing: jest.fn(),
+  };
+}
 
 // Mock the validation utilities
 const mockIsUserRegisteredWithAlternativeCSCA = jest.fn();
@@ -176,16 +226,7 @@ describe('validateDocument - Real mobile-sdk-alpha Integration (PII-safe)', () =
       csca_parsed: {},
     } as PassportData;
 
-    const callbacks = {
-      onPassportDataNull: jest.fn(),
-      onPassportMetadataNull: jest.fn(),
-      onDg1HashFunctionNull: jest.fn(),
-      onEContentHashFunctionNull: jest.fn(),
-      onSignedAttrHashFunctionNull: jest.fn(),
-      onDg1HashMismatch: jest.fn(),
-      onUnsupportedHashAlgorithm: jest.fn(),
-      onDg1HashMissing: jest.fn(),
-    };
+    const callbacks = createValidationCallbacks();
 
     // This should call the real function and not throw
     expect(() => {
@@ -200,16 +241,7 @@ describe('validateDocument - Real mobile-sdk-alpha Integration (PII-safe)', () =
       // Missing required fields to trigger validation errors
     } as PassportData;
 
-    const callbacks = {
-      onPassportDataNull: jest.fn(),
-      onPassportMetadataNull: jest.fn(),
-      onDg1HashFunctionNull: jest.fn(),
-      onEContentHashFunctionNull: jest.fn(),
-      onSignedAttrHashFunctionNull: jest.fn(),
-      onDg1HashMismatch: jest.fn(),
-      onUnsupportedHashAlgorithm: jest.fn(),
-      onDg1HashMissing: jest.fn(),
-    };
+    const callbacks = createValidationCallbacks();
 
     // This should call the real validation function and trigger callbacks
     const result = isPassportDataValid(invalidPassportData, callbacks);
@@ -247,17 +279,10 @@ describe('getAlternativeCSCA', () => {
 
   it('should return public keys in Record format for Aadhaar with valid public keys', () => {
     const mockPublicKeys = ['key1', 'key2', 'key3'];
-    mockGetState.mockReturnValue({
-      passport: { alternative_csca: {} },
-      id_card: { alternative_csca: {} },
-      aadhaar: { public_keys: mockPublicKeys, commitment_tree: 'test_tree' },
-    });
+    mockGetState.mockReturnValue(buildState({ aadhaarKeys: mockPublicKeys }));
 
-    const mockUseProtocolStore = { getState: mockGetState };
-    const result = getAlternativeCSCA(
-      mockUseProtocolStore as unknown,
-      'aadhaar',
-    );
+    const mockUseProtocolStore = { getState: mockGetState } as any;
+    const result = getAlternativeCSCA(mockUseProtocolStore, 'aadhaar');
 
     expect(result).toEqual({
       public_key_0: 'key1',
@@ -267,90 +292,57 @@ describe('getAlternativeCSCA', () => {
   });
 
   it('should return empty object for Aadhaar with no public keys', () => {
-    mockGetState.mockReturnValue({
-      passport: { alternative_csca: {} },
-      id_card: { alternative_csca: {} },
-      aadhaar: { public_keys: null, commitment_tree: 'test_tree' },
-    });
+    mockGetState.mockReturnValue(buildState({ aadhaarKeys: null }));
 
-    const mockUseProtocolStore = { getState: mockGetState };
-    const result = getAlternativeCSCA(
-      mockUseProtocolStore as unknown,
-      'aadhaar',
-    );
+    const mockUseProtocolStore = { getState: mockGetState } as any;
+    const result = getAlternativeCSCA(mockUseProtocolStore, 'aadhaar');
 
     expect(result).toEqual({});
   });
 
   it('should return empty object for Aadhaar with empty public keys array', () => {
-    mockGetState.mockReturnValue({
-      passport: { alternative_csca: {} },
-      id_card: { alternative_csca: {} },
-      aadhaar: { public_keys: [], commitment_tree: 'test_tree' },
-    });
+    mockGetState.mockReturnValue(buildState({ aadhaarKeys: [] }));
 
-    const mockUseProtocolStore = { getState: mockGetState };
-    const result = getAlternativeCSCA(
-      mockUseProtocolStore as unknown,
-      'aadhaar',
-    );
+    const mockUseProtocolStore = { getState: mockGetState } as any;
+    const result = getAlternativeCSCA(mockUseProtocolStore, 'aadhaar');
 
     expect(result).toEqual({});
   });
 
   it('should return alternative_csca for passport', () => {
     const mockAlternativeCSCA = { csca1: 'cert1', csca2: 'cert2' };
-    mockGetState.mockReturnValue({
-      passport: { alternative_csca: mockAlternativeCSCA },
-      id_card: { alternative_csca: {} },
-      aadhaar: { public_keys: [], commitment_tree: 'test_tree' },
-    });
-
-    const mockUseProtocolStore = { getState: mockGetState };
-    const result = getAlternativeCSCA(
-      mockUseProtocolStore as unknown,
-      'passport',
+    mockGetState.mockReturnValue(
+      buildState({ passportAlt: mockAlternativeCSCA }),
     );
+
+    const mockUseProtocolStore = { getState: mockGetState } as any;
+    const result = getAlternativeCSCA(mockUseProtocolStore, 'passport');
 
     expect(result).toEqual(mockAlternativeCSCA);
   });
 
   it('should return alternative_csca for id_card', () => {
     const mockAlternativeCSCA = { csca1: 'id_cert1', csca2: 'id_cert2' };
-    mockGetState.mockReturnValue({
-      passport: { alternative_csca: {} },
-      id_card: { alternative_csca: mockAlternativeCSCA },
-      aadhaar: { public_keys: [], commitment_tree: 'test_tree' },
-    });
+    mockGetState.mockReturnValue(buildState({ idAlt: mockAlternativeCSCA }));
 
-    const mockUseProtocolStore = { getState: mockGetState };
-    const result = getAlternativeCSCA(
-      mockUseProtocolStore as unknown,
-      'id_card',
-    );
+    const mockUseProtocolStore = { getState: mockGetState } as any;
+    const result = getAlternativeCSCA(mockUseProtocolStore, 'id_card');
 
     expect(result).toEqual(mockAlternativeCSCA);
   });
 
   it('should return empty object for passport with no alternative_csca', () => {
-    mockGetState.mockReturnValue({
-      passport: { alternative_csca: {} },
-      id_card: { alternative_csca: {} },
-      aadhaar: { public_keys: [], commitment_tree: 'test_tree' },
-    });
+    mockGetState.mockReturnValue(buildState());
 
-    const mockUseProtocolStore = { getState: mockGetState };
-    const result = getAlternativeCSCA(
-      mockUseProtocolStore as unknown,
-      'passport',
-    );
+    const mockUseProtocolStore = { getState: mockGetState } as any;
+    const result = getAlternativeCSCA(mockUseProtocolStore, 'passport');
 
     expect(result).toEqual({});
   });
 });
 
 describe('checkAndUpdateRegistrationStates', () => {
-  let mockSelfClient: unknown;
+  let mockSelfClient: SelfClient;
   const mockPassportData = {
     documentCategory: 'passport',
     documentType: 'passport',
@@ -372,15 +364,17 @@ describe('checkAndUpdateRegistrationStates', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetState.mockReturnValue({
-      passport: { alternative_csca: { csca1: 'cert1' } },
-      id_card: { alternative_csca: { csca1: 'cert1' } },
-      aadhaar: { public_keys: ['key1', 'key2'] },
-    });
+    mockGetState.mockReturnValue(
+      buildState({
+        passportAlt: { csca1: 'cert1' },
+        idAlt: { csca1: 'cert1' },
+        aadhaarKeys: ['key1', 'key2'],
+      }),
+    );
 
     mockSelfClient = {
       useProtocolStore: { getState: mockGetState },
-    };
+    } as unknown as SelfClient;
 
     mockFetchAllTreesAndCircuits.mockResolvedValue(undefined);
     mockGetCommitmentTree.mockReturnValue('mock_tree');
