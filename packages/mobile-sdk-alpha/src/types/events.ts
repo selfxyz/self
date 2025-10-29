@@ -5,15 +5,12 @@
 import type { DocumentCategory } from '@selfxyz/common';
 
 import type { NFCScanContext, ProofContext } from '../proving/internal/logging';
-import type { LogLevel, Progress } from './public';
+import type { LogLevel, Progress } from './base';
 
 /**
- * Canonical set of lifecycle events emitted by {@link SelfClient}. Each event
- * is forwarded to user-registered listeners synchronously in the order they
- * were added. Handlers may be asynchronous, but long-running work should
- * spawn background tasks so they do not block other listeners. When an error is
- * thrown, the SDK logs it and continues dispatching to remaining callbacks to
- * avoid masking later state updates.
+ * SDK lifecycle events emitted by {@link SelfClient}. Events are dispatched
+ * synchronously to listeners in registration order. If a listener throws an
+ * error, the SDK logs it and continues dispatching to remaining listeners.
  */
 export enum SdkEvents {
   /**
@@ -166,12 +163,9 @@ export enum SdkEvents {
 }
 
 /**
- * Describes the payload each {@link SdkEvents event} delivers to listeners.
- * Strongly typing the map enables {@link SelfClient.on} consumers to receive
- * contextually rich data — for example, NFC scan diagnostics or structured
- * proving errors — while ensuring handlers remain backwards compatible when
- * new keys are added. Undefined entries represent fire-and-forget signals
- * where the SDK does not expect callers to await additional context.
+ * Maps event names to their payload types. Enables type-safe event handlers
+ * and provides structured data like NFC scan diagnostics or proof errors.
+ * Events with undefined payloads carry no additional data.
  */
 export interface SDKEventMap {
   [SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND]: undefined;
@@ -227,8 +221,7 @@ export interface SDKEventMap {
 }
 
 /**
- * Union of event names supported by {@link SelfClient.on}. Prefer narrowing to
- * a specific literal when subscribing so TypeScript surfaces the precise
- * payload contract defined in {@link SDKEventMap}.
+ * Event names supported by {@link SelfClient.on}. Use specific event literals
+ * when subscribing to get accurate payload types from {@link SDKEventMap}.
  */
 export type SDKEvent = keyof SDKEventMap;

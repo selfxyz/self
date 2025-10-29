@@ -56,34 +56,28 @@ const TAG_DG1 = 0x61;
 const TAG_DG2 = 0x75;
 
 /**
- * Logical data group 1 containing the textual MRZ payload that powers
- * passport validation. Consumers should persist this data only after the
- * {@link parseNFCResponse} caller validates checksums and encrypts the
- * resulting string. The SDK never strips personally identifiable fields from
- * this payload.
+ * Data group 1 containing the Machine Readable Zone (MRZ) text from the
+ * document. The MRZ string includes all personally identifiable information
+ * and should be validated and encrypted before storage.
  */
 export interface DG1 {
   mrz: string;
 }
 
 /**
- * Logical data group 2 that carries the JPEG or JPEG2000 portrait bytes read
- * from the NFC chip. Downstream adapters must treat the byte array as opaque
- * binary data and are responsible for compressing or encrypting it before
- * storage. The SDK does not retry failed writes, so callers should stage a
- * temporary copy until persistence succeeds.
+ * Data group 2 containing the passport photo as JPEG or JPEG2000 bytes.
+ * Callers handle compression, encryption, and storage of the image data.
  */
 export interface DG2 {
   image: Uint8Array;
 }
 
 /**
- * Parsed representation of the NFC file system. Only DG1 and DG2 are
- * extracted today; additional data groups are ignored so newer passport
- * schemas do not break older SDK versions. Each field is optional because the
- * underlying chip may omit a data group or a read may fail midway through the
- * session. Callers should treat missing groups as fatal and re-run the scan
- * instead of continuing with partial data.
+ * Parsed NFC data from the document chip. Currently extracts DG1 (MRZ text)
+ * and DG2 (photo). Additional data groups are ignored for forward compatibility.
+ * Both fields are optional since the chip may omit data groups or the read may
+ * fail partway through. Missing data groups typically indicate an incomplete
+ * scan that should be retried.
  */
 export interface ParsedNFCResponse {
   dg1?: DG1;

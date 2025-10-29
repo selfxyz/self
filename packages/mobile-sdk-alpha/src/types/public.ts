@@ -11,6 +11,7 @@ import type { ProvingState } from '../proving/provingMachine';
 import type { MRZState } from '../stores/mrzStore';
 import type { ProtocolState } from '../stores/protocolStore';
 import type { SelfAppState } from '../stores/selfAppStore';
+import type { LogLevel, Progress } from './base';
 import type { SDKEvent, SDKEventMap } from './events';
 
 export type { PassportValidationCallbacks } from '../validation/document';
@@ -164,16 +165,7 @@ export interface MRZValidation {
   overall: boolean;
 }
 
-/** Logging severity passed to adapters and events. */
-export type LogLevel = 'info' | 'warn' | 'error';
-
-/** Progress update emitted during multi-step flows like proving or NFC reads. */
-export interface Progress {
-  /** Identifier for the active step (for example `nfc.read`). */
-  step: string;
-  /** Percentage between 0 and 100 when available. */
-  percent?: number;
-}
+export type { LogLevel, Progress };
 
 /**
  * Bundle of adapters required to construct {@link SelfClient}. Most fields are
