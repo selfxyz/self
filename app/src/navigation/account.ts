@@ -49,12 +49,12 @@ const accountScreens = {
   CloudBackupSettings: {
     screen: CloudBackupScreen,
     options: {
-      title: 'Cloud backup',
+      title: 'Account Backup',
       headerStyle: {
-        backgroundColor: black,
+        backgroundColor: white,
       },
       headerTitleStyle: {
-        color: slate300,
+        color: black,
       },
     } as NativeStackNavigationOptions,
   },

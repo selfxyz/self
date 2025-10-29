@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { Wallet as TurnkeyWallet } from '@turnkey/core';
 import { AuthState, useTurnkey } from '@turnkey/react-native-wallet-kit';
 
 import { useSettingStore } from '@/stores/settingStore';
@@ -15,7 +16,7 @@ export function useTurnkeyUtils() {
     exportWallet,
     importWallet,
     authState,
-    wallets,
+    logout,
   } = turnkey;
 
   const setBackedUpWithTurnKey = useSettingStore(
@@ -23,6 +24,9 @@ export function useTurnkeyUtils() {
   );
   const backedUpWithTurnKey = useSettingStore(
     state => state.backedUpWithTurnKey,
+  );
+  const [turnkeyWallets, setTurnkeyWallets] = useState<Array<TurnkeyWallet>>(
+    [],
   );
 
   const authenticateIfNeeded = useCallback(
@@ -34,6 +38,11 @@ export function useTurnkeyUtils() {
     },
     [authState, handleGoogleOauth],
   );
+
+  const refreshWallets = useCallback(async () => {
+    const fetchedWallets = await fetchWallets();
+    setTurnkeyWallets(fetchedWallets);
+  }, [fetchWallets]);
 
   return useMemo(
     () => ({
@@ -83,6 +92,8 @@ export function useTurnkeyUtils() {
           walletName: `Self-${new Date().toISOString()}`,
         });
         setBackedUpWithTurnKey(true);
+
+        await refreshWallets();
       },
 
       getMnemonic: async (authenticate: boolean = true): Promise<string> => {
@@ -97,10 +108,14 @@ export function useTurnkeyUtils() {
         });
         return exportedWallet;
       },
-      wallets,
+      logout,
+      turnkeyWallets,
+      refreshWallets,
     }),
     [
-      wallets,
+      logout,
+      turnkeyWallets,
+      refreshWallets,
       authState,
       authenticateIfNeeded,
       fetchWallets,

@@ -9,7 +9,6 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Wallet } from '@tamagui/lucide-icons';
-import { useTurnkey } from '@turnkey/react-native-wallet-kit';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -43,11 +42,14 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   route: { params },
 }) => {
   const { trackEvent } = useSelfClient();
-  const { wallets } = useTurnkey();
   const { backupAccount } = useTurnkeyUtils();
   const { getOrCreateMnemonic, loginWithBiometrics } = useAuth();
-  const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
-    useSettingStore();
+  const {
+    cloudBackupEnabled,
+    toggleCloudBackupEnabled,
+    biometricsAvailable,
+    backedUpWithTurnKey,
+  } = useSettingStore();
   const { upload, disableBackup } = useBackupMnemonic();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -148,7 +150,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     buttonTap();
     setSelectedMethod('turnkey');
 
-    if (wallets && wallets.length > 0) {
+    if (backedUpWithTurnKey) {
       return;
     }
 
@@ -174,7 +176,12 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
       }
       setTurnkeyPending(false);
     }
-  }, [wallets, backupAccount, getOrCreateMnemonic, showAlreadySignedInModal]);
+  }, [
+    backedUpWithTurnKey,
+    backupAccount,
+    getOrCreateMnemonic,
+    showAlreadySignedInModal,
+  ]);
 
   return (
     <YStack flex={1} backgroundColor={white}>
@@ -209,39 +216,45 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
                 {iCloudPending ? '…' : ''}
               </SecondaryButton>
             ) : (
-              <>
-                <Pressable
-                  style={[
-                    styles.optionButton,
-                    (iCloudPending || !biometricsAvailable) &&
-                      styles.optionButtonDisabled,
-                  ]}
-                  onPress={handleICloudBackup}
-                  disabled={iCloudPending || !biometricsAvailable}
-                >
-                  <CloudIcon width={24} height={24} color={black} />
-                  <Text style={styles.optionText}>
-                    {iCloudPending ? 'Enabling' : 'Backup with'} {STORAGE_NAME}
-                    {iCloudPending ? '…' : ''}
-                  </Text>
-                </Pressable>
+              <Pressable
+                style={[
+                  styles.optionButton,
+                  (iCloudPending || !biometricsAvailable) &&
+                    styles.optionButtonDisabled,
+                ]}
+                onPress={handleICloudBackup}
+                disabled={iCloudPending || !biometricsAvailable}
+              >
+                <CloudIcon width={24} height={24} color={black} />
+                <Text style={styles.optionText}>
+                  {iCloudPending ? 'Enabling' : 'Backup with'} {STORAGE_NAME}
+                  {iCloudPending ? '…' : ''}
+                </Text>
+              </Pressable>
+            )}
 
-                <Pressable
-                  style={[
-                    styles.optionButton,
-                    (turnkeyPending || (wallets && wallets.length > 0)) &&
-                      styles.optionButtonDisabled,
-                  ]}
-                  onPress={handleTurnkeyBackup}
-                  disabled={turnkeyPending || (wallets && wallets.length > 0)}
-                >
-                  <Wallet size={24} color={black} />
-                  <Text style={styles.optionText}>
-                    {turnkeyPending ? 'Importing' : 'Backup with'} Turnkey
-                    {turnkeyPending ? '…' : ''}
-                  </Text>
-                </Pressable>
-              </>
+            {backedUpWithTurnKey ? (
+              <SecondaryButton
+                disabled
+                trackEvent={BackupEvents.CLOUD_BACKUP_DISABLE_STARTED}
+              >
+                Backed up with Turnkey
+              </SecondaryButton>
+            ) : (
+              <Pressable
+                style={[
+                  styles.optionButton,
+                  turnkeyPending && styles.optionButtonDisabled,
+                ]}
+                onPress={handleTurnkeyBackup}
+                disabled={turnkeyPending}
+              >
+                <Wallet size={24} color={black} />
+                <Text style={styles.optionText}>
+                  {turnkeyPending ? 'Importing' : 'Backup with'} Turnkey
+                  {turnkeyPending ? '…' : ''}
+                </Text>
+              </Pressable>
             )}
 
             <BottomButton
