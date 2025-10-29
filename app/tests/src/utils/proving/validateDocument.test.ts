@@ -572,9 +572,15 @@ describe('checkAndUpdateRegistrationStates', () => {
       );
 
     mockIsUserRegisteredWithAlternativeCSCA
-      .mockResolvedValueOnce({ isRegistered: true, csca: { cert: 'csca1' } })
+      .mockResolvedValueOnce({
+        isRegistered: true,
+        csca: '-----BEGIN CERTIFICATE-----\nMOCK_CSCA_CERT_DATA_1\n-----END CERTIFICATE-----',
+      })
       .mockResolvedValueOnce({ isRegistered: false, csca: null })
-      .mockResolvedValueOnce({ isRegistered: true, csca: { cert: 'csca3' } });
+      .mockResolvedValueOnce({
+        isRegistered: true,
+        csca: '-----BEGIN CERTIFICATE-----\nMOCK_CSCA_CERT_DATA_3\n-----END CERTIFICATE-----',
+      });
 
     await checkAndUpdateRegistrationStates(mockSelfClient);
 
@@ -644,7 +650,7 @@ describe('checkAndUpdateRegistrationStates', () => {
     );
     mockIsUserRegisteredWithAlternativeCSCA.mockResolvedValue({
       isRegistered: true,
-      csca: { cert: 'csca_cert' },
+      csca: '-----BEGIN CERTIFICATE-----\nMOCK_CSCA_CERT_DATA\n-----END CERTIFICATE-----',
     });
 
     await checkAndUpdateRegistrationStates(mockSelfClient);
