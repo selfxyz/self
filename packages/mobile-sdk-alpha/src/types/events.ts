@@ -5,7 +5,7 @@
 import type { DocumentCategory } from '@selfxyz/common';
 
 import type { NFCScanContext, ProofContext } from '../proving/internal/logging';
-import type { LogLevel, Progress, SelfClient } from './public';
+import type { LogLevel, Progress } from './public';
 
 /**
  * Canonical set of lifecycle events emitted by {@link SelfClient}. Each event

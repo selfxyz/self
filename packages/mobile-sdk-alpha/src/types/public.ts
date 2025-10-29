@@ -105,10 +105,10 @@ export interface TrackEventParams {
  */
 export interface AnalyticsAdapter {
   /**
-    * Fire-and-forget event tracker for high-level milestones like onboarding
-    * completion. Implementations should debounce repeated calls triggered by
-    * retries.
-    */
+   * Fire-and-forget event tracker for high-level milestones like onboarding
+   * completion. Implementations should debounce repeated calls triggered by
+   * retries.
+   */
   trackEvent?(event: string, payload?: TrackEventParams): void;
   /**
    * Structured metrics specific to NFC scanning. Consumers can enrich the
@@ -119,12 +119,7 @@ export interface AnalyticsAdapter {
    * Low-level logging channel mirroring {@link SdkEvents.NFC_EVENT}. Use this
    * to pipe contextual errors into crash reporters or observability backends.
    */
-  logNFCEvent?(
-    level: LogLevel,
-    message: string,
-    context: NFCScanContext,
-    details?: Record<string, unknown>,
-  ): void;
+  logNFCEvent?(level: LogLevel, message: string, context: NFCScanContext, details?: Record<string, unknown>): void;
 }
 
 /**
