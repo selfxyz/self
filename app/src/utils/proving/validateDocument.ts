@@ -3,7 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
-import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
+import {
+  type AlternativeCSCA,
+  isUserRegisteredWithAlternativeCSCA,
+} from '@selfxyz/common/utils/passports/validate';
 import type {
   PassportValidationCallbacks,
   SelfClient,
@@ -35,12 +38,14 @@ const { trackEvent } = analytics();
 function getAlternativeCSCA(
   useProtocolStore: SelfClient['useProtocolStore'],
   docCategory: DocumentCategory,
-) {
+): AlternativeCSCA {
   if (docCategory === 'aadhaar') {
     const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
     // Convert string[] to Record<string, string> format expected by AlternativeCSCA
     return publicKeys
-      ? Object.fromEntries(publicKeys.map(key => [key, key]))
+      ? Object.fromEntries(
+          publicKeys.map((key, index) => [`public_key_${index}`, key]),
+        )
       : {};
   }
   return useProtocolStore.getState()[docCategory].alternative_csca;
