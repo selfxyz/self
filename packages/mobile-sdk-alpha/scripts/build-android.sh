@@ -24,11 +24,32 @@ echo "🔍 Checking for Android build options..."
 if [ -d "$MOBILE_SDK_NATIVE" ]; then
     echo "✅ Native modules source submodule found, building from source..."
 
-    # Check if we already have an AAR file
+    # Check if we already have a valid AAR file
     if [ -f "dist/android/mobile-sdk-alpha-release.aar" ]; then
-        echo "✅ AAR file found, skipping build"
-        echo "📦 Using existing AAR: dist/android/mobile-sdk-alpha-release.aar"
-        exit 0
+        echo "🔍 AAR file found, validating contents..."
+
+        # Check file size first (should be at least 100KB for a valid AAR)
+        AAR_SIZE=$(stat -f%z "dist/android/mobile-sdk-alpha-release.aar" 2>/dev/null || stat -c%s "dist/android/mobile-sdk-alpha-release.aar" 2>/dev/null)
+
+        if [ "$AAR_SIZE" -gt 100000 ]; then
+            # Extract classes.jar to temp file and check for required classes
+            TEMP_JAR=$(mktemp)
+            if unzip -p "dist/android/mobile-sdk-alpha-release.aar" classes.jar > "$TEMP_JAR" 2>/dev/null && \
+               jar tf "$TEMP_JAR" 2>/dev/null | grep -q "com/selfxyz/selfSDK/RNSelfPassportReaderModule.class"; then
+                rm -f "$TEMP_JAR"
+                echo "✅ AAR is valid ($(numfmt --to=iec-i --suffix=B $AAR_SIZE 2>/dev/null || echo "${AAR_SIZE} bytes")), skipping build"
+                echo "📦 Using existing AAR: dist/android/mobile-sdk-alpha-release.aar"
+                exit 0
+            else
+                rm -f "$TEMP_JAR"
+                echo "⚠️  AAR is missing required classes (RNSelfPassportReaderModule)"
+            fi
+        else
+            echo "⚠️  AAR file is too small (${AAR_SIZE} bytes), likely incomplete"
+        fi
+
+        echo "🔄 Removing invalid AAR and rebuilding..."
+        rm -f "dist/android/mobile-sdk-alpha-release.aar"
     fi
 
     # Update submodule to latest
