@@ -55,14 +55,36 @@ const getDecoder = (): TextDecoder => {
 const TAG_DG1 = 0x61;
 const TAG_DG2 = 0x75;
 
+/**
+ * Logical data group 1 containing the textual MRZ payload that powers
+ * passport validation. Consumers should persist this data only after the
+ * {@link parseNFCResponse} caller validates checksums and encrypts the
+ * resulting string. The SDK never strips personally identifiable fields from
+ * this payload.
+ */
 export interface DG1 {
   mrz: string;
 }
 
+/**
+ * Logical data group 2 that carries the JPEG or JPEG2000 portrait bytes read
+ * from the NFC chip. Downstream adapters must treat the byte array as opaque
+ * binary data and are responsible for compressing or encrypting it before
+ * storage. The SDK does not retry failed writes, so callers should stage a
+ * temporary copy until persistence succeeds.
+ */
 export interface DG2 {
   image: Uint8Array;
 }
 
+/**
+ * Parsed representation of the NFC file system. Only DG1 and DG2 are
+ * extracted today; additional data groups are ignored so newer passport
+ * schemas do not break older SDK versions. Each field is optional because the
+ * underlying chip may omit a data group or a read may fail midway through the
+ * session. Callers should treat missing groups as fatal and re-run the scan
+ * instead of continuing with partial data.
+ */
 export interface ParsedNFCResponse {
   dg1?: DG1;
   dg2?: DG2;

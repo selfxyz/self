@@ -5,8 +5,16 @@
 import type { DocumentCategory } from '@selfxyz/common';
 
 import type { NFCScanContext, ProofContext } from '../proving/internal/logging';
-import type { LogLevel, Progress } from './public';
+import type { LogLevel, Progress, SelfClient } from './public';
 
+/**
+ * Canonical set of lifecycle events emitted by {@link SelfClient}. Each event
+ * is forwarded to user-registered listeners synchronously in the order they
+ * were added. Handlers may be asynchronous, but long-running work should
+ * spawn background tasks so they do not block other listeners. When an error is
+ * thrown, the SDK logs it and continues dispatching to remaining callbacks to
+ * avoid masking later state updates.
+ */
 export enum SdkEvents {
   /**
    * Emitted when an error occurs during SDK operations, including timeouts.
@@ -157,6 +165,14 @@ export enum SdkEvents {
   DOCUMENT_OWNERSHIP_CONFIRMED = 'DOCUMENT_OWNERSHIP_CONFIRMED',
 }
 
+/**
+ * Describes the payload each {@link SdkEvents event} delivers to listeners.
+ * Strongly typing the map enables {@link SelfClient.on} consumers to receive
+ * contextually rich data — for example, NFC scan diagnostics or structured
+ * proving errors — while ensuring handlers remain backwards compatible when
+ * new keys are added. Undefined entries represent fire-and-forget signals
+ * where the SDK does not expect callers to await additional context.
+ */
 export interface SDKEventMap {
   [SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND]: undefined;
   [SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS]: undefined;
@@ -210,4 +226,9 @@ export interface SDKEventMap {
   };
 }
 
+/**
+ * Union of event names supported by {@link SelfClient.on}. Prefer narrowing to
+ * a specific literal when subscribing so TypeScript surfaces the precise
+ * payload contract defined in {@link SDKEventMap}.
+ */
 export type SDKEvent = keyof SDKEventMap;

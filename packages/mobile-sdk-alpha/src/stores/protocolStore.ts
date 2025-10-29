@@ -28,11 +28,14 @@ import {
 import type { SelfClient } from '../types/public';
 
 /**
- * Fetch with timeout helper
- * @param url - URL to fetch
- * @param options - Fetch options
- * @param timeoutMs - Timeout in milliseconds (default: 30000)
- * @returns Promise<Response>
+ * Fetch helper that races the request against a timeout to prevent hangs when
+ * infrastructure endpoints are degraded. The returned promise rejects with an
+ * `AbortError` when the timer elapses so callers can emit structured retry
+ * events.
+ *
+ * @param url - URL to fetch.
+ * @param options - Fetch options forwarded to `fetch`.
+ * @param timeoutMs - Timeout in milliseconds (default: 30000).
  */
 async function fetchWithTimeout(url: string, options?: RequestInit, timeoutMs: number = 30000): Promise<Response> {
   const controller = new AbortController();
@@ -54,6 +57,13 @@ async function fetchWithTimeout(url: string, options?: RequestInit, timeoutMs: n
   }
 }
 
+/**
+ * In-memory cache of trees, keys, and circuit metadata required for proving
+ * across supported document categories. Each nested object exposes `fetch_*`
+ * helpers that load data from the configured environment. All fetchers are
+ * resilient to network errors and reset state to `null` when the response is
+ * unusable so callers can decide whether to retry or surface an error.
+ */
 export interface ProtocolState {
   passport: {
     commitment_tree: any;
@@ -104,6 +114,11 @@ export interface ProtocolState {
   };
 }
 
+/**
+ * Convenience helper that pulls every relevant tree for a document category in
+ * parallel. Errors bubble to the caller so higher-level flows can surface
+ * progress or failure UI.
+ */
 export async function fetchAllTreesAndCircuits(
   selfClient: SelfClient,
   docCategory: DocumentCategory,
@@ -113,6 +128,11 @@ export async function fetchAllTreesAndCircuits(
   await selfClient.getProtocolState()[docCategory].fetch_all(environment, authorityKeyIdentifier);
 }
 
+/**
+ * Returns the cached alternative CSCA keys for the requested document type.
+ * Aadhaar does not expose alternative CSCA, so the method returns the raw
+ * public key list instead.
+ */
 export function getAltCSCAPublicKeys(selfClient: SelfClient, docCategory: DocumentCategory) {
   if (docCategory === 'aadhaar') {
     return selfClient.getProtocolState()[docCategory].public_keys;
@@ -121,12 +141,22 @@ export function getAltCSCAPublicKeys(selfClient: SelfClient, docCategory: Docume
   return selfClient.getProtocolState()[docCategory].alternative_csca;
 }
 
+/**
+ * Retrieves the latest commitment tree snapshot for the provided document
+ * category. Returns `null` when the data has not been fetched yet or when the
+ * previous fetch failed.
+ */
 export function getCommitmentTree(selfClient: SelfClient, documentCategory: DocumentCategory) {
   const protocolStore = selfClient.getProtocolState();
 
   return protocolStore[documentCategory].commitment_tree;
 }
 
+/**
+ * Protocol store hook exposed through {@link SelfClient}. The store manages
+ * asynchronous fetchers and ensures tree/state mutations remain atomic even
+ * when multiple requests are in flight.
+ */
 export const useProtocolStore = create<ProtocolState>((set, get) => ({
   passport: {
     commitment_tree: null,
