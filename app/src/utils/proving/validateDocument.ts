@@ -32,26 +32,6 @@ import analytics from '@/utils/analytics';
 const { trackEvent } = analytics();
 
 /**
- * Helper function to get alternative CSCA or public keys for a document category.
- * For Aadhaar documents, returns public keys. For passports/ID cards, returns alternative CSCAs.
- */
-function getAlternativeCSCA(
-  useProtocolStore: SelfClient['useProtocolStore'],
-  docCategory: DocumentCategory,
-): AlternativeCSCA {
-  if (docCategory === 'aadhaar') {
-    const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
-    // Convert string[] to Record<string, string> format expected by AlternativeCSCA
-    return publicKeys
-      ? Object.fromEntries(
-          publicKeys.map((key, index) => [`public_key_${index}`, key]),
-        )
-      : {};
-  }
-  return useProtocolStore.getState()[docCategory].alternative_csca;
-}
-
-/**
  * This function checks and updates registration states for all documents and updates the `isRegistered`.
  */
 export async function checkAndUpdateRegistrationStates(
@@ -181,7 +161,10 @@ export async function checkAndUpdateRegistrationStates(
 
       if (isRegistered) {
         // Update passport data with the correct CSCA if one was found
-        if (csca) {
+        // Aadhaar returns a public key string (not a CSCA certificate). The restorage
+        // helper expects a CSCA certificate and passport/ID card metadata. Only call it
+        // when `csca` is a non-string object (passport/id_card flows).
+        if (csca && typeof csca !== 'string') {
           await reStorePassportDataWithRightCSCA(migratedPassportData, csca);
         }
 
@@ -208,6 +191,26 @@ export async function checkAndUpdateRegistrationStates(
   }
 
   if (__DEV__) console.log('Registration state check and update completed');
+}
+
+/**
+ * Helper function to get alternative CSCA or public keys for a document category.
+ * For Aadhaar documents, returns public keys. For passports/ID cards, returns alternative CSCAs.
+ */
+export function getAlternativeCSCA(
+  useProtocolStore: SelfClient['useProtocolStore'],
+  docCategory: DocumentCategory,
+): AlternativeCSCA {
+  if (docCategory === 'aadhaar') {
+    const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
+    // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+    return publicKeys
+      ? Object.fromEntries(
+          publicKeys.map((key, index) => [`public_key_${index}`, key]),
+        )
+      : {};
+  }
+  return useProtocolStore.getState()[docCategory].alternative_csca;
 }
 
 // UNUSED?
