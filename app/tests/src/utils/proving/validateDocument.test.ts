@@ -381,7 +381,8 @@ describe('checkAndUpdateRegistrationStates', () => {
   });
 
   it('should call reStorePassportDataWithRightCSCA when document is registered with alternative CSCA (passport)', async () => {
-    const mockCSCA = { cert: 'alternative_csca_cert' };
+    const mockCSCA =
+      '-----BEGIN CERTIFICATE-----\nMOCK_CSCA_CERT_DATA\n-----END CERTIFICATE-----';
     mockGetAllDocumentsDirectlyFromKeychain.mockResolvedValue({
       doc1: { data: mockPassportData },
     });

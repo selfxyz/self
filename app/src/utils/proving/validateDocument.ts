@@ -161,10 +161,13 @@ export async function checkAndUpdateRegistrationStates(
 
       if (isRegistered) {
         // Update passport data with the correct CSCA if one was found
-        // Aadhaar returns a public key string (not a CSCA certificate). The restorage
-        // helper expects a CSCA certificate and passport/ID card metadata. Only call it
-        // when `csca` is a non-string object (passport/id_card flows).
-        if (csca && typeof csca !== 'string') {
+        // Only restore for passport/id_card documents; Aadhaar uses public keys and
+        // doesn't need CSCA restoration.
+        if (
+          csca &&
+          (migratedPassportData.documentCategory === 'passport' ||
+            migratedPassportData.documentCategory === 'id_card')
+        ) {
           await reStorePassportDataWithRightCSCA(migratedPassportData, csca);
         }
 
