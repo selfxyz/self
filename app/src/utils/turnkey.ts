@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { Wallet as TurnkeyWallet } from '@turnkey/core';
 import { AuthState, useTurnkey } from '@turnkey/react-native-wallet-kit';
 
