@@ -91,6 +91,11 @@ export interface MRZInfo {
  * Common analytics payload describing why an action succeeded or failed.
  * Reserve string constants for `reason` so dashboards can aggregate over
  * stable values (for example `network_error`, `timeout`, `invalid_input`).
+ *
+ * **Security:** Do not include PII (names, DOB, passport numbers, addresses)
+ * or secrets (API keys, tokens, passwords) in any field. Use non-identifying
+ * categorical values or hashed identifiers where needed. Apply standard
+ * redaction patterns (e.g., `***-***-1234` for document numbers).
  */
 export interface TrackEventParams {
   reason?: string | null;
@@ -119,6 +124,10 @@ export interface AnalyticsAdapter {
   /**
    * Low-level logging channel mirroring {@link SdkEvents.NFC_EVENT}. Use this
    * to pipe contextual errors into crash reporters or observability backends.
+   *
+   * **Security:** Never include PII or secrets in `message`, `context`, or
+   * `details`. Apply standard redaction (e.g., passport `***-***-1234`,
+   * names `J*** D***`) before logging.
    */
   logNFCEvent?(level: LogLevel, message: string, context: NFCScanContext, details?: Record<string, unknown>): void;
 }
@@ -194,8 +203,13 @@ export interface Adapters {
 
 /**
  * Logging surface that mirrors structured logging conventions used by Self
- * infrastructure. Implementations should avoid throwing to keep telemetry best
- * effort.
+ * infrastructure. Implementations must never log PII or secrets and should
+ * enforce redaction before emitting. Avoid throwing to keep telemetry
+ * best-effort.
+ *
+ * **Security:** Always redact sensitive fields (names, DOB, passport numbers,
+ * credentials, tokens) using consistent patterns before logging. Examples:
+ * `***-***-1234` for document numbers, `J*** D***` for names.
  */
 export interface LoggerAdapter {
   log(level: LogLevel, message: string, fields?: Record<string, unknown>): void;

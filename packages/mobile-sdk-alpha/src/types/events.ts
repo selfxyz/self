@@ -10,7 +10,12 @@ import type { LogLevel, Progress } from './base';
 /**
  * SDK lifecycle events emitted by {@link SelfClient}. Events are dispatched
  * synchronously to listeners in registration order. If a listener throws an
- * error, the SDK logs it and continues dispatching to remaining listeners.
+ * error, the SDK logs a sanitized/redacted summary (never PII or secrets)
+ * and continues dispatching to remaining listeners.
+ *
+ * **Security:** Host apps should likewise sanitize errors from their listeners
+ * before logging. Redact sensitive fields (MRZ, names, DOB, passport numbers,
+ * keys, tokens) and retain only non-sensitive diagnostic details.
  */
 export enum SdkEvents {
   /**
