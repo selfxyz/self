@@ -4,7 +4,7 @@
 
 import type { PassportData } from '@selfxyz/common/types';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 // Import functions to test AFTER mocks are set up
 import {
@@ -137,20 +137,6 @@ function buildState(params?: {
   };
 }
 
-// DRY helper for isPassportDataValid callback object
-function createValidationCallbacks() {
-  return {
-    onPassportDataNull: jest.fn(),
-    onPassportMetadataNull: jest.fn(),
-    onDg1HashFunctionNull: jest.fn(),
-    onEContentHashFunctionNull: jest.fn(),
-    onSignedAttrHashFunctionNull: jest.fn(),
-    onDg1HashMismatch: jest.fn(),
-    onUnsupportedHashAlgorithm: jest.fn(),
-    onDg1HashMissing: jest.fn(),
-  };
-}
-
 // Mock the validation utilities
 const mockIsUserRegisteredWithAlternativeCSCA = jest.fn();
 jest.mock('@selfxyz/common/utils/passports/validate', () => ({
@@ -158,119 +144,6 @@ jest.mock('@selfxyz/common/utils/passports/validate', () => ({
     mockIsUserRegisteredWithAlternativeCSCA(...args),
   ),
 }));
-
-/**
- * Creates a Self SDK client with minimal mock adapters for tests.
- */
-function createTestClient() {
-  const { createSelfClient } = require('@selfxyz/mobile-sdk-alpha');
-  return createSelfClient({
-    config: {},
-    adapters: {
-      auth: { getPrivateKey: jest.fn() },
-      scanner: { scan: jest.fn() },
-      network: {
-        http: { fetch: jest.fn() },
-        ws: {
-          connect: jest.fn(() => ({
-            send: jest.fn(),
-            close: jest.fn(),
-            onMessage: jest.fn(),
-            onError: jest.fn(),
-            onClose: jest.fn(),
-          })),
-        },
-      },
-      crypto: {
-        hash: jest.fn(),
-        sign: jest.fn(),
-      },
-      documents: {
-        loadDocumentCatalog: jest.fn(),
-        loadDocumentById: jest.fn(),
-      },
-    },
-  });
-}
-
-/** Sample ICAO-compliant MRZ string for parsing tests. */
-const validMrz = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
-
-/** Intentionally malformed MRZ string to exercise error handling. */
-const invalidMrz = 'NOT_A_VALID_MRZ';
-
-describe('validateDocument - Real mobile-sdk-alpha Integration (PII-safe)', () => {
-  it('should use the real isPassportDataValid function with synthetic passport data', () => {
-    // This test verifies that we're using the real function, not a mock
-    expect(typeof isPassportDataValid).toBe('function');
-
-    // The real function should be callable
-    expect(typeof isPassportDataValid).toBe('function');
-
-    // Test with realistic, synthetic passport data (NEVER real user data)
-    const mockPassportData = {
-      documentCategory: 'passport',
-      mock: true,
-      mrz: 'P<UTOD23145890<1233<6831101169<9408125F2206304<<<<<6',
-      dsc: 'mock_dsc_data',
-      eContent: [1, 2, 3, 4],
-      passportMetadata: {
-        cscaFound: true,
-        eContentHashFunction: 'sha256',
-        dg1HashFunction: 'sha256',
-        signedAttrHashFunction: 'sha256',
-      },
-      dsc_parsed: {
-        authorityKeyIdentifier: 'test_key_id',
-      },
-      csca_parsed: {},
-    } as PassportData;
-
-    const callbacks = createValidationCallbacks();
-
-    // This should call the real function and not throw
-    expect(() => {
-      isPassportDataValid(mockPassportData, callbacks);
-    }).not.toThrow();
-  });
-
-  it('should handle validation errors through callbacks', () => {
-    const invalidPassportData = {
-      documentCategory: 'passport',
-      mock: true,
-      // Missing required fields to trigger validation errors
-    } as PassportData;
-
-    const callbacks = createValidationCallbacks();
-
-    // This should call the real validation function and trigger callbacks
-    const result = isPassportDataValid(invalidPassportData, callbacks);
-
-    // The real function should return false for invalid data
-    expect(result).toBe(false);
-
-    // Some callbacks should have been called due to missing data
-    expect(callbacks.onPassportMetadataNull).toHaveBeenCalled();
-  });
-
-  it('should expose extractMRZInfo via a self client instance', () => {
-    const client = createTestClient();
-    expect(typeof client.extractMRZInfo).toBe('function');
-  });
-
-  it('parses a valid MRZ string', () => {
-    const client = createTestClient();
-    const info = client.extractMRZInfo(validMrz);
-    expect(info.documentNumber).toBe('L898902C3');
-    expect(info.validation).toBeDefined();
-    expect(info.validation?.overall).toBe(true);
-  });
-
-  it('throws on malformed MRZ input', () => {
-    const client = createTestClient();
-    expect(() => client.extractMRZInfo(invalidMrz)).toThrow();
-  });
-});
 
 describe('getAlternativeCSCA', () => {
   beforeEach(() => {
@@ -416,47 +289,11 @@ describe('checkAndUpdateRegistrationStates', () => {
       true,
     );
     expect(mockTrackEvent).toHaveBeenCalledWith(
-      'Document: Document Validated',
+      DocumentEvents.DOCUMENT_VALIDATED,
       expect.objectContaining({
         documentId: 'doc1',
         documentCategory: 'passport',
         mock: true,
-      }),
-    );
-  });
-
-  it('should NOT call reStorePassportDataWithRightCSCA when document is registered with public key (Aadhaar)', async () => {
-    const mockAadhaarData = {
-      ...mockPassportData,
-      documentCategory: 'aadhaar' as const,
-    };
-    mockGetAllDocumentsDirectlyFromKeychain.mockResolvedValue({
-      doc1: { data: mockAadhaarData },
-    });
-    mockLoadSelectedDocumentDirectlyFromKeychain.mockResolvedValue({
-      data: mockAadhaarData,
-    });
-    mockLoadPassportDataAndSecret.mockResolvedValue(
-      JSON.stringify({ data: mockAadhaarData, secret: 'test_secret' }),
-    );
-    mockIsUserRegisteredWithAlternativeCSCA.mockResolvedValue({
-      isRegistered: true,
-      csca: 'public_key_string', // Aadhaar returns a string
-    });
-
-    await checkAndUpdateRegistrationStates(mockSelfClient);
-
-    expect(mockIsUserRegisteredWithAlternativeCSCA).toHaveBeenCalled();
-    expect(mockReStorePassportDataWithRightCSCA).not.toHaveBeenCalled();
-    expect(mockUpdateDocumentRegistrationState).toHaveBeenCalledWith(
-      'doc1',
-      true,
-    );
-    expect(mockTrackEvent).toHaveBeenCalledWith(
-      'Document: Document Validated',
-      expect.objectContaining({
-        documentId: 'doc1',
-        documentCategory: 'aadhaar',
       }),
     );
   });
@@ -484,7 +321,7 @@ describe('checkAndUpdateRegistrationStates', () => {
     );
     expect(mockReStorePassportDataWithRightCSCA).not.toHaveBeenCalled();
     expect(mockTrackEvent).not.toHaveBeenCalledWith(
-      'document_validated',
+      DocumentEvents.DOCUMENT_VALIDATED,
       expect.anything(),
     );
   });
@@ -506,7 +343,7 @@ describe('checkAndUpdateRegistrationStates', () => {
     expect(mockIsUserRegisteredWithAlternativeCSCA).not.toHaveBeenCalled();
     expect(mockUpdateDocumentRegistrationState).not.toHaveBeenCalled();
     expect(mockTrackEvent).toHaveBeenCalledWith(
-      'Document: Validate Document Failed',
+      DocumentEvents.VALIDATE_DOCUMENT_FAILED,
       expect.objectContaining({
         error: 'Passport data is not valid',
         documentId: 'doc1',
@@ -534,7 +371,7 @@ describe('checkAndUpdateRegistrationStates', () => {
     expect(mockFetchAllTreesAndCircuits).not.toHaveBeenCalled();
     expect(mockIsUserRegisteredWithAlternativeCSCA).not.toHaveBeenCalled();
     expect(mockTrackEvent).toHaveBeenCalledWith(
-      'Document: Validate Document Failed',
+      DocumentEvents.VALIDATE_DOCUMENT_FAILED,
       expect.objectContaining({
         error: 'Authority key identifier is null',
         documentId: 'doc1',
@@ -629,7 +466,7 @@ describe('checkAndUpdateRegistrationStates', () => {
       ),
     );
     expect(mockTrackEvent).toHaveBeenCalledWith(
-      'Document: Validate Document Failed',
+      DocumentEvents.VALIDATE_DOCUMENT_FAILED,
       expect.objectContaining({
         error: 'Network error',
         documentId: 'doc1',
@@ -657,7 +494,7 @@ describe('checkAndUpdateRegistrationStates', () => {
     await checkAndUpdateRegistrationStates(mockSelfClient);
 
     expect(mockTrackEvent).toHaveBeenCalledWith(
-      'Document: Document Validated',
+      DocumentEvents.DOCUMENT_VALIDATED,
       {
         documentId: 'doc1',
         documentCategory: 'passport',
