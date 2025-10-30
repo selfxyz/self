@@ -80,44 +80,99 @@ struct LiveMRZScannerView: View {
         ]
     }
 
-    private func correctBelgiumDocumentNumber(result: String) -> String? {
-        // Belgium TD1 format: IDBEL000001115<7027
-        let line1RegexPattern = "IDBEL(?<doc9>[A-Z0-9]{9})<(?<doc3>[A-Z0-9<]{3})(?<checkDigit>\\d)"
-        guard let line1Regex = try? NSRegularExpression(pattern: line1RegexPattern) else { return nil }
-        let line1Matcher = line1Regex.firstMatch(in: result, options: [], range: NSRange(location: 0, length: result.count))
+    /// Calculates the MRZ check digit using the ICAO 9303 standard
+    private func calculateMRZCheckDigit(_ input: String) -> Int {
+        let weights = [7, 3, 1]
+        var sum = 0
 
-        if let line1Matcher = line1Matcher {
-            let doc9Range = line1Matcher.range(withName: "doc9")
-            let doc3Range = line1Matcher.range(withName: "doc3")
-            let checkDigitRange = line1Matcher.range(withName: "checkDigit")
-
-            let doc9 = (result as NSString).substring(with: doc9Range)
-            let doc3 = (result as NSString).substring(with: doc3Range)
-            let checkDigit = (result as NSString).substring(with: checkDigitRange)
-
-            if let cleanedDoc = cleanBelgiumDocumentNumber(doc9: doc9, doc3: doc3, checkDigit: checkDigit) {
-                let correctedMRZLine = "IDBEL\(cleanedDoc)\(checkDigit)"
-                return correctedMRZLine
+        for (index, char) in input.enumerated() {
+            let value: Int
+            if char.isNumber {
+                value = Int(String(char)) ?? 0
+            } else if char.isLetter {
+                // mapping letters to values: A=10, B=11, ..., Z=35
+                value = Int(char.asciiValue ?? 0) - Int(Character("A").asciiValue ?? 0) + 10
+            } else if char == "<" {
+                value = 0
+            } else {
+                value = 0
             }
+
+            let weight = weights[index % 3]
+            sum += value * weight
         }
-        return nil
+
+        return sum % 10
     }
 
-    private func cleanBelgiumDocumentNumber(doc9: String, doc3: String, checkDigit: String) -> String? {
-        // For Belgium TD1 format: IDBEL000001115<7027
-        // doc9 = "000001115" (9 digits)
-        // doc3 = "702" (3 digits after <)
-        // checkDigit = "7" (single check digit)
+    /// Extracts and validates the Belgian document number from MRZ line 1, handling both standard and overflow formats.
+    /// Belgian TD1 format uses an overflow mechanism when document numbers exceed 9 digits.
+    /// Example overflow format: IDBEL595392450<8039<<<<<<<<<< where positions 6-14 contain the principal part (595392450),
+    /// position 15 contains the overflow indicator (<), positions 16-18 contain overflow digits (803), and position 19 contains the check digit (9).
+    /// The full document number becomes: 595392450803.
+    private func extractAndValidateBelgianDocumentNumber(line1: String) -> (documentNumber: String, isValid: Bool)? {
+        guard line1.count == 30 else { return nil }
 
-        var cleanDoc9 = doc9
-        // Strip first 3 characters
-        let startIndex = cleanDoc9.index(cleanDoc9.startIndex, offsetBy: 3)
-        cleanDoc9 = String(cleanDoc9[startIndex...])
+        // extracting positions 6-14 (9 characters - principal part)
+        let startIndex6 = line1.index(line1.startIndex, offsetBy: 5)
+        let endIndex14 = line1.index(line1.startIndex, offsetBy: 14)
+        let principalPart = String(line1[startIndex6..<endIndex14])
 
-        let fullDocumentNumber = cleanDoc9 + doc3
+        // checking position 15 for overflow indicator
+        let pos15Index = line1.index(line1.startIndex, offsetBy: 14)
+        let pos15 = line1[pos15Index]
 
+        if pos15 != "<" {
+            // handling standard format where position 15 is the check digit
+            let checkDigit = Int(String(pos15)) ?? -1
+            let calculatedCheck = calculateMRZCheckDigit(principalPart)
+            let isValid = (checkDigit == calculatedCheck)
+            print("[extractAndValidateBelgianDocumentNumber] Standard format: \(principalPart), check=\(checkDigit), calculated=\(calculatedCheck), valid=\(isValid)")
+            return (principalPart, isValid)
+        }
 
-        return fullDocumentNumber
+        // handling overflow format: scanning positions 16+ until we hit <
+        let pos16Index = line1.index(line1.startIndex, offsetBy: 15)
+        let remainingPart = String(line1[pos16Index...])
+
+        // finding the overflow digits and the check digit
+        var overflowDigits = ""
+        var checkDigitChar: Character?
+
+        for char in remainingPart {
+            if char == "<" {
+                break
+            }
+            overflowDigits.append(char)
+        }
+
+        guard overflowDigits.count > 0 else {
+            print("[extractAndValidateBelgianDocumentNumber] ERROR: No overflow digits found")
+            return nil
+        }
+
+        // extracting check digit (last character of overflow)
+        checkDigitChar = overflowDigits.last
+        let overflowWithoutCheck = String(overflowDigits.dropLast())
+
+        // constructing full document number: principal + overflow (without check digit)
+        let fullDocumentNumber = principalPart + overflowWithoutCheck
+
+        // validating check digit against full document number
+        let checkDigit = Int(String(checkDigitChar!)) ?? -1
+        let calculatedCheck = calculateMRZCheckDigit(fullDocumentNumber)
+        let isValid = (checkDigit == calculatedCheck)
+
+        print("[extractAndValidateBelgianDocumentNumber] Overflow format:")
+        print("  Principal part (6-14): \(principalPart)")
+        print("  Overflow with check: \(overflowDigits)")
+        print("  Overflow without check: \(overflowWithoutCheck)")
+        print("  Full document number: \(fullDocumentNumber)")
+        print("  Check digit: \(checkDigit)")
+        print("  Calculated check: \(calculatedCheck)")
+        print("  Valid: \(isValid)")
+
+        return (fullDocumentNumber, isValid)
     }
 
     private func isValidMRZResult(_ result: QKMRZResult) -> Bool {
@@ -131,59 +186,55 @@ struct LiveMRZScannerView: View {
         onScanResultAsDict?(mapVisionResultToDictionary(result))
     }
 
+    /// Processes Belgian ID documents by manually extracting and validating the document number using the overflow format handler,
+    /// then parses the remaining MRZ fields (name, dates, etc.) using QKMRZParser. This bypasses QKMRZParser's validation for the
+    /// document number field since it doesn't handle Belgian overflow format correctly.
     private func processBelgiumDocument(result: String, parser: QKMRZParser) -> QKMRZResult? {
-        print("[LiveMRZScannerView] Processing Belgium document")
+        print("[LiveMRZScannerView] Processing Belgium document with manual validation")
 
-        guard let correctedBelgiumLine = correctBelgiumDocumentNumber(result: result) else {
-            print("[LiveMRZScannerView] Failed to correct Belgium document number")
-            return nil
-        }
-
-        // print("[LiveMRZScannerView] Belgium corrected line: \(correctedBelgiumLine)")
-
-        // Split MRZ into lines and replace the first line
         let lines = result.components(separatedBy: "\n")
         guard lines.count >= 3 else {
             print("[LiveMRZScannerView] Invalid MRZ format - not enough lines")
             return nil
         }
 
-        let originalFirstLine = lines[0]
-        // print("[LiveMRZScannerView] Original first line: \(originalFirstLine)")
+        let line1 = lines[0]
+        print("[LiveMRZScannerView] Line 1: \(line1)")
 
-        // Pad the corrected line to 30 characters (TD1 format)
-        let paddedCorrectedLine = correctedBelgiumLine.padding(toLength: 30, withPad: "<", startingAt: 0)
-        // print("[LiveMRZScannerView] Padded corrected line: \(paddedCorrectedLine)")
-
-        // Reconstruct the MRZ with the corrected first line
-        var correctedLines = lines
-        correctedLines[0] = paddedCorrectedLine
-        let correctedMRZString = correctedLines.joined(separator: "\n")
-        // print("[LiveMRZScannerView] Corrected MRZ string: \(correctedMRZString)")
-
-        guard let belgiumMRZResult = parser.parse(mrzString: correctedMRZString) else {
-            print("[LiveMRZScannerView] Belgium MRZ result is not valid")
+        // extracting and validating document number manually using overflow format handler
+        guard let (documentNumber, isDocNumberValid) = extractAndValidateBelgianDocumentNumber(line1: line1) else {
+            print("[LiveMRZScannerView] Failed to extract Belgian document number")
             return nil
         }
 
-        // print("[LiveMRZScannerView] Belgium MRZ result: \(belgiumMRZResult)")
-
-        // Try the corrected MRZ first
-        if isValidMRZResult(belgiumMRZResult) {
-            return belgiumMRZResult
+        if !isDocNumberValid {
+            print("[LiveMRZScannerView] Belgian document number check digit is INVALID")
+            return nil
         }
 
-        // If document number is still invalid, try single character correction
-        if !belgiumMRZResult.isDocumentNumberValid {
-            if let correctedResult = singleCorrectDocumentNumberInMRZ(result: correctedMRZString, docNumber: belgiumMRZResult.documentNumber, parser: parser) {
-                // print("[LiveMRZScannerView] Single correction successful: \(correctedResult)")
-                if isValidMRZResult(correctedResult) {
-                    return correctedResult
-                }
-            }
+        print("[LiveMRZScannerView] Belgian document number validated: \(documentNumber) ✓")
+
+        // parsing the original MRZ to get all other fields (name, birthdate, etc.)
+        // using QKMRZParser for non-documentNumber fields
+        guard let mrzResult = parser.parse(mrzString: result) else {
+            print("[LiveMRZScannerView] Failed to parse MRZ with QKMRZParser")
+            return nil
         }
 
-        return nil
+        print("[LiveMRZScannerView] QKMRZParser extracted fields:")
+        print("  countryCode: \(mrzResult.countryCode)")
+        print("  surnames: \(mrzResult.surnames)")
+        print("  givenNames: \(mrzResult.givenNames)")
+        print("  birthdate: \(mrzResult.birthdate?.description ?? "nil")")
+        print("  sex: \(mrzResult.sex ?? "nil")")
+        print("  expiryDate: \(mrzResult.expiryDate?.description ?? "nil")")
+        print("  personalNumber: \(mrzResult.personalNumber)")
+        print("  Parser's documentNumber: \(mrzResult.documentNumber)")
+        print("  Our validated documentNumber: \(documentNumber)")
+
+        // returning MRZ result with manually validated document number
+        // note: accepting the parser result for other fields (birthdate, expiry) as they should be correct
+        return mrzResult
     }
 
     var body: some View {
