@@ -5,6 +5,7 @@
 // CI/CD Pipeline Test - July 31, 2025 - With Permissions Fix
 import { Buffer } from 'buffer';
 import React from 'react';
+import { Platform } from 'react-native';
 import { YStack } from 'tamagui';
 import type {
   TurnkeyCallbacks,
@@ -28,7 +29,10 @@ import { PassportProvider } from './src/providers/passportDataProvider';
 import { RemoteConfigProvider } from './src/providers/remoteConfigProvider';
 import { SelfClientProvider } from './src/providers/selfClientProvider';
 import { initSentry, wrapWithSentry } from './src/Sentry';
-import { OAUTH_REDIRECT_URI } from './src/utils/constants';
+import {
+  TURNKEY_OAUTH_REDIRECT_URI_ANDROID,
+  TURNKEY_OAUTH_REDIRECT_URI_IOS,
+} from './src/utils/constants';
 
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
@@ -64,11 +68,19 @@ export const TURNKEY_CONFIG: TurnkeyProviderConfig = {
   auth: {
     passkey: false,
     oauth: {
-      appScheme: 'https',
-      redirectUri: OAUTH_REDIRECT_URI,
+      // Should use custom scheme, NOT 'https' for IOS
+      appScheme:
+        Platform.OS === 'ios' ? 'com.warroom.proofofpassport' : 'https',
+      redirectUri:
+        Platform.OS === 'ios'
+          ? TURNKEY_OAUTH_REDIRECT_URI_IOS
+          : TURNKEY_OAUTH_REDIRECT_URI_ANDROID,
       google: {
         clientId: TURNKEY_GOOGLE_CLIENT_ID!,
-        redirectUri: OAUTH_REDIRECT_URI,
+        redirectUri:
+          Platform.OS === 'ios'
+            ? TURNKEY_OAUTH_REDIRECT_URI_IOS
+            : TURNKEY_OAUTH_REDIRECT_URI_ANDROID,
       },
     },
   },
