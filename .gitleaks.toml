@@ -28,6 +28,7 @@ paths = [
     '''Database.refactorlog''',
     '''vendor''',
     '''.*tamagui-components\.config\.cjs$''',
+    '''packages/mobile-sdk-alpha/src/animations/.*\.json$''',
 ]
 
 [[rules]]

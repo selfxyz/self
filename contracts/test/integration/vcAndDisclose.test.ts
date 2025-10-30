@@ -4,7 +4,7 @@ import { DeployedActors, VcAndDiscloseHubProof } from "../utils/types";
 import { ethers } from "hardhat";
 import { CIRCUIT_CONSTANTS } from "@selfxyz/common/constants/constants";
 import { ATTESTATION_ID } from "../utils/constants";
-import { generateVcAndDiscloseProof, getSMTs } from "../utils/generateProof.js";
+import { generateVcAndDiscloseProof, getSMTs } from "../utils/generateProof";
 import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
 import { BigNumberish } from "ethers";

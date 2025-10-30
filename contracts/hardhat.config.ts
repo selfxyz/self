@@ -1,14 +1,16 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import dotenv from "dotenv";
-dotenv.config({
-  path: process.env.CI ? ".env.test" : ".env",
-});
+dotenv.config();
 import "hardhat-contract-sizer";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import "solidity-coverage";
 import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
+
+// Use a dummy private key for CI/local development (not used for actual deployments)
+const DUMMY_PRIVATE_KEY = "0x0000000000000000000000000000000000000000000000000000000000000001";
+const PRIVATE_KEY = process.env.PRIVATE_KEY || DUMMY_PRIVATE_KEY;
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -16,7 +18,7 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200,
+        runs: 100000,
       },
     },
   },
@@ -42,33 +44,28 @@ const config: HardhatUserConfig = {
     mainnet: {
       chainId: 1,
       url: process.env.MAINNET_RPC_URL || "https://eth.llamarpc.com",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: [PRIVATE_KEY],
     },
     sepolia: {
       chainId: 11155111,
       url: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.public.blastapi.io",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: [PRIVATE_KEY],
     },
     celo: {
       chainId: 42220,
       url: process.env.CELO_RPC_URL || "https://forno.celo.org",
-      accounts: [process.env.PRIVATE_KEY as string],
-    },
-    alfajores: {
-      chainId: 44787,
-      url: process.env.CELO_ALFAJORES_RPC_URL || "https://alfajores-forno.celo-testnet.org",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: [PRIVATE_KEY],
     },
     "celo-sepolia": {
       chainId: 11142220,
       url: process.env.CELO_SEPOLIA_RPC_URL || "https://rpc.ankr.com/celo_sepolia",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: [PRIVATE_KEY],
     },
   },
   etherscan: {
-    apiKey: process.env.CELOSCAN_API_KEY as string,
+    apiKey: process.env.ETHERSCAN_API_KEY as string,
     // apiKey: {
-    //   "celo-sepolia": process.env.CELOSCAN_API_KEY as string,
+    //   "celo-sepolia": process.env.ETHERSCAN_API_KEY as string,
     // },
     customChains: [
       {
@@ -77,14 +74,6 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api.etherscan.io/v2/api?chainid=42220",
           browserURL: "https://celoscan.io/",
-        },
-      },
-      {
-        network: "alfajores",
-        chainId: 44787,
-        urls: {
-          apiURL: "https://api.etherscan.io/v2/api?chainid=44787",
-          browserURL: "https://alfajores.celoscan.io",
         },
       },
       {

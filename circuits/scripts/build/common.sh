@@ -31,7 +31,7 @@ download_ptau() {
     cd build
     if [ ! -f powersOfTau28_hez_final_${POWEROFTAU}.ptau ]; then
         echo -e "${YELLOW}Download power of tau....${NC}"
-        wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_${POWEROFTAU}.ptau
+        wget https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_${POWEROFTAU}.ptau
         echo -e "${GREEN}Finished download!${NC}"
     else
         echo -e "${YELLOW}Powers of tau file already downloaded${NC}"
@@ -72,9 +72,10 @@ build_circuit() {
 
     # Compile circuit
     circom ${CIRCUIT_PATH} \
-        -l ../node_modules \
-        -l ../node_modules/@zk-kit/binary-merkle-root.circom/src \
-        -l ../node_modules/circomlib/circuits \
+        -l node_modules \
+        -l node_modules/@zk-kit/binary-merkle-root.circom/src \
+        -l node_modules/circomlib/circuits \
+        -l node_modules \
         --r1cs --O1 --wasm -c \
         --output ${OUTPUT_DIR}/${CIRCUIT_NAME}/
 

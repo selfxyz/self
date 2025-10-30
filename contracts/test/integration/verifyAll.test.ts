@@ -7,11 +7,11 @@ import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
 import { ATTESTATION_ID } from "../utils/constants";
 import { CIRCUIT_CONSTANTS } from "@selfxyz/common/constants/constants";
 import { poseidon2 } from "poseidon-lite";
-import { generateVcAndDiscloseProof, parseSolidityCalldata } from "../utils/generateProof.js";
+import { generateVcAndDiscloseProof, parseSolidityCalldata } from "../utils/generateProof";
 import { Formatter } from "../utils/formatter";
 import { formatCountriesList, reverseBytes } from "@selfxyz/common/utils/circuits/formatInputs";
 import { VerifyAll } from "../../typechain-types";
-import { getSMTs } from "../utils/generateProof.js";
+import { getSMTs } from "../utils/generateProof";
 import { Groth16Proof, PublicSignals, groth16 } from "snarkjs";
 import { VcAndDiscloseProof } from "../utils/types";
 

@@ -14,16 +14,15 @@ export const ATTESTATION_TO_REGISTRY = {
 export const NETWORK_TO_CHAIN_ID: Record<string, string> = {
   localhost: "31337",
   hardhat: "31337",
-  alfajores: "44787",
-  celoAlfajores: "44787",
+  celoSepolia: "11142220",
   celo: "42220",
   mainnet: "42220",
-  staging: "44787",
+  staging: "11142220",
 };
 
 export const CHAIN_ID_TO_SAVED_REPO: Record<string, string> = {
   "42220": "prod",
-  "44787": "staging",
+  "11142220": "staging",
 };
 
 export const getChainId = (network: string): string => {

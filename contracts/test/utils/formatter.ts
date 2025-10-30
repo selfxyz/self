@@ -303,7 +303,7 @@ export class CircuitAttributeHandler {
   static extractStringAttribute(input: string | Uint8Array, start: number, end: number): string {
     const charcodes = this.normalizeInput(input);
     if (charcodes.length <= end) {
-      throw new Error("INSUFFICIENT_CHARCODE_LEN");
+      throw new Error("InsufficientCharcodeLen");
     }
     const attributeBytes = charcodes.slice(start, end + 1);
     return new TextDecoder("utf-8").decode(attributeBytes);

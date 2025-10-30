@@ -52,6 +52,10 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // Events
     // ====================================================
 
+    // ====================================================
+    // Constructor
+    // ====================================================
+
     /**
      * @notice Initializes the SelfVerificationRoot contract
      * @dev Sets up the immutable reference to the hub contract and generates scope automatically
@@ -62,6 +66,10 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         _identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
         _scope = _calculateScope(address(this), scopeSeed, _getPoseidonAddress());
     }
+
+    // ====================================================
+    // Public Functions
+    // ====================================================
 
     /**
      * @notice Returns the current scope value
@@ -158,6 +166,10 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         // Default implementation reverts; must be overridden in derived contract
         revert("SelfVerificationRoot: getConfigId must be overridden");
     }
+
+    // ====================================================
+    // Internal Functions
+    // ====================================================
 
     /**
      * @notice Custom verification hook that can be overridden by implementing contracts

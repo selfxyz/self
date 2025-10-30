@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 declare module '*.json' {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const value: any;
   export default value;
 }

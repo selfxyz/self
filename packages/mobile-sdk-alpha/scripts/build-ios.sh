@@ -37,7 +37,7 @@ if [ -d "$PREBUILT_DIR/$NFCPASSPORTREADER_XCFRAMEWORK" ] && [ -d "$PREBUILT_DIR/
     # Copy OpenSSL.xcframework
     echo "📦 Copying $OPENSSL_XCFRAMEWORK to $DIST_DIR..."
     rm -rf "$DIST_DIR/$OPENSSL_XCFRAMEWORK"
-    cp -R "$PREBUILT_DIR/$OPENSSL_XCFRAMEWORK" "$DIST_DIR/$OPENSSL_XCFRAMEWORK"
+    cp -RL "$PREBUILT_DIR/$OPENSSL_XCFRAMEWORK" "$DIST_DIR/$OPENSSL_XCFRAMEWORK"
 
     echo "✅ XCFrameworks copied successfully"
     echo "📦 NFCPassportReader XCFramework: $DIST_DIR/$NFCPASSPORTREADER_XCFRAMEWORK"

@@ -30,6 +30,8 @@ interface PersistedSettingsState {
   setSubscribedTopics: (topics: string[]) => void;
   addSubscribedTopic: (topic: string) => void;
   removeSubscribedTopic: (topic: string) => void;
+  pointsAddress: string | null;
+  setPointsAddress: (address: string | null) => void;
 }
 
 interface NonPersistedSettingsState {
@@ -101,6 +103,9 @@ export const useSettingStore = create<SettingsState>()(
       backedUpWithTurnKey: false,
       setBackedUpWithTurnKey: (backedUpWithTurnKey: boolean) =>
         set({ backedUpWithTurnKey }),
+      pointsAddress: null,
+      setPointsAddress: (address: string | null) =>
+        set({ pointsAddress: address }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,

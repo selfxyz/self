@@ -279,3 +279,4 @@ circuits/ptau/
 **/*.d.ts
 !**/types/*.d.ts
 !**/src/types/*.d.ts
+!**/global.d.ts
