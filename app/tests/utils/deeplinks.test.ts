@@ -179,7 +179,8 @@ describe('deeplinks', () => {
         .spyOn(console, 'log')
         .mockImplementation(() => {});
 
-      const url = 'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7&id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature';
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7&id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature';
       handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
@@ -198,7 +199,8 @@ describe('deeplinks', () => {
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
-      const url = 'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7';
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7';
       handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
@@ -214,7 +216,8 @@ describe('deeplinks', () => {
         .spyOn(console, 'log')
         .mockImplementation(() => {});
 
-      const url = 'https://redirect.self.xyz?scheme=https#id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature&scope=email%20profile';
+      const url =
+        'https://redirect.self.xyz?scheme=https#id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature&scope=email%20profile';
       handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
@@ -232,7 +235,8 @@ describe('deeplinks', () => {
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
-      const url = 'https://redirect.self.xyz?scheme=https#scope=email%20profile';
+      const url =
+        'https://redirect.self.xyz?scheme=https#scope=email%20profile';
       handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
@@ -251,7 +255,8 @@ describe('deeplinks', () => {
 
       // id_token with invalid characters (XSS attempt) - should be rejected
       // code is valid, but since id_token is invalid and rejected, code alone shouldn't trigger OAuth
-      const url = 'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93&id_token=<script>alert("xss")</script>';
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93&id_token=<script>alert("xss")</script>';
       handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
@@ -468,23 +473,28 @@ describe('deeplinks', () => {
 
   describe('Turnkey OAuth parameter validation', () => {
     it('returns valid code and state parameters', () => {
-      const url = 'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7&state=state_abc';
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7&state=state_abc';
       const result = parseAndValidateUrlParams(url);
       expect(result.code).toBe('4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7');
       expect(result.state).toBe('state_abc');
     });
 
     it('returns id_token and scope parameters', () => {
-      const url = 'https://redirect.self.xyz?scheme=https#id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature&scope=email%20profile';
+      const url =
+        'https://redirect.self.xyz?scheme=https#id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature&scope=email%20profile';
       const result = parseAndValidateUrlParams(url);
       expect(result.id_token).toBeTruthy();
       expect(result.scope).toBe('email profile');
     });
 
     it('handles code with forward slashes (Google OAuth format)', () => {
-      const url = 'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7CMFt3YS0RKh9yreKIqdMg4qZh6MaIkfonjNlJFw';
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7CMFt3YS0RKh9yreKIqdMg4qZh6MaIkfonjNlJFw';
       const result = parseAndValidateUrlParams(url);
-      expect(result.code).toBe('4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7CMFt3YS0RKh9yreKIqdMg4qZh6MaIkfonjNlJFw');
+      expect(result.code).toBe(
+        '4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7CMFt3YS0RKh9yreKIqdMg4qZh6MaIkfonjNlJFw',
+      );
     });
 
     it('rejects id_token with invalid characters (XSS attempt)', () => {
@@ -493,7 +503,8 @@ describe('deeplinks', () => {
         .mockImplementation(() => {});
 
       // URL with only an invalid id_token - this should reject the id_token
-      const url = 'https://redirect.self.xyz#id_token=<script>alert("xss")</script>';
+      const url =
+        'https://redirect.self.xyz#id_token=<script>alert("xss")</script>';
       const result = parseAndValidateUrlParams(url);
 
       // The invalid id_token should be rejected
@@ -511,7 +522,8 @@ describe('deeplinks', () => {
         .spyOn(console, 'warn')
         .mockImplementation(() => {});
 
-      const url = 'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93&state=state_abc&error=access_denied&error_description=user_denied';
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93&state=state_abc&error=access_denied&error_description=user_denied';
       const result = parseAndValidateUrlParams(url);
 
       expect(result.code).toBe('4/0Ab32j93');

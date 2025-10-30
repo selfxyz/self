@@ -19,7 +19,7 @@ const VALIDATION_PATTERNS = {
   mock_passport: /^[\s\S]*$/, // JSON strings can contain any characters, we'll validate JSON parsing separately
   code: /^[a-zA-Z0-9._/-]+$/, // OAuth authorization code (may include forward slashes)
   state: /^[a-zA-Z0-9._-]+$/, // OAuth state parameter for CSRF protection
-  id_token: /^[\w\-\.]+$/, // JWT token format (base64url encoded segments)
+  id_token: /^[\w\-.]+$/, // JWT token format (base64url encoded segments)
   scope: /^[\w\s%:/.=&+*-]+$/, // OAuth scopes (can include spaces, encoded chars, and URL-encoded content)
   scheme: /^https?$/, // Redirect scheme (http or https)
 } as const;
@@ -259,16 +259,34 @@ export const setupUniversalLinkListenerInNavigation = (
   // Get the initial URL and store it for splash screen handling
   Linking.getInitialURL().then(url => {
     if (url) {
-      // Store the initial URL instead of handling it immediately
+      // Check if it's an OAuth callback - if so, don't queue it, let Turnkey handle it
+      // const validatedParams = parseAndValidateUrlParams(url);
+      // if (!validatedParams.code && !validatedParams.id_token) {
+      //   console.log(
+      //     'not an OAuth callback, storing for splash screen handling',
+      //   );
+      // Not an OAuth callback, store for splash screen handling
       queuedInitialUrl = url;
+      // }
     }
   });
-
   // Handle subsequent URL events normally (when app is already running)
   const linkingEventListener = Linking.addEventListener('url', ({ url }) => {
+    // Check if this is an OAuth callback
+    // const validatedParams = parseAndValidateUrlParams(url);
+    // // console.log('validatedParams', validatedParams);
+    // if (validatedParams.code || validatedParams.id_token) {
+    //   // This is an OAuth callback - don't handle it, let Turnkey SDK handle it
+    //   if (typeof __DEV__ !== 'undefined' && __DEV__) {
+    //     console.log(
+    //       '[Deeplinks] OAuth callback detected - letting Turnkey SDK handle it',
+    //     );
+    //   }
+    //   return; // Don't call handleUrl for OAuth callbacks
+    // }
+    // For non-OAuth URLs, handle normally
     handleUrl(selfClient, url);
   });
-
   return () => {
     linkingEventListener.remove();
   };

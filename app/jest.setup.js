@@ -335,18 +335,9 @@ jest.mock('react-native-device-info', () => ({
 }));
 
 // Mock react-native-device-info nested in @turnkey/react-native-wallet-kit
-jest.mock('node_modules/@turnkey/react-native-wallet-kit/node_modules/react-native-device-info', () => ({
-  getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
-  getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
-  getVersion: jest.fn().mockReturnValue('1.0.0'),
-  getBuildNumber: jest.fn().mockReturnValue('1'),
-  getModel: jest.fn().mockReturnValue('mock-model'),
-  getBrand: jest.fn().mockReturnValue('mock-brand'),
-  isTablet: jest.fn().mockReturnValue(false),
-  isLandscape: jest.fn().mockResolvedValue(false),
-  getSystemVersion: jest.fn().mockReturnValue('14.0'),
-  getSystemName: jest.fn().mockReturnValue('iOS'),
-  default: {
+jest.mock(
+  'node_modules/@turnkey/react-native-wallet-kit/node_modules/react-native-device-info',
+  () => ({
     getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
     getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
     getVersion: jest.fn().mockReturnValue('1.0.0'),
@@ -357,8 +348,21 @@ jest.mock('node_modules/@turnkey/react-native-wallet-kit/node_modules/react-nati
     isLandscape: jest.fn().mockResolvedValue(false),
     getSystemVersion: jest.fn().mockReturnValue('14.0'),
     getSystemName: jest.fn().mockReturnValue('iOS'),
-  },
-}), { virtual: true });
+    default: {
+      getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+      getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+      getVersion: jest.fn().mockReturnValue('1.0.0'),
+      getBuildNumber: jest.fn().mockReturnValue('1'),
+      getModel: jest.fn().mockReturnValue('mock-model'),
+      getBrand: jest.fn().mockReturnValue('mock-brand'),
+      isTablet: jest.fn().mockReturnValue(false),
+      isLandscape: jest.fn().mockResolvedValue(false),
+      getSystemVersion: jest.fn().mockReturnValue('14.0'),
+      getSystemName: jest.fn().mockReturnValue('iOS'),
+    },
+  }),
+  { virtual: true },
+);
 
 // Mock problematic mobile-sdk-alpha components that use React Native StyleSheet
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
