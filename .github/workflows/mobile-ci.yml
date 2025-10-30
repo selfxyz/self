@@ -309,12 +309,14 @@ jobs:
           bundle install --jobs 4 --retry 3
         working-directory: ./app
       - name: Install iOS Dependencies
-        run: |
-          echo "Installing iOS dependencies..."
-          cd ios
-          # Reuse the same guarded flow as local to ensure reproducibility
-          bundle exec bash scripts/pod-install-with-cache-fix.sh
-        working-directory: ./app
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 20
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: |
+            cd app/ios
+            bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Resolve iOS workspace
@@ -436,12 +438,19 @@ jobs:
         with:
           accept-android-sdk-licenses: true
       - name: Cache NDK
+        id: ndk-cache
         uses: actions/cache@v4
         with:
           path: ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
           key: ${{ runner.os }}-ndk-${{ env.ANDROID_NDK_VERSION }}
       - name: Install NDK
-        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+        if: steps.ndk-cache.outputs.cache-hit != 'true'
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Install Mobile Dependencies
         uses: ./.github/actions/yarn-install
       - name: Cache Built Dependencies

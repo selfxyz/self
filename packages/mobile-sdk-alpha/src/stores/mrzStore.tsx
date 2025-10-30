@@ -8,6 +8,12 @@ import type { MRZInfo } from '../types/public';
 
 type MRZNeededForNFC = Pick<MRZInfo, 'documentNumber' | 'dateOfBirth' | 'dateOfExpiry'>;
 
+/**
+ * Zustand slice capturing the latest MRZ data extracted during onboarding.
+ * Values are persisted in-memory only and cleared after successful NFC scans to
+ * reduce the risk of leaking MRZ details if the app crashes. All fields mirror
+ * ICAO formatting and should remain unmasked until passed to the NFC adapter.
+ */
 export interface MRZState {
   // Fields needed for NFC scanning
   passportNumber: string;
@@ -38,10 +44,11 @@ const initialState = {
   documentType: '',
 };
 
-/*
-  Never export outside of the mobile sdk. It can cause multiple instances of the store to be created.
- interact with the store thru the self client
-*/
+/**
+ * Internal MRZ store hook. Consumers should access it via the self client
+ * facade so only one store instance exists per SDK runtime. The store persists
+ * the most recent MRZ payload until cleared or overwritten.
+ */
 export const useMRZStore = create<MRZState>((set, get) => ({
   ...initialState,
 

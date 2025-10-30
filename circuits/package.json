@@ -5,7 +5,7 @@
   "license": "MIT",
   "author": "self team",
   "scripts": {
-    "build-all": "bash scripts/build/build_register_circuits.sh && bash scripts/build/build_register_circuits_id.sh && bash scripts/build/build_dsc_circuits.sh && bash scripts/build/build_disclose_circuits.sh",
+    "build-all": "bash scripts/build/build_register_circuits.sh && bash scripts/build/build_register_circuits_id.sh && bash scripts/build/build_register_aadhaar.sh && bash scripts/build/build_dsc_circuits.sh && bash scripts/build/build_disclose_circuits.sh",
     "build-disclose": "bash scripts/build/build_disclose_circuits.sh",
     "build-dsc": "bash scripts/build/build_dsc_circuits.sh",
     "build-register": "bash scripts/build/build_register_circuits.sh",

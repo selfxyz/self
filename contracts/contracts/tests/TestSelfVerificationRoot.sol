@@ -41,7 +41,7 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory userData
-    ) internal override {
+    ) internal virtual override {
         verificationSuccessful = true;
         lastOutput = output;
         lastUserData = userData;
@@ -82,7 +82,7 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
         verificationConfigId = bytes32(uint256(1));
     }
 
-    function setConfigId(bytes32 configId) external {
+    function setConfigId(bytes32 configId) external virtual {
         verificationConfigId = configId;
     }
 

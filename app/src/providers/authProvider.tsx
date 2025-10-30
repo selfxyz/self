@@ -319,6 +319,45 @@ export const AuthProvider = ({
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
 };
 
+function _generateAddressFromMnemonic(mnemonic: string, index: number): string {
+  const wallet = ethers.HDNodeWallet.fromPhrase(
+    mnemonic,
+    undefined,
+    `m/44'/60'/0'/0/${index}`,
+  );
+  return wallet.address;
+}
+
+/**
+ * Gets the second address if it exists, or generates and stores it if not.
+ * By Generate, it means we need the user's biometric auth.
+ *
+ * Flow is, when the user visits the points screen for the first time, we need to generate the points address.
+ */
+export async function getOrGeneratePointsAddress(): Promise<string> {
+  const pointsAddress = useSettingStore.getState().pointsAddress;
+  if (pointsAddress) {
+    return pointsAddress;
+  }
+
+  const mnemonicData = await _getSecurely<Mnemonic>(
+    keychainOptions => loadOrCreateMnemonic(keychainOptions),
+    str => JSON.parse(str),
+    { requireAuth: true },
+  );
+
+  if (!mnemonicData?.data?.phrase) {
+    throw new Error(
+      'Failed to retrieve mnemonic for points address generation',
+    );
+  }
+
+  const pointsAddr = _generateAddressFromMnemonic(mnemonicData.data.phrase, 1);
+
+  useSettingStore.getState().setPointsAddress(pointsAddr);
+  return pointsAddr;
+}
+
 export async function hasSecretStored() {
   const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
   return !!seed;
