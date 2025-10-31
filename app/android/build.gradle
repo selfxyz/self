@@ -52,6 +52,11 @@ allprojects {
     configurations.all {
         resolutionStrategy {
             force 'com.google.firebase:firebase-iid:21.1.0'
+            force 'org.jmrtd:jmrtd:0.8.1'
+            force 'net.sf.scuba:scuba-smartcards:0.0.20'  // Required by jmrtd 0.8.1
+            force 'net.sf.scuba:scuba-sc-android:0.0.23'  // Android-specific scuba (resolves to compatible scuba-smartcards)
+            force 'org.bouncycastle:bcprov-jdk18on:1.80'  // Required by jmrtd 0.8.1
+            force 'org.bouncycastle:bcutil-jdk18on:1.80'  // Required by jmrtd 0.8.1
         }
     }
 }
