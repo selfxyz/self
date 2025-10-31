@@ -173,10 +173,6 @@ PODS:
   - Mixpanel-swift (5.0.0):
     - Mixpanel-swift/Complete (= 5.0.0)
   - Mixpanel-swift/Complete (5.0.0)
-  - mobile-sdk-alpha (0.1.0):
-    - NFCPassportReader
-    - QKMRZParser
-    - React-Core
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
     - nanopb/encode (= 2.30910.0)
@@ -2161,7 +2157,6 @@ DEPENDENCIES:
   - lottie-ios
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - Mixpanel-swift (~> 5.0.0)
-  - "mobile-sdk-alpha (from `../node_modules/@selfxyz/mobile-sdk-alpha`)"
   - "NFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b`)"
   - QKMRZScanner
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -2296,8 +2291,6 @@ EXTERNAL SOURCES:
     :tag: hermes-2024-11-12-RNv0.76.2-5b4aa20c719830dcf5684832b89a6edb95ac3d64
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
-  mobile-sdk-alpha:
-    :path: "../node_modules/@selfxyz/mobile-sdk-alpha"
   NFCPassportReader:
     :commit: 9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b
     :git: "git@github.com:selfxyz/NFCPassportReader.git"
@@ -2502,7 +2495,6 @@ SPEC CHECKSUMS:
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 7bb65bc88d3f9996ea2f646a96694285405df2f9
   Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
-  mobile-sdk-alpha: 126edf71b65b5a9e294725e4353c2705fa0fd20d
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   NFCPassportReader: 48873f856f91215dbfa1eaaec20eae639672862e
   OpenSSL-Universal: 84efb8a29841f2764ac5403e0c4119a28b713346
