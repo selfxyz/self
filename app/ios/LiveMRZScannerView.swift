@@ -10,6 +10,7 @@ struct LiveMRZScannerView: View {
     @State private var lastMRZDetection: Date = Date()
     @State private var parsedMRZ: QKMRZResult? = nil
     @State private var scanComplete: Bool = false
+    @State private var overrideDocumentNumber: String? = nil  // for Belgian ID overflow format
     var onScanComplete: ((QKMRZResult) -> Void)? = nil
     var onScanResultAsDict: (([String: Any]) -> Void)? = nil
 
@@ -60,12 +61,17 @@ struct LiveMRZScannerView: View {
     }
 
     private func mapVisionResultToDictionary(_ result: QKMRZResult) -> [String: Any] {
+        
+        // using manually validated document number for Belgian IDs (overflow format)
+        // this is necessary for NFC chip authentication which requires the full document number
+        let documentNumber = overrideDocumentNumber ?? result.documentNumber
+
         return [
             "documentType": result.documentType,
             "countryCode": result.countryCode,
             "surnames": result.surnames,
             "givenNames": result.givenNames,
-            "documentNumber": result.documentNumber,
+            "documentNumber": documentNumber,  // using the overriden if available
             "nationalityCountryCode": result.nationalityCountryCode,
             "dateOfBirth": result.birthdate?.description ?? "",
             "sex": result.sex ?? "",
@@ -159,10 +165,15 @@ struct LiveMRZScannerView: View {
         let fullDocumentNumber = principalPart + overflowWithoutCheck
 
         // validating check digit against full document number
-        let checkDigit = Int(String(checkDigitChar!)) ?? -1
+        guard let checkDigitChar = checkDigitChar,
+              let checkDigit = Int(String(checkDigitChar)) else {
+            print("[extractAndValidateBelgianDocumentNumber] ERROR: Invalid check digit")
+            return nil
+        }
         let calculatedCheck = calculateMRZCheckDigit(fullDocumentNumber)
         let isValid = (checkDigit == calculatedCheck)
 
+        #if DEBUG
         print("[extractAndValidateBelgianDocumentNumber] Overflow format:")
         print("  Principal part (6-14): \(principalPart)")
         print("  Overflow with check: \(overflowDigits)")
@@ -171,6 +182,7 @@ struct LiveMRZScannerView: View {
         print("  Check digit: \(checkDigit)")
         print("  Calculated check: \(calculatedCheck)")
         print("  Valid: \(isValid)")
+        #endif
 
         return (fullDocumentNumber, isValid)
     }
@@ -221,6 +233,13 @@ struct LiveMRZScannerView: View {
             return nil
         }
 
+        // validating that other fields are also correct (consistency with non-Belgium documents)
+        if !mrzResult.isBirthdateValid || !mrzResult.isExpiryDateValid {
+            print("[LiveMRZScannerView] Belgium document has invalid birthdate or expiry date")
+            return nil
+        }
+
+        #if DEBUG
         print("[LiveMRZScannerView] QKMRZParser extracted fields:")
         print("  countryCode: \(mrzResult.countryCode)")
         print("  surnames: \(mrzResult.surnames)")
@@ -231,9 +250,16 @@ struct LiveMRZScannerView: View {
         print("  personalNumber: \(mrzResult.personalNumber)")
         print("  Parser's documentNumber: \(mrzResult.documentNumber)")
         print("  Our validated documentNumber: \(documentNumber)")
+        #endif
 
-        // returning MRZ result with manually validated document number
-        // note: accepting the parser result for other fields (birthdate, expiry) as they should be correct
+        // storing the manually validated full document number
+        // this will be used for NFC chip authentication (BAC keys)
+        overrideDocumentNumber = documentNumber
+        #if DEBUG
+        print("[LiveMRZScannerView] Set overrideDocumentNumber to: \(documentNumber)")
+        #endif
+
+        // returning MRZ result, the document number will be overridden in mapVisionResultToDictionary
         return mrzResult
     }
 
