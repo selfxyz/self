@@ -10,7 +10,7 @@ struct LiveMRZScannerView: View {
     @State private var lastMRZDetection: Date = Date()
     @State private var parsedMRZ: QKMRZResult? = nil
     @State private var scanComplete: Bool = false
-    @State private var overrideDocumentNumber: String? = nil  // for Belgian ID overflow format
+    @State private var overrideDocumentNumber: String? = nil  // for TD1 overflow format (ID cards)
     var onScanComplete: ((QKMRZResult) -> Void)? = nil
     var onScanResultAsDict: (([String: Any]) -> Void)? = nil
 
@@ -61,8 +61,8 @@ struct LiveMRZScannerView: View {
     }
 
     private func mapVisionResultToDictionary(_ result: QKMRZResult) -> [String: Any] {
-        
-        // using manually validated document number for Belgian IDs (overflow format)
+
+        // using manually validated document number for TD1 documents with overflow format
         // this is necessary for NFC chip authentication which requires the full document number
         let documentNumber = overrideDocumentNumber ?? result.documentNumber
 
@@ -111,12 +111,13 @@ struct LiveMRZScannerView: View {
         return sum % 10
     }
 
-    /// Extracts and validates the Belgian document number from MRZ line 1, handling both standard and overflow formats.
-    /// Belgian TD1 format uses an overflow mechanism when document numbers exceed 9 digits.
+    /// Extracts and validates the document number from TD1 MRZ line 1, handling both standard and overflow formats.
+    /// TD1 format uses an overflow mechanism when document numbers exceed 9 digits.
     /// Example overflow format: IDBEL595392450<8039<<<<<<<<<< where positions 6-14 contain the principal part (595392450),
     /// position 15 contains the overflow indicator (<), positions 16-18 contain overflow digits (803), and position 19 contains the check digit (9).
     /// The full document number becomes: 595392450803.
-    private func extractAndValidateBelgianDocumentNumber(line1: String) -> (documentNumber: String, isValid: Bool)? {
+    /// This overflow format can occur for any country using TD1 MRZ (ID cards).
+    private func extractAndValidateTD1DocumentNumber(line1: String) -> (documentNumber: String, isValid: Bool)? {
         guard line1.count == 30 else { return nil }
 
         // extracting positions 6-14 (9 characters - principal part)
@@ -133,7 +134,7 @@ struct LiveMRZScannerView: View {
             let checkDigit = Int(String(pos15)) ?? -1
             let calculatedCheck = calculateMRZCheckDigit(principalPart)
             let isValid = (checkDigit == calculatedCheck)
-            print("[extractAndValidateBelgianDocumentNumber] Standard format: \(principalPart), check=\(checkDigit), calculated=\(calculatedCheck), valid=\(isValid)")
+            print("[extractAndValidateTD1DocumentNumber] Standard format: \(principalPart), check=\(checkDigit), calculated=\(calculatedCheck), valid=\(isValid)")
             return (principalPart, isValid)
         }
 
@@ -153,7 +154,7 @@ struct LiveMRZScannerView: View {
         }
 
         guard overflowDigits.count > 0 else {
-            print("[extractAndValidateBelgianDocumentNumber] ERROR: No overflow digits found")
+            print("[extractAndValidateTD1DocumentNumber] ERROR: No overflow digits found")
             return nil
         }
 
@@ -167,14 +168,14 @@ struct LiveMRZScannerView: View {
         // validating check digit against full document number
         guard let checkDigitChar = checkDigitChar,
               let checkDigit = Int(String(checkDigitChar)) else {
-            print("[extractAndValidateBelgianDocumentNumber] ERROR: Invalid check digit")
+            print("[extractAndValidateTD1DocumentNumber] ERROR: Invalid check digit")
             return nil
         }
         let calculatedCheck = calculateMRZCheckDigit(fullDocumentNumber)
         let isValid = (checkDigit == calculatedCheck)
 
         #if DEBUG
-        print("[extractAndValidateBelgianDocumentNumber] Overflow format:")
+        print("[extractAndValidateTD1DocumentNumber] Overflow format:")
         print("  Principal part (6-14): \(principalPart)")
         print("  Overflow with check: \(overflowDigits)")
         print("  Overflow without check: \(overflowWithoutCheck)")
@@ -198,11 +199,11 @@ struct LiveMRZScannerView: View {
         onScanResultAsDict?(mapVisionResultToDictionary(result))
     }
 
-    /// Processes Belgian ID documents by manually extracting and validating the document number using the overflow format handler,
+    /// Processes TD1 documents (ID cards) by manually extracting and validating the document number using the overflow format handler,
     /// then parses the remaining MRZ fields (name, dates, etc.) using QKMRZParser. This bypasses QKMRZParser's validation for the
-    /// document number field since it doesn't handle Belgian overflow format correctly.
-    private func processBelgiumDocument(result: String, parser: QKMRZParser) -> QKMRZResult? {
-        print("[LiveMRZScannerView] Processing Belgium document with manual validation")
+    /// document number field since it doesn't handle TD1 overflow format correctly.
+    private func processTD1DocumentWithOverflow(result: String, parser: QKMRZParser) -> QKMRZResult? {
+        print("[LiveMRZScannerView] Processing TD1 document with manual overflow validation")
 
         let lines = result.components(separatedBy: "\n")
         guard lines.count >= 3 else {
@@ -214,17 +215,17 @@ struct LiveMRZScannerView: View {
         print("[LiveMRZScannerView] Line 1: \(line1)")
 
         // extracting and validating document number manually using overflow format handler
-        guard let (documentNumber, isDocNumberValid) = extractAndValidateBelgianDocumentNumber(line1: line1) else {
-            print("[LiveMRZScannerView] Failed to extract Belgian document number")
+        guard let (documentNumber, isDocNumberValid) = extractAndValidateTD1DocumentNumber(line1: line1) else {
+            print("[LiveMRZScannerView] Failed to extract TD1 document number")
             return nil
         }
 
         if !isDocNumberValid {
-            print("[LiveMRZScannerView] Belgian document number check digit is INVALID")
+            print("[LiveMRZScannerView] TD1 document number check digit is INVALID")
             return nil
         }
 
-        print("[LiveMRZScannerView] Belgian document number validated: \(documentNumber) ✓")
+        print("[LiveMRZScannerView] TD1 document number validated: \(documentNumber) ✓")
 
         // parsing the original MRZ to get all other fields (name, birthdate, etc.)
         // using QKMRZParser for non-documentNumber fields
@@ -233,9 +234,9 @@ struct LiveMRZScannerView: View {
             return nil
         }
 
-        // validating that other fields are also correct (consistency with non-Belgium documents)
+        // validating that other fields are also correct
         if !mrzResult.isBirthdateValid || !mrzResult.isExpiryDateValid {
-            print("[LiveMRZScannerView] Belgium document has invalid birthdate or expiry date")
+            print("[LiveMRZScannerView] TD1 document has invalid birthdate or expiry date")
             return nil
         }
 
@@ -285,10 +286,13 @@ struct LiveMRZScannerView: View {
                                     return
                                 }
 
-                                // Handle Belgium documents (only if not already valid)
-                                if doc.countryCode == "BEL" {
-                                    if let belgiumResult = processBelgiumDocument(result: result, parser: parser) {
-                                        handleValidMRZResult(belgiumResult)
+                                // handling TD1 documents with potential overflow format (only if not already valid)
+                                // TD1 format has 3 lines of 30 characters each
+                                let lines = result.components(separatedBy: "\n")
+                                if lines.count >= 3 && lines[0].count == 30 {
+                                    // trying overflow validation
+                                    if let td1Result = processTD1DocumentWithOverflow(result: result, parser: parser) {
+                                        handleValidMRZResult(td1Result)
                                     }
                                     return
                                 }
