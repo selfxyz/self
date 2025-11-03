@@ -283,7 +283,7 @@ const HomeScreen: React.FC = () => {
               fontSize={16}
               fontStyle="normal"
               fontWeight="500"
-              lineHeight="normal"
+              lineHeight={22}
             >
               Earn points by referring friends, disclosing proof requests, and
               more.
