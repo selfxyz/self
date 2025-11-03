@@ -57,7 +57,7 @@ const Points: React.FC = () => {
             fontFamily="DIN OT"
             fontWeight="500"
             fontSize={32}
-            lineHeight="100%"
+            lineHeight={20}
             letterSpacing={-1}
             verticalAlign="middle"
           >
@@ -70,7 +70,7 @@ const Points: React.FC = () => {
             fontSize={16}
             fontStyle="normal"
             fontWeight="500"
-            lineHeight="normal"
+            lineHeight={20}
           >
             Earn points by referring friends, disclosing proof requests, and
             more.
