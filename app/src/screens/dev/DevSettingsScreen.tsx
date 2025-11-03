@@ -202,6 +202,7 @@ const items = [
   'QRCodeViewFinder',
   'Prove',
   'ProofRequestStatus',
+  'Referral',
   'Settings',
   'AccountRecovery',
   'SaveRecoveryPhrase',

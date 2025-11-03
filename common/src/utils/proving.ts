@@ -24,6 +24,7 @@ export type TEEPayloadDisclose = TEEPayloadBase & {
   onchain: boolean;
   endpoint: string;
   userDefinedData: string;
+  selfDefinedData: string;
   version: number;
 };
 
@@ -64,7 +65,8 @@ export function getPayload(
   endpointType: EndpointType,
   endpoint: string,
   version: number = 1,
-  userDefinedData: string = ''
+  userDefinedData: string = '',
+  selfDefinedData: string = ''
 ) {
   if (circuitType === 'disclose') {
     const type =
@@ -84,6 +86,7 @@ export function getPayload(
       },
       version,
       userDefinedData,
+      selfDefinedData,
     };
     return payload;
   } else {

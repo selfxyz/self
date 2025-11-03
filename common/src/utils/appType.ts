@@ -31,6 +31,7 @@ export interface SelfApp {
   version: number;
   chainID: 42220 | 11142220;
   userDefinedData: string;
+  selfDefinedData: string;
 }
 
 export interface SelfAppDisclosureConfig {

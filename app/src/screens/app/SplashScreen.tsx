@@ -72,7 +72,7 @@ const SplashScreen: React.FC = ({}) => {
           }
 
           const hasValid = await hasAnyValidRegisteredDocument(selfClient);
-          const parentScreen = hasValid ? 'Home' : 'Launch';
+          const parentScreen = hasValid ? 'Home' : 'Home';
 
           // Migrate keychain to secure storage with biometric protection
           try {
