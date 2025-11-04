@@ -292,14 +292,8 @@ jobs:
             packages/mobile-sdk-demo/ios/Pods
             ~/Library/Caches/CocoaPods
           lock-file: packages/mobile-sdk-demo/ios/Podfile.lock
-      - name: Cache DerivedData
-        uses: actions/cache@v4
-        with:
-          path: packages/mobile-sdk-demo/ios/build
-          key: ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-${{ env.XCODE_VERSION }}-${{ hashFiles('packages/mobile-sdk-demo/ios/Podfile.lock', 'yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-${{ env.XCODE_VERSION }}-
-            ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-
+      # DerivedData caching disabled - caused intermittent build failures due to stale cache
+      # Pod caching still speeds up pod install significantly
       - name: Verify iOS Runtime
         run: |
           echo "📱 Verifying iOS Runtime availability..."
