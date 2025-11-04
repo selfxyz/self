@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useCallback, useEffect, useMemo } from 'react';
-import { Dimensions, Platform, StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
@@ -20,16 +20,6 @@ import { notificationSuccess } from '../../haptic';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { SdkEvents } from '../../types/events';
 import type { SelfClient } from '../../types/public';
-
-// Try to import safe area insets if available (optional dependency)
-let useSafeAreaInsets: (() => { bottom: number }) | null = null;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const safeAreaContext = require('react-native-safe-area-context');
-  useSafeAreaInsets = safeAreaContext.useSafeAreaInsets;
-} catch {
-  // Safe area context not available, will use fallback
-}
 
 /*
   Screen to confirm identification ownership
@@ -48,25 +38,17 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
     await onConfirm(selfClient);
   }, [onBeforeConfirm, selfClient]);
 
-  // Get safe area insets if available (will be 0 if not available)
-  const safeAreaInsets = useSafeAreaInsets?.() ?? { bottom: 0 };
-
-  // Calculate total bottom padding: base padding + safe area insets (with fallback for small Android screens)
+  // Calculate total bottom padding: base padding + fallback for smaller screens
   const paddingBottom = useMemo(() => {
     const basePadding = 20;
 
-    // Use safe area insets if available (most accurate)
-    if (safeAreaInsets.bottom > 0) {
-      return basePadding + safeAreaInsets.bottom;
-    }
-
-    // Fallback: estimate for small Android screens when safe area insets aren't available
+    // Estimate for smaller screens to account for safe areas
     const windowHeight = Dimensions.get('window').height;
     const isSmallScreen = windowHeight < 900;
-    const fallbackPadding = Platform.OS === 'android' && isSmallScreen ? 50 : 0;
+    const fallbackPadding = isSmallScreen ? 50 : 0;
 
     return basePadding + fallbackPadding;
-  }, [safeAreaInsets.bottom]);
+  }, []);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
