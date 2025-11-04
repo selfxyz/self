@@ -27,7 +27,7 @@ on:
     paths:
       - "packages/mobile-sdk-demo/**"
       - "packages/mobile-sdk-alpha/**"
-      - ".github/workflows/mobile-sdk-e2e.yml"
+      - ".github/workflows/mobile-sdk-demo-e2e.yml"
 
 jobs:
   android-e2e:
