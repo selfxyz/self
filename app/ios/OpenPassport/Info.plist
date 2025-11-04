@@ -40,6 +40,11 @@
 	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+		<string>sms</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NFCReaderUsageDescription</key>
@@ -64,6 +69,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Advercase-Regular.otf</string>
+		<string>DINOT-Bold.otf</string>
 		<string>DINOT-Medium.otf</string>
 		<string>IBMPlexMono-Regular.otf</string>
 	</array>

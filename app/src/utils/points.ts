@@ -6,6 +6,14 @@ import { v4 } from 'uuid';
 
 import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
 
+const POINTS_API_BASE_URL =
+  'https://points-backend-1025466915061.us-central1.run.app';
+
+export type IncomingPoints = {
+  amount: number;
+  expectedDate: Date;
+};
+
 export type PointEvent = {
   id: string;
   title: string;
@@ -16,13 +24,27 @@ export type PointEvent = {
 
 export type PointEventType = 'refer' | 'notification' | 'backup' | 'disclosure';
 
-// shoudl probably replace that with an api call
 export const POINT_VALUES = {
   disclosure: 10,
   notification: 20,
   backup: 100,
   refer: 150,
 } as const;
+
+export const formatTimeUntilDate = (targetDate: Date): string => {
+  const now = new Date();
+  const diffMs = targetDate.getTime() - now.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+  const diffDays = diffHours / 24;
+
+  if (diffDays >= 1) {
+    const days = Math.ceil(diffDays);
+    return `${days} ${days === 1 ? 'day' : 'days'}`;
+  } else {
+    const hours = Math.ceil(diffHours);
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+  }
+};
 
 export const getAllPointEvents = async (): Promise<PointEvent[]> => {
   const [disclosures, notifications, backups, referrals] = await Promise.all([
@@ -36,79 +58,126 @@ export const getAllPointEvents = async (): Promise<PointEvent[]> => {
   );
 };
 
-// Mock function to get backup point events
 export const getBackupPointEvents = async (): Promise<PointEvent[]> => {
-  // TODO: replace with actual settingStore query
-  // This should check hasViewedRecoveryPhrase or cloudBackupEnabled from settingStore
-  return [
-    {
-      id: 'backup-1',
-      title: 'Account backup completed',
-      type: 'backup',
-      timestamp: Date.now() - 1000 * 60 * 60 * 24 * 7, // 7 days ago
-      points: POINT_VALUES.backup,
-    },
-  ];
+  try {
+    const { usePointEventStore } = await import('@/stores/pointEventStore');
+    const events = usePointEventStore.getState().events;
+    return events.filter(event => event.type === 'backup');
+  } catch (error) {
+    console.error('Error loading backup point events:', error);
+    return [];
+  }
 };
 
-// Mock function to get disclosure point events
-// In the future, this will query on-chain events and match with whitelisted addresses
 export const getDisclosurePointEvents = async (): Promise<PointEvent[]> => {
-  // TODO: replace with actual query to self points contract
-  // This should fetch disclosure events from proof history that match whitelisted addresses
-  return [
-    {
-      id: 'disclosure-1',
-      title: 'Disclosure to WorldCoin',
-      type: 'disclosure',
-      timestamp: Date.now() - 1000 * 60 * 60 * 2, // 2 hours ago
-      points: POINT_VALUES.disclosure,
-    },
-    {
-      id: 'disclosure-2',
-      title: 'Disclosure to Coinbase',
-      type: 'disclosure',
-      timestamp: Date.now() - 1000 * 60 * 60 * 24 * 3, // 3 days ago
-      points: POINT_VALUES.disclosure,
-    },
-  ];
+  try {
+    const { usePointEventStore } = await import('@/stores/pointEventStore');
+    const events = usePointEventStore.getState().events;
+    return events.filter(event => event.type === 'disclosure');
+  } catch (error) {
+    console.error('Error loading disclosure point events:', error);
+    return [];
+  }
 };
 
-// Mock function to get push notification point events
+export const getIncomingPoints = async (): Promise<IncomingPoints | null> => {
+  try {
+    const userAddress = await getUserAddress();
+    const nextSundayDate = getNextSundayNoonUTC();
+
+    const response = await fetch(
+      `${POINTS_API_BASE_URL}/points/${userAddress.toLowerCase()}`,
+    );
+    console.log('response points api', response);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (!data.points || data.points <= 0) {
+      return null;
+    }
+
+    return {
+      amount: data.points,
+      expectedDate: nextSundayDate,
+    };
+  } catch (error) {
+    console.error('Error fetching incoming points:', error);
+    return null;
+  }
+};
+
+export const getNextSundayNoonUTC = (): Date => {
+  const now = new Date();
+  const nextSunday = new Date(now);
+
+  // Get current day (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+  const currentDay = now.getUTCDay();
+
+  // Calculate days until next Sunday (0 = this Sunday if before noon, otherwise next Sunday)
+  let daysUntilSunday = 7 - currentDay;
+
+  // If it's already Sunday, check if it's before or after noon UTC
+  if (currentDay === 0) {
+    const currentHourUTC = now.getUTCHours();
+    // If it's already past noon UTC on Sunday, go to next Sunday
+    if (currentHourUTC >= 12) {
+      daysUntilSunday = 7;
+    } else {
+      // It's before noon on Sunday, so target is today at noon
+      daysUntilSunday = 0;
+    }
+  }
+
+  nextSunday.setUTCDate(now.getUTCDate() + daysUntilSunday);
+  nextSunday.setUTCHours(12, 0, 0, 0);
+  return nextSunday;
+};
+
 export const getPushNotificationPointEvents = async (): Promise<
   PointEvent[]
 > => {
-  // TODO: replace with actual backend query
-  // This should fetch from settingStore or backend tracking
-  return [
-    {
-      id: 'notification-1',
-      title: 'Push notifications enabled',
-      type: 'notification',
-      timestamp: Date.now() - 1000 * 60 * 60 * 24 * 5, // 5 days ago
-      points: POINT_VALUES.notification,
-    },
-  ];
+  try {
+    const { usePointEventStore } = await import('@/stores/pointEventStore');
+    const events = usePointEventStore.getState().events;
+    return events.filter(event => event.type === 'notification');
+  } catch (error) {
+    console.error('Error loading notification point events:', error);
+    return [];
+  }
 };
 
-// Mock function to get referral point events
 export const getReferralPointEvents = async (): Promise<PointEvent[]> => {
-  // TODO: replace with actual backend/contract query
-  // This should fetch referral events from backend or on-chain
-  return [
-    {
-      id: 'referral-1',
-      title: 'Friend joined via referral',
-      type: 'refer',
-      timestamp: Date.now() - 1000 * 60 * 60 * 24 * 10, // 10 days ago
-      points: POINT_VALUES.refer,
-    },
-  ];
+  try {
+    const { usePointEventStore } = await import('@/stores/pointEventStore');
+    const events = usePointEventStore.getState().events;
+    return events.filter(event => event.type === 'refer');
+  } catch (error) {
+    console.error('Error loading referral point events:', error);
+    return [];
+  }
 };
 
-export const getTotalPoints = (_address: string): number => {
-  // TODO: replace with the view function call of the self points contract
-  return 312;
+export const getTotalPoints = async (address: string): Promise<number> => {
+  try {
+    const url = `${POINTS_API_BASE_URL}/distribution/${address.toLowerCase()}`;
+    console.log('url', url);
+    const response = await fetch(url);
+    console.log('response', response);
+
+    if (!response.ok) {
+      return 0;
+    }
+
+    const data = await response.json();
+    return data.total_points || 0;
+  } catch (error) {
+    console.error('Error fetching total points:', error);
+    return 0;
+  }
 };
 
 export const getUserAddress = async (): Promise<string> => {
@@ -118,33 +187,17 @@ export const getUserAddress = async (): Promise<string> => {
 export const getWhiteListedDisclosureAddresses = async (): Promise<
   string[]
 > => {
-  // TODO: replace with the view function call of the self points contract
   return [];
 };
 
-// push notication flow
-// enable the push notification
-// send an api call
-// store in redis: user address -> fcm, code
-// backend will generate a 6 digit code and store it in redis
-// send the push notification to the user with the code
-// if users sends back the code, the backend will check if the code is correct and transfer the points
-// countdown of 20 seconds before the code expires and users can click
-// after the 20sec, user is allowed get a new push notification with a new code
-/**
- * Checks if the user has at least one registered identity document
- * by looking at the document catalog's isRegistered field
- */
 export const hasUserAnIdentityDocumentRegistered =
   async (): Promise<boolean> => {
     try {
-      // Dynamic import to avoid circular dependencies
       const { loadDocumentCatalogDirectlyFromKeychain } = await import(
         '@/providers/passportDataProvider'
       );
       const catalog = await loadDocumentCatalogDirectlyFromKeychain();
 
-      // Check if any document is registered
       return catalog.documents.some(doc => doc.isRegistered === true);
     } catch (error) {
       console.warn(
@@ -156,7 +209,22 @@ export const hasUserAnIdentityDocumentRegistered =
   };
 
 export const hasUserDoneThePointsDisclosure = async (): Promise<boolean> => {
-  return true;
+  try {
+    const userAddress = await getUserAddress();
+    const response = await fetch(
+      `${POINTS_API_BASE_URL}/has-disclosed/${userAddress.toLowerCase()}`,
+    );
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const data = await response.json();
+    return data.has_disclosed || false;
+  } catch (error) {
+    console.error('Error checking disclosure status:', error);
+    return false;
+  }
 };
 
 export const pointsSelfApp = async () => {
@@ -164,19 +232,164 @@ export const pointsSelfApp = async () => {
   const endpoint = '0x25604DB4E556ad5C3f6e888eCe84EcBb8af28560';
   const builder = new SelfAppBuilder({
     appName: '✨ Self Points',
-    endpoint,
+    endpoint: endpoint.toLowerCase(),
     endpointType: 'celo',
     scope: 'self-workshop',
-    userId: v4(), // random UUID as the api is asking for one. we should make this optional.
+    userId: v4(),
     userIdType: 'uuid',
     disclosures: {},
     logoBase64:
       'https://storage.googleapis.com/self-logo-reverse/Self%20Logomark%20Reverse.png',
-    deeplinkCallback: '',
+    deeplinkCallback: 'https://self.xyz',
     selfDefinedData: userAddress,
     header: '',
-    devMode: true,
   });
 
   return builder.build();
+};
+
+export const recordBackupPointEvent = async (): Promise<{
+  success: boolean;
+  error?: string;
+}> => {
+  try {
+    const { usePointEventStore } = await import('@/stores/pointEventStore');
+    const userAddress = await getUserAddress();
+
+    const response = await registerBackupPoints(userAddress);
+
+    if (response.success && response.status === 200) {
+      await usePointEventStore
+        .getState()
+        .addEvent('Secret backed up', 'backup', POINT_VALUES.backup);
+      return { success: true };
+    }
+    return { success: false, error: response.error };
+  } catch (error) {
+    console.error('Error recording backup point event:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred. Please try again.',
+    };
+  }
+};
+
+export const recordNotificationPointEvent = async (): Promise<{
+  success: boolean;
+  error?: string;
+}> => {
+  try {
+    const { usePointEventStore } = await import('@/stores/pointEventStore');
+    const userAddress = await getUserAddress();
+
+    const response = await registerNotificationPoints(userAddress);
+
+    if (response.success && response.status === 200) {
+      await usePointEventStore
+        .getState()
+        .addEvent(
+          'Push notifications enabled',
+          'notification',
+          POINT_VALUES.notification,
+        );
+      return { success: true };
+    }
+    return { success: false, error: response.error };
+  } catch (error) {
+    console.error('Error recording notification point event:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred. Please try again.',
+    };
+  }
+};
+
+export const registerBackupPoints = async (
+  userAddress: string,
+): Promise<{ success: boolean; status: number; error?: string }> => {
+  try {
+    const response = await fetch(`${POINTS_API_BASE_URL}/verify-action`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'secret_backup',
+        address: userAddress.toLowerCase(),
+      }),
+    });
+    console.log('response verify action backup', response);
+
+    if (response.status === 200) {
+      return { success: true, status: 200 };
+    }
+
+    const data = await response.json();
+    const errorMessages: Record<string, string> = {
+      already_verified:
+        'You have already backed up your secret for this account.',
+      unknown_action: 'Invalid action type. Please try again.',
+      verification_failed: 'Verification failed. Please try again.',
+      invalid_address: 'Invalid wallet address. Please check your account.',
+    };
+
+    const errorMessage =
+      errorMessages[data.status] ||
+      data.message ||
+      'Failed to verify backup. Please try again.';
+
+    return { success: false, status: response.status, error: errorMessage };
+  } catch (error) {
+    console.error('Error registering backup points:', error);
+    return {
+      success: false,
+      status: 500,
+      error: 'Network error. Please check your connection and try again.',
+    };
+  }
+};
+
+export const registerNotificationPoints = async (
+  userAddress: string,
+): Promise<{ success: boolean; status: number; error?: string }> => {
+  try {
+    const response = await fetch(`${POINTS_API_BASE_URL}/verify-action`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'push_notification',
+        address: userAddress.toLowerCase(),
+      }),
+    });
+
+    if (response.status === 200) {
+      return { success: true, status: 200 };
+    }
+
+    const data = await response.json();
+    const errorMessages: Record<string, string> = {
+      already_verified:
+        'You have already verified push notifications for this account.',
+      unknown_action: 'Invalid action type. Please try again.',
+      verification_failed:
+        'Verification failed. Please ensure you have enabled push notifications.',
+      invalid_address: 'Invalid wallet address. Please check your account.',
+    };
+
+    const errorMessage =
+      errorMessages[data.status] ||
+      data.message ||
+      'Failed to verify push notification. Please try again.';
+
+    return { success: false, status: response.status, error: errorMessage };
+  } catch (error) {
+    console.error('Error registering notification points:', error);
+    return {
+      success: false,
+      status: 500,
+      error: 'Network error. Please check your connection and try again.',
+    };
+  }
 };

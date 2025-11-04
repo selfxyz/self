@@ -898,18 +898,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       set({ passportData, secret, env });
       set({ circuitType });
-        // Skip parsing for disclosure if passport is already parsed
-        // Re-parsing would overwrite the alternative CSCA used during registration and is unnecessary
-        // skip also the register circuit as the passport already got parsed in during the dsc step
-        console.log('circuitType', circuitType);
-        if (circuitType !== 'dsc' ) {
-          console.log('skipping id document parsing');
-          actor.send({ type: 'FETCH_DATA' });
-          selfClient.trackEvent(ProofEvents.FETCH_DATA_STARTED);
-        } else {
-          actor.send({ type: 'PARSE_ID_DOCUMENT' });
-          selfClient.trackEvent(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
-        }
+      // Skip parsing for disclosure if passport is already parsed
+      // Re-parsing would overwrite the alternative CSCA used during registration and is unnecessary
+      // skip also the register circuit as the passport already got parsed in during the dsc step
+      console.log('circuitType', circuitType);
+      if (circuitType !== 'dsc') {
+        console.log('skipping id document parsing');
+        actor.send({ type: 'FETCH_DATA' });
+        selfClient.trackEvent(ProofEvents.FETCH_DATA_STARTED);
+      } else {
+        actor.send({ type: 'PARSE_ID_DOCUMENT' });
+        selfClient.trackEvent(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
+      }
     },
 
     parseIDDocument: async (selfClient: SelfClient) => {

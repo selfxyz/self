@@ -9,10 +9,10 @@ import { render, screen, waitFor } from '@testing-library/react-native';
 import { WebViewScreen } from '@/screens/shared/WebViewScreen';
 
 jest.mock('react-native-webview', () => {
-  const ReactModule = require('react');
+  const ReactMock = require('react');
   const { View } = require('react-native');
-  const MockWebView = ReactModule.forwardRef((props: any, _ref) => {
-    return ReactModule.createElement(View, { testID: 'webview', ...props });
+  const MockWebView = ReactMock.forwardRef((props: any, _ref) => {
+    return ReactMock.createElement(View, { testID: 'webview', ...props });
   });
   MockWebView.displayName = 'MockWebView';
   return {

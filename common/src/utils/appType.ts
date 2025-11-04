@@ -116,6 +116,7 @@ export class SelfAppBuilder {
       chainID: config.endpointType === 'staging_celo' ? 11142220 : 42220,
       version: config.version ?? 2,
       userDefinedData: '',
+      selfDefinedData: '',
       ...config,
     } as SelfApp;
   }

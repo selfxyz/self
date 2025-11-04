@@ -11,14 +11,11 @@ import {
 } from 'react-native';
 import { Card, Text, View, XStack, YStack } from 'tamagui';
 
-import BellWhiteIcon from '@/images/icons/bell_white.svg';
-import LockWhiteIcon from '@/images/icons/lock_white.svg';
-import PlusCircleIcon from '@/images/icons/plus_circle.svg';
+import HeartIcon from '@/images/icons/heart.svg';
 import StarBlackIcon from '@/images/icons/star_black.svg';
 import {
   black,
   blue600,
-  green500,
   slate50,
   slate200,
   slate300,
@@ -35,6 +32,11 @@ type Section = {
   data: PointEvent[];
 };
 
+export type PointHistoryListProps = {
+  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
+  onRefreshRef?: React.MutableRefObject<(() => Promise<void>) | null>;
+};
+
 const TIME_PERIODS = {
   TODAY: 'TODAY',
   THIS_WEEK: 'THIS WEEK',
@@ -47,20 +49,17 @@ const TIME_PERIODS = {
 
 const getIconForEventType = (type: PointEvent['type']) => {
   switch (type) {
-    case 'notification':
-      return <BellWhiteIcon width={20} height={20} />;
-    case 'backup':
-      return <LockWhiteIcon width={20} height={20} />;
-    case 'refer':
-      return <PlusCircleIcon width={20} height={20} />;
     case 'disclosure':
       return <StarBlackIcon width={20} height={20} />;
     default:
-      return <StarBlackIcon width={20} height={20} />;
+      return <HeartIcon width={20} height={20} />;
   }
 };
 
-export const PointHistoryList: React.FC = () => {
+export const PointHistoryList: React.FC<PointHistoryListProps> = ({
+  ListHeaderComponent,
+  onRefreshRef,
+}) => {
   const [pointEvents, setPointEvents] = useState<PointEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -80,6 +79,13 @@ export const PointHistoryList: React.FC = () => {
   useEffect(() => {
     loadPointEvents();
   }, [loadPointEvents]);
+
+  // Expose refresh function to parent via ref
+  useEffect(() => {
+    if (onRefreshRef) {
+      onRefreshRef.current = loadPointEvents;
+    }
+  }, [loadPointEvents, onRefreshRef]);
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], {
@@ -318,6 +324,7 @@ export const PointHistoryList: React.FC = () => {
       showsVerticalScrollIndicator={false}
       stickySectionHeadersEnabled={false}
       ListEmptyComponent={renderEmptyComponent}
+      ListHeaderComponent={ListHeaderComponent}
       style={{ marginHorizontal: 15, marginBottom: 25 }}
     />
   );

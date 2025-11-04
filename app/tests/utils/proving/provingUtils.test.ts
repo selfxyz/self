@@ -58,6 +58,7 @@ describe('provingUtils', () => {
       circuit: { name: 'vc_and_disclose', inputs: JSON.stringify(inputs) },
       version: 2,
       userDefinedData: '0xabc',
+      selfDefinedData: '',
     });
   });
 

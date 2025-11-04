@@ -30,6 +30,9 @@ interface PersistedSettingsState {
   setSubscribedTopics: (topics: string[]) => void;
   addSubscribedTopic: (topic: string) => void;
   removeSubscribedTopic: (topic: string) => void;
+  hasCompletedBackupForPoints: boolean;
+  setBackupForPointsCompleted: () => void;
+  resetBackupForPoints: () => void;
   pointsAddress: string | null;
   setPointsAddress: (address: string | null) => void;
 }
@@ -103,6 +106,10 @@ export const useSettingStore = create<SettingsState>()(
       backedUpWithTurnKey: false,
       setBackedUpWithTurnKey: (backedUpWithTurnKey: boolean) =>
         set({ backedUpWithTurnKey }),
+      hasCompletedBackupForPoints: false,
+      setBackupForPointsCompleted: () =>
+        set({ hasCompletedBackupForPoints: true }),
+      resetBackupForPoints: () => set({ hasCompletedBackupForPoints: false }),
       pointsAddress: null,
       setPointsAddress: (address: string | null) =>
         set({ pointsAddress: address }),
