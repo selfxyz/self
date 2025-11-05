@@ -1,6 +1,9 @@
 #!/bin/bash
+set -euo pipefail
 
-source "scripts/build/common.sh"
+# Get script directory for stable sourcing
+SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+source "${SCRIPT_DIR}/common.sh"
 
 # Set environment (change this value as needed)
 # ENV="prod"
