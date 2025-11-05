@@ -33,6 +33,18 @@ template ExtractAndValidatePubkey(
     signal input pubkey_actual_size;
     signal input input_pubkey[kScaled];
 
+    // Validate pubkey_actual_size is within bounds (prevent OOB attacks)
+    component size_max_check = LessEqThan(log2Ceil(MAX_PUBKEY_LENGTH));
+    size_max_check.in[0] <== pubkey_actual_size;
+    size_max_check.in[1] <== MAX_PUBKEY_LENGTH;
+    size_max_check.out === 1;
+
+    // Validate pubkey_offset is within bounds (prevent underflow in prefix calculation)
+    component offset_min_check = GreaterEqThan(log2Ceil(MAX_CERT_LENGTH));
+    offset_min_check.in[0] <== pubkey_offset;
+    offset_min_check.in[1] <== MAX_PUBKEY_PREFIX;
+    offset_min_check.out === 1;
+
     // Calculate prefix start index and net length
     signal pubkey_prefix_start_index <== pubkey_offset - MAX_PUBKEY_PREFIX;
     signal pubkey_net_length <== MAX_PUBKEY_PREFIX + pubkey_actual_size + suffixLength;

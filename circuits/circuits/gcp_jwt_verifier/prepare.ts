@@ -16,8 +16,8 @@ import { generateJWTVerifierInputs } from '@zk-email/jwt-tx-builder-helpers/src/
 import type { RSAPublicKey } from '@zk-email/jwt-tx-builder-helpers/src/types.js';
 
 const MAX_CERT_LENGTH = 2048;
-const MAX_EAT_NONCE_B64_LENGTH = 88;  // Base64url string max length (64 bytes encoded)
-const MAX_IMAGE_DIGEST_LENGTH = 80;  // "sha256:" + 64 hex chars = 71, padded to 80
+const MAX_EAT_NONCE_B64_LENGTH = 99;  // Base64url string max length (74 bytes decoded = 99 b64url chars)
+const MAX_IMAGE_DIGEST_LENGTH = 71;  // "sha256:" + 64 hex chars
 
 interface CertificateInfo {
   der: Buffer;
@@ -56,7 +56,23 @@ function parseCertificate(certDer: Buffer): CertificateInfo {
 
   const pubkeyLength = pubkeyDer.length > 256 ? pubkeyDer.length - 1 : pubkeyDer.length;
 
+  // Validate TBS certificate size before padding
+  if (tbsBytes.length > MAX_CERT_LENGTH) {
+    throw new Error(
+      `TBS certificate size ${tbsBytes.length} exceeds MAX_CERT_LENGTH ${MAX_CERT_LENGTH}`
+    );
+  }
+
   const paddedLength = Math.ceil((tbsBytes.length + 9) / 64) * 64;
+
+  // Validate padded length doesn't exceed buffer bounds
+  if (paddedLength > MAX_CERT_LENGTH) {
+    throw new Error(
+      `Padded TBS length ${paddedLength} exceeds MAX_CERT_LENGTH ${MAX_CERT_LENGTH}. ` +
+      `TBS size was ${tbsBytes.length} bytes. Consider increasing MAX_CERT_LENGTH or using a smaller certificate.`
+    );
+  }
+
   const tbsPadded = Buffer.alloc(MAX_CERT_LENGTH);
   tbsBytes.copy(tbsPadded, 0);
 
@@ -240,16 +256,26 @@ async function main() {
     // Find offset of eat_nonce[0] in the decoded payload JSON
     // Decode the payload from base64url to get the exact JSON string
     const payloadJSON = Buffer.from(payloadB64, 'base64url').toString('utf8');
-    const eatNonce0Offset = payloadJSON.indexOf(eatNonce0Base64url);
 
-    if (eatNonce0Offset === -1) {
-      console.error('[ERROR] Could not find eat_nonce[0] in decoded payload JSON');
+    // Find key offset: position after the opening quote of "eat_nonce"
+    const eatNonceKeyPattern = '"eat_nonce"';
+    const eatNonceKeyStart = payloadJSON.indexOf(eatNonceKeyPattern);
+    if (eatNonceKeyStart === -1) {
+      throw new Error('[ERROR] Could not find "eat_nonce" key in payload JSON');
+    }
+    const eatNonce0KeyOffset = eatNonceKeyStart + 1; // Position after opening quote
+
+    // Find value offset: position of the actual value
+    const eatNonce0ValueOffset = payloadJSON.indexOf(eatNonce0Base64url);
+    if (eatNonce0ValueOffset === -1) {
+      console.error('[ERROR] Could not find eat_nonce[0] value in decoded payload JSON');
       console.error('[DEBUG] Payload JSON:', payloadJSON);
       console.error('[DEBUG] Looking for:', eatNonce0Base64url);
-      throw new Error('[ERROR] Could not find eat_nonce[0] in decoded payload JSON');
+      throw new Error('[ERROR] Could not find eat_nonce[0] value in decoded payload JSON');
     }
 
-    console.log(`[INFO] eat_nonce[0] offset in payload: ${eatNonce0Offset}`);
+    console.log(`[INFO] eat_nonce key offset in payload: ${eatNonce0KeyOffset}`);
+    console.log(`[INFO] eat_nonce[0] value offset in payload: ${eatNonce0ValueOffset}`);
 
     // Convert base64url string to character codes (ASCII values) for circuit
     const eatNonce0CharCodes = new Array(MAX_EAT_NONCE_B64_LENGTH).fill(0);
@@ -279,16 +305,25 @@ async function main() {
     }
 
     // Find offset of image_digest in the decoded payload JSON
-    const imageDigestOffset = payloadJSON.indexOf(imageDigest);
+    // Find key offset: position after the opening quote of "image_digest"
+    const imageDigestKeyPattern = '"image_digest"';
+    const imageDigestKeyStart = payloadJSON.indexOf(imageDigestKeyPattern);
+    if (imageDigestKeyStart === -1) {
+      throw new Error('[ERROR] Could not find "image_digest" key in payload JSON');
+    }
+    const imageDigestKeyOffset = imageDigestKeyStart + 1; // Position after opening quote
 
-    if (imageDigestOffset === -1) {
-      console.error('[ERROR] Could not find image_digest in decoded payload JSON');
+    // Find value offset: position of the actual value
+    const imageDigestValueOffset = payloadJSON.indexOf(imageDigest);
+    if (imageDigestValueOffset === -1) {
+      console.error('[ERROR] Could not find image_digest value in decoded payload JSON');
       console.error('[DEBUG] Payload JSON:', payloadJSON);
       console.error('[DEBUG] Looking for:', imageDigest);
-      throw new Error('[ERROR] Could not find image_digest in decoded payload JSON');
+      throw new Error('[ERROR] Could not find image_digest value in decoded payload JSON');
     }
 
-    console.log(`[INFO] image_digest offset in payload: ${imageDigestOffset}`);
+    console.log(`[INFO] image_digest key offset in payload: ${imageDigestKeyOffset}`);
+    console.log(`[INFO] image_digest value offset in payload: ${imageDigestValueOffset}`);
 
     // Convert image_digest string to character codes (ASCII values) for circuit
     const imageDigestCharCodes = new Array(MAX_IMAGE_DIGEST_LENGTH).fill(0);
@@ -332,15 +367,15 @@ async function main() {
       leaf_signature: signatureToChunks(leafCert.signature),
       intermediate_signature: signatureToChunks(intermediateCert.signature),
 
-      // EAT nonce[0] (base64url string from payload, will be verified in-circuit)
-      eat_nonce_0_b64: eatNonce0CharCodes.map(c => c.toString()),
+      // EAT nonce[0] (circuit will extract value directly from payload)
       eat_nonce_0_b64_length: eatNonce0Base64url.length.toString(),
-      eat_nonce_0_offset: eatNonce0Offset.toString(),
+      eat_nonce_0_key_offset: eatNonce0KeyOffset.toString(),
+      eat_nonce_0_value_offset: eatNonce0ValueOffset.toString(),
 
-      // Container image digest (sha256:... string from payload.submods.container)
-      image_digest: imageDigestCharCodes.map(c => c.toString()),
+      // Container image digest (circuit will extract value directly from payload)
       image_digest_length: imageDigest.length.toString(),
-      image_digest_offset: imageDigestOffset.toString(),
+      image_digest_key_offset: imageDigestKeyOffset.toString(),
+      image_digest_value_offset: imageDigestValueOffset.toString(),
     };
 
     fs.writeFileSync(outputFile, JSON.stringify(circuitInputs, null, 2));

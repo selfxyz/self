@@ -2,9 +2,10 @@ pragma circom 2.1.9;
 
 include "./jwt_verifier.circom";
 include "../utils/passport/signatureAlgorithm.circom";
+include "../utils/passport/customHashers.circom";
 include "../utils/gcp_jwt/extractAndValidatePubkey.circom";
 include "../utils/gcp_jwt/verifyCertificateSignature.circom";
-include "../utils/gcp_jwt/verifyExtractedString.circom";
+include "../utils/gcp_jwt/verifyJSONFieldExtraction.circom";
 include "circomlib/circuits/comparators.circom";
 include "@openpassport/zk-email-circuits/utils/array.circom";
 
@@ -67,27 +68,30 @@ template GCPJWTVerifier(
     signal input leaf_signature[kScaled]; // x5c[0] signature
     signal input intermediate_signature[kScaled]; // x5c[1] signature
 
+
+    // GCP spec: nonce must be 10-74 bytes decoded
+    // Base64url encoding: 10 bytes = 14 chars, 74 bytes = 99 chars
+    // https://cloud.google.com/confidential-computing/confidential-space/docs/connect-external-resources
     // EAT nonce (payload.eat_nonce[0])
-    var MAX_EAT_NONCE_B64_LENGTH = 88; // Max length for base64url string (64 bytes = 88 b64 chars max)
-    signal input eat_nonce_0_b64[MAX_EAT_NONCE_B64_LENGTH]; // Base64url string from payload
+    var MAX_EAT_NONCE_B64_LENGTH = 99; // Max length for base64url string (74 bytes decoded = 99 b64url chars)
+    var MAX_EAT_NONCE_KEY_LENGTH = 10; // Length of "eat_nonce" key (without quotes)
     signal input eat_nonce_0_b64_length; // Length of base64url string
-    signal input eat_nonce_0_offset; // Offset in payload where eat_nonce[0] appears
+    signal input eat_nonce_0_key_offset; // Offset in payload where "eat_nonce" key starts (after opening quote)
+    signal input eat_nonce_0_value_offset; // Offset in payload where eat_nonce[0] value appears
 
     // Container image digest (payload.submods.container.image_digest)
-    var MAX_IMAGE_DIGEST_LENGTH = 80; // "sha256:" + 64 hex chars = 71, padded to 80
+    var MAX_IMAGE_DIGEST_LENGTH = 71; // "sha256:" + 64 hex chars
     var IMAGE_HASH_LENGTH = 64; // Just the hex hash portion
-    signal input image_digest[MAX_IMAGE_DIGEST_LENGTH]; // Full "sha256:..." string from payload
+    var MAX_IMAGE_DIGEST_KEY_LENGTH = 12; // Length of "image_digest" key (without quotes)
     signal input image_digest_length; // Length of full string (should be 71)
-    signal input image_digest_offset; // Offset in payload where image_digest appears
+    signal input image_digest_key_offset; // Offset in payload where "image_digest" key starts (after opening quote)
+    signal input image_digest_value_offset; // Offset in payload where image_digest value appears
 
     var maxHeaderLength = (maxB64HeaderLength * 3) \ 4;
     var maxPayloadLength = (maxB64PayloadLength * 3) \ 4;
 
-    signal output publicKeyHash; // Poseidon hash of leaf pubkey
-    signal output header[maxHeaderLength]; // Decoded JWT header
-    signal output payload[maxPayloadLength]; // Decoded JWT payload
+    signal output rootCAPubkeyHash; // Root CA (x5c[2]) pubkey, trust anchor
     signal output eat_nonce_0_b64_output[MAX_EAT_NONCE_B64_LENGTH]; // eat_nonce[0] base64url string
-    signal output eat_nonce_0_b64_output_length; // Length of eat_nonce[0] base64url string
     signal output image_hash[IMAGE_HASH_LENGTH]; // Container image SHA256 hash (without "sha256:" prefix)
 
     // Verify JWT Signature (using x5c[0] public key)
@@ -98,8 +102,10 @@ template GCPJWTVerifier(
     jwtVerifier.signature <== jwt_signature;
     jwtVerifier.periodIndex <== periodIndex;
 
-    publicKeyHash <== jwtVerifier.publicKeyHash;
-    header <== jwtVerifier.header;
+    // Poseidon hash of root CA pubkey (x5c[2])
+    rootCAPubkeyHash <== CustomHasher(kScaled)(root_pubkey);
+
+    signal payload[maxPayloadLength];
     payload <== jwtVerifier.payload;
 
     // Extract and validate x5c[0] Public Key
@@ -142,20 +148,6 @@ template GCPJWTVerifier(
         intermediate_signature
     );
 
-    // Extract substring from payload at the claimed offset
-    signal extracted_eat_nonce[MAX_EAT_NONCE_B64_LENGTH] <== SelectSubArray(
-        maxPayloadLength,
-        MAX_EAT_NONCE_B64_LENGTH
-    )(
-        payload,
-        eat_nonce_0_offset,
-        eat_nonce_0_b64_length
-    );
-
-    // GCP spec: nonce must be 10-74 bytes decoded
-    // Base64url encoding: 10 bytes = 14 chars, 74 bytes = 99 chars
-    // https://cloud.google.com/confidential-computing/confidential-space/docs/connect-external-resources
-
     // Make sure nonce is not empty
     component length_nonzero = IsZero();
     length_nonzero.in <== eat_nonce_0_b64_length;
@@ -174,37 +166,75 @@ template GCPJWTVerifier(
     length_max_check.out === 1;
 
     // Validate nonce offset bounds (prevent reading beyond payload)
-    signal eat_nonce_end_position <== eat_nonce_0_offset + eat_nonce_0_b64_length;
+    signal eat_nonce_end_position <== eat_nonce_0_value_offset + eat_nonce_0_b64_length;
     component offset_bounds_check = LessEqThan(log2Ceil(maxPayloadLength));
     offset_bounds_check.in[0] <== eat_nonce_end_position;
     offset_bounds_check.in[1] <== maxPayloadLength;
     offset_bounds_check.out === 1;
 
-    // Verify extracted string matches input with padding validation
-    VerifyExtractedString(MAX_EAT_NONCE_B64_LENGTH)(
-        extracted_eat_nonce,
-        eat_nonce_0_b64,
-        eat_nonce_0_b64_length
-    );
+    // Extract and verify EAT nonce field
+    signal expected_eat_nonce_key[MAX_EAT_NONCE_KEY_LENGTH];
+    // "eat_nonce", ASCII
+    expected_eat_nonce_key[0] <== 101; // 'e'
+    expected_eat_nonce_key[1] <== 97;  // 'a'
+    expected_eat_nonce_key[2] <== 116; // 't'
+    expected_eat_nonce_key[3] <== 95;  // '_'
+    expected_eat_nonce_key[4] <== 110; // 'n'
+    expected_eat_nonce_key[5] <== 111; // 'o'
+    expected_eat_nonce_key[6] <== 110; // 'n'
+    expected_eat_nonce_key[7] <== 99; // 'c'
+    expected_eat_nonce_key[8] <== 101; // 'e'
+    expected_eat_nonce_key[9] <== 0;   // padding
 
-    // Output the verified base64url string
-    eat_nonce_0_b64_output <== eat_nonce_0_b64;
-    eat_nonce_0_b64_output_length <== eat_nonce_0_b64_length;
+    component eatNonceExtractor = ExtractAndVerifyJSONField(maxPayloadLength, MAX_EAT_NONCE_KEY_LENGTH, MAX_EAT_NONCE_B64_LENGTH);
+    eatNonceExtractor.json <== payload;
+    eatNonceExtractor.key_offset <== eat_nonce_0_key_offset;
+    eatNonceExtractor.key_length <== 9; // actual key length "eat_nonce"
+    eatNonceExtractor.value_offset <== eat_nonce_0_value_offset;
+    eatNonceExtractor.value_length <== eat_nonce_0_b64_length;
+    eatNonceExtractor.expected_key_name <== expected_eat_nonce_key;
 
-    // Extract image digest from payload
-    signal extracted_image_digest[MAX_IMAGE_DIGEST_LENGTH] <== SelectSubArray(
-        maxPayloadLength,
-        MAX_IMAGE_DIGEST_LENGTH
-    )(
-        payload,
-        image_digest_offset,
-        image_digest_length
-    );
+    // Output the extracted base64url string
+    eat_nonce_0_b64_output <== eatNonceExtractor.extracted_value;
 
     // Validate length is exactly 71 ("sha256:" + 64 hex chars)
     image_digest_length === 71;
 
-    // Validate "sha256:" prefix (ASCII codes)
+    // Validate offset bounds
+    signal image_digest_end_position <== image_digest_value_offset + image_digest_length;
+    component image_digest_bounds_check = LessEqThan(log2Ceil(maxPayloadLength));
+    image_digest_bounds_check.in[0] <== image_digest_end_position;
+    image_digest_bounds_check.in[1] <== maxPayloadLength;
+    image_digest_bounds_check.out === 1;
+
+    // Extract and verify image digest field
+    signal expected_image_digest_key[MAX_IMAGE_DIGEST_KEY_LENGTH];
+    // "image_digest", ASCII
+    expected_image_digest_key[0] <== 105; // 'i'
+    expected_image_digest_key[1] <== 109; // 'm'
+    expected_image_digest_key[2] <== 97;  // 'a'
+    expected_image_digest_key[3] <== 103; // 'g'
+    expected_image_digest_key[4] <== 101; // 'e'
+    expected_image_digest_key[5] <== 95;  // '_'
+    expected_image_digest_key[6] <== 100; // 'd'
+    expected_image_digest_key[7] <== 105; // 'i'
+    expected_image_digest_key[8] <== 103; // 'g'
+    expected_image_digest_key[9] <== 101; // 'e'
+    expected_image_digest_key[10] <== 115; // 's'
+    expected_image_digest_key[11] <== 116; // 't'
+
+    component imageDigestExtractor = ExtractAndVerifyJSONField(maxPayloadLength, MAX_IMAGE_DIGEST_KEY_LENGTH, MAX_IMAGE_DIGEST_LENGTH);
+    imageDigestExtractor.json <== payload;
+    imageDigestExtractor.key_offset <== image_digest_key_offset;
+    imageDigestExtractor.key_length <== 12; // actual key length "image_digest"
+    imageDigestExtractor.value_offset <== image_digest_value_offset;
+    imageDigestExtractor.value_length <== image_digest_length;
+    imageDigestExtractor.expected_key_name <== expected_image_digest_key;
+
+    signal extracted_image_digest[MAX_IMAGE_DIGEST_LENGTH];
+    extracted_image_digest <== imageDigestExtractor.extracted_value;
+
+    // "sha256:", ASCII
     extracted_image_digest[0] === 115;  // 's'
     extracted_image_digest[1] === 104;  // 'h'
     extracted_image_digest[2] === 97;   // 'a'
@@ -213,21 +243,7 @@ template GCPJWTVerifier(
     extracted_image_digest[5] === 54;   // '6'
     extracted_image_digest[6] === 58;   // ':'
 
-    // Validate offset bounds
-    signal image_digest_end_position <== image_digest_offset + image_digest_length;
-    component image_digest_bounds_check = LessEqThan(log2Ceil(maxPayloadLength));
-    image_digest_bounds_check.in[0] <== image_digest_end_position;
-    image_digest_bounds_check.in[1] <== maxPayloadLength;
-    image_digest_bounds_check.out === 1;
-
-    // Verify extracted string matches input with padding validation
-    VerifyExtractedString(MAX_IMAGE_DIGEST_LENGTH)(
-        extracted_image_digest,
-        image_digest,
-        image_digest_length
-    );
-
-    // Extract and output only the 64-char hash
+    // Extract and output only the 64-char hash (skip "sha256:" prefix)
     for (var i = 0; i < IMAGE_HASH_LENGTH; i++) {
         image_hash[i] <== extracted_image_digest[7 + i];
     }
