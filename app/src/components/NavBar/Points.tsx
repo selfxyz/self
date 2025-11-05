@@ -62,6 +62,8 @@ const Points: React.FC = () => {
   // Ref to trigger list refresh
   const listRefreshRef = useRef<(() => Promise<void>) | null>(null);
 
+  const [isContentReady, setIsContentReady] = useState(false);
+
   // Mock function to check if user has backed up their account
   const hasUserBackedUpAccount = (): boolean => {
     return hasCompletedBackupForPoints;
@@ -95,6 +97,12 @@ const Points: React.FC = () => {
     };
     fetchIncomingPoints();
   }, []);
+
+  const handleContentLayout = () => {
+    if (!isContentReady) {
+      setIsContentReady(true);
+    }
+  };
 
   const handleEnableNotifications = async () => {
     if (isEnabling) {
@@ -463,20 +471,23 @@ const Points: React.FC = () => {
         <PointHistoryList
           ListHeaderComponent={ListHeader}
           onRefreshRef={listRefreshRef}
+          onLayout={handleContentLayout}
         />
-        <BlurView
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 100,
-          }}
-          blurType="light"
-          blurAmount={4}
-          reducedTransparencyFallbackColor={slate50}
-          pointerEvents="none"
-        />
+        {isContentReady && (
+          <BlurView
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 100,
+            }}
+            blurType="light"
+            blurAmount={4}
+            reducedTransparencyFallbackColor={slate50}
+            pointerEvents="none"
+          />
+        )}
         <YStack position="absolute" bottom={bottom + 20} left={20} right={20}>
           <Button
             backgroundColor={black}
