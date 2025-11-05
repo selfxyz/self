@@ -61,10 +61,22 @@ export const shareViaWhatsApp = async (message: string): Promise<void> => {
   try {
     const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
 
-    const canOpen = await Linking.canOpenURL(url);
+    const schemeToCheck = Platform.OS === 'ios' ? 'whatsapp://' : url;
+
+    const canOpen = await Linking.canOpenURL(schemeToCheck);
     if (canOpen) {
       await Linking.openURL(url);
     } else {
+      // openURL() works even if canOpenURL() returns false in android
+      if (Platform.OS === 'android') {
+        try {
+          await Linking.openURL(url);
+          return;
+        } catch {
+          //atleast we tried
+          //fallthrough to show alert
+        }
+      }
       Alert.alert(
         'WhatsApp Not Installed',
         'Please install WhatsApp to share via this method, or use the Share button instead.',
