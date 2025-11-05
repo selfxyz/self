@@ -8,7 +8,6 @@ import { Country3LetterCode } from "@selfxyz/common/constants/countries";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
 import { AADHAAR_ATTESTATION_ID } from "@selfxyz/common/constants/constants";
-import { hashEndpointWithScope } from "@selfxyz/common/utils/scope";
 import { calculateUserIdentifierHash } from "@selfxyz/common";
 import { prepareAadhaarDiscloseTestData } from "@selfxyz/common";
 import path from "path";
@@ -17,7 +16,7 @@ import { formatInput } from "@selfxyz/common/utils/circuits/generateInputs";
 import fs from "fs";
 
 const privateKeyPem = fs.readFileSync(
-  path.join(__dirname, "../../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem"),
+  path.join(__dirname, "../../../circuits/node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem"),
   "utf8",
 );
 
@@ -39,11 +38,11 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
   let nameAndDob_smt: any;
   let nameAndYob_smt: any;
   let tree: any;
-  let scopeAsBigInt: bigint;
 
   let forbiddenCountriesList: Country3LetterCode[];
   let forbiddenCountriesListPacked: string[];
   let verificationConfigV2: any;
+  let scopeAsBigIntString: string;
 
   before(async () => {
     deployedActors = await deploySystemFixturesV2();
@@ -64,21 +63,21 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
     nameAndDob_smt = getSMTs().nameDobAadhar_smt;
     nameAndYob_smt = getSMTs().nameYobAadhar_smt;
 
-    const expectedScopeFromHash = hashEndpointWithScope("example.com", "test-scope");
-    scopeAsBigInt = BigInt(expectedScopeFromHash);
-
     const destChainId = 31337;
     const user1Address = await deployedActors.user1.getAddress();
     const userData = "test-user-data-for-verification";
 
     userIdentifierHash = BigInt(calculateUserIdentifierHash(destChainId, user1Address.slice(2), userData).toString());
 
+    const actualScope = await deployedActors.testSelfVerificationRoot.scope();
+    scopeAsBigIntString = actualScope.toString();
+
     const testData = prepareAadhaarDiscloseTestData(
       privateKeyPem,
       tree,
       nameAndDob_smt,
       nameAndYob_smt,
-      scopeAsBigInt.toString(),
+      scopeAsBigIntString,
       registerSecret,
       userIdentifierHash.toString(),
       createSelector([
@@ -324,9 +323,17 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(AADHAAR_ATTESTATION_ID)), 32);
 
-      const differentScopeFromHash = hashEndpointWithScope("different.com", "different-scope");
-      const differentScopeAsBigInt = BigInt(differentScopeFromHash);
-      const differentScopeAsBigIntString = differentScopeAsBigInt.toString();
+      // Deploy a new TestSelfVerificationRoot contract with a different scopeSeed
+      const TestSelfVerificationRootFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
+      const differentScopeContract = await TestSelfVerificationRootFactory.deploy(
+        deployedActors.hubImplV2.target,
+        "different-test-scope", // Different scopeSeed
+      );
+      await differentScopeContract.waitForDeployment();
+
+      // Get the actual different scope from the deployed contract
+      const differentActualScope = await differentScopeContract.scope();
+      const differentScopeAsBigIntString = differentActualScope.toString();
 
       const aadhaarInputs = prepareAadhaarDiscloseTestData(
         privateKeyPem,
@@ -498,7 +505,7 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         imt,
         nameAndDob_smt,
         nameAndYob_smt,
-        scopeAsBigInt.toString(),
+        scopeAsBigIntString,
         registerSecret,
         userIdentifierHash.toString(),
         createSelector(["GENDER"]).toString(),
@@ -573,7 +580,7 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         imt,
         nameAndDob_smt,
         nameAndYob_smt,
-        scopeAsBigInt.toString(),
+        scopeAsBigIntString,
         registerSecret,
         userIdentifierHash.toString(),
         createSelector(["GENDER"]).toString(),
@@ -892,7 +899,7 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         imt,
         nameAndDob_smt,
         nameAndYob_smt,
-        scopeAsBigInt.toString(),
+        scopeAsBigIntString,
         registerSecret,
         newUserIdentifierHash.toString(),
         createSelector(["GENDER"]).toString(),

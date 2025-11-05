@@ -5,6 +5,7 @@ import { genAndInitMockPassportData } from "@selfxyz/common/utils/passports/genM
 import { getCscaTreeRoot } from "@selfxyz/common/utils/trees";
 import { PassportData } from "@selfxyz/common/utils/types";
 import serialized_csca_tree from "../../../common/pubkeys/serialized_csca_tree.json";
+import { getSMTs } from "./generateProof";
 import {
   DeployedActors,
   DscVerifier,
@@ -17,11 +18,11 @@ import {
 } from "./types";
 
 // Verifier artifacts
-import VcAndDiscloseVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/disclose/Verifier_vc_and_disclose.sol/Verifier_vc_and_disclose.json";
+import VcAndDiscloseVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/disclose/Verifier_vc_and_disclose_staging.sol/Verifier_vc_and_disclose_staging.json";
 // import VcAndDiscloseVerifierArtifactProd from "../../artifacts/contracts/verifiers/disclose/Verifier_vc_and_disclose.sol/Verifier_vc_and_disclose.json";
-import RegisterVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/register/Verifier_register_sha256_sha256_sha256_rsa_65537_4096.sol/Verifier_register_sha256_sha256_sha256_rsa_65537_4096.json";
+import RegisterVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/register/Verifier_register_sha256_sha256_sha256_rsa_65537_4096_staging.sol/Verifier_register_sha256_sha256_sha256_rsa_65537_4096_staging.json";
 // import RegisterVerifierArtifactProd from "../../artifacts/contracts/verifiers/register/Verifier_register_rsa_65537_sha256.sol/Verifier_register_rsa_65537_sha256.json";
-import DscVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/dsc/Verifier_dsc_sha256_rsa_65537_4096.sol/Verifier_dsc_sha256_rsa_65537_4096.json";
+import DscVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/dsc/Verifier_dsc_sha256_rsa_65537_4096_staging.sol/Verifier_dsc_sha256_rsa_65537_4096_staging.json";
 // import DscVerifierArtifactProd from "../../artifacts/contracts/verifiers/dsc/Verifier_dsc_sha256_rsa_65537_4096.sol/Verifier_dsc_sha256_rsa_65537_4096.json";
 
 export async function deploySystemFixtures(): Promise<DeployedActors> {
@@ -48,8 +49,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
   mockPassport = genAndInitMockPassportData("sha256", "sha256", "rsa_sha256_65537_4096", "FRA", "940131", "401031");
 
   // Deploy verifiers
-  const vcAndDiscloseVerifierArtifact =
-    process.env.TEST_ENV === "local" ? VcAndDiscloseVerifierArtifactLocal : VcAndDiscloseVerifierArtifactProd;
+  const vcAndDiscloseVerifierArtifact = VcAndDiscloseVerifierArtifactLocal;
   const vcAndDiscloseVerifierFactory = await ethers.getContractFactory(
     vcAndDiscloseVerifierArtifact.abi,
     vcAndDiscloseVerifierArtifact.bytecode,
@@ -59,8 +59,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
   await vcAndDiscloseVerifier.waitForDeployment();
 
   // Deploy register verifier
-  const registerVerifierArtifact =
-    process.env.TEST_ENV === "local" ? RegisterVerifierArtifactLocal : RegisterVerifierArtifactProd;
+  const registerVerifierArtifact = RegisterVerifierArtifactLocal;
   const registerVerifierFactory = await ethers.getContractFactory(
     registerVerifierArtifact.abi,
     registerVerifierArtifact.bytecode,
@@ -70,7 +69,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
   await registerVerifier.waitForDeployment();
 
   // Deploy dsc verifier
-  const dscVerifierArtifact = process.env.TEST_ENV === "local" ? DscVerifierArtifactLocal : DscVerifierArtifactProd;
+  const dscVerifierArtifact = DscVerifierArtifactLocal;
   const dscVerifierFactory = await ethers.getContractFactory(
     dscVerifierArtifact.abi,
     dscVerifierArtifact.bytecode,
@@ -138,8 +137,6 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
   // Initialize roots
   const csca_root = getCscaTreeRoot(serialized_csca_tree);
   await registryContract.updateCscaRoot(csca_root, { from: owner });
-  const getSMTs = await import("./generateProof.js").then((mod) => mod.getSMTs);
-
   const { passportNo_smt, nameAndDob_smt, nameAndYob_smt } = getSMTs();
 
   await registryContract.updatePassportNoOfacRoot(passportNo_smt.root, { from: owner });

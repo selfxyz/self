@@ -27,5 +27,9 @@ runs:
         cache-dependency-path: yarn.lock
 
     - name: Install dependencies
-      shell: bash
-      run: yarn install --immutable
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 10
+        max_attempts: 3
+        retry_wait_seconds: 5
+        command: yarn install --immutable

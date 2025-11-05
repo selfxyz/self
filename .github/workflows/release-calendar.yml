@@ -31,44 +31,26 @@ on:
           - staging
           - production
         default: staging
-  push:
-    branches:
-      - dev
-    paths:
-      - ".github/workflows/release-calendar.yml"
   schedule:
     # Friday 17:00 UTC (see timezone conversions above) to prepare the weekend staging PR.
     - cron: "0 17 * * 5"
     # Sunday 17:00 UTC (same times as above) to prepare the production release PR.
     - cron: "0 17 * * 0"
 
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-
 jobs:
   release_to_staging:
     name: Create dev to staging release PR
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     steps:
       - name: Guard Friday schedule
         id: guard_schedule
         shell: bash
         run: |
           set -euo pipefail
-
-          # Allow push events (when workflow file is modified) to run
-          if [ "${{ github.event_name }}" == "push" ]; then
-            if [ "${{ github.ref_name }}" == "dev" ]; then
-              echo "Triggered by push event on dev. Running staging job."
-              echo "continue=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "Triggered by push event on non-dev. Skipping staging job."
-              echo "continue=false" >> "$GITHUB_OUTPUT"
-            fi
-            exit 0
-          fi
 
           # Allow workflow_dispatch based on input
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
@@ -103,7 +85,7 @@ jobs:
         if: ${{ steps.guard_schedule.outputs.continue == 'true' }}
         id: check_dev_staging
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
@@ -130,18 +112,14 @@ jobs:
       - name: Ensure release labels exist
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr == '' }}
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
 
           for LABEL in release automated staging; do
-            if ! gh label list --json name --jq '.[].name' | grep -q "^${LABEL}$"; then
-              echo "Creating missing label: ${LABEL}"
-              gh label create "${LABEL}" --color BFD4F2
-            else
-              echo "Label ${LABEL} already exists."
-            fi
+            echo "Ensuring label exists: ${LABEL}"
+            gh label create "${LABEL}" --color BFD4F2 --force || true
           done
 
       - name: Create release branch from dev
@@ -154,13 +132,31 @@ jobs:
 
           echo "Creating release branch ${BRANCH_NAME} from dev"
           git fetch origin dev
-          git checkout -b "${BRANCH_NAME}" origin/dev
-          git push origin "${BRANCH_NAME}"
+
+          # Check if branch already exists locally
+          if git show-ref --verify --quiet refs/heads/"${BRANCH_NAME}"; then
+            echo "Branch ${BRANCH_NAME} already exists locally, checking out..."
+            git checkout "${BRANCH_NAME}"
+          else
+            git checkout -b "${BRANCH_NAME}" origin/dev
+          fi
+
+          # Check if branch already exists on remote
+          if git ls-remote --heads origin "${BRANCH_NAME}" | grep -q "${BRANCH_NAME}"; then
+            echo "Branch ${BRANCH_NAME} already exists on remote. Skipping push."
+          else
+            echo "Pushing branch ${BRANCH_NAME} to remote..."
+            if ! git push origin "${BRANCH_NAME}"; then
+              echo "❌ ERROR: Failed to push branch ${BRANCH_NAME} to remote"
+              exit 1
+            fi
+            echo "✓ Successfully pushed branch ${BRANCH_NAME}"
+          fi
 
       - name: Create dev to staging release PR
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr == '' }}
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_DATE: ${{ steps.check_dev_staging.outputs.date }}
           BRANCH_NAME: ${{ steps.check_dev_staging.outputs.branch_name }}
         shell: bash
@@ -207,31 +203,33 @@ jobs:
           TITLE="Release to Staging - ${PR_DATE}"
           echo "Creating PR with title: ${TITLE} from branch ${BRANCH_NAME}"
 
-          gh pr create \
+          if ! gh pr create \
             --base staging \
             --head "${BRANCH_NAME}" \
             --title "${TITLE}" \
             --label release \
             --label automated \
             --label staging \
-            --body-file pr_body.md
+            --body-file pr_body.md; then
+            echo "❌ ERROR: Failed to create PR"
+            exit 1
+          fi
+
+          echo "✅ PR created successfully"
 
   release_to_production:
     name: Create staging to main release PR
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     steps:
       - name: Guard Sunday schedule
         id: guard_schedule
         shell: bash
         run: |
           set -euo pipefail
-
-          # Skip production job on push events (we only test on dev)
-          if [ "${{ github.event_name }}" == "push" ]; then
-            echo "Push event: skipping production job."
-            echo "continue=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
 
           # Allow workflow_dispatch based on input
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
@@ -266,7 +264,7 @@ jobs:
         if: ${{ steps.guard_schedule.outputs.continue == 'true' }}
         id: production_status
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
@@ -311,24 +309,20 @@ jobs:
       - name: Ensure release labels exist
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead != 'true' && steps.production_status.outputs.existing_pr == '' }}
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
 
           for LABEL in release automated production; do
-            if ! gh label list --json name --jq '.[].name' | grep -q "^${LABEL}$"; then
-              echo "Creating missing label: ${LABEL}"
-              gh label create "${LABEL}" --color BFD4F2
-            else
-              echo "Label ${LABEL} already exists."
-            fi
+            echo "Ensuring label exists: ${LABEL}"
+            gh label create "${LABEL}" --color BFD4F2 --force || true
           done
 
       - name: Create staging to main release PR
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead != 'true' && steps.production_status.outputs.existing_pr == '' }}
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_DATE: ${{ steps.production_status.outputs.date }}
           COMMITS_AHEAD: ${{ steps.production_status.outputs.commits }}
         shell: bash

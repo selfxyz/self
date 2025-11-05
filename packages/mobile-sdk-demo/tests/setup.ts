@@ -458,6 +458,20 @@ vi.mock('react-native-get-random-values', () => ({
   polyfillGlobal: vi.fn(),
 }));
 
+// Mock react-native-haptic-feedback
+vi.mock('react-native-haptic-feedback', () => ({
+  __esModule: true,
+  default: {
+    trigger: vi.fn(),
+  },
+}));
+
+// Mock uuid
+vi.mock('uuid', () => ({
+  __esModule: true,
+  v4: vi.fn(() => 'test-uuid-1234'),
+}));
+
 // Mock SVG asset used on the home screen
 vi.mock('../src/assets/images/logo.svg', () => ({
   __esModule: true,

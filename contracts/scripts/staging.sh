@@ -4,9 +4,9 @@
 mkdir -p ignition/deployments/staging/artifacts
 
 # Copy deployed_addresses.json
-cp ignition/deployments/chain-44787/deployed_addresses.json ignition/deployments/staging/deployed_addresses.json
+cp ignition/deployments/chain-11142220/deployed_addresses.json ignition/deployments/staging/deployed_addresses.json
 
-# Copy all artifacts from chain-44787 to staging
-cp -r ignition/deployments/chain-44787/artifacts/* ignition/deployments/staging/artifacts/
+# Copy all artifacts from chain-11142220 to staging
+cp -r ignition/deployments/chain-11142220/artifacts/* ignition/deployments/staging/artifacts/
 
-echo "Successfully exported chain-44787 deployment files to staging directory"
+echo "Successfully exported chain-11142220 deployment files to staging directory"

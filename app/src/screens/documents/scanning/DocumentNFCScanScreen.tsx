@@ -34,19 +34,20 @@ import { CircleHelp } from '@tamagui/lucide-icons';
 import type { PassportData } from '@selfxyz/common/types';
 import {
   hasAnyValidRegisteredDocument,
+  sanitizeErrorMessage,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
+  ButtonsContainer,
   PrimaryButton,
   SecondaryButton,
+  TextsContainer,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
-import ButtonsContainer from '@/components/ButtonsContainer';
-import TextsContainer from '@/components/TextsContainer';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import NFC_IMAGE from '@/images/nfc.png';
@@ -71,7 +72,6 @@ import {
   impactLight,
 } from '@/utils/haptic';
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
-import { sanitizeErrorMessage } from '@/utils/utils';
 
 const emitter =
   Platform.OS === 'android'

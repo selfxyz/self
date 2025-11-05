@@ -40,6 +40,14 @@ export function brutforceSignatureAlgorithm(passportData: PassportData) {
       };
     }
   }
+  const hashAlgorithm = brutforceHashAlgorithm(passportData, 'rsa');
+  if (hashAlgorithm) {
+    return {
+      signatureAlgorithm: 'rsa',
+      hashAlgorithm: hashAlgorithm,
+      saltLength: 0,
+    };
+  }
 }
 
 function brutforceHashAlgorithm(

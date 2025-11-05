@@ -5,10 +5,10 @@ android {
     namespace "io.tradle.nfc"
     // Use NDK that supports 16k page size
     ndkVersion = "27.0.12077973"
-    compileSdkVersion 33
+    compileSdkVersion 35
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
         multiDexEnabled = true

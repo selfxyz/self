@@ -4,6 +4,33 @@
 
 /* global jest */
 /** @jest-environment jsdom */
+
+// Mock React Native PixelRatio globally before anything else loads
+const mockPixelRatio = {
+  get: jest.fn(() => 2),
+  getFontScale: jest.fn(() => 1),
+  getPixelSizeForLayoutSize: jest.fn(layoutSize => layoutSize * 2),
+  roundToNearestPixel: jest.fn(layoutSize => Math.round(layoutSize * 2) / 2),
+  startDetecting: jest.fn(),
+};
+
+global.PixelRatio = mockPixelRatio;
+
+// Also make it available for require() calls
+const Module = require('module');
+
+const originalRequire = Module.prototype.require;
+Module.prototype.require = function (id) {
+  if (id === 'react-native') {
+    const RN = originalRequire.apply(this, arguments);
+    if (!RN.PixelRatio || !RN.PixelRatio.getFontScale) {
+      RN.PixelRatio = mockPixelRatio;
+    }
+    return RN;
+  }
+  return originalRequire.apply(this, arguments);
+};
+
 require('react-native-gesture-handler/jestSetup');
 
 // Mock NativeAnimatedHelper - using virtual mock during RN 0.76.9 prep phase
@@ -64,7 +91,50 @@ jest.mock('react-native/Libraries/TurboModule/TurboModuleRegistry', () => ({
   get: jest.fn(() => null),
 }));
 
-// Mock the mobile-sdk-alpha's React Native instance separately
+// Mock main React Native PixelRatio module
+jest.mock('react-native/Libraries/Utilities/PixelRatio', () => ({
+  get: jest.fn(() => 2),
+  getFontScale: jest.fn(() => 1),
+  getPixelSizeForLayoutSize: jest.fn(layoutSize => layoutSize * 2),
+  roundToNearestPixel: jest.fn(layoutSize => Math.round(layoutSize * 2) / 2),
+  startDetecting: jest.fn(),
+}));
+
+// Mock mobile-sdk-alpha to use the main React Native instance instead of its own
+jest.mock(
+  '../packages/mobile-sdk-alpha/node_modules/react-native',
+  () => {
+    // Create the PixelRatio mock first
+    const PixelRatio = {
+      get: jest.fn(() => 2),
+      getFontScale: jest.fn(() => 1),
+      getPixelSizeForLayoutSize: jest.fn(layoutSize => layoutSize * 2),
+      roundToNearestPixel: jest.fn(
+        layoutSize => Math.round(layoutSize * 2) / 2,
+      ),
+      startDetecting: jest.fn(),
+    };
+
+    const RN = jest.requireActual('react-native');
+    // Override the PixelRatio immediately
+    RN.PixelRatio = PixelRatio;
+
+    // Make sure both the default and named exports work
+    const mockedRN = {
+      ...RN,
+      PixelRatio,
+      default: {
+        ...RN,
+        PixelRatio,
+      },
+    };
+
+    return mockedRN;
+  },
+  { virtual: true },
+);
+
+// Mock the mobile-sdk-alpha's TurboModuleRegistry to prevent native module errors
 jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/TurboModule/TurboModuleRegistry',
   () => ({
@@ -112,7 +182,7 @@ jest.mock(
   { virtual: true },
 );
 
-// Mock mobile-sdk-alpha's PixelRatio module
+// Mock mobile-sdk-alpha's PixelRatio module directly since it's still needed by StyleSheet
 jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/Utilities/PixelRatio',
   () => ({
@@ -125,7 +195,7 @@ jest.mock(
   { virtual: true },
 );
 
-// Mock mobile-sdk-alpha's StyleSheet module directly
+// Mock mobile-sdk-alpha's StyleSheet module directly since it's still needed
 jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/StyleSheet/StyleSheet',
   () => ({
@@ -143,6 +213,21 @@ jest.mock(
   }),
   { virtual: true },
 );
+
+// Mock main React Native StyleSheet module
+jest.mock('react-native/Libraries/StyleSheet/StyleSheet', () => ({
+  create: jest.fn(styles => styles),
+  flatten: jest.fn(style => style),
+  hairlineWidth: 1,
+  absoluteFillObject: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  roundToNearestPixel: jest.fn(layoutSize => Math.round(layoutSize * 2) / 2),
+}));
 
 // Mock NativeDeviceInfo specs for both main app and mobile-sdk-alpha
 jest.mock('react-native/src/private/specs/modules/NativeDeviceInfo', () => ({
@@ -164,6 +249,19 @@ jest.mock('react-native-gesture-handler', () => {
     TouchableOpacity: RN.TouchableOpacity,
     TouchableHighlight: RN.TouchableHighlight,
     FlatList: RN.FlatList,
+  };
+});
+
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    SafeAreaProvider: ({ children }) =>
+      React.createElement(View, null, children),
+    SafeAreaView: ({ children }) => React.createElement(View, null, children),
+    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
   };
 });
 
@@ -731,6 +829,10 @@ jest.mock('@react-navigation/native', () => {
   const actualNav = jest.requireActual('@react-navigation/native');
   return {
     ...actualNav,
+    useFocusEffect: jest.fn(callback => {
+      // Immediately invoke the effect for testing without requiring a container
+      return callback();
+    }),
     useNavigation: jest.fn(() => ({
       navigate: jest.fn(),
       goBack: jest.fn(),
@@ -751,3 +853,104 @@ jest.mock('@react-navigation/native-stack', () => ({
   })),
   createNavigatorFactory: jest.fn(),
 }));
+
+// Mock core navigation to avoid requiring a NavigationContainer for hooks
+jest.mock('@react-navigation/core', () => {
+  const actualCore = jest.requireActual('@react-navigation/core');
+  return {
+    ...actualCore,
+    useNavigation: jest.fn(() => ({
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      canGoBack: jest.fn(() => true),
+      dispatch: jest.fn(),
+    })),
+  };
+});
+
+// Mock react-native-webview globally to avoid ESM parsing and native behaviors
+jest.mock('react-native-webview', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const MockWebView = React.forwardRef((props, ref) => {
+    return React.createElement(View, { ref, testID: 'webview', ...props });
+  });
+  MockWebView.displayName = 'MockWebView';
+  return {
+    __esModule: true,
+    default: MockWebView,
+    WebView: MockWebView,
+  };
+});
+
+// Mock ExpandableBottomLayout to simple containers to avoid SDK internals in tests
+jest.mock('@/layouts/ExpandableBottomLayout', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const Layout = ({ children }) => React.createElement(View, null, children);
+  const TopSection = ({ children }) =>
+    React.createElement(View, null, children);
+  const BottomSection = ({ children }) =>
+    React.createElement(View, null, children);
+  const FullSection = ({ children }) =>
+    React.createElement(View, null, children);
+  return {
+    __esModule: true,
+    ExpandableBottomLayout: { Layout, TopSection, BottomSection, FullSection },
+  };
+});
+
+// Mock mobile-sdk-alpha components used by NavBar (Button, XStack)
+jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
+  const React = require('react');
+  const { View, Text, TouchableOpacity } = require('react-native');
+  const Button = ({ children, onPress, icon, ...props }) =>
+    React.createElement(
+      TouchableOpacity,
+      { onPress, ...props, testID: 'msdk-button' },
+      icon
+        ? React.createElement(View, { testID: 'msdk-button-icon' }, icon)
+        : null,
+      children,
+    );
+  const XStack = ({ children, ...props }) =>
+    React.createElement(View, { ...props, testID: 'msdk-xstack' }, children);
+  return {
+    __esModule: true,
+    Button,
+    XStack,
+    // Provide minimal Text to satisfy potential usages
+    Text,
+  };
+});
+
+// Mock Tamagui lucide icons to simple components to avoid theme context
+jest.mock('@tamagui/lucide-icons', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const makeIcon = name => {
+    const Icon = ({ size, color, opacity }) =>
+      React.createElement(View, {
+        testID: `icon-${name}`,
+        size,
+        color,
+        opacity,
+      });
+    Icon.displayName = `MockIcon(${name})`;
+    return Icon;
+  };
+  return {
+    __esModule: true,
+    ExternalLink: makeIcon('external-link'),
+    X: makeIcon('x'),
+  };
+});
+
+// Mock WebViewFooter to avoid SDK rendering complexity
+jest.mock('@/components/WebViewFooter', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const WebViewFooter = () =>
+    React.createElement(View, { testID: 'webview-footer' });
+  return { __esModule: true, WebViewFooter };
+});

@@ -7,10 +7,13 @@ async function showRegistryAddresses() {
 
   try {
     // Read the deployed addresses from the deployment artifacts
-    const deployedAddressesPath = path.join(__dirname, "../ignition/deployments/chain-44787/deployed_addresses.json");
+    const deployedAddressesPath = path.join(
+      __dirname,
+      "../ignition/deployments/chain-11142220/deployed_addresses.json",
+    );
 
     if (!fs.existsSync(deployedAddressesPath)) {
-      console.log("❌ No deployment found for chain 44787 (Alfajores)");
+      console.log("❌ No deployment found for chain 11142220 (Sepolia)");
       console.log("   Please run: yarn deploy:registry");
       return;
     }

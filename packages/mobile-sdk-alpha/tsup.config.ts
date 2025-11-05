@@ -23,8 +23,8 @@ function findFlowFiles(dir: string, basePath = ''): Record<string, string> {
 
     if (item.isDirectory()) {
       Object.assign(entries, findFlowFiles(itemPath, relativePath));
-    } else if (item.isFile() && item.name.endsWith('.ts')) {
-      const key = path.join('flows', relativePath).replace(/\.ts$/, '');
+    } else if (item.isFile() && (item.name.endsWith('.ts') || item.name.endsWith('.tsx'))) {
+      const key = path.join('flows', relativePath).replace(/\.tsx?$/, '');
       entries[key] = path.join('src', 'flows', relativePath);
     }
   }
@@ -58,19 +58,24 @@ export default defineConfig([
     external: [
       'react',
       'react-native',
+      // Externalize all React Native sub-modules and internals
+      /^react-native\/.*/,
       '@selfxyz/common',
       // Common crypto dependencies (already in main app)
       'elliptic',
       'js-sha256',
       'js-sha1',
       'js-sha512',
+      'xstate',
       'node-forge',
       'ethers',
       // React Native dependencies
-      '@react-native-async-storage/async-storage',
-      'react-native-keychain',
-      'react-native-sqlite-storage',
-      // State management (xstate included in bundle)
+      'react-native-svg-circle-country-flags',
+      'lottie-react-native',
+      'react-native-haptic-feedback',
+      'react-native-localize',
+      // SVG files should be handled by React Native's SVG transformer
+      /\.svg$/,
     ],
     esbuildOptions(options) {
       options.supported = {
@@ -98,11 +103,14 @@ export default defineConfig([
     splitting: true,
     clean: false,
     outDir: 'dist/cjs',
+    onSuccess: 'node ./scripts/copy-assets.mjs',
     tsconfig: './tsconfig.cjs.json',
     target: 'es2020',
     external: [
       'react',
       'react-native',
+      // Externalize all React Native sub-modules and internals
+      /^react-native\/.*/,
       '@selfxyz/common',
       // Common crypto dependencies (already in main app)
       'elliptic',
@@ -110,12 +118,15 @@ export default defineConfig([
       'js-sha1',
       'js-sha512',
       'node-forge',
+      'xstate',
       'ethers',
       // React Native dependencies
-      '@react-native-async-storage/async-storage',
-      'react-native-keychain',
-      'react-native-sqlite-storage',
-      // State management (xstate included in bundle)
+      'react-native-svg-circle-country-flags',
+      'lottie-react-native',
+      'react-native-haptic-feedback',
+      'react-native-localize',
+      // SVG files should be handled by React Native's SVG transformer
+      /\.svg$/,
     ],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
     esbuildOptions(options) {

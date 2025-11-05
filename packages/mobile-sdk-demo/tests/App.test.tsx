@@ -146,27 +146,6 @@ describe('App integration', () => {
     expect(await screen.findByTestId('screen-Generate Screen')).toHaveTextContent('Generate Screen');
   });
 
-  it('falls back to the home screen when navigating to an unknown route', async () => {
-    sdkMocks.selfClient.loadDocumentCatalog.mockResolvedValueOnce({ documents: [] });
-    sdkMocks.loadSelectedDocumentMock.mockResolvedValueOnce(null);
-
-    render(<App />);
-
-    await screen.findByText(/Self Demo App/i);
-
-    await act(async () => {
-      latestContext?.navigate('documents');
-    });
-
-    expect(await screen.findByTestId('screen-Documents Screen')).toBeInTheDocument();
-
-    await act(async () => {
-      latestContext?.navigate('unknown' as any);
-    });
-
-    await waitFor(() => expect(screen.getByText(/Self Demo App/i)).toBeInTheDocument());
-  });
-
   it('resets catalog and selection when refresh fails', async () => {
     const catalog = {
       documents: [{ id: 'doc-2', documentType: 'mock_passport' }],

@@ -8,9 +8,9 @@ import type { MRZInfo } from './public';
 
 // Document-related types
 /**
- * Document metadata - must NOT contain plaintext MRZ/PII
- * All sensitive payloads belong only in DocumentData.data (typed as PassportData)
- * or in encrypted storage referenced by the opaque token
+ * Metadata describing a stored document. Never embed MRZ or other plaintext PII
+ * here; keep sensitive payloads within {@link DocumentData.data} or in
+ * encrypted blobs referenced by `encryptedBlobRef`.
  */
 export interface DocumentMetadata {
   id: string;
@@ -22,17 +22,33 @@ export interface DocumentMetadata {
   registeredAt?: number; // timestamp (epoch ms) when document was registered
 }
 
+/**
+ * Combined document payload returned to UI flows. `data` carries the raw
+ * passport response while `metadata` reflects state persisted in the
+ * {@link DocumentsAdapter}. Consumers must treat `data` as sensitive and avoid
+ * serialising it to logs or analytics events.
+ */
 export interface DocumentData {
   data: PassportData;
   metadata: DocumentMetadata;
 }
 
 // Screen component props
+/**
+ * Standard callbacks injected into onboarding screens. `onSuccess` is called
+ * once the flow captured everything required to move forward; `onFailure`
+ * receives the original error so hosts can map to their telemetry systems.
+ */
 export interface ScreenProps {
   onSuccess: () => void;
   onFailure: (error: Error) => void;
 }
 
+/**
+ * Props consumed by the camera component that performs MRZ OCR. The handler is
+ * invoked after the SDK validates checksum integrity but before any NFC work
+ * starts, giving hosts a chance to surface confirmation UI.
+ */
 export interface PassportCameraProps {
   onMRZDetected: (mrzData: MRZInfo) => void;
 }

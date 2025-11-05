@@ -8,12 +8,12 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
+  DelayedLottieView,
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import splashAnimation from '@/assets/animations/splash.json';
-import { DelayedLottieView } from '@/components/DelayedLottieView';
 import type { RootStackParamList } from '@/navigation';
 import { migrateToSecureKeychain, useAuth } from '@/providers/authProvider';
 import {

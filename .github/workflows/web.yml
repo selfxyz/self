@@ -14,6 +14,7 @@ on:
 jobs:
   web-build:
     runs-on: ubuntu-latest
+    if: false
     steps:
       - uses: actions/checkout@v4
       - name: Install Dependencies

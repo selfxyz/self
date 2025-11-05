@@ -3,7 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
-import { isUserRegistered } from '@selfxyz/common/utils/passports/validate';
+import {
+  type AlternativeCSCA,
+  isUserRegisteredWithAlternativeCSCA,
+} from '@selfxyz/common/utils/passports/validate';
 import type {
   PassportValidationCallbacks,
   SelfClient,
@@ -19,6 +22,7 @@ import {
   getAllDocumentsDirectlyFromKeychain,
   loadPassportDataAndSecret,
   loadSelectedDocumentDirectlyFromKeychain,
+  reStorePassportDataWithRightCSCA,
   setSelectedDocument,
   storePassportData,
   updateDocumentRegistrationState,
@@ -138,17 +142,35 @@ export async function checkAndUpdateRegistrationStates(
       }
 
       const { secret } = JSON.parse(passportDataAndSecret);
-      const isRegistered = await isUserRegistered(
+      const { useProtocolStore } = selfClient;
+
+      // Check if user is registered with alternative CSCA
+      const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
         migratedPassportData,
         secret,
-        (docCategory: DocumentCategory) =>
-          getCommitmentTree(selfClient, docCategory),
+        {
+          getCommitmentTree: docCategory =>
+            getCommitmentTree(selfClient, docCategory),
+          getAltCSCA: docCategory =>
+            getAlternativeCSCA(useProtocolStore, docCategory),
+        },
       );
 
       // Update the registration state in the document metadata
       await updateDocumentRegistrationState(documentId, isRegistered);
 
       if (isRegistered) {
+        // Update passport data with the correct CSCA if one was found
+        // Only restore for passport/id_card documents; Aadhaar uses public keys and
+        // doesn't need CSCA restoration.
+        if (
+          csca &&
+          (migratedPassportData.documentCategory === 'passport' ||
+            migratedPassportData.documentCategory === 'id_card')
+        ) {
+          await reStorePassportDataWithRightCSCA(migratedPassportData, csca);
+        }
+
         trackEvent(DocumentEvents.DOCUMENT_VALIDATED, {
           documentId,
           documentCategory,
@@ -172,6 +194,26 @@ export async function checkAndUpdateRegistrationStates(
   }
 
   if (__DEV__) console.log('Registration state check and update completed');
+}
+
+/**
+ * Helper function to get alternative CSCA or public keys for a document category.
+ * For Aadhaar documents, returns public keys. For passports/ID cards, returns alternative CSCAs.
+ */
+export function getAlternativeCSCA(
+  useProtocolStore: SelfClient['useProtocolStore'],
+  docCategory: DocumentCategory,
+): AlternativeCSCA {
+  if (docCategory === 'aadhaar') {
+    const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
+    // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+    return publicKeys
+      ? Object.fromEntries(
+          publicKeys.map((key, index) => [`public_key_${index}`, key]),
+        )
+      : {};
+  }
+  return useProtocolStore.getState()[docCategory].alternative_csca;
 }
 
 // UNUSED?

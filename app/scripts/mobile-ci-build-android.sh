@@ -123,15 +123,15 @@ else
   log "📁 android-passport-nfc-reader already exists - preserving existing directory"
 fi
 
-# Build and package the SDK with timeout
-log "Building SDK..."
+# Build and package the SDK with timeout (including dependencies)
+log "Building SDK and dependencies..."
 if is_ci; then
-  timeout 300 yarn workspace @selfxyz/mobile-sdk-alpha build || {
+  timeout 300 yarn workspaces foreach --from @selfxyz/mobile-sdk-alpha --topological --recursive run build || {
     log "SDK build timed out after 5 minutes"
     exit 1
   }
 else
-  yarn workspace @selfxyz/mobile-sdk-alpha build
+  yarn workspaces foreach --from @selfxyz/mobile-sdk-alpha --topological --recursive run build
 fi
 
 log "Creating SDK tarball..."
@@ -189,20 +189,20 @@ else
   env -u SELFXYZ_INTERNAL_REPO_PAT yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH"
 fi
 
-# Verify installation (check both local and hoisted locations)
-SDK_ANDROID_PATH=""
-if [[ -d "node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res" ]]; then
-  SDK_ANDROID_PATH="node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res"
-elif [[ -d "../node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res" ]]; then
-  SDK_ANDROID_PATH="../node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res"
+# Verify installation (check for AAR file in both local and hoisted locations)
+SDK_AAR_PATH=""
+if [[ -f "node_modules/@selfxyz/mobile-sdk-alpha/dist/android/mobile-sdk-alpha-release.aar" ]]; then
+  SDK_AAR_PATH="node_modules/@selfxyz/mobile-sdk-alpha/dist/android/mobile-sdk-alpha-release.aar"
+elif [[ -f "../node_modules/@selfxyz/mobile-sdk-alpha/dist/android/mobile-sdk-alpha-release.aar" ]]; then
+  SDK_AAR_PATH="../node_modules/@selfxyz/mobile-sdk-alpha/dist/android/mobile-sdk-alpha-release.aar"
 else
-  log "ERROR: SDK Android resources not found after installation"
-  log "Checked: node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res"
-  log "Checked: ../node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res"
+  log "ERROR: SDK AAR file not found after installation"
+  log "Checked: node_modules/@selfxyz/mobile-sdk-alpha/dist/android/mobile-sdk-alpha-release.aar"
+  log "Checked: ../node_modules/@selfxyz/mobile-sdk-alpha/dist/android/mobile-sdk-alpha-release.aar"
   exit 1
 fi
 
-log "SDK Android resources found at: $SDK_ANDROID_PATH"
+log "SDK AAR file found at: $SDK_AAR_PATH"
 
 # Build Android APK (don't install to device)
 log "Building Android APK..."
