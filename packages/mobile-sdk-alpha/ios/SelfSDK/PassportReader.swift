@@ -425,7 +425,7 @@ func serializePublicKey(_ publicKey: SecKey) -> String? {
 #else
 // E2E Testing stub implementation
 @available(iOS 15, *)
-@objc(PassportReader)
+@objc(SelfPassportReader)
 class PassportReader: NSObject {
     override init() {
         super.init()

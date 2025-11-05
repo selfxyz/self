@@ -6,7 +6,7 @@ import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
 import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
-import type { ProofContext } from './proving/internal/logging';
+import type { NFCScanContext, ProofContext } from './proving/internal/logging';
 import { useProvingStore } from './proving/provingMachine';
 import { useMRZStore } from './stores/mrzStore';
 import { useProtocolStore } from './stores/protocolStore';
@@ -124,7 +124,29 @@ export function createSelfClient({
     if (!_adapters.analytics) {
       return;
     }
-    _adapters.analytics.trackEvent(event, payload);
+
+    _adapters.analytics.trackEvent?.(event, payload);
+  }
+
+  function trackNfcEvent(name: string, properties?: Record<string, unknown>): void {
+    if (!_adapters.analytics) {
+      return;
+    }
+
+    _adapters.analytics.trackNfcEvent?.(name, properties);
+  }
+
+  function logNFCEvent(
+    level: LogLevel,
+    message: string,
+    context: NFCScanContext,
+    details?: Record<string, unknown>,
+  ): void {
+    if (!_adapters.analytics) {
+      return;
+    }
+
+    _adapters.analytics.logNFCEvent?.(level, message, context, details);
   }
   /**
    * Retrieves the private key via the auth adapter.
@@ -146,7 +168,12 @@ export function createSelfClient({
 
   return {
     scanNFC,
+
+    // Analytics
     trackEvent,
+    trackNfcEvent,
+    logNFCEvent,
+
     getPrivateKey,
     hasPrivateKey,
     extractMRZInfo: parseMRZInfo,

@@ -3,7 +3,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PropsWithChildren } from 'react';
-import React, { cloneElement, isValidElement, useMemo, useState } from 'react';
+import React, {
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Alert, ScrollView } from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
@@ -17,6 +23,7 @@ import WarningIcon from '@/images/icons/warning.svg';
 import type { RootStackParamList } from '@/navigation';
 import { unsafe_clearSecrets } from '@/providers/authProvider';
 import { usePassport } from '@/providers/passportDataProvider';
+import { useSettingStore } from '@/stores/settingStore';
 import {
   red500,
   slate100,
@@ -30,6 +37,56 @@ import {
   yellow500,
 } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
+import {
+  isNotificationSystemReady,
+  requestNotificationPermission,
+  subscribeToTopics,
+  unsubscribeFromTopics,
+} from '@/utils/notifications/notificationService';
+
+interface TopicToggleButtonProps {
+  label: string;
+  isSubscribed: boolean;
+  onToggle: () => void;
+}
+
+const TopicToggleButton: React.FC<TopicToggleButtonProps> = ({
+  label,
+  isSubscribed,
+  onToggle,
+}) => {
+  return (
+    <Button
+      backgroundColor={isSubscribed ? '$green9' : slate200}
+      borderRadius="$2"
+      height="$5"
+      onPress={onToggle}
+      flexDirection="row"
+      justifyContent="space-between"
+      paddingHorizontal="$4"
+      pressStyle={{
+        opacity: 0.8,
+        scale: 0.98,
+      }}
+    >
+      <Text
+        color={isSubscribed ? white : slate600}
+        fontSize="$5"
+        fontFamily={dinot}
+        fontWeight="600"
+      >
+        {label}
+      </Text>
+      <Text
+        color={isSubscribed ? white : slate400}
+        fontSize="$3"
+        fontFamily={dinot}
+      >
+        {isSubscribed ? 'Enabled' : 'Disabled'}
+      </Text>
+    </Button>
+  );
+};
 
 interface DevSettingsScreenProps extends PropsWithChildren {
   color?: string;
@@ -235,6 +292,130 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const { clearDocumentCatalogForMigrationTesting } = usePassport();
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
+  const subscribedTopics = useSettingStore(state => state.subscribedTopics);
+  const [hasNotificationPermission, setHasNotificationPermission] =
+    useState(false);
+
+  // Check notification permissions on mount
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const readiness = await isNotificationSystemReady();
+      setHasNotificationPermission(readiness.ready);
+    };
+    checkPermissions();
+  }, []);
+
+  const handleTopicToggle = async (topics: string[], topicLabel: string) => {
+    // Check permissions first
+    if (!hasNotificationPermission) {
+      Alert.alert(
+        'Permissions Required',
+        'Push notifications are not enabled. Would you like to enable them?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Enable',
+            onPress: async () => {
+              try {
+                const granted = await requestNotificationPermission();
+                if (granted) {
+                  // Update permission state
+                  setHasNotificationPermission(true);
+                  Alert.alert(
+                    'Success',
+                    'Permissions granted! You can now subscribe to topics.',
+                    [{ text: 'OK' }],
+                  );
+                } else {
+                  Alert.alert(
+                    'Failed',
+                    'Could not enable notifications. Please enable them in your device Settings.',
+                    [{ text: 'OK' }],
+                  );
+                }
+              } catch (error) {
+                Alert.alert(
+                  'Error',
+                  error instanceof Error
+                    ? error.message
+                    : 'Failed to request permissions',
+                  [{ text: 'OK' }],
+                );
+              }
+            },
+          },
+        ],
+      );
+      return;
+    }
+
+    const isCurrentlySubscribed = topics.every(topic =>
+      subscribedTopics.includes(topic),
+    );
+
+    if (isCurrentlySubscribed) {
+      // Show confirmation dialog for unsubscribe
+      Alert.alert(
+        'Disable Notifications',
+        `Are you sure you want to disable push notifications for ${topicLabel}?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Disable',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                const result = await unsubscribeFromTopics(topics);
+                if (result.successes.length > 0) {
+                  Alert.alert(
+                    'Success',
+                    `Disabled notifications for ${topicLabel}`,
+                    [{ text: 'OK' }],
+                  );
+                } else {
+                  Alert.alert(
+                    'Error',
+                    `Failed to disable: ${result.failures.map(f => f.error).join(', ')}`,
+                    [{ text: 'OK' }],
+                  );
+                }
+              } catch (error) {
+                Alert.alert(
+                  'Error',
+                  error instanceof Error
+                    ? error.message
+                    : 'Failed to unsubscribe',
+                  [{ text: 'OK' }],
+                );
+              }
+            },
+          },
+        ],
+      );
+    } else {
+      // Subscribe without confirmation
+      try {
+        const result = await subscribeToTopics(topics);
+        if (result.successes.length > 0) {
+          Alert.alert('✅ Success', `Enabled notifications for ${topicLabel}`, [
+            { text: 'OK' },
+          ]);
+        } else {
+          Alert.alert(
+            'Error',
+            `Failed to enable: ${result.failures.map(f => f.error).join(', ')}`,
+            [{ text: 'OK' }],
+          );
+        }
+      } catch (error) {
+        Alert.alert(
+          'Error',
+          error instanceof Error ? error.message : 'Failed to subscribe',
+          [{ text: 'OK' }],
+        );
+      }
+    }
+  };
 
   const handleClearSecretsPress = () => {
     Alert.alert(
@@ -367,6 +548,41 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
               </XStack>
             </Button>
             <ScreenSelector />
+          </YStack>
+        </ParameterSection>
+
+        <ParameterSection
+          icon={<BugIcon />}
+          title="Push Notifications"
+          description="Manage topic subscriptions"
+        >
+          <YStack gap="$2">
+            <TopicToggleButton
+              label="Nova"
+              isSubscribed={
+                hasNotificationPermission && subscribedTopics.includes('nova')
+              }
+              onToggle={() => handleTopicToggle(['nova'], 'Nova')}
+            />
+            <TopicToggleButton
+              label="General"
+              isSubscribed={
+                hasNotificationPermission &&
+                subscribedTopics.includes('general')
+              }
+              onToggle={() => handleTopicToggle(['general'], 'General')}
+            />
+            <TopicToggleButton
+              label="Both (Nova + General)"
+              isSubscribed={
+                hasNotificationPermission &&
+                subscribedTopics.includes('nova') &&
+                subscribedTopics.includes('general')
+              }
+              onToggle={() =>
+                handleTopicToggle(['nova', 'general'], 'both topics')
+              }
+            />
           </YStack>
         </ParameterSection>
 

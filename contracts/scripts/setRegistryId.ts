@@ -9,7 +9,7 @@ dotenv.config();
 
 // Environment configuration
 const NETWORK = process.env.NETWORK || "localhost"; // Default to localhost
-const RPC_URL_KEY = NETWORK === "celo" ? "CELO_RPC_URL" : "CELO_ALFAJORES_RPC_URL";
+const RPC_URL_KEY = NETWORK === "celo" ? "CELO_RPC_URL" : "CELO_SEPOLIA_RPC_URL";
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const SKIP_CSCA_UPDATE = process.env.SKIP_CSCA_UPDATE === "true";
 const CSCA_ROOT = process.env.CSCA_ROOT; // Allow manual CSCA root setting
@@ -17,7 +17,7 @@ const CSCA_ROOT = process.env.CSCA_ROOT; // Allow manual CSCA root setting
 // Network to Chain ID mapping
 const NETWORK_TO_CHAIN_ID: Record<string, string> = {
   localhost: "31337",
-  celoAlfajores: "44787",
+  celoSepolia: "11142220",
   celo: "42220",
 };
 

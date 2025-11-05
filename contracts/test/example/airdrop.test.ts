@@ -1,21 +1,49 @@
 import { expect } from "chai";
-import { deploySystemFixtures } from "../utils/deployment";
-import { DeployedActors } from "../utils/types";
+import { deploySystemFixturesV2 } from "../utils/deploymentV2";
+import { DeployedActorsV2 } from "../utils/types";
 import { ethers } from "hardhat";
 import { CIRCUIT_CONSTANTS } from "@selfxyz/common/constants/constants";
 import { ATTESTATION_ID } from "../utils/constants";
-import { generateVcAndDiscloseProof } from "../utils/generateProof.js";
+import { generateVcAndDiscloseProof } from "../utils/generateProof";
 import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
 import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
 import BalanceTree from "../utils/example/balance-tree";
-import { castFromScope } from "@selfxyz/common/utils/circuits/uuid";
 import { formatCountriesList, reverseBytes } from "@selfxyz/common/utils/circuits/formatInputs";
 import { Formatter } from "../utils/formatter";
 import { hashEndpointWithScope } from "@selfxyz/common/utils/scope";
+import { createHash } from "crypto";
+
+// Helper function to calculate user identifier hash
+function calculateUserIdentifierHash(userContextData: string): string {
+  const sha256Hash = createHash("sha256")
+    .update(Buffer.from(userContextData.slice(2), "hex"))
+    .digest();
+  const ripemdHash = createHash("ripemd160").update(sha256Hash).digest();
+  return "0x" + ripemdHash.toString("hex").padStart(40, "0");
+}
+
+// Helper function to create V2 proof format
+function createV2ProofData(proof: any, userAddress: string, userData: string = "airdrop-user-data") {
+  const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
+  const userContextData = ethers.solidityPacked(
+    ["bytes32", "bytes32", "bytes"],
+    [destChainId, ethers.zeroPadValue(userAddress, 32), ethers.toUtf8Bytes(userData)],
+  );
+
+  const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
+  const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
+    [[proof.a, proof.b, proof.c, proof.pubSignals]],
+  );
+
+  const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+
+  return { proofData, userContextData };
+}
 
 describe("Airdrop", () => {
-  let deployedActors: DeployedActors;
+  let deployedActors: DeployedActorsV2;
   let snapshotId: string;
   let airdrop: any;
   let token: any;
@@ -28,9 +56,11 @@ describe("Airdrop", () => {
   let forbiddenCountriesList: any;
   let countriesListPacked: any;
   let attestationIds: any[];
+  let userIdentifierBigInt: bigint;
+  let numericScope: string;
 
   before(async () => {
-    deployedActors = await deploySystemFixtures();
+    deployedActors = await deploySystemFixturesV2();
     // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until verison 3
     const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
     registerSecret = generateRandomFieldElement();
@@ -44,22 +74,7 @@ describe("Airdrop", () => {
     imt = new LeanIMT<bigint>(hashFunction);
     await imt.insert(BigInt(commitment));
 
-    baseVcAndDiscloseProof = await generateVcAndDiscloseProof(
-      registerSecret,
-      BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-      deployedActors.mockPassport,
-      hashEndpointWithScope("https://test.com", "test-scope"),
-      new Array(88).fill("1"),
-      "1",
-      imt,
-      "20",
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      forbiddenCountriesList,
-      (await deployedActors.user1.getAddress()).slice(2),
-    );
+    // Proof generation will happen after airdrop deployment
 
     const tokenFactory = await ethers.getContractFactory("AirdropToken");
     token = await tokenFactory.connect(deployedActors.owner).deploy();
@@ -73,24 +88,86 @@ describe("Airdrop", () => {
       reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))),
     );
 
-    const airdropFactory = await ethers.getContractFactory("Airdrop");
-    airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
-      deployedActors.hub.target,
-      hashEndpointWithScope("https://test.com", "test-scope"),
-      0, // the types show we need a contract version here
-      attestationIds,
-      token.target,
-    );
+    // Deploy PoseidonT3 contract for proper scope calculation
+    const PoseidonT3Factory = await ethers.getContractFactory("PoseidonT3");
+    const poseidonT3 = await PoseidonT3Factory.deploy();
+    await poseidonT3.waitForDeployment();
+    const poseidonT3Address = await poseidonT3.getAddress();
+
+    // Deploy TestAirdrop contract (which allows setting PoseidonT3 address)
+    const airdropFactory = await ethers.getContractFactory("TestAirdrop");
+    airdrop = await airdropFactory
+      .connect(deployedActors.owner)
+      .deploy(deployedActors.hub.target, "test-scope", token.target);
     await airdrop.waitForDeployment();
 
-    const verificationConfig = {
+    // Set the proper scope using the deployed PoseidonT3
+    await airdrop.testGenerateScope(poseidonT3Address, "test-scope");
+
+    // Get the actual scope from the airdrop contract (now properly calculated)
+    const contractScope = await airdrop.scope();
+    numericScope = contractScope.toString();
+
+    const airdropAddress = await airdrop.getAddress();
+
+    console.log(`🏠 TestAirdrop deployed at: ${airdropAddress}`);
+    console.log(`🔢 PoseidonT3 deployed at: ${poseidonT3Address}`);
+    console.log(`✅ Proper scope (calculated with PoseidonT3): ${numericScope}`);
+
+    // The airdrop now uses the proper calculated scope
+
+    // Calculate the proper user identifier
+    const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
+    const user1Address = await deployedActors.user1.getAddress();
+    const userData = ethers.toUtf8Bytes("airdrop-user-data");
+
+    const tempUserContextData = ethers.solidityPacked(
+      ["bytes32", "bytes32", "bytes"],
+      [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+    );
+
+    const userIdentifierHash = calculateUserIdentifierHash(tempUserContextData);
+    userIdentifierBigInt = BigInt(userIdentifierHash);
+
+    baseVcAndDiscloseProof = await generateVcAndDiscloseProof(
+      registerSecret,
+      BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+      deployedActors.mockPassport,
+      numericScope,
+      new Array(88).fill("1"),
+      "1",
+      imt,
+      "20",
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      forbiddenCountriesList,
+      "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
+    );
+
+    vcAndDiscloseProof = baseVcAndDiscloseProof;
+
+    // Set up verification config in the hub
+    const verificationConfigV2 = {
       olderThanEnabled: true,
-      olderThan: 20,
+      olderThan: "20",
       forbiddenCountriesEnabled: true,
-      forbiddenCountriesListPacked: countriesListPacked,
+      forbiddenCountriesListPacked: countriesListPacked as [any, any, any, any],
       ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
     };
-    await airdrop.connect(deployedActors.owner).setVerificationConfig(verificationConfig);
+
+    // Register the config in the hub and get the config ID
+    const configId = await deployedActors.hub
+      .connect(deployedActors.owner)
+      .setVerificationConfigV2(verificationConfigV2);
+    const receipt = await configId.wait();
+
+    // Extract the actual config ID from the transaction receipt
+    const actualConfigId = receipt!.logs[0].topics[1]; // The configId is the first indexed parameter
+
+    // Set the config ID in the airdrop contract
+    await airdrop.connect(deployedActors.owner).setConfigId(actualConfigId);
 
     const mintAmount = ethers.parseEther("424242424242");
     await token.mint(airdrop.target, mintAmount);
@@ -201,7 +278,11 @@ describe("Airdrop", () => {
     const { owner, user1 } = deployedActors;
 
     await airdrop.connect(owner).openRegistration();
-    const tx = await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+
+    // Create V2 proof format
+    const { proofData, userContextData } = createV2ProofData(vcAndDiscloseProof, await user1.getAddress());
+
+    const tx = await airdrop.connect(user1).verifySelfProof(proofData, userContextData);
     const receipt = await tx.wait();
 
     const event = receipt?.logs.find(
@@ -215,20 +296,17 @@ describe("Airdrop", () => {
 
     const appNullifier = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX];
     expect(eventArgs?.nullifier).to.be.equal(appNullifier);
-
-    const nullifierToId = await airdrop.getNullifier(appNullifier);
-    expect(nullifierToId).to.be.equal(await user1.getAddress());
-
-    const isRegistered = await airdrop.isRegistered(await user1.getAddress());
-    expect(isRegistered).to.be.equal(true);
-    const isRegisteredFalse = await airdrop.isRegistered(await owner.getAddress());
   });
 
   it("should not able to register address by user if registration is closed", async () => {
     const { owner, user1 } = deployedActors;
 
     await airdrop.connect(owner).closeRegistration();
-    await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof)).to.be.revertedWithCustomError(
+
+    // Create V2 proof format
+    const { proofData, userContextData } = createV2ProofData(vcAndDiscloseProof, await user1.getAddress());
+
+    await expect(airdrop.connect(user1).verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(
       airdrop,
       "RegistrationNotOpen",
     );
@@ -237,11 +315,19 @@ describe("Airdrop", () => {
   it("should not able to register address by user if scope is invalid", async () => {
     const { owner, user1 } = deployedActors;
 
-    vcAndDiscloseProof = await generateVcAndDiscloseProof(
+    // Now that we have proper scope calculation, we can create a proof with a genuinely different scope
+    const airdropAddress = await airdrop.getAddress();
+    const differentScope = hashEndpointWithScope(airdropAddress.toLowerCase(), "different-test-scope");
+
+    console.log(`TestAirdrop scope: ${numericScope}`);
+    console.log(`Different scope for test: ${differentScope}`);
+
+    // Generate proof with the different scope
+    const invalidVcAndDiscloseProof = await generateVcAndDiscloseProof(
       registerSecret,
       BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
       deployedActors.mockPassport,
-      hashEndpointWithScope("https://test.com", "test-scope-invalid"),
+      differentScope, // Use different scope
       new Array(88).fill("1"),
       "1",
       imt,
@@ -251,13 +337,17 @@ describe("Airdrop", () => {
       undefined,
       undefined,
       forbiddenCountriesList,
-      (await deployedActors.user1.getAddress()).slice(2),
+      "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
     );
 
     await airdrop.connect(owner).openRegistration();
-    await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof)).to.be.revertedWithCustomError(
-      airdrop,
-      "InvalidScope",
+
+    // Create V2 proof format with invalid proof (different scope)
+    const { proofData, userContextData } = createV2ProofData(invalidVcAndDiscloseProof, await user1.getAddress());
+
+    await expect(airdrop.connect(user1).verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(
+      deployedActors.hub,
+      "ScopeMismatch",
     );
   });
 
@@ -265,8 +355,15 @@ describe("Airdrop", () => {
     const { owner, user1 } = deployedActors;
 
     await airdrop.connect(owner).openRegistration();
-    await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
-    await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof)).to.be.revertedWithCustomError(
+
+    // Create V2 proof format
+    const { proofData, userContextData } = createV2ProofData(vcAndDiscloseProof, await user1.getAddress());
+
+    // First registration should succeed
+    await airdrop.connect(user1).verifySelfProof(proofData, userContextData);
+
+    // Second registration with same nullifier should fail
+    await expect(airdrop.connect(user1).verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(
       airdrop,
       "RegisteredNullifier",
     );
@@ -292,11 +389,11 @@ describe("Airdrop", () => {
     await invalidImt.insert(BigInt(commitment));
     await invalidImt.insert(BigInt(invalidCommitment));
 
-    vcAndDiscloseProof = await generateVcAndDiscloseProof(
+    const invalidVcAndDiscloseProof = await generateVcAndDiscloseProof(
       registerSecret,
       BigInt(ATTESTATION_ID.INVALID_ATTESTATION_ID).toString(),
       deployedActors.mockPassport,
-      hashEndpointWithScope("https://test.com", "test-scope"),
+      numericScope, // Use the same scope as airdrop (proper calculated scope)
       new Array(88).fill("1"),
       "1",
       invalidImt,
@@ -306,24 +403,29 @@ describe("Airdrop", () => {
       undefined,
       undefined,
       forbiddenCountriesList,
-      (await deployedActors.user1.getAddress()).slice(2),
+      "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
     );
 
     await airdrop.connect(owner).openRegistration();
-    await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof)).to.be.revertedWithCustomError(
-      airdrop,
-      "InvalidAttestationId",
+
+    // Create V2 proof format with invalid attestation ID
+    const { proofData, userContextData } = createV2ProofData(invalidVcAndDiscloseProof, await user1.getAddress());
+
+    await expect(airdrop.connect(user1).verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(
+      deployedActors.hub,
+      "AttestationIdMismatch",
     );
   });
 
   it("should revert with InvalidUserIdentifier when user identifier is 0", async () => {
     const { owner, user1 } = deployedActors;
 
-    vcAndDiscloseProof = await generateVcAndDiscloseProof(
+    // Generate proof with zero user identifier
+    const invalidVcAndDiscloseProof = await generateVcAndDiscloseProof(
       registerSecret,
       BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
       deployedActors.mockPassport,
-      hashEndpointWithScope("https://test.com", "test-scope"),
+      numericScope, // Use the same scope as airdrop (proper calculated scope)
       new Array(88).fill("1"),
       "1",
       imt,
@@ -333,49 +435,123 @@ describe("Airdrop", () => {
       undefined,
       undefined,
       forbiddenCountriesList,
-      "0000000000000000000000000000000000000000",
+      "0x0000000000000000000000000000000000000000000000000000000000000000", // Zero user identifier
     );
 
     await airdrop.connect(owner).openRegistration();
-    await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof)).to.be.revertedWithCustomError(
-      airdrop,
-      "InvalidUserIdentifier",
+
+    // Create V2 proof format with zero user identifier proof
+    const { proofData, userContextData } = createV2ProofData(invalidVcAndDiscloseProof, await user1.getAddress());
+
+    await expect(airdrop.connect(user1).verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(
+      deployedActors.hub,
+      "InvalidUserIdentifierInProof",
     );
   });
 
   it("should allow registration when targetRootTimestamp is 0", async () => {
     const { hub, registry, owner, user1 } = deployedActors;
 
-    const airdropFactory = await ethers.getContractFactory("Airdrop");
-    const newAirdrop = await airdropFactory
-      .connect(owner)
-      .deploy(hub.target, hashEndpointWithScope("https://test.com", "test-scope"), 0, attestationIds, token.target);
+    // Deploy a new TestAirdrop with different scopeSeed
+    const PoseidonT3Factory = await ethers.getContractFactory("PoseidonT3");
+    const newPoseidonT3 = await PoseidonT3Factory.deploy();
+    await newPoseidonT3.waitForDeployment();
+    const newPoseidonT3Address = await newPoseidonT3.getAddress();
+
+    const airdropFactory = await ethers.getContractFactory("TestAirdrop");
+    const newAirdrop = await airdropFactory.connect(owner).deploy(hub.target, "test-scope-2", token.target);
     await newAirdrop.waitForDeployment();
 
-    const verificationConfig = {
+    // Set the proper scope for the new airdrop using the deployed PoseidonT3
+    await newAirdrop.testGenerateScope(newPoseidonT3Address, "test-scope-2");
+
+    // Set up verification config for the new airdrop (same as main airdrop)
+    const verificationConfigV2 = {
       olderThanEnabled: true,
-      olderThan: 20,
+      olderThan: "20",
       forbiddenCountriesEnabled: true,
-      forbiddenCountriesListPacked: countriesListPacked,
+      forbiddenCountriesListPacked: countriesListPacked as [any, any, any, any],
       ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
     };
-    await newAirdrop.connect(owner).setVerificationConfig(verificationConfig);
+
+    // Register the config in the hub and get the config ID
+    const configTx = await deployedActors.hub.connect(owner).setVerificationConfigV2(verificationConfigV2);
+    const configReceipt = await configTx.wait();
+
+    // Extract the actual config ID from the transaction receipt
+    const actualConfigId = configReceipt!.logs[0].topics[1]; // The configId is the first indexed parameter
+
+    // Set the config ID in the new airdrop contract
+    await newAirdrop.connect(owner).setConfigId(actualConfigId);
 
     await newAirdrop.connect(owner).openRegistration();
-    await expect(newAirdrop.connect(user1).verifySelfProof(vcAndDiscloseProof)).to.not.be.reverted;
+
+    // Get the actual scope from the new airdrop contract
+    const newAirdropScope = await newAirdrop.scope();
+    const newAirdropScopeAsBigIntString = newAirdropScope.toString();
+
+    // Calculate user identifier for the new airdrop context
+    const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
+    const user1Address = await user1.getAddress();
+    const userData = ethers.toUtf8Bytes("airdrop-user-data");
+
+    const tempUserContextData = ethers.solidityPacked(
+      ["bytes32", "bytes32", "bytes"],
+      [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+    );
+
+    const userIdentifierHash = calculateUserIdentifierHash(tempUserContextData);
+    const newUserIdentifierBigInt = BigInt(userIdentifierHash);
+
+    // Generate proof with the new airdrop's scope
+    const newVcAndDiscloseProof = await generateVcAndDiscloseProof(
+      registerSecret,
+      BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+      deployedActors.mockPassport,
+      newAirdropScopeAsBigIntString, // Use the actual scope from the new contract
+      new Array(88).fill("1"),
+      "1",
+      imt,
+      "20",
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      forbiddenCountriesList,
+      "0x" + newUserIdentifierBigInt.toString(16).padStart(64, "0"), // Use proper user identifier
+    );
+
+    // Create V2 proof format for the new airdrop
+    const { proofData, userContextData } = createV2ProofData(newVcAndDiscloseProof, await user1.getAddress());
+
+    await expect(newAirdrop.connect(user1).verifySelfProof(proofData, userContextData)).to.not.be.reverted;
   });
 
   it("should return correct scope", async () => {
-    const scope = await airdrop.getScope();
-    expect(scope).to.equal(hashEndpointWithScope("https://test.com", "test-scope"));
-  });
+    const scope = await airdrop.scope();
 
-  it("should check if attestation ID is allowed", async () => {
-    const isAllowed = await airdrop.isAttestationIdAllowed(ATTESTATION_ID.E_PASSPORT);
-    expect(isAllowed).to.be.true;
+    // With TestAirdrop and deployed PoseidonT3, we now get the proper calculated scope
+    expect(scope).to.not.equal(0n);
 
-    const isNotAllowed = await airdrop.isAttestationIdAllowed(999999); // Some random ID not in the list
-    expect(isNotAllowed).to.be.false;
+    // Verify that our test setup correctly uses the contract's actual scope
+    expect(numericScope).to.equal(scope.toString());
+
+    // Calculate what the scope would be using hashEndpointWithScope for comparison
+    const airdropAddress = await airdrop.getAddress();
+    const expectedScope = hashEndpointWithScope(airdropAddress.toLowerCase(), "test-scope");
+
+    // The contract-calculated scope should match the expected scope
+    expect(scope.toString()).to.equal(expectedScope);
+
+    // Also compare with TestSelfVerificationRoot which should have the same scope calculation method
+    const testRootScope = await deployedActors.testSelfVerificationRoot.scope();
+    expect(testRootScope).to.not.equal(0n);
+
+    console.log(`✅ TestAirdrop scope (with PoseidonT3): ${scope}`);
+    console.log(`✅ Test scope variable: ${numericScope}`);
+    console.log(`🔍 TestSelfVerificationRoot scope: ${testRootScope}`);
+    console.log(`🌐 Expected scope (hashEndpointWithScope): ${expectedScope}`);
+    console.log(`🎯 All scopes match: ${scope.toString() === expectedScope}`);
   });
 
   it("should return correct merkle root", async () => {
@@ -396,7 +572,11 @@ describe("Airdrop", () => {
     const { owner, user1 } = deployedActors;
 
     await airdrop.connect(owner).openRegistration();
-    await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+
+    // Register the user first using V2 interface
+    const { proofData, userContextData } = createV2ProofData(vcAndDiscloseProof, await user1.getAddress());
+    await airdrop.connect(user1).verifySelfProof(proofData, userContextData);
+
     await airdrop.connect(owner).closeRegistration();
 
     const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
@@ -427,7 +607,10 @@ describe("Airdrop", () => {
     const { owner, user1 } = deployedActors;
 
     await airdrop.connect(owner).openRegistration();
-    await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+
+    // Register the user first using V2 interface
+    const { proofData, userContextData } = createV2ProofData(vcAndDiscloseProof, await user1.getAddress());
+    await airdrop.connect(user1).verifySelfProof(proofData, userContextData);
 
     const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
     const root = tree.getHexRoot();
@@ -448,7 +631,11 @@ describe("Airdrop", () => {
     const { owner, user1 } = deployedActors;
 
     await airdrop.connect(owner).openRegistration();
-    await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+
+    // Register the user first using V2 interface
+    const { proofData, userContextData } = createV2ProofData(vcAndDiscloseProof, await user1.getAddress());
+    await airdrop.connect(user1).verifySelfProof(proofData, userContextData);
+
     await airdrop.connect(owner).closeRegistration();
 
     const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
@@ -469,7 +656,11 @@ describe("Airdrop", () => {
     const { owner, user1 } = deployedActors;
 
     await airdrop.connect(owner).openRegistration();
-    await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+
+    // Register the user first using V2 interface
+    const { proofData, userContextData } = createV2ProofData(vcAndDiscloseProof, await user1.getAddress());
+    await airdrop.connect(user1).verifySelfProof(proofData, userContextData);
+
     await airdrop.connect(owner).closeRegistration();
     const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
     const root = tree.getHexRoot();
@@ -494,7 +685,11 @@ describe("Airdrop", () => {
     const { owner, user1 } = deployedActors;
 
     await airdrop.connect(owner).openRegistration();
-    await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+
+    // Register the user first using V2 interface
+    const { proofData, userContextData } = createV2ProofData(vcAndDiscloseProof, await user1.getAddress());
+    await airdrop.connect(user1).verifySelfProof(proofData, userContextData);
+
     await airdrop.connect(owner).closeRegistration();
     const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
     const root = tree.getHexRoot();
@@ -516,7 +711,11 @@ describe("Airdrop", () => {
     const { owner, user1, user2 } = deployedActors;
 
     await airdrop.connect(owner).openRegistration();
-    await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+
+    // Register only user1, not user2
+    const { proofData, userContextData } = createV2ProofData(vcAndDiscloseProof, await user1.getAddress());
+    await airdrop.connect(user1).verifySelfProof(proofData, userContextData);
+
     await airdrop.connect(owner).closeRegistration();
 
     const tree = new BalanceTree([
@@ -537,124 +736,21 @@ describe("Airdrop", () => {
     expect(isClaimed).to.be.false;
   });
 
-  it("should able to set verification config by owner", async () => {
+  it("should able to set config ID by owner", async () => {
     const { owner } = deployedActors;
-    const newVerificationConfig = {
-      olderThanEnabled: false,
-      olderThan: 25,
-      forbiddenCountriesEnabled: false,
-      forbiddenCountriesListPacked: countriesListPacked,
-      ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
-    };
+    const newConfigId = ethers.keccak256(ethers.toUtf8Bytes("new-config-v1"));
 
-    await airdrop.connect(owner).setVerificationConfig(newVerificationConfig);
-    const storedConfig = await airdrop.getVerificationConfig();
+    await airdrop.connect(owner).setConfigId(newConfigId);
+    const storedConfigId = await airdrop.verificationConfigId();
 
-    expect(storedConfig.olderThanEnabled).to.equal(newVerificationConfig.olderThanEnabled);
-    expect(storedConfig.olderThan).to.equal(newVerificationConfig.olderThan);
-    expect(storedConfig.forbiddenCountriesEnabled).to.equal(newVerificationConfig.forbiddenCountriesEnabled);
-    for (let i = 0; i < 4; i++) {
-      expect(storedConfig.forbiddenCountriesListPacked[i]).to.equal(
-        newVerificationConfig.forbiddenCountriesListPacked[i],
-      );
-    }
-    expect(storedConfig.ofacEnabled).to.deep.equal(newVerificationConfig.ofacEnabled);
+    expect(storedConfigId).to.equal(newConfigId);
   });
 
-  it("should not able to set verification config by non-owner", async () => {
+  it("should not able to set config ID by non-owner", async () => {
     const { user1 } = deployedActors;
-    const newVerificationConfig = {
-      olderThanEnabled: false,
-      olderThan: 25,
-      forbiddenCountriesEnabled: false,
-      forbiddenCountriesListPacked: countriesListPacked,
-      ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
-    };
+    const newConfigId = ethers.keccak256(ethers.toUtf8Bytes("new-config-v1"));
 
-    await expect(airdrop.connect(user1).setVerificationConfig(newVerificationConfig))
-      .to.be.revertedWithCustomError(airdrop, "OwnableUnauthorizedAccount")
-      .withArgs(await user1.getAddress());
-  });
-
-  it("should return correct verification config", async () => {
-    const config = await airdrop.getVerificationConfig();
-    expect(config.olderThanEnabled).to.equal(true);
-    expect(config.olderThan).to.equal(20);
-    expect(config.forbiddenCountriesEnabled).to.equal(true);
-    for (let i = 0; i < 4; i++) {
-      expect(config.forbiddenCountriesListPacked[i]).to.equal(countriesListPacked[i]);
-    }
-    expect(config.ofacEnabled).to.deep.equal([true, true, true]);
-  });
-
-  it("should able to update scope by owner", async () => {
-    const { owner } = deployedActors;
-    const newScope = hashEndpointWithScope("https://newtest.com", "new-test-scope");
-
-    await airdrop.connect(owner).setScope(newScope);
-    const scope = await airdrop.getScope();
-    expect(scope).to.equal(newScope);
-
-    // Verify event was emitted
-    const filter = airdrop.filters.ScopeUpdated();
-    const events = await airdrop.queryFilter(filter);
-    const lastEvent = events[events.length - 1];
-    expect(lastEvent.args.newScope).to.equal(newScope);
-  });
-
-  it("should not be able to update scope by non-owner", async () => {
-    const { user1 } = deployedActors;
-    const newScope = hashEndpointWithScope("https://newtest.com", "new-test-scope");
-
-    await expect(airdrop.connect(user1).setScope(newScope))
-      .to.be.revertedWithCustomError(airdrop, "OwnableUnauthorizedAccount")
-      .withArgs(await user1.getAddress());
-  });
-
-  it("should able to add attestation ID by owner", async () => {
-    const { owner } = deployedActors;
-    const newAttestationId = 999; // Some new ID
-
-    await airdrop.connect(owner).addAttestationId(newAttestationId);
-    const isAllowed = await airdrop.isAttestationIdAllowed(newAttestationId);
-    expect(isAllowed).to.be.true;
-
-    // Verify event was emitted
-    const filter = airdrop.filters.AttestationIdAdded();
-    const events = await airdrop.queryFilter(filter);
-    const lastEvent = events[events.length - 1];
-    expect(lastEvent.args.attestationId).to.equal(newAttestationId);
-  });
-
-  it("should not be able to add attestation ID by non-owner", async () => {
-    const { user1 } = deployedActors;
-    const newAttestationId = 888; // Some new ID
-
-    await expect(airdrop.connect(user1).addAttestationId(newAttestationId))
-      .to.be.revertedWithCustomError(airdrop, "OwnableUnauthorizedAccount")
-      .withArgs(await user1.getAddress());
-  });
-
-  it("should able to remove attestation ID by owner", async () => {
-    const { owner } = deployedActors;
-    const attestationIdToRemove = ATTESTATION_ID.E_PASSPORT;
-
-    await airdrop.connect(owner).removeAttestationId(attestationIdToRemove);
-    const isAllowed = await airdrop.isAttestationIdAllowed(attestationIdToRemove);
-    expect(isAllowed).to.be.false;
-
-    // Verify event was emitted
-    const filter = airdrop.filters.AttestationIdRemoved();
-    const events = await airdrop.queryFilter(filter);
-    const lastEvent = events[events.length - 1];
-    expect(lastEvent.args.attestationId).to.equal(attestationIdToRemove);
-  });
-
-  it("should not be able to remove attestation ID by non-owner", async () => {
-    const { user1 } = deployedActors;
-    const attestationIdToRemove = ATTESTATION_ID.E_PASSPORT;
-
-    await expect(airdrop.connect(user1).removeAttestationId(attestationIdToRemove))
+    await expect(airdrop.connect(user1).setConfigId(newConfigId))
       .to.be.revertedWithCustomError(airdrop, "OwnableUnauthorizedAccount")
       .withArgs(await user1.getAddress());
   });

@@ -4,10 +4,9 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { XStack, YStack } from 'tamagui';
-import type { RouteProp } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { countryCodes } from '@selfxyz/common/constants';
-import type { DocumentCategory } from '@selfxyz/common/types';
 import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
@@ -23,6 +22,7 @@ import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { SharedRoutesParamList } from '@/navigation/types';
 import analytics from '@/utils/analytics';
 import { black, slate500, white } from '@/utils/colors';
 import { sendCountrySupportNotification } from '@/utils/email';
@@ -30,19 +30,10 @@ import { notificationError } from '@/utils/haptic';
 
 const { flush: flushAnalytics } = analytics();
 
-type ComingSoonScreenRouteProp = RouteProp<
-  {
-    ComingSoon: {
-      countryCode: string;
-      documentCategory?: DocumentCategory;
-    };
-  },
+type ComingSoonScreenProps = NativeStackScreenProps<
+  SharedRoutesParamList,
   'ComingSoon'
 >;
-
-interface ComingSoonScreenProps {
-  route: ComingSoonScreenRouteProp;
-}
 
 const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
   const selfClient = useSelfClient();

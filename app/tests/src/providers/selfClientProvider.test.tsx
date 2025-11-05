@@ -2,12 +2,20 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+// Mock ConfirmIdentificationScreen to avoid PixelRatio issues
 import React, { type ReactNode } from 'react';
 import { renderHook } from '@testing-library/react-native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { SelfClientProvider } from '@/providers/selfClientProvider';
+
+jest.mock(
+  '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification',
+  () => ({
+    ConfirmIdentificationScreen: ({ children }: any) => children,
+  }),
+);
 
 describe('SelfClientProvider', () => {
   it('memoises the client instance', () => {

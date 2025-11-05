@@ -6,17 +6,18 @@ import type { PropsWithChildren } from 'react';
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
 
-import type {
-  Adapters,
-  TrackEventParams,
-  WsConn,
-} from '@selfxyz/mobile-sdk-alpha';
 import {
+  type Adapters,
   createListenersMap,
+  impactLight,
+  type LogLevel,
+  type NFCScanContext,
   reactNativeScannerAdapter,
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
+  type TrackEventParams,
   webNFCScannerShim,
+  type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import type { RootStackParamList } from '@/navigation';
@@ -25,7 +26,7 @@ import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import { logNFCEvent, logProofEvent } from '@/Sentry';
 import { useSettingStore } from '@/stores/settingStore';
-import analytics from '@/utils/analytics';
+import analytics, { trackNfcEvent } from '@/utils/analytics';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
 /**
@@ -113,6 +114,17 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       analytics: {
         trackEvent: (event: string, data?: TrackEventParams) => {
           analytics().trackEvent(event, data);
+        },
+        trackNfcEvent: (name: string, data?: Record<string, unknown>) => {
+          trackNfcEvent(name, data);
+        },
+        logNFCEvent: (
+          level: LogLevel,
+          message: string,
+          context: NFCScanContext,
+          details?: Record<string, unknown>,
+        ) => {
+          logNFCEvent(level, message, context, details);
         },
       },
       auth: {
@@ -216,21 +228,15 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('DocumentNFCScan');
-      }
+      navigateIfReady('DocumentNFCScan');
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('DocumentCameraTrouble');
-      }
+      navigateIfReady('DocumentCameraTrouble');
     });
 
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('AadhaarUploadSuccess');
-      }
+      navigateIfReady('AadhaarUploadSuccess');
     });
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
       navigateIfReady('AadhaarUploadError', { errorType });
@@ -245,9 +251,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         countryCode: string;
         documentTypes: string[];
       }) => {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('IDPicker', { countryCode, documentTypes });
-        }
+        navigateIfReady('IDPicker', { countryCode, documentTypes });
       },
     );
     addListener(
@@ -273,6 +277,18 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               break;
           }
         }
+      },
+    );
+
+    addListener(
+      SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED,
+      ({ documentCategory, signatureAlgorithm, curveOrExponent }) => {
+        impactLight();
+        navigateIfReady('Loading', {
+          documentCategory,
+          signatureAlgorithm,
+          curveOrExponent,
+        });
       },
     );
 

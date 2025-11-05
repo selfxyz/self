@@ -1,11 +1,12 @@
 package com.selfxyz.demoapp
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
+import android.util.Log
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
+import com.selfxyz.selfSDK.RNSelfPassportReaderModule
 
 class MainActivity : ReactActivity() {
     /**
@@ -20,5 +21,16 @@ class MainActivity : ReactActivity() {
      */
     override fun createReactActivityDelegate(): ReactActivityDelegate {
         return DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        Log.d("MAIN_ACTIVITY", "onNewIntent: " + intent.action)
+        try {
+            RNSelfPassportReaderModule.getInstance().receiveIntent(intent)
+        } catch (e: IllegalStateException) {
+            Log.w("MAIN_ACTIVITY", "RNSelfPassportReaderModule not ready; deferring NFC intent")
+            setIntent(intent)
+        }
     }
 }

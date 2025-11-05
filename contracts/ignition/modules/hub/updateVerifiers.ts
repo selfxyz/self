@@ -2,7 +2,7 @@ import { buildModule, IgnitionModuleBuilder } from "@nomicfoundation/ignition-co
 import hre from "hardhat";
 import { readFileSync } from "fs";
 import path from "path";
-import { circuitIds, CircuitName } from "../verifiers/deployAllVerifiersNew";
+import { circuitIds, CircuitName } from "../verifiers/deployAllVerifiers";
 
 // Attestation IDs from the contract
 const AttestationId = {

@@ -11,9 +11,9 @@ import type {
   provingMachineCircuitType,
   ProvingStateType,
 } from '@selfxyz/mobile-sdk-alpha';
+import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
+import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
 
-import failAnimation from '@/assets/animations/loading/fail.json';
-import proveLoadingAnimation from '@/assets/animations/loading/prove.json';
 import LoadingUI from '@/components/loading/LoadingUI';
 import { slate200, slate500 } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';

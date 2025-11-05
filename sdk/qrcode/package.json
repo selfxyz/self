@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/qrcode",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -88,8 +88,8 @@
     "@size-limit/preset-big-lib": "^11.2.0",
     "@types/node": "^22.18.3",
     "@types/node-forge": "^1",
-    "@types/react": "^18.3.4",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": ">=18.0.0 <20.0.0",
+    "@types/react-dom": ">=18.0.0 <20.0.0",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
@@ -102,8 +102,8 @@
     "eslint-plugin-sort-exports": "^0.9.1",
     "mocha": "^10.7.3",
     "prettier": "^3.5.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": ">=18.0.0 <20.0.0",
+    "react-dom": ">=18.0.0 <20.0.0",
     "size-limit": "^11.2.0",
     "ts-loader": "^9.5.1",
     "ts-mocha": "^10.0.0",
@@ -114,8 +114,8 @@
   },
   "peerDependencies": {
     "lottie-react": "^2.4.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": ">=18.0.0 <20.0.0",
+    "react-dom": ">=18.0.0 <20.0.0"
   },
   "engines": {
     "node": ">=22 <23"

@@ -5,6 +5,6 @@ extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
 }
 rootProject.name = 'SelfDemoApp'
 include ':app'
-include ':mobile-sdk-alpha'
-project(':mobile-sdk-alpha').projectDir = new File(rootProject.projectDir, '../../mobile-sdk-alpha/android')
+// include ':mobile-sdk-alpha'
+// project(':mobile-sdk-alpha').projectDir = new File(rootProject.projectDir, '../../mobile-sdk-alpha/android')
 includeBuild('../../../node_modules/@react-native/gradle-plugin')

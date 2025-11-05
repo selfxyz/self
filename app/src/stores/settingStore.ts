@@ -24,6 +24,12 @@ interface PersistedSettingsState {
   setKeychainMigrationCompleted: () => void;
   fcmToken: string | null;
   setFcmToken: (token: string | null) => void;
+  subscribedTopics: string[];
+  setSubscribedTopics: (topics: string[]) => void;
+  addSubscribedTopic: (topic: string) => void;
+  removeSubscribedTopic: (topic: string) => void;
+  pointsAddress: string | null;
+  setPointsAddress: (address: string | null) => void;
 }
 
 interface NonPersistedSettingsState {
@@ -78,6 +84,23 @@ export const useSettingStore = create<SettingsState>()(
         set({ hasCompletedKeychainMigration: true }),
       fcmToken: null,
       setFcmToken: (token: string | null) => set({ fcmToken: token }),
+      subscribedTopics: [],
+      setSubscribedTopics: (topics: string[]) =>
+        set({ subscribedTopics: topics }),
+      addSubscribedTopic: (topic: string) =>
+        set(state => ({
+          subscribedTopics: Array.from(
+            new Set([...state.subscribedTopics, topic]),
+          ),
+        })),
+      removeSubscribedTopic: (topic: string) =>
+        set(state => ({
+          subscribedTopics: state.subscribedTopics.filter(t => t !== topic),
+        })),
+
+      pointsAddress: null,
+      setPointsAddress: (address: string | null) =>
+        set({ pointsAddress: address }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,

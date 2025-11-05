@@ -11,13 +11,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
+  ButtonsContainer,
   Description,
   PrimaryButton,
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 
-import ButtonsContainer from '@/components/ButtonsContainer';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { white } from '@/utils/colors';

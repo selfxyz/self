@@ -69,12 +69,22 @@ jobs:
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
       - name: Validate Maestro test file
         if: false # Skip for build-only test - keep logic for future E2E
         run: |
@@ -106,7 +116,12 @@ jobs:
         with:
           accept-android-sdk-licenses: true
       - name: Install NDK
-        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
@@ -229,12 +244,22 @@ jobs:
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
       - name: Validate Maestro test file
         run: |
           [ -f app/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }
@@ -246,7 +271,12 @@ jobs:
           key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
       - name: Install Maestro
         if: steps.cache-maestro.outputs.cache-hit != 'true'
-        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: curl -Ls "https://get.maestro.mobile.dev" | bash
       - name: Add Maestro to path
         run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
       - name: Set up Xcode
@@ -304,11 +334,15 @@ jobs:
           yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
-        run: |
-          echo "Installing iOS dependencies..."
-          cd app/ios
-          echo "📦 Installing pods via centralized script…"
-          BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh || { echo "❌ Pod install failed"; exit 1; }
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 20
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: |
+            cd app/ios
+            echo "📦 Installing pods via centralized script…"
+            BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Setup iOS Simulator

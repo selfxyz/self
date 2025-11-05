@@ -56,9 +56,7 @@ env:
   IOS_PROV_PROFILE_DIRECTORY: "~/Library/MobileDevice/Provisioning\ Profiles/"
 
 permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
+  contents: read
 
 on:
   workflow_dispatch:
@@ -150,6 +148,8 @@ jobs:
   # NOTE: Checks out the triggering branch (staging for PR merges, or the branch where manually triggered)
   bump-version:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
       !contains(github.event.pull_request.labels.*.name, 'deploy:skip')
@@ -241,9 +241,26 @@ jobs:
           echo "✅ Version bump calculated successfully"
           echo "⚠️  Note: Changes are local only. Will be committed in PR after successful builds."
 
+      - name: Verify bump outputs were set
+        run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          IOS_BUILD="${{ steps.bump.outputs.ios_build }}"
+          ANDROID_BUILD="${{ steps.bump.outputs.android_build }}"
+
+          if [ -z "$VERSION" ] || [ -z "$IOS_BUILD" ] || [ -z "$ANDROID_BUILD" ]; then
+            echo "❌ Version bump failed to set required outputs"
+            echo "version='$VERSION', ios_build='$IOS_BUILD', android_build='$ANDROID_BUILD'"
+            exit 1
+          fi
+
+          echo "✅ All version outputs verified"
+
   build-ios:
     needs: [bump-version]
     runs-on: macos-latest-large
+    permissions:
+      contents: read
+      actions: write
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
       (
@@ -285,7 +302,7 @@ jobs:
           echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - name: Verify branch and commit (iOS)
-        if: inputs.platform != 'android'
+        if: needs.bump-version.outputs.platform != 'android'
         run: |
           echo "🔍 Verifying we're building from the correct branch and commit..."
           echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
@@ -309,7 +326,7 @@ jobs:
           fi
 
       - name: Apply version bump for build
-        if: inputs.platform != 'android'
+        if: needs.bump-version.outputs.platform != 'android'
         run: |
           cd ${{ env.APP_PATH }}
 
@@ -804,6 +821,10 @@ jobs:
   build-android:
     needs: [bump-version]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+      id-token: write
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
       (
@@ -910,7 +931,7 @@ jobs:
           echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - name: Verify branch and commit (Android)
-        if: inputs.platform != 'ios'
+        if: needs.bump-version.outputs.platform != 'ios'
         run: |
           echo "🔍 Verifying we're building from the correct branch and commit..."
           echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
@@ -930,7 +951,7 @@ jobs:
           fi
 
       - name: Apply version bump for build
-        if: inputs.platform != 'ios'
+        if: needs.bump-version.outputs.platform != 'ios'
         run: |
           cd ${{ env.APP_PATH }}
 
@@ -1036,51 +1057,23 @@ jobs:
         with:
           accept-android-sdk-licenses: true
 
-      - name: Install NDK and CMake
+      - name: Install NDK
         if: inputs.platform != 'ios' && steps.ndk-cache.outputs.cache-hit != 'true'
-        run: |
-          max_attempts=5
-          attempt=1
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 15
+          max_attempts: 5
+          retry_wait_seconds: 10
+          command: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
 
-          # Install NDK
-          while [ $attempt -le $max_attempts ]; do
-            echo "Attempt $attempt of $max_attempts to install NDK..."
-            if sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"; then
-              echo "Successfully installed NDK"
-              break
-            fi
-            echo "Failed to install NDK on attempt $attempt"
-            if [ $attempt -eq $max_attempts ]; then
-              echo "All attempts to install NDK failed"
-              exit 1
-            fi
-            # Exponential backoff: 2^attempt seconds
-            wait_time=$((2 ** attempt))
-            echo "Waiting $wait_time seconds before retrying..."
-            sleep $wait_time
-            attempt=$((attempt + 1))
-          done
-
-          # Install CMake (required for native module builds)
-          echo "Installing CMake..."
-          attempt=1
-          while [ $attempt -le $max_attempts ]; do
-            echo "Attempt $attempt of $max_attempts to install CMake..."
-            if sdkmanager "cmake;3.22.1"; then
-              echo "Successfully installed CMake"
-              break
-            fi
-            echo "Failed to install CMake on attempt $attempt"
-            if [ $attempt -eq $max_attempts ]; then
-              echo "All attempts to install CMake failed"
-              exit 1
-            fi
-            # Exponential backoff: 2^attempt seconds
-            wait_time=$((2 ** attempt))
-            echo "Waiting $wait_time seconds before retrying..."
-            sleep $wait_time
-            attempt=$((attempt + 1))
-          done
+      - name: Install CMake
+        if: inputs.platform != 'ios' && steps.ndk-cache.outputs.cache-hit != 'true'
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          retry_wait_seconds: 10
+          command: sdkmanager "cmake;3.22.1"
 
       - name: Set Gradle JVM options
         if: inputs.platform != 'ios' # Apply to CI builds (not just ACT)
@@ -1234,6 +1227,9 @@ jobs:
   # but create the version bump PR to dev so it can be reviewed before merging to staging
   create-version-bump-pr:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     needs: [bump-version, build-ios, build-android]
     if: |
       always() &&
@@ -1260,6 +1256,8 @@ jobs:
           VERSION="${{ needs.bump-version.outputs.version }}"
           IOS_BUILD="${{ needs.bump-version.outputs.ios_build }}"
           ANDROID_BUILD="${{ needs.bump-version.outputs.android_build }}"
+          IOS_SUCCESS="${{ needs.build-ios.result }}"
+          ANDROID_SUCCESS="${{ needs.build-android.result }}"
 
           echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD, Android: $ANDROID_BUILD)"
 
@@ -1272,17 +1270,44 @@ jobs:
             console.log('✅ Updated package.json');
           "
 
-          # Update version.json build numbers
+          # Update version.json build numbers and deployment timestamps
           node -e "
             const fs = require('fs');
             const version = JSON.parse(fs.readFileSync('version.json', 'utf8'));
+            const timestamp = new Date().toISOString();
+
             version.ios.build = $IOS_BUILD;
             version.android.build = $ANDROID_BUILD;
+
+            // Update lastDeployed timestamp for successful builds
+            if ('$IOS_SUCCESS' === 'success') {
+              version.ios.lastDeployed = timestamp;
+              console.log('✅ Updated iOS lastDeployed timestamp');
+            }
+            if ('$ANDROID_SUCCESS' === 'success') {
+              version.android.lastDeployed = timestamp;
+              console.log('✅ Updated Android lastDeployed timestamp');
+            }
+
             fs.writeFileSync('version.json', JSON.stringify(version, null, 2) + '\n');
             console.log('✅ Updated version.json');
           "
 
           echo "✅ Versions applied successfully"
+
+      - name: Verify version changes
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          # Check that version files actually changed
+          if ! git diff --quiet package.json version.json; then
+            echo "✅ Version changes detected"
+            git diff package.json version.json
+          else
+            echo "⚠️  No version changes detected in package.json or version.json"
+            echo "This may indicate a problem with version application"
+            exit 1
+          fi
 
       - name: Determine platforms that succeeded and PR title
         id: platforms
@@ -1353,7 +1378,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: bump mobile app version to $VERSION"
+          git commit -m "chore: bump mobile app version to $VERSION" -m "Update build numbers and deployment timestamps after successful deployment."
 
           # Create new branch from current HEAD (bump target branch with version bump)
           git checkout -b ${BRANCH_NAME}
@@ -1376,6 +1401,10 @@ jobs:
           **Build Branch:** ${{ github.ref_name }}
           **Target Branch:** ${TARGET_BRANCH}
 
+          This PR updates:
+          - Build numbers for deployed platforms
+          - Deployment timestamps (\`lastDeployed\`) for successful builds
+
           This PR was automatically created by the mobile deployment workflow." \
             --label "automated"
 
@@ -1383,6 +1412,9 @@ jobs:
 
   # Create git tags after successful deployment
   create-release-tags:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: [bump-version, build-ios, build-android, create-version-bump-pr]
     if: |
       always() &&
@@ -1390,7 +1422,6 @@ jobs:
       needs.create-version-bump-pr.result == 'success' &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
       (inputs.deployment_track == 'production')
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:

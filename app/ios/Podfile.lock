@@ -173,10 +173,6 @@ PODS:
   - Mixpanel-swift (5.0.0):
     - Mixpanel-swift/Complete (= 5.0.0)
   - Mixpanel-swift/Complete (5.0.0)
-  - mobile-sdk-alpha (0.1.0):
-    - NFCPassportReader
-    - QKMRZParser
-    - React-Core
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
     - nanopb/encode (= 2.30910.0)
@@ -1590,6 +1586,27 @@ PODS:
     - Yoga
   - react-native-sqlite-storage (6.0.1):
     - React-Core
+  - react-native-webview (13.16.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - React-nativeconfig (0.76.9)
   - React-NativeModulesApple (0.76.9):
     - glog
@@ -2140,7 +2157,6 @@ DEPENDENCIES:
   - lottie-ios
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - Mixpanel-swift (~> 5.0.0)
-  - "mobile-sdk-alpha (from `../node_modules/@selfxyz/mobile-sdk-alpha`)"
   - "NFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b`)"
   - QKMRZScanner
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -2183,6 +2199,7 @@ DEPENDENCIES:
   - react-native-nfc-manager (from `../node_modules/react-native-nfc-manager`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-sqlite-storage (from `../node_modules/react-native-sqlite-storage`)
+  - react-native-webview (from `../node_modules/react-native-webview`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -2274,8 +2291,6 @@ EXTERNAL SOURCES:
     :tag: hermes-2024-11-12-RNv0.76.2-5b4aa20c719830dcf5684832b89a6edb95ac3d64
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
-  mobile-sdk-alpha:
-    :path: "../node_modules/@selfxyz/mobile-sdk-alpha"
   NFCPassportReader:
     :commit: 9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b
     :git: "git@github.com:selfxyz/NFCPassportReader.git"
@@ -2355,6 +2370,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-sqlite-storage:
     :path: "../node_modules/react-native-sqlite-storage"
+  react-native-webview:
+    :path: "../node_modules/react-native-webview"
   React-nativeconfig:
     :path: "../node_modules/react-native/ReactCommon"
   React-NativeModulesApple:
@@ -2478,7 +2495,6 @@ SPEC CHECKSUMS:
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 7bb65bc88d3f9996ea2f646a96694285405df2f9
   Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
-  mobile-sdk-alpha: 126edf71b65b5a9e294725e4353c2705fa0fd20d
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   NFCPassportReader: 48873f856f91215dbfa1eaaec20eae639672862e
   OpenSSL-Universal: 84efb8a29841f2764ac5403e0c4119a28b713346
@@ -2523,6 +2539,7 @@ SPEC CHECKSUMS:
   react-native-nfc-manager: 66a00e5ddab9704efebe19d605b1b8afb0bb1bd7
   react-native-safe-area-context: 90a89cb349c7f8168a707e6452288c2f665b9fd1
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
+  react-native-webview: 3f45e19f0ffc3701168768a6c37695e0f252410e
   React-nativeconfig: 415626a63057638759bcc75e0a96e2e07771a479
   React-NativeModulesApple: d33b55553c6957ff94835574636838d78121a1c6
   React-perflogger: 72e653eb3aba9122f9e57cf012d22d2486f33358

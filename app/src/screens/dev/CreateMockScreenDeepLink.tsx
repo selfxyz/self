@@ -16,13 +16,13 @@ import type { IdDocInput } from '@selfxyz/common/utils';
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports';
 import {
   BodyText,
+  ButtonsContainer,
   Description,
   PrimaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import ButtonsContainer from '@/components/ButtonsContainer';
 import type { RootStackParamList } from '@/navigation';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';

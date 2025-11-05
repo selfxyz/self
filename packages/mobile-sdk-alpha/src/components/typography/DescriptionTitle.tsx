@@ -6,7 +6,7 @@ import type React from 'react';
 import type { TextProps } from 'react-native';
 import { Text } from 'react-native';
 
-import { dinot } from '../../utils/fonts';
+import { dinot } from '../../constants/fonts';
 
 export const DescriptionTitle: React.FC<TextProps> = ({ style, ...props }) => (
   <Text
