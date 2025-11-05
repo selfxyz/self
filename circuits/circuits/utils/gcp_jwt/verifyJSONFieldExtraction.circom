@@ -31,6 +31,12 @@ template ExtractAndVerifyJSONField(
 
     signal output extracted_value[maxValueLength];
 
+    // Ensure key_offset is at least 1 (prevents underflow in key_offset - 1)
+    component key_offset_min = GreaterEqThan(log2Ceil(maxJSONLength));
+    key_offset_min.in[0] <== key_offset;
+    key_offset_min.in[1] <== 1;
+    key_offset_min.out === 1;
+
     // Verify opening quote before key
     signal key_quote_before <== ItemAtIndex(maxJSONLength)(json, key_offset - 1);
     key_quote_before === 34;  // ASCII code for "
@@ -62,10 +68,10 @@ template ExtractAndVerifyJSONField(
     signal colon_after_key <== ItemAtIndex(maxJSONLength)(json, key_offset + key_length + 1);
     colon_after_key === 58;  // ASCII code for ':'
 
-    // Verify value comes after key (prevents offset confusion attacks)
+    // Verify value comes after colon (prevents pointing to colon itself)
     component offset_check = GreaterThan(log2Ceil(maxJSONLength));
     offset_check.in[0] <== value_offset;
-    offset_check.in[1] <== key_offset + key_length;
+    offset_check.in[1] <== key_offset + key_length + 1;  // Must be after colon position
     offset_check.out === 1;
 
     // Extract value from JSON and output directly
