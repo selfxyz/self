@@ -7,7 +7,7 @@ import { Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
 import { BlurView } from '@react-native-community/blur';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { PointHistoryList } from '@/components/PointHistoryList';
@@ -63,6 +63,18 @@ const Points: React.FC = () => {
   const listRefreshRef = useRef<(() => Promise<void>) | null>(null);
 
   const [isContentReady, setIsContentReady] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Unmounts BlurView when screen loses focus
+  // This fixes blackscreen issue when navigating to referral screen
+  useFocusEffect(
+    React.useCallback(() => {
+      setIsFocused(true);
+      return () => {
+        setIsFocused(false);
+      };
+    }, []),
+  );
 
   // Mock function to check if user has backed up their account
   const hasUserBackedUpAccount = (): boolean => {
@@ -473,7 +485,7 @@ const Points: React.FC = () => {
           onRefreshRef={listRefreshRef}
           onLayout={handleContentLayout}
         />
-        {isContentReady && (
+        {isContentReady && isFocused && (
           <BlurView
             style={{
               position: 'absolute',
