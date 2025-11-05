@@ -58,6 +58,10 @@ template ExtractAndVerifyJSONField(
     signal key_quote_after <== ItemAtIndex(maxJSONLength)(json, key_offset + key_length);
     key_quote_after === 34;  // ASCII code for "
 
+    // Verify colon after closing quote (ensures valid JSON key:value structure)
+    signal colon_after_key <== ItemAtIndex(maxJSONLength)(json, key_offset + key_length + 1);
+    colon_after_key === 58;  // ASCII code for ':'
+
     // Verify value comes after key (prevents offset confusion attacks)
     component offset_check = GreaterThan(log2Ceil(maxJSONLength));
     offset_check.in[0] <== value_offset;
