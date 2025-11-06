@@ -203,7 +203,7 @@ const HomeScreen: React.FC = () => {
         }
       }
     }
-  }, [navigation, navigateToPointsProof, hasReferrer, isReferralConfirmed]);
+  }, [navigation, navigateToPointsProof, hasReferrer, isReferralConfirmed, referrer]);
 
   useEffect(() => {
     // This should trigger the flow when user comes back from any of the onboarding screens
