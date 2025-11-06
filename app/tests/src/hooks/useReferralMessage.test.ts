@@ -334,7 +334,7 @@ describe('useReferralMessage', () => {
         useSettingStore.setState({ pointsAddress: '' });
       });
 
-      const { result } = renderHook(() => useReferralMessage());
+      renderHook(() => useReferralMessage());
 
       // Empty string is falsy, so it should trigger fetch
       expect(mockGetOrGeneratePointsAddress).toHaveBeenCalled();

@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useRoute } from '@react-navigation/native';
-import { act, renderHook, waitFor } from '@testing-library/react-native';
+import { renderHook, waitFor } from '@testing-library/react-native';
 
 import { useReferralRegistration } from '@/hooks/useReferralRegistration';
 import { useRegisterReferral } from '@/hooks/useRegisterReferral';

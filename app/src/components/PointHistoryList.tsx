@@ -33,7 +33,10 @@ type Section = {
 };
 
 export type PointHistoryListProps = {
-  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
+  ListHeaderComponent?:
+    | React.ComponentType<Record<string, unknown>>
+    | React.ReactElement
+    | null;
   onRefreshRef?: React.MutableRefObject<(() => Promise<void>) | null>;
   onLayout?: () => void;
 };

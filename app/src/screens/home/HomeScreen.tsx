@@ -195,7 +195,7 @@ const HomeScreen: React.FC = () => {
             setIsReferralConfirmed(undefined);
             navigation.navigate('Gratification', {
               points: POINT_VALUES.referee,
-            } as any);
+            });
           } else {
             // Just go to points upon pressing "Earn Points" button
             if (!hasReferrer) {

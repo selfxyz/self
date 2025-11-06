@@ -440,7 +440,7 @@ export const registerReferralPoints = async ({
       if (data && typeof data.message === 'string') {
         errorMessage = data.message;
       }
-    } catch (jsonParseError) {
+    } catch {
       // If parsing fails, just keep the generic error
     }
 

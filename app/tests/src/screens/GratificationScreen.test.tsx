@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { render, waitFor } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 
 import GratificationScreen from '@/screens/app/GratificationScreen';
 
