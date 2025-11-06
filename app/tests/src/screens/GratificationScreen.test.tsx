@@ -76,7 +76,6 @@ describe('GratificationScreen', () => {
     expect(getByText('50')).toBeTruthy();
   });
 
-
   it('should display referral points value (24) when passed', () => {
     mockUseRoute.mockReturnValue({
       params: { points: 24 },

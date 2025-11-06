@@ -62,6 +62,9 @@ const appScreens = {
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
+    params: {} as {
+      points?: number;
+    },
   },
 };
 
