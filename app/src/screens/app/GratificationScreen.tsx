@@ -13,6 +13,7 @@ import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import youWinAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/youWin.json';
 import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 
+import { useReferralRegistration } from '@/hooks/useReferralRegistration';
 import ArrowLeft from '@/images/icons/arrow_left.svg';
 import LogoWhite from '@/images/icons/logo_white.svg';
 import type { RootStackParamList } from '@/navigation';
@@ -24,17 +25,22 @@ const GratificationScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute();
-  const params = route.params as { points?: number } | undefined;
-  const pointsEarned = params?.points ?? 100;
+  const params = route.params as
+    | { points?: number; referrer?: string }
+    | undefined;
+  const pointsEarned = params?.points ?? 0;
   const [isAnimationFinished, setIsAnimationFinished] = useState(false);
+
+  // Handle referral registration if referrer is present in route params
+  useReferralRegistration();
 
   const handleExploreRewards = () => {
     // Navigate to Points screen
-    navigation.navigate('Points');
+    navigation.navigate('Points' as never);
   };
 
   const handleInviteFriend = () => {
-    navigation.navigate('Referral');
+    navigation.navigate('Referral' as never);
   };
 
   const handleBackPress = () => {

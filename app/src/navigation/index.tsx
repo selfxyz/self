@@ -141,6 +141,10 @@ export type RootStackParamList = Omit<
     curveOrExponent?: string;
   };
   Modal: ModalNavigationParams;
+  Gratification: {
+    points?: number;
+    referrer?: string;
+  };
 
   // Dev screens
   CreateMock: undefined;
