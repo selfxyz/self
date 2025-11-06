@@ -22,6 +22,7 @@ const VALIDATION_PATTERNS = {
   id_token: /^[\w\-.]+$/, // JWT token format (base64url encoded segments)
   scope: /^[\w\s%:/.=&+*-]+$/, // OAuth scopes (can include spaces, encoded chars, and URL-encoded content)
   scheme: /^https?$/, // Redirect scheme (http or https)
+  referrer: /^0x[a-fA-F0-9]+$/,
 } as const;
 
 type ValidatedParams = {
@@ -33,6 +34,7 @@ type ValidatedParams = {
   id_token?: string;
   scope?: string;
   scheme?: string;
+  referrer?: string;
 };
 
 // Define proper types for the mock data structure
@@ -113,6 +115,7 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
     mock_passport,
     code,
     id_token,
+    referrer,
   } = validatedParams;
 
   if (selfAppStr) {
@@ -175,6 +178,14 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
         createDeeplinkNavigationState('QRCodeTrouble', correctParentScreen),
       );
     }
+  } else if (referrer && typeof referrer === 'string') {
+    useUserStore.getState().setDeepLinkReferrer(referrer);
+
+    // Navigate to HomeScreen for referrer deeplinks, the screen will handle the rest
+    navigationRef.reset({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
   } else if (Platform.OS === 'web') {
     // TODO: web handle links if we need to idk if we do
     // For web, we can handle the URL some other way if we dont do this loading app in web always navigates to QRCodeTrouble

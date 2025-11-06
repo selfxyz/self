@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useCallback, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import { useCallback, useEffect, useMemo } from 'react';
+import { Dimensions, StyleSheet } from 'react-native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
@@ -38,6 +38,18 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
     await onConfirm(selfClient);
   }, [onBeforeConfirm, selfClient]);
 
+  // Calculate total bottom padding: base padding + fallback for smaller screens
+  const paddingBottom = useMemo(() => {
+    const basePadding = 20;
+
+    // Estimate for smaller screens to account for safe areas
+    const windowHeight = Dimensions.get('window').height;
+    const isSmallScreen = windowHeight < 900;
+    const fallbackPadding = isSmallScreen ? 50 : 0;
+
+    return basePadding + fallbackPadding;
+  }, []);
+
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
@@ -50,7 +62,7 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
           renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection gap={20} paddingBottom={20} backgroundColor={white}>
+      <ExpandableBottomLayout.BottomSection gap={20} paddingBottom={paddingBottom} backgroundColor={white}>
         <Title style={{ textAlign: 'center' }}>Confirm your identity</Title>
         <Description style={{ textAlign: 'center', paddingBottom: 20 }}>{getPreRegistrationDescription()}</Description>
         <PrimaryButton trackEvent={PassportEvents.OWNERSHIP_CONFIRMED} onPress={onPress}>

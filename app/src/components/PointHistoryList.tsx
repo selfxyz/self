@@ -35,6 +35,7 @@ type Section = {
 export type PointHistoryListProps = {
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
   onRefreshRef?: React.MutableRefObject<(() => Promise<void>) | null>;
+  onLayout?: () => void;
 };
 
 const TIME_PERIODS = {
@@ -59,6 +60,7 @@ const getIconForEventType = (type: PointEvent['type']) => {
 export const PointHistoryList: React.FC<PointHistoryListProps> = ({
   ListHeaderComponent,
   onRefreshRef,
+  onLayout,
 }) => {
   const [pointEvents, setPointEvents] = useState<PointEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -326,6 +328,7 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
       ListEmptyComponent={renderEmptyComponent}
       ListHeaderComponent={ListHeaderComponent}
       style={{ marginHorizontal: 15, marginBottom: 25 }}
+      onLayout={onLayout}
     />
   );
 };

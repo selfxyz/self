@@ -38,10 +38,10 @@
 		BFBA0C792E33A01F00E82A52 /* NativeLoggerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = BFBA0C782E33A01F00E82A52 /* NativeLoggerBridge.m */; };
 		D427791AA5714251A5EAF8AD /* DINOT-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */; };
 		DAC618BCA5874DD8AD74FFFC /* Advercase-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 7E5C3CEF7EDA4871B3D0EBE1 /* Advercase-Regular.otf */; };
-		F3A8B2C9D4E5F6A7B8C9D0E1 /* DINOT-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* DINOT-Bold.otf */; };
 		E9F9A99C2D57FE2900E1362E /* PassportOCRViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = E9F9A99A2D57FE2900E1362E /* PassportOCRViewManager.m */; };
 		E9F9A99D2D57FE2900E1362E /* PassportOCRViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9F9A99B2D57FE2900E1362E /* PassportOCRViewManager.swift */; };
 		EBECCA4983EC6929A7722578 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */; };
+		F3A8B2C9D4E5F6A7B8C9D0E1 /* DINOT-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* DINOT-Bold.otf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -546,7 +546,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 2.7.1;
+				MARKETING_VERSION = 2.7.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -686,7 +686,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 2.7.1;
+				MARKETING_VERSION = 2.7.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

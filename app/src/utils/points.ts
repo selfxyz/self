@@ -6,6 +6,8 @@ import { v4 } from 'uuid';
 
 import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
 
+import { getOrGeneratePointsAddress } from '@/providers/authProvider';
+
 const POINTS_API_BASE_URL =
   'https://points-backend-1025466915061.us-central1.run.app';
 
@@ -28,7 +30,8 @@ export const POINT_VALUES = {
   disclosure: 10,
   notification: 20,
   backup: 100,
-  refer: 150,
+  referrer: 80,
+  referee: 24,
 } as const;
 
 export const formatTimeUntilDate = (targetDate: Date): string => {
@@ -82,7 +85,7 @@ export const getDisclosurePointEvents = async (): Promise<PointEvent[]> => {
 
 export const getIncomingPoints = async (): Promise<IncomingPoints | null> => {
   try {
-    const userAddress = await getUserAddress();
+    const userAddress = await getPointsAddress();
     const nextSundayDate = getNextSundayNoonUTC();
 
     const response = await fetch(
@@ -137,6 +140,10 @@ export const getNextSundayNoonUTC = (): Date => {
   return nextSunday;
 };
 
+export const getPointsAddress = async (): Promise<string> => {
+  return getOrGeneratePointsAddress();
+};
+
 export const getPushNotificationPointEvents = async (): Promise<
   PointEvent[]
 > => {
@@ -180,10 +187,6 @@ export const getTotalPoints = async (address: string): Promise<number> => {
   }
 };
 
-export const getUserAddress = async (): Promise<string> => {
-  return '0x0000000000000000000000000000000000000000';
-};
-
 export const getWhiteListedDisclosureAddresses = async (): Promise<
   string[]
 > => {
@@ -210,7 +213,7 @@ export const hasUserAnIdentityDocumentRegistered =
 
 export const hasUserDoneThePointsDisclosure = async (): Promise<boolean> => {
   try {
-    const userAddress = await getUserAddress();
+    const userAddress = await getPointsAddress();
     const response = await fetch(
       `${POINTS_API_BASE_URL}/has-disclosed/${userAddress.toLowerCase()}`,
     );
@@ -228,7 +231,7 @@ export const hasUserDoneThePointsDisclosure = async (): Promise<boolean> => {
 };
 
 export const pointsSelfApp = async () => {
-  const userAddress = (await getUserAddress())?.toLowerCase();
+  const userAddress = (await getPointsAddress())?.toLowerCase();
   const endpoint = '0x25604DB4E556ad5C3f6e888eCe84EcBb8af28560';
   const builder = new SelfAppBuilder({
     appName: '✨ Self Points',
@@ -254,7 +257,7 @@ export const recordBackupPointEvent = async (): Promise<{
 }> => {
   try {
     const { usePointEventStore } = await import('@/stores/pointEventStore');
-    const userAddress = await getUserAddress();
+    const userAddress = await getPointsAddress();
 
     const response = await registerBackupPoints(userAddress);
 
@@ -280,7 +283,7 @@ export const recordNotificationPointEvent = async (): Promise<{
 }> => {
   try {
     const { usePointEventStore } = await import('@/stores/pointEventStore');
-    const userAddress = await getUserAddress();
+    const userAddress = await getPointsAddress();
 
     const response = await registerNotificationPoints(userAddress);
 
@@ -386,6 +389,64 @@ export const registerNotificationPoints = async (
     return { success: false, status: response.status, error: errorMessage };
   } catch (error) {
     console.error('Error registering notification points:', error);
+    return {
+      success: false,
+      status: 500,
+      error: 'Network error. Please check your connection and try again.',
+    };
+  }
+};
+
+/**
+ * Registers a referral relationship between referee and referrer.
+ *
+ * Calls POST /referrals/refer endpoint.
+ *
+ * @param referee - The address of the user being referred
+ * @param referrer - The address of the user referring
+ * @returns Promise resolving to operation status and error message if any
+ */
+export const registerReferralPoints = async ({
+  referee,
+  referrer,
+}: {
+  referee: string;
+  referrer: string;
+}): Promise<{ success: boolean; status: number; error?: string }> => {
+  try {
+    const response = await fetch(`${POINTS_API_BASE_URL}/referrals/refer`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        referee: referee.toLowerCase(),
+        referrer: referrer.toLowerCase(),
+      }),
+    });
+
+    if (response.status === 200) {
+      // Expecting "ok" response on success
+      return { success: true, status: 200 };
+    }
+
+    // Capture error details for known error scenarios
+    let errorMessage =
+      'Failed to register referral relationship. Please try again.';
+    try {
+      const data = await response.json();
+      // Map some common errors, improve this as backend error responses are updated
+      // For now, backend returns "message" or similar on error
+      if (data && typeof data.message === 'string') {
+        errorMessage = data.message;
+      }
+    } catch (jsonParseError) {
+      // If parsing fails, just keep the generic error
+    }
+
+    return { success: false, status: response.status, error: errorMessage };
+  } catch (error) {
+    console.error('Error registering referral points:', error);
     return {
       success: false,
       status: 500,

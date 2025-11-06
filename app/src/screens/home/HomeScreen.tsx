@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Dimensions, Image, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Text, View, XStack, YStack } from 'tamagui';
@@ -31,13 +31,18 @@ import { extraYPadding } from '@/utils/constants';
 import { dinot } from '@/utils/fonts';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import {
+  getUserAddress,
   hasUserAnIdentityDocumentRegistered,
   hasUserDoneThePointsDisclosure,
+  POINT_VALUES,
   pointsSelfApp,
+  registerReferralPoints,
 } from '@/utils/points';
 
 const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
+  const referrer = useUserStore(state => state.deepLinkReferrer);
+  const hasReferrer = referrer !== undefined;
   useConnectionModal();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -57,6 +62,10 @@ const HomeScreen: React.FC = () => {
   // Calculate card dimensions exactly like IdCardLayout does
   const { width: screenWidth } = Dimensions.get('window');
   const cardWidth = screenWidth * 0.95 - 16; // 95% of screen width minus horizontal padding
+
+  const [isReferralConfirmed, setIsReferralConfirmed] = useState<
+    boolean | undefined
+  >(undefined);
 
   const loadDocuments = useCallback(async () => {
     setLoading(true);
@@ -98,7 +107,7 @@ const HomeScreen: React.FC = () => {
     }, 100);
   }, [selfClient, navigation]);
 
-  const onEarnPointsPress = useCallback(async () => {
+  const onEarnPointsPress = useCallback(async (skipReferralFlow = true) => {
     const hasUserAnIdentityDocumentRegistered_result =
       await hasUserAnIdentityDocumentRegistered();
     if (!hasUserAnIdentityDocumentRegistered_result) {
@@ -111,6 +120,11 @@ const HomeScreen: React.FC = () => {
           }, 100);
         },
         onModalDismiss: () => {
+          if (hasReferrer) {
+            setIsReferralConfirmed(false);
+            useUserStore.getState().clearDeepLinkReferrer();
+          }
+
           // No need to navigate, user is already on Home
         },
       });
@@ -132,6 +146,11 @@ const HomeScreen: React.FC = () => {
             navigateToPointsProof();
           },
           onModalDismiss: () => {
+            if (hasReferrer) {
+              setIsReferralConfirmed(false);
+              useUserStore.getState().clearDeepLinkReferrer();
+            }
+
             // No need to navigate, user is already on Home
           },
         });
@@ -144,10 +163,77 @@ const HomeScreen: React.FC = () => {
           callbackId,
         });
       } else {
-        navigation.navigate('Points');
+        if (!skipReferralFlow && hasReferrer && isReferralConfirmed === true) {
+          const response = await registerReferralPoints({
+            referrer,
+            referee: await getUserAddress(),
+          });
+
+          if (response.success) {
+            useUserStore.getState().clearDeepLinkReferrer();
+            setIsReferralConfirmed(undefined);
+            navigation.navigate('Gratification', {
+              points: POINT_VALUES.referee,
+            } as any);
+          } else {
+            if (__DEV__) {
+              console.error(
+                'Error registering referral points:',
+                response.error,
+              );
+            }
+            const callbackId = registerModalCallbacks({
+              onButtonPress: () => {
+                onEarnPointsPress(false);
+              },
+              onModalDismiss: () => {},
+            });
+            navigation.navigate('Modal', {
+              titleText: 'Error',
+              bodyText: 'Error registering referral points. Please try again.',
+              buttonText: 'Retry',
+              callbackId,
+            });
+          }
+        } else {
+          // Just go to points upon pressing "Earn Points" button
+          if (!hasReferrer) {
+            navigation.navigate('Points');
+          }
+        }
       }
     }
-  }, [navigation, navigateToPointsProof]);
+  }, [navigation, navigateToPointsProof, hasReferrer, isReferralConfirmed, referrer]);
+
+  useEffect(() => {
+    // This should trigger the flow when user comes back from any of the onboarding screens
+    if (isReferralConfirmed === true && hasReferrer) {
+      onEarnPointsPress(false);
+
+      return;
+    }
+
+    if (hasReferrer && isReferralConfirmed === undefined) {
+      const callbackId = registerModalCallbacks({
+        onButtonPress: () => {
+          setIsReferralConfirmed(true);
+        },
+        onModalDismiss: () => {
+          setIsReferralConfirmed(false);
+          useUserStore.getState().clearDeepLinkReferrer();
+        },
+      });
+
+      navigation.navigate('Modal', {
+        titleText: 'Referral Confirmation',
+        bodyText:
+          'Seems like you opened the app from a referral link. Please confirm to continue.',
+        buttonText: 'Confirm',
+        secondaryButtonText: 'Dismiss',
+        callbackId,
+      });
+    }
+  }, [hasReferrer, isReferralConfirmed, navigation, onEarnPointsPress]);
 
   if (loading) {
     return (
@@ -297,7 +383,7 @@ const HomeScreen: React.FC = () => {
           borderRadius={5}
           borderWidth={1}
           borderColor={slate300}
-          onPress={onEarnPointsPress}
+          onPress={() => onEarnPointsPress(true)}
         >
           <Text
             color="#2563EB"

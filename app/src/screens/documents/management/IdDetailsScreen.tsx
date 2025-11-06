@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack, ZStack } from 'tamagui';
 import { BlurView } from '@react-native-community/blur';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 
@@ -35,6 +35,18 @@ const IdDetailsScreen: React.FC = () => {
   const [isHidden, setIsHidden] = useState(true);
   const navigation = useNavigation();
   const { bottom } = useSafeAreaInsets();
+
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Added to unmount BlurView when screen loses focus
+  useFocusEffect(
+    React.useCallback(() => {
+      setIsFocused(true);
+      return () => {
+        setIsFocused(false);
+      };
+    }, []),
+  );
 
   useEffect(() => {
     const loadDocumentAndCatalog = async () => {
@@ -128,19 +140,21 @@ const IdDetailsScreen: React.FC = () => {
       {ListHeader}
       <ZStack flex={1}>
         <ProofHistoryList documentId={documentId} />
-        <BlurView
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 100,
-          }}
-          blurType="light"
-          blurAmount={4}
-          reducedTransparencyFallbackColor={slate50}
-          pointerEvents="none"
-        />
+        {isFocused && (
+          <BlurView
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 100,
+            }}
+            blurType="light"
+            blurAmount={4}
+            reducedTransparencyFallbackColor={slate50}
+            pointerEvents="none"
+          />
+        )}
         <YStack position="absolute" bottom={bottom + 20} left={20} right={20}>
           <Button
             backgroundColor={isConnected ? slate100 : white}

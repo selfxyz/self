@@ -7,7 +7,7 @@ import { Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
 import { BlurView } from '@react-native-community/blur';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { PointHistoryList } from '@/components/PointHistoryList';
@@ -37,8 +37,8 @@ import {
 import {
   formatTimeUntilDate,
   getIncomingPoints,
+  getPointsAddress,
   getTotalPoints,
-  getUserAddress,
   type IncomingPoints,
   recordBackupPointEvent,
   recordNotificationPointEvent,
@@ -62,6 +62,20 @@ const Points: React.FC = () => {
   // Ref to trigger list refresh
   const listRefreshRef = useRef<(() => Promise<void>) | null>(null);
 
+  const [isContentReady, setIsContentReady] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Unmounts BlurView when screen loses focus
+  // This fixes blackscreen issue when navigating to referral screen
+  useFocusEffect(
+    React.useCallback(() => {
+      setIsFocused(true);
+      return () => {
+        setIsFocused(false);
+      };
+    }, []),
+  );
+
   // Mock function to check if user has backed up their account
   const hasUserBackedUpAccount = (): boolean => {
     return hasCompletedBackupForPoints;
@@ -73,7 +87,7 @@ const Points: React.FC = () => {
 
   useEffect(() => {
     const fetchPoints = async () => {
-      const address = await getUserAddress();
+      const address = await getPointsAddress();
       const points = await getTotalPoints(address);
       setSelfPoints(points);
     };
@@ -95,6 +109,12 @@ const Points: React.FC = () => {
     };
     fetchIncomingPoints();
   }, []);
+
+  const handleContentLayout = () => {
+    if (!isContentReady) {
+      setIsContentReady(true);
+    }
+  };
 
   const handleEnableNotifications = async () => {
     if (isEnabling) {
@@ -197,7 +217,7 @@ const Points: React.FC = () => {
       if (response.success) {
         setBackupForPointsCompleted();
 
-        const address = await getUserAddress();
+        const address = await getPointsAddress();
         const points = await getTotalPoints(address);
         setSelfPoints(points);
 
@@ -280,7 +300,7 @@ const Points: React.FC = () => {
                 fontFamily="DIN OT"
                 fontWeight="500"
                 fontSize={32}
-                lineHeight="100%"
+                lineHeight={32}
                 letterSpacing={-1}
               >
                 {`${selfPoints} Self `}
@@ -289,7 +309,7 @@ const Points: React.FC = () => {
                 fontFamily="DIN OT"
                 fontWeight="500"
                 fontSize={32}
-                lineHeight="100%"
+                lineHeight={32}
                 letterSpacing={-1}
               >
                 points
@@ -463,20 +483,23 @@ const Points: React.FC = () => {
         <PointHistoryList
           ListHeaderComponent={ListHeader}
           onRefreshRef={listRefreshRef}
+          onLayout={handleContentLayout}
         />
-        <BlurView
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 100,
-          }}
-          blurType="light"
-          blurAmount={4}
-          reducedTransparencyFallbackColor={slate50}
-          pointerEvents="none"
-        />
+        {isContentReady && isFocused && (
+          <BlurView
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 100,
+            }}
+            blurType="light"
+            blurAmount={4}
+            reducedTransparencyFallbackColor={slate50}
+            pointerEvents="none"
+          />
+        )}
         <YStack position="absolute" bottom={bottom + 20} left={20} right={20}>
           <Button
             backgroundColor={black}

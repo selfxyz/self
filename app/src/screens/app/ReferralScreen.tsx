@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { XStack, YStack } from 'tamagui';
@@ -13,6 +13,7 @@ import { CopyReferralButton } from '@/components/referral/CopyReferralButton';
 import { ReferralHeader } from '@/components/referral/ReferralHeader';
 import { ReferralInfo } from '@/components/referral/ReferralInfo';
 import { ShareButton } from '@/components/referral/ShareButton';
+import { useReferralMessage } from '@/hooks/useReferralMessage';
 import Message from '@/images/icons/message.svg';
 import ShareBlue from '@/images/icons/share_blue.svg';
 import WhatsApp from '@/images/icons/whatsapp.svg';
@@ -24,16 +25,13 @@ import {
   shareViaSMS,
   shareViaWhatsApp,
 } from '@/utils/referralShare';
-import { buildReferralMessage } from '@/utils/shareMessageBuilder';
 
 const ReferralScreen: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const [referralCode] = useState('');
-
-  const { message, link: referralLink } = buildReferralMessage(referralCode);
+  const { message, referralLink } = useReferralMessage();
 
   // Android Messages uses blue, iOS Messages uses green
   const messagesButtonColor = Platform.OS === 'android' ? blue600 : green500;
