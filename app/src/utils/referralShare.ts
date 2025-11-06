@@ -43,6 +43,16 @@ export const shareViaSMS = async (message: string): Promise<void> => {
     if (canOpen) {
       await Linking.openURL(url);
     } else {
+      if (Platform.OS === 'android') {
+        try {
+          await Linking.openURL(url);
+
+          return;
+        } catch {
+          // same as for WhatsApp, we try anyway and show alert if it fails
+        }
+      }
+
       Alert.alert('Error', 'Unable to open Messages app');
     }
   } catch (error) {
