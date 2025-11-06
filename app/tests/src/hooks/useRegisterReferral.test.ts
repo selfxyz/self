@@ -5,26 +5,22 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import { useRegisterReferral } from '@/hooks/useRegisterReferral';
-import { getPointsAddress, registerReferralPoints } from '@/utils/points';
+import { recordReferralPointEvent } from '@/utils/points';
 
 jest.mock('@/utils/points', () => ({
-  getPointsAddress: jest.fn(),
-  registerReferralPoints: jest.fn(),
+  recordReferralPointEvent: jest.fn(),
 }));
 
-const mockGetPointsAddress = getPointsAddress as jest.MockedFunction<
-  typeof getPointsAddress
->;
-const mockRegisterReferralPoints =
-  registerReferralPoints as jest.MockedFunction<typeof registerReferralPoints>;
+const mockRecordReferralPointEvent =
+  recordReferralPointEvent as jest.MockedFunction<
+    typeof recordReferralPointEvent
+  >;
 
 describe('useRegisterReferral', () => {
   const validReferrer = '0x1234567890123456789012345678901234567890';
-  const mockReferee = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetPointsAddress.mockResolvedValue(mockReferee);
   });
 
   it('should initialize with loading false and no error', () => {
@@ -44,11 +40,11 @@ describe('useRegisterReferral', () => {
     });
 
     expect(result.current.error).toContain('Invalid referrer address');
-    expect(mockRegisterReferralPoints).not.toHaveBeenCalled();
+    expect(mockRecordReferralPointEvent).not.toHaveBeenCalled();
   });
 
   it('should register referral successfully', async () => {
-    mockRegisterReferralPoints.mockResolvedValue({ success: true });
+    mockRecordReferralPointEvent.mockResolvedValue({ success: true });
 
     const { result } = renderHook(() => useRegisterReferral());
 
@@ -57,17 +53,13 @@ describe('useRegisterReferral', () => {
       expect(response.success).toBe(true);
     });
 
-    expect(mockGetPointsAddress).toHaveBeenCalled();
-    expect(mockRegisterReferralPoints).toHaveBeenCalledWith({
-      referee: mockReferee,
-      referrer: validReferrer,
-    });
+    expect(mockRecordReferralPointEvent).toHaveBeenCalledWith(validReferrer);
     expect(result.current.error).toBe(null);
   });
 
   it('should handle registration failure', async () => {
     const errorMessage = 'Registration failed';
-    mockRegisterReferralPoints.mockResolvedValue({
+    mockRecordReferralPointEvent.mockResolvedValue({
       success: false,
       error: errorMessage,
     });
@@ -84,8 +76,9 @@ describe('useRegisterReferral', () => {
   });
 
   it('should handle registration failure without error message', async () => {
-    mockRegisterReferralPoints.mockResolvedValue({
+    mockRecordReferralPointEvent.mockResolvedValue({
       success: false,
+      error: undefined,
     });
 
     const { result } = renderHook(() => useRegisterReferral());
@@ -101,7 +94,7 @@ describe('useRegisterReferral', () => {
 
   it('should handle exceptions during registration', async () => {
     const errorMessage = 'Network error';
-    mockRegisterReferralPoints.mockRejectedValue(new Error(errorMessage));
+    mockRecordReferralPointEvent.mockRejectedValue(new Error(errorMessage));
 
     const { result } = renderHook(() => useRegisterReferral());
 
@@ -115,7 +108,7 @@ describe('useRegisterReferral', () => {
   });
 
   it('should handle non-Error exceptions', async () => {
-    mockRegisterReferralPoints.mockRejectedValue('String error');
+    mockRecordReferralPointEvent.mockRejectedValue('String error');
 
     const { result } = renderHook(() => useRegisterReferral());
 
@@ -133,7 +126,7 @@ describe('useRegisterReferral', () => {
     const promise = new Promise(resolve => {
       resolvePromise = resolve;
     });
-    mockRegisterReferralPoints.mockReturnValue(promise as any);
+    mockRecordReferralPointEvent.mockReturnValue(promise as any);
 
     const { result } = renderHook(() => useRegisterReferral());
 
@@ -156,7 +149,7 @@ describe('useRegisterReferral', () => {
   });
 
   it('should clear error on new registration attempt', async () => {
-    mockRegisterReferralPoints
+    mockRecordReferralPointEvent
       .mockResolvedValueOnce({ success: false, error: 'First error' })
       .mockResolvedValueOnce({ success: true });
 

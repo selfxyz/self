@@ -5,7 +5,7 @@
 import { ethers } from 'ethers';
 import { useCallback, useState } from 'react';
 
-import { getPointsAddress, registerReferralPoints } from '@/utils/points';
+import { recordReferralPointEvent } from '@/utils/points';
 
 export const useRegisterReferral = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,13 +24,14 @@ export const useRegisterReferral = () => {
         return { success: false, error: errorMessage };
       }
 
-      const referee = await getPointsAddress();
-      const result = await registerReferralPoints({ referee, referrer });
+      // recordReferralPointEvent handles both API registration and local event recording
+      const result = await recordReferralPointEvent(referrer);
       if (result.success) {
         return { success: true };
       }
-      setError(result.error || 'Failed to register referral');
-      return { success: false, error: result.error };
+      const errorMessage = result.error || 'Failed to register referral';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'An unexpected error occurred';

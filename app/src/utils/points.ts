@@ -307,6 +307,34 @@ export const recordNotificationPointEvent = async (): Promise<{
   }
 };
 
+export const recordReferralPointEvent = async (
+  referrer: string,
+): Promise<{
+  success: boolean;
+  error?: string;
+}> => {
+  try {
+    const { usePointEventStore } = await import('@/stores/pointEventStore');
+    const referee = await getPointsAddress();
+
+    const response = await registerReferralPoints({ referee, referrer });
+
+    if (response.success && response.status === 200) {
+      await usePointEventStore
+        .getState()
+        .addEvent('Friend referred', 'refer', POINT_VALUES.referee);
+      return { success: true };
+    }
+    return { success: false, error: response.error };
+  } catch (error) {
+    console.error('Error recording referral point event:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred. Please try again.',
+    };
+  }
+};
+
 export const registerBackupPoints = async (
   userAddress: string,
 ): Promise<{ success: boolean; status: number; error?: string }> => {
