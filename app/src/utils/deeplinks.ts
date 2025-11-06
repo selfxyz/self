@@ -167,10 +167,13 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
       );
     }
   } else if (referrer && typeof referrer === 'string') {
-    // Navigate to GratificationScreen for referrer deeplinks
-    navigationRef.reset(
-      createDeeplinkNavigationState('Gratification', correctParentScreen),
-    );
+    useUserStore.getState().setDeepLinkReferrer(referrer);
+
+    // Navigate to HomeScreen for referrer deeplinks, the screen will handle the rest
+    navigationRef.reset({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
   } else if (Platform.OS === 'web') {
     // TODO: web handle links if we need to idk if we do
     // For web, we can handle the URL some other way if we dont do this loading app in web always navigates to QRCodeTrouble
