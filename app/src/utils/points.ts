@@ -28,7 +28,8 @@ export const POINT_VALUES = {
   disclosure: 10,
   notification: 20,
   backup: 100,
-  refer: 150,
+  referrer: 80,
+  referee: 24,
 } as const;
 
 export const formatTimeUntilDate = (targetDate: Date): string => {
@@ -386,6 +387,61 @@ export const registerNotificationPoints = async (
     return { success: false, status: response.status, error: errorMessage };
   } catch (error) {
     console.error('Error registering notification points:', error);
+    return {
+      success: false,
+      status: 500,
+      error: 'Network error. Please check your connection and try again.',
+    };
+  }
+};
+
+/**
+ * Registers a referral relationship between referee and referrer.
+ *
+ * Calls POST /referrals/refer endpoint.
+ *
+ * @param referee - The address of the user being referred
+ * @param referrer - The address of the user referring
+ * @returns Promise resolving to operation status and error message if any
+ */
+export const registerReferralPoints = async (
+  referee: string,
+  referrer: string,
+): Promise<{ success: boolean; status: number; error?: string }> => {
+  try {
+    const response = await fetch(`${POINTS_API_BASE_URL}/referrals/refer`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        referee: referee.toLowerCase(),
+        referrer: referrer.toLowerCase(),
+      }),
+    });
+
+    if (response.status === 200) {
+      // Expecting "ok" response on success
+      return { success: true, status: 200 };
+    }
+
+    // Capture error details for known error scenarios
+    let errorMessage =
+      'Failed to register referral relationship. Please try again.';
+    try {
+      const data = await response.json();
+      // Map some common errors, improve this as backend error responses are updated
+      // For now, backend returns "message" or similar on error
+      if (data && typeof data.message === 'string') {
+        errorMessage = data.message;
+      }
+    } catch (jsonParseError) {
+      // If parsing fails, just keep the generic error
+    }
+
+    return { success: false, status: response.status, error: errorMessage };
+  } catch (error) {
+    console.error('Error registering referral points:', error);
     return {
       success: false,
       status: 500,

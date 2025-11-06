@@ -12,9 +12,11 @@ interface UserState {
   deepLinkNationality?: IdDocInput['nationality'];
   deepLinkBirthDate?: string;
   deepLinkGender?: string;
+  deepLinkReferrer?: string;
   idDetailsDocumentId?: string;
   update: (patch: Partial<UserState>) => void;
   setIdDetailsDocumentId: (documentId: string) => void;
+  setDeepLinkReferrer: (referrer: string) => void;
   setDeepLinkUserDetails: (details: {
     name?: string;
     surname?: string;
@@ -23,6 +25,7 @@ interface UserState {
     gender?: string;
   }) => void;
   clearDeepLinkUserDetails: () => void;
+  clearDeepLinkReferrer: () => void;
 }
 
 const useUserStore = create<UserState>((set, _get) => ({
@@ -32,6 +35,7 @@ const useUserStore = create<UserState>((set, _get) => ({
   deepLinkBirthDate: undefined,
   deepLinkGender: undefined,
   idDetailsDocumentId: undefined,
+  deepLinkReferrer: undefined,
 
   update: patch => {
     set(state => ({ ...state, ...patch }));
@@ -57,6 +61,11 @@ const useUserStore = create<UserState>((set, _get) => ({
       deepLinkBirthDate: undefined,
       deepLinkGender: undefined,
     }),
+
+  setDeepLinkReferrer: (referrer: string) =>
+    set({ deepLinkReferrer: referrer }),
+
+  clearDeepLinkReferrer: () => set({ deepLinkReferrer: undefined }),
 }));
 
 export default useUserStore;
