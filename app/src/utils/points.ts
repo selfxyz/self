@@ -6,6 +6,8 @@ import { v4 } from 'uuid';
 
 import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
 
+import { getOrGeneratePointsAddress } from '@/providers/authProvider';
+
 const POINTS_API_BASE_URL =
   'https://points-backend-1025466915061.us-central1.run.app';
 
@@ -181,7 +183,7 @@ export const getTotalPoints = async (address: string): Promise<number> => {
 };
 
 export const getUserAddress = async (): Promise<string> => {
-  return '0x0000000000000000000000000000000000000000';
+  return getOrGeneratePointsAddress();
 };
 
 export const getWhiteListedDisclosureAddresses = async (): Promise<
