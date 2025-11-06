@@ -164,10 +164,10 @@ const HomeScreen: React.FC = () => {
         });
       } else {
         if (!skipReferralFlow && hasReferrer && isReferralConfirmed === true) {
-          const response = await registerReferralPoints(
+          const response = await registerReferralPoints({
             referrer,
-            await getUserAddress(),
-          );
+            referee: await getUserAddress(),
+          });
 
           if (response.success) {
             useUserStore.getState().clearDeepLinkReferrer();
