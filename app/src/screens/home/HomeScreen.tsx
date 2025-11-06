@@ -107,43 +107,18 @@ const HomeScreen: React.FC = () => {
     }, 100);
   }, [selfClient, navigation]);
 
-  const onEarnPointsPress = useCallback(async (skipReferralFlow = true) => {
-    const hasUserAnIdentityDocumentRegistered_result =
-      await hasUserAnIdentityDocumentRegistered();
-    if (!hasUserAnIdentityDocumentRegistered_result) {
-      // Show modal prompting user to register an identity document first
-      const callbackId = registerModalCallbacks({
-        onButtonPress: () => {
-          // Use setTimeout to ensure modal dismisses before navigating
-          setTimeout(() => {
-            navigation.navigate('DocumentOnboarding');
-          }, 100);
-        },
-        onModalDismiss: () => {
-          if (hasReferrer) {
-            setIsReferralConfirmed(false);
-            useUserStore.getState().clearDeepLinkReferrer();
-          }
-
-          // No need to navigate, user is already on Home
-        },
-      });
-
-      navigation.navigate('Modal', {
-        titleText: 'Identity Verification Required',
-        bodyText:
-          'To access Self Points, you need to register an identity document with Self first. This helps us verify your identity and keep your points secure.',
-        buttonText: 'Verify Identity',
-        secondaryButtonText: 'Not Now',
-        callbackId,
-      });
-    } else {
-      const hasUserDoneThePointsDisclosure_result =
-        await hasUserDoneThePointsDisclosure();
-      if (!hasUserDoneThePointsDisclosure_result) {
+  const onEarnPointsPress = useCallback(
+    async (skipReferralFlow = true) => {
+      const hasUserAnIdentityDocumentRegistered_result =
+        await hasUserAnIdentityDocumentRegistered();
+      if (!hasUserAnIdentityDocumentRegistered_result) {
+        // Show modal prompting user to register an identity document first
         const callbackId = registerModalCallbacks({
           onButtonPress: () => {
-            navigateToPointsProof();
+            // Use setTimeout to ensure modal dismisses before navigating
+            setTimeout(() => {
+              navigation.navigate('DocumentOnboarding');
+            }, 100);
           },
           onModalDismiss: () => {
             if (hasReferrer) {
@@ -154,56 +129,95 @@ const HomeScreen: React.FC = () => {
             // No need to navigate, user is already on Home
           },
         });
+
         navigation.navigate('Modal', {
-          titleText: 'Points Disclosure Required',
+          titleText: 'Identity Verification Required',
           bodyText:
-            'To access Self Points, you need to complete the points disclosure first. This helps us verify your identity and keep your points secure.',
-          buttonText: 'Complete Points Disclosure',
+            'To access Self Points, you need to register an identity document with Self first. This helps us verify your identity and keep your points secure.',
+          buttonText: 'Verify Identity',
           secondaryButtonText: 'Not Now',
           callbackId,
         });
       } else {
-        if (!skipReferralFlow && hasReferrer && isReferralConfirmed === true) {
-          const response = await registerReferralPoints({
-            referrer,
-            referee: await getUserAddress(),
-          });
+        const hasUserDoneThePointsDisclosure_result =
+          await hasUserDoneThePointsDisclosure();
+        if (!hasUserDoneThePointsDisclosure_result) {
+          const callbackId = registerModalCallbacks({
+            onButtonPress: () => {
+              navigateToPointsProof();
+            },
+            onModalDismiss: () => {
+              if (hasReferrer) {
+                setIsReferralConfirmed(false);
+                useUserStore.getState().clearDeepLinkReferrer();
+              }
 
-          if (response.success) {
-            useUserStore.getState().clearDeepLinkReferrer();
-            setIsReferralConfirmed(undefined);
-            navigation.navigate('Gratification', {
-              points: POINT_VALUES.referee,
-            } as any);
-          } else {
-            if (__DEV__) {
-              console.error(
-                'Error registering referral points:',
-                response.error,
-              );
-            }
-            const callbackId = registerModalCallbacks({
-              onButtonPress: () => {
-                onEarnPointsPress(false);
-              },
-              onModalDismiss: () => {},
-            });
-            navigation.navigate('Modal', {
-              titleText: 'Error',
-              bodyText: 'Error registering referral points. Please try again.',
-              buttonText: 'Retry',
-              callbackId,
-            });
-          }
+              // No need to navigate, user is already on Home
+            },
+          });
+          navigation.navigate('Modal', {
+            titleText: 'Points Disclosure Required',
+            bodyText:
+              'To access Self Points, you need to complete the points disclosure first. This helps us verify your identity and keep your points secure.',
+            buttonText: 'Complete Points Disclosure',
+            secondaryButtonText: 'Not Now',
+            callbackId,
+          });
         } else {
-          // Just go to points upon pressing "Earn Points" button
-          if (!hasReferrer) {
-            navigation.navigate('Points');
+          if (
+            !skipReferralFlow &&
+            hasReferrer &&
+            isReferralConfirmed === true
+          ) {
+            const response = await registerReferralPoints({
+              referrer,
+              referee: await getUserAddress(),
+            });
+
+            if (response.success) {
+              useUserStore.getState().clearDeepLinkReferrer();
+              setIsReferralConfirmed(undefined);
+              navigation.navigate('Gratification', {
+                points: POINT_VALUES.referee,
+              } as any);
+            } else {
+              if (__DEV__) {
+                console.error(
+                  'Error registering referral points:',
+                  response.error,
+                );
+              }
+              const callbackId = registerModalCallbacks({
+                onButtonPress: () => {
+                  onEarnPointsPress(false);
+                },
+                onModalDismiss: () => {},
+              });
+              navigation.navigate('Modal', {
+                titleText: 'Error',
+                bodyText:
+                  'Error registering referral points. Please try again.',
+                buttonText: 'Retry',
+                callbackId,
+              });
+            }
+          } else {
+            // Just go to points upon pressing "Earn Points" button
+            if (!hasReferrer) {
+              navigation.navigate('Points');
+            }
           }
         }
       }
-    }
-  }, [navigation, navigateToPointsProof, hasReferrer, isReferralConfirmed, referrer]);
+    },
+    [
+      navigation,
+      navigateToPointsProof,
+      hasReferrer,
+      isReferralConfirmed,
+      referrer,
+    ],
+  );
 
   useEffect(() => {
     // This should trigger the flow when user comes back from any of the onboarding screens
