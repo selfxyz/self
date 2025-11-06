@@ -68,11 +68,45 @@ template ExtractAndVerifyJSONField(
     signal colon_after_key <== ItemAtIndex(maxJSONLength)(json, key_offset + key_length + 1);
     colon_after_key === 58;  // ASCII code for ':'
 
-    // Verify value comes after colon (prevents pointing to colon itself)
-    component offset_check = GreaterThan(log2Ceil(maxJSONLength));
-    offset_check.in[0] <== value_offset;
-    offset_check.in[1] <== key_offset + key_length + 1;  // Must be after colon position
-    offset_check.out === 1;
+    // Validate JSON array structure: "key":["value"] or "key": ["value"]
+    signal colon_position <== key_offset + key_length + 1;
+
+    // Check character at colon+1: must be '[' (91) or space (32)
+    signal char_after_colon <== ItemAtIndex(maxJSONLength)(json, colon_position + 1);
+
+    // is_bracket: 1 if char is '[', 0 otherwise
+    component is_bracket = IsEqual();
+    is_bracket.in[0] <== char_after_colon;
+    is_bracket.in[1] <== 91;  // '['
+
+    // is_space: 1 if char is space, 0 otherwise
+    component is_space = IsEqual();
+    is_space.in[0] <== char_after_colon;
+    is_space.in[1] <== 32;  // ' '
+
+    // Exactly one must be true: char is either '[' or space
+    is_bracket.out + is_space.out === 1;
+
+    // If bracket at colon+1: check quote at colon+2, value at colon+3
+    // If space at colon+1: check bracket at colon+2, quote at colon+3, value at colon+4
+
+    // When is_bracket=1 (no space): expect quote at colon+2
+    signal char_at_plus2 <== ItemAtIndex(maxJSONLength)(json, colon_position + 2);
+    // When is_space=1: expect bracket at colon+2
+    // Constraint: if is_bracket=1, char_at_plus2 must be quote(34)
+    //             if is_space=1, char_at_plus2 must be bracket(91)
+    is_bracket.out * (char_at_plus2 - 34) === 0;  // If bracket at +1, quote at +2
+    is_space.out * (char_at_plus2 - 91) === 0;    // If space at +1, bracket at +2
+
+    // When is_space=1: check quote at colon+3
+    signal char_at_plus3 <== ItemAtIndex(maxJSONLength)(json, colon_position + 3);
+    is_space.out * (char_at_plus3 - 34) === 0;    // If space at +1, quote at +3
+
+    // Enforce value_offset based on pattern
+    // Pattern 1 (no space): :[" -> value at colon+3
+    // Pattern 2 (space): : [" -> value at colon+4
+    signal expected_value_offset <== colon_position + 3 + is_space.out;
+    value_offset === expected_value_offset;
 
     // Extract value from JSON and output directly
     extracted_value <== SelectSubArray(
