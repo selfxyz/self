@@ -404,10 +404,13 @@ export const registerNotificationPoints = async (
  * @param referrer - The address of the user referring
  * @returns Promise resolving to operation status and error message if any
  */
-export const registerReferralPoints = async (
-  referee: string,
-  referrer: string,
-): Promise<{ success: boolean; status: number; error?: string }> => {
+export const registerReferralPoints = async ({
+  referee,
+  referrer,
+}: {
+  referee: string;
+  referrer: string;
+}): Promise<{ success: boolean; status: number; error?: string }> => {
   try {
     const response = await fetch(`${POINTS_API_BASE_URL}/referrals/refer`, {
       method: 'POST',
