@@ -25,7 +25,10 @@ export const useReferralRegistration = () => {
   useEffect(() => {
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
       if (referrer) {
-        console.log('[useReferralRegistration] Referrer found in params:', referrer);
+        console.log(
+          '[useReferralRegistration] Referrer found in params:',
+          referrer,
+        );
       } else {
         console.log('[useReferralRegistration] No referrer in route params');
       }
@@ -40,7 +43,10 @@ export const useReferralRegistration = () => {
     // Check if this referrer has already been registered
     if (store.isReferrerRegistered(referrer)) {
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
-        console.log('[useReferralRegistration] Referrer already registered:', referrer);
+        console.log(
+          '[useReferralRegistration] Referrer already registered:',
+          referrer,
+        );
       }
       return;
     }
@@ -55,11 +61,17 @@ export const useReferralRegistration = () => {
       if (result.success) {
         store.markReferrerAsRegistered(referrer);
         if (typeof __DEV__ !== 'undefined' && __DEV__) {
-          console.log('[useReferralRegistration] Successfully registered referrer:', referrer);
+          console.log(
+            '[useReferralRegistration] Successfully registered referrer:',
+            referrer,
+          );
         }
       } else {
         if (typeof __DEV__ !== 'undefined' && __DEV__) {
-          console.error('[useReferralRegistration] Failed to register referrer:', result.error);
+          console.error(
+            '[useReferralRegistration] Failed to register referrer:',
+            result.error,
+          );
         }
       }
     };

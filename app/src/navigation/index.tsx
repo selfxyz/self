@@ -143,7 +143,6 @@ export type RootStackParamList = Omit<
   Modal: ModalNavigationParams;
   Gratification: {
     points?: number;
-    referrer?: string;
   };
 
   // Dev screens

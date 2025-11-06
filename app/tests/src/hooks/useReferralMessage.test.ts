@@ -118,9 +118,7 @@ describe('useReferralMessage', () => {
       const mockAddress = '0x1234567890123456789012345678901234567890';
       mockGetOrGeneratePointsAddress.mockImplementation(
         () =>
-          new Promise(resolve =>
-            setTimeout(() => resolve(mockAddress), 200),
-          ),
+          new Promise(resolve => setTimeout(() => resolve(mockAddress), 200)),
       );
 
       const { result } = renderHook(() => useReferralMessage());
@@ -167,7 +165,9 @@ describe('useReferralMessage', () => {
       expect(result.current.message).toBe(
         `Join Self and use my referral link:\n\n${expectedLink}`,
       );
-      expect(result.current.message).toContain('Join Self and use my referral link:');
+      expect(result.current.message).toContain(
+        'Join Self and use my referral link:',
+      );
       expect(result.current.message).toContain(expectedLink);
     });
 
@@ -196,9 +196,7 @@ describe('useReferralMessage', () => {
       const mockAddress = '0x1234567890123456789012345678901234567890';
       mockGetOrGeneratePointsAddress.mockImplementation(
         () =>
-          new Promise(resolve =>
-            setTimeout(() => resolve(mockAddress), 100),
-          ),
+          new Promise(resolve => setTimeout(() => resolve(mockAddress), 100)),
       );
 
       const { result } = renderHook(() => useReferralMessage());

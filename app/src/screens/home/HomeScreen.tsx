@@ -21,6 +21,7 @@ import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import IdCardLayout from '@/components/homeScreen/idCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
+import { useRegisterReferral } from '@/hooks/useRegisterReferral';
 import LogoInversed from '@/images/logo_inversed.svg';
 import UnverifiedHumanImage from '@/images/unverified_human.png';
 import type { RootStackParamList } from '@/navigation';
@@ -31,12 +32,10 @@ import { extraYPadding } from '@/utils/constants';
 import { dinot } from '@/utils/fonts';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import {
-  getUserAddress,
   hasUserAnIdentityDocumentRegistered,
   hasUserDoneThePointsDisclosure,
   POINT_VALUES,
   pointsSelfApp,
-  registerReferralPoints,
 } from '@/utils/points';
 
 const HomeScreen: React.FC = () => {
@@ -66,6 +65,7 @@ const HomeScreen: React.FC = () => {
   const [isReferralConfirmed, setIsReferralConfirmed] = useState<
     boolean | undefined
   >(undefined);
+  const { registerReferral } = useRegisterReferral();
 
   const loadDocuments = useCallback(async () => {
     setLoading(true);
@@ -169,38 +169,33 @@ const HomeScreen: React.FC = () => {
             hasReferrer &&
             isReferralConfirmed === true
           ) {
-            const response = await registerReferralPoints({
-              referrer,
-              referee: await getUserAddress(),
-            });
-
-            if (response.success) {
-              useUserStore.getState().clearDeepLinkReferrer();
-              setIsReferralConfirmed(undefined);
-              navigation.navigate('Gratification', {
-                points: POINT_VALUES.referee,
-              } as any);
-            } else {
-              if (__DEV__) {
-                console.error(
-                  'Error registering referral points:',
-                  response.error,
-                );
+            // Register referral before navigating to GratificationScreen
+            if (referrer) {
+              const store = useUserStore.getState();
+              // Check if already registered to avoid duplicate calls
+              if (!store.isReferrerRegistered(referrer)) {
+                const result = await registerReferral(referrer);
+                if (result.success) {
+                  store.markReferrerAsRegistered(referrer);
+                } else {
+                  if (__DEV__) {
+                    console.error(
+                      'Error registering referral points:',
+                      result.error,
+                    );
+                  }
+                  // Still navigate to GratificationScreen even if registration fails
+                  // The backend will handle duplicate prevention
+                }
               }
-              const callbackId = registerModalCallbacks({
-                onButtonPress: () => {
-                  onEarnPointsPress(false);
-                },
-                onModalDismiss: () => {},
-              });
-              navigation.navigate('Modal', {
-                titleText: 'Error',
-                bodyText:
-                  'Error registering referral points. Please try again.',
-                buttonText: 'Retry',
-                callbackId,
-              });
             }
+
+            // Navigate to GratificationScreen (referral-agnostic)
+            useUserStore.getState().clearDeepLinkReferrer();
+            setIsReferralConfirmed(undefined);
+            navigation.navigate('Gratification', {
+              points: POINT_VALUES.referee,
+            } as any);
           } else {
             // Just go to points upon pressing "Earn Points" button
             if (!hasReferrer) {
@@ -216,6 +211,7 @@ const HomeScreen: React.FC = () => {
       hasReferrer,
       isReferralConfirmed,
       referrer,
+      registerReferral,
     ],
   );
 

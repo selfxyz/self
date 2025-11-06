@@ -7,14 +7,11 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { render, waitFor } from '@testing-library/react-native';
 
 import GratificationScreen from '@/screens/app/GratificationScreen';
-import { useReferralRegistration } from '@/hooks/useReferralRegistration';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
   useRoute: jest.fn(),
 }));
-
-jest.mock('@/hooks/useReferralRegistration');
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   DelayedLottieView: ({ onAnimationFinish }: any) => {
@@ -41,9 +38,6 @@ const mockUseNavigation = useNavigation as jest.MockedFunction<
   typeof useNavigation
 >;
 const mockUseRoute = useRoute as jest.MockedFunction<typeof useRoute>;
-const mockUseReferralRegistration = useReferralRegistration as jest.MockedFunction<
-  typeof useReferralRegistration
->;
 
 describe('GratificationScreen', () => {
   const mockNavigate = jest.fn();
@@ -60,15 +54,6 @@ describe('GratificationScreen', () => {
     mockUseRoute.mockReturnValue({
       params: {},
     } as any);
-
-    // Mock the hook to do nothing by default
-    mockUseReferralRegistration.mockImplementation(() => {});
-  });
-
-  it('should call useReferralRegistration hook', () => {
-    render(<GratificationScreen />);
-
-    expect(mockUseReferralRegistration).toHaveBeenCalled();
   });
 
   it('should use default points value when not provided', () => {
@@ -91,15 +76,6 @@ describe('GratificationScreen', () => {
     expect(getByText('50')).toBeTruthy();
   });
 
-  it('should use points value when both points and referrer are provided', () => {
-    mockUseRoute.mockReturnValue({
-      params: { points: 24, referrer: '0x1234567890123456789012345678901234567890' },
-    } as any);
-
-    const { getByText } = render(<GratificationScreen />);
-
-    expect(getByText('24')).toBeTruthy();
-  });
 
   it('should display referral points value (24) when passed', () => {
     mockUseRoute.mockReturnValue({

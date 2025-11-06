@@ -16,9 +16,8 @@ jest.mock('@/utils/points', () => ({
 const mockGetPointsAddress = getPointsAddress as jest.MockedFunction<
   typeof getPointsAddress
 >;
-const mockRegisterReferralPoints = registerReferralPoints as jest.MockedFunction<
-  typeof registerReferralPoints
->;
+const mockRegisterReferralPoints =
+  registerReferralPoints as jest.MockedFunction<typeof registerReferralPoints>;
 
 describe('useRegisterReferral', () => {
   const validReferrer = '0x1234567890123456789012345678901234567890';

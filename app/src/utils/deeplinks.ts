@@ -11,7 +11,6 @@ import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { navigationRef } from '@/navigation';
 import useUserStore from '@/stores/userStore';
-import { POINT_VALUES } from '@/utils/points';
 
 // Validation patterns for each expected parameter
 const VALIDATION_PATTERNS = {
@@ -172,25 +171,15 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
 
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
       console.log(
-        '[deeplinks] Navigating to GratificationScreen with referrer:',
+        '[deeplinks] Setting referrer and navigating to HomeScreen for confirmation:',
         referrer,
       );
     }
 
-    // Navigate to GratificationScreen with referrer parameter
-    // The screen will handle the referral registration on mount
+    // Navigate to HomeScreen - it will show confirmation modal and then navigate to GratificationScreen
     navigationRef.reset({
-      index: 1,
-      routes: [
-        { name: correctParentScreen as never },
-        {
-          name: 'Gratification' as never,
-          params: {
-            points: POINT_VALUES.referee, // 24 points for referral deeplink
-            referrer,
-          },
-        },
-      ],
+      index: 0,
+      routes: [{ name: 'Home' }],
     });
   } else if (Platform.OS === 'web') {
     // TODO: web handle links if we need to idk if we do
