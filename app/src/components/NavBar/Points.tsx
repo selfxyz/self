@@ -37,8 +37,8 @@ import {
 import {
   formatTimeUntilDate,
   getIncomingPoints,
+  getPointsAddress,
   getTotalPoints,
-  getUserAddress,
   type IncomingPoints,
   recordBackupPointEvent,
   recordNotificationPointEvent,
@@ -87,7 +87,7 @@ const Points: React.FC = () => {
 
   useEffect(() => {
     const fetchPoints = async () => {
-      const address = await getUserAddress();
+      const address = await getPointsAddress();
       const points = await getTotalPoints(address);
       setSelfPoints(points);
     };
@@ -217,7 +217,7 @@ const Points: React.FC = () => {
       if (response.success) {
         setBackupForPointsCompleted();
 
-        const address = await getUserAddress();
+        const address = await getPointsAddress();
         const points = await getTotalPoints(address);
         setSelfPoints(points);
 

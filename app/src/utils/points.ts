@@ -84,7 +84,7 @@ export const getDisclosurePointEvents = async (): Promise<PointEvent[]> => {
 
 export const getIncomingPoints = async (): Promise<IncomingPoints | null> => {
   try {
-    const userAddress = await getUserAddress();
+    const userAddress = await getPointsAddress();
     const nextSundayDate = getNextSundayNoonUTC();
 
     const response = await fetch(
@@ -139,6 +139,10 @@ export const getNextSundayNoonUTC = (): Date => {
   return nextSunday;
 };
 
+export const getPointsAddress = async (): Promise<string> => {
+  return getOrGeneratePointsAddress();
+};
+
 export const getPushNotificationPointEvents = async (): Promise<
   PointEvent[]
 > => {
@@ -182,10 +186,6 @@ export const getTotalPoints = async (address: string): Promise<number> => {
   }
 };
 
-export const getUserAddress = async (): Promise<string> => {
-  return getOrGeneratePointsAddress();
-};
-
 export const getWhiteListedDisclosureAddresses = async (): Promise<
   string[]
 > => {
@@ -212,7 +212,7 @@ export const hasUserAnIdentityDocumentRegistered =
 
 export const hasUserDoneThePointsDisclosure = async (): Promise<boolean> => {
   try {
-    const userAddress = await getUserAddress();
+    const userAddress = await getPointsAddress();
     const response = await fetch(
       `${POINTS_API_BASE_URL}/has-disclosed/${userAddress.toLowerCase()}`,
     );
@@ -230,7 +230,7 @@ export const hasUserDoneThePointsDisclosure = async (): Promise<boolean> => {
 };
 
 export const pointsSelfApp = async () => {
-  const userAddress = (await getUserAddress())?.toLowerCase();
+  const userAddress = (await getPointsAddress())?.toLowerCase();
   const endpoint = '0x25604DB4E556ad5C3f6e888eCe84EcBb8af28560';
   const builder = new SelfAppBuilder({
     appName: '✨ Self Points',
@@ -256,7 +256,7 @@ export const recordBackupPointEvent = async (): Promise<{
 }> => {
   try {
     const { usePointEventStore } = await import('@/stores/pointEventStore');
-    const userAddress = await getUserAddress();
+    const userAddress = await getPointsAddress();
 
     const response = await registerBackupPoints(userAddress);
 
@@ -282,7 +282,7 @@ export const recordNotificationPointEvent = async (): Promise<{
 }> => {
   try {
     const { usePointEventStore } = await import('@/stores/pointEventStore');
-    const userAddress = await getUserAddress();
+    const userAddress = await getPointsAddress();
 
     const response = await registerNotificationPoints(userAddress);
 
