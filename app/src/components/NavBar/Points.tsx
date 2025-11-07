@@ -11,6 +11,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { PointHistoryList } from '@/components/PointHistoryList';
+import { useIncomingPoints, usePoints } from '@/hooks/usePoints';
 import BellWhiteIcon from '@/images/icons/bell_white.svg';
 import ClockIcon from '@/images/icons/clock.svg';
 import LockWhiteIcon from '@/images/icons/lock_white.svg';
@@ -36,24 +37,17 @@ import {
 } from '@/utils/notifications/notificationService';
 import {
   formatTimeUntilDate,
-  getIncomingPoints,
-  getPointsAddress,
-  getTotalPoints,
-  type IncomingPoints,
   recordBackupPointEvent,
   recordNotificationPointEvent,
 } from '@/utils/points';
 
 const Points: React.FC = () => {
-  const [selfPoints, setSelfPoints] = useState(0);
   const { bottom } = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isNovaSubscribed, setIsNovaSubscribed] = useState(false);
   const [isEnabling, setIsEnabling] = useState(false);
-  const [incomingPoints, setIncomingPoints] = useState<IncomingPoints | null>(
-    null,
-  );
+  const incomingPoints = useIncomingPoints();
   const loadEvents = usePointEventStore(state => state.loadEvents);
   const { hasCompletedBackupForPoints, setBackupForPointsCompleted } =
     useSettingStore();
@@ -129,14 +123,7 @@ const Points: React.FC = () => {
     loadEvents();
   }, [loadEvents]);
 
-  useEffect(() => {
-    const fetchPoints = async () => {
-      const address = await getPointsAddress();
-      const points = await getTotalPoints(address);
-      setSelfPoints(points);
-    };
-    fetchPoints();
-  }, []);
+  const points = usePoints();
 
   useEffect(() => {
     const checkSubscription = async () => {
@@ -144,14 +131,6 @@ const Points: React.FC = () => {
       setIsNovaSubscribed(subscribed);
     };
     checkSubscription();
-  }, []);
-
-  useEffect(() => {
-    const fetchIncomingPoints = async () => {
-      const incoming = await getIncomingPoints();
-      setIncomingPoints(incoming);
-    };
-    fetchIncomingPoints();
   }, []);
 
   const handleContentLayout = () => {
@@ -259,6 +238,7 @@ const Points: React.FC = () => {
     if (cloudBackupEnabled) {
       setIsBackingUp(true);
       try {
+        // this will add event to store and the new event will then trigger useIncomingPoints hook to refetch incoming points
         const response = await recordBackupPointEvent();
 
         if (response.success) {
@@ -344,22 +324,14 @@ const Points: React.FC = () => {
             <XStack gap={4} alignItems="center">
               <Text
                 color={black}
+                textAlign="center"
                 fontFamily="DIN OT"
                 fontWeight="500"
                 fontSize={32}
                 lineHeight={32}
                 letterSpacing={-1}
               >
-                {`${selfPoints} Self `}
-              </Text>
-              <Text
-                fontFamily="DIN OT"
-                fontWeight="500"
-                fontSize={32}
-                lineHeight={32}
-                letterSpacing={-1}
-              >
-                points
+                {`${points} Self points`}
               </Text>
             </XStack>
             <Text
