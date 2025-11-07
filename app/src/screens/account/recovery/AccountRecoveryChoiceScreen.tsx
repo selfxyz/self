@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AuthState, useTurnkey } from '@turnkey/react-native-wallet-kit';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -41,6 +42,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   const { restoreAccountFromMnemonic } = useAuth();
   const { turnkeyWallets, refreshWallets } = useTurnkeyUtils();
   const { getMnemonic } = useTurnkeyUtils();
+  const { authState } = useTurnkey();
   const [restoring, setRestoring] = useState(false);
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
@@ -196,7 +198,10 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromTurnkeyPress}
               disabled={
-                restoring || !biometricsAvailable || turnkeyWallets.length === 0
+                restoring ||
+                !biometricsAvailable ||
+                (authState === AuthState.Authenticated &&
+                  turnkeyWallets.length === 0)
               }
             >
               {restoring ? 'Restoring' : 'Restore'} from Turnkey
