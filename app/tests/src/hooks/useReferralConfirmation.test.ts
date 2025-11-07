@@ -5,11 +5,10 @@
 import { useNavigation } from '@react-navigation/native';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
+import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
 import type { RootStackParamList } from '@/navigation';
 import useUserStore from '@/stores/userStore';
 import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
-
-import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
@@ -548,4 +547,3 @@ describe('useReferralConfirmation', () => {
     });
   });
 });
-
