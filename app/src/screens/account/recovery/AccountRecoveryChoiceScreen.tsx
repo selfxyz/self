@@ -8,7 +8,10 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  markCurrentDocumentAsRegistered,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   Caption,
   Description,
@@ -98,6 +101,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         toggleCloudBackupEnabled();
       }
       reStorePassportDataWithRightCSCA(passportData, csca as string);
+      await markCurrentDocumentAsRegistered(selfClient);
       trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS);
       trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
       onRestoreFromCloudNext();
@@ -117,6 +121,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
     navigation,
     toggleCloudBackupEnabled,
     useProtocolStore,
+    selfClient,
   ]);
 
   const handleManualRecoveryPress = useCallback(() => {

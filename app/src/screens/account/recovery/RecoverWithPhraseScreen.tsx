@@ -11,7 +11,10 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  markCurrentDocumentAsRegistered,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   Description,
   SecondaryButton,
@@ -100,12 +103,14 @@ const RecoverWithPhraseScreen: React.FC = () => {
     }
 
     setRestoring(false);
+    await markCurrentDocumentAsRegistered(selfClient);
     trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
     navigation.navigate('AccountVerifiedSuccess');
   }, [
     mnemonic,
     navigation,
     restoreAccountFromMnemonic,
+    selfClient,
     trackEvent,
     useProtocolStore,
   ]);
