@@ -55,9 +55,6 @@ export const usePoints = () => {
       }
     };
     fetchPoints();
-    return () => {
-      setTruePoints(prev => ({ ...prev, isRefetching: false }));
-    };
     // refresh when points update time changes as its the only time points can change
   }, [nextPointsUpdate]);
 

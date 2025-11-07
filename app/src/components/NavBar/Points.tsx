@@ -272,22 +272,14 @@ const Points: React.FC = () => {
             <XStack gap={4} alignItems="center">
               <Text
                 color={black}
+                textAlign="center"
                 fontFamily="DIN OT"
                 fontWeight="500"
                 fontSize={32}
                 lineHeight={32}
                 letterSpacing={-1}
               >
-                {`${points} Self `}
-              </Text>
-              <Text
-                fontFamily="DIN OT"
-                fontWeight="500"
-                fontSize={32}
-                lineHeight={32}
-                letterSpacing={-1}
-              >
-                points
+                {`${points} Self points`}
               </Text>
             </XStack>
             <Text
