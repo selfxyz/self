@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Text, View, XStack, YStack } from 'tamagui';
@@ -21,7 +21,8 @@ import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import IdCardLayout from '@/components/homeScreen/idCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
-import { useRegisterReferral } from '@/hooks/useRegisterReferral';
+import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
+import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
 import LogoInversed from '@/images/logo_inversed.svg';
 import UnverifiedHumanImage from '@/images/unverified_human.png';
 import type { RootStackParamList } from '@/navigation';
@@ -30,13 +31,6 @@ import useUserStore from '@/stores/userStore';
 import { black, slate50, slate300 } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { dinot } from '@/utils/fonts';
-import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
-import {
-  hasUserAnIdentityDocumentRegistered,
-  hasUserDoneThePointsDisclosure,
-  POINT_VALUES,
-  pointsSelfApp,
-} from '@/utils/points';
 
 const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -61,11 +55,6 @@ const HomeScreen: React.FC = () => {
   // Calculate card dimensions exactly like IdCardLayout does
   const { width: screenWidth } = Dimensions.get('window');
   const cardWidth = screenWidth * 0.95 - 16; // 95% of screen width minus horizontal padding
-
-  const [isReferralConfirmed, setIsReferralConfirmed] = useState<
-    boolean | undefined
-  >(undefined);
-  const { registerReferral } = useRegisterReferral();
 
   const loadDocuments = useCallback(async () => {
     setLoading(true);
@@ -97,153 +86,39 @@ const HomeScreen: React.FC = () => {
   usePreventRemove(true, () => {});
   const { bottom } = useSafeAreaInsets();
 
-  const navigateToPointsProof = useCallback(async () => {
-    const selfApp = await pointsSelfApp();
-    selfClient.getSelfAppState().setSelfApp(selfApp);
+  // Create a stable reference to avoid hook dependency issues
+  const onEarnPointsPressRef = useRef<
+    ((skipReferralFlow?: boolean) => Promise<void>) | null
+  >(null);
 
-    // Use setTimeout to ensure modal dismisses before navigating
-    setTimeout(() => {
-      navigation.navigate('Prove');
-    }, 100);
-  }, [selfClient, navigation]);
-
-  const onEarnPointsPress = useCallback(
-    async (skipReferralFlow = true) => {
-      const hasUserAnIdentityDocumentRegistered_result =
-        await hasUserAnIdentityDocumentRegistered();
-      if (!hasUserAnIdentityDocumentRegistered_result) {
-        // Show modal prompting user to register an identity document first
-        const callbackId = registerModalCallbacks({
-          onButtonPress: () => {
-            // Use setTimeout to ensure modal dismisses before navigating
-            setTimeout(() => {
-              navigation.navigate('DocumentOnboarding');
-            }, 100);
-          },
-          onModalDismiss: () => {
-            if (hasReferrer) {
-              setIsReferralConfirmed(false);
-              useUserStore.getState().clearDeepLinkReferrer();
-            }
-
-            // No need to navigate, user is already on Home
-          },
-        });
-
-        navigation.navigate('Modal', {
-          titleText: 'Identity Verification Required',
-          bodyText:
-            'To access Self Points, you need to register an identity document with Self first. This helps us verify your identity and keep your points secure.',
-          buttonText: 'Verify Identity',
-          secondaryButtonText: 'Not Now',
-          callbackId,
-        });
-      } else {
-        const hasUserDoneThePointsDisclosure_result =
-          await hasUserDoneThePointsDisclosure();
-        if (!hasUserDoneThePointsDisclosure_result) {
-          const callbackId = registerModalCallbacks({
-            onButtonPress: () => {
-              navigateToPointsProof();
-            },
-            onModalDismiss: () => {
-              if (hasReferrer) {
-                setIsReferralConfirmed(false);
-                useUserStore.getState().clearDeepLinkReferrer();
-              }
-
-              // No need to navigate, user is already on Home
-            },
-          });
-          navigation.navigate('Modal', {
-            titleText: 'Points Disclosure Required',
-            bodyText:
-              'To access Self Points, you need to complete the points disclosure first. This helps us verify your identity and keep your points secure.',
-            buttonText: 'Complete Points Disclosure',
-            secondaryButtonText: 'Not Now',
-            callbackId,
-          });
-        } else {
-          if (
-            !skipReferralFlow &&
-            hasReferrer &&
-            isReferralConfirmed === true
-          ) {
-            // Register referral before navigating to GratificationScreen
-            if (referrer) {
-              const store = useUserStore.getState();
-              // Check if already registered to avoid duplicate calls
-              if (!store.isReferrerRegistered(referrer)) {
-                const result = await registerReferral(referrer);
-                if (result.success) {
-                  store.markReferrerAsRegistered(referrer);
-                } else {
-                  if (__DEV__) {
-                    console.error(
-                      'Error registering referral points:',
-                      result.error,
-                    );
-                  }
-                  // Still navigate to GratificationScreen even if registration fails
-                  // The backend will handle duplicate prevention
-                }
-              }
-            }
-
-            // Navigate to GratificationScreen (referral-agnostic)
-            useUserStore.getState().clearDeepLinkReferrer();
-            setIsReferralConfirmed(undefined);
-            navigation.navigate('Gratification', {
-              points: POINT_VALUES.referee,
-            });
-          } else {
-            // Just go to points upon pressing "Earn Points" button
-            if (!hasReferrer) {
-              navigation.navigate('Points');
-            }
-          }
-        }
-      }
+  const { isReferralConfirmed } = useReferralConfirmation({
+    hasReferrer,
+    onConfirmed: () => {
+      onEarnPointsPressRef.current?.(false);
     },
-    [
-      navigation,
-      navigateToPointsProof,
-      hasReferrer,
-      isReferralConfirmed,
-      referrer,
-      registerReferral,
-    ],
-  );
+  });
 
+  const { onEarnPointsPress } = useEarnPointsFlow({
+    hasReferrer,
+    isReferralConfirmed,
+  });
+
+  // Update the ref whenever onEarnPointsPress changes
   useEffect(() => {
-    // This should trigger the flow when user comes back from any of the onboarding screens
-    if (isReferralConfirmed === true && hasReferrer) {
-      onEarnPointsPress(false);
+    onEarnPointsPressRef.current = onEarnPointsPress;
+  }, [onEarnPointsPress]);
 
-      return;
-    }
-
-    if (hasReferrer && isReferralConfirmed === undefined) {
-      const callbackId = registerModalCallbacks({
-        onButtonPress: () => {
-          setIsReferralConfirmed(true);
-        },
-        onModalDismiss: () => {
-          setIsReferralConfirmed(false);
-          useUserStore.getState().clearDeepLinkReferrer();
-        },
+  const handleDocumentPress = useCallback(
+    (metadata: DocumentMetadata, documentData: IDDocument) => {
+      selfClient.trackEvent(DocumentEvents.DOCUMENT_SELECTED, {
+        document_type: documentData.documentType,
+        document_category: documentData.documentCategory,
       });
-
-      navigation.navigate('Modal', {
-        titleText: 'Referral Confirmation',
-        bodyText:
-          'Seems like you opened the app from a referral link. Please confirm to continue.',
-        buttonText: 'Confirm',
-        secondaryButtonText: 'Dismiss',
-        callbackId,
-      });
-    }
-  }, [hasReferrer, isReferralConfirmed, navigation, onEarnPointsPress]);
+      setIdDetailsDocumentId(metadata.id);
+      navigation.navigate('IdDetails');
+    },
+    [selfClient, setIdDetailsDocumentId, navigation],
+  );
 
   if (loading) {
     return (
@@ -311,14 +186,7 @@ const HomeScreen: React.FC = () => {
             return (
               <Pressable
                 key={metadata.id}
-                onPress={() => {
-                  selfClient.trackEvent(DocumentEvents.DOCUMENT_SELECTED, {
-                    document_type: documentData.data.documentType,
-                    document_category: documentData.data.documentCategory,
-                  });
-                  setIdDetailsDocumentId(metadata.id);
-                  navigation.navigate('IdDetails');
-                }}
+                onPress={() => handleDocumentPress(metadata, documentData.data)}
               >
                 <IdCardLayout
                   idDocument={documentData.data}

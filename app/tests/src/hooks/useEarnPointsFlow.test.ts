@@ -1,0 +1,618 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
+import { useNavigation } from '@react-navigation/native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
+
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+
+import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
+import { useRegisterReferral } from '@/hooks/useRegisterReferral';
+import type { RootStackParamList } from '@/navigation';
+import useUserStore from '@/stores/userStore';
+import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
+import {
+  hasUserAnIdentityDocumentRegistered,
+  hasUserDoneThePointsDisclosure,
+  POINT_VALUES,
+  pointsSelfApp,
+} from '@/utils/points';
+
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: jest.fn(),
+}));
+
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  useSelfClient: jest.fn(),
+}));
+
+jest.mock('@/hooks/useRegisterReferral', () => ({
+  useRegisterReferral: jest.fn(),
+}));
+
+jest.mock('@/utils/points', () => ({
+  hasUserAnIdentityDocumentRegistered: jest.fn(),
+  hasUserDoneThePointsDisclosure: jest.fn(),
+  pointsSelfApp: jest.fn(),
+  POINT_VALUES: {
+    referee: 24,
+  },
+}));
+
+jest.mock('@/stores/userStore', () => {
+  const actual = jest.requireActual('@/stores/userStore');
+  return {
+    __esModule: true,
+    default: actual.default,
+  };
+});
+
+const mockNavigate = jest.fn();
+const mockUseNavigation = useNavigation as jest.MockedFunction<
+  typeof useNavigation
+>;
+const mockUseSelfClient = useSelfClient as jest.MockedFunction<
+  typeof useSelfClient
+>;
+const mockUseRegisterReferral = useRegisterReferral as jest.MockedFunction<
+  typeof useRegisterReferral
+>;
+const mockHasUserAnIdentityDocumentRegistered =
+  hasUserAnIdentityDocumentRegistered as jest.MockedFunction<
+    typeof hasUserAnIdentityDocumentRegistered
+  >;
+const mockHasUserDoneThePointsDisclosure =
+  hasUserDoneThePointsDisclosure as jest.MockedFunction<
+    typeof hasUserDoneThePointsDisclosure
+  >;
+const mockPointsSelfApp = pointsSelfApp as jest.MockedFunction<
+  typeof pointsSelfApp
+>;
+
+describe('useEarnPointsFlow', () => {
+  const mockSetSelfApp = jest.fn();
+  const mockSelfClient = {
+    getSelfAppState: jest.fn(() => ({
+      setSelfApp: mockSetSelfApp,
+    })),
+  };
+  const mockRegisterReferral = jest.fn();
+  const mockSelfApp = {
+    appName: '✨ Self Points',
+    endpoint: '0x25604DB4E556ad5C3f6e888eCe84EcBb8af28560',
+    sessionId: 'test-session-id',
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockSetSelfApp.mockClear();
+    jest.useFakeTimers();
+
+    mockUseNavigation.mockReturnValue({
+      navigate: mockNavigate,
+    } as any);
+
+    mockUseSelfClient.mockReturnValue(mockSelfClient as any);
+
+    mockUseRegisterReferral.mockReturnValue({
+      registerReferral: mockRegisterReferral,
+      isLoading: false,
+      error: null,
+    });
+
+    // Reset user store state
+    useUserStore.getState().clearDeepLinkReferrer();
+    useUserStore.getState().registeredReferrers.clear();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  describe('Identity verification flow', () => {
+    it('should show identity verification modal when user has no identity document', async () => {
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(false);
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: false,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      expect(mockHasUserAnIdentityDocumentRegistered).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('Modal', {
+        titleText: 'Identity Verification Required',
+        bodyText:
+          'To access Self Points, you need to register an identity document with Self first. This helps us verify your identity and keep your points secure.',
+        buttonText: 'Verify Identity',
+        secondaryButtonText: 'Not Now',
+        callbackId: expect.any(Number),
+      });
+    });
+
+    it('should navigate to DocumentOnboarding when identity verification modal button is pressed', async () => {
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(false);
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: false,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      const callbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const callbacks = getModalCallbacks(callbackId);
+
+      expect(callbacks).toBeDefined();
+
+      act(() => {
+        callbacks!.onButtonPress();
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith('DocumentOnboarding');
+    });
+
+    it('should clear referrer when identity verification modal is dismissed with referrer', async () => {
+      const referrer = '0x1234567890123456789012345678901234567890';
+      useUserStore.getState().setDeepLinkReferrer(referrer);
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(false);
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: true,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      const callbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const callbacks = getModalCallbacks(callbackId);
+
+      act(() => {
+        callbacks!.onModalDismiss();
+      });
+
+      expect(useUserStore.getState().deepLinkReferrer).toBeUndefined();
+    });
+  });
+
+  describe('Points disclosure flow', () => {
+    it('should show points disclosure modal when user has not done disclosure', async () => {
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
+      mockHasUserDoneThePointsDisclosure.mockResolvedValue(false);
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: false,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      expect(mockHasUserAnIdentityDocumentRegistered).toHaveBeenCalled();
+      expect(mockHasUserDoneThePointsDisclosure).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('Modal', {
+        titleText: 'Points Disclosure Required',
+        bodyText:
+          'To access Self Points, you need to complete the points disclosure first. This helps us verify your identity and keep your points secure.',
+        buttonText: 'Complete Points Disclosure',
+        secondaryButtonText: 'Not Now',
+        callbackId: expect.any(Number),
+      });
+    });
+
+    it('should navigate to Prove screen when points disclosure modal button is pressed', async () => {
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
+      mockHasUserDoneThePointsDisclosure.mockResolvedValue(false);
+      mockPointsSelfApp.mockResolvedValue(mockSelfApp as any);
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: false,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      const callbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const callbacks = getModalCallbacks(callbackId);
+
+      expect(callbacks).toBeDefined();
+
+      await act(async () => {
+        await callbacks!.onButtonPress();
+      });
+
+      expect(mockPointsSelfApp).toHaveBeenCalled();
+
+      // setSelfApp is called synchronously after pointsSelfApp resolves
+      expect(mockSetSelfApp).toHaveBeenCalledWith(mockSelfApp);
+
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith('Prove');
+    });
+
+    it('should clear referrer when points disclosure modal is dismissed with referrer', async () => {
+      const referrer = '0x1234567890123456789012345678901234567890';
+      useUserStore.getState().setDeepLinkReferrer(referrer);
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
+      mockHasUserDoneThePointsDisclosure.mockResolvedValue(false);
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: true,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      const callbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const callbacks = getModalCallbacks(callbackId);
+
+      act(() => {
+        callbacks!.onModalDismiss();
+      });
+
+      expect(useUserStore.getState().deepLinkReferrer).toBeUndefined();
+    });
+  });
+
+  describe('Direct navigation flow', () => {
+    it('should navigate to Points screen when user has completed all checks and no referrer', async () => {
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
+      mockHasUserDoneThePointsDisclosure.mockResolvedValue(true);
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: false,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith('Points');
+    });
+
+    it('should not navigate when user has completed all checks, has referrer, but skipReferralFlow is true', async () => {
+      const referrer = '0x1234567890123456789012345678901234567890';
+      useUserStore.getState().setDeepLinkReferrer(referrer);
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
+      mockHasUserDoneThePointsDisclosure.mockResolvedValue(true);
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: true,
+          isReferralConfirmed: true,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress(true);
+      });
+
+      // Should not navigate to Points or Gratification
+      expect(mockNavigate).not.toHaveBeenCalledWith('Points');
+      expect(mockNavigate).not.toHaveBeenCalledWith('Gratification');
+    });
+  });
+
+  describe('Referral flow', () => {
+    const referrer = '0x1234567890123456789012345678901234567890';
+
+    beforeEach(() => {
+      useUserStore.getState().setDeepLinkReferrer(referrer);
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
+      mockHasUserDoneThePointsDisclosure.mockResolvedValue(true);
+    });
+
+    it('should handle referral flow when referrer is confirmed and not skipped', async () => {
+      mockRegisterReferral.mockResolvedValue({ success: true });
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: true,
+          isReferralConfirmed: true,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress(false);
+      });
+
+      expect(mockRegisterReferral).toHaveBeenCalledWith(referrer);
+      expect(useUserStore.getState().isReferrerRegistered(referrer)).toBe(true);
+      expect(useUserStore.getState().deepLinkReferrer).toBeUndefined();
+      expect(mockNavigate).toHaveBeenCalledWith('Gratification', {
+        points: POINT_VALUES.referee,
+      });
+    });
+
+    it('should not register referral if already registered', async () => {
+      useUserStore.getState().markReferrerAsRegistered(referrer);
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: true,
+          isReferralConfirmed: true,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress(false);
+      });
+
+      expect(mockRegisterReferral).not.toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('Gratification', {
+        points: POINT_VALUES.referee,
+      });
+    });
+
+    it('should navigate to Gratification even if referral registration fails', async () => {
+      mockRegisterReferral.mockResolvedValue({
+        success: false,
+        error: 'Registration failed',
+      });
+
+      const originalConsoleError = console.error;
+      console.error = jest.fn();
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: true,
+          isReferralConfirmed: true,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress(false);
+      });
+
+      expect(mockRegisterReferral).toHaveBeenCalledWith(referrer);
+      expect(mockNavigate).toHaveBeenCalledWith('Gratification', {
+        points: POINT_VALUES.referee,
+      });
+      expect(useUserStore.getState().deepLinkReferrer).toBeUndefined();
+
+      console.error = originalConsoleError;
+    });
+
+    it('should not handle referral flow when isReferralConfirmed is false', async () => {
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: true,
+          isReferralConfirmed: false,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress(false);
+      });
+
+      expect(mockRegisterReferral).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalledWith('Gratification');
+    });
+
+    it('should not handle referral flow when isReferralConfirmed is undefined', async () => {
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: true,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress(false);
+      });
+
+      expect(mockRegisterReferral).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalledWith('Gratification');
+    });
+
+    it('should not handle referral flow when hasReferrer is false', async () => {
+      useUserStore.getState().clearDeepLinkReferrer();
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: false,
+          isReferralConfirmed: true,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress(false);
+      });
+
+      expect(mockRegisterReferral).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalledWith('Gratification');
+    });
+
+    it('should handle referral flow when referrer is not in store but hasReferrer is true', async () => {
+      useUserStore.getState().clearDeepLinkReferrer();
+      mockRegisterReferral.mockResolvedValue({ success: true });
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: true,
+          isReferralConfirmed: true,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress(false);
+      });
+
+      // Should not call registerReferral if referrer is not in store
+      expect(mockRegisterReferral).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalledWith('Gratification');
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('should handle errors in hasUserAnIdentityDocumentRegistered gracefully', async () => {
+      // Mock to return false on error (as the actual function catches errors and returns false)
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(false);
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: false,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      // The function catches errors and returns false, so it should show identity verification modal
+      expect(mockNavigate).toHaveBeenCalledWith(
+        'Modal',
+        expect.objectContaining({
+          titleText: 'Identity Verification Required',
+          callbackId: expect.any(Number),
+        }),
+      );
+    });
+
+    it('should handle errors in hasUserDoneThePointsDisclosure gracefully', async () => {
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
+      // Mock to return false on error (as the actual function catches errors and returns false)
+      mockHasUserDoneThePointsDisclosure.mockResolvedValue(false);
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: false,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      // The function catches errors and returns false, so it should show points disclosure modal
+      expect(mockNavigate).toHaveBeenCalledWith(
+        'Modal',
+        expect.objectContaining({
+          titleText: 'Points Disclosure Required',
+          callbackId: expect.any(Number),
+        }),
+      );
+    });
+
+    it('should handle errors in pointsSelfApp gracefully', async () => {
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
+      mockHasUserDoneThePointsDisclosure.mockResolvedValue(false);
+
+      // Mock pointsSelfApp to throw an error
+      const originalError = console.error;
+      console.error = jest.fn();
+
+      mockPointsSelfApp.mockImplementation(async () => {
+        throw new Error('Failed to create app');
+      });
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: false,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      const callbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const callbacks = getModalCallbacks(callbackId);
+
+      // The error will be thrown when onButtonPress is called
+      // Since the implementation doesn't catch the error, it will propagate
+      await expect(
+        act(async () => {
+          await callbacks!.onButtonPress();
+        }),
+      ).rejects.toThrow('Failed to create app');
+
+      // Verify pointsSelfApp was called
+      expect(mockPointsSelfApp).toHaveBeenCalled();
+      
+      // setSelfApp should not be called if pointsSelfApp fails
+      expect(mockSetSelfApp).not.toHaveBeenCalled();
+      
+      console.error = originalError;
+    });
+  });
+
+  describe('Callback dependencies', () => {
+    it('should update callbacks when dependencies change', async () => {
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
+      mockHasUserDoneThePointsDisclosure.mockResolvedValue(true);
+
+      const referrer = '0x1234567890123456789012345678901234567890';
+      useUserStore.getState().setDeepLinkReferrer(referrer);
+      mockRegisterReferral.mockResolvedValue({ success: true });
+
+      const { result, rerender } = renderHook(
+        ({ hasReferrer, isReferralConfirmed }) =>
+          useEarnPointsFlow({ hasReferrer, isReferralConfirmed }),
+        {
+          initialProps: {
+            hasReferrer: false,
+            isReferralConfirmed: undefined,
+          },
+        },
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith('Points');
+
+      mockNavigate.mockClear();
+
+      rerender({
+        hasReferrer: true,
+        isReferralConfirmed: true,
+      });
+
+      await act(async () => {
+        await result.current.onEarnPointsPress(false);
+      });
+
+      expect(mockRegisterReferral).toHaveBeenCalledWith(referrer);
+    });
+  });
+});
