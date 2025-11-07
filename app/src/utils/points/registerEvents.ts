@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { makeApiRequest } from '@/utils/points/api';
+import { IS_DEV_MODE } from '@/utils/devUtils';
+import { makeApiRequest, POINTS_API_BASE_URL } from '@/utils/points/api';
 
 /**
  * Registers backup action with the points API.
@@ -81,6 +82,21 @@ export const registerReferralPoints = async ({
   referee: string;
   referrer: string;
 }): Promise<{ success: boolean; status: number; error?: string }> => {
+  // In __DEV__ mode, log the request instead of sending it
+  if (IS_DEV_MODE) {
+    const requestBody = {
+      referee: referee.toLowerCase(),
+      referrer: referrer.toLowerCase(),
+    };
+    console.log('[DEV MODE] Would have sent referral registration request:', {
+      url: `${POINTS_API_BASE_URL}/referrals/refer`,
+      method: 'POST',
+      body: requestBody,
+    });
+    // Simulate a successful response for testing
+    return { success: true, status: 200 };
+  }
+
   try {
     const response = await makeApiRequest('/referrals/refer', {
       referee: referee.toLowerCase(),
