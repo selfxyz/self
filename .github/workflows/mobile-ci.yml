@@ -76,7 +76,7 @@ jobs:
         with:
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Build dependencies (cache miss)
-      # Temporarily disabled due to `yarn types` failures when cache is used.
+        # Temporarily disabled due to `yarn types` failures when cache is used.
         # if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Cache miss for built dependencies. Building now..."

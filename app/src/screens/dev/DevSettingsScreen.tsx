@@ -37,6 +37,7 @@ import {
   white,
   yellow500,
 } from '@/utils/colors';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 import { dinot } from '@/utils/fonts';
 import {
   isNotificationSystemReady,
@@ -626,6 +627,31 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                 <ChevronRight color={slate500} strokeWidth={2.5} />
               </XStack>
             </Button>
+            {IS_DEV_MODE && (
+              <Button
+                style={{ backgroundColor: 'white' }}
+                borderColor={slate200}
+                borderRadius="$2"
+                height="$5"
+                padding={0}
+                onPress={() => {
+                  navigation.navigate('Home', { testReferralFlow: true });
+                }}
+              >
+                <XStack
+                  width="100%"
+                  justifyContent="space-between"
+                  paddingVertical="$3"
+                  paddingLeft="$4"
+                  paddingRight="$1.5"
+                >
+                  <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+                    Test Referral Flow
+                  </Text>
+                  <ChevronRight color={slate500} strokeWidth={2.5} />
+                </XStack>
+              </Button>
+            )}
             <ScreenSelector />
           </YStack>
         </ParameterSection>

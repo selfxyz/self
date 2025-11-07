@@ -58,22 +58,30 @@ type BaseRootStackParamList = StaticParamList<typeof AppNavigation>;
 // Explicitly declare route params that are not inferred from initialParams
 export type RootStackParamList = Omit<
   BaseRootStackParamList,
-  | 'ComingSoon'
-  | 'IDPicker'
   | 'AadhaarUpload'
   | 'AadhaarUploadError'
-  | 'WebView'
+  | 'AadhaarUploadSuccess'
   | 'AccountRecovery'
-  | 'SaveRecoveryPhrase'
+  | 'AccountVerifiedSuccess'
   | 'CloudBackupSettings'
+  | 'ComingSoon'
   | 'ConfirmBelonging'
-  | 'ProofHistoryDetail'
+  | 'CreateMock'
+  | 'Disclaimer'
+  | 'DocumentNFCScan'
+  | 'DocumentOnboarding'
+  | 'Gratification'
+  | 'Home'
+  | 'IDPicker'
+  | 'IdDetails'
   | 'Loading'
   | 'Modal'
-  | 'CreateMock'
   | 'MockDataDeepLink'
-  | 'DocumentNFCScan'
-  | 'AadhaarUploadSuccess'
+  | 'Points'
+  | 'ProofHistoryDetail'
+  | 'Prove'
+  | 'SaveRecoveryPhrase'
+  | 'WebView'
 > & {
   // Shared screens
   ComingSoon: {
@@ -102,6 +110,7 @@ export type RootStackParamList = Omit<
       }
     | undefined;
   DocumentCameraTrouble: undefined;
+  DocumentOnboarding: undefined;
 
   // Aadhaar screens
   AadhaarUpload: {
@@ -128,11 +137,13 @@ export type RootStackParamList = Omit<
         nextScreen?: string;
       }
     | undefined;
+  AccountVerifiedSuccess: undefined;
 
   // Proof/Verification screens
   ProofHistoryDetail: {
     data: ProofHistory;
   };
+  Prove: undefined;
 
   // App screens
   Loading: {
@@ -141,6 +152,19 @@ export type RootStackParamList = Omit<
     curveOrExponent?: string;
   };
   Modal: ModalNavigationParams;
+  Gratification: {
+    points?: number;
+  };
+
+  // Home screens
+  Home: {
+    testReferralFlow?: boolean;
+  };
+  Points: undefined;
+  IdDetails: undefined;
+
+  // Onboarding screens
+  Disclaimer: undefined;
 
   // Dev screens
   CreateMock: undefined;

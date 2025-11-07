@@ -29,6 +29,7 @@ import {
   handleUrl,
   setDeeplinkParentScreen,
 } from '@/utils/deeplinks';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 import { impactLight } from '@/utils/haptic';
 
 const SplashScreen: React.FC = ({}) => {
@@ -85,7 +86,7 @@ const SplashScreen: React.FC = ({}) => {
 
           const queuedUrl = getAndClearQueuedUrl();
           if (queuedUrl) {
-            if (typeof __DEV__ !== 'undefined' && __DEV__) {
+            if (IS_DEV_MODE) {
               console.log('Processing queued deeplink:', queuedUrl);
             }
             setQueuedDeepLink(queuedUrl);

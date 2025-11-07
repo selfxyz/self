@@ -11,6 +11,7 @@ import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { navigationRef } from '@/navigation';
 import useUserStore from '@/stores/userStore';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 
 // Validation patterns for each expected parameter
 const VALIDATION_PATTERNS = {
@@ -63,7 +64,7 @@ const validateAndSanitizeParam = (
   try {
     decodedValue = decodeURIComponent(value);
   } catch (error) {
-    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+    if (IS_DEV_MODE) {
       console.error(`Error decoding parameter ${key}:`, error);
     }
     return undefined;
@@ -74,7 +75,7 @@ const validateAndSanitizeParam = (
     const pattern =
       VALIDATION_PATTERNS[key as keyof typeof VALIDATION_PATTERNS];
     if (!pattern.test(decodedValue)) {
-      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      if (IS_DEV_MODE) {
         console.error(`Parameter ${key} failed validation:`, decodedValue);
       }
       return undefined;
@@ -128,7 +129,7 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
 
       return;
     } catch (error) {
-      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      if (IS_DEV_MODE) {
         console.error('Error parsing selfApp:', error);
       }
       navigationRef.reset(
@@ -171,7 +172,7 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
         createDeeplinkNavigationState('MockDataDeepLink', correctParentScreen),
       );
     } catch (error) {
-      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      if (IS_DEV_MODE) {
         console.error('Error parsing mock_passport data or navigating:', error);
       }
       navigationRef.reset(
@@ -181,7 +182,14 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
   } else if (referrer && typeof referrer === 'string') {
     useUserStore.getState().setDeepLinkReferrer(referrer);
 
-    // Navigate to HomeScreen for referrer deeplinks, the screen will handle the rest
+    if (IS_DEV_MODE) {
+      console.log(
+        '[deeplinks] Setting referrer and navigating to HomeScreen for confirmation:',
+        referrer,
+      );
+    }
+
+    // Navigate to HomeScreen - it will show confirmation modal and then navigate to GratificationScreen
     navigationRef.reset({
       index: 0,
       routes: [{ name: 'Home' }],
@@ -198,9 +206,9 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
     }
     return;
   } else {
-    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+    if (IS_DEV_MODE) {
       console.error(
-        'No sessionId, selfApp, or valid OAuth parameters found in the deeplink',
+        'No sessionId, selfApp or valid OAuth parameters found in the data',
       );
     }
     navigationRef.reset(
@@ -244,7 +252,7 @@ export const parseAndValidateUrlParams = (uri: string): ValidatedParams => {
       if (sanitizedValue !== undefined) {
         validatedParams[key as keyof ValidatedParams] = sanitizedValue;
       }
-    } else if (typeof __DEV__ !== 'undefined' && __DEV__) {
+    } else if (IS_DEV_MODE) {
       // Log unexpected parameters in development
       console.warn(`Unexpected or invalid parameter ignored: ${key}`);
     }

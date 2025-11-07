@@ -112,6 +112,27 @@ describe('deeplinks', () => {
       });
     });
 
+    it('handles referrer parameter and navigates to HomeScreen for confirmation', () => {
+      const referrer = '0x1234567890123456789012345678901234567890';
+      const url = `scheme://open?referrer=${referrer}`;
+
+      const mockSetDeepLinkReferrer = jest.fn();
+      mockUserStore.default.getState.mockReturnValue({
+        setDeepLinkReferrer: mockSetDeepLinkReferrer,
+      });
+
+      handleUrl({} as SelfClient, url);
+
+      expect(mockSetDeepLinkReferrer).toHaveBeenCalledWith(referrer);
+
+      const { navigationRef } = require('@/navigation');
+      // Should navigate to HomeScreen, which will show confirmation modal
+      expect(navigationRef.reset).toHaveBeenCalledWith({
+        index: 0,
+        routes: [{ name: 'Home' }],
+      });
+    });
+
     it('navigates to QRCodeTrouble for invalid data', () => {
       const consoleErrorSpy = jest
         .spyOn(console, 'error')

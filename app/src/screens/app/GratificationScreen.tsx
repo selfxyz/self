@@ -3,7 +3,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text as RNText } from 'react-native';
+import {
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  Text as RNText,
+} from 'react-native';
+import { SystemBars } from 'react-native-edge-to-edge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, YStack } from 'tamagui';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -13,6 +19,7 @@ import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import youWinAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/youWin.json';
 import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 
+import GratificationBg from '@/images/gratification_bg.svg';
 import ArrowLeft from '@/images/icons/arrow_left.svg';
 import LogoWhite from '@/images/icons/logo_white.svg';
 import type { RootStackParamList } from '@/navigation';
@@ -25,16 +32,17 @@ const GratificationScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute();
   const params = route.params as { points?: number } | undefined;
-  const pointsEarned = params?.points ?? 100;
+  const pointsEarned = params?.points ?? 0;
   const [isAnimationFinished, setIsAnimationFinished] = useState(false);
+  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
   const handleExploreRewards = () => {
     // Navigate to Points screen
-    navigation.navigate('Points');
+    navigation.navigate('Points' as never);
   };
 
   const handleInviteFriend = () => {
-    navigation.navigate('Referral');
+    navigation.navigate('Referral' as never);
   };
 
   const handleBackPress = () => {
@@ -70,6 +78,46 @@ const GratificationScreen: React.FC = () => {
 
   return (
     <YStack flex={1} backgroundColor={black}>
+      <SystemBars style="light" />
+      {/* Full screen background */}
+      <View
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        zIndex={0}
+        alignItems="center"
+        justifyContent="center"
+      >
+        <GratificationBg
+          width={screenWidth * 1.1}
+          height={screenHeight * 1.1}
+        />
+      </View>
+
+      {/* Black overlay for top safe area (status bar) */}
+      <View
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        height={top}
+        backgroundColor={black}
+        zIndex={1}
+      />
+
+      {/* Black overlay for bottom safe area */}
+      <View
+        position="absolute"
+        bottom={0}
+        left={0}
+        right={0}
+        height={bottom}
+        backgroundColor={black}
+        zIndex={1}
+      />
+
       {/* Back button */}
       <View position="absolute" top={top + 20} left={20} zIndex={10}>
         <Pressable onPress={handleBackPress}>
@@ -92,11 +140,11 @@ const GratificationScreen: React.FC = () => {
         paddingTop={top + 54}
         paddingBottom={bottom + 50}
         paddingHorizontal={20}
+        zIndex={2}
       >
         {/* Dialogue container */}
         <YStack
           flex={1}
-          backgroundColor={black}
           borderRadius={14}
           borderTopLeftRadius={14}
           borderTopRightRadius={14}
@@ -157,8 +205,6 @@ const GratificationScreen: React.FC = () => {
           paddingBottom={20}
           paddingHorizontal={20}
           gap={12}
-          borderTopWidth={1}
-          borderTopColor={black}
         >
           <PrimaryButton
             onPress={handleExploreRewards}

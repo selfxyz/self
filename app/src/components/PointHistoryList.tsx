@@ -33,7 +33,10 @@ type Section = {
 };
 
 export type PointHistoryListProps = {
-  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
+  ListHeaderComponent?:
+    | React.ComponentType<Record<string, unknown>>
+    | React.ReactElement
+    | null;
   onRefreshRef?: React.MutableRefObject<(() => Promise<void>) | null>;
   onLayout?: () => void;
 };
@@ -345,6 +348,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    paddingTop: 5,
   },
 });
 

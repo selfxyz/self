@@ -61,7 +61,11 @@ const appScreens = {
     screen: GratificationScreen,
     options: {
       headerShown: false,
+      contentStyle: { backgroundColor: '#000000' },
     } as NativeStackNavigationOptions,
+    params: {} as {
+      points?: number;
+    },
   },
 };
 
