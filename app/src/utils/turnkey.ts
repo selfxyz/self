@@ -81,12 +81,30 @@ export function useTurnkeyUtils() {
       ): Promise<void> => {
         await authenticateIfNeeded(authenticate);
         const fetchedWallets = await fetchWallets();
+
         if (fetchedWallets.length > 0) {
-          if (!backedUpWithTurnKey) {
-            setBackedUpWithTurnKey(true);
+          // Get the existing mnemonic to compare
+          const existingMnemonic = await exportWallet({
+            walletId: fetchedWallets[0].walletId,
+            decrypt: true,
+          });
+
+          // Compare mnemonics (normalize whitespace)
+          const normalizedExisting = existingMnemonic.trim().toLowerCase();
+          const normalizedProvided = mnemonic.trim().toLowerCase();
+
+          if (normalizedExisting === normalizedProvided) {
+            // Same wallet, already backed up
+            if (!backedUpWithTurnKey) {
+              setBackedUpWithTurnKey(true);
+            }
+            throw new Error('already_backed_up');
+          } else {
+            // Different wallet exists
+            throw new Error('already_exists');
           }
-          throw new Error('already_exists');
         }
+
         await importWallet({
           mnemonic,
           walletName: `Self-${new Date().toISOString()}`,

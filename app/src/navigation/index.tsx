@@ -134,7 +134,8 @@ export type RootStackParamList = Omit<
     | undefined;
   CloudBackupSettings:
     | {
-        nextScreen?: string;
+        nextScreen?: 'SaveRecoveryPhrase';
+        returnToScreen?: 'Points';
       }
     | undefined;
   AccountVerifiedSuccess: undefined;

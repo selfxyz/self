@@ -32,6 +32,7 @@ type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
 type CloudBackupScreenProps = StaticScreenProps<
   | {
       nextScreen?: NextScreen;
+      returnToScreen?: 'Points';
     }
   | undefined
 >;
@@ -90,14 +91,21 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   );
 
   const { showModal: showAlreadySignedInModal } = useModal({
-    titleText: 'Already signed in with Turnkey',
+    titleText: 'Cannot use this email',
     bodyText:
-      'You have already signed in with this email address. Please sign out and try again with a different email address.',
+      'You cannot use this email. Please try again with a different email address.',
     buttonText: 'OK',
     onButtonPress: () => {},
     onModalDismiss: () => {},
   });
 
+  const { showModal: showAlreadyBackedUpModal } = useModal({
+    titleText: 'Already backed up with Turnkey',
+    bodyText: 'You have already backed up your account with Turnkey.',
+    buttonText: 'OK',
+    onButtonPress: () => {},
+    onModalDismiss: () => {},
+  });
   const handleICloudBackup = useCallback(async () => {
     buttonTap();
     setSelectedMethod('icloud');
@@ -119,7 +127,9 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
       toggleCloudBackupEnabled();
       trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE);
 
-      if (params?.nextScreen) {
+      if (params?.returnToScreen) {
+        navigation.navigate(params.returnToScreen);
+      } else if (params?.nextScreen) {
         navigation.navigate(params.nextScreen);
       } else {
         navigation.goBack();
@@ -167,10 +177,30 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
 
       await backupAccount(mnemonics.data.phrase);
       setTurnkeyPending(false);
+
+      if (params?.returnToScreen) {
+        navigation.navigate(params.returnToScreen);
+      } else if (params?.nextScreen) {
+        navigation.navigate(params.nextScreen);
+      } else {
+        navigation.goBack();
+      }
     } catch (error) {
       if (error instanceof Error && error.message === 'already_exists') {
         console.error('Already signed in with Turnkey');
         showAlreadySignedInModal();
+      } else if (
+        error instanceof Error &&
+        error.message === 'already_backed_up'
+      ) {
+        console.error('Already backed up with Turnkey');
+        if (params?.returnToScreen) {
+          navigation.navigate(params.returnToScreen);
+        } else if (params?.nextScreen) {
+          navigation.navigate(params.nextScreen);
+        } else {
+          showAlreadyBackedUpModal();
+        }
       } else {
         console.error('Turnkey backup error', error);
       }
@@ -181,6 +211,9 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     backupAccount,
     getOrCreateMnemonic,
     showAlreadySignedInModal,
+    showAlreadyBackedUpModal,
+    navigation,
+    params,
   ]);
 
   return (
