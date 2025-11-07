@@ -171,7 +171,11 @@ describe('deeplinks', () => {
         routes: [{ name: 'Home' }, { name: 'QRCodeTrouble' }],
       });
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'No sessionId, selfApp, or valid OAuth parameters found in the deeplink',
+        'Parameter sessionId failed validation:',
+        'abc<script>alert("xss")</script>',
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'No sessionId, selfApp or valid OAuth parameters found in the data',
       );
 
       consoleWarnSpy.mockRestore();
