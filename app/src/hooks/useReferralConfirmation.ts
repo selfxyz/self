@@ -21,14 +21,22 @@ export const useReferralConfirmation = ({
 }: UseReferralConfirmationParams) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const referrer = useUserStore(state => state.deepLinkReferrer);
+  const isReferrerRegistered = useUserStore(
+    state => state.isReferrerRegistered,
+  );
   const [isReferralConfirmed, setIsReferralConfirmed] = useState<
     boolean | undefined
   >(undefined);
 
   const showReferralConfirmationModal = useCallback(() => {
     const callbackId = registerModalCallbacks({
-      onButtonPress: () => {
+      onButtonPress: async () => {
         setIsReferralConfirmed(true);
+        // Use setTimeout to ensure modal dismisses before any navigation triggered by state change
+        setTimeout(() => {
+          navigation.goBack();
+        }, 100);
       },
       onModalDismiss: () => {
         setIsReferralConfirmed(false);
@@ -54,12 +62,20 @@ export const useReferralConfirmation = ({
       return;
     }
 
-    if (hasReferrer && isReferralConfirmed === undefined) {
+    // Only show modal if referrer exists, not yet confirmed, and hasn't been registered
+    if (
+      hasReferrer &&
+      referrer &&
+      isReferralConfirmed === undefined &&
+      !isReferrerRegistered(referrer)
+    ) {
       showReferralConfirmationModal();
     }
   }, [
     hasReferrer,
+    referrer,
     isReferralConfirmed,
+    isReferrerRegistered,
     showReferralConfirmationModal,
     onConfirmed,
   ]);
