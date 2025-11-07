@@ -59,6 +59,8 @@ secret:
   ignored_matches:
     - match: 2036b4e50ad3042969b290e354d9864465107a14de6f5a36d49f81ea8290def8
       name: prebuilt-ios-arm64-apple-ios.private.swiftinterface
+    - match: 19414827
+      name: NFCPassportReader-swiftinterface-false-positive
   ignored_paths:
     - ".gitleaks.toml"
     - "**/*.swiftinterface"
