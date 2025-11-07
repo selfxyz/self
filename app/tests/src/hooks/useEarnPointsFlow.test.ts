@@ -378,10 +378,10 @@ describe('useEarnPointsFlow', () => {
       });
     });
 
-    it('should navigate to Gratification even if referral registration fails', async () => {
+    it('should show error modal and preserve referrer if referral registration fails', async () => {
       mockRegisterReferral.mockResolvedValue({
         success: false,
-        error: 'Registration failed',
+        error: 'Network error occurred',
       });
 
       const originalConsoleError = console.error;
@@ -399,10 +399,127 @@ describe('useEarnPointsFlow', () => {
       });
 
       expect(mockRegisterReferral).toHaveBeenCalledWith(referrer);
+
+      // Should NOT navigate to Gratification on failure
+      expect(mockNavigate).not.toHaveBeenCalledWith('Gratification', {
+        points: POINT_VALUES.referee,
+      });
+
+      // Should show error modal instead
+      expect(mockNavigate).toHaveBeenCalledWith('Modal', {
+        titleText: 'Referral Registration Failed',
+        bodyText: expect.stringContaining('Network error occurred'),
+        buttonText: 'Try Again',
+        secondaryButtonText: 'Dismiss',
+        callbackId: expect.any(Number),
+      });
+
+      // Should preserve the referrer for retry
+      expect(useUserStore.getState().deepLinkReferrer).toBe(referrer);
+
+      // Should log the error
+      expect(console.error).toHaveBeenCalledWith(
+        'Referral registration failed:',
+        'Network error occurred',
+      );
+
+      console.error = originalConsoleError;
+    });
+
+    it('should retry referral registration when error modal retry button is pressed', async () => {
+      // First call fails, second call succeeds
+      mockRegisterReferral
+        .mockResolvedValueOnce({
+          success: false,
+          error: 'Network error',
+        })
+        .mockResolvedValueOnce({
+          success: true,
+        });
+
+      const originalConsoleError = console.error;
+      console.error = jest.fn();
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: true,
+          isReferralConfirmed: true,
+        }),
+      );
+
+      // First attempt - should fail
+      await act(async () => {
+        await result.current.onEarnPointsPress(false);
+      });
+
+      expect(mockRegisterReferral).toHaveBeenCalledTimes(1);
+      expect(mockNavigate).toHaveBeenCalledWith('Modal', {
+        titleText: 'Referral Registration Failed',
+        bodyText: expect.stringContaining('Network error'),
+        buttonText: 'Try Again',
+        secondaryButtonText: 'Dismiss',
+        callbackId: expect.any(Number),
+      });
+
+      // Referrer should still be in store
+      expect(useUserStore.getState().deepLinkReferrer).toBe(referrer);
+
+      // Get the callback from the error modal and trigger retry
+      const callbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const callbacks = getModalCallbacks(callbackId);
+
+      mockNavigate.mockClear();
+
+      // Retry - should succeed
+      await act(async () => {
+        await callbacks!.onButtonPress();
+      });
+
+      expect(mockRegisterReferral).toHaveBeenCalledTimes(2);
+      expect(mockRegisterReferral).toHaveBeenCalledWith(referrer);
+
+      // Should now navigate to Gratification
       expect(mockNavigate).toHaveBeenCalledWith('Gratification', {
         points: POINT_VALUES.referee,
       });
+
+      // Should mark referrer as registered and clear it
+      expect(useUserStore.getState().isReferrerRegistered(referrer)).toBe(true);
       expect(useUserStore.getState().deepLinkReferrer).toBeUndefined();
+
+      console.error = originalConsoleError;
+    });
+
+    it('should preserve referrer when error modal is dismissed', async () => {
+      mockRegisterReferral.mockResolvedValue({
+        success: false,
+        error: 'API error',
+      });
+
+      const originalConsoleError = console.error;
+      console.error = jest.fn();
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: true,
+          isReferralConfirmed: true,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress(false);
+      });
+
+      const callbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const callbacks = getModalCallbacks(callbackId);
+
+      // Dismiss the error modal
+      act(() => {
+        callbacks!.onModalDismiss();
+      });
+
+      // Referrer should still be preserved
+      expect(useUserStore.getState().deepLinkReferrer).toBe(referrer);
 
       console.error = originalConsoleError;
     });

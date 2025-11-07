@@ -38,9 +38,7 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
         const response = await fetch(
           `https://api.self.xyz/consume-deferred-linking-token?token=${content}`,
         );
-        console.log('Consume token response:', response);
         const result = await response.json();
-        console.log('Consume token result:', result);
         if (result.status !== 'success') {
           throw new Error(
             `Failed to consume token: ${result.message || 'Unknown error'}`,

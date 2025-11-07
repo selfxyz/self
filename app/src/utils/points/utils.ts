@@ -33,7 +33,6 @@ export const getIncomingPoints = async (): Promise<IncomingPoints | null> => {
     const response = await fetch(
       `${POINTS_API_BASE_URL}/points/${userAddress.toLowerCase()}`,
     );
-    console.log('response points api', response);
 
     if (!response.ok) {
       return null;
@@ -89,9 +88,7 @@ export const getPointsAddress = async (): Promise<string> => {
 export const getTotalPoints = async (address: string): Promise<number> => {
   try {
     const url = `${POINTS_API_BASE_URL}/distribution/${address.toLowerCase()}`;
-    console.log('url', url);
     const response = await fetch(url);
-    console.log('response', response);
 
     if (!response.ok) {
       return 0;

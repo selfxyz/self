@@ -101,6 +101,31 @@ export const useEarnPointsFlow = ({
       console.log('[DEV MODE] Starting referral flow for referrer:', referrer);
     }
 
+    const showReferralErrorModal = (errorMessage: string) => {
+      const callbackId = registerModalCallbacks({
+        onButtonPress: async () => {
+          // Retry the referral flow
+          await handleReferralFlow();
+        },
+        onModalDismiss: () => {
+          // Preserve referrer for future retry attempts
+          if (IS_DEV_MODE) {
+            console.log(
+              '[DEV MODE] Referral error modal dismissed, preserving referrer for retry',
+            );
+          }
+        },
+      });
+
+      navigation.navigate('Modal', {
+        titleText: 'Referral Registration Failed',
+        bodyText: `We couldn't register your referral at this time. ${errorMessage}. You can try again or dismiss this message.`,
+        buttonText: 'Try Again',
+        secondaryButtonText: 'Dismiss',
+        callbackId,
+      });
+    };
+
     const store = useUserStore.getState();
     // Check if already registered to avoid duplicate calls
     if (!store.isReferrerRegistered(referrer)) {
@@ -115,12 +140,28 @@ export const useEarnPointsFlow = ({
         if (IS_DEV_MODE) {
           console.log('[DEV MODE] ✓ Referral registration successful (mocked)');
         }
-      } else {
+
+        // Only navigate to GratificationScreen on success
         if (IS_DEV_MODE) {
-          console.error('Error registering referral points:', result.error);
+          console.log(
+            '[DEV MODE] 4. Navigating to Gratification screen with points:',
+            POINT_VALUES.referee,
+          );
         }
-        // Still navigate to GratificationScreen even if registration fails
-        // The backend will handle duplicate prevention
+        store.clearDeepLinkReferrer();
+        navigation.navigate('Gratification', {
+          points: POINT_VALUES.referee,
+        });
+      } else {
+        // Registration failed - show error and preserve referrer
+        const errorMessage = result.error || 'Unknown error occurred';
+        if (IS_DEV_MODE) {
+          console.error('[DEV MODE] Error registering referral:', errorMessage);
+        }
+        console.error('Referral registration failed:', errorMessage);
+
+        // Show error modal with retry option, don't clear referrer
+        showReferralErrorModal(errorMessage);
       }
     } else {
       if (IS_DEV_MODE) {
@@ -128,19 +169,19 @@ export const useEarnPointsFlow = ({
           '[DEV MODE] Referrer already registered, skipping registration',
         );
       }
-    }
 
-    // Navigate to GratificationScreen (referral-agnostic)
-    if (IS_DEV_MODE) {
-      console.log(
-        '[DEV MODE] 4. Navigating to Gratification screen with points:',
-        POINT_VALUES.referee,
-      );
+      // Already registered, navigate to gratification
+      if (IS_DEV_MODE) {
+        console.log(
+          '[DEV MODE] 4. Navigating to Gratification screen with points:',
+          POINT_VALUES.referee,
+        );
+      }
+      store.clearDeepLinkReferrer();
+      navigation.navigate('Gratification', {
+        points: POINT_VALUES.referee,
+      });
     }
-    useUserStore.getState().clearDeepLinkReferrer();
-    navigation.navigate('Gratification', {
-      points: POINT_VALUES.referee,
-    });
   }, [referrer, registerReferral, navigation]);
 
   const onEarnPointsPress = useCallback(

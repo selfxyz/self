@@ -31,10 +31,6 @@ export const registerBackupPoints = async (
     errorMessages,
   );
 
-  if (response.success) {
-    console.log('response verify action backup', response);
-  }
-
   return response;
 };
 
@@ -84,14 +80,16 @@ export const registerReferralPoints = async ({
 }): Promise<{ success: boolean; status: number; error?: string }> => {
   // In __DEV__ mode, log the request instead of sending it
   if (IS_DEV_MODE) {
-    const requestBody = {
-      referee: referee.toLowerCase(),
-      referrer: referrer.toLowerCase(),
-    };
+    // Redact addresses for security - show first 6 and last 4 characters only
+    const redactAddress = (addr: string) =>
+      `${addr.slice(0, 6)}...${addr.slice(-4)}`;
     console.log('[DEV MODE] Would have sent referral registration request:', {
       url: `${POINTS_API_BASE_URL}/referrals/refer`,
       method: 'POST',
-      body: requestBody,
+      body: {
+        referee: redactAddress(referee.toLowerCase()),
+        referrer: redactAddress(referrer.toLowerCase()),
+      },
     });
     // Simulate a successful response for testing
     return { success: true, status: 200 };

@@ -212,7 +212,6 @@ const Points: React.FC = () => {
     setIsBackingUp(true);
     try {
       const response = await recordBackupPointEvent();
-      console.log('response backup point event', response);
 
       if (response.success) {
         setBackupForPointsCompleted();
