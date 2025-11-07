@@ -24,6 +24,7 @@ import IdCardLayout from '@/components/homeScreen/idCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
+import { usePoints } from '@/hooks/usePoints';
 import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
 import { useTestReferralFlow } from '@/hooks/useTestReferralFlow';
 import LogoInversed from '@/images/logo_inversed.svg';
@@ -52,7 +53,8 @@ const HomeScreen: React.FC = () => {
     Record<string, { data: IDDocument; metadata: DocumentMetadata }>
   >({});
   const [loading, setLoading] = useState(true);
-  const [selfPoints] = useState(312);
+
+  const selfPoints = usePoints();
 
   // Calculate card dimensions exactly like IdCardLayout does
   const { width: screenWidth } = Dimensions.get('window');
