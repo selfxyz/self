@@ -65,6 +65,7 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
   onRefreshRef,
   onLayout,
 }) => {
+  // why is this not using usePointEventStore((store) => store.events)?
   const [pointEvents, setPointEvents] = useState<PointEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

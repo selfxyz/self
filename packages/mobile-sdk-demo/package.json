@@ -23,9 +23,9 @@
     "reinstall": "yarn clean && yarn install && yarn prebuild && cd ios && pod install && cd ..",
     "start": "react-native start",
     "test": "vitest run",
+    "test:e2e:android": "bash scripts/e2e-android-ci.sh",
     "test:watch": "vitest",
-    "types": "yarn prebuild && tsc --noEmit",
-    "test:e2e:android": "bash scripts/e2e-android-ci.sh"
+    "types": "yarn prebuild && tsc --noEmit"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",

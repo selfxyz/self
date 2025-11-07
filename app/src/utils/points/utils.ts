@@ -158,7 +158,6 @@ export const pointsSelfApp = async () => {
     disclosures: {},
     logoBase64:
       'https://storage.googleapis.com/self-logo-reverse/Self%20Logomark%20Reverse.png',
-    deeplinkCallback: 'https://self.xyz',
     selfDefinedData: userAddress,
     header: '',
   });

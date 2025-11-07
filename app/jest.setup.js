@@ -240,11 +240,14 @@ jest.mock('react-native/src/private/specs/modules/NativeDeviceInfo', () => ({
 }));
 
 // Mock NativeStatusBarManagerIOS for react-native-edge-to-edge SystemBars
-jest.mock('react-native/src/private/specs/modules/NativeStatusBarManagerIOS', () => ({
-  setStyle: jest.fn(),
-  setHidden: jest.fn(),
-  setNetworkActivityIndicatorVisible: jest.fn(),
-}));
+jest.mock(
+  'react-native/src/private/specs/modules/NativeStatusBarManagerIOS',
+  () => ({
+    setStyle: jest.fn(),
+    setHidden: jest.fn(),
+    setNetworkActivityIndicatorVisible: jest.fn(),
+  }),
+);
 
 // Mock react-native-gesture-handler to prevent getConstants errors
 jest.mock('react-native-gesture-handler', () => {

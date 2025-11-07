@@ -50,8 +50,8 @@
     "release:patch": "./scripts/release.sh patch",
     "setup": "yarn clean:build && yarn install && yarn build:deps && yarn setup:android-deps && cd ios && bundle install && bundle exec pod install --repo-update && cd .. && yarn clean:xcode-env-local",
     "setup:android-deps": "node scripts/setup-private-modules.cjs",
-    "start": "watchman watch-del-all && react-native start",
-    "start:clean": "watchman watch-del-all && cd android && ./gradlew clean && cd .. && react-native start --reset-cache",
+    "start": "watchman watch-del-all && yarn watch:sdk & react-native start",
+    "start:clean": "watchman watch-del-all && cd android && ./gradlew clean && cd .. && yarn watch:sdk & react-native start --reset-cache",
     "sync-versions": "bundle exec fastlane ios sync_version && bundle exec fastlane android sync_version",
     "tag:release": "node scripts/tag.cjs release",
     "tag:remove": "node scripts/tag.cjs remove",
@@ -66,6 +66,7 @@
     "test:tree-shaking": "node ./scripts/test-tree-shaking.cjs",
     "test:web-build": "jest tests/web-build-render.test.ts --testTimeout=180000",
     "types": "tsc --noEmit",
+    "watch:sdk": "yarn workspace @selfxyz/mobile-sdk-alpha watch",
     "web": "vite",
     "web:build": "yarn build:deps && vite build",
     "web:preview": "vite preview"
