@@ -137,6 +137,7 @@ async function restoreFromMnemonic(
       ...options.setOptions,
       service: SERVICE_NAME,
     });
+    generateAndStorePointsAddress(mnemonic);
     trackEvent(AuthEvents.MNEMONIC_RESTORE_SUCCESS);
     return data;
   } catch (error: unknown) {
@@ -278,7 +279,7 @@ export const AuthProvider = ({
         keychainOptions => loadOrCreateMnemonic(keychainOptions),
         str => JSON.parse(str),
         {
-          requireAuth: false,
+          requireAuth: true,
         },
       ),
     [],
@@ -328,15 +329,25 @@ function _generateAddressFromMnemonic(mnemonic: string, index: number): string {
   return wallet.address;
 }
 
+export async function generateAndStorePointsAddress(
+  mnemonic: string,
+): Promise<string> {
+  const pointsAddr = _generateAddressFromMnemonic(mnemonic, 1);
+  useSettingStore.getState().setPointsAddress(pointsAddr);
+  return pointsAddr;
+}
+
 /**
  * Gets the second address if it exists, or generates and stores it if not.
  * By Generate, it means we need the user's biometric auth.
  *
  * Flow is, when the user visits the points screen for the first time, we need to generate the points address.
  */
-export async function getOrGeneratePointsAddress(): Promise<string> {
+export async function getOrGeneratePointsAddress(
+  forceGenerateFromMnemonic: boolean = false,
+): Promise<string> {
   const pointsAddress = useSettingStore.getState().pointsAddress;
-  if (pointsAddress) {
+  if (pointsAddress && !forceGenerateFromMnemonic) {
     return pointsAddress;
   }
 

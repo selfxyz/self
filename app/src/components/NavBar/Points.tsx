@@ -75,17 +75,33 @@ const Points: React.FC = () => {
     }, []),
   );
 
+  //TODO - uncomment after merging - https://github.com/selfxyz/self/pull/1363/
+  // useEffect(() => {
+  //   const backupEvent = usePointEventStore
+  //     .getState()
+  //     .events.find(
+  //       event => event.type === 'backup' && event.status === 'completed',
+  //     );
+
+  //   if (backupEvent && !hasCompletedBackupForPoints) {
+  //     setBackupForPointsCompleted();
+  //   }
+  // }, [setBackupForPointsCompleted, hasCompletedBackupForPoints]);
+
   // Detect when returning from backup screen and record points if backup was completed
   useFocusEffect(
     React.useCallback(() => {
-      const currentBackupEnabled =
-        useSettingStore.getState().cloudBackupEnabled;
+      const { cloudBackupEnabled, backedUpWithTurnKey } =
+        useSettingStore.getState();
       const currentHasCompletedBackup =
         useSettingStore.getState().hasCompletedBackupForPoints;
 
-      // If backup is enabled but points haven't been recorded yet, record them now
+      // If either backup method is enabled but points haven't been recorded yet, record them now
       // This happens when user just completed backup and returned to this screen
-      if (currentBackupEnabled && !currentHasCompletedBackup) {
+      if (
+        (cloudBackupEnabled || backedUpWithTurnKey) &&
+        !currentHasCompletedBackup
+      ) {
         const recordPoints = async () => {
           try {
             const response = await recordBackupPointEvent();
@@ -110,6 +126,10 @@ const Points: React.FC = () => {
                 callbackId,
               });
             } else {
+              console.error(
+                'Error recording backup points after return:',
+                response.error,
+              );
               selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
             }
           } catch (error) {
@@ -120,7 +140,7 @@ const Points: React.FC = () => {
 
         recordPoints();
       }
-    }, [navigation]),
+    }, [navigation, selfClient]),
   );
 
   // Mock function to check if user has backed up their account
@@ -256,10 +276,11 @@ const Points: React.FC = () => {
     }
     selfClient.trackEvent(PointEvents.EARN_BACKUP);
 
-    const cloudBackupEnabled = useSettingStore.getState().cloudBackupEnabled;
+    const { cloudBackupEnabled, backedUpWithTurnKey } =
+      useSettingStore.getState();
 
-    // If backup is already enabled, just record points
-    if (cloudBackupEnabled) {
+    // If either backup method is already enabled, just record points
+    if (cloudBackupEnabled || backedUpWithTurnKey) {
       setIsBackingUp(true);
       try {
         // this will add event to store and the new event will then trigger useIncomingPoints hook to refetch incoming points

@@ -24,6 +24,8 @@ interface PersistedSettingsState {
   setKeychainMigrationCompleted: () => void;
   fcmToken: string | null;
   setFcmToken: (token: string | null) => void;
+  backedUpWithTurnKey: boolean;
+  setBackedUpWithTurnKey: (backedUpWithTurnKey: boolean) => void;
   subscribedTopics: string[];
   setSubscribedTopics: (topics: string[]) => void;
   addSubscribedTopic: (topic: string) => void;
@@ -101,6 +103,9 @@ export const useSettingStore = create<SettingsState>()(
           subscribedTopics: state.subscribedTopics.filter(t => t !== topic),
         })),
 
+      backedUpWithTurnKey: false,
+      setBackedUpWithTurnKey: (backedUpWithTurnKey: boolean) =>
+        set({ backedUpWithTurnKey }),
       hasCompletedBackupForPoints: false,
       setBackupForPointsCompleted: () =>
         set({ hasCompletedBackupForPoints: true }),

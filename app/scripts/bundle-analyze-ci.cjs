@@ -17,8 +17,8 @@ if (!platform || !['android', 'ios'].includes(platform)) {
 // Bundle size thresholds in MB - easy to update!
 const BUNDLE_THRESHOLDS_MB = {
   // TODO: fix temporary bundle bump
-  ios: 42,
-  android: 42,
+  ios: 44,
+  android: 44,
 };
 
 function formatBytes(bytes) {

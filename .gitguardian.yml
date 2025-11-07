@@ -2,7 +2,7 @@
 # This file configures which files and secrets to ignore during scanning
 
 # Ignore specific file patterns
-paths-ignore:
+paths_ignore:
   # Gitleaks configuration file (contains example secrets/patterns for detection)
   - ".gitleaks.toml"
 
@@ -49,7 +49,7 @@ paths-ignore:
   - "**/packages/mobile-sdk-alpha/ios/Frameworks/**"
   - "**/packages/mobile-sdk-alpha/ios/SelfSDK/**"
 # Ignore specific secret types for mock files
-secrets-ignore:
+secrets_ignore:
   - "Generic Private Key" # For mock certificate keys
   - "Generic Certificate" # For mock certificates
   - "RSA Private Key" # For mock RSA keys

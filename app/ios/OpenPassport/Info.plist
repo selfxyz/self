@@ -30,6 +30,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>proofofpassport</string>
+				<string>com.warroom.proofofpassport</string>
 			</array>
 		</dict>
 	</array>

@@ -84,6 +84,16 @@ jest.mock('react-native/Libraries/TurboModule/TurboModuleRegistry', () => ({
         }),
       };
     }
+    if (name === 'RNDeviceInfo') {
+      return {
+        getConstants: () => ({
+          Dimensions: {
+            window: { width: 375, height: 667, scale: 2 },
+            screen: { width: 375, height: 667, scale: 2 },
+          },
+        }),
+      };
+    }
     return {
       getConstants: () => ({}),
     };
@@ -133,6 +143,23 @@ jest.mock(
   },
   { virtual: true },
 );
+
+// Mock @turnkey/react-native-wallet-kit to prevent loading of problematic dependencies
+jest.mock('@turnkey/react-native-wallet-kit', () => ({
+  AuthState: {
+    Authenticated: 'Authenticated',
+    Unauthenticated: 'Unauthenticated',
+  },
+  useTurnkey: jest.fn(() => ({
+    handleGoogleOauth: jest.fn(),
+    fetchWallets: jest.fn().mockResolvedValue([]),
+    exportWallet: jest.fn(),
+    importWallet: jest.fn(),
+    authState: 'Unauthenticated',
+    logout: jest.fn(),
+  })),
+  TurnkeyProvider: ({ children }) => children,
+}));
 
 // Mock the mobile-sdk-alpha's TurboModuleRegistry to prevent native module errors
 jest.mock(
@@ -277,18 +304,75 @@ jest.mock('react-native-safe-area-context', () => {
 
 // Mock NativeEventEmitter to prevent null argument errors
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter', () => {
-  return class MockNativeEventEmitter {
-    constructor(nativeModule) {
-      // Accept any nativeModule argument (including null/undefined)
-      this.nativeModule = nativeModule;
-    }
+  function MockNativeEventEmitter(nativeModule) {
+    // Accept any nativeModule argument (including null/undefined)
+    this.nativeModule = nativeModule;
+    this.addListener = jest.fn();
+    this.removeListener = jest.fn();
+    this.removeAllListeners = jest.fn();
+    this.emit = jest.fn();
+  }
 
-    addListener = jest.fn();
-    removeListener = jest.fn();
-    removeAllListeners = jest.fn();
-    emit = jest.fn();
-  };
+  // The mock needs to be the constructor itself, not wrapped
+  MockNativeEventEmitter.default = MockNativeEventEmitter;
+  return MockNativeEventEmitter;
 });
+
+// Mock react-native-device-info to prevent NativeEventEmitter errors
+jest.mock('react-native-device-info', () => ({
+  getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+  getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+  getVersion: jest.fn().mockReturnValue('1.0.0'),
+  getBuildNumber: jest.fn().mockReturnValue('1'),
+  getModel: jest.fn().mockReturnValue('mock-model'),
+  getBrand: jest.fn().mockReturnValue('mock-brand'),
+  isTablet: jest.fn().mockReturnValue(false),
+  isLandscape: jest.fn().mockResolvedValue(false),
+  getSystemVersion: jest.fn().mockReturnValue('14.0'),
+  getSystemName: jest.fn().mockReturnValue('iOS'),
+  default: {
+    getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+    getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+    getVersion: jest.fn().mockReturnValue('1.0.0'),
+    getBuildNumber: jest.fn().mockReturnValue('1'),
+    getModel: jest.fn().mockReturnValue('mock-model'),
+    getBrand: jest.fn().mockReturnValue('mock-brand'),
+    isTablet: jest.fn().mockReturnValue(false),
+    isLandscape: jest.fn().mockResolvedValue(false),
+    getSystemVersion: jest.fn().mockReturnValue('14.0'),
+    getSystemName: jest.fn().mockReturnValue('iOS'),
+  },
+}));
+
+// Mock react-native-device-info nested in @turnkey/react-native-wallet-kit
+jest.mock(
+  'node_modules/@turnkey/react-native-wallet-kit/node_modules/react-native-device-info',
+  () => ({
+    getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+    getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+    getVersion: jest.fn().mockReturnValue('1.0.0'),
+    getBuildNumber: jest.fn().mockReturnValue('1'),
+    getModel: jest.fn().mockReturnValue('mock-model'),
+    getBrand: jest.fn().mockReturnValue('mock-brand'),
+    isTablet: jest.fn().mockReturnValue(false),
+    isLandscape: jest.fn().mockResolvedValue(false),
+    getSystemVersion: jest.fn().mockReturnValue('14.0'),
+    getSystemName: jest.fn().mockReturnValue('iOS'),
+    default: {
+      getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+      getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+      getVersion: jest.fn().mockReturnValue('1.0.0'),
+      getBuildNumber: jest.fn().mockReturnValue('1'),
+      getModel: jest.fn().mockReturnValue('mock-model'),
+      getBrand: jest.fn().mockReturnValue('mock-brand'),
+      isTablet: jest.fn().mockReturnValue(false),
+      isLandscape: jest.fn().mockResolvedValue(false),
+      getSystemVersion: jest.fn().mockReturnValue('14.0'),
+      getSystemName: jest.fn().mockReturnValue('iOS'),
+    },
+  }),
+  { virtual: true },
+);
 
 // Mock problematic mobile-sdk-alpha components that use React Native StyleSheet
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
