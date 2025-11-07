@@ -33,7 +33,7 @@ const CountryItem = memo<{
 
   return (
     <TouchableOpacity onPress={() => onSelect(countryCode)} style={styles.countryItemContainer}>
-      <XStack alignItems="center" gap={16}>
+      <XStack style={styles.countryItemContent}>
         <RoundFlag countryCode={countryCode} size={FLAG_SIZE} />
         <BodyText style={styles.countryItemText}>{countryName}</BodyText>
       </XStack>
@@ -147,6 +147,10 @@ CountryPickerScreen.displayName = 'CountryPickerScreen';
 const styles = StyleSheet.create({
   countryItemContainer: {
     paddingVertical: 13,
+  },
+  countryItemContent: {
+    alignItems: 'center',
+    gap: 16,
   },
   countryItemText: {
     fontSize: 16,
