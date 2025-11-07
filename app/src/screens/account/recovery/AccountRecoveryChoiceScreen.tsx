@@ -64,7 +64,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   }, [refreshWallets]);
 
   const restoreAccountFlow = useCallback(
-    async (mnemonic: Mnemonic, isCloudRestore: boolean = false) => {
+    async (mnemonic: Mnemonic, isCloudRestore: boolean = false): Promise<boolean> => {
       try {
         const result = await restoreAccountFromMnemonic(mnemonic.phrase);
 
@@ -73,7 +73,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
           trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
           navigation.navigate('Launch');
           setRestoring(false);
-          return;
+          return false;
         }
 
         const passportDataAndSecret =
@@ -104,7 +104,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
           trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED);
           navigation.navigate('Launch');
           setRestoring(false);
-          return;
+          return false;
         }
         if (isCloudRestore && !cloudBackupEnabled) {
           toggleCloudBackupEnabled();
@@ -115,11 +115,12 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
         onRestoreFromCloudNext();
         setRestoring(false);
+        return true;
       } catch (e: unknown) {
         console.error(e);
         trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
         setRestoring(false);
-        throw new Error('Something wrong happened during cloud recovery');
+        return false;
       }
     },
     [
@@ -145,8 +146,10 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         },
         entropy: '',
       };
-      await restoreAccountFlow(mnemonic);
-      setBackedUpWithTurnKey(true);
+      const success = await restoreAccountFlow(mnemonic);
+      if (success) {
+        setBackedUpWithTurnKey(true);
+      }
     } catch (error) {
       console.error('Turnkey restore error:', error);
       trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
