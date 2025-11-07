@@ -157,7 +157,9 @@ export type RootStackParamList = Omit<
   };
 
   // Home screens
-  Home: undefined;
+  Home: {
+    testReferralFlow?: boolean;
+  };
   Points: undefined;
   IdDetails: undefined;
 

@@ -8,8 +8,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Text, View, XStack, YStack } from 'tamagui';
 import {
   useFocusEffect,
+  useIsFocused,
   useNavigation,
   usePreventRemove,
+  useRoute,
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -57,8 +59,35 @@ const HomeScreen: React.FC = () => {
   const { width: screenWidth } = Dimensions.get('window');
   const cardWidth = screenWidth * 0.95 - 16; // 95% of screen width minus horizontal padding
 
-  // DEV MODE: Test referral flow hook
-  const { handleTestReferralFlow, isDevMode } = useTestReferralFlow();
+  // DEV MODE: Test referral flow hook (only show alert when screen is focused)
+  const isFocused = useIsFocused();
+  const route = useRoute();
+  const routeParams = route.params as
+    | { testReferralFlow?: boolean }
+    | undefined;
+  const [shouldTriggerReferralTest, setShouldTriggerReferralTest] =
+    useState(false);
+
+  // Watch for testReferralFlow param and trigger once
+  useEffect(() => {
+    if (routeParams?.testReferralFlow && isFocused) {
+      setShouldTriggerReferralTest(true);
+      // Clear the param
+      navigation.setParams({ testReferralFlow: undefined } as never);
+    }
+  }, [routeParams?.testReferralFlow, isFocused, navigation]);
+
+  useTestReferralFlow(isFocused, shouldTriggerReferralTest);
+
+  // Reset trigger flag after hook processes it
+  useEffect(() => {
+    if (shouldTriggerReferralTest) {
+      const timer = setTimeout(() => {
+        setShouldTriggerReferralTest(false);
+      }, 3500); // Slightly longer than the 3 second timer in the hook
+      return () => clearTimeout(timer);
+    }
+  }, [shouldTriggerReferralTest]);
 
   const loadDocuments = useCallback(async () => {
     setLoading(true);
@@ -258,28 +287,6 @@ const HomeScreen: React.FC = () => {
             </Text>
           </YStack>
         </XStack>
-        {isDevMode && (
-          <Button
-            backgroundColor="#FF6B6B"
-            paddingHorizontal={22}
-            paddingVertical={12}
-            borderRadius={5}
-            borderWidth={1}
-            borderColor="#FF6B6B"
-            marginBottom={12}
-            onPress={handleTestReferralFlow}
-          >
-            <Text
-              color="white"
-              textAlign="center"
-              fontFamily={dinot}
-              fontSize={14}
-              height={20}
-            >
-              [DEV] Test Referral Flow
-            </Text>
-          </Button>
-        )}
         <Button
           backgroundColor="white"
           paddingHorizontal={22}
