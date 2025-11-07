@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { isSuccessfulStatus } from '@/utils/points/api';
 import {
   registerBackupPoints,
   registerNotificationPoints,
@@ -36,7 +37,7 @@ export const recordBackupPointEvent = async (): Promise<{
     const userAddress = await getPointsAddress();
     const response = await registerBackupPoints(userAddress);
 
-    if (response.success && response.status === 200) {
+    if (response.success && isSuccessfulStatus(response.status)) {
       await addEventToStore('Secret backed up', 'backup', POINT_VALUES.backup);
       return { success: true };
     }
@@ -63,7 +64,7 @@ export const recordNotificationPointEvent = async (): Promise<{
     const userAddress = await getPointsAddress();
     const response = await registerNotificationPoints(userAddress);
 
-    if (response.success && response.status === 200) {
+    if (response.success && isSuccessfulStatus(response.status)) {
       await addEventToStore(
         'Push notifications enabled',
         'notification',
@@ -97,7 +98,7 @@ export const recordReferralPointEvent = async (
     const referee = await getPointsAddress();
     const response = await registerReferralPoints({ referee, referrer });
 
-    if (response.success && response.status === 200) {
+    if (response.success && isSuccessfulStatus(response.status)) {
       await addEventToStore('Friend referred', 'refer', POINT_VALUES.referee);
       return { success: true };
     }

@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type { AxiosError } from 'axios';
+import axios from 'axios';
+import { Buffer } from 'buffer';
+import { ethers } from 'ethers';
+
+import { unsafe_getPrivateKey } from '@/providers/authProvider';
+
 export type ApiResponse<T = unknown> = {
   success: boolean;
   status: number;
@@ -9,11 +16,80 @@ export type ApiResponse<T = unknown> = {
   data?: T;
 };
 
+export interface SignatureData {
+  signature: string; // base64-encoded signature
+  parity: number; // yParity value (0 or 1)
+}
+
+/**
+ * Interface for signature data to be included in API requests
+ */
 export const POINTS_API_BASE_URL =
   'https://points-backend-1025466915061.us-central1.run.app';
 
 /**
+ * Successful HTTP status codes accepted by the points API
+ */
+const SUCCESSFUL_STATUS_CODES = [200, 202] as const;
+
+/**
+ * Checks if a status code is considered successful
+ */
+export const isSuccessfulStatus = (status: number): boolean =>
+  SUCCESSFUL_STATUS_CODES.includes(
+    status as (typeof SUCCESSFUL_STATUS_CODES)[number],
+  );
+
+/**
+ * Generates a signature for API authentication.
+ * Signs the lowercase wallet address using the user's private key.
+ *
+ * @param address - The wallet address to sign (will be lowercased)
+ * @returns Signature data including base64 signature and parity
+ * @throws Error if private key cannot be retrieved or signing fails
+ */
+const generateSignature = async (address: string): Promise<SignatureData> => {
+  try {
+    // Get the private key from keychain (requires biometric auth)
+    const privateKey = await unsafe_getPrivateKey();
+    if (!privateKey) {
+      throw new Error('Failed to retrieve private key for signing');
+    }
+
+    // Create wallet from private key
+    const wallet = new ethers.Wallet(privateKey);
+
+    // Sign the lowercase address
+    const message = address.toLowerCase();
+    const signature = await wallet.signMessage(message);
+
+    // Parse signature to extract parity
+    const sig = ethers.Signature.from(signature);
+
+    // Convert signature to base64
+    const sigBytes = ethers.getBytes(signature);
+    const signatureBase64 = Buffer.from(sigBytes).toString('base64');
+
+    return {
+      signature: signatureBase64,
+      parity: sig.yParity,
+    };
+  } catch (error) {
+    console.error('Error generating signature:', error);
+    throw new Error(
+      `Failed to generate signature: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+  }
+};
+
+/**
  * Makes a POST request to the points API with consistent error handling.
+ * Automatically includes signature and parity for authentication by detecting
+ * the signing address from the request body (uses 'referee' or 'address' field).
+ *
+ * @param endpoint - The API endpoint path
+ * @param body - The request body data
+ * @param errorMessages - Optional custom error messages for specific error codes
  */
 export const makeApiRequest = async (
   endpoint: string,
@@ -21,38 +97,66 @@ export const makeApiRequest = async (
   errorMessages?: Record<string, string>,
 ): Promise<ApiResponse> => {
   try {
-    const response = await fetch(`${POINTS_API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+    // Auto-detect signing address from body (referee for referrals, address for other endpoints)
+    const signingAddress = (body.referee as string) || (body.address as string);
 
-    if (response.status === 200) {
-      return { success: true, status: 200 };
+    // Lowercase address fields and prepare request body
+    let requestBody = { ...body };
+    if (body.referee) {
+      requestBody.referee = (body.referee as string).toLowerCase();
+    }
+    if (body.referrer) {
+      requestBody.referrer = (body.referrer as string).toLowerCase();
+    }
+    if (body.address) {
+      requestBody.address = (body.address as string).toLowerCase();
+    }
+
+    // Generate signature if a signing address is detected
+    if (signingAddress) {
+      const signatureData = await generateSignature(signingAddress);
+      requestBody = {
+        ...requestBody,
+        signature: signatureData.signature,
+        parity: signatureData.parity,
+      };
+    }
+
+    const response = await axios.post(
+      `${POINTS_API_BASE_URL}${endpoint}`,
+      requestBody,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        validateStatus: () => true, // Don't throw on any status
+      },
+    );
+
+    if (isSuccessfulStatus(response.status)) {
+      return { success: true, status: response.status, data: response.data };
     }
 
     let errorMessage = 'An unexpected error occurred. Please try again.';
-    try {
-      const data = await response.json();
-      if (errorMessages && data.status) {
-        errorMessage =
-          errorMessages[data.status] || data.message || errorMessage;
-      } else if (data.message) {
-        errorMessage = data.message;
-      }
-    } catch {
-      // If parsing fails, keep the generic error
+    if (errorMessages && response.data?.status) {
+      errorMessage =
+        errorMessages[response.data.status] ||
+        response.data.message ||
+        errorMessage;
+    } else if (response.data?.message) {
+      errorMessage = response.data.message;
     }
 
     return { success: false, status: response.status, error: errorMessage };
   } catch (error) {
     console.error(`Error making API request to ${endpoint}:`, error);
+    const axiosError = error as AxiosError;
     return {
       success: false,
-      status: 500,
-      error: 'Network error. Please check your connection and try again.',
+      status: axiosError.response?.status || 500,
+      error:
+        axiosError.message ||
+        'Network error. Please check your connection and try again.',
     };
   }
 };

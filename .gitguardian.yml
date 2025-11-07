@@ -3,6 +3,9 @@
 
 # Ignore specific file patterns
 paths-ignore:
+  # Gitleaks configuration file (contains example secrets/patterns for detection)
+  - ".gitleaks.toml"
+
   # Mock certificates for testing (these are intentionally committed test data)
   - "**/mock_certificates/**/*.key"
   - "**/mock_certificates/**/*.crt"
@@ -57,6 +60,7 @@ secret:
     - match: 2036b4e50ad3042969b290e354d9864465107a14de6f5a36d49f81ea8290def8
       name: prebuilt-ios-arm64-apple-ios.private.swiftinterface
   ignored_paths:
+    - ".gitleaks.toml"
     - "**/*.swiftinterface"
     - "**/*.xcframework/**"
     - "**/packages/mobile-sdk-alpha/ios/Frameworks/**"
