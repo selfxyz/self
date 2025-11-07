@@ -128,7 +128,7 @@
     "types": "tsc -p tsconfig.json --noEmit",
     "validate:exports": "node ./scripts/validate-exports.mjs",
     "validate:pkg": "node ./scripts/verify-conditions.mjs",
-    "watch": "tsup && yarn postbuild && tsup --watch"
+    "watch": "pkill -f 'tsup.*--watch' 2>/dev/null || true && tsup && yarn postbuild && tsup --watch"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",
