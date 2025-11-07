@@ -7,7 +7,11 @@ import axios from 'axios';
 import { ethers } from 'ethers';
 
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
-import { makeApiRequest, POINTS_API_BASE_URL } from '@/utils/points/api';
+import {
+  isSuccessfulStatus,
+  makeApiRequest,
+  POINTS_API_BASE_URL,
+} from '@/utils/points/api';
 
 // Mock dependencies
 jest.mock('axios');
@@ -33,6 +37,27 @@ const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockUnsafeGetPrivateKey = unsafe_getPrivateKey as jest.MockedFunction<
   typeof unsafe_getPrivateKey
 >;
+
+describe('isSuccessfulStatus', () => {
+  it('should return true for 200 status code', () => {
+    expect(isSuccessfulStatus(200)).toBe(true);
+  });
+
+  it('should return true for 202 status code', () => {
+    expect(isSuccessfulStatus(202)).toBe(true);
+  });
+
+  it('should return false for other 2xx codes', () => {
+    expect(isSuccessfulStatus(201)).toBe(false);
+    expect(isSuccessfulStatus(204)).toBe(false);
+  });
+
+  it('should return false for error status codes', () => {
+    expect(isSuccessfulStatus(400)).toBe(false);
+    expect(isSuccessfulStatus(404)).toBe(false);
+    expect(isSuccessfulStatus(500)).toBe(false);
+  });
+});
 
 describe('Points API - Signature Logic', () => {
   const mockPrivateKey =
@@ -300,6 +325,24 @@ describe('Points API - Signature Logic', () => {
         success: true,
         status: 200,
         data: { result: 'success' },
+      });
+    });
+
+    it('should handle successful 202 response', async () => {
+      mockAxios.post.mockResolvedValue({
+        status: 202,
+        data: { result: 'accepted' },
+      } as AxiosResponse);
+
+      const result = await makeApiRequest('/referrals/refer', {
+        referee: mockAddress,
+        referrer: '0x9876543210987654321098765432109876543210',
+      });
+
+      expect(result).toEqual({
+        success: true,
+        status: 202,
+        data: { result: 'accepted' },
       });
     });
 

@@ -28,6 +28,19 @@ export const POINTS_API_BASE_URL =
   'https://points-backend-1025466915061.us-central1.run.app';
 
 /**
+ * Successful HTTP status codes accepted by the points API
+ */
+const SUCCESSFUL_STATUS_CODES = [200, 202] as const;
+
+/**
+ * Checks if a status code is considered successful
+ */
+export const isSuccessfulStatus = (status: number): boolean =>
+  SUCCESSFUL_STATUS_CODES.includes(
+    status as (typeof SUCCESSFUL_STATUS_CODES)[number],
+  );
+
+/**
  * Generates a signature for API authentication.
  * Signs the lowercase wallet address using the user's private key.
  *
@@ -120,8 +133,8 @@ export const makeApiRequest = async (
       },
     );
 
-    if (response.status === 200) {
-      return { success: true, status: 200, data: response.data };
+    if (isSuccessfulStatus(response.status)) {
+      return { success: true, status: response.status, data: response.data };
     }
 
     let errorMessage = 'An unexpected error occurred. Please try again.';
