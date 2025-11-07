@@ -306,6 +306,14 @@ platform :android do
     skip_upload = options[:skip_upload] == true || options[:skip_upload] == "true"
     version_bump = options[:version_bump] || "build"
 
+    # Automatically skip uploads in local development (no local permissions for Play Store)
+    # Uploads must be done by CI/CD machines with proper authentication
+    if local_development && !skip_upload
+      skip_upload = true
+      UI.important("🏠 LOCAL DEVELOPMENT: Automatically skipping Play Store upload")
+      UI.important("   Uploads require CI/CD machine permissions and will be handled automatically")
+    end
+
     if local_development
       if ENV["ANDROID_KEYSTORE_PATH"].nil?
         ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.android_create_keystore(android_keystore_path)
