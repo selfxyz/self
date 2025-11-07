@@ -34,6 +34,7 @@ type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
 type CloudBackupScreenProps = StaticScreenProps<
   | {
       nextScreen?: NextScreen;
+      returnToScreen?: 'Points';
     }
   | undefined
 >;
@@ -47,7 +48,8 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     useSettingStore();
   const { upload, disableBackup } = useBackupMnemonic();
   const [pending, setPending] = useState(false);
-
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showModal } = useModal(
     useMemo(
       () => ({
@@ -98,6 +100,10 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     toggleCloudBackupEnabled();
     trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE);
     setPending(false);
+
+    if (params?.returnToScreen) {
+      navigation.navigate(params.returnToScreen);
+    }
   }, [
     cloudBackupEnabled,
     getOrCreateMnemonic,
