@@ -79,7 +79,7 @@ describe('useEarnPointsFlow', () => {
   const mockRegisterReferral = jest.fn();
   const mockSelfApp = {
     appName: '✨ Self Points',
-    endpoint: '0x25604DB4E556ad5C3f6e888eCe84EcBb8af28560',
+    endpoint: '0x829d183faaa675f8f80e8bb25fb1476cd4f7c1f0',
     sessionId: 'test-session-id',
   };
 

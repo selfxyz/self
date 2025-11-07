@@ -147,12 +147,12 @@ export const hasUserDoneThePointsDisclosure = async (): Promise<boolean> => {
 
 export const pointsSelfApp = async () => {
   const userAddress = (await getPointsAddress())?.toLowerCase();
-  const endpoint = '0x25604DB4E556ad5C3f6e888eCe84EcBb8af28560';
+  const endpoint = '0x829d183faaa675f8f80e8bb25fb1476cd4f7c1f0';
   const builder = new SelfAppBuilder({
     appName: '✨ Self Points',
     endpoint: endpoint.toLowerCase(),
     endpointType: 'celo',
-    scope: 'self-workshop',
+    scope: 'self-disclosure-quest',
     userId: v4(),
     userIdType: 'uuid',
     disclosures: {},
