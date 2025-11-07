@@ -7363,6 +7363,7 @@ __metadata:
     "@vitejs/plugin-react-swc": "npm:^3.10.2"
     "@xstate/react": "npm:^5.0.3"
     asn1js: "npm:^3.0.6"
+    axios: "npm:^1.13.2"
     babel-plugin-module-resolver: "npm:^5.0.2"
     buffer: "npm:^6.0.3"
     constants-browserify: "npm:^1.0.0"
@@ -14015,6 +14016,17 @@ __metadata:
   dependencies:
     possible-typed-array-names: "npm:^1.0.0"
   checksum: 10c0/d07226ef4f87daa01bd0fe80f8f310982e345f372926da2e5296aecc25c41cab440916bbaa4c5e1034b453af3392f67df5961124e4b586df1e99793a1374bdb2
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.13.2":
+  version: 1.13.2
+  resolution: "axios@npm:1.13.2"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.4"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10c0/e8a42e37e5568ae9c7a28c348db0e8cf3e43d06fcbef73f0048669edfe4f71219664da7b6cc991b0c0f01c28a48f037c515263cb79be1f1ae8ff034cd813867b
   languageName: node
   linkType: hard
 

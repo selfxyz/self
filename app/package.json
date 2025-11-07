@@ -109,6 +109,7 @@
     "@tamagui/toast": "1.126.14",
     "@xstate/react": "^5.0.3",
     "asn1js": "^3.0.6",
+    "axios": "^1.13.2",
     "country-emoji": "^1.5.6",
     "elliptic": "^6.6.1",
     "ethers": "^6.11.0",

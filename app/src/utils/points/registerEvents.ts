@@ -26,7 +26,7 @@ export const registerBackupPoints = async (
     '/verify-action',
     {
       action: 'secret_backup',
-      address: userAddress.toLowerCase(),
+      address: userAddress,
     },
     errorMessages,
   );
@@ -56,7 +56,7 @@ export const registerNotificationPoints = async (
     '/verify-action',
     {
       action: 'push_notification',
-      address: userAddress.toLowerCase(),
+      address: userAddress,
     },
     errorMessages,
   );
@@ -87,8 +87,8 @@ export const registerReferralPoints = async ({
       url: `${POINTS_API_BASE_URL}/referrals/refer`,
       method: 'POST',
       body: {
-        referee: redactAddress(referee.toLowerCase()),
-        referrer: redactAddress(referrer.toLowerCase()),
+        referee: redactAddress(referee),
+        referrer: redactAddress(referrer),
       },
     });
     // Simulate a successful response for testing
@@ -97,8 +97,8 @@ export const registerReferralPoints = async ({
 
   try {
     const response = await makeApiRequest('/referrals/refer', {
-      referee: referee.toLowerCase(),
-      referrer: referrer.toLowerCase(),
+      referee,
+      referrer,
     });
 
     if (response.success) {
