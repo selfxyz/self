@@ -20,6 +20,7 @@ import { Dimensions } from 'react-native';
  * // For use with ExpandableBottomLayout.BottomSection
  * const bottomPadding = useSafeBottomPadding(20);
  * <ExpandableBottomLayout.BottomSection paddingBottom={bottomPadding} />
+ * ```
  *
  */
 export const useSafeBottomPadding = (basePadding: number = 20): number => {

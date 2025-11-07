@@ -17,7 +17,10 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import type { DocumentMetadata } from '@selfxyz/mobile-sdk-alpha';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  DocumentEvents,
+  PointEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks/useSafeBottomPadding';
 
 import IdCardLayout from '@/components/homeScreen/idCard';
@@ -296,7 +299,10 @@ const HomeScreen: React.FC = () => {
           borderRadius={5}
           borderWidth={1}
           borderColor={slate300}
-          onPress={() => onEarnPointsPress(true)}
+          onPress={() => {
+            selfClient.trackEvent(PointEvents.HOME_POINT_EARN_POINTS_OPENED);
+            onEarnPointsPress(true);
+          }}
         >
           <Text
             color="#2563EB"

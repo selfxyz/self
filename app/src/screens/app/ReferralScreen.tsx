@@ -9,6 +9,9 @@ import { XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { CopyReferralButton } from '@/components/referral/CopyReferralButton';
 import { ReferralHeader } from '@/components/referral/ReferralHeader';
 import { ReferralInfo } from '@/components/referral/ReferralInfo';
@@ -27,6 +30,7 @@ import {
 } from '@/utils/referralShare';
 
 const ReferralScreen: React.FC = () => {
+  const selfClient = useSelfClient();
   const { bottom } = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -37,14 +41,17 @@ const ReferralScreen: React.FC = () => {
   const messagesButtonColor = Platform.OS === 'android' ? blue600 : green500;
 
   const handleShareMessages = async () => {
+    selfClient.trackEvent(PointEvents.EARN_REFERAL_MESSAGES);
     await shareViaSMS(message);
   };
 
   const handleShare = async () => {
+    selfClient.trackEvent(PointEvents.EARN_REFERAL_SHARE);
     await shareViaNative(message, referralLink, 'Join Self');
   };
 
   const handleShareWhatsApp = async () => {
+    selfClient.trackEvent(PointEvents.EARN_REFERAL_WHATSAPP);
     await shareViaWhatsApp(message);
   };
 

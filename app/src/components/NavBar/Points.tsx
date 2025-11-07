@@ -10,6 +10,9 @@ import { BlurView } from '@react-native-community/blur';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { PointHistoryList } from '@/components/PointHistoryList';
 import { useIncomingPoints, usePoints } from '@/hooks/usePoints';
 import BellWhiteIcon from '@/images/icons/bell_white.svg';
@@ -42,6 +45,8 @@ import {
 } from '@/utils/points';
 
 const Points: React.FC = () => {
+  const selfClient = useSelfClient();
+
   const { bottom } = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -68,6 +73,74 @@ const Points: React.FC = () => {
         setIsFocused(false);
       };
     }, []),
+  );
+
+  //TODO - uncomment after merging - https://github.com/selfxyz/self/pull/1363/
+  // useEffect(() => {
+  //   const backupEvent = usePointEventStore
+  //     .getState()
+  //     .events.find(
+  //       event => event.type === 'backup' && event.status === 'completed',
+  //     );
+
+  //   if (backupEvent && !hasCompletedBackupForPoints) {
+  //     setBackupForPointsCompleted();
+  //   }
+  // }, [setBackupForPointsCompleted, hasCompletedBackupForPoints]);
+
+  // Detect when returning from backup screen and record points if backup was completed
+  useFocusEffect(
+    React.useCallback(() => {
+      const { cloudBackupEnabled, backedUpWithTurnKey } =
+        useSettingStore.getState();
+      const currentHasCompletedBackup =
+        useSettingStore.getState().hasCompletedBackupForPoints;
+
+      // If either backup method is enabled but points haven't been recorded yet, record them now
+      // This happens when user just completed backup and returned to this screen
+      if (
+        (cloudBackupEnabled || backedUpWithTurnKey) &&
+        !currentHasCompletedBackup
+      ) {
+        const recordPoints = async () => {
+          try {
+            const response = await recordBackupPointEvent();
+
+            if (response.success) {
+              useSettingStore.getState().setBackupForPointsCompleted();
+              selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
+
+              if (listRefreshRef.current) {
+                await listRefreshRef.current();
+              }
+
+              const callbackId = registerModalCallbacks({
+                onButtonPress: () => {},
+                onModalDismiss: () => {},
+              });
+              navigation.navigate('Modal', {
+                titleText: 'Success!',
+                bodyText:
+                  'Account backed up successfully! You earned 100 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
+                buttonText: 'OK',
+                callbackId,
+              });
+            } else {
+              console.error(
+                'Error recording backup points after return:',
+                response.error,
+              );
+              selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
+            }
+          } catch (error) {
+            selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
+            console.error('Error recording backup points after return:', error);
+          }
+        };
+
+        recordPoints();
+      }
+    }, [navigation, selfClient]),
   );
 
   // Mock function to check if user has backed up their account
@@ -99,7 +172,7 @@ const Points: React.FC = () => {
     if (isEnabling) {
       return;
     }
-
+    selfClient.trackEvent(PointEvents.EARN_NOTIFICATION);
     setIsEnabling(true);
     try {
       const granted = await requestNotificationPermission();
@@ -109,6 +182,7 @@ const Points: React.FC = () => {
           const response = await recordNotificationPointEvent();
           if (response.success) {
             setIsNovaSubscribed(true);
+            selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_SUCCESS);
 
             if (listRefreshRef.current) {
               await listRefreshRef.current();
@@ -126,6 +200,10 @@ const Points: React.FC = () => {
               callbackId,
             });
           } else {
+            selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_FAILED, {
+              reason: 'Failed to record points',
+            });
+
             const callbackId = registerModalCallbacks({
               onButtonPress: () => {},
               onModalDismiss: () => {},
@@ -140,6 +218,9 @@ const Points: React.FC = () => {
             });
           }
         } else {
+          selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_FAILED, {
+            reason: 'Subscription failed',
+          });
           const callbackId = registerModalCallbacks({
             onButtonPress: () => {},
             onModalDismiss: () => {},
@@ -152,6 +233,9 @@ const Points: React.FC = () => {
           });
         }
       } else {
+        selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_FAILED, {
+          reason: 'Permission denied',
+        });
         const callbackId = registerModalCallbacks({
           onButtonPress: () => {},
           onModalDismiss: () => {},
@@ -165,6 +249,9 @@ const Points: React.FC = () => {
         });
       }
     } catch (error) {
+      selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_FAILED, {
+        reason: 'Exception occurred',
+      });
       const callbackId = registerModalCallbacks({
         onButtonPress: () => {},
         onModalDismiss: () => {},
@@ -187,57 +274,70 @@ const Points: React.FC = () => {
     if (isBackingUp) {
       return;
     }
+    selfClient.trackEvent(PointEvents.EARN_BACKUP);
 
-    setIsBackingUp(true);
-    try {
-      // this will add event to store and the new event will then trigger useIncomingPoints hook to refetch incoming points
-      const response = await recordBackupPointEvent();
+    const { cloudBackupEnabled, backedUpWithTurnKey } =
+      useSettingStore.getState();
 
-      if (response.success) {
-        setBackupForPointsCompleted();
+    // If either backup method is already enabled, just record points
+    if (cloudBackupEnabled || backedUpWithTurnKey) {
+      setIsBackingUp(true);
+      try {
+        // this will add event to store and the new event will then trigger useIncomingPoints hook to refetch incoming points
+        const response = await recordBackupPointEvent();
 
-        if (listRefreshRef.current) {
-          await listRefreshRef.current();
+        if (response.success) {
+          setBackupForPointsCompleted();
+          selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
+
+          if (listRefreshRef.current) {
+            await listRefreshRef.current();
+          }
+
+          const callbackId = registerModalCallbacks({
+            onButtonPress: () => {},
+            onModalDismiss: () => {},
+          });
+          navigation.navigate('Modal', {
+            titleText: 'Success!',
+            bodyText:
+              'Account backed up successfully! You earned 100 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
+            buttonText: 'OK',
+            callbackId,
+          });
+        } else {
+          selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
+          const callbackId = registerModalCallbacks({
+            onButtonPress: () => {},
+            onModalDismiss: () => {},
+          });
+          navigation.navigate('Modal', {
+            titleText: 'Verification Failed',
+            bodyText:
+              response.error || 'Failed to register points. Please try again.',
+            buttonText: 'OK',
+            callbackId,
+          });
         }
-
+      } catch (error) {
+        selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
         const callbackId = registerModalCallbacks({
           onButtonPress: () => {},
           onModalDismiss: () => {},
         });
         navigation.navigate('Modal', {
-          titleText: 'Success!',
+          titleText: 'Error',
           bodyText:
-            'Account backed up successfully! You earned 100 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
+            error instanceof Error ? error.message : 'Failed to backup account',
           buttonText: 'OK',
           callbackId,
         });
-      } else {
-        const callbackId = registerModalCallbacks({
-          onButtonPress: () => {},
-          onModalDismiss: () => {},
-        });
-        navigation.navigate('Modal', {
-          titleText: 'Verification Failed',
-          bodyText:
-            response.error || 'Failed to register points. Please try again.',
-          buttonText: 'OK',
-          callbackId,
-        });
+      } finally {
+        setIsBackingUp(false);
       }
-    } catch (error) {
-      const callbackId = registerModalCallbacks({
-        onButtonPress: () => {},
-        onModalDismiss: () => {},
-      });
-      navigation.navigate('Modal', {
-        titleText: 'Error',
-        bodyText:
-          error instanceof Error ? error.message : 'Failed to backup account',
-        buttonText: 'OK',
-        callbackId,
-      });
-    } finally {
-      setIsBackingUp(false);
+    } else {
+      // Navigate to backup screen and return to Points after backup completes
+      navigation.navigate('CloudBackupSettings', { returnToScreen: 'Points' });
     }
   };
 
@@ -402,7 +502,12 @@ const Points: React.FC = () => {
           </XStack>
         </Pressable>
       )}
-      <Pressable onPress={() => navigation.navigate('Referral')}>
+      <Pressable
+        onPress={() => {
+          selfClient.trackEvent(PointEvents.EARN_REFERRAL);
+          navigation.navigate('Referral');
+        }}
+      >
         <YStack
           height={270}
           backgroundColor="white"
@@ -474,6 +579,7 @@ const Points: React.FC = () => {
             paddingVertical={14}
             borderRadius={5}
             height={52}
+            onPress={() => selfClient.trackEvent(PointEvents.EXPLORE_APPS)}
           >
             <Text
               fontFamily="DIN OT"

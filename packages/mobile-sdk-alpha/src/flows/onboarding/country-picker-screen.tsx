@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { memo, useCallback } from 'react';
-import { ActivityIndicator, FlatList, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { commonNames } from '@selfxyz/common/constants/countries';
 
@@ -32,15 +32,10 @@ const CountryItem = memo<{
   if (!countryName) return null;
 
   return (
-    <TouchableOpacity
-      onPress={() => onSelect(countryCode)}
-      style={{
-        paddingVertical: 13,
-      }}
-    >
-      <XStack alignItems="center" gap={16}>
+    <TouchableOpacity onPress={() => onSelect(countryCode)} style={styles.countryItemContainer}>
+      <XStack style={styles.countryItemContent}>
         <RoundFlag countryCode={countryCode} size={FLAG_SIZE} />
-        <BodyText style={{ fontSize: 16, color: black, flex: 1 }}>{countryName}</BodyText>
+        <BodyText style={styles.countryItemText}>{countryName}</BodyText>
       </XStack>
     </TouchableOpacity>
   );
@@ -49,7 +44,7 @@ const CountryItem = memo<{
 CountryItem.displayName = 'CountryItem';
 
 const Loading = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+  <View style={styles.loadingContainer}>
     <ActivityIndicator size="small" />
   </View>
 );
@@ -63,11 +58,11 @@ const CountryPickerScreen: React.FC = () => {
   const onPressCountry = useCallback(
     (countryCode: string) => {
       buttonTap();
-      if (__DEV__) {
-        console.log('Selected country code:', countryCode);
-        console.log('Current countryData:', countryData);
-        console.log('Available country codes:', Object.keys(countryData));
-      }
+      // if (__DEV__) {
+      //   console.log('Selected country code:', countryCode);
+      //   console.log('Current countryData:', countryData);
+      //   console.log('Available country codes:', Object.keys(countryData));
+      // }
       const documentTypes = countryData[countryCode];
       if (__DEV__) {
         console.log('documentTypes for', countryCode, ':', documentTypes);
@@ -111,8 +106,8 @@ const CountryPickerScreen: React.FC = () => {
   return (
     <YStack flex={1} paddingTop="$4" paddingHorizontal="$4" backgroundColor={slate100}>
       <YStack marginTop="$4" marginBottom="$6">
-        <BodyText style={{ fontSize: 29, fontFamily: advercase }}>Select the country that issued your ID</BodyText>
-        <BodyText style={{ fontSize: 16, color: slate500, marginTop: 20 }}>
+        <BodyText style={styles.titleText}>Select the country that issued your ID</BodyText>
+        <BodyText style={styles.subtitleText}>
           Self has support for over 300 ID types. You can select the type of ID in the next step
         </BodyText>
       </YStack>
@@ -122,32 +117,12 @@ const CountryPickerScreen: React.FC = () => {
         <YStack flex={1}>
           {showSuggestion && (
             <YStack marginBottom="$2">
-              <BodyText
-                style={{
-                  fontSize: 16,
-                  color: black,
-                  fontFamily: dinot,
-                  letterSpacing: 0.8,
-                  marginBottom: 8,
-                }}
-              >
-                SUGGESTION
-              </BodyText>
+              <BodyText style={styles.sectionLabel}>SUGGESTION</BodyText>
               <CountryItem
                 countryCode={userCountryCode as string /*safe due to showSuggestion*/}
                 onSelect={onPressCountry}
               />
-              <BodyText
-                style={{
-                  fontSize: 16,
-                  color: black,
-                  fontFamily: dinot,
-                  letterSpacing: 0.8,
-                  marginTop: 20,
-                }}
-              >
-                SELECT AN ISSUING COUNTRY
-              </BodyText>
+              <BodyText style={styles.sectionLabelBottom}>SELECT AN ISSUING COUNTRY</BodyText>
             </YStack>
           )}
           <FlatList
@@ -168,5 +143,49 @@ const CountryPickerScreen: React.FC = () => {
   );
 };
 CountryPickerScreen.displayName = 'CountryPickerScreen';
+
+const styles = StyleSheet.create({
+  countryItemContainer: {
+    paddingVertical: 13,
+  },
+  countryItemContent: {
+    alignItems: 'center',
+    gap: 16,
+  },
+  countryItemText: {
+    fontSize: 16,
+    color: black,
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  titleText: {
+    fontSize: 29,
+    fontFamily: advercase,
+    color: black,
+  },
+  subtitleText: {
+    fontSize: 16,
+    color: slate500,
+    marginTop: 20,
+  },
+  sectionLabel: {
+    fontSize: 16,
+    color: black,
+    fontFamily: dinot,
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
+  sectionLabelBottom: {
+    fontSize: 16,
+    color: black,
+    fontFamily: dinot,
+    letterSpacing: 0.8,
+    marginTop: 20,
+  },
+});
 
 export default CountryPickerScreen;

@@ -129,10 +129,6 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
 
       if (params?.returnToScreen) {
         navigation.navigate(params.returnToScreen);
-      } else if (params?.nextScreen) {
-        navigation.navigate(params.nextScreen);
-      } else {
-        navigation.goBack();
       }
     } catch (error) {
       console.error('iCloud backup error', error);
@@ -180,20 +176,16 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
 
       if (params?.returnToScreen) {
         navigation.navigate(params.returnToScreen);
-      } else if (params?.nextScreen) {
-        navigation.navigate(params.nextScreen);
-      } else {
-        navigation.goBack();
       }
     } catch (error) {
       if (error instanceof Error && error.message === 'already_exists') {
-        console.error('Already signed in with Turnkey');
+        console.log('Already signed in with Turnkey');
         showAlreadySignedInModal();
       } else if (
         error instanceof Error &&
         error.message === 'already_backed_up'
       ) {
-        console.error('Already backed up with Turnkey');
+        console.log('Already backed up with Turnkey');
         if (params?.returnToScreen) {
           navigation.navigate(params.returnToScreen);
         } else if (params?.nextScreen) {
