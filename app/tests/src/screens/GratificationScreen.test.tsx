@@ -15,18 +15,24 @@ jest.mock('@react-navigation/native', () => ({
 
 // Mock Tamagui components to avoid theme provider requirement
 jest.mock('tamagui', () => {
-  const React = require('react');
+  const ReactMock = require('react');
   const { View: RNView, Text: RNText } = require('react-native');
+  const YStack = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
+    ReactMock.createElement(RNView, { ref, ...props }, children),
+  );
+  YStack.displayName = 'YStack';
+  const Text = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
+    ReactMock.createElement(RNText, { ref, ...props }, children),
+  );
+  Text.displayName = 'Text';
+  const View = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
+    ReactMock.createElement(RNView, { ref, ...props }, children),
+  );
+  View.displayName = 'View';
   return {
-    YStack: React.forwardRef(({ children, ...props }: any, ref: any) =>
-      React.createElement(RNView, { ref, ...props }, children),
-    ),
-    Text: React.forwardRef(({ children, ...props }: any, ref: any) =>
-      React.createElement(RNText, { ref, ...props }, children),
-    ),
-    View: React.forwardRef(({ children, ...props }: any, ref: any) =>
-      React.createElement(RNView, { ref, ...props }, children),
-    ),
+    YStack,
+    Text,
+    View,
   };
 });
 

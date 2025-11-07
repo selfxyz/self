@@ -3,13 +3,12 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useNavigation } from '@react-navigation/native';
-import { act, renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook } from '@testing-library/react-native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
 import { useRegisterReferral } from '@/hooks/useRegisterReferral';
-import type { RootStackParamList } from '@/navigation';
 import useUserStore from '@/stores/userStore';
 import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 import {

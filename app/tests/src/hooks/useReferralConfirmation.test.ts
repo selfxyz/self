@@ -6,7 +6,6 @@ import { useNavigation } from '@react-navigation/native';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
-import type { RootStackParamList } from '@/navigation';
 import useUserStore from '@/stores/userStore';
 import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 
@@ -72,7 +71,7 @@ describe('useReferralConfirmation', () => {
     });
 
     it('should not show modal when isReferralConfirmed is already true', () => {
-      const { result, rerender } = renderHook(
+      const { rerender } = renderHook(
         ({ hasReferrer, onConfirmed }) =>
           useReferralConfirmation({ hasReferrer, onConfirmed }),
         {
@@ -108,7 +107,7 @@ describe('useReferralConfirmation', () => {
     });
 
     it('should not show modal when isReferralConfirmed is already false', () => {
-      const { result, rerender } = renderHook(
+      const { rerender } = renderHook(
         ({ hasReferrer, onConfirmed }) =>
           useReferralConfirmation({ hasReferrer, onConfirmed }),
         {
@@ -165,7 +164,7 @@ describe('useReferralConfirmation', () => {
     });
 
     it('should call onConfirmed when isReferralConfirmed becomes true and hasReferrer is true', async () => {
-      const { result } = renderHook(() =>
+      renderHook(() =>
         useReferralConfirmation({
           hasReferrer: true,
           onConfirmed: mockOnConfirmed,
@@ -185,7 +184,7 @@ describe('useReferralConfirmation', () => {
     });
 
     it('should not call onConfirmed when isReferralConfirmed is true but hasReferrer is false', () => {
-      const { result } = renderHook(() =>
+      renderHook(() =>
         useReferralConfirmation({
           hasReferrer: false,
           onConfirmed: mockOnConfirmed,
@@ -225,7 +224,7 @@ describe('useReferralConfirmation', () => {
       const referrer = '0x1234567890123456789012345678901234567890';
       useUserStore.getState().setDeepLinkReferrer(referrer);
 
-      const { result } = renderHook(() =>
+      renderHook(() =>
         useReferralConfirmation({
           hasReferrer: true,
           onConfirmed: mockOnConfirmed,
@@ -243,7 +242,7 @@ describe('useReferralConfirmation', () => {
     });
 
     it('should not call onConfirmed when modal is dismissed', () => {
-      const { result } = renderHook(() =>
+      renderHook(() =>
         useReferralConfirmation({
           hasReferrer: true,
           onConfirmed: mockOnConfirmed,
@@ -308,7 +307,7 @@ describe('useReferralConfirmation', () => {
     });
 
     it('should not show modal again after confirmation', () => {
-      const { result, rerender } = renderHook(
+      const { rerender } = renderHook(
         ({ hasReferrer, onConfirmed }) =>
           useReferralConfirmation({ hasReferrer, onConfirmed }),
         {
@@ -342,7 +341,7 @@ describe('useReferralConfirmation', () => {
     });
 
     it('should not show modal again after dismissal', () => {
-      const { result, rerender } = renderHook(
+      const { rerender } = renderHook(
         ({ hasReferrer, onConfirmed }) =>
           useReferralConfirmation({ hasReferrer, onConfirmed }),
         {
