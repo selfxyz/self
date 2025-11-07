@@ -6,6 +6,9 @@ import React, { useState } from 'react';
 import { Button, Text, XStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import CopyToClipboard from '@/images/icons/copy_to_clipboard.svg';
 import { black, green500, white } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
@@ -20,9 +23,11 @@ export const CopyReferralButton: React.FC<CopyReferralButtonProps> = ({
   onCopy,
 }) => {
   const [isCopied, setIsCopied] = useState(false);
+  const selfClient = useSelfClient();
 
   const handleCopyLink = async () => {
     try {
+      selfClient.trackEvent(PointEvents.EARN_REFERRAL_COPY_LINK);
       await Clipboard.setString(referralLink);
       setIsCopied(true);
 

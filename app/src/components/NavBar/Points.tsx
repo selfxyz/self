@@ -10,6 +10,9 @@ import { BlurView } from '@react-native-community/blur';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { PointHistoryList } from '@/components/PointHistoryList';
 import { useIncomingPoints, usePoints } from '@/hooks/usePoints';
 import BellWhiteIcon from '@/images/icons/bell_white.svg';
@@ -42,6 +45,8 @@ import {
 } from '@/utils/points';
 
 const Points: React.FC = () => {
+  const selfClient = useSelfClient();
+
   const { bottom } = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -99,7 +104,7 @@ const Points: React.FC = () => {
     if (isEnabling) {
       return;
     }
-
+    selfClient.trackEvent(PointEvents.EARN_NOTIFICATION);
     setIsEnabling(true);
     try {
       const granted = await requestNotificationPermission();
@@ -109,6 +114,7 @@ const Points: React.FC = () => {
           const response = await recordNotificationPointEvent();
           if (response.success) {
             setIsNovaSubscribed(true);
+            selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_SUCCESS);
 
             if (listRefreshRef.current) {
               await listRefreshRef.current();
@@ -126,6 +132,10 @@ const Points: React.FC = () => {
               callbackId,
             });
           } else {
+            selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_FAILED, {
+              reason: 'Failed to record points',
+            });
+
             const callbackId = registerModalCallbacks({
               onButtonPress: () => {},
               onModalDismiss: () => {},
@@ -140,6 +150,9 @@ const Points: React.FC = () => {
             });
           }
         } else {
+          selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_FAILED, {
+            reason: 'Subscription failed',
+          });
           const callbackId = registerModalCallbacks({
             onButtonPress: () => {},
             onModalDismiss: () => {},
@@ -152,6 +165,9 @@ const Points: React.FC = () => {
           });
         }
       } else {
+        selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_FAILED, {
+          reason: 'Permission denied',
+        });
         const callbackId = registerModalCallbacks({
           onButtonPress: () => {},
           onModalDismiss: () => {},
@@ -165,6 +181,9 @@ const Points: React.FC = () => {
         });
       }
     } catch (error) {
+      selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_FAILED, {
+        reason: 'Exception occurred',
+      });
       const callbackId = registerModalCallbacks({
         onButtonPress: () => {},
         onModalDismiss: () => {},
@@ -187,6 +206,7 @@ const Points: React.FC = () => {
     if (isBackingUp) {
       return;
     }
+    selfClient.trackEvent(PointEvents.EARN_BACKUP);
 
     setIsBackingUp(true);
     try {
@@ -195,7 +215,7 @@ const Points: React.FC = () => {
 
       if (response.success) {
         setBackupForPointsCompleted();
-
+        selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
         if (listRefreshRef.current) {
           await listRefreshRef.current();
         }
@@ -212,6 +232,7 @@ const Points: React.FC = () => {
           callbackId,
         });
       } else {
+        selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
         const callbackId = registerModalCallbacks({
           onButtonPress: () => {},
           onModalDismiss: () => {},
@@ -225,6 +246,7 @@ const Points: React.FC = () => {
         });
       }
     } catch (error) {
+      selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
       const callbackId = registerModalCallbacks({
         onButtonPress: () => {},
         onModalDismiss: () => {},
@@ -402,7 +424,12 @@ const Points: React.FC = () => {
           </XStack>
         </Pressable>
       )}
-      <Pressable onPress={() => navigation.navigate('Referral')}>
+      <Pressable
+        onPress={() => {
+          selfClient.trackEvent(PointEvents.EARN_REFERRAL);
+          navigation.navigate('Referral');
+        }}
+      >
         <YStack
           height={270}
           backgroundColor="white"
@@ -474,6 +501,7 @@ const Points: React.FC = () => {
             paddingVertical={14}
             borderRadius={5}
             height={52}
+            onPress={() => selfClient.trackEvent(PointEvents.EXPLORE_APPS)}
           >
             <Text
               fontFamily="DIN OT"
