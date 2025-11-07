@@ -4,6 +4,7 @@
 
 import type { AxiosError } from 'axios';
 import axios from 'axios';
+import { Buffer } from 'buffer';
 import { ethers } from 'ethers';
 
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
