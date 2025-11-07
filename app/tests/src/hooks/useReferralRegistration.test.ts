@@ -11,6 +11,10 @@ import useUserStore from '@/stores/userStore';
 
 jest.mock('@react-navigation/native', () => ({
   useRoute: jest.fn(),
+  useNavigation: jest.fn(() => ({
+    navigate: jest.fn(),
+    goBack: jest.fn(),
+  })),
 }));
 
 jest.mock('@/hooks/useRegisterReferral');

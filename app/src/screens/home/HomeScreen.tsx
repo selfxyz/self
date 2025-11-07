@@ -77,7 +77,7 @@ const HomeScreen: React.FC = () => {
     }
   }, [routeParams?.testReferralFlow, isFocused, navigation]);
 
-  useTestReferralFlow(isFocused, shouldTriggerReferralTest);
+  useTestReferralFlow(shouldTriggerReferralTest);
 
   // Reset trigger flag after hook processes it
   useEffect(() => {

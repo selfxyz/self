@@ -28,15 +28,27 @@ const mockUseNavigation = useNavigation as jest.MockedFunction<
 
 describe('useReferralConfirmation', () => {
   const mockOnConfirmed = jest.fn();
+  const testReferrer = '0x1234567890123456789012345678901234567890';
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
 
     mockUseNavigation.mockReturnValue({
       navigate: mockNavigate,
+      goBack: jest.fn(),
     } as any);
 
     // Reset user store state
+    useUserStore.getState().clearDeepLinkReferrer();
+    // Set a test referrer for tests that need it
+    useUserStore.getState().setDeepLinkReferrer(testReferrer);
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+    // Clean up store state to prevent leaks to other tests
     useUserStore.getState().clearDeepLinkReferrer();
   });
 
@@ -221,9 +233,7 @@ describe('useReferralConfirmation', () => {
     });
 
     it('should clear deep link referrer when modal is dismissed', () => {
-      const referrer = '0x1234567890123456789012345678901234567890';
-      useUserStore.getState().setDeepLinkReferrer(referrer);
-
+      // testReferrer is already set in beforeEach
       renderHook(() =>
         useReferralConfirmation({
           hasReferrer: true,

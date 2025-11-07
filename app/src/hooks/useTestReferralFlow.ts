@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useCallback, useEffect, useRef } from 'react';
-import { Alert } from 'react-native';
 
 import useUserStore from '@/stores/userStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
@@ -17,20 +16,10 @@ const TEST_REFERRER = '0x1234567890123456789012345678901234567890';
  * Flow: Sets referrer → shows confirmation modal → on confirm, checks prerequisites
  * → if identity doc & points disclosure done → registers referral → navigates to Gratification
  *
- * @param isFocused - Whether the screen is currently focused (prevents showing alert on other screens)
- * @param shouldAutoTrigger - Whether to automatically trigger the alert after 3 seconds (default: false)
+ * @param shouldAutoTrigger - Whether to automatically trigger the flow after 3 seconds (default: false)
  */
-export const useTestReferralFlow = (
-  isFocused = true,
-  shouldAutoTrigger = false,
-) => {
+export const useTestReferralFlow = (shouldAutoTrigger = false) => {
   const referralTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const isFocusedRef = useRef(isFocused);
-
-  // Keep the ref updated
-  useEffect(() => {
-    isFocusedRef.current = isFocused;
-  }, [isFocused]);
 
   const triggerReferralFlow = useCallback(() => {
     if (IS_DEV_MODE) {
@@ -54,40 +43,13 @@ export const useTestReferralFlow = (
     }
   }, []);
 
-  const showReferralFlowAlert = useCallback(() => {
-    // Only show alert if screen is focused
-    if (IS_DEV_MODE && isFocusedRef.current) {
-      Alert.alert(
-        'DEV MODE: Test Referral Flow',
-        'Start the full referral flow test? (Will reset test state)',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-            onPress: () => {
-              console.log('[DEV MODE] Referral flow test cancelled');
-            },
-          },
-          {
-            text: 'Start',
-            onPress: triggerReferralFlow,
-          },
-        ],
-      );
-    } else if (IS_DEV_MODE && !isFocusedRef.current) {
-      console.log(
-        '[DEV MODE] Skipping referral flow alert - screen not focused',
-      );
-    }
-  }, [triggerReferralFlow]);
-
   // Automatic trigger after 3 seconds (only if shouldAutoTrigger is true)
   useEffect(() => {
     if (IS_DEV_MODE && shouldAutoTrigger) {
-      console.log('[DEV MODE] Referral flow test will prompt in 3 seconds...');
+      console.log('[DEV MODE] Auto-triggering referral flow in 3 seconds...');
       referralTimerRef.current = setTimeout(() => {
-        showReferralFlowAlert();
-      }, 3000); // 3 seconds
+        triggerReferralFlow();
+      }, 3000);
     }
 
     return () => {
@@ -95,13 +57,13 @@ export const useTestReferralFlow = (
         clearTimeout(referralTimerRef.current);
       }
     };
-  }, [showReferralFlowAlert, shouldAutoTrigger]);
+  }, [triggerReferralFlow, shouldAutoTrigger]);
 
   const handleTestReferralFlow = useCallback(() => {
     if (IS_DEV_MODE) {
-      showReferralFlowAlert();
+      triggerReferralFlow();
     }
-  }, [showReferralFlowAlert]);
+  }, [triggerReferralFlow]);
 
   return {
     handleTestReferralFlow,
