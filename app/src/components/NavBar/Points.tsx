@@ -94,10 +94,6 @@ const Points: React.FC = () => {
             if (response.success) {
               useSettingStore.getState().setBackupForPointsCompleted();
 
-              const address = await getPointsAddress();
-              const points = await getTotalPoints(address);
-              setSelfPoints(points);
-
               if (listRefreshRef.current) {
                 await listRefreshRef.current();
               }
@@ -267,10 +263,6 @@ const Points: React.FC = () => {
 
         if (response.success) {
           setBackupForPointsCompleted();
-
-          const address = await getPointsAddress();
-          const points = await getTotalPoints(address);
-          setSelfPoints(points);
 
           if (listRefreshRef.current) {
             await listRefreshRef.current();
