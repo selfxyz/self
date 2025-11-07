@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { render } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 
 import GratificationScreen from '@/screens/app/GratificationScreen';
 
@@ -13,14 +13,29 @@ jest.mock('@react-navigation/native', () => ({
   useRoute: jest.fn(),
 }));
 
+// Mock Tamagui components to avoid theme provider requirement
+jest.mock('tamagui', () => {
+  const React = require('react');
+  const { View: RNView, Text: RNText } = require('react-native');
+  return {
+    YStack: React.forwardRef(({ children, ...props }: any, ref: any) =>
+      React.createElement(RNView, { ref, ...props }, children),
+    ),
+    Text: React.forwardRef(({ children, ...props }: any, ref: any) =>
+      React.createElement(RNText, { ref, ...props }, children),
+    ),
+    View: React.forwardRef(({ children, ...props }: any, ref: any) =>
+      React.createElement(RNView, { ref, ...props }, children),
+    ),
+  };
+});
+
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   DelayedLottieView: ({ onAnimationFinish }: any) => {
-    React.useEffect(() => {
-      // Simulate animation finishing immediately
-      setTimeout(() => {
-        onAnimationFinish?.();
-      }, 0);
-    }, [onAnimationFinish]);
+    // Simulate animation finishing immediately
+    setTimeout(() => {
+      onAnimationFinish?.();
+    }, 0);
     return null;
   },
 }));
@@ -56,33 +71,39 @@ describe('GratificationScreen', () => {
     } as any);
   });
 
-  it('should use default points value when not provided', () => {
+  it('should use default points value when not provided', async () => {
     mockUseRoute.mockReturnValue({
       params: {},
     } as any);
 
     const { getByText } = render(<GratificationScreen />);
 
-    expect(getByText('0')).toBeTruthy();
+    await waitFor(() => {
+      expect(getByText('0')).toBeTruthy();
+    });
   });
 
-  it('should use custom points value when provided', () => {
+  it('should use custom points value when provided', async () => {
     mockUseRoute.mockReturnValue({
       params: { points: 50 },
     } as any);
 
     const { getByText } = render(<GratificationScreen />);
 
-    expect(getByText('50')).toBeTruthy();
+    await waitFor(() => {
+      expect(getByText('50')).toBeTruthy();
+    });
   });
 
-  it('should display referral points value (24) when passed', () => {
+  it('should display referral points value (24) when passed', async () => {
     mockUseRoute.mockReturnValue({
       params: { points: 24 },
     } as any);
 
     const { getByText } = render(<GratificationScreen />);
 
-    expect(getByText('24')).toBeTruthy();
+    await waitFor(() => {
+      expect(getByText('24')).toBeTruthy();
+    });
   });
 });
