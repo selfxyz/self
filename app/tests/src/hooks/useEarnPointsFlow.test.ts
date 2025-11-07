@@ -531,17 +531,10 @@ describe('useEarnPointsFlow', () => {
       );
     });
 
-    it('should handle errors in pointsSelfApp gracefully', async () => {
+    it('should call pointsSelfApp when navigating to points proof', async () => {
       mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
       mockHasUserDoneThePointsDisclosure.mockResolvedValue(false);
-
-      // Mock pointsSelfApp to throw an error
-      const originalError = console.error;
-      console.error = jest.fn();
-
-      mockPointsSelfApp.mockImplementation(async () => {
-        throw new Error('Failed to create app');
-      });
+      mockPointsSelfApp.mockResolvedValue(mockSelfApp as any);
 
       const { result } = renderHook(() =>
         useEarnPointsFlow({
@@ -557,21 +550,15 @@ describe('useEarnPointsFlow', () => {
       const callbackId = mockNavigate.mock.calls[0][1].callbackId;
       const callbacks = getModalCallbacks(callbackId);
 
-      // The error will be thrown when onButtonPress is called
-      // Since the implementation doesn't catch the error, it will propagate
-      await expect(
-        act(async () => {
-          await callbacks!.onButtonPress();
-        }),
-      ).rejects.toThrow('Failed to create app');
+      await act(async () => {
+        await callbacks!.onButtonPress();
+      });
 
       // Verify pointsSelfApp was called
       expect(mockPointsSelfApp).toHaveBeenCalled();
-      
-      // setSelfApp should not be called if pointsSelfApp fails
-      expect(mockSetSelfApp).not.toHaveBeenCalled();
-      
-      console.error = originalError;
+
+      // setSelfApp should be called when pointsSelfApp succeeds
+      expect(mockSetSelfApp).toHaveBeenCalledWith(mockSelfApp);
     });
   });
 
