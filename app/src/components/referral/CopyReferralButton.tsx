@@ -3,8 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useState } from 'react';
-import { Clipboard } from 'react-native';
 import { Button, Text, XStack } from 'tamagui';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 import CopyToClipboard from '@/images/icons/copy_to_clipboard.svg';
 import { black, green500, white } from '@/utils/colors';
