@@ -319,7 +319,8 @@ jobs:
               echo "::add-mask::${SELFXYZ_INTERNAL_REPO_PAT}"
             fi
             cd packages/mobile-sdk-demo/ios
-            pod install
+            echo "📦 Installing pods via cache-fix script…"
+            bash scripts/pod-install-with-cache-fix.sh
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
           GIT_TERMINAL_PROMPT: 0

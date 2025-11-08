@@ -5,50 +5,6 @@
 import { IS_DEV_MODE } from '@/utils/devUtils';
 import { makeApiRequest, POINTS_API_BASE_URL } from '@/utils/points/api';
 
-export type JobStatusResponse = {
-  job_id: string;
-  status: 'complete' | 'failed';
-};
-
-export async function checkEventProcessingStatus(
-  jobId: string,
-): Promise<'pending' | 'completed' | 'failed' | null> {
-  try {
-    const response = await fetch(`${POINTS_API_BASE_URL}/job/${jobId}/status`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    // 102 means pending
-    if (response.status === 102) {
-      return 'pending';
-    }
-
-    // 404 means job not found - stop polling as it will never be found
-    if (response.status === 404) {
-      return 'failed';
-    }
-
-    // 200 means completed or failed - check the response body
-    if (response.status === 200) {
-      const data: JobStatusResponse = await response.json();
-      if (data.status === 'complete') {
-        return 'completed';
-      }
-      if (data.status === 'failed') {
-        return 'failed';
-      }
-    }
-
-    return null;
-  } catch (error) {
-    console.error(`Error checking job ${jobId} status:`, error);
-    return null;
-  }
-}
-
 type VerifyActionResponse = {
   job_id: string;
 };
@@ -79,7 +35,7 @@ export const registerBackupPoints = async (
     '/verify-action',
     {
       action: 'secret_backup',
-      address: userAddress.toLowerCase(),
+      address: userAddress,
     },
     errorMessages,
   );
@@ -126,7 +82,7 @@ export const registerNotificationPoints = async (
     '/verify-action',
     {
       action: 'push_notification',
-      address: userAddress.toLowerCase(),
+      address: userAddress,
     },
     errorMessages,
   );
@@ -176,8 +132,8 @@ export const registerReferralPoints = async ({
       url: `${POINTS_API_BASE_URL}/referrals/refer`,
       method: 'POST',
       body: {
-        referee: redactAddress(referee.toLowerCase()),
-        referrer: redactAddress(referrer.toLowerCase()),
+        referee: redactAddress(referee),
+        referrer: redactAddress(referrer),
       },
     });
     // Simulate a successful response with mock job_id for testing

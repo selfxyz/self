@@ -46,10 +46,10 @@ describe('useReferralMessage', () => {
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.referralLink).toBe(
-        `https://redirectselfxyzwebpages.vercel.app/referral/${mockAddress}`,
+        `https://referral.self.xyz/referral/${mockAddress}`,
       );
       expect(result.current.message).toBe(
-        `Join Self and use my referral link:\n\nhttps://redirectselfxyzwebpages.vercel.app/referral/${mockAddress}`,
+        `Join Self and use my referral link:\n\nhttps://referral.self.xyz/referral/${mockAddress}`,
       );
       expect(mockGetOrGeneratePointsAddress).not.toHaveBeenCalled();
     });
@@ -92,10 +92,10 @@ describe('useReferralMessage', () => {
       });
 
       expect(result.current.referralLink).toBe(
-        `https://redirectselfxyzwebpages.vercel.app/referral/${mockAddress}`,
+        `https://referral.self.xyz/referral/${mockAddress}`,
       );
       expect(result.current.message).toBe(
-        `Join Self and use my referral link:\n\nhttps://redirectselfxyzwebpages.vercel.app/referral/${mockAddress}`,
+        `Join Self and use my referral link:\n\nhttps://referral.self.xyz/referral/${mockAddress}`,
       );
     });
 
@@ -149,7 +149,7 @@ describe('useReferralMessage', () => {
       const { result } = renderHook(() => useReferralMessage());
 
       expect(result.current.referralLink).toBe(
-        `https://redirectselfxyzwebpages.vercel.app/referral/${mockAddress}`,
+        `https://referral.self.xyz/referral/${mockAddress}`,
       );
     });
 
@@ -161,7 +161,7 @@ describe('useReferralMessage', () => {
 
       const { result } = renderHook(() => useReferralMessage());
 
-      const expectedLink = `https://redirectselfxyzwebpages.vercel.app/referral/${mockAddress}`;
+      const expectedLink = `https://referral.self.xyz/referral/${mockAddress}`;
       expect(result.current.message).toBe(
         `Join Self and use my referral link:\n\n${expectedLink}`,
       );

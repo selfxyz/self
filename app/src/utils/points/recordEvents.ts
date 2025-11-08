@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { isSuccessfulStatus } from '@/utils/points/api';
 import { pollEventProcessingStatus } from '@/utils/points/eventPolling';
 import {
   registerBackupPoints,
@@ -48,7 +49,11 @@ export const recordBackupPointEvent = async (): Promise<{
     const userAddress = await getPointsAddress();
     const response = await registerBackupPoints(userAddress);
 
-    if (response.success && response.status === 200 && response.jobId) {
+    if (
+      response.success &&
+      isSuccessfulStatus(response.status) &&
+      response.jobId
+    ) {
       await addEventToStoreAndPoll(
         'Secret backed up',
         'backup',
@@ -80,7 +85,11 @@ export const recordNotificationPointEvent = async (): Promise<{
     const userAddress = await getPointsAddress();
     const response = await registerNotificationPoints(userAddress);
 
-    if (response.success && response.status === 200 && response.jobId) {
+    if (
+      response.success &&
+      isSuccessfulStatus(response.status) &&
+      response.jobId
+    ) {
       await addEventToStoreAndPoll(
         'Push notifications enabled',
         'notification',
@@ -115,7 +124,11 @@ export const recordReferralPointEvent = async (
     const referee = await getPointsAddress();
     const response = await registerReferralPoints({ referee, referrer });
 
-    if (response.success && response.status === 200 && response.jobId) {
+    if (
+      response.success &&
+      isSuccessfulStatus(response.status) &&
+      response.jobId
+    ) {
       await addEventToStoreAndPoll(
         'Friend referred',
         'refer',

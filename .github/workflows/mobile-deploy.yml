@@ -1276,17 +1276,21 @@ jobs:
             const version = JSON.parse(fs.readFileSync('version.json', 'utf8'));
             const timestamp = new Date().toISOString();
 
-            version.ios.build = $IOS_BUILD;
-            version.android.build = $ANDROID_BUILD;
-
-            // Update lastDeployed timestamp for successful builds
+            // Only bump build numbers for successful builds
             if ('$IOS_SUCCESS' === 'success') {
+              version.ios.build = $IOS_BUILD;
               version.ios.lastDeployed = timestamp;
-              console.log('✅ Updated iOS lastDeployed timestamp');
+              console.log('✅ Updated iOS build number to $IOS_BUILD and lastDeployed timestamp');
+            } else {
+              console.log('⏭️  Skipped iOS build number bump (build did not succeed)');
             }
+
             if ('$ANDROID_SUCCESS' === 'success') {
+              version.android.build = $ANDROID_BUILD;
               version.android.lastDeployed = timestamp;
-              console.log('✅ Updated Android lastDeployed timestamp');
+              console.log('✅ Updated Android build number to $ANDROID_BUILD and lastDeployed timestamp');
+            } else {
+              console.log('⏭️  Skipped Android build number bump (build did not succeed)');
             }
 
             fs.writeFileSync('version.json', JSON.stringify(version, null, 2) + '\n');
