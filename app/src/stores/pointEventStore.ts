@@ -128,15 +128,8 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
    * Calculates the total optimistic incoming points based on the current events.
    */
   totalOptimisticIncomingPoints: () => {
-    const pointsLastUpdated = get().incomingPoints.lastUpdated;
     const optimisticIncomingPoints = get()
       .getUnprocessedEvents()
-      .filter(
-        event =>
-          // by checking the timestamp is > than last point update time we can be sure
-          // that we are only counting points that have not yet been counted in the last update
-          event.timestamp > (pointsLastUpdated ?? 0),
-      )
       .reduce((sum, event) => sum + event.points, 0);
     return optimisticIncomingPoints + get().incomingPoints.amount;
   },
