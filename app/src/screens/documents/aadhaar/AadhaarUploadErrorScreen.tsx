@@ -14,12 +14,12 @@ import {
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import { getErrorMessages } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
 import WarningIcon from '@/images/warning.svg';
 import { black, slate100, slate200, slate500, white } from '@/lib/colors';
 import { extraYPadding } from '@/lib/constants';
-import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
 
 type AadhaarUploadErrorRouteParams = {
   errorType?: 'general' | 'expired';
@@ -31,7 +31,7 @@ type AadhaarUploadErrorRoute = RouteProp<
 >;
 
 const AadhaarUploadErrorScreen: React.FC = () => {
-  const { bottom } = useSafeAreaInsets();
+  const paddingBottom = useSafeBottomPadding(extraYPadding + 35);
   const navigation = useNavigation();
   const route = useRoute<AadhaarUploadErrorRoute>();
   const { trackEvent } = useSelfClient();
@@ -78,7 +78,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
       <YStack
         paddingHorizontal={25}
         backgroundColor={white}
-        paddingBottom={bottom + extraYPadding + 35}
+        paddingBottom={paddingBottom}
         paddingTop={25}
       >
         <XStack gap="$3" alignItems="stretch">

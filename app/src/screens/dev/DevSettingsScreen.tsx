@@ -17,6 +17,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
 
+import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
+
 import BugIcon from '@/images/icons/bug_icon.svg';
 import IdIcon from '@/images/icons/id_icon.svg';
 import WarningIcon from '@/images/icons/warning.svg';
@@ -295,6 +297,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const subscribedTopics = useSettingStore(state => state.subscribedTopics);
   const [hasNotificationPermission, setHasNotificationPermission] =
     useState(false);
+  const paddingBottom = useSafeBottomPadding(20);
 
   // Check notification permissions on mount
   useEffect(() => {
@@ -466,6 +469,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         flex={1}
         paddingHorizontal="$4"
         paddingTop="$4"
+        paddingBottom={paddingBottom}
       >
         <ParameterSection
           icon={<IdIcon />}

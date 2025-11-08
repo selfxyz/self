@@ -40,6 +40,8 @@ const entry = {
   'constants/analytics': 'src/constants/analytics.ts',
   'constants/colors': 'src/constants/colors.ts',
   'components/index': 'src/components/index.ts',
+  'hooks/index': 'src/hooks/index.ts',
+  'hooks/useSafeBottomPadding': 'src/hooks/useSafeBottomPadding.ts',
   stores: 'src/stores/index.ts',
   ...flowEntries,
 };

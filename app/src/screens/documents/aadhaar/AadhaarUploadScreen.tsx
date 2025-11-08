@@ -12,6 +12,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import { useAadhaar } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
 import { useModal } from '@/hooks/useModal';
@@ -22,11 +23,10 @@ import {
 } from '@/integrations/qr/qrScanner';
 import { slate100, slate200, slate400, slate500, white } from '@/lib/colors';
 import { extraYPadding } from '@/lib/constants';
-import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
 import type { RootStackParamList } from '@/navigation';
 
 const AadhaarUploadScreen: React.FC = () => {
-  const { bottom } = useSafeAreaInsets();
+  const paddingBottom = useSafeBottomPadding(extraYPadding + 50);
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -140,11 +140,7 @@ const AadhaarUploadScreen: React.FC = () => {
   ]);
 
   return (
-    <YStack
-      flex={1}
-      backgroundColor={slate100}
-      paddingBottom={bottom + extraYPadding + 50}
-    >
+    <YStack flex={1} backgroundColor={slate100} paddingBottom={paddingBottom}>
       <YStack flex={1} paddingHorizontal={20} paddingTop={20}>
         <YStack
           flex={1}

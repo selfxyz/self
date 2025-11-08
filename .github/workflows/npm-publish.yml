@@ -8,7 +8,7 @@ on:
       - "sdk/core/package.json"
       - "sdk/qrcode/package.json"
       - "common/package.json"
-      - 'packages/mobile-sdk-alpha/package.json'
+      - "packages/mobile-sdk-alpha/package.json"
       - "sdk/qrcode-angular/package.json"
       - "contracts/package.json"
   workflow_dispatch:

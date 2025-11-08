@@ -30,6 +30,8 @@ module.exports = {
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/index.cjs',
     '^@selfxyz/mobile-sdk-alpha/components$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/components/index.cjs',
+    '^@selfxyz/mobile-sdk-alpha/hooks$':
+      '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/hooks/index.cjs',
     '^@selfxyz/mobile-sdk-alpha/onboarding/(.*)$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/flows/onboarding/$1.cjs',
     '^@selfxyz/mobile-sdk-alpha/disclosing/(.*)$':

@@ -110,10 +110,10 @@
   ],
   "scripts": {
     "build": "yarn build:android && yarn build:ios && tsup && yarn postbuild",
-    "build:ts-only": "tsup && yarn postbuild",
+    "postbuild": "node ./scripts/postBuild.mjs",
     "build:android": "sh ./scripts/build-android.sh",
     "build:ios": "sh ./scripts/build-ios.sh",
-    "postbuild": "node ./scripts/postBuild.mjs",
+    "build:ts-only": "tsup && yarn postbuild",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "format": "sh -c 'if [ -z \"$SKIP_BUILD_DEPS\" ]; then yarn nice; else yarn fmt:fix; fi'",
@@ -127,7 +127,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "types": "tsc -p tsconfig.json --noEmit",
     "validate:exports": "node ./scripts/validate-exports.mjs",
-    "validate:pkg": "node ./scripts/verify-conditions.mjs"
+    "validate:pkg": "node ./scripts/verify-conditions.mjs",
+    "watch": "pkill -f 'tsup.*--watch' 2>/dev/null || true && tsup && yarn postbuild && tsup --watch"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",
