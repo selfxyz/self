@@ -14,12 +14,18 @@ import {
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate100,
+  slate200,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import { getErrorMessages } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
 import WarningIcon from '@/images/warning.svg';
-import { black, slate100, slate200, slate500, white } from '@/lib/colors';
-import { extraYPadding } from '@/lib/constants';
+import { extraYPadding } from '@/utils/styleUtils';
 
 type AadhaarUploadErrorRouteParams = {
   errorType?: 'general' | 'expired';

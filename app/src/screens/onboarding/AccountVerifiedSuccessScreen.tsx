@@ -14,11 +14,11 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
 import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, white } from '@/lib/colors';
 import type { RootStackParamList } from '@/navigation';
 import { styles } from '@/screens/verification/ProofRequestStatusScreen';
 

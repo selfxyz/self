@@ -7,13 +7,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { ChevronLeft, HelpCircle } from '@tamagui/lucide-icons';
 
+import { dinot } from '@selfxyz/mobile-sdk-alpha';
 import { Button, XStack, YStack } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  black,
+  slate100,
+  slate300,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
 import { buttonTap } from '@/integrations/haptics';
-import { black, slate100, slate300 } from '@/lib/colors';
-import { extraYPadding } from '@/lib/constants';
-import { dinot } from '@/lib/fonts';
+import { extraYPadding } from '@/utils/styleUtils';
 
 export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();

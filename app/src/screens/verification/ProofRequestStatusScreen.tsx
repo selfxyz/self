@@ -20,6 +20,7 @@ import {
   typography,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
@@ -30,7 +31,6 @@ import {
   notificationSuccess,
 } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, white } from '@/lib/colors';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
 

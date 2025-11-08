@@ -6,6 +6,7 @@ import type { PropsWithChildren } from 'react';
 import React, { useCallback, useMemo } from 'react';
 import { Linking, Platform, Share, View as RNView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
@@ -14,6 +15,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bug, FileText } from '@tamagui/lucide-icons';
 
 import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  amber500,
+  black,
+  neutral700,
+  slate800,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import {
   appStoreUrl,
@@ -34,10 +42,8 @@ import Telegram from '@/images/icons/telegram.svg';
 import Web from '@/images/icons/webpage.svg';
 import X from '@/images/icons/x.svg';
 import { impactLight } from '@/integrations/haptics';
-import { amber500, black, neutral700, slate800, white } from '@/lib/colors';
-import { extraYPadding } from '@/lib/constants';
-import { getCountry, getLocales, getTimeZone } from '@/lib/locale';
 import { useSettingStore } from '@/stores/settingStore';
+import { extraYPadding } from '@/utils/styleUtils';
 
 import { version } from '../../../../package.json';
 // Avoid importing RootStackParamList to prevent type cycles; use minimal typing

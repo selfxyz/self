@@ -4,7 +4,8 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import { black, white } from '@/lib/colors';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
 import CreateMockScreen from '@/screens/dev/CreateMockScreen';
 import CreateMockScreenDeepLink from '@/screens/dev/CreateMockScreenDeepLink';
 import DevFeatureFlagsScreen from '@/screens/dev/DevFeatureFlagsScreen';

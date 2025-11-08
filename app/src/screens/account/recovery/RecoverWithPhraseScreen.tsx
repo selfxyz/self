@@ -20,8 +20,6 @@ import {
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-
-import Paste from '@/images/icons/paste.svg';
 import {
   black,
   slate300,
@@ -29,7 +27,9 @@ import {
   slate600,
   slate700,
   white,
-} from '@/lib/colors';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import Paste from '@/images/icons/paste.svg';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import {

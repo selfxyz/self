@@ -11,8 +11,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { registerModalCallbacks } from '@/lib/modalCallbackRegistry';
 import type { RootStackParamList } from '@/navigation';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 export const useAppUpdates = (): [boolean, () => void, boolean] => {
   const navigation =

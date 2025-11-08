@@ -5,12 +5,12 @@
 import React, { useEffect } from 'react';
 
 import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
-import { slate500 } from '@/lib/colors';
 import { flushAllAnalytics } from '@/services/analytics';
 
 const tips: TipProps[] = [

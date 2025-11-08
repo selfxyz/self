@@ -12,6 +12,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  slate100,
+  slate200,
+  slate400,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import { useAadhaar } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
@@ -21,9 +28,8 @@ import {
   isQRScannerPhotoLibraryAvailable,
   scanQRCodeFromPhotoLibrary,
 } from '@/integrations/qrScanner';
-import { slate100, slate200, slate400, slate500, white } from '@/lib/colors';
-import { extraYPadding } from '@/lib/constants';
 import type { RootStackParamList } from '@/navigation';
+import { extraYPadding } from '@/utils/styleUtils';
 
 const AadhaarUploadScreen: React.FC = () => {
   const paddingBottom = useSafeBottomPadding(extraYPadding + 50);

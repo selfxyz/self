@@ -33,6 +33,7 @@ import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
 import {
+  dinot,
   hasAnyValidRegisteredDocument,
   sanitizeErrorMessage,
   useSelfClient,
@@ -46,8 +47,16 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate100,
+  slate400,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
+import { logNFCEvent } from '@/config/sentry';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import NFC_IMAGE from '@/images/nfc.png';
@@ -59,12 +68,9 @@ import {
 } from '@/integrations/haptics';
 import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate100, slate400, slate500, white } from '@/lib/colors';
-import { dinot } from '@/lib/fonts';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
-import { logNFCEvent } from '@/Sentry';
 import {
   configureNfcAnalytics,
   flushAllAnalytics,

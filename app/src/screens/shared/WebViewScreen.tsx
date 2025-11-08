@@ -15,10 +15,15 @@ import type { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import {
+  charcoal,
+  slate200,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
 import { WebViewNavBar } from '@/components/NavBar/WebViewNavBar';
 import { WebViewFooter } from '@/components/WebViewFooter';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { charcoal, slate200, white } from '@/lib/colors';
 import type { SharedRoutesParamList } from '@/navigation/types';
 
 export interface WebViewScreenParams {

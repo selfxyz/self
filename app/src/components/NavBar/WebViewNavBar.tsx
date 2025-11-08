@@ -7,11 +7,11 @@ import { StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExternalLink, X } from '@tamagui/lucide-icons';
 
+import { dinot } from '@selfxyz/mobile-sdk-alpha';
 import { Button, XStack } from '@selfxyz/mobile-sdk-alpha/components';
+import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { buttonTap } from '@/integrations/haptics';
-import { black } from '@/lib/colors';
-import { dinot } from '@/lib/fonts';
 
 export interface WebViewNavBarProps {
   title?: string;

@@ -9,8 +9,6 @@ import { BlurView } from '@react-native-community/blur';
 import { useNavigation } from '@react-navigation/native';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
-
-import IdCardLayout from '@/components/homeScreen/idCard';
 import {
   black,
   slate50,
@@ -18,7 +16,9 @@ import {
   slate300,
   slate500,
   white,
-} from '@/lib/colors';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import IdCardLayout from '@/components/homeScreen/idCard';
 import { usePassport } from '@/providers/passportDataProvider';
 import { ProofHistoryList } from '@/screens/home/ProofHistoryList';
 import useUserStore from '@/stores/userStore';

@@ -4,7 +4,12 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import { black, slate300, white } from '@/lib/colors';
+import {
+  black,
+  slate300,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
 import AccountRecoveryChoiceScreen from '@/screens/account/recovery/AccountRecoveryChoiceScreen';
 import AccountRecoveryScreen from '@/screens/account/recovery/AccountRecoveryScreen';
 import DocumentDataNotFoundScreen from '@/screens/account/recovery/DocumentDataNotFoundScreen';

@@ -17,11 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
 
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
-
-import BugIcon from '@/images/icons/bug_icon.svg';
-import IdIcon from '@/images/icons/id_icon.svg';
-import WarningIcon from '@/images/icons/warning.svg';
+import { dinot } from '@selfxyz/mobile-sdk-alpha';
 import {
   red500,
   slate100,
@@ -33,8 +29,12 @@ import {
   slate900,
   white,
   yellow500,
-} from '@/lib/colors';
-import { dinot } from '@/lib/fonts';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
+
+import BugIcon from '@/images/icons/bug_icon.svg';
+import IdIcon from '@/images/icons/id_icon.svg';
+import WarningIcon from '@/images/icons/warning.svg';
 import type { RootStackParamList } from '@/navigation';
 import { unsafe_clearSecrets } from '@/providers/authProvider';
 import { usePassport } from '@/providers/passportDataProvider';

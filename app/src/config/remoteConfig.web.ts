@@ -10,7 +10,7 @@ import type {
   RemoteConfigBackend,
   RemoteConfigValue,
   StorageBackend,
-} from '@/RemoteConfig.shared';
+} from '@/config/remoteConfig.shared';
 import {
   clearAllLocalOverrides as clearAllLocalOverridesShared,
   clearLocalOverride as clearLocalOverrideShared,
@@ -20,7 +20,7 @@ import {
   initRemoteConfig as initRemoteConfigShared,
   refreshRemoteConfig as refreshRemoteConfigShared,
   setLocalOverride as setLocalOverrideShared,
-} from '@/RemoteConfig.shared';
+} from '@/config/remoteConfig.shared';
 
 // Web-specific storage backend using LocalStorage
 const webStorageBackend: StorageBackend = {
@@ -94,7 +94,7 @@ class MockFirebaseRemoteConfig implements RemoteConfigBackend {
 const webRemoteConfigBackend: RemoteConfigBackend =
   new MockFirebaseRemoteConfig();
 
-export type { FeatureFlagValue } from '@/RemoteConfig.shared';
+export type { FeatureFlagValue } from '@/config/remoteConfig.shared';
 
 export const clearAllLocalOverrides = () =>
   clearAllLocalOverridesShared(webStorageBackend);

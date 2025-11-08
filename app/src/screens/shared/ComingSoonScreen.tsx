@@ -19,11 +19,15 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { notificationError } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate500, white } from '@/lib/colors';
 import type { SharedRoutesParamList } from '@/navigation/types';
 import analytics from '@/services/analytics';
 import { sendCountrySupportNotification } from '@/services/email';

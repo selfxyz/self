@@ -6,7 +6,6 @@ import React, { useCallback, useState } from 'react';
 import { Button, Text, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 
-import { confirmTap } from '@/integrations/haptics';
 import {
   black,
   slate50,
@@ -15,7 +14,9 @@ import {
   slate500,
   teal500,
   white,
-} from '@/lib/colors';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import { confirmTap } from '@/integrations/haptics';
 import { useSettingStore } from '@/stores/settingStore';
 
 interface MnemonicProps {

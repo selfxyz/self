@@ -8,13 +8,13 @@ import { Platform } from 'react-native';
 import type { PassportData } from '@selfxyz/common/types';
 import type { NFCScanContext } from '@selfxyz/mobile-sdk-alpha';
 
+import { logNFCEvent } from '@/config/sentry';
 import {
   type AndroidScanResponse,
   reset,
   scan as scanDocument,
 } from '@/integrations/nfc/passportReader';
 import { PassportReader } from '@/integrations/nfc/passportReader';
-import { logNFCEvent } from '@/Sentry';
 
 interface Inputs {
   passportNumber: string;

@@ -4,7 +4,8 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import { black, white } from '@/lib/colors';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 
 const accountScreens = {

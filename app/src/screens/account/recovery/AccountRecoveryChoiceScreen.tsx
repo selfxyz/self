@@ -20,12 +20,17 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate500,
+  slate600,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Keyboard from '@/images/icons/keyboard.svg';
 import RestoreAccountSvg from '@/images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate500, slate600, white } from '@/lib/colors';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import {

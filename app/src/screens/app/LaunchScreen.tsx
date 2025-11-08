@@ -8,17 +8,13 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
 
+import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha';
 import {
   AbstractButton,
   BodyText,
   Caption,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-
-import { privacyUrl, termsUrl } from '@/consts/links';
-import useConnectionModal from '@/hooks/useConnectionModal';
-import useHapticNavigation from '@/hooks/useHapticNavigation';
-import IDCardPlaceholder from '@/images/icons/id_card_placeholder.svg';
 import {
   black,
   red500,
@@ -26,8 +22,12 @@ import {
   slate400,
   white,
   zinc800,
-} from '@/lib/colors';
-import { advercase, dinot } from '@/lib/fonts';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import { privacyUrl, termsUrl } from '@/consts/links';
+import useConnectionModal from '@/hooks/useConnectionModal';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import IDCardPlaceholder from '@/images/icons/id_card_placeholder.svg';
 
 const LaunchScreen: React.FC = () => {
   useConnectionModal();

@@ -13,14 +13,15 @@ import {
   YStack,
 } from 'tamagui';
 
-import { textBlack } from '@/lib/colors';
-import type { FeatureFlagValue } from '@/RemoteConfig';
+import { textBlack } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import type { FeatureFlagValue } from '@/config/remoteConfig';
 import {
   clearAllLocalOverrides,
   getAllFeatureFlags,
   refreshRemoteConfig,
   setLocalOverride,
-} from '@/RemoteConfig';
+} from '@/config/remoteConfig';
 
 interface FeatureFlag {
   key: string;

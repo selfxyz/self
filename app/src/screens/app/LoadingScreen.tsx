@@ -9,15 +9,24 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
-import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  advercase,
+  dinot,
+  loadSelectedDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
 import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
 import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
+import {
+  black,
+  slate400,
+  white,
+  zinc900,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import LoadingUI from '@/components/LoadingUI';
 import { loadingScreenProgress } from '@/integrations/haptics';
-import { black, slate400, white, zinc900 } from '@/lib/colors';
-import { advercase, dinot } from '@/lib/fonts';
 import { getLoadingScreenText } from '@/proving/loadingScreenStateText';
 import { setupNotifications } from '@/services/notifications/notificationService';
 import { useSettingStore } from '@/stores/settingStore';

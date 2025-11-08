@@ -10,7 +10,7 @@ import type {
   FeatureFlagValue,
   RemoteConfigBackend,
   StorageBackend,
-} from '@/RemoteConfig.shared';
+} from '@/config/remoteConfig.shared';
 import {
   clearAllLocalOverrides as clearAllLocalOverridesShared,
   clearLocalOverride as clearLocalOverrideShared,
@@ -20,7 +20,7 @@ import {
   initRemoteConfig as initRemoteConfigShared,
   refreshRemoteConfig as refreshRemoteConfigShared,
   setLocalOverride as setLocalOverrideShared,
-} from '@/RemoteConfig.shared';
+} from '@/config/remoteConfig.shared';
 
 // Mobile-specific storage backend using AsyncStorage
 const mobileStorageBackend: StorageBackend = {
@@ -56,7 +56,7 @@ const mobileRemoteConfigBackend: RemoteConfigBackend = {
   },
 };
 
-export type { FeatureFlagValue } from '@/RemoteConfig.shared';
+export type { FeatureFlagValue } from '@/config/remoteConfig.shared';
 
 export const clearAllLocalOverrides = () =>
   clearAllLocalOverridesShared(mobileStorageBackend);

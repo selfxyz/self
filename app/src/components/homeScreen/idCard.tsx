@@ -14,11 +14,7 @@ import {
 } from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types/passport';
 import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
-import AadhaarIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
-import EPassport from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport.svg';
-
-import { SvgXml } from '@/components/homeScreen/SvgXmlWrapper';
-import LogoGray from '@/images/logo_gray.svg';
+import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha';
 import {
   black,
   slate100,
@@ -26,8 +22,12 @@ import {
   slate400,
   slate500,
   white,
-} from '@/lib/colors';
-import { dinot, plexMono } from '@/lib/fonts';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import AadhaarIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
+import EPassport from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport.svg';
+
+import { SvgXml } from '@/components/homeScreen/SvgXmlWrapper';
+import LogoGray from '@/images/logo_gray.svg';
 
 // Import the logo SVG as a string
 const logoSvg = `<svg width="47" height="46" viewBox="0 0 47 46" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -17,13 +17,13 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import BackupDocumentationLink from '@/components/BackupDocumentationLink';
 import { useModal } from '@/hooks/useModal';
 import Cloud from '@/images/icons/logo_cloud_backup.svg';
 import { buttonTap, confirmTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, white } from '@/lib/colors';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import { STORAGE_NAME, useBackupMnemonic } from '@/services/cloud-backup';

@@ -11,12 +11,16 @@ import {
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  black,
+  slate400,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import Mnemonic from '@/components/Mnemonic';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import useMnemonic from '@/hooks/useMnemonic';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate400, white } from '@/lib/colors';
 import { STORAGE_NAME } from '@/services/cloud-backup';
 import { useSettingStore } from '@/stores/settingStore';
 

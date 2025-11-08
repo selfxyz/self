@@ -12,10 +12,14 @@ import type { AadhaarData } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate200,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { black, slate200, white } from '@/lib/colors';
-import { extraYPadding } from '@/lib/constants';
 import { usePassport } from '@/providers/passportDataProvider';
+import { extraYPadding } from '@/utils/styleUtils';
 
 type DocumentMetadata =
   | (PassportMetadata & { documentCategory: 'passport' | 'id_card' })

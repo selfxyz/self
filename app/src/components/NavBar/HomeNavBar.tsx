@@ -11,14 +11,18 @@ import { Clipboard as ClipboardIcon } from '@tamagui/lucide-icons';
 
 import type { SelfApp } from '@selfxyz/common/utils/appType';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  black,
+  charcoal,
+  slate50,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
 import ActivityIcon from '@/images/icons/activity.svg';
 import ScanIcon from '@/images/icons/qr_scan.svg';
 import SettingsIcon from '@/images/icons/settings.svg';
 import { buttonTap } from '@/integrations/haptics';
-import { black, charcoal, slate50 } from '@/lib/colors';
-import { extraYPadding } from '@/lib/constants';
+import { extraYPadding } from '@/utils/styleUtils';
 
 export const HomeNavBar = (props: NativeStackHeaderProps) => {
   const selfClient = useSelfClient();

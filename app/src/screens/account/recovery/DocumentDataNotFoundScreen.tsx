@@ -13,10 +13,14 @@ import {
   PrimaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  black,
+  slate200,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate200, white } from '@/lib/colors';
 import analytics from '@/services/analytics';
 
 const { flush: flushAnalytics } = analytics();

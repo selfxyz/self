@@ -5,6 +5,7 @@
 import React, { useEffect } from 'react';
 
 import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
@@ -15,7 +16,6 @@ import PassportCameraScan from '@/images/icons/passport_camera_scan.svg';
 import QrScan from '@/images/icons/qr_scan.svg';
 import Star from '@/images/icons/star.svg';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
-import { slate500 } from '@/lib/colors';
 import analytics from '@/services/analytics';
 
 const { flush: flushAnalytics } = analytics();

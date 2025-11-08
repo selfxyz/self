@@ -12,10 +12,10 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import splashAnimation from '@/assets/animations/splash.json';
 import { impactLight } from '@/integrations/haptics';
-import { black } from '@/lib/colors';
 import type { RootStackParamList } from '@/navigation';
 import {
   getAndClearQueuedUrl,

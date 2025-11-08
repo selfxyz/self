@@ -13,15 +13,15 @@ import {
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import ModalClose from '@/images/icons/modal_close.svg';
 import LogoInversed from '@/images/logo_inversed.svg';
 import { confirmTap, impactLight } from '@/integrations/haptics';
-import { white } from '@/lib/colors';
 import {
   getModalCallbacks,
   unregisterModalCallbacks,
-} from '@/lib/modalCallbackRegistry';
+} from '@/utils/modalCallbackRegistry';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',

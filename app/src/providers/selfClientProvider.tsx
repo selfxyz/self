@@ -20,11 +20,11 @@ import {
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
+import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
-import { logNFCEvent, logProofEvent } from '@/Sentry';
 import analytics, { trackNfcEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
 

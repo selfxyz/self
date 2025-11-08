@@ -17,11 +17,15 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate100,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '@/lib/colors';
 
 const DocumentNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();

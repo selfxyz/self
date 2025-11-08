@@ -9,8 +9,6 @@ import {
   MIME_TYPES,
 } from '@robinbobin/react-native-google-drive-api-wrapper';
 
-import { parseMnemonic } from '@/lib/crypto/mnemonic';
-import { withRetries } from '@/lib/retry';
 import { createGDrive } from '@/services/cloud-backup/google';
 import { FILE_NAME } from '@/services/cloud-backup/helpers';
 import {
@@ -19,6 +17,8 @@ import {
   upload as iosUpload,
 } from '@/services/cloud-backup/ios';
 import type { Mnemonic } from '@/types/mnemonic';
+import { parseMnemonic } from '@/utils/crypto/mnemonic';
+import { withRetries } from '@/utils/retry';
 
 export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
 

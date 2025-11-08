@@ -13,8 +13,7 @@ import type {
   TopSectionProps,
 } from '@selfxyz/mobile-sdk-alpha';
 import { ExpandableBottomLayout as BaseExpandableBottomLayout } from '@selfxyz/mobile-sdk-alpha';
-
-import { black } from '@/lib/colors';
+import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 const Layout: React.FC<LayoutProps> = ({
   children,

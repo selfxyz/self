@@ -15,11 +15,11 @@ import {
   SubHeader,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import warningAnimation from '@/assets/animations/warning.json';
 import { confirmTap, notificationWarning } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, white } from '@/lib/colors';
 import type { RootStackParamList } from '@/navigation';
 import { useSettingStore } from '@/stores/settingStore';
 

@@ -7,10 +7,11 @@ import type { TextStyle, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 
+import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
 import { NavBar } from '@/components/NavBar/BaseNavBar';
 import { buttonTap } from '@/integrations/haptics';
-import { white } from '@/lib/colors';
-import { extraYPadding } from '@/lib/constants';
+import { extraYPadding } from '@/utils/styleUtils';
 
 export const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;

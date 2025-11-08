@@ -11,10 +11,10 @@ import {
   PrimaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { confirmTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, white } from '@/lib/colors';
 
 const DeferredLinkingInfoScreen: React.FC = () => {
   const navigation = useNavigation();

@@ -31,11 +31,15 @@ import {
   HeldPrimaryButtonProveScreen,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate300,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import Disclosures from '@/components/Disclosures';
 import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate300, white } from '@/lib/colors';
 import type { RootStackParamList } from '@/navigation';
 import {
   setDefaultDocumentTypeIfNeeded,

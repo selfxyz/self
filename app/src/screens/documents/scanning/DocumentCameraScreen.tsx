@@ -9,6 +9,7 @@ import { useIsFocused } from '@react-navigation/native';
 
 import {
   DelayedLottieView,
+  dinot,
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -20,6 +21,12 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
+  black,
+  slate400,
+  slate800,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
   mrzReadInstructions,
   useReadMRZ,
 } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
@@ -29,8 +36,6 @@ import { PassportCamera } from '@/components/native/PassportCamera';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Scan from '@/images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate400, slate800, white } from '@/lib/colors';
-import { dinot } from '@/lib/fonts';
 
 const DocumentCameraScreen: React.FC = () => {
   const client = useSelfClient();

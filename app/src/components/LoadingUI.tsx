@@ -7,10 +7,7 @@ import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, XStack, YStack } from 'tamagui';
 
-import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
-
-import CloseWarningIcon from '@/images/icons/close-warning.svg';
-import Plus from '@/images/icons/plus_slate600.svg';
+import { advercase, DelayedLottieView, dinot } from '@selfxyz/mobile-sdk-alpha';
 import {
   black,
   cyan300,
@@ -19,9 +16,11 @@ import {
   white,
   zinc500,
   zinc900,
-} from '@/lib/colors';
-import { extraYPadding } from '@/lib/constants';
-import { advercase, dinot } from '@/lib/fonts';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import CloseWarningIcon from '@/images/icons/close-warning.svg';
+import Plus from '@/images/icons/plus_slate600.svg';
+import { extraYPadding } from '@/utils/styleUtils';
 
 interface LoadingUIProps {
   animationSource: LottieView['props']['source'];

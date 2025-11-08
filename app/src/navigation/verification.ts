@@ -4,7 +4,8 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import { black, white } from '@/lib/colors';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
 import ProofRequestStatusScreen from '@/screens/verification/ProofRequestStatusScreen';
 import ProveScreen from '@/screens/verification/ProveScreen';
 import QRCodeTroubleScreen from '@/screens/verification/QRCodeTroubleScreen';

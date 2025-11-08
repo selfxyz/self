@@ -17,15 +17,15 @@ import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import type { DocumentMetadata } from '@selfxyz/mobile-sdk-alpha';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { slate50 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import IdCardLayout from '@/components/homeScreen/idCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
-import { slate50 } from '@/lib/colors';
-import { extraYPadding } from '@/lib/constants';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
+import { extraYPadding } from '@/utils/styleUtils';
 
 const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();

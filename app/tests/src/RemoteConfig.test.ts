@@ -13,7 +13,7 @@ import {
   getFeatureFlag,
   getLocalOverrides,
   setLocalOverride,
-} from '@/RemoteConfig';
+} from '@/config/remoteConfig';
 
 // Mock AsyncStorage with a default export
 jest.mock('@react-native-async-storage/async-storage', () => ({

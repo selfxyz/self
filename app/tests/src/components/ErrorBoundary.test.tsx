@@ -13,13 +13,13 @@ jest.doMock('@/services/analytics', () => ({
   trackNfcEvent: mockTrackNfcEvent,
   flushAllAnalytics: mockFlushAllAnalytics,
 }));
-jest.mock('@/Sentry', () => ({
+jest.mock('@/config/sentry', () => ({
   captureException: jest.fn(),
 }));
 
 // Import after mocks are set up
 const ErrorBoundary = require('@/components/ErrorBoundary').default;
-const { captureException } = require('@/Sentry');
+const { captureException } = require('@/config/sentry');
 
 const ProblemChild = () => {
   throw new Error('boom');

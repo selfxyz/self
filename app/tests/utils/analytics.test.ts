@@ -5,7 +5,7 @@
 import analytics from '@/services/analytics';
 
 // Mock the Segment client
-jest.mock('@/Segment', () => ({
+jest.mock('@/config/segment', () => ({
   createSegmentClient: jest.fn(() => ({
     track: jest.fn(),
     screen: jest.fn(),

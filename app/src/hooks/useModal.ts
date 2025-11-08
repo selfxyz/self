@@ -6,13 +6,13 @@ import { useCallback, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import type { RootStackParamList } from '@/navigation';
+import type { ModalParams } from '@/screens/app/ModalScreen';
 import {
   getModalCallbacks,
   registerModalCallbacks,
   unregisterModalCallbacks,
-} from '@/lib/modalCallbackRegistry';
-import type { RootStackParamList } from '@/navigation';
-import type { ModalParams } from '@/screens/app/ModalScreen';
+} from '@/utils/modalCallbackRegistry';
 
 export const useModal = (params: ModalParams) => {
   const [visible, setVisible] = useState(false);
