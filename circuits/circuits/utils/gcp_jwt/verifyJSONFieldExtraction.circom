@@ -113,4 +113,11 @@ template ExtractAndVerifyJSONField(
         maxJSONLength,
         maxValueLength
     )(json, value_offset, value_length);
+
+    // Validate value ends with closing quote and bracket: "value"]
+    signal closing_quote <== ItemAtIndex(maxJSONLength)(json, value_offset + value_length);
+    closing_quote === 34;  // ASCII code for "
+
+    signal closing_bracket <== ItemAtIndex(maxJSONLength)(json, value_offset + value_length + 1);
+    closing_bracket === 93;  // ASCII code for ]
 }
