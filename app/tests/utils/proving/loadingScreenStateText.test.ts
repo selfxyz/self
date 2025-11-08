@@ -9,23 +9,21 @@ import {
   getProvingTimeEstimate,
 } from '@/proving/loadingScreenStateText';
 
-// Local type for testing
-type PassportMetadata = {
-  signatureAlgorithm: string;
-  curveOrExponent: string;
-};
-
 describe('stateLoadingScreenText', () => {
-  // Default metadata for basic tests
-  const defaultMetadata: PassportMetadata = {
-    signatureAlgorithm: 'RSA',
-    curveOrExponent: '',
-  };
+  // Default values for basic tests
+  const defaultSignatureAlgorithm = 'RSA';
+  const defaultCurveOrExponent = '';
+  const defaultType = 'register' as const;
 
   // Helper function to test a state has a response
   const testStateHasResponse = (state: ProvingStateType) => {
     it(`should return a response for ${state} state`, () => {
-      const result = getLoadingScreenText(state, defaultMetadata);
+      const result = getLoadingScreenText(
+        state,
+        defaultSignatureAlgorithm,
+        defaultCurveOrExponent,
+        defaultType,
+      );
       expect(result).toBeDefined();
       expect(result.actionText).toBeDefined();
       expect(result.actionText.length).toBeGreaterThan(0);
@@ -63,7 +61,9 @@ describe('stateLoadingScreenText', () => {
     it('should handle undefined state', () => {
       const result = getLoadingScreenText(
         undefined as ProvingStateType,
-        defaultMetadata,
+        defaultSignatureAlgorithm,
+        defaultCurveOrExponent,
+        defaultType,
       );
       expect(result).toBeDefined();
       expect(result.actionText).toBeDefined();
@@ -73,7 +73,9 @@ describe('stateLoadingScreenText', () => {
     it('should handle unknown state', () => {
       const result = getLoadingScreenText(
         'unknown' as ProvingStateType,
-        defaultMetadata,
+        defaultSignatureAlgorithm,
+        defaultCurveOrExponent,
+        defaultType,
       );
       expect(result).toBeDefined();
       expect(result.actionText).toBeDefined();
@@ -81,7 +83,7 @@ describe('stateLoadingScreenText', () => {
     });
 
     it('should handle undefined metadata', () => {
-      const result = getLoadingScreenText('proving', undefined);
+      const result = getLoadingScreenText('proving', '', '', defaultType);
       expect(result).toBeDefined();
       expect(result.actionText).toBeDefined();
       expect(result.estimatedTime).toBe('30 - 90 SECONDS'); // Should use default time estimate
@@ -89,16 +91,15 @@ describe('stateLoadingScreenText', () => {
   });
 
   describe('getLoadingScreenText with passport metadata', () => {
-    const rsaMetadata: PassportMetadata = {
-      signatureAlgorithm: 'RSA',
-      curveOrExponent: '65537',
-    };
+    const rsaSignatureAlgorithm = 'RSA';
+    const rsaCurveOrExponent = '65537';
 
     it('should use algorithm information to estimate proving time', () => {
       const result = getLoadingScreenText(
         'proving',
-        rsaMetadata.signatureAlgorithm,
-        rsaMetadata.curveOrExponent,
+        rsaSignatureAlgorithm,
+        rsaCurveOrExponent,
+        defaultType,
       );
 
       // Should use RSA (4 SECONDS)
@@ -121,14 +122,9 @@ describe('stateLoadingScreenText', () => {
       ])(
         'should return correct time for %s with exponent %s and type %s',
         (algorithm, exponent, type, expectedTime) => {
-          const metadata: PassportMetadata = {
-            signatureAlgorithm: algorithm,
-            curveOrExponent: exponent,
-          };
-
           const result = getProvingTimeEstimate(
-            metadata.signatureAlgorithm,
-            metadata.curveOrExponent,
+            algorithm,
+            exponent,
             type as 'dsc' | 'register',
           );
           expect(result).toBe(expectedTime);
@@ -143,14 +139,9 @@ describe('stateLoadingScreenText', () => {
       ])(
         'should return correct time for %s with exponent %s and type %s',
         (algorithm, exponent, type, expectedTime) => {
-          const metadata: PassportMetadata = {
-            signatureAlgorithm: algorithm,
-            curveOrExponent: exponent,
-          };
-
           const result = getProvingTimeEstimate(
-            metadata.signatureAlgorithm,
-            metadata.curveOrExponent,
+            algorithm,
+            exponent,
             type as 'dsc' | 'register',
           );
           expect(result).toBe(expectedTime);
@@ -167,14 +158,9 @@ describe('stateLoadingScreenText', () => {
       ])(
         'should return correct time for 224-bit curve %s with type %s',
         (curve, type, expectedTime) => {
-          const metadata: PassportMetadata = {
-            signatureAlgorithm: 'ECDSA',
-            curveOrExponent: curve,
-          };
-
           const result = getProvingTimeEstimate(
-            metadata.signatureAlgorithm,
-            metadata.curveOrExponent,
+            'ECDSA',
+            curve,
             type as 'dsc' | 'register',
           );
           expect(result).toBe(expectedTime);
@@ -189,14 +175,9 @@ describe('stateLoadingScreenText', () => {
       ])(
         'should return correct time for 256-bit curve %s with type %s',
         (curve, type, expectedTime) => {
-          const metadata: PassportMetadata = {
-            signatureAlgorithm: 'ECDSA',
-            curveOrExponent: curve,
-          };
-
           const result = getProvingTimeEstimate(
-            metadata.signatureAlgorithm,
-            metadata.curveOrExponent,
+            'ECDSA',
+            curve,
             type as 'dsc' | 'register',
           );
           expect(result).toBe(expectedTime);
@@ -211,14 +192,9 @@ describe('stateLoadingScreenText', () => {
       ])(
         'should return correct time for 384-bit curve %s with type %s',
         (curve, type, expectedTime) => {
-          const metadata: PassportMetadata = {
-            signatureAlgorithm: 'ECDSA',
-            curveOrExponent: curve,
-          };
-
           const result = getProvingTimeEstimate(
-            metadata.signatureAlgorithm,
-            metadata.curveOrExponent,
+            'ECDSA',
+            curve,
             type as 'dsc' | 'register',
           );
           expect(result).toBe(expectedTime);
@@ -233,14 +209,9 @@ describe('stateLoadingScreenText', () => {
       ])(
         'should return correct time for 512/521-bit curve %s with type %s',
         (curve, type, expectedTime) => {
-          const metadata: PassportMetadata = {
-            signatureAlgorithm: 'ECDSA',
-            curveOrExponent: curve,
-          };
-
           const result = getProvingTimeEstimate(
-            metadata.signatureAlgorithm,
-            metadata.curveOrExponent,
+            'ECDSA',
+            curve,
             type as 'dsc' | 'register',
           );
           expect(result).toBe(expectedTime);
@@ -249,14 +220,9 @@ describe('stateLoadingScreenText', () => {
     });
 
     it('should return default time when algorithm is not recognized', () => {
-      const metadata: PassportMetadata = {
-        signatureAlgorithm: 'UNKNOWN_ALGORITHM',
-        curveOrExponent: '',
-      };
-
       const result = getProvingTimeEstimate(
-        metadata.signatureAlgorithm,
-        metadata.curveOrExponent,
+        'UNKNOWN_ALGORITHM',
+        '',
         'register',
       );
       expect(result).toBe('30 - 90 SECONDS');

@@ -227,13 +227,6 @@ module.exports = {
       },
     },
     {
-      // Allow require imports for dynamic imports in proving machine
-      files: ['src/features/proving/provingMachine.ts'],
-      rules: {
-        '@typescript-eslint/no-require-imports': 'off',
-      },
-    },
-    {
       // Allow require imports for conditional loading in navigation
       files: ['src/navigation/index.tsx'],
       rules: {
