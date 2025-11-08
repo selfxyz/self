@@ -19,9 +19,9 @@ import {
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import Cloud from '@/assets/images/icons/logo_cloud_backup.svg';
 import BackupDocumentationLink from '@/components/BackupDocumentationLink';
 import { useModal } from '@/hooks/useModal';
-import Cloud from '@/images/icons/logo_cloud_backup.svg';
 import { buttonTap, confirmTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';

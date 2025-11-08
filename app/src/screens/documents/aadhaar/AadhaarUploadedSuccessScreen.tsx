@@ -19,7 +19,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
-import BlueCheckIcon from '@/images/blue_check.svg';
+import BlueCheckIcon from '@/assets/images/blue_check.svg';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
 

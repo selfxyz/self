@@ -32,9 +32,9 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
+import Scan from '@/assets/images/icons/passport_camera_scan.svg';
 import { PassportCamera } from '@/components/native/PassportCamera';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import Scan from '@/images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 
 const DocumentCameraScreen: React.FC = () => {

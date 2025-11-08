@@ -7,14 +7,14 @@ import React, { useEffect } from 'react';
 import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import Activity from '@/assets/images/icons/activity.svg';
+import PassportCameraBulb from '@/assets/images/icons/passport_camera_bulb.svg';
+import PassportCameraScan from '@/assets/images/icons/passport_camera_scan.svg';
+import QrScan from '@/assets/images/icons/qr_scan.svg';
+import Star from '@/assets/images/icons/star.svg';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import Activity from '@/images/icons/activity.svg';
-import PassportCameraBulb from '@/images/icons/passport_camera_bulb.svg';
-import PassportCameraScan from '@/images/icons/passport_camera_scan.svg';
-import QrScan from '@/images/icons/qr_scan.svg';
-import Star from '@/images/icons/star.svg';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import analytics from '@/services/analytics';
 

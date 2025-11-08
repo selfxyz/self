@@ -23,6 +23,16 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import Github from '@/assets/images/icons/github.svg';
+import Cloud from '@/assets/images/icons/settings_cloud_backup.svg';
+import Data from '@/assets/images/icons/settings_data.svg';
+import Feedback from '@/assets/images/icons/settings_feedback.svg';
+import Lock from '@/assets/images/icons/settings_lock.svg';
+import ShareIcon from '@/assets/images/icons/share.svg';
+import Star from '@/assets/images/icons/star.svg';
+import Telegram from '@/assets/images/icons/telegram.svg';
+import Web from '@/assets/images/icons/webpage.svg';
+import X from '@/assets/images/icons/x.svg';
 import {
   appStoreUrl,
   gitHubUrl,
@@ -31,16 +41,6 @@ import {
   telegramUrl,
   xUrl,
 } from '@/consts/links';
-import Github from '@/images/icons/github.svg';
-import Cloud from '@/images/icons/settings_cloud_backup.svg';
-import Data from '@/images/icons/settings_data.svg';
-import Feedback from '@/images/icons/settings_feedback.svg';
-import Lock from '@/images/icons/settings_lock.svg';
-import ShareIcon from '@/images/icons/share.svg';
-import Star from '@/images/icons/star.svg';
-import Telegram from '@/images/icons/telegram.svg';
-import Web from '@/images/icons/webpage.svg';
-import X from '@/images/icons/x.svg';
 import { impactLight } from '@/integrations/haptics';
 import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';

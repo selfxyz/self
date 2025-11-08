@@ -22,8 +22,8 @@ import {
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import { useAadhaar } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
+import AadhaarImage from '@/assets/images/512w.png';
 import { useModal } from '@/hooks/useModal';
-import AadhaarImage from '@/images/512w.png';
 import {
   isQRScannerPhotoLibraryAvailable,
   scanQRCodeFromPhotoLibrary,

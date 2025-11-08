@@ -18,8 +18,8 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import RestoreAccountSvg from '@/assets/images/icons/restore_account.svg';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import RestoreAccountSvg from '@/images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 
 const AccountRecoveryScreen: React.FC = () => {

@@ -27,9 +27,9 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import Keyboard from '@/assets/images/icons/keyboard.svg';
+import RestoreAccountSvg from '@/assets/images/icons/restore_account.svg';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import Keyboard from '@/images/icons/keyboard.svg';
-import RestoreAccountSvg from '@/images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';

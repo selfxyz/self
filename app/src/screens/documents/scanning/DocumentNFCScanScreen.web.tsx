@@ -23,8 +23,8 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import NFC_IMAGE from '@/assets/images/nfc.png';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 
 const DocumentNFCScanScreen: React.FC = () => {

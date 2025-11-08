@@ -24,7 +24,7 @@ import {
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import { getErrorMessages } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
-import WarningIcon from '@/images/warning.svg';
+import WarningIcon from '@/assets/images/warning.svg';
 import { extraYPadding } from '@/utils/styleUtils';
 
 type AadhaarUploadErrorRouteParams = {

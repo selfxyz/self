@@ -18,8 +18,8 @@ import {
   zinc900,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import CloseWarningIcon from '@/images/icons/close-warning.svg';
-import Plus from '@/images/icons/plus_slate600.svg';
+import CloseWarningIcon from '@/assets/images/icons/close-warning.svg';
+import Plus from '@/assets/images/icons/plus_slate600.svg';
 import { extraYPadding } from '@/utils/styleUtils';
 
 interface LoadingUIProps {

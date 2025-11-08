@@ -17,10 +17,10 @@ import {
   slate50,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import ActivityIcon from '@/assets/images/icons/activity.svg';
+import ScanIcon from '@/assets/images/icons/qr_scan.svg';
+import SettingsIcon from '@/assets/images/icons/settings.svg';
 import { NavBar } from '@/components/NavBar/BaseNavBar';
-import ActivityIcon from '@/images/icons/activity.svg';
-import ScanIcon from '@/images/icons/qr_scan.svg';
-import SettingsIcon from '@/images/icons/settings.svg';
 import { buttonTap } from '@/integrations/haptics';
 import { extraYPadding } from '@/utils/styleUtils';
 

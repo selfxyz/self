@@ -24,10 +24,10 @@ import {
   zinc800,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import IDCardPlaceholder from '@/assets/images/icons/id_card_placeholder.svg';
 import { privacyUrl, termsUrl } from '@/consts/links';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import IDCardPlaceholder from '@/images/icons/id_card_placeholder.svg';
 
 const LaunchScreen: React.FC = () => {
   useConnectionModal();

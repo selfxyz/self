@@ -50,10 +50,10 @@ import {
   zinc400,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import SelfDevCard from '@/assets/images/card-dev.svg';
+import IdIcon from '@/assets/images/icons/id_icon.svg';
+import NoteIcon from '@/assets/images/icons/note.svg';
 import { useMockDataForm } from '@/hooks/useMockDataForm';
-import SelfDevCard from '@/images/card-dev.svg';
-import IdIcon from '@/images/icons/id_icon.svg';
-import NoteIcon from '@/images/icons/note.svg';
 import { buttonTap, selectionChange } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { storePassportData } from '@/providers/passportDataProvider';

@@ -26,8 +26,8 @@ import {
 import AadhaarIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
 import EPassport from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport.svg';
 
+import LogoGray from '@/assets/images/logo_gray.svg';
 import { SvgXml } from '@/components/homeScreen/SvgXmlWrapper';
-import LogoGray from '@/images/logo_gray.svg';
 
 // Import the logo SVG as a string
 const logoSvg = `<svg width="47" height="46" viewBox="0 0 47 46" fill="none" xmlns="http://www.w3.org/2000/svg">
