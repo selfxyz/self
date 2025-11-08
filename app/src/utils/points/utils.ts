@@ -152,7 +152,7 @@ export const pointsSelfApp = async () => {
     appName: '✨ Self Points',
     endpoint: endpoint.toLowerCase(),
     endpointType: 'celo',
-    scope: 'self-disclosure-quest',
+    scope: 'minimal-disclosure-quest',
     userId: v4(),
     userIdType: 'uuid',
     disclosures: {},

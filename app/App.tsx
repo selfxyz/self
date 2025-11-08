@@ -54,7 +54,7 @@ export const TURNKEY_CALLBACKS: TurnkeyCallbacks = {
     console.log('[Turnkey] Session expired:', sessionKey);
   },
   onAuthenticationSuccess: ({ action, method, identifier }) => {
-    console.log('[Turnkey] Auth success:', { action, method, identifier });
+    // console.log('[Turnkey] Auth success:', { action, method, identifier });
   },
   onError: error => {
     console.error('[Turnkey] Error:', error);
