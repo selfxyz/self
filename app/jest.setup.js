@@ -145,21 +145,25 @@ jest.mock(
 );
 
 // Mock @turnkey/react-native-wallet-kit to prevent loading of problematic dependencies
-jest.mock('@turnkey/react-native-wallet-kit', () => ({
-  AuthState: {
-    Authenticated: 'Authenticated',
-    Unauthenticated: 'Unauthenticated',
-  },
-  useTurnkey: jest.fn(() => ({
-    handleGoogleOauth: jest.fn(),
-    fetchWallets: jest.fn().mockResolvedValue([]),
-    exportWallet: jest.fn(),
-    importWallet: jest.fn(),
-    authState: 'Unauthenticated',
-    logout: jest.fn(),
-  })),
-  TurnkeyProvider: ({ children }) => children,
-}));
+jest.mock(
+  '@turnkey/react-native-wallet-kit',
+  () => ({
+    AuthState: {
+      Authenticated: 'Authenticated',
+      Unauthenticated: 'Unauthenticated',
+    },
+    useTurnkey: jest.fn(() => ({
+      handleGoogleOauth: jest.fn(),
+      fetchWallets: jest.fn().mockResolvedValue([]),
+      exportWallet: jest.fn(),
+      importWallet: jest.fn(),
+      authState: 'Unauthenticated',
+      logout: jest.fn(),
+    })),
+    TurnkeyProvider: ({ children }) => children,
+  }),
+  { virtual: true },
+);
 
 // Mock the mobile-sdk-alpha's TurboModuleRegistry to prevent native module errors
 jest.mock(

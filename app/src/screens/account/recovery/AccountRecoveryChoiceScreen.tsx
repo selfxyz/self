@@ -64,7 +64,10 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   }, [refreshWallets]);
 
   const restoreAccountFlow = useCallback(
-    async (mnemonic: Mnemonic, isCloudRestore: boolean = false): Promise<boolean> => {
+    async (
+      mnemonic: Mnemonic,
+      isCloudRestore: boolean = false,
+    ): Promise<boolean> => {
       try {
         const result = await restoreAccountFromMnemonic(mnemonic.phrase);
 
@@ -204,6 +207,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
             <PrimaryButton
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromTurnkeyPress}
+              testID="button-from-turnkey"
               disabled={
                 restoring ||
                 !biometricsAvailable ||
@@ -217,6 +221,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
             <PrimaryButton
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromCloudPress}
+              testID="button-from-teststorage"
               disabled={restoring || !biometricsAvailable}
             >
               {restoring ? 'Restoring' : 'Restore'} from {STORAGE_NAME}
