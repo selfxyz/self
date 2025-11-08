@@ -14,7 +14,7 @@ import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.jso
 import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
 import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
 
-import LoadingUI from '@/components/loading/LoadingUI';
+import LoadingUI from '@/components/LoadingUI';
 import { loadingScreenProgress } from '@/integrations/haptics';
 import { black, slate400, white, zinc900 } from '@/lib/colors';
 import { advercase, dinot } from '@/lib/fonts';

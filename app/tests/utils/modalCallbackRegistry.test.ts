@@ -6,7 +6,7 @@ import {
   getModalCallbacks,
   registerModalCallbacks,
   unregisterModalCallbacks,
-} from '@/lib/ui/modalCallbackRegistry';
+} from '@/lib/modalCallbackRegistry';
 
 describe('modalCallbackRegistry', () => {
   const registeredIds: number[] = [];

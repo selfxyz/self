@@ -71,7 +71,7 @@ import {
   setNfcScanningActive,
   trackNfcEvent,
 } from '@/services/analytics';
-import { sendFeedbackEmail } from '@/services/support/email';
+import { sendFeedbackEmail } from '@/services/email';
 
 const emitter =
   Platform.OS === 'android'

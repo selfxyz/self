@@ -16,7 +16,7 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { slate500 } from '@/lib/colors';
 import { flushAllAnalytics } from '@/services/analytics';
-import { sendFeedbackEmail } from '@/services/support/email';
+import { sendFeedbackEmail } from '@/services/email';
 
 const tips: TipProps[] = [
   {

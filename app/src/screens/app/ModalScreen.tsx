@@ -21,7 +21,7 @@ import { white } from '@/lib/colors';
 import {
   getModalCallbacks,
   unregisterModalCallbacks,
-} from '@/lib/ui/modalCallbackRegistry';
+} from '@/lib/modalCallbackRegistry';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',

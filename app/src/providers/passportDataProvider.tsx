@@ -65,7 +65,7 @@ import { isMRZDocument } from '@selfxyz/common/utils/types';
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import { createKeychainOptions } from '@/lib/security/keychainSecurity';
+import { createKeychainOptions } from '@/lib/keychainSecurity';
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
 
 // Create safe wrapper functions to prevent undefined errors during early initialization

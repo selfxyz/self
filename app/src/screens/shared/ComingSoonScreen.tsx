@@ -26,7 +26,7 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, slate500, white } from '@/lib/colors';
 import type { SharedRoutesParamList } from '@/navigation/types';
 import analytics from '@/services/analytics';
-import { sendCountrySupportNotification } from '@/services/support/email';
+import { sendCountrySupportNotification } from '@/services/email';
 
 const { flush: flushAnalytics } = analytics();
 

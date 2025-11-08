@@ -9,8 +9,8 @@ import {
   MIME_TYPES,
 } from '@robinbobin/react-native-google-drive-api-wrapper';
 
-import { withRetries } from '@/lib/async/retry';
 import { parseMnemonic } from '@/lib/crypto/mnemonic';
+import { withRetries } from '@/lib/retry';
 import { createGDrive } from '@/services/cloud-backup/google';
 import { FILE_NAME } from '@/services/cloud-backup/helpers';
 import {

@@ -10,7 +10,7 @@ import {
   getModalCallbacks,
   registerModalCallbacks,
   unregisterModalCallbacks,
-} from '@/lib/ui/modalCallbackRegistry';
+} from '@/lib/modalCallbackRegistry';
 import type { RootStackParamList } from '@/navigation';
 import type { ModalParams } from '@/screens/app/ModalScreen';
 

@@ -14,7 +14,7 @@ import type {
 import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
 import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
 
-import LoadingUI from '@/components/loading/LoadingUI';
+import LoadingUI from '@/components/LoadingUI';
 import { slate200, slate500 } from '@/lib/colors';
 import { dinot } from '@/lib/fonts';
 import { getLoadingScreenText } from '@/proving/loadingScreenStateText';

@@ -4,8 +4,8 @@
 
 import { CloudStorage } from 'react-native-cloud-storage';
 
-import { withRetries } from '@/lib/async/retry';
 import { parseMnemonic } from '@/lib/crypto/mnemonic';
+import { withRetries } from '@/lib/retry';
 import { ENCRYPTED_FILE_PATH, FOLDER } from '@/services/cloud-backup/helpers';
 import type { Mnemonic } from '@/types/mnemonic';
 

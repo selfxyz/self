@@ -20,7 +20,7 @@ import AadhaarImage from '@/images/512w.png';
 import {
   isQRScannerPhotoLibraryAvailable,
   scanQRCodeFromPhotoLibrary,
-} from '@/integrations/qr/qrScanner';
+} from '@/integrations/qrScanner';
 import { slate100, slate200, slate400, slate500, white } from '@/lib/colors';
 import { extraYPadding } from '@/lib/constants';
 import type { RootStackParamList } from '@/navigation';

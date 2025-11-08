@@ -7,7 +7,7 @@ import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 
 import { sanitizeErrorMessage } from '@selfxyz/mobile-sdk-alpha';
 
-import { version } from '../../../package.json';
+import { version } from '../../package.json';
 
 interface SendFeedbackEmailOptions {
   message: string;
