@@ -4,11 +4,7 @@
 
 import forge from 'node-forge';
 
-import {
-  encryptAES256GCM,
-  getPayload,
-  getWSDbRelayerUrl,
-} from '@/features/proving';
+import { encryptAES256GCM, getPayload, getWSDbRelayerUrl } from '@/proving';
 
 describe('provingUtils', () => {
   it('encryptAES256GCM encrypts and decrypts correctly', () => {

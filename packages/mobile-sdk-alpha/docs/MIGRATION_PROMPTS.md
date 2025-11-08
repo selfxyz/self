@@ -107,4 +107,4 @@ yarn build
 
 - Move `calculateContentHash` and related catalog helpers from `app/src/providers/passportDataProvider.tsx` to `common/src/utils/documents/` and re-export via `@selfxyz/common`.
 - Pull keychain wrappers like `storeDocument` into `common/src/utils/storage/passport.ts`.
-- Publish shared analytics/auth adapters (currently in `app/src/utils/analytics.ts` and `app/src/providers/authProvider.tsx`) through a new package and re-export types from `@selfxyz/common`.
+- Publish shared analytics/auth adapters (currently in `app/src/services/analytics/index.ts` and `app/src/providers/authProvider.tsx`) through a new package and re-export types from `@selfxyz/common`.

@@ -242,7 +242,7 @@ export async function checkAndUpdateRegistrationStates(
 ): Promise<void> {
   // Lazy import to avoid circular dependency
   const { checkAndUpdateRegistrationStates: validateDocCheckAndUpdate } =
-    await import('@/features/proving/validateDocument');
+    await import('@/proving/validateDocument');
   return validateDocCheckAndUpdate(selfClient);
 }
 

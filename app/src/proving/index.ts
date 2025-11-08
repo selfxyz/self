@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+// This module combines:
+// 1. Shared proving utilities from @selfxyz/common (cross-workspace)
+// 2. App-specific proving helpers (loadingScreenStateText, validateDocument)
+
 // Only export what's actually used elsewhere to enable proper tree shaking
 
 // From provingMachine - used in screens and tests
@@ -14,4 +18,4 @@ export {
 } from '@selfxyz/common/utils/proving';
 
 // From loadingScreenStateText - used in loading screen
-export { getLoadingScreenText } from '@/features/proving/loadingScreenStateText';
+export { getLoadingScreenText } from '@/proving/loadingScreenStateText';

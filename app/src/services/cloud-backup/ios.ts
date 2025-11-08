@@ -4,12 +4,9 @@
 
 import { CloudStorage } from 'react-native-cloud-storage';
 
-import {
-  ENCRYPTED_FILE_PATH,
-  FOLDER,
-  parseMnemonic,
-  withRetries,
-} from '@/services/cloud-backup/helpers';
+import { withRetries } from '@/lib/async/retry';
+import { parseMnemonic } from '@/lib/crypto/mnemonic';
+import { ENCRYPTED_FILE_PATH, FOLDER } from '@/services/cloud-backup/helpers';
 import type { Mnemonic } from '@/types/mnemonic';
 
 export async function disableBackup() {

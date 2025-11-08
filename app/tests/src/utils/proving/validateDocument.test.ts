@@ -10,7 +10,7 @@ import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   checkAndUpdateRegistrationStates,
   getAlternativeCSCA,
-} from '@/features/proving/validateDocument';
+} from '@/proving/validateDocument';
 
 // Mock the analytics module to avoid side effects in tests
 let mockTrackEvent: jest.Mock;

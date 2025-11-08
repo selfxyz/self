@@ -14,6 +14,6 @@ export const loadCryptoUtils = async () => {
 export const loadProvingUtils = async () => {
   return Promise.all([
     import('@selfxyz/mobile-sdk-alpha/stores'),
-    import('@/features/proving/validateDocument'),
+    import('@/proving/validateDocument'),
   ]);
 };
