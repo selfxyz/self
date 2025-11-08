@@ -10,7 +10,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 describe('iOS Info.plist Configuration', () => {
-  const plistPath = join(__dirname, '../../ios/OpenPassport/Info.plist');
+  const plistPath = join(__dirname, '../../../ios/OpenPassport/Info.plist');
   let plistContent: string;
 
   beforeAll(() => {

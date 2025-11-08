@@ -12,7 +12,7 @@ import { join } from 'path';
 describe('iOS project.pbxproj Configuration', () => {
   const projectPath = join(
     __dirname,
-    '../../ios/Self.xcodeproj/project.pbxproj',
+    '../../../ios/Self.xcodeproj/project.pbxproj',
   );
   let projectContent: string;
 

@@ -14,7 +14,7 @@ import {
   usePassport,
 } from '@/providers/passportDataProvider';
 
-import { mockAdapters } from '../../utils/selfClientProvider';
+import { mockAdapters } from '../../__setup__/selfClientProvider';
 
 // Mock react-native-keychain before importing the module
 const mockKeychain = {

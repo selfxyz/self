@@ -12,7 +12,7 @@ import { join } from 'path';
 describe('Android Manifest Configuration', () => {
   const manifestPath = join(
     __dirname,
-    '../../android/app/src/main/AndroidManifest.xml',
+    '../../../android/app/src/main/AndroidManifest.xml',
   );
   let manifestContent: string;
 
