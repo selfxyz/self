@@ -182,13 +182,6 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
   } else if (referrer && typeof referrer === 'string') {
     useUserStore.getState().setDeepLinkReferrer(referrer);
 
-    if (IS_DEV_MODE) {
-      console.log(
-        '[deeplinks] Setting referrer and navigating to HomeScreen for confirmation:',
-        referrer,
-      );
-    }
-
     // Navigate to HomeScreen - it will show confirmation modal and then navigate to GratificationScreen
     navigationRef.reset({
       index: 0,
