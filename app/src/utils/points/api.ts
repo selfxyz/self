@@ -91,11 +91,11 @@ const generateSignature = async (address: string): Promise<SignatureData> => {
  * @param body - The request body data
  * @param errorMessages - Optional custom error messages for specific error codes
  */
-export const makeApiRequest = async (
+export const makeApiRequest = async <T = unknown>(
   endpoint: string,
   body: Record<string, unknown>,
   errorMessages?: Record<string, string>,
-): Promise<ApiResponse> => {
+): Promise<ApiResponse<T>> => {
   try {
     // Auto-detect signing address from body (referee for referrals, address for other endpoints)
     const signingAddress = (body.referee as string) || (body.address as string);

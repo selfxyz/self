@@ -39,6 +39,7 @@ export const WebViewNavBar: React.FC<WebViewNavBarProps> = ({
     >
       {/* Left: Close Button */}
       <Button
+        testID="WebViewNavBar.closeButton"
         unstyled
         hitSlop={{ top: 20, bottom: 20, left: 20, right: 10 }}
         icon={<X size={24} color={black} />}

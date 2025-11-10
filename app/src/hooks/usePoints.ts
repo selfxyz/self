@@ -2,65 +2,52 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { usePointEventStore } from '@/stores/pointEventStore';
-import {
-  getIncomingPoints,
-  getNextSundayNoonUTC,
-  getPointsAddress,
-  getTotalPoints,
-  type IncomingPoints,
-} from '@/utils/points';
+import { getNextSundayNoonUTC, type IncomingPoints } from '@/utils/points';
 
 /*
- * Hook to fetch incoming points for the user. It refetches the incoming points when there is a new event in the point events store.
+ * Hook to get incoming points for the user. It shows the optimistic incoming points.
+ * Refreshes incoming points once on mount.
  */
-export const useIncomingPoints = (): IncomingPoints | null => {
-  const [incomingPoints, setIncomingPoints] = useState<null | IncomingPoints>(
-    null,
+export const useIncomingPoints = (): IncomingPoints => {
+  const incomingPoints = usePointEventStore(state => state.incomingPoints);
+  const totalOptimisticIncomingPoints = usePointEventStore(state =>
+    state.totalOptimisticIncomingPoints(),
   );
-  const pointEvents = usePointEventStore(state => state.events);
-  const pointEventsCount = pointEvents.length;
+  const refreshIncomingPoints = usePointEventStore(
+    state => state.refreshIncomingPoints,
+  );
 
   useEffect(() => {
-    const fetchIncomingPoints = async () => {
-      try {
-        const points = await getIncomingPoints();
-        setIncomingPoints(points);
-      } catch (error) {
-        console.error('Error fetching incoming points:', error);
-      }
-    };
-    fetchIncomingPoints();
-    // when we record a new point event, we want to refetch incoming points
-  }, [pointEventsCount]);
+    // Only refresh once on mount - the store handles promise caching for concurrent calls
+    refreshIncomingPoints();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps: only run once on mount
 
-  return incomingPoints;
+  return {
+    amount: totalOptimisticIncomingPoints,
+    expectedDate: incomingPoints.expectedDate,
+  };
 };
 
 /*
  * Hook to fetch total points for the user. It refetches the total points when the next points update time is reached (each Sunday noon UTC).
  */
 export const usePoints = () => {
-  const [truePoints, setTruePoints] = useState({
-    points: 0,
-  });
+  const points = usePointEventStore(state => state.points);
   const nextPointsUpdate = getNextSundayNoonUTC().getTime();
+  const refreshPoints = usePointEventStore(state => state.refreshPoints);
 
   useEffect(() => {
-    const fetchPoints = async () => {
-      try {
-        const address = await getPointsAddress();
-        const points = await getTotalPoints(address);
-        setTruePoints({ points });
-      } catch (error) {
-        console.error('Error fetching total points:', error);
-      }
-    };
-    fetchPoints();
+    refreshPoints();
     // refresh when points update time changes as its the only time points can change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nextPointsUpdate]);
 
-  return truePoints.points;
+  return {
+    amount: points,
+    refetch: refreshPoints,
+  };
 };

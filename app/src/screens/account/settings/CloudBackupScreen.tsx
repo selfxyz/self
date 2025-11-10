@@ -23,7 +23,8 @@ import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import { useSettingStore } from '@/stores/settingStore';
 import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
-import { black, white } from '@/utils/colors';
+import { black, blue600, slate200, slate500, white } from '@/utils/colors';
+import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap, confirmTap } from '@/utils/haptic';
 import { useTurnkeyUtils } from '@/utils/turnkey';
 
@@ -374,7 +375,7 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#3B82F6',
+    backgroundColor: blue600,
   },
   descriptionContainer: {
     width: '100%',
@@ -385,16 +386,16 @@ const styles = StyleSheet.create({
     width: '100%',
     fontSize: 28,
     letterSpacing: 1,
-    fontFamily: 'Advercase',
-    color: '#000',
+    fontFamily: advercase,
+    color: black,
     textAlign: 'center',
   },
   description: {
     width: '100%',
     fontSize: 18,
     fontWeight: '500',
-    fontFamily: 'DIN OT',
-    color: '#000',
+    fontFamily: dinot,
+    color: black,
     textAlign: 'center',
   },
   optionsContainer: {
@@ -404,7 +405,7 @@ const styles = StyleSheet.create({
   optionButton: {
     backgroundColor: white,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: slate200,
     borderRadius: 5,
     paddingVertical: 20,
     paddingHorizontal: 20,
@@ -417,16 +418,16 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   optionText: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 18,
     color: black,
   },
   warningText: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 14,
-    color: '#6B7280',
+    color: slate500,
     textAlign: 'center',
     marginTop: 10,
   },

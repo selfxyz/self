@@ -282,14 +282,25 @@ jest.mock(
 
 // Mock react-native-gesture-handler to prevent getConstants errors
 jest.mock('react-native-gesture-handler', () => {
-  const RN = jest.requireActual('react-native');
+  const React = require('react');
+
+  // Mock the components directly without requiring react-native
+  // to avoid triggering hermes-parser WASM errors
+  const MockScrollView = props =>
+    React.createElement('ScrollView', props, props.children);
+  const MockTouchableOpacity = props =>
+    React.createElement('TouchableOpacity', props, props.children);
+  const MockTouchableHighlight = props =>
+    React.createElement('TouchableHighlight', props, props.children);
+  const MockFlatList = props => React.createElement('FlatList', props);
+
   return {
     ...jest.requireActual('react-native-gesture-handler/jestSetup'),
     GestureHandlerRootView: ({ children }) => children,
-    ScrollView: RN.ScrollView,
-    TouchableOpacity: RN.TouchableOpacity,
-    TouchableHighlight: RN.TouchableHighlight,
-    FlatList: RN.FlatList,
+    ScrollView: MockScrollView,
+    TouchableOpacity: MockTouchableOpacity,
+    TouchableHighlight: MockTouchableHighlight,
+    FlatList: MockFlatList,
   };
 });
 
@@ -480,6 +491,21 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
     PROVING_FAILED: 'PROVING_FAILED',
     // Add other events as needed
   },
+  // Mock haptic functions
+  buttonTap: jest.fn(),
+  cancelTap: jest.fn(),
+  confirmTap: jest.fn(),
+  feedbackProgress: jest.fn(),
+  feedbackSuccess: jest.fn(),
+  feedbackUnsuccessful: jest.fn(),
+  impactLight: jest.fn(),
+  impactMedium: jest.fn(),
+  loadingScreenProgress: jest.fn(),
+  notificationError: jest.fn(),
+  notificationSuccess: jest.fn(),
+  notificationWarning: jest.fn(),
+  selectionChange: jest.fn(),
+  triggerFeedback: jest.fn(),
   // Add other components and hooks as needed
 }));
 

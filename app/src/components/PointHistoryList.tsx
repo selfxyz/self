@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -11,8 +11,12 @@ import {
 } from 'react-native';
 import { Card, Text, View, XStack, YStack } from 'tamagui';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import HeartIcon from '@/images/icons/heart.svg';
 import StarBlackIcon from '@/images/icons/star_black.svg';
+import { usePointEventStore } from '@/stores/pointEventStore';
 import {
   black,
   blue600,
@@ -25,7 +29,6 @@ import {
 } from '@/utils/colors';
 import { dinot, plexMono } from '@/utils/fonts';
 import type { PointEvent } from '@/utils/points';
-import { getAllPointEvents } from '@/utils/points';
 
 type Section = {
   title: string;
@@ -37,7 +40,6 @@ export type PointHistoryListProps = {
     | React.ComponentType<Record<string, unknown>>
     | React.ReactElement
     | null;
-  onRefreshRef?: React.MutableRefObject<(() => Promise<void>) | null>;
   onLayout?: () => void;
 };
 
@@ -62,36 +64,19 @@ const getIconForEventType = (type: PointEvent['type']) => {
 
 export const PointHistoryList: React.FC<PointHistoryListProps> = ({
   ListHeaderComponent,
-  onRefreshRef,
   onLayout,
 }) => {
-  // why is this not using usePointEventStore((store) => store.events)?
-  const [pointEvents, setPointEvents] = useState<PointEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const selfClient = useSelfClient();
   const [refreshing, setRefreshing] = useState(false);
-
-  const loadPointEvents = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const events = await getAllPointEvents();
-      setPointEvents(events);
-    } catch (error) {
-      console.error('Error loading point events:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadPointEvents();
-  }, [loadPointEvents]);
-
-  // Expose refresh function to parent via ref
-  useEffect(() => {
-    if (onRefreshRef) {
-      onRefreshRef.current = loadPointEvents;
-    }
-  }, [loadPointEvents, onRefreshRef]);
+  // Subscribe to events directly from store - component will auto-update when store changes
+  const pointEvents = usePointEventStore(state => state.getAllPointEvents());
+  const isLoading = usePointEventStore(state => state.isLoading);
+  const refreshPoints = usePointEventStore(state => state.refreshPoints);
+  const refreshIncomingPoints = usePointEventStore(
+    state => state.refreshIncomingPoints,
+  );
+  // loadEvents only needs to be called once on mount.
+  // and it is called in Points.ts
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], {
@@ -286,10 +271,14 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
     [],
   );
 
+  // Pull-to-refresh handler
   const onRefresh = useCallback(() => {
+    selfClient.trackEvent(PointEvents.REFRESH_HISTORY);
     setRefreshing(true);
-    loadPointEvents().finally(() => setRefreshing(false));
-  }, [loadPointEvents]);
+    Promise.all([refreshPoints(), refreshIncomingPoints()]).finally(() =>
+      setRefreshing(false),
+    );
+  }, [selfClient, refreshPoints, refreshIncomingPoints]);
 
   const keyExtractor = useCallback((item: PointEvent) => item.id, []);
 

@@ -681,6 +681,9 @@ jobs:
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
+          TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
+          TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}
         timeout-minutes: 90
         run: |
           cd ${{ env.APP_PATH }}
@@ -1121,6 +1124,9 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=6144"
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
+          TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
+          TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}
         run: |
           cd ${{ env.APP_PATH }}
 

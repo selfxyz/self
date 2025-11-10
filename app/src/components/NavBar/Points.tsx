@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
@@ -24,6 +24,7 @@ import MajongImage from '@/images/majong.png';
 import type { RootStackParamList } from '@/navigation';
 import { usePointEventStore } from '@/stores/pointEventStore';
 import { useSettingStore } from '@/stores/settingStore';
+import analytics from '@/utils/analytics';
 import {
   black,
   blue600,
@@ -32,6 +33,7 @@ import {
   slate500,
   white,
 } from '@/utils/colors';
+import { dinot } from '@/utils/fonts';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import {
   isTopicSubscribed,
@@ -53,16 +55,24 @@ const Points: React.FC = () => {
   const [isNovaSubscribed, setIsNovaSubscribed] = useState(false);
   const [isEnabling, setIsEnabling] = useState(false);
   const incomingPoints = useIncomingPoints();
+  const { amount: points } = usePoints();
   const loadEvents = usePointEventStore(state => state.loadEvents);
   const { hasCompletedBackupForPoints, setBackupForPointsCompleted } =
     useSettingStore();
   const [isBackingUp, setIsBackingUp] = useState(false);
 
-  // Ref to trigger list refresh
-  const listRefreshRef = useRef<(() => Promise<void>) | null>(null);
-
   // Guard: Validate that user has registered a document and completed points disclosure
   usePointsGuardrail();
+
+  // Track NavBar view analytics
+  useFocusEffect(
+    React.useCallback(() => {
+      const { trackScreenView } = analytics();
+      trackScreenView('Points NavBar', {
+        screenName: 'Points NavBar',
+      });
+    }, []),
+  );
 
   //TODO - uncomment after merging - https://github.com/selfxyz/self/pull/1363/
   // useEffect(() => {
@@ -98,10 +108,6 @@ const Points: React.FC = () => {
             if (response.success) {
               useSettingStore.getState().setBackupForPointsCompleted();
               selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
-
-              if (listRefreshRef.current) {
-                await listRefreshRef.current();
-              }
 
               const callbackId = registerModalCallbacks({
                 onButtonPress: () => {},
@@ -141,8 +147,6 @@ const Points: React.FC = () => {
     loadEvents();
   }, [loadEvents]);
 
-  const points = usePoints();
-
   useEffect(() => {
     const checkSubscription = async () => {
       const subscribed = await isTopicSubscribed('nova');
@@ -166,10 +170,6 @@ const Points: React.FC = () => {
           if (response.success) {
             setIsNovaSubscribed(true);
             selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_SUCCESS);
-
-            if (listRefreshRef.current) {
-              await listRefreshRef.current();
-            }
 
             const callbackId = registerModalCallbacks({
               onButtonPress: () => {},
@@ -272,10 +272,6 @@ const Points: React.FC = () => {
         if (response.success) {
           setBackupForPointsCompleted();
           selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
-
-          if (listRefreshRef.current) {
-            await listRefreshRef.current();
-          }
 
           const callbackId = registerModalCallbacks({
             onButtonPress: () => {},
@@ -418,16 +414,19 @@ const Points: React.FC = () => {
   return (
     <YStack flex={1} backgroundColor={slate50}>
       <ZStack flex={1}>
-        <PointHistoryList
-          ListHeaderComponent={ListHeader}
-          onRefreshRef={listRefreshRef}
-        />
+        <PointHistoryList ListHeaderComponent={ListHeader} />
         <YStack
           style={[styles.exploreButtonContainer, { bottom: bottom + 20 }]}
         >
           <Button
             style={styles.exploreButton}
-            onPress={() => selfClient.trackEvent(PointEvents.EXPLORE_APPS)}
+            onPress={() => {
+              selfClient.trackEvent(PointEvents.EXPLORE_APPS);
+              navigation.navigate('WebView', {
+                url: 'https://apps.self.xyz',
+                title: 'Explore Apps',
+              });
+            }}
           >
             <Text style={styles.exploreButtonText}>Explore apps</Text>
           </Button>
@@ -464,7 +463,7 @@ const styles = StyleSheet.create({
   pointsTitle: {
     color: black,
     textAlign: 'center',
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 32,
     lineHeight: 32,
@@ -472,7 +471,7 @@ const styles = StyleSheet.create({
   },
   pointsDescription: {
     color: black,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 18,
     fontWeight: '500',
     textAlign: 'center',
@@ -489,13 +488,13 @@ const styles = StyleSheet.create({
   },
   incomingPointsAmount: {
     flex: 1,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 14,
     color: black,
   },
   incomingPointsTime: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 14,
     color: blue600,
@@ -518,13 +517,13 @@ const styles = StyleSheet.create({
   },
   actionTitle: {
     color: black,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 16,
   },
   actionSubtitle: {
     color: slate500,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 14,
   },
   referralCard: {
@@ -551,12 +550,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   referralTitle: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 16,
     color: black,
   },
   referralLink: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 16,
     color: blue600,
   },
@@ -571,7 +570,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 20,
     right: 20,
-    display: 'none',
   },
   exploreButton: {
     backgroundColor: black,
@@ -581,7 +579,7 @@ const styles = StyleSheet.create({
     height: 52,
   },
   exploreButtonText: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 16,
     color: white,
     textAlign: 'center',

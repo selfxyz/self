@@ -57,7 +57,7 @@ const HomeScreen: React.FC = () => {
   >({});
   const [loading, setLoading] = useState(true);
 
-  const selfPoints = usePoints();
+  const { amount: selfPoints } = usePoints();
 
   // Calculate card dimensions exactly like IdCardLayout does
   const { width: screenWidth } = Dimensions.get('window');
