@@ -45,6 +45,7 @@ import {
   recordBackupPointEvent,
   recordNotificationPointEvent,
 } from '@/utils/points';
+import { POINT_VALUES } from '@/utils/points/types';
 
 const Points: React.FC = () => {
   const selfClient = useSelfClient();
@@ -52,7 +53,7 @@ const Points: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [isNovaSubscribed, setIsNovaSubscribed] = useState(false);
+  const [isGeneralSubscribed, setIsGeneralSubscribed] = useState(false);
   const [isEnabling, setIsEnabling] = useState(false);
   const incomingPoints = useIncomingPoints();
   const { amount: points } = usePoints();
@@ -115,8 +116,7 @@ const Points: React.FC = () => {
               });
               navigation.navigate('Modal', {
                 titleText: 'Success!',
-                bodyText:
-                  'Account backed up successfully! You earned 100 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
+                bodyText: `Account backed up successfully! You earned ${POINT_VALUES.backup} points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.`,
                 buttonText: 'OK',
                 callbackId,
               });
@@ -149,8 +149,8 @@ const Points: React.FC = () => {
 
   useEffect(() => {
     const checkSubscription = async () => {
-      const subscribed = await isTopicSubscribed('nova');
-      setIsNovaSubscribed(subscribed);
+      const subscribed = await isTopicSubscribed('general');
+      setIsGeneralSubscribed(subscribed);
     };
     checkSubscription();
   }, []);
@@ -164,11 +164,11 @@ const Points: React.FC = () => {
     try {
       const granted = await requestNotificationPermission();
       if (granted) {
-        const result = await subscribeToTopics(['nova']);
+        const result = await subscribeToTopics(['general']);
         if (result.successes.length > 0) {
           const response = await recordNotificationPointEvent();
           if (response.success) {
-            setIsNovaSubscribed(true);
+            setIsGeneralSubscribed(true);
             selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_SUCCESS);
 
             const callbackId = registerModalCallbacks({
@@ -177,8 +177,7 @@ const Points: React.FC = () => {
             });
             navigation.navigate('Modal', {
               titleText: 'Success!',
-              bodyText:
-                'Push notifications enabled! You earned 20 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
+              bodyText: `Push notifications enabled! You earned ${POINT_VALUES.notification} points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.`,
               buttonText: 'OK',
               callbackId,
             });
@@ -279,8 +278,7 @@ const Points: React.FC = () => {
           });
           navigation.navigate('Modal', {
             titleText: 'Success!',
-            bodyText:
-              'Account backed up successfully! You earned 100 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
+            bodyText: `Account backed up successfully! You earned ${POINT_VALUES.backup} points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.`,
             buttonText: 'OK',
             callbackId,
           });
@@ -349,7 +347,7 @@ const Points: React.FC = () => {
           </XStack>
         )}
       </YStack>
-      {!isNovaSubscribed && (
+      {!isGeneralSubscribed && (
         <Pressable onPress={handleEnableNotifications} disabled={isEnabling}>
           <XStack
             style={[styles.actionCard, { opacity: isEnabling ? 0.5 : 1 }]}
@@ -363,7 +361,9 @@ const Points: React.FC = () => {
                   ? 'Enabling notifications...'
                   : 'Turn on push notifications'}
               </Text>
-              <Text style={styles.actionSubtitle}>Earn 44 points</Text>
+              <Text style={styles.actionSubtitle}>
+                Earn {POINT_VALUES.notification} points
+              </Text>
             </YStack>
           </XStack>
         </Pressable>
@@ -380,7 +380,9 @@ const Points: React.FC = () => {
               <Text style={styles.actionTitle}>
                 {isBackingUp ? 'Processing backup...' : 'Backup your account'}
               </Text>
-              <Text style={styles.actionSubtitle}>Earn 32 points</Text>
+              <Text style={styles.actionSubtitle}>
+                Earn {POINT_VALUES.backup} points
+              </Text>
             </YStack>
           </XStack>
         </Pressable>
