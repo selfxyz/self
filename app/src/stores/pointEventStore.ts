@@ -43,9 +43,12 @@ interface PointEventState {
   refreshPoints: () => Promise<void>;
   fetchIncomingPoints: () => Promise<IncomingPoints | null>;
   refreshIncomingPoints: () => Promise<void>;
+  getAllPointEvents: () => PointEvent[];
 }
 
 const STORAGE_KEY = '@point_events';
+
+const DESIRED_EVENT_TYPES = ['refer', 'notification', 'backup', 'disclosure'];
 
 export const usePointEventStore = create<PointEventState>()((set, get) => ({
   incomingPoints: {
@@ -67,6 +70,11 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
     }
   },
   // should only be called once on app startup
+  getAllPointEvents: () => {
+    return get()
+      .events.filter(event => DESIRED_EVENT_TYPES.includes(event.type))
+      .sort((a, b) => b.timestamp - a.timestamp);
+  },
   loadEvents: async () => {
     try {
       set({ isLoading: true });
