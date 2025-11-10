@@ -142,7 +142,8 @@ export const makeApiRequest = async <T = unknown>(
     );
 
     // uncomment to see api call
-    // console.log('url', `${POINTS_API_BASE_URL}${endpoint}`);
+    // console.error('url', `${POINTS_API_BASE_URL}${endpoint}`);
+    // console.error('req body', JSON.stringify(requestBody, null, 2));
     // console.error('response', JSON.stringify(response.data, null, 2));
     // console.error('response.status', response.status);
 
