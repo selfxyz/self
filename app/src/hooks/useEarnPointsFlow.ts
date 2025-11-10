@@ -99,11 +99,11 @@ export const useEarnPointsFlow = ({
     const showReferralErrorModal = (errorMessage: string) => {
       const callbackId = registerModalCallbacks({
         onButtonPress: async () => {
-          // Retry the referral flow
           await handleReferralFlow();
         },
         onModalDismiss: () => {
-          // Preserve referrer for future retry attempts
+          // Clear referrer when user dismisses to prevent retry loop
+          useUserStore.getState().clearDeepLinkReferrer();
         },
       });
 
