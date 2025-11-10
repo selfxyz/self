@@ -24,8 +24,7 @@ export interface SignatureData {
 /**
  * Interface for signature data to be included in API requests
  */
-export const POINTS_API_BASE_URL =
-  'https://points-backend-1025466915061.us-central1.run.app';
+export const POINTS_API_BASE_URL = 'https://points.self.xyz';
 
 /**
  * Successful HTTP status codes accepted by the points API
