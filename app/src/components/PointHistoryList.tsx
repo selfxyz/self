@@ -69,6 +69,8 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
   // Subscribe to events directly from store - component will auto-update when store changes
   const pointEvents = usePointEventStore(state => state.getAllPointEvents());
   const isLoading = usePointEventStore(state => state.isLoading);
+  // loadEvents only needs to be called once on mount. ev
+  // and it is called in Points.ts
 
   // Expose no-op refresh function to parent via ref for backward compatibility
   // Component auto-updates via Zustand, so manual refresh is not needed
