@@ -186,9 +186,12 @@ function validateTD3CheckDigits(lines: string[]): Omit<MRZValidation, 'format' |
 }
 
 export function checkScannedInfo(passportNumber: string, dateOfBirth: string, dateOfExpiry: string): boolean {
-  if (passportNumber.length > 9) {
-    return false;
-  }
+  // TD1 overflow format allows document numbers > 9 characters per ICAO 9303:
+  // When document numbers exceed 9 characters, the overflow digits are stored in the optional data
+  // field and the full document number is reconstructed during MRZ parsing.
+  // if (passportNumber.length > 9) {
+  //   return false;
+  // }
   if (dateOfBirth.length !== 6) {
     return false;
   }
