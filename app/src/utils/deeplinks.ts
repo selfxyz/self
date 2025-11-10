@@ -148,12 +148,12 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
 
       // Validate nationality is a valid country code
       const isValidCountryCode = (
-        code: string | undefined,
-      ): code is IdDocInput['nationality'] => {
-        if (!code) return false;
+        nationalityCode: string | undefined,
+      ): nationalityCode is IdDocInput['nationality'] => {
+        if (!nationalityCode) return false;
         // Check if the code exists as a value in the countries object
         return Object.values(countries).some(
-          countryCode => countryCode === code,
+          countryCode => countryCode === nationalityCode,
         );
       };
 

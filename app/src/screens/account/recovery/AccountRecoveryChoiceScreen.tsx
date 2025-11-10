@@ -134,6 +134,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       navigation,
       toggleCloudBackupEnabled,
       useProtocolStore,
+      selfClient,
     ],
   );
 
