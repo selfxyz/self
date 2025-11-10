@@ -68,8 +68,10 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
 
   it('navigates back when close button is pressed', () => {
     render(<WebViewScreen {...createProps('https://self.xyz')} />);
-    const closeButton = screen.getByTestId('WebViewNavBar.closeButton');
-    fireEvent.press(closeButton);
+    // The Button component renders with msdk-button testID, find by icon
+    const closeButtonIcon = screen.getByTestId('icon-x');
+    const closeButton = closeButtonIcon.parent?.parent;
+    fireEvent.press(closeButton!);
     expect(mockGoBack).toHaveBeenCalledTimes(1);
   });
 

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { usePointEventStore } from '@/stores/pointEventStore';
 import { isSuccessfulStatus } from '@/utils/points/api';
 import { pollEventProcessingStatus } from '@/utils/points/eventPolling';
 import {
@@ -22,7 +23,6 @@ const addEventToStoreAndPoll = async (
   points: number,
   jobId: string,
 ): Promise<void> => {
-  const { usePointEventStore } = await import('@/stores/pointEventStore');
   // Use job_id as the event id
   await usePointEventStore.getState().addEvent(title, type, points, jobId);
 

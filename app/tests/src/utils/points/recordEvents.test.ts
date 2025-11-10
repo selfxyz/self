@@ -53,6 +53,10 @@ describe('recordReferralPointEvent', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetPointsAddress.mockResolvedValue(currentUserAddress);
+    // Reset store mocks
+    mockAddEvent.mockResolvedValue(undefined);
+    mockMarkEventAsProcessed.mockReturnValue(undefined);
+    mockMarkEventAsFailed.mockReturnValue(undefined);
   });
 
   describe('Self-referral validation', () => {
