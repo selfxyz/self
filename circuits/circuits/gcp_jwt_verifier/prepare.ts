@@ -16,8 +16,8 @@ import { generateJWTVerifierInputs } from '@zk-email/jwt-tx-builder-helpers/src/
 import type { RSAPublicKey } from '@zk-email/jwt-tx-builder-helpers/src/types.js';
 
 const MAX_CERT_LENGTH = 2048;
-const MAX_EAT_NONCE_B64_LENGTH = 99;  // Base64url string max length (74 bytes decoded = 99 b64url chars)
-const MAX_IMAGE_DIGEST_LENGTH = 71;  // "sha256:" + 64 hex chars
+const MAX_EAT_NONCE_B64_LENGTH = 99; // Base64url string max length (74 bytes decoded = 99 b64url chars)
+const MAX_IMAGE_DIGEST_LENGTH = 71; // "sha256:" + 64 hex chars
 
 interface CertificateInfo {
   der: Buffer;
@@ -52,7 +52,7 @@ function parseCertificate(certDer: Buffer): CertificateInfo {
   if (rawOffset === -1) {
     throw new Error('Could not find public key in TBS certificate DER encoding');
   }
-  const pubkeyOffset = (rawOffset / 2) + 1;
+  const pubkeyOffset = rawOffset / 2 + 1;
 
   const pubkeyLength = pubkeyDer.length > 256 ? pubkeyDer.length - 1 : pubkeyDer.length;
 
@@ -69,7 +69,7 @@ function parseCertificate(certDer: Buffer): CertificateInfo {
   if (paddedLength > MAX_CERT_LENGTH) {
     throw new Error(
       `Padded TBS length ${paddedLength} exceeds MAX_CERT_LENGTH ${MAX_CERT_LENGTH}. ` +
-      `TBS size was ${tbsBytes.length} bytes. Consider increasing MAX_CERT_LENGTH or using a smaller certificate.`
+        `TBS size was ${tbsBytes.length} bytes. Consider increasing MAX_CERT_LENGTH or using a smaller certificate.`
     );
   }
 
@@ -96,7 +96,7 @@ function parseCertificate(certDer: Buffer): CertificateInfo {
     pubkeyOffset,
     pubkeyLength,
     signature,
-    cert
+    cert,
   };
 }
 
@@ -226,12 +226,12 @@ async function main() {
     // Generate JWT verifier inputs (for JWT signature verification)
     const rsaPublicKey: RSAPublicKey = {
       n: Buffer.from(leafCert.publicKey.n.toByteArray()).toString('base64'),
-      e: leafCert.publicKey.e.intValue()
+      e: leafCert.publicKey.e.intValue(),
     };
 
     console.log('[INFO] Generating JWT verifier inputs...');
     const jwtInputs = await generateJWTVerifierInputs(rawJWT, rsaPublicKey, {
-      maxMessageLength: 11776
+      maxMessageLength: 11776,
     });
 
     console.log('[INFO] JWT signature verified');
@@ -246,7 +246,9 @@ async function main() {
     console.log(`[INFO] eat_nonce[0] string length: ${eatNonce0Base64url.length} characters`);
 
     if (eatNonce0Base64url.length > MAX_EAT_NONCE_B64_LENGTH) {
-      throw new Error(`[ERROR] eat_nonce[0] length ${eatNonce0Base64url.length} exceeds max ${MAX_EAT_NONCE_B64_LENGTH}`);
+      throw new Error(
+        `[ERROR] eat_nonce[0] length ${eatNonce0Base64url.length} exceeds max ${MAX_EAT_NONCE_B64_LENGTH}`
+      );
     }
 
     // Decode for verification/logging (not used in circuit)
@@ -297,11 +299,15 @@ async function main() {
     }
 
     if (imageDigest.length !== 71) {
-      throw new Error(`[ERROR] image_digest must be 71 characters ("sha256:" + 64 hex), got: ${imageDigest.length}`);
+      throw new Error(
+        `[ERROR] image_digest must be 71 characters ("sha256:" + 64 hex), got: ${imageDigest.length}`
+      );
     }
 
     if (imageDigest.length > MAX_IMAGE_DIGEST_LENGTH) {
-      throw new Error(`[ERROR] image_digest length ${imageDigest.length} exceeds max ${MAX_IMAGE_DIGEST_LENGTH}`);
+      throw new Error(
+        `[ERROR] image_digest length ${imageDigest.length} exceeds max ${MAX_IMAGE_DIGEST_LENGTH}`
+      );
     }
 
     // Find offset of image_digest in the decoded payload JSON
@@ -381,7 +387,6 @@ async function main() {
     fs.writeFileSync(outputFile, JSON.stringify(circuitInputs, null, 2));
 
     console.log('\n[INFO] Circuit inputs saved to', outputFile);
-
   } catch (error) {
     console.error('[ERROR]', error instanceof Error ? error.message : error);
     if (error instanceof Error && error.stack) {
