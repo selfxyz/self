@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
-import { BlurView } from '@react-native-community/blur';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -62,25 +61,16 @@ const Points: React.FC = () => {
     useSettingStore();
   const [isBackingUp, setIsBackingUp] = useState(false);
 
-  const [isContentReady, setIsContentReady] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-
   // Guard: Validate that user has registered a document and completed points disclosure
   usePointsGuardrail();
 
-  // Track NavBar view and unmount BlurView when screen loses focus
-  // BlurView unmounting fixes blackscreen issue when navigating to referral screen
+  // Track NavBar view analytics
   useFocusEffect(
     React.useCallback(() => {
-      setIsFocused(true);
-      // Track when the Points NavBar is viewed
       const { trackScreenView } = analytics();
       trackScreenView('Points NavBar', {
         screenName: 'Points NavBar',
       });
-      return () => {
-        setIsFocused(false);
-      };
     }, []),
   );
 
@@ -164,12 +154,6 @@ const Points: React.FC = () => {
     };
     checkSubscription();
   }, []);
-
-  const handleContentLayout = () => {
-    if (!isContentReady) {
-      setIsContentReady(true);
-    }
-  };
 
   const handleEnableNotifications = async () => {
     if (isEnabling) {
@@ -430,19 +414,7 @@ const Points: React.FC = () => {
   return (
     <YStack flex={1} backgroundColor={slate50}>
       <ZStack flex={1}>
-        <PointHistoryList
-          ListHeaderComponent={ListHeader}
-          onLayout={handleContentLayout}
-        />
-        {isContentReady && isFocused && (
-          <BlurView
-            style={styles.blurView}
-            blurType="light"
-            blurAmount={4}
-            reducedTransparencyFallbackColor={slate50}
-            pointerEvents="none"
-          />
-        )}
+        <PointHistoryList ListHeaderComponent={ListHeader} />
         <YStack
           style={[styles.exploreButtonContainer, { bottom: bottom + 20 }]}
         >
