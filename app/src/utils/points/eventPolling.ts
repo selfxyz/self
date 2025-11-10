@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { checkEventProcessingStatus } from './jobStatus';
+import { checkEventProcessingStatus } from '@/utils/points/jobStatus';
 
 /**
  * Polls the server to check if an event has been processed.

@@ -35,12 +35,13 @@ jest.mock('@/utils/points/eventPolling', () => ({
 }));
 
 jest.mock('@/utils/points/api', () => ({
-  isSuccessfulStatus: jest.fn((status: number) => status === 200 || status === 202),
+  isSuccessfulStatus: jest.fn(
+    (status: number) => status === 200 || status === 202,
+  ),
 }));
 
-const mockRegisterReferralPoints = registerReferralPoints as jest.MockedFunction<
-  typeof registerReferralPoints
->;
+const mockRegisterReferralPoints =
+  registerReferralPoints as jest.MockedFunction<typeof registerReferralPoints>;
 const mockGetPointsAddress = getPointsAddress as jest.MockedFunction<
   typeof getPointsAddress
 >;
@@ -203,7 +204,9 @@ describe('recordReferralPointEvent', () => {
       const result = await recordReferralPointEvent(differentReferrer);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('An unexpected error occurred. Please try again.');
+      expect(result.error).toBe(
+        'An unexpected error occurred. Please try again.',
+      );
       expect(mockRegisterReferralPoints).not.toHaveBeenCalled();
     });
 
@@ -213,7 +216,9 @@ describe('recordReferralPointEvent', () => {
       const result = await recordReferralPointEvent(differentReferrer);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('An unexpected error occurred. Please try again.');
+      expect(result.error).toBe(
+        'An unexpected error occurred. Please try again.',
+      );
     });
 
     it('should log errors to console', async () => {
