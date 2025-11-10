@@ -29,16 +29,23 @@ export const usePointsGuardrail = () => {
 
   useFocusEffect(
     useCallback(() => {
+      let isActive = true;
+
       const checkRequirements = async () => {
         const hasDocument = await hasUserAnIdentityDocumentRegistered();
         const hasDisclosed = await hasUserDoneThePointsDisclosure();
 
-        if (!hasDocument || !hasDisclosed) {
+        // Only navigate if the screen is still focused
+        if (isActive && (!hasDocument || !hasDisclosed)) {
           // User hasn't met requirements, redirect to Home
           navigation.navigate('Home', {});
         }
       };
       checkRequirements();
+
+      return () => {
+        isActive = false;
+      };
     }, [navigation]),
   );
 };
