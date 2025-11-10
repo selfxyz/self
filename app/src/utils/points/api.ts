@@ -7,7 +7,11 @@ import axios from 'axios';
 import { Buffer } from 'buffer';
 import { ethers } from 'ethers';
 
-import { unsafe_getPrivateKey } from '@/providers/authProvider';
+import {
+  unsafe_getPointsPrivateKey,
+  unsafe_getPrivateKey,
+} from '@/providers/authProvider';
+import { getPointsAddress } from '@/utils/points/utils';
 
 export type ApiResponse<T = unknown> = {
   success: boolean;
@@ -49,8 +53,23 @@ export const isSuccessfulStatus = (status: number): boolean =>
  */
 const generateSignature = async (address: string): Promise<SignatureData> => {
   try {
-    // Get the private key from keychain (requires biometric auth)
-    const privateKey = await unsafe_getPrivateKey();
+    const signingAddress = address.toLowerCase();
+
+    // Select appropriate private key based on which derived address is being signed:
+    // - If signing the points address (derived at index 1), use the points private key
+    // - Otherwise, default to the primary account private key (index 0)
+    let privateKey: string | null = null;
+    try {
+      const pointsAddr = (await getPointsAddress()).toLowerCase();
+      if (signingAddress === pointsAddr) {
+        privateKey = await unsafe_getPointsPrivateKey();
+      }
+    } catch {
+      // If fetching the points address fails for any reason, fall back to primary key
+    }
+    if (!privateKey) {
+      privateKey = await unsafe_getPrivateKey();
+    }
     if (!privateKey) {
       throw new Error('Failed to retrieve private key for signing');
     }
@@ -59,8 +78,7 @@ const generateSignature = async (address: string): Promise<SignatureData> => {
     const wallet = new ethers.Wallet(privateKey);
 
     // Sign the lowercase address
-    const message = address.toLowerCase();
-    const signature = await wallet.signMessage(message);
+    const signature = await wallet.signMessage(signingAddress);
 
     // Parse signature to extract parity
     const sig = ethers.Signature.from(signature);
@@ -131,6 +149,10 @@ export const makeApiRequest = async <T = unknown>(
         validateStatus: () => true, // Don't throw on any status
       },
     );
+
+    // uncomment to see api call
+    // console.error('response', JSON.stringify(response.data, null, 2));
+    // console.error('response.status', response.status);
 
     if (isSuccessfulStatus(response.status)) {
       return { success: true, status: response.status, data: response.data };
