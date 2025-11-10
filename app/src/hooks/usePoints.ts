@@ -14,7 +14,7 @@ import {
 
 /*
  * Hook to get incoming points for the user. It shows the optimistic incoming points.
- *
+ * Refreshes incoming points once on mount.
  */
 export const useIncomingPoints = (): IncomingPoints => {
   const incomingPoints = usePointEventStore(state => state.incomingPoints);
@@ -26,8 +26,10 @@ export const useIncomingPoints = (): IncomingPoints => {
   );
 
   useEffect(() => {
+    // Only refresh once on mount - the store handles promise caching for concurrent calls
     refreshIncomingPoints();
-  }, [refreshIncomingPoints]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps: only run once on mount
 
   return {
     amount: totalOptimisticIncomingPoints,

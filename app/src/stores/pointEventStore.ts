@@ -31,8 +31,9 @@ interface PointEventState {
   totalOptimisticIncomingPoints: () => number;
   incomingPoints: IncomingPoints & {
     lastUpdated: number | null;
-    isUpdating: boolean;
+    promise: Promise<IncomingPoints | null> | null;
   };
+  fetchIncomingPoints: () => Promise<IncomingPoints | null>;
   refreshIncomingPoints: () => Promise<void>;
 }
 
@@ -42,31 +43,61 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
   incomingPoints: {
     amount: 0,
     lastUpdated: null,
-    isUpdating: false,
+    promise: null,
     expectedDate: getNextSundayNoonUTC(),
   },
   events: [],
   isLoading: false,
 
+  // should only be called once on app startup
   loadEvents: async () => {
     try {
       set({ isLoading: true });
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       if (stored) {
-        const events: PointEvent[] = JSON.parse(stored);
-        set({ events, isLoading: false });
-        get()
-          .getUnprocessedEvents()
-          .forEach(event => {
-            // Use event.id as job_id (id is the job_id)
-            pollEventProcessingStatus(event.id).then(result => {
-              if (result === 'completed') {
-                get().markEventAsProcessed(event.id);
-              } else if (result === 'failed') {
-                get().markEventAsFailed(event.id);
-              }
+        try {
+          const parsed = JSON.parse(stored);
+          // Validate that parsed data is an array
+          if (!Array.isArray(parsed)) {
+            console.error('Invalid stored events format, expected array');
+            set({ events: [], isLoading: false });
+            return;
+          }
+          // Validate each event has required fields
+          const events: PointEvent[] = parsed.filter((event: unknown) => {
+            if (
+              typeof event === 'object' &&
+              event !== null &&
+              'id' in event &&
+              'status' in event &&
+              'points' in event
+            ) {
+              return true;
+            }
+            console.warn('Skipping invalid event:', event);
+            return false;
+          }) as PointEvent[];
+          set({ events, isLoading: false });
+          // Resume polling for any pending events that were interrupted by app restart
+          // (New events are polled immediately in recordEvents.ts when created)
+          get()
+            .getUnprocessedEvents()
+            .forEach(event => {
+              // Use event.id as job_id (id is the job_id)
+              pollEventProcessingStatus(event.id).then(result => {
+                if (result === 'completed') {
+                  get().markEventAsProcessed(event.id);
+                } else if (result === 'failed') {
+                  get().markEventAsFailed(event.id);
+                }
+              });
             });
-          });
+        } catch (parseError) {
+          console.error('Error parsing stored events:', parseError);
+          // Clear corrupted data
+          await AsyncStorage.removeItem(STORAGE_KEY);
+          set({ events: [], isLoading: false });
+        }
       } else {
         set({ isLoading: false });
       }
@@ -75,50 +106,65 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
       set({ isLoading: false });
     }
   },
+
+  fetchIncomingPoints: async () => {
+    if (get().incomingPoints.promise) {
+      return await get().incomingPoints.promise;
+    }
+    const promise = getIncomingPoints();
+    set({
+      incomingPoints: {
+        ...get().incomingPoints,
+        promise: promise,
+      },
+    });
+    try {
+      const points = await promise;
+      return points;
+    } finally {
+      // Clear promise after completion (success or failure)
+      // Only clear if it's still the same promise (no concurrent update)
+      if (get().incomingPoints.promise === promise) {
+        set({
+          incomingPoints: {
+            ...get().incomingPoints,
+            promise: null,
+          },
+        });
+      }
+    }
+  },
   /*
    * Fetches incoming points from the backend and updates the store.
    * @param otherState Optional additional state to merge into incomingPoints. so they can be updated atomically.
    */
   refreshIncomingPoints: async () => {
     // Avoid concurrent updates
-    if (get().incomingPoints.isUpdating) {
+    if (get().incomingPoints.promise) {
       return;
     }
-    set({
-      incomingPoints: {
-        ...get().incomingPoints,
-        isUpdating: true,
-      },
-    });
+
     // Fetch incoming points
     try {
-      const points = await getIncomingPoints();
+      const points = await get().fetchIncomingPoints();
       if (points === null) {
-        set({
-          incomingPoints: {
-            ...get().incomingPoints,
-            isUpdating: false,
-          },
-        });
+        // Fetch failed, promise already cleared by fetchIncomingPoints
         return;
       }
-
+      // points are not saved to local storage as that would lead to stale data
+      // Refresh expectedDate to ensure it's current
       set({
         incomingPoints: {
+          ...get().incomingPoints,
           lastUpdated: Date.now(),
           amount: points.amount,
+          promise: null, // Already cleared by fetchIncomingPoints, but ensure it's null
           expectedDate: points.expectedDate,
-          isUpdating: false,
         },
       });
     } catch (error) {
       console.error('Error refreshing incoming points:', error);
-      set({
-        incomingPoints: {
-          ...get().incomingPoints,
-          isUpdating: false,
-        },
-      });
+      // Promise already cleared by fetchIncomingPoints in finally block
     }
   },
   getUnprocessedEvents: () => {
@@ -148,55 +194,97 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
       const currentEvents = get().events;
       const updatedEvents = [newEvent, ...currentEvents];
 
+      // Save to storage first, then update state to maintain consistency
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEvents));
       set({ events: updatedEvents });
     } catch (error) {
       console.error('Error adding point event:', error);
+      // Don't update state if storage fails - maintain consistency
+      throw error; // Re-throw so caller knows it failed
     }
   },
 
   markEventAsProcessed: async (id: string) => {
     try {
+      // Re-read events to avoid race conditions with concurrent updates
       const currentEvents = get().events;
-      const updatedEvents = currentEvents.map(event =>
-        event.id === id ? { ...event, status: 'completed' as const } : event,
+      // Check if event still exists and is still pending
+      const event = currentEvents.find(e => e.id === id);
+      if (!event) {
+        console.warn(`Event ${id} not found when marking as processed`);
+        return;
+      }
+      if (event.status !== 'pending') {
+        // Already processed, skip
+        return;
+      }
+
+      const updatedEvents = currentEvents.map(e =>
+        e.id === id ? { ...e, status: 'completed' as const } : e,
       );
+      // Fetch fresh incoming points from server while saving events to storage
+      // points are not saved to local storage as that would lead to stale data
+      // Use fetchIncomingPoints to reuse promise caching and avoid race conditions
+      const [points] = await Promise.all([
+        get().fetchIncomingPoints(),
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEvents)),
+      ]);
 
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEvents));
-      // Fetch fresh incoming points from server
-      const points = await getIncomingPoints();
-
-      // Atomically update both events and incoming points in single state update
-      if (points !== null) {
-        set({
-          events: updatedEvents,
-          incomingPoints: {
-            lastUpdated: Date.now(),
-            amount: points.amount,
-            expectedDate: points.expectedDate,
-            isUpdating: false,
-          },
-        });
+      // Re-check events haven't changed during async operations
+      const latestEvents = get().events;
+      const latestEvent = latestEvents.find(e => e.id === id);
+      if (latestEvent && latestEvent.status !== 'pending') {
+        // Event was already updated by another call, merge updates carefully
+        const finalEvents = latestEvents.map(e =>
+          e.id === id ? { ...e, status: 'completed' as const } : e,
+        );
+        set({ events: finalEvents });
       } else {
-        // If fetch failed, just update events
-        set({ events: updatedEvents });
+        // Atomically update both events and incoming points in single state update
+        if (points !== null) {
+          set({
+            events: updatedEvents,
+            incomingPoints: {
+              ...get().incomingPoints,
+              promise: null,
+              lastUpdated: Date.now(),
+              amount: points.amount,
+              expectedDate: points.expectedDate,
+            },
+          });
+        } else {
+          // If fetch failed, just update events
+          set({ events: updatedEvents });
+        }
       }
     } catch (error) {
       console.error('Error marking point event as processed:', error);
+      // Don't update state if storage fails
     }
   },
 
   markEventAsFailed: async (id: string) => {
     try {
       const currentEvents = get().events;
-      const updatedEvents = currentEvents.map(event =>
-        event.id === id ? { ...event, status: 'failed' as const } : event,
+      const event = currentEvents.find(e => e.id === id);
+      if (!event) {
+        console.warn(`Event ${id} not found when marking as failed`);
+        return;
+      }
+      if (event.status !== 'pending') {
+        // Already processed, skip
+        return;
+      }
+
+      const updatedEvents = currentEvents.map(e =>
+        e.id === id ? { ...e, status: 'failed' as const } : e,
       );
 
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEvents));
       set({ events: updatedEvents });
     } catch (error) {
       console.error('Error marking point event as failed:', error);
+      // Don't update state if storage fails
     }
   },
 
