@@ -122,6 +122,15 @@ export const registerReferralPoints = async ({
   error?: string;
   jobId?: string;
 }> => {
+  // Check if referee and referrer are the same person
+  if (referee.toLowerCase().trim() === referrer.toLowerCase().trim()) {
+    return {
+      success: false,
+      status: 400,
+      error: 'You cannot refer yourself. Please use a different referral link.',
+    };
+  }
+
   try {
     const response = await makeApiRequest<VerifyActionResponse>(
       '/referrals/refer',

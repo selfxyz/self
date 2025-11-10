@@ -122,6 +122,16 @@ export const recordReferralPointEvent = async (
 }> => {
   try {
     const referee = await getPointsAddress();
+
+    // Check if referee and referrer are the same person
+    if (referee.toLowerCase() === referrer.toLowerCase().trim()) {
+      return {
+        success: false,
+        error:
+          'You cannot refer yourself. Please use a different referral link.',
+      };
+    }
+
     const response = await registerReferralPoints({ referee, referrer });
 
     if (
