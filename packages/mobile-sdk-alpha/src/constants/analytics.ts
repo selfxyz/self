@@ -149,6 +149,7 @@ export const PointEvents = {
   EARN_NOTIFICATION: 'Points: Earn with Notification',
   EARN_NOTIFICATION_FAILED: 'Points: Earn with Notification Failed',
   EARN_NOTIFICATION_SUCCESS: 'Points: Earn with Notification Success',
+  REFRESH_HISTORY: 'Points: Refresh History',
 };
 
 export const ProofEvents = {

@@ -25,6 +25,7 @@ import MajongImage from '@/images/majong.png';
 import type { RootStackParamList } from '@/navigation';
 import { usePointEventStore } from '@/stores/pointEventStore';
 import { useSettingStore } from '@/stores/settingStore';
+import analytics from '@/utils/analytics';
 import {
   black,
   blue600,
@@ -33,6 +34,7 @@ import {
   slate500,
   white,
 } from '@/utils/colors';
+import { dinot } from '@/utils/fonts';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import {
   isTopicSubscribed,
@@ -66,11 +68,16 @@ const Points: React.FC = () => {
   // Guard: Validate that user has registered a document and completed points disclosure
   usePointsGuardrail();
 
-  // Unmounts BlurView when screen loses focus
-  // This fixes blackscreen issue when navigating to referral screen
+  // Track NavBar view and unmount BlurView when screen loses focus
+  // BlurView unmounting fixes blackscreen issue when navigating to referral screen
   useFocusEffect(
     React.useCallback(() => {
       setIsFocused(true);
+      // Track when the Points NavBar is viewed
+      const { trackScreenView } = analytics();
+      trackScreenView('Points NavBar', {
+        screenName: 'Points NavBar',
+      });
       return () => {
         setIsFocused(false);
       };
@@ -478,7 +485,7 @@ const styles = StyleSheet.create({
   pointsTitle: {
     color: black,
     textAlign: 'center',
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 32,
     lineHeight: 32,
@@ -486,7 +493,7 @@ const styles = StyleSheet.create({
   },
   pointsDescription: {
     color: black,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 18,
     fontWeight: '500',
     textAlign: 'center',
@@ -503,13 +510,13 @@ const styles = StyleSheet.create({
   },
   incomingPointsAmount: {
     flex: 1,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 14,
     color: black,
   },
   incomingPointsTime: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 14,
     color: blue600,
@@ -532,13 +539,13 @@ const styles = StyleSheet.create({
   },
   actionTitle: {
     color: black,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 16,
   },
   actionSubtitle: {
     color: slate500,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 14,
   },
   referralCard: {
@@ -565,12 +572,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   referralTitle: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 16,
     color: black,
   },
   referralLink: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 16,
     color: blue600,
   },
@@ -595,7 +602,7 @@ const styles = StyleSheet.create({
     height: 52,
   },
   exploreButtonText: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 16,
     color: white,
     textAlign: 'center',
