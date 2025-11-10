@@ -54,6 +54,7 @@ const Points: React.FC = () => {
   const [isNovaSubscribed, setIsNovaSubscribed] = useState(false);
   const [isEnabling, setIsEnabling] = useState(false);
   const incomingPoints = useIncomingPoints();
+  const { amount: points } = usePoints();
   const loadEvents = usePointEventStore(state => state.loadEvents);
   const { hasCompletedBackupForPoints, setBackupForPointsCompleted } =
     useSettingStore();
@@ -155,8 +156,6 @@ const Points: React.FC = () => {
   useEffect(() => {
     loadEvents();
   }, [loadEvents]);
-
-  const points = usePoints();
 
   useEffect(() => {
     const checkSubscription = async () => {

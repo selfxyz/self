@@ -13,6 +13,7 @@ import { Card, Text, View, XStack, YStack } from 'tamagui';
 
 import HeartIcon from '@/images/icons/heart.svg';
 import StarBlackIcon from '@/images/icons/star_black.svg';
+import { usePointEventStore } from '@/stores/pointEventStore';
 import {
   black,
   blue600,
@@ -69,7 +70,7 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
   const [pointEvents, setPointEvents] = useState<PointEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
+  const refreshPoints = usePointEventStore(state => state.refreshPoints);
   const loadPointEvents = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -288,7 +289,9 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
+    refreshPoints();
     loadPointEvents().finally(() => setRefreshing(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadPointEvents]);
 
   const keyExtractor = useCallback((item: PointEvent) => item.id, []);

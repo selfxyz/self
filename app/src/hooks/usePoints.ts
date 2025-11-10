@@ -41,24 +41,18 @@ export const useIncomingPoints = (): IncomingPoints => {
  * Hook to fetch total points for the user. It refetches the total points when the next points update time is reached (each Sunday noon UTC).
  */
 export const usePoints = () => {
-  const [truePoints, setTruePoints] = useState({
-    points: 0,
-  });
+  const points = usePointEventStore(state => state.points);
   const nextPointsUpdate = getNextSundayNoonUTC().getTime();
+  const refreshPoints = usePointEventStore(state => state.refreshPoints);
 
   useEffect(() => {
-    const fetchPoints = async () => {
-      try {
-        const address = await getPointsAddress();
-        const points = await getTotalPoints(address);
-        setTruePoints({ points });
-      } catch (error) {
-        console.error('Error fetching total points:', error);
-      }
-    };
-    fetchPoints();
+    refreshPoints();
     // refresh when points update time changes as its the only time points can change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nextPointsUpdate]);
 
-  return truePoints.points;
+  return {
+    amount: points,
+    refetch: refreshPoints,
+  };
 };

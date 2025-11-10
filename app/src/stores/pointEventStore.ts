@@ -10,7 +10,12 @@ import type {
   PointEvent,
   PointEventType,
 } from '@/utils/points';
-import { getIncomingPoints, getNextSundayNoonUTC } from '@/utils/points';
+import {
+  getIncomingPoints,
+  getNextSundayNoonUTC,
+  getPointsAddress,
+  getTotalPoints,
+} from '@/utils/points';
 import { pollEventProcessingStatus } from '@/utils/points/eventPolling';
 
 interface PointEventState {
@@ -33,6 +38,9 @@ interface PointEventState {
     lastUpdated: number | null;
     promise: Promise<IncomingPoints | null> | null;
   };
+  // these are the real points that are on chain. each sunday noon UTC they get updated based on incoming points
+  points: number;
+  refreshPoints: () => Promise<void>;
   fetchIncomingPoints: () => Promise<IncomingPoints | null>;
   refreshIncomingPoints: () => Promise<void>;
 }
@@ -46,9 +54,18 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
     promise: null,
     expectedDate: getNextSundayNoonUTC(),
   },
+  points: 0,
   events: [],
   isLoading: false,
-
+  refreshPoints: async () => {
+    try {
+      const address = await getPointsAddress();
+      const points = await getTotalPoints(address);
+      set({ points });
+    } catch (error) {
+      console.error('Error refreshing points:', error);
+    }
+  },
   // should only be called once on app startup
   loadEvents: async () => {
     try {
