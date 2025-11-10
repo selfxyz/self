@@ -124,7 +124,7 @@ export const recordReferralPointEvent = async (
     const referee = await getPointsAddress();
 
     // Check if referee and referrer are the same person
-    if (referee.toLowerCase() === referrer.toLowerCase().trim()) {
+    if (referee.toLowerCase().trim() === referrer.toLowerCase().trim()) {
       return {
         success: false,
         error:
