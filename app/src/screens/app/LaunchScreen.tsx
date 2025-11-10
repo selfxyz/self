@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     fontWeight: '500',
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     textAlign: 'center',
   },
   haveAnAccount: {
