@@ -71,6 +71,9 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const refreshPoints = usePointEventStore(state => state.refreshPoints);
+  const refreshIncomingPoints = usePointEventStore(
+    state => state.refreshIncomingPoints,
+  );
   const loadPointEvents = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -289,8 +292,12 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    refreshPoints();
-    loadPointEvents().finally(() => setRefreshing(false));
+    Promise.all([
+      refreshPoints(),
+      refreshIncomingPoints(),
+      loadPointEvents(),
+    ]).finally(() => setRefreshing(false));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadPointEvents]);
 

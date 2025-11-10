@@ -83,7 +83,7 @@ const generateSignature = async (address: string): Promise<SignatureData> => {
 };
 
 /**
- * Makes a POST or GET request to the points API with consistent error handling.
+ * Makes a POST request to the points API with consistent error handling.
  * Automatically includes signature and parity for authentication by detecting
  * the signing address from the request body (uses 'referee' or 'address' field).
  *
