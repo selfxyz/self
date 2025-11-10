@@ -379,7 +379,7 @@ const Points: React.FC = () => {
                   ? 'Enabling notifications...'
                   : 'Turn on push notifications'}
               </Text>
-              <Text style={styles.actionSubtitle}>Earn 20 points</Text>
+              <Text style={styles.actionSubtitle}>Earn 44 points</Text>
             </YStack>
           </XStack>
         </Pressable>
@@ -396,7 +396,7 @@ const Points: React.FC = () => {
               <Text style={styles.actionTitle}>
                 {isBackingUp ? 'Processing backup...' : 'Backup your account'}
               </Text>
-              <Text style={styles.actionSubtitle}>Earn 100 points</Text>
+              <Text style={styles.actionSubtitle}>Earn 32 points</Text>
             </YStack>
           </XStack>
         </Pressable>
