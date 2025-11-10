@@ -2,15 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { usePointEventStore } from '@/stores/pointEventStore';
-import {
-  getNextSundayNoonUTC,
-  getPointsAddress,
-  getTotalPoints,
-  type IncomingPoints,
-} from '@/utils/points';
+import { getNextSundayNoonUTC, type IncomingPoints } from '@/utils/points';
 
 /*
  * Hook to get incoming points for the user. It shows the optimistic incoming points.
