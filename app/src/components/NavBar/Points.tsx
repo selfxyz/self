@@ -448,7 +448,13 @@ const Points: React.FC = () => {
         >
           <Button
             style={styles.exploreButton}
-            onPress={() => selfClient.trackEvent(PointEvents.EXPLORE_APPS)}
+            onPress={() => {
+              selfClient.trackEvent(PointEvents.EXPLORE_APPS);
+              navigation.navigate('WebView', {
+                url: 'https://apps.self.xyz',
+                title: 'Explore Apps',
+              });
+            }}
           >
             <Text style={styles.exploreButtonText}>Explore apps</Text>
           </Button>
@@ -592,7 +598,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 20,
     right: 20,
-    display: 'none',
   },
   exploreButton: {
     backgroundColor: black,
