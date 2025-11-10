@@ -6,7 +6,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
-import { BlurView } from '@react-native-community/blur';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -62,22 +61,8 @@ const Points: React.FC = () => {
   // Ref to trigger list refresh
   const listRefreshRef = useRef<(() => Promise<void>) | null>(null);
 
-  const [isContentReady, setIsContentReady] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-
   // Guard: Validate that user has registered a document and completed points disclosure
   usePointsGuardrail();
-
-  // Unmounts BlurView when screen loses focus
-  // This fixes blackscreen issue when navigating to referral screen
-  useFocusEffect(
-    React.useCallback(() => {
-      setIsFocused(true);
-      return () => {
-        setIsFocused(false);
-      };
-    }, []),
-  );
 
   //TODO - uncomment after merging - https://github.com/selfxyz/self/pull/1363/
   // useEffect(() => {
@@ -165,12 +150,6 @@ const Points: React.FC = () => {
     };
     checkSubscription();
   }, []);
-
-  const handleContentLayout = () => {
-    if (!isContentReady) {
-      setIsContentReady(true);
-    }
-  };
 
   const handleEnableNotifications = async () => {
     if (isEnabling) {
@@ -442,17 +421,7 @@ const Points: React.FC = () => {
         <PointHistoryList
           ListHeaderComponent={ListHeader}
           onRefreshRef={listRefreshRef}
-          onLayout={handleContentLayout}
         />
-        {isContentReady && isFocused && (
-          <BlurView
-            style={styles.blurView}
-            blurType="light"
-            blurAmount={4}
-            reducedTransparencyFallbackColor={slate50}
-            pointerEvents="none"
-          />
-        )}
         <YStack
           style={[styles.exploreButtonContainer, { bottom: bottom + 20 }]}
         >
