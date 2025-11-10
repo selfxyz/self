@@ -6,13 +6,16 @@ import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 import { ethers } from 'ethers';
 
-import { unsafe_getPrivateKey, unsafe_getPointsPrivateKey } from '@/providers/authProvider';
-import { getPointsAddress } from '@/utils/points/utils';
+import {
+  unsafe_getPointsPrivateKey,
+  unsafe_getPrivateKey,
+} from '@/providers/authProvider';
 import {
   isSuccessfulStatus,
   makeApiRequest,
   POINTS_API_BASE_URL,
 } from '@/utils/points/api';
+import { getPointsAddress } from '@/utils/points/utils';
 
 // Mock dependencies
 jest.mock('axios');
@@ -39,9 +42,16 @@ jest.mock('ethers', () => {
 });
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
-const mockUnsafeGetPrivateKey = unsafe_getPrivateKey as jest.MockedFunction<typeof unsafe_getPrivateKey>;
-const mockUnsafeGetPointsPrivateKey = unsafe_getPointsPrivateKey as jest.MockedFunction<typeof unsafe_getPointsPrivateKey>;
-const mockGetPointsAddress = getPointsAddress as jest.MockedFunction<typeof getPointsAddress>;
+const mockUnsafeGetPrivateKey = unsafe_getPrivateKey as jest.MockedFunction<
+  typeof unsafe_getPrivateKey
+>;
+const mockUnsafeGetPointsPrivateKey =
+  unsafe_getPointsPrivateKey as jest.MockedFunction<
+    typeof unsafe_getPointsPrivateKey
+  >;
+const mockGetPointsAddress = getPointsAddress as jest.MockedFunction<
+  typeof getPointsAddress
+>;
 
 describe('isSuccessfulStatus', () => {
   it('should return true for 200 status code', () => {
@@ -105,7 +115,9 @@ describe('Points API - Signature Logic', () => {
     }) as any;
 
     // Default: points address does not match any tested address to prefer primary key unless overridden
-    mockGetPointsAddress.mockResolvedValue('0x9999999999999999999999999999999999999999');
+    mockGetPointsAddress.mockResolvedValue(
+      '0x9999999999999999999999999999999999999999',
+    );
   });
 
   afterEach(() => {
@@ -154,7 +166,9 @@ describe('Points API - Signature Logic', () => {
         '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab';
 
       // Ensure points address does not match; use primary key
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockUnsafeGetPrivateKey.mockResolvedValue(mockPrimaryPrivateKey);
       mockWallet.signMessage.mockResolvedValue(mockSignatureHex);
 
@@ -197,7 +211,9 @@ describe('Points API - Signature Logic', () => {
 
     it('should handle missing private key', async () => {
       // No points match; primary key retrieval returns null
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockUnsafeGetPrivateKey.mockResolvedValue(null);
 
       const result = await makeApiRequest('/referrals/refer', {
@@ -224,7 +240,9 @@ describe('Points API - Signature Logic', () => {
       const referrerAddress = '0x9876543210987654321098765432109876543210';
 
       // Ensure points address does not match here; not asserting key choice in this test
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: {},
@@ -250,7 +268,9 @@ describe('Points API - Signature Logic', () => {
     it('should auto-detect address field and include signature', async () => {
       const userAddress = '0xABCDEF1234567890ABCDEF1234567890ABCDEF12';
 
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: {},
@@ -282,7 +302,9 @@ describe('Points API - Signature Logic', () => {
       const refereeAddress = '0x1111111111111111111111111111111111111111';
       const addressField = '0x2222222222222222222222222222222222222222';
 
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: {},
@@ -334,7 +356,9 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle successful 200 response', async () => {
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: { result: 'success' },
@@ -353,7 +377,9 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle successful 202 response', async () => {
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 202,
         data: { result: 'accepted' },
@@ -372,7 +398,9 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle error responses with custom error messages', async () => {
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 400,
         data: { status: 'already_verified', message: 'Already verified' },
@@ -399,7 +427,9 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle error responses with generic message from response', async () => {
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 400,
         data: { message: 'Invalid request data' },
@@ -418,7 +448,9 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle error responses with fallback message', async () => {
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 500,
         data: {},
@@ -437,7 +469,9 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle network errors', async () => {
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockRejectedValue(new Error('Network error'));
 
       const result = await makeApiRequest('/referrals/refer', {
@@ -451,7 +485,9 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle axios errors with response status', async () => {
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockRejectedValue({
         message: 'Request failed',
         response: { status: 503 },
@@ -518,7 +554,9 @@ describe('Points API - Signature Logic', () => {
       const mockSignatureHex =
         '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab';
 
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockWallet.signMessage.mockResolvedValue(mockSignatureHex);
       mockAxios.post.mockResolvedValue({
         status: 200,
@@ -588,7 +626,9 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle empty body object', async () => {
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: {},
@@ -601,7 +641,9 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle null address values', async () => {
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: {},
@@ -616,7 +658,9 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle undefined address values', async () => {
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: {},
@@ -634,7 +678,9 @@ describe('Points API - Signature Logic', () => {
       const mixedCaseReferee = '0xAbCdEf1234567890aBcDeF1234567890AbCdEf12';
       const mixedCaseReferrer = '0xAbCdEf0987654321aBcDeF0987654321AbCdEf09';
 
-      mockGetPointsAddress.mockResolvedValue('0x0000000000000000000000000000000000000001');
+      mockGetPointsAddress.mockResolvedValue(
+        '0x0000000000000000000000000000000000000001',
+      );
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: {},
