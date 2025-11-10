@@ -10,11 +10,8 @@ import {
   unsafe_getPointsPrivateKey,
   unsafe_getPrivateKey,
 } from '@/providers/authProvider';
-import {
-  isSuccessfulStatus,
-  makeApiRequest,
-  POINTS_API_BASE_URL,
-} from '@/utils/points/api';
+import { isSuccessfulStatus, makeApiRequest } from '@/utils/points/api';
+import { POINTS_API_BASE_URL } from '@/utils/points/constants';
 import { getPointsAddress } from '@/utils/points/utils';
 
 // Mock dependencies
