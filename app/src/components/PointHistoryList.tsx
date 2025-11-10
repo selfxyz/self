@@ -11,6 +11,9 @@ import {
 } from 'react-native';
 import { Card, Text, View, XStack, YStack } from 'tamagui';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import HeartIcon from '@/images/icons/heart.svg';
 import StarBlackIcon from '@/images/icons/star_black.svg';
 import { usePointEventStore } from '@/stores/pointEventStore';
@@ -63,6 +66,7 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
   ListHeaderComponent,
   onLayout,
 }) => {
+  const selfClient = useSelfClient();
   const [refreshing, setRefreshing] = useState(false);
   // Subscribe to events directly from store - component will auto-update when store changes
   const pointEvents = usePointEventStore(state => state.getAllPointEvents());
@@ -269,11 +273,12 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
 
   // Pull-to-refresh handler
   const onRefresh = useCallback(() => {
+    selfClient.trackEvent(PointEvents.REFRESH_HISTORY);
     setRefreshing(true);
     Promise.all([refreshPoints(), refreshIncomingPoints()]).finally(() =>
       setRefreshing(false),
     );
-  }, [refreshPoints, refreshIncomingPoints]);
+  }, [selfClient, refreshPoints, refreshIncomingPoints]);
 
   const keyExtractor = useCallback((item: PointEvent) => item.id, []);
 
