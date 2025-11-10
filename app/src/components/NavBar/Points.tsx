@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
 import { BlurView } from '@react-native-community/blur';
@@ -15,6 +15,7 @@ import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { PointHistoryList } from '@/components/PointHistoryList';
 import { useIncomingPoints, usePoints } from '@/hooks/usePoints';
+import { usePointsGuardrail } from '@/hooks/usePointsGuardrail';
 import BellWhiteIcon from '@/images/icons/bell_white.svg';
 import ClockIcon from '@/images/icons/clock.svg';
 import LockWhiteIcon from '@/images/icons/lock_white.svg';
@@ -63,6 +64,9 @@ const Points: React.FC = () => {
 
   const [isContentReady, setIsContentReady] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+
+  // Guard: Validate that user has registered a document and completed points disclosure
+  usePointsGuardrail();
 
   // Unmounts BlurView when screen loses focus
   // This fixes blackscreen issue when navigating to referral screen
@@ -343,84 +347,28 @@ const Points: React.FC = () => {
 
   const ListHeader = (
     <YStack paddingHorizontal={5} gap={20} paddingTop={20}>
-      <YStack
-        backgroundColor="white"
-        borderRadius={10}
-        borderWidth={1}
-        borderColor={slate200}
-        overflow="hidden"
-      >
-        <YStack
-          paddingVertical={30}
-          paddingHorizontal={40}
-          alignItems="center"
-          gap={20}
-        >
-          <View
-            width={68}
-            height={68}
-            borderRadius={12}
-            borderWidth={1}
-            borderColor={slate200}
-            alignItems="center"
-            justifyContent="center"
-            backgroundColor="white"
-          >
+      <YStack style={styles.pointsCard}>
+        <YStack style={styles.pointsCardContent}>
+          <View style={styles.logoContainer}>
             <LogoInversed width={33} height={33} />
           </View>
           <YStack gap={12} alignItems="center">
             <XStack gap={4} alignItems="center">
-              <Text
-                color={black}
-                textAlign="center"
-                fontFamily="DIN OT"
-                fontWeight="500"
-                fontSize={32}
-                lineHeight={32}
-                letterSpacing={-1}
-              >
-                {`${points} Self points`}
-              </Text>
+              <Text style={styles.pointsTitle}>{`${points} Self points`}</Text>
             </XStack>
-            <Text
-              color={black}
-              fontFamily="DIN OT"
-              fontSize={18}
-              fontWeight="500"
-              textAlign="center"
-              paddingHorizontal={20}
-            >
+            <Text style={styles.pointsDescription}>
               Earn points by referring friends, disclosing proof requests, and
               more.
             </Text>
           </YStack>
         </YStack>
         {incomingPoints && (
-          <XStack
-            backgroundColor={slate50}
-            borderTopWidth={1}
-            borderTopColor={slate200}
-            paddingVertical={10}
-            paddingHorizontal={10}
-            alignItems="center"
-            gap={4}
-          >
+          <XStack style={styles.incomingPointsBar}>
             <ClockIcon width={16} height={16} />
-            <Text
-              flex={1}
-              fontFamily="DIN OT"
-              fontWeight="500"
-              fontSize={14}
-              color={black}
-            >
+            <Text style={styles.incomingPointsAmount}>
               {`${incomingPoints.amount} incoming points`}
             </Text>
-            <Text
-              fontFamily="DIN OT"
-              fontWeight="500"
-              fontSize={14}
-              color={blue600}
-            >
+            <Text style={styles.incomingPointsTime}>
               {`Expected in ${formatTimeUntilDate(incomingPoints.expectedDate)}`}
             </Text>
           </XStack>
@@ -429,38 +377,18 @@ const Points: React.FC = () => {
       {!isNovaSubscribed && (
         <Pressable onPress={handleEnableNotifications} disabled={isEnabling}>
           <XStack
-            gap={22}
-            backgroundColor="white"
-            padding={16}
-            borderRadius={17}
-            borderWidth={1}
-            borderColor={slate200}
-            opacity={isEnabling ? 0.5 : 1}
+            style={[styles.actionCard, { opacity: isEnabling ? 0.5 : 1 }]}
           >
-            <View
-              width={60}
-              height={60}
-              borderRadius={16}
-              alignItems="center"
-              justifyContent="center"
-              backgroundColor="black"
-            >
+            <View style={styles.actionIconContainer}>
               <BellWhiteIcon width={30} height={26} />
             </View>
             <YStack gap={4} justifyContent="center">
-              <Text
-                color={black}
-                fontFamily="DIN OT"
-                fontWeight="500"
-                fontSize={16}
-              >
+              <Text style={styles.actionTitle}>
                 {isEnabling
                   ? 'Enabling notifications...'
                   : 'Turn on push notifications'}
               </Text>
-              <Text color={slate500} fontFamily="DIN OT" fontSize={14}>
-                Earn 20 points
-              </Text>
+              <Text style={styles.actionSubtitle}>Earn 20 points</Text>
             </YStack>
           </XStack>
         </Pressable>
@@ -468,36 +396,16 @@ const Points: React.FC = () => {
       {!hasUserBackedUpAccount() && (
         <Pressable onPress={handleBackupSecret} disabled={isBackingUp}>
           <XStack
-            gap={22}
-            backgroundColor="white"
-            padding={16}
-            borderRadius={17}
-            borderWidth={1}
-            borderColor={slate200}
-            opacity={isBackingUp ? 0.5 : 1}
+            style={[styles.actionCard, { opacity: isBackingUp ? 0.5 : 1 }]}
           >
-            <View
-              width={60}
-              height={60}
-              borderRadius={16}
-              alignItems="center"
-              justifyContent="center"
-              backgroundColor="black"
-            >
+            <View style={styles.actionIconContainer}>
               <LockWhiteIcon width={30} height={26} />
             </View>
             <YStack gap={4} justifyContent="center">
-              <Text
-                color={black}
-                fontFamily="DIN OT"
-                fontWeight="500"
-                fontSize={16}
-              >
+              <Text style={styles.actionTitle}>
                 {isBackingUp ? 'Processing backup...' : 'Backup your account'}
               </Text>
-              <Text color={slate500} fontFamily="DIN OT" fontSize={14}>
-                Earn 100 points
-              </Text>
+              <Text style={styles.actionSubtitle}>Earn 100 points</Text>
             </YStack>
           </XStack>
         </Pressable>
@@ -508,41 +416,20 @@ const Points: React.FC = () => {
           navigation.navigate('Referral');
         }}
       >
-        <YStack
-          height={270}
-          backgroundColor="white"
-          borderRadius={16}
-          borderWidth={1}
-          borderColor={slate200}
-        >
-          <ZStack
-            borderBottomWidth={1}
-            borderBottomColor={slate200}
-            height={170}
-          >
-            <Image
-              source={MajongImage}
-              style={{
-                width: '80%',
-                height: '100%',
-                position: 'absolute',
-                right: 0,
-                top: 0,
-              }}
-            />
+        <YStack style={styles.referralCard}>
+          <ZStack style={styles.referralImageContainer}>
+            <Image source={MajongImage} style={styles.referralImage} />
             <StarBlackIcon
               width={24}
               height={24}
-              style={{ marginLeft: 16, marginTop: 16 }}
+              style={styles.referralStarIcon}
             />
           </ZStack>
           <YStack padding={16} paddingBottom={32} gap={10}>
-            <Text fontFamily="DIN OT" fontSize={16} color={black}>
+            <Text style={styles.referralTitle}>
               Refer friends and earn rewards
             </Text>
-            <Text fontFamily="DIN OT" fontSize={16} color={blue600}>
-              Refer now
-            </Text>
+            <Text style={styles.referralLink}>Refer now</Text>
           </YStack>
         </YStack>
       </Pressable>
@@ -559,41 +446,177 @@ const Points: React.FC = () => {
         />
         {isContentReady && isFocused && (
           <BlurView
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 100,
-            }}
+            style={styles.blurView}
             blurType="light"
             blurAmount={4}
             reducedTransparencyFallbackColor={slate50}
             pointerEvents="none"
           />
         )}
-        <YStack position="absolute" bottom={bottom + 20} left={20} right={20}>
+        <YStack
+          style={[styles.exploreButtonContainer, { bottom: bottom + 20 }]}
+        >
           <Button
-            backgroundColor={black}
-            paddingHorizontal={20}
-            paddingVertical={14}
-            borderRadius={5}
-            height={52}
+            style={styles.exploreButton}
             onPress={() => selfClient.trackEvent(PointEvents.EXPLORE_APPS)}
           >
-            <Text
-              fontFamily="DIN OT"
-              fontSize={16}
-              color={white}
-              textAlign="center"
-            >
-              Explore apps
-            </Text>
+            <Text style={styles.exploreButtonText}>Explore apps</Text>
           </Button>
         </YStack>
       </ZStack>
     </YStack>
   );
 };
+
+const styles = StyleSheet.create({
+  pointsCard: {
+    backgroundColor: white,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: slate200,
+    overflow: 'hidden',
+  },
+  pointsCardContent: {
+    paddingVertical: 30,
+    paddingHorizontal: 40,
+    alignItems: 'center',
+    gap: 20,
+  },
+  logoContainer: {
+    width: 68,
+    height: 68,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: slate200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: white,
+  },
+  pointsTitle: {
+    color: black,
+    textAlign: 'center',
+    fontFamily: 'DIN OT',
+    fontWeight: '500',
+    fontSize: 32,
+    lineHeight: 32,
+    letterSpacing: -1,
+  },
+  pointsDescription: {
+    color: black,
+    fontFamily: 'DIN OT',
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  incomingPointsBar: {
+    backgroundColor: slate50,
+    borderTopWidth: 1,
+    borderTopColor: slate200,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    gap: 4,
+  },
+  incomingPointsAmount: {
+    flex: 1,
+    fontFamily: 'DIN OT',
+    fontWeight: '500',
+    fontSize: 14,
+    color: black,
+  },
+  incomingPointsTime: {
+    fontFamily: 'DIN OT',
+    fontWeight: '500',
+    fontSize: 14,
+    color: blue600,
+  },
+  actionCard: {
+    gap: 22,
+    backgroundColor: white,
+    padding: 16,
+    borderRadius: 17,
+    borderWidth: 1,
+    borderColor: slate200,
+  },
+  actionIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: black,
+  },
+  actionTitle: {
+    color: black,
+    fontFamily: 'DIN OT',
+    fontWeight: '500',
+    fontSize: 16,
+  },
+  actionSubtitle: {
+    color: slate500,
+    fontFamily: 'DIN OT',
+    fontSize: 14,
+  },
+  referralCard: {
+    height: 270,
+    backgroundColor: white,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: slate200,
+  },
+  referralImageContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: slate200,
+    height: 170,
+  },
+  referralImage: {
+    width: '80%',
+    height: '100%',
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  referralStarIcon: {
+    marginLeft: 16,
+    marginTop: 16,
+  },
+  referralTitle: {
+    fontFamily: 'DIN OT',
+    fontSize: 16,
+    color: black,
+  },
+  referralLink: {
+    fontFamily: 'DIN OT',
+    fontSize: 16,
+    color: blue600,
+  },
+  blurView: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+  },
+  exploreButtonContainer: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    display: 'none',
+  },
+  exploreButton: {
+    backgroundColor: black,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 5,
+    height: 52,
+  },
+  exploreButtonText: {
+    fontFamily: 'DIN OT',
+    fontSize: 16,
+    color: white,
+    textAlign: 'center',
+  },
+});
 
 export default Points;
