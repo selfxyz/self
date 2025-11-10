@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { IS_DEV_MODE } from '@/utils/devUtils';
-import { makeApiRequest, POINTS_API_BASE_URL } from '@/utils/points/api';
+import { makeApiRequest } from '@/utils/points/api';
 
 type VerifyActionResponse = {
   job_id: string;
@@ -123,23 +122,6 @@ export const registerReferralPoints = async ({
   error?: string;
   jobId?: string;
 }> => {
-  // In __DEV__ mode, log the request instead of sending it
-  if (IS_DEV_MODE) {
-    // Redact addresses for security - show first 6 and last 4 characters only
-    const redactAddress = (addr: string) =>
-      `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-    console.log('[DEV MODE] Would have sent referral registration request:', {
-      url: `${POINTS_API_BASE_URL}/referrals/refer`,
-      method: 'POST',
-      body: {
-        referee: redactAddress(referee),
-        referrer: redactAddress(referrer),
-      },
-    });
-    // Simulate a successful response with mock job_id for testing
-    return { success: true, status: 200, jobId: 'dev-refer-' + Date.now() };
-  }
-
   try {
     const response = await makeApiRequest<VerifyActionResponse>(
       '/referrals/refer',
