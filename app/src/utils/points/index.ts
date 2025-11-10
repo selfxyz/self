@@ -34,6 +34,7 @@ export {
 
 // Re-export event recording functions
 export {
+  handleBackupPointsReward,
   recordBackupPointEvent,
   recordNotificationPointEvent,
   recordReferralPointEvent,

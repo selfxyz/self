@@ -25,6 +25,7 @@ import { useSettingStore } from '@/stores/settingStore';
 import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, white } from '@/utils/colors';
 import { buttonTap, confirmTap } from '@/utils/haptic';
+import { handleBackupPointsReward } from '@/utils/points';
 import { useTurnkeyUtils } from '@/utils/turnkey';
 
 type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
@@ -127,6 +128,10 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
       toggleCloudBackupEnabled();
       trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE);
 
+      // Award points if eligible
+      await handleBackupPointsReward();
+
+      // Navigate to return screen if specified
       if (params?.returnToScreen) {
         navigation.navigate(params.returnToScreen);
       }
@@ -174,6 +179,10 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
       await backupAccount(mnemonics.data.phrase);
       setTurnkeyPending(false);
 
+      // Award points if eligible
+      await handleBackupPointsReward();
+
+      // Navigate to return screen if specified
       if (params?.returnToScreen) {
         navigation.navigate(params.returnToScreen);
       }
@@ -186,6 +195,11 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         error.message === 'already_backed_up'
       ) {
         console.log('Already backed up with Turnkey');
+
+        // Award points if eligible
+        await handleBackupPointsReward();
+
+        // Navigate based on priority: returnToScreen > nextScreen > show modal
         if (params?.returnToScreen) {
           navigation.navigate(params.returnToScreen);
         } else if (params?.nextScreen) {

@@ -41,7 +41,6 @@ import {
 } from '@/utils/notifications/notificationService';
 import {
   formatTimeUntilDate,
-  recordBackupPointEvent,
   recordNotificationPointEvent,
 } from '@/utils/points';
 
@@ -55,9 +54,7 @@ const Points: React.FC = () => {
   const [isEnabling, setIsEnabling] = useState(false);
   const incomingPoints = useIncomingPoints();
   const loadEvents = usePointEventStore(state => state.loadEvents);
-  const { hasCompletedBackupForPoints, setBackupForPointsCompleted } =
-    useSettingStore();
-  const [isBackingUp, setIsBackingUp] = useState(false);
+  const { hasCompletedBackupForPoints } = useSettingStore();
 
   // Ref to trigger list refresh
   const listRefreshRef = useRef<(() => Promise<void>) | null>(null);
@@ -91,61 +88,6 @@ const Points: React.FC = () => {
   //     setBackupForPointsCompleted();
   //   }
   // }, [setBackupForPointsCompleted, hasCompletedBackupForPoints]);
-
-  // Detect when returning from backup screen and record points if backup was completed
-  useFocusEffect(
-    React.useCallback(() => {
-      const { cloudBackupEnabled, backedUpWithTurnKey } =
-        useSettingStore.getState();
-      const currentHasCompletedBackup =
-        useSettingStore.getState().hasCompletedBackupForPoints;
-
-      // If either backup method is enabled but points haven't been recorded yet, record them now
-      // This happens when user just completed backup and returned to this screen
-      if (
-        (cloudBackupEnabled || backedUpWithTurnKey) &&
-        !currentHasCompletedBackup
-      ) {
-        const recordPoints = async () => {
-          try {
-            const response = await recordBackupPointEvent();
-
-            if (response.success) {
-              useSettingStore.getState().setBackupForPointsCompleted();
-              selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
-
-              if (listRefreshRef.current) {
-                await listRefreshRef.current();
-              }
-
-              const callbackId = registerModalCallbacks({
-                onButtonPress: () => {},
-                onModalDismiss: () => {},
-              });
-              navigation.navigate('Modal', {
-                titleText: 'Success!',
-                bodyText:
-                  'Account backed up successfully! You earned 100 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
-                buttonText: 'OK',
-                callbackId,
-              });
-            } else {
-              console.error(
-                'Error recording backup points after return:',
-                response.error,
-              );
-              selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
-            }
-          } catch (error) {
-            selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
-            console.error('Error recording backup points after return:', error);
-          }
-        };
-
-        recordPoints();
-      }
-    }, [navigation, selfClient]),
-  );
 
   // Mock function to check if user has backed up their account
   const hasUserBackedUpAccount = (): boolean => {
@@ -274,75 +216,12 @@ const Points: React.FC = () => {
     }
   };
 
-  const handleBackupSecret = async () => {
-    if (isBackingUp) {
-      return;
-    }
+  const handleBackupSecret = () => {
     selfClient.trackEvent(PointEvents.EARN_BACKUP);
-
-    const { cloudBackupEnabled, backedUpWithTurnKey } =
-      useSettingStore.getState();
-
-    // If either backup method is already enabled, just record points
-    if (cloudBackupEnabled || backedUpWithTurnKey) {
-      setIsBackingUp(true);
-      try {
-        // this will add event to store and the new event will then trigger useIncomingPoints hook to refetch incoming points
-        const response = await recordBackupPointEvent();
-
-        if (response.success) {
-          setBackupForPointsCompleted();
-          selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
-
-          if (listRefreshRef.current) {
-            await listRefreshRef.current();
-          }
-
-          const callbackId = registerModalCallbacks({
-            onButtonPress: () => {},
-            onModalDismiss: () => {},
-          });
-          navigation.navigate('Modal', {
-            titleText: 'Success!',
-            bodyText:
-              'Account backed up successfully! You earned 100 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
-            buttonText: 'OK',
-            callbackId,
-          });
-        } else {
-          selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
-          const callbackId = registerModalCallbacks({
-            onButtonPress: () => {},
-            onModalDismiss: () => {},
-          });
-          navigation.navigate('Modal', {
-            titleText: 'Verification Failed',
-            bodyText:
-              response.error || 'Failed to register points. Please try again.',
-            buttonText: 'OK',
-            callbackId,
-          });
-        }
-      } catch (error) {
-        selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
-        const callbackId = registerModalCallbacks({
-          onButtonPress: () => {},
-          onModalDismiss: () => {},
-        });
-        navigation.navigate('Modal', {
-          titleText: 'Error',
-          bodyText:
-            error instanceof Error ? error.message : 'Failed to backup account',
-          buttonText: 'OK',
-          callbackId,
-        });
-      } finally {
-        setIsBackingUp(false);
-      }
-    } else {
-      // Navigate to backup screen and return to Points after backup completes
-      navigation.navigate('CloudBackupSettings', { returnToScreen: 'Points' });
-    }
+    // Navigate to backup screen - it will handle points reward automatically
+    navigation.navigate('CloudBackupSettings', {
+      returnToScreen: 'Points',
+    });
   };
 
   const ListHeader = (
@@ -394,17 +273,13 @@ const Points: React.FC = () => {
         </Pressable>
       )}
       {!hasUserBackedUpAccount() && (
-        <Pressable onPress={handleBackupSecret} disabled={isBackingUp}>
-          <XStack
-            style={[styles.actionCard, { opacity: isBackingUp ? 0.5 : 1 }]}
-          >
+        <Pressable onPress={handleBackupSecret}>
+          <XStack style={styles.actionCard}>
             <View style={styles.actionIconContainer}>
               <LockWhiteIcon width={30} height={26} />
             </View>
             <YStack gap={4} justifyContent="center">
-              <Text style={styles.actionTitle}>
-                {isBackingUp ? 'Processing backup...' : 'Backup your account'}
-              </Text>
+              <Text style={styles.actionTitle}>Backup your account</Text>
               <Text style={styles.actionSubtitle}>Earn 100 points</Text>
             </YStack>
           </XStack>

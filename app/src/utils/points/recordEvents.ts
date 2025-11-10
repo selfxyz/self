@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { navigationRef } from '@/navigation';
+import { useSettingStore } from '@/stores/settingStore';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import { isSuccessfulStatus } from '@/utils/points/api';
 import {
   registerBackupPoints,
@@ -22,6 +25,60 @@ const addEventToStore = async (
 ): Promise<void> => {
   const { usePointEventStore } = await import('@/stores/pointEventStore');
   await usePointEventStore.getState().addEvent(title, type, points);
+};
+
+export const handleBackupPointsReward = async (): Promise<void> => {
+  const { hasCompletedBackupForPoints, setBackupForPointsCompleted } =
+    useSettingStore.getState();
+
+  // Skip if already completed
+  if (hasCompletedBackupForPoints) {
+    return;
+  }
+
+  try {
+    const response = await recordBackupPointEvent();
+
+    if (response.success) {
+      setBackupForPointsCompleted();
+
+      const callbackId = registerModalCallbacks({
+        onButtonPress: () => {},
+        onModalDismiss: () => {},
+      });
+      navigationRef.navigate('Modal', {
+        titleText: 'Success!',
+        bodyText:
+          'Account backed up successfully! You earned 100 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
+        buttonText: 'OK',
+        callbackId,
+      });
+    } else {
+      const callbackId = registerModalCallbacks({
+        onButtonPress: () => {},
+        onModalDismiss: () => {},
+      });
+      navigationRef.navigate('Modal', {
+        titleText: 'Verification Failed',
+        bodyText:
+          response.error || 'Failed to register points. Please try again.',
+        buttonText: 'OK',
+        callbackId,
+      });
+    }
+  } catch (error) {
+    const callbackId = registerModalCallbacks({
+      onButtonPress: () => {},
+      onModalDismiss: () => {},
+    });
+    navigationRef.navigate('Modal', {
+      titleText: 'Error',
+      bodyText:
+        error instanceof Error ? error.message : 'Failed to backup account',
+      buttonText: 'OK',
+      callbackId,
+    });
+  }
 };
 
 /**
