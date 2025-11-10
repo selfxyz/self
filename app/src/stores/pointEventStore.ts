@@ -18,14 +18,21 @@ interface PointEventState {
   ) => Promise<void>;
   removeEvent: (id: string) => Promise<void>;
   clearEvents: () => Promise<void>;
+  getAllPointEvents: () => PointEvent[];
 }
 
 const STORAGE_KEY = '@point_events';
 
+const DESIRED_EVENT_TYPES = ['refer', 'notification', 'backup', 'disclosure'];
+
 export const usePointEventStore = create<PointEventState>()((set, get) => ({
   events: [],
   isLoading: false,
-
+  getAllPointEvents: () => {
+    return get()
+      .events.filter(event => DESIRED_EVENT_TYPES.includes(event.type))
+      .sort((a, b) => b.timestamp - a.timestamp);
+  },
   loadEvents: async () => {
     try {
       set({ isLoading: true });
