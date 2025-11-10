@@ -13,6 +13,7 @@ import { Card, Text, View, XStack, YStack } from 'tamagui';
 
 import HeartIcon from '@/images/icons/heart.svg';
 import StarBlackIcon from '@/images/icons/star_black.svg';
+import { usePointEventStore } from '@/stores/pointEventStore';
 import {
   black,
   blue600,
@@ -25,7 +26,6 @@ import {
 } from '@/utils/colors';
 import { dinot, plexMono } from '@/utils/fonts';
 import type { PointEvent } from '@/utils/points';
-import { getAllPointEvents } from '@/utils/points';
 
 type Section = {
   title: string;
@@ -65,33 +65,24 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
   onRefreshRef,
   onLayout,
 }) => {
-  // why is this not using usePointEventStore((store) => store.events)?
-  const [pointEvents, setPointEvents] = useState<PointEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  // Subscribe to events directly from store - component will auto-update when store changes
+  const pointEvents = usePointEventStore(state => state.getAllPointEvents());
+  const isLoading = usePointEventStore(state => state.isLoading);
+  // loadEvents only needs to be called once on mount. ev
+  // and it is called in Points.ts
 
-  const loadPointEvents = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const events = await getAllPointEvents();
-      setPointEvents(events);
-    } catch (error) {
-      console.error('Error loading point events:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadPointEvents();
-  }, [loadPointEvents]);
-
-  // Expose refresh function to parent via ref
+  // Expose no-op refresh function to parent via ref for backward compatibility
+  // Component auto-updates via Zustand, so manual refresh is not needed
+  // Note: We don't call loadEvents() here as it could cause data loss if called
+  // while events are being saved (loadEvents should only run at app startup)
   useEffect(() => {
     if (onRefreshRef) {
-      onRefreshRef.current = loadPointEvents;
+      onRefreshRef.current = async () => {
+        // No-op: component auto-updates when store changes
+      };
     }
-  }, [loadPointEvents, onRefreshRef]);
+  }, [onRefreshRef]);
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], {
@@ -286,10 +277,13 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
     [],
   );
 
+  // Pull-to-refresh handler - currently a no-op
+  // TODO: Implement refresh logic after merge
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    loadPointEvents().finally(() => setRefreshing(false));
-  }, [loadPointEvents]);
+    // Placeholder for future refresh logic
+    setTimeout(() => setRefreshing(false), 500);
+  }, []);
 
   const keyExtractor = useCallback((item: PointEvent) => item.id, []);
 
