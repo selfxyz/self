@@ -7,10 +7,8 @@ import axios from 'axios';
 import { Buffer } from 'buffer';
 import { ethers } from 'ethers';
 
-import {
-  unsafe_getPointsPrivateKey,
-  unsafe_getPrivateKey,
-} from '@/providers/authProvider';
+import { unsafe_getPointsPrivateKey } from '@/providers/authProvider';
+import { POINTS_API_BASE_URL } from '@/utils/points/constants';
 import { getPointsAddress } from '@/utils/points/utils';
 
 export type ApiResponse<T = unknown> = {
@@ -24,11 +22,6 @@ export interface SignatureData {
   signature: string; // base64-encoded signature
   parity: number; // yParity value (0 or 1)
 }
-
-/**
- * Interface for signature data to be included in API requests
- */
-export const POINTS_API_BASE_URL = 'https://points.self.xyz';
 
 /**
  * Successful HTTP status codes accepted by the points API
@@ -67,9 +60,7 @@ const generateSignature = async (address: string): Promise<SignatureData> => {
     } catch {
       // If fetching the points address fails for any reason, fall back to primary key
     }
-    if (!privateKey) {
-      privateKey = await unsafe_getPrivateKey();
-    }
+
     if (!privateKey) {
       throw new Error('Failed to retrieve private key for signing');
     }
