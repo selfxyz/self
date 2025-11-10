@@ -88,6 +88,9 @@ const Points: React.FC = () => {
   //   }
   // }, [setBackupForPointsCompleted, hasCompletedBackupForPoints]);
 
+  // Track if we should check for backup completion on next focus
+  const shouldCheckBackupRef = React.useRef(false);
+
   // Detect when returning from backup screen and record points if backup was completed
   useFocusEffect(
     React.useCallback(() => {
@@ -96,9 +99,10 @@ const Points: React.FC = () => {
       const currentHasCompletedBackup =
         useSettingStore.getState().hasCompletedBackupForPoints;
 
-      // If either backup method is enabled but points haven't been recorded yet, record them now
-      // This happens when user just completed backup and returned to this screen
+      // Only check if we explicitly set the flag (when navigating to backup settings)
+      // This prevents false triggers when returning from other flows (like notification permissions)
       if (
+        shouldCheckBackupRef.current &&
         (cloudBackupEnabled || backedUpWithTurnKey) &&
         !currentHasCompletedBackup
       ) {
@@ -135,6 +139,9 @@ const Points: React.FC = () => {
 
         recordPoints();
       }
+
+      // Reset the flag after checking
+      shouldCheckBackupRef.current = false;
     }, [navigation, selfClient]),
   );
 
@@ -314,6 +321,8 @@ const Points: React.FC = () => {
       }
     } else {
       // Navigate to backup screen and return to Points after backup completes
+      // Set flag to check for backup completion when we return
+      shouldCheckBackupRef.current = true;
       navigation.navigate('CloudBackupSettings', { returnToScreen: 'Points' });
     }
   };

@@ -87,7 +87,7 @@ export const getPointsAddress = async (): Promise<string> => {
 
 export const getTotalPoints = async (address: string): Promise<number> => {
   try {
-    const url = `${POINTS_API_BASE_URL}/distribution/${address.toLowerCase()}`;
+    const url = `${POINTS_API_BASE_URL}/points/${address.toLowerCase()}`;
     const response = await fetch(url);
 
     if (!response.ok) {
