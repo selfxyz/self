@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -28,12 +28,13 @@ export const useReferralConfirmation = ({
   const [isReferralConfirmed, setIsReferralConfirmed] = useState<
     boolean | undefined
   >(undefined);
+  const hasTriggeredFlowRef = useRef(false);
 
   const showReferralConfirmationModal = useCallback(() => {
     const callbackId = registerModalCallbacks({
       onButtonPress: async () => {
         setIsReferralConfirmed(true);
-        // Use setTimeout to ensure modal dismisses before any navigation triggered by state change
+        // Use setTimeout to ensure state updates and modal dismisses before navigation
         setTimeout(() => {
           navigation.goBack();
         }, 100);
@@ -54,11 +55,38 @@ export const useReferralConfirmation = ({
     });
   }, [navigation]);
 
+  // Reset the trigger flag when referrer changes or is cleared
+  useEffect(() => {
+    hasTriggeredFlowRef.current = false;
+  }, [referrer]);
+
   // Handle referral confirmation flow
   useEffect(() => {
+    console.log('[Referral] useReferralConfirmation effect triggered', {
+      isReferralConfirmed,
+      hasReferrer,
+      referrer,
+      isReferrerRegistered: referrer ? isReferrerRegistered(referrer) : null,
+      hasTriggeredFlow: hasTriggeredFlowRef.current,
+    });
+
     // This should trigger the flow when user comes back from any of the onboarding screens
-    if (isReferralConfirmed === true && hasReferrer) {
-      onConfirmed();
+    // Only trigger once when confirmed, and ensure the referrer hasn't been registered yet
+    if (
+      isReferralConfirmed === true &&
+      hasReferrer &&
+      referrer &&
+      !isReferrerRegistered(referrer) &&
+      !hasTriggeredFlowRef.current
+    ) {
+      console.log('[Referral] Scheduling onConfirmed callback');
+      hasTriggeredFlowRef.current = true;
+      // Use setTimeout to ensure React re-renders with updated state before calling callback
+      // This prevents stale closure issues where the callback has old state values
+      setTimeout(() => {
+        console.log('[Referral] Executing onConfirmed callback');
+        onConfirmed();
+      }, 150);
       return;
     }
 
