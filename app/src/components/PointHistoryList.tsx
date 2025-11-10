@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -37,7 +37,6 @@ export type PointHistoryListProps = {
     | React.ComponentType<Record<string, unknown>>
     | React.ReactElement
     | null;
-  onRefreshRef?: React.MutableRefObject<(() => Promise<void>) | null>;
   onLayout?: () => void;
 };
 
@@ -62,27 +61,18 @@ const getIconForEventType = (type: PointEvent['type']) => {
 
 export const PointHistoryList: React.FC<PointHistoryListProps> = ({
   ListHeaderComponent,
-  onRefreshRef,
   onLayout,
 }) => {
   const [refreshing, setRefreshing] = useState(false);
   // Subscribe to events directly from store - component will auto-update when store changes
   const pointEvents = usePointEventStore(state => state.getAllPointEvents());
   const isLoading = usePointEventStore(state => state.isLoading);
-  // loadEvents only needs to be called once on mount. ev
+  const refreshPoints = usePointEventStore(state => state.refreshPoints);
+  const refreshIncomingPoints = usePointEventStore(
+    state => state.refreshIncomingPoints,
+  );
+  // loadEvents only needs to be called once on mount.
   // and it is called in Points.ts
-
-  // Expose no-op refresh function to parent via ref for backward compatibility
-  // Component auto-updates via Zustand, so manual refresh is not needed
-  // Note: We don't call loadEvents() here as it could cause data loss if called
-  // while events are being saved (loadEvents should only run at app startup)
-  useEffect(() => {
-    if (onRefreshRef) {
-      onRefreshRef.current = async () => {
-        // No-op: component auto-updates when store changes
-      };
-    }
-  }, [onRefreshRef]);
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], {
@@ -277,13 +267,13 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
     [],
   );
 
-  // Pull-to-refresh handler - currently a no-op
-  // TODO: Implement refresh logic after merge
+  // Pull-to-refresh handler
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    // Placeholder for future refresh logic
-    setTimeout(() => setRefreshing(false), 500);
-  }, []);
+    Promise.all([refreshPoints(), refreshIncomingPoints()]).finally(() =>
+      setRefreshing(false),
+    );
+  }, [refreshPoints, refreshIncomingPoints]);
 
   const keyExtractor = useCallback((item: PointEvent) => item.id, []);
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
@@ -54,13 +54,11 @@ const Points: React.FC = () => {
   const [isNovaSubscribed, setIsNovaSubscribed] = useState(false);
   const [isEnabling, setIsEnabling] = useState(false);
   const incomingPoints = useIncomingPoints();
+  const { amount: points } = usePoints();
   const loadEvents = usePointEventStore(state => state.loadEvents);
   const { hasCompletedBackupForPoints, setBackupForPointsCompleted } =
     useSettingStore();
   const [isBackingUp, setIsBackingUp] = useState(false);
-
-  // Ref to trigger list refresh
-  const listRefreshRef = useRef<(() => Promise<void>) | null>(null);
 
   const [isContentReady, setIsContentReady] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -114,10 +112,6 @@ const Points: React.FC = () => {
               useSettingStore.getState().setBackupForPointsCompleted();
               selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
 
-              if (listRefreshRef.current) {
-                await listRefreshRef.current();
-              }
-
               const callbackId = registerModalCallbacks({
                 onButtonPress: () => {},
                 onModalDismiss: () => {},
@@ -156,8 +150,6 @@ const Points: React.FC = () => {
     loadEvents();
   }, [loadEvents]);
 
-  const points = usePoints();
-
   useEffect(() => {
     const checkSubscription = async () => {
       const subscribed = await isTopicSubscribed('nova');
@@ -187,10 +179,6 @@ const Points: React.FC = () => {
           if (response.success) {
             setIsNovaSubscribed(true);
             selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_SUCCESS);
-
-            if (listRefreshRef.current) {
-              await listRefreshRef.current();
-            }
 
             const callbackId = registerModalCallbacks({
               onButtonPress: () => {},
@@ -293,10 +281,6 @@ const Points: React.FC = () => {
         if (response.success) {
           setBackupForPointsCompleted();
           selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
-
-          if (listRefreshRef.current) {
-            await listRefreshRef.current();
-          }
 
           const callbackId = registerModalCallbacks({
             onButtonPress: () => {},
@@ -441,7 +425,6 @@ const Points: React.FC = () => {
       <ZStack flex={1}>
         <PointHistoryList
           ListHeaderComponent={ListHeader}
-          onRefreshRef={listRefreshRef}
           onLayout={handleContentLayout}
         />
         {isContentReady && isFocused && (

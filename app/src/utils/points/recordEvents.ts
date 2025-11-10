@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { isSuccessfulStatus } from '@/utils/points/api';
+import { pollEventProcessingStatus } from '@/utils/points/eventPolling';
 import {
   registerBackupPoints,
   registerNotificationPoints,
@@ -13,15 +14,26 @@ import { POINT_VALUES } from '@/utils/points/types';
 import { getPointsAddress } from '@/utils/points/utils';
 
 /**
- * Shared helper to add an event to the store.
+ * Shared helper to add an event to the store and start polling for processing.
  */
-const addEventToStore = async (
+const addEventToStoreAndPoll = async (
   title: string,
   type: PointEventType,
   points: number,
+  jobId: string,
 ): Promise<void> => {
   const { usePointEventStore } = await import('@/stores/pointEventStore');
-  await usePointEventStore.getState().addEvent(title, type, points);
+  // Use job_id as the event id
+  await usePointEventStore.getState().addEvent(title, type, points, jobId);
+
+  // Start polling in background - don't await
+  pollEventProcessingStatus(jobId).then(result => {
+    if (result === 'completed') {
+      usePointEventStore.getState().markEventAsProcessed(jobId);
+    } else if (result === 'failed') {
+      usePointEventStore.getState().markEventAsFailed(jobId);
+    }
+  });
 };
 
 /**
@@ -37,8 +49,17 @@ export const recordBackupPointEvent = async (): Promise<{
     const userAddress = await getPointsAddress();
     const response = await registerBackupPoints(userAddress);
 
-    if (response.success && isSuccessfulStatus(response.status)) {
-      await addEventToStore('Secret backed up', 'backup', POINT_VALUES.backup);
+    if (
+      response.success &&
+      isSuccessfulStatus(response.status) &&
+      response.jobId
+    ) {
+      await addEventToStoreAndPoll(
+        'Secret backed up',
+        'backup',
+        POINT_VALUES.backup,
+        response.jobId,
+      );
       return { success: true };
     }
     return { success: false, error: response.error };
@@ -64,11 +85,16 @@ export const recordNotificationPointEvent = async (): Promise<{
     const userAddress = await getPointsAddress();
     const response = await registerNotificationPoints(userAddress);
 
-    if (response.success && isSuccessfulStatus(response.status)) {
-      await addEventToStore(
+    if (
+      response.success &&
+      isSuccessfulStatus(response.status) &&
+      response.jobId
+    ) {
+      await addEventToStoreAndPoll(
         'Push notifications enabled',
         'notification',
         POINT_VALUES.notification,
+        response.jobId,
       );
       return { success: true };
     }
@@ -98,8 +124,17 @@ export const recordReferralPointEvent = async (
     const referee = await getPointsAddress();
     const response = await registerReferralPoints({ referee, referrer });
 
-    if (response.success && isSuccessfulStatus(response.status)) {
-      await addEventToStore('Friend referred', 'refer', POINT_VALUES.referee);
+    if (
+      response.success &&
+      isSuccessfulStatus(response.status) &&
+      response.jobId
+    ) {
+      await addEventToStoreAndPoll(
+        'Friend referred',
+        'refer',
+        POINT_VALUES.referee,
+        response.jobId,
+      );
       return { success: true };
     }
     return { success: false, error: response.error };

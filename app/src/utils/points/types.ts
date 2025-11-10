@@ -13,7 +13,10 @@ export type PointEvent = {
   type: PointEventType;
   timestamp: number;
   points: number;
+  status: PointEventStatus;
 };
+
+export type PointEventStatus = 'pending' | 'completed' | 'failed';
 
 export type PointEventType = 'refer' | 'notification' | 'backup' | 'disclosure';
 

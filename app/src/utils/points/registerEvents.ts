@@ -5,15 +5,24 @@
 import { IS_DEV_MODE } from '@/utils/devUtils';
 import { makeApiRequest, POINTS_API_BASE_URL } from '@/utils/points/api';
 
+type VerifyActionResponse = {
+  job_id: string;
+};
+
 /**
  * Registers backup action with the points API.
  *
  * @param userAddress - The user's wallet address
- * @returns Promise resolving to operation status and error message if any
+ * @returns Promise resolving to job_id, operation status and error message if any
  */
 export const registerBackupPoints = async (
   userAddress: string,
-): Promise<{ success: boolean; status: number; error?: string }> => {
+): Promise<{
+  success: boolean;
+  status: number;
+  error?: string;
+  jobId?: string;
+}> => {
   const errorMessages: Record<string, string> = {
     already_verified:
       'You have already backed up your secret for this account.',
@@ -22,7 +31,7 @@ export const registerBackupPoints = async (
     invalid_address: 'Invalid wallet address. Please check your account.',
   };
 
-  const response = await makeApiRequest(
+  const response = await makeApiRequest<VerifyActionResponse>(
     '/verify-action',
     {
       action: 'secret_backup',
@@ -31,18 +40,35 @@ export const registerBackupPoints = async (
     errorMessages,
   );
 
-  return response;
+  if (response.success && response.data?.job_id) {
+    return {
+      success: true,
+      status: response.status,
+      jobId: response.data.job_id,
+    };
+  }
+
+  return {
+    success: false,
+    status: response.status,
+    error: response.error,
+  };
 };
 
 /**
  * Registers push notification action with the points API.
  *
  * @param userAddress - The user's wallet address
- * @returns Promise resolving to operation status and error message if any
+ * @returns Promise resolving to job_id, operation status and error message if any
  */
 export const registerNotificationPoints = async (
   userAddress: string,
-): Promise<{ success: boolean; status: number; error?: string }> => {
+): Promise<{
+  success: boolean;
+  status: number;
+  error?: string;
+  jobId?: string;
+}> => {
   const errorMessages: Record<string, string> = {
     already_verified:
       'You have already verified push notifications for this account.',
@@ -52,7 +78,7 @@ export const registerNotificationPoints = async (
     invalid_address: 'Invalid wallet address. Please check your account.',
   };
 
-  return makeApiRequest(
+  const response = await makeApiRequest<VerifyActionResponse>(
     '/verify-action',
     {
       action: 'push_notification',
@@ -60,6 +86,20 @@ export const registerNotificationPoints = async (
     },
     errorMessages,
   );
+
+  if (response.success && response.data?.job_id) {
+    return {
+      success: true,
+      status: response.status,
+      jobId: response.data.job_id,
+    };
+  }
+
+  return {
+    success: false,
+    status: response.status,
+    error: response.error,
+  };
 };
 
 /**
@@ -69,7 +109,7 @@ export const registerNotificationPoints = async (
  *
  * @param referee - The address of the user being referred
  * @param referrer - The address of the user referring
- * @returns Promise resolving to operation status and error message if any
+ * @returns Promise resolving to job_id, operation status and error message if any
  */
 export const registerReferralPoints = async ({
   referee,
@@ -77,7 +117,12 @@ export const registerReferralPoints = async ({
 }: {
   referee: string;
   referrer: string;
-}): Promise<{ success: boolean; status: number; error?: string }> => {
+}): Promise<{
+  success: boolean;
+  status: number;
+  error?: string;
+  jobId?: string;
+}> => {
   // In __DEV__ mode, log the request instead of sending it
   if (IS_DEV_MODE) {
     // Redact addresses for security - show first 6 and last 4 characters only
@@ -91,18 +136,25 @@ export const registerReferralPoints = async ({
         referrer: redactAddress(referrer),
       },
     });
-    // Simulate a successful response for testing
-    return { success: true, status: 200 };
+    // Simulate a successful response with mock job_id for testing
+    return { success: true, status: 200, jobId: 'dev-refer-' + Date.now() };
   }
 
   try {
-    const response = await makeApiRequest('/referrals/refer', {
-      referee,
-      referrer,
-    });
+    const response = await makeApiRequest<VerifyActionResponse>(
+      '/referrals/refer',
+      {
+        referee: referee.toLowerCase(),
+        referrer: referrer.toLowerCase(),
+      },
+    );
 
-    if (response.success) {
-      return { success: true, status: 200 };
+    if (response.success && response.data?.job_id) {
+      return {
+        success: true,
+        status: response.status,
+        jobId: response.data.job_id,
+      };
     }
 
     // For referral endpoint, try to extract message from response
