@@ -8,6 +8,7 @@ import { Buffer } from 'buffer';
 import { ethers } from 'ethers';
 
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
+import { showErrorModal } from '@/utils/points/showErrorModal';
 
 export type ApiResponse<T = unknown> = {
   success: boolean;
@@ -151,6 +152,7 @@ export const makeApiRequest = async <T = unknown>(
   } catch (error) {
     console.error(`Error making API request to ${endpoint}:`, error);
     const axiosError = error as AxiosError;
+    showErrorModal();
     return {
       success: false,
       status: axiosError.response?.status || 500,

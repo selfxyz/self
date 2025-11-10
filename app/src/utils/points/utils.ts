@@ -8,6 +8,7 @@ import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
 
 import { getOrGeneratePointsAddress } from '@/providers/authProvider';
 import { POINTS_API_BASE_URL } from '@/utils/points/api';
+import { showErrorModal } from '@/utils/points/showErrorModal';
 import type { IncomingPoints } from '@/utils/points/types';
 
 export const formatTimeUntilDate = (targetDate: Date): string => {
@@ -35,11 +36,12 @@ export const getIncomingPoints = async (): Promise<IncomingPoints | null> => {
     );
 
     if (!response.ok) {
+      showErrorModal();
       return null;
     }
 
     const data = await response.json();
-
+    console.log('data', data);
     if (!data.points || data.points <= 0) {
       return null;
     }
@@ -50,6 +52,7 @@ export const getIncomingPoints = async (): Promise<IncomingPoints | null> => {
     };
   } catch (error) {
     console.error('Error fetching incoming points:', error);
+    showErrorModal();
     return null;
   }
 };
@@ -91,6 +94,7 @@ export const getTotalPoints = async (address: string): Promise<number> => {
     const response = await fetch(url);
 
     if (!response.ok) {
+      showErrorModal('Error fetching total points', 'Please try again later');
       return 0;
     }
 
@@ -98,6 +102,7 @@ export const getTotalPoints = async (address: string): Promise<number> => {
     return data.total_points || 0;
   } catch (error) {
     console.error('Error fetching total points:', error);
+    showErrorModal();
     return 0;
   }
 };
@@ -134,10 +139,12 @@ export const hasUserDoneThePointsDisclosure = async (): Promise<boolean> => {
     );
 
     if (!response.ok) {
+      showErrorModal();
       return false;
     }
 
     const data = await response.json();
+    console.log('data', data);
     return data.has_disclosed || false;
   } catch (error) {
     console.error('Error checking disclosure status:', error);
