@@ -41,17 +41,17 @@ const ReferralScreen: React.FC = () => {
   const messagesButtonColor = Platform.OS === 'android' ? blue600 : green500;
 
   const handleShareMessages = async () => {
-    selfClient.trackEvent(PointEvents.EARN_REFERAL_MESSAGES);
+    selfClient.trackEvent(PointEvents.EARN_REFERRAL_MESSAGES);
     await shareViaSMS(message);
   };
 
   const handleShare = async () => {
-    selfClient.trackEvent(PointEvents.EARN_REFERAL_SHARE);
+    selfClient.trackEvent(PointEvents.EARN_REFERRAL_SHARE);
     await shareViaNative(message, referralLink, 'Join Self');
   };
 
   const handleShareWhatsApp = async () => {
-    selfClient.trackEvent(PointEvents.EARN_REFERAL_WHATSAPP);
+    selfClient.trackEvent(PointEvents.EARN_REFERRAL_WHATSAPP);
     await shareViaWhatsApp(message);
   };
 
