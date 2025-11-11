@@ -5,12 +5,13 @@
 jest.unmock('@/utils/notifications/notificationService');
 
 // Mock Platform and PermissionsAndroid without requiring react-native to avoid memory issues
-const Platform = {
+// Prefix with 'mock' so Jest allows referencing them in the mock factory
+const mockPlatform = {
   OS: 'ios',
   Version: 14,
 };
 
-const PermissionsAndroid = {
+const mockPermissionsAndroid = {
   request: jest.fn(),
   PERMISSIONS: {
     POST_NOTIFICATIONS: 'android.permission.POST_NOTIFICATIONS',
@@ -23,8 +24,8 @@ const PermissionsAndroid = {
 };
 
 jest.mock('react-native', () => ({
-  Platform,
-  PermissionsAndroid,
+  Platform: mockPlatform,
+  PermissionsAndroid: mockPermissionsAndroid,
 }));
 
 jest.mock('@react-native-firebase/messaging', () => {
@@ -50,9 +51,9 @@ describe('notificationService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset Platform to default iOS values
-    Platform.OS = 'ios';
-    Platform.Version = 14;
+    // Reset Platform to default iOS values (using the mock objects directly)
+    mockPlatform.OS = 'ios';
+    mockPlatform.Version = 14;
 
     messagingMock = require('@react-native-firebase/messaging').default
       ._instance;
@@ -62,14 +63,14 @@ describe('notificationService', () => {
     (fetch as jest.Mock).mockResolvedValue({ ok: true, text: jest.fn() });
     messagingMock.requestPermission.mockResolvedValue(1);
     messagingMock.getToken.mockResolvedValue('token');
-    (PermissionsAndroid.request as jest.Mock).mockClear();
+    mockPermissionsAndroid.request.mockClear();
   });
 
   describe('requestNotificationPermission', () => {
     it('grants permission on Android', async () => {
-      Platform.OS = 'android';
-      Platform.Version = 34;
-      (PermissionsAndroid.request as jest.Mock).mockResolvedValue('granted');
+      mockPlatform.OS = 'android';
+      mockPlatform.Version = 34;
+      mockPermissionsAndroid.request.mockResolvedValue('granted');
 
       const result = await service.requestNotificationPermission();
       expect(result).toBe(true);
@@ -77,27 +78,25 @@ describe('notificationService', () => {
     });
 
     it('handles denied permission on Android', async () => {
-      Platform.OS = 'android';
-      Platform.Version = 34;
-      (PermissionsAndroid.request as jest.Mock).mockResolvedValue('denied');
+      mockPlatform.OS = 'android';
+      mockPlatform.Version = 34;
+      mockPermissionsAndroid.request.mockResolvedValue('denied');
 
       const result = await service.requestNotificationPermission();
       expect(result).toBe(false);
     });
 
     it('handles never_ask_again permission on Android', async () => {
-      Platform.OS = 'android';
-      Platform.Version = 34;
-      (PermissionsAndroid.request as jest.Mock).mockResolvedValue(
-        'never_ask_again',
-      );
+      mockPlatform.OS = 'android';
+      mockPlatform.Version = 34;
+      mockPermissionsAndroid.request.mockResolvedValue('never_ask_again');
 
       const result = await service.requestNotificationPermission();
       expect(result).toBe(false);
     });
 
     it('returns false on error', async () => {
-      Platform.OS = 'ios';
+      mockPlatform.OS = 'ios';
       messagingMock.requestPermission.mockRejectedValueOnce(new Error('fail'));
       const result = await service.requestNotificationPermission();
       expect(result).toBe(false);
@@ -120,7 +119,7 @@ describe('notificationService', () => {
 
   describe('registerDeviceToken', () => {
     it('posts token', async () => {
-      Platform.OS = 'ios';
+      mockPlatform.OS = 'ios';
       const response = { ok: true, text: jest.fn() };
       (fetch as jest.Mock).mockResolvedValue(response);
       await service.registerDeviceToken('123', 'tok', true);
