@@ -258,7 +258,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
               </Pressable>
             )}
 
-            {backedUpWithTurnKey ? (
+            {/* {backedUpWithTurnKey ? (
               <SecondaryButton
                 disabled
                 trackEvent={BackupEvents.CLOUD_BACKUP_DISABLE_STARTED}
@@ -280,7 +280,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
                   {turnkeyPending ? '…' : ''}
                 </Text>
               </Pressable>
-            )}
+            )} */}
 
             <BottomButton
               cloudBackupEnabled={cloudBackupEnabled}
