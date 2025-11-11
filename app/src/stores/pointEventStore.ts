@@ -199,7 +199,7 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
    * Calculates the total optimistic incoming points based on the current events.
    */
   totalOptimisticIncomingPoints: () => {
-    // todo: fix the optimistic approach to include unprocessed events
+    // todo: fix the optimistic approach - should add unprocessed event points
     return get().incomingPoints.amount;
   },
 

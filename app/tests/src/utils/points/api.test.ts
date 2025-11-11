@@ -171,11 +171,15 @@ describe('Points API - Signature Logic', () => {
 
       expect(result.success).toBe(false);
       expect(result.status).toBe(500);
-      expect(result.error).toContain('Failed to retrieve private key for signing');
+      expect(result.error).toContain(
+        'Failed to retrieve private key for signing',
+      );
     });
 
     it('should fail when getPointsAddress fails', async () => {
-      mockGetPointsAddress.mockRejectedValue(new Error('Address lookup failed'));
+      mockGetPointsAddress.mockRejectedValue(
+        new Error('Address lookup failed'),
+      );
 
       const result = await makeApiRequest('/referrals/refer', {
         referee: mockAddress,
@@ -184,7 +188,9 @@ describe('Points API - Signature Logic', () => {
 
       expect(result.success).toBe(false);
       expect(result.status).toBe(500);
-      expect(result.error).toContain('Failed to retrieve private key for signing');
+      expect(result.error).toContain(
+        'Failed to retrieve private key for signing',
+      );
     });
 
     it('should handle error when points key retrieval fails', async () => {
@@ -214,7 +220,9 @@ describe('Points API - Signature Logic', () => {
 
       expect(result.success).toBe(false);
       expect(result.status).toBe(500);
-      expect(result.error).toContain('Failed to retrieve private key for signing');
+      expect(result.error).toContain(
+        'Failed to retrieve private key for signing',
+      );
     });
   });
 

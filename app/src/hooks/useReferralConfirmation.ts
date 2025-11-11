@@ -67,7 +67,6 @@ export const useReferralConfirmation = ({
 
   // Handle referral confirmation flow
   useEffect(() => {
-
     // === Common validation: Has valid, unregistered referrer ===
     const hasValidReferrer =
       hasReferrer && referrer && !isReferrerRegistered(referrer);
