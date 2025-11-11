@@ -149,11 +149,22 @@ function clonePrivateRepo(repoName, localPath) {
   log(`Setting up ${repoName}...`, 'info');
 
   let cloneUrl;
+  let credentialHelperPath = null;
 
   if (isCI && repoToken) {
     // CI environment with Personal Access Token
+    // Use clean URL and credential helper to avoid write access checks
     log('CI detected: Using SELFXYZ_INTERNAL_REPO_PAT for clone', 'info');
-    cloneUrl = `https://${repoToken}@github.com/${GITHUB_ORG}/${repoName}.git`;
+    cloneUrl = `https://github.com/${GITHUB_ORG}/${repoName}.git`;
+
+    // Create a temporary credential helper script
+    // GitHub PAT: use token as username, token as password (or empty password)
+    credentialHelperPath = path.join(ANDROID_DIR, `.git-credential-helper-${Date.now()}.sh`);
+    const helperScript = `#!/bin/sh
+echo "username=${repoToken}"
+echo "password=${repoToken}"
+`;
+    fs.writeFileSync(credentialHelperPath, helperScript, { mode: 0o755 });
   } else if (isCI) {
     log(
       'CI environment detected but SELFXYZ_INTERNAL_REPO_PAT not available - skipping private module setup',
@@ -176,18 +187,50 @@ function clonePrivateRepo(repoName, localPath) {
   const isCredentialedUrl = isCI && repoToken;
   const quietFlag = isCredentialedUrl ? '--quiet' : '';
   const targetDir = path.basename(localPath);
-  const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" "${targetDir}"`;
+
+  // Use credential helper for CI to avoid write access checks
+  const gitConfigFlags = credentialHelperPath
+    ? `-c credential.helper='!${credentialHelperPath}'`
+    : '';
+  const cloneCommand = `git ${gitConfigFlags} clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" "${targetDir}"`;
 
   try {
     if (isCredentialedUrl) {
       // Security: Run command silently to avoid token exposure in logs
-      runCommand(cloneCommand, { stdio: 'pipe' });
+      // Configure environment to prevent write access checks and use read-only mode
+      runCommand(cloneCommand, {
+        stdio: 'pipe',
+        env: {
+          ...process.env,
+          GIT_TERMINAL_PROMPT: '0'
+        }
+      });
     } else {
       runCommand(cloneCommand);
+    }
+
+    // Clean up credential helper script
+    if (credentialHelperPath && fs.existsSync(credentialHelperPath)) {
+      try {
+        fs.unlinkSync(credentialHelperPath);
+      } catch (cleanupError) {
+        // Non-fatal - script will be cleaned up eventually
+        log(`Warning: Failed to cleanup credential helper: ${cleanupError.message}`, 'warning');
+      }
     }
     log(`Successfully cloned ${repoName}`, 'success');
     return true; // Return true to indicate successful clone
   } catch (error) {
+    // Clean up credential helper script on error
+    if (credentialHelperPath && fs.existsSync(credentialHelperPath)) {
+      try {
+        fs.unlinkSync(credentialHelperPath);
+      } catch (cleanupError) {
+        // Non-fatal - script will be cleaned up eventually
+        log(`Warning: Failed to cleanup credential helper: ${cleanupError.message}`, 'warning');
+      }
+    }
+
     if (isCI) {
       log(
         'Clone failed in CI environment. Check SELFXYZ_INTERNAL_REPO_PAT permissions.',
