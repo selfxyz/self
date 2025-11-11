@@ -7431,7 +7431,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:^8.39.0"
     "@typescript-eslint/parser": "npm:^8.39.0"
     "@vitejs/plugin-react-swc": "npm:^3.10.2"
-    "@walletconnect/react-native-compat": "npm:^2.22.4"
+    "@walletconnect/react-native-compat": "npm:^2.23.0"
     "@xstate/react": "npm:^5.0.3"
     asn1js: "npm:^3.0.6"
     axios: "npm:^1.13.2"
@@ -13131,9 +13131,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@walletconnect/react-native-compat@npm:^2.22.4":
-  version: 2.22.4
-  resolution: "@walletconnect/react-native-compat@npm:2.22.4"
+"@walletconnect/react-native-compat@npm:^2.23.0":
+  version: 2.23.0
+  resolution: "@walletconnect/react-native-compat@npm:2.23.0"
   dependencies:
     events: "npm:3.3.0"
     fast-text-encoding: "npm:1.0.6"
@@ -13147,7 +13147,7 @@ __metadata:
   peerDependenciesMeta:
     expo-application:
       optional: true
-  checksum: 10c0/dd536da58a6a2e2a9a52fc67c4220322417cb5170657bf614f5f03c43d2391d0ed063c5184e0e633545b692c1c749720e16bbb60648e431f2fec7997145983fb
+  checksum: 10c0/1d7b23972881fe6bb914cbfbd3e3c4d399c01ac5a4e5f7a90a8541d1db1db1b6ac8e942c88c656f8c6f0137ed952c88eb7296317dfd06b65268f450129ff6f58
   languageName: node
   linkType: hard
 
