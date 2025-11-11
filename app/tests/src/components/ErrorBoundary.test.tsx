@@ -27,8 +27,7 @@ const ProblemChild = () => {
 
 const GoodChild = () => <Text>Good child</Text>;
 
-// eslint-disable-next-line jest/no-disabled-tests
-describe.skip('ErrorBoundary', () => {
+describe('ErrorBoundary', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
