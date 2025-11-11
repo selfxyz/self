@@ -7,7 +7,7 @@ env:
   ANDROID_NDK_VERSION: 27.0.12077973
   XCODE_VERSION: 16.4
   # Cache versions
-  GH_CACHE_VERSION: v1 # Global cache version
+  GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
   GRADLE_OPTS: -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
@@ -296,12 +296,13 @@ jobs:
           xcodebuild -version
           echo "Xcode path:"
           xcode-select -p
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ github.job }}-${{ runner.os }}
-      - name: Add ccache to PATH
-        run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+      # Temporarily disabled ccache to debug CI issues
+      # - name: Setup ccache
+      #   uses: hendrikmuhs/ccache-action@v1.2
+      #   with:
+      #     key: ${{ github.job }}-${{ runner.os }}
+      # - name: Add ccache to PATH
+      #   run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
