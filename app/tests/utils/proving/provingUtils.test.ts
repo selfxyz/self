@@ -21,12 +21,18 @@ describe('provingUtils', () => {
       forge.util.createBuffer(key),
     );
     decipher.start({
-      iv: forge.util.createBuffer(Buffer.from(encrypted.nonce)),
+      iv: forge.util.createBuffer(
+        Buffer.from(encrypted.nonce).toString('binary'),
+      ),
       tagLength: 128,
-      tag: forge.util.createBuffer(Buffer.from(encrypted.auth_tag)),
+      tag: forge.util.createBuffer(
+        Buffer.from(encrypted.auth_tag).toString('binary'),
+      ),
     });
     decipher.update(
-      forge.util.createBuffer(Buffer.from(encrypted.cipher_text)),
+      forge.util.createBuffer(
+        Buffer.from(encrypted.cipher_text).toString('binary'),
+      ),
     );
     const success = decipher.finish();
     const decrypted = decipher.output.toString();
