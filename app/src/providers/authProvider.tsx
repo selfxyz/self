@@ -429,6 +429,32 @@ export async function unsafe_clearSecrets() {
 }
 
 /**
+ * Retrieves the private key for the points address (derived at index 1) using the
+ * same biometric protections and keychain options as other secret accessors.
+ */
+export async function unsafe_getPointsPrivateKey(
+  keychainOptions?: KeychainOptions,
+) {
+  const options =
+    keychainOptions ||
+    (await createKeychainOptions({
+      requireAuth: true,
+    }));
+
+  const foundMnemonic = await loadOrCreateMnemonic(options);
+  if (!foundMnemonic) {
+    return null;
+  }
+  const mnemonic = JSON.parse(foundMnemonic) as Mnemonic;
+  const wallet = ethers.HDNodeWallet.fromPhrase(
+    mnemonic.phrase,
+    undefined,
+    "m/44'/60'/0'/0/1",
+  );
+  return wallet.privateKey;
+}
+
+/**
  * The only reason this is exported without being locked behind user biometrics is to allow `loadPassportDataAndSecret`
  * to access both the privatekey and the passport data with the user only authenticating once
  */

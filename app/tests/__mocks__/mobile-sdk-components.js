@@ -25,7 +25,7 @@ const { View } = require('react-native');
 const PrimaryButton = ({ children, onPress, disabled, testID }) => {
   const buttonText = getTextFromChildren(children);
   const id =
-    testID || `button-${buttonText.toLowerCase().replace(/\\s+/g, '-')}`;
+    testID || `button-${buttonText.toLowerCase().replace(/\s+/g, '-')}`;
   return React.createElement(
     View,
     { onPress, disabled, testID: id, accessibilityRole: 'button' },
@@ -36,7 +36,7 @@ const PrimaryButton = ({ children, onPress, disabled, testID }) => {
 const SecondaryButton = ({ children, onPress, disabled, testID }) => {
   const buttonText = getTextFromChildren(children);
   const id =
-    testID || `button-${buttonText.toLowerCase().replace(/\\s+/g, '-')}`;
+    testID || `button-${buttonText.toLowerCase().replace(/\s+/g, '-')}`;
   return React.createElement(
     View,
     { onPress, disabled, testID: id, accessibilityRole: 'button' },

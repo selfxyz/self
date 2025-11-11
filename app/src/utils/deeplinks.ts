@@ -148,12 +148,12 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
 
       // Validate nationality is a valid country code
       const isValidCountryCode = (
-        code: string | undefined,
-      ): code is IdDocInput['nationality'] => {
-        if (!code) return false;
+        nationalityCode: string | undefined,
+      ): nationalityCode is IdDocInput['nationality'] => {
+        if (!nationalityCode) return false;
         // Check if the code exists as a value in the countries object
         return Object.values(countries).some(
-          countryCode => countryCode === code,
+          countryCode => countryCode === nationalityCode,
         );
       };
 
@@ -181,13 +181,6 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
     }
   } else if (referrer && typeof referrer === 'string') {
     useUserStore.getState().setDeepLinkReferrer(referrer);
-
-    if (IS_DEV_MODE) {
-      console.log(
-        '[deeplinks] Setting referrer and navigating to HomeScreen for confirmation:',
-        referrer,
-      );
-    }
 
     // Navigate to HomeScreen - it will show confirmation modal and then navigate to GratificationScreen
     navigationRef.reset({

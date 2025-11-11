@@ -26,17 +26,6 @@ export const useTestReferralFlow = (shouldAutoTrigger = false) => {
       const testReferrer = TEST_REFERRER;
       const store = useUserStore.getState();
 
-      // Always reset state for full flow testing
-      console.log('[DEV MODE] Resetting test state for full flow:');
-      console.log('  - Clearing all registered referrers');
-      // Clear the "already registered" flag for all referrers
-      useUserStore.setState({ registeredReferrers: new Set<string>() });
-      console.log('  - Referrer will be treated as first-time registration');
-
-      console.log(
-        '[DEV MODE] Simulating referral flow with referrer:',
-        testReferrer,
-      );
       store.setDeepLinkReferrer(testReferrer);
       // Trigger the referral confirmation modal
       // The useReferralConfirmation hook will handle showing the modal
@@ -46,7 +35,6 @@ export const useTestReferralFlow = (shouldAutoTrigger = false) => {
   // Automatic trigger after 3 seconds (only if shouldAutoTrigger is true)
   useEffect(() => {
     if (IS_DEV_MODE && shouldAutoTrigger) {
-      console.log('[DEV MODE] Auto-triggering referral flow in 3 seconds...');
       referralTimerRef.current = setTimeout(() => {
         triggerReferralFlow();
       }, 3000);

@@ -7,7 +7,7 @@ import { v4 } from 'uuid';
 import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
 
 import { getOrGeneratePointsAddress } from '@/providers/authProvider';
-import { POINTS_API_BASE_URL } from '@/utils/points/api';
+import { POINTS_API_BASE_URL } from '@/utils/points/constants';
 import type { IncomingPoints } from '@/utils/points/types';
 
 export const formatTimeUntilDate = (targetDate: Date): string => {
@@ -87,7 +87,7 @@ export const getPointsAddress = async (): Promise<string> => {
 
 export const getTotalPoints = async (address: string): Promise<number> => {
   try {
-    const url = `${POINTS_API_BASE_URL}/distribution/${address.toLowerCase()}`;
+    const url = `${POINTS_API_BASE_URL}/points/${address.toLowerCase()}`;
     const response = await fetch(url);
 
     if (!response.ok) {

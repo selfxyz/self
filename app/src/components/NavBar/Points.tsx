@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
-import { BlurView } from '@react-native-community/blur';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -25,6 +24,7 @@ import MajongImage from '@/images/majong.png';
 import type { RootStackParamList } from '@/navigation';
 import { usePointEventStore } from '@/stores/pointEventStore';
 import { useSettingStore } from '@/stores/settingStore';
+import analytics from '@/utils/analytics';
 import {
   black,
   blue600,
@@ -33,6 +33,7 @@ import {
   slate500,
   white,
 } from '@/utils/colors';
+import { dinot } from '@/utils/fonts';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import {
   isTopicSubscribed,
@@ -44,6 +45,7 @@ import {
   recordBackupPointEvent,
   recordNotificationPointEvent,
 } from '@/utils/points';
+import { POINT_VALUES } from '@/utils/points/types';
 
 const Points: React.FC = () => {
   const selfClient = useSelfClient();
@@ -51,7 +53,7 @@ const Points: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [isNovaSubscribed, setIsNovaSubscribed] = useState(false);
+  const [isGeneralSubscribed, setIsGeneralSubscribed] = useState(false);
   const [isEnabling, setIsEnabling] = useState(false);
   const incomingPoints = useIncomingPoints();
   const { amount: points } = usePoints();
@@ -60,20 +62,16 @@ const Points: React.FC = () => {
     useSettingStore();
   const [isBackingUp, setIsBackingUp] = useState(false);
 
-  const [isContentReady, setIsContentReady] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-
   // Guard: Validate that user has registered a document and completed points disclosure
   usePointsGuardrail();
 
-  // Unmounts BlurView when screen loses focus
-  // This fixes blackscreen issue when navigating to referral screen
+  // Track NavBar view analytics
   useFocusEffect(
     React.useCallback(() => {
-      setIsFocused(true);
-      return () => {
-        setIsFocused(false);
-      };
+      const { trackScreenView } = analytics();
+      trackScreenView('Points NavBar', {
+        screenName: 'Points NavBar',
+      });
     }, []),
   );
 
@@ -90,6 +88,9 @@ const Points: React.FC = () => {
   //   }
   // }, [setBackupForPointsCompleted, hasCompletedBackupForPoints]);
 
+  // Track if we should check for backup completion on next focus
+  const shouldCheckBackupRef = React.useRef(false);
+
   // Detect when returning from backup screen and record points if backup was completed
   useFocusEffect(
     React.useCallback(() => {
@@ -98,9 +99,10 @@ const Points: React.FC = () => {
       const currentHasCompletedBackup =
         useSettingStore.getState().hasCompletedBackupForPoints;
 
-      // If either backup method is enabled but points haven't been recorded yet, record them now
-      // This happens when user just completed backup and returned to this screen
+      // Only check if we explicitly set the flag (when navigating to backup settings)
+      // This prevents false triggers when returning from other flows (like notification permissions)
       if (
+        shouldCheckBackupRef.current &&
         (cloudBackupEnabled || backedUpWithTurnKey) &&
         !currentHasCompletedBackup
       ) {
@@ -118,8 +120,7 @@ const Points: React.FC = () => {
               });
               navigation.navigate('Modal', {
                 titleText: 'Success!',
-                bodyText:
-                  'Account backed up successfully! You earned 100 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
+                bodyText: `Account backed up successfully! You earned ${POINT_VALUES.backup} points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.`,
                 buttonText: 'OK',
                 callbackId,
               });
@@ -138,6 +139,9 @@ const Points: React.FC = () => {
 
         recordPoints();
       }
+
+      // Reset the flag after checking
+      shouldCheckBackupRef.current = false;
     }, [navigation, selfClient]),
   );
 
@@ -152,17 +156,11 @@ const Points: React.FC = () => {
 
   useEffect(() => {
     const checkSubscription = async () => {
-      const subscribed = await isTopicSubscribed('nova');
-      setIsNovaSubscribed(subscribed);
+      const subscribed = await isTopicSubscribed('general');
+      setIsGeneralSubscribed(subscribed);
     };
     checkSubscription();
   }, []);
-
-  const handleContentLayout = () => {
-    if (!isContentReady) {
-      setIsContentReady(true);
-    }
-  };
 
   const handleEnableNotifications = async () => {
     if (isEnabling) {
@@ -173,11 +171,11 @@ const Points: React.FC = () => {
     try {
       const granted = await requestNotificationPermission();
       if (granted) {
-        const result = await subscribeToTopics(['nova']);
+        const result = await subscribeToTopics(['general']);
         if (result.successes.length > 0) {
           const response = await recordNotificationPointEvent();
           if (response.success) {
-            setIsNovaSubscribed(true);
+            setIsGeneralSubscribed(true);
             selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_SUCCESS);
 
             const callbackId = registerModalCallbacks({
@@ -186,8 +184,7 @@ const Points: React.FC = () => {
             });
             navigation.navigate('Modal', {
               titleText: 'Success!',
-              bodyText:
-                'Push notifications enabled! You earned 20 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
+              bodyText: `Push notifications enabled! You earned ${POINT_VALUES.notification} points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.`,
               buttonText: 'OK',
               callbackId,
             });
@@ -288,8 +285,7 @@ const Points: React.FC = () => {
           });
           navigation.navigate('Modal', {
             titleText: 'Success!',
-            bodyText:
-              'Account backed up successfully! You earned 100 points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.',
+            bodyText: `Account backed up successfully! You earned ${POINT_VALUES.backup} points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.`,
             buttonText: 'OK',
             callbackId,
           });
@@ -325,6 +321,8 @@ const Points: React.FC = () => {
       }
     } else {
       // Navigate to backup screen and return to Points after backup completes
+      // Set flag to check for backup completion when we return
+      shouldCheckBackupRef.current = true;
       navigation.navigate('CloudBackupSettings', { returnToScreen: 'Points' });
     }
   };
@@ -358,7 +356,7 @@ const Points: React.FC = () => {
           </XStack>
         )}
       </YStack>
-      {!isNovaSubscribed && (
+      {!isGeneralSubscribed && (
         <Pressable onPress={handleEnableNotifications} disabled={isEnabling}>
           <XStack
             style={[styles.actionCard, { opacity: isEnabling ? 0.5 : 1 }]}
@@ -372,7 +370,9 @@ const Points: React.FC = () => {
                   ? 'Enabling notifications...'
                   : 'Turn on push notifications'}
               </Text>
-              <Text style={styles.actionSubtitle}>Earn 20 points</Text>
+              <Text style={styles.actionSubtitle}>
+                Earn {POINT_VALUES.notification} points
+              </Text>
             </YStack>
           </XStack>
         </Pressable>
@@ -389,7 +389,9 @@ const Points: React.FC = () => {
               <Text style={styles.actionTitle}>
                 {isBackingUp ? 'Processing backup...' : 'Backup your account'}
               </Text>
-              <Text style={styles.actionSubtitle}>Earn 100 points</Text>
+              <Text style={styles.actionSubtitle}>
+                Earn {POINT_VALUES.backup} points
+              </Text>
             </YStack>
           </XStack>
         </Pressable>
@@ -423,25 +425,19 @@ const Points: React.FC = () => {
   return (
     <YStack flex={1} backgroundColor={slate50}>
       <ZStack flex={1}>
-        <PointHistoryList
-          ListHeaderComponent={ListHeader}
-          onLayout={handleContentLayout}
-        />
-        {isContentReady && isFocused && (
-          <BlurView
-            style={styles.blurView}
-            blurType="light"
-            blurAmount={4}
-            reducedTransparencyFallbackColor={slate50}
-            pointerEvents="none"
-          />
-        )}
+        <PointHistoryList ListHeaderComponent={ListHeader} />
         <YStack
           style={[styles.exploreButtonContainer, { bottom: bottom + 20 }]}
         >
           <Button
             style={styles.exploreButton}
-            onPress={() => selfClient.trackEvent(PointEvents.EXPLORE_APPS)}
+            onPress={() => {
+              selfClient.trackEvent(PointEvents.EXPLORE_APPS);
+              navigation.navigate('WebView', {
+                url: 'https://apps.self.xyz',
+                title: 'Explore Apps',
+              });
+            }}
           >
             <Text style={styles.exploreButtonText}>Explore apps</Text>
           </Button>
@@ -478,7 +474,7 @@ const styles = StyleSheet.create({
   pointsTitle: {
     color: black,
     textAlign: 'center',
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 32,
     lineHeight: 32,
@@ -486,7 +482,7 @@ const styles = StyleSheet.create({
   },
   pointsDescription: {
     color: black,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 18,
     fontWeight: '500',
     textAlign: 'center',
@@ -503,13 +499,13 @@ const styles = StyleSheet.create({
   },
   incomingPointsAmount: {
     flex: 1,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 14,
     color: black,
   },
   incomingPointsTime: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 14,
     color: blue600,
@@ -532,13 +528,13 @@ const styles = StyleSheet.create({
   },
   actionTitle: {
     color: black,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontWeight: '500',
     fontSize: 16,
   },
   actionSubtitle: {
     color: slate500,
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 14,
   },
   referralCard: {
@@ -565,12 +561,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   referralTitle: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 16,
     color: black,
   },
   referralLink: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 16,
     color: blue600,
   },
@@ -585,7 +581,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 20,
     right: 20,
-    display: 'none',
   },
   exploreButton: {
     backgroundColor: black,
@@ -595,7 +590,7 @@ const styles = StyleSheet.create({
     height: 52,
   },
   exploreButtonText: {
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     fontSize: 16,
     color: white,
     textAlign: 'center',

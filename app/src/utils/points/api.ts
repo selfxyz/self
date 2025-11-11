@@ -7,7 +7,9 @@ import axios from 'axios';
 import { Buffer } from 'buffer';
 import { ethers } from 'ethers';
 
-import { unsafe_getPrivateKey } from '@/providers/authProvider';
+import { unsafe_getPointsPrivateKey } from '@/providers/authProvider';
+import { POINTS_API_BASE_URL } from '@/utils/points/constants';
+import { getPointsAddress } from '@/utils/points/utils';
 
 export type ApiResponse<T = unknown> = {
   success: boolean;
@@ -20,12 +22,6 @@ export interface SignatureData {
   signature: string; // base64-encoded signature
   parity: number; // yParity value (0 or 1)
 }
-
-/**
- * Interface for signature data to be included in API requests
- */
-export const POINTS_API_BASE_URL =
-  'https://points-backend-1025466915061.us-central1.run.app';
 
 /**
  * Successful HTTP status codes accepted by the points API
@@ -50,8 +46,21 @@ export const isSuccessfulStatus = (status: number): boolean =>
  */
 const generateSignature = async (address: string): Promise<SignatureData> => {
   try {
-    // Get the private key from keychain (requires biometric auth)
-    const privateKey = await unsafe_getPrivateKey();
+    const signingAddress = address.toLowerCase();
+
+    // Select appropriate private key based on which derived address is being signed:
+    // - If signing the points address (derived at index 1), use the points private key
+    // - Otherwise, default to the primary account private key (index 0)
+    let privateKey: string | null = null;
+    try {
+      const pointsAddr = (await getPointsAddress()).toLowerCase();
+      if (signingAddress === pointsAddr) {
+        privateKey = await unsafe_getPointsPrivateKey();
+      }
+    } catch {
+      // If fetching the points address fails for any reason, fall back to primary key
+    }
+
     if (!privateKey) {
       throw new Error('Failed to retrieve private key for signing');
     }
@@ -60,8 +69,7 @@ const generateSignature = async (address: string): Promise<SignatureData> => {
     const wallet = new ethers.Wallet(privateKey);
 
     // Sign the lowercase address
-    const message = address.toLowerCase();
-    const signature = await wallet.signMessage(message);
+    const signature = await wallet.signMessage(signingAddress);
 
     // Parse signature to extract parity
     const sig = ethers.Signature.from(signature);
@@ -132,6 +140,12 @@ export const makeApiRequest = async <T = unknown>(
         validateStatus: () => true, // Don't throw on any status
       },
     );
+
+    // uncomment to see api call
+    // console.error('url', `${POINTS_API_BASE_URL}${endpoint}`);
+    // console.error('req body', JSON.stringify(requestBody, null, 2));
+    // console.error('response', JSON.stringify(response.data, null, 2));
+    // console.error('response.status', response.status);
 
     if (isSuccessfulStatus(response.status)) {
       return { success: true, status: response.status, data: response.data };

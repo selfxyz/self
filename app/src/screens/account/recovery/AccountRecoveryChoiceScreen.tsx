@@ -134,6 +134,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       navigation,
       toggleCloudBackupEnabled,
       useProtocolStore,
+      selfClient,
     ],
   );
 
@@ -204,7 +205,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
           </Description>
 
           <YStack gap="$2.5" width="100%" paddingTop="$6">
-            <PrimaryButton
+            {/* <PrimaryButton
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromTurnkeyPress}
               testID="button-from-turnkey"
@@ -217,7 +218,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
             >
               {restoring ? 'Restoring' : 'Restore'} from Turnkey
               {restoring ? '…' : ''}
-            </PrimaryButton>
+            </PrimaryButton> */}
             <PrimaryButton
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromCloudPress}

@@ -21,9 +21,9 @@ export type PointEventStatus = 'pending' | 'completed' | 'failed';
 export type PointEventType = 'refer' | 'notification' | 'backup' | 'disclosure';
 
 export const POINT_VALUES = {
-  disclosure: 10,
-  notification: 20,
-  backup: 100,
+  disclosure: 8,
+  notification: 44,
+  backup: 32,
   referrer: 80,
   referee: 24,
 } as const;
