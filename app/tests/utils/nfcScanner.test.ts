@@ -2,10 +2,23 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { Buffer } from 'buffer';
 import { Platform } from 'react-native';
 
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { PassportReader } from '@/utils/passportReader';
+
+// Mock Platform.OS for the entire test suite
+jest.mock('react-native', () => {
+  const RN = jest.requireActual('react-native');
+  return {
+    ...RN,
+    Platform: {
+      ...RN.Platform,
+      OS: 'ios', // Default to iOS
+    },
+  };
+});
 
 describe('parseScanResponse', () => {
   beforeEach(() => {
@@ -13,10 +26,7 @@ describe('parseScanResponse', () => {
   });
 
   it('parses iOS response', () => {
-    Object.defineProperty(Platform, 'OS', {
-      value: 'ios',
-      writable: true,
-    });
+    // Platform.OS is already mocked as 'ios' by default
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
     const response = JSON.stringify({
@@ -41,10 +51,14 @@ describe('parseScanResponse', () => {
   });
 
   it('parses Android response', () => {
+    // Temporarily override Platform.OS for this test
+    const originalOS = Platform.OS;
     Object.defineProperty(Platform, 'OS', {
       value: 'android',
       writable: true,
+      configurable: true,
     });
+
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
     const response = {
@@ -61,23 +75,30 @@ describe('parseScanResponse', () => {
     expect(result.mrz).toBe(mrz);
     expect(result.dg1Hash).toEqual([171, 205]);
     expect(result.dgPresents).toEqual([1, 2]);
+
+    // Restore original value
+    Object.defineProperty(Platform, 'OS', {
+      value: originalOS,
+      writable: true,
+      configurable: true,
+    });
   });
 
   it('handles malformed iOS response', () => {
-    Object.defineProperty(Platform, 'OS', {
-      value: 'ios',
-      writable: true,
-    });
+    // Platform.OS is already mocked as 'ios' by default
     const response = '{"invalid": "json"';
 
     expect(() => parseScanResponse(response)).toThrow();
   });
 
   it('handles malformed Android response', () => {
+    const originalOS = Platform.OS;
     Object.defineProperty(Platform, 'OS', {
       value: 'android',
       writable: true,
+      configurable: true,
     });
+
     const response = {
       mrz: 'valid_mrz',
       eContent: 'invalid_json_string',
@@ -85,13 +106,17 @@ describe('parseScanResponse', () => {
     };
 
     expect(() => parseScanResponse(response)).toThrow();
+
+    // Restore original value
+    Object.defineProperty(Platform, 'OS', {
+      value: originalOS,
+      writable: true,
+      configurable: true,
+    });
   });
 
   it('handles missing required fields', () => {
-    Object.defineProperty(Platform, 'OS', {
-      value: 'ios',
-      writable: true,
-    });
+    // Platform.OS is already mocked as 'ios' by default
     const response = JSON.stringify({
       // Providing minimal data but missing critical passportMRZ field
       dataGroupHashes: JSON.stringify({
@@ -110,10 +135,7 @@ describe('parseScanResponse', () => {
   });
 
   it('handles invalid hex data in dataGroupHashes', () => {
-    Object.defineProperty(Platform, 'OS', {
-      value: 'ios',
-      writable: true,
-    });
+    // Platform.OS is already mocked as 'ios' by default
     const response = JSON.stringify({
       dataGroupHashes: JSON.stringify({
         DG1: { sodHash: 'invalid_hex' },
@@ -140,12 +162,7 @@ describe('scan', () => {
   });
 
   describe('iOS platform', () => {
-    beforeEach(() => {
-      Object.defineProperty(Platform, 'OS', {
-        value: 'ios',
-        writable: true,
-      });
-    });
+    // Platform.OS is already mocked as 'ios' by default, no additional setup needed
 
     it('should call PassportReader.scanPassport with correct parameters', async () => {
       const mockScanPassport = jest.fn().mockResolvedValue({
@@ -240,12 +257,7 @@ describe('scan', () => {
   // which is more complex in Jest. The interface tests handle this better.
 
   describe('Analytics configuration', () => {
-    beforeEach(() => {
-      Object.defineProperty(Platform, 'OS', {
-        value: 'ios',
-        writable: true,
-      });
-    });
+    // Platform.OS is already mocked as 'ios' by default, no additional setup needed
 
     it('should configure analytics before scanning', async () => {
       const mockScanPassport = jest.fn().mockResolvedValue({
