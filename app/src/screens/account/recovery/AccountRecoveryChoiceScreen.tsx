@@ -196,7 +196,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
           <Description>
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.{' '}
-            {biometricsAvailable && (
+            {!biometricsAvailable && (
               <>
                 Your device doesn't support biometrics or is disabled for apps
                 and is required for cloud storage.
