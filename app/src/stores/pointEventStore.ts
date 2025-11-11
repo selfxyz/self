@@ -202,7 +202,7 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
     const optimisticIncomingPoints = get()
       .getUnprocessedEvents()
       .reduce((sum, event) => sum + event.points, 0);
-    return optimisticIncomingPoints + get().incomingPoints.amount;
+    return get().incomingPoints.amount; // todo: fix the optimistic approach
   },
 
   addEvent: async (title, type, points, id) => {
