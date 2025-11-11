@@ -47,10 +47,10 @@ initSentry();
 global.Buffer = Buffer;
 
 export const TURNKEY_CALLBACKS: TurnkeyCallbacks = {
-  beforeSessionExpiry: ({ sessionKey }) => {
+  beforeSessionExpiry: ({ sessionKey: _sessionKey }) => {
     console.log('[Turnkey] Session nearing expiry');
   },
-  onSessionExpired: ({ sessionKey }) => {
+  onSessionExpired: ({ sessionKey: _sessionKey }) => {
     console.log('[Turnkey] Session expired');
   },
   onAuthenticationSuccess: ({
