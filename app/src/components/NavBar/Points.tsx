@@ -94,7 +94,7 @@ const Points: React.FC = () => {
   // Detect when returning from backup screen and record points if backup was completed
   useFocusEffect(
     React.useCallback(() => {
-      const { cloudBackupEnabled, backedUpWithTurnKey } =
+      const { cloudBackupEnabled, turnkeyBackupEnabled } =
         useSettingStore.getState();
       const currentHasCompletedBackup =
         useSettingStore.getState().hasCompletedBackupForPoints;
@@ -103,7 +103,7 @@ const Points: React.FC = () => {
       // This prevents false triggers when returning from other flows (like notification permissions)
       if (
         shouldCheckBackupRef.current &&
-        (cloudBackupEnabled || backedUpWithTurnKey) &&
+        (cloudBackupEnabled || turnkeyBackupEnabled) &&
         !currentHasCompletedBackup
       ) {
         const recordPoints = async () => {
@@ -265,11 +265,11 @@ const Points: React.FC = () => {
     }
     selfClient.trackEvent(PointEvents.EARN_BACKUP);
 
-    const { cloudBackupEnabled, backedUpWithTurnKey } =
+    const { cloudBackupEnabled, turnkeyBackupEnabled } =
       useSettingStore.getState();
 
     // If either backup method is already enabled, just record points
-    if (cloudBackupEnabled || backedUpWithTurnKey) {
+    if (cloudBackupEnabled || turnkeyBackupEnabled) {
       setIsBackingUp(true);
       try {
         // this will add event to store and the new event will then trigger useIncomingPoints hook to refetch incoming points

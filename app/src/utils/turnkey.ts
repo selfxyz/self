@@ -19,11 +19,11 @@ export function useTurnkeyUtils() {
     logout,
   } = turnkey;
 
-  const setBackedUpWithTurnKey = useSettingStore(
-    state => state.setBackedUpWithTurnKey,
+  const setTurnkeyBackupEnabled = useSettingStore(
+    state => state.setTurnkeyBackupEnabled,
   );
-  const backedUpWithTurnKey = useSettingStore(
-    state => state.backedUpWithTurnKey,
+  const turnkeyBackupEnabled = useSettingStore(
+    state => state.turnkeyBackupEnabled,
   );
   const [turnkeyWallets, setTurnkeyWallets] = useState<Array<TurnkeyWallet>>(
     [],
@@ -60,8 +60,8 @@ export function useTurnkeyUtils() {
           await authenticateIfNeeded(authenticate);
           const fetchedWallets = await fetchWallets();
           if (fetchedWallets.length > 0) {
-            if (!backedUpWithTurnKey) {
-              setBackedUpWithTurnKey(true);
+            if (!turnkeyBackupEnabled) {
+              setTurnkeyBackupEnabled(true);
             }
             return { message: 'Wallet restored successfully' };
           }
@@ -95,8 +95,8 @@ export function useTurnkeyUtils() {
 
           if (normalizedExisting === normalizedProvided) {
             // Same wallet, already backed up
-            if (!backedUpWithTurnKey) {
-              setBackedUpWithTurnKey(true);
+            if (!turnkeyBackupEnabled) {
+              setTurnkeyBackupEnabled(true);
             }
             throw new Error('already_backed_up');
           } else {
@@ -109,7 +109,7 @@ export function useTurnkeyUtils() {
           mnemonic,
           walletName: `Self-${new Date().toISOString()}`,
         });
-        setBackedUpWithTurnKey(true);
+        setTurnkeyBackupEnabled(true);
 
         await refreshWallets();
       },
@@ -137,8 +137,8 @@ export function useTurnkeyUtils() {
       authState,
       authenticateIfNeeded,
       fetchWallets,
-      backedUpWithTurnKey,
-      setBackedUpWithTurnKey,
+      turnkeyBackupEnabled,
+      setTurnkeyBackupEnabled,
       importWallet,
       exportWallet,
     ],

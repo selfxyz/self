@@ -52,8 +52,8 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   const { download } = useBackupMnemonic();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const setBackedUpWithTurnKey = useSettingStore(
-    state => state.setBackedUpWithTurnKey,
+  const setTurnkeyBackupEnabled = useSettingStore(
+    state => state.setTurnkeyBackupEnabled,
   );
 
   const onRestoreFromCloudNext = useHapticNavigation('AccountVerifiedSuccess');
@@ -152,7 +152,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       };
       const success = await restoreAccountFlow(mnemonic);
       if (success) {
-        setBackedUpWithTurnKey(true);
+        setTurnkeyBackupEnabled(true);
       }
     } catch (error) {
       console.error('Turnkey restore error:', error);
@@ -160,7 +160,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
     } finally {
       setRestoring(false);
     }
-  }, [getMnemonic, restoreAccountFlow, setBackedUpWithTurnKey, trackEvent]);
+  }, [getMnemonic, restoreAccountFlow, setTurnkeyBackupEnabled, trackEvent]);
 
   const onRestoreFromCloudPress = useCallback(async () => {
     setRestoring(true);
