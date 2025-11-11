@@ -67,13 +67,6 @@ export const useReferralConfirmation = ({
 
   // Handle referral confirmation flow
   useEffect(() => {
-    console.log('[Referral] useReferralConfirmation effect triggered', {
-      isReferralConfirmed,
-      hasReferrer,
-      referrer,
-      isReferrerRegistered: referrer ? isReferrerRegistered(referrer) : null,
-      hasTriggeredFlow: hasTriggeredFlowRef.current,
-    });
 
     // === Common validation: Has valid, unregistered referrer ===
     const hasValidReferrer =
