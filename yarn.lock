@@ -5888,7 +5888,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@peculiar/asn1-schema@npm:^2.3.13, @peculiar/asn1-schema@npm:^2.3.8, @peculiar/asn1-schema@npm:^2.5.0":
+"@peculiar/asn1-schema@npm:^2.3.13, @peculiar/asn1-schema@npm:^2.5.0":
   version: 2.5.0
   resolution: "@peculiar/asn1-schema@npm:2.5.0"
   dependencies:
@@ -5920,28 +5920,6 @@ __metadata:
     pvtsutils: "npm:^1.3.6"
     tslib: "npm:^2.8.1"
   checksum: 10c0/278c81f8a9c025a4276d5d88d955f5374e03cd4181b6aaf4d16ac369f323aff118da531c41de17abd8903c149b4811e3ad457e445ce91ad3d1ac30785d01686e
-  languageName: node
-  linkType: hard
-
-"@peculiar/json-schema@npm:^1.1.12":
-  version: 1.1.12
-  resolution: "@peculiar/json-schema@npm:1.1.12"
-  dependencies:
-    tslib: "npm:^2.0.0"
-  checksum: 10c0/202132c66dcc6b6aca5d0af971c015be2e163da2f7f992910783c5d39c8a7db59b6ec4f4ce419459a1f954b7e1d17b6b253f0e60072c1b3d254079f4eaebc311
-  languageName: node
-  linkType: hard
-
-"@peculiar/webcrypto@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@peculiar/webcrypto@npm:1.5.0"
-  dependencies:
-    "@peculiar/asn1-schema": "npm:^2.3.8"
-    "@peculiar/json-schema": "npm:^1.1.12"
-    pvtsutils: "npm:^1.3.5"
-    tslib: "npm:^2.6.2"
-    webcrypto-core: "npm:^1.8.0"
-  checksum: 10c0/4f6f24b2c52c2155b9c569b6eb1d57954cb5f7bd2764a50cdaed7aea17a6dcf304b75b87b57ba318756ffec8179a07d9a76534aaf77855912b838543e5ff8983
   languageName: node
   linkType: hard
 
@@ -7413,8 +7391,9 @@ __metadata:
     "@testing-library/react-native": "npm:^13.3.3"
     "@tsconfig/react-native": "npm:^3.0.6"
     "@turnkey/api-key-stamper": "npm:^0.5.0"
+    "@turnkey/core": "npm:1.7.0"
     "@turnkey/encoding": "npm:^0.6.0"
-    "@turnkey/react-native-wallet-kit": "npm:1.0.0"
+    "@turnkey/react-native-wallet-kit": "npm:1.1.5"
     "@types/bn.js": "npm:^5.2.0"
     "@types/dompurify": "npm:^3.2.0"
     "@types/elliptic": "npm:^6.4.18"
@@ -11487,15 +11466,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turnkey/core@npm:1.4.1":
-  version: 1.4.1
-  resolution: "@turnkey/core@npm:1.4.1"
+"@turnkey/core@npm:1.7.0":
+  version: 1.7.0
+  resolution: "@turnkey/core@npm:1.7.0"
   dependencies:
     "@turnkey/api-key-stamper": "npm:0.5.0"
-    "@turnkey/crypto": "npm:2.8.1"
+    "@turnkey/crypto": "npm:2.8.5"
     "@turnkey/encoding": "npm:0.6.0"
-    "@turnkey/http": "npm:3.13.0"
-    "@turnkey/sdk-types": "npm:0.6.1"
+    "@turnkey/http": "npm:3.15.0"
+    "@turnkey/sdk-types": "npm:0.8.0"
     "@turnkey/webauthn-stamper": "npm:0.6.0"
     "@wallet-standard/app": "npm:^1.1.0"
     "@wallet-standard/base": "npm:^1.1.0"
@@ -11508,7 +11487,7 @@ __metadata:
     viem: "npm:^2.33.1"
   peerDependencies:
     "@react-native-async-storage/async-storage": ^2.2.0
-    "@turnkey/react-native-passkey-stamper": 1.2.2
+    "@turnkey/react-native-passkey-stamper": 1.2.5
     react-native-keychain: ^8.1.0 || ^9.2.2 || ^10.0.0
   peerDependenciesMeta:
     "@react-native-async-storage/async-storage":
@@ -11517,24 +11496,23 @@ __metadata:
       optional: true
     react-native-keychain:
       optional: true
-  checksum: 10c0/4a9e4154ca9998a64d9a6d4a0e93de044deba271ec85420b8116bbb681f34b45fbd6cb3d4d05488199a0ae9d6a8995c81bd39ffa8f4c676b9ea0c9814d51c8ff
+  checksum: 10c0/f8b54d61271b36842ec741e811c8be0e05b24fcbb0e1a263fe333744b785e5b7dcbc8a902f8550120f418be830e65000536644dfb2e29d9271fb2c9573229549
   languageName: node
   linkType: hard
 
-"@turnkey/crypto@npm:2.8.1":
-  version: 2.8.1
-  resolution: "@turnkey/crypto@npm:2.8.1"
+"@turnkey/crypto@npm:2.8.5":
+  version: 2.8.5
+  resolution: "@turnkey/crypto@npm:2.8.5"
   dependencies:
     "@noble/ciphers": "npm:1.3.0"
     "@noble/curves": "npm:1.9.0"
     "@noble/hashes": "npm:1.8.0"
-    "@peculiar/webcrypto": "npm:1.5.0"
     "@peculiar/x509": "npm:1.12.3"
     "@turnkey/encoding": "npm:0.6.0"
-    "@turnkey/sdk-types": "npm:0.6.1"
+    "@turnkey/sdk-types": "npm:0.8.0"
     borsh: "npm:2.0.0"
     cbor-js: "npm:0.1.0"
-  checksum: 10c0/ea3f39d61244237de004ecd02d681db89572014ff28150a77c31c29e36ef89bdbb44b4f77d44b7f8520006ae31ca4b3a04be15614bef1c7cd59a396b799ed982
+  checksum: 10c0/b03719ef40f1b9850816858ff79596489bbcb877e5ae95b8bf596fa1f1c78828aa155bf55fb3dd85ea70910439f59a7c53287fc638bfc4577dc2dddebc2abda9
   languageName: node
   linkType: hard
 
@@ -11548,42 +11526,42 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turnkey/http@npm:3.13.0":
-  version: 3.13.0
-  resolution: "@turnkey/http@npm:3.13.0"
+"@turnkey/http@npm:3.15.0":
+  version: 3.15.0
+  resolution: "@turnkey/http@npm:3.15.0"
   dependencies:
     "@turnkey/api-key-stamper": "npm:0.5.0"
     "@turnkey/encoding": "npm:0.6.0"
     "@turnkey/webauthn-stamper": "npm:0.6.0"
     cross-fetch: "npm:^3.1.5"
-  checksum: 10c0/5fbde22bd48cd92a1831fdf258c09ebc88777628ff17965a5e3a11e93a5ef06a138919de2ce41d310466106eb2df027ebbb4655c6f04ee22cbad99dd69e2753c
+  checksum: 10c0/edc5ea44bb702fd85ad92d4d4af0ee84accf1a230506bcfbe5a9530c7b15ace36aa037b77842a6dd953a5aab9488ada92110c1c9e69086e355077b7db7533340
   languageName: node
   linkType: hard
 
-"@turnkey/react-native-passkey-stamper@npm:1.2.2":
-  version: 1.2.2
-  resolution: "@turnkey/react-native-passkey-stamper@npm:1.2.2"
+"@turnkey/react-native-passkey-stamper@npm:1.2.5":
+  version: 1.2.5
+  resolution: "@turnkey/react-native-passkey-stamper@npm:1.2.5"
   dependencies:
     "@turnkey/encoding": "npm:0.6.0"
-    "@turnkey/http": "npm:3.13.0"
-    buffer: "npm:6.0.3"
-    react-native-passkey: "npm:3.0.0"
-    sha256-uint8array: "npm:0.10.7"
-  checksum: 10c0/98efb5ce8f6c00fb589da7019985fccde606ab38e1f727efba389c153cf77021f12bbf1c84b0cc84f0b351e9a19f4b532ac4886cf99c3fdcf02a45029269c03b
+    "@turnkey/http": "npm:3.15.0"
+    buffer: "npm:^6.0.3"
+    react-native-passkey: "npm:^3.0.0"
+    sha256-uint8array: "npm:^0.10.7"
+  checksum: 10c0/8f5856a0d046c71be962a3f390abfcfd1ce9c0052f96f9d408edfbd6e05d62cda34be27ebb2084bb0287f278f9da585b71852f53c39f453d67bfa9296a01c305
   languageName: node
   linkType: hard
 
-"@turnkey/react-native-wallet-kit@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@turnkey/react-native-wallet-kit@npm:1.0.0"
+"@turnkey/react-native-wallet-kit@npm:1.1.5":
+  version: 1.1.5
+  resolution: "@turnkey/react-native-wallet-kit@npm:1.1.5"
   dependencies:
     "@noble/hashes": "npm:^1.8.0"
     "@react-native-async-storage/async-storage": "npm:^2.2.0"
-    "@turnkey/core": "npm:1.4.1"
-    "@turnkey/crypto": "npm:2.8.1"
+    "@turnkey/core": "npm:1.7.0"
+    "@turnkey/crypto": "npm:2.8.5"
     "@turnkey/encoding": "npm:0.6.0"
-    "@turnkey/react-native-passkey-stamper": "npm:1.2.2"
-    "@turnkey/sdk-types": "npm:0.6.1"
+    "@turnkey/react-native-passkey-stamper": "npm:1.2.5"
+    "@turnkey/sdk-types": "npm:0.8.0"
     react-native-device-info: "npm:^11.1.0"
   peerDependencies:
     "@types/react": ">=16.8.0 <20"
@@ -11596,14 +11574,14 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/5183a3f60c470dbd4d95a7afd5f73d5b8e122d7f58186006bdaf9687341fdd8f6384de97518a7d52f4a2f61c6af74cf4cdef30e20122794f8c139c9e4526cfea
+  checksum: 10c0/552c962a0a8df347d3342fa6d2d5210867c8c8aaac61936fc55e06e23607dfccbb007f3e7e60442e46d5f598d13ebbd7b90f47288e77d1d88c2c60cb8fcb1e91
   languageName: node
   linkType: hard
 
-"@turnkey/sdk-types@npm:0.6.1":
-  version: 0.6.1
-  resolution: "@turnkey/sdk-types@npm:0.6.1"
-  checksum: 10c0/5a966d1cbd9d040cf1748e23520d8575d0f0c1ac8bc97b9ea63d4bc2d41af54b56dc79724fa42284d0a28912a3fd2339af19ce6875182a16d78588bceb1d7e53
+"@turnkey/sdk-types@npm:0.8.0":
+  version: 0.8.0
+  resolution: "@turnkey/sdk-types@npm:0.8.0"
+  checksum: 10c0/16d88fe7b1f9ed04063d59f2895371ce89295486ec569543055a2ccc92bcb31ab4a7f3cab58930261b362f2a09f2b7fc5f400e4e036f449f003f859ec29cfdf3
   languageName: node
   linkType: hard
 
@@ -15403,16 +15381,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer@npm:6.0.3, buffer@npm:^6.0.3":
-  version: 6.0.3
-  resolution: "buffer@npm:6.0.3"
-  dependencies:
-    base64-js: "npm:^1.3.1"
-    ieee754: "npm:^1.2.1"
-  checksum: 10c0/2a905fbbcde73cc5d8bd18d1caa23715d5f83a5935867c2329f0ac06104204ba7947be098fe1317fbd8830e26090ff8e764f08cd14fefc977bb248c3487bcbd0
-  languageName: node
-  linkType: hard
-
 "buffer@npm:^5.4.3, buffer@npm:^5.5.0":
   version: 5.7.1
   resolution: "buffer@npm:5.7.1"
@@ -15420,6 +15388,16 @@ __metadata:
     base64-js: "npm:^1.3.1"
     ieee754: "npm:^1.1.13"
   checksum: 10c0/27cac81cff434ed2876058d72e7c4789d11ff1120ef32c9de48f59eab58179b66710c488987d295ae89a228f835fc66d088652dffeb8e3ba8659f80eb091d55e
+  languageName: node
+  linkType: hard
+
+"buffer@npm:^6.0.3":
+  version: 6.0.3
+  resolution: "buffer@npm:6.0.3"
+  dependencies:
+    base64-js: "npm:^1.3.1"
+    ieee754: "npm:^1.2.1"
+  checksum: 10c0/2a905fbbcde73cc5d8bd18d1caa23715d5f83a5935867c2329f0ac06104204ba7947be098fe1317fbd8830e26090ff8e764f08cd14fefc977bb248c3487bcbd0
   languageName: node
   linkType: hard
 
@@ -29430,7 +29408,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sha256-uint8array@npm:0.10.7, sha256-uint8array@npm:^0.10.7":
+"sha256-uint8array@npm:^0.10.7":
   version: 0.10.7
   resolution: "sha256-uint8array@npm:0.10.7"
   checksum: 10c0/b48dd49be908906d8a148ce023994e567977795f489a22a7837eede2ebab59399c8ba37d65a2b65fc43704a435e0c4add74661d4fbff31f4a07b81a35c5343ea
@@ -31465,7 +31443,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.6.0, tslib@npm:^2.6.2, tslib@npm:^2.6.3, tslib@npm:^2.7.0, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
+"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.6.0, tslib@npm:^2.6.3, tslib@npm:^2.7.0, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
@@ -32743,19 +32721,6 @@ __metadata:
     randombytes: "npm:^2.1.0"
     utf8: "npm:3.0.0"
   checksum: 10c0/fbd5c8ec71e944e9e66e3436dbd4446927c3edc95f81928723f9ac137e0d821c5cbb92dba0ed5bbac766f919f919c9d8e316e459c51d876d5188321642676677
-  languageName: node
-  linkType: hard
-
-"webcrypto-core@npm:^1.8.0":
-  version: 1.8.1
-  resolution: "webcrypto-core@npm:1.8.1"
-  dependencies:
-    "@peculiar/asn1-schema": "npm:^2.3.13"
-    "@peculiar/json-schema": "npm:^1.1.12"
-    asn1js: "npm:^3.0.5"
-    pvtsutils: "npm:^1.3.5"
-    tslib: "npm:^2.7.0"
-  checksum: 10c0/b85a986b4f73e8505ec5eaafe8e4f1ff02574a3b655793aca91f913d02822c8b79168ad6961eaab86ae00fec00bf780ec4cef7535f64879fb866649bc2a723fa
   languageName: node
   linkType: hard
 
