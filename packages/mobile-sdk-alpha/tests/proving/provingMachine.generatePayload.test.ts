@@ -173,6 +173,7 @@ describe('_generatePayload', () => {
         chainID: 42220,
         userId: '12345678-1234-1234-1234-123456789abc', // Valid UUID format
         userDefinedData: '0x0',
+        selfDefinedData: '',
         endpointType: 'https',
         endpoint: 'https://e',
         scope: 's',

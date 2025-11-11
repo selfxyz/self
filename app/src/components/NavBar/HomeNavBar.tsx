@@ -13,9 +13,9 @@ import type { SelfApp } from '@selfxyz/common/utils/appType';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
-import ActivityIcon from '@/images/icons/activity.svg';
+import CogHollowIcon from '@/images/icons/cog_hollow.svg';
+import PlusCircleIcon from '@/images/icons/plus_circle.svg';
 import ScanIcon from '@/images/icons/qr_scan.svg';
-import SettingsIcon from '@/images/icons/settings.svg';
 import { black, charcoal, slate50 } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { buttonTap } from '@/utils/haptic';
@@ -38,9 +38,7 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
         const response = await fetch(
           `https://api.self.xyz/consume-deferred-linking-token?token=${content}`,
         );
-        console.log('Consume token response:', response);
         const result = await response.json();
-        console.log('Consume token result:', result);
         if (result.status !== 'success') {
           throw new Error(
             `Failed to consume token: ${result.message || 'Unknown error'}`,
@@ -110,18 +108,18 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
               size={'$3'}
               unstyled
               icon={
-                <ActivityIcon width={'24'} height={'100%'} color={charcoal} />
+                <PlusCircleIcon width={'24'} height={'100%'} color={charcoal} />
               }
               onPress={() => {
                 buttonTap();
-                props.navigation.navigate('ProofHistory');
+                props.navigation.navigate('CountryPicker');
               }}
             />
             <Button
               size={'$3'}
               unstyled
               icon={
-                <SettingsIcon width={'24'} height={'100%'} color={charcoal} />
+                <CogHollowIcon width={'24'} height={'100%'} color={charcoal} />
               }
               onPress={() => {
                 buttonTap();

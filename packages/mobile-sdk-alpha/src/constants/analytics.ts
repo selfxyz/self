@@ -135,6 +135,23 @@ export const PassportEvents = {
   START_PASSPORT_NFC: 'Passport: Start Passport NFC',
 };
 
+export const PointEvents = {
+  HOME_POINT_EARN_POINTS_OPENED: 'Points: Home Earn Points Opened',
+  EXPLORE_APPS: 'Points: Explore Apps Opened',
+  EARN_REFERRAL: 'Points: Earn Referral Opened',
+  EARN_REFERRAL_MESSAGES: 'Points: Earn Referral via Messages',
+  EARN_REFERRAL_WHATSAPP: 'Points: Earn Referral via WhatsApp',
+  EARN_REFERRAL_SHARE: 'Points: Earn Referral via Share',
+  EARN_REFERRAL_COPY_LINK: 'Points: Earn Referral Copy Link',
+  EARN_BACKUP: 'Points: Earn with Backup',
+  EARN_BACKUP_SUCCESS: 'Points: Earn with Backup Success',
+  EARN_BACKUP_FAILED: 'Points: Earn with Backup Failed',
+  EARN_NOTIFICATION: 'Points: Earn with Notification',
+  EARN_NOTIFICATION_FAILED: 'Points: Earn with Notification Failed',
+  EARN_NOTIFICATION_SUCCESS: 'Points: Earn with Notification Success',
+  REFRESH_HISTORY: 'Points: Refresh History',
+};
+
 export const ProofEvents = {
   ALREADY_REGISTERED: 'Proof: Already Registered',
   ATTESTATION_RECEIVED: 'Proof: Attestation Received',

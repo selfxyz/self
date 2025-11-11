@@ -10,7 +10,7 @@ env:
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app
   # Cache versions
-  GH_CACHE_VERSION: v1 # Global cache version
+  GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.caching=true
@@ -76,7 +76,7 @@ jobs:
         with:
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Build dependencies (cache miss)
-      # Temporarily disabled due to `yarn types` failures when cache is used.
+        # Temporarily disabled due to `yarn types` failures when cache is used.
         # if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Cache miss for built dependencies. Building now..."
@@ -147,10 +147,11 @@ jobs:
           ls -la common/dist/ || echo "❌ common dist not found"
           ls -la common/dist/cjs/ || echo "❌ common dist/cjs not found"
           ls -la common/dist/cjs/index.cjs || echo "❌ common dist/cjs/index.cjs not found"
-      - name: Build dependencies (cache miss)
-        if: steps.built-deps.outputs.cache-hit != 'true'
+      - name: Build dependencies (always - debugging CI)
+        # Temporarily always build to debug CI issues
+        # TODO: Re-enable cache after fixing: if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
-          echo "Cache miss for built dependencies. Building now..."
+          echo "Building dependencies (cache temporarily disabled for debugging)..."
           yarn workspace @selfxyz/mobile-app run build:deps
           # Verify build completed successfully
           if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
@@ -183,6 +184,9 @@ jobs:
             echo "✅ All required dependency files exist"
           fi
       - name: App Tests
+        env:
+          # Increase Node.js memory to prevent hermes-parser WASM memory errors
+          NODE_OPTIONS: --max-old-space-size=4096
         run: |
           # Final verification from app directory perspective
           echo "Final verification before running tests (from app directory)..."

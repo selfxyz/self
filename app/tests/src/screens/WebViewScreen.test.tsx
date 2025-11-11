@@ -4,15 +4,27 @@
 
 import React from 'react';
 import { Linking } from 'react-native';
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { useNavigation } from '@react-navigation/native';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react-native';
 
 import { WebViewScreen } from '@/screens/shared/WebViewScreen';
 
+jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
+  useNavigation: jest.fn(),
+  useFocusEffect: jest.fn(),
+}));
+
 jest.mock('react-native-webview', () => {
-  const ReactModule = require('react');
+  const ReactMock = require('react');
   const { View } = require('react-native');
-  const MockWebView = ReactModule.forwardRef((props: any, _ref) => {
-    return ReactModule.createElement(View, { testID: 'webview', ...props });
+  const MockWebView = ReactMock.forwardRef((props: any, _ref) => {
+    return ReactMock.createElement(View, { testID: 'webview', ...props });
   });
   MockWebView.displayName = 'MockWebView';
   return {
@@ -21,6 +33,8 @@ jest.mock('react-native-webview', () => {
     WebView: MockWebView,
   };
 });
+
+const mockGoBack = jest.fn();
 
 describe('WebViewScreen URL sanitization and navigation interception', () => {
   const createProps = (initialUrl?: string, title?: string) => {
@@ -40,12 +54,25 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
   };
 
   beforeEach(() => {
+    (useNavigation as jest.Mock).mockReturnValue({
+      goBack: mockGoBack,
+      canGoBack: () => true,
+    });
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
     jest.resetAllMocks();
     (console.error as jest.Mock).mockRestore?.();
+  });
+
+  it('navigates back when close button is pressed', () => {
+    render(<WebViewScreen {...createProps('https://self.xyz')} />);
+    // The Button component renders with msdk-button testID, find by icon
+    const closeButtonIcon = screen.getByTestId('icon-x');
+    const closeButton = closeButtonIcon.parent?.parent;
+    fireEvent.press(closeButton!);
+    expect(mockGoBack).toHaveBeenCalledTimes(1);
   });
 
   it('sanitizes initial non-http(s) url and uses default', () => {

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-// Types
 export type {
   Adapters,
   AnalyticsAdapter,
@@ -28,10 +27,8 @@ export type {
   WsConn,
 } from './types/public';
 
-// LogEvent Types
 export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
 
-// MRZ module
 export type { DG1, DG2, ParsedNFCResponse } from './nfc';
 
 export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
@@ -40,14 +37,12 @@ export type { HapticOptions, HapticType } from './haptic/shared';
 
 export type { MRZScanOptions } from './mrz';
 
-// QR module
 export type { PassportValidationCallbacks } from './validation/document';
 
 export type { SDKEvent, SDKEventMap } from './types/events';
 
-// Error handling
 export type { SdkErrorCategory } from './errors';
-// Screen Components (React Native-based)
+
 export type { provingMachineCircuitType } from './proving/provingMachine';
 
 export {
@@ -74,15 +69,14 @@ export {
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 
 export { type ProvingStateType } from './proving/provingMachine';
-// Components
+
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
-// Documents utils
+
 export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
-// Haptic feedback utilities
-export { advercase, dinot, plexMono } from './constants/fonts';
+export { advercase, dinot, dinotBold, plexMono } from './constants/fonts';
 
 export {
   buttonTap,
@@ -114,17 +108,14 @@ export {
 
 export { createListenersMap, createSelfClient } from './client';
 
-// Document utils
 export { defaultConfig } from './config/defaults';
 
 export { defaultOptions } from './haptic/shared';
 
 export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
-// Core functions
 export { extractNameFromDocument } from './documents/utils';
 
-// Document validation
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
 export { isPassportDataValid } from './validation/document';

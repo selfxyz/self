@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useCallback, useEffect, useMemo } from 'react';
-import { Dimensions, StyleSheet } from 'react-native';
+import { useCallback, useEffect } from 'react';
+import { StyleSheet } from 'react-native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
@@ -17,6 +17,7 @@ import { black, white } from '../../constants/colors';
 import { useSelfClient } from '../../context';
 import { loadSelectedDocument } from '../../documents/utils';
 import { notificationSuccess } from '../../haptic';
+import { useSafeBottomPadding } from '../../hooks/useSafeBottomPadding';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { SdkEvents } from '../../types/events';
 import type { SelfClient } from '../../types/public';
@@ -38,17 +39,9 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
     await onConfirm(selfClient);
   }, [onBeforeConfirm, selfClient]);
 
-  // Calculate total bottom padding: base padding + fallback for smaller screens
-  const paddingBottom = useMemo(() => {
-    const basePadding = 20;
-
-    // Estimate for smaller screens to account for safe areas
-    const windowHeight = Dimensions.get('window').height;
-    const isSmallScreen = windowHeight < 900;
-    const fallbackPadding = isSmallScreen ? 50 : 0;
-
-    return basePadding + fallbackPadding;
-  }, []);
+  // Calculate bottom padding to prevent button bleeding into system navigation
+  // ExpandableBottomLayout.BottomSection handles safe areas internally
+  const paddingBottom = useSafeBottomPadding(20);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>

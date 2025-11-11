@@ -38,10 +38,6 @@ const error = (...args: unknown[]) => {
 
 export { getStateMessage };
 
-/**
- * Check if notifications are ready on iOS (APNs token registered with FCM)
- * @returns true if ready, false otherwise
- */
 export async function isNotificationSystemReady(): Promise<{
   ready: boolean;
   message: string;
@@ -90,6 +86,19 @@ export async function isNotificationSystemReady(): Promise<{
       ready: false,
       message: `Error: ${errorMessage}`,
     };
+  }
+}
+
+export async function isTopicSubscribed(topic: string): Promise<boolean> {
+  try {
+    const readiness = await isNotificationSystemReady();
+    if (!readiness.ready) {
+      return false;
+    }
+    const subscribedTopics = useSettingStore.getState().subscribedTopics;
+    return subscribedTopics.includes(topic);
+  } catch {
+    return false;
   }
 }
 

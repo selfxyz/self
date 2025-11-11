@@ -21,7 +21,9 @@ describe('provingUtils', () => {
       forge.util.createBuffer(key),
     );
     decipher.start({
-      iv: Buffer.from(encrypted.nonce).toString('binary'),
+      iv: forge.util.createBuffer(
+        Buffer.from(encrypted.nonce).toString('binary'),
+      ),
       tagLength: 128,
       tag: forge.util.createBuffer(
         Buffer.from(encrypted.auth_tag).toString('binary'),
@@ -58,6 +60,7 @@ describe('provingUtils', () => {
       circuit: { name: 'vc_and_disclose', inputs: JSON.stringify(inputs) },
       version: 2,
       userDefinedData: '0xabc',
+      selfDefinedData: '',
     });
   });
 

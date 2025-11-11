@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
+import { StyleSheet } from 'react-native';
 
 import AadhaarLogo from '../../../svgs/icons/aadhaar.svg';
 import EPassportLogoRounded from '../../../svgs/icons/epassport_rounded.svg';
@@ -105,16 +106,7 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
             <SelfLogo width={24} height={24} />
           </YStack>
         </XStack>
-        <BodyText
-          style={{
-            marginTop: 48,
-            fontSize: 29,
-            fontFamily: advercase,
-            textAlign: 'center',
-          }}
-        >
-          Select an ID type
-        </BodyText>
+        <BodyText style={styles.titleText}>Select an ID type</BodyText>
       </YStack>
       <YStack gap="$3">
         {documentTypes.map((docType: string) => (
@@ -135,35 +127,42 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
             <XStack alignItems="center" gap={'$3'} flex={1}>
               {getDocumentLogo(docType)}
               <YStack gap={'$1'}>
-                <BodyText style={{ fontSize: 24, fontFamily: dinot, color: black }}>
-                  {getDocumentName(docType)}
-                </BodyText>
-                <BodyText
-                  style={{
-                    fontSize: 14,
-                    fontFamily: dinot,
-                    color: slate400,
-                  }}
-                >
-                  {getDocumentDescription(docType)}
-                </BodyText>
+                <BodyText style={styles.documentNameText}>{getDocumentName(docType)}</BodyText>
+                <BodyText style={styles.documentDescriptionText}>{getDocumentDescription(docType)}</BodyText>
               </YStack>
             </XStack>
           </XStack>
         ))}
-        <BodyText
-          style={{
-            fontSize: 18,
-            fontFamily: dinot,
-            color: slate400,
-            textAlign: 'center',
-          }}
-        >
-          Be sure your document is ready to scan
-        </BodyText>
+        <BodyText style={styles.footerText}>Be sure your document is ready to scan</BodyText>
       </YStack>
     </YStack>
   );
 };
+
+const styles = StyleSheet.create({
+  titleText: {
+    marginTop: 48,
+    fontSize: 29,
+    fontFamily: advercase,
+    textAlign: 'center',
+    color: black,
+  },
+  documentNameText: {
+    fontSize: 24,
+    fontFamily: dinot,
+    color: black,
+  },
+  documentDescriptionText: {
+    fontSize: 14,
+    fontFamily: dinot,
+    color: slate400,
+  },
+  footerText: {
+    fontSize: 18,
+    fontFamily: dinot,
+    color: slate400,
+    textAlign: 'center',
+  },
+});
 
 export default IDSelectionScreen;

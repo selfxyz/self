@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { PermissionsAndroid, Platform } from 'react-native';
-
 jest.unmock('@/utils/notifications/notificationService');
 
 jest.mock('@react-native-firebase/messaging', () => {
@@ -18,6 +16,8 @@ jest.mock('@react-native-firebase/messaging', () => {
 });
 
 let messagingMock: ReturnType<typeof jest.fn>;
+let PermissionsAndroid: any;
+let Platform: any;
 
 global.fetch = jest.fn();
 
@@ -26,6 +26,11 @@ describe('notificationService', () => {
 
   beforeEach(() => {
     jest.resetModules();
+    // Load React Native modules dynamically to avoid hermes-parser WASM memory issues
+    const RN = require('react-native');
+    PermissionsAndroid = RN.PermissionsAndroid;
+    Platform = RN.Platform;
+
     messagingMock = require('@react-native-firebase/messaging').default
       ._instance;
     messagingMock.requestPermission.mockReset();

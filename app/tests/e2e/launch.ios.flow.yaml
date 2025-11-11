@@ -2,5 +2,6 @@ appId: com.warroom.proofofpassport
 ---
 - launchApp
 - extendedWaitUntil:
-    visible: "Get Started"
+    visible:
+      id: "earn-points-button"
     timeout: ${LAUNCH_WAIT_MS:60000}

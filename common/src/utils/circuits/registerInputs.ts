@@ -250,10 +250,6 @@ export async function generateTEEInputsRegister(
       dscTree as string[],
       env
     );
-    console.log('inputs-aadhaar', inputs);
-    console.log('circuitName-aadhaar', circuitName);
-    console.log('endpointType-aadhaar', endpointType);
-    console.log('endpoint-aadhaar', endpoint);
     return { inputs, circuitName, endpointType, endpoint };
   }
 

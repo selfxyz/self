@@ -112,6 +112,27 @@ describe('deeplinks', () => {
       });
     });
 
+    it('handles referrer parameter and navigates to HomeScreen for confirmation', () => {
+      const referrer = '0x1234567890123456789012345678901234567890';
+      const url = `scheme://open?referrer=${referrer}`;
+
+      const mockSetDeepLinkReferrer = jest.fn();
+      mockUserStore.default.getState.mockReturnValue({
+        setDeepLinkReferrer: mockSetDeepLinkReferrer,
+      });
+
+      handleUrl({} as SelfClient, url);
+
+      expect(mockSetDeepLinkReferrer).toHaveBeenCalledWith(referrer);
+
+      const { navigationRef } = require('@/navigation');
+      // Should navigate to HomeScreen, which will show confirmation modal
+      expect(navigationRef.reset).toHaveBeenCalledWith({
+        index: 0,
+        routes: [{ name: 'Home' }],
+      });
+    });
+
     it('navigates to QRCodeTrouble for invalid data', () => {
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
@@ -150,7 +171,11 @@ describe('deeplinks', () => {
         routes: [{ name: 'Home' }, { name: 'QRCodeTrouble' }],
       });
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'No sessionId or selfApp found in the data',
+        'Parameter sessionId failed validation:',
+        'abc<script>alert("xss")</script>',
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'No sessionId, selfApp or valid OAuth parameters found in the data',
       );
 
       consoleWarnSpy.mockRestore();
@@ -170,6 +195,100 @@ describe('deeplinks', () => {
         index: 1,
         routes: [{ name: 'Home' }, { name: 'QRCodeTrouble' }],
       });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('handles valid Turnkey OAuth redirect with code and state', () => {
+      const consoleLogSpy = jest
+        .spyOn(console, 'log')
+        .mockImplementation(() => {});
+
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7&id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature';
+      handleUrl({} as SelfClient, url);
+
+      const { navigationRef } = require('@/navigation');
+      // Turnkey OAuth should return silently without navigation
+      expect(navigationRef.navigate).not.toHaveBeenCalled();
+      expect(navigationRef.reset).not.toHaveBeenCalled();
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        '[Deeplinks] Turnkey OAuth redirect received with valid parameters',
+      );
+
+      consoleLogSpy.mockRestore();
+    });
+
+    it('navigates to QRCodeTrouble when only code is present (missing id_token)', () => {
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7';
+      handleUrl({} as SelfClient, url);
+
+      const { navigationRef } = require('@/navigation');
+      // With just code and id_token validation removed, this should be accepted as valid OAuth
+      expect(navigationRef.navigate).not.toHaveBeenCalled();
+      expect(navigationRef.reset).not.toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('handles valid Turnkey OAuth with only id_token (implicit flow)', () => {
+      const consoleLogSpy = jest
+        .spyOn(console, 'log')
+        .mockImplementation(() => {});
+
+      const url =
+        'https://redirect.self.xyz?scheme=https#id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature&scope=email%20profile';
+      handleUrl({} as SelfClient, url);
+
+      const { navigationRef } = require('@/navigation');
+      expect(navigationRef.navigate).not.toHaveBeenCalled();
+      expect(navigationRef.reset).not.toHaveBeenCalled();
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        '[Deeplinks] Turnkey OAuth redirect received with valid parameters',
+      );
+
+      consoleLogSpy.mockRestore();
+    });
+
+    it('navigates to QRCodeTrouble when neither code nor id_token is present', () => {
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      const url =
+        'https://redirect.self.xyz?scheme=https#scope=email%20profile';
+      handleUrl({} as SelfClient, url);
+
+      const { navigationRef } = require('@/navigation');
+      expect(navigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'QRCodeTrouble' }],
+      });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('rejects Turnkey OAuth with invalid id_token format', () => {
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      // id_token with invalid characters (XSS attempt) - should be rejected
+      // code is valid, but since id_token is invalid and rejected, code alone shouldn't trigger OAuth
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93&id_token=<script>alert("xss")</script>';
+      handleUrl({} as SelfClient, url);
+
+      const { navigationRef } = require('@/navigation');
+      // Code without valid id_token should still be accepted as valid OAuth (authorization code flow)
+      // So this should NOT navigate to QRCodeTrouble
+      expect(navigationRef.navigate).not.toHaveBeenCalled();
+      expect(navigationRef.reset).not.toHaveBeenCalled();
 
       consoleErrorSpy.mockRestore();
     });
@@ -206,6 +325,8 @@ describe('deeplinks', () => {
       const result = parseAndValidateUrlParams(url);
 
       expect(result).toEqual({ sessionId: 'abc123' });
+      // Check both warnings were called, regardless of order
+      expect(consoleWarnSpy).toHaveBeenCalledTimes(2);
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         'Unexpected or invalid parameter ignored: maliciousParam',
       );
@@ -370,6 +491,74 @@ describe('deeplinks', () => {
       const result = mockedParser(url);
 
       expect(result).toEqual({});
+
+      consoleWarnSpy.mockRestore();
+    });
+  });
+
+  describe('Turnkey OAuth parameter validation', () => {
+    it('returns valid code and state parameters', () => {
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7&state=state_abc';
+      const result = parseAndValidateUrlParams(url);
+      expect(result.code).toBe('4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7');
+      expect(result.state).toBe('state_abc');
+    });
+
+    it('returns id_token and scope parameters', () => {
+      const url =
+        'https://redirect.self.xyz?scheme=https#id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature&scope=email%20profile';
+      const result = parseAndValidateUrlParams(url);
+      expect(result.id_token).toBeTruthy();
+      expect(result.scope).toBe('email profile');
+    });
+
+    it('handles code with forward slashes (Google OAuth format)', () => {
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7CMFt3YS0RKh9yreKIqdMg4qZh6MaIkfonjNlJFw';
+      const result = parseAndValidateUrlParams(url);
+      expect(result.code).toBe(
+        '4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7CMFt3YS0RKh9yreKIqdMg4qZh6MaIkfonjNlJFw',
+      );
+    });
+
+    it('rejects id_token with invalid characters (XSS attempt)', () => {
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      // URL with only an invalid id_token - this should reject the id_token
+      const url =
+        'https://redirect.self.xyz#id_token=<script>alert("xss")</script>';
+      const result = parseAndValidateUrlParams(url);
+
+      // The invalid id_token should be rejected
+      expect(result.id_token).toBeUndefined();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Parameter id_token failed validation:',
+        expect.any(String),
+      );
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('filters out unexpected OAuth-related parameters', () => {
+      const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
+
+      const url =
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93&state=state_abc&error=access_denied&error_description=user_denied';
+      const result = parseAndValidateUrlParams(url);
+
+      expect(result.code).toBe('4/0Ab32j93');
+      expect(result.state).toBe('state_abc');
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'Unexpected or invalid parameter ignored: error',
+      );
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'Unexpected or invalid parameter ignored: error_description',
+      );
 
       consoleWarnSpy.mockRestore();
     });
