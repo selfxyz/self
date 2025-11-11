@@ -4935,7 +4935,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:^1.4.0, @noble/hashes@npm:^1.5.0":
+"@noble/hashes@npm:^1.4.0":
   version: 1.8.0
   resolution: "@noble/hashes@npm:1.8.0"
   checksum: 10c0/06a0b52c81a6fa7f04d67762e08b2c476a00285858150caeaaff4037356dd5e119f45b2a530f638b77a5eeca013168ec1b655db41bae3236cb2e9d511484fc77
@@ -24230,7 +24230,7 @@ __metadata:
     "@babel/core": "npm:^7.28.3"
     "@babel/runtime": "npm:^7.28.3"
     "@faker-js/faker": "npm:^10.0.0"
-    "@noble/hashes": "npm:^1.5.0"
+    "@noble/hashes": "npm:^2.0.0"
     "@react-native-async-storage/async-storage": "npm:^2.2.0"
     "@react-native-community/cli": "npm:^16.0.3"
     "@react-native/gradle-plugin": "npm:0.76.9"
