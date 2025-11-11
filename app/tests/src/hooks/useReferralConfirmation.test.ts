@@ -439,7 +439,7 @@ describe('useReferralConfirmation', () => {
       expect(mockNavigate).not.toHaveBeenCalled();
     });
 
-    it('should call onConfirmed with updated callback when onConfirmed prop changes', async () => {
+    it('should not call onConfirmed again when callback prop changes after confirmation', async () => {
       const firstCallback = jest.fn();
       const secondCallback = jest.fn();
 
@@ -472,10 +472,9 @@ describe('useReferralConfirmation', () => {
         onConfirmed: secondCallback,
       });
 
-      // Since isReferralConfirmed is already true, onConfirmed should be called immediately
-      await waitFor(() => {
-        expect(secondCallback).toHaveBeenCalledTimes(1);
-      });
+      // Guard prevents callback from being called again for the same referrer
+      // even when the callback prop changes
+      expect(secondCallback).not.toHaveBeenCalled();
     });
   });
 

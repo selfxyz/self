@@ -7,7 +7,7 @@ import { v4 } from 'uuid';
 import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
 
 import { getOrGeneratePointsAddress } from '@/providers/authProvider';
-import { POINTS_API_BASE_URL } from '@/utils/points/api';
+import { POINTS_API_BASE_URL } from '@/utils/points/constants';
 import type { IncomingPoints } from '@/utils/points/types';
 
 export const formatTimeUntilDate = (targetDate: Date): string => {

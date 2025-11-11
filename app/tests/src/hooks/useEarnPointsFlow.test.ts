@@ -490,7 +490,7 @@ describe('useEarnPointsFlow', () => {
       console.error = originalConsoleError;
     });
 
-    it('should preserve referrer when error modal is dismissed', async () => {
+    it('should clear referrer when error modal is dismissed', async () => {
       mockRegisterReferral.mockResolvedValue({
         success: false,
         error: 'API error',
@@ -518,8 +518,8 @@ describe('useEarnPointsFlow', () => {
         callbacks!.onModalDismiss();
       });
 
-      // Referrer should still be preserved
-      expect(useUserStore.getState().deepLinkReferrer).toBe(referrer);
+      // Referrer should be cleared to prevent retry loop
+      expect(useUserStore.getState().deepLinkReferrer).toBeUndefined();
 
       console.error = originalConsoleError;
     });

@@ -6,17 +6,22 @@ import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 import { ethers } from 'ethers';
 
-import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import {
-  isSuccessfulStatus,
-  makeApiRequest,
-  POINTS_API_BASE_URL,
-} from '@/utils/points/api';
+  unsafe_getPointsPrivateKey,
+  unsafe_getPrivateKey,
+} from '@/providers/authProvider';
+import { isSuccessfulStatus, makeApiRequest } from '@/utils/points/api';
+import { POINTS_API_BASE_URL } from '@/utils/points/constants';
+import { getPointsAddress } from '@/utils/points/utils';
 
 // Mock dependencies
 jest.mock('axios');
 jest.mock('@/providers/authProvider', () => ({
   unsafe_getPrivateKey: jest.fn(),
+  unsafe_getPointsPrivateKey: jest.fn(),
+}));
+jest.mock('@/utils/points/utils', () => ({
+  getPointsAddress: jest.fn(),
 }));
 jest.mock('ethers', () => {
   const actualEthers = jest.requireActual('ethers');
@@ -36,6 +41,13 @@ jest.mock('ethers', () => {
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockUnsafeGetPrivateKey = unsafe_getPrivateKey as jest.MockedFunction<
   typeof unsafe_getPrivateKey
+>;
+const mockUnsafeGetPointsPrivateKey =
+  unsafe_getPointsPrivateKey as jest.MockedFunction<
+    typeof unsafe_getPointsPrivateKey
+  >;
+const mockGetPointsAddress = getPointsAddress as jest.MockedFunction<
+  typeof getPointsAddress
 >;
 
 describe('isSuccessfulStatus', () => {
@@ -60,8 +72,10 @@ describe('isSuccessfulStatus', () => {
 });
 
 describe('Points API - Signature Logic', () => {
-  const mockPrivateKey =
+  const mockPrimaryPrivateKey =
     '0x1234567890123456789012345678901234567890123456789012345678901234';
+  const mockPointsPrivateKey =
+    '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd';
   const mockAddress = '0xAbCdEf1234567890aBcDeF1234567890AbCdEf12';
   const mockSignatureBytes = new Uint8Array([1, 2, 3, 4, 5]);
   const mockSignatureBase64 = 'AQIDBAU='; // base64 of [1,2,3,4,5]
@@ -96,6 +110,11 @@ describe('Points API - Signature Logic', () => {
     global.Buffer.from = jest.fn().mockReturnValue({
       toString: jest.fn().mockReturnValue(mockSignatureBase64),
     }) as any;
+
+    // Default: points address does not match any tested address to prefer primary key unless overridden
+    mockGetPointsAddress.mockResolvedValue(
+      '0x9999999999999999999999999999999999999999',
+    );
   });
 
   afterEach(() => {
@@ -103,12 +122,14 @@ describe('Points API - Signature Logic', () => {
   });
 
   describe('Signature Generation', () => {
-    it('should generate signature with correct parameters for referee address', async () => {
-      const refereeAddress = '0x1234567890123456789012345678901234567890';
+    it('should use points private key when signing the points address', async () => {
+      const pointsAddress = '0x1234567890123456789012345678901234567890';
       const mockSignatureHex =
         '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab';
 
-      mockUnsafeGetPrivateKey.mockResolvedValue(mockPrivateKey);
+      // Mock getPointsAddress to return the address being signed
+      mockGetPointsAddress.mockResolvedValue(pointsAddress);
+      mockUnsafeGetPointsPrivateKey.mockResolvedValue(mockPointsPrivateKey);
       mockWallet.signMessage.mockResolvedValue(mockSignatureHex);
 
       mockAxios.post.mockResolvedValue({
@@ -117,16 +138,16 @@ describe('Points API - Signature Logic', () => {
       } as AxiosResponse);
 
       await makeApiRequest('/referrals/refer', {
-        referee: refereeAddress,
+        referee: pointsAddress,
         referrer: '0x9876543210987654321098765432109876543210',
       });
 
-      // Verify wallet was created with correct private key
-      expect(ethers.Wallet).toHaveBeenCalledWith(mockPrivateKey);
+      // Verify wallet was created with points private key
+      expect(ethers.Wallet).toHaveBeenCalledWith(mockPointsPrivateKey);
 
       // Verify message signed was lowercase address
       expect(mockWallet.signMessage).toHaveBeenCalledWith(
-        refereeAddress.toLowerCase(),
+        pointsAddress.toLowerCase(),
       );
 
       // Verify signature was parsed
@@ -136,36 +157,39 @@ describe('Points API - Signature Logic', () => {
       expect(ethers.getBytes).toHaveBeenCalledWith(mockSignatureHex);
     });
 
-    it('should generate signature with correct parameters for address field', async () => {
+    it('should fail when signing a non-points address', async () => {
       const userAddress = '0xABCDEF1234567890ABCDEF1234567890ABCDEF12';
-      const mockSignatureHex =
-        '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab';
+      const pointsAddress = '0x9999999999999999999999999999999999999999';
 
-      mockUnsafeGetPrivateKey.mockResolvedValue(mockPrivateKey);
-      mockWallet.signMessage.mockResolvedValue(mockSignatureHex);
+      // Mock getPointsAddress to return a different address
+      mockGetPointsAddress.mockResolvedValue(pointsAddress);
 
-      mockAxios.post.mockResolvedValue({
-        status: 200,
-        data: {},
-      } as AxiosResponse);
+      const result = await makeApiRequest('/verify-action', {
+        action: 'secret_backup',
+        address: userAddress,
+      });
 
-      await makeApiRequest(
-        '/verify-action',
-        {
-          action: 'secret_backup',
-          address: userAddress,
-        },
-        undefined,
-      );
-
-      // Verify message signed was lowercase address
-      expect(mockWallet.signMessage).toHaveBeenCalledWith(
-        userAddress.toLowerCase(),
-      );
+      expect(result.success).toBe(false);
+      expect(result.status).toBe(500);
+      expect(result.error).toContain('Failed to retrieve private key for signing');
     });
 
-    it('should handle signature generation errors', async () => {
-      mockUnsafeGetPrivateKey.mockRejectedValue(
+    it('should fail when getPointsAddress fails', async () => {
+      mockGetPointsAddress.mockRejectedValue(new Error('Address lookup failed'));
+
+      const result = await makeApiRequest('/referrals/refer', {
+        referee: mockAddress,
+        referrer: '0x9876543210987654321098765432109876543210',
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.status).toBe(500);
+      expect(result.error).toContain('Failed to retrieve private key for signing');
+    });
+
+    it('should handle error when points key retrieval fails', async () => {
+      mockGetPointsAddress.mockResolvedValue(mockAddress);
+      mockUnsafeGetPointsPrivateKey.mockRejectedValue(
         new Error('Biometric auth failed'),
       );
 
@@ -179,8 +203,9 @@ describe('Points API - Signature Logic', () => {
       expect(result.error).toContain('Failed to generate signature');
     });
 
-    it('should handle missing private key', async () => {
-      mockUnsafeGetPrivateKey.mockResolvedValue(null);
+    it('should handle missing points private key', async () => {
+      mockGetPointsAddress.mockResolvedValue(mockAddress);
+      mockUnsafeGetPointsPrivateKey.mockResolvedValue(null);
 
       const result = await makeApiRequest('/referrals/refer', {
         referee: mockAddress,
@@ -189,13 +214,13 @@ describe('Points API - Signature Logic', () => {
 
       expect(result.success).toBe(false);
       expect(result.status).toBe(500);
-      expect(result.error).toContain('Failed to generate signature');
+      expect(result.error).toContain('Failed to retrieve private key for signing');
     });
   });
 
   describe('makeApiRequest - Auto-detection of signing address', () => {
     beforeEach(() => {
-      mockUnsafeGetPrivateKey.mockResolvedValue(mockPrivateKey);
+      mockUnsafeGetPointsPrivateKey.mockResolvedValue(mockPointsPrivateKey);
       mockWallet.signMessage.mockResolvedValue(
         '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
       );
@@ -205,6 +230,8 @@ describe('Points API - Signature Logic', () => {
       const refereeAddress = '0x1234567890123456789012345678901234567890';
       const referrerAddress = '0x9876543210987654321098765432109876543210';
 
+      // Mock points address to match referee
+      mockGetPointsAddress.mockResolvedValue(refereeAddress);
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: {},
@@ -230,6 +257,8 @@ describe('Points API - Signature Logic', () => {
     it('should auto-detect address field and include signature', async () => {
       const userAddress = '0xABCDEF1234567890ABCDEF1234567890ABCDEF12';
 
+      // Mock points address to match user address
+      mockGetPointsAddress.mockResolvedValue(userAddress);
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: {},
@@ -261,6 +290,8 @@ describe('Points API - Signature Logic', () => {
       const refereeAddress = '0x1111111111111111111111111111111111111111';
       const addressField = '0x2222222222222222222222222222222222222222';
 
+      // Mock points address to match referee
+      mockGetPointsAddress.mockResolvedValue(refereeAddress);
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: {},
@@ -289,6 +320,7 @@ describe('Points API - Signature Logic', () => {
 
       // Should not attempt to get private key or sign
       expect(mockUnsafeGetPrivateKey).not.toHaveBeenCalled();
+      expect(mockUnsafeGetPointsPrivateKey).not.toHaveBeenCalled();
       expect(mockWallet.signMessage).not.toHaveBeenCalled();
 
       // Should send request without signature
@@ -304,7 +336,9 @@ describe('Points API - Signature Logic', () => {
 
   describe('makeApiRequest - Response handling', () => {
     beforeEach(() => {
-      mockUnsafeGetPrivateKey.mockResolvedValue(mockPrivateKey);
+      // Mock points address to match mockAddress so signing works
+      mockGetPointsAddress.mockResolvedValue(mockAddress);
+      mockUnsafeGetPointsPrivateKey.mockResolvedValue(mockPointsPrivateKey);
       mockWallet.signMessage.mockResolvedValue(
         '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
       );
@@ -440,7 +474,11 @@ describe('Points API - Signature Logic', () => {
 
   describe('Integration tests - Full flow', () => {
     beforeEach(() => {
-      mockUnsafeGetPrivateKey.mockResolvedValue(mockPrivateKey);
+      mockUnsafeGetPrivateKey.mockResolvedValue(mockPrimaryPrivateKey);
+      mockUnsafeGetPointsPrivateKey.mockResolvedValue(mockPointsPrivateKey);
+      mockWallet.signMessage.mockResolvedValue(
+        '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
+      );
     });
 
     it('should complete full signature flow for referral endpoint', async () => {
@@ -449,6 +487,7 @@ describe('Points API - Signature Logic', () => {
       const mockSignatureHex =
         '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab';
 
+      mockGetPointsAddress.mockResolvedValue(refereeAddress);
       mockWallet.signMessage.mockResolvedValue(mockSignatureHex);
       mockAxios.post.mockResolvedValue({
         status: 200,
@@ -461,8 +500,8 @@ describe('Points API - Signature Logic', () => {
       });
 
       // Verify complete flow
-      expect(mockUnsafeGetPrivateKey).toHaveBeenCalled();
-      expect(ethers.Wallet).toHaveBeenCalledWith(mockPrivateKey);
+      expect(mockUnsafeGetPointsPrivateKey).toHaveBeenCalled();
+      expect(ethers.Wallet).toHaveBeenCalledWith(mockPointsPrivateKey);
       expect(mockWallet.signMessage).toHaveBeenCalledWith(
         refereeAddress.toLowerCase(),
       );
@@ -486,6 +525,8 @@ describe('Points API - Signature Logic', () => {
       const mockSignatureHex =
         '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab';
 
+      // Mock points address to match user address
+      mockGetPointsAddress.mockResolvedValue(userAddress);
       mockWallet.signMessage.mockResolvedValue(mockSignatureHex);
       mockAxios.post.mockResolvedValue({
         status: 200,
@@ -498,7 +539,7 @@ describe('Points API - Signature Logic', () => {
       });
 
       // Verify complete flow
-      expect(mockUnsafeGetPrivateKey).toHaveBeenCalled();
+      expect(mockUnsafeGetPointsPrivateKey).toHaveBeenCalled();
       expect(mockWallet.signMessage).toHaveBeenCalledWith(
         userAddress.toLowerCase(),
       );
@@ -520,6 +561,8 @@ describe('Points API - Signature Logic', () => {
       const mockSignatureHex =
         '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab';
 
+      // Mock points address to match user address
+      mockGetPointsAddress.mockResolvedValue(userAddress);
       mockWallet.signMessage.mockResolvedValue(mockSignatureHex);
       mockAxios.post.mockResolvedValue({
         status: 200,
@@ -548,7 +591,7 @@ describe('Points API - Signature Logic', () => {
 
   describe('Edge cases', () => {
     beforeEach(() => {
-      mockUnsafeGetPrivateKey.mockResolvedValue(mockPrivateKey);
+      mockUnsafeGetPointsPrivateKey.mockResolvedValue(mockPointsPrivateKey);
       mockWallet.signMessage.mockResolvedValue(
         '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
       );
@@ -562,7 +605,7 @@ describe('Points API - Signature Logic', () => {
 
       const result = await makeApiRequest('/some-endpoint', {});
 
-      expect(mockUnsafeGetPrivateKey).not.toHaveBeenCalled();
+      expect(mockUnsafeGetPointsPrivateKey).not.toHaveBeenCalled();
       expect(result.success).toBe(true);
     });
 
@@ -576,7 +619,7 @@ describe('Points API - Signature Logic', () => {
         address: null,
       });
 
-      expect(mockUnsafeGetPrivateKey).not.toHaveBeenCalled();
+      expect(mockUnsafeGetPointsPrivateKey).not.toHaveBeenCalled();
       expect(result.success).toBe(true);
     });
 
@@ -590,7 +633,7 @@ describe('Points API - Signature Logic', () => {
         address: undefined,
       });
 
-      expect(mockUnsafeGetPrivateKey).not.toHaveBeenCalled();
+      expect(mockUnsafeGetPointsPrivateKey).not.toHaveBeenCalled();
       expect(result.success).toBe(true);
     });
 
@@ -598,6 +641,8 @@ describe('Points API - Signature Logic', () => {
       const mixedCaseReferee = '0xAbCdEf1234567890aBcDeF1234567890AbCdEf12';
       const mixedCaseReferrer = '0xAbCdEf0987654321aBcDeF0987654321AbCdEf09';
 
+      // Mock points address to match referee
+      mockGetPointsAddress.mockResolvedValue(mixedCaseReferee);
       mockAxios.post.mockResolvedValue({
         status: 200,
         data: {},
