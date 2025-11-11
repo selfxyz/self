@@ -75,14 +75,14 @@ export const useReferralConfirmation = ({
       hasTriggeredFlow: hasTriggeredFlowRef.current,
     });
 
-    // === STAGE 2: Execute callback after confirmation ===
-    // This should trigger the flow when user comes back from any of the onboarding screens
-    // Only trigger once when confirmed, and ensure the referrer hasn't been registered yet
+    // === Common validation: Has valid, unregistered referrer ===
+    const hasValidReferrer =
+      hasReferrer && referrer && !isReferrerRegistered(referrer);
+
+    // === CHECK 1: Execute callback after user confirms (evaluated first due to early return) ===
     const shouldExecuteCallback =
+      hasValidReferrer &&
       isReferralConfirmed === true &&
-      hasReferrer &&
-      referrer &&
-      !isReferrerRegistered(referrer) &&
       !hasTriggeredFlowRef.current;
 
     if (shouldExecuteCallback) {
@@ -97,13 +97,9 @@ export const useReferralConfirmation = ({
       return;
     }
 
-    // === STAGE 1: Show modal for new referrals ===
-    // Only show modal if referrer exists, not yet confirmed, and hasn't been registered
+    // === CHECK 2: Show modal for unconfirmed referrals ===
     const shouldShowModal =
-      hasReferrer &&
-      referrer &&
-      isReferralConfirmed === undefined &&
-      !isReferrerRegistered(referrer);
+      hasValidReferrer && isReferralConfirmed === undefined;
 
     if (shouldShowModal) {
       showReferralConfirmationModal();
