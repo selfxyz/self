@@ -43,7 +43,9 @@ describe('parseScanResponse', () => {
     const result = parseScanResponse(response);
     expect(result.mrz).toBe(mrz);
     expect(result.documentType).toBe('passport');
+    // 'abcd' in hex: ab = 171, cd = 205
     expect(result.dg1Hash).toEqual([171, 205]);
+    // '1234' in hex: 12 = 18, 34 = 52
     expect(result.dg2Hash).toEqual([18, 52]);
   });
 
@@ -60,13 +62,17 @@ describe('parseScanResponse', () => {
       encryptedDigest: JSON.stringify([6, 7]),
       encapContent: JSON.stringify([8, 9]),
       documentSigningCertificate: 'CERT',
-      dataGroupHashes: JSON.stringify({ '1': 'abcd', '2': [1, 2, 3] }),
+      // Android format: '1' and '2' are hex strings, not arrays
+      dataGroupHashes: JSON.stringify({ '1': 'abcd', '2': '1234' }),
     } as any;
 
     const result = parseScanResponse(response);
     expect(result.documentType).toBe('passport');
     expect(result.mrz).toBe(mrz);
+    // 'abcd' in hex: ab = 171, cd = 205
     expect(result.dg1Hash).toEqual([171, 205]);
+    // dg2Hash should be parsed from hex string '1234': 12 = 18, 34 = 52
+    expect(result.dg2Hash).toEqual([18, 52]);
     expect(result.dgPresents).toEqual([1, 2]);
 
     // Restore original value
@@ -140,6 +146,13 @@ describe('scan', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset PassportReader mock before each test
+    // The implementation checks for scanPassport property, so we need to ensure it exists
+    Object.defineProperty(PassportReader, 'scanPassport', {
+      writable: true,
+      configurable: true,
+      value: undefined,
+    });
   });
 
   describe('iOS platform', () => {
@@ -151,7 +164,12 @@ describe('scan', () => {
         dataGroupHashes: JSON.stringify({}),
       });
 
-      (PassportReader as any).scanPassport = mockScanPassport;
+      // Set the mock function directly on PassportReader
+      Object.defineProperty(PassportReader, 'scanPassport', {
+        writable: true,
+        configurable: true,
+        value: mockScanPassport,
+      });
 
       await scan(mockInputs);
 
@@ -175,7 +193,11 @@ describe('scan', () => {
         dataGroupHashes: JSON.stringify({}),
       });
 
-      (PassportReader as any).scanPassport = mockScanPassport;
+      Object.defineProperty(PassportReader, 'scanPassport', {
+        writable: true,
+        configurable: true,
+        value: mockScanPassport,
+      });
 
       const minimalInputs = {
         passportNumber: 'L898902C3',
@@ -206,7 +228,11 @@ describe('scan', () => {
         dataGroupHashes: JSON.stringify({}),
       });
 
-      (PassportReader as any).scanPassport = mockScanPassport;
+      Object.defineProperty(PassportReader, 'scanPassport', {
+        writable: true,
+        configurable: true,
+        value: mockScanPassport,
+      });
 
       const fullInputs = {
         ...mockInputs,
@@ -246,7 +272,11 @@ describe('scan', () => {
         dataGroupHashes: JSON.stringify({}),
       });
 
-      (PassportReader as any).scanPassport = mockScanPassport;
+      Object.defineProperty(PassportReader, 'scanPassport', {
+        writable: true,
+        configurable: true,
+        value: mockScanPassport,
+      });
 
       await scan(mockInputs);
 
