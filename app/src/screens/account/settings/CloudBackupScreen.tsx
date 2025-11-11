@@ -285,6 +285,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
 
             <BottomButton
               cloudBackupEnabled={cloudBackupEnabled}
+              backedUpWithTurnKey={backedUpWithTurnKey}
               nextScreen={params?.nextScreen}
             />
           </View>
@@ -303,9 +304,11 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
 
 function BottomButton({
   cloudBackupEnabled,
+  backedUpWithTurnKey,
   nextScreen,
 }: {
   cloudBackupEnabled: boolean;
+  backedUpWithTurnKey: boolean;
   nextScreen?: NextScreen;
 }) {
   const { trackEvent } = useSelfClient();
@@ -318,7 +321,9 @@ function BottomButton({
     navigation.goBack();
   };
 
-  if (nextScreen && cloudBackupEnabled) {
+  const hasBackup = cloudBackupEnabled || backedUpWithTurnKey;
+
+  if (nextScreen && hasBackup) {
     return (
       <PrimaryButton
         onPress={() => {
@@ -330,7 +335,7 @@ function BottomButton({
         Continue
       </PrimaryButton>
     );
-  } else if (nextScreen && !cloudBackupEnabled) {
+  } else if (nextScreen && !hasBackup) {
     return (
       <SecondaryButton
         onPress={() => {
@@ -342,7 +347,7 @@ function BottomButton({
         Back up manually
       </SecondaryButton>
     );
-  } else if (cloudBackupEnabled) {
+  } else if (hasBackup) {
     return (
       <PrimaryButton
         onPress={goBack}
