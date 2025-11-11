@@ -14,11 +14,13 @@ import { hash } from '../../hash.js';
 export function brutforceSignatureAlgorithmDsc(dsc: CertificateData, csca: CertificateData) {
   if (csca.signatureAlgorithm === 'ecdsa') {
     const hashAlgorithm = brutforceHashAlgorithmDsc(dsc, csca, 'ecdsa');
-    return {
-      signatureAlgorithm: 'ecdsa',
-      hashAlgorithm: hashAlgorithm,
-      saltLength: 0,
-    };
+    if (hashAlgorithm) {
+      return {
+        signatureAlgorithm: 'ecdsa',
+        hashAlgorithm: hashAlgorithm,
+        saltLength: 0,
+      };
+    }
   } else if (csca.signatureAlgorithm === 'rsa') {
     const hashAlgorithm = brutforceHashAlgorithmDsc(dsc, csca, 'rsa');
     if (hashAlgorithm) {

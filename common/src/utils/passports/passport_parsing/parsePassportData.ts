@@ -111,8 +111,6 @@ export function parsePassportData(
     passportData.signedAttr
   );
 
-  const brutForcedPublicKeyDetails = brutforceSignatureAlgorithm(passportData);
-
   let parsedDsc = null;
   let dscSignatureAlgorithmBits = 0;
 
@@ -123,6 +121,20 @@ export function parsePassportData(
     dscSignatureAlgorithmBits = parseInt(parsedDsc.publicKeyDetails?.bits || '0');
 
     dscMetaData = parseDscCertificateData(parsedDsc, skiPem);
+  }
+
+  // Determine signature algorithm/hash with fallback if brute-force fails
+  const brutForcedPublicKeyDetails = brutforceSignatureAlgorithm(passportData);
+  let resolvedSignatureAlgorithm = brutForcedPublicKeyDetails?.signatureAlgorithm as string | undefined;
+  let resolvedSignedAttrHashFunction = brutForcedPublicKeyDetails?.hashAlgorithm as string | undefined;
+  let resolvedSaltLength = (brutForcedPublicKeyDetails?.saltLength as number | undefined) ?? undefined;
+
+  if (!resolvedSignatureAlgorithm || !resolvedSignedAttrHashFunction) {
+    if (parsedDsc) {
+      resolvedSignatureAlgorithm = parsedDsc.signatureAlgorithm;
+      resolvedSignedAttrHashFunction = parsedDsc.hashAlgorithm;
+      resolvedSaltLength = 0;
+    }
   }
 
   return {
@@ -141,9 +153,9 @@ export function parsePassportData(
     eContentHashFunction,
     eContentHashOffset,
     signedAttrSize: passportData.signedAttr?.length || 0,
-    signedAttrHashFunction: brutForcedPublicKeyDetails.hashAlgorithm,
-    signatureAlgorithm: brutForcedPublicKeyDetails.signatureAlgorithm,
-    saltLength: brutForcedPublicKeyDetails.saltLength,
+    signedAttrHashFunction: resolvedSignedAttrHashFunction,
+    signatureAlgorithm: resolvedSignatureAlgorithm,
+    saltLength: resolvedSaltLength || 0,
     curveOrExponent: parsedDsc ? getCurveOrExponent(parsedDsc) : 'unknown',
     signatureAlgorithmBits: dscSignatureAlgorithmBits,
     countryCode: passportData.mrz ? getCountryCodeFromMrz(passportData.mrz) : 'unknown',

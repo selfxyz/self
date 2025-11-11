@@ -35,11 +35,17 @@ export function parseDscCertificateData(
         cscaParsed = parseCertificateSimple(csca);
         const details = brutforceSignatureAlgorithmDsc(dscCert, cscaParsed);
         cscaFound = true;
-        cscaHashAlgorithm = details.hashAlgorithm;
-        cscaSignatureAlgorithm = details.signatureAlgorithm;
+        if (details && details.hashAlgorithm && details.signatureAlgorithm) {
+          cscaHashAlgorithm = details.hashAlgorithm;
+          cscaSignatureAlgorithm = details.signatureAlgorithm;
+          cscaSaltLength = details.saltLength;
+        } else if (cscaParsed) {
+          cscaHashAlgorithm = cscaParsed.hashAlgorithm;
+          cscaSignatureAlgorithm = cscaParsed.signatureAlgorithm;
+          cscaSaltLength = 0;
+        }
         cscaCurveOrExponent = getCurveOrExponent(cscaParsed);
         cscaSignatureAlgorithmBits = parseInt(cscaParsed.publicKeyDetails.bits);
-        cscaSaltLength = details.saltLength;
       }
     } catch (error) {}
   } else {
