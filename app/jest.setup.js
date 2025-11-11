@@ -307,12 +307,12 @@ jest.mock('react-native-gesture-handler', () => {
 // Mock react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');
-  const { View } = require('react-native');
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
   return {
     __esModule: true,
     SafeAreaProvider: ({ children }) =>
-      React.createElement(View, null, children),
-    SafeAreaView: ({ children }) => React.createElement(View, null, children),
+      React.createElement('View', null, children),
+    SafeAreaView: ({ children }) => React.createElement('View', null, children),
     useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
   };
 });
@@ -751,15 +751,20 @@ jest.mock('react-native-passport-reader', () => {
   };
 });
 
-const { NativeModules } = require('react-native');
-
-NativeModules.PassportReader = {
-  configure: jest.fn(),
-  scanPassport: jest.fn(),
-  trackEvent: jest.fn(),
-  flush: jest.fn(),
-  reset: jest.fn(),
+// Mock NativeModules without requiring react-native to avoid memory issues
+// Create a minimal NativeModules mock for PassportReader
+const NativeModules = {
+  PassportReader: {
+    configure: jest.fn(),
+    scanPassport: jest.fn(),
+    trackEvent: jest.fn(),
+    flush: jest.fn(),
+    reset: jest.fn(),
+  },
 };
+
+// Make it available globally for any code that expects it
+global.NativeModules = NativeModules;
 
 // Mock @/utils/passportReader to properly expose the interface expected by tests
 jest.mock('./src/utils/passportReader', () => {
@@ -995,9 +1000,9 @@ jest.mock('@react-navigation/core', () => {
 // Mock react-native-webview globally to avoid ESM parsing and native behaviors
 jest.mock('react-native-webview', () => {
   const React = require('react');
-  const { View } = require('react-native');
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
   const MockWebView = React.forwardRef((props, ref) => {
-    return React.createElement(View, { ref, testID: 'webview', ...props });
+    return React.createElement('View', { ref, testID: 'webview', ...props });
   });
   MockWebView.displayName = 'MockWebView';
   return {
@@ -1010,14 +1015,14 @@ jest.mock('react-native-webview', () => {
 // Mock ExpandableBottomLayout to simple containers to avoid SDK internals in tests
 jest.mock('@/layouts/ExpandableBottomLayout', () => {
   const React = require('react');
-  const { View } = require('react-native');
-  const Layout = ({ children }) => React.createElement(View, null, children);
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
+  const Layout = ({ children }) => React.createElement('View', null, children);
   const TopSection = ({ children }) =>
-    React.createElement(View, null, children);
+    React.createElement('View', null, children);
   const BottomSection = ({ children }) =>
-    React.createElement(View, null, children);
+    React.createElement('View', null, children);
   const FullSection = ({ children }) =>
-    React.createElement(View, null, children);
+    React.createElement('View', null, children);
   return {
     __esModule: true,
     ExpandableBottomLayout: { Layout, TopSection, BottomSection, FullSection },
@@ -1027,18 +1032,20 @@ jest.mock('@/layouts/ExpandableBottomLayout', () => {
 // Mock mobile-sdk-alpha components used by NavBar (Button, XStack)
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
   const React = require('react');
-  const { View, Text, TouchableOpacity } = require('react-native');
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
   const Button = ({ children, onPress, icon, ...props }) =>
     React.createElement(
-      TouchableOpacity,
+      'TouchableOpacity',
       { onPress, ...props, testID: 'msdk-button' },
       icon
-        ? React.createElement(View, { testID: 'msdk-button-icon' }, icon)
+        ? React.createElement('View', { testID: 'msdk-button-icon' }, icon)
         : null,
       children,
     );
   const XStack = ({ children, ...props }) =>
-    React.createElement(View, { ...props, testID: 'msdk-xstack' }, children);
+    React.createElement('View', { ...props, testID: 'msdk-xstack' }, children);
+  const Text = ({ children, ...props }) =>
+    React.createElement('Text', { ...props }, children);
   return {
     __esModule: true,
     Button,
@@ -1051,10 +1058,10 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
 // Mock Tamagui lucide icons to simple components to avoid theme context
 jest.mock('@tamagui/lucide-icons', () => {
   const React = require('react');
-  const { View } = require('react-native');
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
   const makeIcon = name => {
     const Icon = ({ size, color, opacity }) =>
-      React.createElement(View, {
+      React.createElement('View', {
         testID: `icon-${name}`,
         size,
         color,
@@ -1073,8 +1080,8 @@ jest.mock('@tamagui/lucide-icons', () => {
 // Mock WebViewFooter to avoid SDK rendering complexity
 jest.mock('@/components/WebViewFooter', () => {
   const React = require('react');
-  const { View } = require('react-native');
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
   const WebViewFooter = () =>
-    React.createElement(View, { testID: 'webview-footer' });
+    React.createElement('View', { testID: 'webview-footer' });
   return { __esModule: true, WebViewFooter };
 });

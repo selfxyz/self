@@ -21,15 +21,34 @@ let Platform: any;
 
 global.fetch = jest.fn();
 
+// Mock Platform and PermissionsAndroid without requiring react-native to avoid memory issues
+Platform = {
+  OS: 'ios',
+  Version: 14,
+};
+
+PermissionsAndroid = {
+  request: jest.fn(),
+  PERMISSIONS: {
+    POST_NOTIFICATIONS: 'post',
+  },
+  RESULTS: {
+    GRANTED: 'granted',
+    DENIED: 'denied',
+    NEVER_ASK_AGAIN: 'never_ask_again',
+  },
+};
+
 describe('notificationService', () => {
   let service: any; // Using any here since we're dynamically requiring the module in tests
 
   beforeEach(() => {
     jest.resetModules();
-    // Load React Native modules dynamically to avoid hermes-parser WASM memory issues
-    const RN = require('react-native');
-    PermissionsAndroid = RN.PermissionsAndroid;
-    Platform = RN.Platform;
+    // Mock react-native module to provide Platform and PermissionsAndroid without loading the full library
+    jest.doMock('react-native', () => ({
+      Platform,
+      PermissionsAndroid,
+    }));
 
     messagingMock = require('@react-native-firebase/messaging').default
       ._instance;
