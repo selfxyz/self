@@ -4,7 +4,7 @@
 
 import { createHash } from '../src/polyfills/crypto';
 
-import { sha256 } from '@noble/hashes/sha256';
+import { sha256 } from '@noble/hashes/sha2.js';
 
 describe('Hash Finalization', () => {
   const message = 'Hello World!';

@@ -4,8 +4,8 @@
 
 import { createHmac } from '../src/polyfills/crypto';
 
-import { hmac } from '@noble/hashes/hmac';
-import { sha256 } from '@noble/hashes/sha256';
+import { hmac } from '@noble/hashes/hmac.js';
+import { sha256 } from '@noble/hashes/sha2.js';
 
 describe('HMAC Streaming', () => {
   const key = 'test-key';

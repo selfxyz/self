@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1",
-    "@noble/curves": "^1.4.2",
+    "@noble/curves": "^2.0.0",
     "@openpassport/zk-email-circuits": "^6.1.2",
     "@openpassport/zk-kit-imt": "^0.0.4",
     "@openpassport/zk-kit-lean-imt": "^0.0.4",

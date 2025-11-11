@@ -80,7 +80,7 @@
   "dependencies": {
     "@babel/runtime": "^7.28.3",
     "@ethersproject/shims": "^5.7.0",
-    "@noble/hashes": "^1.5.0",
+    "@noble/hashes": "^2.0.0",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@openpassport/zk-kit-smt": "^0.0.1",

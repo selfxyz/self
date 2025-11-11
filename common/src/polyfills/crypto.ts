@@ -7,12 +7,10 @@
  * This replaces crypto-browserify with a more modern and secure implementation
  */
 
-import { hmac } from '@noble/hashes/hmac';
-import { md5 as nobleMd5 } from '@noble/hashes/legacy';
-import { pbkdf2 as noblePbkdf2 } from '@noble/hashes/pbkdf2';
-import { sha1 as nobleSha1 } from '@noble/hashes/sha1';
-import { sha256 as nobleSha256 } from '@noble/hashes/sha256';
-import { sha512 as nobleSha512 } from '@noble/hashes/sha512';
+import { hmac } from '@noble/hashes/hmac.js';
+import { md5 as nobleMd5, sha1 as nobleSha1 } from '@noble/hashes/legacy.js';
+import { pbkdf2 as noblePbkdf2 } from '@noble/hashes/pbkdf2.js';
+import { sha256 as nobleSha256, sha512 as nobleSha512 } from '@noble/hashes/sha2.js';
 
 // Create hash instances that mimic Node.js crypto API
 function createHash(algorithm: string) {

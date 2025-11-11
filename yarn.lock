@@ -4882,12 +4882,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@npm:^1.4.2":
-  version: 1.9.7
-  resolution: "@noble/curves@npm:1.9.7"
+"@noble/curves@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "@noble/curves@npm:2.0.1"
   dependencies:
-    "@noble/hashes": "npm:1.8.0"
-  checksum: 10c0/150014751ebe8ca06a8654ca2525108452ea9ee0be23430332769f06808cddabfe84f248b6dbf836916bc869c27c2092957eec62c7506d68a1ed0a624017c2a3
+    "@noble/hashes": "npm:2.0.1"
+  checksum: 10c0/e0b329eb9229e862d3b7203e0444bd479e9ecf2d5990181908dad416aab69106717ca696fc7b12ad0eb19d710f58c454646b27ce517a4298ab9abc89a9bdb6ee
   languageName: node
   linkType: hard
 
@@ -4928,7 +4928,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:1.8.0, @noble/hashes@npm:^1.4.0, @noble/hashes@npm:^1.5.0":
+"@noble/hashes@npm:2.0.1, @noble/hashes@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "@noble/hashes@npm:2.0.1"
+  checksum: 10c0/e81769ce21c3b1c80141a3b99bd001f17edea09879aa936692ae39525477386d696101cd573928a304806efb2b9fa751e1dd83241c67d0c84d30091e85c79bdb
+  languageName: node
+  linkType: hard
+
+"@noble/hashes@npm:^1.4.0, @noble/hashes@npm:^1.5.0":
   version: 1.8.0
   resolution: "@noble/hashes@npm:1.8.0"
   checksum: 10c0/06a0b52c81a6fa7f04d67762e08b2c476a00285858150caeaaff4037356dd5e119f45b2a530f638b77a5eeca013168ec1b655db41bae3236cb2e9d511484fc77
@@ -7146,7 +7153,7 @@ __metadata:
   resolution: "@selfxyz/circuits@workspace:circuits"
   dependencies:
     "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1"
-    "@noble/curves": "npm:^1.4.2"
+    "@noble/curves": "npm:^2.0.0"
     "@openpassport/zk-email-circuits": "npm:^6.1.2"
     "@openpassport/zk-kit-imt": "npm:^0.0.4"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.4"
@@ -7161,8 +7168,8 @@ __metadata:
     "@yarnpkg/sdks": "npm:^3.2.0"
     "@zk-email/circuits": "npm:^6.3.2"
     "@zk-email/helpers": "npm:^6.1.1"
-    "@zk-email/jwt-tx-builder-circuits": "npm:^0.1.0"
-    "@zk-email/jwt-tx-builder-helpers": "npm:^0.1.0"
+    "@zk-email/jwt-tx-builder-circuits": "npm:0.1.0"
+    "@zk-email/jwt-tx-builder-helpers": "npm:0.1.0"
     "@zk-email/zk-regex-circom": "npm:^1.2.1"
     "@zk-kit/binary-merkle-root.circom": "https://gitpkg.vercel.app/Vishalkulkarni45/zk-kit.circom/packages/binary-merkle-root?fix/bin-merkle-tree"
     "@zk-kit/circuits": "npm:^1.0.0-beta"
@@ -7201,7 +7208,7 @@ __metadata:
   resolution: "@selfxyz/common@workspace:common"
   dependencies:
     "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1"
-    "@noble/hashes": "npm:^1.5.0"
+    "@noble/hashes": "npm:^2.0.0"
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
@@ -7346,7 +7353,7 @@ __metadata:
     "@babel/preset-env": "npm:^7.28.3"
     "@babel/runtime": "npm:^7.28.3"
     "@ethersproject/shims": "npm:^5.7.0"
-    "@noble/hashes": "npm:^1.5.0"
+    "@noble/hashes": "npm:^2.0.0"
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
@@ -13162,7 +13169,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-email/jwt-tx-builder-circuits@npm:^0.1.0":
+"@zk-email/jwt-tx-builder-circuits@npm:0.1.0":
   version: 0.1.0
   resolution: "@zk-email/jwt-tx-builder-circuits@npm:0.1.0"
   dependencies:
@@ -13178,7 +13185,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-email/jwt-tx-builder-helpers@npm:^0.1.0":
+"@zk-email/jwt-tx-builder-helpers@npm:0.1.0":
   version: 0.1.0
   resolution: "@zk-email/jwt-tx-builder-helpers@npm:0.1.0"
   dependencies:
