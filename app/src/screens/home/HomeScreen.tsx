@@ -299,6 +299,7 @@ const HomeScreen: React.FC = () => {
           borderRadius={5}
           borderWidth={1}
           borderColor={slate300}
+          testID="earn-points-button"
           onPress={() => {
             selfClient.trackEvent(PointEvents.HOME_POINT_EARN_POINTS_OPENED);
             onEarnPointsPress(true);
