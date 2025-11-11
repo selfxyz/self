@@ -19,23 +19,10 @@
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     center.delegate = self;
 
-    // Request permission for notifications
-    [center requestAuthorizationWithOptions:(UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionBadge)
-                          completionHandler:^(BOOL granted, NSError * _Nullable error) {
-      if (error) {
-        NSLog(@"Failed to request notification authorization: %@", error.localizedDescription);
-        return;
-      }
-
-      if (granted) {
-        NSLog(@"Notification authorization granted");
-        dispatch_async(dispatch_get_main_queue(), ^{
-          [[UIApplication sharedApplication] registerForRemoteNotifications];
-        });
-      } else {
-        NSLog(@"Notification authorization denied by user");
-      }
-    }];
+    // NOTE: Notification permission request removed from app launch
+    // Permission is now requested only when user explicitly enables notifications
+    // (e.g., in Points screen or settings)
+    // The auto-request was causing unwanted permission prompts on first app launch
   }
 
   self.moduleName = @"OpenPassport";
