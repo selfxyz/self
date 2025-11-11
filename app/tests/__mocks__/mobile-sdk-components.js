@@ -20,14 +20,13 @@ const Description = ({ children }) =>
 const Title = ({ children }) =>
   React.createElement(React.Fragment, null, children);
 
-const { View } = require('react-native');
-
+// Use React.createElement directly instead of requiring react-native to avoid memory issues
 const PrimaryButton = ({ children, onPress, disabled, testID }) => {
   const buttonText = getTextFromChildren(children);
   const id =
     testID || `button-${buttonText.toLowerCase().replace(/\s+/g, '-')}`;
   return React.createElement(
-    View,
+    'View',
     { onPress, disabled, testID: id, accessibilityRole: 'button' },
     children,
   );
@@ -38,7 +37,7 @@ const SecondaryButton = ({ children, onPress, disabled, testID }) => {
   const id =
     testID || `button-${buttonText.toLowerCase().replace(/\s+/g, '-')}`;
   return React.createElement(
-    View,
+    'View',
     { onPress, disabled, testID: id, accessibilityRole: 'button' },
     children,
   );

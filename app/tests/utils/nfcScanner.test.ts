@@ -3,22 +3,19 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { Buffer } from 'buffer';
-import { Platform } from 'react-native';
 
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { PassportReader } from '@/utils/passportReader';
 
-// Mock Platform.OS for the entire test suite
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  return {
-    ...RN,
-    Platform: {
-      ...RN.Platform,
-      OS: 'ios', // Default to iOS
-    },
-  };
-});
+// Mock Platform without requiring react-native to avoid memory issues
+const Platform = {
+  OS: 'ios', // Default to iOS
+  Version: 14,
+};
+
+jest.mock('react-native', () => ({
+  Platform,
+}));
 
 describe('parseScanResponse', () => {
   beforeEach(() => {
@@ -53,11 +50,7 @@ describe('parseScanResponse', () => {
   it('parses Android response', () => {
     // Temporarily override Platform.OS for this test
     const originalOS = Platform.OS;
-    Object.defineProperty(Platform, 'OS', {
-      value: 'android',
-      writable: true,
-      configurable: true,
-    });
+    Platform.OS = 'android';
 
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
@@ -77,11 +70,7 @@ describe('parseScanResponse', () => {
     expect(result.dgPresents).toEqual([1, 2]);
 
     // Restore original value
-    Object.defineProperty(Platform, 'OS', {
-      value: originalOS,
-      writable: true,
-      configurable: true,
-    });
+    Platform.OS = originalOS;
   });
 
   it('handles malformed iOS response', () => {
@@ -93,11 +82,7 @@ describe('parseScanResponse', () => {
 
   it('handles malformed Android response', () => {
     const originalOS = Platform.OS;
-    Object.defineProperty(Platform, 'OS', {
-      value: 'android',
-      writable: true,
-      configurable: true,
-    });
+    Platform.OS = 'android';
 
     const response = {
       mrz: 'valid_mrz',
@@ -108,11 +93,7 @@ describe('parseScanResponse', () => {
     expect(() => parseScanResponse(response)).toThrow();
 
     // Restore original value
-    Object.defineProperty(Platform, 'OS', {
-      value: originalOS,
-      writable: true,
-      configurable: true,
-    });
+    Platform.OS = originalOS;
   });
 
   it('handles missing required fields', () => {

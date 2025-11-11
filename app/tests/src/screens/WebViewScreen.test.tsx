@@ -22,9 +22,9 @@ jest.mock('@react-navigation/native', () => ({
 
 jest.mock('react-native-webview', () => {
   const ReactMock = require('react');
-  const { View } = require('react-native');
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
   const MockWebView = ReactMock.forwardRef((props: any, _ref) => {
-    return ReactMock.createElement(View, { testID: 'webview', ...props });
+    return ReactMock.createElement('View', { testID: 'webview', ...props });
   });
   MockWebView.displayName = 'MockWebView';
   return {
