@@ -152,8 +152,6 @@ function clonePrivateRepo(repoName, localPath) {
 
   if (isCI && repoToken) {
     // CI environment with Personal Access Token
-    // Embed token directly in URL to avoid write access checks
-    // The URL will be scrubbed after clone to remove credentials
     log('CI detected: Using SELFXYZ_INTERNAL_REPO_PAT for clone', 'info');
     cloneUrl = `https://${repoToken}@github.com/${GITHUB_ORG}/${repoName}.git`;
   } else if (isCI) {
@@ -178,19 +176,12 @@ function clonePrivateRepo(repoName, localPath) {
   const isCredentialedUrl = isCI && repoToken;
   const quietFlag = isCredentialedUrl ? '--quiet' : '';
   const targetDir = path.basename(localPath);
-
   const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" "${targetDir}"`;
 
   try {
     if (isCredentialedUrl) {
       // Security: Run command silently to avoid token exposure in logs
-      runCommand(cloneCommand, {
-        stdio: 'pipe',
-        env: {
-          ...process.env,
-          GIT_TERMINAL_PROMPT: '0',
-        },
-      });
+      runCommand(cloneCommand, { stdio: 'pipe' });
     } else {
       runCommand(cloneCommand);
     }
