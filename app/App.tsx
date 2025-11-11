@@ -48,10 +48,10 @@ global.Buffer = Buffer;
 
 export const TURNKEY_CALLBACKS: TurnkeyCallbacks = {
   beforeSessionExpiry: ({ sessionKey }) => {
-    console.log('[Turnkey] Session nearing expiry:', sessionKey);
+    console.log('[Turnkey] Session nearing expiry');
   },
   onSessionExpired: ({ sessionKey }) => {
-    console.log('[Turnkey] Session expired:', sessionKey);
+    console.log('[Turnkey] Session expired');
   },
   onAuthenticationSuccess: ({
     action: _action,

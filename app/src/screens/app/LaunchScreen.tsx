@@ -55,8 +55,8 @@ const LaunchScreen: React.FC = () => {
       }
 
       onPress();
-    } catch (error) {
-      console.error('handleGoogleOauth error', error);
+    } catch {
+      console.error('handleGoogleOauth error');
     }
   };
 
