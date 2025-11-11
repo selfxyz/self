@@ -189,7 +189,7 @@ const HomeScreen: React.FC = () => {
         {documentCatalog.documents.length === 0 ? (
           <Pressable
             onPress={() => {
-              navigation.navigate('DocumentOnboarding');
+              navigation.navigate('CountryPicker');
             }}
           >
             <View
