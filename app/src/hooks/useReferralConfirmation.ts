@@ -25,16 +25,21 @@ export const useReferralConfirmation = ({
   const isReferrerRegistered = useUserStore(
     state => state.isReferrerRegistered,
   );
+
+  // State machine: undefined (not shown) → true (confirmed) / false (dismissed)
   const [isReferralConfirmed, setIsReferralConfirmed] = useState<
     boolean | undefined
   >(undefined);
+
+  // Guard to ensure callback executes exactly once per referral
   const hasTriggeredFlowRef = useRef(false);
 
   const showReferralConfirmationModal = useCallback(() => {
     const callbackId = registerModalCallbacks({
       onButtonPress: async () => {
         setIsReferralConfirmed(true);
-        // Use setTimeout to ensure state updates and modal dismisses before navigation
+        // CRITICAL: setTimeout ensures React completes render cycle before navigation
+        // Without this, navigation happens with stale state causing flow to re-trigger
         setTimeout(() => {
           navigation.goBack();
         }, 100);
@@ -70,18 +75,20 @@ export const useReferralConfirmation = ({
       hasTriggeredFlow: hasTriggeredFlowRef.current,
     });
 
+    // === STAGE 2: Execute callback after confirmation ===
     // This should trigger the flow when user comes back from any of the onboarding screens
     // Only trigger once when confirmed, and ensure the referrer hasn't been registered yet
-    if (
+    const shouldExecuteCallback =
       isReferralConfirmed === true &&
       hasReferrer &&
       referrer &&
       !isReferrerRegistered(referrer) &&
-      !hasTriggeredFlowRef.current
-    ) {
+      !hasTriggeredFlowRef.current;
+
+    if (shouldExecuteCallback) {
       console.log('[Referral] Scheduling onConfirmed callback');
       hasTriggeredFlowRef.current = true;
-      // Use setTimeout to ensure React re-renders with updated state before calling callback
+      // CRITICAL: setTimeout ensures React completes render cycle before executing callback
       // This prevents stale closure issues where the callback has old state values
       setTimeout(() => {
         console.log('[Referral] Executing onConfirmed callback');
@@ -90,13 +97,15 @@ export const useReferralConfirmation = ({
       return;
     }
 
+    // === STAGE 1: Show modal for new referrals ===
     // Only show modal if referrer exists, not yet confirmed, and hasn't been registered
-    if (
+    const shouldShowModal =
       hasReferrer &&
       referrer &&
       isReferralConfirmed === undefined &&
-      !isReferrerRegistered(referrer)
-    ) {
+      !isReferrerRegistered(referrer);
+
+    if (shouldShowModal) {
       showReferralConfirmationModal();
     }
   }, [
