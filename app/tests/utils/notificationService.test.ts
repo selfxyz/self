@@ -2,26 +2,29 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { PermissionsAndroid, Platform } from 'react-native';
-
 jest.unmock('@/utils/notifications/notificationService');
 
+// Mock Platform and PermissionsAndroid without requiring react-native to avoid memory issues
+const Platform = {
+  OS: 'ios',
+  Version: 14,
+};
+
+const PermissionsAndroid = {
+  request: jest.fn(),
+  PERMISSIONS: {
+    POST_NOTIFICATIONS: 'android.permission.POST_NOTIFICATIONS',
+  },
+  RESULTS: {
+    GRANTED: 'granted',
+    DENIED: 'denied',
+    NEVER_ASK_AGAIN: 'never_ask_again',
+  },
+};
+
 jest.mock('react-native', () => ({
-  Platform: {
-    OS: 'ios',
-    Version: '15.0',
-  },
-  PermissionsAndroid: {
-    request: jest.fn(),
-    PERMISSIONS: {
-      POST_NOTIFICATIONS: 'android.permission.POST_NOTIFICATIONS',
-    },
-    RESULTS: {
-      GRANTED: 'granted',
-      DENIED: 'denied',
-      NEVER_ASK_AGAIN: 'never_ask_again',
-    },
-  },
+  Platform,
+  PermissionsAndroid,
 }));
 
 jest.mock('@react-native-firebase/messaging', () => {
@@ -42,34 +45,14 @@ let messagingMock: {
 
 global.fetch = jest.fn();
 
-// Mock Platform and PermissionsAndroid without requiring react-native to avoid memory issues
-Platform = {
-  OS: 'ios',
-  Version: 14,
-};
-
-PermissionsAndroid = {
-  request: jest.fn(),
-  PERMISSIONS: {
-    POST_NOTIFICATIONS: 'post',
-  },
-  RESULTS: {
-    GRANTED: 'granted',
-    DENIED: 'denied',
-    NEVER_ASK_AGAIN: 'never_ask_again',
-  },
-};
-
 describe('notificationService', () => {
   let service: any; // Using any here since we're dynamically requiring the module in tests
 
   beforeEach(() => {
-    jest.resetModules();
-    // Mock react-native module to provide Platform and PermissionsAndroid without loading the full library
-    jest.doMock('react-native', () => ({
-      Platform,
-      PermissionsAndroid,
-    }));
+    jest.clearAllMocks();
+    // Reset Platform to default iOS values
+    Platform.OS = 'ios';
+    Platform.Version = 14;
 
     messagingMock = require('@react-native-firebase/messaging').default
       ._instance;
