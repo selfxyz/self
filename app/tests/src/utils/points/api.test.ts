@@ -200,7 +200,7 @@ describe('Points API - Signature Logic', () => {
 
       expect(result.success).toBe(false);
       expect(result.status).toBe(500);
-      expect(result.error).toContain('Biometric auth failed');
+      expect(result.error).toContain('Failed to generate signature');
     });
 
     it('should handle missing points private key', async () => {
@@ -381,9 +381,6 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle error responses with custom error messages', async () => {
-      mockGetPointsAddress.mockResolvedValue(
-        '0x0000000000000000000000000000000000000001',
-      );
       mockAxios.post.mockResolvedValue({
         status: 400,
         data: { status: 'already_verified', message: 'Already verified' },
@@ -410,9 +407,6 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle error responses with generic message from response', async () => {
-      mockGetPointsAddress.mockResolvedValue(
-        '0x0000000000000000000000000000000000000001',
-      );
       mockAxios.post.mockResolvedValue({
         status: 400,
         data: { message: 'Invalid request data' },
@@ -431,9 +425,6 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle error responses with fallback message', async () => {
-      mockGetPointsAddress.mockResolvedValue(
-        '0x0000000000000000000000000000000000000001',
-      );
       mockAxios.post.mockResolvedValue({
         status: 500,
         data: {},
@@ -452,9 +443,6 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle network errors', async () => {
-      mockGetPointsAddress.mockResolvedValue(
-        '0x0000000000000000000000000000000000000001',
-      );
       mockAxios.post.mockRejectedValue(new Error('Network error'));
 
       const result = await makeApiRequest('/referrals/refer', {
@@ -468,9 +456,6 @@ describe('Points API - Signature Logic', () => {
     });
 
     it('should handle axios errors with response status', async () => {
-      mockGetPointsAddress.mockResolvedValue(
-        '0x0000000000000000000000000000000000000001',
-      );
       mockAxios.post.mockRejectedValue({
         message: 'Request failed',
         response: { status: 503 },
