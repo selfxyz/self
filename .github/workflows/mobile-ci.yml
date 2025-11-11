@@ -184,6 +184,9 @@ jobs:
             echo "✅ All required dependency files exist"
           fi
       - name: App Tests
+        env:
+          # Increase Node.js memory to prevent hermes-parser WASM memory errors
+          NODE_OPTIONS: --max-old-space-size=4096
         run: |
           # Final verification from app directory perspective
           echo "Final verification before running tests (from app directory)..."

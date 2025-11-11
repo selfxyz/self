@@ -21,7 +21,9 @@ describe('provingUtils', () => {
       forge.util.createBuffer(key),
     );
     decipher.start({
-      iv: forge.util.createBuffer(Buffer.from(encrypted.nonce)),
+      iv: forge.util.createBuffer(
+        Buffer.from(encrypted.nonce).toString('binary'),
+      ),
       tagLength: 128,
       tag: forge.util.createBuffer(Buffer.from(encrypted.auth_tag)),
     });
