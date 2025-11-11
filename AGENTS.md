@@ -180,21 +180,25 @@ These workspace-specific files override or extend the root instructions for thei
 ### Common Issues
 
 #### Yarn Install Fails
+
 - Ensure Node.js 22.x is installed: `nvm use`
 - Clear Yarn cache: `yarn cache clean`
 - Remove `node_modules` and reinstall: `rm -rf node_modules && yarn install`
 
 #### Build Failures
+
 - Run `yarn build:deps` in affected workspace first
 - Check workspace-specific `AGENTS.md` for platform requirements
 - For mobile app: ensure iOS/Android prerequisites are met (see `app/AGENTS.md`)
 
 #### Test Failures
+
 - Check workspace-specific test setup requirements
 - For mobile app tests: ensure native modules are properly mocked
 - See `.cursor/rules/test-memory-optimization.mdc` for test memory issues
 
 #### Type Errors
+
 - Run `yarn types` to see all type errors across workspaces
 - Some packages may need to be built first: `yarn build:deps`
 

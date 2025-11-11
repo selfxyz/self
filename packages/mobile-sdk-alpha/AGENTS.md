@@ -227,6 +227,7 @@ describe('Real SDK Integration', () => {
 ### Example Patterns
 
 #### ✅ CORRECT: Use ES6 imports
+
 ```ts
 // GOOD - Single import at top level
 import { Platform } from 'react-native';
@@ -239,6 +240,7 @@ describe('MyComponent', () => {
 ```
 
 #### ❌ FORBIDDEN: Nested requires
+
 ```ts
 // BAD - This will cause OOM issues
 describe('MyComponent', () => {
