@@ -28,3 +28,9 @@ export const IS_TEST_BUILD = process.env.IS_TEST_BUILD === 'true';
 export const MIXPANEL_NFC_PROJECT_TOKEN = undefined;
 export const SEGMENT_KEY = process.env.SEGMENT_KEY;
 export const SENTRY_DSN = process.env.SENTRY_DSN;
+
+export const TURNKEY_AUTH_PROXY_CONFIG_ID =
+  process.env.TURNKEY_AUTH_PROXY_CONFIG_ID;
+
+export const TURNKEY_GOOGLE_CLIENT_ID = process.env.TURNKEY_GOOGLE_CLIENT_ID;
+export const TURNKEY_ORGANIZATION_ID = process.env.TURNKEY_ORGANIZATION_ID;

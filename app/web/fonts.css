@@ -7,6 +7,14 @@
 }
 
 @font-face {
+  font-family: 'DINOT-Bold';
+  src: url('./fonts/DINOT-Bold.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'DINOT-Medium';
   src: url('./fonts/DINOT-Medium.otf') format('opentype');
   font-weight: normal;

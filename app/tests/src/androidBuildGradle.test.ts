@@ -31,7 +31,7 @@ describe('Android build.gradle Configuration', () => {
 
   it('sets the expected SDK version numbers', () => {
     expect(rootGradleContent).toMatch(/minSdkVersion\s*=\s*24/);
-    expect(rootGradleContent).toMatch(/targetSdkVersion\s*=\s*35/);
+    expect(rootGradleContent).toMatch(/targetSdkVersion\s*=\s*36/);
   });
 
   it('includes Firebase messaging dependency', () => {

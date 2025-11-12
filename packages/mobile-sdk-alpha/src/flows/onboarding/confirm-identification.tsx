@@ -39,6 +39,8 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
     await onConfirm(selfClient);
   }, [onBeforeConfirm, selfClient]);
 
+  // Calculate bottom padding to prevent button bleeding into system navigation
+  // ExpandableBottomLayout.BottomSection handles safe areas internally
   const paddingBottom = useSafeBottomPadding(20);
 
   return (

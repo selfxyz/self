@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
+import { useTurnkey } from '@turnkey/react-native-wallet-kit';
 
 import {
   AbstractButton,
@@ -18,6 +18,7 @@ import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { privacyUrl, termsUrl } from '@/consts/links';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useModal } from '@/hooks/useModal';
 import IDCardPlaceholder from '@/images/icons/id_card_placeholder.svg';
 import {
   black,
@@ -31,9 +32,33 @@ import { advercase, dinot } from '@/utils/fonts';
 
 const LaunchScreen: React.FC = () => {
   useConnectionModal();
+  const { handleGoogleOauth, fetchWallets } = useTurnkey();
   const onPress = useHapticNavigation('CountryPicker');
   const createMock = useHapticNavigation('CreateMock');
   const { bottom } = useSafeAreaInsets();
+
+  const { showModal: showNoWalletsModal } = useModal({
+    titleText: 'No wallets found',
+    bodyText: 'No wallets found. Please sign in with Turnkey to continue.',
+    buttonText: 'OK',
+    onButtonPress: () => {},
+    onModalDismiss: () => {},
+  });
+  const onImportWalletPress = async () => {
+    try {
+      await handleGoogleOauth();
+      const fetchedWallets = await fetchWallets();
+
+      if (fetchedWallets.length === 0) {
+        showNoWalletsModal();
+        return;
+      }
+
+      onPress();
+    } catch {
+      console.error('handleGoogleOauth error');
+    }
+  };
 
   const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
@@ -98,6 +123,13 @@ const LaunchScreen: React.FC = () => {
           Get Started
         </AbstractButton>
 
+        <Pressable onPress={onImportWalletPress}>
+          <Text style={styles.disclaimer}>
+            <Text style={styles.haveAnAccount}>{`Have an account? `}</Text>
+            <Text style={styles.restore}>restore</Text>
+          </Text>
+        </Pressable>
+
         <Caption style={styles.notice}>
           By continuing, you agree to the&nbsp;
           <Anchor style={styles.link} href={termsUrl}>
@@ -149,7 +181,21 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
-
+  disclaimer: {
+    width: '100%',
+    fontSize: 11,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    fontWeight: '500',
+    fontFamily: dinot,
+    textAlign: 'center',
+  },
+  haveAnAccount: {
+    color: '#6b7280',
+  },
+  restore: {
+    color: '#fff',
+  },
   notice: {
     fontFamily: dinot,
     marginVertical: 10,

@@ -84,6 +84,16 @@ jest.mock('react-native/Libraries/TurboModule/TurboModuleRegistry', () => ({
         }),
       };
     }
+    if (name === 'RNDeviceInfo') {
+      return {
+        getConstants: () => ({
+          Dimensions: {
+            window: { width: 375, height: 667, scale: 2 },
+            screen: { width: 375, height: 667, scale: 2 },
+          },
+        }),
+      };
+    }
     return {
       getConstants: () => ({}),
     };
@@ -131,6 +141,27 @@ jest.mock(
 
     return mockedRN;
   },
+  { virtual: true },
+);
+
+// Mock @turnkey/react-native-wallet-kit to prevent loading of problematic dependencies
+jest.mock(
+  '@turnkey/react-native-wallet-kit',
+  () => ({
+    AuthState: {
+      Authenticated: 'Authenticated',
+      Unauthenticated: 'Unauthenticated',
+    },
+    useTurnkey: jest.fn(() => ({
+      handleGoogleOauth: jest.fn(),
+      fetchWallets: jest.fn().mockResolvedValue([]),
+      exportWallet: jest.fn(),
+      importWallet: jest.fn(),
+      authState: 'Unauthenticated',
+      logout: jest.fn(),
+    })),
+    TurnkeyProvider: ({ children }) => children,
+  }),
   { virtual: true },
 );
 
@@ -239,46 +270,124 @@ jest.mock('react-native/src/private/specs/modules/NativeDeviceInfo', () => ({
   })),
 }));
 
+// Mock NativeStatusBarManagerIOS for react-native-edge-to-edge SystemBars
+jest.mock(
+  'react-native/src/private/specs/modules/NativeStatusBarManagerIOS',
+  () => ({
+    setStyle: jest.fn(),
+    setHidden: jest.fn(),
+    setNetworkActivityIndicatorVisible: jest.fn(),
+  }),
+);
+
 // Mock react-native-gesture-handler to prevent getConstants errors
 jest.mock('react-native-gesture-handler', () => {
-  const RN = jest.requireActual('react-native');
+  const React = require('react');
+
+  // Mock the components directly without requiring react-native
+  // to avoid triggering hermes-parser WASM errors
+  const MockScrollView = props =>
+    React.createElement('ScrollView', props, props.children);
+  const MockTouchableOpacity = props =>
+    React.createElement('TouchableOpacity', props, props.children);
+  const MockTouchableHighlight = props =>
+    React.createElement('TouchableHighlight', props, props.children);
+  const MockFlatList = props => React.createElement('FlatList', props);
+
   return {
     ...jest.requireActual('react-native-gesture-handler/jestSetup'),
     GestureHandlerRootView: ({ children }) => children,
-    ScrollView: RN.ScrollView,
-    TouchableOpacity: RN.TouchableOpacity,
-    TouchableHighlight: RN.TouchableHighlight,
-    FlatList: RN.FlatList,
+    ScrollView: MockScrollView,
+    TouchableOpacity: MockTouchableOpacity,
+    TouchableHighlight: MockTouchableHighlight,
+    FlatList: MockFlatList,
   };
 });
 
 // Mock react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');
-  const { View } = require('react-native');
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
   return {
     __esModule: true,
     SafeAreaProvider: ({ children }) =>
-      React.createElement(View, null, children),
-    SafeAreaView: ({ children }) => React.createElement(View, null, children),
+      React.createElement('View', null, children),
+    SafeAreaView: ({ children }) => React.createElement('View', null, children),
     useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
   };
 });
 
 // Mock NativeEventEmitter to prevent null argument errors
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter', () => {
-  return class MockNativeEventEmitter {
-    constructor(nativeModule) {
-      // Accept any nativeModule argument (including null/undefined)
-      this.nativeModule = nativeModule;
-    }
+  function MockNativeEventEmitter(nativeModule) {
+    // Accept any nativeModule argument (including null/undefined)
+    this.nativeModule = nativeModule;
+    this.addListener = jest.fn();
+    this.removeListener = jest.fn();
+    this.removeAllListeners = jest.fn();
+    this.emit = jest.fn();
+  }
 
-    addListener = jest.fn();
-    removeListener = jest.fn();
-    removeAllListeners = jest.fn();
-    emit = jest.fn();
-  };
+  // The mock needs to be the constructor itself, not wrapped
+  MockNativeEventEmitter.default = MockNativeEventEmitter;
+  return MockNativeEventEmitter;
 });
+
+// Mock react-native-device-info to prevent NativeEventEmitter errors
+jest.mock('react-native-device-info', () => ({
+  getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+  getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+  getVersion: jest.fn().mockReturnValue('1.0.0'),
+  getBuildNumber: jest.fn().mockReturnValue('1'),
+  getModel: jest.fn().mockReturnValue('mock-model'),
+  getBrand: jest.fn().mockReturnValue('mock-brand'),
+  isTablet: jest.fn().mockReturnValue(false),
+  isLandscape: jest.fn().mockResolvedValue(false),
+  getSystemVersion: jest.fn().mockReturnValue('14.0'),
+  getSystemName: jest.fn().mockReturnValue('iOS'),
+  default: {
+    getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+    getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+    getVersion: jest.fn().mockReturnValue('1.0.0'),
+    getBuildNumber: jest.fn().mockReturnValue('1'),
+    getModel: jest.fn().mockReturnValue('mock-model'),
+    getBrand: jest.fn().mockReturnValue('mock-brand'),
+    isTablet: jest.fn().mockReturnValue(false),
+    isLandscape: jest.fn().mockResolvedValue(false),
+    getSystemVersion: jest.fn().mockReturnValue('14.0'),
+    getSystemName: jest.fn().mockReturnValue('iOS'),
+  },
+}));
+
+// Mock react-native-device-info nested in @turnkey/react-native-wallet-kit
+jest.mock(
+  'node_modules/@turnkey/react-native-wallet-kit/node_modules/react-native-device-info',
+  () => ({
+    getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+    getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+    getVersion: jest.fn().mockReturnValue('1.0.0'),
+    getBuildNumber: jest.fn().mockReturnValue('1'),
+    getModel: jest.fn().mockReturnValue('mock-model'),
+    getBrand: jest.fn().mockReturnValue('mock-brand'),
+    isTablet: jest.fn().mockReturnValue(false),
+    isLandscape: jest.fn().mockResolvedValue(false),
+    getSystemVersion: jest.fn().mockReturnValue('14.0'),
+    getSystemName: jest.fn().mockReturnValue('iOS'),
+    default: {
+      getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+      getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+      getVersion: jest.fn().mockReturnValue('1.0.0'),
+      getBuildNumber: jest.fn().mockReturnValue('1'),
+      getModel: jest.fn().mockReturnValue('mock-model'),
+      getBrand: jest.fn().mockReturnValue('mock-brand'),
+      isTablet: jest.fn().mockReturnValue(false),
+      isLandscape: jest.fn().mockResolvedValue(false),
+      getSystemVersion: jest.fn().mockReturnValue('14.0'),
+      getSystemName: jest.fn().mockReturnValue('iOS'),
+    },
+  }),
+  { virtual: true },
+);
 
 // Mock problematic mobile-sdk-alpha components that use React Native StyleSheet
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
@@ -382,6 +491,21 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
     PROVING_FAILED: 'PROVING_FAILED',
     // Add other events as needed
   },
+  // Mock haptic functions
+  buttonTap: jest.fn(),
+  cancelTap: jest.fn(),
+  confirmTap: jest.fn(),
+  feedbackProgress: jest.fn(),
+  feedbackSuccess: jest.fn(),
+  feedbackUnsuccessful: jest.fn(),
+  impactLight: jest.fn(),
+  impactMedium: jest.fn(),
+  loadingScreenProgress: jest.fn(),
+  notificationError: jest.fn(),
+  notificationSuccess: jest.fn(),
+  notificationWarning: jest.fn(),
+  selectionChange: jest.fn(),
+  triggerFeedback: jest.fn(),
   // Add other components and hooks as needed
 }));
 
@@ -627,15 +751,20 @@ jest.mock('react-native-passport-reader', () => {
   };
 });
 
-const { NativeModules } = require('react-native');
-
-NativeModules.PassportReader = {
-  configure: jest.fn(),
-  scanPassport: jest.fn(),
-  trackEvent: jest.fn(),
-  flush: jest.fn(),
-  reset: jest.fn(),
+// Mock NativeModules without requiring react-native to avoid memory issues
+// Create a minimal NativeModules mock for PassportReader
+const NativeModules = {
+  PassportReader: {
+    configure: jest.fn(),
+    scanPassport: jest.fn(),
+    trackEvent: jest.fn(),
+    flush: jest.fn(),
+    reset: jest.fn(),
+  },
 };
+
+// Make it available globally for any code that expects it
+global.NativeModules = NativeModules;
 
 // Mock @/utils/passportReader to properly expose the interface expected by tests
 jest.mock('./src/utils/passportReader', () => {
@@ -871,9 +1000,9 @@ jest.mock('@react-navigation/core', () => {
 // Mock react-native-webview globally to avoid ESM parsing and native behaviors
 jest.mock('react-native-webview', () => {
   const React = require('react');
-  const { View } = require('react-native');
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
   const MockWebView = React.forwardRef((props, ref) => {
-    return React.createElement(View, { ref, testID: 'webview', ...props });
+    return React.createElement('View', { ref, testID: 'webview', ...props });
   });
   MockWebView.displayName = 'MockWebView';
   return {
@@ -886,14 +1015,14 @@ jest.mock('react-native-webview', () => {
 // Mock ExpandableBottomLayout to simple containers to avoid SDK internals in tests
 jest.mock('@/layouts/ExpandableBottomLayout', () => {
   const React = require('react');
-  const { View } = require('react-native');
-  const Layout = ({ children }) => React.createElement(View, null, children);
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
+  const Layout = ({ children }) => React.createElement('View', null, children);
   const TopSection = ({ children }) =>
-    React.createElement(View, null, children);
+    React.createElement('View', null, children);
   const BottomSection = ({ children }) =>
-    React.createElement(View, null, children);
+    React.createElement('View', null, children);
   const FullSection = ({ children }) =>
-    React.createElement(View, null, children);
+    React.createElement('View', null, children);
   return {
     __esModule: true,
     ExpandableBottomLayout: { Layout, TopSection, BottomSection, FullSection },
@@ -903,18 +1032,20 @@ jest.mock('@/layouts/ExpandableBottomLayout', () => {
 // Mock mobile-sdk-alpha components used by NavBar (Button, XStack)
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
   const React = require('react');
-  const { View, Text, TouchableOpacity } = require('react-native');
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
   const Button = ({ children, onPress, icon, ...props }) =>
     React.createElement(
-      TouchableOpacity,
+      'TouchableOpacity',
       { onPress, ...props, testID: 'msdk-button' },
       icon
-        ? React.createElement(View, { testID: 'msdk-button-icon' }, icon)
+        ? React.createElement('View', { testID: 'msdk-button-icon' }, icon)
         : null,
       children,
     );
   const XStack = ({ children, ...props }) =>
-    React.createElement(View, { ...props, testID: 'msdk-xstack' }, children);
+    React.createElement('View', { ...props, testID: 'msdk-xstack' }, children);
+  const Text = ({ children, ...props }) =>
+    React.createElement('Text', { ...props }, children);
   return {
     __esModule: true,
     Button,
@@ -927,10 +1058,10 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
 // Mock Tamagui lucide icons to simple components to avoid theme context
 jest.mock('@tamagui/lucide-icons', () => {
   const React = require('react');
-  const { View } = require('react-native');
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
   const makeIcon = name => {
     const Icon = ({ size, color, opacity }) =>
-      React.createElement(View, {
+      React.createElement('View', {
         testID: `icon-${name}`,
         size,
         color,
@@ -949,8 +1080,8 @@ jest.mock('@tamagui/lucide-icons', () => {
 // Mock WebViewFooter to avoid SDK rendering complexity
 jest.mock('@/components/WebViewFooter', () => {
   const React = require('react');
-  const { View } = require('react-native');
+  // Use React.createElement directly instead of requiring react-native to avoid memory issues
   const WebViewFooter = () =>
-    React.createElement(View, { testID: 'webview-footer' });
+    React.createElement('View', { testID: 'webview-footer' });
   return { __esModule: true, WebViewFooter };
 });

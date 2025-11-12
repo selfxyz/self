@@ -235,8 +235,8 @@ const ProveScreen: React.FC = () => {
                 <Image
                   marginBottom={20}
                   source={logoSource}
-                  width={100}
-                  height={100}
+                  width={64}
+                  height={64}
                   objectFit="contain"
                 />
               )}
@@ -249,7 +249,7 @@ const ProveScreen: React.FC = () => {
                 style={{ fontSize: 24, color: slate300, textAlign: 'center' }}
               >
                 <Text color={white}>{selectedApp.appName}</Text> is requesting
-                that you prove the following information:
+                you to prove the following information:
               </BodyText>
             </YStack>
           )}

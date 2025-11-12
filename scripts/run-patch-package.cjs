@@ -113,6 +113,21 @@ try {
       console.log('patch-package: patches applied successfully (CI mode)');
     }
   }
+  
+  // Also patch app/node_modules if it exists
+  const appPath = path.join(repositoryRootPath, 'app');
+  const appNodeModules = path.join(appPath, 'node_modules');
+  if (fs.existsSync(appNodeModules)) {
+    const appPatchRun = spawnSync('patch-package', ['--patch-dir', '../patches'], {
+      cwd: appPath,
+      shell: true,
+      stdio: isCI ? 'pipe' : 'inherit',
+      timeout: 30000
+    });
+    if (appPatchRun.status === 0 && !isCI) {
+      console.log('✓ Patches applied to app workspace');
+    }
+  }
 } catch (error) {
   if (isCI) {
     console.log('patch-package: error during execution (CI mode):', error.message);

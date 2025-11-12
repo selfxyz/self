@@ -69,6 +69,12 @@
       "import": "./dist/esm/hooks/index.js",
       "require": "./dist/cjs/hooks/index.cjs"
     },
+    "./hooks/useSafeBottomPadding": {
+      "types": "./dist/esm/hooks/useSafeBottomPadding.d.ts",
+      "react-native": "./dist/esm/hooks/useSafeBottomPadding.js",
+      "import": "./dist/esm/hooks/useSafeBottomPadding.js",
+      "require": "./dist/cjs/hooks/useSafeBottomPadding.cjs"
+    },
     "./svgs/*.svg": {
       "react-native": "./dist/svgs/*.svg",
       "import": "./dist/svgs/*.svg",

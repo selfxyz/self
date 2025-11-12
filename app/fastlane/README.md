@@ -21,7 +21,7 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 [bundle exec] fastlane ios sync_version
 ```
 
-Sync ios version
+Sync ios version (DEPRECATED)
 
 ### ios internal_test
 
@@ -50,7 +50,7 @@ Deploy iOS app with automatic version management
 [bundle exec] fastlane android sync_version
 ```
 
-Sync android version
+Sync android version (DEPRECATED)
 
 ### android internal_test
 

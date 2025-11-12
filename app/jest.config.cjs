@@ -49,6 +49,9 @@ module.exports = {
     '^@anon-aadhaar/core$':
       '<rootDir>/../common/node_modules/@anon-aadhaar/core/dist/index.js',
   },
+  transform: {
+    '\\.[jt]sx?$': 'babel-jest',
+  },
   globals: {
     'ts-jest': {
       tsconfig: 'tsconfig.test.json',
