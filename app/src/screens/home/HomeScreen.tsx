@@ -5,6 +5,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, Pressable } from 'react-native';
 import { Button, ScrollView, Text, View, XStack, YStack } from 'tamagui';
+import { HelpCircle } from '@tamagui/lucide-icons';
 import {
   useFocusEffect,
   useIsFocused,
@@ -35,7 +36,7 @@ import UnverifiedHumanImage from '@/images/unverified_human.png';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
-import { black, slate50, slate300 } from '@/utils/colors';
+import { black, slate50, slate300, blue600 } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
 
 const HomeScreen: React.FC = () => {
@@ -136,6 +137,10 @@ const HomeScreen: React.FC = () => {
       onEarnPointsPressRef.current?.(false);
     },
   });
+
+  const onPointsInfoPress = useCallback(() => {
+    navigation.navigate('PointsInfo');
+  }, [navigation]);
 
   const { onEarnPointsPress } = useEarnPointsFlow({
     hasReferrer,
@@ -267,17 +272,22 @@ const HomeScreen: React.FC = () => {
             <LogoInversed width={33} height={33} />
           </View>
           <YStack gap={4}>
-            <Text
-              color={black}
-              fontFamily={dinot}
-              fontSize={20}
-              fontStyle="normal"
-              fontWeight="500"
-              lineHeight={22}
-              textTransform="uppercase"
-            >
-              {`${selfPoints} SELF POINTS`}
-            </Text>
+            <XStack gap={8} alignItems="center">
+              <Text
+                color={black}
+                fontFamily={dinot}
+                fontSize={20}
+                fontStyle="normal"
+                fontWeight="500"
+                lineHeight={22}
+                textTransform="uppercase"
+              >
+                {`${selfPoints} SELF POINTS`}
+              </Text>
+              <Pressable onPress={onPointsInfoPress}>
+                <HelpCircle size={24} color={blue600} />
+              </Pressable>
+            </XStack>
             <Text
               color={black}
               width="60%"
@@ -302,11 +312,12 @@ const HomeScreen: React.FC = () => {
           testID="earn-points-button"
           onPress={() => {
             selfClient.trackEvent(PointEvents.HOME_POINT_EARN_POINTS_OPENED);
+
             onEarnPointsPress(true);
           }}
         >
           <Text
-            color="#2563EB"
+            color={blue600}
             textAlign="center"
             fontFamily={dinot}
             fontSize={18}

@@ -78,6 +78,7 @@ export type RootStackParamList = Omit<
   | 'Modal'
   | 'MockDataDeepLink'
   | 'Points'
+  | 'PointsInfo'
   | 'ProofHistoryDetail'
   | 'Prove'
   | 'SaveRecoveryPhrase'
@@ -162,6 +163,7 @@ export type RootStackParamList = Omit<
     testReferralFlow?: boolean;
   };
   Points: undefined;
+  PointsInfo: undefined;
   IdDetails: undefined;
 
   // Onboarding screens

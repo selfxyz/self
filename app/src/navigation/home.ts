@@ -9,8 +9,10 @@ import PointsScreen from '@/components/NavBar/Points';
 import { PointsNavBar } from '@/components/NavBar/PointsNavBar';
 import ReferralScreen from '@/screens/app/ReferralScreen';
 import HomeScreen from '@/screens/home/HomeScreen';
+import PointsInfoScreen from '@/screens/home/PointsInfoScreen';
 import ProofHistoryDetailScreen from '@/screens/home/ProofHistoryDetailScreen';
 import ProofHistoryScreen from '@/screens/home/ProofHistoryScreen';
+import { black, white } from '@/utils/colors';
 
 const homeScreens = {
   Home: {
@@ -47,6 +49,13 @@ const homeScreens = {
     options: {
       title: 'Approval',
     },
+  },
+  PointsInfo: {
+    screen: PointsInfoScreen,
+    options: {
+      headerShown: true,
+      title: 'About Self Points',
+    } as NativeStackNavigationOptions,
   },
 };
 
