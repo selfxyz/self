@@ -230,7 +230,9 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
               onPress={onRestoreFromCloudPress}
               testID="button-from-teststorage"
               disabled={
-                restoringFromTurnkey || restoringFromCloud || !biometricsAvailable
+                restoringFromTurnkey ||
+                restoringFromCloud ||
+                !biometricsAvailable
               }
             >
               {restoringFromCloud ? 'Restoring' : 'Restore'} from {STORAGE_NAME}
