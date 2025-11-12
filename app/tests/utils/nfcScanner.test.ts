@@ -8,8 +8,16 @@ import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { PassportReader } from '@/utils/passportReader';
 
 // Mock Platform without requiring react-native to avoid memory issues
+// Use a closure to store the OS value, preventing test pollution
+let platformOS = 'ios'; // Default to iOS
+
 const Platform = {
-  OS: 'ios', // Default to iOS
+  get OS() {
+    return platformOS;
+  },
+  set OS(value: string) {
+    platformOS = value;
+  },
   Version: 14,
 };
 
@@ -20,6 +28,8 @@ jest.mock('react-native', () => ({
 describe('parseScanResponse', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset Platform.OS to default before each test to prevent pollution
+    Platform.OS = 'ios';
   });
 
   it('parses iOS response', () => {
@@ -140,6 +150,8 @@ describe('scan', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset Platform.OS to default before each test to prevent pollution
+    Platform.OS = 'ios';
   });
 
   describe('iOS platform', () => {
