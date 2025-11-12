@@ -191,7 +191,7 @@ module.exports = {
     {
       // Disable export sorting for files with dependency issues
       files: [
-        'src/components/NavBar/BaseNavBar.tsx',
+        'src/components/navbar/BaseNavBar.tsx',
         'src/navigation/index.tsx',
         'src/providers/passportDataProvider.tsx',
         'src/services/cloud-backup/helpers.ts',
