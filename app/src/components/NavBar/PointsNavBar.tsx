@@ -31,7 +31,7 @@ export const PointsNavBar = (props: NativeStackHeaderProps) => {
         color={black}
         onPress={() => {
           buttonTap();
-          props.navigation.goBack();
+          props.navigation.navigate('Home');
         }}
       />
       <View flex={1} alignItems="center" justifyContent="center">

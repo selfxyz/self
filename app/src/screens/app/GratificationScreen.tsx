@@ -14,13 +14,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, YStack } from 'tamagui';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { X } from '@tamagui/lucide-icons';
 
 import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import youWinAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/youWin.json';
 import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 
 import GratificationBg from '@/images/gratification_bg.svg';
-import ArrowLeft from '@/images/icons/arrow_left.svg';
 import LogoWhite from '@/images/icons/logo_white.svg';
 import type { RootStackParamList } from '@/navigation';
 import { black, slate700, white } from '@/utils/colors';
@@ -46,7 +46,7 @@ const GratificationScreen: React.FC = () => {
   };
 
   const handleBackPress = () => {
-    navigation.goBack();
+    navigation.navigate('Points' as never);
   };
 
   const handleAnimationFinish = useCallback(() => {
@@ -129,7 +129,7 @@ const GratificationScreen: React.FC = () => {
             alignItems="center"
             justifyContent="center"
           >
-            <ArrowLeft width={24} height={24} />
+            <X width={24} height={24} />
           </View>
         </Pressable>
       </View>
