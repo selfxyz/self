@@ -8,8 +8,6 @@ import { YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-// DISABLED FOR NOW: Turnkey functionality
-// import { Wallet } from '@tamagui/lucide-icons';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -27,7 +25,9 @@ import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, blue600, slate200, slate500, white } from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap, confirmTap } from '@/utils/haptic';
+
 // DISABLED FOR NOW: Turnkey functionality
+// import { Wallet } from '@tamagui/lucide-icons';
 // import { useTurnkeyUtils } from '@/utils/turnkey';
 
 type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
