@@ -20,7 +20,7 @@ import {
 import CogHollowIcon from '@/assets/icons/cog_hollow.svg';
 import PlusCircleIcon from '@/assets/icons/plus_circle.svg';
 import ScanIcon from '@/assets/icons/qr_scan.svg';
-import { NavBar } from '@/components/NavBar/BaseNavBar';
+import { NavBar } from '@/components/navbar/BaseNavBar';
 import { buttonTap } from '@/integrations/haptics';
 import { extraYPadding } from '@/utils/styleUtils';
 

@@ -6,7 +6,7 @@ import { YStack } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate100 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import SDKCountryPickerScreen from '@selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen';
 
-import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
+import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 
 export default function CountryPickerScreen() {
   return (

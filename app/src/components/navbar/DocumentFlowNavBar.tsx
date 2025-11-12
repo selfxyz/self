@@ -10,7 +10,7 @@ import { HelpCircle } from '@tamagui/lucide-icons';
 import { dinot } from '@selfxyz/mobile-sdk-alpha';
 import { slate100 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { NavBar } from '@/components/NavBar/BaseNavBar';
+import { NavBar } from '@/components/navbar/BaseNavBar';
 
 export const DocumentFlowNavBar = ({
   title,

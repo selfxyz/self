@@ -4,9 +4,9 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import { HomeNavBar } from '@/components/NavBar';
-import PointsScreen from '@/components/NavBar/Points';
-import { PointsNavBar } from '@/components/NavBar/PointsNavBar';
+import { HomeNavBar } from '@/components/navbar';
+import PointsScreen from '@/components/navbar/Points';
+import { PointsNavBar } from '@/components/navbar/PointsNavBar';
 import ReferralScreen from '@/screens/app/ReferralScreen';
 import HomeScreen from '@/screens/home/HomeScreen';
 import ProofHistoryDetailScreen from '@/screens/home/ProofHistoryDetailScreen';

@@ -11,7 +11,7 @@ import { YStack } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate100 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import IDSelection from '@selfxyz/mobile-sdk-alpha/onboarding/id-selection-screen';
 
-import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
+import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
 

@@ -9,7 +9,7 @@ import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 
 import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { NavBar } from '@/components/NavBar/BaseNavBar';
+import { NavBar } from '@/components/navbar/BaseNavBar';
 import { buttonTap } from '@/integrations/haptics';
 import { extraYPadding } from '@/utils/styleUtils';
 

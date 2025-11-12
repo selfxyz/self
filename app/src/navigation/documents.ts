@@ -6,7 +6,7 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { AadhaarNavBar, IdDetailsNavBar } from '@/components/NavBar';
+import { AadhaarNavBar, IdDetailsNavBar } from '@/components/navbar';
 import AadhaarUploadedSuccessScreen from '@/screens/documents/aadhaar/AadhaarUploadedSuccessScreen';
 import AadhaarUploadErrorScreen from '@/screens/documents/aadhaar/AadhaarUploadErrorScreen';
 import AadhaarUploadScreen from '@/screens/documents/aadhaar/AadhaarUploadScreen';

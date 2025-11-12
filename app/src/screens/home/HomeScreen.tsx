@@ -30,7 +30,7 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import LogoInversed from '@/assets/images/logo_inversed.svg';
 import UnverifiedHumanImage from '@/assets/images/unverified_human.png';
-import IdCardLayout from '@/components/homeScreen/idCard';
+import IdCardLayout from '@/components/homescreen/IdCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';

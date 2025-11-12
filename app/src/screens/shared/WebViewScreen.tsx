@@ -21,7 +21,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { WebViewNavBar } from '@/components/NavBar/WebViewNavBar';
+import { WebViewNavBar } from '@/components/navbar/WebViewNavBar';
 import { WebViewFooter } from '@/components/WebViewFooter';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';

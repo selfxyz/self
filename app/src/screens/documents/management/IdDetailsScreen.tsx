@@ -18,7 +18,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import IdCardLayout from '@/components/homeScreen/idCard';
+import IdCardLayout from '@/components/homescreen/IdCard';
 import { usePassport } from '@/providers/passportDataProvider';
 import { ProofHistoryList } from '@/screens/home/ProofHistoryList';
 import useUserStore from '@/stores/userStore';

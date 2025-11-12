@@ -16,7 +16,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import { DefaultNavBar } from '@/components/NavBar';
+import { DefaultNavBar } from '@/components/navbar';
 import AppLayout from '@/layouts/AppLayout';
 import accountScreens from '@/navigation/account';
 import appScreens from '@/navigation/app';
