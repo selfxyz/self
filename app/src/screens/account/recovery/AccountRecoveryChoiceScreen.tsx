@@ -46,8 +46,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   const { turnkeyWallets, refreshWallets } = useTurnkeyUtils();
   const { getMnemonic } = useTurnkeyUtils();
   const { authState } = useTurnkey();
-  const [restoringFromTurnkey, setRestoringFromTurnkey] = useState(false);
-  const [restoringFromCloud, setRestoringFromCloud] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
   const { download } = useBackupMnemonic();
@@ -68,7 +67,6 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
     async (
       mnemonic: Mnemonic,
       isCloudRestore: boolean = false,
-      setRestoringState?: (value: boolean) => void,
     ): Promise<boolean> => {
       try {
         const result = await restoreAccountFromMnemonic(mnemonic.phrase);
@@ -77,7 +75,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
           console.warn('Failed to restore account');
           trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
           navigation.navigate('Launch');
-          setRestoringState?.(false);
+          setRestoring(false);
           return false;
         }
 
@@ -108,7 +106,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
           );
           trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED);
           navigation.navigate('Launch');
-          setRestoringState?.(false);
+          setRestoring(false);
           return false;
         }
         if (isCloudRestore && !cloudBackupEnabled) {
@@ -119,12 +117,12 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS);
         trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
         onRestoreFromCloudNext();
-        setRestoringState?.(false);
+        setRestoring(false);
         return true;
       } catch (e: unknown) {
         console.error(e);
         trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
-        setRestoringState?.(false);
+        setRestoring(false);
         return false;
       }
     },
@@ -141,7 +139,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   );
 
   const onRestoreFromTurnkeyPress = useCallback(async () => {
-    setRestoringFromTurnkey(true);
+    setRestoring(true);
     try {
       const mnemonicPhrase = await getMnemonic();
       const mnemonic: Mnemonic = {
@@ -152,30 +150,27 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         },
         entropy: '',
       };
-      const success = await restoreAccountFlow(
-        mnemonic,
-        false,
-        setRestoringFromTurnkey,
-      );
+      const success = await restoreAccountFlow(mnemonic);
       if (success) {
         setTurnkeyBackupEnabled(true);
       }
     } catch (error) {
       console.error('Turnkey restore error:', error);
       trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
-      setRestoringFromTurnkey(false);
+    } finally {
+      setRestoring(false);
     }
   }, [getMnemonic, restoreAccountFlow, setTurnkeyBackupEnabled, trackEvent]);
 
   const onRestoreFromCloudPress = useCallback(async () => {
-    setRestoringFromCloud(true);
+    setRestoring(true);
     try {
       const mnemonic = await download();
-      await restoreAccountFlow(mnemonic, true, setRestoringFromCloud);
+      await restoreAccountFlow(mnemonic, true);
     } catch (error) {
       console.error('Cloud restore error:', error);
       trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
-      setRestoringFromCloud(false);
+      setRestoring(false);
     }
   }, [download, restoreAccountFlow, trackEvent]);
 
@@ -215,28 +210,23 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
               onPress={onRestoreFromTurnkeyPress}
               testID="button-from-turnkey"
               disabled={
-                restoringFromTurnkey ||
-                restoringFromCloud ||
+                restoring ||
                 !biometricsAvailable ||
                 (authState === AuthState.Authenticated &&
                   turnkeyWallets.length === 0)
               }
             >
-              {restoringFromTurnkey ? 'Restoring' : 'Restore'} from Turnkey
-              {restoringFromTurnkey ? '…' : ''}
+              {restoring ? 'Restoring' : 'Restore'} from Turnkey
+              {restoring ? '…' : ''}
             </PrimaryButton>
             <PrimaryButton
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromCloudPress}
               testID="button-from-teststorage"
-              disabled={
-                restoringFromTurnkey ||
-                restoringFromCloud ||
-                !biometricsAvailable
-              }
+              disabled={restoring || !biometricsAvailable}
             >
-              {restoringFromCloud ? 'Restoring' : 'Restore'} from {STORAGE_NAME}
-              {restoringFromCloud ? '…' : ''}
+              {restoring ? 'Restoring' : 'Restore'} from {STORAGE_NAME}
+              {restoring ? '…' : ''}
             </PrimaryButton>
             <XStack gap={64} alignItems="center" justifyContent="space-between">
               <Separator flexGrow={1} />
@@ -246,7 +236,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
             <SecondaryButton
               trackEvent={BackupEvents.MANUAL_RECOVERY_SELECTED}
               onPress={handleManualRecoveryPress}
-              disabled={restoringFromTurnkey || restoringFromCloud}
+              disabled={restoring}
             >
               <XStack alignItems="center" justifyContent="center">
                 <Keyboard height={25} width={40} color={slate500} />
