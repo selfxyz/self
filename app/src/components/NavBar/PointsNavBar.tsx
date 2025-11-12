@@ -7,11 +7,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 
 import { Text, View } from '@selfxyz/mobile-sdk-alpha/components';
+import { black, slate50 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
-import { black, slate50 } from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
-import { buttonTap } from '@/utils/haptic';
+import { buttonTap } from '@/integrations/haptics';
+import { extraYPadding } from '@/utils/styleUtils';
 
 export const PointsNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();

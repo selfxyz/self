@@ -6,8 +6,8 @@ import React from 'react';
 import { Pressable } from 'react-native';
 import { Text, View, YStack } from 'tamagui';
 
-import { slate800 } from '@/utils/colors';
-import { dinot } from '@/utils/fonts';
+import { dinot } from '@selfxyz/mobile-sdk-alpha';
+import { slate800 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 export interface ShareButtonProps {
   icon: React.ReactNode;

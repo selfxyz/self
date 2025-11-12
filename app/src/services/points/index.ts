@@ -7,8 +7,8 @@ export type {
   IncomingPoints,
   PointEvent,
   PointEventType,
-} from '@/utils/points/types';
-export { POINT_VALUES } from '@/utils/points/types';
+} from '@/services/points/types';
+export { POINT_VALUES } from '@/services/points/types';
 
 // Re-export all utility functions
 export {
@@ -21,7 +21,7 @@ export {
   hasUserAnIdentityDocumentRegistered,
   hasUserDoneThePointsDisclosure,
   pointsSelfApp,
-} from '@/utils/points/utils';
+} from '@/services/points/utils';
 
 // Re-export event getter functions
 export {
@@ -30,18 +30,18 @@ export {
   getDisclosurePointEvents,
   getPushNotificationPointEvents,
   getReferralPointEvents,
-} from '@/utils/points/getEvents';
+} from '@/services/points/getEvents';
 
 // Re-export event recording functions
 export {
   recordBackupPointEvent,
   recordNotificationPointEvent,
   recordReferralPointEvent,
-} from '@/utils/points/recordEvents';
+} from '@/services/points/recordEvents';
 
 // Re-export event registration functions
 export {
   registerBackupPoints,
   registerNotificationPoints,
   registerReferralPoints,
-} from '@/utils/points/registerEvents';
+} from '@/services/points/registerEvents';

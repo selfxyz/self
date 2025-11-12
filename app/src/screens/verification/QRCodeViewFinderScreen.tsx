@@ -27,7 +27,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import qrScanAnimation from '@/assets/animations/qr_scan.json';
-import QRScan from '@/assets/images/icons/qr_code.svg';
+import QRScan from '@/assets/icons/qr_code.svg';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
 import useConnectionModal from '@/hooks/useConnectionModal';

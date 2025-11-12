@@ -9,22 +9,8 @@ import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { dinot, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-
-import { PointHistoryList } from '@/components/PointHistoryList';
-import { useIncomingPoints, usePoints } from '@/hooks/usePoints';
-import { usePointsGuardrail } from '@/hooks/usePointsGuardrail';
-import BellWhiteIcon from '@/images/icons/bell_white.svg';
-import ClockIcon from '@/images/icons/clock.svg';
-import LockWhiteIcon from '@/images/icons/lock_white.svg';
-import StarBlackIcon from '@/images/icons/star_black.svg';
-import LogoInversed from '@/images/logo_inversed.svg';
-import MajongImage from '@/images/majong.png';
-import type { RootStackParamList } from '@/navigation';
-import { usePointEventStore } from '@/stores/pointEventStore';
-import { useSettingStore } from '@/stores/settingStore';
-import analytics from '@/utils/analytics';
 import {
   black,
   blue600,
@@ -32,20 +18,33 @@ import {
   slate200,
   slate500,
   white,
-} from '@/utils/colors';
-import { dinot } from '@/utils/fonts';
-import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import BellWhiteIcon from '@/assets/icons/bell_white.svg';
+import ClockIcon from '@/assets/icons/clock.svg';
+import LockWhiteIcon from '@/assets/icons/lock_white.svg';
+import StarBlackIcon from '@/assets/icons/star_black.svg';
+import LogoInversed from '@/assets/images/logo_inversed.svg';
+import MajongImage from '@/assets/images/majong.png';
+import { PointHistoryList } from '@/components/PointHistoryList';
+import { useIncomingPoints, usePoints } from '@/hooks/usePoints';
+import { usePointsGuardrail } from '@/hooks/usePointsGuardrail';
+import type { RootStackParamList } from '@/navigation';
+import analytics from '@/services/analytics';
 import {
   isTopicSubscribed,
   requestNotificationPermission,
   subscribeToTopics,
-} from '@/utils/notifications/notificationService';
+} from '@/services/notifications/notificationService';
 import {
   formatTimeUntilDate,
+  POINT_VALUES,
   recordBackupPointEvent,
   recordNotificationPointEvent,
-} from '@/utils/points';
-import { POINT_VALUES } from '@/utils/points/types';
+} from '@/services/points';
+import { usePointEventStore } from '@/stores/pointEventStore';
+import { useSettingStore } from '@/stores/settingStore';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 const Points: React.FC = () => {
   const selfClient = useSelfClient();

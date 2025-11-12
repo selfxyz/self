@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { POINTS_API_BASE_URL } from '@/utils/points/constants';
+import { POINTS_API_BASE_URL } from '@/services/points/constants';
 
 export type JobStatusResponse = {
   job_id: string;

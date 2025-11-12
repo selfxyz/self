@@ -29,7 +29,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import Paste from '@/assets/images/icons/paste.svg';
+import Paste from '@/assets/icons/paste.svg';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import {

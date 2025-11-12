@@ -28,9 +28,10 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import Keyboard from '@/assets/images/icons/keyboard.svg';
-import RestoreAccountSvg from '@/assets/images/icons/restore_account.svg';
+import Keyboard from '@/assets/icons/keyboard.svg';
+import RestoreAccountSvg from '@/assets/icons/restore_account.svg';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useTurnkeyUtils } from '@/integrations/turnkey';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
@@ -41,7 +42,6 @@ import {
 import { STORAGE_NAME, useBackupMnemonic } from '@/services/cloud-backup';
 import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
-import { useTurnkeyUtils } from '@/utils/turnkey';
 
 const AccountRecoveryChoiceScreen: React.FC = () => {
   const selfClient = useSelfClient();

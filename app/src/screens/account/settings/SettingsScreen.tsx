@@ -23,16 +23,16 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import Github from '@/assets/images/icons/github.svg';
-import Cloud from '@/assets/images/icons/settings_cloud_backup.svg';
-import Data from '@/assets/images/icons/settings_data.svg';
-import Feedback from '@/assets/images/icons/settings_feedback.svg';
-import Lock from '@/assets/images/icons/settings_lock.svg';
-import ShareIcon from '@/assets/images/icons/share.svg';
-import Star from '@/assets/images/icons/star.svg';
-import Telegram from '@/assets/images/icons/telegram.svg';
-import Web from '@/assets/images/icons/webpage.svg';
-import X from '@/assets/images/icons/x.svg';
+import Github from '@/assets/icons/github.svg';
+import Cloud from '@/assets/icons/settings_cloud_backup.svg';
+import Data from '@/assets/icons/settings_data.svg';
+import Feedback from '@/assets/icons/settings_feedback.svg';
+import Lock from '@/assets/icons/settings_lock.svg';
+import ShareIcon from '@/assets/icons/share.svg';
+import Star from '@/assets/icons/star.svg';
+import Telegram from '@/assets/icons/telegram.svg';
+import Web from '@/assets/icons/webpage.svg';
+import X from '@/assets/icons/x.svg';
 import {
   appStoreUrl,
   gitHubUrl,

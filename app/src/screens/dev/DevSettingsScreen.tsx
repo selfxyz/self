@@ -32,9 +32,9 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
-import BugIcon from '@/assets/images/icons/bug_icon.svg';
-import IdIcon from '@/assets/images/icons/id_icon.svg';
-import WarningIcon from '@/assets/images/icons/warning.svg';
+import BugIcon from '@/assets/icons/bug_icon.svg';
+import IdIcon from '@/assets/icons/id_icon.svg';
+import WarningIcon from '@/assets/icons/warning.svg';
 import type { RootStackParamList } from '@/navigation';
 import { unsafe_clearSecrets } from '@/providers/authProvider';
 import { usePassport } from '@/providers/passportDataProvider';

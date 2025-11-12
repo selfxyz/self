@@ -17,9 +17,9 @@ import {
   slate50,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import CogHollowIcon from '@/assets/images/icons/cog_hollow.svg';
-import PlusCircleIcon from '@/assets/images/icons/plus_circle.svg';
-import ScanIcon from '@/assets/images/icons/qr_scan.svg';
+import CogHollowIcon from '@/assets/icons/cog_hollow.svg';
+import PlusCircleIcon from '@/assets/icons/plus_circle.svg';
+import ScanIcon from '@/assets/icons/qr_scan.svg';
 import { NavBar } from '@/components/NavBar/BaseNavBar';
 import { buttonTap } from '@/integrations/haptics';
 import { extraYPadding } from '@/utils/styleUtils';

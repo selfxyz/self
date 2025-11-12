@@ -8,8 +8,8 @@ import { Buffer } from 'buffer';
 import { ethers } from 'ethers';
 
 import { unsafe_getPointsPrivateKey } from '@/providers/authProvider';
-import { POINTS_API_BASE_URL } from '@/utils/points/constants';
-import { getPointsAddress } from '@/utils/points/utils';
+import { POINTS_API_BASE_URL } from '@/services/points/constants';
+import { getPointsAddress } from '@/services/points/utils';
 
 export type ApiResponse<T = unknown> = {
   success: boolean;

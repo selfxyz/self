@@ -5,7 +5,7 @@
 import { ethers } from 'ethers';
 import { useCallback, useState } from 'react';
 
-import { recordReferralPointEvent } from '@/utils/points';
+import { recordReferralPointEvent } from '@/services/points';
 
 export const useRegisterReferral = () => {
   const [isLoading, setIsLoading] = useState(false);

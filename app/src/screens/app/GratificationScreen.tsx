@@ -15,16 +15,19 @@ import { Text, View, YStack } from 'tamagui';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView, dinot, dinotBold } from '@selfxyz/mobile-sdk-alpha';
 import youWinAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/youWin.json';
 import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  black,
+  slate700,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import GratificationBg from '@/images/gratification_bg.svg';
-import ArrowLeft from '@/images/icons/arrow_left.svg';
-import LogoWhite from '@/images/icons/logo_white.svg';
+import ArrowLeft from '@/assets/icons/arrow_left.svg';
+import LogoWhite from '@/assets/icons/logo_white.svg';
+import GratificationBg from '@/assets/images/gratification_bg.svg';
 import type { RootStackParamList } from '@/navigation';
-import { black, slate700, white } from '@/utils/colors';
-import { dinot, dinotBold } from '@/utils/fonts';
 
 const GratificationScreen: React.FC = () => {
   const { top, bottom } = useSafeAreaInsets();

@@ -10,14 +10,14 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { useRegisterReferral } from '@/hooks/useRegisterReferral';
 import type { RootStackParamList } from '@/navigation';
-import useUserStore from '@/stores/userStore';
-import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import {
   hasUserAnIdentityDocumentRegistered,
   hasUserDoneThePointsDisclosure,
   POINT_VALUES,
   pointsSelfApp,
-} from '@/utils/points';
+} from '@/services/points';
+import useUserStore from '@/stores/userStore';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 type UseEarnPointsFlowParams = {
   hasReferrer: boolean;

@@ -15,7 +15,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import ModalClose from '@/assets/images/icons/modal_close.svg';
+import ModalClose from '@/assets/icons/modal_close.svg';
 import LogoInversed from '@/assets/images/logo_inversed.svg';
 import { confirmTap, impactLight } from '@/integrations/haptics';
 import {

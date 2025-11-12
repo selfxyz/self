@@ -6,6 +6,9 @@ import React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { captureException } from '@/config/sentry';
+
 jest.mock('@/services/analytics', () => ({
   trackNfcEvent: jest.fn(),
   flushAllAnalytics: jest.fn(),
@@ -14,9 +17,6 @@ jest.mock('@/services/analytics', () => ({
 jest.mock('@/config/sentry', () => ({
   captureException: jest.fn(),
 }));
-
-import ErrorBoundary from '@/components/ErrorBoundary';
-import { captureException } from '@/config/sentry';
 const ProblemChild = () => {
   throw new Error('boom');
 };

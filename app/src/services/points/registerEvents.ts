@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { makeApiRequest } from '@/utils/points/api';
+import { makeApiRequest } from '@/services/points/api';
 
 type VerifyActionResponse = {
   job_id: string;

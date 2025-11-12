@@ -16,18 +16,25 @@ import {
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  black,
+  blue600,
+  slate200,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha';
 
-import Cloud from '@/assets/images/icons/logo_cloud_backup.svg';
+import Cloud from '@/assets/icons/logo_cloud_backup.svg';
 import BackupDocumentationLink from '@/components/BackupDocumentationLink';
 import { useModal } from '@/hooks/useModal';
 import { buttonTap, confirmTap } from '@/integrations/haptics';
+import { useTurnkeyUtils } from '@/integrations/turnkey';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import { STORAGE_NAME, useBackupMnemonic } from '@/services/cloud-backup';
 import { useSettingStore } from '@/stores/settingStore';
-import { useTurnkeyUtils } from '@/utils/turnkey';
 
 type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
 

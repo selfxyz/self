@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { usePointEventStore } from '@/stores/pointEventStore';
-import { isSuccessfulStatus } from '@/utils/points/api';
-import { pollEventProcessingStatus } from '@/utils/points/eventPolling';
+import { isSuccessfulStatus } from '@/services/points/api';
+import { pollEventProcessingStatus } from '@/services/points/eventPolling';
 import {
   registerBackupPoints,
   registerNotificationPoints,
   registerReferralPoints,
-} from '@/utils/points/registerEvents';
-import type { PointEventType } from '@/utils/points/types';
-import { POINT_VALUES } from '@/utils/points/types';
-import { getPointsAddress } from '@/utils/points/utils';
+} from '@/services/points/registerEvents';
+import type { PointEventType } from '@/services/points/types';
+import { POINT_VALUES } from '@/services/points/types';
+import { getPointsAddress } from '@/services/points/utils';
+import { usePointEventStore } from '@/stores/pointEventStore';
 
 /**
  * Shared helper to add an event to the store and start polling for processing.
