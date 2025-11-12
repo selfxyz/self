@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { PermissionsAndroid, Platform } from 'react-native';
-
 jest.unmock('@/services/notifications/notificationService');
 
 // Mock Platform and PermissionsAndroid without requiring react-native to avoid memory issues

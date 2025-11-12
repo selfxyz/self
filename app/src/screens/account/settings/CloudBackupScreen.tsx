@@ -25,11 +25,9 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import Cloud from '@/assets/icons/logo_cloud_backup.svg';
-import BackupDocumentationLink from '@/components/BackupDocumentationLink';
 import { useModal } from '@/hooks/useModal';
 import { buttonTap, confirmTap } from '@/integrations/haptics';
 import { useTurnkeyUtils } from '@/integrations/turnkey';
-import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import { STORAGE_NAME, useBackupMnemonic } from '@/services/cloud-backup';

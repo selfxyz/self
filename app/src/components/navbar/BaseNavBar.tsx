@@ -123,6 +123,13 @@ const Container: React.FC<NavBarProps> = ({
   );
 };
 
+export const NavBar = {
+  Container,
+  Title: NavBarTitle,
+  LeftAction,
+  RightAction,
+};
+
 export const RightAction: React.FC<RightActionProps> = ({
   component,
   onPress,
@@ -137,11 +144,4 @@ export const RightAction: React.FC<RightActionProps> = ({
       {component}
     </View>
   );
-};
-
-export const NavBar = {
-  Container,
-  Title: NavBarTitle,
-  LeftAction,
-  RightAction,
 };

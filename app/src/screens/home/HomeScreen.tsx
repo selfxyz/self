@@ -40,7 +40,6 @@ import { useTestReferralFlow } from '@/hooks/useTestReferralFlow';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
-import { extraYPadding } from '@/utils/styleUtils';
 
 const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
