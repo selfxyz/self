@@ -496,7 +496,7 @@ jobs:
           # Use Release configuration for faster builds (still fully testable for E2E)
           # Use the simulator that was set up earlier in the workflow
           FORCE_BUNDLING=1 RCT_NO_LAUNCH_PACKAGER=1 \
-            xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule || { echo "❌ iOS build failed"; exit 1; }
+            xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule SWIFT_OPTIMIZATION_LEVEL=-Onone || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
