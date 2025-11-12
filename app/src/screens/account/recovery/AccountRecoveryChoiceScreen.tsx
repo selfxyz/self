@@ -6,8 +6,6 @@ import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-// DISABLED FOR NOW: Turnkey functionality
-// import { AuthState, useTurnkey } from '@turnkey/react-native-wallet-kit';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import {
@@ -37,7 +35,9 @@ import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
 import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, slate500, slate600, white } from '@/utils/colors';
+
 // DISABLED FOR NOW: Turnkey functionality
+// import { AuthState, useTurnkey } from '@turnkey/react-native-wallet-kit';
 // import { useTurnkeyUtils } from '@/utils/turnkey';
 
 const AccountRecoveryChoiceScreen: React.FC = () => {
