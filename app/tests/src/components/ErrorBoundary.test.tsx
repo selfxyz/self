@@ -8,6 +8,7 @@ import { render } from '@testing-library/react-native';
 
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { captureException } from '@/config/sentry';
+import { flushAllAnalytics, trackNfcEvent } from '@/services/analytics';
 
 jest.mock('@/services/analytics', () => ({
   trackNfcEvent: jest.fn(),

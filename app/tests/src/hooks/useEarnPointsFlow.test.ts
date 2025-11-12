@@ -9,14 +9,14 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
 import { useRegisterReferral } from '@/hooks/useRegisterReferral';
-import useUserStore from '@/stores/userStore';
-import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 import {
   hasUserAnIdentityDocumentRegistered,
   hasUserDoneThePointsDisclosure,
   POINT_VALUES,
   pointsSelfApp,
-} from '@/utils/points';
+} from '@/services/points';
+import useUserStore from '@/stores/userStore';
+import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
@@ -30,7 +30,7 @@ jest.mock('@/hooks/useRegisterReferral', () => ({
   useRegisterReferral: jest.fn(),
 }));
 
-jest.mock('@/utils/points', () => ({
+jest.mock('@/services/points', () => ({
   hasUserAnIdentityDocumentRegistered: jest.fn(),
   hasUserDoneThePointsDisclosure: jest.fn(),
   pointsSelfApp: jest.fn(),

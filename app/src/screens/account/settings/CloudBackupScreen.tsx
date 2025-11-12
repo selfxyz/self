@@ -10,7 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Wallet } from '@tamagui/lucide-icons';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { advercase, dinot, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   PrimaryButton,
   SecondaryButton,
@@ -23,7 +23,6 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha';
 
 import Cloud from '@/assets/icons/logo_cloud_backup.svg';
 import BackupDocumentationLink from '@/components/BackupDocumentationLink';
