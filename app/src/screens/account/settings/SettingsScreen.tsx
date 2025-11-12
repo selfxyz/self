@@ -40,10 +40,10 @@ import {
   selfUrl,
   telegramUrl,
   xUrl,
-} from '@/consts';
+} from '@/consts/links';
 import { impactLight } from '@/integrations/haptics';
 import { useSettingStore } from '@/stores/settingStore';
-import { extraYPadding } from '@/utils';
+import { extraYPadding } from '@/utils/styleUtils';
 
 import { version } from '../../../../package.json';
 // Avoid importing RootStackParamList to prevent type cycles; use minimal typing

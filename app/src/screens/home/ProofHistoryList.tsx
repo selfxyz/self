@@ -14,7 +14,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
 
-import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
@@ -28,6 +27,7 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import type { RootStackParamList } from '@/navigation';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';

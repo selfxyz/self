@@ -17,7 +17,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
 
-import { dinot } from '@selfxyz/mobile-sdk-alpha';
 import {
   red500,
   slate100,
@@ -30,6 +29,7 @@ import {
   white,
   yellow500,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import BugIcon from '@/assets/icons/bug_icon.svg';
@@ -46,7 +46,7 @@ import {
 } from '@/services/notifications/notificationService';
 import { usePointEventStore } from '@/stores/pointEventStore';
 import { useSettingStore } from '@/stores/settingStore';
-import { IS_DEV_MODE } from '@/utils';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 
 interface TopicToggleButtonProps {
   label: string;

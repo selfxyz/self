@@ -15,7 +15,7 @@ import { Text, View, YStack } from 'tamagui';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DelayedLottieView, dinot, dinotBold } from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import youWinAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/youWin.json';
 import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import {
@@ -23,6 +23,7 @@ import {
   slate700,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot, dinotBold } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import ArrowLeft from '@/assets/icons/arrow_left.svg';
 import LogoWhite from '@/assets/icons/logo_white.svg';

@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 import useUserStore from '@/stores/userStore';
-import { IS_DEV_MODE } from '@/utils';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 
 const TEST_REFERRER = '0x1234567890123456789012345678901234567890';
 

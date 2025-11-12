@@ -15,7 +15,7 @@ import {
 
 import { NavBar } from '@/components/navbar/BaseNavBar';
 import { buttonTap } from '@/integrations/haptics';
-import { extraYPadding } from '@/utils';
+import { extraYPadding } from '@/utils/styleUtils';
 
 export const IdDetailsNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();

@@ -7,4 +7,14 @@
  * Re-exports all constants from subdirectories.
  */
 
-export * from '@/consts/links';
+export {
+  appStoreUrl,
+  gitHubUrl,
+  playStoreUrl,
+  privacyUrl,
+  selfUrl,
+  supportedBiometricIdsUrl,
+  telegramUrl,
+  termsUrl,
+  xUrl,
+} from '@/consts/links';

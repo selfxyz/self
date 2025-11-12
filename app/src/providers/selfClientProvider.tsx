@@ -20,7 +20,7 @@ import {
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
-import { logNFCEvent, logProofEvent } from '@/config';
+import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';

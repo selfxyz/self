@@ -4,7 +4,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-import { initRemoteConfig } from '@/config';
+import { initRemoteConfig } from '@/config/remoteConfig';
 
 interface RemoteConfigContextValue {
   isInitialized: boolean;

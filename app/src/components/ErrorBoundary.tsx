@@ -6,7 +6,7 @@ import type { ErrorInfo } from 'react';
 import React, { Component } from 'react';
 import { Text, View } from 'react-native';
 
-import { captureException } from '@/config';
+import { captureException } from '@/config/sentry';
 import { flushAllAnalytics, trackNfcEvent } from '@/services/analytics';
 
 interface Props {

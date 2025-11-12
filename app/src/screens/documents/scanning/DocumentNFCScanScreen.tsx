@@ -57,7 +57,7 @@ import {
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
 import NFC_IMAGE from '@/assets/images/nfc.png';
-import { logNFCEvent } from '@/config';
+import { logNFCEvent } from '@/config/sentry';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import {

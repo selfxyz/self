@@ -165,6 +165,18 @@ module.exports = {
       },
     ],
 
+    // Custom rule to prevent export * (bad for tree shaking)
+    // This rule prevents the use of export * which disables tree shaking
+    // and can significantly increase bundle size. Use selective exports instead.
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'ExportAllDeclaration',
+        message:
+          'export * is forbidden. Use selective exports for better tree shaking. Example: export { specific1, specific2 } from "./module"',
+      },
+    ],
+
     // Override rules conflicting with TypeScript union formatting
 
     '@typescript-eslint/indent': 'off',

@@ -6,13 +6,14 @@ import React, { useState } from 'react';
 import { Button, Text, XStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 
-import { dinot, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   green500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import CopyToClipboard from '@/assets/icons/copy_to_clipboard.svg';
 

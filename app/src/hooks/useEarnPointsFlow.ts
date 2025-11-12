@@ -17,7 +17,7 @@ import {
   pointsSelfApp,
 } from '@/services/points';
 import useUserStore from '@/stores/userStore';
-import { registerModalCallbacks } from '@/utils';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 type UseEarnPointsFlowParams = {
   hasReferrer: boolean;

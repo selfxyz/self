@@ -8,7 +8,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
 import { useTurnkey } from '@turnkey/react-native-wallet-kit';
 
-import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha';
 import {
   AbstractButton,
   BodyText,
@@ -23,9 +22,10 @@ import {
   white,
   zinc800,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import IDCardPlaceholder from '@/assets/icons/id_card_placeholder.svg';
-import { privacyUrl, termsUrl } from '@/consts';
+import { privacyUrl, termsUrl } from '@/consts/links';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useModal } from '@/hooks/useModal';

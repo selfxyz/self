@@ -6,7 +6,6 @@ import React, { useState } from 'react';
 import { Alert, Modal, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, XStack, YStack } from 'tamagui';
 
-import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha';
 import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
@@ -15,6 +14,7 @@ import {
   zinc800,
   zinc900,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 interface FeedbackModalProps {
   visible: boolean;

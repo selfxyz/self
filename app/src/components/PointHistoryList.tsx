@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Card, Text, View, XStack, YStack } from 'tamagui';
 
-import { dinot, plexMono, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
@@ -23,6 +23,7 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import HeartIcon from '@/assets/icons/heart.svg';
 import StarBlackIcon from '@/assets/icons/star_black.svg';

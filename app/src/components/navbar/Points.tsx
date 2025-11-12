@@ -9,7 +9,7 @@ import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { dinot, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
@@ -19,6 +19,7 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import BellWhiteIcon from '@/assets/icons/bell_white.svg';
 import ClockIcon from '@/assets/icons/clock.svg';
@@ -44,7 +45,7 @@ import {
 } from '@/services/points';
 import { usePointEventStore } from '@/stores/pointEventStore';
 import { useSettingStore } from '@/stores/settingStore';
-import { registerModalCallbacks } from '@/utils';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 const Points: React.FC = () => {
   const selfClient = useSelfClient();

@@ -6,12 +6,12 @@ import React from 'react';
 import { Pressable } from 'react-native';
 import { Text, YStack } from 'tamagui';
 
-import { dinot } from '@selfxyz/mobile-sdk-alpha';
 import {
   black,
   blue600,
   slate500,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 export interface ReferralInfoProps {
   title: string;

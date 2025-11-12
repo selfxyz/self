@@ -10,7 +10,7 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import type { RootStackParamList } from '@/navigation';
-import { registerModalCallbacks } from '@/utils';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 export const useAppUpdates = (): [boolean, () => void, boolean] => {
   const navigation =

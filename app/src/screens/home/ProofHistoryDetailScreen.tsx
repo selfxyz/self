@@ -7,7 +7,6 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
 import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
 
-import { advercase, dinot, plexMono } from '@selfxyz/mobile-sdk-alpha';
 import {
   black,
   blue100,
@@ -21,6 +20,11 @@ import {
   zinc400,
   zinc500,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  advercase,
+  dinot,
+  plexMono,
+} from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import type { ProofHistory } from '@/stores/proofTypes';
 import { ProofStatus } from '@/stores/proofTypes';

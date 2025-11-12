@@ -57,6 +57,12 @@
       "import": "./dist/esm/constants/colors.js",
       "require": "./dist/cjs/constants/colors.cjs"
     },
+    "./constants/fonts": {
+      "types": "./dist/esm/constants/fonts.d.ts",
+      "react-native": "./dist/esm/constants/fonts.js",
+      "import": "./dist/esm/constants/fonts.js",
+      "require": "./dist/cjs/constants/fonts.cjs"
+    },
     "./components": {
       "types": "./dist/esm/components/index.d.ts",
       "react-native": "./dist/esm/components/index.js",
@@ -74,6 +80,12 @@
       "react-native": "./dist/esm/hooks/useSafeBottomPadding.js",
       "import": "./dist/esm/hooks/useSafeBottomPadding.js",
       "require": "./dist/cjs/hooks/useSafeBottomPadding.cjs"
+    },
+    "./utils/utils": {
+      "types": "./dist/esm/utils/utils.d.ts",
+      "react-native": "./dist/esm/utils/utils.js",
+      "import": "./dist/esm/utils/utils.js",
+      "require": "./dist/cjs/utils/utils.cjs"
     },
     "./svgs/*.svg": {
       "react-native": "./dist/svgs/*.svg",

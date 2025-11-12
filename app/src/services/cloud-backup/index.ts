@@ -17,7 +17,8 @@ import {
   upload as iosUpload,
 } from '@/services/cloud-backup/ios';
 import type { Mnemonic } from '@/types/mnemonic';
-import { parseMnemonic, withRetries } from '@/utils';
+import { parseMnemonic } from '@/utils/crypto/mnemonic';
+import { withRetries } from '@/utils/retry';
 
 export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
 

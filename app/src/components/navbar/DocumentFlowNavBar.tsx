@@ -7,8 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { HelpCircle } from '@tamagui/lucide-icons';
 
-import { dinot } from '@selfxyz/mobile-sdk-alpha';
 import { slate100 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import { NavBar } from '@/components/navbar/BaseNavBar';
 

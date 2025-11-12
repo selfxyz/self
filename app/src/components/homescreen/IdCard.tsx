@@ -14,7 +14,6 @@ import {
 } from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types/passport';
 import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
-import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha';
 import {
   black,
   slate100,
@@ -23,6 +22,7 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import AadhaarIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
 import EPassport from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport.svg';
 

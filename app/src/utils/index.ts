@@ -9,14 +9,16 @@
 
 // Crypto utilities
 export type { ModalCallbacks } from '@/utils/modalCallbackRegistry';
-export * from '@/utils/crypto/cryptoLoader';
-export * from '@/utils/crypto/ethers';
-
-// Development utilities
-export * from '@/utils/crypto/mnemonic';
-
 // Format utilities
 export { IS_DEV_MODE } from '@/utils/devUtils';
+
+export {
+  computeHmac,
+  pbkdf2,
+  randomBytes,
+  sha256,
+  sha512,
+} from '@/utils/crypto/ethers';
 
 // Style utilities
 export { extraYPadding, normalizeBorderWidth } from '@/utils/styleUtils';
@@ -29,6 +31,11 @@ export {
   registerModalCallbacks,
   unregisterModalCallbacks,
 } from '@/utils/modalCallbackRegistry';
+
+// Development utilities
+export { isMnemonic, parseMnemonic } from '@/utils/crypto/mnemonic';
+
+export { loadCryptoUtils, loadProvingUtils } from '@/utils/crypto/cryptoLoader';
 
 // Modal utilities
 export { safeJsonParse, safeJsonStringify } from '@/utils/jsonUtils';

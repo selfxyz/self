@@ -11,7 +11,7 @@ import { black, slate50 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { NavBar } from '@/components/navbar/BaseNavBar';
 import { buttonTap } from '@/integrations/haptics';
-import { extraYPadding } from '@/utils';
+import { extraYPadding } from '@/utils/styleUtils';
 
 export const PointsNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();

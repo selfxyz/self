@@ -7,9 +7,9 @@ import { StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExternalLink, X } from '@tamagui/lucide-icons';
 
-import { dinot } from '@selfxyz/mobile-sdk-alpha';
 import { Button, XStack } from '@selfxyz/mobile-sdk-alpha/components';
 import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import { buttonTap } from '@/integrations/haptics';
 
