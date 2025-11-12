@@ -135,7 +135,7 @@ describe('useEarnPointsFlow', () => {
       });
     });
 
-    it('should navigate to DocumentOnboarding when identity verification modal button is pressed', async () => {
+    it('should navigate to CountryPicker when identity verification modal button is pressed', async () => {
       mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(false);
 
       const { result } = renderHook(() =>
@@ -162,7 +162,7 @@ describe('useEarnPointsFlow', () => {
         jest.advanceTimersByTime(100);
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith('DocumentOnboarding');
+      expect(mockNavigate).toHaveBeenCalledWith('CountryPicker');
     });
 
     it('should clear referrer when identity verification modal is dismissed with referrer', async () => {

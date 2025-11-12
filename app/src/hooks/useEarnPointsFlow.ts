@@ -49,7 +49,7 @@ export const useEarnPointsFlow = ({
       onButtonPress: () => {
         // Use setTimeout to ensure modal dismisses before navigating
         setTimeout(() => {
-          navigation.navigate('DocumentOnboarding');
+          navigation.navigate('CountryPicker');
         }, 100);
       },
       onModalDismiss: () => {
