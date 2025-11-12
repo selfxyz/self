@@ -52,7 +52,7 @@ import {
 
 import IdIcon from '@/assets/icons/id_icon.svg';
 import NoteIcon from '@/assets/icons/note.svg';
-import SelfDevCard from '@/assets/images/card-dev.svg';
+import SelfDevCard from '@/assets/images/card_dev.svg';
 import { useMockDataForm } from '@/hooks/useMockDataForm';
 import { buttonTap, selectionChange } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';

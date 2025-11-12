@@ -18,7 +18,7 @@ import {
   zinc900,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import CloseWarningIcon from '@/assets/icons/close-warning.svg';
+import CloseWarningIcon from '@/assets/icons/close_warning.svg';
 import Plus from '@/assets/icons/plus_slate600.svg';
 import { extraYPadding } from '@/utils/styleUtils';
 
