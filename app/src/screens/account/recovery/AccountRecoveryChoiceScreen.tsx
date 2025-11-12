@@ -122,7 +122,10 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         setRestoring(false);
         return true;
       } catch (e: unknown) {
-        console.error(e);
+        console.error(
+          'Restore account error:',
+          e instanceof Error ? e.message : 'Unknown error',
+        );
         trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
         setRestoring(false);
         return false;
@@ -161,7 +164,10 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         setTurnkeyBackupEnabled(true);
       }
     } catch (error) {
-      console.error('Turnkey restore error:', error);
+      console.error(
+        'Turnkey restore error:',
+        error instanceof Error ? error.message : 'Unknown error',
+      );
       trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
     } finally {
       setRestoringFromTurnkey(false);
@@ -174,7 +180,10 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       const mnemonic = await download();
       await restoreAccountFlow(mnemonic, true, setRestoringFromCloud);
     } catch (error) {
-      console.error('Cloud restore error:', error);
+      console.error(
+        'Cloud restore error:',
+        error instanceof Error ? error.message : 'Unknown error',
+      );
       trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
       setRestoringFromCloud(false);
     }
