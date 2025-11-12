@@ -178,15 +178,8 @@ const Points: React.FC = () => {
             setIsGeneralSubscribed(true);
             selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_SUCCESS);
 
-            const callbackId = registerModalCallbacks({
-              onButtonPress: () => {},
-              onModalDismiss: () => {},
-            });
-            navigation.navigate('Modal', {
-              titleText: 'Success!',
-              bodyText: `Push notifications enabled! You earned ${POINT_VALUES.notification} points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.`,
-              buttonText: 'OK',
-              callbackId,
+            navigation.navigate('Gratification', {
+              points: POINT_VALUES.notification,
             });
           } else {
             selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_FAILED, {
@@ -279,15 +272,8 @@ const Points: React.FC = () => {
           setBackupForPointsCompleted();
           selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
 
-          const callbackId = registerModalCallbacks({
-            onButtonPress: () => {},
-            onModalDismiss: () => {},
-          });
-          navigation.navigate('Modal', {
-            titleText: 'Success!',
-            bodyText: `Account backed up successfully! You earned ${POINT_VALUES.backup} points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.`,
-            buttonText: 'OK',
-            callbackId,
+          navigation.navigate('Gratification', {
+            points: POINT_VALUES.backup,
           });
         } else {
           selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
