@@ -4991,14 +4991,14 @@ __metadata:
   resolution: "@noble/curves@npm:1.9.7"
   dependencies:
     "@noble/hashes": "npm:2.0.1"
-  checksum: 10c0/e0b329eb9229e862d3b7203e0444bd479e9ecf2d5990181908dad416aab69106717ca696fc7b12ad0eb19d710f58c454646b27ce517a4298ab9abc89a9bdb6ee
+  checksum: 10c0/150014751ebe8ca06a8654ca2525108452ea9ee0be23430332769f06808cddabfe84f248b6dbf836916bc869c27c2092957eec62c7506d68a1ed0a624017c2a3
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:1.8.0":
-  version: 1.8.0
-  resolution: "@noble/hashes@npm:1.8.0"
-  checksum: 10c0/06a0b52c81a6fa7f04d67762e08b2c476a00285858150caeaaff4037356dd5e119f45b2a530f638b77a5eeca013168ec1b655db41bae3236cb2e9d511484fc77
+"@noble/hashes@npm:2.0.1":
+  version: 2.0.1
+  resolution: "@noble/hashes@npm:2.0.1"
+  checksum: 10c0/e81769ce21c3b1c80141a3b99bd001f17edea09879aa936692ae39525477386d696101cd573928a304806efb2b9fa751e1dd83241c67d0c84d30091e85c79bdb
   languageName: node
   linkType: hard
 
@@ -7308,7 +7308,7 @@ __metadata:
   resolution: "@selfxyz/common@workspace:common"
   dependencies:
     "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1"
-    "@noble/hashes": "npm:^2.0.0"
+    "@noble/hashes": "npm:2.0.1"
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
@@ -7454,7 +7454,7 @@ __metadata:
     "@babel/preset-env": "npm:^7.28.3"
     "@babel/runtime": "npm:^7.28.3"
     "@ethersproject/shims": "npm:^5.7.0"
-    "@noble/hashes": "npm:^2.0.0"
+    "@noble/hashes": "npm:2.0.1"
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
@@ -25088,7 +25088,7 @@ __metadata:
     "@babel/core": "npm:^7.28.3"
     "@babel/runtime": "npm:^7.28.3"
     "@faker-js/faker": "npm:^10.0.0"
-    "@noble/hashes": "npm:^2.0.0"
+    "@noble/hashes": "npm:2.0.1"
     "@react-native-async-storage/async-storage": "npm:^2.2.0"
     "@react-native-community/cli": "npm:^16.0.3"
     "@react-native/gradle-plugin": "npm:0.76.9"
