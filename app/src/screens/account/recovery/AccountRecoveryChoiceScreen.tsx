@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthState, useTurnkey } from '@turnkey/react-native-wallet-kit';
+// DISABLED FOR NOW: Turnkey functionality
+// import { AuthState, useTurnkey } from '@turnkey/react-native-wallet-kit';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import {
@@ -36,32 +37,36 @@ import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
 import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, slate500, slate600, white } from '@/utils/colors';
-import { useTurnkeyUtils } from '@/utils/turnkey';
+// DISABLED FOR NOW: Turnkey functionality
+// import { useTurnkeyUtils } from '@/utils/turnkey';
 
 const AccountRecoveryChoiceScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useProtocolStore } = selfClient;
   const { trackEvent } = useSelfClient();
   const { restoreAccountFromMnemonic } = useAuth();
-  const { turnkeyWallets, refreshWallets } = useTurnkeyUtils();
-  const { getMnemonic } = useTurnkeyUtils();
-  const { authState } = useTurnkey();
+  // DISABLED FOR NOW: Turnkey functionality
+  // const { turnkeyWallets, refreshWallets } = useTurnkeyUtils();
+  // const { getMnemonic } = useTurnkeyUtils();
+  // const { authState } = useTurnkey();
   const [restoring, setRestoring] = useState(false);
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
   const { download } = useBackupMnemonic();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const setTurnkeyBackupEnabled = useSettingStore(
-    state => state.setTurnkeyBackupEnabled,
-  );
+  // DISABLED FOR NOW: Turnkey functionality
+  // const setTurnkeyBackupEnabled = useSettingStore(
+  //   state => state.setTurnkeyBackupEnabled,
+  // );
 
   const onRestoreFromCloudNext = useHapticNavigation('AccountVerifiedSuccess');
   const onEnterRecoveryPress = useHapticNavigation('RecoverWithPhrase');
 
-  useEffect(() => {
-    refreshWallets();
-  }, [refreshWallets]);
+  // DISABLED FOR NOW: Turnkey functionality
+  // useEffect(() => {
+  //   refreshWallets();
+  // }, [refreshWallets]);
 
   const restoreAccountFlow = useCallback(
     async (
@@ -138,29 +143,30 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
     ],
   );
 
-  const onRestoreFromTurnkeyPress = useCallback(async () => {
-    setRestoring(true);
-    try {
-      const mnemonicPhrase = await getMnemonic();
-      const mnemonic: Mnemonic = {
-        phrase: mnemonicPhrase,
-        password: '',
-        wordlist: {
-          locale: 'en',
-        },
-        entropy: '',
-      };
-      const success = await restoreAccountFlow(mnemonic);
-      if (success) {
-        setTurnkeyBackupEnabled(true);
-      }
-    } catch (error) {
-      console.error('Turnkey restore error:', error);
-      trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
-    } finally {
-      setRestoring(false);
-    }
-  }, [getMnemonic, restoreAccountFlow, setTurnkeyBackupEnabled, trackEvent]);
+  // DISABLED FOR NOW: Turnkey functionality
+  // const onRestoreFromTurnkeyPress = useCallback(async () => {
+  //   setRestoring(true);
+  //   try {
+  //     const mnemonicPhrase = await getMnemonic();
+  //     const mnemonic: Mnemonic = {
+  //       phrase: mnemonicPhrase,
+  //       password: '',
+  //       wordlist: {
+  //         locale: 'en',
+  //       },
+  //       entropy: '',
+  //     };
+  //     const success = await restoreAccountFlow(mnemonic);
+  //     if (success) {
+  //       setTurnkeyBackupEnabled(true);
+  //     }
+  //   } catch (error) {
+  //     console.error('Turnkey restore error:', error);
+  //     trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
+  //   } finally {
+  //     setRestoring(false);
+  //   }
+  // }, [getMnemonic, restoreAccountFlow, setTurnkeyBackupEnabled, trackEvent]);
 
   const onRestoreFromCloudPress = useCallback(async () => {
     setRestoring(true);
@@ -205,7 +211,8 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
           </Description>
 
           <YStack gap="$2.5" width="100%" paddingTop="$6">
-            <PrimaryButton
+            {/* DISABLED FOR NOW: Turnkey functionality */}
+            {/* <PrimaryButton
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromTurnkeyPress}
               testID="button-from-turnkey"
@@ -218,7 +225,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
             >
               {restoring ? 'Restoring' : 'Restore'} from Turnkey
               {restoring ? '…' : ''}
-            </PrimaryButton>
+            </PrimaryButton> */}
             <PrimaryButton
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromCloudPress}

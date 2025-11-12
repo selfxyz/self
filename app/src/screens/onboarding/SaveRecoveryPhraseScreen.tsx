@@ -23,7 +23,9 @@ import { black, slate400, white } from '@/utils/colors';
 const SaveRecoveryPhraseScreen: React.FC = () => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
   const { mnemonic, loadMnemonic } = useMnemonic();
-  const { cloudBackupEnabled, turnkeyBackupEnabled } = useSettingStore();
+  // DISABLED FOR NOW: Turnkey functionality
+  // const { cloudBackupEnabled, turnkeyBackupEnabled } = useSettingStore();
+  const { cloudBackupEnabled } = useSettingStore();
 
   const onRevealWords = useCallback(async () => {
     await loadMnemonic();
@@ -64,10 +66,10 @@ const SaveRecoveryPhraseScreen: React.FC = () => {
           settings.
         </Caption>
         <PrimaryButton onPress={onCloudBackupPress}>
-          Manage {STORAGE_NAME} or Turnkey backups
+          Manage {STORAGE_NAME} backups
         </PrimaryButton>
         <SecondaryButton onPress={onSkipPress}>
-          {userHasSeenMnemonic || cloudBackupEnabled || turnkeyBackupEnabled
+          {userHasSeenMnemonic || cloudBackupEnabled
             ? 'Continue'
             : 'Skip making a backup'}
         </SecondaryButton>

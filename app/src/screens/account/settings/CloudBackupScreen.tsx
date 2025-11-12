@@ -8,7 +8,8 @@ import { YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Wallet } from '@tamagui/lucide-icons';
+// DISABLED FOR NOW: Turnkey functionality
+// import { Wallet } from '@tamagui/lucide-icons';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -26,7 +27,8 @@ import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, blue600, slate200, slate500, white } from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap, confirmTap } from '@/utils/haptic';
-import { useTurnkeyUtils } from '@/utils/turnkey';
+// DISABLED FOR NOW: Turnkey functionality
+// import { useTurnkeyUtils } from '@/utils/turnkey';
 
 type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
 
@@ -44,13 +46,15 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   route: { params },
 }) => {
   const { trackEvent } = useSelfClient();
-  const { backupAccount } = useTurnkeyUtils();
+  // DISABLED FOR NOW: Turnkey functionality
+  // const { backupAccount } = useTurnkeyUtils();
   const { getOrCreateMnemonic, loginWithBiometrics } = useAuth();
   const {
     cloudBackupEnabled,
     toggleCloudBackupEnabled,
     biometricsAvailable,
-    turnkeyBackupEnabled,
+    // DISABLED FOR NOW: Turnkey functionality
+    // turnkeyBackupEnabled,
   } = useSettingStore();
   const { upload, disableBackup } = useBackupMnemonic();
   const navigation =
@@ -58,7 +62,8 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
 
   const [_selectedMethod, setSelectedMethod] = useState<BackupMethod>(null);
   const [iCloudPending, setICloudPending] = useState(false);
-  const [turnkeyPending, setTurnkeyPending] = useState(false);
+  // DISABLED FOR NOW: Turnkey functionality
+  // const [turnkeyPending, setTurnkeyPending] = useState(false);
 
   const { showModal: showDisableModal } = useModal(
     useMemo(
@@ -91,22 +96,23 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     ),
   );
 
-  const { showModal: showAlreadySignedInModal } = useModal({
-    titleText: 'Cannot use this email',
-    bodyText:
-      'You cannot use this email. Please try again with a different email address.',
-    buttonText: 'OK',
-    onButtonPress: () => {},
-    onModalDismiss: () => {},
-  });
+  // DISABLED FOR NOW: Turnkey functionality
+  // const { showModal: showAlreadySignedInModal } = useModal({
+  //   titleText: 'Cannot use this email',
+  //   bodyText:
+  //     'You cannot use this email. Please try again with a different email address.',
+  //   buttonText: 'OK',
+  //   onButtonPress: () => {},
+  //   onModalDismiss: () => {},
+  // });
 
-  const { showModal: showAlreadyBackedUpModal } = useModal({
-    titleText: 'Already backed up with Turnkey',
-    bodyText: 'You have already backed up your account with Turnkey.',
-    buttonText: 'OK',
-    onButtonPress: () => {},
-    onModalDismiss: () => {},
-  });
+  // const { showModal: showAlreadyBackedUpModal } = useModal({
+  //   titleText: 'Already backed up with Turnkey',
+  //   bodyText: 'You have already backed up your account with Turnkey.',
+  //   buttonText: 'OK',
+  //   onButtonPress: () => {},
+  //   onModalDismiss: () => {},
+  // });
   const handleICloudBackup = useCallback(async () => {
     buttonTap();
     setSelectedMethod('icloud');
@@ -153,61 +159,62 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     showDisableModal();
   }, [showDisableModal]);
 
-  const handleTurnkeyBackup = useCallback(async () => {
-    buttonTap();
-    setSelectedMethod('turnkey');
+  // DISABLED FOR NOW: Turnkey functionality
+  // const handleTurnkeyBackup = useCallback(async () => {
+  //   buttonTap();
+  //   setSelectedMethod('turnkey');
 
-    if (turnkeyBackupEnabled) {
-      return;
-    }
+  //   if (turnkeyBackupEnabled) {
+  //     return;
+  //   }
 
-    setTurnkeyPending(true);
+  //   setTurnkeyPending(true);
 
-    try {
-      const mnemonics = await getOrCreateMnemonic();
+  //   try {
+  //     const mnemonics = await getOrCreateMnemonic();
 
-      if (!mnemonics?.data.phrase) {
-        console.error('No mnemonic found');
-        setTurnkeyPending(false);
-        return;
-      }
+  //     if (!mnemonics?.data.phrase) {
+  //       console.error('No mnemonic found');
+  //       setTurnkeyPending(false);
+  //       return;
+  //     }
 
-      await backupAccount(mnemonics.data.phrase);
-      setTurnkeyPending(false);
+  //     await backupAccount(mnemonics.data.phrase);
+  //     setTurnkeyPending(false);
 
-      if (params?.returnToScreen) {
-        navigation.navigate(params.returnToScreen);
-      }
-    } catch (error) {
-      if (error instanceof Error && error.message === 'already_exists') {
-        console.log('Already signed in with Turnkey');
-        showAlreadySignedInModal();
-      } else if (
-        error instanceof Error &&
-        error.message === 'already_backed_up'
-      ) {
-        console.log('Already backed up with Turnkey');
-        if (params?.returnToScreen) {
-          navigation.navigate(params.returnToScreen);
-        } else if (params?.nextScreen) {
-          navigation.navigate(params.nextScreen);
-        } else {
-          showAlreadyBackedUpModal();
-        }
-      } else {
-        console.error('Turnkey backup error', error);
-      }
-      setTurnkeyPending(false);
-    }
-  }, [
-    turnkeyBackupEnabled,
-    backupAccount,
-    getOrCreateMnemonic,
-    showAlreadySignedInModal,
-    showAlreadyBackedUpModal,
-    navigation,
-    params,
-  ]);
+  //     if (params?.returnToScreen) {
+  //       navigation.navigate(params.returnToScreen);
+  //     }
+  //   } catch (error) {
+  //     if (error instanceof Error && error.message === 'already_exists') {
+  //       console.log('Already signed in with Turnkey');
+  //       showAlreadySignedInModal();
+  //     } else if (
+  //       error instanceof Error &&
+  //       error.message === 'already_backed_up'
+  //     ) {
+  //       console.log('Already backed up with Turnkey');
+  //       if (params?.returnToScreen) {
+  //         navigation.navigate(params.returnToScreen);
+  //       } else if (params?.nextScreen) {
+  //         navigation.navigate(params.nextScreen);
+  //       } else {
+  //         showAlreadyBackedUpModal();
+  //       }
+  //     } else {
+  //       console.error('Turnkey backup error', error);
+  //     }
+  //     setTurnkeyPending(false);
+  //   }
+  // }, [
+  //   turnkeyBackupEnabled,
+  //   backupAccount,
+  //   getOrCreateMnemonic,
+  //   showAlreadySignedInModal,
+  //   showAlreadyBackedUpModal,
+  //   navigation,
+  //   params,
+  // ]);
 
   return (
     <YStack flex={1} backgroundColor={white}>
@@ -259,7 +266,8 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
               </Pressable>
             )}
 
-            {turnkeyBackupEnabled ? (
+            {/* DISABLED FOR NOW: Turnkey functionality */}
+            {/* {turnkeyBackupEnabled ? (
               <SecondaryButton
                 disabled
                 trackEvent={BackupEvents.CLOUD_BACKUP_DISABLE_STARTED}
@@ -281,11 +289,11 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
                   {turnkeyPending ? '…' : ''}
                 </Text>
               </Pressable>
-            )}
+            )} */}
 
             <BottomButton
               cloudBackupEnabled={cloudBackupEnabled}
-              turnkeyBackupEnabled={turnkeyBackupEnabled}
+              turnkeyBackupEnabled={false}
               nextScreen={params?.nextScreen}
             />
           </View>
