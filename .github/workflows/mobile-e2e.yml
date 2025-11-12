@@ -216,7 +216,7 @@ jobs:
 
   e2e-ios:
     timeout-minutes: 120
-    runs-on: macos-latest-large
+    runs-on: macos-latest-xlarge
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
       cancel-in-progress: true
