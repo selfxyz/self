@@ -130,11 +130,13 @@ jobs:
           corepack prepare yarn@4.6.0 --activate
           yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
-      - name: Clone android-passport-nfc-reader
-        uses: ./.github/actions/clone-android-passport-nfc-reader
-        with:
-          working_directory: app
-          selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+      - name: Setup Android private modules
+        run: |
+          cd app
+          PLATFORM=android node scripts/setup-private-modules.cjs
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          CI: true
       - name: Build Android APK
         run: |
           echo "Building Android APK..."
@@ -154,16 +156,29 @@ jobs:
           APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH" 2>/dev/null || echo "unknown")
           echo "📱 APK size: $APK_SIZE bytes"
 
-          # Verify android-passport-nfc-reader was properly integrated (skip for forks)
+          # Verify private modules were properly integrated (skip for forks)
           if [ -z "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]; then
             echo "🔕 No PAT available — skipping private module verification"
-          elif [ -d "app/android/android-passport-nfc-reader" ]; then
-            echo "✅ android-passport-nfc-reader directory exists"
-            echo "📁 android-passport-nfc-reader contents:"
-            ls -la app/android/android-passport-nfc-reader/ | head -10
           else
-            echo "❌ android-passport-nfc-reader directory not found"
-            exit 1
+            # Verify android-passport-nfc-reader
+            if [ -d "app/android/android-passport-nfc-reader" ]; then
+              echo "✅ android-passport-nfc-reader directory exists"
+              echo "📁 android-passport-nfc-reader contents:"
+              ls -la app/android/android-passport-nfc-reader/ | head -10
+            else
+              echo "❌ android-passport-nfc-reader directory not found"
+              exit 1
+            fi
+
+            # Verify react-native-passport-reader
+            if [ -d "app/android/react-native-passport-reader" ]; then
+              echo "✅ react-native-passport-reader directory exists"
+              echo "📁 react-native-passport-reader contents:"
+              ls -la app/android/react-native-passport-reader/ | head -10
+            else
+              echo "❌ react-native-passport-reader directory not found"
+              exit 1
+            fi
           fi
 
           echo "🎉 Build verification completed successfully!"

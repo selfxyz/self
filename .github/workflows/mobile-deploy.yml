@@ -1089,12 +1089,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
 
-      - name: Clone android-passport-nfc-reader
+      - name: Setup Android private modules
         if: inputs.platform != 'ios'
-        uses: ./.github/actions/clone-android-passport-nfc-reader
-        with:
-          working_directory: ${{ env.APP_PATH }}
-          selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+        run: |
+          cd ${{ env.APP_PATH }}
+          PLATFORM=android node scripts/setup-private-modules.cjs
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          CI: true
 
       - name: Build Dependencies (Android)
         if: inputs.platform != 'ios'

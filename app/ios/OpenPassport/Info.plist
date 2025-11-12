@@ -59,7 +59,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Needed to scan the passport MRZ.</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Needed to secure the secret</string>
+	<string>Personal information is only stored in the secure element of your device.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string></string>
 	<key>NSLocationWhenInUseUsageDescription</key>

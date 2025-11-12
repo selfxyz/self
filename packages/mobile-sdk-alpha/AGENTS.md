@@ -75,11 +75,13 @@ Before creating a PR for the mobile-sdk-alpha package:
 
 ### SDK-Specific Validation
 
-- [ ] Exports are properly configured
-- [ ] Package conditions are valid
+- [ ] Exports are properly configured (`yarn validate:exports`)
+- [ ] Package conditions are valid (`yarn validate:pkg`)
 - [ ] No breaking changes to public API (or properly documented)
 - [ ] Migration guide updated (if applicable)
 - [ ] Integration tests pass
+- [ ] SDK integration with main app verified (if API changed)
+- [ ] Cross-platform compatibility verified (React Native + Web)
 
 ### AI Review Preparation
 
@@ -102,9 +104,12 @@ After PR creation:
 ### SDK-Specific Checks
 
 - [ ] Package exports validation passes
-- [ ] Integration with main app still works
+- [ ] Integration with main app still works (tested in `@selfxyz/mobile-app`)
 - [ ] No circular dependencies introduced
 - [ ] Bundle size impact acceptable
+- [ ] No nested `require('react-native')` calls in tests (causes OOM in CI)
+- [ ] Cross-platform compatibility maintained (React Native + Web)
+- [ ] Type definitions are complete and accurate
 
 ### Review Integration
 
@@ -144,6 +149,28 @@ yarn build # Confirm build still works
 - Prettier is used for code formatting
 - The `yarn nice` command is the recommended way to fix code quality issues
 - Use the root Prettier and EditorConfig settings for consistency
+- Uses Vitest for testing (not Jest) - see `tests/setup.ts` for configuration
+- React Native is mocked for web compatibility in tests
+
+## Integration Testing
+
+### Testing SDK Integration with Main App
+
+When making changes to the SDK API, verify integration:
+
+```bash
+# From app directory
+cd ../../app
+yarn build:deps  # Ensures latest SDK is built
+yarn test        # Run app tests that use SDK
+```
+
+### Cross-Platform Considerations
+
+- SDK must work in both React Native and Web environments
+- Use platform detection when needed: `Platform.OS === 'web'`
+- Test both environments when adding platform-specific code
+- Vitest tests run in Node.js environment (mocked React Native)
 
 ## Testing Guidelines
 
@@ -184,3 +211,44 @@ describe('Real SDK Integration', () => {
 ```
 
 **⚠️ CRITICAL: Never use real user PII in tests. Use only synthetic, anonymized, or approved test vectors.**
+
+## Test Memory Optimization
+
+**CRITICAL**: Never create nested `require('react-native')` calls in tests. This causes out-of-memory (OOM) errors in CI/CD pipelines.
+
+### Key Rules
+
+- Use ES6 `import` statements instead of `require()` when possible
+- Avoid dynamic `require()` calls in `beforeEach`/`afterEach` hooks
+- Prefer top-level imports over nested requires
+- This package uses Vitest (not Jest), but the same principles apply
+- React Native is already mocked in `tests/setup.ts` using `vi.mock()` - use imports in test files
+
+### Example Patterns
+
+#### ✅ CORRECT: Use ES6 imports
+
+```ts
+// GOOD - Single import at top level
+import { Platform } from 'react-native';
+
+describe('MyComponent', () => {
+  it('should work', () => {
+    expect(Platform.OS).toBe('web');
+  });
+});
+```
+
+#### ❌ FORBIDDEN: Nested requires
+
+```ts
+// BAD - This will cause OOM issues
+describe('MyComponent', () => {
+  beforeEach(() => {
+    const RN = require('react-native'); // First require
+    const Component = require('./MyComponent'); // May internally require RN again = nested = OOM
+  });
+});
+```
+
+See `.cursor/rules/test-memory-optimization.mdc` for detailed guidelines and more examples.
