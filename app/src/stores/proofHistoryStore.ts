@@ -174,6 +174,7 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
             id: row.id.toString(),
             sessionId: row.sessionId,
             appName: row.appName,
+            endpoint: row.endpoint,
             endpointType: row.endpointType,
             status: row.status,
             errorCode: row.errorCode,

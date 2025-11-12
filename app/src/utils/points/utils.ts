@@ -10,6 +10,12 @@ import { getOrGeneratePointsAddress } from '@/providers/authProvider';
 import { POINTS_API_BASE_URL } from '@/utils/points/constants';
 import type { IncomingPoints } from '@/utils/points/types';
 
+export type WhitelistedContract = {
+  contract_address: string;
+  points_per_disclosure: number;
+  num_disclosures: number;
+};
+
 export const formatTimeUntilDate = (targetDate: Date): string => {
   const now = new Date();
   const diffMs = targetDate.getTime() - now.getTime();
@@ -103,9 +109,23 @@ export const getTotalPoints = async (address: string): Promise<number> => {
 };
 
 export const getWhiteListedDisclosureAddresses = async (): Promise<
-  string[]
+  WhitelistedContract[]
 > => {
-  return [];
+  try {
+    const response = await fetch(
+      `${POINTS_API_BASE_URL}/whitelisted-addresses`,
+    );
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const data = await response.json();
+    return data.contracts || [];
+  } catch (error) {
+    console.error('Error fetching whitelisted addresses:', error);
+    return [];
+  }
 };
 
 export const hasUserAnIdentityDocumentRegistered =
@@ -146,7 +166,6 @@ export const hasUserDoneThePointsDisclosure = async (): Promise<boolean> => {
 };
 
 export const pointsSelfApp = async () => {
-  const userAddress = (await getPointsAddress())?.toLowerCase();
   const endpoint = '0x829d183faaa675f8f80e8bb25fb1476cd4f7c1f0';
   const builder = new SelfAppBuilder({
     appName: '✨ Self Points',
@@ -158,7 +177,6 @@ export const pointsSelfApp = async () => {
     disclosures: {},
     logoBase64:
       'https://storage.googleapis.com/self-logo-reverse/Self%20Logomark%20Reverse.png',
-    selfDefinedData: userAddress,
     header: '',
   });
 

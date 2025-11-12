@@ -44,6 +44,7 @@ import { ProofStatus } from '@/stores/proofTypes';
 import { black, slate300, white } from '@/utils/colors';
 import { formatUserId } from '@/utils/formatUserId';
 import { buttonTap } from '@/utils/haptic';
+import { getPointsAddress } from '@/utils/points/utils';
 
 const ProveScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -83,11 +84,12 @@ const ProveScreen: React.FC = () => {
           sessionId: provingStore.uuid!,
           userId: selectedApp.userId,
           userIdType: selectedApp.userIdType,
+          endpoint: selectedApp.endpoint,
           endpointType: selectedApp.endpointType,
           status: ProofStatus.PENDING,
           logoBase64: selectedApp.logoBase64,
           disclosures: JSON.stringify(selectedApp.disclosures),
-          documentId: selectedDocumentId || '', // Fallback to empty if none selected
+          documentId: selectedDocumentId || '',
         });
       }
     };
@@ -114,6 +116,29 @@ const ProveScreen: React.FC = () => {
     }
     selectedAppRef.current = selectedApp;
   }, [selectedApp, isFocused, provingStore, selfClient]);
+
+  // Enhance selfApp with user's points address if not already set
+  useEffect(() => {
+    console.log('useEffect selectedApp', selectedApp);
+    if (!selectedApp || selectedApp.selfDefinedData) {
+      return;
+    }
+
+    const enhanceApp = async () => {
+      const address = await getPointsAddress();
+
+      // Only update if still the same session
+      if (selectedAppRef.current?.sessionId === selectedApp.sessionId) {
+        console.log('enhancing app with points address', address);
+        selfClient.getSelfAppState().setSelfApp({
+          ...selectedApp,
+          selfDefinedData: address.toLowerCase(),
+        });
+      }
+    };
+
+    enhanceApp();
+  }, [selectedApp, selfClient]);
 
   const disclosureOptions = useMemo(() => {
     return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];

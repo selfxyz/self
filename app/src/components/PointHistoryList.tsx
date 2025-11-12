@@ -68,15 +68,15 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
 }) => {
   const selfClient = useSelfClient();
   const [refreshing, setRefreshing] = useState(false);
-  // Subscribe to events directly from store - component will auto-update when store changes
   const pointEvents = usePointEventStore(state => state.getAllPointEvents());
   const isLoading = usePointEventStore(state => state.isLoading);
   const refreshPoints = usePointEventStore(state => state.refreshPoints);
   const refreshIncomingPoints = usePointEventStore(
     state => state.refreshIncomingPoints,
   );
-  // loadEvents only needs to be called once on mount.
-  // and it is called in Points.ts
+  const loadDisclosureEvents = usePointEventStore(
+    state => state.loadDisclosureEvents,
+  );
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], {
@@ -271,14 +271,15 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
     [],
   );
 
-  // Pull-to-refresh handler
   const onRefresh = useCallback(() => {
     selfClient.trackEvent(PointEvents.REFRESH_HISTORY);
     setRefreshing(true);
-    Promise.all([refreshPoints(), refreshIncomingPoints()]).finally(() =>
-      setRefreshing(false),
-    );
-  }, [selfClient, refreshPoints, refreshIncomingPoints]);
+    Promise.all([
+      refreshPoints(),
+      refreshIncomingPoints(),
+      loadDisclosureEvents(),
+    ]).finally(() => setRefreshing(false));
+  }, [selfClient, refreshPoints, refreshIncomingPoints, loadDisclosureEvents]);
 
   const keyExtractor = useCallback((item: PointEvent) => item.id, []);
 
