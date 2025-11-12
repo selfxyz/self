@@ -29,7 +29,7 @@ import {
   scanQRCodeFromPhotoLibrary,
 } from '@/integrations/qrScanner';
 import type { RootStackParamList } from '@/navigation';
-import { extraYPadding } from '@/utils/styleUtils';
+import { extraYPadding } from '@/utils';
 
 const AadhaarUploadScreen: React.FC = () => {
   const paddingBottom = useSafeBottomPadding(extraYPadding + 50);

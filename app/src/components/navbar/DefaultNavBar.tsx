@@ -11,7 +11,7 @@ import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { NavBar } from '@/components/navbar/BaseNavBar';
 import { buttonTap } from '@/integrations/haptics';
-import { extraYPadding } from '@/utils/styleUtils';
+import { extraYPadding } from '@/utils';
 
 export const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;

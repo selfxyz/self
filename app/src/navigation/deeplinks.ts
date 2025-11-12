@@ -11,7 +11,7 @@ import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { navigationRef } from '@/navigation';
 import useUserStore from '@/stores/userStore';
-import { IS_DEV_MODE } from '@/utils/devUtils';
+import { IS_DEV_MODE } from '@/utils';
 
 // Validation patterns for each expected parameter
 const VALIDATION_PATTERNS = {

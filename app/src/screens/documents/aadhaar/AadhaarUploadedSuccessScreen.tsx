@@ -21,7 +21,7 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import BlueCheckIcon from '@/assets/images/blue_check.svg';
 import type { RootStackParamList } from '@/navigation';
-import { extraYPadding } from '@/utils/styleUtils';
+import { extraYPadding } from '@/utils';
 
 const AadhaarUploadedSuccessScreen: React.FC = () => {
   const paddingBottom = useSafeBottomPadding(extraYPadding + 35);

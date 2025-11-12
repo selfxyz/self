@@ -25,7 +25,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import IDCardPlaceholder from '@/assets/icons/id_card_placeholder.svg';
-import { privacyUrl, termsUrl } from '@/consts/links';
+import { privacyUrl, termsUrl } from '@/consts';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useModal } from '@/hooks/useModal';

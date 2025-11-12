@@ -17,7 +17,7 @@ import {
 
 import { NavBar } from '@/components/navbar/BaseNavBar';
 import { buttonTap } from '@/integrations/haptics';
-import { extraYPadding } from '@/utils/styleUtils';
+import { extraYPadding } from '@/utils';
 
 export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();

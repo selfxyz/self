@@ -8,7 +8,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '@/navigation';
 import useUserStore from '@/stores/userStore';
-import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
+import { registerModalCallbacks } from '@/utils';
 
 type UseReferralConfirmationParams = {
   hasReferrer: boolean;

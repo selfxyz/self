@@ -46,7 +46,7 @@ import {
 } from '@/services/notifications/notificationService';
 import { usePointEventStore } from '@/stores/pointEventStore';
 import { useSettingStore } from '@/stores/settingStore';
-import { IS_DEV_MODE } from '@/utils/devUtils';
+import { IS_DEV_MODE } from '@/utils';
 
 interface TopicToggleButtonProps {
   label: string;

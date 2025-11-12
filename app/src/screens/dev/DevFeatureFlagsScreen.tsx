@@ -15,13 +15,13 @@ import {
 
 import { textBlack } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import type { FeatureFlagValue } from '@/config/remoteConfig';
+import type { FeatureFlagValue } from '@/config';
 import {
   clearAllLocalOverrides,
   getAllFeatureFlags,
   refreshRemoteConfig,
   setLocalOverride,
-} from '@/config/remoteConfig';
+} from '@/config';
 
 interface FeatureFlag {
   key: string;

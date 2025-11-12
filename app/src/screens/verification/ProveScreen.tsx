@@ -47,7 +47,7 @@ import {
 } from '@/providers/passportDataProvider';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
-import { formatUserId } from '@/utils/formatUserId';
+import { formatUserId } from '@/utils';
 
 const ProveScreen: React.FC = () => {
   const selfClient = useSelfClient();

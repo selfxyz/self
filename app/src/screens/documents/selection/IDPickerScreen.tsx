@@ -13,7 +13,7 @@ import IDSelection from '@selfxyz/mobile-sdk-alpha/onboarding/id-selection-scree
 
 import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 import type { RootStackParamList } from '@/navigation';
-import { extraYPadding } from '@/utils/styleUtils';
+import { extraYPadding } from '@/utils';
 
 type IDPickerScreenRouteProp = RouteProp<RootStackParamList, 'IDPicker'>;
 

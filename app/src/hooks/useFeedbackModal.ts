@@ -10,7 +10,7 @@ import {
 } from '@sentry/react-native';
 
 import type { FeedbackModalScreenParams } from '@/components/FeedbackModalScreen';
-import { captureFeedback } from '@/config/sentry';
+import { captureFeedback } from '@/config';
 
 export type FeedbackType = 'button' | 'widget' | 'custom';
 

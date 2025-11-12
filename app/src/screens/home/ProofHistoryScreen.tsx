@@ -33,7 +33,7 @@ import type { RootStackParamList } from '@/navigation';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import type { ProofHistory } from '@/stores/proofTypes';
 import { ProofStatus } from '@/stores/proofTypes';
-import { extraYPadding } from '@/utils/styleUtils';
+import { extraYPadding } from '@/utils';
 
 type Section = {
   title: string;

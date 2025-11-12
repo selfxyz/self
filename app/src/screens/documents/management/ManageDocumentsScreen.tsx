@@ -30,7 +30,7 @@ import {
 import { impactLight } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
-import { extraYPadding } from '@/utils/styleUtils';
+import { extraYPadding } from '@/utils';
 
 const PassportDataSelector = () => {
   const selfClient = useSelfClient();

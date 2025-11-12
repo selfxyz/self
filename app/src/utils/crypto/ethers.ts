@@ -44,14 +44,25 @@ function sha512(data: Uint8Array): Uint8Array {
   return nobleSha512.create().update(data).digest();
 }
 
-ethers.randomBytes.register(randomBytes);
+// Register functions with ethers if available (guarded for test environments)
+if (ethers?.randomBytes?.register) {
+  ethers.randomBytes.register(randomBytes);
+}
 
-ethers.computeHmac.register(computeHmac);
+if (ethers?.computeHmac?.register) {
+  ethers.computeHmac.register(computeHmac);
+}
 
-ethers.pbkdf2.register(pbkdf2);
+if (ethers?.pbkdf2?.register) {
+  ethers.pbkdf2.register(pbkdf2);
+}
 
-ethers.sha256.register(sha256);
+if (ethers?.sha256?.register) {
+  ethers.sha256.register(sha256);
+}
 
-ethers.sha512.register(sha512);
+if (ethers?.sha512?.register) {
+  ethers.sha512.register(sha512);
+}
 
 export { computeHmac, pbkdf2, randomBytes, sha256, sha512 };

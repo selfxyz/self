@@ -30,7 +30,7 @@ import {
   migrateFromLegacyStorage,
 } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
-import { IS_DEV_MODE } from '@/utils/devUtils';
+import { IS_DEV_MODE } from '@/utils';
 
 const SplashScreen: React.FC = ({}) => {
   const selfClient = useSelfClient();

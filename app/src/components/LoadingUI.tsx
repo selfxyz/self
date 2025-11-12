@@ -20,7 +20,7 @@ import {
 
 import CloseWarningIcon from '@/assets/icons/close_warning.svg';
 import Plus from '@/assets/icons/plus_slate600.svg';
-import { extraYPadding } from '@/utils/styleUtils';
+import { extraYPadding } from '@/utils';
 
 interface LoadingUIProps {
   animationSource: LottieView['props']['source'];

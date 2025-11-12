@@ -44,7 +44,7 @@ import {
 } from '@/services/points';
 import { usePointEventStore } from '@/stores/pointEventStore';
 import { useSettingStore } from '@/stores/settingStore';
-import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
+import { registerModalCallbacks } from '@/utils';
 
 const Points: React.FC = () => {
   const selfClient = useSelfClient();

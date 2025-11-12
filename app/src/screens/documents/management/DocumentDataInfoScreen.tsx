@@ -19,7 +19,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { usePassport } from '@/providers/passportDataProvider';
-import { extraYPadding } from '@/utils/styleUtils';
+import { extraYPadding } from '@/utils';
 
 type DocumentMetadata =
   | (PassportMetadata & { documentCategory: 'passport' | 'id_card' })

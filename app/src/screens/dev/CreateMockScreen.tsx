@@ -57,7 +57,7 @@ import { useMockDataForm } from '@/hooks/useMockDataForm';
 import { buttonTap, selectionChange } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { storePassportData } from '@/providers/passportDataProvider';
-import { extraYPadding } from '@/utils/styleUtils';
+import { extraYPadding } from '@/utils';
 
 const documentTypes = {
   mock_passport: 'Passport',

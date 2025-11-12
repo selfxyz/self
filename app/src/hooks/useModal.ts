@@ -12,7 +12,7 @@ import {
   getModalCallbacks,
   registerModalCallbacks,
   unregisterModalCallbacks,
-} from '@/utils/modalCallbackRegistry';
+} from '@/utils';
 
 export const useModal = (params: ModalParams) => {
   const [visible, setVisible] = useState(false);

@@ -31,7 +31,7 @@ import {
 import type { RootStackParamList } from '@/navigation';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
-import { extraYPadding } from '@/utils/styleUtils';
+import { extraYPadding } from '@/utils';
 
 const CreateMockScreenDeepLink: React.FC = () => {
   const navigation =

@@ -18,10 +18,7 @@ import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import ModalClose from '@/assets/icons/modal_close.svg';
 import LogoInversed from '@/assets/images/logo_inversed.svg';
 import { confirmTap, impactLight } from '@/integrations/haptics';
-import {
-  getModalCallbacks,
-  unregisterModalCallbacks,
-} from '@/utils/modalCallbackRegistry';
+import { getModalCallbacks, unregisterModalCallbacks } from '@/utils';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',
