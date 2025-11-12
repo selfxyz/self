@@ -44,6 +44,31 @@ export const useEarnPointsFlow = ({
     }, 100);
   }, [selfClient, navigation]);
 
+  const showIdentityVerificationModal = useCallback(() => {
+    const callbackId = registerModalCallbacks({
+      onButtonPress: () => {
+        // Use setTimeout to ensure modal dismisses before navigating
+        setTimeout(() => {
+          navigation.navigate('CountryPicker');
+        }, 100);
+      },
+      onModalDismiss: () => {
+        if (hasReferrer) {
+          useUserStore.getState().clearDeepLinkReferrer();
+        }
+      },
+    });
+
+    navigation.navigate('Modal', {
+      titleText: 'Identity Verification Required',
+      bodyText:
+        'To access Self Points, you need to register an identity document with Self first. This helps us verify your identity and keep your points secure.',
+      buttonText: 'Verify Identity',
+      secondaryButtonText: 'Not Now',
+      callbackId,
+    });
+  }, [hasReferrer, navigation]);
+
   const showPointsDisclosureModal = useCallback(() => {
     const callbackId = registerModalCallbacks({
       onButtonPress: () => {
@@ -125,7 +150,7 @@ export const useEarnPointsFlow = ({
       const hasUserAnIdentityDocumentRegistered_result =
         await hasUserAnIdentityDocumentRegistered();
       if (!hasUserAnIdentityDocumentRegistered_result) {
-        navigation.navigate('CountryPicker');
+        showIdentityVerificationModal();
         return;
       }
 
@@ -150,6 +175,7 @@ export const useEarnPointsFlow = ({
       hasReferrer,
       isReferralConfirmed,
       navigation,
+      showIdentityVerificationModal,
       showPointsDisclosureModal,
       handleReferralFlow,
     ],
