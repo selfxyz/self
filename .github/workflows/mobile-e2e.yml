@@ -312,11 +312,9 @@ jobs:
           echo "Xcode path:"
           xcode-select -p
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+        uses: ./.github/actions/cache-ccache
         with:
-          key: ${{ github.job }}-${{ runner.os }}-${{ env.XCODE_VERSION }}
-      - name: Add ccache to PATH
-        run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+          xcode-version: ${{ env.XCODE_VERSION }}
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -330,24 +328,12 @@ jobs:
             app/ios/Pods
             ~/Library/Caches/CocoaPods
           lock-file: app/ios/Podfile.lock
-      - name: Cache Xcode build
-        uses: actions/cache@v4
+      - name: Cache Xcode build and index
+        uses: ./.github/actions/cache-xcode
         with:
-          path: |
-            app/ios/build
-            ~/Library/Developer/Xcode/DerivedData
-            ~/Library/Caches/com.apple.dt.Xcode
-          key: ${{ runner.os }}-xcode-e2e-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock', 'app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata', 'app/ios/Self.xcworkspace/contents.xcworkspacedata') }}
-          restore-keys: |
-            ${{ runner.os }}-xcode-e2e-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}-
-            ${{ runner.os }}-xcode-e2e-${{ env.XCODE_VERSION }}-
-      - name: Cache Xcode Index
-        uses: actions/cache@v4
-        with:
-          path: app/ios/build/Index.noindex
-          key: ${{ runner.os }}-xcode-index-e2e-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-xcode-index-e2e-${{ env.XCODE_VERSION }}-
+          xcode-version: ${{ env.XCODE_VERSION }}
+          cache-suffix: -e2e
+          cache-version: ${{ env.GH_CACHE_VERSION }}
       - name: Verify iOS Runtime
         run: |
           echo "📱 Verifying iOS Runtime availability..."
@@ -364,6 +350,14 @@ jobs:
           echo "Building dependencies..."
           yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
+      - name: Save Built Dependencies
+        if: steps.built-deps.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Install iOS dependencies
         uses: nick-fields/retry@v3
         with:

@@ -81,6 +81,14 @@ jobs:
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Save Built Dependencies
+        if: steps.built-deps.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Run linter
         run: yarn lint
         working-directory: ./app
@@ -161,6 +169,14 @@ jobs:
             exit 1
           fi
           echo "✅ Build completed successfully"
+      - name: Save Built Dependencies
+        if: steps.built-deps.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Force Build Dependencies If Missing
         run: |
           # Force build if required files don't exist, regardless of cache status
@@ -306,6 +322,14 @@ jobs:
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Save Built Dependencies
+        if: steps.built-deps.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Install Ruby Dependencies
         run: |
           echo "Installing Ruby dependencies..."
@@ -467,6 +491,14 @@ jobs:
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Save Built Dependencies
+        if: steps.built-deps.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Setup Android private modules
         run: |
           cd ${{ env.APP_PATH }}

@@ -1,0 +1,38 @@
+name: Cache ccache
+
+description: Setup and cache ccache for faster C/C++ compilation.
+
+inputs:
+  key:
+    description: Custom cache key (optional, will be auto-generated if not provided)
+    required: false
+    default: ""
+  job-name:
+    description: GitHub job name (for auto-generated key)
+    required: false
+    default: ${{ github.job }}
+  runner-os:
+    description: Runner OS (for auto-generated key)
+    required: false
+    default: ${{ runner.os }}
+  xcode-version:
+    description: Xcode version (for auto-generated key)
+    required: false
+    default: ""
+
+outputs:
+  cache-hit:
+    description: Whether an exact match was found for the cache key
+    value: ${{ steps.cache.outputs.cache-hit }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: cache
+      name: Setup ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ${{ inputs.key != '' && inputs.key || format('{0}-{1}{2}', inputs.job-name, inputs.runner-os, inputs.xcode-version != '' && format('-{0}', inputs.xcode-version) || '') }}
+    - name: Add ccache to PATH
+      shell: bash
+      run: echo "/usr/local/opt/ccache/libexec" >> "$GITHUB_PATH"

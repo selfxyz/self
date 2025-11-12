@@ -1,0 +1,72 @@
+name: Cache Xcode
+
+description: Cache Xcode build artifacts, DerivedData, and Index.
+
+inputs:
+  build-path:
+    description: Path to Xcode build directory
+    required: false
+    default: app/ios/build
+  derived-data-path:
+    description: Path to Xcode DerivedData
+    required: false
+    default: ~/Library/Developer/Xcode/DerivedData
+  xcode-cache-path:
+    description: Path to Xcode caches
+    required: false
+    default: ~/Library/Caches/com.apple.dt.Xcode
+  index-path:
+    description: Path to Xcode Index
+    required: false
+    default: app/ios/build/Index.noindex
+  xcode-version:
+    description: Xcode version (e.g., 16.4)
+    required: true
+  workspace-files:
+    description: Comma-separated list of workspace files to hash for cache key
+    required: false
+    default: app/ios/Podfile.lock,app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata,app/ios/Self.xcworkspace/contents.xcworkspacedata
+  podfile-lock:
+    description: Path to Podfile.lock
+    required: false
+    default: app/ios/Podfile.lock
+  cache-version:
+    description: Additional cache version segment
+    required: false
+    default: v1
+  cache-suffix:
+    description: Additional suffix for cache key (e.g., 'e2e' for E2E-specific caches)
+    required: false
+    default: ""
+
+outputs:
+  build-cache-hit:
+    description: Whether an exact match was found for the build cache key
+    value: ${{ steps.cache-build.outputs.cache-hit }}
+  index-cache-hit:
+    description: Whether an exact match was found for the index cache key
+    value: ${{ steps.cache-index.outputs.cache-hit }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: cache-build
+      name: Cache Xcode build
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ inputs.build-path }}
+          ${{ inputs.derived-data-path }}
+          ${{ inputs.xcode-cache-path }}
+        key: ${{ runner.os }}-xcode${{ inputs.cache-suffix }}-${{ inputs.xcode-version }}-${{ inputs.cache-version }}-${{ hashFiles(inputs.workspace-files) }}
+        restore-keys: |
+          ${{ runner.os }}-xcode${{ inputs.cache-suffix }}-${{ inputs.xcode-version }}-${{ inputs.cache-version }}-${{ hashFiles(inputs.podfile-lock) }}-
+          ${{ runner.os }}-xcode${{ inputs.cache-suffix }}-${{ inputs.xcode-version }}-${{ inputs.cache-version }}-
+    - id: cache-index
+      name: Cache Xcode Index
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.index-path }}
+        key: ${{ runner.os }}-xcode-index${{ inputs.cache-suffix }}-${{ inputs.xcode-version }}-${{ inputs.cache-version }}-${{ hashFiles(inputs.podfile-lock) }}
+        restore-keys: |
+          ${{ runner.os }}-xcode-index${{ inputs.cache-suffix }}-${{ inputs.xcode-version }}-${{ inputs.cache-version }}-

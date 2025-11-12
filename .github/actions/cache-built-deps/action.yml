@@ -1,5 +1,5 @@
 name: cache-built-deps
-description: Cache built JS artifacts (common + mobile-sdk-alpha)
+description: "Restore cached built JS artifacts (common + mobile-sdk-alpha). Note: Save step must be added in workflow after build completes."
 inputs:
   cache-version:
     description: Cache version string for cache key
@@ -20,11 +20,3 @@ runs:
           packages/mobile-sdk-alpha/dist
         key: built-deps-${{ inputs.cache-version }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
         fail-on-cache-miss: false
-    - name: Save Built Dependencies
-      if: steps.restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
-      with:
-        path: |
-          common/dist
-          packages/mobile-sdk-alpha/dist
-        key: built-deps-${{ inputs.cache-version }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
