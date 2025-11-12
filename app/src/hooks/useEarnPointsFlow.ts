@@ -150,7 +150,7 @@ export const useEarnPointsFlow = ({
       const hasUserAnIdentityDocumentRegistered_result =
         await hasUserAnIdentityDocumentRegistered();
       if (!hasUserAnIdentityDocumentRegistered_result) {
-        showIdentityVerificationModal();
+        navigation.navigate('CountryPicker');
         return;
       }
 
@@ -175,7 +175,6 @@ export const useEarnPointsFlow = ({
       hasReferrer,
       isReferralConfirmed,
       navigation,
-      showIdentityVerificationModal,
       showPointsDisclosureModal,
       handleReferralFlow,
     ],
