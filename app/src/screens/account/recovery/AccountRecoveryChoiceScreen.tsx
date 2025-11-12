@@ -168,7 +168,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         'Turnkey restore error:',
         error instanceof Error ? error.message : 'Unknown error',
       );
-      trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
+      trackEvent(BackupEvents.TURNKEY_RESTORE_FAILED);
     } finally {
       setRestoringFromTurnkey(false);
     }
