@@ -1512,12 +1512,54 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-compat (2.23.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-get-random-values (1.11.0):
     - React-Core
   - react-native-netinfo (11.4.1):
     - React-Core
   - react-native-nfc-manager (3.16.3):
     - React-Core
+  - react-native-passkey (3.3.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-safe-area-context (5.6.1):
     - DoubleConversion
     - glog
@@ -1956,6 +1998,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNInAppBrowser (3.7.0):
+    - React-Core
   - RNKeychain (10.0.0):
     - DoubleConversion
     - glog
@@ -2087,7 +2131,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - Sentry/HybridSDK (= 8.53.2)
     - Yoga
-  - RNSVG (15.12.1):
+  - RNSVG (15.14.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2107,9 +2151,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNSVG/common (= 15.12.1)
+    - RNSVG/common (= 15.14.0)
     - Yoga
-  - RNSVG/common (15.12.1):
+  - RNSVG/common (15.14.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2194,9 +2238,11 @@ DEPENDENCIES:
   - react-native-biometrics (from `../node_modules/react-native-biometrics`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-cloud-storage (from `../node_modules/react-native-cloud-storage`)
+  - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-nfc-manager (from `../node_modules/react-native-nfc-manager`)
+  - react-native-passkey (from `../node_modules/react-native-passkey`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-sqlite-storage (from `../node_modules/react-native-sqlite-storage`)
   - react-native-webview (from `../node_modules/react-native-webview`)
@@ -2234,6 +2280,7 @@ DEPENDENCIES:
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - "RNFBRemoteConfig (from `../node_modules/@react-native-firebase/remote-config`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
@@ -2360,12 +2407,16 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/blur"
   react-native-cloud-storage:
     :path: "../node_modules/react-native-cloud-storage"
+  react-native-compat:
+    :path: "../node_modules/@walletconnect/react-native-compat"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-nfc-manager:
     :path: "../node_modules/react-native-nfc-manager"
+  react-native-passkey:
+    :path: "../node_modules/react-native-passkey"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-sqlite-storage:
@@ -2440,6 +2491,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/remote-config"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNInAppBrowser:
+    :path: "../node_modules/react-native-inappbrowser-reborn"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
   RNLocalize:
@@ -2534,9 +2587,11 @@ SPEC CHECKSUMS:
   react-native-biometrics: 43ed5b828646a7862dbc7945556446be00798e7d
   react-native-blur: 6334d934a9b5e67718b8f5725c44cc0a12946009
   react-native-cloud-storage: 8d89f2bc574cf11068dfd90933905974087fb9e9
+  react-native-compat: 44e82a19b6130e3965d6c8ff37dbc1546d477f0f
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-nfc-manager: 66a00e5ddab9704efebe19d605b1b8afb0bb1bd7
+  react-native-passkey: 8853c3c635164864da68a6dbbcec7148506c3bcf
   react-native-safe-area-context: 90a89cb349c7f8168a707e6452288c2f665b9fd1
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
   react-native-webview: 3f45e19f0ffc3701168768a6c37695e0f252410e
@@ -2574,12 +2629,13 @@ SPEC CHECKSUMS:
   RNFBMessaging: 92325b0d5619ac90ef023a23cfd16fd3b91d0a88
   RNFBRemoteConfig: a569bacaa410acfcaba769370e53a787f80fd13b
   RNGestureHandler: a63b531307e5b2e6ea21d053a1a7ad4cf9695c57
+  RNInAppBrowser: 6d3eb68d471b9834335c664704719b8be1bfdb20
   RNKeychain: 471ceef8c13f15a5534c3cd2674dbbd9d0680e52
   RNLocalize: 7683e450496a5aea9a2dab3745bfefa7341d3f5e
   RNReactNativeHapticFeedback: e526ac4a7ca9fb23c7843ea4fd7d823166054c73
   RNScreens: 806e1449a8ec63c2a4e4cf8a63cc80203ccda9b8
   RNSentry: 6ad982be2c8e32dab912afb4132b6a0d88484ea0
-  RNSVG: 0c1fc3e7b147949dc15644845e9124947ac8c9bb
+  RNSVG: e1cf5a9a5aa12c69f2ec47031defbd87ae7fb697
   segment-analytics-react-native: a0c29c75ede1989118b50cac96b9495ea5c91a1d
   Sentry: 59993bffde4a1ac297ba6d268dc4bbce068d7c1b
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748

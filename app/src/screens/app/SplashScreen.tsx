@@ -30,6 +30,7 @@ import {
   migrateFromLegacyStorage,
 } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 
 const SplashScreen: React.FC = ({}) => {
   const selfClient = useSelfClient();
@@ -72,7 +73,7 @@ const SplashScreen: React.FC = ({}) => {
           }
 
           const hasValid = await hasAnyValidRegisteredDocument(selfClient);
-          const parentScreen = hasValid ? 'Home' : 'Launch';
+          const parentScreen = hasValid ? 'Home' : 'Home';
 
           // Migrate keychain to secure storage with biometric protection
           try {
@@ -85,7 +86,7 @@ const SplashScreen: React.FC = ({}) => {
 
           const queuedUrl = getAndClearQueuedUrl();
           if (queuedUrl) {
-            if (typeof __DEV__ !== 'undefined' && __DEV__) {
+            if (IS_DEV_MODE) {
               console.log('Processing queued deeplink:', queuedUrl);
             }
             setQueuedDeepLink(queuedUrl);

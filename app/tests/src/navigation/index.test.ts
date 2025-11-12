@@ -2,13 +2,73 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-// Mock ConfirmIdentificationScreen to avoid PixelRatio issues
-jest.mock(
-  '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification',
-  () => ({
-    ConfirmIdentificationScreen: ({ children }: any) => children,
-  }),
-);
+// Mock the navigation module to avoid deep import chains that overwhelm the parser
+jest.mock('@/navigation', () => {
+  const mockScreens = {
+    // App screens
+    Home: {},
+    Launch: {},
+    Loading: {},
+    Modal: {},
+    Gratification: {},
+    WebView: {},
+    Points: {},
+    // Onboarding screens
+    Disclaimer: {},
+    Splash: {},
+    // Documents screens
+    IDPicker: {},
+    IdDetails: {},
+    CountryPicker: {},
+    DocumentCamera: {},
+    DocumentCameraTrouble: {},
+    DocumentDataInfo: {},
+    DocumentDataNotFound: {},
+    DocumentNFCMethodSelection: {},
+    DocumentNFCScan: {},
+    DocumentNFCTrouble: {},
+    DocumentOnboarding: {},
+    ManageDocuments: {},
+    // Verification screens
+    ConfirmBelonging: {},
+    Prove: {},
+    ProofHistory: {},
+    ProofHistoryDetail: {},
+    ProofRequestStatus: {},
+    QRCodeViewFinder: {},
+    QRCodeTrouble: {},
+    // Account screens
+    AccountRecovery: {},
+    AccountRecoveryChoice: {},
+    AccountVerifiedSuccess: {},
+    CloudBackupSettings: {},
+    SaveRecoveryPhrase: {},
+    ShowRecoveryPhrase: {},
+    RecoverWithPhrase: {},
+    Settings: {},
+    Referral: {},
+    DeferredLinkingInfo: {},
+    // Shared screens
+    ComingSoon: {},
+    // Dev screens
+    DevSettings: {},
+    DevFeatureFlags: {},
+    DevHapticFeedback: {},
+    DevLoadingScreen: {},
+    DevPrivateKey: {},
+    CreateMock: {},
+    MockDataDeepLink: {},
+    // Aadhaar screens
+    AadhaarUpload: {},
+    AadhaarUploadSuccess: {},
+    AadhaarUploadError: {},
+  };
+
+  return {
+    navigationScreens: mockScreens,
+    navigationRef: { current: null },
+  };
+});
 
 describe('navigation', () => {
   it('should have the correct navigation screens', () => {
@@ -41,6 +101,7 @@ describe('navigation', () => {
       'DocumentNFCScan',
       'DocumentNFCTrouble',
       'DocumentOnboarding',
+      'Gratification',
       'Home',
       'IDPicker',
       'IdDetails',
@@ -49,6 +110,7 @@ describe('navigation', () => {
       'ManageDocuments',
       'MockDataDeepLink',
       'Modal',
+      'Points',
       'ProofHistory',
       'ProofHistoryDetail',
       'ProofRequestStatus',
@@ -56,6 +118,7 @@ describe('navigation', () => {
       'QRCodeTrouble',
       'QRCodeViewFinder',
       'RecoverWithPhrase',
+      'Referral',
       'SaveRecoveryPhrase',
       'Settings',
       'ShowRecoveryPhrase',

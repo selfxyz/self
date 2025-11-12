@@ -27,7 +27,7 @@ import { useSettingStore } from '@/stores/settingStore';
 const SaveRecoveryPhraseScreen: React.FC = () => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
   const { mnemonic, loadMnemonic } = useMnemonic();
-  const { cloudBackupEnabled } = useSettingStore();
+  const { cloudBackupEnabled, turnkeyBackupEnabled } = useSettingStore();
 
   const onRevealWords = useCallback(async () => {
     await loadMnemonic();
@@ -64,13 +64,14 @@ const SaveRecoveryPhraseScreen: React.FC = () => {
       >
         <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
         <Caption style={{ color: slate400 }}>
-          You can reveal your recovery phrase in settings.
+          You can reveal your recovery phrase or manage your backups in
+          settings.
         </Caption>
         <PrimaryButton onPress={onCloudBackupPress}>
-          Manage {STORAGE_NAME} backups
+          Manage {STORAGE_NAME} or Turnkey backups
         </PrimaryButton>
         <SecondaryButton onPress={onSkipPress}>
-          {userHasSeenMnemonic || cloudBackupEnabled
+          {userHasSeenMnemonic || cloudBackupEnabled || turnkeyBackupEnabled
             ? 'Continue'
             : 'Skip making a backup'}
         </SecondaryButton>

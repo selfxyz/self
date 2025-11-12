@@ -15,6 +15,9 @@
 		<string>appclips:appclip.openpassport.app</string>
 		<string>applinks:proofofpassport-merkle-tree.xyz</string>
 		<string>applinks:redirect.self.xyz</string>
+		<string>webcredentials:redirect.self.xyz</string>
+		<string>applinks:oauth-redirect.turnkey.com</string>
+		<string>webcredentials:oauth-redirect.turnkey.com</string>
 	</array>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>

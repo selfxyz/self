@@ -58,7 +58,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
           trackEvent={BackupEvents.ACCOUNT_VERIFICATION_COMPLETED}
           onPress={() => {
             buttonTap();
-            navigation.navigate('Home');
+            navigation.navigate({ name: 'Home', params: {} });
           }}
         >
           Continue

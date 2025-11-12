@@ -11,18 +11,31 @@ import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { navigationRef } from '@/navigation';
 import useUserStore from '@/stores/userStore';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 
 // Validation patterns for each expected parameter
 const VALIDATION_PATTERNS = {
   sessionId: /^[a-zA-Z0-9_-]+$/,
   selfApp: /^[\s\S]*$/, // JSON strings can contain any characters, we'll validate JSON parsing separately
   mock_passport: /^[\s\S]*$/, // JSON strings can contain any characters, we'll validate JSON parsing separately
+  code: /^[a-zA-Z0-9._/-]+$/, // OAuth authorization code (may include forward slashes)
+  state: /^[a-zA-Z0-9._-]+$/, // OAuth state parameter for CSRF protection
+  id_token: /^[\w\-.]+$/, // JWT token format (base64url encoded segments)
+  scope: /^[\w\s%:/.=&+*-]+$/, // OAuth scopes (can include spaces, encoded chars, and URL-encoded content)
+  scheme: /^https?$/, // Redirect scheme (http or https)
+  referrer: /^0x[a-fA-F0-9]+$/,
 } as const;
 
 type ValidatedParams = {
   sessionId?: string;
   selfApp?: string;
   mock_passport?: string;
+  code?: string;
+  state?: string;
+  id_token?: string;
+  scope?: string;
+  scheme?: string;
+  referrer?: string;
 };
 
 // Define proper types for the mock data structure
@@ -51,7 +64,7 @@ const validateAndSanitizeParam = (
   try {
     decodedValue = decodeURIComponent(value);
   } catch (error) {
-    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+    if (IS_DEV_MODE) {
       console.error(`Error decoding parameter ${key}:`, error);
     }
     return undefined;
@@ -62,7 +75,7 @@ const validateAndSanitizeParam = (
     const pattern =
       VALIDATION_PATTERNS[key as keyof typeof VALIDATION_PATTERNS];
     if (!pattern.test(decodedValue)) {
-      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      if (IS_DEV_MODE) {
         console.error(`Parameter ${key} failed validation:`, decodedValue);
       }
       return undefined;
@@ -97,7 +110,14 @@ export const getAndClearQueuedUrl = (): string | null => {
 
 export const handleUrl = (selfClient: SelfClient, uri: string) => {
   const validatedParams = parseAndValidateUrlParams(uri);
-  const { sessionId, selfApp: selfAppStr, mock_passport } = validatedParams;
+  const {
+    sessionId,
+    selfApp: selfAppStr,
+    mock_passport,
+    code,
+    id_token,
+    referrer,
+  } = validatedParams;
 
   if (selfAppStr) {
     try {
@@ -109,7 +129,7 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
 
       return;
     } catch (error) {
-      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      if (IS_DEV_MODE) {
         console.error('Error parsing selfApp:', error);
       }
       navigationRef.reset(
@@ -128,12 +148,12 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
 
       // Validate nationality is a valid country code
       const isValidCountryCode = (
-        code: string | undefined,
-      ): code is IdDocInput['nationality'] => {
-        if (!code) return false;
+        nationalityCode: string | undefined,
+      ): nationalityCode is IdDocInput['nationality'] => {
+        if (!nationalityCode) return false;
         // Check if the code exists as a value in the countries object
         return Object.values(countries).some(
-          countryCode => countryCode === code,
+          countryCode => countryCode === nationalityCode,
         );
       };
 
@@ -152,19 +172,37 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
         createDeeplinkNavigationState('MockDataDeepLink', correctParentScreen),
       );
     } catch (error) {
-      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      if (IS_DEV_MODE) {
         console.error('Error parsing mock_passport data or navigating:', error);
       }
       navigationRef.reset(
         createDeeplinkNavigationState('QRCodeTrouble', correctParentScreen),
       );
     }
+  } else if (referrer && typeof referrer === 'string') {
+    useUserStore.getState().setDeepLinkReferrer(referrer);
+
+    // Navigate to HomeScreen - it will show confirmation modal and then navigate to GratificationScreen
+    navigationRef.reset({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
   } else if (Platform.OS === 'web') {
     // TODO: web handle links if we need to idk if we do
     // For web, we can handle the URL some other way if we dont do this loading app in web always navigates to QRCodeTrouble
-  } else {
+  } else if (code || id_token) {
+    // Handle Turnkey OAuth redirect
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
-      console.error('No sessionId or selfApp found in the data');
+      console.log(
+        '[Deeplinks] Turnkey OAuth redirect received with valid parameters',
+      );
+    }
+    return;
+  } else {
+    if (IS_DEV_MODE) {
+      console.error(
+        'No sessionId, selfApp or valid OAuth parameters found in the data',
+      );
     }
     navigationRef.reset(
       createDeeplinkNavigationState('QRCodeTrouble', correctParentScreen),
@@ -182,6 +220,22 @@ export const parseAndValidateUrlParams = (uri: string): ValidatedParams => {
   const parsed = parseUrl(uri);
   const query = parsed.query || {};
 
+  if (uri.includes('#')) {
+    const fragmentString = uri.split('#')[1];
+    if (fragmentString) {
+      try {
+        const fragmentParams = new URLSearchParams(fragmentString);
+        for (const [key, value] of fragmentParams.entries()) {
+          query[key] = value;
+        }
+      } catch (error) {
+        if (typeof __DEV__ !== 'undefined' && __DEV__) {
+          console.error('Error parsing fragment parameters:', error);
+        }
+      }
+    }
+  }
+
   const validatedParams: ValidatedParams = {};
 
   // Only process expected parameters and validate them
@@ -191,7 +245,7 @@ export const parseAndValidateUrlParams = (uri: string): ValidatedParams => {
       if (sanitizedValue !== undefined) {
         validatedParams[key as keyof ValidatedParams] = sanitizedValue;
       }
-    } else if (typeof __DEV__ !== 'undefined' && __DEV__) {
+    } else if (IS_DEV_MODE) {
       // Log unexpected parameters in development
       console.warn(`Unexpected or invalid parameter ignored: ${key}`);
     }
@@ -217,16 +271,34 @@ export const setupUniversalLinkListenerInNavigation = (
   // Get the initial URL and store it for splash screen handling
   Linking.getInitialURL().then(url => {
     if (url) {
-      // Store the initial URL instead of handling it immediately
+      // Check if it's an OAuth callback - if so, don't queue it, let Turnkey handle it
+      // const validatedParams = parseAndValidateUrlParams(url);
+      // if (!validatedParams.code && !validatedParams.id_token) {
+      //   console.log(
+      //     'not an OAuth callback, storing for splash screen handling',
+      //   );
+      // Not an OAuth callback, store for splash screen handling
       queuedInitialUrl = url;
+      // }
     }
   });
-
   // Handle subsequent URL events normally (when app is already running)
   const linkingEventListener = Linking.addEventListener('url', ({ url }) => {
+    // Check if this is an OAuth callback
+    // const validatedParams = parseAndValidateUrlParams(url);
+    // // console.log('validatedParams', validatedParams);
+    // if (validatedParams.code || validatedParams.id_token) {
+    //   // This is an OAuth callback - don't handle it, let Turnkey SDK handle it
+    //   if (typeof __DEV__ !== 'undefined' && __DEV__) {
+    //     console.log(
+    //       '[Deeplinks] OAuth callback detected - letting Turnkey SDK handle it',
+    //     );
+    //   }
+    //   return; // Don't call handleUrl for OAuth callbacks
+    // }
+    // For non-OAuth URLs, handle normally
     handleUrl(selfClient, url);
   });
-
   return () => {
     linkingEventListener.remove();
   };

@@ -30,6 +30,7 @@ describe('iOS Info.plist Configuration', () => {
 
   it('lists required fonts', () => {
     expect(plistContent).toContain('<string>Advercase-Regular.otf</string>');
+    expect(plistContent).toContain('<string>DINOT-Bold.otf</string>');
     expect(plistContent).toContain('<string>DINOT-Medium.otf</string>');
   });
 });

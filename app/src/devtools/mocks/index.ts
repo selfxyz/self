@@ -4,3 +4,8 @@
 
 // Re-export all mocks for easier imports
 export * from '@/devtools/mocks/nfcScanner';
+
+// Turnkey OAuth redirect URIs
+export const TURNKEY_OAUTH_REDIRECT_URI_ANDROID = 'https://redirect.self.xyz';
+export const TURNKEY_OAUTH_REDIRECT_URI_IOS =
+  'https://oauth-redirect.turnkey.com';

@@ -146,7 +146,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     addListener(SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS, () => {
       setTimeout(() => {
         if (navigationRef.isReady()) {
-          navigationRef.navigate('AccountVerifiedSuccess');
+          navigationRef.navigate({
+            name: 'AccountVerifiedSuccess',
+            params: undefined,
+          });
         }
       }, 1000);
     });
@@ -157,9 +160,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         setTimeout(() => {
           if (navigationRef.isReady()) {
             if (hasValidDocument) {
-              navigationRef.navigate('Home');
+              navigationRef.navigate({ name: 'Home', params: {} });
             } else {
-              navigationRef.navigate('Launch');
+              navigationRef.navigate({ name: 'Launch', params: undefined });
             }
           }
         }, 3000);

@@ -36,6 +36,8 @@
   "resolutions": {
     "@babel/core": "^7.28.4",
     "@babel/runtime": "^7.28.4",
+    "@noble/curves": "1.9.7",
+    "@noble/hashes": "1.8.0",
     "@swc/core": "1.7.36",
     "@tamagui/animations-react-native": "1.126.14",
     "@tamagui/toast": "1.126.14",
@@ -44,7 +46,8 @@
     "punycode": "npm:punycode.js@^2.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-native": "0.76.9"
+    "react-native": "0.76.9",
+    "react-native-passkey": "3.3.1"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",

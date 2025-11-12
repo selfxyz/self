@@ -4,3 +4,11 @@
 
 // Re-export all testing utilities for easier imports
 export * from '@/devtools/testing/utils';
+
+// Re-export fonts from mobile-sdk-alpha
+export {
+  advercase,
+  dinot,
+  dinotBold,
+  plexMono,
+} from '@selfxyz/mobile-sdk-alpha';
