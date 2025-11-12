@@ -311,13 +311,12 @@ jobs:
           xcodebuild -version
           echo "Xcode path:"
           xcode-select -p
-      # Temporarily disabled ccache to debug CI issues
-      # - name: Setup ccache
-      #   uses: hendrikmuhs/ccache-action@v1.2
-      #   with:
-      #     key: ${{ github.job }}-${{ runner.os }}
-      # - name: Add ccache to PATH
-      #   run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.job }}-${{ runner.os }}-${{ env.XCODE_VERSION }}
+      - name: Add ccache to PATH
+        run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -331,14 +330,36 @@ jobs:
             app/ios/Pods
             ~/Library/Caches/CocoaPods
           lock-file: app/ios/Podfile.lock
-      # DerivedData caching disabled - caused intermittent build failures due to stale cache
-      # Pod caching still speeds up pod install significantly
+      - name: Cache Xcode build
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/ios/build
+            ~/Library/Developer/Xcode/DerivedData
+            ~/Library/Caches/com.apple.dt.Xcode
+          key: ${{ runner.os }}-xcode-e2e-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock', 'app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata', 'app/ios/Self.xcworkspace/contents.xcworkspacedata') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-e2e-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}-
+            ${{ runner.os }}-xcode-e2e-${{ env.XCODE_VERSION }}-
+      - name: Cache Xcode Index
+        uses: actions/cache@v4
+        with:
+          path: app/ios/build/Index.noindex
+          key: ${{ runner.os }}-xcode-index-e2e-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-index-e2e-${{ env.XCODE_VERSION }}-
       - name: Verify iOS Runtime
         run: |
           echo "📱 Verifying iOS Runtime availability..."
           echo "Available iOS runtimes:"
           xcrun simctl list runtimes | grep iOS
+      - name: Cache Built Dependencies
+        id: built-deps
+        uses: ./.github/actions/cache-built-deps
+        with:
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Build dependencies (outside main flow)
+        if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Building dependencies..."
           yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
@@ -472,14 +493,15 @@ jobs:
 
           # Use cached derived data and enable parallel builds for faster compilation
           # Additional flags disable indexing, restrict architecture, and use whole-module Swift compilation
+          # Use Release configuration for faster builds (still fully testable for E2E)
           # Use the simulator that was set up earlier in the workflow
           FORCE_BUNDLING=1 RCT_NO_LAUNCH_PACKAGER=1 \
-            xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Debug -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule || { echo "❌ iOS build failed"; exit 1; }
+            xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
           echo "Installing app on simulator..."
-          APP_PATH=$(find app/ios/build/Build/Products/Debug-iphonesimulator -name "*.app" | head -1)
+          APP_PATH=$(find app/ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -1)
           [ -z "$APP_PATH" ] && { echo "❌ Could not find built iOS app"; exit 1; }
           echo "Found app at: $APP_PATH"
 
