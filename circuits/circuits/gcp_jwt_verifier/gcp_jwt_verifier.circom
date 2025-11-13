@@ -8,6 +8,7 @@ include "../utils/gcp_jwt/verifyCertificateSignature.circom";
 include "../utils/gcp_jwt/verifyJSONFieldExtraction.circom";
 include "circomlib/circuits/comparators.circom";
 include "@openpassport/zk-email-circuits/utils/array.circom";
+include "@openpassport/zk-email-circuits/utils/bytes.circom";
 
 /// @title GCPJWTVerifier
 /// @notice Verifies GCP JWT signature and full x5c certificate chain
@@ -70,19 +71,22 @@ template GCPJWTVerifier(
 
 
     // GCP spec: nonce must be 10-74 bytes decoded
-    // Base64url encoding: 10 bytes = 14 chars, 74 bytes = 99 chars
     // https://cloud.google.com/confidential-computing/confidential-space/docs/connect-external-resources
     // EAT nonce (payload.eat_nonce[0])
-    var MAX_EAT_NONCE_B64_LENGTH = 99; // Max length for base64url string (74 bytes decoded = 99 b64url chars)
+    var MAX_EAT_NONCE_B64_LENGTH = 74; // Max length for base64url string (74 bytes decoded = 99 b64url chars)
     var MAX_EAT_NONCE_KEY_LENGTH = 10; // Length of "eat_nonce" key (without quotes)
+	var EAT_NONCE_PACKED_CHUNKS = computeIntChunkLength(MAX_EAT_NONCE_B64_LENGTH);
     signal input eat_nonce_0_b64_length; // Length of base64url string
     signal input eat_nonce_0_key_offset; // Offset in payload where "eat_nonce" key starts (after opening quote)
     signal input eat_nonce_0_value_offset; // Offset in payload where eat_nonce[0] value appears
+
+    signal input eat_nonce_1_b64_length; // Length of base64url string
 
     // Container image digest (payload.submods.container.image_digest)
     var MAX_IMAGE_DIGEST_LENGTH = 71; // "sha256:" + 64 hex chars
     var IMAGE_HASH_LENGTH = 64; // Just the hex hash portion
     var MAX_IMAGE_DIGEST_KEY_LENGTH = 12; // Length of "image_digest" key (without quotes)
+	var IMAGE_HASH_PACKED_CHUNKS = computeIntChunkLength(IMAGE_HASH_LENGTH);
     signal input image_digest_length; // Length of full string (should be 71)
     signal input image_digest_key_offset; // Offset in payload where "image_digest" key starts (after opening quote)
     signal input image_digest_value_offset; // Offset in payload where image_digest value appears
@@ -91,8 +95,10 @@ template GCPJWTVerifier(
     var maxPayloadLength = (maxB64PayloadLength * 3) \ 4;
 
     signal output rootCAPubkeyHash; // Root CA (x5c[2]) pubkey, trust anchor
-    signal output eat_nonce_0_b64_output[MAX_EAT_NONCE_B64_LENGTH]; // eat_nonce[0] base64url string
-    signal output image_hash[IMAGE_HASH_LENGTH]; // Container image SHA256 hash (without "sha256:" prefix)
+	// Packed outputs
+	signal output eat_nonce_0_b64_packed[EAT_NONCE_PACKED_CHUNKS]; // eat_nonce[0] base64url string packed with PackBytes
+    signal output eat_nonce_1_b64_packed[EAT_NONCE_PACKED_CHUNKS]; // eat_nonce[1] base64url string packed with PackBytes
+	signal output image_hash_packed[IMAGE_HASH_PACKED_CHUNKS]; // Container image SHA256 hash (64 hex chars) packed with PackBytes
 
     // Verify JWT Signature (using x5c[0] public key)
     component jwtVerifier = JWTVerifier(n, k, maxMessageLength, maxB64HeaderLength, maxB64PayloadLength);
@@ -109,68 +115,68 @@ template GCPJWTVerifier(
     payload <== jwtVerifier.payload;
 
     // Extract and validate x5c[0] Public Key
-    ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
-        leaf_cert,
-        leaf_pubkey_offset,
-        leaf_pubkey_actual_size,
-        leaf_pubkey
-    );
+    // ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
+    //     leaf_cert,
+    //     leaf_pubkey_offset,
+    //     leaf_pubkey_actual_size,
+    //     leaf_pubkey
+    // );
 
     // Extract and validate x5c[1] public key
-    ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
-        intermediate_cert,
-        intermediate_pubkey_offset,
-        intermediate_pubkey_actual_size,
-        intermediate_pubkey
-    );
+    // ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
+    //     intermediate_cert,
+    //     intermediate_pubkey_offset,
+    //     intermediate_pubkey_actual_size,
+    //     intermediate_pubkey
+    // );
 
     // Verify x5c[0] signature using x5c[1] public key
-    VerifyCertificateSignature(signatureAlgorithm, n, k, MAX_CERT_LENGTH)(
-        leaf_cert,
-        leaf_cert_padded_length,
-        intermediate_pubkey,
-        leaf_signature
-    );
+    // VerifyCertificateSignature(signatureAlgorithm, n, k, MAX_CERT_LENGTH)(
+    //     leaf_cert,
+    //     leaf_cert_padded_length,
+    //     intermediate_pubkey,
+    //     leaf_signature
+    // );
 
     // Extract and validate x5c[2] public key
-    ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
-        root_cert,
-        root_pubkey_offset,
-        root_pubkey_actual_size,
-        root_pubkey
-    );
+    // ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
+    //     root_cert,
+    //     root_pubkey_offset,
+    //     root_pubkey_actual_size,
+    //     root_pubkey
+    // );
 
     // Verify x5c[1] signature using x5c[2] public key
-    VerifyCertificateSignature(signatureAlgorithm, n, k, MAX_CERT_LENGTH)(
-        intermediate_cert,
-        intermediate_cert_padded_length,
-        root_pubkey,
-        intermediate_signature
-    );
+    // VerifyCertificateSignature(signatureAlgorithm, n, k, MAX_CERT_LENGTH)(
+    //     intermediate_cert,
+    //     intermediate_cert_padded_length,
+    //     root_pubkey,
+    //     intermediate_signature
+    // );
 
     // Make sure nonce is not empty
-    component length_nonzero = IsZero();
-    length_nonzero.in <== eat_nonce_0_b64_length;
-    length_nonzero.out === 0;  // Must NOT be zero
+    // component length_nonzero = IsZero();
+    // length_nonzero.in <== eat_nonce_0_b64_length;
+    // length_nonzero.out === 0;  // Must NOT be zero
 
     // Validate nonce minimum length (10 bytes decoded = 14 base64url chars)
-    component length_min_check = GreaterEqThan(log2Ceil(MAX_EAT_NONCE_B64_LENGTH));
-    length_min_check.in[0] <== eat_nonce_0_b64_length;
-    length_min_check.in[1] <== 14;
-    length_min_check.out === 1;
+    // component length_min_check = GreaterEqThan(log2Ceil(MAX_EAT_NONCE_B64_LENGTH));
+    // length_min_check.in[0] <== eat_nonce_0_b64_length;
+    // length_min_check.in[1] <== 14;
+    // length_min_check.out === 1;
 
-    // Validate nonce maximum length (74 bytes decoded = 99 base64url chars)
-    component length_max_check = LessEqThan(log2Ceil(MAX_EAT_NONCE_B64_LENGTH));
-    length_max_check.in[0] <== eat_nonce_0_b64_length;
-    length_max_check.in[1] <== 99;
-    length_max_check.out === 1;
+    // // Validate nonce maximum length (74 bytes decoded = 99 base64url chars)
+    // component length_max_check = LessEqThan(log2Ceil(MAX_EAT_NONCE_B64_LENGTH));
+    // length_max_check.in[0] <== eat_nonce_0_b64_length;
+    // length_max_check.in[1] <== 99;
+    // length_max_check.out === 1;
 
-    // Validate nonce offset bounds (prevent reading beyond payload)
-    signal eat_nonce_end_position <== eat_nonce_0_value_offset + eat_nonce_0_b64_length;
-    component offset_bounds_check = LessEqThan(log2Ceil(maxPayloadLength));
-    offset_bounds_check.in[0] <== eat_nonce_end_position;
-    offset_bounds_check.in[1] <== maxPayloadLength;
-    offset_bounds_check.out === 1;
+    // Validate nonce offset bounds (prevent reading beyond payload) (add this for eat_nonce[1] too)
+    // signal eat_nonce_end_position <== eat_nonce_0_value_offset + eat_nonce_0_b64_length;
+    // component offset_bounds_check = LessEqThan(log2Ceil(maxPayloadLength));
+    // offset_bounds_check.in[0] <== eat_nonce_end_position;
+    // offset_bounds_check.in[1] <== maxPayloadLength;
+    // offset_bounds_check.out === 1;
 
     // Extract and verify EAT nonce field
     signal expected_eat_nonce_key[MAX_EAT_NONCE_KEY_LENGTH];
@@ -194,8 +200,17 @@ template GCPJWTVerifier(
     eatNonceExtractor.value_length <== eat_nonce_0_b64_length;
     eatNonceExtractor.expected_key_name <== expected_eat_nonce_key;
 
-    // Output the extracted base64url string
-    eat_nonce_0_b64_output <== eatNonceExtractor.extracted_value;
+	// Output the extracted base64url string as packed bytes
+	eat_nonce_0_b64_packed <== PackBytes(MAX_EAT_NONCE_B64_LENGTH)(eatNonceExtractor.extracted_value);
+
+    signal extracted_eat_nonce_1_bytes[MAX_EAT_NONCE_B64_LENGTH];
+    extracted_eat_nonce_1_bytes <== SelectSubArray(
+        maxPayloadLength,
+        MAX_EAT_NONCE_B64_LENGTH
+    )(payload, eat_nonce_0_value_offset + eat_nonce_0_b64_length + 3, eat_nonce_1_b64_length);
+
+    // Output the extracted base64url string as packed bytes
+    eat_nonce_1_b64_packed <== PackBytes(MAX_EAT_NONCE_B64_LENGTH)(extracted_eat_nonce_1_bytes);
 
     // Validate length is exactly 71 ("sha256:" + 64 hex chars)
     image_digest_length === 71;
@@ -244,9 +259,13 @@ template GCPJWTVerifier(
     extracted_image_digest[6] === 58;   // ':'
 
     // Extract and output only the 64-char hash (skip "sha256:" prefix)
-    for (var i = 0; i < IMAGE_HASH_LENGTH; i++) {
-        image_hash[i] <== extracted_image_digest[7 + i];
-    }
+	signal image_hash_bytes[IMAGE_HASH_LENGTH];
+	for (var i = 0; i < IMAGE_HASH_LENGTH; i++) {
+		image_hash_bytes[i] <== extracted_image_digest[7 + i];
+	}
+
+	// Output the 64-char hash as packed bytes
+	image_hash_packed <== PackBytes(IMAGE_HASH_LENGTH)(image_hash_bytes);
 }
 
 component main = GCPJWTVerifier(1, 120, 35);

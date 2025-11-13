@@ -251,10 +251,6 @@ async function main() {
       );
     }
 
-    // Decode for verification/logging (not used in circuit)
-    const eatNonce0Buffer = Buffer.from(eatNonce0Base64url, 'base64url');
-    console.log(`[INFO] eat_nonce[0] decoded: ${eatNonce0Buffer.length} bytes`);
-
     // Find offset of eat_nonce[0] in the decoded payload JSON
     // Decode the payload from base64url to get the exact JSON string
     const payloadJSON = Buffer.from(payloadB64, 'base64url').toString('utf8');
@@ -283,6 +279,30 @@ async function main() {
     const eatNonce0CharCodes = new Array(MAX_EAT_NONCE_B64_LENGTH).fill(0);
     for (let i = 0; i < eatNonce0Base64url.length; i++) {
       eatNonce0CharCodes[i] = eatNonce0Base64url.charCodeAt(i);
+    }
+
+    const eatNonce1Base64url = payload.eat_nonce[1];
+    console.log(`[INFO] eat_nonce[1] (base64url): ${eatNonce1Base64url}`);
+    console.log(`[INFO] eat_nonce[1] string length: ${eatNonce1Base64url.length} characters`);
+
+    if (eatNonce1Base64url.length > MAX_EAT_NONCE_B64_LENGTH) {
+      throw new Error(
+        `[ERROR] eat_nonce[1] length ${eatNonce1Base64url.length} exceeds max ${MAX_EAT_NONCE_B64_LENGTH}`
+      );
+    }
+
+    const eatNonce1ValueOffset = payloadJSON.indexOf(eatNonce1Base64url);
+    if (eatNonce1ValueOffset === -1) {
+      console.error('[ERROR] Could not find eat_nonce[1] value in decoded payload JSON');
+      console.error('[DEBUG] Payload JSON:', payloadJSON);
+      console.error('[DEBUG] Looking for:', eatNonce1Base64url);
+      throw new Error('[ERROR] Could not find eat_nonce[1] value in decoded payload JSON');
+    }
+    console.log(`[INFO] eat_nonce[1] value offset in payload: ${eatNonce1ValueOffset}`);
+
+    const eatNonce1CharCodes = new Array(MAX_EAT_NONCE_B64_LENGTH).fill(0);
+    for (let i = 0; i < eatNonce1Base64url.length; i++) {
+      eatNonce1CharCodes[i] = eatNonce1Base64url.charCodeAt(i);
     }
 
     // Extract image_digest from payload.submods.container.image_digest
@@ -377,6 +397,9 @@ async function main() {
       eat_nonce_0_b64_length: eatNonce0Base64url.length.toString(),
       eat_nonce_0_key_offset: eatNonce0KeyOffset.toString(),
       eat_nonce_0_value_offset: eatNonce0ValueOffset.toString(),
+
+      // EAT nonce[1] (circuit will extract value directly from payload)
+      eat_nonce_1_b64_length: eatNonce1Base64url.length.toString(),
 
       // Container image digest (circuit will extract value directly from payload)
       image_digest_length: imageDigest.length.toString(),
