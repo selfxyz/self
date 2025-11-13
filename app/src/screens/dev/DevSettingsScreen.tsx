@@ -552,10 +552,20 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           text: 'Logout',
           style: 'destructive',
           onPress: () => {
-            logout();
-            Alert.alert('Success', 'Turnkey logged out successfully.', [
-              { text: 'OK' },
-            ]);
+            try {
+              logout();
+              Alert.alert('Success', 'Turnkey logged out successfully.', [
+                { text: 'OK' },
+              ]);
+            } catch (error) {
+              Alert.alert(
+                'Error',
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to logout from Turnkey',
+                [{ text: 'OK' }],
+              );
+            }
           },
         },
       ],
@@ -572,10 +582,20 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           text: 'Clear',
           style: 'destructive',
           onPress: async () => {
-            await deleteBackups();
-            Alert.alert('Success', 'Turnkey backup cleared successfully.', [
-              { text: 'OK' },
-            ]);
+            try {
+              await deleteBackups();
+              Alert.alert('Success', 'Turnkey backup cleared successfully.', [
+                { text: 'OK' },
+              ]);
+            } catch (error) {
+              Alert.alert(
+                'Error',
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to clear turnkey backup',
+                [{ text: 'OK' }],
+              );
+            }
           },
         },
       ],

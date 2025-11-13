@@ -128,23 +128,22 @@ export function useTurnkeyUtils() {
         return exportedWallet;
       },
       deleteBackups: async (authenticate: boolean = true): Promise<void> => {
-        try {
-          await authenticateIfNeeded(authenticate);
+        await authenticateIfNeeded(authenticate);
 
-          const fetchedWallets = await fetchWallets();
-          if (fetchedWallets.length === 0) {
-            setTurnkeyBackupEnabled(false);
-            return;
-          }
-          await httpClient?.deleteWallets({
-            walletIds: fetchedWallets.map(wallet => wallet.walletId),
-            deleteWithoutExport: true,
-          });
+        const fetchedWallets = await fetchWallets();
+        if (fetchedWallets.length === 0) {
           setTurnkeyBackupEnabled(false);
-          await refreshWallets();
-        } catch (error) {
-          console.error('deleteBackups error:', error);
+          return;
         }
+        if (!httpClient) {
+          throw new Error('Turnkey client not available');
+        }
+        await httpClient?.deleteWallets({
+          walletIds: fetchedWallets.map(wallet => wallet.walletId),
+          deleteWithoutExport: true,
+        });
+        setTurnkeyBackupEnabled(false);
+        await refreshWallets();
       },
       logout,
       turnkeyWallets,
