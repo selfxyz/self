@@ -138,10 +138,6 @@ const HomeScreen: React.FC = () => {
     },
   });
 
-  const onPointsInfoPress = useCallback(() => {
-    navigation.navigate('PointsInfo');
-  }, [navigation]);
-
   const { onEarnPointsPress } = useEarnPointsFlow({
     hasReferrer,
     isReferralConfirmed,
@@ -272,22 +268,17 @@ const HomeScreen: React.FC = () => {
             <LogoInversed width={33} height={33} />
           </View>
           <YStack gap={4}>
-            <XStack gap={8} alignItems="center">
-              <Text
-                color={black}
-                fontFamily={dinot}
-                fontSize={20}
-                fontStyle="normal"
-                fontWeight="500"
-                lineHeight={22}
-                textTransform="uppercase"
-              >
-                {`${selfPoints} SELF POINTS`}
-              </Text>
-              <Pressable onPress={onPointsInfoPress}>
-                <HelpCircle size={24} color={blue600} />
-              </Pressable>
-            </XStack>
+            <Text
+              color={black}
+              fontFamily={dinot}
+              fontSize={20}
+              fontStyle="normal"
+              fontWeight="500"
+              lineHeight={22}
+              textTransform="uppercase"
+            >
+              {`${selfPoints} SELF POINTS`}
+            </Text>
             <Text
               color={black}
               width="60%"

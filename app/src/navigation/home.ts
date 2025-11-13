@@ -53,8 +53,9 @@ const homeScreens = {
   PointsInfo: {
     screen: PointsInfoScreen,
     options: {
-      headerShown: true,
-      title: 'About Self Points',
+      headerBackTitle: 'close',
+      title: 'Self Points',
+      animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
   },
 };

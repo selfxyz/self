@@ -163,7 +163,12 @@ export type RootStackParamList = Omit<
     testReferralFlow?: boolean;
   };
   Points: undefined;
-  PointsInfo: undefined;
+  PointsInfo:
+    | {
+        showNextButton?: boolean;
+        onNextButtonPress?: () => void;
+      }
+    | undefined;
   IdDetails: undefined;
 
   // Onboarding screens
