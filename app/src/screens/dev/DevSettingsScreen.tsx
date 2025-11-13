@@ -6,6 +6,7 @@ import type { PropsWithChildren } from 'react';
 import React, {
   cloneElement,
   isValidElement,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -16,6 +17,7 @@ import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
+import { AuthState, useTurnkey } from '@turnkey/react-native-wallet-kit';
 
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
@@ -298,6 +300,10 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const { clearDocumentCatalogForMigrationTesting } = usePassport();
   const clearPointEvents = usePointEventStore(state => state.clearEvents);
   const { deleteBackups, logout } = useTurnkeyUtils();
+  const { authState } = useTurnkey();
+  const turnkeyBackupEnabled = useSettingStore(
+    state => state.turnkeyBackupEnabled,
+  );
   const { resetBackupForPoints } = useSettingStore();
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
@@ -447,7 +453,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     );
   };
 
-  const handleClearDocumentCatalogPress = () => {
+  const handleClearDocumentCatalogPress = useCallback(async () => {
     Alert.alert(
       'Clear Document Catalog',
       'Are you sure you want to clear the document catalog?\n\nThis will remove all documents from the new storage system but preserve legacy storage for migration testing. You will need to restart the app to test migration.',
@@ -465,9 +471,9 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         },
       ],
     );
-  };
+  }, [clearDocumentCatalogForMigrationTesting]);
 
-  const handleClearPointEventsPress = () => {
+  const handleClearPointEventsPress = useCallback(async () => {
     Alert.alert(
       'Clear Point Events',
       'Are you sure you want to clear all point events from local storage?\n\nThis will reset your point history but not affect your actual points on the blockchain.',
@@ -488,9 +494,9 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         },
       ],
     );
-  };
+  }, [clearPointEvents]);
 
-  const handleResetBackupStatePress = () => {
+  const handleResetBackupStatePress = useCallback(() => {
     Alert.alert(
       'Reset Backup State',
       'Are you sure you want to reset the backup state?\n\nThis will allow you to see and trigger the backup points flow again.',
@@ -511,9 +517,9 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         },
       ],
     );
-  };
+  }, [resetBackupForPoints]);
 
-  const handleClearBackupEventsPress = () => {
+  const handleClearBackupEventsPress = useCallback(async () => {
     Alert.alert(
       'Clear Backup Events',
       'Are you sure you want to clear all backup point events from local storage?\n\nThis will remove backup events from your point history.',
@@ -540,9 +546,9 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         },
       ],
     );
-  };
+  }, []);
 
-  const handleLogoutTurnkeyPress = () => {
+  const handleLogoutTurnkeyPress = useCallback(() => {
     Alert.alert(
       'Logout Turnkey',
       'Are you sure you want to logout of turnkey?\n\nThis will logout you from turnkey and you will need to sign in again.',
@@ -554,6 +560,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           onPress: () => {
             try {
               logout();
+              useSettingStore.getState().setTurnkeyBackupEnabled(false);
               Alert.alert('Success', 'Turnkey logged out successfully.', [
                 { text: 'OK' },
               ]);
@@ -570,9 +577,9 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         },
       ],
     );
-  };
+  }, [logout]);
 
-  const handleClearTurnkeyBackupPress = () => {
+  const handleClearTurnkeyBackupPress = useCallback(() => {
     Alert.alert(
       'Clear Turnkey Backup',
       'Are you sure you want to clear the turnkey backup?\n\nThis will remove all turnkey backups linked with your email.',
@@ -600,7 +607,64 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         },
       ],
     );
-  };
+  }, [deleteBackups]);
+
+  const dangerZoneItems = useMemo(() => {
+    const baseItems = [
+      {
+        label: 'Delete your private key',
+        onPress: handleClearSecretsPress,
+        dangerTheme: true,
+      },
+      {
+        label: 'Clear document catalog',
+        onPress: handleClearDocumentCatalogPress,
+        dangerTheme: true,
+      },
+      {
+        label: 'Clear point events',
+        onPress: handleClearPointEventsPress,
+        dangerTheme: true,
+      },
+      {
+        label: 'Reset backup state',
+        onPress: handleResetBackupStatePress,
+        dangerTheme: true,
+      },
+      {
+        label: 'Clear backup events',
+        onPress: handleClearBackupEventsPress,
+        dangerTheme: true,
+      },
+    ];
+
+    if (authState === AuthState.Authenticated || turnkeyBackupEnabled) {
+      return [
+        ...baseItems,
+        {
+          label: 'Logout Turnkey',
+          onPress: handleLogoutTurnkeyPress,
+          dangerTheme: true,
+        },
+        {
+          label: 'Clear Turnkey Backup',
+          onPress: handleClearTurnkeyBackupPress,
+          dangerTheme: true,
+        },
+      ];
+    }
+
+    return baseItems;
+  }, [
+    authState,
+    handleClearBackupEventsPress,
+    handleClearDocumentCatalogPress,
+    handleClearPointEventsPress,
+    handleClearTurnkeyBackupPress,
+    handleLogoutTurnkeyPress,
+    handleResetBackupStatePress,
+    turnkeyBackupEnabled,
+  ]);
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
@@ -763,43 +827,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           description="These actions are sensitive"
           darkMode={true}
         >
-          {[
-            {
-              label: 'Delete your private key',
-              onPress: handleClearSecretsPress,
-              dangerTheme: true,
-            },
-            {
-              label: 'Clear document catalog',
-              onPress: handleClearDocumentCatalogPress,
-              dangerTheme: true,
-            },
-            {
-              label: 'Clear point events',
-              onPress: handleClearPointEventsPress,
-              dangerTheme: true,
-            },
-            {
-              label: 'Reset backup state',
-              onPress: handleResetBackupStatePress,
-              dangerTheme: true,
-            },
-            {
-              label: 'Clear backup events',
-              onPress: handleClearBackupEventsPress,
-              dangerTheme: true,
-            },
-            {
-              label: 'Logout Turnkey',
-              onPress: handleLogoutTurnkeyPress,
-              dangerTheme: true,
-            },
-            {
-              label: 'Clear Turnkey Backup',
-              onPress: handleClearTurnkeyBackupPress,
-              dangerTheme: true,
-            },
-          ].map(({ label, onPress, dangerTheme }) => (
+          {dangerZoneItems.map(({ label, onPress, dangerTheme }) => (
             <Button
               key={label}
               style={{ backgroundColor: dangerTheme ? red500 : white }}
