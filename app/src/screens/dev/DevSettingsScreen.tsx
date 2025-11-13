@@ -47,6 +47,7 @@ import {
   subscribeToTopics,
   unsubscribeFromTopics,
 } from '@/utils/notifications/notificationService';
+import { useTurnkeyUtils } from '@/utils/turnkey';
 
 interface TopicToggleButtonProps {
   label: string;
@@ -296,6 +297,7 @@ const ScreenSelector = ({}) => {
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const { clearDocumentCatalogForMigrationTesting } = usePassport();
   const clearPointEvents = usePointEventStore(state => state.clearEvents);
+  const { deleteBackups, logout } = useTurnkeyUtils();
   const { resetBackupForPoints } = useSettingStore();
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
@@ -540,6 +542,46 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     );
   };
 
+  const handleLogoutTurnkeyPress = () => {
+    Alert.alert(
+      'Logout Turnkey',
+      'Are you sure you want to logout of turnkey?\n\nThis will logout you from turnkey and you will need to sign in again.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: () => {
+            logout();
+            Alert.alert('Success', 'Turnkey logged out successfully.', [
+              { text: 'OK' },
+            ]);
+          },
+        },
+      ],
+    );
+  };
+
+  const handleClearTurnkeyBackupPress = () => {
+    Alert.alert(
+      'Clear Turnkey Backup',
+      'Are you sure you want to clear the turnkey backup?\n\nThis will remove all turnkey backups linked with your email.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteBackups();
+            Alert.alert('Success', 'Turnkey backup cleared successfully.', [
+              { text: 'OK' },
+            ]);
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <YStack
@@ -725,6 +767,16 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             {
               label: 'Clear backup events',
               onPress: handleClearBackupEventsPress,
+              dangerTheme: true,
+            },
+            {
+              label: 'Logout Turnkey',
+              onPress: handleLogoutTurnkeyPress,
+              dangerTheme: true,
+            },
+            {
+              label: 'Clear Turnkey Backup',
+              onPress: handleClearTurnkeyBackupPress,
               dangerTheme: true,
             },
           ].map(({ label, onPress, dangerTheme }) => (

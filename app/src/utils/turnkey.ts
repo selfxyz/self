@@ -17,6 +17,7 @@ export function useTurnkeyUtils() {
     importWallet,
     authState,
     logout,
+    httpClient,
   } = turnkey;
 
   const setTurnkeyBackupEnabled = useSettingStore(
@@ -126,6 +127,25 @@ export function useTurnkeyUtils() {
         });
         return exportedWallet;
       },
+      deleteBackups: async (authenticate: boolean = true): Promise<void> => {
+        try {
+          await authenticateIfNeeded(authenticate);
+
+          const fetchedWallets = await fetchWallets();
+          if (fetchedWallets.length === 0) {
+            setTurnkeyBackupEnabled(false);
+            return;
+          }
+          await httpClient?.deleteWallets({
+            walletIds: fetchedWallets.map(wallet => wallet.walletId),
+            deleteWithoutExport: true,
+          });
+          setTurnkeyBackupEnabled(false);
+          await refreshWallets();
+        } catch (error) {
+          console.error('deleteBackups error:', error);
+        }
+      },
       logout,
       turnkeyWallets,
       refreshWallets,
@@ -141,6 +161,7 @@ export function useTurnkeyUtils() {
       setTurnkeyBackupEnabled,
       importWallet,
       exportWallet,
+      httpClient,
     ],
   );
 }
