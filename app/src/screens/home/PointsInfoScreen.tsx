@@ -3,24 +3,24 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
+import { Image, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Text, View, XStack, YStack } from 'tamagui';
-import { Image, StyleSheet } from 'react-native';
+import type { StaticScreenProps } from '@react-navigation/native';
 
-import { black, slate50, slate500, white } from '@/utils/colors';
-import { dinot } from '@/utils/fonts';
-import Referral from '@/images/referral.png';
 import {
   BodyText,
   PrimaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 
-import StarIcon from '@/images/icons/star.svg';
 import CheckmarkSquareIcon from '@/images/icons/checkmark_square.svg';
-import PushNotificationsIcon from '@/images/icons/push_notifications.svg';
 import CloudBackupIcon from '@/images/icons/cloud_backup.svg';
-import { StaticScreenProps } from '@react-navigation/native';
+import PushNotificationsIcon from '@/images/icons/push_notifications.svg';
+import StarIcon from '@/images/icons/star.svg';
+import Referral from '@/images/referral.png';
+import { black, slate50, slate500, white } from '@/utils/colors';
+import { dinot } from '@/utils/fonts';
 
 type PointsInfoScreenProps = StaticScreenProps<
   | {

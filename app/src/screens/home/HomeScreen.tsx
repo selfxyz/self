@@ -5,7 +5,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, Pressable } from 'react-native';
 import { Button, ScrollView, Text, View, XStack, YStack } from 'tamagui';
-import { HelpCircle } from '@tamagui/lucide-icons';
 import {
   useFocusEffect,
   useIsFocused,
@@ -14,6 +13,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { HelpCircle } from '@tamagui/lucide-icons';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import type { DocumentMetadata } from '@selfxyz/mobile-sdk-alpha';
@@ -36,7 +36,7 @@ import UnverifiedHumanImage from '@/images/unverified_human.png';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
-import { black, slate50, slate300, blue600 } from '@/utils/colors';
+import { black, blue600, slate50, slate300 } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
 
 const HomeScreen: React.FC = () => {
