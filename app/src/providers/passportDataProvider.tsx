@@ -474,8 +474,10 @@ export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<Documen
     const catalogCreds = await Keychain.getGenericPassword({
       service: 'documentCatalog',
     });
+    // console.log('catalogCreds', catalogCreds);
     if (catalogCreds !== false) {
       const parsed = JSON.parse(catalogCreds.password);
+      // console.log('parsed', parsed);
       // Handle case where JSON.parse(null) returns null
       if (parsed === null) {
         throw new TypeError('Cannot parse null password');
