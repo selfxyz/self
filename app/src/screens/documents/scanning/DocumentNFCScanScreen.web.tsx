@@ -24,21 +24,12 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '@/utils/colors';
 
 const DocumentNFCScanScreen: React.FC = () => {
-  const selfClient = useSelfClient();
-  const navigateToLaunch = useHapticNavigation('Launch', {
-    action: 'cancel',
-  });
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
   });
 
   const onCancelPress = async () => {
-    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
-    if (hasValidDocument) {
-      navigateToHome();
-    } else {
-      navigateToLaunch();
-    }
+    navigateToHome();
   };
 
   return (

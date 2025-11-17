@@ -65,7 +65,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
 
     if (!result) {
       console.warn('Failed to restore account');
-      navigation.navigate('Launch');
+      navigation.navigate({ name: 'Home', params: {} });
       setRestoring(false);
       return;
     }
@@ -97,7 +97,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
         'Secret provided did not match a registered passport. Please try again.',
       );
       reStorePassportDataWithRightCSCA(passportData, csca as string);
-      navigation.navigate('Launch');
+      navigation.navigate({ name: 'Home', params: {} });
       setRestoring(false);
       return;
     }

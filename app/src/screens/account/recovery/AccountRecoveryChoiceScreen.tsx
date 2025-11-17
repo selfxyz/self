@@ -79,7 +79,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         if (!result) {
           console.warn('Failed to restore account');
           trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
-          navigation.navigate('Launch');
+          navigation.navigate({ name: 'Home', params: {} });
           setRestoring(false);
           return false;
         }
@@ -110,7 +110,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
             'Secret provided did not match a registered ID. Please try again.',
           );
           trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED);
-          navigation.navigate('Launch');
+          navigation.navigate({ name: 'Home', params: {} });
           setRestoring(false);
           return false;
         }

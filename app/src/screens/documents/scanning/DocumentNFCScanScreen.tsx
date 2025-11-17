@@ -447,9 +447,6 @@ const DocumentNFCScanScreen: React.FC = () => {
     trackEvent,
   ]);
 
-  const navigateToLaunch = useHapticNavigation('Launch', {
-    action: 'cancel',
-  });
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
   });
@@ -457,12 +454,7 @@ const DocumentNFCScanScreen: React.FC = () => {
   const onCancelPress = async () => {
     flushAllAnalytics();
     logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
-    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
-    if (hasValidDocument) {
-      navigateToHome();
-    } else {
-      navigateToLaunch();
-    }
+    navigateToHome();
   };
 
   useFocusEffect(

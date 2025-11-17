@@ -33,27 +33,18 @@ import { black, slate400, slate800, white } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
 
 const DocumentCameraScreen: React.FC = () => {
-  const client = useSelfClient();
   const isFocused = useIsFocused();
 
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
   const { onPassportRead } = useReadMRZ(scanStartTimeRef);
 
-  const navigateToLaunch = useHapticNavigation('Launch', {
-    action: 'cancel',
-  });
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
   });
 
   const onCancelPress = async () => {
-    const hasValidDocument = await hasAnyValidRegisteredDocument(client);
-    if (hasValidDocument) {
-      navigateToHome();
-    } else {
-      navigateToLaunch();
-    }
+    navigateToHome();
   };
 
   return (

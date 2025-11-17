@@ -159,11 +159,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       async ({ hasValidDocument }) => {
         setTimeout(() => {
           if (navigationRef.isReady()) {
-            if (hasValidDocument) {
-              navigationRef.navigate({ name: 'Home', params: {} });
-            } else {
-              navigationRef.navigate({ name: 'Launch', params: undefined });
-            }
+            navigationRef.navigate({ name: 'Home', params: {} });
           }
         }, 3000);
       },
