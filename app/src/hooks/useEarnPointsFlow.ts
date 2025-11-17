@@ -185,7 +185,7 @@ export const useEarnPointsFlow = ({
       isReferralConfirmed,
       navigation,
       showIdentityVerificationModal,
-      showPointsDisclosureModal,
+      showPointsInfoScreen,
       handleReferralFlow,
     ],
   );

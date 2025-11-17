@@ -12,7 +12,6 @@ import HomeScreen from '@/screens/home/HomeScreen';
 import PointsInfoScreen from '@/screens/home/PointsInfoScreen';
 import ProofHistoryDetailScreen from '@/screens/home/ProofHistoryDetailScreen';
 import ProofHistoryScreen from '@/screens/home/ProofHistoryScreen';
-import { black, white } from '@/utils/colors';
 
 const homeScreens = {
   Home: {

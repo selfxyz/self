@@ -8,11 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Text, View, XStack, YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 
-import {
-  BodyText,
-  PrimaryButton,
-  Title,
-} from '@selfxyz/mobile-sdk-alpha/components';
+import { PrimaryButton, Title } from '@selfxyz/mobile-sdk-alpha/components';
 
 import CheckmarkSquareIcon from '@/images/icons/checkmark_square.svg';
 import CloudBackupIcon from '@/images/icons/cloud_backup.svg';

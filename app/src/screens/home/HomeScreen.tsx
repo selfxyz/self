@@ -13,7 +13,6 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { HelpCircle } from '@tamagui/lucide-icons';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import type { DocumentMetadata } from '@selfxyz/mobile-sdk-alpha';
