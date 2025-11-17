@@ -240,7 +240,11 @@ const ScreenSelector = ({}) => {
           <Select.Group>
             {useMemo(
               () =>
-                (Object.keys(navigationScreens) as (keyof RootStackParamList)[])
+                (
+                  Object.keys(
+                    navigationScreens,
+                  ) as (keyof typeof navigationScreens)[]
+                )
                   .sort()
                   .map((item, i) => {
                     return (
