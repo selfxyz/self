@@ -41,27 +41,30 @@ export function calculateUserIdentifierHash(
   return BigInt(ripemdHash);
 }
 
-export function customHasher(pubKeyFormatted: string[]) {
-  if (pubKeyFormatted.length < 16) {
+export function customHasher(pubKeyFormatted: Array<string | bigint | number>) {
+  const asBigints: bigint[] = pubKeyFormatted.map((v) =>
+    typeof v === 'bigint' ? v : BigInt(v)
+  );
+  if (asBigints.length < 16) {
     // if k is less than 16, we can use a single poseidon hash
-    return flexiblePoseidon(pubKeyFormatted.map(BigInt)).toString();
+    return flexiblePoseidon(asBigints).toString();
   } else {
-    const rounds = Math.ceil(pubKeyFormatted.length / 16); // do up to 16 rounds of poseidon
+    const rounds = Math.ceil(asBigints.length / 16); // do up to 16 rounds of poseidon
     if (rounds > 16) {
       throw new Error('Number of rounds is greater than 16');
     }
-    const hash = new Array(rounds);
-    for (let i = 0; i < rounds; i++) {
-      hash[i] = { inputs: new Array(16).fill(BigInt(0)) };
-    }
+    const blocks: bigint[][] = Array.from({ length: rounds }, () =>
+      new Array<bigint>(16).fill(0n)
+    );
     for (let i = 0; i < rounds; i++) {
       for (let j = 0; j < 16; j++) {
-        if (i * 16 + j < pubKeyFormatted.length) {
-          hash[i].inputs[j] = BigInt(pubKeyFormatted[i * 16 + j]);
+        const idx = i * 16 + j;
+        if (idx < asBigints.length) {
+          blocks[i][j] = asBigints[idx];
         }
       }
     }
-    const finalHash = flexiblePoseidon(hash.map((h) => poseidon16(h.inputs)));
+    const finalHash = flexiblePoseidon(blocks.map((b) => poseidon16(b)));
     return finalHash.toString();
   }
 }
@@ -184,5 +187,5 @@ export function hash(
 
 export function packBytesAndPoseidon(unpacked: number[]) {
   const packed = packBytesArray(unpacked);
-  return customHasher(packed.map(String)).toString();
+  return customHasher(packed);
 }
