@@ -9,7 +9,10 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   PrimaryButton,
   SecondaryButton,
@@ -62,6 +65,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
 
   const [_selectedMethod, setSelectedMethod] = useState<BackupMethod>(null);
   const [iCloudPending, setICloudPending] = useState(false);
+  const selfClient = useSelfClient();
   // DISABLED FOR NOW: Turnkey functionality
   // const [turnkeyPending, setTurnkeyPending] = useState(false);
 
@@ -96,6 +100,25 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     ),
   );
 
+  const { showModal: showNoRegisteredAccountModal } = useModal(
+    useMemo(
+      () => ({
+        titleText: 'No registered account',
+        bodyText: 'You need to register an account to enable cloud backups.',
+        buttonText: 'Register now',
+        secondaryButtonText: 'Cancel',
+        onButtonPress: () => {
+          // setTimeout to ensure modal closes before navigation to prevent navigation conflicts when the modal tries to goBack()
+          setTimeout(() => {
+            navigation.navigate({ name: 'CountryPicker', params: {} });
+          }, 100);
+        },
+        onModalDismiss: () => {},
+      }),
+      [navigation],
+    ),
+  );
+
   // DISABLED FOR NOW: Turnkey functionality
   // const { showModal: showAlreadySignedInModal } = useModal({
   //   titleText: 'Cannot use this email',
@@ -116,6 +139,13 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   const handleICloudBackup = useCallback(async () => {
     buttonTap();
     setSelectedMethod('icloud');
+
+    const hasAnyValidRegisteredDocumentResult =
+      await hasAnyValidRegisteredDocument(selfClient);
+    if (!hasAnyValidRegisteredDocumentResult) {
+      showNoRegisteredAccountModal();
+      return;
+    }
 
     if (cloudBackupEnabled || !biometricsAvailable) {
       return;
@@ -151,6 +181,8 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     trackEvent,
     navigation,
     params,
+    selfClient,
+    showNoRegisteredAccountModal,
   ]);
 
   const disableCloudBackups = useCallback(() => {
