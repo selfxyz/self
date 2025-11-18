@@ -66,6 +66,9 @@ const RecoverWithPhraseScreen: React.FC = () => {
 
       if (!result) {
         console.warn('Failed to restore account');
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_AUTH, {
+          mnemonicLength: slimMnemonic.split(' ').length,
+        });
         navigation.navigate({ name: 'Home', params: {} });
         setRestoring(false);
         return;
@@ -99,6 +102,10 @@ const RecoverWithPhraseScreen: React.FC = () => {
         console.warn(
           'Secret provided did not match a registered passport. Please try again.',
         );
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED, {
+          reason: 'document_not_registered',
+          hasCSCA: !!csca,
+        });
         reStorePassportDataWithRightCSCA(passportData, csca as string);
         navigation.navigate({ name: 'Home', params: {} });
         setRestoring(false);
@@ -109,7 +116,11 @@ const RecoverWithPhraseScreen: React.FC = () => {
       setRestoring(false);
       trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
       navigation.navigate('AccountVerifiedSuccess');
-    } catch {
+    } catch (error) {
+      trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN, {
+        reason: 'unexpected_error',
+        error: error instanceof Error ? error.message : 'unknown',
+      });
       setRestoring(false);
       navigation.navigate({ name: 'Home', params: {} });
     }
