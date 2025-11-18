@@ -22,7 +22,7 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import BugIcon from '@/images/icons/bug_icon.svg';
 import IdIcon from '@/images/icons/id_icon.svg';
 import WarningIcon from '@/images/icons/warning.svg';
-import type { RootStackParamList } from '@/navigation';
+import { navigationScreens, type RootStackParamList } from '@/navigation';
 import { unsafe_clearSecrets } from '@/providers/authProvider';
 import { usePassport } from '@/providers/passportDataProvider';
 import { usePointEventStore } from '@/stores/pointEventStore';
@@ -183,39 +183,6 @@ function ParameterSection({
   );
 }
 
-const items = [
-  'DevSettings',
-  'CountryPicker',
-  'DevLoadingScreen',
-  'AadhaarUpload',
-  'DevFeatureFlags',
-  'DevHapticFeedback',
-  'DevPrivateKey',
-  'Splash',
-  'DocumentOnboarding',
-  'DocumentCamera',
-  'DocumentNFCScan',
-  'DocumentDataInfo',
-  'Loading',
-  'AccountVerifiedSuccess',
-  'ConfirmBelonging',
-  'CreateMock',
-  'Home',
-  'Disclaimer',
-  'QRCodeViewFinder',
-  'Prove',
-  'ProofRequestStatus',
-  'Referral',
-  'Settings',
-  'AccountRecovery',
-  'SaveRecoveryPhrase',
-  'RecoverWithPhrase',
-  'ShowRecoveryPhrase',
-  'CloudBackupSettings',
-  'ComingSoon',
-  'DocumentCameraTrouble',
-  'DocumentNFCTrouble',
-] satisfies (keyof RootStackParamList)[];
 const ScreenSelector = ({}) => {
   const navigation = useNavigation();
   const [open, setOpen] = useState(false);
@@ -273,16 +240,22 @@ const ScreenSelector = ({}) => {
           <Select.Group>
             {useMemo(
               () =>
-                items.sort().map((item, i) => {
-                  return (
-                    <Select.Item index={i} key={item} value={item}>
-                      <Select.ItemText>{item}</Select.ItemText>
-                      <Select.ItemIndicator marginLeft="auto">
-                        <Check size={16} />
-                      </Select.ItemIndicator>
-                    </Select.Item>
-                  );
-                }),
+                (
+                  Object.keys(
+                    navigationScreens,
+                  ) as (keyof typeof navigationScreens)[]
+                )
+                  .sort()
+                  .map((item, i) => {
+                    return (
+                      <Select.Item index={i} key={item} value={item}>
+                        <Select.ItemText>{item}</Select.ItemText>
+                        <Select.ItemIndicator marginLeft="auto">
+                          <Check size={16} />
+                        </Select.ItemIndicator>
+                      </Select.Item>
+                    );
+                  }),
               [],
             )}
           </Select.Group>
