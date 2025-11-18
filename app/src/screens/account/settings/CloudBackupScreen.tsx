@@ -110,7 +110,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         onButtonPress: () => {
           // setTimeout to ensure modal closes before navigation to prevent navigation conflicts when the modal tries to goBack()
           setTimeout(() => {
-            navigation.navigate({ name: 'CountryPicker', params: {} });
+            navigation.navigate('CountryPicker');
           }, 100);
         },
         onModalDismiss: () => {},
