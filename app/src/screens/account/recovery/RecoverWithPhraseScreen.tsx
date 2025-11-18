@@ -74,8 +74,18 @@ const RecoverWithPhraseScreen: React.FC = () => {
         return;
       }
 
-      const passportDataAndSecret =
-        (await loadPassportDataAndSecret()) as string;
+      const passportDataAndSecret = await loadPassportDataAndSecret();
+      if (!passportDataAndSecret) {
+        console.warn(
+          'No passport data found on device. Please scan or import your document.',
+        );
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_AUTH, {
+          reason: 'no_passport_data',
+        });
+        navigation.navigate({ name: 'Home', params: {} });
+        setRestoring(false);
+        return;
+      }
       const { passportData, secret } = JSON.parse(passportDataAndSecret);
       const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
         passportData,
@@ -106,10 +116,13 @@ const RecoverWithPhraseScreen: React.FC = () => {
           reason: 'document_not_registered',
           hasCSCA: !!csca,
         });
-        reStorePassportDataWithRightCSCA(passportData, csca as string);
         navigation.navigate({ name: 'Home', params: {} });
         setRestoring(false);
         return;
+      }
+
+      if (csca) {
+        await reStorePassportDataWithRightCSCA(passportData, csca);
       }
 
       await markCurrentDocumentAsRegistered(selfClient);
