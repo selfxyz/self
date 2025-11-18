@@ -32,11 +32,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
-import {
-  hasAnyValidRegisteredDocument,
-  sanitizeErrorMessage,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { sanitizeErrorMessage, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
   ButtonsContainer,

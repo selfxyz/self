@@ -6,10 +6,6 @@ import React from 'react';
 import { Image } from 'tamagui';
 
 import {
-  hasAnyValidRegisteredDocument,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
-import {
   BodyText,
   ButtonsContainer,
   SecondaryButton,

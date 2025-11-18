@@ -8,10 +8,6 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import {
-  hasAnyValidRegisteredDocument,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
-import {
   BodyText,
   PrimaryButton,
   RoundFlag,

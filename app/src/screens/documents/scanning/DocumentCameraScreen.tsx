@@ -7,11 +7,7 @@ import { StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
 import { useIsFocused } from '@react-navigation/native';
 
-import {
-  DelayedLottieView,
-  hasAnyValidRegisteredDocument,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   Description,

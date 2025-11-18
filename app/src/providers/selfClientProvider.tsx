@@ -156,7 +156,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
 
     addListener(
       SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE,
-      async ({ hasValidDocument }) => {
+      async ({ hasValidDocument: _hasValidDocument }) => {
         setTimeout(() => {
           if (navigationRef.isReady()) {
             navigationRef.navigate({ name: 'Home', params: {} });
