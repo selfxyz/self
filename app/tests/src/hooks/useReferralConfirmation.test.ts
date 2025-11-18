@@ -13,13 +13,7 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
 
-jest.mock('@/stores/userStore', () => {
-  const actual = jest.requireActual('@/stores/userStore');
-  return {
-    __esModule: true,
-    default: actual.default,
-  };
-});
+// userStore is used as-is, no mock needed
 
 const mockNavigate = jest.fn();
 const mockUseNavigation = useNavigation as jest.MockedFunction<

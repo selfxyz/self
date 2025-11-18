@@ -6,7 +6,7 @@
  * @jest-environment node
  */
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Text } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 

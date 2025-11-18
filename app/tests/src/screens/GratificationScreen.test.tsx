@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { render, waitFor } from '@testing-library/react-native';
 
@@ -15,24 +14,31 @@ jest.mock('@react-navigation/native', () => ({
 
 // Mock Tamagui components to avoid theme provider requirement
 jest.mock('tamagui', () => {
-  const ReactMock = require('react');
-  // Use React.createElement directly instead of requiring react-native to avoid memory issues
-  const YStack = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
-    ReactMock.createElement('View', { ref, ...props }, children),
+  const View: any = 'View';
+  const Text: any = 'Text';
+  const createViewComponent = (displayName: string) => {
+    const MockComponent = ({ children, ...props }: any) => (
+      <View {...props} testID={displayName}>
+        {children}
+      </View>
+    );
+    MockComponent.displayName = displayName;
+    return MockComponent;
+  };
+
+  const MockYStack = createViewComponent('YStack');
+  const MockView = createViewComponent('View');
+
+  const MockText = ({ children, ...props }: any) => (
+    <Text {...props}>{children}</Text>
   );
-  YStack.displayName = 'YStack';
-  const Text = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
-    ReactMock.createElement('Text', { ref, ...props }, children),
-  );
-  Text.displayName = 'Text';
-  const View = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
-    ReactMock.createElement('View', { ref, ...props }, children),
-  );
-  View.displayName = 'View';
+  MockText.displayName = 'Text';
+
   return {
-    YStack,
-    Text,
-    View,
+    __esModule: true,
+    YStack: MockYStack,
+    View: MockView,
+    Text: MockText,
   };
 });
 

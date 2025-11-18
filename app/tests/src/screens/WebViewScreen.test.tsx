@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
 import { Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -15,17 +14,15 @@ import {
 import { WebViewScreen } from '@/screens/shared/WebViewScreen';
 
 jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
   useNavigation: jest.fn(),
   useFocusEffect: jest.fn(),
 }));
 
 jest.mock('react-native-webview', () => {
-  const ReactMock = require('react');
-  // Use React.createElement directly instead of requiring react-native to avoid memory issues
-  const MockWebView = ReactMock.forwardRef((props: any, _ref) => {
-    return ReactMock.createElement('View', { testID: 'webview', ...props });
-  });
+  // Lightweight host component so React can render while keeping props inspectable
+  const MockWebView = ({ testID = 'webview', ...props }: any) => (
+    <mock-webview testID={testID} {...props} />
+  );
   MockWebView.displayName = 'MockWebView';
   return {
     __esModule: true,
