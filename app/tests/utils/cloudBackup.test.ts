@@ -37,13 +37,9 @@ jest.mock('@robinbobin/react-native-google-drive-api-wrapper', () => ({
   },
 }));
 
-jest.mock('@/utils/cloudBackup/google', () => {
-  const originalModule = jest.requireActual('@/utils/cloudBackup/google');
-  return {
-    ...originalModule,
-    createGDrive: jest.fn(),
-  };
-});
+jest.mock('@/utils/cloudBackup/google', () => ({
+  createGDrive: jest.fn(),
+}));
 
 jest.mock('ethers', () => ({
   ethers: {

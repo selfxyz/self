@@ -23,20 +23,15 @@ jest.mock('@/providers/authProvider', () => ({
 jest.mock('@/utils/points/utils', () => ({
   getPointsAddress: jest.fn(),
 }));
-jest.mock('ethers', () => {
-  const actualEthers = jest.requireActual('ethers');
-  return {
-    ...actualEthers,
-    ethers: {
-      ...actualEthers.ethers,
-      Wallet: jest.fn(),
-      Signature: {
-        from: jest.fn(),
-      },
-      getBytes: jest.fn(),
+jest.mock('ethers', () => ({
+  ethers: {
+    Wallet: jest.fn(),
+    Signature: {
+      from: jest.fn(),
     },
-  };
-});
+    getBytes: jest.fn(),
+  },
+}));
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockUnsafeGetPrivateKey = unsafe_getPrivateKey as jest.MockedFunction<
