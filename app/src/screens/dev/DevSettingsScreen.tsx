@@ -192,7 +192,6 @@ const items = [
   'DevHapticFeedback',
   'DevPrivateKey',
   'Splash',
-  'Launch',
   'DocumentOnboarding',
   'DocumentCamera',
   'DocumentNFCScan',
