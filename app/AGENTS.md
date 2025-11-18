@@ -209,22 +209,32 @@ yarn mobile-local-deploy
 
 ## Test Memory Optimization
 
-**CRITICAL**: Never create nested `require('react-native')` calls in tests. This causes out-of-memory (OOM) errors in CI/CD pipelines.
+**CRITICAL**: Never create nested `require('react')` or `require('react-native')` calls in tests. This causes out-of-memory (OOM) errors in CI/CD pipelines that hide actual test failures.
+
+### Automated Enforcement
+
+The project has multiple layers of protection:
+
+1. **ESLint Rule**: Blocks `require('react')` and `require('react-native')` in test files
+2. **Pre-commit Script**: Run `node scripts/check-test-requires.cjs` to validate
+3. **CI Fast-Fail**: GitHub Actions checks for nested requires before running tests
 
 ### Quick Check
 Before committing, verify no nested requires:
 ```bash
-# Check for require('react-native') in test files
-grep -r "require('react-native')" app/tests/
+# Automated check (recommended)
+node scripts/check-test-requires.cjs
 
-# Review results - ensure no nested patterns (require inside beforeEach/afterEach or inside modules that are required in tests)
+# Manual check
+grep -r "require('react')" app/tests/
+grep -r "require('react-native')" app/tests/
 ```
 
 ### Best Practices
-- Use ES6 `import` statements instead of `require()` when possible
-- Avoid dynamic `require()` calls in `beforeEach`/`afterEach` hooks
-- Prefer top-level imports over nested requires
-- React Native is already mocked in `jest.setup.js` - use imports in test files
+- **Always use ES6 `import` statements** - Never use `require('react')` or `require('react-native')` in test files
+- Put all imports at the top of the file - No dynamic imports in hooks
+- Avoid `require()` calls in `beforeEach`/`afterEach` hooks
+- React and React Native are already mocked in `jest.setup.js` - use imports in test files
 
 ### Detailed Guidelines
 See `.cursor/rules/test-memory-optimization.mdc` for comprehensive guidelines, examples, and anti-patterns.

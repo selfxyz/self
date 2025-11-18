@@ -213,10 +213,52 @@ module.exports = {
       rules: {
         // Allow console logging and relaxed typing in tests
         'no-console': 'off',
-        // Allow require() imports in tests for mocking
+        // Allow require() imports in tests for mocking, but block react/react-native
         '@typescript-eslint/no-require-imports': 'off',
+        // Block require('react') and require('react-native') to prevent OOM issues
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector:
+              "CallExpression[callee.name='require'][arguments.0.value='react']",
+            message:
+              "Do not use require('react') in tests. Use 'import React from \"react\"' at the top of the file to avoid out-of-memory issues in CI.",
+          },
+          {
+            selector:
+              "CallExpression[callee.name='require'][arguments.0.value='react-native']",
+            message:
+              "Do not use require('react-native') in tests. Use 'import { ... } from \"react-native\"' at the top of the file to avoid out-of-memory issues in CI.",
+          },
+        ],
         // Allow any types in tests for mocking
         '@typescript-eslint/no-explicit-any': 'off',
+      },
+    },
+    {
+      files: ['tests/**/*.js'],
+      env: {
+        jest: true,
+      },
+      rules: {
+        // Allow console logging in test JS files
+        'no-console': 'off',
+        // Block require('react') and require('react-native') to prevent OOM issues
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector:
+              "CallExpression[callee.name='require'][arguments.0.value='react']",
+            message:
+              "Do not use require('react') in tests. Use 'import React from \"react\"' at the top of the file to avoid out-of-memory issues in CI.",
+          },
+          {
+            selector:
+              "CallExpression[callee.name='require'][arguments.0.value='react-native']",
+            message:
+              "Do not use require('react-native') in tests. Use 'import { ... } from \"react-native\"' at the top of the file to avoid out-of-memory issues in CI.",
+          },
+        ],
       },
     },
     {

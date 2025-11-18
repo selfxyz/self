@@ -3,7 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 // Minimal JS mock for @selfxyz/mobile-sdk-alpha/components used in tests
-const React = require('react');
+// Use ES6 import instead of require() to avoid OOM issues in CI
+import React from 'react';
 
 const getTextFromChildren = ch => {
   if (typeof ch === 'string') return ch;
@@ -13,15 +14,14 @@ const getTextFromChildren = ch => {
   return '';
 };
 
-const Caption = ({ children }) =>
+export const Caption = ({ children }) =>
   React.createElement(React.Fragment, null, children);
-const Description = ({ children }) =>
-  React.createElement(React.Fragment, null, children);
-const Title = ({ children }) =>
+
+export const Description = ({ children }) =>
   React.createElement(React.Fragment, null, children);
 
 // Use React.createElement directly instead of requiring react-native to avoid memory issues
-const PrimaryButton = ({ children, onPress, disabled, testID }) => {
+export const PrimaryButton = ({ children, onPress, disabled, testID }) => {
   const buttonText = getTextFromChildren(children);
   const id =
     testID || `button-${buttonText.toLowerCase().replace(/\s+/g, '-')}`;
@@ -32,7 +32,7 @@ const PrimaryButton = ({ children, onPress, disabled, testID }) => {
   );
 };
 
-const SecondaryButton = ({ children, onPress, disabled, testID }) => {
+export const SecondaryButton = ({ children, onPress, disabled, testID }) => {
   const buttonText = getTextFromChildren(children);
   const id =
     testID || `button-${buttonText.toLowerCase().replace(/\s+/g, '-')}`;
@@ -43,11 +43,5 @@ const SecondaryButton = ({ children, onPress, disabled, testID }) => {
   );
 };
 
-module.exports = {
-  __esModule: true,
-  Caption,
-  Description,
-  Title,
-  PrimaryButton,
-  SecondaryButton,
-};
+export const Title = ({ children }) =>
+  React.createElement(React.Fragment, null, children);

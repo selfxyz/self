@@ -15,18 +15,17 @@ jest.mock('@react-navigation/native', () => ({
 
 // Mock Tamagui components to avoid theme provider requirement
 jest.mock('tamagui', () => {
-  const ReactMock = require('react');
-  // Use React.createElement directly instead of requiring react-native to avoid memory issues
-  const YStack = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
-    ReactMock.createElement('View', { ref, ...props }, children),
+  // Reference the top-level React import instead of nested require to avoid OOM issues
+  const YStack = React.forwardRef(({ children, ...props }: any, ref: any) =>
+    React.createElement('View', { ref, ...props }, children),
   );
   YStack.displayName = 'YStack';
-  const Text = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
-    ReactMock.createElement('Text', { ref, ...props }, children),
+  const Text = React.forwardRef(({ children, ...props }: any, ref: any) =>
+    React.createElement('Text', { ref, ...props }, children),
   );
   Text.displayName = 'Text';
-  const View = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
-    ReactMock.createElement('View', { ref, ...props }, children),
+  const View = React.forwardRef(({ children, ...props }: any, ref: any) =>
+    React.createElement('View', { ref, ...props }, children),
   );
   View.displayName = 'View';
   return {
