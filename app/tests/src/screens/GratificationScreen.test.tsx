@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { Text as RNText, View as RNView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { render, waitFor } from '@testing-library/react-native';
 
@@ -13,11 +14,30 @@ jest.mock('@react-navigation/native', () => ({
 }));
 
 // Mock Tamagui components to avoid theme provider requirement
-jest.mock('tamagui', () => ({
-  YStack: 'YStack',
-  Text: 'Text',
-  View: 'View',
-}));
+jest.mock('tamagui', () => {
+  const createViewComponent = (displayName: string) => {
+    const MockComponent = ({ children, ...props }: any) => (
+      <RNView {...props}>{children}</RNView>
+    );
+    MockComponent.displayName = displayName;
+    return MockComponent;
+  };
+
+  const MockYStack = createViewComponent('YStack');
+  const MockView = createViewComponent('View');
+
+  const MockText = ({ children, ...props }: any) => (
+    <RNText {...props}>{children}</RNText>
+  );
+  MockText.displayName = 'Text';
+
+  return {
+    __esModule: true,
+    YStack: MockYStack,
+    View: MockView,
+    Text: MockText,
+  };
+});
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   DelayedLottieView: ({ onAnimationFinish }: any) => {
