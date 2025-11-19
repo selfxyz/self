@@ -1008,10 +1008,15 @@ jest.mock('@/layouts/ExpandableBottomLayout', () => {
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
   // Avoid requiring React to prevent nested require memory issues
   // Create mock components that work with React testing library
-  // Button needs to render its icon prop so tests can query it
+  // Button needs to render a host element with onPress so tests can interact with it
   const Button = jest.fn(({ testID, icon, onPress, children, ...props }) => {
-    // Render icon as a child so it's queryable in tests
-    return icon || children || null;
+    // Render as a mock-touchable-opacity host element so fireEvent.press works
+    // This allows tests to query by testID and press the button
+    return (
+      <mock-touchable-opacity testID={testID} onPress={onPress} {...props}>
+        {icon || children || null}
+      </mock-touchable-opacity>
+    );
   });
   Button.displayName = 'MockButton';
 
@@ -1035,27 +1040,76 @@ jest.mock('tamagui', () => {
   // Avoid requiring React to prevent nested require memory issues
   // Create mock components that work with React testing library
 
-  // Mock styled function - simplified version
-  const styled = jest.fn((Component) => Component);
+  // Helper to create a simple pass-through mock component
+  const createMockComponent = displayName => {
+    const Component = jest.fn(props => props.children || null);
+    Component.displayName = displayName;
+    return Component;
+  };
 
-  // Mock Button component - simple pass-through
-  const Button = jest.fn((props) => props.children || null);
-  Button.displayName = 'MockButton';
+  // Mock styled function - simplified version that returns the component
+  const styled = jest.fn(Component => Component);
 
-  // Mock XStack component - simple pass-through
-  const XStack = jest.fn((props) => props.children || null);
-  XStack.displayName = 'MockXStack';
+  // Create all Tamagui component mocks
+  const Button = createMockComponent('MockButton');
+  const XStack = createMockComponent('MockXStack');
+  const YStack = createMockComponent('MockYStack');
+  const ZStack = createMockComponent('MockZStack');
+  const Text = createMockComponent('MockText');
+  const View = createMockComponent('MockView');
+  const ScrollView = createMockComponent('MockScrollView');
+  const Spinner = createMockComponent('MockSpinner');
+  const Image = createMockComponent('MockImage');
+  const Card = createMockComponent('MockCard');
+  const Separator = createMockComponent('MockSeparator');
+  const TextArea = createMockComponent('MockTextArea');
+  const Input = createMockComponent('MockInput');
+  const Anchor = createMockComponent('MockAnchor');
 
-  // Mock Text component - simple pass-through
-  const Text = jest.fn((props) => props.children || null);
-  Text.displayName = 'MockText';
+  // Mock Select component with nested components
+  const Select = Object.assign(createMockComponent('MockSelect'), {
+    Trigger: createMockComponent('MockSelectTrigger'),
+    Value: createMockComponent('MockSelectValue'),
+    Content: createMockComponent('MockSelectContent'),
+    Item: createMockComponent('MockSelectItem'),
+    Group: createMockComponent('MockSelectGroup'),
+    Label: createMockComponent('MockSelectLabel'),
+    Viewport: createMockComponent('MockSelectViewport'),
+    ScrollUpButton: createMockComponent('MockSelectScrollUpButton'),
+    ScrollDownButton: createMockComponent('MockSelectScrollDownButton'),
+  });
+
+  // Mock Sheet component with nested components
+  const Sheet = Object.assign(createMockComponent('MockSheet'), {
+    Frame: createMockComponent('MockSheetFrame'),
+    Overlay: createMockComponent('MockSheetOverlay'),
+    Handle: createMockComponent('MockSheetHandle'),
+    ScrollView: createMockComponent('MockSheetScrollView'),
+  });
+
+  // Mock Adapt component
+  const Adapt = createMockComponent('MockAdapt');
 
   return {
     __esModule: true,
     styled,
     Button,
     XStack,
+    YStack,
+    ZStack,
     Text,
+    View,
+    ScrollView,
+    Spinner,
+    Image,
+    Card,
+    Separator,
+    TextArea,
+    Input,
+    Anchor,
+    Select,
+    Sheet,
+    Adapt,
     // Provide default exports for other common components
     default: jest.fn(() => null),
   };
@@ -1067,7 +1121,7 @@ jest.mock('@tamagui/lucide-icons', () => {
   // Return mock components that can be queried by testID
   const makeIcon = name => {
     // Use a mock element tag that React can render
-    const Icon = (props) => ({
+    const Icon = props => ({
       $$typeof: Symbol.for('react.element'),
       type: `mock-icon-${name}`,
       props: { testID: `icon-${name}`, ...props },
