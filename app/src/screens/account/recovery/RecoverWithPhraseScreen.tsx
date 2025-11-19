@@ -23,9 +23,9 @@ import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import Paste from '@/images/icons/paste.svg';
 import type { RootStackParamList } from '@/navigation';
-import { useAuth } from '@/providers/authProvider';
+import { getPrivateKeyFromMnemonic, useAuth } from '@/providers/authProvider';
 import {
-  loadPassportDataAndSecret,
+  loadPassportData,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
 import {
@@ -74,8 +74,10 @@ const RecoverWithPhraseScreen: React.FC = () => {
         return;
       }
 
-      const passportDataAndSecret = await loadPassportDataAndSecret();
-      if (!passportDataAndSecret) {
+      const passportData = await loadPassportData();
+      const secret = getPrivateKeyFromMnemonic(slimMnemonic);
+
+      if (!passportData || !secret) {
         console.warn(
           'No passport data found on device. Please scan or import your document.',
         );
@@ -86,9 +88,10 @@ const RecoverWithPhraseScreen: React.FC = () => {
         setRestoring(false);
         return;
       }
-      const { passportData, secret } = JSON.parse(passportDataAndSecret);
+      const passportDataParsed = JSON.parse(passportData);
+
       const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
-        passportData,
+        passportDataParsed,
         secret as string,
         {
           getCommitmentTree(docCategory) {
@@ -122,7 +125,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
       }
 
       if (csca) {
-        await reStorePassportDataWithRightCSCA(passportData, csca);
+        await reStorePassportDataWithRightCSCA(passportDataParsed, csca);
       }
 
       await markCurrentDocumentAsRegistered(selfClient);
