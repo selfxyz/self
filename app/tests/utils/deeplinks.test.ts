@@ -2,9 +2,21 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { Linking } from 'react-native';
-
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  handleUrl,
+  parseAndValidateUrlParams,
+  setupUniversalLinkListenerInNavigation,
+} from '@/utils/deeplinks';
+
+const mockLinking = {
+  addEventListener: jest.fn(),
+  getInitialURL: jest.fn(),
+};
+
+jest.mock('react-native', () => ({
+  Linking: mockLinking,
+}));
 
 jest.mock('@/navigation', () => ({
   navigationRef: {
@@ -22,24 +34,14 @@ jest.mock('@/stores/userStore', () => ({
 
 let setDeepLinkUserDetails: jest.Mock;
 
-let handleUrl: (selfClient: SelfClient, url: string) => void;
-let parseAndValidateUrlParams: (uri: string) => any;
-let setupUniversalLinkListenerInNavigation: () => () => void;
-
 describe('deeplinks', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.resetModules();
-    ({
-      handleUrl,
-      parseAndValidateUrlParams,
-      setupUniversalLinkListenerInNavigation,
-    } = require('@/utils/deeplinks'));
     setDeepLinkUserDetails = jest.fn();
-    jest.spyOn(Linking, 'getInitialURL').mockResolvedValue(null as any);
-    jest
-      .spyOn(Linking, 'addEventListener')
-      .mockReturnValue({ remove: jest.fn() } as any);
+    mockLinking.getInitialURL.mockReset();
+    mockLinking.addEventListener.mockReset();
+    mockLinking.getInitialURL.mockResolvedValue(null as any);
+    mockLinking.addEventListener.mockReturnValue({ remove: jest.fn() } as any);
     mockUserStore.default.getState.mockReturnValue({
       setDeepLinkUserDetails,
     });
@@ -566,11 +568,11 @@ describe('deeplinks', () => {
 
   it('setup listener registers and cleans up', () => {
     const remove = jest.fn();
-    (Linking.getInitialURL as jest.Mock).mockResolvedValue(undefined);
-    (Linking.addEventListener as jest.Mock).mockReturnValue({ remove });
+    mockLinking.getInitialURL.mockResolvedValue(undefined as any);
+    mockLinking.addEventListener.mockReturnValue({ remove });
 
     const cleanup = setupUniversalLinkListenerInNavigation();
-    expect(Linking.addEventListener).toHaveBeenCalled();
+    expect(mockLinking.addEventListener).toHaveBeenCalled();
     cleanup();
     expect(remove).toHaveBeenCalled();
   });

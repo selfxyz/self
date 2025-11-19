@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
   fireEvent,
@@ -12,6 +11,15 @@ import {
 } from '@testing-library/react-native';
 
 import { WebViewScreen } from '@/screens/shared/WebViewScreen';
+
+const mockLinking = {
+  canOpenURL: jest.fn(),
+  openURL: jest.fn(),
+};
+
+jest.mock('react-native', () => ({
+  Linking: mockLinking,
+}));
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
@@ -56,6 +64,8 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
       canGoBack: () => true,
     });
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockLinking.canOpenURL.mockReset();
+    mockLinking.openURL.mockReset();
   });
 
   afterEach(() => {
@@ -107,10 +117,8 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
   });
 
   it('opens allowed external schemes externally and blocks in WebView (mailto, tel)', async () => {
-    jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true as any);
-    const openSpy = jest
-      .spyOn(Linking, 'openURL')
-      .mockResolvedValue(undefined as any);
+    mockLinking.canOpenURL.mockResolvedValue(true as any);
+    mockLinking.openURL.mockResolvedValue(undefined as any);
     render(<WebViewScreen {...createProps('https://self.xyz')} />);
     const webview = screen.getByTestId('webview');
 
@@ -119,19 +127,19 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
     });
     expect(resultMailto).toBe(false);
     await waitFor(() =>
-      expect(openSpy).toHaveBeenCalledWith('mailto:test@example.com'),
+      expect(mockLinking.openURL).toHaveBeenCalledWith('mailto:test@example.com'),
     );
 
     const resultTel = await webview.props.onShouldStartLoadWithRequest?.({
       url: 'tel:+123456789',
     });
     expect(resultTel).toBe(false);
-    await waitFor(() => expect(openSpy).toHaveBeenCalledWith('tel:+123456789'));
+    await waitFor(() =>
+      expect(mockLinking.openURL).toHaveBeenCalledWith('tel:+123456789'),
+    );
   });
 
   it('blocks disallowed external schemes and does not attempt to open', async () => {
-    const canOpenSpy = jest.spyOn(Linking, 'canOpenURL');
-    const openSpy = jest.spyOn(Linking, 'openURL');
     render(<WebViewScreen {...createProps('https://self.xyz')} />);
     const webview = screen.getByTestId('webview');
 
@@ -139,13 +147,13 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
       url: 'ftp://example.com',
     });
     expect(result).toBe(false);
-    expect(canOpenSpy).not.toHaveBeenCalled();
-    expect(openSpy).not.toHaveBeenCalled();
+    expect(mockLinking.canOpenURL).not.toHaveBeenCalled();
+    expect(mockLinking.openURL).not.toHaveBeenCalled();
   });
 
   it('scrubs error log wording when external open fails', async () => {
-    jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true as any);
-    jest.spyOn(Linking, 'openURL').mockRejectedValue(new Error('boom'));
+    mockLinking.canOpenURL.mockResolvedValue(true as any);
+    mockLinking.openURL.mockRejectedValue(new Error('boom'));
     render(<WebViewScreen {...createProps('https://self.xyz')} />);
     const webview = screen.getByTestId('webview');
 

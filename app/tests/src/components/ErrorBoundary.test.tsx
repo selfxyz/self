@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { Text } from 'react-native';
+import type { ReactNode } from 'react';
 import { render } from '@testing-library/react-native';
 
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -18,11 +18,15 @@ jest.mock('@/Sentry', () => ({
   captureException: jest.fn(),
 }));
 
+const MockText = ({ children }: { children?: ReactNode }) => (
+  <mock-text>{children}</mock-text>
+);
+
 const ProblemChild = () => {
   throw new Error('boom');
 };
 
-const GoodChild = () => <Text>Good child</Text>;
+const GoodChild = () => <MockText>Good child</MockText>;
 
 describe('ErrorBoundary', () => {
   beforeEach(() => {

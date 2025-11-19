@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { ethers } from 'ethers';
-import { Platform } from 'react-native';
 import { CloudStorage } from 'react-native-cloud-storage';
 // Import after mocks
 import { GDrive } from '@robinbobin/react-native-google-drive-api-wrapper';
@@ -11,6 +10,14 @@ import { renderHook } from '@testing-library/react-native';
 
 import { useBackupMnemonic } from '@/utils/cloudBackup';
 import { createGDrive } from '@/utils/cloudBackup/google';
+
+type SupportedPlatforms = 'ios' | 'android';
+
+const mockPlatform: { OS: SupportedPlatforms } = { OS: 'ios' };
+
+jest.mock('react-native', () => ({
+  Platform: mockPlatform,
+}));
 
 // Mock dependencies
 jest.mock('react-native-cloud-storage', () => ({
@@ -74,12 +81,12 @@ const mockMnemonic = {
 };
 
 describe('cloudBackup', () => {
-  let originalPlatform: any;
+  let originalPlatform: SupportedPlatforms;
   let consoleSpy: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    originalPlatform = Platform.OS;
+    originalPlatform = mockPlatform.OS;
     // Suppress console.error during tests to avoid cluttering output
     consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     (GDrive as jest.Mock).mockImplementation(() => mockGDriveInstance);
@@ -87,7 +94,7 @@ describe('cloudBackup', () => {
   });
 
   afterEach(() => {
-    Platform.OS = originalPlatform;
+    mockPlatform.OS = originalPlatform;
     consoleSpy.mockRestore();
   });
 
@@ -106,7 +113,7 @@ describe('cloudBackup', () => {
 
   describe('upload function - iOS', () => {
     beforeEach(() => {
-      Platform.OS = 'ios';
+      mockPlatform.OS = 'ios';
     });
 
     it('should upload mnemonic to iCloud successfully', async () => {
@@ -180,7 +187,7 @@ describe('cloudBackup', () => {
 
   describe('upload function - Android', () => {
     beforeEach(() => {
-      Platform.OS = 'android';
+      mockPlatform.OS = 'android';
     });
 
     it('should upload mnemonic to Google Drive successfully', async () => {
@@ -217,7 +224,7 @@ describe('cloudBackup', () => {
 
   describe('download function - iOS', () => {
     beforeEach(() => {
-      Platform.OS = 'ios';
+      mockPlatform.OS = 'ios';
     });
 
     it('should download and parse mnemonic from iCloud successfully', async () => {
@@ -295,7 +302,7 @@ describe('cloudBackup', () => {
 
   describe('download function - Android', () => {
     beforeEach(() => {
-      Platform.OS = 'android';
+      mockPlatform.OS = 'android';
     });
 
     it('should download and parse mnemonic from Google Drive successfully', async () => {
@@ -397,7 +404,7 @@ describe('cloudBackup', () => {
 
   describe('disableBackup function - iOS', () => {
     beforeEach(() => {
-      Platform.OS = 'ios';
+      mockPlatform.OS = 'ios';
     });
 
     it('should remove backup folder from iCloud', async () => {
@@ -414,7 +421,7 @@ describe('cloudBackup', () => {
 
   describe('disableBackup function - Android', () => {
     beforeEach(() => {
-      Platform.OS = 'android';
+      mockPlatform.OS = 'android';
     });
 
     it('should delete backup files from Google Drive', async () => {

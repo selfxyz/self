@@ -6,11 +6,15 @@
  * @jest-environment node
  */
 
+import type { ReactNode } from 'react';
 import { useEffect } from 'react';
-import { Text } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 
 import { LoggerProvider, useLogger } from '@/providers/loggerProvider';
+import {
+  AppLogger,
+  NfcLogger,
+} from '@/utils/logger';
 
 // Mock the native logger bridge
 jest.mock('@/utils/logger/nativeLoggerBridge', () => ({
@@ -97,6 +101,10 @@ jest.mock('@/utils/logger', () => ({
   },
 }));
 
+const MockText = ({ children, testID }: { children?: ReactNode; testID?: string }) => (
+  <mock-text testID={testID}>{children}</mock-text>
+);
+
 // Test component that uses the logger
 const TestComponent = () => {
   const loggers = useLogger();
@@ -108,9 +116,9 @@ const TestComponent = () => {
   }, [loggers]);
 
   return (
-    <Text testID="test-component">
+    <MockText testID="test-component">
       Test Component - AppLogger Level: {loggers.logLevels.info}
-    </Text>
+    </MockText>
   );
 };
 
@@ -133,7 +141,6 @@ describe('LoggerProvider', () => {
     ).toBeTruthy();
 
     // Verify that logger methods were called with expected arguments
-    const { AppLogger, NfcLogger } = require('@/utils/logger');
     expect(AppLogger.info).toHaveBeenCalledWith('Test message');
     expect(NfcLogger.debug).toHaveBeenCalledWith('NFC test');
   });
@@ -141,7 +148,7 @@ describe('LoggerProvider', () => {
   it('should initialize and allow loggers to be called', () => {
     render(
       <LoggerProvider>
-        <Text>Test</Text>
+        <MockText>Test</MockText>
       </LoggerProvider>,
     );
     // The TestComponent is rendered in other tests; here we just assert provider renders without errors
@@ -165,7 +172,7 @@ describe('LoggerProvider', () => {
     // The nativeLoggerBridge import should be called when LoggerProvider is rendered
     render(
       <LoggerProvider>
-        <Text>Test</Text>
+        <MockText>Test</MockText>
       </LoggerProvider>,
     );
 
