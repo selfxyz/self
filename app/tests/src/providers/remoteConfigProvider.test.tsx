@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { Text } from 'react-native';
+import type { ReactNode } from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 
 import {
@@ -21,12 +21,16 @@ const mockInitRemoteConfig = initRemoteConfig as jest.MockedFunction<
 >;
 
 // Test component that uses the hook
+const MockText = ({ children, testID }: { children?: ReactNode; testID: string }) => (
+  <mock-text testID={testID}>{children}</mock-text>
+);
+
 const TestComponent = () => {
   const { isInitialized, error } = useRemoteConfig();
   return (
     <>
-      <Text testID="initialized">{isInitialized ? 'true' : 'false'}</Text>
-      <Text testID="error">{error || 'none'}</Text>
+      <MockText testID="initialized">{isInitialized ? 'true' : 'false'}</MockText>
+      <MockText testID="error">{error || 'none'}</MockText>
     </>
   );
 };

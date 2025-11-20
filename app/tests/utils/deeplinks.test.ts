@@ -2,9 +2,34 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { Linking } from 'react-native';
-
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  handleUrl,
+  parseAndValidateUrlParams,
+  setupUniversalLinkListenerInNavigation,
+} from '@/utils/deeplinks';
+
+jest.mock('react-native', () => {
+  const mockLinking = {
+    addEventListener: jest.fn(),
+    getInitialURL: jest.fn(),
+  };
+
+  return {
+    Linking: mockLinking,
+    Platform: { OS: 'ios' },
+  };
+});
+
+const mockLinking = jest.requireMock('react-native')
+  .Linking as jest.Mocked<{
+  addEventListener: jest.Mock;
+  getInitialURL: jest.Mock;
+}>; 
+
+const mockPlatform = jest.requireMock('react-native').Platform as {
+  OS: string;
+};
 
 jest.mock('@/navigation', () => ({
   navigationRef: {
@@ -14,35 +39,33 @@ jest.mock('@/navigation', () => ({
   },
 }));
 
-const mockUserStore = { default: { getState: jest.fn() } };
-jest.mock('@/stores/userStore', () => ({
-  __esModule: true,
-  ...mockUserStore,
-}));
+jest.mock('@/stores/userStore', () => {
+  const mockUserStore = { default: { getState: jest.fn() } };
+
+  return {
+    __esModule: true,
+    ...mockUserStore,
+  };
+});
+
+const mockUserStore = jest.requireMock('@/stores/userStore') as {
+  default: { getState: jest.Mock };
+};
 
 let setDeepLinkUserDetails: jest.Mock;
-
-let handleUrl: (selfClient: SelfClient, url: string) => void;
-let parseAndValidateUrlParams: (uri: string) => any;
-let setupUniversalLinkListenerInNavigation: () => () => void;
 
 describe('deeplinks', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.resetModules();
-    ({
-      handleUrl,
-      parseAndValidateUrlParams,
-      setupUniversalLinkListenerInNavigation,
-    } = require('@/utils/deeplinks'));
     setDeepLinkUserDetails = jest.fn();
-    jest.spyOn(Linking, 'getInitialURL').mockResolvedValue(null as any);
-    jest
-      .spyOn(Linking, 'addEventListener')
-      .mockReturnValue({ remove: jest.fn() } as any);
+    mockLinking.getInitialURL.mockReset();
+    mockLinking.addEventListener.mockReset();
+    mockLinking.getInitialURL.mockResolvedValue(null as any);
+    mockLinking.addEventListener.mockReturnValue({ remove: jest.fn() } as any);
     mockUserStore.default.getState.mockReturnValue({
       setDeepLinkUserDetails,
     });
+    mockPlatform.OS = 'ios';
   });
 
   describe('handleUrl', () => {
@@ -566,11 +589,11 @@ describe('deeplinks', () => {
 
   it('setup listener registers and cleans up', () => {
     const remove = jest.fn();
-    (Linking.getInitialURL as jest.Mock).mockResolvedValue(undefined);
-    (Linking.addEventListener as jest.Mock).mockReturnValue({ remove });
+    mockLinking.getInitialURL.mockResolvedValue(undefined as any);
+    mockLinking.addEventListener.mockReturnValue({ remove });
 
     const cleanup = setupUniversalLinkListenerInNavigation();
-    expect(Linking.addEventListener).toHaveBeenCalled();
+    expect(mockLinking.addEventListener).toHaveBeenCalled();
     cleanup();
     expect(remove).toHaveBeenCalled();
   });

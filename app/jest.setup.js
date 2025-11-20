@@ -897,6 +897,71 @@ jest.mock('react-native-localize', () => ({
     languageTag: 'en-US',
     isRTL: false,
   }),
+  default: {
+    getLocales: jest.fn().mockReturnValue([
+      {
+        countryCode: 'US',
+        languageTag: 'en-US',
+        languageCode: 'en',
+        isRTL: false,
+      },
+    ]),
+    getCountry: jest.fn().mockReturnValue('US'),
+    getTimeZone: jest.fn().mockReturnValue('America/New_York'),
+    getCurrencies: jest.fn().mockReturnValue(['USD']),
+    getTemperatureUnit: jest.fn().mockReturnValue('celsius'),
+    getFirstWeekDay: jest.fn().mockReturnValue(0),
+    uses24HourClock: jest.fn().mockReturnValue(false),
+    usesMetricSystem: jest.fn().mockReturnValue(false),
+    findBestAvailableLanguage: jest.fn().mockReturnValue({
+      languageTag: 'en-US',
+      isRTL: false,
+    }),
+  },
+}));
+
+// Ensure mobile-sdk-alpha's bundled react-native-localize dependency is mocked as well
+jest.mock('../packages/mobile-sdk-alpha/node_modules/react-native-localize', () => ({
+  getLocales: jest.fn().mockReturnValue([
+    {
+      countryCode: 'US',
+      languageTag: 'en-US',
+      languageCode: 'en',
+      isRTL: false,
+    },
+  ]),
+  getCountry: jest.fn().mockReturnValue('US'),
+  getTimeZone: jest.fn().mockReturnValue('America/New_York'),
+  getCurrencies: jest.fn().mockReturnValue(['USD']),
+  getTemperatureUnit: jest.fn().mockReturnValue('celsius'),
+  getFirstWeekDay: jest.fn().mockReturnValue(0),
+  uses24HourClock: jest.fn().mockReturnValue(false),
+  usesMetricSystem: jest.fn().mockReturnValue(false),
+  findBestAvailableLanguage: jest.fn().mockReturnValue({
+    languageTag: 'en-US',
+    isRTL: false,
+  }),
+  default: {
+    getLocales: jest.fn().mockReturnValue([
+      {
+        countryCode: 'US',
+        languageTag: 'en-US',
+        languageCode: 'en',
+        isRTL: false,
+      },
+    ]),
+    getCountry: jest.fn().mockReturnValue('US'),
+    getTimeZone: jest.fn().mockReturnValue('America/New_York'),
+    getCurrencies: jest.fn().mockReturnValue(['USD']),
+    getTemperatureUnit: jest.fn().mockReturnValue('celsius'),
+    getFirstWeekDay: jest.fn().mockReturnValue(0),
+    uses24HourClock: jest.fn().mockReturnValue(false),
+    usesMetricSystem: jest.fn().mockReturnValue(false),
+    findBestAvailableLanguage: jest.fn().mockReturnValue({
+      languageTag: 'en-US',
+      isRTL: false,
+    }),
+  },
 }));
 
 jest.mock('./src/utils/notifications/notificationService', () =>

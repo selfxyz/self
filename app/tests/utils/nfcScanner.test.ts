@@ -4,6 +4,9 @@
 
 import { Buffer } from 'buffer';
 
+// Ensure the Node Buffer implementation is available to the module under test
+global.Buffer = Buffer;
+
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { PassportReader } from '@/utils/passportReader';
 
