@@ -4,11 +4,11 @@
 
 import { Buffer } from 'buffer';
 
-// Ensure the Node Buffer implementation is available to the module under test
-global.Buffer = Buffer;
-
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { PassportReader } from '@/utils/passportReader';
+
+// Ensure the Node Buffer implementation is available to the module under test
+global.Buffer = Buffer;
 
 // Mock Platform without requiring react-native to avoid memory issues
 // Use a closure to store the OS value, preventing test pollution

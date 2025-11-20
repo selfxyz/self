@@ -10,11 +10,11 @@ import { SelfClientProvider } from '@selfxyz/mobile-sdk-alpha';
 
 // Import after mocking
 import {
-  PassportProvider,
   __resetPassportProviderTestState,
   initializeNativeModules,
   loadDocumentCatalogDirectlyFromKeychain,
   migrateFromLegacyStorage,
+  PassportProvider,
   usePassport,
 } from '@/providers/passportDataProvider';
 
@@ -47,9 +47,13 @@ jest.mock('@/providers/authProvider', () => ({
   useAuth: () => mockAuthProvider,
 }));
 
-const MockText = ({ children, testID }: { children?: ReactNode; testID?: string }) => (
-  <mock-text testID={testID}>{children}</mock-text>
-);
+const MockText = ({
+  children,
+  testID,
+}: {
+  children?: ReactNode;
+  testID?: string;
+}) => <mock-text testID={testID}>{children}</mock-text>;
 
 // Test component that uses the passport hook and extracts context values
 const TestComponent = () => {
@@ -71,7 +75,9 @@ const TestComponent = () => {
       <MockText testID="context-functions-count">
         {contextValues.length} functions available
       </MockText>
-      <MockText testID="context-functions-list">{contextValues.join(',')}</MockText>
+      <MockText testID="context-functions-list">
+        {contextValues.join(',')}
+      </MockText>
       <MockText testID="getData-available">getData available</MockText>
       <MockText testID="setData-available">setData available</MockText>
       <MockText testID="loadDocumentCatalog-available">
@@ -118,7 +124,9 @@ const ErrorBoundaryTest = () => {
     }
   };
 
-  return <MockText testID="error-test-result">{testContextFunction()}</MockText>;
+  return (
+    <MockText testID="error-test-result">{testContextFunction()}</MockText>
+  );
 };
 
 // Component to test context updates

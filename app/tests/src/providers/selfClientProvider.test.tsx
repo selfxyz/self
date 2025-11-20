@@ -10,7 +10,12 @@ jest.mock('@/images/512w.png', () => 'mock-512w-image');
 jest.mock('@/images/nfc.png', () => 'mock-nfc-image');
 jest.mock('react-native-localize', () => {
   const getLocales = jest.fn(() => [
-    { countryCode: 'US', languageTag: 'en-US', languageCode: 'en', isRTL: false },
+    {
+      countryCode: 'US',
+      languageTag: 'en-US',
+      languageCode: 'en',
+      isRTL: false,
+    },
   ]);
   const getCountry = jest.fn(() => 'US');
 

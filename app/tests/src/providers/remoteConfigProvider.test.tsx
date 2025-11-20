@@ -21,15 +21,21 @@ const mockInitRemoteConfig = initRemoteConfig as jest.MockedFunction<
 >;
 
 // Test component that uses the hook
-const MockText = ({ children, testID }: { children?: ReactNode; testID: string }) => (
-  <mock-text testID={testID}>{children}</mock-text>
-);
+const MockText = ({
+  children,
+  testID,
+}: {
+  children?: ReactNode;
+  testID: string;
+}) => <mock-text testID={testID}>{children}</mock-text>;
 
 const TestComponent = () => {
   const { isInitialized, error } = useRemoteConfig();
   return (
     <>
-      <MockText testID="initialized">{isInitialized ? 'true' : 'false'}</MockText>
+      <MockText testID="initialized">
+        {isInitialized ? 'true' : 'false'}
+      </MockText>
       <MockText testID="error">{error || 'none'}</MockText>
     </>
   );

@@ -38,8 +38,7 @@ jest.mock('react-native', () => {
   };
 });
 
-const mockLinking = jest.requireMock('react-native')
-  .Linking as jest.Mocked<{
+const mockLinking = jest.requireMock('react-native').Linking as jest.Mocked<{
   canOpenURL: jest.Mock;
   openURL: jest.Mock;
 }>;
@@ -176,7 +175,9 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
     });
     expect(resultMailto).toBe(false);
     await waitFor(() =>
-      expect(mockLinking.openURL).toHaveBeenCalledWith('mailto:test@example.com'),
+      expect(mockLinking.openURL).toHaveBeenCalledWith(
+        'mailto:test@example.com',
+      ),
     );
 
     const resultTel = await webview.props.onShouldStartLoadWithRequest?.({

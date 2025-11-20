@@ -11,10 +11,7 @@ import { useEffect } from 'react';
 import { render, screen } from '@testing-library/react-native';
 
 import { LoggerProvider, useLogger } from '@/providers/loggerProvider';
-import {
-  AppLogger,
-  NfcLogger,
-} from '@/utils/logger';
+import { AppLogger, NfcLogger } from '@/utils/logger';
 
 // Mock the native logger bridge
 jest.mock('@/utils/logger/nativeLoggerBridge', () => ({
@@ -101,9 +98,13 @@ jest.mock('@/utils/logger', () => ({
   },
 }));
 
-const MockText = ({ children, testID }: { children?: ReactNode; testID?: string }) => (
-  <mock-text testID={testID}>{children}</mock-text>
-);
+const MockText = ({
+  children,
+  testID,
+}: {
+  children?: ReactNode;
+  testID?: string;
+}) => <mock-text testID={testID}>{children}</mock-text>;
 
 // Test component that uses the logger
 const TestComponent = () => {
@@ -152,7 +153,9 @@ describe('LoggerProvider', () => {
       </LoggerProvider>,
     );
     // The TestComponent is rendered in other tests; here we just assert provider renders without errors
-    expect(screen.getByTestId('logger-provider-text')).toHaveTextContent('Test');
+    expect(screen.getByTestId('logger-provider-text')).toHaveTextContent(
+      'Test',
+    );
   });
 
   it('should throw error when useLogger is used outside LoggerProvider', () => {
@@ -177,7 +180,9 @@ describe('LoggerProvider', () => {
     );
 
     // Verify that the LoggerProvider renders without errors
-    expect(screen.getByTestId('logger-provider-text')).toHaveTextContent('Test');
+    expect(screen.getByTestId('logger-provider-text')).toHaveTextContent(
+      'Test',
+    );
   });
 
   it('should provide logLevels constant', () => {

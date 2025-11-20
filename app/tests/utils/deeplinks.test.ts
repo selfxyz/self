@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+
 import {
   handleUrl,
   parseAndValidateUrlParams,
@@ -21,11 +22,10 @@ jest.mock('react-native', () => {
   };
 });
 
-const mockLinking = jest.requireMock('react-native')
-  .Linking as jest.Mocked<{
+const mockLinking = jest.requireMock('react-native').Linking as jest.Mocked<{
   addEventListener: jest.Mock;
   getInitialURL: jest.Mock;
-}>; 
+}>;
 
 const mockPlatform = jest.requireMock('react-native').Platform as {
   OS: string;

@@ -21,7 +21,8 @@ jest.mock('@/utils/analytics', () => {
   });
 });
 
-const mockTrackEvent = jest.requireMock('@/utils/analytics')().trackEvent as jest.Mock;
+const mockTrackEvent = jest.requireMock('@/utils/analytics')()
+  .trackEvent as jest.Mock;
 
 // Mock the passport data provider to avoid database operations
 const mockGetAllDocumentsDirectlyFromKeychain = jest.fn();
