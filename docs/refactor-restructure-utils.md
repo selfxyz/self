@@ -203,12 +203,13 @@ app/src/
 ### Before & After Examples
 
 ```typescript
-// ❌ BEFORE: Direct imports from scattered locations
-import { getPointsAddress } from '@/providers/authProvider';
+// ❌ BEFORE: Address helpers and integrations wired through providers/SDK directly
+import { getOrGeneratePointsAddress } from '@/providers/authProvider'; // derives + stores points address behind biometrics
 import { buttonTap } from '@selfxyz/mobile-sdk-alpha';
 import analytics from '@/somewhere/analytics';
 
-// ✅ AFTER: Clean, organized imports
+// ✅ AFTER: Clean, organized imports through services/integrations layers
+// Note: getPointsAddress is a thin wrapper around authProvider.getOrGeneratePointsAddress
 import { getPointsAddress } from '@/services/points';
 import { buttonTap } from '@/integrations/haptics';
 import analytics from '@/services/analytics';
@@ -293,10 +294,13 @@ import { scan } from '@/integrations/nfc';
 
 ### 3. **Better Tree-Shaking**
 
-All new directories use **barrel exports** (`index.ts`) that:
+Core new directories like `config/`, `integrations/`, `proving/`, `services`, and `utils/` use **feature-level barrel exports** (`index.ts` inside each feature folder) that:
 - Enable clean imports: `@/services/points` instead of `@/services/points/utils`
 - Allow bundlers to eliminate unused code
-- Provide a single source of truth for exports
+- Provide a single source of truth for exports within each feature
+
+> **Bundle-size strategy:** We intentionally avoid a single, root-level barrel like `@/services` or `@/integrations` to reduce the risk of accidentally pulling in large parts of a layer.
+> Prefer importing from **feature barrels** (e.g. `@/services/points`, `@/integrations/haptics`) so bundlers can tree-shake unused services and integrations.
 
 ### 4. **Enhanced Discoverability**
 
@@ -381,15 +385,20 @@ app/src/config/index.ts
 
 ### If You're Working on Existing Code
 
-**Update imports to use new paths:**
+**Update imports to use new paths and semantics:**
 
 ```typescript
-// ❌ Old way
-import { getPointsAddress } from '@/providers/authProvider';
+// ❌ Old way (address generation lived in auth provider)
+import { getOrGeneratePointsAddress } from '@/providers/authProvider';
 
-// ✅ New way
+// ✅ New way (dedicated points service API)
+// getPointsAddress currently delegates to getOrGeneratePointsAddress under the hood,
+// so behavior is preserved while keeping auth concerns in providers and points logic in services.
 import { getPointsAddress } from '@/services/points';
 ```
+
+> **Backward compatibility:** We intentionally did **not** add re-exports in `authProvider` for `@/services/points`.
+> Call sites must be migrated to the new paths; this refactor is internal to the mobile app and does **not** affect external SDK consumers (e.g. `@selfxyz/mobile-sdk-alpha`).
 
 **Use barrel exports:**
 

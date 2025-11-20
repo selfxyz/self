@@ -19,8 +19,25 @@ jest.mock('react-native', () => {
     select: jest.fn(() => 'ios'),
   };
 
+  const mockAppState = {
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+    removeEventListener: jest.fn(),
+  };
+
+  const mockNativeModules = {
+    NativeLoggerBridge: {},
+  };
+
+  const MockNativeEventEmitter = jest.fn(() => ({
+    addListener: jest.fn(),
+    removeAllListeners: jest.fn(),
+  }));
+
   return {
     Platform: mockPlatform,
+    AppState: mockAppState,
+    NativeModules: mockNativeModules,
+    NativeEventEmitter: MockNativeEventEmitter,
   };
 });
 
