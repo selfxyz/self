@@ -1158,6 +1158,14 @@ jest.mock('tamagui', () => {
   // Mock Adapt component
   const Adapt = createMockComponent('MockAdapt');
 
+  // Mock TamaguiProvider - simple pass-through that renders children
+  const TamaguiProvider = jest.fn(({ children }) => children || null);
+  TamaguiProvider.displayName = 'MockTamaguiProvider';
+
+  // Mock configuration factory functions
+  const createFont = jest.fn(() => ({}));
+  const createTamagui = jest.fn(() => ({}));
+
   return {
     __esModule: true,
     styled,
@@ -1178,6 +1186,9 @@ jest.mock('tamagui', () => {
     Select,
     Sheet,
     Adapt,
+    TamaguiProvider,
+    createFont,
+    createTamagui,
     // Provide default exports for other common components
     default: jest.fn(() => null),
   };
