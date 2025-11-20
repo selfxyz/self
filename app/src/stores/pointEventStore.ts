@@ -130,7 +130,7 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
   loadDisclosureEvents: async () => {
     try {
       const { getDisclosurePointEvents } = await import(
-        '@/utils/points/getEvents'
+        '@/services/points/getEvents'
       );
       const { useProofHistoryStore } = await import(
         '@/stores/proofHistoryStore'

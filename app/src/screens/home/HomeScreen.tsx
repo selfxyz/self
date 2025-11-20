@@ -29,6 +29,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
+  blue600,
   slate50,
   slate300,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';

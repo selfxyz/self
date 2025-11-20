@@ -50,7 +50,7 @@ jest.mock('@react-navigation/native', () => ({
 
 jest.mock('@/components/navbar/WebViewNavBar', () => ({
   WebViewNavBar: ({ children, onBackPress, ...props }: any) => (
-      <mock-webview-navbar {...props}>
+    <mock-webview-navbar {...props}>
       <mock-pressable testID="icon-x" onPress={onBackPress} />
       {children}
     </mock-webview-navbar>

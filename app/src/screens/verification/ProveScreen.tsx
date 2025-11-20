@@ -45,6 +45,7 @@ import {
   setDefaultDocumentTypeIfNeeded,
   usePassport,
 } from '@/providers/passportDataProvider';
+import { getPointsAddress } from '@/services/points';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
 import { formatUserId } from '@/utils/formatUserId';

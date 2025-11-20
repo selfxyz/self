@@ -11,15 +11,15 @@ import {
   checkAndUpdateRegistrationStates,
   getAlternativeCSCA,
 } from '@/proving/validateDocument';
+import analytics from '@/services/analytics';
 
 // Mock the analytics module to avoid side effects in tests
-// Use var to avoid temporal dead zone issues with jest hoisting
-var mockTrackEvent: jest.Mock;
 jest.mock('@/services/analytics', () => {
-  mockTrackEvent = jest.fn();
-  return () => ({
+  // Create mock inside factory to avoid temporal dead zone
+  const mockTrackEvent = jest.fn();
+  return jest.fn(() => ({
     trackEvent: mockTrackEvent,
-  });
+  }));
 });
 
 // Mock the passport data provider to avoid database operations
@@ -146,9 +146,15 @@ jest.mock('@selfxyz/common/utils/passports/validate', () => ({
   ),
 }));
 
+// Get reference to the mocked trackEvent function
+let mockTrackEvent: jest.Mock;
+
 describe('getAlternativeCSCA', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Get the mocked trackEvent from the analytics module
+    const mockAnalytics = jest.mocked(analytics);
+    mockTrackEvent = mockAnalytics().trackEvent as jest.Mock;
   });
 
   it('should return public keys in Record format for Aadhaar with valid public keys', () => {
@@ -238,6 +244,10 @@ describe('checkAndUpdateRegistrationStates', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Get the mocked trackEvent from the analytics module
+    const mockAnalytics = jest.mocked(analytics);
+    mockTrackEvent = mockAnalytics().trackEvent as jest.Mock;
+
     mockGetState.mockReturnValue(
       buildState({
         passportAlt: { csca1: 'cert1' },
