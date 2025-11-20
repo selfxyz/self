@@ -9,14 +9,27 @@ import {
   setupUniversalLinkListenerInNavigation,
 } from '@/utils/deeplinks';
 
-const mockLinking = {
-  addEventListener: jest.fn(),
-  getInitialURL: jest.fn(),
-};
+jest.mock('react-native', () => {
+  const mockLinking = {
+    addEventListener: jest.fn(),
+    getInitialURL: jest.fn(),
+  };
 
-jest.mock('react-native', () => ({
-  Linking: mockLinking,
-}));
+  return {
+    Linking: mockLinking,
+    Platform: { OS: 'ios' },
+  };
+});
+
+const mockLinking = jest.requireMock('react-native')
+  .Linking as jest.Mocked<{
+  addEventListener: jest.Mock;
+  getInitialURL: jest.Mock;
+}>; 
+
+const mockPlatform = jest.requireMock('react-native').Platform as {
+  OS: string;
+};
 
 jest.mock('@/navigation', () => ({
   navigationRef: {
@@ -26,11 +39,18 @@ jest.mock('@/navigation', () => ({
   },
 }));
 
-const mockUserStore = { default: { getState: jest.fn() } };
-jest.mock('@/stores/userStore', () => ({
-  __esModule: true,
-  ...mockUserStore,
-}));
+jest.mock('@/stores/userStore', () => {
+  const mockUserStore = { default: { getState: jest.fn() } };
+
+  return {
+    __esModule: true,
+    ...mockUserStore,
+  };
+});
+
+const mockUserStore = jest.requireMock('@/stores/userStore') as {
+  default: { getState: jest.Mock };
+};
 
 let setDeepLinkUserDetails: jest.Mock;
 
@@ -45,6 +65,7 @@ describe('deeplinks', () => {
     mockUserStore.default.getState.mockReturnValue({
       setDeepLinkUserDetails,
     });
+    mockPlatform.OS = 'ios';
   });
 
   describe('handleUrl', () => {

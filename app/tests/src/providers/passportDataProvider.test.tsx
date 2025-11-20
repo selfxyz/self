@@ -20,16 +20,23 @@ import {
 
 import { mockAdapters } from '../../utils/selfClientProvider';
 
-// Mock react-native-keychain before importing the module
-const mockKeychain = {
-  getGenericPassword: jest.fn(),
-  setGenericPassword: jest.fn(),
-  resetGenericPassword: jest.fn(),
-};
-
 const listeners = new Map();
 
-jest.mock('react-native-keychain', () => mockKeychain);
+jest.mock('react-native-keychain', () => {
+  const mockKeychain = {
+    getGenericPassword: jest.fn(),
+    setGenericPassword: jest.fn(),
+    resetGenericPassword: jest.fn(),
+  };
+
+  return mockKeychain;
+});
+
+const mockKeychain = jest.requireMock('react-native-keychain') as {
+  getGenericPassword: jest.Mock;
+  setGenericPassword: jest.Mock;
+  resetGenericPassword: jest.Mock;
+};
 
 // Mock the auth provider
 const mockAuthProvider = {

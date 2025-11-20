@@ -12,18 +12,68 @@ import {
 
 import { WebViewScreen } from '@/screens/shared/WebViewScreen';
 
-const mockLinking = {
-  canOpenURL: jest.fn(),
-  openURL: jest.fn(),
-};
+jest.mock('react-native', () => {
+  const mockLinking = {
+    canOpenURL: jest.fn(),
+    openURL: jest.fn(),
+  };
 
-jest.mock('react-native', () => ({
-  Linking: mockLinking,
-}));
+  const MockView = ({ children, ...props }: any) => (
+    <mock-view {...props}>{children}</mock-view>
+  );
+  const mockBackHandler = {
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+    removeEventListener: jest.fn(),
+  };
+
+  return {
+    ActivityIndicator: (props: any) => <mock-activity-indicator {...props} />,
+    BackHandler: mockBackHandler,
+    Linking: mockLinking,
+    StyleSheet: {
+      create: (styles: unknown) => styles,
+      flatten: (style: unknown) => style,
+    },
+    View: MockView,
+  };
+});
+
+const mockLinking = jest.requireMock('react-native')
+  .Linking as jest.Mocked<{
+  canOpenURL: jest.Mock;
+  openURL: jest.Mock;
+}>;
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
   useFocusEffect: jest.fn(),
+}));
+
+jest.mock('@/components/NavBar/WebViewNavBar', () => ({
+  WebViewNavBar: ({ children, onBackPress, ...props }: any) => (
+    <mock-webview-navbar {...props}>
+      <mock-pressable testID="icon-x" onPress={onBackPress} />
+      {children}
+    </mock-webview-navbar>
+  ),
+}));
+
+jest.mock('@/components/WebViewFooter', () => ({
+  WebViewFooter: () => <mock-webview-footer />,
+}));
+
+jest.mock('@/layouts/ExpandableBottomLayout', () => ({
+  ExpandableBottomLayout: {
+    Layout: ({ children, ...props }: any) => (
+      <mock-expandable-layout {...props}>{children}</mock-expandable-layout>
+    ),
+    TopSection: ({ children, ...props }: any) => (
+      <mock-expandable-top {...props}>{children}</mock-expandable-top>
+    ),
+    BottomSection: ({ children, ...props }: any) => (
+      <mock-expandable-bottom {...props}>{children}</mock-expandable-bottom>
+    ),
+  },
 }));
 
 jest.mock('react-native-webview', () => {
@@ -77,8 +127,7 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
     render(<WebViewScreen {...createProps('https://self.xyz')} />);
     // The Button component renders with msdk-button testID, find by icon
     const closeButtonIcon = screen.getByTestId('icon-x');
-    const closeButton = closeButtonIcon.parent?.parent;
-    fireEvent.press(closeButton!);
+    fireEvent.press(closeButtonIcon);
     expect(mockGoBack).toHaveBeenCalledTimes(1);
   });
 

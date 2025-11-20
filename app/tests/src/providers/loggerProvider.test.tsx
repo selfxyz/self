@@ -136,9 +136,9 @@ describe('LoggerProvider', () => {
 
     // Verify the component renders without errors and shows context values
     expect(screen.getByTestId('test-component')).toBeTruthy();
-    expect(
-      screen.getByText('Test Component - AppLogger Level: 1'),
-    ).toBeTruthy();
+    expect(screen.getByTestId('test-component')).toHaveTextContent(
+      /Test Component - AppLogger Level:\s*1/,
+    );
 
     // Verify that logger methods were called with expected arguments
     expect(AppLogger.info).toHaveBeenCalledWith('Test message');
@@ -148,11 +148,11 @@ describe('LoggerProvider', () => {
   it('should initialize and allow loggers to be called', () => {
     render(
       <LoggerProvider>
-        <MockText>Test</MockText>
+        <MockText testID="logger-provider-text">Test</MockText>
       </LoggerProvider>,
     );
     // The TestComponent is rendered in other tests; here we just assert provider renders without errors
-    expect(screen.getByText('Test')).toBeTruthy();
+    expect(screen.getByTestId('logger-provider-text')).toHaveTextContent('Test');
   });
 
   it('should throw error when useLogger is used outside LoggerProvider', () => {
@@ -172,12 +172,12 @@ describe('LoggerProvider', () => {
     // The nativeLoggerBridge import should be called when LoggerProvider is rendered
     render(
       <LoggerProvider>
-        <MockText>Test</MockText>
+        <MockText testID="logger-provider-text">Test</MockText>
       </LoggerProvider>,
     );
 
     // Verify that the LoggerProvider renders without errors
-    expect(screen.getByText('Test')).toBeTruthy();
+    expect(screen.getByTestId('logger-provider-text')).toHaveTextContent('Test');
   });
 
   it('should provide logLevels constant', () => {

@@ -18,15 +18,19 @@ jest.mock('@/Sentry', () => ({
   captureException: jest.fn(),
 }));
 
-const MockText = ({ children }: { children?: ReactNode }) => (
-  <mock-text>{children}</mock-text>
-);
+const MockText = ({
+  children,
+  testID,
+}: {
+  children?: ReactNode;
+  testID?: string;
+}) => <mock-text testID={testID}>{children}</mock-text>;
 
 const ProblemChild = () => {
   throw new Error('boom');
 };
 
-const GoodChild = () => <MockText>Good child</MockText>;
+const GoodChild = () => <MockText testID="good-child">Good child</MockText>;
 
 describe('ErrorBoundary', () => {
   beforeEach(() => {
@@ -91,13 +95,13 @@ describe('ErrorBoundary', () => {
   });
 
   it('renders children normally when no error occurs', () => {
-    const { getByText } = render(
+    const { getByTestId } = render(
       <ErrorBoundary>
         <GoodChild />
       </ErrorBoundary>,
     );
 
-    expect(getByText('Good child')).toBeTruthy();
+    expect(getByTestId('good-child')).toHaveTextContent('Good child');
   });
 
   it('captures error details correctly', () => {

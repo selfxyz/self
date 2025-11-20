@@ -13,13 +13,15 @@ import {
 } from '@/utils/proving/validateDocument';
 
 // Mock the analytics module to avoid side effects in tests
-let mockTrackEvent: jest.Mock;
 jest.mock('@/utils/analytics', () => {
-  mockTrackEvent = jest.fn();
+  const mockTrackEvent = jest.fn();
+
   return () => ({
     trackEvent: mockTrackEvent,
   });
 });
+
+const mockTrackEvent = jest.requireMock('@/utils/analytics')().trackEvent as jest.Mock;
 
 // Mock the passport data provider to avoid database operations
 const mockGetAllDocumentsDirectlyFromKeychain = jest.fn();

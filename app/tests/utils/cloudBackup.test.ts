@@ -13,11 +13,21 @@ import { createGDrive } from '@/utils/cloudBackup/google';
 
 type SupportedPlatforms = 'ios' | 'android';
 
-const mockPlatform: { OS: SupportedPlatforms } = { OS: 'ios' };
+jest.mock('react-native', () => {
+  const mockPlatform: { OS: SupportedPlatforms; select: jest.Mock } = {
+    OS: 'ios',
+    select: jest.fn(() => 'ios'),
+  };
 
-jest.mock('react-native', () => ({
-  Platform: mockPlatform,
-}));
+  return {
+    Platform: mockPlatform,
+  };
+});
+
+const mockPlatform = jest.requireMock('react-native').Platform as {
+  OS: SupportedPlatforms;
+  select: jest.Mock;
+};
 
 // Mock dependencies
 jest.mock('react-native-cloud-storage', () => ({
