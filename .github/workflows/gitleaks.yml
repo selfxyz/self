@@ -13,7 +13,7 @@ jobs:
       - name: Install gitleaks
         uses: gitleaks/gitleaks-action@v2.3.9
         with:
-          config-path: .gitleaks.toml
+          config-path: gitleaks-override.toml
           fail: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

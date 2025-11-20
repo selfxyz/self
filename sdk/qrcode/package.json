@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/qrcode",
-  "version": "1.0.17-beta.1",
+  "version": "1.0.17-beta.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -72,7 +72,7 @@
     "types": "yarn build"
   },
   "dependencies": {
-    "@selfxyz/common": "workspace:^",
+    "@selfxyz/sdk-common": "workspace:^",
     "js-sha1": "^0.7.0",
     "js-sha256": "^0.11.0",
     "js-sha512": "^0.9.0",

@@ -13,7 +13,8 @@ import {
 } from '@/proving/validateDocument';
 
 // Mock the analytics module to avoid side effects in tests
-let mockTrackEvent: jest.Mock;
+// Use var to avoid temporal dead zone issues with jest hoisting
+var mockTrackEvent: jest.Mock;
 jest.mock('@/services/analytics', () => {
   mockTrackEvent = jest.fn();
   return () => ({

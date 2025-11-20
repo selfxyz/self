@@ -1,4 +1,4 @@
-import type { SelfApp } from '@selfxyz/common';
+import type { SelfApp } from '@selfxyz/sdk-common';
 import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
 

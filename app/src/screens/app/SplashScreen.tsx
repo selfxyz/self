@@ -95,8 +95,8 @@ const SplashScreen: React.FC = ({}) => {
           }
         } catch (error) {
           console.error(`Error in SplashScreen data loading: ${error}`);
-          setDeeplinkParentScreen('Launch');
-          setNextScreen('Launch');
+          setDeeplinkParentScreen('Home');
+          setNextScreen('Home');
         }
       };
 

@@ -1,5 +1,5 @@
-import type { SelfApp } from '@selfxyz/common';
-import { getUniversalLink, REDIRECT_URL, WS_DB_RELAYER } from '@selfxyz/common';
+import type { SelfApp } from '@selfxyz/sdk-common';
+import { getUniversalLink, REDIRECT_URL, WS_DB_RELAYER } from '@selfxyz/sdk-common';
 import Lottie from 'lottie-react';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useEffect, useRef, useState } from 'react';

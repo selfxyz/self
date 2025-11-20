@@ -85,6 +85,8 @@ describe('database (SQLite)', () => {
         status: ProofStatus.PENDING,
         disclosures: '{"test": "data"}',
         logoBase64: 'base64-logo',
+        documentId: 'document-123',
+        endpoint: 'https://example.com/endpoint',
       };
 
       const mockInsertResult = {
@@ -100,6 +102,7 @@ describe('database (SQLite)', () => {
         expect.stringContaining('INSERT OR IGNORE INTO proof_history'),
         [
           mockProof.appName,
+          mockProof.endpoint,
           mockProof.endpointType,
           mockProof.status,
           null, // errorCode
@@ -110,6 +113,7 @@ describe('database (SQLite)', () => {
           mockProof.userId,
           mockProof.userIdType,
           mockProof.sessionId,
+          mockProof.documentId,
         ],
       );
 
@@ -126,11 +130,13 @@ describe('database (SQLite)', () => {
         sessionId: 'session-123',
         userId: 'user-456',
         userIdType: 'uuid' as const,
+        endpoint: 'https://example.com/endpoint',
         endpointType: 'https' as const,
         status: ProofStatus.FAILURE,
         errorCode: 'ERROR_001',
         errorReason: 'Test error',
         disclosures: '{"test": "data"}',
+        documentId: 'document-123',
       };
 
       const mockInsertResult = {
@@ -146,6 +152,7 @@ describe('database (SQLite)', () => {
         expect.stringContaining('INSERT OR IGNORE INTO proof_history'),
         [
           mockProof.appName,
+          mockProof.endpoint,
           mockProof.endpointType,
           mockProof.status,
           mockProof.errorCode,
@@ -156,6 +163,7 @@ describe('database (SQLite)', () => {
           mockProof.userId,
           mockProof.userIdType,
           mockProof.sessionId,
+          mockProof.documentId,
         ],
       );
 

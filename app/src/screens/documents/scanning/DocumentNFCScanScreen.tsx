@@ -32,12 +32,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
-import {
-  dinot,
-  hasAnyValidRegisteredDocument,
-  sanitizeErrorMessage,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { sanitizeErrorMessage, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
   ButtonsContainer,
@@ -54,6 +49,7 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
 import NFC_IMAGE from '@/assets/images/nfc.png';
@@ -453,9 +449,6 @@ const DocumentNFCScanScreen: React.FC = () => {
     trackEvent,
   ]);
 
-  const navigateToLaunch = useHapticNavigation('Launch', {
-    action: 'cancel',
-  });
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
   });
@@ -463,12 +456,7 @@ const DocumentNFCScanScreen: React.FC = () => {
   const onCancelPress = async () => {
     flushAllAnalytics();
     logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
-    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
-    if (hasValidDocument) {
-      navigateToHome();
-    } else {
-      navigateToLaunch();
-    }
+    navigateToHome();
   };
 
   useFocusEffect(

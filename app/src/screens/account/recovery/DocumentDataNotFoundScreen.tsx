@@ -27,7 +27,7 @@ const { flush: flushAnalytics } = analytics();
 
 const DocumentDataNotFoundScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const navigateToLaunch = useHapticNavigation('Launch');
+  const navigateToCountryPicker = useHapticNavigation('CountryPicker');
   const navigateToHome = useHapticNavigation('Home');
 
   const onPress = async () => {
@@ -35,7 +35,7 @@ const DocumentDataNotFoundScreen: React.FC = () => {
     if (hasValidDocument) {
       navigateToHome();
     } else {
-      navigateToLaunch();
+      navigateToCountryPicker();
     }
   };
 

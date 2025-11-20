@@ -2,28 +2,24 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+// Mock Platform without requiring react-native to avoid memory issues
+// Use a simple object that can be modified directly
 import { Buffer } from 'buffer';
 
 import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
 import { PassportReader } from '@/integrations/nfc/passportReader';
 
-// Mock Platform without requiring react-native to avoid memory issues
-// Use a closure to store the OS value, preventing test pollution
-let platformOS = 'ios'; // Default to iOS
-
 const Platform = {
-  get OS() {
-    return platformOS;
-  },
-  set OS(value: string) {
-    platformOS = value;
-  },
+  OS: 'ios', // Default to iOS
   Version: 14,
 };
 
 jest.mock('react-native', () => ({
   Platform,
 }));
+
+// Ensure the Node Buffer implementation is available to the module under test
+global.Buffer = Buffer;
 
 describe('parseScanResponse', () => {
   beforeEach(() => {

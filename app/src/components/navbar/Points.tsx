@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { HelpCircle } from '@tamagui/lucide-icons';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -74,6 +75,10 @@ const Points: React.FC = () => {
       });
     }, []),
   );
+
+  const onHelpButtonPress = () => {
+    navigation.navigate('PointsInfo');
+  };
 
   //TODO - uncomment after merging - https://github.com/selfxyz/self/pull/1363/
   // useEffect(() => {
@@ -178,15 +183,8 @@ const Points: React.FC = () => {
             setIsGeneralSubscribed(true);
             selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_SUCCESS);
 
-            const callbackId = registerModalCallbacks({
-              onButtonPress: () => {},
-              onModalDismiss: () => {},
-            });
-            navigation.navigate('Modal', {
-              titleText: 'Success!',
-              bodyText: `Push notifications enabled! You earned ${POINT_VALUES.notification} points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.`,
-              buttonText: 'OK',
-              callbackId,
+            navigation.navigate('Gratification', {
+              points: POINT_VALUES.notification,
             });
           } else {
             selfClient.trackEvent(PointEvents.EARN_NOTIFICATION_FAILED, {
@@ -279,15 +277,8 @@ const Points: React.FC = () => {
           setBackupForPointsCompleted();
           selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
 
-          const callbackId = registerModalCallbacks({
-            onButtonPress: () => {},
-            onModalDismiss: () => {},
-          });
-          navigation.navigate('Modal', {
-            titleText: 'Success!',
-            bodyText: `Account backed up successfully! You earned ${POINT_VALUES.backup} points.\n\nPoints will be distributed to your wallet on the next Sunday at noon UTC.`,
-            buttonText: 'OK',
-            callbackId,
+          navigation.navigate('Gratification', {
+            points: POINT_VALUES.backup,
           });
         } else {
           selfClient.trackEvent(PointEvents.EARN_BACKUP_FAILED);
@@ -330,6 +321,9 @@ const Points: React.FC = () => {
   const ListHeader = (
     <YStack paddingHorizontal={5} gap={20} paddingTop={20}>
       <YStack style={styles.pointsCard}>
+        <Pressable style={styles.helpButton} onPress={onHelpButtonPress}>
+          <HelpCircle size={32} color={blue600} />
+        </Pressable>
         <YStack style={styles.pointsCardContent}>
           <View style={styles.logoContainer}>
             <LogoInversed width={33} height={33} />
@@ -594,6 +588,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: white,
     textAlign: 'center',
+  },
+  helpButton: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    padding: 12,
   },
 });
 
