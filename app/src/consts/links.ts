@@ -16,7 +16,7 @@ export const selfUrl = 'https://self.xyz';
 export const supportedBiometricIdsUrl =
   'https://docs.self.xyz/use-self/self-map-countries-list';
 
-export const telegramUrl = 'https://t.me/self_xyz';
+export const telegramUrl = 'https://t.me/selfprotocolbuilder';
 
 export const termsUrl = 'https://self.xyz/terms';
 
