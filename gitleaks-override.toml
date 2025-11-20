@@ -1,5 +1,5 @@
 [extend]
-path = "./.gitleaks.toml"
+path = ".gitleaks.toml"
 
 [allowlist]
 description = "Project-specific overrides"
