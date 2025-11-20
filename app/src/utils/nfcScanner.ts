@@ -266,9 +266,13 @@ const handleResponseAndroid = (response: AndroidScanResponse): PassportData => {
 
   const dgHashesObj = JSON.parse(dataGroupHashes);
   const dg1HashString = dgHashesObj['1'];
-  const dg1Hash = Array.from(Buffer.from(dg1HashString, 'hex'));
+  const dg1Hash = dg1HashString
+    ? Array.from(Buffer.from(dg1HashString, 'hex'))
+    : [];
   const dg2HashString = dgHashesObj['2'];
-  const dg2Hash = Array.from(Buffer.from(dg2HashString, 'hex'));
+  const dg2Hash = dg2HashString
+    ? Array.from(Buffer.from(dg2HashString, 'hex'))
+    : [];
   const pem =
     '-----BEGIN CERTIFICATE-----' +
     documentSigningCertificate +
