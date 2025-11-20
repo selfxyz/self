@@ -19,28 +19,21 @@ jest.mock('react-native', () => {
     select: jest.fn(() => 'ios'),
   };
 
-  const mockAppState = {
-    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
-    removeEventListener: jest.fn(),
-  };
-
-  const mockNativeModules = {
-    NativeLoggerBridge: {},
-    RNPassportReader: {},
-  };
-
-  const MockNativeEventEmitter = jest.fn(() => ({
-    addListener: jest.fn(),
-    removeAllListeners: jest.fn(),
-  }));
-
   return {
     Platform: mockPlatform,
-    AppState: mockAppState,
-    NativeModules: mockNativeModules,
-    NativeEventEmitter: MockNativeEventEmitter,
   };
 });
+
+jest.mock('react-native-biometrics', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    simplePrompt: jest.fn(async () => ({ success: true })),
+    isSensorAvailable: jest.fn(async () => ({
+      available: true,
+      biometryType: 'TouchID',
+    })),
+  })),
+}));
 
 const mockPlatform = jest.requireMock('react-native').Platform as {
   OS: SupportedPlatforms;
@@ -70,17 +63,6 @@ jest.mock('@robinbobin/react-native-google-drive-api-wrapper', () => ({
       json: 'application/json',
     },
   },
-}));
-
-jest.mock('react-native-biometrics', () => ({
-  __esModule: true,
-  default: jest.fn(() => ({
-    simplePrompt: jest.fn(async () => ({ success: true })),
-    isSensorAvailable: jest.fn(async () => ({
-      available: true,
-      biometryType: 'TouchID',
-    })),
-  })),
 }));
 
 jest.mock('@/services/cloud-backup/google', () => ({
