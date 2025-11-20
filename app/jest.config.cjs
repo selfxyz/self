@@ -26,6 +26,7 @@ module.exports = {
   testPathIgnorePatterns: [
     '/node_modules/',
     '/scripts/tests/', // Node.js native test runner tests
+    '/babel\\.config\\.test\\.cjs',
   ],
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
