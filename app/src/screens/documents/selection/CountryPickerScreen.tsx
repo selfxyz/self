@@ -3,10 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { YStack } from '@selfxyz/mobile-sdk-alpha/components';
+import { slate100 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import SDKCountryPickerScreen from '@selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen';
 
-import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
-import { slate100 } from '@/utils/colors';
+import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 
 export default function CountryPickerScreen() {
   return (

@@ -6,6 +6,7 @@ import type { PropsWithChildren } from 'react';
 import React, { useCallback, useMemo } from 'react';
 import { Linking, Platform, Share, View as RNView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
@@ -14,7 +15,24 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bug, FileText } from '@tamagui/lucide-icons';
 
 import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  amber500,
+  black,
+  neutral700,
+  slate800,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import Github from '@/assets/icons/github.svg';
+import Cloud from '@/assets/icons/settings_cloud_backup.svg';
+import Data from '@/assets/icons/settings_data.svg';
+import Feedback from '@/assets/icons/settings_feedback.svg';
+import Lock from '@/assets/icons/settings_lock.svg';
+import ShareIcon from '@/assets/icons/share.svg';
+import Star from '@/assets/icons/star.svg';
+import Telegram from '@/assets/icons/telegram.svg';
+import Web from '@/assets/icons/webpage.svg';
+import X from '@/assets/icons/x.svg';
 import {
   appStoreUrl,
   gitHubUrl,
@@ -23,21 +41,9 @@ import {
   telegramUrl,
   xUrl,
 } from '@/consts/links';
-import Github from '@/images/icons/github.svg';
-import Cloud from '@/images/icons/settings_cloud_backup.svg';
-import Data from '@/images/icons/settings_data.svg';
-import Feedback from '@/images/icons/settings_feedback.svg';
-import Lock from '@/images/icons/settings_lock.svg';
-import ShareIcon from '@/images/icons/share.svg';
-import Star from '@/images/icons/star.svg';
-import Telegram from '@/images/icons/telegram.svg';
-import Web from '@/images/icons/webpage.svg';
-import X from '@/images/icons/x.svg';
+import { impactLight } from '@/integrations/haptics';
 import { useSettingStore } from '@/stores/settingStore';
-import { amber500, black, neutral700, slate800, white } from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
-import { impactLight } from '@/utils/haptic';
-import { getCountry, getLocales, getTimeZone } from '@/utils/locale';
+import { extraYPadding } from '@/utils/styleUtils';
 
 import { version } from '../../../../package.json';
 // Avoid importing RootStackParamList to prevent type cycles; use minimal typing

@@ -6,19 +6,20 @@
  * @jest-environment node
  */
 
+import type { ReactNode } from 'react';
 import { useEffect } from 'react';
-import { Text } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 
 import { LoggerProvider, useLogger } from '@/providers/loggerProvider';
+import { AppLogger, NfcLogger } from '@/services/logging';
 
 // Mock the native logger bridge
-jest.mock('@/utils/logger/nativeLoggerBridge', () => ({
+jest.mock('@/services/logging/logger/nativeLoggerBridge', () => ({
   cleanup: jest.fn(),
 }));
 
 // Mock the logger utilities
-jest.mock('@/utils/logger', () => ({
+jest.mock('@/services/logging', () => ({
   AppLogger: {
     debug: jest.fn(),
     info: jest.fn(),
@@ -97,6 +98,14 @@ jest.mock('@/utils/logger', () => ({
   },
 }));
 
+const MockText = ({
+  children,
+  testID,
+}: {
+  children?: ReactNode;
+  testID?: string;
+}) => <mock-text testID={testID}>{children}</mock-text>;
+
 // Test component that uses the logger
 const TestComponent = () => {
   const loggers = useLogger();
@@ -108,9 +117,9 @@ const TestComponent = () => {
   }, [loggers]);
 
   return (
-    <Text testID="test-component">
+    <MockText testID="test-component">
       Test Component - AppLogger Level: {loggers.logLevels.info}
-    </Text>
+    </MockText>
   );
 };
 
@@ -128,12 +137,11 @@ describe('LoggerProvider', () => {
 
     // Verify the component renders without errors and shows context values
     expect(screen.getByTestId('test-component')).toBeTruthy();
-    expect(
-      screen.getByText('Test Component - AppLogger Level: 1'),
-    ).toBeTruthy();
+    expect(screen.getByTestId('test-component')).toHaveTextContent(
+      /Test Component - AppLogger Level:\s*1/,
+    );
 
     // Verify that logger methods were called with expected arguments
-    const { AppLogger, NfcLogger } = require('@/utils/logger');
     expect(AppLogger.info).toHaveBeenCalledWith('Test message');
     expect(NfcLogger.debug).toHaveBeenCalledWith('NFC test');
   });
@@ -141,11 +149,13 @@ describe('LoggerProvider', () => {
   it('should initialize and allow loggers to be called', () => {
     render(
       <LoggerProvider>
-        <Text>Test</Text>
+        <MockText testID="logger-provider-text">Test</MockText>
       </LoggerProvider>,
     );
     // The TestComponent is rendered in other tests; here we just assert provider renders without errors
-    expect(screen.getByText('Test')).toBeTruthy();
+    expect(screen.getByTestId('logger-provider-text')).toHaveTextContent(
+      'Test',
+    );
   });
 
   it('should throw error when useLogger is used outside LoggerProvider', () => {
@@ -165,12 +175,14 @@ describe('LoggerProvider', () => {
     // The nativeLoggerBridge import should be called when LoggerProvider is rendered
     render(
       <LoggerProvider>
-        <Text>Test</Text>
+        <MockText testID="logger-provider-text">Test</MockText>
       </LoggerProvider>,
     );
 
     // Verify that the LoggerProvider renders without errors
-    expect(screen.getByText('Test')).toBeTruthy();
+    expect(screen.getByTestId('logger-provider-text')).toHaveTextContent(
+      'Test',
+    );
   });
 
   it('should provide logLevels constant', () => {

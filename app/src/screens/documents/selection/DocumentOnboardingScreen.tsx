@@ -18,12 +18,16 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate100,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '@/utils/colors';
-import { impactLight } from '@/utils/haptic';
 
 const DocumentOnboardingScreen: React.FC = () => {
   const navigation = useNavigation();

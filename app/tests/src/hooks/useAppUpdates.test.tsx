@@ -31,7 +31,7 @@ jest.mock('@/utils/modalCallbackRegistry', () => ({
   registerModalCallbacks: jest.fn().mockReturnValue(1),
 }));
 
-jest.mock('@/utils/analytics', () => () => ({
+jest.mock('@/services/analytics', () => () => ({
   trackEvent: jest.fn(),
 }));
 

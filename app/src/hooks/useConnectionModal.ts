@@ -10,8 +10,8 @@ import { SettingsEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { useModal } from '@/hooks/useModal';
 import { useNetInfo } from '@/hooks/useNetInfo';
 import { navigationRef } from '@/navigation';
+import analytics from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
-import analytics from '@/utils/analytics';
 
 const { trackEvent } = analytics();
 

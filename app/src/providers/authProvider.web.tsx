@@ -18,8 +18,8 @@ import React, {
 
 import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
+import analytics from '@/services/analytics';
 import type { Mnemonic } from '@/types/mnemonic';
-import analytics from '@/utils/analytics';
 
 const { trackEvent } = analytics();
 

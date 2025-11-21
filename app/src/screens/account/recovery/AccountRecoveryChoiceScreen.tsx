@@ -20,10 +20,16 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate500,
+  slate600,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import Keyboard from '@/assets/icons/keyboard.svg';
+import RestoreAccountSvg from '@/assets/icons/restore_account.svg';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import Keyboard from '@/images/icons/keyboard.svg';
-import RestoreAccountSvg from '@/images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { getPrivateKeyFromMnemonic, useAuth } from '@/providers/authProvider';
@@ -31,14 +37,9 @@ import {
   loadPassportData,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
+import { STORAGE_NAME, useBackupMnemonic } from '@/services/cloud-backup';
 import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
-import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
-import { black, slate500, slate600, white } from '@/utils/colors';
-
-// DISABLED FOR NOW: Turnkey functionality
-// import { AuthState, useTurnkey } from '@turnkey/react-native-wallet-kit';
-// import { useTurnkeyUtils } from '@/utils/turnkey';
 
 const AccountRecoveryChoiceScreen: React.FC = () => {
   const selfClient = useSelfClient();

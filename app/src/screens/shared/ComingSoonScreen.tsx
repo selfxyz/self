@@ -15,14 +15,18 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { notificationError } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';
-import analytics from '@/utils/analytics';
-import { black, slate500, white } from '@/utils/colors';
-import { sendCountrySupportNotification } from '@/utils/email';
-import { notificationError } from '@/utils/haptic';
+import analytics from '@/services/analytics';
+import { sendCountrySupportNotification } from '@/services/email';
 
 const { flush: flushAnalytics } = analytics();
 

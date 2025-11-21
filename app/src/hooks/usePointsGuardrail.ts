@@ -10,7 +10,7 @@ import type { RootStackParamList } from '@/navigation';
 import {
   hasUserAnIdentityDocumentRegistered,
   hasUserDoneThePointsDisclosure,
-} from '@/utils/points';
+} from '@/services/points';
 
 /**
  * Guard hook that validates points screen access requirements.

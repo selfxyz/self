@@ -8,15 +8,15 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { YStack } from 'tamagui';
 
 import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
-import { flushAllAnalytics } from '@/utils/analytics';
-import { slate500 } from '@/utils/colors';
-import { sendFeedbackEmail } from '@/utils/email';
+import { flushAllAnalytics } from '@/services/analytics';
+import { sendFeedbackEmail } from '@/services/email';
 
 const tips: TipProps[] = [
   {

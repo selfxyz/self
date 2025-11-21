@@ -11,14 +11,18 @@ import {
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  black,
+  slate400,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import Mnemonic from '@/components/Mnemonic';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import useMnemonic from '@/hooks/useMnemonic';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { STORAGE_NAME } from '@/services/cloud-backup';
 import { useSettingStore } from '@/stores/settingStore';
-import { STORAGE_NAME } from '@/utils/cloudBackup';
-import { black, slate400, white } from '@/utils/colors';
 
 const SaveRecoveryPhraseScreen: React.FC = () => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);

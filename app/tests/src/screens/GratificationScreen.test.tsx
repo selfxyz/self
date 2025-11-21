@@ -7,6 +7,44 @@ import { render, waitFor } from '@testing-library/react-native';
 
 import GratificationScreen from '@/screens/app/GratificationScreen';
 
+jest.mock('react-native', () => {
+  const MockView = ({ children, ...props }: any) => (
+    <mock-view {...props}>{children}</mock-view>
+  );
+  const MockText = ({ children, ...props }: any) => (
+    <mock-text {...props}>{children}</mock-text>
+  );
+  const mockDimensions = {
+    get: jest.fn(() => ({ width: 320, height: 640 })),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  };
+
+  return {
+    __esModule: true,
+    Dimensions: mockDimensions,
+    Pressable: ({ onPress, children }: any) => (
+      <button onClick={onPress} type="button">
+        {children}
+      </button>
+    ),
+    StyleSheet: {
+      create: (styles: any) => styles,
+      flatten: (style: any) => style,
+    },
+    Text: MockText,
+    View: MockView,
+  };
+});
+
+jest.mock('react-native-edge-to-edge', () => ({
+  SystemBars: () => null,
+}));
+
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: jest.fn(() => ({ top: 0, bottom: 0 })),
+}));
+
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
   useRoute: jest.fn(),
@@ -58,8 +96,8 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
   ),
 }));
 
-jest.mock('@/images/icons/arrow_left.svg', () => 'ArrowLeft');
-jest.mock('@/images/icons/logo_white.svg', () => 'LogoWhite');
+jest.mock('@/assets/icons/arrow_left.svg', () => 'ArrowLeft');
+jest.mock('@/assets/icons/logo_white.svg', () => 'LogoWhite');
 
 const mockUseNavigation = useNavigation as jest.MockedFunction<
   typeof useNavigation

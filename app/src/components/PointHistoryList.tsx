@@ -13,10 +13,6 @@ import { Card, Text, View, XStack, YStack } from 'tamagui';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-
-import HeartIcon from '@/images/icons/heart.svg';
-import StarBlackIcon from '@/images/icons/star_black.svg';
-import { usePointEventStore } from '@/stores/pointEventStore';
 import {
   black,
   blue600,
@@ -26,9 +22,13 @@ import {
   slate400,
   slate500,
   white,
-} from '@/utils/colors';
-import { dinot, plexMono } from '@/utils/fonts';
-import type { PointEvent } from '@/utils/points';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+
+import HeartIcon from '@/assets/icons/heart.svg';
+import StarBlackIcon from '@/assets/icons/star_black.svg';
+import type { PointEvent } from '@/services/points';
+import { usePointEventStore } from '@/stores/pointEventStore';
 
 type Section = {
   title: string;

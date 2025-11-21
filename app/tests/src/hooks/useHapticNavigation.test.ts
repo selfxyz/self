@@ -6,13 +6,17 @@ import { useNavigation } from '@react-navigation/native';
 import { act, renderHook } from '@testing-library/react-native';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import { impactLight, impactMedium, selectionChange } from '@/utils/haptic';
+import {
+  impactLight,
+  impactMedium,
+  selectionChange,
+} from '@/integrations/haptics';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
 
-jest.mock('@/utils/haptic', () => ({
+jest.mock('@/integrations/haptics', () => ({
   impactLight: jest.fn(),
   impactMedium: jest.fn(),
   selectionChange: jest.fn(),

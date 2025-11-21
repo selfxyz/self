@@ -27,22 +27,27 @@ import {
   DocumentEvents,
   PointEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks/useSafeBottomPadding';
+import {
+  black,
+  blue600,
+  slate50,
+  slate300,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
-import IdCardLayout from '@/components/homeScreen/idCard';
+import LogoInversed from '@/assets/images/logo_inversed.svg';
+import UnverifiedHumanImage from '@/assets/images/unverified_human.png';
+import IdCardLayout from '@/components/homescreen/IdCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
 import { usePoints } from '@/hooks/usePoints';
 import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
 import { useTestReferralFlow } from '@/hooks/useTestReferralFlow';
-import LogoInversed from '@/images/logo_inversed.svg';
-import UnverifiedHumanImage from '@/images/unverified_human.png';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
-import { black, blue600, slate50, slate300 } from '@/utils/colors';
-import { dinot } from '@/utils/fonts';
 
 const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();

@@ -150,9 +150,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    # Guard against auto-closed PRs (GitHub reports merged == false when a PR closes without merging)
     if: |
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
-      !contains(github.event.pull_request.labels.*.name, 'deploy:skip')
+      (
+        github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)
+      ) &&
+      (
+        github.event_name != 'pull_request' ||
+        !contains(github.event.pull_request.labels.*.name, 'deploy:skip')
+      )
     outputs:
       version: ${{ steps.bump.outputs.version }}
       ios_build: ${{ steps.bump.outputs.ios_build }}
@@ -262,7 +269,8 @@ jobs:
       contents: read
       actions: write
     if: |
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (
         (inputs.platform == 'ios' || inputs.platform == 'both') ||
         (github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'deploy:android'))
@@ -829,7 +837,8 @@ jobs:
       actions: write
       id-token: write
     if: |
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (
         (inputs.platform == 'android' || inputs.platform == 'both') ||
         (github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'deploy:ios'))
@@ -1241,7 +1250,8 @@ jobs:
     needs: [bump-version, build-ios, build-android]
     if: |
       always() &&
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
     env:
       APP_PATH: ${{ github.workspace }}/app

@@ -9,14 +9,19 @@ import { ScrollView, Text, View, XStack, YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 
 import { PrimaryButton, Title } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  black,
+  slate50,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import CheckmarkSquareIcon from '@/images/icons/checkmark_square.svg';
-import CloudBackupIcon from '@/images/icons/cloud_backup.svg';
-import PushNotificationsIcon from '@/images/icons/push_notifications.svg';
-import StarIcon from '@/images/icons/star.svg';
-import Referral from '@/images/referral.png';
-import { black, slate50, slate500, white } from '@/utils/colors';
-import { dinot } from '@/utils/fonts';
+import CheckmarkSquareIcon from '@/assets/icons/checkmark_square.svg';
+import CloudBackupIcon from '@/assets/icons/cloud_backup.svg';
+import PushNotificationsIcon from '@/assets/icons/push_notifications.svg';
+import StarIcon from '@/assets/icons/star.svg';
+import Referral from '@/assets/images/referral.png';
 
 type PointsInfoScreenProps = StaticScreenProps<
   | {

@@ -165,6 +165,18 @@ module.exports = {
       },
     ],
 
+    // Custom rule to prevent export * (bad for tree shaking)
+    // This rule prevents the use of export * which disables tree shaking
+    // and can significantly increase bundle size. Use selective exports instead.
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'ExportAllDeclaration',
+        message:
+          'export * is forbidden. Use selective exports for better tree shaking. Example: export { specific1, specific2 } from "./module"',
+      },
+    ],
+
     // Override rules conflicting with TypeScript union formatting
 
     '@typescript-eslint/indent': 'off',
@@ -191,11 +203,11 @@ module.exports = {
     {
       // Disable export sorting for files with dependency issues
       files: [
-        'src/components/NavBar/BaseNavBar.tsx',
+        'src/components/navbar/BaseNavBar.tsx',
         'src/navigation/index.tsx',
         'src/providers/passportDataProvider.tsx',
-        'src/utils/cloudBackup/helpers.ts',
-        'src/utils/haptic/index.ts',
+        'src/services/cloud-backup/helpers.ts',
+        'src/integrations/haptics/index.ts',
       ],
       rules: {
         'sort-exports/sort-exports': 'off',
@@ -266,13 +278,6 @@ module.exports = {
       files: ['scripts/**/*.cjs', 'scripts/*.cjs'],
       rules: {
         'no-console': 'off',
-      },
-    },
-    {
-      // Allow require imports for dynamic imports in proving machine
-      files: ['src/utils/proving/provingMachine.ts'],
-      rules: {
-        '@typescript-eslint/no-require-imports': 'off',
       },
     },
     {

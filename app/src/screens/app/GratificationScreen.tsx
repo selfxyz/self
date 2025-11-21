@@ -19,12 +19,16 @@ import { X } from '@tamagui/lucide-icons';
 import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import youWinAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/youWin.json';
 import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  black,
+  slate700,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot, dinotBold } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import GratificationBg from '@/images/gratification_bg.svg';
-import LogoWhite from '@/images/icons/logo_white.svg';
+import LogoWhite from '@/assets/icons/logo_white.svg';
+import GratificationBg from '@/assets/images/gratification_bg.svg';
 import type { RootStackParamList } from '@/navigation';
-import { black, slate700, white } from '@/utils/colors';
-import { dinot, dinotBold } from '@/utils/fonts';
 
 const GratificationScreen: React.FC = () => {
   const { top, bottom } = useSafeAreaInsets();
