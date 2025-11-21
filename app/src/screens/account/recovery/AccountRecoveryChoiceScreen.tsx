@@ -141,7 +141,10 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         if (isCloudRestore && !cloudBackupEnabled) {
           toggleCloudBackupEnabled();
         }
-        reStorePassportDataWithRightCSCA(passportDataParsed, csca as string);
+        await reStorePassportDataWithRightCSCA(
+          passportDataParsed,
+          csca as string,
+        );
         await markCurrentDocumentAsRegistered(selfClient);
         trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS);
         trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
