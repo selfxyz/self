@@ -9,7 +9,7 @@ inputs:
     default: |
       ios/Pods
       ~/Library/Caches/CocoaPods
-  lock-file:
+  lockfile:
     description: Path to Podfile.lock
     required: false
     default: ios/Podfile.lock
@@ -31,7 +31,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ inputs.path }}
-        key: ${{ runner.os }}-pods-${{ inputs.cache-version }}-${{ hashFiles(inputs.lock-file) }}
+        key: ${{ runner.os }}-pods-${{ inputs.cache-version }}-${{ hashFiles(inputs.lockfile) }}
         restore-keys: |
           ${{ runner.os }}-pods-${{ inputs.cache-version }}-
           ${{ runner.os }}-pods-
