@@ -174,7 +174,7 @@ const AadhaarUploadScreen: React.FC = () => {
         <BodyText
           style={{ fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}
         >
-          Generate a QR code from the mAadaar app
+          Generate a QR code from the Aadhaar app
         </BodyText>
         <BodyText
           style={{ fontSize: 16, textAlign: 'center', color: slate500 }}
