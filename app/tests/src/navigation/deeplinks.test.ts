@@ -228,7 +228,7 @@ describe('deeplinks', () => {
         .mockImplementation(() => {});
 
       const url =
-        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7&id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature';
+        'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7&id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature'; // gitleaks:allow
       handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
@@ -265,7 +265,7 @@ describe('deeplinks', () => {
         .mockImplementation(() => {});
 
       const url =
-        'https://redirect.self.xyz?scheme=https#id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature&scope=email%20profile';
+        'https://redirect.self.xyz?scheme=https#id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature&scope=email%20profile'; // gitleaks:allow
       handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
@@ -530,7 +530,7 @@ describe('deeplinks', () => {
 
     it('returns id_token and scope parameters', () => {
       const url =
-        'https://redirect.self.xyz?scheme=https#id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature&scope=email%20profile';
+        'https://redirect.self.xyz?scheme=https#id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature&scope=email%20profile'; // gitleaks:allow
       const result = parseAndValidateUrlParams(url);
       expect(result.id_token).toBeTruthy();
       expect(result.scope).toBe('email profile');
