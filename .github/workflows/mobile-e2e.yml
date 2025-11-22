@@ -56,6 +56,19 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        shell: bash
+        run: |
+          if [ -f .yarnrc.yml ]; then
+            if command -v shasum >/dev/null 2>&1; then
+              echo "hash=$(shasum -a 256 .yarnrc.yml | awk '{ print $1 }')" >> $GITHUB_OUTPUT
+            else
+              echo "hash=$(sha256sum .yarnrc.yml | awk '{ print $1 }')" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "hash=no-yarnrc" >> $GITHUB_OUTPUT
+          fi
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn
         with:
@@ -63,7 +76,7 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
@@ -246,6 +259,19 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        shell: bash
+        run: |
+          if [ -f .yarnrc.yml ]; then
+            if command -v shasum >/dev/null 2>&1; then
+              echo "hash=$(shasum -a 256 .yarnrc.yml | awk '{ print $1 }')" >> $GITHUB_OUTPUT
+            else
+              echo "hash=$(sha256sum .yarnrc.yml | awk '{ print $1 }')" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "hash=no-yarnrc" >> $GITHUB_OUTPUT
+          fi
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn
         with:
@@ -253,7 +279,7 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
