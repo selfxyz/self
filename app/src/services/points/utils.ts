@@ -6,6 +6,7 @@ import { v4 } from 'uuid';
 
 import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
 
+import { selfLogoReverseUrl } from '@/consts/links';
 import { getOrGeneratePointsAddress } from '@/providers/authProvider';
 import { POINTS_API_BASE_URL } from '@/services/points/constants';
 import type { IncomingPoints } from '@/services/points/types';
@@ -175,8 +176,7 @@ export const pointsSelfApp = async () => {
     userId: v4(),
     userIdType: 'uuid',
     disclosures: {},
-    logoBase64:
-      'https://storage.googleapis.com/self-logo-reverse/Self%20Logomark%20Reverse.png',
+    logoBase64: selfLogoReverseUrl,
     header: '',
   });
 

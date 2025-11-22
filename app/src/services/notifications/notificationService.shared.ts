@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { notificationApiStagingUrl, notificationApiUrl } from '@/consts/links';
+
 export interface DeviceTokenRegistration {
   session_id: string;
   device_token: string;
@@ -18,9 +20,9 @@ export interface RemoteMessage {
   [key: string]: unknown;
 }
 
-export const API_URL = 'https://notification.self.xyz';
+export const API_URL = notificationApiUrl;
 
-export const API_URL_STAGING = 'https://notification.staging.self.xyz';
+export const API_URL_STAGING = notificationApiStagingUrl;
 export const getStateMessage = (state: string): string => {
   switch (state) {
     case 'idle':

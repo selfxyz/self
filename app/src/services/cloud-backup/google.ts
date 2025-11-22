@@ -7,6 +7,12 @@ import { authorize } from 'react-native-app-auth';
 import { GOOGLE_SIGNIN_ANDROID_CLIENT_ID } from '@env';
 import { GDrive } from '@robinbobin/react-native-google-drive-api-wrapper';
 
+import {
+  googleDriveAppDataScope,
+  googleOAuthAuthorizationEndpoint,
+  googleOAuthTokenEndpoint,
+} from '@/consts/links';
+
 // Ensure the client ID is available at runtime (skip in test environment)
 const isTestEnvironment =
   process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
@@ -22,10 +28,10 @@ const config: AuthConfiguration = {
   // ensure this prints the correct values before calling authorize
   clientId: GOOGLE_SIGNIN_ANDROID_CLIENT_ID || 'mock-client-id',
   redirectUrl: 'com.proofofpassportapp:/oauth2redirect',
-  scopes: ['https://www.googleapis.com/auth/drive.appdata'],
+  scopes: [googleDriveAppDataScope],
   serviceConfiguration: {
-    authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-    tokenEndpoint: 'https://oauth2.googleapis.com/token',
+    authorizationEndpoint: googleOAuthAuthorizationEndpoint,
+    tokenEndpoint: googleOAuthTokenEndpoint,
   },
   additionalParameters: { access_type: 'offline', prompt: 'consent' as const },
 };

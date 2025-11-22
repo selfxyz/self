@@ -2,4 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-export const POINTS_API_BASE_URL = 'https://points.self.xyz';
+import { pointsApiBaseUrl } from '@/consts/links';
+
+export const POINTS_API_BASE_URL = pointsApiBaseUrl;

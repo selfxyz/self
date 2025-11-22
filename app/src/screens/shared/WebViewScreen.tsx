@@ -23,6 +23,7 @@ import {
 
 import { WebViewNavBar } from '@/components/navbar/WebViewNavBar';
 import { WebViewFooter } from '@/components/WebViewFooter';
+import { selfUrl } from '@/consts/links';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';
 
@@ -39,7 +40,7 @@ type WebViewScreenProps = NativeStackScreenProps<
   'WebView'
 >;
 
-const defaultUrl = 'https://self.xyz';
+const defaultUrl = selfUrl;
 
 export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
   const navigation = useNavigation();

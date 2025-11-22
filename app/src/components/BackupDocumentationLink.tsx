@@ -6,6 +6,8 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { Anchor, styled } from 'tamagui';
 
+import { androidBackupDocsUrl, appleICloudDocsUrl } from '@/consts/links';
+
 const StyledAnchor = styled(Anchor, {
   fontSize: 15,
   fontFamily: 'DINOT-Medium',
@@ -15,16 +17,13 @@ const StyledAnchor = styled(Anchor, {
 const BackupDocumentationLink: React.FC = () => {
   if (Platform.OS === 'ios') {
     return (
-      <StyledAnchor unstyled href="https://support.apple.com/en-us/102651">
+      <StyledAnchor unstyled href={appleICloudDocsUrl}>
         iCloud data
       </StyledAnchor>
     );
   }
   return (
-    <StyledAnchor
-      unstyled
-      href="https://developer.android.com/identity/data/autobackup"
-    >
+    <StyledAnchor unstyled href={androidBackupDocsUrl}>
       Android Backup
     </StyledAnchor>
   );
