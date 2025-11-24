@@ -7577,7 +7577,7 @@ __metadata:
     "@zk-email/jwt-tx-builder-circuits": "npm:0.1.0"
     "@zk-email/jwt-tx-builder-helpers": "npm:0.1.0"
     "@zk-email/zk-regex-circom": "npm:^1.2.1"
-    "@zk-kit/binary-merkle-root.circom": "https://gitpkg.vercel.app/Vishalkulkarni45/zk-kit.circom/packages/binary-merkle-root?fix/bin-merkle-tree"
+    "@zk-kit/binary-merkle-root.circom": "npm:2.0.0"
     "@zk-kit/circuits": "npm:^1.0.0-beta"
     anon-aadhaar-circuits: "https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/circuits?main"
     asn1: "npm:^0.2.6"
@@ -14121,12 +14121,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-kit/binary-merkle-root.circom@https://gitpkg.vercel.app/Vishalkulkarni45/zk-kit.circom/packages/binary-merkle-root?fix/bin-merkle-tree":
-  version: 1.0.0
-  resolution: "@zk-kit/binary-merkle-root.circom@https://gitpkg.vercel.app/Vishalkulkarni45/zk-kit.circom/packages/binary-merkle-root?fix/bin-merkle-tree"
+"@zk-kit/binary-merkle-root.circom@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@zk-kit/binary-merkle-root.circom@npm:2.0.0"
   dependencies:
     circomlib: "npm:^2.0.5"
-  checksum: 10c0/f7bef284bae30b261610c5e2791c8aa7cc6ab42f5b4caf1e4b251543f506989dfb27d27963979a1db2c67b9c3d3561ce287fa8e0391bddee567c62963cd8f743
+  checksum: 10c0/1f6145a6c70334138cdb5c48f7851e306f728abc71760f7ce6ae81bdfb8dd2e4158a70b4b6df09073edde805a6653f96d49d583d92e249aeba3607060be97023
   languageName: node
   linkType: hard
 

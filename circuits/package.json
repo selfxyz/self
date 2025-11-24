@@ -49,7 +49,7 @@
     "@zk-email/jwt-tx-builder-circuits": "0.1.0",
     "@zk-email/jwt-tx-builder-helpers": "0.1.0",
     "@zk-email/zk-regex-circom": "^1.2.1",
-    "@zk-kit/binary-merkle-root.circom": "https://gitpkg.vercel.app/Vishalkulkarni45/zk-kit.circom/packages/binary-merkle-root?fix/bin-merkle-tree",
+    "@zk-kit/binary-merkle-root.circom": "2.0.0",
     "@zk-kit/circuits": "^1.0.0-beta",
     "anon-aadhaar-circuits": "https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/circuits?main",
     "asn1": "^0.2.6",
