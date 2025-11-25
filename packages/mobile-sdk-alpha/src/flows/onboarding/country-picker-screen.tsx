@@ -66,12 +66,9 @@ const CountryPickerScreen: React.FC = () => {
     setSearchValue(value);
   }, []);
 
-  if (loading) {
-    return <Loading />;
-  }
-
   return (
     <CountryPickerUI
+      isLoading={loading}
       countries={countryList}
       onCountrySelect={onCountrySelect}
       suggestionCountryCode={userCountryCode ?? undefined}
