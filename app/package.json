@@ -74,10 +74,14 @@
     "web:preview": "vite preview"
   },
   "resolutions": {
-    "punycode": "npm:punycode.js@2.3.1"
+    "punycode": "npm:punycode.js@2.3.1",
+    "react-native-blur-effect": "1.1.3",
+    "react-native-webview": "13.16.0"
   },
   "overrides": {
-    "punycode": "npm:punycode.js@2.3.1"
+    "punycode": "npm:punycode.js@2.3.1",
+    "react-native-blur-effect": "1.1.3",
+    "react-native-webview": "13.16.0"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",
@@ -137,6 +141,7 @@
     "react-native": "0.76.9",
     "react-native-app-auth": "^8.0.3",
     "react-native-biometrics": "^3.0.1",
+    "react-native-blur-effect": "^1.1.3",
     "react-native-check-version": "^1.3.0",
     "react-native-cloud-storage": "^2.2.2",
     "react-native-device-info": "^14.0.4",

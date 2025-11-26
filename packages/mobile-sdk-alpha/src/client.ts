@@ -212,7 +212,12 @@ export function createSelfClient({
     getMRZState: () => {
       return useMRZStore.getState();
     },
-
+    goBack: () => {
+      adapters.navigation.goBack();
+    },
+    goTo: (routeName, params) => {
+      adapters.navigation.goTo(routeName, params);
+    },
     // for reactivity (if needed)
     useProvingStore,
     useSelfAppStore,

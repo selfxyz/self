@@ -199,6 +199,26 @@ export interface Adapters {
   auth: AuthAdapter;
   /** Required document persistence layer. Implementations must be idempotent. */
   documents: DocumentsAdapter;
+  /**  Required navigation adapter for handling screen transitions. */
+  navigation: NavigationAdapter;
+}
+
+/**
+ * Map these route names to your navigation configuration.
+ * This needs to be build out to include all screen route we need to navigate to in the SDK
+ */
+export type RouteName =
+  | 'DocumentCamera'
+  | 'CountryPicker'
+  | 'ComingSoon'
+  | 'DocumentDataNotFound'
+  | 'AccountVerifiedSuccess'
+  | 'Home'
+  | 'AccountRecoveryChoice';
+
+export interface NavigationAdapter {
+  goBack(): void;
+  goTo(routeName: RouteName, params?: Record<string, unknown>): void;
 }
 
 /**
@@ -284,6 +304,8 @@ export interface SelfClient {
   scanNFC(opts: NFCScanOpts & { signal?: AbortSignal }): Promise<NFCScanResult>;
   /** Parses MRZ text and returns structured fields plus checksum metadata. */
   extractMRZInfo(mrz: string): MRZInfo;
+  goBack(): void;
+  goTo(routeName: RouteName, params?: Record<string, unknown>): void;
 
   /**
    * Convenience wrapper around {@link AnalyticsAdapter.trackEvent}. Calls are

@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { commonNames } from '@selfxyz/common/constants/countries';
 import { CountryPickerScreen as CountryPickerUI } from '@selfxyz/euclid';
@@ -14,17 +13,10 @@ import { useCountries } from '../../documents/useCountries';
 import { buttonTap } from '../../haptic';
 import { SdkEvents } from '../../types/events';
 
-const Loading = () => (
-  <View style={styles.loadingContainer}>
-    <ActivityIndicator size="small" />
-  </View>
-);
-Loading.displayName = 'Loading';
-
 const CountryPickerScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const [searchValue, setSearchValue] = useState('');
 
+  const [searchValue, setSearchValue] = useState('');
   const { countryData, countryList, loading, userCountryCode, showSuggestion } = useCountries();
 
   const onCountrySelect = useCallback(
@@ -76,18 +68,12 @@ const CountryPickerScreen: React.FC = () => {
       renderFlag={renderFlag}
       getCountryName={getCountryName}
       searchValue={searchValue}
+      onClose={selfClient.goBack}
+      onInfoPress={() => console.log('Info pressed TODO: Implement')}
       onSearchChange={onSearchChange}
     />
   );
 };
 CountryPickerScreen.displayName = 'CountryPickerScreen';
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export default CountryPickerScreen;
