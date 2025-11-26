@@ -14012,7 +14012,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-email/circuits@npm:^6.3.2":
+"@zk-email/circuits@npm:^6.1.1, @zk-email/circuits@npm:^6.3.2":
   version: 6.3.4
   resolution: "@zk-email/circuits@npm:6.3.4"
   dependencies:
@@ -14517,6 +14517,16 @@ __metadata:
   peerDependencies:
     "@angular/core": ^20.0.0
   checksum: 10c0/268ea4a13a071d979a2738211793bf9d53631a74298ccc12995bb0a3c969d647b6366a231aff8e0f35298d95bab3a78218a023a07f86b20734f54cf06af98875
+  languageName: node
+  linkType: hard
+
+"anon-aadhaar-circuits@https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/circuits?main":
+  version: 2.4.3
+  resolution: "anon-aadhaar-circuits@https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/circuits?main"
+  dependencies:
+    "@anon-aadhaar/core": "npm:^2.4.3"
+    "@zk-email/circuits": "npm:^6.1.1"
+  checksum: 10c0/93138d1c251988402482f1719ed37764b962250a51deb67bf5b855b91a6f89df2776ffe6135e8accc7a0d57dd13e7c210fc02fc6562af249ea4305f24d7d55f4
   languageName: node
   linkType: hard
 
