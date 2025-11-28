@@ -111,44 +111,44 @@ template GCPJWTVerifier(
     payload <== jwtVerifier.payload;
 
     // Extract and validate x5c[0] Public Key
-    // ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
-    //     leaf_cert,
-    //     leaf_pubkey_offset,
-    //     leaf_pubkey_actual_size,
-    //     leaf_pubkey
-    // );
+    ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
+        leaf_cert,
+        leaf_pubkey_offset,
+        leaf_pubkey_actual_size,
+        leaf_pubkey
+    );
 
-    // // Extract and validate x5c[1] public key
-    // ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
-    //     intermediate_cert,
-    //     intermediate_pubkey_offset,
-    //     intermediate_pubkey_actual_size,
-    //     intermediate_pubkey
-    // );
+    // Extract and validate x5c[1] public key
+    ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
+        intermediate_cert,
+        intermediate_pubkey_offset,
+        intermediate_pubkey_actual_size,
+        intermediate_pubkey
+    );
 
-    // // Verify x5c[0] signature using x5c[1] public key
-    // VerifyCertificateSignature(signatureAlgorithm, n, k, MAX_CERT_LENGTH)(
-    //     leaf_cert,
-    //     leaf_cert_padded_length,
-    //     intermediate_pubkey,
-    //     leaf_signature
-    // );
+    // Verify x5c[0] signature using x5c[1] public key
+    VerifyCertificateSignature(signatureAlgorithm, n, k, MAX_CERT_LENGTH)(
+        leaf_cert,
+        leaf_cert_padded_length,
+        intermediate_pubkey,
+        leaf_signature
+    );
 
-    // // Extract and validate x5c[2] public key
-    // ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
-    //     root_cert,
-    //     root_pubkey_offset,
-    //     root_pubkey_actual_size,
-    //     root_pubkey
-    // );
+    // Extract and validate x5c[2] public key
+    ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
+        root_cert,
+        root_pubkey_offset,
+        root_pubkey_actual_size,
+        root_pubkey
+    );
 
-    // // Verify x5c[1] signature using x5c[2] public key
-    // VerifyCertificateSignature(signatureAlgorithm, n, k, MAX_CERT_LENGTH)(
-    //     intermediate_cert,
-    //     intermediate_cert_padded_length,
-    //     root_pubkey,
-    //     intermediate_signature
-    // );
+    // Verify x5c[1] signature using x5c[2] public key
+    VerifyCertificateSignature(signatureAlgorithm, n, k, MAX_CERT_LENGTH)(
+        intermediate_cert,
+        intermediate_cert_padded_length,
+        root_pubkey,
+        intermediate_signature
+    );
 
     // Make sure nonce is not empty
     component length_nonzero = IsZero();
