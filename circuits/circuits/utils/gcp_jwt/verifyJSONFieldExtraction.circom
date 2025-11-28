@@ -28,7 +28,6 @@ template ExtractAndVerifyJSONField(
     signal input value_length;
 
     signal input expected_key_name[maxKeyNameLength];
-    log(expected_key_name[0], expected_key_name[1], expected_key_name[2], expected_key_name[3], expected_key_name[4], expected_key_name[5], expected_key_name[6], expected_key_name[7], expected_key_name[8], expected_key_name[9]);
 
     signal output extracted_value[maxValueLength];
 
@@ -112,7 +111,6 @@ template ExtractAndVerifyJSONField(
 
 	// The character following the closing quote must be either ']' (93) or ',' (44)
 	signal char_after_quote <== ItemAtIndex(maxJSONLength)(json, value_offset + value_length + 1);
-    log(char_after_quote);
 	component is_closing_bracket = IsEqual();
 	is_closing_bracket.in[0] <== char_after_quote;
 	is_closing_bracket.in[1] <== 93;  // ']'
