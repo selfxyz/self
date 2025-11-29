@@ -1,13 +1,20 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
+const { executablePath } = require('puppeteer');
+
 module.exports = function (config) {
+  const chromeExecutable = process.env.CHROME_BIN || executablePath();
+  if (!process.env.CHROME_BIN) {
+    process.env.CHROME_BIN = chromeExecutable;
+  }
+
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
     plugins: [
       require('karma-jasmine'),
-      require('karma-chrome-headless'),
+      require('karma-chrome-launcher'),
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
       require('@angular-devkit/build-angular/plugins/karma'),
@@ -30,7 +37,23 @@ module.exports = function (config) {
       reporters: [{ type: 'html' }, { type: 'text-summary' }],
     },
     reporters: ['progress', 'kjhtml'],
-    browsers: ['ChromeHeadless'],
+    browsers: ['ChromeHeadlessNoSandbox'],
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        env: {
+          CHROME_BIN: chromeExecutable,
+        },
+        flags: [
+          '--headless=new',
+          '--no-sandbox',
+          '--disable-gpu',
+          '--disable-dev-shm-usage',
+          '--disable-setuid-sandbox',
+        ],
+      },
+    },
+    singleRun: true,
     restartOnFileChange: true,
   });
 };

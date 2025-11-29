@@ -33,7 +33,7 @@
     "nice": "yarn format && yarn lint",
     "prepublishOnly": "yarn build",
     "publish": "yarn npm publish --access public",
-    "test": "ng test"
+    "test": "CI=true CHROME_BIN=$(node -e \"const { executablePath } = require('./node_modules/puppeteer'); process.stdout.write(executablePath());\") ng test --watch=false --progress=false --browsers=ChromeHeadlessNoSandbox"
   },
   "dependencies": {
     "angularx-qrcode": "^20.0.0",
@@ -56,6 +56,7 @@
     "@angular/core": "^20.3.0",
     "@angular/platform-browser": "^20.3.0",
     "@angular/platform-browser-dynamic": "^20.3.0",
+    "@types/jasmine": "^5.1.0",
     "@types/node": "^22.0.0",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
@@ -63,9 +64,16 @@
     "@typescript-eslint/types": "^8.0.0",
     "@typescript-eslint/utils": "^8.0.0",
     "eslint": "^8.57.0",
+    "jasmine-core": "^4.6.1",
+    "karma": "^6.4.3",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-coverage": "^2.2.1",
+    "karma-jasmine": "^5.1.0",
+    "karma-jasmine-html-reporter": "^2.1.0",
     "ng-packagr": "^20.3.0",
     "ngx-lottie": "^20.0.0",
     "prettier": "^3.5.3",
+    "puppeteer": "^24.31.0",
     "rxjs": "^7.8.0",
     "tslib": "^2.6.0",
     "typescript": "~5.9.0",

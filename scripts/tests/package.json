@@ -4,7 +4,8 @@
   "description": "Tests for project scripts",
   "type": "module",
   "scripts": {
-    "test": "node check-license-headers.test.mjs",
-    "test:license-headers": "node check-license-headers.test.mjs"
-  }
+    "test": "node checkLicenseHeaders.test.mjs",
+    "test:license-headers": "node checkLicenseHeaders.test.mjs"
+  },
+  "packageManager": "yarn@4.6.0"
 }
