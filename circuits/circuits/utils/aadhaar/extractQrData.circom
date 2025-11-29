@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "anon-aadhaar-circuits/src/helpers/constants.circom";
+include "@selfxyz/aa-circuits/src/helpers/constants.circom";
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/poseidon.circom";

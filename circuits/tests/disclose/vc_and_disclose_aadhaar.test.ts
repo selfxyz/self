@@ -17,9 +17,9 @@ import nameAndYobAadhaarjson from '../consts/ofac/nameAndYobAadhaarSMT.json' wit
 import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// const privateKeyPath = path.join(__dirname, '../../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem');
+// const privateKeyPath = path.join(__dirname, '../../../node_modules/@selfxyz/aa-circuits/assets/testPrivateKey.pem');
 const privateKeyPem = fs.readFileSync(
-  path.join(__dirname, '../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem'),
+  path.join(__dirname, '../../node_modules/@selfxyz/aa-circuits/assets/testPrivateKey.pem'),
   'utf8'
 );
 

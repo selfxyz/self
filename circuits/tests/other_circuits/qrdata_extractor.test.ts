@@ -14,7 +14,7 @@ import fs from 'fs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const privateKeyPem = fs.readFileSync(
-  path.join(__dirname, '../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem'),
+  path.join(__dirname, '../../node_modules/@selfxyz/aa-circuits/assets/testPrivateKey.pem'),
   'utf8'
 );
 
@@ -29,7 +29,7 @@ describe('Aadhaar QR Data Extractor1', function () {
         logOutput: true,
         include: [
           'node_modules',
-          'node_modules/anon-aadhaar-circuits/src/helpers/constants.circom',
+          'node_modules/@selfxyz/aa-circuits/src/helpers/constants.circom',
           'node_modules/circomlib/circuits',
         ],
       }
