@@ -51,7 +51,7 @@
     "@zk-email/zk-regex-circom": "^1.2.1",
     "@zk-kit/binary-merkle-root.circom": "2.0.0",
     "@zk-kit/circuits": "^1.0.0-beta",
-    "anon-aadhaar-circuits": "https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/circuits?main",
+    "anon-aadhaar-circuits": "selfxyz/anon-aadhaar#1b9efa501cff3cf25dc260b060bf611229e316a4",
     "asn1": "^0.2.6",
     "asn1.js": "^5.4.1",
     "asn1js": "^3.0.5",

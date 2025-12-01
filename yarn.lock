@@ -688,30 +688,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@anon-aadhaar/core@npm:^2.4.3":
-  version: 2.4.3
-  resolution: "@anon-aadhaar/core@npm:2.4.3"
-  dependencies:
-    "@pcd/pcd-types": "npm:^0.10.0"
-    "@pcd/tsconfig": "npm:^0.6.0"
-    "@types/node-forge": "npm:^1.3.8"
-    "@types/snarkjs": "npm:^0.7.6"
-    "@zk-email/helpers": "npm:^6.1.1"
-    buffer: "npm:^6.0.3"
-    json-bigint: "npm:^1.0.0"
-    localforage: "npm:^1.10.0"
-    pako: "npm:^2.1.0"
-    react: "npm:^18.2.0"
-    react-dom: "npm:^18.2.0"
-    snarkjs: "npm:^0.7.3"
-    styled-components: "npm:^6.0.0-rc.1"
-    uuid: "npm:^9.0.0"
-    valid-url: "npm:^1.0.9"
-    web-worker: "npm:1.2.0"
-  checksum: 10c0/6234f0c4bffa3a72dc0663f2029c2b1381f4f091d372af1a5135413fd186d4fc320ebf57467a6c1fa4b3e267426647bc90144ac592156d75d72f3534b533c630
-  languageName: node
-  linkType: hard
-
 "@arcanis/slice-ansi@npm:^1.1.1":
   version: 1.1.1
   resolution: "@arcanis/slice-ansi@npm:1.1.1"
@@ -7579,7 +7555,7 @@ __metadata:
     "@zk-email/zk-regex-circom": "npm:^1.2.1"
     "@zk-kit/binary-merkle-root.circom": "npm:2.0.0"
     "@zk-kit/circuits": "npm:^1.0.0-beta"
-    anon-aadhaar-circuits: "https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/circuits?main"
+    anon-aadhaar-circuits: "selfxyz/anon-aadhaar#1b9efa501cff3cf25dc260b060bf611229e316a4"
     asn1: "npm:^0.2.6"
     asn1.js: "npm:^5.4.1"
     asn1js: "npm:^3.0.5"
@@ -14014,7 +13990,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-email/circuits@npm:^6.1.1, @zk-email/circuits@npm:^6.3.2":
+"@zk-email/circuits@npm:^6.3.2":
   version: 6.3.4
   resolution: "@zk-email/circuits@npm:6.3.4"
   dependencies:
@@ -14522,13 +14498,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"anon-aadhaar-circuits@https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/circuits?main":
+"anon-aadhaar-circuits@selfxyz/anon-aadhaar#1b9efa501cff3cf25dc260b060bf611229e316a4":
   version: 2.4.3
-  resolution: "anon-aadhaar-circuits@https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/circuits?main"
-  dependencies:
-    "@anon-aadhaar/core": "npm:^2.4.3"
-    "@zk-email/circuits": "npm:^6.1.1"
-  checksum: 10c0/93138d1c251988402482f1719ed37764b962250a51deb67bf5b855b91a6f89df2776ffe6135e8accc7a0d57dd13e7c210fc02fc6562af249ea4305f24d7d55f4
+  resolution: "anon-aadhaar-circuits@https://github.com/selfxyz/anon-aadhaar.git#commit=1b9efa501cff3cf25dc260b060bf611229e316a4"
+  checksum: 10c0/3e9e8ba8ae020476fc20f3915e45df79f01d13bf858221be2a75865df26304da3fd7b8969c0b7fa22f7e44b8ea9e22d93ef8bf24f28e0bb61a33d0003496a144
   languageName: node
   linkType: hard
 
