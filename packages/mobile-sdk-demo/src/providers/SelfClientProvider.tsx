@@ -11,6 +11,7 @@ import {
   createListenersMap,
   SdkEvents,
   type Adapters,
+  type RouteName,
   type TrackEventParams,
   type WsConn,
   reactNativeScannerAdapter,
@@ -20,6 +21,37 @@ import { persistentDocumentsAdapter } from '../utils/documentStore';
 import { getOrCreateSecret } from '../utils/secureStorage';
 import type { ScreenName } from '../navigation/NavigationProvider';
 import { useNavigation } from '../navigation/NavigationProvider';
+
+/**
+ * Maps SDK RouteName values to demo app ScreenName values.
+ * Routes not in this map are not supported in the demo app.
+ */
+const ROUTE_TO_SCREEN_MAP: Partial<Record<RouteName, ScreenName>> = {
+  'Home': 'Home',
+  'CountryPicker': 'CountrySelection',
+  'IDPicker': 'IDSelection',
+  'DocumentCamera': 'MRZ',
+  'DocumentNFCScan': 'NFC',
+  'ManageDocuments': 'Documents',
+  'AccountVerifiedSuccess': 'Success',
+  // Routes not implemented in demo app:
+  // 'DocumentOnboarding': null,
+  // 'SaveRecoveryPhrase': null,
+  // 'AccountRecoveryChoice': null,
+  // 'ComingSoon': null,
+  // 'DocumentDataNotFound': null,
+  // 'Settings': null,
+} as const;
+
+/**
+ * Translates SDK RouteName to demo app ScreenName.
+ *
+ * @param routeName - The route name from the SDK
+ * @returns The corresponding demo app screen name, or null if not supported
+ */
+function translateRouteToScreen(routeName: RouteName): ScreenName | null {
+  return ROUTE_TO_SCREEN_MAP[routeName] ?? null;
+}
 
 const createFetch = () => {
   const fetchImpl = globalThis.fetch;
@@ -135,9 +167,14 @@ export function SelfClientProvider({ children, onNavigate }: SelfClientProviderP
           navigation.goBack();
         },
         goTo: (routeName, params) => {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          navigation.navigate(routeName as ScreenName, params);
+          const screenName = translateRouteToScreen(routeName);
+          if (screenName) {
+            // SDK passes generic Record<string, unknown>, but demo navigation expects specific types
+            // This is safe because we control the route mapping
+            navigation.navigate(screenName, params as any);
+          } else {
+            console.warn(`[SelfClientProvider] SDK route "${routeName}" is not mapped to a demo screen. Ignoring navigation request.`);
+          }
         },
       },
       documents: persistentDocumentsAdapter,

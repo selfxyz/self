@@ -63,8 +63,8 @@ const mockAuth = {
 };
 
 const mockNavigation: NavigationAdapter = {
-  goBack: () => {},
-  goTo: (_routeName: string, _params?: Record<string, any>) => {},
+  goBack: vi.fn(),
+  goTo: vi.fn(),
 };
 
 export const mockAdapters = {

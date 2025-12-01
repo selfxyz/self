@@ -225,8 +225,6 @@ const documents: DocumentsAdapter = {
 };
 
 const navigation: NavigationAdapter = {
-  goBack: () => {},
-  goTo: (routeName: string, params?: Record<string, any>) => {
-    console.log(`Navigating to ${routeName} with params:`, params);
-  },
+  goBack: vi.fn(),
+  goTo: vi.fn(),
 };

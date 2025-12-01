@@ -205,16 +205,26 @@ export interface Adapters {
 
 /**
  * Map these route names to your navigation configuration.
- * This needs to be build out to include all screen route we need to navigate to in the SDK
+ * Includes all screens that the SDK may navigate to across host applications.
  */
 export type RouteName =
+  // Document acquisition flow
   | 'DocumentCamera'
+  | 'DocumentOnboarding'
   | 'CountryPicker'
+  | 'IDPicker'
+  | 'DocumentNFCScan'
+  | 'ManageDocuments'
+  // Account/onboarding flow
+  | 'Home'
+  | 'AccountVerifiedSuccess'
+  | 'AccountRecoveryChoice'
+  | 'SaveRecoveryPhrase'
+  // Error/fallback screens
   | 'ComingSoon'
   | 'DocumentDataNotFound'
-  | 'AccountVerifiedSuccess'
-  | 'Home'
-  | 'AccountRecoveryChoice';
+  // Settings
+  | 'Settings';
 
 export interface NavigationAdapter {
   goBack(): void;
