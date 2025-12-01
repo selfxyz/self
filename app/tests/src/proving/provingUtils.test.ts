@@ -12,23 +12,27 @@ describe('provingUtils', () => {
     const plaintext = 'hello world';
     const encrypted = encryptAES256GCM(plaintext, forge.util.createBuffer(key));
 
+    // Convert arrays to Uint8Array first to ensure proper byte conversion
+    const nonceBytes = new Uint8Array(encrypted.nonce);
+    const authTagBytes = new Uint8Array(encrypted.auth_tag);
+    const cipherTextBytes = new Uint8Array(encrypted.cipher_text);
+
+    // Validate tag length (128 bits = 16 bytes)
+    expect(authTagBytes.length).toBe(16);
+
     const decipher = forge.cipher.createDecipher(
       'AES-GCM',
       forge.util.createBuffer(key),
     );
     decipher.start({
-      iv: forge.util.createBuffer(
-        Buffer.from(encrypted.nonce).toString('binary'),
-      ),
+      iv: forge.util.createBuffer(Buffer.from(nonceBytes).toString('binary')),
       tagLength: 128,
       tag: forge.util.createBuffer(
-        Buffer.from(encrypted.auth_tag).toString('binary'),
+        Buffer.from(authTagBytes).toString('binary'),
       ),
     });
     decipher.update(
-      forge.util.createBuffer(
-        Buffer.from(encrypted.cipher_text).toString('binary'),
-      ),
+      forge.util.createBuffer(Buffer.from(cipherTextBytes).toString('binary')),
     );
     const success = decipher.finish();
     const decrypted = decipher.output.toString();
