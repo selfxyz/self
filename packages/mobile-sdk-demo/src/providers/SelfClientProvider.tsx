@@ -18,6 +18,7 @@ import {
 
 import { persistentDocumentsAdapter } from '../utils/documentStore';
 import { getOrCreateSecret } from '../utils/secureStorage';
+import type { ScreenName } from '../navigation/NavigationProvider';
 import { useNavigation } from '../navigation/NavigationProvider';
 
 const createFetch = () => {
@@ -128,6 +129,16 @@ export function SelfClientProvider({ children, onNavigate }: SelfClientProviderP
           fetch: createFetch(),
         },
         ws: createWsAdapter(),
+      },
+      navigation: {
+        goBack: () => {
+          navigation.goBack();
+        },
+        goTo: (routeName, params) => {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
+          navigation.navigate(routeName as ScreenName, params);
+        },
       },
       documents: persistentDocumentsAdapter,
       crypto: {
