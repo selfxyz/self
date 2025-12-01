@@ -91,7 +91,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       documents: selfClientDocumentsAdapter,
       navigation: {
         goBack: () => {
-          navigationRef.goBack();
+          if (navigationRef.isReady()) {
+            navigationRef.goBack();
+          }
         },
         goTo: (routeName, params) => {
           if (navigationRef.isReady()) {
