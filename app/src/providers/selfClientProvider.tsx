@@ -89,6 +89,23 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         },
       },
       documents: selfClientDocumentsAdapter,
+      navigation: {
+        goBack: () => {
+          if (navigationRef.isReady()) {
+            navigationRef.goBack();
+          }
+        },
+        goTo: (routeName, params) => {
+          if (navigationRef.isReady()) {
+            if (params !== undefined) {
+              // @ts-expect-error
+              navigationRef.navigate(routeName, params);
+            } else {
+              navigationRef.navigate(routeName as never);
+            }
+          }
+        },
+      },
       crypto: {
         async hash(
           data: Uint8Array,

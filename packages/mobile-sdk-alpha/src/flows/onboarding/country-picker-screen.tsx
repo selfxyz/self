@@ -2,67 +2,26 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { memo, useCallback } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useCallback, useState } from 'react';
 
 import { commonNames } from '@selfxyz/common/constants/countries';
+import { CountryPickerScreen as CountryPickerUI } from '@selfxyz/euclid';
 
-import { BodyText, RoundFlag, XStack, YStack } from '../../components';
-import { black, slate100, slate500 } from '../../constants/colors';
-import { advercase, dinot } from '../../constants/fonts';
+import { RoundFlag } from '../../components';
 import { useSelfClient } from '../../context';
 import { useCountries } from '../../documents/useCountries';
 import { buttonTap } from '../../haptic';
 import { SdkEvents } from '../../types/events';
 
-interface CountryListItem {
-  key: string;
-  countryCode: string;
-}
-
-const ITEM_HEIGHT = 65;
-const FLAG_SIZE = 32;
-
-const CountryItem = memo<{
-  countryCode: string;
-  onSelect: (code: string) => void;
-}>(({ countryCode, onSelect }) => {
-  const countryName = commonNames[countryCode as keyof typeof commonNames];
-
-  if (!countryName) return null;
-
-  return (
-    <TouchableOpacity onPress={() => onSelect(countryCode)} style={styles.countryItemContainer}>
-      <XStack style={styles.countryItemContent}>
-        <RoundFlag countryCode={countryCode} size={FLAG_SIZE} />
-        <BodyText style={styles.countryItemText}>{countryName}</BodyText>
-      </XStack>
-    </TouchableOpacity>
-  );
-});
-
-CountryItem.displayName = 'CountryItem';
-
-const Loading = () => (
-  <View style={styles.loadingContainer}>
-    <ActivityIndicator size="small" />
-  </View>
-);
-Loading.displayName = 'Loading';
-
 const CountryPickerScreen: React.FC = () => {
   const selfClient = useSelfClient();
 
+  const [searchValue, setSearchValue] = useState('');
   const { countryData, countryList, loading, userCountryCode, showSuggestion } = useCountries();
 
-  const onPressCountry = useCallback(
+  const onCountrySelect = useCallback(
     (countryCode: string) => {
       buttonTap();
-      // if (__DEV__) {
-      //   console.log('Selected country code:', countryCode);
-      //   console.log('Current countryData:', countryData);
-      //   console.log('Available country codes:', Object.keys(countryData));
-      // }
       const documentTypes = countryData[countryCode];
       if (__DEV__) {
         console.log('documentTypes for', countryCode, ':', documentTypes);
@@ -87,105 +46,34 @@ const CountryPickerScreen: React.FC = () => {
     [countryData, selfClient],
   );
 
-  const renderItem = useCallback(
-    ({ item }: { item: CountryListItem }) => <CountryItem countryCode={item.countryCode} onSelect={onPressCountry} />,
-    [onPressCountry],
-  );
+  const renderFlag = useCallback((countryCode: string, size: number) => {
+    return <RoundFlag countryCode={countryCode} size={size} />;
+  }, []);
 
-  const keyExtractor = useCallback((item: CountryListItem) => item.countryCode, []);
+  const getCountryName = useCallback((countryCode: string) => {
+    return commonNames[countryCode as keyof typeof commonNames] || countryCode;
+  }, []);
 
-  const getItemLayout = useCallback(
-    (_data: ArrayLike<CountryListItem> | null | undefined, index: number) => ({
-      length: ITEM_HEIGHT,
-      offset: ITEM_HEIGHT * index,
-      index,
-    }),
-    [],
-  );
+  const onSearchChange = useCallback((value: string) => {
+    setSearchValue(value);
+  }, []);
 
   return (
-    <YStack flex={1} paddingTop="$4" paddingHorizontal="$4" backgroundColor={slate100}>
-      <YStack marginTop="$4" marginBottom="$6">
-        <BodyText style={styles.titleText}>Select the country that issued your ID</BodyText>
-        <BodyText style={styles.subtitleText}>
-          Self has support for over 300 ID types. You can select the type of ID in the next step
-        </BodyText>
-      </YStack>
-      {loading ? (
-        <Loading />
-      ) : (
-        <YStack flex={1}>
-          {showSuggestion && (
-            <YStack marginBottom="$2">
-              <BodyText style={styles.sectionLabel}>SUGGESTION</BodyText>
-              <CountryItem
-                countryCode={userCountryCode as string /*safe due to showSuggestion*/}
-                onSelect={onPressCountry}
-              />
-              <BodyText style={styles.sectionLabelBottom}>SELECT AN ISSUING COUNTRY</BodyText>
-            </YStack>
-          )}
-          <FlatList
-            data={countryList}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            showsVerticalScrollIndicator={false}
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={10}
-            windowSize={10}
-            initialNumToRender={10}
-            updateCellsBatchingPeriod={50}
-            getItemLayout={getItemLayout}
-          />
-        </YStack>
-      )}
-    </YStack>
+    <CountryPickerUI
+      isLoading={loading}
+      countries={countryList}
+      onCountrySelect={onCountrySelect}
+      suggestionCountryCode={userCountryCode ?? undefined}
+      showSuggestion={!!showSuggestion}
+      renderFlag={renderFlag}
+      getCountryName={getCountryName}
+      searchValue={searchValue}
+      onClose={selfClient.goBack}
+      onInfoPress={() => console.log('Info pressed TODO: Implement')}
+      onSearchChange={onSearchChange}
+    />
   );
 };
 CountryPickerScreen.displayName = 'CountryPickerScreen';
-
-const styles = StyleSheet.create({
-  countryItemContainer: {
-    paddingVertical: 13,
-  },
-  countryItemContent: {
-    alignItems: 'center',
-    gap: 16,
-  },
-  countryItemText: {
-    fontSize: 16,
-    color: black,
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  titleText: {
-    fontSize: 29,
-    fontFamily: advercase,
-    color: black,
-  },
-  subtitleText: {
-    fontSize: 16,
-    color: slate500,
-    marginTop: 20,
-  },
-  sectionLabel: {
-    fontSize: 16,
-    color: black,
-    fontFamily: dinot,
-    letterSpacing: 0.8,
-    marginBottom: 8,
-  },
-  sectionLabelBottom: {
-    fontSize: 16,
-    color: black,
-    fontFamily: dinot,
-    letterSpacing: 0.8,
-    marginTop: 20,
-  },
-});
 
 export default CountryPickerScreen;

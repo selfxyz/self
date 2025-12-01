@@ -35,6 +35,10 @@ const createMockSelfClientWithDocumentsAdapter = (documentsAdapter: DocumentsAda
           }),
         },
       },
+      navigation: {
+        goBack: () => {},
+        goTo: (_routeName: string, _params?: Record<string, any>) => {},
+      },
       scanner: {
         scan: async () => ({
           passportData: {
