@@ -17,7 +17,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
 import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
-import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
+import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha';
 import {
   black,
   slate400,
