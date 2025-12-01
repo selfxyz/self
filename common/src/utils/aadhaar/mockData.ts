@@ -576,7 +576,8 @@ export function processQRDataSimple(qrData: string) {
   // Calculate qrHash exclude timestamp (positions 9-25, 17 bytes)
   const qrDataWithoutTimestamp = [
     ...Array.from(qrDataPadded.slice(0, 9)),
-    ...Array.from(qrDataPadded.slice(26)), 
+    ...Array.from(qrDataPadded.slice(9, 26)).map((x) => 0),
+    ...Array.from(qrDataPadded.slice(26)),
   ];
   const qrHash = packBytesAndPoseidon(qrDataWithoutTimestamp);
   const photo = extractPhoto(Array.from(qrDataPadded), photoEOI + 1);

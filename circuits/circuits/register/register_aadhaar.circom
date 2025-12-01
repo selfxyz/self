@@ -113,12 +113,15 @@ template REGISTER_AADHAAR(n, k, maxDataLength){
     signal output nullifier <== nullifierHasher.out;
 
 
-    component qrDataHasher = PackBytesAndPoseidon(maxDataLength - 17);
+    component qrDataHasher = PackBytesAndPoseidon(maxDataLength);
     for (var i = 0; i < 9; i++){
         qrDataHasher.in[i] <== qrDataPadded[i];
     }
-    for (var i = 9; i < maxDataLength - 17; i++){
-        qrDataHasher.in[i] <== qrDataPadded[i + 17];
+    for (var i = 9; i < 26; i++) {
+        qrDataHasher.in[i] <== 0;
+    }
+    for (var i = 26; i < maxDataLength; i++){
+        qrDataHasher.in[i] <== qrDataPadded[i];
     }
 
     // Generate commitment
