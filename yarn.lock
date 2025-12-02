@@ -7577,7 +7577,7 @@ __metadata:
     "@zk-email/jwt-tx-builder-circuits": "npm:0.1.0"
     "@zk-email/jwt-tx-builder-helpers": "npm:0.1.0"
     "@zk-email/zk-regex-circom": "npm:^1.2.1"
-    "@zk-kit/binary-merkle-root.circom": "npm:2.0.0"
+    "@zk-kit/binary-merkle-root.circom": "npm:@selfxyz/binary-merkle-root.circom@^0.0.1"
     "@zk-kit/circuits": "npm:^1.0.0-beta"
     anon-aadhaar-circuits: "https://github.com/selfxyz/anon-aadhaar.git#commit=1b9efa501cff3cf25dc260b060bf611229e316a4&workspace=@anon-aadhaar/circuits"
     asn1: "npm:^0.2.6"
@@ -14138,12 +14138,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-kit/binary-merkle-root.circom@npm:2.0.0":
-  version: 2.0.0
-  resolution: "@zk-kit/binary-merkle-root.circom@npm:2.0.0"
+"@zk-kit/binary-merkle-root.circom@npm:@selfxyz/binary-merkle-root.circom@^0.0.1":
+  version: 0.0.1
+  resolution: "@selfxyz/binary-merkle-root.circom@npm:0.0.1"
   dependencies:
     circomlib: "npm:^2.0.5"
-  checksum: 10c0/1f6145a6c70334138cdb5c48f7851e306f728abc71760f7ce6ae81bdfb8dd2e4158a70b4b6df09073edde805a6653f96d49d583d92e249aeba3607060be97023
+  checksum: 10c0/616426859e67702ef61c28651e38ebf218d560af13630e183f034f8cc66f40e01fa3b7ecb4ab5ed41ceb9c1f0ec8b3e62bdf7f184de38f1d7a8d7d1058a04fd5
   languageName: node
   linkType: hard
 
