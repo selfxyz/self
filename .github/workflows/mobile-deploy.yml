@@ -369,17 +369,7 @@ jobs:
 
       - name: Compute .yarnrc.yml hash
         id: yarnrc-hash
-        shell: bash
-        run: |
-          if [ -f .yarnrc.yml ]; then
-            if command -v shasum >/dev/null 2>&1; then
-              echo "hash=$(shasum -a 256 .yarnrc.yml | awk '{ print $1 }')" >> $GITHUB_OUTPUT
-            else
-              echo "hash=$(sha256sum .yarnrc.yml | awk '{ print $1 }')" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "hash=no-yarnrc" >> $GITHUB_OUTPUT
-          fi
+        uses: ./.github/actions/yarnrc-hash
 
       - name: Cache Yarn artifacts
         id: yarn-cache
@@ -992,17 +982,7 @@ jobs:
 
       - name: Compute .yarnrc.yml hash
         id: yarnrc-hash
-        shell: bash
-        run: |
-          if [ -f .yarnrc.yml ]; then
-            if command -v shasum >/dev/null 2>&1; then
-              echo "hash=$(shasum -a 256 .yarnrc.yml | awk '{ print $1 }')" >> $GITHUB_OUTPUT
-            else
-              echo "hash=$(sha256sum .yarnrc.yml | awk '{ print $1 }')" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "hash=no-yarnrc" >> $GITHUB_OUTPUT
-          fi
+        uses: ./.github/actions/yarnrc-hash
 
       - name: Cache Yarn artifacts
         id: yarn-cache
