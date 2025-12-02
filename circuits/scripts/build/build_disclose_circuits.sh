@@ -15,9 +15,9 @@ OUTPUT_DIR="build/${CIRCUIT_TYPE}"
 # Define circuits and their configurations
 # format: name:poweroftau:build_flag
 CIRCUITS=(
-    # "vc_and_disclose:20:true"
-    # "vc_and_disclose_id:20:true"
-    "vc_and_disclose_aadhaar:17:true"
+    "vc_and_disclose:18:true"
+    "vc_and_disclose_id:18:true"
+    "vc_and_disclose_aadhaar:18:true"
 )
 
 build_circuits "$CIRCUIT_TYPE" "$OUTPUT_DIR" "${CIRCUITS[@]}"

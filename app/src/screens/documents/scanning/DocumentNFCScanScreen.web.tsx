@@ -6,37 +6,30 @@ import React from 'react';
 import { Image } from 'tamagui';
 
 import {
-  hasAnyValidRegisteredDocument,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+  BodyText,
+  ButtonsContainer,
+  SecondaryButton,
+  TextsContainer,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate100,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import ButtonsContainer from '@/components/ButtonsContainer';
-import TextsContainer from '@/components/TextsContainer';
-import { BodyText } from '@/components/typography/BodyText';
-import { Title } from '@/components/typography/Title';
+import NFC_IMAGE from '@/assets/images/nfc.png';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '@/utils/colors';
 
 const DocumentNFCScanScreen: React.FC = () => {
-  const selfClient = useSelfClient();
-  const navigateToLaunch = useHapticNavigation('Launch', {
-    action: 'cancel',
-  });
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
   });
 
   const onCancelPress = async () => {
-    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
-    if (hasValidDocument) {
-      navigateToHome();
-    } else {
-      navigateToLaunch();
-    }
+    navigateToHome();
   };
 
   return (
@@ -48,7 +41,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         <>
           <TextsContainer>
             <Title children="Ready to scan" />
-            <BodyText textAlign="center">TODO implement</BodyText>
+            <BodyText style={{ textAlign: 'center' }}>TODO implement</BodyText>
           </TextsContainer>
           <Image
             height="$8"

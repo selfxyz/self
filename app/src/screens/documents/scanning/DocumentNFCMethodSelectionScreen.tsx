@@ -9,16 +9,18 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  BodyText,
+  ButtonsContainer,
+  Description,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
+import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import ButtonsContainer from '@/components/ButtonsContainer';
-import { BodyText } from '@/components/typography/BodyText';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
-import { white } from '@/utils/colors';
 
 type NFCParams = {
   skipPACE?: boolean;
@@ -173,7 +175,9 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
                       maxLength={6}
                     />
                     {error ? (
-                      <Description color="red">{error}</Description>
+                      <Description style={{ color: 'red' }}>
+                        {error}
+                      </Description>
                     ) : null}
                   </YStack>
                 )}

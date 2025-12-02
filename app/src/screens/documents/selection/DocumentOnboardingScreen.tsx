@@ -8,20 +8,26 @@ import { StyleSheet } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { useNavigation } from '@react-navigation/native';
 
+import {
+  Additional,
+  ButtonsContainer,
+  Description,
+  PrimaryButton,
+  SecondaryButton,
+  TextsContainer,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate100,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import ButtonsContainer from '@/components/ButtonsContainer';
-import TextsContainer from '@/components/TextsContainer';
-import Additional from '@/components/typography/Additional';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '@/utils/colors';
-import { impactLight } from '@/utils/haptic';
 
 const DocumentOnboardingScreen: React.FC = () => {
   const navigation = useNavigation();

@@ -177,12 +177,10 @@ describe("CircuitAttributeHandler", function () {
       const shortMRZ = ethers.toUtf8Bytes("ABC");
       await expect(testHandler.testExtractStringAttribute(shortMRZ, 0, 5)).to.be.revertedWithCustomError(
         testHandler,
-        "INSUFFICIENT_CHARCODE_LEN",
+        "InsufficientCharcodeLen",
       );
 
-      expect(() => CircuitAttributeHandler.extractStringAttribute(shortMRZ, 0, 5)).to.throw(
-        "INSUFFICIENT_CHARCODE_LEN",
-      );
+      expect(() => CircuitAttributeHandler.extractStringAttribute(shortMRZ, 0, 5)).to.throw("InsufficientCharcodeLen");
     });
 
     it("should match contract and ts implementation for empty range", async function () {

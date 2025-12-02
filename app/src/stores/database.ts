@@ -87,6 +87,7 @@ export const database: ProofDB = {
         sessionId TEXT NOT NULL UNIQUE,
         userId TEXT NOT NULL,
         userIdType TEXT NOT NULL,
+        endpoint TEXT,
         endpointType TEXT NOT NULL,
         status TEXT NOT NULL,
         errorCode TEXT,
@@ -108,10 +109,11 @@ export const database: ProofDB = {
 
     try {
       const [insertResult] = await db.executeSql(
-        `INSERT OR IGNORE INTO ${TABLE_NAME} (appName, endpointType, status, errorCode, errorReason, timestamp, disclosures, logoBase64, userId, userIdType, sessionId, documentId)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT OR IGNORE INTO ${TABLE_NAME} (appName, endpoint, endpointType, status, errorCode, errorReason, timestamp, disclosures, logoBase64, userId, userIdType, sessionId, documentId)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           proof.appName,
+          proof.endpoint || null,
           proof.endpointType,
           proof.status,
           proof.errorCode || null,
@@ -133,12 +135,40 @@ export const database: ProofDB = {
     } catch (error) {
       if ((error as Error).message.includes('no column named documentId')) {
         await addDocumentIdColumn();
-        // Then retry the insert (copy the executeSql call here)
         const [insertResult] = await db.executeSql(
-          `INSERT OR IGNORE INTO ${TABLE_NAME} (appName, endpointType, status, errorCode, errorReason, timestamp, disclosures, logoBase64, userId, userIdType, sessionId, documentId)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT OR IGNORE INTO ${TABLE_NAME} (appName, endpoint, endpointType, status, errorCode, errorReason, timestamp, disclosures, logoBase64, userId, userIdType, sessionId, documentId)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             proof.appName,
+            proof.endpoint || null,
+            proof.endpointType,
+            proof.status,
+            proof.errorCode || null,
+            proof.errorReason || null,
+            timestamp,
+            proof.disclosures,
+            proof.logoBase64 || null,
+            proof.userId,
+            proof.userIdType,
+            proof.sessionId,
+            proof.documentId,
+          ],
+        );
+        return {
+          id: insertResult.insertId.toString(),
+          timestamp,
+          rowsAffected: insertResult.rowsAffected,
+        };
+      } else if (
+        (error as Error).message.includes('no column named endpoint')
+      ) {
+        await addEndpointColumn();
+        const [insertResult] = await db.executeSql(
+          `INSERT OR IGNORE INTO ${TABLE_NAME} (appName, endpoint, endpointType, status, errorCode, errorReason, timestamp, disclosures, logoBase64, userId, userIdType, sessionId, documentId)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            proof.appName,
+            proof.endpoint || null,
             proof.endpointType,
             proof.status,
             proof.errorCode || null,
@@ -183,4 +213,9 @@ async function addDocumentIdColumn() {
   await db.executeSql(
     `ALTER TABLE ${TABLE_NAME} ADD COLUMN documentId TEXT NOT NULL DEFAULT ''`,
   );
+}
+
+async function addEndpointColumn() {
+  const db = await openDatabase();
+  await db.executeSql(`ALTER TABLE ${TABLE_NAME} ADD COLUMN endpoint TEXT`);
 }

@@ -15,16 +15,22 @@ import type {
   DocumentMetadata,
 } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  ButtonsContainer,
+  PrimaryButton,
+  SecondaryButton,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  borderColor,
+  textBlack,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import ButtonsContainer from '@/components/ButtonsContainer';
+import { impactLight } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
-import { borderColor, textBlack, white } from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
-import { impactLight } from '@/utils/haptic';
+import { extraYPadding } from '@/utils/styleUtils';
 
 const PassportDataSelector = () => {
   const selfClient = useSelfClient();
@@ -305,16 +311,6 @@ const ManageDocumentsScreen: React.FC = () => {
         </ScrollView>
 
         <YStack gap="$3" marginTop="$4">
-          <Text
-            color={textBlack}
-            fontWeight="bold"
-            fontSize="$5"
-            textAlign="center"
-            marginBottom="$2"
-          >
-            Add New Document
-          </Text>
-
           <ButtonsContainer>
             <PrimaryButton onPress={handleAddDocument}>
               Add New Document

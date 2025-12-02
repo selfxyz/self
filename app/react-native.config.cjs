@@ -5,7 +5,7 @@
 module.exports = {
   project: { ios: {}, android: {} },
   dependencies: {
-    '@selfxyz/mobile-sdk-alpha': { platforms: { android: null } },
+    '@selfxyz/mobile-sdk-alpha': { platforms: { android: null, ios: null } },
   },
   assets: ['../src/assets/fonts'],
 };

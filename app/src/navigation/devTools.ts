@@ -4,6 +4,8 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
 import CreateMockScreen from '@/screens/dev/CreateMockScreen';
 import CreateMockScreenDeepLink from '@/screens/dev/CreateMockScreenDeepLink';
 import DevFeatureFlagsScreen from '@/screens/dev/DevFeatureFlagsScreen';
@@ -11,7 +13,6 @@ import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
-import { black, white } from '@/utils/colors';
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {

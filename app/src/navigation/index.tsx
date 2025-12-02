@@ -13,22 +13,24 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import { DefaultNavBar } from '@/components/NavBar';
-import { RECOVERY_PROMPT_ALLOWED_ROUTES } from '@/consts/recoveryPrompts';
-import useRecoveryPrompts from '@/hooks/useRecoveryPrompts';
+import { DefaultNavBar } from '@/components/navbar';
 import AppLayout from '@/layouts/AppLayout';
 import accountScreens from '@/navigation/account';
 import appScreens from '@/navigation/app';
+import { setupUniversalLinkListenerInNavigation } from '@/navigation/deeplinks';
 import devScreens from '@/navigation/devTools';
 import documentsScreens from '@/navigation/documents';
 import homeScreens from '@/navigation/home';
 import onboardingScreens from '@/navigation/onboarding';
 import sharedScreens from '@/navigation/shared';
 import verificationScreens from '@/navigation/verification';
-import analytics from '@/utils/analytics';
-import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
+import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
+import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
+import analytics from '@/services/analytics';
+import type { ProofHistory } from '@/stores/proofTypes';
 
 export const navigationScreens = {
   ...appScreens,
@@ -40,6 +42,7 @@ export const navigationScreens = {
   ...sharedScreens,
   ...devScreens, // allow in production for testing
 };
+
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
   initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
@@ -55,22 +58,125 @@ type BaseRootStackParamList = StaticParamList<typeof AppNavigation>;
 // Explicitly declare route params that are not inferred from initialParams
 export type RootStackParamList = Omit<
   BaseRootStackParamList,
-  'ComingSoon' | 'IDPicker' | 'AadhaarUpload' | 'AadhaarUploadError'
+  | 'AadhaarUpload'
+  | 'AadhaarUploadError'
+  | 'AadhaarUploadSuccess'
+  | 'AccountRecovery'
+  | 'AccountVerifiedSuccess'
+  | 'CloudBackupSettings'
+  | 'ComingSoon'
+  | 'ConfirmBelonging'
+  | 'CreateMock'
+  | 'Disclaimer'
+  | 'DocumentNFCScan'
+  | 'DocumentOnboarding'
+  | 'Gratification'
+  | 'Home'
+  | 'IDPicker'
+  | 'IdDetails'
+  | 'Loading'
+  | 'Modal'
+  | 'MockDataDeepLink'
+  | 'Points'
+  | 'PointsInfo'
+  | 'ProofHistoryDetail'
+  | 'Prove'
+  | 'SaveRecoveryPhrase'
+  | 'WebView'
 > & {
+  // Shared screens
   ComingSoon: {
     countryCode?: string;
     documentCategory?: string;
   };
+  WebView: WebViewScreenParams;
+
+  // Document screens
   IDPicker: {
     countryCode: string;
     documentTypes: string[];
   };
+  ConfirmBelonging:
+    | {
+        documentCategory?: DocumentCategory;
+        signatureAlgorithm?: string;
+        curveOrExponent?: string;
+      }
+    | undefined;
+  DocumentNFCScan:
+    | {
+        passportNumber?: string;
+        dateOfBirth?: string;
+        dateOfExpiry?: string;
+      }
+    | undefined;
+  DocumentCameraTrouble: undefined;
+  DocumentOnboarding: undefined;
+
+  // Aadhaar screens
   AadhaarUpload: {
     countryCode: string;
   };
+  AadhaarUploadSuccess: undefined;
   AadhaarUploadError: {
     errorType: string;
   };
+
+  // Account/Recovery screens
+  AccountRecovery:
+    | {
+        nextScreen?: string;
+      }
+    | undefined;
+  SaveRecoveryPhrase:
+    | {
+        nextScreen?: string;
+      }
+    | undefined;
+  CloudBackupSettings:
+    | {
+        nextScreen?: 'SaveRecoveryPhrase';
+        returnToScreen?: 'Points';
+      }
+    | undefined;
+  AccountVerifiedSuccess: undefined;
+
+  // Proof/Verification screens
+  ProofHistoryDetail: {
+    data: ProofHistory;
+  };
+  Prove: undefined;
+
+  // App screens
+  Loading: {
+    documentCategory?: DocumentCategory;
+    signatureAlgorithm?: string;
+    curveOrExponent?: string;
+  };
+  Modal: ModalNavigationParams;
+  Gratification: {
+    points?: number;
+  };
+
+  // Home screens
+  Home: {
+    testReferralFlow?: boolean;
+  };
+  Points: undefined;
+  PointsInfo:
+    | {
+        showNextButton?: boolean;
+        onNextButtonPress?: () => void;
+      }
+    | undefined;
+  IdDetails: undefined;
+
+  // Onboarding screens
+  Disclaimer: undefined;
+
+  // Dev screens
+  CreateMock: undefined;
+  MockDataDeepLink: undefined;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

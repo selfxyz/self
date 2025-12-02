@@ -7,6 +7,11 @@
  */
 
 /**
+ * Extra vertical padding constant for layouts
+ */
+export const extraYPadding = 15;
+
+/**
  * Normalizes borderWidth value.
  * Validates and converts borderWidth to a non-negative number or undefined.
  * @param borderWidth - The borderWidth value to normalize

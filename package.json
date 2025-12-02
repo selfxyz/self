@@ -21,7 +21,7 @@
     "format": "SKIP_BUILD_DEPS=1 yarn format:root && yarn format:github && SKIP_BUILD_DEPS=1 yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
     "format:github": "yarn prettier --parser yaml --write .github/**/*.yml --single-quote false",
     "format:root": "echo 'format markdown' && yarn prettier --parser markdown --write *.md  && echo 'format yaml' && yarn prettier --parser yaml --write .*.{yml,yaml} --single-quote false && yarn prettier --write scripts/**/*.{js,mjs,ts} && yarn prettier --parser json --write scripts/**/*.json",
-    "gitleaks": "gitleaks protect --staged --redact --config=.gitleaks.toml",
+    "gitleaks": "gitleaks protect --staged --redact --config=gitleaks-override.toml",
     "postinstall": "node scripts/run-patch-package.cjs",
     "lint": "yarn lint:headers && yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint",
     "lint:headers": "node scripts/check-duplicate-headers.cjs . && node scripts/check-license-headers.mjs . --check",
@@ -36,6 +36,8 @@
   "resolutions": {
     "@babel/core": "^7.28.4",
     "@babel/runtime": "^7.28.4",
+    "@noble/curves": "1.9.7",
+    "@noble/hashes": "1.8.0",
     "@swc/core": "1.7.36",
     "@tamagui/animations-react-native": "1.126.14",
     "@tamagui/toast": "1.126.14",
@@ -44,13 +46,17 @@
     "punycode": "npm:punycode.js@^2.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-native": "0.76.9"
+    "react-native": "0.76.9",
+    "react-native-blur-effect": "1.1.3",
+    "react-native-passkey": "3.3.1",
+    "react-native-webview": "13.16.0"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",
     "js-sha1": "^0.7.0",
     "react": "^18.3.1",
-    "react-native": "0.76.9"
+    "react-native": "0.76.9",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@react-native-community/cli-server-api": "^16.0.3",

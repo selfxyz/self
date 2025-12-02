@@ -8,8 +8,9 @@ import DocumentCamera from '../../src/screens/DocumentCamera';
 describe('DocumentCamera screen', () => {
   it('shows placeholder messaging and handles back navigation', async () => {
     const onBack = vi.fn();
+    const onSuccess = vi.fn();
 
-    render(<DocumentCamera onBack={onBack} />);
+    render(<DocumentCamera onBack={onBack} onSuccess={onSuccess} />);
 
     expect(screen.getByText('Document Camera')).toBeInTheDocument();
     expect(screen.getByText(/camera-based document scanning/i)).toBeInTheDocument();

@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import forge from 'node-forge';
-import { PCR0_MANAGER_ADDRESS, RPC_URL } from 'src/constants/constants.js';
+
+import { PCR0_MANAGER_ADDRESS, RPC_URL } from '../constants/constants.js';
 
 const GCP_ROOT_CERT = `
 -----BEGIN CERTIFICATE-----

@@ -6,26 +6,27 @@ import type { PropsWithChildren } from 'react';
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
 
-import type {
-  Adapters,
-  TrackEventParams,
-  WsConn,
-} from '@selfxyz/mobile-sdk-alpha';
 import {
+  type Adapters,
   createListenersMap,
+  impactLight,
+  type LogLevel,
+  type NFCScanContext,
   reactNativeScannerAdapter,
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
+  type TrackEventParams,
   webNFCScannerShim,
+  type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
+import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
-import { logNFCEvent, logProofEvent } from '@/Sentry';
+import analytics, { trackNfcEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
-import analytics from '@/utils/analytics';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
 /**
@@ -88,6 +89,23 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         },
       },
       documents: selfClientDocumentsAdapter,
+      navigation: {
+        goBack: () => {
+          if (navigationRef.isReady()) {
+            navigationRef.goBack();
+          }
+        },
+        goTo: (routeName, params) => {
+          if (navigationRef.isReady()) {
+            if (params !== undefined) {
+              // @ts-expect-error
+              navigationRef.navigate(routeName, params);
+            } else {
+              navigationRef.navigate(routeName as never);
+            }
+          }
+        },
+      },
       crypto: {
         async hash(
           data: Uint8Array,
@@ -114,6 +132,17 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         trackEvent: (event: string, data?: TrackEventParams) => {
           analytics().trackEvent(event, data);
         },
+        trackNfcEvent: (name: string, data?: Record<string, unknown>) => {
+          trackNfcEvent(name, data);
+        },
+        logNFCEvent: (
+          level: LogLevel,
+          message: string,
+          context: NFCScanContext,
+          details?: Record<string, unknown>,
+        ) => {
+          logNFCEvent(level, message, context, details);
+        },
       },
       auth: {
         getPrivateKey: () => unsafe_getPrivateKey(),
@@ -134,21 +163,20 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     addListener(SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS, () => {
       setTimeout(() => {
         if (navigationRef.isReady()) {
-          navigationRef.navigate('AccountVerifiedSuccess');
+          navigationRef.navigate({
+            name: 'AccountVerifiedSuccess',
+            params: undefined,
+          });
         }
       }, 1000);
     });
 
     addListener(
       SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE,
-      async ({ hasValidDocument }) => {
+      async ({ hasValidDocument: _hasValidDocument }) => {
         setTimeout(() => {
           if (navigationRef.isReady()) {
-            if (hasValidDocument) {
-              navigationRef.navigate('Home');
-            } else {
-              navigationRef.navigate('Launch');
-            }
+            navigationRef.navigate({ name: 'Home', params: {} });
           }
         }, 3000);
       },
@@ -187,7 +215,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
             logProofEvent('info', 'Device token registration started', context);
 
             const { registerDeviceToken: registerFirebaseDeviceToken } =
-              await import('@/utils/notifications/notificationService');
+              await import('@/services/notifications/notificationService');
             await registerFirebaseDeviceToken(uuid, fcmToken, isMock);
 
             analytics().trackEvent('DEVICE_TOKEN_REG_SUCCESS');
@@ -216,21 +244,15 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('DocumentNFCScan');
-      }
+      navigateIfReady('DocumentNFCScan');
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('DocumentCameraTrouble');
-      }
+      navigateIfReady('DocumentCameraTrouble');
     });
 
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('AadhaarUploadSuccess');
-      }
+      navigateIfReady('AadhaarUploadSuccess');
     });
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
       navigateIfReady('AadhaarUploadError', { errorType });
@@ -245,9 +267,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         countryCode: string;
         documentTypes: string[];
       }) => {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('IDPicker', { countryCode, documentTypes });
-        }
+        navigateIfReady('IDPicker', { countryCode, documentTypes });
       },
     );
     addListener(
@@ -273,6 +293,18 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               break;
           }
         }
+      },
+    );
+
+    addListener(
+      SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED,
+      ({ documentCategory, signatureAlgorithm, curveOrExponent }) => {
+        impactLight();
+        navigateIfReady('Loading', {
+          documentCategory,
+          signatureAlgorithm,
+          curveOrExponent,
+        });
       },
     );
 

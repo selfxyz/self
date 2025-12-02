@@ -4,47 +4,38 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { XStack, YStack } from 'tamagui';
-import type { RouteProp } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { countryCodes } from '@selfxyz/common/constants';
-import type { DocumentCategory } from '@selfxyz/common/types';
 import {
-  hasAnyValidRegisteredDocument,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+  BodyText,
+  PrimaryButton,
+  RoundFlag,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import { RoundFlag } from '@/components/flag/RoundFlag';
-import { BodyText } from '@/components/typography/BodyText';
-import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { notificationError } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import analytics from '@/utils/analytics';
-import { black, slate500, white } from '@/utils/colors';
-import { sendCountrySupportNotification } from '@/utils/email';
-import { notificationError } from '@/utils/haptic';
+import type { SharedRoutesParamList } from '@/navigation/types';
+import analytics from '@/services/analytics';
+import { sendCountrySupportNotification } from '@/services/email';
 
 const { flush: flushAnalytics } = analytics();
 
-type ComingSoonScreenRouteProp = RouteProp<
-  {
-    ComingSoon: {
-      countryCode: string;
-      documentCategory?: DocumentCategory;
-    };
-  },
+type ComingSoonScreenProps = NativeStackScreenProps<
+  SharedRoutesParamList,
   'ComingSoon'
 >;
 
-interface ComingSoonScreenProps {
-  route: ComingSoonScreenRouteProp;
-}
-
 const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
-  const selfClient = useSelfClient();
-  const navigateToLaunch = useHapticNavigation('Launch');
   const navigateToHome = useHapticNavigation('Home');
 
   const { countryName, countryCode, documentTypeText } = useMemo(() => {
@@ -89,12 +80,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
   }, [route.params?.documentCategory, route.params?.countryCode]);
 
   const onDismiss = async () => {
-    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
-    if (hasValidDocument) {
-      navigateToHome();
-    } else {
-      navigateToLaunch();
-    }
+    navigateToHome();
   };
 
   const onNotifyMe = async () => {
@@ -135,30 +121,36 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
             )}
           </XStack>
           <Title
-            fontSize={32}
-            textAlign="center"
-            color={black}
-            marginBottom={16}
+            style={{
+              fontSize: 32,
+              textAlign: 'center',
+              color: black,
+              marginBottom: 16,
+            }}
           >
             Coming Soon
           </Title>
           <BodyText
-            fontSize={17}
-            textAlign="center"
-            color={black}
-            marginBottom={10}
-            paddingHorizontal={10}
+            style={{
+              fontSize: 17,
+              textAlign: 'center',
+              color: black,
+              marginBottom: 10,
+              paddingHorizontal: 10,
+            }}
           >
             {documentTypeText
               ? `We're working to roll out support for ${documentTypeText} in ${countryName}.`
               : `We're working to roll out support in ${countryName}.`}
           </BodyText>
           <BodyText
-            fontSize={17}
-            textAlign="center"
-            color={slate500}
-            marginBottom={40}
-            paddingHorizontal={10}
+            style={{
+              fontSize: 17,
+              textAlign: 'center',
+              color: slate500,
+              marginBottom: 40,
+              paddingHorizontal: 10,
+            }}
           >
             Sign up for live updates.
           </BodyText>

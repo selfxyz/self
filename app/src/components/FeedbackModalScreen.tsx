@@ -6,14 +6,17 @@ import React, { useCallback } from 'react';
 import { Modal, StyleSheet } from 'react-native';
 import { styled, View, XStack, YStack } from 'tamagui';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
-import ModalClose from '@/images/icons/modal_close.svg';
-import LogoInversed from '@/images/logo_inversed.svg';
-import { white } from '@/utils/colors';
-import { confirmTap, impactLight } from '@/utils/haptic';
+import {
+  Description,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
+import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import ModalClose from '@/assets/icons/modal_close.svg';
+import LogoInversed from '@/assets/images/logo_inversed.svg';
+import { confirmTap, impactLight } from '@/integrations/haptics';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',
@@ -112,7 +115,9 @@ const FeedbackModalScreen: React.FC<FeedbackModalScreenProps> = ({
               )}
             </XStack>
             <YStack gap={20}>
-              <Title textAlign="left">{modalParams.titleText}</Title>
+              <Title style={{ textAlign: 'left' }}>
+                {modalParams.titleText}
+              </Title>
               <Description style={styles.description}>
                 {modalParams.bodyText}
               </Description>

@@ -14,21 +14,27 @@ import {
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  Additional,
+  Description,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate800,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import qrScanAnimation from '@/assets/animations/qr_scan.json';
+import QRScan from '@/assets/icons/qr_code.svg';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
-import Additional from '@/components/typography/Additional';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import QRScan from '@/images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
-import { black, slate800, white } from '@/utils/colors';
-import { parseAndValidateUrlParams } from '@/utils/deeplinks';
+import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
 
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();

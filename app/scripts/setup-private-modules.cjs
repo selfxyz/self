@@ -10,17 +10,26 @@ const path = require('path');
 const SCRIPT_DIR = __dirname;
 const APP_DIR = path.dirname(SCRIPT_DIR);
 const ANDROID_DIR = path.join(APP_DIR, 'android');
-const PRIVATE_MODULE_PATH = path.join(
-  ANDROID_DIR,
-  'android-passport-nfc-reader',
-);
 
 const GITHUB_ORG = 'selfxyz';
-const REPO_NAME = 'android-passport-nfc-reader';
 const BRANCH = 'main';
 
+const PRIVATE_MODULES = [
+  {
+    repoName: 'android-passport-nfc-reader',
+    localPath: path.join(ANDROID_DIR, 'android-passport-nfc-reader'),
+    validationFiles: ['app/build.gradle', 'app/src/main/AndroidManifest.xml'],
+  },
+  {
+    repoName: 'react-native-passport-reader',
+    localPath: path.join(ANDROID_DIR, 'react-native-passport-reader'),
+    validationFiles: ['android/build.gradle'],
+  },
+];
+
 // Environment detection
-const isCI = process.env.CI === 'true';
+// CI is set by GitHub Actions, CircleCI, etc. Check for truthy value
+const isCI = !!process.env.CI || process.env.GITHUB_ACTIONS === 'true';
 const repoToken = process.env.SELFXYZ_INTERNAL_REPO_PAT;
 const isDryRun = process.env.DRY_RUN === 'true';
 
@@ -102,13 +111,13 @@ function sanitizeCommandForLogging(command) {
   );
 }
 
-function removeExistingModule() {
-  if (fs.existsSync(PRIVATE_MODULE_PATH)) {
-    log(`Removing existing ${REPO_NAME}...`, 'cleanup');
+function removeExistingModule(modulePath, repoName) {
+  if (fs.existsSync(modulePath)) {
+    log(`Removing existing ${repoName}...`, 'cleanup');
 
     if (!isDryRun) {
       // Force remove even if it's a git repo
-      fs.rmSync(PRIVATE_MODULE_PATH, {
+      fs.rmSync(modulePath, {
         recursive: true,
         force: true,
         maxRetries: 3,
@@ -116,7 +125,7 @@ function removeExistingModule() {
       });
     }
 
-    log(`Removed existing ${REPO_NAME}`, 'success');
+    log(`Removed existing ${repoName}`, 'success');
   }
 }
 // some of us connect to github via SSH, others via HTTPS with gh auth
@@ -136,15 +145,15 @@ function usingHTTPSGitAuth() {
   }
 }
 
-function clonePrivateRepo() {
-  log(`Setting up ${REPO_NAME}...`, 'info');
+function clonePrivateRepo(repoName, localPath) {
+  log(`Setting up ${repoName}...`, 'info');
 
   let cloneUrl;
 
   if (isCI && repoToken) {
     // CI environment with Personal Access Token
     log('CI detected: Using SELFXYZ_INTERNAL_REPO_PAT for clone', 'info');
-    cloneUrl = `https://${repoToken}@github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
+    cloneUrl = `https://${repoToken}@github.com/${GITHUB_ORG}/${repoName}.git`;
   } else if (isCI) {
     log(
       'CI environment detected but SELFXYZ_INTERNAL_REPO_PAT not available - skipping private module setup',
@@ -156,17 +165,18 @@ function clonePrivateRepo() {
     );
     return false; // Return false to indicate clone was skipped
   } else if (usingHTTPSGitAuth()) {
-    cloneUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
+    cloneUrl = `https://github.com/${GITHUB_ORG}/${repoName}.git`;
   } else {
     // Local development with SSH
     log('Local development: Using SSH for clone', 'info');
-    cloneUrl = `git@github.com:${GITHUB_ORG}/${REPO_NAME}.git`;
+    cloneUrl = `git@github.com:${GITHUB_ORG}/${repoName}.git`;
   }
 
   // Security: Use quiet mode for credentialed URLs to prevent token exposure
   const isCredentialedUrl = isCI && repoToken;
   const quietFlag = isCredentialedUrl ? '--quiet' : '';
-  const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" android-passport-nfc-reader`;
+  const targetDir = path.basename(localPath);
+  const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" "${targetDir}"`;
 
   try {
     if (isCredentialedUrl) {
@@ -175,7 +185,7 @@ function clonePrivateRepo() {
     } else {
       runCommand(cloneCommand);
     }
-    log(`Successfully cloned ${REPO_NAME}`, 'success');
+    log(`Successfully cloned ${repoName}`, 'success');
     return true; // Return true to indicate successful clone
   } catch (error) {
     if (isCI) {
@@ -193,65 +203,94 @@ function clonePrivateRepo() {
   }
 }
 
-function validateSetup() {
-  const expectedFiles = [
-    'app/build.gradle',
-    'app/src/main/AndroidManifest.xml',
-  ];
-
-  for (const file of expectedFiles) {
-    const filePath = path.join(PRIVATE_MODULE_PATH, file);
+function validateSetup(modulePath, validationFiles, repoName) {
+  for (const file of validationFiles) {
+    const filePath = path.join(modulePath, file);
     if (!fs.existsSync(filePath)) {
-      throw new Error(`Expected file not found: ${file}`);
+      throw new Error(`Expected file not found in ${repoName}: ${file}`);
     }
   }
 
-  log('Private module validation passed', 'success');
+  log(`${repoName} validation passed`, 'success');
+}
+
+function setupPrivateModule(module) {
+  const { repoName, localPath, validationFiles } = module;
+  log(`Starting setup of ${repoName}...`, 'info');
+
+  // Remove existing module
+  removeExistingModule(localPath, repoName);
+
+  // Clone the private repository
+  const cloneSuccessful = clonePrivateRepo(repoName, localPath);
+
+  // If clone was skipped (e.g., in forked PRs), exit gracefully
+  if (cloneSuccessful === false) {
+    log(`${repoName} setup skipped - private module not available`, 'warning');
+    return false;
+  }
+
+  // Security: Remove credential-embedded remote URL after clone
+  if (isCI && repoToken && !isDryRun) {
+    scrubGitRemoteUrl(localPath, repoName);
+  }
+
+  // Validate the setup
+  if (!isDryRun) {
+    validateSetup(localPath, validationFiles, repoName);
+  }
+
+  log(`${repoName} setup complete!`, 'success');
+  return true;
 }
 
 function setupAndroidPassportReader() {
-  log(`Starting setup of ${REPO_NAME}...`, 'info');
-
   // Ensure android directory exists
   if (!fs.existsSync(ANDROID_DIR)) {
     throw new Error(`Android directory not found: ${ANDROID_DIR}`);
   }
 
-  // Remove existing module
-  removeExistingModule();
+  log(
+    `Starting setup of ${PRIVATE_MODULES.length} private module(s)...`,
+    'info',
+  );
 
-  // Clone the private repository
-  const cloneSuccessful = clonePrivateRepo();
-
-  // If clone was skipped (e.g., in forked PRs), exit gracefully
-  if (cloneSuccessful === false) {
-    log(`${REPO_NAME} setup skipped - private module not available`, 'warning');
-    return;
+  let successCount = 0;
+  for (const module of PRIVATE_MODULES) {
+    try {
+      const success = setupPrivateModule(module);
+      if (success) {
+        successCount++;
+      }
+    } catch (error) {
+      log(`Failed to setup ${module.repoName}: ${error.message}`, 'error');
+      throw error;
+    }
   }
 
-  // Security: Remove credential-embedded remote URL after clone
-  if (isCI && repoToken && !isDryRun) {
-    scrubGitRemoteUrl();
+  if (successCount === PRIVATE_MODULES.length) {
+    log('All private modules setup complete!', 'success');
+  } else if (successCount > 0) {
+    log(
+      `Setup complete: ${successCount}/${PRIVATE_MODULES.length} modules cloned`,
+      'warning',
+    );
   }
-
-  // Validate the setup
-  if (!isDryRun) {
-    validateSetup();
-  }
-
-  log(`${REPO_NAME} setup complete!`, 'success');
 }
 
-function scrubGitRemoteUrl() {
+function scrubGitRemoteUrl(modulePath, repoName) {
   try {
-    const cleanUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
-    const scrubCommand = `cd "${PRIVATE_MODULE_PATH}" && git remote set-url origin "${cleanUrl}"`;
+    const cleanUrl = `https://github.com/${GITHUB_ORG}/${repoName}.git`;
+    const scrubCommand = `cd "${modulePath}" && git remote set-url origin "${cleanUrl}"`;
 
-    log('Scrubbing credential from git remote URL...', 'info');
+    log(`Scrubbing credential from git remote URL for ${repoName}...`, 'info');
     runCommand(scrubCommand, { stdio: 'pipe' });
-    log('Git remote URL cleaned', 'success');
+    log(`Git remote URL cleaned for ${repoName}`, 'success');
   } catch (error) {
-    log(`Warning: Failed to scrub git remote URL: ${error.message}`, 'warning');
+    log(
+      `Warning: Failed to scrub git remote URL for ${repoName}: ${error.message}`,
+      'warning',
+    );
     // Non-fatal error - continue execution
   }
 }
@@ -274,5 +313,5 @@ if (require.main === module) {
 module.exports = {
   setupAndroidPassportReader,
   removeExistingModule,
-  PRIVATE_MODULE_PATH,
+  PRIVATE_MODULES,
 };

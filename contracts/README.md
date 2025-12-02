@@ -84,15 +84,59 @@ As an example, please refer to the following contract.
 
 ## Building Contracts
 
-1. Install dependencies:
+### Prerequisites
 
-We use yarn 4. If you havent already it can be enabled with
+Before building contracts, you must install these **system-level dependencies manually** or ensure they are already
+installed.
+
+#### 1. Node.js and Yarn
+
+We use yarn 4. If you haven't already, it can be enabled with:
 
 ```bash
 corepack enable yarn
 ```
 
-_corepack_ is a built in nodejs command
+_corepack_ is a built-in nodejs command
+
+#### 2. Rust (for Circom)
+
+Install Rust using rustup:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+```
+
+#### 3. Circom 2.1.9
+
+Install the specific version of Circom required:
+
+```bash
+git clone https://github.com/iden3/circom.git
+cd circom
+git checkout v2.1.9
+cargo build --release
+cp ./target/release/circom ~/.cargo/bin/
+```
+
+Verify installation:
+
+```bash
+circom --version
+# Should output: circom compiler 2.1.9
+```
+
+#### 4. wget
+
+Install wget using your system's package manager:
+
+- **macOS**: `brew install wget`
+- **Ubuntu/Debian**: `apt-get install wget`
+
+### Installation
+
+1. Install Node.js dependencies (after installing the system dependencies above):
 
 ```bash
 yarn install

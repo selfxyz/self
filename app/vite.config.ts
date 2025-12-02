@@ -37,21 +37,24 @@ export default defineConfig({
       'lottie-react-native': 'lottie-react',
       '@react-native-community/blur': resolve(
         __dirname,
-        'src/mocks/react-native-community-blur.ts',
+        'src/devtools/mocks/react-native-community-blur.ts',
       ),
       'react-native-safe-area-context': resolve(
         __dirname,
-        'src/mocks/react-native-safe-area-context.js',
+        'src/devtools/mocks/react-native-safe-area-context.js',
       ),
       'react-native-gesture-handler': resolve(
         __dirname,
-        'src/mocks/react-native-gesture-handler.ts',
+        'src/devtools/mocks/react-native-gesture-handler.ts',
       ),
       'react-native-passport-reader': resolve(
         __dirname,
-        'src/mocks/react-native-passport-reader.ts',
+        'src/devtools/mocks/react-native-passport-reader.ts',
       ),
-      '@/utils/nfcScanner': resolve(__dirname, 'src/mocks/nfcScanner.ts'),
+      '@/integrations/nfc/nfcScanner': resolve(
+        __dirname,
+        'src/devtools/mocks/nfcScanner.ts',
+      ),
       crypto: resolve(__dirname, '../common/src/polyfills/crypto.ts'),
       buffer: 'buffer',
 
@@ -175,16 +178,16 @@ export default defineConfig({
 
           // Screen-specific chunks - more granular
           'screens-document-core': ['./src/navigation/documents.ts'],
-          'screens-passport-nfc': ['./src/utils/nfcScanner.ts'],
+          'screens-passport-nfc': ['./src/devtools/mocks/nfcScanner.ts'],
 
           // Proving - split into even smaller chunks
           'screens-prove-core': ['./src/navigation/verification.ts'],
           'screens-prove-validation-core': [
-            './src/utils/proving/validateDocument.ts',
+            './src/proving/validateDocument.ts',
           ],
           'screens-prove-utils': [
-            './src/utils/proving/index.ts',
-            './src/utils/proving/loadingScreenStateText.ts',
+            './src/proving/index.ts',
+            './src/proving/loadingScreenStateText.ts',
           ],
 
           // Large animations - split out heavy Lottie files

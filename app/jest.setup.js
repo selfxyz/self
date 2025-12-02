@@ -4,6 +4,33 @@
 
 /* global jest */
 /** @jest-environment jsdom */
+
+// Mock React Native PixelRatio globally before anything else loads
+const mockPixelRatio = {
+  get: jest.fn(() => 2),
+  getFontScale: jest.fn(() => 1),
+  getPixelSizeForLayoutSize: jest.fn(layoutSize => layoutSize * 2),
+  roundToNearestPixel: jest.fn(layoutSize => Math.round(layoutSize * 2) / 2),
+  startDetecting: jest.fn(),
+};
+
+global.PixelRatio = mockPixelRatio;
+
+// Also make it available for require() calls
+const Module = require('module');
+
+const originalRequire = Module.prototype.require;
+Module.prototype.require = function (id) {
+  if (id === 'react-native') {
+    const RN = originalRequire.apply(this, arguments);
+    if (!RN.PixelRatio || !RN.PixelRatio.getFontScale) {
+      RN.PixelRatio = mockPixelRatio;
+    }
+    return RN;
+  }
+  return originalRequire.apply(this, arguments);
+};
+
 require('react-native-gesture-handler/jestSetup');
 
 // Mock NativeAnimatedHelper - using virtual mock during RN 0.76.9 prep phase
@@ -57,6 +84,16 @@ jest.mock('react-native/Libraries/TurboModule/TurboModuleRegistry', () => ({
         }),
       };
     }
+    if (name === 'RNDeviceInfo') {
+      return {
+        getConstants: () => ({
+          Dimensions: {
+            window: { width: 375, height: 667, scale: 2 },
+            screen: { width: 375, height: 667, scale: 2 },
+          },
+        }),
+      };
+    }
     return {
       getConstants: () => ({}),
     };
@@ -64,7 +101,71 @@ jest.mock('react-native/Libraries/TurboModule/TurboModuleRegistry', () => ({
   get: jest.fn(() => null),
 }));
 
-// Mock the mobile-sdk-alpha's React Native instance separately
+// Mock main React Native PixelRatio module
+jest.mock('react-native/Libraries/Utilities/PixelRatio', () => ({
+  get: jest.fn(() => 2),
+  getFontScale: jest.fn(() => 1),
+  getPixelSizeForLayoutSize: jest.fn(layoutSize => layoutSize * 2),
+  roundToNearestPixel: jest.fn(layoutSize => Math.round(layoutSize * 2) / 2),
+  startDetecting: jest.fn(),
+}));
+
+// Mock mobile-sdk-alpha to use the main React Native instance instead of its own
+jest.mock(
+  '../packages/mobile-sdk-alpha/node_modules/react-native',
+  () => {
+    // Create the PixelRatio mock first
+    const PixelRatio = {
+      get: jest.fn(() => 2),
+      getFontScale: jest.fn(() => 1),
+      getPixelSizeForLayoutSize: jest.fn(layoutSize => layoutSize * 2),
+      roundToNearestPixel: jest.fn(
+        layoutSize => Math.round(layoutSize * 2) / 2,
+      ),
+      startDetecting: jest.fn(),
+    };
+
+    const RN = jest.requireActual('react-native');
+    // Override the PixelRatio immediately
+    RN.PixelRatio = PixelRatio;
+
+    // Make sure both the default and named exports work
+    const mockedRN = {
+      ...RN,
+      PixelRatio,
+      default: {
+        ...RN,
+        PixelRatio,
+      },
+    };
+
+    return mockedRN;
+  },
+  { virtual: true },
+);
+
+// Mock @turnkey/react-native-wallet-kit to prevent loading of problematic dependencies
+jest.mock(
+  '@turnkey/react-native-wallet-kit',
+  () => ({
+    AuthState: {
+      Authenticated: 'Authenticated',
+      Unauthenticated: 'Unauthenticated',
+    },
+    useTurnkey: jest.fn(() => ({
+      handleGoogleOauth: jest.fn(),
+      fetchWallets: jest.fn().mockResolvedValue([]),
+      exportWallet: jest.fn(),
+      importWallet: jest.fn(),
+      authState: 'Unauthenticated',
+      logout: jest.fn(),
+    })),
+    TurnkeyProvider: ({ children }) => children,
+  }),
+  { virtual: true },
+);
+
+// Mock the mobile-sdk-alpha's TurboModuleRegistry to prevent native module errors
 jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/TurboModule/TurboModuleRegistry',
   () => ({
@@ -112,7 +213,7 @@ jest.mock(
   { virtual: true },
 );
 
-// Mock mobile-sdk-alpha's PixelRatio module
+// Mock mobile-sdk-alpha's PixelRatio module directly since it's still needed by StyleSheet
 jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/Utilities/PixelRatio',
   () => ({
@@ -125,7 +226,7 @@ jest.mock(
   { virtual: true },
 );
 
-// Mock mobile-sdk-alpha's StyleSheet module directly
+// Mock mobile-sdk-alpha's StyleSheet module directly since it's still needed
 jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/StyleSheet/StyleSheet',
   () => ({
@@ -144,6 +245,21 @@ jest.mock(
   { virtual: true },
 );
 
+// Mock main React Native StyleSheet module
+jest.mock('react-native/Libraries/StyleSheet/StyleSheet', () => ({
+  create: jest.fn(styles => styles),
+  flatten: jest.fn(style => style),
+  hairlineWidth: 1,
+  absoluteFillObject: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  roundToNearestPixel: jest.fn(layoutSize => Math.round(layoutSize * 2) / 2),
+}));
+
 // Mock NativeDeviceInfo specs for both main app and mobile-sdk-alpha
 jest.mock('react-native/src/private/specs/modules/NativeDeviceInfo', () => ({
   getConstants: jest.fn(() => ({
@@ -154,33 +270,118 @@ jest.mock('react-native/src/private/specs/modules/NativeDeviceInfo', () => ({
   })),
 }));
 
+// Mock NativeStatusBarManagerIOS for react-native-edge-to-edge SystemBars
+jest.mock(
+  'react-native/src/private/specs/modules/NativeStatusBarManagerIOS',
+  () => ({
+    setStyle: jest.fn(),
+    setHidden: jest.fn(),
+    setNetworkActivityIndicatorVisible: jest.fn(),
+  }),
+);
+
 // Mock react-native-gesture-handler to prevent getConstants errors
 jest.mock('react-native-gesture-handler', () => {
-  const RN = jest.requireActual('react-native');
+  // Avoid requiring React to prevent nested require memory issues
+
+  // Mock the components as simple pass-through functions
+  const MockScrollView = jest.fn(props => props.children || null);
+  const MockTouchableOpacity = jest.fn(props => props.children || null);
+  const MockTouchableHighlight = jest.fn(props => props.children || null);
+  const MockFlatList = jest.fn(props => null);
+
   return {
     ...jest.requireActual('react-native-gesture-handler/jestSetup'),
     GestureHandlerRootView: ({ children }) => children,
-    ScrollView: RN.ScrollView,
-    TouchableOpacity: RN.TouchableOpacity,
-    TouchableHighlight: RN.TouchableHighlight,
-    FlatList: RN.FlatList,
+    ScrollView: MockScrollView,
+    TouchableOpacity: MockTouchableOpacity,
+    TouchableHighlight: MockTouchableHighlight,
+    FlatList: MockFlatList,
+  };
+});
+
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => {
+  // Avoid requiring React to prevent nested require memory issues
+  return {
+    __esModule: true,
+    SafeAreaProvider: jest.fn(({ children }) => children || null),
+    SafeAreaView: jest.fn(({ children }) => children || null),
+    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
   };
 });
 
 // Mock NativeEventEmitter to prevent null argument errors
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter', () => {
-  return class MockNativeEventEmitter {
-    constructor(nativeModule) {
-      // Accept any nativeModule argument (including null/undefined)
-      this.nativeModule = nativeModule;
-    }
+  function MockNativeEventEmitter(nativeModule) {
+    // Accept any nativeModule argument (including null/undefined)
+    this.nativeModule = nativeModule;
+    this.addListener = jest.fn();
+    this.removeListener = jest.fn();
+    this.removeAllListeners = jest.fn();
+    this.emit = jest.fn();
+  }
 
-    addListener = jest.fn();
-    removeListener = jest.fn();
-    removeAllListeners = jest.fn();
-    emit = jest.fn();
-  };
+  // The mock needs to be the constructor itself, not wrapped
+  MockNativeEventEmitter.default = MockNativeEventEmitter;
+  return MockNativeEventEmitter;
 });
+
+// Mock react-native-device-info to prevent NativeEventEmitter errors
+jest.mock('react-native-device-info', () => ({
+  getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+  getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+  getVersion: jest.fn().mockReturnValue('1.0.0'),
+  getBuildNumber: jest.fn().mockReturnValue('1'),
+  getModel: jest.fn().mockReturnValue('mock-model'),
+  getBrand: jest.fn().mockReturnValue('mock-brand'),
+  isTablet: jest.fn().mockReturnValue(false),
+  isLandscape: jest.fn().mockResolvedValue(false),
+  getSystemVersion: jest.fn().mockReturnValue('14.0'),
+  getSystemName: jest.fn().mockReturnValue('iOS'),
+  default: {
+    getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+    getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+    getVersion: jest.fn().mockReturnValue('1.0.0'),
+    getBuildNumber: jest.fn().mockReturnValue('1'),
+    getModel: jest.fn().mockReturnValue('mock-model'),
+    getBrand: jest.fn().mockReturnValue('mock-brand'),
+    isTablet: jest.fn().mockReturnValue(false),
+    isLandscape: jest.fn().mockResolvedValue(false),
+    getSystemVersion: jest.fn().mockReturnValue('14.0'),
+    getSystemName: jest.fn().mockReturnValue('iOS'),
+  },
+}));
+
+// Mock react-native-device-info nested in @turnkey/react-native-wallet-kit
+jest.mock(
+  'node_modules/@turnkey/react-native-wallet-kit/node_modules/react-native-device-info',
+  () => ({
+    getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+    getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+    getVersion: jest.fn().mockReturnValue('1.0.0'),
+    getBuildNumber: jest.fn().mockReturnValue('1'),
+    getModel: jest.fn().mockReturnValue('mock-model'),
+    getBrand: jest.fn().mockReturnValue('mock-brand'),
+    isTablet: jest.fn().mockReturnValue(false),
+    isLandscape: jest.fn().mockResolvedValue(false),
+    getSystemVersion: jest.fn().mockReturnValue('14.0'),
+    getSystemName: jest.fn().mockReturnValue('iOS'),
+    default: {
+      getUniqueId: jest.fn().mockResolvedValue('mock-device-id'),
+      getReadableVersion: jest.fn().mockReturnValue('1.0.0'),
+      getVersion: jest.fn().mockReturnValue('1.0.0'),
+      getBuildNumber: jest.fn().mockReturnValue('1'),
+      getModel: jest.fn().mockReturnValue('mock-model'),
+      getBrand: jest.fn().mockReturnValue('mock-brand'),
+      isTablet: jest.fn().mockReturnValue(false),
+      isLandscape: jest.fn().mockResolvedValue(false),
+      getSystemVersion: jest.fn().mockReturnValue('14.0'),
+      getSystemName: jest.fn().mockReturnValue('iOS'),
+    },
+  }),
+  { virtual: true },
+);
 
 // Mock problematic mobile-sdk-alpha components that use React Native StyleSheet
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
@@ -284,6 +485,21 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
     PROVING_FAILED: 'PROVING_FAILED',
     // Add other events as needed
   },
+  // Mock haptic functions
+  buttonTap: jest.fn(),
+  cancelTap: jest.fn(),
+  confirmTap: jest.fn(),
+  feedbackProgress: jest.fn(),
+  feedbackSuccess: jest.fn(),
+  feedbackUnsuccessful: jest.fn(),
+  impactLight: jest.fn(),
+  impactMedium: jest.fn(),
+  loadingScreenProgress: jest.fn(),
+  notificationError: jest.fn(),
+  notificationSuccess: jest.fn(),
+  notificationWarning: jest.fn(),
+  selectionChange: jest.fn(),
+  triggerFeedback: jest.fn(),
   // Add other components and hooks as needed
 }));
 
@@ -529,18 +745,23 @@ jest.mock('react-native-passport-reader', () => {
   };
 });
 
-const { NativeModules } = require('react-native');
-
-NativeModules.PassportReader = {
-  configure: jest.fn(),
-  scanPassport: jest.fn(),
-  trackEvent: jest.fn(),
-  flush: jest.fn(),
-  reset: jest.fn(),
+// Mock NativeModules without requiring react-native to avoid memory issues
+// Create a minimal NativeModules mock for PassportReader
+const NativeModules = {
+  PassportReader: {
+    configure: jest.fn(),
+    scanPassport: jest.fn(),
+    trackEvent: jest.fn(),
+    flush: jest.fn(),
+    reset: jest.fn(),
+  },
 };
 
-// Mock @/utils/passportReader to properly expose the interface expected by tests
-jest.mock('./src/utils/passportReader', () => {
+// Make it available globally for any code that expects it
+global.NativeModules = NativeModules;
+
+// Mock @/integrations/nfc/passportReader to properly expose the interface expected by tests
+jest.mock('./src/integrations/nfc/passportReader', () => {
   const mockScanPassport = jest.fn();
   // Mock the parameter count for scanPassport (iOS native method takes 9 parameters)
   Object.defineProperty(mockScanPassport, 'length', { value: 9 });
@@ -676,26 +897,108 @@ jest.mock('react-native-localize', () => ({
     languageTag: 'en-US',
     isRTL: false,
   }),
+  default: {
+    getLocales: jest.fn().mockReturnValue([
+      {
+        countryCode: 'US',
+        languageTag: 'en-US',
+        languageCode: 'en',
+        isRTL: false,
+      },
+    ]),
+    getCountry: jest.fn().mockReturnValue('US'),
+    getTimeZone: jest.fn().mockReturnValue('America/New_York'),
+    getCurrencies: jest.fn().mockReturnValue(['USD']),
+    getTemperatureUnit: jest.fn().mockReturnValue('celsius'),
+    getFirstWeekDay: jest.fn().mockReturnValue(0),
+    uses24HourClock: jest.fn().mockReturnValue(false),
+    usesMetricSystem: jest.fn().mockReturnValue(false),
+    findBestAvailableLanguage: jest.fn().mockReturnValue({
+      languageTag: 'en-US',
+      isRTL: false,
+    }),
+  },
 }));
 
-jest.mock('./src/utils/notifications/notificationService', () =>
+// Ensure mobile-sdk-alpha's bundled react-native-localize dependency is mocked as well
+jest.mock(
+  '../packages/mobile-sdk-alpha/node_modules/react-native-localize',
+  () => ({
+    getLocales: jest.fn().mockReturnValue([
+      {
+        countryCode: 'US',
+        languageTag: 'en-US',
+        languageCode: 'en',
+        isRTL: false,
+      },
+    ]),
+    getCountry: jest.fn().mockReturnValue('US'),
+    getTimeZone: jest.fn().mockReturnValue('America/New_York'),
+    getCurrencies: jest.fn().mockReturnValue(['USD']),
+    getTemperatureUnit: jest.fn().mockReturnValue('celsius'),
+    getFirstWeekDay: jest.fn().mockReturnValue(0),
+    uses24HourClock: jest.fn().mockReturnValue(false),
+    usesMetricSystem: jest.fn().mockReturnValue(false),
+    findBestAvailableLanguage: jest.fn().mockReturnValue({
+      languageTag: 'en-US',
+      isRTL: false,
+    }),
+    default: {
+      getLocales: jest.fn().mockReturnValue([
+        {
+          countryCode: 'US',
+          languageTag: 'en-US',
+          languageCode: 'en',
+          isRTL: false,
+        },
+      ]),
+      getCountry: jest.fn().mockReturnValue('US'),
+      getTimeZone: jest.fn().mockReturnValue('America/New_York'),
+      getCurrencies: jest.fn().mockReturnValue(['USD']),
+      getTemperatureUnit: jest.fn().mockReturnValue('celsius'),
+      getFirstWeekDay: jest.fn().mockReturnValue(0),
+      uses24HourClock: jest.fn().mockReturnValue(false),
+      usesMetricSystem: jest.fn().mockReturnValue(false),
+      findBestAvailableLanguage: jest.fn().mockReturnValue({
+        languageTag: 'en-US',
+        isRTL: false,
+      }),
+    },
+  }),
+);
+
+jest.mock('./src/services/notifications/notificationService', () =>
   require('./tests/__setup__/notificationServiceMock.js'),
 );
 
-// Create a global mock navigation ref that can be used by all tests
-global.mockNavigationRef = {
-  isReady: jest.fn(() => true),
-  navigate: jest.fn(),
-  goBack: jest.fn(),
-  canGoBack: jest.fn(() => true),
-  dispatch: jest.fn(),
-  addListener: jest.fn(() => jest.fn()),
-  removeListener: jest.fn(),
-  getCurrentRoute: jest.fn(() => ({ name: 'Home' })),
-  getState: jest.fn(() => ({ routes: [{ name: 'Home' }], index: 0 })),
-  resetRoot: jest.fn(),
-  getRootState: jest.fn(),
-};
+// Mock react-native-svg
+jest.mock('react-native-svg', () => {
+  // Avoid requiring React to prevent nested require memory issues
+
+  // Mock SvgXml component that handles XML strings
+  const SvgXml = jest.fn(() => null);
+  SvgXml.displayName = 'SvgXml';
+
+  return {
+    __esModule: true,
+    default: SvgXml,
+    SvgXml,
+    Svg: jest.fn(() => null),
+    Circle: jest.fn(() => null),
+    Path: jest.fn(() => null),
+    G: jest.fn(() => null),
+    Rect: jest.fn(() => null),
+    Defs: jest.fn(() => null),
+    LinearGradient: jest.fn(() => null),
+    Stop: jest.fn(() => null),
+    ClipPath: jest.fn(() => null),
+    Polygon: jest.fn(() => null),
+    Polyline: jest.fn(() => null),
+    Line: jest.fn(() => null),
+    Text: jest.fn(() => null),
+    TSpan: jest.fn(() => null),
+  };
+});
 
 // Mock React Navigation
 jest.mock('@react-navigation/native', () => {
@@ -703,6 +1006,10 @@ jest.mock('@react-navigation/native', () => {
   const React = jest.requireActual('react');
   return {
     ...actualNav,
+    useFocusEffect: jest.fn(callback => {
+      // Immediately invoke the effect for testing without requiring a container
+      return callback();
+    }),
     useNavigation: jest.fn(() => ({
       navigate: jest.fn(),
       goBack: jest.fn(),
@@ -724,11 +1031,197 @@ jest.mock('@react-navigation/native-stack', () => ({
   createNavigatorFactory: jest.fn(),
 }));
 
-// Mock the navigation module to provide navigationRef to all components/hooks
-// This mock will be used by default, but individual tests can override it
-jest.mock('./src/navigation', () => ({
-  __esModule: true,
-  navigationRef: global.mockNavigationRef,
-  navigationScreens: {},
-  default: () => null,
-}));
+// Mock core navigation to avoid requiring a NavigationContainer for hooks
+jest.mock('@react-navigation/core', () => {
+  const actualCore = jest.requireActual('@react-navigation/core');
+  return {
+    ...actualCore,
+    useNavigation: jest.fn(() => ({
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      canGoBack: jest.fn(() => true),
+      dispatch: jest.fn(),
+    })),
+  };
+});
+
+// Mock react-native-webview globally to avoid ESM parsing and native behaviors
+// Note: Individual test files can override this with their own more specific mocks
+jest.mock('react-native-webview', () => {
+  // Avoid requiring React to prevent nested require memory issues
+  // Return a simple pass-through mock - tests can override with JSX mocks if needed
+  const MockWebView = jest.fn(() => null);
+  MockWebView.displayName = 'MockWebView';
+  return {
+    __esModule: true,
+    default: MockWebView,
+    WebView: MockWebView,
+  };
+});
+
+// Mock ExpandableBottomLayout to simple containers to avoid SDK internals in tests
+jest.mock('@/layouts/ExpandableBottomLayout', () => {
+  // Avoid requiring React to prevent nested require memory issues
+  // These need to pass through children so WebView is rendered
+  const Layout = ({ children, ...props }) => children;
+  const TopSection = ({ children, ...props }) => children;
+  const BottomSection = ({ children, ...props }) => children;
+  const FullSection = ({ children, ...props }) => children;
+  return {
+    __esModule: true,
+    ExpandableBottomLayout: { Layout, TopSection, BottomSection, FullSection },
+  };
+});
+
+// Mock mobile-sdk-alpha components used by NavBar (Button, XStack)
+jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
+  // Avoid requiring React to prevent nested require memory issues
+  // Create mock components that work with React testing library
+  // Button needs to render a host element with onPress so tests can interact with it
+  const Button = jest.fn(({ testID, icon, onPress, children, ...props }) => {
+    // Render as a mock-touchable-opacity host element so fireEvent.press works
+    // This allows tests to query by testID and press the button
+    return (
+      <mock-touchable-opacity testID={testID} onPress={onPress} {...props}>
+        {icon || children || null}
+      </mock-touchable-opacity>
+    );
+  });
+  Button.displayName = 'MockButton';
+
+  const XStack = jest.fn(({ children, ...props }) => children || null);
+  XStack.displayName = 'MockXStack';
+
+  const Text = jest.fn(({ children, ...props }) => children || null);
+  Text.displayName = 'MockText';
+
+  return {
+    __esModule: true,
+    Button,
+    XStack,
+    // Provide minimal Text to satisfy potential usages
+    Text,
+  };
+});
+
+// Mock Tamagui to avoid hermes-parser WASM memory issues during transformation
+jest.mock('tamagui', () => {
+  // Avoid requiring React to prevent nested require memory issues
+  // Create mock components that work with React testing library
+
+  // Helper to create a simple pass-through mock component
+  const createMockComponent = displayName => {
+    const Component = jest.fn(props => props.children || null);
+    Component.displayName = displayName;
+    return Component;
+  };
+
+  // Mock styled function - simplified version that returns the component
+  const styled = jest.fn(Component => Component);
+
+  // Create all Tamagui component mocks
+  const Button = createMockComponent('MockButton');
+  const XStack = createMockComponent('MockXStack');
+  const YStack = createMockComponent('MockYStack');
+  const ZStack = createMockComponent('MockZStack');
+  const Text = createMockComponent('MockText');
+  const View = createMockComponent('MockView');
+  const ScrollView = createMockComponent('MockScrollView');
+  const Spinner = createMockComponent('MockSpinner');
+  const Image = createMockComponent('MockImage');
+  const Card = createMockComponent('MockCard');
+  const Separator = createMockComponent('MockSeparator');
+  const TextArea = createMockComponent('MockTextArea');
+  const Input = createMockComponent('MockInput');
+  const Anchor = createMockComponent('MockAnchor');
+
+  // Mock Select component with nested components
+  const Select = Object.assign(createMockComponent('MockSelect'), {
+    Trigger: createMockComponent('MockSelectTrigger'),
+    Value: createMockComponent('MockSelectValue'),
+    Content: createMockComponent('MockSelectContent'),
+    Item: createMockComponent('MockSelectItem'),
+    Group: createMockComponent('MockSelectGroup'),
+    Label: createMockComponent('MockSelectLabel'),
+    Viewport: createMockComponent('MockSelectViewport'),
+    ScrollUpButton: createMockComponent('MockSelectScrollUpButton'),
+    ScrollDownButton: createMockComponent('MockSelectScrollDownButton'),
+  });
+
+  // Mock Sheet component with nested components
+  const Sheet = Object.assign(createMockComponent('MockSheet'), {
+    Frame: createMockComponent('MockSheetFrame'),
+    Overlay: createMockComponent('MockSheetOverlay'),
+    Handle: createMockComponent('MockSheetHandle'),
+    ScrollView: createMockComponent('MockSheetScrollView'),
+  });
+
+  // Mock Adapt component
+  const Adapt = createMockComponent('MockAdapt');
+
+  // Mock TamaguiProvider - simple pass-through that renders children
+  const TamaguiProvider = jest.fn(({ children }) => children || null);
+  TamaguiProvider.displayName = 'MockTamaguiProvider';
+
+  // Mock configuration factory functions
+  const createFont = jest.fn(() => ({}));
+  const createTamagui = jest.fn(() => ({}));
+
+  return {
+    __esModule: true,
+    styled,
+    Button,
+    XStack,
+    YStack,
+    ZStack,
+    Text,
+    View,
+    ScrollView,
+    Spinner,
+    Image,
+    Card,
+    Separator,
+    TextArea,
+    Input,
+    Anchor,
+    Select,
+    Sheet,
+    Adapt,
+    TamaguiProvider,
+    createFont,
+    createTamagui,
+    // Provide default exports for other common components
+    default: jest.fn(() => null),
+  };
+});
+
+// Mock Tamagui lucide icons to simple components to avoid theme context
+jest.mock('@tamagui/lucide-icons', () => {
+  // Avoid requiring React to prevent nested require memory issues
+  // Return mock components that can be queried by testID
+  const makeIcon = name => {
+    // Use a mock element tag that React can render
+    const Icon = props => ({
+      $$typeof: Symbol.for('react.element'),
+      type: `mock-icon-${name}`,
+      props: { testID: `icon-${name}`, ...props },
+      key: null,
+      ref: null,
+    });
+    Icon.displayName = `MockIcon(${name})`;
+    return Icon;
+  };
+  return {
+    __esModule: true,
+    ExternalLink: makeIcon('external-link'),
+    X: makeIcon('x'),
+    Clipboard: makeIcon('clipboard'),
+  };
+});
+
+// Mock WebViewFooter to avoid SDK rendering complexity
+jest.mock('@/components/WebViewFooter', () => {
+  // Avoid requiring React to prevent nested require memory issues
+  const WebViewFooter = jest.fn(() => null);
+  return { __esModule: true, WebViewFooter };
+});

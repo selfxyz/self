@@ -15,11 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
 
-import { BodyText } from '@/components/typography/BodyText';
-import type { RootStackParamList } from '@/navigation';
-import { useProofHistoryStore } from '@/stores/proofHistoryStore';
-import type { ProofHistory } from '@/stores/proofTypes';
-import { ProofStatus } from '@/stores/proofTypes';
+import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
   blue100,
@@ -30,9 +26,14 @@ import {
   slate300,
   slate500,
   white,
-} from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
-import { dinot } from '@/utils/fonts';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+
+import type { RootStackParamList } from '@/navigation';
+import { useProofHistoryStore } from '@/stores/proofHistoryStore';
+import type { ProofHistory } from '@/stores/proofTypes';
+import { ProofStatus } from '@/stores/proofTypes';
+import { extraYPadding } from '@/utils/styleUtils';
 
 type Section = {
   title: string;
@@ -238,10 +239,12 @@ const ProofHistoryScreen: React.FC = () => {
                     />
                   )}
                   <YStack flex={1}>
-                    <BodyText fontSize={20} color={black} fontWeight="500">
+                    <BodyText
+                      style={{ fontSize: 20, color: black, fontWeight: '500' }}
+                    >
                       {item.appName}
                     </BodyText>
-                    <BodyText color={slate300} gap={2} fontSize={14}>
+                    <BodyText style={{ color: slate300, fontSize: 14 }}>
                       {formatDate(item.timestamp)}
                     </BodyText>
                   </YStack>

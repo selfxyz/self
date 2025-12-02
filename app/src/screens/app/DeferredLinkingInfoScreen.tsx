@@ -6,12 +6,15 @@ import React from 'react';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
+import {
+  Description,
+  PrimaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import { confirmTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, white } from '@/utils/colors';
-import { confirmTap } from '@/utils/haptic';
 
 const DeferredLinkingInfoScreen: React.FC = () => {
   const navigation = useNavigation();

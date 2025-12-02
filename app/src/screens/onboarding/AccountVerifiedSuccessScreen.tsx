@@ -7,18 +7,20 @@ import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
+import {
+  Description,
+  PrimaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { DelayedLottieView } from '@/components/DelayedLottieView';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
+import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { styles } from '@/screens/verification/ProofRequestStatusScreen';
-import { black, white } from '@/utils/colors';
-import { buttonTap } from '@/utils/haptic';
 
 const AccountVerifiedSuccessScreen: React.FC = ({}) => {
   const navigation =
@@ -56,7 +58,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
           trackEvent={BackupEvents.ACCOUNT_VERIFICATION_COMPLETED}
           onPress={() => {
             buttonTap();
-            navigation.navigate('Home');
+            navigation.navigate({ name: 'Home', params: {} });
           }}
         >
           Continue

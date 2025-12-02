@@ -7,11 +7,12 @@ import { Linking, Platform } from 'react-native';
 
 import { SettingsEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
+import { apiPingUrl } from '@/consts/links';
 import { useModal } from '@/hooks/useModal';
 import { useNetInfo } from '@/hooks/useNetInfo';
 import { navigationRef } from '@/navigation';
+import analytics from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
-import analytics from '@/utils/analytics';
 
 const { trackEvent } = analytics();
 
@@ -34,7 +35,7 @@ const connectionModalParams = {
 
 export default function useConnectionModal() {
   const { isConnected, isInternetReachable } = useNetInfo({
-    reachabilityUrl: 'https://api.self.xyz/ping',
+    reachabilityUrl: apiPingUrl,
   });
   const { showModal, dismissModal, visible } = useModal(connectionModalParams);
   //isConnected and isInternetReachable can be null for unknown state

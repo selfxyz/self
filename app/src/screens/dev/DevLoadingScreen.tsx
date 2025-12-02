@@ -11,13 +11,13 @@ import type {
   provingMachineCircuitType,
   ProvingStateType,
 } from '@selfxyz/mobile-sdk-alpha';
+import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
+import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
+import { slate200, slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import failAnimation from '@/assets/animations/loading/fail.json';
-import proveLoadingAnimation from '@/assets/animations/loading/prove.json';
-import LoadingUI from '@/components/loading/LoadingUI';
-import { slate200, slate500 } from '@/utils/colors';
-import { dinot } from '@/utils/fonts';
-import { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';
+import LoadingUI from '@/components/LoadingUI';
+import { getLoadingScreenText } from '@/proving/loadingScreenStateText';
 
 const allProvingStates = [
   'idle',

@@ -12,9 +12,12 @@ interface UserState {
   deepLinkNationality?: IdDocInput['nationality'];
   deepLinkBirthDate?: string;
   deepLinkGender?: string;
+  deepLinkReferrer?: string;
   idDetailsDocumentId?: string;
+  registeredReferrers: Set<string>;
   update: (patch: Partial<UserState>) => void;
   setIdDetailsDocumentId: (documentId: string) => void;
+  setDeepLinkReferrer: (referrer: string) => void;
   setDeepLinkUserDetails: (details: {
     name?: string;
     surname?: string;
@@ -23,15 +26,20 @@ interface UserState {
     gender?: string;
   }) => void;
   clearDeepLinkUserDetails: () => void;
+  clearDeepLinkReferrer: () => void;
+  isReferrerRegistered: (referrer: string) => boolean;
+  markReferrerAsRegistered: (referrer: string) => void;
 }
 
-const useUserStore = create<UserState>((set, _get) => ({
+const useUserStore = create<UserState>((set, get) => ({
   deepLinkName: undefined,
   deepLinkSurname: undefined,
   deepLinkNationality: undefined,
   deepLinkBirthDate: undefined,
   deepLinkGender: undefined,
   idDetailsDocumentId: undefined,
+  deepLinkReferrer: undefined,
+  registeredReferrers: new Set<string>(),
 
   update: patch => {
     set(state => ({ ...state, ...patch }));
@@ -56,6 +64,23 @@ const useUserStore = create<UserState>((set, _get) => ({
       deepLinkNationality: undefined,
       deepLinkBirthDate: undefined,
       deepLinkGender: undefined,
+    }),
+
+  setDeepLinkReferrer: (referrer: string) =>
+    set({ deepLinkReferrer: referrer }),
+
+  clearDeepLinkReferrer: () => set({ deepLinkReferrer: undefined }),
+
+  isReferrerRegistered: (referrer: string) => {
+    const state = get();
+    return state.registeredReferrers.has(referrer.toLowerCase());
+  },
+
+  markReferrerAsRegistered: (referrer: string) =>
+    set(state => {
+      const newSet = new Set(state.registeredReferrers);
+      newSet.add(referrer.toLowerCase());
+      return { registeredReferrers: newSet };
     }),
 }));
 

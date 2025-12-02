@@ -2,30 +2,34 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
-import { Text } from 'react-native';
+import type { ReactNode } from 'react';
 import { render } from '@testing-library/react-native';
 
-const mockTrackNfcEvent = jest.fn();
-const mockFlushAllAnalytics = jest.fn();
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { captureException } from '@/config/sentry';
+import { flushAllAnalytics, trackNfcEvent } from '@/services/analytics';
 
-jest.doMock('@/utils/analytics', () => ({
-  trackNfcEvent: mockTrackNfcEvent,
-  flushAllAnalytics: mockFlushAllAnalytics,
+jest.mock('@/services/analytics', () => ({
+  trackNfcEvent: jest.fn(),
+  flushAllAnalytics: jest.fn(),
 }));
-jest.mock('@/Sentry', () => ({
+
+jest.mock('@/config/sentry', () => ({
   captureException: jest.fn(),
 }));
 
-// Import after mocks are set up
-const ErrorBoundary = require('@/components/ErrorBoundary').default;
-const { captureException } = require('@/Sentry');
-
+const MockText = ({
+  children,
+  testID,
+}: {
+  children?: ReactNode;
+  testID?: string;
+}) => <mock-text testID={testID}>{children}</mock-text>;
 const ProblemChild = () => {
   throw new Error('boom');
 };
 
-const GoodChild = () => <Text>Good child</Text>;
+const GoodChild = () => <MockText testID="good-child">Good child</MockText>;
 
 describe('ErrorBoundary', () => {
   beforeEach(() => {
@@ -82,21 +86,21 @@ describe('ErrorBoundary', () => {
     );
 
     consoleError.mockRestore();
-    expect(mockTrackNfcEvent).toHaveBeenCalledWith('error_boundary', {
+    expect(trackNfcEvent).toHaveBeenCalledWith('error_boundary', {
       message: 'boom',
       stack: expect.any(String),
     });
-    expect(mockFlushAllAnalytics).toHaveBeenCalled();
+    expect(flushAllAnalytics).toHaveBeenCalled();
   });
 
   it('renders children normally when no error occurs', () => {
-    const { getByText } = render(
+    const { getByTestId } = render(
       <ErrorBoundary>
         <GoodChild />
       </ErrorBoundary>,
     );
 
-    expect(getByText('Good child')).toBeTruthy();
+    expect(getByTestId('good-child')).toHaveTextContent('Good child');
   });
 
   it('captures error details correctly', () => {

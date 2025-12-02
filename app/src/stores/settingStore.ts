@@ -24,6 +24,17 @@ interface PersistedSettingsState {
   setKeychainMigrationCompleted: () => void;
   fcmToken: string | null;
   setFcmToken: (token: string | null) => void;
+  turnkeyBackupEnabled: boolean;
+  setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
+  subscribedTopics: string[];
+  setSubscribedTopics: (topics: string[]) => void;
+  addSubscribedTopic: (topic: string) => void;
+  removeSubscribedTopic: (topic: string) => void;
+  hasCompletedBackupForPoints: boolean;
+  setBackupForPointsCompleted: () => void;
+  resetBackupForPoints: () => void;
+  pointsAddress: string | null;
+  setPointsAddress: (address: string | null) => void;
 }
 
 interface NonPersistedSettingsState {
@@ -78,6 +89,30 @@ export const useSettingStore = create<SettingsState>()(
         set({ hasCompletedKeychainMigration: true }),
       fcmToken: null,
       setFcmToken: (token: string | null) => set({ fcmToken: token }),
+      subscribedTopics: [],
+      setSubscribedTopics: (topics: string[]) =>
+        set({ subscribedTopics: topics }),
+      addSubscribedTopic: (topic: string) =>
+        set(state => ({
+          subscribedTopics: Array.from(
+            new Set([...state.subscribedTopics, topic]),
+          ),
+        })),
+      removeSubscribedTopic: (topic: string) =>
+        set(state => ({
+          subscribedTopics: state.subscribedTopics.filter(t => t !== topic),
+        })),
+
+      turnkeyBackupEnabled: false,
+      setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) =>
+        set({ turnkeyBackupEnabled }),
+      hasCompletedBackupForPoints: false,
+      setBackupForPointsCompleted: () =>
+        set({ hasCompletedBackupForPoints: true }),
+      resetBackupForPoints: () => set({ hasCompletedBackupForPoints: false }),
+      pointsAddress: null,
+      setPointsAddress: (address: string | null) =>
+        set({ pointsAddress: address }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,

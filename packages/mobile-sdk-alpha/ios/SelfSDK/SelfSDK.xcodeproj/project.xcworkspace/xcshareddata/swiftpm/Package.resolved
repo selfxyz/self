@@ -1,5 +1,5 @@
 {
-  "originHash" : "641baa15781d19846454d9bf0c82bbd4020f7c0ca0a706e8dfce02af0ac4b003",
+  "originHash" : "9e9f8024def4f5539798bdf76ea3c74e3b0feb60a8c213a8a90e176a2c5908db",
   "pins" : [
     {
       "identity" : "mixpanel-swift",
@@ -12,8 +12,8 @@
     },
     {
       "identity" : "nfcpassportreader",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/seshanthS/NFCPassportReader",
+      "kind" : "localSourceControl",
+      "location" : "/Users/seshanth/code/self/self-temp/packages/mobile-sdk-alpha/NFCPassportReader",
       "state" : {
         "revision" : "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
       }

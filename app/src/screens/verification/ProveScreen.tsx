@@ -24,24 +24,31 @@ import { Eye, EyeOff } from '@tamagui/lucide-icons';
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import miscAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
+import {
+  BodyText,
+  Caption,
+  HeldPrimaryButtonProveScreen,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate300,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import miscAnimation from '@/assets/animations/loading/misc.json';
-import { HeldPrimaryButtonProveScreen } from '@/components/buttons/HeldPrimaryButtonProveScreen';
 import Disclosures from '@/components/Disclosures';
-import { BodyText } from '@/components/typography/BodyText';
-import { Caption } from '@/components/typography/Caption';
+import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import {
   setDefaultDocumentTypeIfNeeded,
   usePassport,
 } from '@/providers/passportDataProvider';
+import { getPointsAddress } from '@/services/points';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
-import { black, slate300, white } from '@/utils/colors';
 import { formatUserId } from '@/utils/formatUserId';
-import { buttonTap } from '@/utils/haptic';
 
 const ProveScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -81,11 +88,12 @@ const ProveScreen: React.FC = () => {
           sessionId: provingStore.uuid!,
           userId: selectedApp.userId,
           userIdType: selectedApp.userIdType,
+          endpoint: selectedApp.endpoint,
           endpointType: selectedApp.endpointType,
           status: ProofStatus.PENDING,
           logoBase64: selectedApp.logoBase64,
           disclosures: JSON.stringify(selectedApp.disclosures),
-          documentId: selectedDocumentId || '', // Fallback to empty if none selected
+          documentId: selectedDocumentId || '',
         });
       }
     };
@@ -112,6 +120,29 @@ const ProveScreen: React.FC = () => {
     }
     selectedAppRef.current = selectedApp;
   }, [selectedApp, isFocused, provingStore, selfClient]);
+
+  // Enhance selfApp with user's points address if not already set
+  useEffect(() => {
+    console.log('useEffect selectedApp', selectedApp);
+    if (!selectedApp || selectedApp.selfDefinedData) {
+      return;
+    }
+
+    const enhanceApp = async () => {
+      const address = await getPointsAddress();
+
+      // Only update if still the same session
+      if (selectedAppRef.current?.sessionId === selectedApp.sessionId) {
+        console.log('enhancing app with points address', address);
+        selfClient.getSelfAppState().setSelfApp({
+          ...selectedApp,
+          selfDefinedData: address.toLowerCase(),
+        });
+      }
+    };
+
+    enhanceApp();
+  }, [selectedApp, selfClient]);
 
   const disclosureOptions = useMemo(() => {
     return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];
@@ -233,17 +264,21 @@ const ProveScreen: React.FC = () => {
                 <Image
                   marginBottom={20}
                   source={logoSource}
-                  width={100}
-                  height={100}
+                  width={64}
+                  height={64}
                   objectFit="contain"
                 />
               )}
-              <BodyText fontSize={12} color={slate300} marginBottom={20}>
+              <BodyText
+                style={{ fontSize: 12, color: slate300, marginBottom: 20 }}
+              >
                 {url}
               </BodyText>
-              <BodyText fontSize={24} color={slate300} textAlign="center">
+              <BodyText
+                style={{ fontSize: 24, color: slate300, textAlign: 'center' }}
+              >
                 <Text color={white}>{selectedApp.appName}</Text> is requesting
-                that you prove the following information:
+                you to prove the following information:
               </BodyText>
             </YStack>
           )}
@@ -267,10 +302,12 @@ const ProveScreen: React.FC = () => {
           {formattedUserId && (
             <View marginTop={20} paddingHorizontal={20}>
               <BodyText
-                fontSize={16}
-                color={black}
-                fontWeight="600"
-                marginBottom={10}
+                style={{
+                  fontSize: 16,
+                  color: black,
+                  fontWeight: '600',
+                  marginBottom: 10,
+                }}
               >
                 {selectedApp?.userIdType === 'hex'
                   ? 'Connected Wallet'
@@ -294,15 +331,16 @@ const ProveScreen: React.FC = () => {
                       marginRight={selectedApp?.userIdType === 'hex' ? 12 : 0}
                     >
                       <BodyText
-                        fontSize={14}
-                        color={black}
-                        lineHeight={20}
-                        fontFamily={
-                          showFullAddress && selectedApp?.userIdType === 'hex'
-                            ? 'monospace'
-                            : 'normal'
-                        }
-                        flexWrap={showFullAddress ? 'wrap' : 'nowrap'}
+                        style={{
+                          fontSize: 14,
+                          color: black,
+                          lineHeight: 20,
+                          ...(showFullAddress &&
+                          selectedApp?.userIdType === 'hex'
+                            ? { fontFamily: 'monospace' }
+                            : {}),
+                          flexWrap: showFullAddress ? 'wrap' : 'nowrap',
+                        }}
                       >
                         {selectedApp?.userIdType === 'hex' && showFullAddress
                           ? selectedApp.userId
@@ -321,10 +359,12 @@ const ProveScreen: React.FC = () => {
                   </XStack>
                   {selectedApp?.userIdType === 'hex' && (
                     <BodyText
-                      fontSize={12}
-                      color={black}
-                      opacity={0.6}
-                      marginTop={4}
+                      style={{
+                        fontSize: 12,
+                        color: black,
+                        opacity: 0.6,
+                        marginTop: 4,
+                      }}
                     >
                       {showFullAddress
                         ? 'Tap to hide address'
@@ -340,10 +380,12 @@ const ProveScreen: React.FC = () => {
           {selectedApp?.userDefinedData && (
             <View marginTop={20} paddingHorizontal={20}>
               <BodyText
-                fontSize={16}
-                color={black}
-                fontWeight="600"
-                marginBottom={10}
+                style={{
+                  fontSize: 16,
+                  color: black,
+                  fontWeight: '600',
+                  marginBottom: 10,
+                }}
               >
                 Additional Information:
               </BodyText>
@@ -353,7 +395,9 @@ const ProveScreen: React.FC = () => {
                 borderRadius={8}
                 marginBottom={10}
               >
-                <BodyText fontSize={14} color={black} lineHeight={20}>
+                <BodyText
+                  style={{ fontSize: 14, color: black, lineHeight: 20 }}
+                >
                   {selectedApp.userDefinedData}
                 </BodyText>
               </View>
@@ -362,12 +406,14 @@ const ProveScreen: React.FC = () => {
 
           <View marginTop={20}>
             <Caption
-              textAlign="center"
-              size="small"
-              marginBottom={20}
-              marginTop={10}
-              borderRadius={4}
-              paddingBottom={20}
+              style={{
+                textAlign: 'center',
+                fontSize: 12,
+                marginBottom: 20,
+                marginTop: 10,
+                borderRadius: 4,
+                paddingBottom: 20,
+              }}
             >
               Self will confirm that these details are accurate and none of your
               confidential info will be revealed to {selectedApp?.appName}

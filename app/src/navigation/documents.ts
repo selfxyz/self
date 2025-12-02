@@ -4,7 +4,9 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import { AadhaarNavBar, IdDetailsNavBar } from '@/components/NavBar';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import { AadhaarNavBar, IdDetailsNavBar } from '@/components/navbar';
 import AadhaarUploadedSuccessScreen from '@/screens/documents/aadhaar/AadhaarUploadedSuccessScreen';
 import AadhaarUploadErrorScreen from '@/screens/documents/aadhaar/AadhaarUploadErrorScreen';
 import AadhaarUploadScreen from '@/screens/documents/aadhaar/AadhaarUploadScreen';
@@ -20,7 +22,6 @@ import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongi
 import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
 import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
 import IDPickerScreen from '@/screens/documents/selection/IDPickerScreen';
-import { black, white } from '@/utils/colors';
 
 const documentsScreens = {
   DocumentCamera: {

@@ -3,8 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useCallback } from 'react';
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { View } from 'tamagui';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 

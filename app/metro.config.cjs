@@ -66,11 +66,18 @@ const config = {
       new RegExp('packages/mobile-sdk-alpha/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/|$)'),
+      new RegExp(
+        'packages/mobile-sdk-alpha/node_modules/lottie-react-native(/|$)',
+      ),
       new RegExp('packages/mobile-sdk-alpha/node_modules/scheduler(/|$)'),
+      new RegExp(
+        'packages/mobile-sdk-alpha/node_modules/react-native-svg(/|$)',
+      ),
       new RegExp('packages/mobile-sdk-demo/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-native(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/scheduler(/|$)'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/react-native-svg(/|$)'),
     ],
     // Enable automatic workspace package resolution
     enableGlobalPackages: true,
@@ -95,6 +102,10 @@ const config = {
       assert: require.resolve('assert'),
       events: require.resolve('events'),
       process: require.resolve('process'),
+      'react-native-svg': path.resolve(
+        projectRoot,
+        'node_modules/react-native-svg',
+      ),
       // App-specific alias
       '@': path.join(__dirname, 'src'),
     },
@@ -180,6 +191,73 @@ const config = {
       }
 
       // Handle problematic package exports and Node.js modules
+
+      // Fix @turnkey/encoding to use CommonJS instead of ESM
+      if (moduleName === '@turnkey/encoding') {
+        const filePath = path.resolve(
+          projectRoot,
+          'node_modules/@turnkey/encoding/dist/index.js',
+        );
+        return {
+          type: 'sourceFile',
+          filePath,
+        };
+      }
+
+      // Fix @turnkey/encoding submodules to use CommonJS
+      if (moduleName.startsWith('@turnkey/encoding/')) {
+        const subpath = moduleName.replace('@turnkey/encoding/', '');
+        const filePath = path.resolve(
+          projectRoot,
+          `node_modules/@turnkey/encoding/dist/${subpath}.js`,
+        );
+        return {
+          type: 'sourceFile',
+          filePath,
+        };
+      }
+
+      // Fix @turnkey/api-key-stamper to use CommonJS instead of ESM
+      if (moduleName === '@turnkey/api-key-stamper') {
+        const filePath = path.resolve(
+          projectRoot,
+          'node_modules/@turnkey/api-key-stamper/dist/index.js',
+        );
+        return {
+          type: 'sourceFile',
+          filePath,
+        };
+      }
+
+      // Fix @turnkey/api-key-stamper dynamic imports by resolving submodules statically
+      if (moduleName.startsWith('@turnkey/api-key-stamper/')) {
+        const subpath = moduleName.replace('@turnkey/api-key-stamper/', '');
+        const filePath = path.resolve(
+          projectRoot,
+          `node_modules/@turnkey/api-key-stamper/dist/${subpath}`,
+        );
+        return {
+          type: 'sourceFile',
+          filePath,
+        };
+      }
+
+      // Fix viem dynamic import resolution
+      if (moduleName === 'viem') {
+        try {
+          // Viem uses package exports, so we need to resolve to the actual file path
+          const viemPath = path.resolve(
+            projectRoot,
+            'node_modules/viem/_cjs/index.js',
+          );
+          return {
+            type: 'sourceFile',
+            filePath: viemPath,
+          };
+        } catch (error) {
+          console.warn('Failed to resolve viem:', error);
+        }
+      }
 
       // Fix @tamagui/config v2-native export resolution
       if (moduleName === '@tamagui/config/v2-native') {

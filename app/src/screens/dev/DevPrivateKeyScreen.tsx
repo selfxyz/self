@@ -6,9 +6,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, Text, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 
+import {
+  black,
+  slate50,
+  slate200,
+  teal500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import { confirmTap } from '@/integrations/haptics';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
-import { black, slate50, slate200, teal500, white } from '@/utils/colors';
-import { confirmTap } from '@/utils/haptic';
 
 const DevPrivateKeyScreen: React.FC = () => {
   const [privateKey, setPrivateKey] = useState<string | null>(

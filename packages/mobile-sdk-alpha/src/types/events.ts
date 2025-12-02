@@ -5,8 +5,18 @@
 import type { DocumentCategory } from '@selfxyz/common';
 
 import type { NFCScanContext, ProofContext } from '../proving/internal/logging';
-import type { LogLevel, Progress } from './public';
+import type { LogLevel, Progress } from './base';
 
+/**
+ * SDK lifecycle events emitted by {@link SelfClient}. Events are dispatched
+ * synchronously to listeners in registration order. If a listener throws an
+ * error, the SDK logs a sanitized/redacted summary (never PII or secrets)
+ * and continues dispatching to remaining listeners.
+ *
+ * **Security:** Host apps should likewise sanitize errors from their listeners
+ * before logging. Redact sensitive fields (MRZ, names, DOB, passport numbers,
+ * keys, tokens) and retain only non-sensitive diagnostic details.
+ */
 export enum SdkEvents {
   /**
    * Emitted when an error occurs during SDK operations, including timeouts.
@@ -138,8 +148,30 @@ export enum SdkEvents {
    * **Recommended:** This event is triggered when MRZ data validation fails (invalid format, missing fields, etc.).
    */
   DOCUMENT_MRZ_READ_FAILURE = 'DOCUMENT_MRZ_READ_FAILURE',
+
+  /**
+   * Emitted when document NFC scan is successful and ready for confirmation.
+   *
+   * **Required:** Navigate to the ConfirmIdentification screen to continue the verification process.
+   * **Recommended:** This event is triggered after successful NFC data extraction and validation.
+   */
+  DOCUMENT_NFC_SCAN_SUCCESS = 'DOCUMENT_NFC_SCAN_SUCCESS',
+
+  /**
+   * Emitted when the user confirms ownership of the document being registered.
+   *
+   * **Required:** Proceed with the document proving process after receiving this event.
+   * **Recommended:** Use this time to ensure permissions for notifications are granted,
+   *
+   */
+  DOCUMENT_OWNERSHIP_CONFIRMED = 'DOCUMENT_OWNERSHIP_CONFIRMED',
 }
 
+/**
+ * Maps event names to their payload types. Enables type-safe event handlers
+ * and provides structured data like NFC scan diagnostics or proof errors.
+ * Events with undefined payloads carry no additional data.
+ */
 export interface SDKEventMap {
   [SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND]: undefined;
   [SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS]: undefined;
@@ -160,7 +192,6 @@ export interface SDKEventMap {
     documentType: string;
     documentName: string;
     countryCode: string;
-    countryName: string;
   };
   [SdkEvents.PROVING_BEGIN_GENERATION]: {
     uuid: string;
@@ -186,6 +217,16 @@ export interface SDKEventMap {
   };
   [SdkEvents.DOCUMENT_MRZ_READ_SUCCESS]: undefined;
   [SdkEvents.DOCUMENT_MRZ_READ_FAILURE]: undefined;
+  [SdkEvents.DOCUMENT_NFC_SCAN_SUCCESS]: undefined;
+  [SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED]: {
+    documentCategory?: DocumentCategory;
+    signatureAlgorithm?: string;
+    curveOrExponent?: string;
+  };
 }
 
+/**
+ * Event names supported by {@link SelfClient.on}. Use specific event literals
+ * when subscribing to get accurate payload types from {@link SDKEventMap}.
+ */
 export type SDKEvent = keyof SDKEventMap;

@@ -8,18 +8,20 @@ import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
+import {
+  Caution,
+  PrimaryButton,
+  SubHeader,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import warningAnimation from '@/assets/animations/warning.json';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { DelayedLottieView } from '@/components/DelayedLottieView';
-import Caution from '@/components/typography/Caution';
-import { SubHeader } from '@/components/typography/SubHeader';
+import { confirmTap, notificationWarning } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useSettingStore } from '@/stores/settingStore';
-import { black, white } from '@/utils/colors';
-import { confirmTap, notificationWarning } from '@/utils/haptic';
 
 const DisclaimerScreen: React.FC = () => {
   const navigation =
@@ -61,7 +63,7 @@ const DisclaimerScreen: React.FC = () => {
             onPress={() => {
               confirmTap();
               dismissPrivacyNote();
-              navigation.navigate('Home');
+              navigation.navigate({ name: 'Home', params: {} });
             }}
           >
             Dismiss

@@ -1,163 +1,205 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import { RegisterVerifierId, DscVerifierId } from "@selfxyz/common";
-import * as fs from "fs";
-import * as path from "path";
 
-const deployVerifiers = {
-  vcAndDiscloseVerifier: false,
-  vcAndDiscloseIdVerifier: false,
-  registerIdVerifier: false,
-  registerVerifier: true,
-  dscVerifier: false,
+// All circuit names as a union type
+export type CircuitName =
+  | "register_sha256_sha256_sha256_rsa_65537_4096"
+  | "register_sha256_sha256_sha256_ecdsa_brainpoolP384r1"
+  | "register_sha256_sha256_sha256_ecdsa_secp256r1"
+  | "register_sha256_sha256_sha256_ecdsa_secp384r1"
+  | "register_sha256_sha256_sha256_rsa_3_4096"
+  | "register_sha256_sha256_sha256_rsapss_3_32_2048"
+  | "register_sha256_sha256_sha256_rsapss_65537_32_2048"
+  | "register_sha256_sha256_sha256_rsapss_65537_32_3072"
+  | "register_sha384_sha384_sha384_ecdsa_brainpoolP384r1"
+  | "register_sha384_sha384_sha384_ecdsa_brainpoolP512r1"
+  | "register_sha384_sha384_sha384_ecdsa_secp384r1"
+  | "register_sha512_sha512_sha512_ecdsa_brainpoolP512r1"
+  | "register_sha512_sha512_sha512_rsa_65537_4096"
+  | "register_sha512_sha512_sha512_rsapss_65537_64_2048"
+  | "register_sha1_sha1_sha1_rsa_65537_4096"
+  | "register_sha1_sha256_sha256_rsa_65537_4096"
+  | "register_sha224_sha224_sha224_ecdsa_brainpoolP224r1"
+  | "register_sha256_sha224_sha224_ecdsa_secp224r1"
+  | "register_sha256_sha256_sha256_ecdsa_brainpoolP256r1"
+  | "register_sha1_sha1_sha1_ecdsa_brainpoolP224r1"
+  | "register_sha384_sha384_sha384_rsapss_65537_48_2048"
+  | "register_sha1_sha1_sha1_ecdsa_secp256r1"
+  | "register_sha256_sha256_sha256_rsapss_65537_64_2048"
+  | "register_sha512_sha512_sha256_rsa_65537_4096"
+  | "register_sha512_sha512_sha512_ecdsa_secp521r1"
+  | "register_id_sha256_sha256_sha256_rsa_65537_4096"
+  | "register_sha256_sha256_sha224_ecdsa_secp224r1"
+  | "register_id_sha1_sha1_sha1_ecdsa_brainpoolP224r1"
+  | "register_id_sha1_sha1_sha1_ecdsa_secp256r1"
+  | "register_id_sha1_sha1_sha1_rsa_65537_4096"
+  | "register_id_sha1_sha256_sha256_rsa_65537_4096"
+  | "register_id_sha224_sha224_sha224_ecdsa_brainpoolP224r1"
+  | "register_id_sha256_sha224_sha224_ecdsa_secp224r1"
+  | "register_id_sha256_sha256_sha224_ecdsa_secp224r1"
+  | "register_id_sha256_sha256_sha256_ecdsa_brainpoolP256r1"
+  | "register_id_sha256_sha256_sha256_ecdsa_brainpoolP384r1"
+  | "register_id_sha256_sha256_sha256_ecdsa_secp256r1"
+  | "register_id_sha256_sha256_sha256_ecdsa_secp384r1"
+  | "register_id_sha256_sha256_sha256_rsa_3_4096"
+  | "register_id_sha256_sha256_sha256_rsapss_3_32_2048"
+  | "register_id_sha256_sha256_sha256_rsapss_65537_32_2048"
+  | "register_id_sha256_sha256_sha256_rsapss_65537_32_3072"
+  | "register_id_sha256_sha256_sha256_rsapss_65537_64_2048"
+  | "register_id_sha384_sha384_sha384_ecdsa_brainpoolP384r1"
+  | "register_id_sha384_sha384_sha384_ecdsa_brainpoolP512r1"
+  | "register_id_sha384_sha384_sha384_ecdsa_secp384r1"
+  | "register_id_sha384_sha384_sha384_rsapss_65537_48_2048"
+  | "register_id_sha512_sha512_sha256_rsa_65537_4096"
+  | "register_id_sha512_sha512_sha512_ecdsa_brainpoolP512r1"
+  | "register_id_sha512_sha512_sha512_ecdsa_secp521r1"
+  | "register_id_sha512_sha512_sha512_rsa_65537_4096"
+  | "register_id_sha512_sha512_sha512_rsapss_65537_64_2048"
+  | "register_aadhaar"
+  | "register_sha1_sha1_sha1_rsa_64321_4096"
+  | "register_sha256_sha1_sha1_rsa_65537_4096"
+  | "register_sha256_sha256_sha256_rsapss_65537_32_4096"
+  | "register_id_sha512_sha512_sha256_rsapss_65537_32_2048"
+  | "register_sha512_sha512_sha256_rsapss_65537_32_2048"
+  | "dsc_sha1_ecdsa_brainpoolP256r1"
+  | "dsc_sha1_rsa_65537_4096"
+  | "dsc_sha256_ecdsa_brainpoolP256r1"
+  | "dsc_sha256_ecdsa_brainpoolP384r1"
+  | "dsc_sha256_ecdsa_secp256r1"
+  | "dsc_sha256_ecdsa_secp384r1"
+  | "dsc_sha256_ecdsa_secp521r1"
+  | "dsc_sha256_rsa_65537_4096"
+  | "dsc_sha256_rsapss_3_32_3072"
+  | "dsc_sha256_rsapss_65537_32_3072"
+  | "dsc_sha256_rsapss_65537_32_4096"
+  | "dsc_sha384_ecdsa_brainpoolP384r1"
+  | "dsc_sha384_ecdsa_brainpoolP512r1"
+  | "dsc_sha384_ecdsa_secp384r1"
+  | "dsc_sha512_ecdsa_brainpoolP512r1"
+  | "dsc_sha512_ecdsa_secp521r1"
+  | "dsc_sha512_rsa_65537_4096"
+  | "dsc_sha512_rsapss_65537_64_4096"
+  // | "dsc_sha256_rsapss_3_32_4096"
+  | "dsc_sha1_ecdsa_secp256r1"
+  | "dsc_sha256_rsa_107903_4096"
+  | "dsc_sha256_rsa_122125_4096"
+  | "dsc_sha256_rsa_130689_4096"
+  | "dsc_sha256_rsa_56611_4096"
+  | "vc_and_disclose"
+  | "vc_and_disclose_id"
+  | "vc_and_disclose_aadhaar";
+
+// Record mapping circuit names to numbers
+export const circuitIds: Record<CircuitName, [boolean, number]> = {
+  register_sha256_sha256_sha256_rsa_65537_4096: [true, 0],
+  register_sha256_sha256_sha256_ecdsa_brainpoolP384r1: [true, 1],
+  register_sha256_sha256_sha256_ecdsa_secp256r1: [true, 2],
+  register_sha256_sha256_sha256_ecdsa_secp384r1: [true, 3],
+  register_sha256_sha256_sha256_rsa_3_4096: [true, 4],
+  register_sha256_sha256_sha256_rsapss_3_32_2048: [true, 5],
+  register_sha256_sha256_sha256_rsapss_65537_32_2048: [true, 6],
+  register_sha256_sha256_sha256_rsapss_65537_32_3072: [true, 7],
+  register_sha384_sha384_sha384_ecdsa_brainpoolP384r1: [true, 8],
+  register_sha384_sha384_sha384_ecdsa_brainpoolP512r1: [true, 9],
+  register_sha384_sha384_sha384_ecdsa_secp384r1: [true, 10],
+  register_sha512_sha512_sha512_ecdsa_brainpoolP512r1: [true, 11],
+  register_sha512_sha512_sha512_rsa_65537_4096: [true, 12],
+  register_sha512_sha512_sha512_rsapss_65537_64_2048: [true, 13],
+  register_sha1_sha1_sha1_rsa_65537_4096: [true, 14],
+  register_sha1_sha256_sha256_rsa_65537_4096: [true, 15],
+  register_sha224_sha224_sha224_ecdsa_brainpoolP224r1: [true, 16],
+  register_sha256_sha224_sha224_ecdsa_secp224r1: [true, 17],
+  register_sha256_sha256_sha256_ecdsa_brainpoolP256r1: [true, 18],
+  register_sha1_sha1_sha1_ecdsa_brainpoolP224r1: [true, 19],
+  register_sha384_sha384_sha384_rsapss_65537_48_2048: [true, 20],
+  register_sha1_sha1_sha1_ecdsa_secp256r1: [true, 21],
+  register_sha256_sha256_sha256_rsapss_65537_64_2048: [true, 22],
+  register_sha512_sha512_sha256_rsa_65537_4096: [true, 23],
+  register_sha512_sha512_sha512_ecdsa_secp521r1: [true, 24],
+  register_id_sha256_sha256_sha256_rsa_65537_4096: [true, 25],
+  register_sha256_sha256_sha224_ecdsa_secp224r1: [true, 26],
+  register_id_sha1_sha1_sha1_ecdsa_brainpoolP224r1: [true, 27],
+  register_id_sha1_sha1_sha1_ecdsa_secp256r1: [true, 28],
+  register_id_sha1_sha1_sha1_rsa_65537_4096: [true, 29],
+  register_id_sha1_sha256_sha256_rsa_65537_4096: [true, 30],
+  register_id_sha224_sha224_sha224_ecdsa_brainpoolP224r1: [true, 31],
+  register_id_sha256_sha224_sha224_ecdsa_secp224r1: [true, 32],
+  register_id_sha256_sha256_sha224_ecdsa_secp224r1: [true, 33],
+  register_id_sha256_sha256_sha256_ecdsa_brainpoolP256r1: [true, 34],
+  register_id_sha256_sha256_sha256_ecdsa_brainpoolP384r1: [true, 35],
+  register_id_sha256_sha256_sha256_ecdsa_secp256r1: [true, 36],
+  register_id_sha256_sha256_sha256_ecdsa_secp384r1: [true, 37],
+  register_id_sha256_sha256_sha256_rsa_3_4096: [true, 38],
+  register_id_sha256_sha256_sha256_rsapss_3_32_2048: [true, 39],
+  register_id_sha256_sha256_sha256_rsapss_65537_32_2048: [true, 40],
+  register_id_sha256_sha256_sha256_rsapss_65537_32_3072: [true, 41],
+  register_id_sha256_sha256_sha256_rsapss_65537_64_2048: [true, 42],
+  register_id_sha384_sha384_sha384_ecdsa_brainpoolP384r1: [true, 43],
+  register_id_sha384_sha384_sha384_ecdsa_brainpoolP512r1: [true, 44],
+  register_id_sha384_sha384_sha384_ecdsa_secp384r1: [true, 45],
+  register_id_sha384_sha384_sha384_rsapss_65537_48_2048: [true, 46],
+  register_id_sha512_sha512_sha256_rsa_65537_4096: [true, 47],
+  register_id_sha512_sha512_sha512_ecdsa_brainpoolP512r1: [true, 48],
+  register_id_sha512_sha512_sha512_ecdsa_secp521r1: [true, 49],
+  register_id_sha512_sha512_sha512_rsa_65537_4096: [true, 50],
+  register_id_sha512_sha512_sha512_rsapss_65537_64_2048: [true, 51],
+  register_aadhaar: [true, 52],
+  register_sha1_sha1_sha1_rsa_64321_4096: [true, 53],
+  register_sha256_sha1_sha1_rsa_65537_4096: [true, 54],
+  register_sha256_sha256_sha256_rsapss_65537_32_4096: [true, 55],
+  register_id_sha512_sha512_sha256_rsapss_65537_32_2048: [true, 56],
+  register_sha512_sha512_sha256_rsapss_65537_32_2048: [true, 57],
+
+  dsc_sha1_ecdsa_brainpoolP256r1: [true, 0],
+  dsc_sha1_rsa_65537_4096: [true, 1],
+  dsc_sha256_ecdsa_brainpoolP256r1: [true, 2],
+  dsc_sha256_ecdsa_brainpoolP384r1: [true, 3],
+  dsc_sha256_ecdsa_secp256r1: [true, 4],
+  dsc_sha256_ecdsa_secp384r1: [true, 5],
+  dsc_sha256_ecdsa_secp521r1: [true, 6],
+  dsc_sha256_rsa_65537_4096: [true, 7],
+  dsc_sha256_rsapss_3_32_3072: [true, 8],
+  dsc_sha256_rsapss_65537_32_3072: [true, 9],
+  dsc_sha256_rsapss_65537_32_4096: [true, 10],
+  dsc_sha384_ecdsa_brainpoolP384r1: [true, 11],
+  dsc_sha384_ecdsa_brainpoolP512r1: [true, 12],
+  dsc_sha384_ecdsa_secp384r1: [true, 13],
+  dsc_sha512_ecdsa_brainpoolP512r1: [true, 14],
+  dsc_sha512_ecdsa_secp521r1: [true, 15],
+  dsc_sha512_rsa_65537_4096: [true, 16],
+  dsc_sha512_rsapss_65537_64_4096: [true, 17],
+  // dsc_sha256_rsapss_3_32_4096: [true, 18],
+  dsc_sha1_ecdsa_secp256r1: [true, 19],
+  dsc_sha256_rsa_107903_4096: [true, 20],
+  dsc_sha256_rsa_122125_4096: [true, 21],
+  dsc_sha256_rsa_130689_4096: [true, 22],
+  dsc_sha256_rsa_56611_4096: [true, 23],
+
+  vc_and_disclose: [true, 24],
+  vc_and_disclose_id: [true, 25],
+  vc_and_disclose_aadhaar: [true, 26],
 };
 
-/**
- * Get enum keys (circuit names) excluding numeric values
- */
-function getEnumKeys<T extends Record<string, string | number>>(enumObject: T): string[] {
-  return Object.keys(enumObject).filter((key) => isNaN(Number(key)));
-}
-
-/**
- * Filter register circuits to get only register_id variants
- */
-function getRegisterIdCircuits(): string[] {
-  const allRegisterCircuits = getEnumKeys(RegisterVerifierId);
-  return allRegisterCircuits.filter((circuit) => circuit.startsWith("register_id_"));
-}
-
-/**
- * Filter register circuits to get only regular register variants (non-ID)
- */
-function getRegularRegisterCircuits(): string[] {
-  const allRegisterCircuits = getEnumKeys(RegisterVerifierId);
-  return allRegisterCircuits.filter(
-    (circuit) => circuit.startsWith("register_") && !circuit.startsWith("register_id_"),
-  );
-}
-
-/**
- * Check if a contract file exists
- */
-function contractExists(contractName: string): boolean {
-  const contractsDir = path.join(__dirname, "../../../contracts");
-  const possiblePaths = [
-    path.join(contractsDir, "verifiers/register", `${contractName}.sol`),
-    path.join(contractsDir, "verifiers/register_id", `${contractName}.sol`),
-    path.join(contractsDir, "verifiers/dsc", `${contractName}.sol`),
-    path.join(contractsDir, "verifiers/disclose", `${contractName}.sol`),
-    path.join(contractsDir, "verifiers", `${contractName}.sol`),
-  ];
-
-  return possiblePaths.some((filePath) => fs.existsSync(filePath));
-}
-
-/**
- * Sleep utility function
- */
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export default buildModule("DeployAllVerifiers", (m) => {
-  let successfulRegisterIdDeployments = 0;
-  let successfulRegisterDeployments = 0;
-  let successfulDscDeployments = 0;
-
-  const deployedContracts: Record<string, any> = {};
+  const deployments: Record<string, any> = {};
   let lastDeployedContract: any = null;
 
-  // Deploy VC and Disclose verifier
-  if (deployVerifiers.vcAndDiscloseVerifier) {
-    console.log("Deploying VC and Disclose verifier...");
-    deployedContracts.vcAndDiscloseVerifier = m.contract("Verifier_vc_and_disclose");
-    lastDeployedContract = deployedContracts.vcAndDiscloseVerifier;
-  }
+  for (const circuit of Object.keys(circuitIds) as CircuitName[]) {
+    const [shouldDeploy] = circuitIds[circuit];
 
-  // Deploy VC and Disclose ID verifier
-  if (deployVerifiers.vcAndDiscloseIdVerifier) {
-    console.log("Deploying VC and Disclose ID verifier...");
+    if (!shouldDeploy) {
+      console.log(`Skipping Verifier_${circuit}`);
+      continue;
+    }
+
+    const name = `Verifier_${circuit}`;
+    console.log(`Deploying ${name}...`);
+
+    // Create dependency on the last deployed contract to ensure sequential deployment
     const deployOptions = lastDeployedContract ? { after: [lastDeployedContract] } : {};
-    deployedContracts.vcAndDiscloseIdVerifier = m.contract("Verifier_vc_and_disclose_id", [], deployOptions);
-    lastDeployedContract = deployedContracts.vcAndDiscloseIdVerifier;
+    deployments[name] = m.contract(name, [], deployOptions);
+    lastDeployedContract = deployments[name];
   }
 
-  // Deploy Register ID verifiers (for ID cards) - filtered from unified RegisterVerifierId enum
-  const registerIdCircuits = getRegisterIdCircuits();
-  if (deployVerifiers.registerIdVerifier) {
-    console.log("Deploying Register ID verifiers with sequential dependencies...");
-    registerIdCircuits.forEach((circuitName, index) => {
-      const contractName = `Verifier_${circuitName}`;
-      if (contractExists(contractName)) {
-        console.log(`  - Deploying ${contractName} (${index + 1}/${registerIdCircuits.length})`);
-
-        // Create dependency on the last deployed contract to ensure sequential deployment
-        const deployOptions = lastDeployedContract ? { after: [lastDeployedContract] } : {};
-        deployedContracts[circuitName] = m.contract(contractName, [], deployOptions);
-        lastDeployedContract = deployedContracts[circuitName];
-        successfulRegisterIdDeployments++;
-      } else {
-        console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
-      }
-    });
-  }
-
-  // Deploy Register verifiers (regular, non-ID) - filtered from unified RegisterVerifierId enum
-  const registerCircuits = getRegularRegisterCircuits();
-  if (deployVerifiers.registerVerifier) {
-    console.log("Deploying Register verifiers with sequential dependencies...");
-    registerCircuits.forEach((circuitName, index) => {
-      const contractName = `Verifier_${circuitName}`;
-      if (contractExists(contractName)) {
-        console.log(`  - Deploying ${contractName} (${index + 1}/${registerCircuits.length})`);
-
-        // Create dependency on the last deployed contract to ensure sequential deployment
-        const deployOptions = lastDeployedContract ? { after: [lastDeployedContract] } : {};
-        deployedContracts[circuitName] = m.contract(contractName, [], deployOptions);
-        lastDeployedContract = deployedContracts[circuitName];
-        successfulRegisterDeployments++;
-      } else {
-        console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
-      }
-    });
-  }
-
-  // Deploy DSC verifiers using DscVerifierId enum
-  const dscCircuits = getEnumKeys(DscVerifierId);
-  if (deployVerifiers.dscVerifier) {
-    console.log("Deploying DSC verifiers with sequential dependencies...");
-    dscCircuits.forEach((circuitName, index) => {
-      const contractName = `Verifier_${circuitName}`;
-      if (contractExists(contractName)) {
-        console.log(`  - Deploying ${contractName} (${index + 1}/${dscCircuits.length})`);
-
-        // Create dependency on the last deployed contract to ensure sequential deployment
-        const deployOptions = lastDeployedContract ? { after: [lastDeployedContract] } : {};
-        deployedContracts[circuitName] = m.contract(contractName, [], deployOptions);
-        lastDeployedContract = deployedContracts[circuitName];
-        successfulDscDeployments++;
-      } else {
-        console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
-      }
-    });
-  }
-
-  console.log(`Total verifiers deployment summary:`);
-  console.log(`  - VC and Disclose: ${deployVerifiers.vcAndDiscloseVerifier ? 1 : 0}`);
-  console.log(`  - VC and Disclose ID: ${deployVerifiers.vcAndDiscloseIdVerifier ? 1 : 0}`);
-  console.log(
-    `  - Register ID: ${successfulRegisterIdDeployments}/${registerIdCircuits.length} (${registerIdCircuits.length - successfulRegisterIdDeployments} skipped)`,
-  );
-  console.log(
-    `  - Register: ${successfulRegisterDeployments}/${registerCircuits.length} (${registerCircuits.length - successfulRegisterDeployments} skipped)`,
-  );
-  console.log(
-    `  - DSC: ${successfulDscDeployments}/${dscCircuits.length} (${dscCircuits.length - successfulDscDeployments} skipped)`,
-  );
-  console.log(
-    `  - Total successful deployments: ${(deployVerifiers.vcAndDiscloseVerifier ? 1 : 0) + (deployVerifiers.vcAndDiscloseIdVerifier ? 1 : 0) + successfulRegisterIdDeployments + successfulRegisterDeployments + successfulDscDeployments}`,
-  );
-  console.log(`  - Deployments will execute sequentially to prevent nonce conflicts`);
-
-  return deployedContracts;
+  console.log(`Deployments will execute sequentially to prevent nonce conflicts`);
+  return deployments;
 });

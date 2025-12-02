@@ -7,8 +7,6 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
 import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
 
-import type { ProofHistory } from '@/stores/proofTypes';
-import { ProofStatus } from '@/stores/proofTypes';
 import {
   black,
   blue100,
@@ -21,8 +19,15 @@ import {
   white,
   zinc400,
   zinc500,
-} from '@/utils/colors';
-import { advercase, dinot, plexMono } from '@/utils/fonts';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  advercase,
+  dinot,
+  plexMono,
+} from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+
+import type { ProofHistory } from '@/stores/proofTypes';
+import { ProofStatus } from '@/stores/proofTypes';
 
 type ProofHistoryDetailScreenProps = {
   route: {

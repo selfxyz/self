@@ -57,6 +57,7 @@ export {
   commonNames,
   countries,
   countryCodes,
+  getCountryISO2,
 } from './src/constants/index.js';
 
 // Type exports

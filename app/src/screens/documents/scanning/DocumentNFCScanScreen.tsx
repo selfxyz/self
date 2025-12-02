@@ -32,44 +32,48 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
+import { sanitizeErrorMessage, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
-  hasAnyValidRegisteredDocument,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+  BodyText,
+  ButtonsContainer,
+  PrimaryButton,
+  SecondaryButton,
+  TextsContainer,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate100,
+  slate400,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import ButtonsContainer from '@/components/ButtonsContainer';
-import TextsContainer from '@/components/TextsContainer';
-import { BodyText } from '@/components/typography/BodyText';
-import { Title } from '@/components/typography/Title';
+import NFC_IMAGE from '@/assets/images/nfc.png';
+import { logNFCEvent } from '@/config/sentry';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import NFC_IMAGE from '@/images/nfc.png';
-import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import type { RootStackParamList } from '@/navigation';
-import { useFeedback } from '@/providers/feedbackProvider';
-import { storePassportData } from '@/providers/passportDataProvider';
-import { logNFCEvent } from '@/Sentry';
-import {
-  configureNfcAnalytics,
-  flushAllAnalytics,
-  setNfcScanningActive,
-  trackNfcEvent,
-} from '@/utils/analytics';
-import { black, slate100, slate400, slate500, white } from '@/utils/colors';
-import { sendFeedbackEmail } from '@/utils/email';
-import { dinot } from '@/utils/fonts';
 import {
   buttonTap,
   feedbackSuccess,
   feedbackUnsuccessful,
   impactLight,
-} from '@/utils/haptic';
-import { parseScanResponse, scan } from '@/utils/nfcScanner';
-import { sanitizeErrorMessage } from '@/utils/utils';
+} from '@/integrations/haptics';
+import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
+import { useFeedback } from '@/providers/feedbackProvider';
+import { storePassportData } from '@/providers/passportDataProvider';
+import {
+  configureNfcAnalytics,
+  flushAllAnalytics,
+  setNfcScanningActive,
+  trackNfcEvent,
+} from '@/services/analytics';
+import { sendFeedbackEmail } from '@/services/email';
 
 const emitter =
   Platform.OS === 'android'
@@ -445,9 +449,6 @@ const DocumentNFCScanScreen: React.FC = () => {
     trackEvent,
   ]);
 
-  const navigateToLaunch = useHapticNavigation('Launch', {
-    action: 'cancel',
-  });
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
   });
@@ -455,12 +456,7 @@ const DocumentNFCScanScreen: React.FC = () => {
   const onCancelPress = async () => {
     flushAllAnalytics();
     logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
-    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
-    if (hasValidDocument) {
-      navigateToHome();
-    } else {
-      navigateToLaunch();
-    }
+    navigateToHome();
   };
 
   useFocusEffect(
@@ -546,7 +542,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           <>
             <TextsContainer>
               <Title children="Ready to scan" />
-              <BodyText textAlign="center">
+              <BodyText style={{ textAlign: 'center' }}>
                 {nfcMessage && nfcMessage.trim().length > 0 ? (
                   nfcMessage
                 ) : (
@@ -588,24 +584,22 @@ const DocumentNFCScanScreen: React.FC = () => {
               </GestureDetector>
               {isNfcEnabled ? (
                 <>
-                  <Title style={styles.title} marginTop="$2">
+                  <Title style={[styles.title, { marginTop: 8 }]}>
                     Find the RFID chip in your ID
                   </Title>
                   <BodyText
-                    style={styles.bodyText}
-                    marginTop="$2"
-                    marginBottom="$2"
+                    style={[styles.bodyText, { marginTop: 8, marginBottom: 8 }]}
                   >
                     Place your phone against the chip and keep it still until
                     the sensor reads it.
                   </BodyText>
-                  <BodyText style={styles.disclaimer} marginTop="$2">
+                  <BodyText style={[styles.disclaimer, { marginTop: 16 }]}>
                     SELF DOES NOT STORE THIS INFORMATION.
                   </BodyText>
                 </>
               ) : (
                 <>
-                  <BodyText style={styles.disclaimer} marginTop="$2">
+                  <BodyText style={[styles.disclaimer, { marginTop: 16 }]}>
                     {dialogMessage}
                   </BodyText>
                 </>

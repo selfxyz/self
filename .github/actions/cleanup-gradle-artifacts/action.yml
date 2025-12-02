@@ -1,0 +1,23 @@
+name: Clean Up Gradle Artifacts
+
+description: Clean up unnecessary Gradle build artifacts to save disk space and reduce cache size.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Clean up Gradle build artifacts
+      shell: bash
+      run: |
+        echo "Cleaning up unnecessary build artifacts to save disk space..."
+        # Remove build outputs (APK/AAB already tested, no need to cache them)
+        # Find all Android build directories and clean up intermediates and tmp
+        find . -type d -path "*/android/app/build/intermediates" -exec rm -rf {} + 2>/dev/null || true
+        find . -type d -path "*/android/app/build/tmp" -exec rm -rf {} + 2>/dev/null || true
+        # Clean up Gradle daemon logs and lock files
+        rm -rf ~/.gradle/daemon
+        rm -rf ~/.gradle/*.lock
+        # Remove large cache files that aren't needed for subsequent builds
+        find ~/.gradle/caches -name "*.lock" -delete 2>/dev/null || true
+        find ~/.gradle/caches -type f -name "gc.properties" -delete 2>/dev/null || true
+        echo "Disk usage after cleanup:"
+        df -h

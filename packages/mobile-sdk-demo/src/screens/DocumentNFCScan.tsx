@@ -4,25 +4,21 @@
 
 import React from 'react';
 
-import PlaceholderScreen from '../components/PlaceholderScreen';
+import { DocumentNFCScreen } from '@selfxyz/mobile-sdk-alpha/onboarding/document-nfc-screen';
+import { Alert } from 'react-native';
 
 type Props = {
   onBack: () => void;
+  onNavigate: (screen: string, params?: any) => void;
 };
 
 export default function DocumentNFCScan({ onBack }: Props) {
   return (
-    <PlaceholderScreen
-      title="Document NFC Scan"
+    <DocumentNFCScreen
       onBack={onBack}
-      description="This screen would handle NFC-based passport reading for enhanced security and data extraction."
-      features={[
-        'NFC chip reading from passports',
-        'PACE (Password Authenticated Connection Establishment)',
-        'BAC (Basic Access Control) fallback',
-        'Secure data extraction and validation',
-        'Real-time NFC status and feedback',
-      ]}
+      onError={(message: string) => {
+        Alert.alert('Error', message);
+      }}
     />
   );
 }
