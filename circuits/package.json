@@ -50,7 +50,7 @@
     "@zk-email/jwt-tx-builder-circuits": "0.1.0",
     "@zk-email/jwt-tx-builder-helpers": "0.1.0",
     "@zk-email/zk-regex-circom": "^1.2.1",
-    "@zk-kit/binary-merkle-root.circom": "2.0.0",
+    "@zk-kit/binary-merkle-root.circom": "npm:@selfxyz/binary-merkle-root.circom@^0.0.1",
     "@zk-kit/circuits": "^1.0.0-beta",
     "anon-aadhaar-circuits": "https://github.com/selfxyz/anon-aadhaar.git#commit=1b9efa501cff3cf25dc260b060bf611229e316a4&workspace=@anon-aadhaar/circuits",
     "asn1": "^0.2.6",
