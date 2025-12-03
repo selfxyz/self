@@ -16,12 +16,10 @@ const DEFAULT_ALLOWED_ROUTES = RECOVERY_PROMPT_ALLOWED_ROUTES;
 
 type UseRecoveryPromptsOptions = {
   allowedRoutes?: readonly string[];
-  disallowedRoutes?: readonly string[];
 };
 
 export default function useRecoveryPrompts({
   allowedRoutes = DEFAULT_ALLOWED_ROUTES,
-  disallowedRoutes,
 }: UseRecoveryPromptsOptions = {}) {
   const { loginCount, cloudBackupEnabled, hasViewedRecoveryPhrase } =
     useSettingStore();
@@ -49,10 +47,6 @@ export default function useRecoveryPrompts({
     () => new Set(allowedRoutes),
     [allowedRoutes],
   );
-  const disallowedRouteSet = useMemo(
-    () => (disallowedRoutes ? new Set(disallowedRoutes) : null),
-    [disallowedRoutes],
-  );
 
   const isRouteEligible = useCallback(
     (routeName: string | undefined): routeName is string => {
@@ -62,12 +56,9 @@ export default function useRecoveryPrompts({
       if (!allowedRouteSet.has(routeName)) {
         return false;
       }
-      if (disallowedRouteSet?.has(routeName)) {
-        return false;
-      }
       return true;
     },
-    [allowedRouteSet, disallowedRouteSet],
+    [allowedRouteSet],
   );
 
   const maybePrompt = useCallback(async () => {

@@ -24,10 +24,4 @@ export const CRITICAL_RECOVERY_PROMPT_ROUTES = [
   'QRCodeTrouble',
 ] as const;
 
-export const RECOVERY_PROMPT_ALLOWED_ROUTES = [
-  'Home',
-  'ProofHistory',
-  'ProofHistoryDetail',
-  'ManageDocuments',
-  'Settings',
-] as const;
+export const RECOVERY_PROMPT_ALLOWED_ROUTES = ['Home'] as const;

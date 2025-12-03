@@ -5,8 +5,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
-import { RECOVERY_PROMPT_ALLOWED_ROUTES } from '@/consts/recoveryPrompts';
-
 jest.mock('@/hooks/useRecoveryPrompts', () => jest.fn());
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   useSelfClient: jest.fn(() => ({})),
@@ -97,8 +95,6 @@ describe('navigation', () => {
     const NavigationWithTracking = navigation.default;
     render(<NavigationWithTracking />);
 
-    expect(useRecoveryPrompts).toHaveBeenCalledWith({
-      allowedRoutes: RECOVERY_PROMPT_ALLOWED_ROUTES,
-    });
+    expect(useRecoveryPrompts).toHaveBeenCalledWith();
   });
 });

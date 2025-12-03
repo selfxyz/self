@@ -198,7 +198,7 @@ const { trackScreenView } = analytics();
 const Navigation = createStaticNavigation(AppNavigation);
 
 const NavigationWithTracking = () => {
-  useRecoveryPrompts({ allowedRoutes: RECOVERY_PROMPT_ALLOWED_ROUTES });
+  useRecoveryPrompts();
   const selfClient = useSelfClient();
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();

@@ -4,10 +4,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
-import {
-  CRITICAL_RECOVERY_PROMPT_ROUTES,
-  RECOVERY_PROMPT_ALLOWED_ROUTES,
-} from '@/consts/recoveryPrompts';
+import { CRITICAL_RECOVERY_PROMPT_ROUTES } from '@/consts/recoveryPrompts';
 import { useModal } from '@/hooks/useModal';
 import useRecoveryPrompts from '@/hooks/useRecoveryPrompts';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -121,7 +118,7 @@ describe('useRecoveryPrompts', () => {
   });
 
   it.each([...CRITICAL_RECOVERY_PROMPT_ROUTES])(
-    'does not show modal when route %s is disallowed',
+    'does not show modal when route %s is not allowed',
     async routeName => {
       global.mockNavigationRef.getCurrentRoute.mockReturnValue({
         name: routeName,
@@ -141,9 +138,7 @@ describe('useRecoveryPrompts', () => {
     act(() => {
       useSettingStore.setState({ loginCount: 1 });
     });
-    renderHook(() =>
-      useRecoveryPrompts({ allowedRoutes: ['Settings'], disallowedRoutes: [] }),
-    );
+    renderHook(() => useRecoveryPrompts({ allowedRoutes: ['Settings'] }));
     await waitFor(() => {
       expect(showModal).not.toHaveBeenCalled();
     });
@@ -153,12 +148,7 @@ describe('useRecoveryPrompts', () => {
       name: 'Settings',
     });
 
-    renderHook(() =>
-      useRecoveryPrompts({
-        allowedRoutes: RECOVERY_PROMPT_ALLOWED_ROUTES,
-        disallowedRoutes: [],
-      }),
-    );
+    renderHook(() => useRecoveryPrompts({ allowedRoutes: ['Settings'] }));
 
     await waitFor(() => {
       expect(showModal).toHaveBeenCalled();
