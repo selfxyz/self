@@ -114,20 +114,24 @@ async function main(): Promise<void> {
       return a.coverage - b.coverage;
     });
 
-    const totalExports = summaries.reduce((sum, file) => sum + file.totalExports, 0);
+    const totalExports = summaries.reduce(
+      (sum, file) => sum + file.totalExports,
+      0,
+    );
     const documentedExports = summaries.reduce(
       (sum, file) => sum + file.documentedExports,
       0,
     );
-    const overallCoverage = totalExports === 0 ? 1 : documentedExports / totalExports;
+    const overallCoverage =
+      totalExports === 0 ? 1 : documentedExports / totalExports;
 
     printTable(summaries, options.label);
     printSummary(totalExports, documentedExports, overallCoverage);
     printUndocumentedHighlights(summaries);
 
     if (options.writeReport) {
-      const missingEntries = summaries.flatMap((file) =>
-        file.missing.map<UndocumentedEntry>((symbol) => ({
+      const missingEntries = summaries.flatMap(file =>
+        file.missing.map<UndocumentedEntry>(symbol => ({
           file: file.relativePath,
           symbol,
         })),
@@ -137,8 +141,8 @@ async function main(): Promise<void> {
         : Math.min(50, missingEntries.length);
       const files = options.includeDetails
         ? summaries
-            .filter((file) => file.missing.length > 0)
-            .map<JsonReportFile>((file) => ({
+            .filter(file => file.missing.length > 0)
+            .map<JsonReportFile>(file => ({
               file: file.relativePath,
               exports: file.totalExports,
               documented: file.documentedExports,
@@ -247,7 +251,10 @@ Examples:
   console.log(usage);
 }
 
-async function resolveFiles(patterns: string[], root: string): Promise<string[]> {
+async function resolveFiles(
+  patterns: string[],
+  root: string,
+): Promise<string[]> {
   const files = new Set<string>();
 
   for (const pattern of patterns) {
@@ -288,7 +295,10 @@ function shouldIncludeFile(filePath: string, root: string): boolean {
   return true;
 }
 
-async function analyzeFile(filePath: string, root: string): Promise<FileExportSummary> {
+async function analyzeFile(
+  filePath: string,
+  root: string,
+): Promise<FileExportSummary> {
   const content = await fs.readFile(filePath, 'utf8');
   const scriptKind = filePath.endsWith('.tsx')
     ? ts.ScriptKind.TSX
@@ -307,7 +317,11 @@ async function analyzeFile(filePath: string, root: string): Promise<FileExportSu
 
   for (const statement of sourceFile.statements) {
     if (ts.isExportDeclaration(statement)) {
-      if (!statement.moduleSpecifier && statement.exportClause && ts.isNamedExports(statement.exportClause)) {
+      if (
+        !statement.moduleSpecifier &&
+        statement.exportClause &&
+        ts.isNamedExports(statement.exportClause)
+      ) {
         for (const element of statement.exportClause.elements) {
           const localName = element.propertyName
             ? element.propertyName.text
@@ -344,7 +358,8 @@ async function analyzeFile(filePath: string, root: string): Promise<FileExportSu
 
         const entry = ensureEntry(entries, name);
         entry.kinds.add('variable');
-        entry.documented ||= statementDoc || hasDocComment(declaration, sourceFile);
+        entry.documented ||=
+          statementDoc || hasDocComment(declaration, sourceFile);
         if (exported) {
           entry.exported = true;
           entry.exportedAs.add(name);
@@ -386,12 +401,14 @@ async function analyzeFile(filePath: string, root: string): Promise<FileExportSu
   }
 
   const relativePath = path.relative(root, filePath).replace(/\\/g, '/');
-  const exportedEntries = Array.from(entries.values()).filter((entry) => entry.exported);
-  const documentedEntries = exportedEntries.filter((entry) => entry.documented);
+  const exportedEntries = Array.from(entries.values()).filter(
+    entry => entry.exported,
+  );
+  const documentedEntries = exportedEntries.filter(entry => entry.documented);
 
   const missing = exportedEntries
-    .filter((entry) => !entry.documented)
-    .map((entry) => formatMissingName(entry));
+    .filter(entry => !entry.documented)
+    .map(entry => formatMissingName(entry));
 
   return {
     filePath,
@@ -424,24 +441,35 @@ function ensureEntry(map: Map<string, ExportEntry>, key: string): ExportEntry {
   return entry;
 }
 
-function hasExportModifier(modifiers: ts.NodeArray<ts.Modifier> | undefined): boolean {
+function hasExportModifier(
+  modifiers: ts.NodeArray<ts.Modifier> | undefined,
+): boolean {
   return Boolean(
     modifiers?.some(
-      (modifier) =>
+      modifier =>
         modifier.kind === ts.SyntaxKind.ExportKeyword ||
         modifier.kind === ts.SyntaxKind.DefaultKeyword,
     ),
   );
 }
 
-function getDeclarationName(node: ts.Node, sourceFile: ts.SourceFile): string | undefined {
+function getDeclarationName(
+  node: ts.Node,
+  sourceFile: ts.SourceFile,
+): string | undefined {
   if ('name' in node && node.name) {
-    const nameNode = (node as ts.Node & { name?: ts.Node }).name as ts.Node | undefined;
+    const nameNode = (node as ts.Node & { name?: ts.Node }).name as
+      | ts.Node
+      | undefined;
     if (!nameNode) {
       return undefined;
     }
 
-    if (ts.isIdentifier(nameNode) || ts.isStringLiteralLike(nameNode) || ts.isNumericLiteral(nameNode)) {
+    if (
+      ts.isIdentifier(nameNode) ||
+      ts.isStringLiteralLike(nameNode) ||
+      ts.isNumericLiteral(nameNode)
+    ) {
       return nameNode.text;
     }
 
@@ -492,9 +520,12 @@ function hasDocComment(node: ts.Node, sourceFile: ts.SourceFile): boolean {
     return true;
   }
 
-  const leadingRanges = ts.getLeadingCommentRanges(sourceFile.text, node.getFullStart());
+  const leadingRanges = ts.getLeadingCommentRanges(
+    sourceFile.text,
+    node.getFullStart(),
+  );
   if (leadingRanges) {
-    return leadingRanges.some((range) =>
+    return leadingRanges.some(range =>
       sourceFile.text.slice(range.pos, range.end).startsWith('/**'),
     );
   }
@@ -512,7 +543,7 @@ function printTable(summaries: FileExportSummary[], label?: string): void {
   console.log('='.repeat(title.length));
 
   const headers = ['File', 'Exports', 'With Docs', 'Coverage', 'Missing'];
-  const rows = summaries.map((summary) => [
+  const rows = summaries.map(summary => [
     summary.relativePath,
     summary.totalExports.toString(),
     summary.documentedExports.toString(),
@@ -521,12 +552,15 @@ function printTable(summaries: FileExportSummary[], label?: string): void {
   ]);
 
   const widths = headers.map((header, columnIndex) => {
-    const columnValues = rows.map((row) => row[columnIndex]);
+    const columnValues = rows.map(row => row[columnIndex]);
     const maxContentLength = columnValues.reduce(
       (max, value) => Math.max(max, value.length),
       header.length,
     );
-    const maxWidth = columnIndex === 0 ? Math.min(70, Math.max(20, maxContentLength)) : maxContentLength;
+    const maxWidth =
+      columnIndex === 0
+        ? Math.min(70, Math.max(20, maxContentLength))
+        : maxContentLength;
     return maxWidth;
   });
 
@@ -535,7 +569,9 @@ function printTable(summaries: FileExportSummary[], label?: string): void {
       .map((value, index) => {
         const width = widths[index];
         const trimmed =
-          index === 0 && value.length > width ? `…${value.slice(value.length - width + 1)}` : value;
+          index === 0 && value.length > width
+            ? `…${value.slice(value.length - width + 1)}`
+            : value;
         return trimmed.padEnd(width, ' ');
       })
       .join('  ');
@@ -543,13 +579,17 @@ function printTable(summaries: FileExportSummary[], label?: string): void {
   console.log(formatRow(headers));
   console.log(
     formatRow(
-      widths.map((width) => '-'.repeat(Math.max(3, Math.min(width, 80)))),
+      widths.map(width => '-'.repeat(Math.max(3, Math.min(width, 80)))),
     ),
   );
-  rows.forEach((row) => console.log(formatRow(row)));
+  rows.forEach(row => console.log(formatRow(row)));
 }
 
-function printSummary(total: number, documented: number, coverage: number): void {
+function printSummary(
+  total: number,
+  documented: number,
+  coverage: number,
+): void {
   console.log();
   if (total === 0) {
     console.log('Overall coverage: 100.00% (0/0 exported declarations)');
@@ -564,7 +604,10 @@ function printUndocumentedHighlights(summaries: FileExportSummary[]): void {
   const missingEntries: Array<{ file: string; names: string[] }> = [];
   for (const summary of summaries) {
     if (summary.missing.length > 0) {
-      missingEntries.push({ file: summary.relativePath, names: summary.missing });
+      missingEntries.push({
+        file: summary.relativePath,
+        names: summary.missing,
+      });
     }
   }
 
@@ -589,7 +632,9 @@ function formatMissingName(entry: ExportEntry): string {
     return entry.localName;
   }
 
-  const aliasList = exportedNames.filter((name) => name !== entry.localName && name !== 'default');
+  const aliasList = exportedNames.filter(
+    name => name !== entry.localName && name !== 'default',
+  );
   if (exportedNames.includes('default')) {
     if (aliasList.length > 0) {
       return `default (local: ${entry.localName}, aliases: ${aliasList.join(', ')})`;
@@ -607,11 +652,20 @@ function formatMissingName(entry: ExportEntry): string {
   return entry.localName;
 }
 
-async function writeJsonReport(targetPath: string, report: JsonReport): Promise<void> {
+async function writeJsonReport(
+  targetPath: string,
+  report: JsonReport,
+): Promise<void> {
   const resolvedPath = path.resolve(process.cwd(), targetPath);
   await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
-  await fs.writeFile(resolvedPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-  console.log(`\nSaved coverage snapshot to ${path.relative(process.cwd(), resolvedPath)}`);
+  await fs.writeFile(
+    resolvedPath,
+    `${JSON.stringify(report, null, 2)}\n`,
+    'utf8',
+  );
+  console.log(
+    `\nSaved coverage snapshot to ${path.relative(process.cwd(), resolvedPath)}`,
+  );
 }
 
 void main();

@@ -35,8 +35,10 @@ const ModalBackDrop = styled(View, {
   height: '100%',
 });
 
-export interface ModalNavigationParams
-  extends Omit<ModalParams, 'onButtonPress' | 'onModalDismiss'> {
+export interface ModalNavigationParams extends Omit<
+  ModalParams,
+  'onButtonPress' | 'onModalDismiss'
+> {
   callbackId: number;
 }
 
