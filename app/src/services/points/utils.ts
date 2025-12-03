@@ -8,7 +8,10 @@ import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
 
 import { selfLogoReverseUrl } from '@/consts/links';
 import { getOrGeneratePointsAddress } from '@/providers/authProvider';
-import { POINTS_API_BASE_URL } from '@/services/points/constants';
+import {
+  POINTS_API_BASE_URL,
+  POINTS_TOKEN_CONTRACT_ADDRESS,
+} from '@/services/points/constants';
 import type { IncomingPoints } from '@/services/points/types';
 
 export type WhitelistedContract = {
