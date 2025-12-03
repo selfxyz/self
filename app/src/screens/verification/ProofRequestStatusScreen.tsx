@@ -21,21 +21,21 @@ import {
   typography,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import type { RootStackParamList } from '@/navigation';
-import { useProofHistoryStore } from '@/stores/proofHistoryStore';
-import { ProofStatus } from '@/stores/proofTypes';
-import { black, white } from '@/utils/colors';
 import {
   buttonTap,
   notificationError,
   notificationSuccess,
-} from '@/utils/haptic';
-import { getWhiteListedDisclosureAddresses } from '@/utils/points/utils';
+} from '@/integrations/haptics';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
+import { getWhiteListedDisclosureAddresses } from '@/services/points/utils';
+import { useProofHistoryStore } from '@/stores/proofHistoryStore';
+import { ProofStatus } from '@/stores/proofTypes';
 
 const SuccessScreen: React.FC = () => {
   const selfClient = useSelfClient();

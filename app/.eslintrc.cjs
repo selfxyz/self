@@ -165,6 +165,18 @@ module.exports = {
       },
     ],
 
+    // Custom rule to prevent export * (bad for tree shaking)
+    // This rule prevents the use of export * which disables tree shaking
+    // and can significantly increase bundle size. Use selective exports instead.
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'ExportAllDeclaration',
+        message:
+          'export * is forbidden. Use selective exports for better tree shaking. Example: export { specific1, specific2 } from "./module"',
+      },
+    ],
+
     // Override rules conflicting with TypeScript union formatting
 
     '@typescript-eslint/indent': 'off',
@@ -191,11 +203,11 @@ module.exports = {
     {
       // Disable export sorting for files with dependency issues
       files: [
-        'src/components/NavBar/BaseNavBar.tsx',
+        'src/components/navbar/BaseNavBar.tsx',
         'src/navigation/index.tsx',
         'src/providers/passportDataProvider.tsx',
-        'src/utils/cloudBackup/helpers.ts',
-        'src/utils/haptic/index.ts',
+        'src/services/cloud-backup/helpers.ts',
+        'src/integrations/haptics/index.ts',
       ],
       rules: {
         'sort-exports/sort-exports': 'off',
@@ -213,10 +225,52 @@ module.exports = {
       rules: {
         // Allow console logging and relaxed typing in tests
         'no-console': 'off',
-        // Allow require() imports in tests for mocking
+        // Allow require() imports in tests for mocking, but block react/react-native
         '@typescript-eslint/no-require-imports': 'off',
+        // Block require('react') and require('react-native') to prevent OOM issues
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector:
+              "CallExpression[callee.name='require'][arguments.0.value='react']",
+            message:
+              "Do not use require('react') in tests. Use 'import React from \"react\"' at the top of the file to avoid out-of-memory issues in CI.",
+          },
+          {
+            selector:
+              "CallExpression[callee.name='require'][arguments.0.value='react-native']",
+            message:
+              "Do not use require('react-native') in tests. Use 'import { ... } from \"react-native\"' at the top of the file to avoid out-of-memory issues in CI.",
+          },
+        ],
         // Allow any types in tests for mocking
         '@typescript-eslint/no-explicit-any': 'off',
+      },
+    },
+    {
+      files: ['tests/**/*.js'],
+      env: {
+        jest: true,
+      },
+      rules: {
+        // Allow console logging in test JS files
+        'no-console': 'off',
+        // Block require('react') and require('react-native') to prevent OOM issues
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector:
+              "CallExpression[callee.name='require'][arguments.0.value='react']",
+            message:
+              "Do not use require('react') in tests. Use 'import React from \"react\"' at the top of the file to avoid out-of-memory issues in CI.",
+          },
+          {
+            selector:
+              "CallExpression[callee.name='require'][arguments.0.value='react-native']",
+            message:
+              "Do not use require('react-native') in tests. Use 'import { ... } from \"react-native\"' at the top of the file to avoid out-of-memory issues in CI.",
+          },
+        ],
       },
     },
     {
@@ -224,13 +278,6 @@ module.exports = {
       files: ['scripts/**/*.cjs', 'scripts/*.cjs'],
       rules: {
         'no-console': 'off',
-      },
-    },
-    {
-      // Allow require imports for dynamic imports in proving machine
-      files: ['src/utils/proving/provingMachine.ts'],
-      rules: {
-        '@typescript-eslint/no-require-imports': 'off',
       },
     },
     {

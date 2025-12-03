@@ -13,17 +13,21 @@ import {
   PrimaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  black,
+  slate200,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import analytics from '@/utils/analytics';
-import { black, slate200, white } from '@/utils/colors';
+import analytics from '@/services/analytics';
 
 const { flush: flushAnalytics } = analytics();
 
 const DocumentDataNotFoundScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const navigateToLaunch = useHapticNavigation('Launch');
+  const navigateToCountryPicker = useHapticNavigation('CountryPicker');
   const navigateToHome = useHapticNavigation('Home');
 
   const onPress = async () => {
@@ -31,7 +35,7 @@ const DocumentDataNotFoundScreen: React.FC = () => {
     if (hasValidDocument) {
       navigateToHome();
     } else {
-      navigateToLaunch();
+      navigateToCountryPicker();
     }
   };
 

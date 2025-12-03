@@ -17,14 +17,14 @@ import Keychain from 'react-native-keychain';
 
 import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { useSettingStore } from '@/stores/settingStore';
-import type { Mnemonic } from '@/types/mnemonic';
-import analytics from '@/utils/analytics';
-import type { GetSecureOptions } from '@/utils/keychainSecurity';
+import type { GetSecureOptions } from '@/integrations/keychain';
 import {
   createKeychainOptions,
   detectSecurityCapabilities,
-} from '@/utils/keychainSecurity';
+} from '@/integrations/keychain';
+import analytics from '@/services/analytics';
+import { useSettingStore } from '@/stores/settingStore';
+import type { Mnemonic } from '@/types/mnemonic';
 
 const { trackEvent } = analytics();
 
@@ -369,6 +369,11 @@ export async function getOrGeneratePointsAddress(
   return pointsAddr;
 }
 
+export function getPrivateKeyFromMnemonic(mnemonic: string) {
+  const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
+  return wallet.privateKey;
+}
+
 export async function hasSecretStored() {
   const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
   return !!seed;
@@ -470,8 +475,7 @@ export async function unsafe_getPrivateKey(keychainOptions?: KeychainOptions) {
     return null;
   }
   const mnemonic = JSON.parse(foundMnemonic) as Mnemonic;
-  const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic.phrase);
-  return wallet.privateKey;
+  return getPrivateKeyFromMnemonic(mnemonic.phrase);
 }
 
 export const useAuth = () => {

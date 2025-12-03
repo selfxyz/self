@@ -7,9 +7,14 @@ import { Alert, Modal, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, XStack, YStack } from 'tamagui';
 
 import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
-
-import { black, slate400, white, zinc800, zinc900 } from '@/utils/colors';
-import { advercase, dinot } from '@/utils/fonts';
+import {
+  black,
+  slate400,
+  white,
+  zinc800,
+  zinc900,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 interface FeedbackModalProps {
   visible: boolean;

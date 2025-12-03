@@ -13,11 +13,11 @@ import {
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import ModalClose from '@/images/icons/modal_close.svg';
-import LogoInversed from '@/images/logo_inversed.svg';
-import { white } from '@/utils/colors';
-import { confirmTap, impactLight } from '@/utils/haptic';
+import ModalClose from '@/assets/icons/modal_close.svg';
+import LogoInversed from '@/assets/images/logo_inversed.svg';
+import { confirmTap, impactLight } from '@/integrations/haptics';
 import {
   getModalCallbacks,
   unregisterModalCallbacks,

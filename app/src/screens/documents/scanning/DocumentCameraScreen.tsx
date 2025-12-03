@@ -7,11 +7,7 @@ import { StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
 import { useIsFocused } from '@react-navigation/native';
 
-import {
-  DelayedLottieView,
-  hasAnyValidRegisteredDocument,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView, dinot } from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   Description,
@@ -20,40 +16,35 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
+  black,
+  slate400,
+  slate800,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
   mrzReadInstructions,
   useReadMRZ,
 } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
+import Scan from '@/assets/icons/passport_camera_scan.svg';
 import { PassportCamera } from '@/components/native/PassportCamera';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import Scan from '@/images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate400, slate800, white } from '@/utils/colors';
-import { dinot } from '@/utils/fonts';
 
 const DocumentCameraScreen: React.FC = () => {
-  const client = useSelfClient();
   const isFocused = useIsFocused();
 
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
   const { onPassportRead } = useReadMRZ(scanStartTimeRef);
 
-  const navigateToLaunch = useHapticNavigation('Launch', {
-    action: 'cancel',
-  });
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
   });
 
   const onCancelPress = async () => {
-    const hasValidDocument = await hasAnyValidRegisteredDocument(client);
-    if (hasValidDocument) {
-      navigateToHome();
-    } else {
-      navigateToLaunch();
-    }
+    navigateToHome();
   };
 
   return (

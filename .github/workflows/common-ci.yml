@@ -79,6 +79,8 @@ jobs:
         run: yarn workspace @selfxyz/common build
       - name: Build @selfxyz/mobile-sdk-alpha
         run: yarn workspace @selfxyz/mobile-sdk-alpha build
+      - name: Build @selfxyz/qrcode
+        run: yarn workspace @selfxyz/qrcode build:deps
       - name: Yarn types
         run: yarn types
 

@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthState, useTurnkey } from '@turnkey/react-native-wallet-kit';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import {
@@ -21,47 +20,54 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate500,
+  slate600,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import Keyboard from '@/assets/icons/keyboard.svg';
+import RestoreAccountSvg from '@/assets/icons/restore_account.svg';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import Keyboard from '@/images/icons/keyboard.svg';
-import RestoreAccountSvg from '@/images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
-import { useAuth } from '@/providers/authProvider';
+import { getPrivateKeyFromMnemonic, useAuth } from '@/providers/authProvider';
 import {
-  loadPassportDataAndSecret,
+  loadPassportData,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
+import { STORAGE_NAME, useBackupMnemonic } from '@/services/cloud-backup';
 import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
-import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
-import { black, slate500, slate600, white } from '@/utils/colors';
-import { useTurnkeyUtils } from '@/utils/turnkey';
 
 const AccountRecoveryChoiceScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useProtocolStore } = selfClient;
   const { trackEvent } = useSelfClient();
   const { restoreAccountFromMnemonic } = useAuth();
-  const { turnkeyWallets, refreshWallets } = useTurnkeyUtils();
-  const { getMnemonic } = useTurnkeyUtils();
-  const { authState } = useTurnkey();
+  // DISABLED FOR NOW: Turnkey functionality
+  // const { turnkeyWallets, refreshWallets } = useTurnkeyUtils();
+  // const { getMnemonic } = useTurnkeyUtils();
+  // const { authState } = useTurnkey();
   const [restoring, setRestoring] = useState(false);
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
   const { download } = useBackupMnemonic();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const setTurnkeyBackupEnabled = useSettingStore(
-    state => state.setTurnkeyBackupEnabled,
-  );
+  // DISABLED FOR NOW: Turnkey functionality
+  // const setTurnkeyBackupEnabled = useSettingStore(
+  //   state => state.setTurnkeyBackupEnabled,
+  // );
 
   const onRestoreFromCloudNext = useHapticNavigation('AccountVerifiedSuccess');
   const onEnterRecoveryPress = useHapticNavigation('RecoverWithPhrase');
 
-  useEffect(() => {
-    refreshWallets();
-  }, [refreshWallets]);
+  // DISABLED FOR NOW: Turnkey functionality
+  // useEffect(() => {
+  //   refreshWallets();
+  // }, [refreshWallets]);
 
   const restoreAccountFlow = useCallback(
     async (
@@ -74,45 +80,71 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         if (!result) {
           console.warn('Failed to restore account');
           trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
-          navigation.navigate('Launch');
+          navigation.navigate({ name: 'Home', params: {} });
           setRestoring(false);
           return false;
         }
 
-        const passportDataAndSecret =
-          (await loadPassportDataAndSecret()) as string;
-        const { passportData, secret } = JSON.parse(passportDataAndSecret);
-        const { isRegistered, csca } =
-          await isUserRegisteredWithAlternativeCSCA(passportData, secret, {
-            getCommitmentTree(docCategory) {
-              return useProtocolStore.getState()[docCategory].commitment_tree;
-            },
-            getAltCSCA(docCategory) {
-              if (docCategory === 'aadhaar') {
-                const publicKeys =
-                  useProtocolStore.getState().aadhaar.public_keys;
-                // Convert string[] to Record<string, string> format expected by AlternativeCSCA
-                return publicKeys
-                  ? Object.fromEntries(publicKeys.map(key => [key, key]))
-                  : {};
-              }
+        const passportData = await loadPassportData();
+        const secret = getPrivateKeyFromMnemonic(mnemonic.phrase);
 
-              return useProtocolStore.getState()[docCategory].alternative_csca;
-            },
+        if (!passportData || !secret) {
+          console.warn('Failed to load passport data or secret');
+          trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_AUTH, {
+            reason: 'no_passport_data_or_secret',
           });
+          navigation.navigate({ name: 'Home', params: {} });
+          setRestoring(false);
+          return false;
+        }
+
+        const passportDataParsed = JSON.parse(passportData);
+
+        const { isRegistered, csca } =
+          await isUserRegisteredWithAlternativeCSCA(
+            passportDataParsed,
+            secret as string,
+            {
+              getCommitmentTree(docCategory) {
+                return useProtocolStore.getState()[docCategory].commitment_tree;
+              },
+              getAltCSCA(docCategory) {
+                if (docCategory === 'aadhaar') {
+                  const publicKeys =
+                    useProtocolStore.getState().aadhaar.public_keys;
+                  // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+                  return publicKeys
+                    ? Object.fromEntries(publicKeys.map(key => [key, key]))
+                    : {};
+                }
+
+                return useProtocolStore.getState()[docCategory]
+                  .alternative_csca;
+              },
+            },
+          );
         if (!isRegistered) {
           console.warn(
             'Secret provided did not match a registered ID. Please try again.',
           );
-          trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED);
-          navigation.navigate('Launch');
+          trackEvent(
+            BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED,
+            {
+              reason: 'document_not_registered',
+              hasCSCA: !!csca,
+            },
+          );
+          navigation.navigate({ name: 'Home', params: {} });
           setRestoring(false);
           return false;
         }
         if (isCloudRestore && !cloudBackupEnabled) {
           toggleCloudBackupEnabled();
         }
-        reStorePassportDataWithRightCSCA(passportData, csca as string);
+        await reStorePassportDataWithRightCSCA(
+          passportDataParsed,
+          csca as string,
+        );
         await markCurrentDocumentAsRegistered(selfClient);
         trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS);
         trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
@@ -138,29 +170,30 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
     ],
   );
 
-  const onRestoreFromTurnkeyPress = useCallback(async () => {
-    setRestoring(true);
-    try {
-      const mnemonicPhrase = await getMnemonic();
-      const mnemonic: Mnemonic = {
-        phrase: mnemonicPhrase,
-        password: '',
-        wordlist: {
-          locale: 'en',
-        },
-        entropy: '',
-      };
-      const success = await restoreAccountFlow(mnemonic);
-      if (success) {
-        setTurnkeyBackupEnabled(true);
-      }
-    } catch (error) {
-      console.error('Turnkey restore error:', error);
-      trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
-    } finally {
-      setRestoring(false);
-    }
-  }, [getMnemonic, restoreAccountFlow, setTurnkeyBackupEnabled, trackEvent]);
+  // DISABLED FOR NOW: Turnkey functionality
+  // const onRestoreFromTurnkeyPress = useCallback(async () => {
+  //   setRestoring(true);
+  //   try {
+  //     const mnemonicPhrase = await getMnemonic();
+  //     const mnemonic: Mnemonic = {
+  //       phrase: mnemonicPhrase,
+  //       password: '',
+  //       wordlist: {
+  //         locale: 'en',
+  //       },
+  //       entropy: '',
+  //     };
+  //     const success = await restoreAccountFlow(mnemonic);
+  //     if (success) {
+  //       setTurnkeyBackupEnabled(true);
+  //     }
+  //   } catch (error) {
+  //     console.error('Turnkey restore error:', error);
+  //     trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
+  //   } finally {
+  //     setRestoring(false);
+  //   }
+  // }, [getMnemonic, restoreAccountFlow, setTurnkeyBackupEnabled, trackEvent]);
 
   const onRestoreFromCloudPress = useCallback(async () => {
     setRestoring(true);
@@ -205,7 +238,8 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
           </Description>
 
           <YStack gap="$2.5" width="100%" paddingTop="$6">
-            <PrimaryButton
+            {/* DISABLED FOR NOW: Turnkey functionality */}
+            {/* <PrimaryButton
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromTurnkeyPress}
               testID="button-from-turnkey"
@@ -218,7 +252,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
             >
               {restoring ? 'Restoring' : 'Restore'} from Turnkey
               {restoring ? '…' : ''}
-            </PrimaryButton>
+            </PrimaryButton> */}
             <PrimaryButton
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromCloudPress}

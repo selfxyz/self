@@ -11,23 +11,28 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  blue600,
+  green500,
+  slate50,
+  slate200,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import Message from '@/assets/icons/message.svg';
+import ShareBlue from '@/assets/icons/share_blue.svg';
+import WhatsApp from '@/assets/icons/whatsapp.svg';
+import Referral from '@/assets/images/referral.png';
 import { CopyReferralButton } from '@/components/referral/CopyReferralButton';
 import { ReferralHeader } from '@/components/referral/ReferralHeader';
 import { ReferralInfo } from '@/components/referral/ReferralInfo';
 import { ShareButton } from '@/components/referral/ShareButton';
 import { useReferralMessage } from '@/hooks/useReferralMessage';
-import Message from '@/images/icons/message.svg';
-import ShareBlue from '@/images/icons/share_blue.svg';
-import WhatsApp from '@/images/icons/whatsapp.svg';
-import Referral from '@/images/referral.png';
-import type { RootStackParamList } from '@/navigation';
-import { blue600, green500, slate50, slate200 } from '@/utils/colors';
 import {
   shareViaNative,
   shareViaSMS,
   shareViaWhatsApp,
-} from '@/utils/referralShare';
+} from '@/integrations/sharing';
+import type { RootStackParamList } from '@/navigation';
 
 const ReferralScreen: React.FC = () => {
   const selfClient = useSelfClient();

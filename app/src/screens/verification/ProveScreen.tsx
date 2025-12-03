@@ -31,20 +31,24 @@ import {
   HeldPrimaryButtonProveScreen,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate300,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import Disclosures from '@/components/Disclosures';
+import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import {
   setDefaultDocumentTypeIfNeeded,
   usePassport,
 } from '@/providers/passportDataProvider';
+import { getPointsAddress } from '@/services/points';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
-import { black, slate300, white } from '@/utils/colors';
 import { formatUserId } from '@/utils/formatUserId';
-import { buttonTap } from '@/utils/haptic';
-import { getPointsAddress } from '@/utils/points/utils';
 
 const ProveScreen: React.FC = () => {
   const selfClient = useSelfClient();

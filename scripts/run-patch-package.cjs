@@ -90,30 +90,6 @@ if (!isExecutableAvailableOnPath('patch-package')) {
 
 // Run patch-package with better error handling
 try {
-  const patchRun = spawnSync('patch-package', {
-    shell: true,
-    stdio: isCI ? 'pipe' : 'inherit',
-    timeout: 30000 // 30 second timeout
-  });
-
-  if (patchRun.status !== 0) {
-    if (isCI) {
-      console.log('patch-package: failed to apply patches (CI mode)');
-      console.log('stdout:', patchRun.stdout?.toString());
-      console.log('stderr:', patchRun.stderr?.toString());
-      // In CI, don't fail the entire build for patch issues
-      console.log('Continuing build despite patch failures...');
-      process.exit(0);
-    } else {
-      console.error('patch-package failed with exit code:', patchRun.status);
-      process.exit(patchRun.status || 1);
-    }
-  } else {
-    if (isCI) {
-      console.log('patch-package: patches applied successfully (CI mode)');
-    }
-  }
-  
   // Also patch app/node_modules if it exists
   const appPath = path.join(repositoryRootPath, 'app');
   const appNodeModules = path.join(appPath, 'node_modules');

@@ -8,7 +8,7 @@ import messaging from '@react-native-firebase/messaging';
 
 import { NotificationEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import analytics from '@/utils/analytics';
+import analytics from '@/services/analytics';
 
 const { trackEvent } = analytics();
 

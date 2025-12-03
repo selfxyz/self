@@ -31,6 +31,7 @@ on:
 
 jobs:
   android-e2e:
+    name: Android E2E Tests Demo App
     # Currently build-only for Android. E2E steps are preserved but skipped (if: false).
     # To re-enable full E2E: change `if: false` to `if: true` on emulator steps.
     concurrency:
@@ -192,6 +193,7 @@ jobs:
   ios-e2e:
     timeout-minutes: 60
     runs-on: macos-latest-large
+    name: iOS E2E Tests Demo App
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
       cancel-in-progress: true

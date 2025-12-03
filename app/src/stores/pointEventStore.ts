@@ -9,14 +9,14 @@ import type {
   IncomingPoints,
   PointEvent,
   PointEventType,
-} from '@/utils/points';
+} from '@/services/points';
 import {
   getIncomingPoints,
   getNextSundayNoonUTC,
   getPointsAddress,
   getTotalPoints,
-} from '@/utils/points';
-import { pollEventProcessingStatus } from '@/utils/points/eventPolling';
+} from '@/services/points';
+import { pollEventProcessingStatus } from '@/services/points/eventPolling';
 
 interface PointEventState {
   events: PointEvent[];
@@ -130,7 +130,7 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
   loadDisclosureEvents: async () => {
     try {
       const { getDisclosurePointEvents } = await import(
-        '@/utils/points/getEvents'
+        '@/services/points/getEvents'
       );
       const { useProofHistoryStore } = await import(
         '@/stores/proofHistoryStore'

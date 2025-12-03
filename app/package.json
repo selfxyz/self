@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/mobile-app",
-  "version": "2.9.0",
+  "version": "2.9.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -56,27 +56,32 @@
     "sync-versions": "bundle exec fastlane ios sync_version && bundle exec fastlane android sync_version",
     "tag:release": "node scripts/tag.cjs release",
     "tag:remove": "node scripts/tag.cjs remove",
-    "test": "yarn build:deps && jest --passWithNoTests && node --test scripts/tests/*.cjs",
+    "test": "yarn build:deps && yarn jest:run --passWithNoTests && node --test scripts/tests/*.cjs",
     "test:build": "yarn build:deps && yarn types && node ./scripts/bundle-analyze-ci.cjs ios && yarn test",
-    "test:ci": "jest --passWithNoTests && node --test scripts/tests/*.cjs",
-    "test:coverage": "jest --coverage --passWithNoTests",
-    "test:coverage:ci": "jest --coverage --passWithNoTests --ci --coverageReporters=lcov --coverageReporters=text --coverageReporters=json",
+    "test:ci": "yarn jest:run --passWithNoTests && node --test scripts/tests/*.cjs",
+    "test:coverage": "yarn jest:run --coverage --passWithNoTests",
+    "test:coverage:ci": "yarn jest:run --coverage --passWithNoTests --ci --coverageReporters=lcov --coverageReporters=text --coverageReporters=json",
     "test:e2e:android": "./scripts/mobile-ci-build-android.sh && maestro test tests/e2e/launch.android.flow.yaml",
     "test:e2e:ios": "xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build && maestro test tests/e2e/launch.ios.flow.yaml",
     "test:fastlane": "bundle exec ruby -Itest fastlane/test/helpers_test.rb",
     "test:tree-shaking": "node ./scripts/test-tree-shaking.cjs",
-    "test:web-build": "jest tests/web-build-render.test.ts --testTimeout=180000",
+    "test:web-build": "yarn jest:run tests/web-build-render.test.ts --testTimeout=180000",
     "types": "tsc --noEmit",
+    "jest:run": "node ./node_modules/jest/bin/jest.js",
     "watch:sdk": "yarn workspace @selfxyz/mobile-sdk-alpha watch",
     "web": "vite",
     "web:build": "yarn build:deps && vite build",
     "web:preview": "vite preview"
   },
   "resolutions": {
-    "punycode": "npm:punycode.js@2.3.1"
+    "punycode": "npm:punycode.js@2.3.1",
+    "react-native-blur-effect": "1.1.3",
+    "react-native-webview": "13.16.0"
   },
   "overrides": {
-    "punycode": "npm:punycode.js@2.3.1"
+    "punycode": "npm:punycode.js@2.3.1",
+    "react-native-blur-effect": "1.1.3",
+    "react-native-webview": "13.16.0"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",
@@ -136,6 +141,7 @@
     "react-native": "0.76.9",
     "react-native-app-auth": "^8.0.3",
     "react-native-biometrics": "^3.0.1",
+    "react-native-blur-effect": "^1.1.3",
     "react-native-check-version": "^1.3.0",
     "react-native-cloud-storage": "^2.2.2",
     "react-native-device-info": "^14.0.4",
@@ -168,9 +174,13 @@
   },
   "devDependencies": {
     "@babel/core": "^7.28.3",
+    "@babel/plugin-syntax-flow": "^7.27.1",
+    "@babel/plugin-transform-classes": "^7.27.1",
     "@babel/plugin-transform-export-namespace-from": "^7.27.1",
+    "@babel/plugin-transform-flow-strip-types": "^7.27.1",
     "@babel/plugin-transform-private-methods": "^7.27.1",
     "@babel/preset-env": "^7.28.3",
+    "@babel/preset-react": "^7.27.1",
     "@react-native-community/cli": "^16.0.3",
     "@react-native/babel-preset": "0.76.9",
     "@react-native/eslint-config": "0.76.9",

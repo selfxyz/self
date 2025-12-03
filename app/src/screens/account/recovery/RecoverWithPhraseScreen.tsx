@@ -20,14 +20,6 @@ import {
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-
-import Paste from '@/images/icons/paste.svg';
-import type { RootStackParamList } from '@/navigation';
-import { useAuth } from '@/providers/authProvider';
-import {
-  loadPassportDataAndSecret,
-  reStorePassportDataWithRightCSCA,
-} from '@/providers/passportDataProvider';
 import {
   black,
   slate300,
@@ -35,7 +27,15 @@ import {
   slate600,
   slate700,
   white,
-} from '@/utils/colors';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import Paste from '@/assets/icons/paste.svg';
+import type { RootStackParamList } from '@/navigation';
+import { getPrivateKeyFromMnemonic, useAuth } from '@/providers/authProvider';
+import {
+  loadPassportData,
+  reStorePassportDataWithRightCSCA,
+} from '@/providers/passportDataProvider';
 
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation =
@@ -55,57 +55,91 @@ const RecoverWithPhraseScreen: React.FC = () => {
   }, []);
 
   const restoreAccount = useCallback(async () => {
-    setRestoring(true);
-    const slimMnemonic = mnemonic?.trim();
-    if (!slimMnemonic || !ethers.Mnemonic.isValidMnemonic(slimMnemonic)) {
-      setRestoring(false);
-      return;
-    }
-    const result = await restoreAccountFromMnemonic(slimMnemonic);
+    try {
+      setRestoring(true);
+      const slimMnemonic = mnemonic?.trim();
+      if (!slimMnemonic || !ethers.Mnemonic.isValidMnemonic(slimMnemonic)) {
+        setRestoring(false);
+        return;
+      }
+      const result = await restoreAccountFromMnemonic(slimMnemonic);
 
-    if (!result) {
-      console.warn('Failed to restore account');
-      navigation.navigate('Launch');
-      setRestoring(false);
-      return;
-    }
+      if (!result) {
+        console.warn('Failed to restore account');
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_AUTH, {
+          mnemonicLength: slimMnemonic.split(' ').length,
+        });
+        navigation.navigate({ name: 'Home', params: {} });
+        setRestoring(false);
+        return;
+      }
 
-    const passportDataAndSecret = (await loadPassportDataAndSecret()) as string;
-    const { passportData, secret } = JSON.parse(passportDataAndSecret);
-    const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
-      passportData,
-      secret as string,
-      {
-        getCommitmentTree(docCategory) {
-          return useProtocolStore.getState()[docCategory].commitment_tree;
+      const passportData = await loadPassportData();
+      const secret = getPrivateKeyFromMnemonic(slimMnemonic);
+
+      if (!passportData || !secret) {
+        console.warn(
+          'No passport data found on device. Please scan or import your document.',
+        );
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_AUTH, {
+          reason: 'no_passport_data',
+        });
+        navigation.navigate({ name: 'Home', params: {} });
+        setRestoring(false);
+        return;
+      }
+      const passportDataParsed = JSON.parse(passportData);
+
+      const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
+        passportDataParsed,
+        secret as string,
+        {
+          getCommitmentTree(docCategory) {
+            return useProtocolStore.getState()[docCategory].commitment_tree;
+          },
+          getAltCSCA(docCategory) {
+            if (docCategory === 'aadhaar') {
+              const publicKeys =
+                useProtocolStore.getState().aadhaar.public_keys;
+              // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+              return publicKeys
+                ? Object.fromEntries(publicKeys.map(key => [key, key]))
+                : {};
+            }
+
+            return useProtocolStore.getState()[docCategory].alternative_csca;
+          },
         },
-        getAltCSCA(docCategory) {
-          if (docCategory === 'aadhaar') {
-            const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
-            // Convert string[] to Record<string, string> format expected by AlternativeCSCA
-            return publicKeys
-              ? Object.fromEntries(publicKeys.map(key => [key, key]))
-              : {};
-          }
-
-          return useProtocolStore.getState()[docCategory].alternative_csca;
-        },
-      },
-    );
-    if (!isRegistered) {
-      console.warn(
-        'Secret provided did not match a registered passport. Please try again.',
       );
-      reStorePassportDataWithRightCSCA(passportData, csca as string);
-      navigation.navigate('Launch');
-      setRestoring(false);
-      return;
-    }
+      if (!isRegistered) {
+        console.warn(
+          'Secret provided did not match a registered passport. Please try again.',
+        );
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED, {
+          reason: 'document_not_registered',
+          hasCSCA: !!csca,
+        });
+        navigation.navigate({ name: 'Home', params: {} });
+        setRestoring(false);
+        return;
+      }
 
-    setRestoring(false);
-    await markCurrentDocumentAsRegistered(selfClient);
-    trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
-    navigation.navigate('AccountVerifiedSuccess');
+      if (csca) {
+        await reStorePassportDataWithRightCSCA(passportDataParsed, csca);
+      }
+
+      await markCurrentDocumentAsRegistered(selfClient);
+      setRestoring(false);
+      trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
+      navigation.navigate('AccountVerifiedSuccess');
+    } catch (error) {
+      trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN, {
+        reason: 'unexpected_error',
+        error: error instanceof Error ? error.message : 'unknown',
+      });
+      setRestoring(false);
+      navigation.navigate({ name: 'Home', params: {} });
+    }
   }, [
     mnemonic,
     navigation,

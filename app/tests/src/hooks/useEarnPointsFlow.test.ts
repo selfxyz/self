@@ -9,14 +9,14 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
 import { useRegisterReferral } from '@/hooks/useRegisterReferral';
-import useUserStore from '@/stores/userStore';
-import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 import {
   hasUserAnIdentityDocumentRegistered,
   hasUserDoneThePointsDisclosure,
   POINT_VALUES,
   pointsSelfApp,
-} from '@/utils/points';
+} from '@/services/points';
+import useUserStore from '@/stores/userStore';
+import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
@@ -30,7 +30,7 @@ jest.mock('@/hooks/useRegisterReferral', () => ({
   useRegisterReferral: jest.fn(),
 }));
 
-jest.mock('@/utils/points', () => ({
+jest.mock('@/services/points', () => ({
   hasUserAnIdentityDocumentRegistered: jest.fn(),
   hasUserDoneThePointsDisclosure: jest.fn(),
   pointsSelfApp: jest.fn(),
@@ -39,13 +39,7 @@ jest.mock('@/utils/points', () => ({
   },
 }));
 
-jest.mock('@/stores/userStore', () => {
-  const actual = jest.requireActual('@/stores/userStore');
-  return {
-    __esModule: true,
-    default: actual.default,
-  };
-});
+// userStore is used as-is, no mock needed
 
 const mockNavigate = jest.fn();
 const mockUseNavigation = useNavigation as jest.MockedFunction<
@@ -210,6 +204,17 @@ describe('useEarnPointsFlow', () => {
 
       expect(mockHasUserAnIdentityDocumentRegistered).toHaveBeenCalled();
       expect(mockHasUserDoneThePointsDisclosure).toHaveBeenCalled();
+
+      expect(mockNavigate).toHaveBeenCalledWith('PointsInfo', {
+        showNextButton: true,
+        onNextButtonPress: expect.any(Function),
+      });
+
+      // We pass onNextButtonPress() that displays the points disclosure modal
+      await act(async () => {
+        await mockNavigate.mock.calls[0][1].onNextButtonPress();
+      });
+
       expect(mockNavigate).toHaveBeenCalledWith('Modal', {
         titleText: 'Points Disclosure Required',
         bodyText:
@@ -236,7 +241,16 @@ describe('useEarnPointsFlow', () => {
         await result.current.onEarnPointsPress();
       });
 
-      const callbackId = mockNavigate.mock.calls[0][1].callbackId;
+      expect(mockNavigate).toHaveBeenCalledWith('PointsInfo', {
+        showNextButton: true,
+        onNextButtonPress: expect.any(Function),
+      });
+
+      await act(async () => {
+        await mockNavigate.mock.calls[0][1].onNextButtonPress();
+      });
+
+      const callbackId = mockNavigate.mock.calls[1][1].callbackId;
       const callbacks = getModalCallbacks(callbackId);
 
       expect(callbacks).toBeDefined();
@@ -274,7 +288,16 @@ describe('useEarnPointsFlow', () => {
         await result.current.onEarnPointsPress();
       });
 
-      const callbackId = mockNavigate.mock.calls[0][1].callbackId;
+      expect(mockNavigate).toHaveBeenCalledWith('PointsInfo', {
+        showNextButton: true,
+        onNextButtonPress: expect.any(Function),
+      });
+
+      await act(async () => {
+        await mockNavigate.mock.calls[0][1].onNextButtonPress();
+      });
+
+      const callbackId = mockNavigate.mock.calls[1][1].callbackId;
       const callbacks = getModalCallbacks(callbackId);
 
       act(() => {
@@ -637,6 +660,15 @@ describe('useEarnPointsFlow', () => {
         await result.current.onEarnPointsPress();
       });
 
+      expect(mockNavigate).toHaveBeenCalledWith('PointsInfo', {
+        showNextButton: true,
+        onNextButtonPress: expect.any(Function),
+      });
+
+      await act(async () => {
+        await mockNavigate.mock.calls[0][1].onNextButtonPress();
+      });
+
       // The function catches errors and returns false, so it should show points disclosure modal
       expect(mockNavigate).toHaveBeenCalledWith(
         'Modal',
@@ -663,7 +695,16 @@ describe('useEarnPointsFlow', () => {
         await result.current.onEarnPointsPress();
       });
 
-      const callbackId = mockNavigate.mock.calls[0][1].callbackId;
+      expect(mockNavigate).toHaveBeenCalledWith('PointsInfo', {
+        showNextButton: true,
+        onNextButtonPress: expect.any(Function),
+      });
+
+      await act(async () => {
+        await mockNavigate.mock.calls[0][1].onNextButtonPress();
+      });
+
+      const callbackId = mockNavigate.mock.calls[1][1].callbackId;
       const callbacks = getModalCallbacks(callbackId);
 
       await act(async () => {

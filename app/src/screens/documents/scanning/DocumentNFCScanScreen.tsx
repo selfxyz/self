@@ -32,11 +32,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
-import {
-  hasAnyValidRegisteredDocument,
-  sanitizeErrorMessage,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { sanitizeErrorMessage, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
   ButtonsContainer,
@@ -46,32 +42,38 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate100,
+  slate400,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
+import NFC_IMAGE from '@/assets/images/nfc.png';
+import { logNFCEvent } from '@/config/sentry';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import NFC_IMAGE from '@/images/nfc.png';
-import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import type { RootStackParamList } from '@/navigation';
-import { useFeedback } from '@/providers/feedbackProvider';
-import { storePassportData } from '@/providers/passportDataProvider';
-import { logNFCEvent } from '@/Sentry';
-import {
-  configureNfcAnalytics,
-  flushAllAnalytics,
-  setNfcScanningActive,
-  trackNfcEvent,
-} from '@/utils/analytics';
-import { black, slate100, slate400, slate500, white } from '@/utils/colors';
-import { sendFeedbackEmail } from '@/utils/email';
-import { dinot } from '@/utils/fonts';
 import {
   buttonTap,
   feedbackSuccess,
   feedbackUnsuccessful,
   impactLight,
-} from '@/utils/haptic';
-import { parseScanResponse, scan } from '@/utils/nfcScanner';
+} from '@/integrations/haptics';
+import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
+import { useFeedback } from '@/providers/feedbackProvider';
+import { storePassportData } from '@/providers/passportDataProvider';
+import {
+  configureNfcAnalytics,
+  flushAllAnalytics,
+  setNfcScanningActive,
+  trackNfcEvent,
+} from '@/services/analytics';
+import { sendFeedbackEmail } from '@/services/email';
 
 const emitter =
   Platform.OS === 'android'
@@ -447,9 +449,6 @@ const DocumentNFCScanScreen: React.FC = () => {
     trackEvent,
   ]);
 
-  const navigateToLaunch = useHapticNavigation('Launch', {
-    action: 'cancel',
-  });
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
   });
@@ -457,12 +456,7 @@ const DocumentNFCScanScreen: React.FC = () => {
   const onCancelPress = async () => {
     flushAllAnalytics();
     logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
-    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
-    if (hasValidDocument) {
-      navigateToHome();
-    } else {
-      navigateToLaunch();
-    }
+    navigateToHome();
   };
 
   useFocusEffect(

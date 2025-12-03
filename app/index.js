@@ -19,7 +19,7 @@ import App from './App';
 import { name as appName } from './app.json';
 import tamaguiConfig from './tamagui.config';
 
-import './src/utils/ethers';
+import './src/utils/crypto/ethers';
 import 'react-native-gesture-handler';
 
 // Set global Buffer before any other imports

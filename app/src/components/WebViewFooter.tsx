@@ -6,9 +6,13 @@ import React from 'react';
 import { ArrowLeft, ArrowRight, RotateCcw } from '@tamagui/lucide-icons';
 
 import { Button, XStack, YStack } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  black,
+  slate50,
+  slate400,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { black, slate50, slate400 } from '@/utils/colors';
-import { buttonTap } from '@/utils/haptic';
+import { buttonTap } from '@/integrations/haptics';
 
 export interface WebViewFooterProps {
   canGoBack: boolean;
