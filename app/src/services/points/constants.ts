@@ -5,3 +5,6 @@
 import { pointsApiBaseUrl } from '@/consts/links';
 
 export const POINTS_API_BASE_URL = pointsApiBaseUrl;
+
+export const POINTS_TOKEN_CONTRACT_ADDRESS =
+  '0xfa6279293dfa5b38486ee179e4ddf6806c517a49'; // gitleaks:allow

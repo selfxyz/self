@@ -6,3 +6,5 @@
 0e4555eee6589aa9cca68f451227b149277d8c90:app/tests/src/utils/points/api.test.ts:generic-api-key:34
 circuits/circuits/gcp_jwt_verifier/example_jwt.txt:jwt:1
 cadd7ae5b768c261230f84426eac879c1853ce70:app/ios/Podfile.lock:generic-api-key:2586
+aeb8287078f088ecd8e9430e3f6a9f2c593ef1fc:app/src/utils/points/constants.ts:generic-api-key:7
+app/src/services/points/constants.ts:generic-api-key:10
