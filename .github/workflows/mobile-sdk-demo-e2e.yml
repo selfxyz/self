@@ -293,7 +293,7 @@ jobs:
           path: |
             packages/mobile-sdk-demo/ios/Pods
             ~/Library/Caches/CocoaPods
-          lock-file: packages/mobile-sdk-demo/ios/Podfile.lock
+          lockfile: packages/mobile-sdk-demo/ios/Podfile.lock
       # DerivedData caching disabled - caused intermittent build failures due to stale cache
       # Pod caching still speeds up pod install significantly
       - name: Verify iOS Runtime

@@ -5,6 +5,11 @@
 /* global jest */
 /** @jest-environment jsdom */
 
+// Set up Buffer globally for tests that need it
+const { Buffer } = require('buffer');
+
+global.Buffer = Buffer;
+
 // Mock React Native PixelRatio globally before anything else loads
 const mockPixelRatio = {
   get: jest.fn(() => 2),

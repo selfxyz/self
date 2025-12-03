@@ -277,7 +277,7 @@ jobs:
           path: |
             app/ios/Pods
             ~/Library/Caches/CocoaPods
-          lock-file: app/ios/Podfile.lock
+          lockfile: app/ios/Podfile.lock
           cache-version: ${{ env.GH_CACHE_VERSION }}
       - name: Cache Xcode build
         uses: actions/cache@v4

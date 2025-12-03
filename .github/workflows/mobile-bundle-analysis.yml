@@ -112,7 +112,7 @@ jobs:
         uses: ./.github/actions/cache-pods
         with:
           path: app/ios/Pods
-          lock-file: app/ios/Podfile.lock
+          lockfile: app/ios/Podfile.lock
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
