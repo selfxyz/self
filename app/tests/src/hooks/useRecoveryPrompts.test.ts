@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { AppState } from 'react-native';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import { CRITICAL_RECOVERY_PROMPT_ROUTES } from '@/consts/recoveryPrompts';
@@ -43,8 +44,11 @@ const showModal = jest.fn();
 const getAllDocuments = jest.fn();
 (usePassport as jest.Mock).mockReturnValue({ getAllDocuments });
 
-const getAppState = () =>
-  require('react-native').AppState as unknown as {
+const getAppState = (): {
+  currentState: string;
+  addEventListener: jest.Mock;
+} =>
+  AppState as unknown as {
     currentState: string;
     addEventListener: jest.Mock;
   };
@@ -75,8 +79,8 @@ describe('useRecoveryPrompts', () => {
 
     (useModal as jest.Mock).mockReturnValue({ showModal, visible: false });
     getAllDocuments.mockResolvedValue({ doc1: {} as any });
-    const AppState = getAppState();
-    AppState.currentState = 'active';
+    const mockAppState = getAppState();
+    mockAppState.currentState = 'active';
     act(() => {
       useSettingStore.setState({
         loginCount: 0,
@@ -156,8 +160,8 @@ describe('useRecoveryPrompts', () => {
   });
 
   it('prompts when returning from background on eligible route', async () => {
-    const AppState = getAppState();
-    AppState.currentState = 'background';
+    const mockAppState = getAppState();
+    mockAppState.currentState = 'background';
     act(() => {
       useSettingStore.setState({ loginCount: 1 });
     });
