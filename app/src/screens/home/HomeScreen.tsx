@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Dimensions, Image, Pressable } from 'react-native';
 import { Button, ScrollView, Text, View, XStack, YStack } from 'tamagui';
 import {
@@ -21,22 +27,27 @@ import {
   DocumentEvents,
   PointEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks/useSafeBottomPadding';
+import {
+  black,
+  blue600,
+  slate50,
+  slate300,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
-import IdCardLayout from '@/components/homeScreen/idCard';
+import LogoInversed from '@/assets/images/logo_inversed.svg';
+import UnverifiedHumanImage from '@/assets/images/unverified_human.png';
+import IdCardLayout from '@/components/homescreen/IdCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
 import { usePoints } from '@/hooks/usePoints';
 import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
 import { useTestReferralFlow } from '@/hooks/useTestReferralFlow';
-import LogoInversed from '@/images/logo_inversed.svg';
-import UnverifiedHumanImage from '@/images/unverified_human.png';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
-import { black, slate50, slate300 } from '@/utils/colors';
-import { dinot } from '@/utils/fonts';
 
 const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -122,6 +133,10 @@ const HomeScreen: React.FC = () => {
   // Prevents back navigation
   usePreventRemove(true, () => {});
 
+  const hasValidRegisteredDocument = useMemo(() => {
+    return documentCatalog.documents.some(doc => doc.isRegistered === true);
+  }, [documentCatalog]);
+
   // Calculate bottom padding to prevent button bleeding into system navigation
   const bottomPadding = useSafeBottomPadding(20);
 
@@ -186,7 +201,7 @@ const HomeScreen: React.FC = () => {
           paddingBottom: 35, // Add extra bottom padding for shadow
         }}
       >
-        {documentCatalog.documents.length === 0 ? (
+        {!hasValidRegisteredDocument ? (
           <Pressable
             onPress={() => {
               navigation.navigate('CountryPicker');
@@ -218,7 +233,7 @@ const HomeScreen: React.FC = () => {
             const isSelected =
               documentCatalog.selectedDocumentId === metadata.id;
 
-            if (!documentData) {
+            if (!documentData || !documentData.metadata.isRegistered) {
               return null;
             }
 
@@ -302,11 +317,12 @@ const HomeScreen: React.FC = () => {
           testID="earn-points-button"
           onPress={() => {
             selfClient.trackEvent(PointEvents.HOME_POINT_EARN_POINTS_OPENED);
+
             onEarnPointsPress(true);
           }}
         >
           <Text
-            color="#2563EB"
+            color={blue600}
             textAlign="center"
             fontFamily={dinot}
             fontSize={18}

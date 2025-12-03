@@ -16,11 +16,6 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
 
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
-
-import type { RootStackParamList } from '@/navigation';
-import { useProofHistoryStore } from '@/stores/proofHistoryStore';
-import type { ProofHistory } from '@/stores/proofTypes';
-import { ProofStatus } from '@/stores/proofTypes';
 import {
   black,
   blue100,
@@ -31,9 +26,14 @@ import {
   slate300,
   slate500,
   white,
-} from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
-import { dinot } from '@/utils/fonts';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+
+import type { RootStackParamList } from '@/navigation';
+import { useProofHistoryStore } from '@/stores/proofHistoryStore';
+import type { ProofHistory } from '@/stores/proofTypes';
+import { ProofStatus } from '@/stores/proofTypes';
+import { extraYPadding } from '@/utils/styleUtils';
 
 type Section = {
   title: string;

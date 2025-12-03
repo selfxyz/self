@@ -4,8 +4,8 @@
 
 import { useEffect } from 'react';
 
+import { getNextSundayNoonUTC, type IncomingPoints } from '@/services/points';
 import { usePointEventStore } from '@/stores/pointEventStore';
-import { getNextSundayNoonUTC, type IncomingPoints } from '@/utils/points';
 
 /*
  * Hook to get incoming points for the user. It shows the optimistic incoming points.

@@ -17,16 +17,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
 
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
-
-import BugIcon from '@/images/icons/bug_icon.svg';
-import IdIcon from '@/images/icons/id_icon.svg';
-import WarningIcon from '@/images/icons/warning.svg';
-import type { RootStackParamList } from '@/navigation';
-import { unsafe_clearSecrets } from '@/providers/authProvider';
-import { usePassport } from '@/providers/passportDataProvider';
-import { usePointEventStore } from '@/stores/pointEventStore';
-import { useSettingStore } from '@/stores/settingStore';
 import {
   red500,
   slate100,
@@ -38,15 +28,26 @@ import {
   slate900,
   white,
   yellow500,
-} from '@/utils/colors';
-import { IS_DEV_MODE } from '@/utils/devUtils';
-import { dinot } from '@/utils/fonts';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
+
+import BugIcon from '@/assets/icons/bug_icon.svg';
+import IdIcon from '@/assets/icons/id_icon.svg';
+import WarningIcon from '@/assets/icons/warning.svg';
+import type { RootStackParamList } from '@/navigation';
+import { navigationScreens } from '@/navigation';
+import { unsafe_clearSecrets } from '@/providers/authProvider';
+import { usePassport } from '@/providers/passportDataProvider';
 import {
   isNotificationSystemReady,
   requestNotificationPermission,
   subscribeToTopics,
   unsubscribeFromTopics,
-} from '@/utils/notifications/notificationService';
+} from '@/services/notifications/notificationService';
+import { usePointEventStore } from '@/stores/pointEventStore';
+import { useSettingStore } from '@/stores/settingStore';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 
 interface TopicToggleButtonProps {
   label: string;
@@ -183,40 +184,6 @@ function ParameterSection({
   );
 }
 
-const items = [
-  'DevSettings',
-  'CountryPicker',
-  'DevLoadingScreen',
-  'AadhaarUpload',
-  'DevFeatureFlags',
-  'DevHapticFeedback',
-  'DevPrivateKey',
-  'Splash',
-  'Launch',
-  'DocumentOnboarding',
-  'DocumentCamera',
-  'DocumentNFCScan',
-  'DocumentDataInfo',
-  'Loading',
-  'AccountVerifiedSuccess',
-  'ConfirmBelonging',
-  'CreateMock',
-  'Home',
-  'Disclaimer',
-  'QRCodeViewFinder',
-  'Prove',
-  'ProofRequestStatus',
-  'Referral',
-  'Settings',
-  'AccountRecovery',
-  'SaveRecoveryPhrase',
-  'RecoverWithPhrase',
-  'ShowRecoveryPhrase',
-  'CloudBackupSettings',
-  'ComingSoon',
-  'DocumentCameraTrouble',
-  'DocumentNFCTrouble',
-] satisfies (keyof RootStackParamList)[];
 const ScreenSelector = ({}) => {
   const navigation = useNavigation();
   const [open, setOpen] = useState(false);
@@ -274,16 +241,22 @@ const ScreenSelector = ({}) => {
           <Select.Group>
             {useMemo(
               () =>
-                items.sort().map((item, i) => {
-                  return (
-                    <Select.Item index={i} key={item} value={item}>
-                      <Select.ItemText>{item}</Select.ItemText>
-                      <Select.ItemIndicator marginLeft="auto">
-                        <Check size={16} />
-                      </Select.ItemIndicator>
-                    </Select.Item>
-                  );
-                }),
+                (
+                  Object.keys(
+                    navigationScreens,
+                  ) as (keyof typeof navigationScreens)[]
+                )
+                  .sort()
+                  .map((item, i) => {
+                    return (
+                      <Select.Item index={i} key={item} value={item}>
+                        <Select.ItemText>{item}</Select.ItemText>
+                        <Select.ItemIndicator marginLeft="auto">
+                          <Check size={16} />
+                        </Select.ItemIndicator>
+                      </Select.Item>
+                    );
+                  }),
               [],
             )}
           </Select.Group>

@@ -8,7 +8,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { ScrollView, Spinner } from 'tamagui';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import loadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
@@ -20,19 +21,21 @@ import {
   typography,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { useProofHistoryStore } from '@/stores/proofHistoryStore';
-import { ProofStatus } from '@/stores/proofTypes';
-import { black, white } from '@/utils/colors';
 import {
   buttonTap,
   notificationError,
   notificationSuccess,
-} from '@/utils/haptic';
+} from '@/integrations/haptics';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
+import { getWhiteListedDisclosureAddresses } from '@/services/points/utils';
+import { useProofHistoryStore } from '@/stores/proofHistoryStore';
+import { ProofStatus } from '@/stores/proofTypes';
 
 const SuccessScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -41,6 +44,8 @@ const SuccessScreen: React.FC = () => {
   const selfApp = useSelfAppStore(state => state.selfApp);
   const appName = selfApp?.appName;
   const goHome = useHapticNavigation('Home');
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { updateProofStatus } = useProofHistoryStore();
 
@@ -55,15 +60,28 @@ const SuccessScreen: React.FC = () => {
     useState<LottieViewProps['source']>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
+  const [whitelistedPoints, setWhitelistedPoints] = useState<number | null>(
+    null,
+  );
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const onOkPress = useCallback(() => {
+  const onOkPress = useCallback(async () => {
     buttonTap();
-    goHome();
-    setTimeout(() => {
-      selfClient.getSelfAppState().cleanSelfApp();
-    }, 2000); // Wait 2 seconds to user coming back to the home screen. If we don't wait the appname will change and user will see it.
-  }, [goHome, selfClient]);
+
+    if (whitelistedPoints !== null) {
+      navigation.navigate('Gratification', {
+        points: whitelistedPoints,
+      });
+      setTimeout(() => {
+        selfClient.getSelfAppState().cleanSelfApp();
+      }, 2000);
+    } else {
+      goHome();
+      setTimeout(() => {
+        selfClient.getSelfAppState().cleanSelfApp();
+      }, 2000);
+    }
+  }, [whitelistedPoints, navigation, goHome, selfClient]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
@@ -88,7 +106,28 @@ const SuccessScreen: React.FC = () => {
         sessionId,
         appName,
       });
-      // Start countdown for redirect (only if we are on this screen and haven't started yet)
+
+      if (selfApp?.endpoint && whitelistedPoints === null) {
+        const checkWhitelist = async () => {
+          try {
+            const whitelistedContracts =
+              await getWhiteListedDisclosureAddresses();
+            const endpoint = selfApp.endpoint.toLowerCase();
+            const whitelistedContract = whitelistedContracts.find(
+              c => c.contract_address.toLowerCase() === endpoint,
+            );
+
+            if (whitelistedContract) {
+              setWhitelistedPoints(whitelistedContract.points_per_disclosure);
+            }
+          } catch (error) {
+            console.error('Error checking whitelist:', error);
+          }
+        };
+
+        checkWhitelist();
+      }
+
       if (isFocused && !countdownStarted && selfApp?.deeplinkCallback) {
         if (selfApp?.deeplinkCallback) {
           try {
@@ -133,7 +172,9 @@ const SuccessScreen: React.FC = () => {
     reason,
     updateProofStatus,
     selfApp?.deeplinkCallback,
+    selfApp?.endpoint,
     countdownStarted,
+    whitelistedPoints,
   ]);
 
   useEffect(() => {

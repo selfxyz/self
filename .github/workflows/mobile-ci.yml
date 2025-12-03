@@ -183,6 +183,9 @@ jobs:
           else
             echo "✅ All required dependency files exist"
           fi
+      - name: Check for nested require() in tests
+        run: node scripts/check-test-requires.cjs
+        working-directory: ./app
       - name: App Tests
         env:
           # Increase Node.js memory to prevent hermes-parser WASM memory errors
@@ -274,7 +277,7 @@ jobs:
           path: |
             app/ios/Pods
             ~/Library/Caches/CocoaPods
-          lock-file: app/ios/Podfile.lock
+          lockfile: app/ios/Podfile.lock
           cache-version: ${{ env.GH_CACHE_VERSION }}
       - name: Cache Xcode build
         uses: actions/cache@v4

@@ -37,32 +37,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Node Modules
-        uses: actions/cache@v4
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
             node_modules
             app/node_modules
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
-      - name: Cache Ruby Bundler
-        uses: actions/cache@v4
+          cache-version: node-${{ env.NODE_VERSION_SANITIZED }}
+      - name: Cache Bundler
+        uses: ./.github/actions/cache-bundler
         with:
           path: app/vendor/bundle
-          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ hashFiles('app/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-
+          lock-file: app/Gemfile.lock
+          cache-version: ruby${{ env.RUBY_VERSION }}
       - name: Cache Gradle
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-gradle
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('app/android/**/gradle-wrapper.properties', 'app/android/**/gradle-wrapper.jar') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
@@ -100,30 +94,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Node Modules
-        uses: actions/cache@v4
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
             node_modules
             app/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
-      - name: Cache Ruby Bundler
-        uses: actions/cache@v4
+          cache-version: node-${{ env.NODE_VERSION_SANITIZED }}
+      - name: Cache Bundler
+        uses: ./.github/actions/cache-bundler
         with:
           path: app/vendor/bundle
-          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ hashFiles('app/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-
+          lock-file: app/Gemfile.lock
+          cache-version: ruby${{ env.RUBY_VERSION }}
       - name: Cache CocoaPods
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-pods
         with:
           path: app/ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('app/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
+          lockfile: app/ios/Podfile.lock
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:

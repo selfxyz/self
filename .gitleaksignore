@@ -3,10 +3,8 @@
 1b461a626e0a4a93d4e1c727e7aed8c955aa728c:common/src/utils/passports/validate.test.ts:generic-api-key:73
 1b461a626e0a4a93d4e1c727e7aed8c955aa728c:common/src/utils/passports/validate.test.ts:generic-api-key:74
 8bc1e85075f73906767652ab35d5563efce2a931:packages/mobile-sdk-alpha/src/animations/passport_verify.json:aws-access-token:6
-f506113a22e5b147132834e4659f5af308448389:app/tests/utils/deeplinks.test.ts:generic-api-key:183
-5a67b5cc50f291401d1da4e51706d0cfcf1c2316:app/tests/utils/deeplinks.test.ts:generic-api-key:182
 0e4555eee6589aa9cca68f451227b149277d8c90:app/tests/src/utils/points/api.test.ts:generic-api-key:34
-feb433e3553f8a7fa6c724b2de5a3e32ef079880:app/ios/Podfile.lock:generic-api-key:2594
-3d0e1b4589680df2451031913d067b1b91dafa60:app/ios/Podfile.lock:generic-api-key:2594
-3d0e1b4589680df2451031913d067b1b91dafa60:app/tests/utils/deeplinks.test.ts:generic-api-key:208
 circuits/circuits/gcp_jwt_verifier/example_jwt.txt:jwt:1
+cadd7ae5b768c261230f84426eac879c1853ce70:app/ios/Podfile.lock:generic-api-key:2586
+aeb8287078f088ecd8e9430e3f6a9f2c593ef1fc:app/src/utils/points/constants.ts:generic-api-key:7
+app/src/services/points/constants.ts:generic-api-key:10

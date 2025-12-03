@@ -118,26 +118,83 @@ vi.mock('react-native', () => ({
 
 ## Best Practices
 
-1. **Always use ES6 `import` statements** - Never use `require('react-native')` in test files
+1. **Always use ES6 `import` statements** - Never use `require('react')` or `require('react-native')` in test files
 2. **Put all imports at the top of the file** - No dynamic imports in hooks
 3. **Avoid `jest.resetModules()`** - Only use when absolutely necessary for module initialization tests
 4. **Use setup file mocks** - React Native is already mocked in `jest.setup.js` (Jest) or `tests/setup.ts` (Vitest)
 
+## Automated Enforcement
+
+The project has multiple layers of protection against nested require() patterns:
+
+### 1. ESLint Rule (app/.eslintrc.cjs)
+
+ESLint will fail on `require('react')` and `require('react-native')` in test files:
+
+```javascript
+'no-restricted-syntax': [
+  'error',
+  {
+    selector: "CallExpression[callee.name='require'][arguments.0.value='react']",
+    message: "Do not use require('react') in tests..."
+  },
+  {
+    selector: "CallExpression[callee.name='require'][arguments.0.value='react-native']",
+    message: "Do not use require('react-native') in tests..."
+  }
+]
+```
+
+Run `yarn lint` to check for violations.
+
+### 2. Validation Script (app/scripts/check-test-requires.cjs)
+
+Automated script to detect nested require patterns:
+
+```bash
+node scripts/check-test-requires.cjs
+```
+
+This script:
+- Scans all test files for `require('react')` and `require('react-native')`
+- Reports exact file locations and line numbers
+- Exits with error code 1 if issues found
+
+### 3. CI Fast-Fail Check
+
+GitHub Actions runs the validation script before tests:
+
+```yaml
+- name: Check for nested require() in tests
+  run: node scripts/check-test-requires.cjs
+  working-directory: ./app
+```
+
+This prevents wasting CI time on tests that will OOM.
+
 ## Quick Checklist
 
 Before committing test changes:
-- [ ] No `require('react-native')` calls in test files (use `import` instead)
-- [ ] All imports at top of file (not in hooks)
-- [ ] Search for nested patterns: `grep -r "require('react-native')" app/tests/`
+- [ ] No `require('react')` calls in test files (use `import React from 'react'` instead)
+- [ ] No `require('react-native')` calls in test files (use `import { ... } from 'react-native'` instead)
+- [ ] All imports at top of file (not in hooks or jest.mock() factories)
+- [ ] Run validation: `node scripts/check-test-requires.cjs`
+- [ ] Run lint: `yarn lint`
 
 ## Detection
 
-**Signs of nested require issues**: CI OOM errors, test timeouts, memory spikes, "Call stack size exceeded" errors
+**Signs of nested require issues**: CI OOM errors, test timeouts, memory spikes, "Call stack size exceeded" errors, tests hiding actual failures
 
-**Fix**: Search for `require('react-native')` in tests → Replace with `import` statements
+**Fix**:
+1. Search for `require('react')` and `require('react-native')` in tests
+2. Replace with `import` statements at the top of the file
+3. Run `node scripts/check-test-requires.cjs` to verify
 
 ## Related Files
 
+- `app/.eslintrc.cjs` - ESLint rules blocking nested requires
+- `app/scripts/check-test-requires.cjs` - Validation script
+- `.github/workflows/mobile-ci.yml` - CI enforcement
 - `app/jest.setup.js` - Jest setup with React Native mocks
 - `packages/mobile-sdk-alpha/tests/setup.ts` - Vitest setup with React Native mocks
 - `app/jest.config.cjs` - Jest configuration

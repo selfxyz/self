@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/qrcode",
-  "version": "1.0.16",
+  "version": "1.0.17-beta.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -69,10 +69,10 @@
     "prepublishOnly": "yarn build",
     "publish": "yarn npm publish --access public",
     "test": "echo 'no tests found'",
-    "types": "yarn build"
+    "types": "yarn workspace @selfxyz/sdk-common build && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@selfxyz/common": "workspace:^",
+    "@selfxyz/sdk-common": "workspace:^",
     "js-sha1": "^0.7.0",
     "js-sha256": "^0.11.0",
     "js-sha512": "^0.9.0",

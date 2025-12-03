@@ -57,6 +57,12 @@
       "import": "./dist/esm/constants/colors.js",
       "require": "./dist/cjs/constants/colors.cjs"
     },
+    "./constants/fonts": {
+      "types": "./dist/esm/constants/fonts.d.ts",
+      "react-native": "./dist/esm/constants/fonts.js",
+      "import": "./dist/esm/constants/fonts.js",
+      "require": "./dist/cjs/constants/fonts.cjs"
+    },
     "./components": {
       "types": "./dist/esm/components/index.d.ts",
       "react-native": "./dist/esm/components/index.js",
@@ -74,6 +80,12 @@
       "react-native": "./dist/esm/hooks/useSafeBottomPadding.js",
       "import": "./dist/esm/hooks/useSafeBottomPadding.js",
       "require": "./dist/cjs/hooks/useSafeBottomPadding.cjs"
+    },
+    "./utils/utils": {
+      "types": "./dist/esm/utils/utils.d.ts",
+      "react-native": "./dist/esm/utils/utils.js",
+      "import": "./dist/esm/utils/utils.js",
+      "require": "./dist/cjs/utils/utils.cjs"
     },
     "./svgs/*.svg": {
       "react-native": "./dist/svgs/*.svg",
@@ -139,6 +151,7 @@
   "dependencies": {
     "@babel/runtime": "^7.28.3",
     "@selfxyz/common": "workspace:^",
+    "@selfxyz/euclid": "^0.4.1",
     "@xstate/react": "^5.0.5",
     "node-forge": "^1.3.1",
     "react-native-nfc-manager": "^3.17.1",
@@ -179,9 +192,11 @@
     "lottie-react-native": "7.2.2",
     "react": "^18.3.1",
     "react-native": "0.76.9",
+    "react-native-blur-effect": "^1.1.3",
     "react-native-haptic-feedback": "*",
     "react-native-localize": "*",
-    "react-native-svg": "*"
+    "react-native-svg": "*",
+    "react-native-webview": "^13.16.0"
   },
   "packageManager": "yarn@4.6.0",
   "publishConfig": {

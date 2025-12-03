@@ -65,8 +65,8 @@ import { isMRZDocument } from '@selfxyz/common/utils/types';
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
+import { createKeychainOptions } from '@/integrations/keychain';
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
-import { createKeychainOptions } from '@/utils/keychainSecurity';
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
@@ -119,6 +119,11 @@ const notifyDocumentChange = (isMock: boolean) => {
 
 // Global flag to track if native modules are ready
 let nativeModulesReady = false;
+
+// Test-only helper so unit tests can reset module-level state without re-importing
+export function __resetPassportProviderTestState() {
+  nativeModulesReady = false;
+}
 
 export const PassportContext = createContext<IPassportContext>({
   getData: () => Promise.resolve(null),
@@ -242,7 +247,7 @@ export async function checkAndUpdateRegistrationStates(
 ): Promise<void> {
   // Lazy import to avoid circular dependency
   const { checkAndUpdateRegistrationStates: validateDocCheckAndUpdate } =
-    await import('@/utils/proving/validateDocument');
+    await import('@/proving/validateDocument');
   return validateDocCheckAndUpdate(selfClient);
 }
 

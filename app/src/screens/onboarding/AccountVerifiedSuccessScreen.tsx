@@ -14,13 +14,13 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
+import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { styles } from '@/screens/verification/ProofRequestStatusScreen';
-import { black, white } from '@/utils/colors';
-import { buttonTap } from '@/utils/haptic';
 
 const AccountVerifiedSuccessScreen: React.FC = ({}) => {
   const navigation =

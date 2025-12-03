@@ -6,10 +6,6 @@ import React from 'react';
 import { Image } from 'tamagui';
 
 import {
-  hasAnyValidRegisteredDocument,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
-import {
   BodyText,
   ButtonsContainer,
   SecondaryButton,
@@ -17,28 +13,23 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate100,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import NFC_IMAGE from '@/assets/images/nfc.png';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '@/utils/colors';
 
 const DocumentNFCScanScreen: React.FC = () => {
-  const selfClient = useSelfClient();
-  const navigateToLaunch = useHapticNavigation('Launch', {
-    action: 'cancel',
-  });
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
   });
 
   const onCancelPress = async () => {
-    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
-    if (hasValidDocument) {
-      navigateToHome();
-    } else {
-      navigateToLaunch();
-    }
+    navigateToHome();
   };
 
   return (

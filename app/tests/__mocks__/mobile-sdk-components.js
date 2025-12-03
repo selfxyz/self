@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 // Minimal JS mock for @selfxyz/mobile-sdk-alpha/components used in tests
-const React = require('react');
+// CRITICAL: Do NOT import React to avoid OOM issues in CI
 
 const getTextFromChildren = ch => {
   if (typeof ch === 'string') return ch;
@@ -13,41 +13,50 @@ const getTextFromChildren = ch => {
   return '';
 };
 
-const Caption = ({ children }) =>
-  React.createElement(React.Fragment, null, children);
-const Description = ({ children }) =>
-  React.createElement(React.Fragment, null, children);
-const Title = ({ children }) =>
-  React.createElement(React.Fragment, null, children);
+// Simple mock components that return plain objects instead of using React.createElement
+export const Caption = ({ children }) => ({
+  type: 'Caption',
+  props: { children },
+});
 
-// Use React.createElement directly instead of requiring react-native to avoid memory issues
-const PrimaryButton = ({ children, onPress, disabled, testID }) => {
+export const Description = ({ children }) => ({
+  type: 'Description',
+  props: { children },
+});
+
+export const PrimaryButton = ({ children, onPress, disabled, testID }) => {
   const buttonText = getTextFromChildren(children);
   const id =
     testID || `button-${buttonText.toLowerCase().replace(/\s+/g, '-')}`;
-  return React.createElement(
-    'View',
-    { onPress, disabled, testID: id, accessibilityRole: 'button' },
-    children,
-  );
+  return {
+    type: 'PrimaryButton',
+    props: {
+      children,
+      onPress,
+      disabled,
+      testID: id,
+      accessibilityRole: 'button',
+    },
+  };
 };
 
-const SecondaryButton = ({ children, onPress, disabled, testID }) => {
+export const SecondaryButton = ({ children, onPress, disabled, testID }) => {
   const buttonText = getTextFromChildren(children);
   const id =
     testID || `button-${buttonText.toLowerCase().replace(/\s+/g, '-')}`;
-  return React.createElement(
-    'View',
-    { onPress, disabled, testID: id, accessibilityRole: 'button' },
-    children,
-  );
+  return {
+    type: 'SecondaryButton',
+    props: {
+      children,
+      onPress,
+      disabled,
+      testID: id,
+      accessibilityRole: 'button',
+    },
+  };
 };
 
-module.exports = {
-  __esModule: true,
-  Caption,
-  Description,
-  Title,
-  PrimaryButton,
-  SecondaryButton,
-};
+export const Title = ({ children }) => ({
+  type: 'Title',
+  props: { children },
+});

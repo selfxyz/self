@@ -10,9 +10,9 @@ import {
   unsafe_getPointsPrivateKey,
   unsafe_getPrivateKey,
 } from '@/providers/authProvider';
-import { isSuccessfulStatus, makeApiRequest } from '@/utils/points/api';
-import { POINTS_API_BASE_URL } from '@/utils/points/constants';
-import { getPointsAddress } from '@/utils/points/utils';
+import { isSuccessfulStatus, makeApiRequest } from '@/services/points/api';
+import { POINTS_API_BASE_URL } from '@/services/points/constants';
+import { getPointsAddress } from '@/services/points/utils';
 
 // Mock dependencies
 jest.mock('axios');
@@ -20,23 +20,18 @@ jest.mock('@/providers/authProvider', () => ({
   unsafe_getPrivateKey: jest.fn(),
   unsafe_getPointsPrivateKey: jest.fn(),
 }));
-jest.mock('@/utils/points/utils', () => ({
+jest.mock('@/services/points/utils', () => ({
   getPointsAddress: jest.fn(),
 }));
-jest.mock('ethers', () => {
-  const actualEthers = jest.requireActual('ethers');
-  return {
-    ...actualEthers,
-    ethers: {
-      ...actualEthers.ethers,
-      Wallet: jest.fn(),
-      Signature: {
-        from: jest.fn(),
-      },
-      getBytes: jest.fn(),
+jest.mock('ethers', () => ({
+  ethers: {
+    Wallet: jest.fn(),
+    Signature: {
+      from: jest.fn(),
     },
-  };
-});
+    getBytes: jest.fn(),
+  },
+}));
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockUnsafeGetPrivateKey = unsafe_getPrivateKey as jest.MockedFunction<

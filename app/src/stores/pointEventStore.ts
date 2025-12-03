@@ -9,19 +9,20 @@ import type {
   IncomingPoints,
   PointEvent,
   PointEventType,
-} from '@/utils/points';
+} from '@/services/points';
 import {
   getIncomingPoints,
   getNextSundayNoonUTC,
   getPointsAddress,
   getTotalPoints,
-} from '@/utils/points';
-import { pollEventProcessingStatus } from '@/utils/points/eventPolling';
+} from '@/services/points';
+import { pollEventProcessingStatus } from '@/services/points/eventPolling';
 
 interface PointEventState {
   events: PointEvent[];
   isLoading: boolean;
   loadEvents: () => Promise<void>;
+  loadDisclosureEvents: () => Promise<void>;
   addEvent: (
     title: string,
     type: PointEventType,
@@ -38,7 +39,6 @@ interface PointEventState {
     lastUpdated: number | null;
     promise: Promise<IncomingPoints | null> | null;
   };
-  // these are the real points that are on chain. each sunday noon UTC they get updated based on incoming points
   points: number;
   refreshPoints: () => Promise<void>;
   fetchIncomingPoints: () => Promise<IncomingPoints | null>;
@@ -82,13 +82,11 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          // Validate that parsed data is an array
           if (!Array.isArray(parsed)) {
             console.error('Invalid stored events format, expected array');
             set({ events: [], isLoading: false });
             return;
           }
-          // Validate each event has required fields
           const events: PointEvent[] = parsed.filter((event: unknown) => {
             if (
               typeof event === 'object' &&
@@ -103,12 +101,9 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
             return false;
           }) as PointEvent[];
           set({ events, isLoading: false });
-          // Resume polling for any pending events that were interrupted by app restart
-          // (New events are polled immediately in recordEvents.ts when created)
           get()
             .getUnprocessedEvents()
             .forEach(event => {
-              // Use event.id as job_id (id is the job_id)
               pollEventProcessingStatus(event.id).then(result => {
                 if (result === 'completed') {
                   get().markEventAsProcessed(event.id);
@@ -119,16 +114,33 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
             });
         } catch (parseError) {
           console.error('Error parsing stored events:', parseError);
-          // Clear corrupted data
           await AsyncStorage.removeItem(STORAGE_KEY);
           set({ events: [], isLoading: false });
         }
       } else {
         set({ isLoading: false });
       }
+      await get().loadDisclosureEvents();
     } catch (error) {
       console.error('Error loading point events:', error);
       set({ isLoading: false });
+    }
+  },
+
+  loadDisclosureEvents: async () => {
+    try {
+      const { getDisclosurePointEvents } = await import(
+        '@/services/points/getEvents'
+      );
+      const { useProofHistoryStore } = await import(
+        '@/stores/proofHistoryStore'
+      );
+      await useProofHistoryStore.getState().initDatabase();
+      const disclosureEvents = await getDisclosurePointEvents();
+      const existingEvents = get().events.filter(e => e.type !== 'disclosure');
+      set({ events: [...existingEvents, ...disclosureEvents] });
+    } catch (error) {
+      console.error('Error loading disclosure events:', error);
     }
   },
 

@@ -1,0 +1,13 @@
+[extend]
+path = ".gitleaks.toml"
+
+[allowlist]
+description = "Project-specific overrides"
+paths = [
+    '''(?:^|/)Podfile\.lock$''',
+    '''(?:^|/)app/src/services/points/constants\.ts$''',
+]
+regexes = [
+    '''(?i)(?:token|key|address)[\w\s]*contract[\w\s]*=\s*['"]0x[a-f0-9]{40}['"]''',
+    '''POINTS_TOKEN_CONTRACT_ADDRESS\s*=\s*['"]0x[a-f0-9]{40}['"]''',
+]

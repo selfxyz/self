@@ -20,13 +20,13 @@ import {
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
+import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
-import { logNFCEvent, logProofEvent } from '@/Sentry';
+import analytics, { trackNfcEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
-import analytics, { trackNfcEvent } from '@/utils/analytics';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
 /**
@@ -89,6 +89,23 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         },
       },
       documents: selfClientDocumentsAdapter,
+      navigation: {
+        goBack: () => {
+          if (navigationRef.isReady()) {
+            navigationRef.goBack();
+          }
+        },
+        goTo: (routeName, params) => {
+          if (navigationRef.isReady()) {
+            if (params !== undefined) {
+              // @ts-expect-error
+              navigationRef.navigate(routeName, params);
+            } else {
+              navigationRef.navigate(routeName as never);
+            }
+          }
+        },
+      },
       crypto: {
         async hash(
           data: Uint8Array,
@@ -156,14 +173,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
 
     addListener(
       SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE,
-      async ({ hasValidDocument }) => {
+      async ({ hasValidDocument: _hasValidDocument }) => {
         setTimeout(() => {
           if (navigationRef.isReady()) {
-            if (hasValidDocument) {
-              navigationRef.navigate({ name: 'Home', params: {} });
-            } else {
-              navigationRef.navigate({ name: 'Launch', params: undefined });
-            }
+            navigationRef.navigate({ name: 'Home', params: {} });
           }
         }, 3000);
       },
@@ -202,7 +215,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
             logProofEvent('info', 'Device token registration started', context);
 
             const { registerDeviceToken: registerFirebaseDeviceToken } =
-              await import('@/utils/notifications/notificationService');
+              await import('@/services/notifications/notificationService');
             await registerFirebaseDeviceToken(uuid, fcmToken, isMock);
 
             analytics().trackEvent('DEVICE_TOKEN_REG_SUCCESS');

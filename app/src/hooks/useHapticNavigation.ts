@@ -6,8 +6,12 @@ import { useCallback } from 'react';
 import type { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 
+import {
+  impactLight,
+  impactMedium,
+  selectionChange,
+} from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation/index';
-import { impactLight, impactMedium, selectionChange } from '@/utils/haptic';
 
 type NavigationAction = 'default' | 'cancel' | 'confirm';
 

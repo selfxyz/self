@@ -25,7 +25,9 @@ import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { countryCodes } from '@selfxyz/common/constants';
 import { getCountryISO2 } from '@selfxyz/common/constants/countries';
 import {
+  dinot,
   generateMockDocument,
+  plexMono,
   signatureAlgorithmToStrictSignatureAlgorithm,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -35,13 +37,6 @@ import {
   PrimaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-
-import { useMockDataForm } from '@/hooks/useMockDataForm';
-import SelfDevCard from '@/images/card-dev.svg';
-import IdIcon from '@/images/icons/id_icon.svg';
-import NoteIcon from '@/images/icons/note.svg';
-import type { RootStackParamList } from '@/navigation';
-import { storePassportData } from '@/providers/passportDataProvider';
 import {
   black,
   borderColor,
@@ -53,10 +48,16 @@ import {
   textBlack,
   white,
   zinc400,
-} from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
-import { dinot, plexMono } from '@/utils/fonts';
-import { buttonTap, selectionChange } from '@/utils/haptic';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import IdIcon from '@/assets/icons/id_icon.svg';
+import NoteIcon from '@/assets/icons/note.svg';
+import SelfDevCard from '@/assets/images/card_dev.svg';
+import { useMockDataForm } from '@/hooks/useMockDataForm';
+import { buttonTap, selectionChange } from '@/integrations/haptics';
+import type { RootStackParamList } from '@/navigation';
+import { storePassportData } from '@/providers/passportDataProvider';
+import { extraYPadding } from '@/utils/styleUtils';
 
 const documentTypes = {
   mock_passport: 'Passport',

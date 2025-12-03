@@ -1,5 +1,5 @@
-import type { SelfApp } from '@selfxyz/common';
-import { getUniversalLink, REDIRECT_URL, WS_DB_RELAYER } from '@selfxyz/common';
+import type { SelfApp } from '@selfxyz/sdk-common';
+import { getUniversalLink, REDIRECT_URL, WS_DB_RELAYER } from '@selfxyz/sdk-common';
 import Lottie from 'lottie-react';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -12,6 +12,8 @@ import { containerStyle, ledContainerStyle, qrContainerStyle } from '../utils/st
 import { QRcodeSteps } from '../utils/utils.js';
 import { initWebSocket } from '../utils/websocket.js';
 import LED from './LED.js';
+
+const LottieComponent = Lottie.default || Lottie;
 
 interface SelfQRcodeProps {
   selfApp: SelfApp;
@@ -95,7 +97,8 @@ const SelfQRcode = ({
               return <BounceLoader loading={true} size={200} color="#94FBAB" />;
             case QRcodeSteps.PROOF_GENERATION_FAILED:
               return (
-                <Lottie.default
+                // @ts-expect-error Lottie typings don't match the default export shape
+                <LottieComponent
                   animationData={X_ANIMATION}
                   style={{ width: 200, height: 200 }}
                   onComplete={() => {
@@ -106,7 +109,8 @@ const SelfQRcode = ({
               );
             case QRcodeSteps.PROOF_VERIFIED:
               return (
-                <Lottie.default
+                // @ts-expect-error Lottie typings don't match the default export shape
+                <LottieComponent
                   animationData={CHECK_ANIMATION}
                   style={{ width: 200, height: 200 }}
                   onComplete={() => {

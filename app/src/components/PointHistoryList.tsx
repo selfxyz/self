@@ -13,10 +13,6 @@ import { Card, Text, View, XStack, YStack } from 'tamagui';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PointEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-
-import HeartIcon from '@/images/icons/heart.svg';
-import StarBlackIcon from '@/images/icons/star_black.svg';
-import { usePointEventStore } from '@/stores/pointEventStore';
 import {
   black,
   blue600,
@@ -26,9 +22,13 @@ import {
   slate400,
   slate500,
   white,
-} from '@/utils/colors';
-import { dinot, plexMono } from '@/utils/fonts';
-import type { PointEvent } from '@/utils/points';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+
+import HeartIcon from '@/assets/icons/heart.svg';
+import StarBlackIcon from '@/assets/icons/star_black.svg';
+import type { PointEvent } from '@/services/points';
+import { usePointEventStore } from '@/stores/pointEventStore';
 
 type Section = {
   title: string;
@@ -68,15 +68,15 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
 }) => {
   const selfClient = useSelfClient();
   const [refreshing, setRefreshing] = useState(false);
-  // Subscribe to events directly from store - component will auto-update when store changes
   const pointEvents = usePointEventStore(state => state.getAllPointEvents());
   const isLoading = usePointEventStore(state => state.isLoading);
   const refreshPoints = usePointEventStore(state => state.refreshPoints);
   const refreshIncomingPoints = usePointEventStore(
     state => state.refreshIncomingPoints,
   );
-  // loadEvents only needs to be called once on mount.
-  // and it is called in Points.ts
+  const loadDisclosureEvents = usePointEventStore(
+    state => state.loadDisclosureEvents,
+  );
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], {
@@ -271,14 +271,15 @@ export const PointHistoryList: React.FC<PointHistoryListProps> = ({
     [],
   );
 
-  // Pull-to-refresh handler
   const onRefresh = useCallback(() => {
     selfClient.trackEvent(PointEvents.REFRESH_HISTORY);
     setRefreshing(true);
-    Promise.all([refreshPoints(), refreshIncomingPoints()]).finally(() =>
-      setRefreshing(false),
-    );
-  }, [selfClient, refreshPoints, refreshIncomingPoints]);
+    Promise.all([
+      refreshPoints(),
+      refreshIncomingPoints(),
+      loadDisclosureEvents(),
+    ]).finally(() => setRefreshing(false));
+  }, [selfClient, refreshPoints, refreshIncomingPoints, loadDisclosureEvents]);
 
   const keyExtractor = useCallback((item: PointEvent) => item.id, []);
 

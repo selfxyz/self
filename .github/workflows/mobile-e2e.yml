@@ -56,6 +56,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        uses: ./.github/actions/yarnrc-hash
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn
         with:
@@ -63,7 +66,7 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
@@ -246,6 +249,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        uses: ./.github/actions/yarnrc-hash
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn
         with:
@@ -253,7 +259,7 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
@@ -330,7 +336,7 @@ jobs:
           path: |
             app/ios/Pods
             ~/Library/Caches/CocoaPods
-          lock-file: app/ios/Podfile.lock
+          lockfile: app/ios/Podfile.lock
       # DerivedData caching disabled - caused intermittent build failures due to stale cache
       # Pod caching still speeds up pod install significantly
       - name: Verify iOS Runtime
