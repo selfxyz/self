@@ -2,7 +2,10 @@
 # This file configures which files and secrets to ignore during scanning
 
 # Ignore specific file patterns
-paths-ignore:
+paths_ignore:
+  # Gitleaks configuration file (contains example secrets/patterns for detection)
+  - ".gitleaks.toml"
+
   # Mock certificates for testing (these are intentionally committed test data)
   - "**/mock_certificates/**/*.key"
   - "**/mock_certificates/**/*.crt"
@@ -46,47 +49,47 @@ paths-ignore:
   - "**/packages/mobile-sdk-alpha/ios/Frameworks/**"
   - "**/packages/mobile-sdk-alpha/ios/SelfSDK/**"
 # Ignore specific secret types for mock files
-secrets-ignore:
+secrets_ignore:
   - "Generic Private Key" # For mock certificate keys
   - "Generic Certificate" # For mock certificates
   - "RSA Private Key" # For mock RSA keys
   - "EC Private Key" # For mock EC keys
 
-
 secret:
   ignored_matches:
-  - match: 2036b4e50ad3042969b290e354d9864465107a14de6f5a36d49f81ea8290def8
-    name: prebuilt-ios-arm64-apple-ios.private.swiftinterface
+    - match: 2036b4e50ad3042969b290e354d9864465107a14de6f5a36d49f81ea8290def8
+      name: prebuilt-ios-arm64-apple-ios.private.swiftinterface
   ignored_paths:
-  - '**/*.swiftinterface'
-  - '**/*.xcframework/**'
-  - '**/packages/mobile-sdk-alpha/ios/Frameworks/**'
-  - '**/OpenSSL.xcframework/**'
-  - '**/demo-app/**/mock/**'
-  - common/src/mock_certificates/aadhaar/mockAadhaarCert.ts
-  - '**/NFCPassportReader.xcframework/**'
-  - common/src/utils/passports/genMockIdDoc.ts
-  - '**/tests/**/*.crt'
-  - '**/mock_certificates/**/*.crt'
-  - '**/mock_certificates/**/*.key'
-  - '**/demo-app/**/test-data/**'
-  - '**/generated/**/*.key'
-  - '**/SelfSDK.xcframework/**'
-  - '**/mock/**/*.crt'
-  - '**/generated/**/*.crt'
-  - '**/test/**/*.key'
-  - '**/mock/**/*.key'
-  - '**/test/**/*.crt'
-  - '**/test/**/*.pem'
-  - '**/constants/mockCertificates.ts'
-  - '**/mock/**/*.pem'
-  - '**/mock_certificates/**/*.pem'
-  - '**/mock-data/**'
-  - '**/packages/mobile-sdk-alpha/ios/SelfSDK/**'
-  - '**/tests/**/*.key'
-  - '**/generated/**/*.pem'
-  - '**/tests/**/*.pem'
-  - '**/test-data/**'
-  - common/src/mock_certificates/**
-  - '**/*.xcframework'
+    - ".gitleaks.toml"
+    - "**/*.swiftinterface"
+    - "**/*.xcframework/**"
+    - "**/packages/mobile-sdk-alpha/ios/Frameworks/**"
+    - "**/OpenSSL.xcframework/**"
+    - "**/demo-app/**/mock/**"
+    - common/src/mock_certificates/aadhaar/mockAadhaarCert.ts
+    - "**/NFCPassportReader.xcframework/**"
+    - common/src/utils/passports/genMockIdDoc.ts
+    - "**/tests/**/*.crt"
+    - "**/mock_certificates/**/*.crt"
+    - "**/mock_certificates/**/*.key"
+    - "**/demo-app/**/test-data/**"
+    - "**/generated/**/*.key"
+    - "**/SelfSDK.xcframework/**"
+    - "**/mock/**/*.crt"
+    - "**/generated/**/*.crt"
+    - "**/test/**/*.key"
+    - "**/mock/**/*.key"
+    - "**/test/**/*.crt"
+    - "**/test/**/*.pem"
+    - "**/constants/mockCertificates.ts"
+    - "**/mock/**/*.pem"
+    - "**/mock_certificates/**/*.pem"
+    - "**/mock-data/**"
+    - "**/packages/mobile-sdk-alpha/ios/SelfSDK/**"
+    - "**/tests/**/*.key"
+    - "**/generated/**/*.pem"
+    - "**/tests/**/*.pem"
+    - "**/test-data/**"
+    - common/src/mock_certificates/**
+    - "**/*.xcframework"
 version: 2

@@ -21,7 +21,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.7.1</string>
+	<string>2.9.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -30,6 +30,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>proofofpassport</string>
+				<string>com.warroom.proofofpassport</string>
 			</array>
 		</dict>
 	</array>
@@ -39,6 +40,11 @@
 	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+		<string>sms</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NFCReaderUsageDescription</key>
@@ -53,7 +59,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Needed to scan the passport MRZ.</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Needed to secure the secret</string>
+	<string>Personal information is only stored in the secure element of your device.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string></string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -63,6 +69,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Advercase-Regular.otf</string>
+		<string>DINOT-Bold.otf</string>
 		<string>DINOT-Medium.otf</string>
 		<string>IBMPlexMono-Regular.otf</string>
 	</array>

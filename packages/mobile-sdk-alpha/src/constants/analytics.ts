@@ -69,6 +69,7 @@ export const BackupEvents = {
   CLOUD_BACKUP_ENABLED_DONE: 'Backup: Cloud Backup Enabled Done',
   CLOUD_BACKUP_ENABLE_STARTED: 'Backup: Cloud Backup Enable Started',
   CLOUD_BACKUP_STARTED: 'Backup: Cloud Backup Started',
+  CLOUD_RESTORE_FAILED_AUTH: 'Backup: Cloud Restore Failed: Authentication Failed',
   CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED: 'Backup: Cloud Restore Failed: Passport Not Registered',
   CLOUD_RESTORE_FAILED_UNKNOWN: 'Backup: Cloud Restore Failed: Unknown Error',
   CLOUD_RESTORE_SUCCESS: 'Backup: Cloud Restore Success',
@@ -133,6 +134,23 @@ export const PassportEvents = {
   PASSPORT_PARSE_FAILED: 'Passport: Passport Parse Failed',
   PASSPORT_PARSED: 'Passport: Passport Parsed',
   START_PASSPORT_NFC: 'Passport: Start Passport NFC',
+};
+
+export const PointEvents = {
+  HOME_POINT_EARN_POINTS_OPENED: 'Points: Home Earn Points Opened',
+  EXPLORE_APPS: 'Points: Explore Apps Opened',
+  EARN_REFERRAL: 'Points: Earn Referral Opened',
+  EARN_REFERRAL_MESSAGES: 'Points: Earn Referral via Messages',
+  EARN_REFERRAL_WHATSAPP: 'Points: Earn Referral via WhatsApp',
+  EARN_REFERRAL_SHARE: 'Points: Earn Referral via Share',
+  EARN_REFERRAL_COPY_LINK: 'Points: Earn Referral Copy Link',
+  EARN_BACKUP: 'Points: Earn with Backup',
+  EARN_BACKUP_SUCCESS: 'Points: Earn with Backup Success',
+  EARN_BACKUP_FAILED: 'Points: Earn with Backup Failed',
+  EARN_NOTIFICATION: 'Points: Earn with Notification',
+  EARN_NOTIFICATION_FAILED: 'Points: Earn with Notification Failed',
+  EARN_NOTIFICATION_SUCCESS: 'Points: Earn with Notification Success',
+  REFRESH_HISTORY: 'Points: Refresh History',
 };
 
 export const ProofEvents = {

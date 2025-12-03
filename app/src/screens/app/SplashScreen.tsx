@@ -12,9 +12,16 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import splashAnimation from '@/assets/animations/splash.json';
+import { impactLight } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
+import {
+  getAndClearQueuedUrl,
+  handleUrl,
+  setDeeplinkParentScreen,
+} from '@/navigation/deeplinks';
 import { migrateToSecureKeychain, useAuth } from '@/providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
@@ -23,13 +30,7 @@ import {
   migrateFromLegacyStorage,
 } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
-import { black } from '@/utils/colors';
-import {
-  getAndClearQueuedUrl,
-  handleUrl,
-  setDeeplinkParentScreen,
-} from '@/utils/deeplinks';
-import { impactLight } from '@/utils/haptic';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 
 const SplashScreen: React.FC = ({}) => {
   const selfClient = useSelfClient();
@@ -71,8 +72,8 @@ const SplashScreen: React.FC = ({}) => {
             await checkAndUpdateRegistrationStates(selfClient);
           }
 
-          const hasValid = await hasAnyValidRegisteredDocument(selfClient);
-          const parentScreen = hasValid ? 'Home' : 'Launch';
+          await hasAnyValidRegisteredDocument(selfClient);
+          const parentScreen = 'Home';
 
           // Migrate keychain to secure storage with biometric protection
           try {
@@ -85,7 +86,7 @@ const SplashScreen: React.FC = ({}) => {
 
           const queuedUrl = getAndClearQueuedUrl();
           if (queuedUrl) {
-            if (typeof __DEV__ !== 'undefined' && __DEV__) {
+            if (IS_DEV_MODE) {
               console.log('Processing queued deeplink:', queuedUrl);
             }
             setQueuedDeepLink(queuedUrl);
@@ -94,8 +95,8 @@ const SplashScreen: React.FC = ({}) => {
           }
         } catch (error) {
           console.error(`Error in SplashScreen data loading: ${error}`);
-          setDeeplinkParentScreen('Launch');
-          setNextScreen('Launch');
+          setDeeplinkParentScreen('Home');
+          setNextScreen('Home');
         }
       };
 

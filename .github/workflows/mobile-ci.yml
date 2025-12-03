@@ -10,7 +10,7 @@ env:
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app
   # Cache versions
-  GH_CACHE_VERSION: v1 # Global cache version
+  GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.caching=true
@@ -76,7 +76,7 @@ jobs:
         with:
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Build dependencies (cache miss)
-      # Temporarily disabled due to `yarn types` failures when cache is used.
+        # Temporarily disabled due to `yarn types` failures when cache is used.
         # if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Cache miss for built dependencies. Building now..."
@@ -147,10 +147,11 @@ jobs:
           ls -la common/dist/ || echo "❌ common dist not found"
           ls -la common/dist/cjs/ || echo "❌ common dist/cjs not found"
           ls -la common/dist/cjs/index.cjs || echo "❌ common dist/cjs/index.cjs not found"
-      - name: Build dependencies (cache miss)
-        if: steps.built-deps.outputs.cache-hit != 'true'
+      - name: Build dependencies (always - debugging CI)
+        # Temporarily always build to debug CI issues
+        # TODO: Re-enable cache after fixing: if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
-          echo "Cache miss for built dependencies. Building now..."
+          echo "Building dependencies (cache temporarily disabled for debugging)..."
           yarn workspace @selfxyz/mobile-app run build:deps
           # Verify build completed successfully
           if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
@@ -182,7 +183,13 @@ jobs:
           else
             echo "✅ All required dependency files exist"
           fi
+      - name: Check for nested require() in tests
+        run: node scripts/check-test-requires.cjs
+        working-directory: ./app
       - name: App Tests
+        env:
+          # Increase Node.js memory to prevent hermes-parser WASM memory errors
+          NODE_OPTIONS: --max-old-space-size=4096
         run: |
           # Final verification from app directory perspective
           echo "Final verification before running tests (from app directory)..."
@@ -309,12 +316,14 @@ jobs:
           bundle install --jobs 4 --retry 3
         working-directory: ./app
       - name: Install iOS Dependencies
-        run: |
-          echo "Installing iOS dependencies..."
-          cd ios
-          # Reuse the same guarded flow as local to ensure reproducibility
-          bundle exec bash scripts/pod-install-with-cache-fix.sh
-        working-directory: ./app
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 20
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: |
+            cd app/ios
+            bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Resolve iOS workspace
@@ -436,12 +445,19 @@ jobs:
         with:
           accept-android-sdk-licenses: true
       - name: Cache NDK
+        id: ndk-cache
         uses: actions/cache@v4
         with:
           path: ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
           key: ${{ runner.os }}-ndk-${{ env.ANDROID_NDK_VERSION }}
       - name: Install NDK
-        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+        if: steps.ndk-cache.outputs.cache-hit != 'true'
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Install Mobile Dependencies
         uses: ./.github/actions/yarn-install
       - name: Cache Built Dependencies
@@ -454,11 +470,13 @@ jobs:
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
-      - name: Clone android-passport-nfc-reader
-        uses: ./.github/actions/clone-android-passport-nfc-reader
-        with:
-          working_directory: ${{ env.APP_PATH }}
-          selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+      - name: Setup Android private modules
+        run: |
+          cd ${{ env.APP_PATH }}
+          PLATFORM=android node scripts/setup-private-modules.cjs
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          CI: true
       - name: Build Android (with AAPT2 symlink fix)
         run: yarn android:ci
         working-directory: ./app

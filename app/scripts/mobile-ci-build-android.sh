@@ -87,28 +87,43 @@ cd "$PROJECT_ROOT"
 
 log "Working directory: $(pwd)"
 
-# Clone android-passport-nfc-reader if it doesn't exist (for local development)
+# Clone private Android modules if they don't exist (for local development)
 # Note: In CI, this is usually handled by GitHub action, but we keep this as fallback
-if [[ ! -d "app/android/android-passport-nfc-reader" ]]; then
-  log "Cloning android-passport-nfc-reader for build..."
+clone_private_module() {
+  local repo_name=$1
+  local target_dir=$2
+
+  if [[ -d "$target_dir" ]]; then
+    if is_ci; then
+      log "📁 $repo_name exists (likely cloned by GitHub action)"
+    else
+      log "📁 $repo_name already exists - preserving existing directory"
+    fi
+    return 0
+  fi
+
+  log "Cloning $repo_name for build..."
   cd app/android
+
+  # Extract just the directory name from the full path for git clone
+  local dir_name=$(basename "$target_dir")
 
   # Use different clone methods based on environment
   if is_ci && [[ -n "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]]; then
     # CI environment with PAT (fallback if action didn't run)
-    git clone "https://${SELFXYZ_INTERNAL_REPO_PAT}@github.com/selfxyz/android-passport-nfc-reader.git" || {
-      log "ERROR: Failed to clone android-passport-nfc-reader with PAT"
+    git clone "https://${SELFXYZ_INTERNAL_REPO_PAT}@github.com/selfxyz/${repo_name}.git" "$dir_name" || {
+      log "ERROR: Failed to clone $repo_name with PAT"
       exit 1
     }
   elif [[ -n "${SSH_AUTH_SOCK:-}" ]] || [[ -f "${HOME}/.ssh/id_rsa" ]] || [[ -f "${HOME}/.ssh/id_ed25519" ]]; then
     # Local development with SSH
-    git clone "git@github.com:selfxyz/android-passport-nfc-reader.git" || {
-      log "ERROR: Failed to clone android-passport-nfc-reader with SSH"
+    git clone "git@github.com:selfxyz/${repo_name}.git" "$dir_name" || {
+      log "ERROR: Failed to clone $repo_name with SSH"
       log "Please ensure you have SSH access to the repository or set SELFXYZ_INTERNAL_REPO_PAT"
       exit 1
     }
   else
-    log "ERROR: No authentication method available for cloning android-passport-nfc-reader"
+    log "ERROR: No authentication method available for cloning $repo_name"
     log "Please either:"
     log "  - Set up SSH access (for local development)"
     log "  - Set SELFXYZ_INTERNAL_REPO_PAT environment variable (for CI)"
@@ -116,12 +131,12 @@ if [[ ! -d "app/android/android-passport-nfc-reader" ]]; then
   fi
 
   cd ../../
-  log "✅ android-passport-nfc-reader cloned successfully"
-elif is_ci; then
-  log "📁 android-passport-nfc-reader exists (likely cloned by GitHub action)"
-else
-  log "📁 android-passport-nfc-reader already exists - preserving existing directory"
-fi
+  log "✅ $repo_name cloned successfully"
+}
+
+# Clone all required private modules
+clone_private_module "android-passport-nfc-reader" "app/android/android-passport-nfc-reader"
+clone_private_module "react-native-passport-reader" "app/android/react-native-passport-reader"
 
 # Build and package the SDK with timeout (including dependencies)
 log "Building SDK and dependencies..."

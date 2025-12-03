@@ -9,21 +9,34 @@ import { create } from 'zustand';
 import type { SelfApp } from '@selfxyz/common';
 import { WS_DB_RELAYER } from '@selfxyz/common';
 
+/**
+ * Zustand state backing the in-app handoff between the SDK and the hosted Self
+ * application. The store tracks the active websocket session, latest
+ * {@link SelfApp} payload, and helper callbacks used by the proving machine.
+ * Consumers should treat the state as ephemeral and expect it to reset whenever
+ * the socket disconnects.
+ */
 export interface SelfAppState {
   selfApp: SelfApp | null;
   sessionId: string | null;
   socket: Socket | null;
+  /** Establishes (or reuses) a websocket connection for the provided session. */
   startAppListener: (sessionId: string) => void;
+  /** Tears down any active socket connection and clears cached payloads. */
   cleanSelfApp: () => void;
+  /** Directly mutates the cached {@link SelfApp}. Primarily used by socket handlers. */
   setSelfApp: (selfApp: SelfApp | null) => void;
+  /** Internal helper that derives the correct websocket endpoint and instantiates the client. */
   _initSocket: (sessionId: string) => Socket;
+  /** Emits proving results to the relayer so the host app can respond. */
   handleProofResult: (proof_verified: boolean, error_code?: string, reason?: string) => void;
 }
 
-/*
-  Never export outside of the mobile sdk. It can cause multiple instances of the store to be created.
-  Use the functions above to interact with the store.
-*/
+/**
+ * Internal Self app store hook. Always access it through the self client
+ * accessors to avoid creating multiple websocket connections within the same
+ * runtime.
+ */
 export const useSelfAppStore = create<SelfAppState>((set, get) => ({
   selfApp: null,
   sessionId: null,

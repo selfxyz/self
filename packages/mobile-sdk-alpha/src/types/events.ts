@@ -5,8 +5,18 @@
 import type { DocumentCategory } from '@selfxyz/common';
 
 import type { NFCScanContext, ProofContext } from '../proving/internal/logging';
-import type { LogLevel, Progress } from './public';
+import type { LogLevel, Progress } from './base';
 
+/**
+ * SDK lifecycle events emitted by {@link SelfClient}. Events are dispatched
+ * synchronously to listeners in registration order. If a listener throws an
+ * error, the SDK logs a sanitized/redacted summary (never PII or secrets)
+ * and continues dispatching to remaining listeners.
+ *
+ * **Security:** Host apps should likewise sanitize errors from their listeners
+ * before logging. Redact sensitive fields (MRZ, names, DOB, passport numbers,
+ * keys, tokens) and retain only non-sensitive diagnostic details.
+ */
 export enum SdkEvents {
   /**
    * Emitted when an error occurs during SDK operations, including timeouts.
@@ -157,6 +167,11 @@ export enum SdkEvents {
   DOCUMENT_OWNERSHIP_CONFIRMED = 'DOCUMENT_OWNERSHIP_CONFIRMED',
 }
 
+/**
+ * Maps event names to their payload types. Enables type-safe event handlers
+ * and provides structured data like NFC scan diagnostics or proof errors.
+ * Events with undefined payloads carry no additional data.
+ */
 export interface SDKEventMap {
   [SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND]: undefined;
   [SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS]: undefined;
@@ -210,4 +225,8 @@ export interface SDKEventMap {
   };
 }
 
+/**
+ * Event names supported by {@link SelfClient.on}. Use specific event literals
+ * when subscribing to get accurate payload types from {@link SDKEventMap}.
+ */
 export type SDKEvent = keyof SDKEventMap;

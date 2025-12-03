@@ -3,6 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /* eslint-disable sort-exports/sort-exports */
+import type { NavigationAdapter } from 'src/types/public';
+
 import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, NFCScannerAdapter } from '../../src';
 
 // Shared test data
@@ -60,12 +62,18 @@ const mockAuth = {
   getPrivateKey: async () => 'stubbed-private-key',
 };
 
+const mockNavigation: NavigationAdapter = {
+  goBack: vi.fn(),
+  goTo: vi.fn(),
+};
+
 export const mockAdapters = {
   scanner: mockScanner,
   network: mockNetwork,
   crypto: mockCrypto,
   documents: mockDocuments,
   auth: mockAuth,
+  navigation: mockNavigation,
 };
 
 // Shared test expectations

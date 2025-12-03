@@ -55,14 +55,30 @@ const getDecoder = (): TextDecoder => {
 const TAG_DG1 = 0x61;
 const TAG_DG2 = 0x75;
 
+/**
+ * Data group 1 containing the Machine Readable Zone (MRZ) text from the
+ * document. The MRZ string includes all personally identifiable information
+ * and should be validated and encrypted before storage.
+ */
 export interface DG1 {
   mrz: string;
 }
 
+/**
+ * Data group 2 containing the passport photo as JPEG or JPEG2000 bytes.
+ * Callers handle compression, encryption, and storage of the image data.
+ */
 export interface DG2 {
   image: Uint8Array;
 }
 
+/**
+ * Parsed NFC data from the document chip. Currently extracts DG1 (MRZ text)
+ * and DG2 (photo). Additional data groups are ignored for forward compatibility.
+ * Both fields are optional since the chip may omit data groups or the read may
+ * fail partway through. Missing data groups typically indicate an incomplete
+ * scan that should be retried.
+ */
 export interface ParsedNFCResponse {
   dg1?: DG1;
   dg2?: DG2;

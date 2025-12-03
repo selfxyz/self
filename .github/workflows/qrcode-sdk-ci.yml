@@ -68,6 +68,7 @@ jobs:
         shell: bash
         run: |
           yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/sdk-common build
           yarn workspace @selfxyz/qrcode build
 
       - name: Cache build artifacts
@@ -257,6 +258,9 @@ jobs:
             sdk/qrcode/dist
           key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
           fail-on-cache-miss: true
+
+      - name: Build SDK common dependency
+        run: yarn workspace @selfxyz/sdk-common build
 
       - name: Run tests
         run: yarn workspace @selfxyz/qrcode test

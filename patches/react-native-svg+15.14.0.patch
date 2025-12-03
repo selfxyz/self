@@ -1,0 +1,98 @@
+diff --git a/node_modules/react-native-svg/android/.project b/node_modules/react-native-svg/android/.project
+new file mode 100644
+index 0000000..dd0da62
+--- /dev/null
++++ b/node_modules/react-native-svg/android/.project
+@@ -0,0 +1,28 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>react-native-svg</name>
++	<comment>Project OpenPassport-android-react-native-svg created by Buildship.</comment>
++	<projects>
++	</projects>
++	<buildSpec>
++		<buildCommand>
++			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++	</buildSpec>
++	<natures>
++		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
++	</natures>
++	<filteredResources>
++		<filter>
++			<id>1759738232589</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
++</projectDescription>
+diff --git a/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp b/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp
+index 11718dd..fe993b3 100644
+--- a/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp
++++ b/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp
+@@ -28,8 +28,8 @@ void RNSVGLayoutableShadowNode::setZeroDimensions() {
+   // views in the layout inspector when Yoga attempts to interpret SVG
+   // properties like width when viewBox scale is set.
+   auto style = yogaNode_.style();
+-  style.setDimension(yoga::Dimension::Width, yoga::StyleSizeLength::points(0));
+-  style.setDimension(yoga::Dimension::Height, yoga::StyleSizeLength::points(0));
++  style.setDimension(yoga::Dimension::Width, yoga::StyleLength::points(0));
++  style.setDimension(yoga::Dimension::Height, yoga::StyleLength::points(0));
+   yogaNode_.setStyle(style);
+ }
+ 
+diff --git a/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp.bak b/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp.bak
+new file mode 100644
+index 0000000..11718dd
+--- /dev/null
++++ b/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp.bak
+@@ -0,0 +1,43 @@
++#include "RNSVGLayoutableShadowNode.h"
++#include <react/renderer/core/LayoutContext.h>
++
++namespace facebook::react {
++
++RNSVGLayoutableShadowNode::RNSVGLayoutableShadowNode(
++    const ShadowNodeFragment &fragment,
++    const ShadowNodeFamily::Shared &family,
++    ShadowNodeTraits traits)
++    : YogaLayoutableShadowNode(fragment, family, traits) {
++  if (std::strcmp(this->getComponentName(), "RNSVGGroup") != 0) {
++    setZeroDimensions();
++  }
++}
++
++RNSVGLayoutableShadowNode::RNSVGLayoutableShadowNode(
++    const ShadowNode &sourceShadowNode,
++    const ShadowNodeFragment &fragment)
++    : YogaLayoutableShadowNode(sourceShadowNode, fragment) {
++  if (std::strcmp(this->getComponentName(), "RNSVGGroup") != 0) {
++    setZeroDimensions();
++  }
++}
++
++void RNSVGLayoutableShadowNode::setZeroDimensions() {
++  // SVG handles its layout manually on the native side and does not depend on
++  // the Yoga layout. Setting the dimensions to 0 eliminates randomly positioned
++  // views in the layout inspector when Yoga attempts to interpret SVG
++  // properties like width when viewBox scale is set.
++  auto style = yogaNode_.style();
++  style.setDimension(yoga::Dimension::Width, yoga::StyleSizeLength::points(0));
++  style.setDimension(yoga::Dimension::Height, yoga::StyleSizeLength::points(0));
++  yogaNode_.setStyle(style);
++}
++
++void RNSVGLayoutableShadowNode::layout(LayoutContext layoutContext) {
++  auto affectedNodes = layoutContext.affectedNodes;
++  layoutContext.affectedNodes = nullptr;
++  YogaLayoutableShadowNode::layout(layoutContext);
++  layoutContext.affectedNodes = affectedNodes;
++}
++
++} // namespace facebook::react

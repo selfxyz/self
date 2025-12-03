@@ -14,12 +14,18 @@ import {
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate100,
+  slate200,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import { getErrorMessages } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
-import WarningIcon from '@/images/warning.svg';
-import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
-import { black, slate100, slate200, slate500, white } from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
+import WarningIcon from '@/assets/images/warning.svg';
+import { extraYPadding } from '@/utils/styleUtils';
 
 type AadhaarUploadErrorRouteParams = {
   errorType?: 'general' | 'expired';
@@ -31,7 +37,7 @@ type AadhaarUploadErrorRoute = RouteProp<
 >;
 
 const AadhaarUploadErrorScreen: React.FC = () => {
-  const { bottom } = useSafeAreaInsets();
+  const paddingBottom = useSafeBottomPadding(extraYPadding + 35);
   const navigation = useNavigation();
   const route = useRoute<AadhaarUploadErrorRoute>();
   const { trackEvent } = useSelfClient();
@@ -78,7 +84,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
       <YStack
         paddingHorizontal={25}
         backgroundColor={white}
-        paddingBottom={bottom + extraYPadding + 35}
+        paddingBottom={paddingBottom}
         paddingTop={25}
       >
         <XStack gap="$3" alignItems="stretch">

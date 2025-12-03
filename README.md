@@ -77,6 +77,8 @@ Gitleaks will scan staged changes on each commit via `yarn gitleaks`.
 
 ## Development Documentation
 
+> **Note:** We do not accept text-only pull request changes. While we appreciate the feedback, we will not merge external pull requests that only modify markdown files or code comments (e.g., typo fixes in documentation or comments). Pull requests must include functional code changes.
+
 For detailed development patterns and conventions, see:
 
 - **[Development Patterns](docs/development-patterns.md)** - React Native architecture, navigation, state management, and code organization

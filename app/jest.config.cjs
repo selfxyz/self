@@ -3,8 +3,18 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 module.exports = {
-  preset: 'react-native',
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'cjs', 'json', 'node'],
+  moduleFileExtensions: [
+    'ios.js',
+    'android.js',
+    'native.js',
+    'ts',
+    'tsx',
+    'js',
+    'jsx',
+    'cjs',
+    'json',
+    'node',
+  ],
   transformIgnorePatterns: [
     'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|react-native-svg|react-native-svg-circle-country-flags)/)',
   ],
@@ -16,6 +26,7 @@ module.exports = {
   testPathIgnorePatterns: [
     '/node_modules/',
     '/scripts/tests/', // Node.js native test runner tests
+    '/babel\\.config\\.test\\.cjs',
   ],
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
@@ -30,6 +41,8 @@ module.exports = {
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/index.cjs',
     '^@selfxyz/mobile-sdk-alpha/components$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/components/index.cjs',
+    '^@selfxyz/mobile-sdk-alpha/hooks$':
+      '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/hooks/index.cjs',
     '^@selfxyz/mobile-sdk-alpha/onboarding/(.*)$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/flows/onboarding/$1.cjs',
     '^@selfxyz/mobile-sdk-alpha/disclosing/(.*)$':
@@ -46,6 +59,9 @@ module.exports = {
     // Fix @anon-aadhaar/core resolution
     '^@anon-aadhaar/core$':
       '<rootDir>/../common/node_modules/@anon-aadhaar/core/dist/index.js',
+  },
+  transform: {
+    '\\.[jt]sx?$': ['babel-jest', { configFile: './babel.config.test.cjs' }],
   },
   globals: {
     'ts-jest': {

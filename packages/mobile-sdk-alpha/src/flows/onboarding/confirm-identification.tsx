@@ -17,6 +17,7 @@ import { black, white } from '../../constants/colors';
 import { useSelfClient } from '../../context';
 import { loadSelectedDocument } from '../../documents/utils';
 import { notificationSuccess } from '../../haptic';
+import { useSafeBottomPadding } from '../../hooks/useSafeBottomPadding';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { SdkEvents } from '../../types/events';
 import type { SelfClient } from '../../types/public';
@@ -38,6 +39,10 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
     await onConfirm(selfClient);
   }, [onBeforeConfirm, selfClient]);
 
+  // Calculate bottom padding to prevent button bleeding into system navigation
+  // ExpandableBottomLayout.BottomSection handles safe areas internally
+  const paddingBottom = useSafeBottomPadding(20);
+
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
@@ -50,7 +55,7 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
           renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection gap={20} paddingBottom={20} backgroundColor={white}>
+      <ExpandableBottomLayout.BottomSection gap={20} paddingBottom={paddingBottom} backgroundColor={white}>
         <Title style={{ textAlign: 'center' }}>Confirm your identity</Title>
         <Description style={{ textAlign: 'center', paddingBottom: 20 }}>{getPreRegistrationDescription()}</Description>
         <PrimaryButton trackEvent={PassportEvents.OWNERSHIP_CONFIRMED} onPress={onPress}>

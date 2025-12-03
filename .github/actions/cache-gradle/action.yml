@@ -29,7 +29,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ inputs.path }}
-        key: ${{ runner.os }}-gradle-${{ inputs.cache-version }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        key: ${{ runner.os }}-gradle-${{ inputs.cache-version }}-${{ hashFiles('**/build.gradle', '**/settings.gradle', '**/gradle-wrapper.properties', '**/gradle.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-${{ inputs.cache-version }}-
           ${{ runner.os }}-gradle-

@@ -24,12 +24,22 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - id: get-hash
+      name: Hash lock file
+      shell: bash
+      run: |
+        if [ -f "${{ inputs.lock-file }}" ]; then
+          echo "hash=$(shasum -a 256 "${{ inputs.lock-file }}" | awk '{ print $1 }')" >> $GITHUB_OUTPUT
+        else
+          echo "::warning::Lock file '${{ inputs.lock-file }}' not found."
+          echo "hash=no-lock-file" >> $GITHUB_OUTPUT
+        fi
     - id: cache
       name: Cache Ruby gems
       uses: actions/cache@v4
       with:
         path: ${{ inputs.path }}
-        key: ${{ runner.os }}-gems-${{ inputs.cache-version }}-${{ hashFiles(inputs.lock-file) }}
+        key: ${{ runner.os }}-gems-${{ inputs.cache-version }}-${{ steps.get-hash.outputs.hash }}
         restore-keys: |
           ${{ runner.os }}-gems-${{ inputs.cache-version }}-
           ${{ runner.os }}-gems-

@@ -130,6 +130,20 @@ yarn types # Verify type checking
   - For Noir circuits, run `nargo test -p <crate>` in each `noir/crates/*` directory.
   - Tests for `@selfxyz/contracts` are currently disabled in CI and may be skipped.
 
+- E2E tests (mobile app) - **Run automatically in CI/CD, not required locally**:
+  - E2E tests execute automatically in GitHub Actions on PRs and main branch
+  - Local E2E testing is optional (see `app/AGENTS.md` for local setup if needed)
+  - Commands available: `yarn workspace @selfxyz/mobile-app test:e2e:ios` / `test:e2e:android`
+
+#### Test Memory Optimization
+
+**CRITICAL**: Never create nested `require('react-native')` calls in tests. This causes out-of-memory (OOM) errors in CI/CD pipelines.
+
+- Use ES6 `import` statements instead of `require()` when possible
+- Avoid dynamic `require()` calls in `beforeEach`/`afterEach` hooks
+- Prefer top-level imports over nested requires
+- See `.cursor/rules/test-memory-optimization.mdc` for detailed guidelines
+
 ### CI Caching
 
 Use the shared composite actions in `.github/actions` when caching dependencies in GitHub workflows. They provide consistent cache paths and keys:
@@ -150,6 +164,43 @@ Each action accepts an optional `cache-version` input (often combined with `GH_C
 
 - Write short, imperative commit messages (e.g. `Fix address validation`).
 - The pull request body should summarize the changes and mention test results.
+
+## Workspace-Specific Instructions
+
+Some workspaces have additional instructions in their own `AGENTS.md` files:
+
+- `app/AGENTS.md` - Mobile app development, E2E testing, deployment
+- `packages/mobile-sdk-alpha/AGENTS.md` - SDK development, testing guidelines, package validation
+- `noir/AGENTS.md` - Noir circuit development
+
+These workspace-specific files override or extend the root instructions for their respective areas.
+
+## Troubleshooting
+
+### Common Issues
+
+#### Yarn Install Fails
+
+- Ensure Node.js 22.x is installed: `nvm use`
+- Clear Yarn cache: `yarn cache clean`
+- Remove `node_modules` and reinstall: `rm -rf node_modules && yarn install`
+
+#### Build Failures
+
+- Run `yarn build:deps` in affected workspace first
+- Check workspace-specific `AGENTS.md` for platform requirements
+- For mobile app: ensure iOS/Android prerequisites are met (see `app/AGENTS.md`)
+
+#### Test Failures
+
+- Check workspace-specific test setup requirements
+- For mobile app tests: ensure native modules are properly mocked
+- See `.cursor/rules/test-memory-optimization.mdc` for test memory issues
+
+#### Type Errors
+
+- Run `yarn types` to see all type errors across workspaces
+- Some packages may need to be built first: `yarn build:deps`
 
 ## Scope
 

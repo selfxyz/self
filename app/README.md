@@ -30,7 +30,7 @@
 
 ## Installation
 
-> All of the commands in this guide are run from the `self/app` directory
+> All of the commands in this guide are run from the `app` directory
 
 Install dependencies + build
 
@@ -144,8 +144,6 @@ Press `a` to open the app on Android.
 
 To view the Android logs, use the Logcat feature in Android Studio, or use the `adb logcat` command-line tool.
 
-**EDIT**: to test the app on android, see [this issue](https://github.com/zk-passport/openpassport/issues/191) temporarily
-
 ### iOS
 
 > :warning: To run the app on iOS, you will need a paying Apple Developer account. Free accounts can't run apps that use NFC reading.<br/>
@@ -169,43 +167,6 @@ And run the app in Xcode.
 To enable it, open Xcode and go to **Product > Destination > Show All Run Destinations**. This will unlock the ability to select the Rosetta build simulator, allowing you to run the app in the iOS Simulator.
 
 > **Note:** This is a simulator-specific issue - the app itself runs natively on ARM64 devices and builds without issues.
-
-#### react-native-haptic-feedback v2.3.3
-
-To create a successful build, "Target Membership" for the AudioToolbox.framework needs to be updated.
-
-Pods Project > Frameworks > iOS > AudioToolbox.framework
-
-Then click on the "+" button in the "Target Membership" box and add `RNReactNativeHapticFeedback`
-
-[more info](https://github.com/mkuczera/react-native-haptic-feedback/issues/142)
-
-## Modify the circuits
-
-If you want to modify the circuits, you'll have to adapt a few things.
-
-First, go to the `circuit` folder of the monorepo, modify the circuits and build them.
-
-Then, upload the zipped zkeys and dat files at publicly available urls and replace the urls in `app/src/utils/zkeyDownload.ts`.
-
-Adapt the input generation in `common/src/utils/generateInputs.ts`, and adapt and redeploy the contracts.
-
-### Android
-
-Make sure that `ANDROID_NDK_VERSION` and `ANDROID_NDK` are defined as per the instructions above. Then build the android native module:
-
-```
-./scripts/build_android_module.sh
-```
-
-### iOS
-
-Find your [development team id](https://chat.openai.com/share/9d52c37f-d9da-4a62-acb9-9e4ee8179f95) and run:
-
-```
-export DEVELOPMENT_TEAM="<your-development-team-id>"
-./scripts/build_ios_module.sh
-```
 
 ## 🚀 Deployment & Release
 
@@ -405,6 +366,6 @@ watchman shutdown-server
 
 The `yarn reinstall` command deletes your `yarn.lock` and `package-lock.json` files and re-installs all dependencies from scratch. **This means you may get newer versions of packages than before, even if your `package.json` specifies loose version ranges.** This can sometimes introduce breaking changes or incompatibilities.
 
-For example, as of this writing (July 29, 2024), a minor update to the Sentry Cocoa SDK (`sentry-cocoa`) breaks Xcode builds ([see issue](https://github.com/getsentry/sentry-cocoa/issues/5648)). If you run into unexpected build failures after a reinstall, check for updated dependencies and consider pinning versions or restoring your previous lockfile.
+If you run into unexpected build failures after a reinstall, check for updated dependencies and consider pinning versions or restoring your previous lockfile.
 
 **Tip:** After running `yarn reinstall`, if you encounter new build issues, compare your new `yarn.lock` (or `package-lock.json`) with the previous version. Look for any package version changes, especially for critical dependencies. Sometimes, a seemingly minor update can introduce breaking changes. If you find a problematic update, you may need to revert to the previous lockfile or explicitly pin the affected package version in your `package.json` to restore a working build.

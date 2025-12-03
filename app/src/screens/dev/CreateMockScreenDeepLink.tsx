@@ -22,12 +22,16 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  borderColor,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import type { RootStackParamList } from '@/navigation';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
-import { black, borderColor, white } from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
+import { extraYPadding } from '@/utils/styleUtils';
 
 const CreateMockScreenDeepLink: React.FC = () => {
   const navigation =

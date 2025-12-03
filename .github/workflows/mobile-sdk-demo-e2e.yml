@@ -27,10 +27,11 @@ on:
     paths:
       - "packages/mobile-sdk-demo/**"
       - "packages/mobile-sdk-alpha/**"
-      - ".github/workflows/mobile-sdk-e2e.yml"
+      - ".github/workflows/mobile-sdk-demo-e2e.yml"
 
 jobs:
   android-e2e:
+    name: Android E2E Tests Demo App
     # Currently build-only for Android. E2E steps are preserved but skipped (if: false).
     # To re-enable full E2E: change `if: false` to `if: true` on emulator steps.
     concurrency:
@@ -71,12 +72,22 @@ jobs:
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
       - name: Validate Maestro test file
         if: false # Skip for build-only test - keep logic for future E2E
         run: |
@@ -108,7 +119,12 @@ jobs:
         with:
           accept-android-sdk-licenses: true
       - name: Install NDK
-        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Enable KVM group perms
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -177,6 +193,7 @@ jobs:
   ios-e2e:
     timeout-minutes: 60
     runs-on: macos-latest-large
+    name: iOS E2E Tests Demo App
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
       cancel-in-progress: true
@@ -216,12 +233,22 @@ jobs:
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
       - name: Validate Maestro test file
         run: |
           [ -f packages/mobile-sdk-demo/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }
@@ -233,7 +260,12 @@ jobs:
           key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
       - name: Install Maestro
         if: steps.cache-maestro.outputs.cache-hit != 'true'
-        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: curl -Ls "https://get.maestro.mobile.dev" | bash
       - name: Add Maestro to path
         run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
       - name: Set up Xcode
@@ -262,14 +294,8 @@ jobs:
             packages/mobile-sdk-demo/ios/Pods
             ~/Library/Caches/CocoaPods
           lock-file: packages/mobile-sdk-demo/ios/Podfile.lock
-      - name: Cache DerivedData
-        uses: actions/cache@v4
-        with:
-          path: packages/mobile-sdk-demo/ios/build
-          key: ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-${{ env.XCODE_VERSION }}-${{ hashFiles('packages/mobile-sdk-demo/ios/Podfile.lock', 'yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-${{ env.XCODE_VERSION }}-
-            ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-
+      # DerivedData caching disabled - caused intermittent build failures due to stale cache
+      # Pod caching still speeds up pod install significantly
       - name: Verify iOS Runtime
         run: |
           echo "📱 Verifying iOS Runtime availability..."
@@ -284,17 +310,22 @@ jobs:
           yarn workspace mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 20
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: |
+            if [ -n "${SELFXYZ_INTERNAL_REPO_PAT}" ]; then
+              echo "🔑 Using SELFXYZ_INTERNAL_REPO_PAT for private pod access"
+              echo "::add-mask::${SELFXYZ_INTERNAL_REPO_PAT}"
+            fi
+            cd packages/mobile-sdk-demo/ios
+            echo "📦 Installing pods via cache-fix script…"
+            bash scripts/pod-install-with-cache-fix.sh
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
           GIT_TERMINAL_PROMPT: 0
-        run: |
-          echo "Installing iOS dependencies..."
-          if [ -n "${SELFXYZ_INTERNAL_REPO_PAT}" ]; then
-            echo "🔑 Using SELFXYZ_INTERNAL_REPO_PAT for private pod access"
-            echo "::add-mask::${SELFXYZ_INTERNAL_REPO_PAT}"
-          fi
-          cd packages/mobile-sdk-demo/ios
-          pod install
       - name: Setup iOS Simulator
         run: |
           echo "Setting up iOS Simulator..."

@@ -15,13 +15,13 @@ import {
   SubHeader,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import warningAnimation from '@/assets/animations/warning.json';
+import { confirmTap, notificationWarning } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useSettingStore } from '@/stores/settingStore';
-import { black, white } from '@/utils/colors';
-import { confirmTap, notificationWarning } from '@/utils/haptic';
 
 const DisclaimerScreen: React.FC = () => {
   const navigation =
@@ -63,7 +63,7 @@ const DisclaimerScreen: React.FC = () => {
             onPress={() => {
               confirmTap();
               dismissPrivacyNote();
-              navigation.navigate('Home');
+              navigation.navigate({ name: 'Home', params: {} });
             }}
           >
             Dismiss

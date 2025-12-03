@@ -11,10 +11,5 @@
       "output": "animations"
     }
   ],
-  "allowedNonPeerDependencies": [
-    "angularx-qrcode",
-    "lottie-web",
-    "socket.io-client",
-    "uuid"
-  ]
+  "allowedNonPeerDependencies": ["angularx-qrcode", "lottie-web", "socket.io-client", "uuid"]
 }

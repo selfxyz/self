@@ -1,1 +1,8 @@
 build
+
+# Private modules cloned dynamically by setup-private-modules.cjs
+android-passport-nfc-reader/
+react-native-passport-reader/
+
+# Temporary credential helper scripts created during CI setup
+.git-credential-helper-*.sh

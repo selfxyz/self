@@ -35,6 +35,7 @@ export interface ProofHistory {
   sessionId: string;
   userId: string;
   userIdType: UserIdType;
+  endpoint?: string;
   endpointType: EndpointType;
   status: ProofStatus;
   errorCode?: string;

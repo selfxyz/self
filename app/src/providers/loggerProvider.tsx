@@ -16,10 +16,10 @@ import {
   PassportLogger,
   ProofLogger,
   SettingsLogger,
-} from '@/utils/logger';
+} from '@/services/logging';
 
 // Import native logger bridge first to ensure initialization order
-import '@/utils/logger/nativeLoggerBridge';
+import '@/services/logging/logger/nativeLoggerBridge';
 
 type LoggerContextType = {
   AppLogger: typeof AppLogger;

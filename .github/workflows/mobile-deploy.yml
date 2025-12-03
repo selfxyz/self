@@ -150,9 +150,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    # Guard against auto-closed PRs (GitHub reports merged == false when a PR closes without merging)
     if: |
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
-      !contains(github.event.pull_request.labels.*.name, 'deploy:skip')
+      (
+        github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)
+      ) &&
+      (
+        github.event_name != 'pull_request' ||
+        !contains(github.event.pull_request.labels.*.name, 'deploy:skip')
+      )
     outputs:
       version: ${{ steps.bump.outputs.version }}
       ios_build: ${{ steps.bump.outputs.ios_build }}
@@ -262,7 +269,8 @@ jobs:
       contents: read
       actions: write
     if: |
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (
         (inputs.platform == 'ios' || inputs.platform == 'both') ||
         (github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'deploy:android'))
@@ -359,6 +367,10 @@ jobs:
           echo "Xcode path:"
           xcode-select -p
 
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        uses: ./.github/actions/yarnrc-hash
+
       - name: Cache Yarn artifacts
         id: yarn-cache
         uses: ./.github/actions/cache-yarn
@@ -367,7 +379,7 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
 
       - name: Cache Ruby gems
         id: gems-cache
@@ -681,6 +693,9 @@ jobs:
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
+          TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
+          TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}
         timeout-minutes: 90
         run: |
           cd ${{ env.APP_PATH }}
@@ -826,7 +841,8 @@ jobs:
       actions: write
       id-token: write
     if: |
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (
         (inputs.platform == 'android' || inputs.platform == 'both') ||
         (github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'deploy:ios'))
@@ -964,6 +980,10 @@ jobs:
           # Use version-manager script to apply versions
           node ${{ env.APP_PATH }}/scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
 
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        uses: ./.github/actions/yarnrc-hash
+
       - name: Cache Yarn artifacts
         id: yarn-cache
         uses: ./.github/actions/cache-yarn
@@ -972,7 +992,7 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
 
       - name: Cache Ruby gems
         id: gems-cache
@@ -1057,51 +1077,23 @@ jobs:
         with:
           accept-android-sdk-licenses: true
 
-      - name: Install NDK and CMake
+      - name: Install NDK
         if: inputs.platform != 'ios' && steps.ndk-cache.outputs.cache-hit != 'true'
-        run: |
-          max_attempts=5
-          attempt=1
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 15
+          max_attempts: 5
+          retry_wait_seconds: 10
+          command: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
 
-          # Install NDK
-          while [ $attempt -le $max_attempts ]; do
-            echo "Attempt $attempt of $max_attempts to install NDK..."
-            if sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"; then
-              echo "Successfully installed NDK"
-              break
-            fi
-            echo "Failed to install NDK on attempt $attempt"
-            if [ $attempt -eq $max_attempts ]; then
-              echo "All attempts to install NDK failed"
-              exit 1
-            fi
-            # Exponential backoff: 2^attempt seconds
-            wait_time=$((2 ** attempt))
-            echo "Waiting $wait_time seconds before retrying..."
-            sleep $wait_time
-            attempt=$((attempt + 1))
-          done
-
-          # Install CMake (required for native module builds)
-          echo "Installing CMake..."
-          attempt=1
-          while [ $attempt -le $max_attempts ]; do
-            echo "Attempt $attempt of $max_attempts to install CMake..."
-            if sdkmanager "cmake;3.22.1"; then
-              echo "Successfully installed CMake"
-              break
-            fi
-            echo "Failed to install CMake on attempt $attempt"
-            if [ $attempt -eq $max_attempts ]; then
-              echo "All attempts to install CMake failed"
-              exit 1
-            fi
-            # Exponential backoff: 2^attempt seconds
-            wait_time=$((2 ** attempt))
-            echo "Waiting $wait_time seconds before retrying..."
-            sleep $wait_time
-            attempt=$((attempt + 1))
-          done
+      - name: Install CMake
+        if: inputs.platform != 'ios' && steps.ndk-cache.outputs.cache-hit != 'true'
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          retry_wait_seconds: 10
+          command: sdkmanager "cmake;3.22.1"
 
       - name: Set Gradle JVM options
         if: inputs.platform != 'ios' # Apply to CI builds (not just ACT)
@@ -1114,12 +1106,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
 
-      - name: Clone android-passport-nfc-reader
+      - name: Setup Android private modules
         if: inputs.platform != 'ios'
-        uses: ./.github/actions/clone-android-passport-nfc-reader
-        with:
-          working_directory: ${{ env.APP_PATH }}
-          selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+        run: |
+          cd ${{ env.APP_PATH }}
+          PLATFORM=android node scripts/setup-private-modules.cjs
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          CI: true
 
       - name: Build Dependencies (Android)
         if: inputs.platform != 'ios'
@@ -1149,6 +1143,9 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=6144"
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
+          TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
+          TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}
         run: |
           cd ${{ env.APP_PATH }}
 
@@ -1261,7 +1258,8 @@ jobs:
     needs: [bump-version, build-ios, build-android]
     if: |
       always() &&
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
     env:
       APP_PATH: ${{ github.workspace }}/app
@@ -1304,17 +1302,21 @@ jobs:
             const version = JSON.parse(fs.readFileSync('version.json', 'utf8'));
             const timestamp = new Date().toISOString();
 
-            version.ios.build = $IOS_BUILD;
-            version.android.build = $ANDROID_BUILD;
-
-            // Update lastDeployed timestamp for successful builds
+            // Only bump build numbers for successful builds
             if ('$IOS_SUCCESS' === 'success') {
+              version.ios.build = $IOS_BUILD;
               version.ios.lastDeployed = timestamp;
-              console.log('✅ Updated iOS lastDeployed timestamp');
+              console.log('✅ Updated iOS build number to $IOS_BUILD and lastDeployed timestamp');
+            } else {
+              console.log('⏭️  Skipped iOS build number bump (build did not succeed)');
             }
+
             if ('$ANDROID_SUCCESS' === 'success') {
+              version.android.build = $ANDROID_BUILD;
               version.android.lastDeployed = timestamp;
-              console.log('✅ Updated Android lastDeployed timestamp');
+              console.log('✅ Updated Android build number to $ANDROID_BUILD and lastDeployed timestamp');
+            } else {
+              console.log('⏭️  Skipped Android build number bump (build did not succeed)');
             }
 
             fs.writeFileSync('version.json', JSON.stringify(version, null, 2) + '\n');

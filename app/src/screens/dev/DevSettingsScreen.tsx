@@ -17,13 +17,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
 
-import BugIcon from '@/images/icons/bug_icon.svg';
-import IdIcon from '@/images/icons/id_icon.svg';
-import WarningIcon from '@/images/icons/warning.svg';
-import type { RootStackParamList } from '@/navigation';
-import { unsafe_clearSecrets } from '@/providers/authProvider';
-import { usePassport } from '@/providers/passportDataProvider';
-import { useSettingStore } from '@/stores/settingStore';
 import {
   red500,
   slate100,
@@ -35,14 +28,26 @@ import {
   slate900,
   white,
   yellow500,
-} from '@/utils/colors';
-import { dinot } from '@/utils/fonts';
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
+
+import BugIcon from '@/assets/icons/bug_icon.svg';
+import IdIcon from '@/assets/icons/id_icon.svg';
+import WarningIcon from '@/assets/icons/warning.svg';
+import type { RootStackParamList } from '@/navigation';
+import { navigationScreens } from '@/navigation';
+import { unsafe_clearSecrets } from '@/providers/authProvider';
+import { usePassport } from '@/providers/passportDataProvider';
 import {
   isNotificationSystemReady,
   requestNotificationPermission,
   subscribeToTopics,
   unsubscribeFromTopics,
-} from '@/utils/notifications/notificationService';
+} from '@/services/notifications/notificationService';
+import { usePointEventStore } from '@/stores/pointEventStore';
+import { useSettingStore } from '@/stores/settingStore';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 
 interface TopicToggleButtonProps {
   label: string;
@@ -179,39 +184,6 @@ function ParameterSection({
   );
 }
 
-const items = [
-  'DevSettings',
-  'CountryPicker',
-  'DevLoadingScreen',
-  'AadhaarUpload',
-  'DevFeatureFlags',
-  'DevHapticFeedback',
-  'DevPrivateKey',
-  'Splash',
-  'Launch',
-  'DocumentOnboarding',
-  'DocumentCamera',
-  'DocumentNFCScan',
-  'DocumentDataInfo',
-  'Loading',
-  'AccountVerifiedSuccess',
-  'ConfirmBelonging',
-  'CreateMock',
-  'Home',
-  'Disclaimer',
-  'QRCodeViewFinder',
-  'Prove',
-  'ProofRequestStatus',
-  'Settings',
-  'AccountRecovery',
-  'SaveRecoveryPhrase',
-  'RecoverWithPhrase',
-  'ShowRecoveryPhrase',
-  'CloudBackupSettings',
-  'ComingSoon',
-  'DocumentCameraTrouble',
-  'DocumentNFCTrouble',
-] satisfies (keyof RootStackParamList)[];
 const ScreenSelector = ({}) => {
   const navigation = useNavigation();
   const [open, setOpen] = useState(false);
@@ -269,16 +241,22 @@ const ScreenSelector = ({}) => {
           <Select.Group>
             {useMemo(
               () =>
-                items.sort().map((item, i) => {
-                  return (
-                    <Select.Item index={i} key={item} value={item}>
-                      <Select.ItemText>{item}</Select.ItemText>
-                      <Select.ItemIndicator marginLeft="auto">
-                        <Check size={16} />
-                      </Select.ItemIndicator>
-                    </Select.Item>
-                  );
-                }),
+                (
+                  Object.keys(
+                    navigationScreens,
+                  ) as (keyof typeof navigationScreens)[]
+                )
+                  .sort()
+                  .map((item, i) => {
+                    return (
+                      <Select.Item index={i} key={item} value={item}>
+                        <Select.ItemText>{item}</Select.ItemText>
+                        <Select.ItemIndicator marginLeft="auto">
+                          <Check size={16} />
+                        </Select.ItemIndicator>
+                      </Select.Item>
+                    );
+                  }),
               [],
             )}
           </Select.Group>
@@ -290,11 +268,14 @@ const ScreenSelector = ({}) => {
 
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const { clearDocumentCatalogForMigrationTesting } = usePassport();
+  const clearPointEvents = usePointEventStore(state => state.clearEvents);
+  const { resetBackupForPoints } = useSettingStore();
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
   const subscribedTopics = useSettingStore(state => state.subscribedTopics);
   const [hasNotificationPermission, setHasNotificationPermission] =
     useState(false);
+  const paddingBottom = useSafeBottomPadding(20);
 
   // Check notification permissions on mount
   useEffect(() => {
@@ -457,6 +438,81 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     );
   };
 
+  const handleClearPointEventsPress = () => {
+    Alert.alert(
+      'Clear Point Events',
+      'Are you sure you want to clear all point events from local storage?\n\nThis will reset your point history but not affect your actual points on the blockchain.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            await clearPointEvents();
+            Alert.alert('Success', 'Point events cleared successfully.', [
+              { text: 'OK' },
+            ]);
+          },
+        },
+      ],
+    );
+  };
+
+  const handleResetBackupStatePress = () => {
+    Alert.alert(
+      'Reset Backup State',
+      'Are you sure you want to reset the backup state?\n\nThis will allow you to see and trigger the backup points flow again.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: () => {
+            resetBackupForPoints();
+            Alert.alert('Success', 'Backup state reset successfully.', [
+              { text: 'OK' },
+            ]);
+          },
+        },
+      ],
+    );
+  };
+
+  const handleClearBackupEventsPress = () => {
+    Alert.alert(
+      'Clear Backup Events',
+      'Are you sure you want to clear all backup point events from local storage?\n\nThis will remove backup events from your point history.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            const events = usePointEventStore.getState().events;
+            const backupEvents = events.filter(
+              event => event.type === 'backup',
+            );
+            for (const event of backupEvents) {
+              await usePointEventStore.getState().removeEvent(event.id);
+            }
+            Alert.alert('Success', 'Backup events cleared successfully.', [
+              { text: 'OK' },
+            ]);
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <YStack
@@ -466,6 +522,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         flex={1}
         paddingHorizontal="$4"
         paddingTop="$4"
+        paddingBottom={paddingBottom}
       >
         <ParameterSection
           icon={<IdIcon />}
@@ -547,6 +604,31 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                 <ChevronRight color={slate500} strokeWidth={2.5} />
               </XStack>
             </Button>
+            {IS_DEV_MODE && (
+              <Button
+                style={{ backgroundColor: 'white' }}
+                borderColor={slate200}
+                borderRadius="$2"
+                height="$5"
+                padding={0}
+                onPress={() => {
+                  navigation.navigate('Home', { testReferralFlow: true });
+                }}
+              >
+                <XStack
+                  width="100%"
+                  justifyContent="space-between"
+                  paddingVertical="$3"
+                  paddingLeft="$4"
+                  paddingRight="$1.5"
+                >
+                  <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+                    Test Referral Flow
+                  </Text>
+                  <ChevronRight color={slate500} strokeWidth={2.5} />
+                </XStack>
+              </Button>
+            )}
             <ScreenSelector />
           </YStack>
         </ParameterSection>
@@ -601,6 +683,21 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             {
               label: 'Clear document catalog',
               onPress: handleClearDocumentCatalogPress,
+              dangerTheme: true,
+            },
+            {
+              label: 'Clear point events',
+              onPress: handleClearPointEventsPress,
+              dangerTheme: true,
+            },
+            {
+              label: 'Reset backup state',
+              onPress: handleResetBackupStatePress,
+              dangerTheme: true,
+            },
+            {
+              label: 'Clear backup events',
+              onPress: handleClearBackupEventsPress,
               dangerTheme: true,
             },
           ].map(({ label, onPress, dangerTheme }) => (

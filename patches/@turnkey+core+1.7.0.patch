@@ -1,0 +1,68 @@
+diff --git a/node_modules/@turnkey/core/dist/__clients__/core.js b/node_modules/@turnkey/core/dist/__clients__/core.js
+index 3400c3d..d5ddc74 100644
+--- a/node_modules/@turnkey/core/dist/__clients__/core.js
++++ b/node_modules/@turnkey/core/dist/__clients__/core.js
+@@ -2903,6 +2903,20 @@ class TurnkeyClient {
+                 if (!publicKeys || publicKeys.length === 0) {
+                     return;
+                 }
++                // PATCH: Filter out non-Turnkey keychain services to avoid deleting app data
++                // Turnkey uses P256 keys: compressed (66 hex chars) or uncompressed (130 hex chars)
++                // App services: 'secret', 'documentCatalog', 'document-{64-char-hash}', etc.
++                const filteredPublicKeys = publicKeys.filter(key => {
++                    // Only process keys that look like P256 public key hex strings (66 or 130 chars)
++                    // This excludes document hashes (64 chars) and service names with non-hex chars
++                    const isTurnkeyKey = typeof key === 'string' &&
++                                        (key.length === 66 || key.length === 130) &&
++                                        /^[0-9a-fA-F]+$/.test(key);
++                    return isTurnkeyKey;
++                });
++                if (filteredPublicKeys.length === 0) {
++                    return;
++                }
+                 const sessionKeys = await this.storageManager?.listSessionKeys();
+                 const sessionTokensMap = {};
+                 for (const sessionKey of sessionKeys) {
+@@ -2911,7 +2925,7 @@ class TurnkeyClient {
+                         sessionTokensMap[session.publicKey] = sessionKey;
+                     }
+                 }
+-                for (const publicKey of publicKeys) {
++                for (const publicKey of filteredPublicKeys) {
+                     if (!sessionTokensMap[publicKey]) {
+                         try {
+                             await this.apiKeyStamper?.deleteKeyPair(publicKey);
+diff --git a/node_modules/@turnkey/core/dist/__clients__/core.mjs b/node_modules/@turnkey/core/dist/__clients__/core.mjs
+index 09353bc..55835bf 100644
+--- a/node_modules/@turnkey/core/dist/__clients__/core.mjs
++++ b/node_modules/@turnkey/core/dist/__clients__/core.mjs
+@@ -2901,6 +2901,20 @@ class TurnkeyClient {
+                 if (!publicKeys || publicKeys.length === 0) {
+                     return;
+                 }
++                // PATCH: Filter out non-Turnkey keychain services to avoid deleting app data
++                // Turnkey uses P256 keys: compressed (66 hex chars) or uncompressed (130 hex chars)
++                // App services: 'secret', 'documentCatalog', 'document-{64-char-hash}', etc.
++                const filteredPublicKeys = publicKeys.filter(key => {
++                    // Only process keys that look like P256 public key hex strings (66 or 130 chars)
++                    // This excludes document hashes (64 chars) and service names with non-hex chars
++                    const isTurnkeyKey = typeof key === 'string' &&
++                                        (key.length === 66 || key.length === 130) &&
++                                        /^[0-9a-fA-F]+$/.test(key);
++                    return isTurnkeyKey;
++                });
++                if (filteredPublicKeys.length === 0) {
++                    return;
++                }
+                 const sessionKeys = await this.storageManager?.listSessionKeys();
+                 const sessionTokensMap = {};
+                 for (const sessionKey of sessionKeys) {
+@@ -2909,7 +2923,7 @@ class TurnkeyClient {
+                         sessionTokensMap[session.publicKey] = sessionKey;
+                     }
+                 }
+-                for (const publicKey of publicKeys) {
++                for (const publicKey of filteredPublicKeys) {
+                     if (!sessionTokensMap[publicKey]) {
+                         try {
+                             await this.apiKeyStamper?.deleteKeyPair(publicKey);

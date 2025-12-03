@@ -12,14 +12,20 @@ import {
 } from 'react-native';
 import WebView, { type WebView as WebViewType } from 'react-native-webview';
 import type { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { WebViewNavBar } from '@/components/NavBar/WebViewNavBar';
+import {
+  charcoal,
+  slate200,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import { WebViewNavBar } from '@/components/navbar/WebViewNavBar';
 import { WebViewFooter } from '@/components/WebViewFooter';
+import { selfUrl } from '@/consts/links';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';
-import { charcoal, slate200, white } from '@/utils/colors';
 
 export interface WebViewScreenParams {
   url: string;
@@ -34,12 +40,10 @@ type WebViewScreenProps = NativeStackScreenProps<
   'WebView'
 >;
 
-const defaultUrl = 'https://self.xyz';
+const defaultUrl = selfUrl;
 
-export const WebViewScreen: React.FC<WebViewScreenProps> = ({
-  navigation,
-  route,
-}) => {
+export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
+  const navigation = useNavigation();
   const params = route?.params as WebViewScreenParams | undefined;
   const safeParams: WebViewScreenParams = params ?? { url: defaultUrl };
   const { url, title } = safeParams;
@@ -86,15 +90,19 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
     webViewRef.current?.reload();
   }, []);
 
+  const handleClose = useCallback(() => {
+    if (navigation?.canGoBack()) {
+      navigation.goBack();
+    }
+  }, [navigation]);
+
   const handleGoBack = useCallback(() => {
     if (canGoBackInWebView) {
       webViewRef.current?.goBack();
       return;
     }
-    if (typeof navigation?.canGoBack === 'function' && navigation.canGoBack()) {
-      navigation.goBack();
-    }
-  }, [canGoBackInWebView, navigation]);
+    handleClose();
+  }, [canGoBackInWebView, handleClose]);
 
   const handleGoForward = useCallback(() => {
     if (canGoForwardInWebView) {
@@ -129,7 +137,7 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({
       >
         <WebViewNavBar
           title={derivedTitle}
-          onBackPress={handleGoBack}
+          onBackPress={handleClose}
           onOpenExternalPress={handleOpenExternal}
         />
         <View style={styles.webViewContainer}>

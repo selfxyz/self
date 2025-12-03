@@ -251,19 +251,11 @@ The SDK surfaces typed errors for clearer diagnostics:
 
 All errors extend `SdkError`, which includes a `code`, `category`, and `retryable` flag.
 
-## Migration plan
-
-Track remaining tasks in [MIGRATION_PLAN.md](./docs/MIGRATION_PLAN.md) and see completed work in [MIGRATION_COMPLETED.md](./docs/MIGRATION_COMPLETED.md).
-
-## Architecture
-
-Migration and architecture prompts live in [PROMPTS.md](./docs/PROMPTS.md).
-
 ## Testing
 
 **IMPORTANT: Do NOT mock this package in tests!**
 
-The purpose of the mobile-sdk-alpha migration is to test the REAL package methods, not mocked versions. When integrating this package into your application:
+Use the REAL package methods, not mocked versions. When integrating this package into your application:
 
 ### ✅ DO: Use Real Package Methods (PII-safe)
 

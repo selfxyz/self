@@ -16,10 +16,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import { DefaultNavBar } from '@/components/NavBar';
+import { DefaultNavBar } from '@/components/navbar';
 import AppLayout from '@/layouts/AppLayout';
 import accountScreens from '@/navigation/account';
 import appScreens from '@/navigation/app';
+import { setupUniversalLinkListenerInNavigation } from '@/navigation/deeplinks';
 import devScreens from '@/navigation/devTools';
 import documentsScreens from '@/navigation/documents';
 import homeScreens from '@/navigation/home';
@@ -28,9 +29,8 @@ import sharedScreens from '@/navigation/shared';
 import verificationScreens from '@/navigation/verification';
 import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
 import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
+import analytics from '@/services/analytics';
 import type { ProofHistory } from '@/stores/proofTypes';
-import analytics from '@/utils/analytics';
-import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
 export const navigationScreens = {
   ...appScreens,
@@ -58,22 +58,31 @@ type BaseRootStackParamList = StaticParamList<typeof AppNavigation>;
 // Explicitly declare route params that are not inferred from initialParams
 export type RootStackParamList = Omit<
   BaseRootStackParamList,
-  | 'ComingSoon'
-  | 'IDPicker'
   | 'AadhaarUpload'
   | 'AadhaarUploadError'
-  | 'WebView'
+  | 'AadhaarUploadSuccess'
   | 'AccountRecovery'
-  | 'SaveRecoveryPhrase'
+  | 'AccountVerifiedSuccess'
   | 'CloudBackupSettings'
+  | 'ComingSoon'
   | 'ConfirmBelonging'
-  | 'ProofHistoryDetail'
+  | 'CreateMock'
+  | 'Disclaimer'
+  | 'DocumentNFCScan'
+  | 'DocumentOnboarding'
+  | 'Gratification'
+  | 'Home'
+  | 'IDPicker'
+  | 'IdDetails'
   | 'Loading'
   | 'Modal'
-  | 'CreateMock'
   | 'MockDataDeepLink'
-  | 'DocumentNFCScan'
-  | 'AadhaarUploadSuccess'
+  | 'Points'
+  | 'PointsInfo'
+  | 'ProofHistoryDetail'
+  | 'Prove'
+  | 'SaveRecoveryPhrase'
+  | 'WebView'
 > & {
   // Shared screens
   ComingSoon: {
@@ -102,6 +111,7 @@ export type RootStackParamList = Omit<
       }
     | undefined;
   DocumentCameraTrouble: undefined;
+  DocumentOnboarding: undefined;
 
   // Aadhaar screens
   AadhaarUpload: {
@@ -125,14 +135,17 @@ export type RootStackParamList = Omit<
     | undefined;
   CloudBackupSettings:
     | {
-        nextScreen?: string;
+        nextScreen?: 'SaveRecoveryPhrase';
+        returnToScreen?: 'Points';
       }
     | undefined;
+  AccountVerifiedSuccess: undefined;
 
   // Proof/Verification screens
   ProofHistoryDetail: {
     data: ProofHistory;
   };
+  Prove: undefined;
 
   // App screens
   Loading: {
@@ -141,6 +154,25 @@ export type RootStackParamList = Omit<
     curveOrExponent?: string;
   };
   Modal: ModalNavigationParams;
+  Gratification: {
+    points?: number;
+  };
+
+  // Home screens
+  Home: {
+    testReferralFlow?: boolean;
+  };
+  Points: undefined;
+  PointsInfo:
+    | {
+        showNextButton?: boolean;
+        onNextButtonPress?: () => void;
+      }
+    | undefined;
+  IdDetails: undefined;
+
+  // Onboarding screens
+  Disclaimer: undefined;
 
   // Dev screens
   CreateMock: undefined;

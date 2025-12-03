@@ -34,12 +34,7 @@ import { generateCommitment, generateNullifier } from './passport.js';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 
-export type PassportSupportStatus =
-  | 'passport_metadata_missing'
-  | 'csca_not_found'
-  | 'registration_circuit_not_supported'
-  | 'dsc_circuit_not_supported'
-  | 'passport_supported';
+export type AlternativeCSCA = Record<string, string>;
 
 function validateRegistrationCircuit(
   passportData: IDDocument,
@@ -69,6 +64,13 @@ function validateDscCircuit(
       deployedCircuits.DSC_ID.includes(circuitNameDsc));
   return { isValid: !!isValid, circuitName: circuitNameDsc };
 }
+
+export type PassportSupportStatus =
+  | 'passport_metadata_missing'
+  | 'csca_not_found'
+  | 'registration_circuit_not_supported'
+  | 'dsc_circuit_not_supported'
+  | 'passport_supported';
 
 export async function checkDocumentSupported(
   passportData: IDDocument,
@@ -137,8 +139,6 @@ export async function checkIfPassportDscIsInTree(
   }
   return true;
 }
-
-type AlternativeCSCA = Record<string, string>;
 type AadhaarPublicKeys = null | Array<string>;
 
 export function generateCommitmentInApp(

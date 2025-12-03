@@ -79,7 +79,7 @@ export const DocumentCameraScreen = ({ onBack, onSuccess, safeAreaInsets }: Prop
             </XStack>
           </YStack>
 
-          <Additional style={styles.disclaimer}>SELF WILL NOT CAPTURE AN IMAGE OF YOUR PASSPORT.</Additional>
+          <Additional style={styles.disclaimer}>Self will not capture an image of your ID.</Additional>
 
           <SecondaryButton trackEvent={PassportEvents.CAMERA_SCREEN_CLOSED} onPress={onBack ?? (() => {})}>
             Cancel

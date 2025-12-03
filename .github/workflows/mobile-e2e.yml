@@ -7,7 +7,7 @@ env:
   ANDROID_NDK_VERSION: 27.0.12077973
   XCODE_VERSION: 16.4
   # Cache versions
-  GH_CACHE_VERSION: v1 # Global cache version
+  GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
   GRADLE_OPTS: -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
@@ -56,6 +56,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        uses: ./.github/actions/yarnrc-hash
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn
         with:
@@ -63,18 +66,28 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
       - name: Validate Maestro test file
         if: false # Skip for build-only test - keep logic for future E2E
         run: |
@@ -106,7 +119,12 @@ jobs:
         with:
           accept-android-sdk-licenses: true
       - name: Install NDK
-        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
@@ -115,11 +133,13 @@ jobs:
           corepack prepare yarn@4.6.0 --activate
           yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
-      - name: Clone android-passport-nfc-reader
-        uses: ./.github/actions/clone-android-passport-nfc-reader
-        with:
-          working_directory: app
-          selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+      - name: Setup Android private modules
+        run: |
+          cd app
+          PLATFORM=android node scripts/setup-private-modules.cjs
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          CI: true
       - name: Build Android APK
         run: |
           echo "Building Android APK..."
@@ -139,16 +159,29 @@ jobs:
           APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH" 2>/dev/null || echo "unknown")
           echo "📱 APK size: $APK_SIZE bytes"
 
-          # Verify android-passport-nfc-reader was properly integrated (skip for forks)
+          # Verify private modules were properly integrated (skip for forks)
           if [ -z "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]; then
             echo "🔕 No PAT available — skipping private module verification"
-          elif [ -d "app/android/android-passport-nfc-reader" ]; then
-            echo "✅ android-passport-nfc-reader directory exists"
-            echo "📁 android-passport-nfc-reader contents:"
-            ls -la app/android/android-passport-nfc-reader/ | head -10
           else
-            echo "❌ android-passport-nfc-reader directory not found"
-            exit 1
+            # Verify android-passport-nfc-reader
+            if [ -d "app/android/android-passport-nfc-reader" ]; then
+              echo "✅ android-passport-nfc-reader directory exists"
+              echo "📁 android-passport-nfc-reader contents:"
+              ls -la app/android/android-passport-nfc-reader/ | head -10
+            else
+              echo "❌ android-passport-nfc-reader directory not found"
+              exit 1
+            fi
+
+            # Verify react-native-passport-reader
+            if [ -d "app/android/react-native-passport-reader" ]; then
+              echo "✅ react-native-passport-reader directory exists"
+              echo "📁 react-native-passport-reader contents:"
+              ls -la app/android/react-native-passport-reader/ | head -10
+            else
+              echo "❌ react-native-passport-reader directory not found"
+              exit 1
+            fi
           fi
 
           echo "🎉 Build verification completed successfully!"
@@ -216,6 +249,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        uses: ./.github/actions/yarnrc-hash
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn
         with:
@@ -223,18 +259,28 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
-        run: yarn install --immutable --silent
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: yarn install --immutable --silent
       - name: Validate Maestro test file
         run: |
           [ -f app/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }
@@ -246,7 +292,12 @@ jobs:
           key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
       - name: Install Maestro
         if: steps.cache-maestro.outputs.cache-hit != 'true'
-        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: curl -Ls "https://get.maestro.mobile.dev" | bash
       - name: Add Maestro to path
         run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
       - name: Set up Xcode
@@ -266,12 +317,13 @@ jobs:
           xcodebuild -version
           echo "Xcode path:"
           xcode-select -p
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ github.job }}-${{ runner.os }}
-      - name: Add ccache to PATH
-        run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+      # Temporarily disabled ccache to debug CI issues
+      # - name: Setup ccache
+      #   uses: hendrikmuhs/ccache-action@v1.2
+      #   with:
+      #     key: ${{ github.job }}-${{ runner.os }}
+      # - name: Add ccache to PATH
+      #   run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -285,14 +337,8 @@ jobs:
             app/ios/Pods
             ~/Library/Caches/CocoaPods
           lock-file: app/ios/Podfile.lock
-      - name: Cache DerivedData
-        uses: actions/cache@v4
-        with:
-          path: app/ios/build
-          key: ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock', 'yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-${{ env.XCODE_VERSION }}-
-            ${{ runner.os }}-derived-data-${{ env.GH_CACHE_VERSION }}-
+      # DerivedData caching disabled - caused intermittent build failures due to stale cache
+      # Pod caching still speeds up pod install significantly
       - name: Verify iOS Runtime
         run: |
           echo "📱 Verifying iOS Runtime availability..."
@@ -304,11 +350,15 @@ jobs:
           yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
-        run: |
-          echo "Installing iOS dependencies..."
-          cd app/ios
-          echo "📦 Installing pods via centralized script…"
-          BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh || { echo "❌ Pod install failed"; exit 1; }
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 20
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: |
+            cd app/ios
+            echo "📦 Installing pods via centralized script…"
+            BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Setup iOS Simulator

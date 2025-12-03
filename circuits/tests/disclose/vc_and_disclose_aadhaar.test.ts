@@ -17,9 +17,28 @@ import nameAndYobAadhaarjson from '../consts/ofac/nameAndYobAadhaarSMT.json' wit
 import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// const privateKeyPath = path.join(__dirname, '../../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem');
+
+// Dynamically resolve the anon-aadhaar-circuits package location
+function resolvePackagePath(packageName: string, subpath: string): string {
+  try {
+    // Try to resolve the package's package.json
+    const packageJsonPath = require.resolve(`${packageName}/package.json`, {
+      paths: [__dirname],
+    });
+    const packageDir = path.dirname(packageJsonPath);
+    return path.join(packageDir, subpath);
+  } catch (error) {
+    // Fallback to traditional node_modules search
+    const modulePath = path.join(__dirname, '../../node_modules', packageName, subpath);
+    if (fs.existsSync(modulePath)) {
+      return modulePath;
+    }
+    throw new Error(`Could not resolve ${packageName}/${subpath}`);
+  }
+}
+
 const privateKeyPem = fs.readFileSync(
-  path.join(__dirname, '../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem'),
+  resolvePackagePath('anon-aadhaar-circuits', 'assets/testPrivateKey.pem'),
   'utf8'
 );
 

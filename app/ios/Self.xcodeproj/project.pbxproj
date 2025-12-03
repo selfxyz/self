@@ -41,6 +41,7 @@
 		E9F9A99C2D57FE2900E1362E /* PassportOCRViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = E9F9A99A2D57FE2900E1362E /* PassportOCRViewManager.m */; };
 		E9F9A99D2D57FE2900E1362E /* PassportOCRViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9F9A99B2D57FE2900E1362E /* PassportOCRViewManager.swift */; };
 		EBECCA4983EC6929A7722578 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */; };
+		F3A8B2C9D4E5F6A7B8C9D0E1 /* DINOT-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* DINOT-Bold.otf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,6 +73,7 @@
 		905B70062A72774000AFA232 /* PassportReader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PassportReader.m; sourceTree = "<group>"; };
 		905B70082A729CD400AFA232 /* OpenPassport.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = OpenPassport.entitlements; path = OpenPassport/OpenPassport.entitlements; sourceTree = "<group>"; };
 		9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "DINOT-Medium.otf"; path = "../src/assets/fonts/DINOT-Medium.otf"; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* DINOT-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "DINOT-Bold.otf"; path = "../src/assets/fonts/DINOT-Bold.otf"; sourceTree = "<group>"; };
 		AE6147EB2DC95A8D00445C0F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B49D2B102E28AA7900946F64 /* IBMPlexMono-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "IBMPlexMono-Regular.otf"; path = "../src/assets/fonts/IBMPlexMono-Regular.otf"; sourceTree = SOURCE_ROOT; };
 		BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveMRZScannerView.swift; sourceTree = "<group>"; };
@@ -155,8 +157,9 @@
 			isa = PBXGroup;
 			children = (
 				7E5C3CEF7EDA4871B3D0EBE1 /* Advercase-Regular.otf */,
-				B49D2B102E28AA7900946F64 /* IBMPlexMono-Regular.otf */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* DINOT-Bold.otf */,
 				9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */,
+				B49D2B102E28AA7900946F64 /* IBMPlexMono-Regular.otf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -270,8 +273,9 @@
 				AE6147EC2DC95A8D00445C0F /* GoogleService-Info.plist in Resources */,
 				EBECCA4983EC6929A7722578 /* PrivacyInfo.xcprivacy in Resources */,
 				DAC618BCA5874DD8AD74FFFC /* Advercase-Regular.otf in Resources */,
-				B49D2B112E28AA7900946F64 /* IBMPlexMono-Regular.otf in Resources */,
+				F3A8B2C9D4E5F6A7B8C9D0E1 /* DINOT-Bold.otf in Resources */,
 				D427791AA5714251A5EAF8AD /* DINOT-Medium.otf in Resources */,
+				B49D2B112E28AA7900946F64 /* IBMPlexMono-Regular.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -427,7 +431,7 @@
 				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassportDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 178;
+				CURRENT_PROJECT_VERSION = 189;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				ENABLE_BITCODE = NO;
@@ -542,7 +546,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 2.7.1;
+				MARKETING_VERSION = 2.9.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -568,7 +572,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassport.entitlements;
-				CURRENT_PROJECT_VERSION = 178;
+				CURRENT_PROJECT_VERSION = 189;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -682,7 +686,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 2.7.1;
+				MARKETING_VERSION = 2.9.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

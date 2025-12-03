@@ -45,9 +45,9 @@ export function useCountries() {
 
         if (result.status === 'success') {
           setCountryData(result.data);
-          if (__DEV__) {
-            console.log('Set country data:', result.data);
-          }
+          // if (__DEV__) {
+          //   console.log('Set country data:', result.data);
+          // }
         } else {
           console.error('API returned non-success status:', result.status);
         }
