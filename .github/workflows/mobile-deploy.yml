@@ -396,7 +396,7 @@ jobs:
           path: |
             ${{ env.APP_PATH }}/ios/Pods
             ~/Library/Caches/CocoaPods
-          lock-file: app/ios/Podfile.lock
+          lockfile: app/ios/Podfile.lock
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}
 
       - name: Log cache status

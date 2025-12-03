@@ -80,7 +80,7 @@ const DocumentCameraScreen: React.FC = () => {
           </YStack>
 
           <Additional style={styles.disclaimer}>
-            SELF WILL NOT CAPTURE AN IMAGE OF YOUR PASSPORT.
+            Self will not capture an image of your ID.
           </Additional>
 
           <SecondaryButton

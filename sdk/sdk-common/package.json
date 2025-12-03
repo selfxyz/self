@@ -1,11 +1,11 @@
 {
   "name": "@selfxyz/sdk-common",
-  "type": "module",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/esm/index.d.ts",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "type": "module",
   "exports": {
     ".": {
       "import": {
@@ -18,20 +18,20 @@
       }
     }
   },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "./dist/**/*"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "typescript": "^5.9.2"
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
   }
 }
