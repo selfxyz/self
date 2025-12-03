@@ -17,7 +17,7 @@ import {
   notificationSuccess,
   notificationWarning,
   selectionChange,
-} from '@/utils/haptic';
+} from '@/integrations/haptics';
 
 const StyledButton = styled(Button, {
   width: '75%',

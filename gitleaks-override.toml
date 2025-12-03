@@ -1,0 +1,8 @@
+[extend]
+path = ".gitleaks.toml"
+
+[allowlist]
+description = "Project-specific overrides"
+paths = [
+    '''(?:^|/)Podfile\.lock$'''
+]

@@ -10,12 +10,12 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { ConfirmIdentificationScreen } from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
-import { useSettingStore } from '@/stores/settingStore';
-import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
+import { flushAllAnalytics, trackNfcEvent } from '@/services/analytics';
 import {
   getFCMToken,
   requestNotificationPermission,
-} from '@/utils/notifications/notificationService';
+} from '@/services/notifications/notificationService';
+import { useSettingStore } from '@/stores/settingStore';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 

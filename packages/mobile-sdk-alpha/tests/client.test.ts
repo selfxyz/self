@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, NFCScannerAdapter } from '../src';
 import { createListenersMap, createSelfClient, SdkEvents } from '../src/index';
-import type { AuthAdapter } from '../src/types/public';
+import type { AuthAdapter, NavigationAdapter } from '../src/types/public';
 
 describe('createSelfClient', () => {
   // Test eager validation during client creation
@@ -27,21 +27,21 @@ describe('createSelfClient', () => {
 
   it('throws when network adapter missing during creation', () => {
     // @ts-expect-error -- missing adapters
-    expect(() => createSelfClient({ config: {}, adapters: { scanner, crypto, documents, auth } })).toThrow(
+    expect(() => createSelfClient({ config: {}, adapters: { scanner, crypto, documents, auth, navigation } })).toThrow(
       'network adapter not provided',
     );
   });
 
   it('throws when crypto adapter missing during creation', () => {
     // @ts-expect-error -- missing adapters
-    expect(() => createSelfClient({ config: {}, adapters: { scanner, network, documents, auth } })).toThrow(
+    expect(() => createSelfClient({ config: {}, adapters: { scanner, network, documents, auth, navigation } })).toThrow(
       'crypto adapter not provided',
     );
   });
 
   it('throws when documents adapter missing during creation', () => {
     // @ts-expect-error -- missing adapters
-    expect(() => createSelfClient({ config: {}, adapters: { scanner, network, crypto, auth } })).toThrow(
+    expect(() => createSelfClient({ config: {}, adapters: { scanner, network, crypto, auth, navigation } })).toThrow(
       'documents adapter not provided',
     );
   });
@@ -49,7 +49,7 @@ describe('createSelfClient', () => {
   it('creates client successfully with all required adapters', () => {
     const client = createSelfClient({
       config: {},
-      adapters: { scanner, network, crypto, documents, auth },
+      adapters: { scanner, network, crypto, documents, auth, navigation },
       listeners: new Map(),
     });
     expect(client).toBeTruthy();
@@ -59,7 +59,7 @@ describe('createSelfClient', () => {
     const scanMock = vi.fn().mockResolvedValue({ passportData: { mock: true } });
     const client = createSelfClient({
       config: {},
-      adapters: { scanner: { scan: scanMock }, network, crypto, documents, auth },
+      adapters: { scanner: { scan: scanMock }, network, crypto, documents, auth, navigation },
       listeners: new Map(),
     });
     const result = await client.scanNFC({
@@ -85,7 +85,7 @@ describe('createSelfClient', () => {
     const scanMock = vi.fn().mockRejectedValue(err);
     const client = createSelfClient({
       config: {},
-      adapters: { scanner: { scan: scanMock }, network, crypto, documents, auth },
+      adapters: { scanner: { scan: scanMock }, network, crypto, documents, auth, navigation },
       listeners: new Map(),
     });
     await expect(
@@ -106,7 +106,7 @@ describe('createSelfClient', () => {
 
     const client = createSelfClient({
       config: {},
-      adapters: { scanner, network, crypto, documents, auth },
+      adapters: { scanner, network, crypto, documents, auth, navigation },
       listeners: listeners.map,
     });
 
@@ -134,7 +134,7 @@ describe('createSelfClient', () => {
   it('parses MRZ via client', () => {
     const client = createSelfClient({
       config: {},
-      adapters: { scanner, network, crypto, documents, auth },
+      adapters: { scanner, network, crypto, documents, auth, navigation },
       listeners: new Map(),
     });
     const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
@@ -149,6 +149,7 @@ describe('createSelfClient', () => {
       const client = createSelfClient({
         config: {},
         adapters: {
+          navigation,
           scanner,
           network,
           crypto,
@@ -171,7 +172,7 @@ describe('createSelfClient', () => {
       const getPrivateKey = vi.fn(() => Promise.resolve('stubbed-private-key'));
       const client = createSelfClient({
         config: {},
-        adapters: { scanner, network, crypto, documents, auth: { getPrivateKey } },
+        adapters: { scanner, network, crypto, documents, navigation, auth: { getPrivateKey } },
         listeners: new Map(),
       });
 
@@ -181,7 +182,7 @@ describe('createSelfClient', () => {
       const getPrivateKey = vi.fn(() => Promise.resolve('stubbed-private-key'));
       const client = createSelfClient({
         config: {},
-        adapters: { scanner, network, crypto, documents, auth: { getPrivateKey } },
+        adapters: { scanner, network, crypto, documents, navigation, auth: { getPrivateKey } },
         listeners: new Map(),
       });
       await expect(client.hasPrivateKey()).resolves.toBe(true);
@@ -221,4 +222,9 @@ const documents: DocumentsAdapter = {
   saveDocumentCatalog: async () => {},
   saveDocument: async () => {},
   deleteDocument: async () => {},
+};
+
+const navigation: NavigationAdapter = {
+  goBack: vi.fn(),
+  goTo: vi.fn(),
 };

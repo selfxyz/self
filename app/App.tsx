@@ -19,6 +19,11 @@ import {
   TURNKEY_ORGANIZATION_ID,
 } from './env';
 import ErrorBoundary from './src/components/ErrorBoundary';
+import { initSentry, wrapWithSentry } from './src/config/sentry';
+import {
+  TURNKEY_OAUTH_REDIRECT_URI_ANDROID,
+  TURNKEY_OAUTH_REDIRECT_URI_IOS,
+} from './src/devtools/mocks';
 import AppNavigation from './src/navigation';
 import { AuthProvider } from './src/providers/authProvider';
 import { DatabaseProvider } from './src/providers/databaseProvider';
@@ -28,11 +33,6 @@ import { NotificationTrackingProvider } from './src/providers/notificationTracki
 import { PassportProvider } from './src/providers/passportDataProvider';
 import { RemoteConfigProvider } from './src/providers/remoteConfigProvider';
 import { SelfClientProvider } from './src/providers/selfClientProvider';
-import { initSentry, wrapWithSentry } from './src/Sentry';
-import {
-  TURNKEY_OAUTH_REDIRECT_URI_ANDROID,
-  TURNKEY_OAUTH_REDIRECT_URI_IOS,
-} from './src/utils/constants';
 
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';

@@ -15,11 +15,17 @@ import type { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { WebViewNavBar } from '@/components/NavBar/WebViewNavBar';
+import {
+  charcoal,
+  slate200,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import { WebViewNavBar } from '@/components/navbar/WebViewNavBar';
 import { WebViewFooter } from '@/components/WebViewFooter';
+import { selfUrl } from '@/consts/links';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';
-import { charcoal, slate200, white } from '@/utils/colors';
 
 export interface WebViewScreenParams {
   url: string;
@@ -34,7 +40,7 @@ type WebViewScreenProps = NativeStackScreenProps<
   'WebView'
 >;
 
-const defaultUrl = 'https://self.xyz';
+const defaultUrl = selfUrl;
 
 export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
   const navigation = useNavigation();

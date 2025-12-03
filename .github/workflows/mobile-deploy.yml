@@ -150,9 +150,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    # Guard against auto-closed PRs (GitHub reports merged == false when a PR closes without merging)
     if: |
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
-      !contains(github.event.pull_request.labels.*.name, 'deploy:skip')
+      (
+        github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)
+      ) &&
+      (
+        github.event_name != 'pull_request' ||
+        !contains(github.event.pull_request.labels.*.name, 'deploy:skip')
+      )
     outputs:
       version: ${{ steps.bump.outputs.version }}
       ios_build: ${{ steps.bump.outputs.ios_build }}
@@ -262,7 +269,8 @@ jobs:
       contents: read
       actions: write
     if: |
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (
         (inputs.platform == 'ios' || inputs.platform == 'both') ||
         (github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'deploy:android'))
@@ -359,6 +367,10 @@ jobs:
           echo "Xcode path:"
           xcode-select -p
 
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        uses: ./.github/actions/yarnrc-hash
+
       - name: Cache Yarn artifacts
         id: yarn-cache
         uses: ./.github/actions/cache-yarn
@@ -367,7 +379,7 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
 
       - name: Cache Ruby gems
         id: gems-cache
@@ -829,7 +841,8 @@ jobs:
       actions: write
       id-token: write
     if: |
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (
         (inputs.platform == 'android' || inputs.platform == 'both') ||
         (github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'deploy:ios'))
@@ -967,6 +980,10 @@ jobs:
           # Use version-manager script to apply versions
           node ${{ env.APP_PATH }}/scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
 
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        uses: ./.github/actions/yarnrc-hash
+
       - name: Cache Yarn artifacts
         id: yarn-cache
         uses: ./.github/actions/cache-yarn
@@ -975,7 +992,7 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
 
       - name: Cache Ruby gems
         id: gems-cache
@@ -1241,7 +1258,8 @@ jobs:
     needs: [bump-version, build-ios, build-android]
     if: |
       always() &&
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (github.event_name != 'pull_request' ||
+        (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
     env:
       APP_PATH: ${{ github.workspace }}/app

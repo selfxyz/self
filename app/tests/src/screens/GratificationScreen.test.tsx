@@ -2,11 +2,48 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { render, waitFor } from '@testing-library/react-native';
 
 import GratificationScreen from '@/screens/app/GratificationScreen';
+
+jest.mock('react-native', () => {
+  const MockView = ({ children, ...props }: any) => (
+    <mock-view {...props}>{children}</mock-view>
+  );
+  const MockText = ({ children, ...props }: any) => (
+    <mock-text {...props}>{children}</mock-text>
+  );
+  const mockDimensions = {
+    get: jest.fn(() => ({ width: 320, height: 640 })),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  };
+
+  return {
+    __esModule: true,
+    Dimensions: mockDimensions,
+    Pressable: ({ onPress, children }: any) => (
+      <button onClick={onPress} type="button">
+        {children}
+      </button>
+    ),
+    StyleSheet: {
+      create: (styles: any) => styles,
+      flatten: (style: any) => style,
+    },
+    Text: MockText,
+    View: MockView,
+  };
+});
+
+jest.mock('react-native-edge-to-edge', () => ({
+  SystemBars: () => null,
+}));
+
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: jest.fn(() => ({ top: 0, bottom: 0 })),
+}));
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
@@ -15,24 +52,31 @@ jest.mock('@react-navigation/native', () => ({
 
 // Mock Tamagui components to avoid theme provider requirement
 jest.mock('tamagui', () => {
-  const ReactMock = require('react');
-  // Use React.createElement directly instead of requiring react-native to avoid memory issues
-  const YStack = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
-    ReactMock.createElement('View', { ref, ...props }, children),
+  const View: any = 'View';
+  const Text: any = 'Text';
+  const createViewComponent = (displayName: string) => {
+    const MockComponent = ({ children, ...props }: any) => (
+      <View {...props} testID={displayName}>
+        {children}
+      </View>
+    );
+    MockComponent.displayName = displayName;
+    return MockComponent;
+  };
+
+  const MockYStack = createViewComponent('YStack');
+  const MockView = createViewComponent('View');
+
+  const MockText = ({ children, ...props }: any) => (
+    <Text {...props}>{children}</Text>
   );
-  YStack.displayName = 'YStack';
-  const Text = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
-    ReactMock.createElement('Text', { ref, ...props }, children),
-  );
-  Text.displayName = 'Text';
-  const View = ReactMock.forwardRef(({ children, ...props }: any, ref: any) =>
-    ReactMock.createElement('View', { ref, ...props }, children),
-  );
-  View.displayName = 'View';
+  MockText.displayName = 'Text';
+
   return {
-    YStack,
-    Text,
-    View,
+    __esModule: true,
+    YStack: MockYStack,
+    View: MockView,
+    Text: MockText,
   };
 });
 
@@ -52,8 +96,8 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
   ),
 }));
 
-jest.mock('@/images/icons/arrow_left.svg', () => 'ArrowLeft');
-jest.mock('@/images/icons/logo_white.svg', () => 'LogoWhite');
+jest.mock('@/assets/icons/arrow_left.svg', () => 'ArrowLeft');
+jest.mock('@/assets/icons/logo_white.svg', () => 'LogoWhite');
 
 const mockUseNavigation = useNavigation as jest.MockedFunction<
   typeof useNavigation

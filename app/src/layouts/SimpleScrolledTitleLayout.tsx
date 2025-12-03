@@ -12,9 +12,9 @@ import {
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { white } from '@/utils/colors';
 
 type DetailListProps = PropsWithChildren<{
   title: string;

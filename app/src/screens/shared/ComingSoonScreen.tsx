@@ -8,10 +8,6 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import {
-  hasAnyValidRegisteredDocument,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
-import {
   BodyText,
   PrimaryButton,
   RoundFlag,
@@ -19,14 +15,18 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  black,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { notificationError } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';
-import analytics from '@/utils/analytics';
-import { black, slate500, white } from '@/utils/colors';
-import { sendCountrySupportNotification } from '@/utils/email';
-import { notificationError } from '@/utils/haptic';
+import analytics from '@/services/analytics';
+import { sendCountrySupportNotification } from '@/services/email';
 
 const { flush: flushAnalytics } = analytics();
 
@@ -36,8 +36,6 @@ type ComingSoonScreenProps = NativeStackScreenProps<
 >;
 
 const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
-  const selfClient = useSelfClient();
-  const navigateToLaunch = useHapticNavigation('Launch');
   const navigateToHome = useHapticNavigation('Home');
 
   const { countryName, countryCode, documentTypeText } = useMemo(() => {
@@ -82,12 +80,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
   }, [route.params?.documentCategory, route.params?.countryCode]);
 
   const onDismiss = async () => {
-    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
-    if (hasValidDocument) {
-      navigateToHome();
-    } else {
-      navigateToLaunch();
-    }
+    navigateToHome();
   };
 
   const onNotifyMe = async () => {

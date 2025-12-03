@@ -6,8 +6,7 @@ import React from 'react';
 import { Text, View } from 'tamagui';
 
 import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
-
-import { slate500 } from '@/utils/colors';
+import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 export interface TipProps {
   title: string;

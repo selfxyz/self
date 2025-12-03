@@ -5,9 +5,9 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import { useRegisterReferral } from '@/hooks/useRegisterReferral';
-import { recordReferralPointEvent } from '@/utils/points';
+import { recordReferralPointEvent } from '@/services/points';
 
-jest.mock('@/utils/points', () => ({
+jest.mock('@/services/points', () => ({
   recordReferralPointEvent: jest.fn(),
 }));
 

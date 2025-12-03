@@ -16,10 +16,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import { DefaultNavBar } from '@/components/NavBar';
+import { DefaultNavBar } from '@/components/navbar';
 import AppLayout from '@/layouts/AppLayout';
 import accountScreens from '@/navigation/account';
 import appScreens from '@/navigation/app';
+import { setupUniversalLinkListenerInNavigation } from '@/navigation/deeplinks';
 import devScreens from '@/navigation/devTools';
 import documentsScreens from '@/navigation/documents';
 import homeScreens from '@/navigation/home';
@@ -28,9 +29,8 @@ import sharedScreens from '@/navigation/shared';
 import verificationScreens from '@/navigation/verification';
 import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
 import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
+import analytics from '@/services/analytics';
 import type { ProofHistory } from '@/stores/proofTypes';
-import analytics from '@/utils/analytics';
-import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
 export const navigationScreens = {
   ...appScreens,
@@ -78,6 +78,7 @@ export type RootStackParamList = Omit<
   | 'Modal'
   | 'MockDataDeepLink'
   | 'Points'
+  | 'PointsInfo'
   | 'ProofHistoryDetail'
   | 'Prove'
   | 'SaveRecoveryPhrase'
@@ -162,6 +163,12 @@ export type RootStackParamList = Omit<
     testReferralFlow?: boolean;
   };
   Points: undefined;
+  PointsInfo:
+    | {
+        showNextButton?: boolean;
+        onNextButtonPress?: () => void;
+      }
+    | undefined;
   IdDetails: undefined;
 
   // Onboarding screens

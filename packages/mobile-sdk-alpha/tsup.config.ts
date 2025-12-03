@@ -39,10 +39,12 @@ const entry = {
   browser: 'src/browser.ts',
   'constants/analytics': 'src/constants/analytics.ts',
   'constants/colors': 'src/constants/colors.ts',
+  'constants/fonts': 'src/constants/fonts.ts',
   'components/index': 'src/components/index.ts',
   'hooks/index': 'src/hooks/index.ts',
   'hooks/useSafeBottomPadding': 'src/hooks/useSafeBottomPadding.ts',
   stores: 'src/stores/index.ts',
+  'utils/utils': 'src/utils/utils.ts',
   ...flowEntries,
 };
 

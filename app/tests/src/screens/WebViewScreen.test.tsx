@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
-import { Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
   fireEvent,
@@ -14,18 +12,74 @@ import {
 
 import { WebViewScreen } from '@/screens/shared/WebViewScreen';
 
+jest.mock('react-native', () => {
+  const mockLinking = {
+    canOpenURL: jest.fn(),
+    openURL: jest.fn(),
+  };
+
+  const MockView = ({ children, ...props }: any) => (
+    <mock-view {...props}>{children}</mock-view>
+  );
+  const mockBackHandler = {
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+    removeEventListener: jest.fn(),
+  };
+
+  return {
+    ActivityIndicator: (props: any) => <mock-activity-indicator {...props} />,
+    BackHandler: mockBackHandler,
+    Linking: mockLinking,
+    StyleSheet: {
+      create: (styles: unknown) => styles,
+      flatten: (style: unknown) => style,
+    },
+    View: MockView,
+  };
+});
+
+const mockLinking = jest.requireMock('react-native').Linking as jest.Mocked<{
+  canOpenURL: jest.Mock;
+  openURL: jest.Mock;
+}>;
+
 jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
   useNavigation: jest.fn(),
   useFocusEffect: jest.fn(),
 }));
 
+jest.mock('@/components/navbar/WebViewNavBar', () => ({
+  WebViewNavBar: ({ children, onBackPress, ...props }: any) => (
+    <mock-webview-navbar {...props}>
+      <mock-pressable testID="icon-x" onPress={onBackPress} />
+      {children}
+    </mock-webview-navbar>
+  ),
+}));
+
+jest.mock('@/components/WebViewFooter', () => ({
+  WebViewFooter: () => <mock-webview-footer />,
+}));
+
+jest.mock('@/layouts/ExpandableBottomLayout', () => ({
+  ExpandableBottomLayout: {
+    Layout: ({ children, ...props }: any) => (
+      <mock-expandable-layout {...props}>{children}</mock-expandable-layout>
+    ),
+    TopSection: ({ children, ...props }: any) => (
+      <mock-expandable-top {...props}>{children}</mock-expandable-top>
+    ),
+    BottomSection: ({ children, ...props }: any) => (
+      <mock-expandable-bottom {...props}>{children}</mock-expandable-bottom>
+    ),
+  },
+}));
+
 jest.mock('react-native-webview', () => {
-  const ReactMock = require('react');
-  // Use React.createElement directly instead of requiring react-native to avoid memory issues
-  const MockWebView = ReactMock.forwardRef((props: any, _ref) => {
-    return ReactMock.createElement('View', { testID: 'webview', ...props });
-  });
+  // Lightweight host component so React can render while keeping props inspectable
+  const MockWebView = ({ testID = 'webview', ...props }: any) => (
+    <mock-webview testID={testID} {...props} />
+  );
   MockWebView.displayName = 'MockWebView';
   return {
     __esModule: true,
@@ -59,6 +113,8 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
       canGoBack: () => true,
     });
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockLinking.canOpenURL.mockReset();
+    mockLinking.openURL.mockReset();
   });
 
   afterEach(() => {
@@ -70,8 +126,7 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
     render(<WebViewScreen {...createProps('https://self.xyz')} />);
     // The Button component renders with msdk-button testID, find by icon
     const closeButtonIcon = screen.getByTestId('icon-x');
-    const closeButton = closeButtonIcon.parent?.parent;
-    fireEvent.press(closeButton!);
+    fireEvent.press(closeButtonIcon);
     expect(mockGoBack).toHaveBeenCalledTimes(1);
   });
 
@@ -110,10 +165,8 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
   });
 
   it('opens allowed external schemes externally and blocks in WebView (mailto, tel)', async () => {
-    jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true as any);
-    const openSpy = jest
-      .spyOn(Linking, 'openURL')
-      .mockResolvedValue(undefined as any);
+    mockLinking.canOpenURL.mockResolvedValue(true as any);
+    mockLinking.openURL.mockResolvedValue(undefined as any);
     render(<WebViewScreen {...createProps('https://self.xyz')} />);
     const webview = screen.getByTestId('webview');
 
@@ -122,19 +175,21 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
     });
     expect(resultMailto).toBe(false);
     await waitFor(() =>
-      expect(openSpy).toHaveBeenCalledWith('mailto:test@example.com'),
+      expect(mockLinking.openURL).toHaveBeenCalledWith(
+        'mailto:test@example.com',
+      ),
     );
 
     const resultTel = await webview.props.onShouldStartLoadWithRequest?.({
       url: 'tel:+123456789',
     });
     expect(resultTel).toBe(false);
-    await waitFor(() => expect(openSpy).toHaveBeenCalledWith('tel:+123456789'));
+    await waitFor(() =>
+      expect(mockLinking.openURL).toHaveBeenCalledWith('tel:+123456789'),
+    );
   });
 
   it('blocks disallowed external schemes and does not attempt to open', async () => {
-    const canOpenSpy = jest.spyOn(Linking, 'canOpenURL');
-    const openSpy = jest.spyOn(Linking, 'openURL');
     render(<WebViewScreen {...createProps('https://self.xyz')} />);
     const webview = screen.getByTestId('webview');
 
@@ -142,13 +197,13 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
       url: 'ftp://example.com',
     });
     expect(result).toBe(false);
-    expect(canOpenSpy).not.toHaveBeenCalled();
-    expect(openSpy).not.toHaveBeenCalled();
+    expect(mockLinking.canOpenURL).not.toHaveBeenCalled();
+    expect(mockLinking.openURL).not.toHaveBeenCalled();
   });
 
   it('scrubs error log wording when external open fails', async () => {
-    jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true as any);
-    jest.spyOn(Linking, 'openURL').mockRejectedValue(new Error('boom'));
+    mockLinking.canOpenURL.mockResolvedValue(true as any);
+    mockLinking.openURL.mockRejectedValue(new Error('boom'));
     render(<WebViewScreen {...createProps('https://self.xyz')} />);
     const webview = screen.getByTestId('webview');
 

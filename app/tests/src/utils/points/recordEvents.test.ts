@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { recordReferralPointEvent } from '@/utils/points/recordEvents';
-import { registerReferralPoints } from '@/utils/points/registerEvents';
-import { getPointsAddress } from '@/utils/points/utils';
+import { recordReferralPointEvent } from '@/services/points/recordEvents';
+import { registerReferralPoints } from '@/services/points/registerEvents';
+import { getPointsAddress } from '@/services/points/utils';
 
 // Mock dependencies
-jest.mock('@/utils/points/registerEvents', () => ({
+jest.mock('@/services/points/registerEvents', () => ({
   registerReferralPoints: jest.fn(),
 }));
 
-jest.mock('@/utils/points/utils', () => ({
+jest.mock('@/services/points/utils', () => ({
   getPointsAddress: jest.fn(),
 }));
 
@@ -30,11 +30,11 @@ jest.mock('@/stores/pointEventStore', () => ({
   },
 }));
 
-jest.mock('@/utils/points/eventPolling', () => ({
+jest.mock('@/services/points/eventPolling', () => ({
   pollEventProcessingStatus: jest.fn(() => Promise.resolve('completed')),
 }));
 
-jest.mock('@/utils/points/api', () => ({
+jest.mock('@/services/points/api', () => ({
   isSuccessfulStatus: jest.fn(
     (status: number) => status === 200 || status === 202,
   ),

@@ -21,12 +21,16 @@ import {
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  borderColor,
+  textBlack,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import { impactLight } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
-import { borderColor, textBlack, white } from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
-import { impactLight } from '@/utils/haptic';
+import { extraYPadding } from '@/utils/styleUtils';
 
 const PassportDataSelector = () => {
   const selfClient = useSelfClient();

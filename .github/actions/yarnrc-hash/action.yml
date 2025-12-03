@@ -1,0 +1,25 @@
+name: Compute .yarnrc.yml hash
+
+description: Compute a stable hash for .yarnrc.yml to use in cache keys.
+
+outputs:
+  hash:
+    description: Hash of .yarnrc.yml (or "no-yarnrc" if the file is missing)
+    value: ${{ steps.compute-yarnrc-hash.outputs.hash }}
+
+runs:
+  using: composite
+  steps:
+    - name: Compute .yarnrc.yml hash
+      id: compute-yarnrc-hash
+      shell: bash
+      run: |
+        if [ -f .yarnrc.yml ]; then
+          if command -v shasum >/dev/null 2>&1; then
+            echo "hash=$(shasum -a 256 .yarnrc.yml | awk '{ print $1 }')" >> "$GITHUB_OUTPUT"
+          else
+            echo "hash=$(sha256sum .yarnrc.yml | awk '{ print $1 }')" >> "$GITHUB_OUTPUT"
+          fi
+        else
+          echo "hash=no-yarnrc" >> "$GITHUB_OUTPUT"
+        fi

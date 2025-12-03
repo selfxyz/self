@@ -8,12 +8,12 @@ import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 
 import { YStack } from '@selfxyz/mobile-sdk-alpha/components';
+import { slate100 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import IDSelection from '@selfxyz/mobile-sdk-alpha/onboarding/id-selection-screen';
 
-import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
+import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 import type { RootStackParamList } from '@/navigation';
-import { slate100 } from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
+import { extraYPadding } from '@/utils/styleUtils';
 
 type IDPickerScreenRouteProp = RouteProp<RootStackParamList, 'IDPicker'>;
 

@@ -8,8 +8,9 @@ import { Image, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View } from 'tamagui';
 
-import ArrowLeft from '@/images/icons/arrow_left.svg';
-import { black, white } from '@/utils/colors';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import ArrowLeft from '@/assets/icons/arrow_left.svg';
 
 export interface ReferralHeaderProps {
   imageSource: ImageSourcePropType;
