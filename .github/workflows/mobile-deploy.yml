@@ -367,6 +367,10 @@ jobs:
           echo "Xcode path:"
           xcode-select -p
 
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        uses: ./.github/actions/yarnrc-hash
+
       - name: Cache Yarn artifacts
         id: yarn-cache
         uses: ./.github/actions/cache-yarn
@@ -375,7 +379,7 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
 
       - name: Cache Ruby gems
         id: gems-cache
@@ -976,6 +980,10 @@ jobs:
           # Use version-manager script to apply versions
           node ${{ env.APP_PATH }}/scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
 
+      - name: Compute .yarnrc.yml hash
+        id: yarnrc-hash
+        uses: ./.github/actions/yarnrc-hash
+
       - name: Cache Yarn artifacts
         id: yarn-cache
         uses: ./.github/actions/cache-yarn
@@ -984,7 +992,7 @@ jobs:
             .yarn/cache
             .yarn/install-state.gz
             .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('.yarnrc.yml') }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
 
       - name: Cache Ruby gems
         id: gems-cache

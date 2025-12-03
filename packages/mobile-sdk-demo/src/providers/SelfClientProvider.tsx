@@ -27,13 +27,13 @@ import { useNavigation } from '../navigation/NavigationProvider';
  * Routes not in this map are not supported in the demo app.
  */
 const ROUTE_TO_SCREEN_MAP: Partial<Record<RouteName, ScreenName>> = {
-  'Home': 'Home',
-  'CountryPicker': 'CountrySelection',
-  'IDPicker': 'IDSelection',
-  'DocumentCamera': 'MRZ',
-  'DocumentNFCScan': 'NFC',
-  'ManageDocuments': 'Documents',
-  'AccountVerifiedSuccess': 'Success',
+  Home: 'Home',
+  CountryPicker: 'CountrySelection',
+  IDPicker: 'IDSelection',
+  DocumentCamera: 'MRZ',
+  DocumentNFCScan: 'NFC',
+  ManageDocuments: 'Documents',
+  AccountVerifiedSuccess: 'Success',
   // Routes not implemented in demo app:
   // 'DocumentOnboarding': null,
   // 'SaveRecoveryPhrase': null,
@@ -173,7 +173,9 @@ export function SelfClientProvider({ children, onNavigate }: SelfClientProviderP
             // This is safe because we control the route mapping
             navigation.navigate(screenName, params as any);
           } else {
-            console.warn(`[SelfClientProvider] SDK route "${routeName}" is not mapped to a demo screen. Ignoring navigation request.`);
+            console.warn(
+              `[SelfClientProvider] SDK route "${routeName}" is not mapped to a demo screen. Ignoring navigation request.`,
+            );
           }
         },
       },
