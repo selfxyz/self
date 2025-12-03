@@ -21,6 +21,48 @@ const mockPixelRatio = {
 
 global.PixelRatio = mockPixelRatio;
 
+// Define NativeModules early so it's available for react-native mock
+// This will be assigned to global.NativeModules later, but we define it here
+// so the react-native mock can reference it
+const NativeModules = {
+  PassportReader: {
+    configure: jest.fn(),
+    scanPassport: jest.fn(),
+    trackEvent: jest.fn(),
+    flush: jest.fn(),
+    reset: jest.fn(),
+  },
+  ReactNativeBiometrics: {
+    isSensorAvailable: jest.fn().mockResolvedValue({
+      available: true,
+      biometryType: 'TouchID',
+    }),
+    createKeys: jest.fn().mockResolvedValue({ publicKey: 'mock-public-key' }),
+    deleteKeys: jest.fn().mockResolvedValue(true),
+    createSignature: jest
+      .fn()
+      .mockResolvedValue({ signature: 'mock-signature' }),
+    simplePrompt: jest.fn().mockResolvedValue({ success: true }),
+  },
+  NativeLoggerBridge: {
+    log: jest.fn(),
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+  RNPassportReader: {
+    configure: jest.fn(),
+    scanPassport: jest.fn(),
+    trackEvent: jest.fn(),
+    flush: jest.fn(),
+    reset: jest.fn(),
+  },
+};
+
+// Assign to global so it's available everywhere
+global.NativeModules = NativeModules;
+
 // Also make it available for require() calls
 const Module = require('module');
 
@@ -31,12 +73,100 @@ Module.prototype.require = function (id) {
     if (!RN.PixelRatio || !RN.PixelRatio.getFontScale) {
       RN.PixelRatio = mockPixelRatio;
     }
+    // Ensure NativeModules includes our mocked modules
+    if (RN.NativeModules) {
+      Object.assign(RN.NativeModules, NativeModules);
+    } else {
+      RN.NativeModules = NativeModules;
+    }
     return RN;
   }
   return originalRequire.apply(this, arguments);
 };
 
 require('react-native-gesture-handler/jestSetup');
+
+// Mock react-native comprehensively - single source of truth for all tests
+// Note: NativeModules will be defined later and assigned to global.NativeModules
+// This mock accesses it at runtime via global.NativeModules
+jest.mock('react-native', () => {
+  // Create AppState mock with listener tracking
+  // Expose listeners array globally so tests can access it
+  const appStateListeners = [];
+  global.mockAppStateListeners = appStateListeners;
+
+  const mockAppState = {
+    currentState: 'active',
+    addEventListener: jest.fn((eventType, handler) => {
+      appStateListeners.push(handler);
+      return {
+        remove: () => {
+          const index = appStateListeners.indexOf(handler);
+          if (index >= 0) {
+            appStateListeners.splice(index, 1);
+          }
+        },
+      };
+    }),
+  };
+
+  return {
+    __esModule: true,
+    AppState: mockAppState,
+    Platform: {
+      OS: 'ios',
+      select: jest.fn(obj => obj.ios || obj.default),
+      Version: 14,
+    },
+    // NativeModules is defined above and assigned to global.NativeModules
+    // Use getter to access it at runtime (jest.mock is hoisted)
+    get NativeModules() {
+      return global.NativeModules || {};
+    },
+    NativeEventEmitter: jest.fn().mockImplementation(nativeModule => {
+      return {
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        removeAllListeners: jest.fn(),
+        emit: jest.fn(),
+      };
+    }),
+    PixelRatio: mockPixelRatio,
+    Dimensions: {
+      get: jest.fn(() => ({
+        window: { width: 375, height: 667, scale: 2 },
+        screen: { width: 375, height: 667, scale: 2 },
+      })),
+    },
+    Linking: {
+      getInitialURL: jest.fn().mockResolvedValue(null),
+      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+      removeEventListener: jest.fn(),
+      openURL: jest.fn().mockResolvedValue(undefined),
+      canOpenURL: jest.fn().mockResolvedValue(true),
+    },
+    StyleSheet: {
+      create: jest.fn(styles => styles),
+      flatten: jest.fn(style => style),
+      hairlineWidth: 1,
+      absoluteFillObject: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+      },
+    },
+    View: jest.fn(({ children, ...props }) => children || null),
+    Text: jest.fn(({ children, ...props }) => children || null),
+    ScrollView: jest.fn(({ children, ...props }) => children || null),
+    TouchableOpacity: jest.fn(({ children, ...props }) => children || null),
+    TouchableHighlight: jest.fn(({ children, ...props }) => children || null),
+    Image: jest.fn(() => null),
+    ActivityIndicator: jest.fn(() => null),
+    SafeAreaView: jest.fn(({ children, ...props }) => children || null),
+  };
+});
 
 // Mock NativeAnimatedHelper - using virtual mock during RN 0.76.9 prep phase
 jest.mock(
@@ -750,20 +880,8 @@ jest.mock('react-native-passport-reader', () => {
   };
 });
 
-// Mock NativeModules without requiring react-native to avoid memory issues
-// Create a minimal NativeModules mock for PassportReader
-const NativeModules = {
-  PassportReader: {
-    configure: jest.fn(),
-    scanPassport: jest.fn(),
-    trackEvent: jest.fn(),
-    flush: jest.fn(),
-    reset: jest.fn(),
-  },
-};
-
-// Make it available globally for any code that expects it
-global.NativeModules = NativeModules;
+// NativeModules is already defined at the top of the file and assigned to global.NativeModules
+// No need to redefine it here
 
 // Mock @/integrations/nfc/passportReader to properly expose the interface expected by tests
 jest.mock('./src/integrations/nfc/passportReader', () => {
@@ -1229,4 +1347,60 @@ jest.mock('@/components/WebViewFooter', () => {
   // Avoid requiring React to prevent nested require memory issues
   const WebViewFooter = jest.fn(() => null);
   return { __esModule: true, WebViewFooter };
+});
+
+// Mock react-native-biometrics to prevent NativeModules errors
+jest.mock('react-native-biometrics', () => {
+  class MockReactNativeBiometrics {
+    constructor(options) {
+      // Constructor accepts options but doesn't need to do anything
+    }
+    isSensorAvailable = jest.fn().mockResolvedValue({
+      available: true,
+      biometryType: 'TouchID',
+    });
+    createKeys = jest.fn().mockResolvedValue({ publicKey: 'mock-public-key' });
+    deleteKeys = jest.fn().mockResolvedValue(true);
+    createSignature = jest
+      .fn()
+      .mockResolvedValue({ signature: 'mock-signature' });
+    simplePrompt = jest.fn().mockResolvedValue({ success: true });
+  }
+  return {
+    __esModule: true,
+    default: MockReactNativeBiometrics,
+  };
+});
+
+// Mock NativeAppState native module to prevent getCurrentAppState errors
+jest.mock('react-native/Libraries/AppState/NativeAppState', () => ({
+  __esModule: true,
+  default: {
+    getConstants: jest.fn(() => ({ initialAppState: 'active' })),
+    getCurrentAppState: jest.fn(() => Promise.resolve({ app_state: 'active' })),
+    addListener: jest.fn(),
+    removeListeners: jest.fn(),
+  },
+}));
+
+// Mock AppState to prevent getCurrentAppState errors
+jest.mock('react-native/Libraries/AppState/AppState', () => {
+  const appStateListeners = [];
+  return {
+    __esModule: true,
+    default: {
+      currentState: 'active',
+      addEventListener: jest.fn((eventType, handler) => {
+        appStateListeners.push(handler);
+        return {
+          remove: () => {
+            const index = appStateListeners.indexOf(handler);
+            if (index >= 0) {
+              appStateListeners.splice(index, 1);
+            }
+          },
+        };
+      }),
+    },
+  };
 });

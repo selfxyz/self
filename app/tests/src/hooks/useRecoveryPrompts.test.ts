@@ -13,32 +13,12 @@ import { useSettingStore } from '@/stores/settingStore';
 
 const navigationStateListeners: Array<() => void> = [];
 let isNavigationReady = true;
-const appStateListeners: Array<(state: string) => void> = [];
+// Use global appStateListeners from jest.setup.js mock
+const appStateListeners = global.mockAppStateListeners || [];
 
 jest.mock('@/hooks/useModal');
 jest.mock('@/providers/passportDataProvider');
-jest.mock('react-native', () => {
-  const actual = jest.requireActual('react-native');
-  return {
-    ...actual,
-    AppState: {
-      currentState: 'active',
-      addEventListener: jest.fn(
-        (_: string, handler: (state: string) => void) => {
-          appStateListeners.push(handler);
-          return {
-            remove: () => {
-              const index = appStateListeners.indexOf(handler);
-              if (index >= 0) {
-                appStateListeners.splice(index, 1);
-              }
-            },
-          };
-        },
-      ),
-    },
-  };
-});
+// Use global react-native mock from jest.setup.js - no need to mock here
 
 const showModal = jest.fn();
 const getAllDocuments = jest.fn();

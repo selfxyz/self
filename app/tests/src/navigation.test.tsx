@@ -9,14 +9,17 @@ jest.mock('@/hooks/useRecoveryPrompts', () => jest.fn());
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   useSelfClient: jest.fn(() => ({})),
 }));
-jest.mock('@/utils/deeplinks', () => ({
+jest.mock('@/navigation/deeplinks', () => ({
   setupUniversalLinkListenerInNavigation: jest.fn(() => jest.fn()),
 }));
-jest.mock('@/utils/analytics', () =>
-  jest.fn(() => ({
+jest.mock('@/services/analytics', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    trackEvent: jest.fn(),
     trackScreenView: jest.fn(),
+    flush: jest.fn(),
   })),
-);
+}));
 
 describe('navigation', () => {
   beforeEach(() => {
