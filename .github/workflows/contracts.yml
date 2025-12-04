@@ -49,7 +49,26 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Check ethereum-cryptography version
-        run: node -p "require('ethereum-cryptography/package.json').version"
+        run: |
+          node - <<'NODE'
+          const path = require('path');
+          const fs = require('fs');
+
+          let current = path.dirname(require.resolve('ethereum-cryptography'));
+          let last = '';
+          while (current !== last) {
+            const candidate = path.join(current, 'package.json');
+            if (fs.existsSync(candidate)) {
+              const version = JSON.parse(fs.readFileSync(candidate, 'utf8')).version;
+              console.log(version);
+              process.exit(0);
+            }
+            last = current;
+            current = path.dirname(current);
+          }
+          console.error('package.json for ethereum-cryptography not found');
+          process.exit(1);
+          NODE
         working-directory: ./contracts
       - name: Prettier Check - Code Formatting
         run: yarn prettier:check
