@@ -33,10 +33,20 @@ jobs:
           fi
           echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
-      - name: Set Node.js
-        uses: actions/setup-node@v4
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          path: |
+            .yarn/cache
+            node_modules
+            contracts/node_modules
+          cache-version: v2
+      - name: Clean Yarn cache (one-off bust)
+        run: |
+          corepack enable
+          corepack prepare yarn@4.6.0 --activate
+          rm -rf .yarn/cache
+          yarn cache clean --all
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Prettier Check - Code Formatting

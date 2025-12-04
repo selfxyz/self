@@ -39,6 +39,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Use Node from .nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+          cache-dependency-path: |
+            yarn.lock
+            .yarnrc.yml
       - name: Setup Corepack
         run: |
           corepack enable
@@ -68,6 +76,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Use Node from .nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+          cache-dependency-path: |
+            yarn.lock
+            .yarnrc.yml
       - name: Setup Corepack
         run: |
           corepack enable
@@ -97,6 +113,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Use Node from .nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+          cache-dependency-path: |
+            yarn.lock
+            .yarnrc.yml
       - name: Setup Corepack
         run: |
           corepack enable
