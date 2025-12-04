@@ -39,7 +39,7 @@ jobs:
         with:
           path: |
             .yarn/cache
-          cache-version: v3
+          cache-version: v4
       - name: Clean Yarn cache (one-off bust)
         run: |
           corepack enable
@@ -48,6 +48,9 @@ jobs:
           yarn cache clean --all
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+      - name: Check ethereum-cryptography version
+        run: node -p "require('ethereum-cryptography/package.json').version"
+        working-directory: ./contracts
       - name: Prettier Check - Code Formatting
         run: yarn prettier:check
         working-directory: ./contracts
