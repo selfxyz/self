@@ -8,6 +8,7 @@ on:
     paths:
       - "contracts/**"
       - "common/**"
+      - ".github/workflows/contracts.yml"
 
 concurrency:
   group: contracts-ci-${{ github.workflow }}-${{ github.ref }}
