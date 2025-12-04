@@ -39,15 +39,14 @@ jobs:
         with:
           path: |
             .yarn/cache
-            node_modules
-            contracts/node_modules
-          cache-version: v2
+          cache-version: v3
       - name: Clean Yarn cache (one-off bust)
         run: |
           corepack enable
           corepack prepare yarn@4.6.0 --activate
           rm -rf .yarn/cache
           yarn cache clean --all
+          rm -rf node_modules contracts/node_modules
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Prettier Check - Code Formatting
