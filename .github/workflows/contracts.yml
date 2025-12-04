@@ -70,6 +70,18 @@ jobs:
           process.exit(1);
           NODE
         working-directory: ./contracts
+      - name: Dump ethereum-cryptography utils snippet
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = require.resolve('ethereum-cryptography/utils.js');
+          const data = fs.readFileSync(p, 'utf8');
+          console.log('--- utils.js head ---');
+          console.log(data.split('\n').slice(0,40).join('\n'));
+          console.log('--- utils.js tail ---');
+          console.log(data.split('\n').slice(-20).join('\n'));
+          NODE
+        working-directory: ./contracts
       - name: Prettier Check - Code Formatting
         run: yarn prettier:check
         working-directory: ./contracts
