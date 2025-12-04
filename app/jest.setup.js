@@ -157,14 +157,20 @@ jest.mock('react-native', () => {
         bottom: 0,
       },
     },
-    View: jest.fn(({ children, ...props }) => children || null),
-    Text: jest.fn(({ children, ...props }) => children || null),
-    ScrollView: jest.fn(({ children, ...props }) => children || null),
-    TouchableOpacity: jest.fn(({ children, ...props }) => children || null),
-    TouchableHighlight: jest.fn(({ children, ...props }) => children || null),
-    Image: jest.fn(() => null),
-    ActivityIndicator: jest.fn(() => null),
-    SafeAreaView: jest.fn(({ children, ...props }) => children || null),
+    View: 'View',
+    Text: 'Text',
+    ScrollView: 'ScrollView',
+    TouchableOpacity: 'TouchableOpacity',
+    TouchableHighlight: 'TouchableHighlight',
+    Image: 'Image',
+    ActivityIndicator: 'ActivityIndicator',
+    SafeAreaView: 'SafeAreaView',
+    requireNativeComponent: jest.fn(name => {
+      // Return a mock component function for any native component
+      const MockNativeComponent = jest.fn(props => props.children || null);
+      MockNativeComponent.displayName = `Mock(${name})`;
+      return MockNativeComponent;
+    }),
   };
 });
 
@@ -185,6 +191,19 @@ global.__fbBatchedBridgeConfig = {
 
 // Set up global React Native test environment
 global.__DEV__ = true;
+
+// Set up global mock navigation ref for tests
+global.mockNavigationRef = {
+  isReady: jest.fn(() => true),
+  getCurrentRoute: jest.fn(() => ({ name: 'Home' })),
+  navigate: jest.fn(),
+  goBack: jest.fn(),
+  canGoBack: jest.fn(() => true),
+  dispatch: jest.fn(),
+  getState: jest.fn(() => ({ routes: [{ name: 'Home' }], index: 0 })),
+  addListener: jest.fn(() => jest.fn()),
+  removeListener: jest.fn(),
+};
 
 // Mock TurboModuleRegistry to provide required native modules for BOTH main app and mobile-sdk-alpha
 jest.mock('react-native/Libraries/TurboModule/TurboModuleRegistry', () => ({
@@ -260,21 +279,44 @@ jest.mock(
       startDetecting: jest.fn(),
     };
 
-    const RN = jest.requireActual('react-native');
-    // Override the PixelRatio immediately
-    RN.PixelRatio = PixelRatio;
-
-    // Make sure both the default and named exports work
-    const mockedRN = {
-      ...RN,
+    // Return a simple object with all the mocks we need
+    // Avoid nested requireActual/requireMock to prevent OOM in CI
+    return {
+      __esModule: true,
       PixelRatio,
-      default: {
-        ...RN,
-        PixelRatio,
+      Platform: {
+        OS: 'ios',
+        select: jest.fn(obj => obj.ios || obj.default),
+        Version: 14,
       },
+      Dimensions: {
+        get: jest.fn(() => ({
+          window: { width: 375, height: 667, scale: 2 },
+          screen: { width: 375, height: 667, scale: 2 },
+        })),
+      },
+      StyleSheet: {
+        create: jest.fn(styles => styles),
+        flatten: jest.fn(style => style),
+        hairlineWidth: 1,
+        absoluteFillObject: {
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+        },
+      },
+      View: 'View',
+      Text: 'Text',
+      ScrollView: 'ScrollView',
+      TouchableOpacity: 'TouchableOpacity',
+      requireNativeComponent: jest.fn(name => {
+        const MockNativeComponent = jest.fn(props => props.children || null);
+        MockNativeComponent.displayName = `Mock(${name})`;
+        return MockNativeComponent;
+      }),
     };
-
-    return mockedRN;
   },
   { virtual: true },
 );
@@ -426,12 +468,19 @@ jest.mock('react-native-gesture-handler', () => {
   const MockFlatList = jest.fn(props => null);
 
   return {
-    ...jest.requireActual('react-native-gesture-handler/jestSetup'),
+    // Provide gesture handler mock without requireActual to avoid OOM
     GestureHandlerRootView: ({ children }) => children,
     ScrollView: MockScrollView,
     TouchableOpacity: MockTouchableOpacity,
     TouchableHighlight: MockTouchableHighlight,
     FlatList: MockFlatList,
+    Directions: {},
+    State: {},
+    Swipeable: jest.fn(() => null),
+    DrawerLayout: jest.fn(() => null),
+    PanGestureHandler: jest.fn(() => null),
+    TapGestureHandler: jest.fn(() => null),
+    LongPressGestureHandler: jest.fn(() => null),
   };
 });
 
@@ -1125,10 +1174,12 @@ jest.mock('react-native-svg', () => {
 
 // Mock React Navigation
 jest.mock('@react-navigation/native', () => {
-  const actualNav = jest.requireActual('@react-navigation/native');
-  const React = jest.requireActual('react');
+  // Avoid nested requireActual to prevent OOM in CI
+  // Create mock navigator without requiring React
+  const MockNavigator = (props, _ref) => props.children;
+  MockNavigator.displayName = 'MockNavigator';
+
   return {
-    ...actualNav,
     useFocusEffect: jest.fn(callback => {
       // Immediately invoke the effect for testing without requiring a container
       return callback();
@@ -1140,12 +1191,18 @@ jest.mock('@react-navigation/native', () => {
       dispatch: jest.fn(),
       getState: jest.fn(() => ({ routes: [{ name: 'Home' }], index: 0 })),
     })),
+    useRoute: jest.fn(() => ({
+      key: 'mock-route-key',
+      name: 'MockRoute',
+      params: {},
+    })),
+    useIsFocused: jest.fn(() => true),
+    useLinkTo: jest.fn(() => jest.fn()),
     createNavigationContainerRef: jest.fn(() => global.mockNavigationRef),
-    createStaticNavigation: jest.fn(() => {
-      const MockNavigator = React.forwardRef((props, _ref) => props.children);
-      MockNavigator.displayName = 'MockNavigator';
-      return MockNavigator;
-    }),
+    createStaticNavigation: jest.fn(() => MockNavigator),
+    NavigationContainer: ({ children }) => children,
+    DefaultTheme: {},
+    DarkTheme: {},
   };
 });
 
@@ -1156,15 +1213,30 @@ jest.mock('@react-navigation/native-stack', () => ({
 
 // Mock core navigation to avoid requiring a NavigationContainer for hooks
 jest.mock('@react-navigation/core', () => {
-  const actualCore = jest.requireActual('@react-navigation/core');
+  // Avoid nested requireActual to prevent OOM in CI
   return {
-    ...actualCore,
     useNavigation: jest.fn(() => ({
       navigate: jest.fn(),
       goBack: jest.fn(),
       canGoBack: jest.fn(() => true),
       dispatch: jest.fn(),
+      getState: jest.fn(() => ({ routes: [{ name: 'Home' }], index: 0 })),
     })),
+    useRoute: jest.fn(() => ({
+      key: 'mock-route-key',
+      name: 'MockRoute',
+      params: {},
+    })),
+    useIsFocused: jest.fn(() => true),
+    useLinkTo: jest.fn(() => jest.fn()),
+    NavigationContext: {
+      Provider: ({ children }) => children,
+      Consumer: ({ children }) => children(null),
+    },
+    NavigationRouteContext: {
+      Provider: ({ children }) => children,
+      Consumer: ({ children }) => children(null),
+    },
   };
 });
 
@@ -1349,6 +1421,19 @@ jest.mock('@/components/WebViewFooter', () => {
   return { __esModule: true, WebViewFooter };
 });
 
+// Mock screens that use mobile-sdk-alpha flows with PixelRatio issues or missing dependencies
+jest.mock('@/screens/documents/selection/ConfirmBelongingScreen', () => {
+  const MockScreen = jest.fn(() => null);
+  MockScreen.displayName = 'MockConfirmBelongingScreen';
+  return { __esModule: true, default: MockScreen };
+});
+
+jest.mock('@/screens/documents/selection/CountryPickerScreen', () => {
+  const MockScreen = jest.fn(() => null);
+  MockScreen.displayName = 'MockCountryPickerScreen';
+  return { __esModule: true, default: MockScreen };
+});
+
 // Mock react-native-biometrics to prevent NativeModules errors
 jest.mock('react-native-biometrics', () => {
   class MockReactNativeBiometrics {
@@ -1385,7 +1470,8 @@ jest.mock('react-native/Libraries/AppState/NativeAppState', () => ({
 
 // Mock AppState to prevent getCurrentAppState errors
 jest.mock('react-native/Libraries/AppState/AppState', () => {
-  const appStateListeners = [];
+  // Use the global appStateListeners array so tests can access it
+  const appStateListeners = global.mockAppStateListeners || [];
   return {
     __esModule: true,
     default: {

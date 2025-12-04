@@ -35,6 +35,7 @@
     "install-app:setup": "yarn install && yarn build:deps && yarn setup:android-deps && cd ios && bundle install && scripts/pod-install-with-cache-fix.sh && cd ..",
     "ios": "yarn build:deps && node scripts/run-ios-simulator.cjs",
     "ios:fastlane-debug": "yarn reinstall && bundle exec fastlane --verbose ios internal_test",
+    "jest:clear": "node ./node_modules/jest/bin/jest.js --clearCache",
     "jest:run": "node ./node_modules/jest/bin/jest.js",
     "lint": "eslint . --cache --cache-location .eslintcache",
     "lint:fix": "eslint --fix . --cache --cache-location .eslintcache",

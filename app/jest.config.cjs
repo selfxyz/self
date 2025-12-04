@@ -31,6 +31,7 @@ module.exports = {
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
     '\\.svg$': '<rootDir>/tests/__setup__/svgMock.js',
+    '\\.(png|jpg|jpeg|gif|webp)$': '<rootDir>/tests/__setup__/imageMock.js',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@$': '<rootDir>/src',
     '^@tests/(.*)$': '<rootDir>/tests/src/$1',
