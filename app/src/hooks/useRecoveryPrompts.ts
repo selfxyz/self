@@ -77,14 +77,23 @@ export default function useRecoveryPrompts({
     }
     try {
       const docs = await getAllDocuments();
-      if (Object.keys(docs).length === 0) {
+      const hasRegisteredDocument = Object.values(docs).some(
+        doc => doc.metadata.isRegistered === true,
+      );
+      if (!hasRegisteredDocument) {
         return;
       }
       const shouldPrompt =
-        loginCount > 0 && (loginCount <= 3 || (loginCount - 3) % 5 === 0);
+        loginCount > 0 && (loginCount <= 3 || (loginCount - 3) % 3 === 0);
       if (shouldPrompt && !visible && lastPromptCount.current !== loginCount) {
-        showModal();
-        lastPromptCount.current = loginCount;
+        // Double-check route eligibility right before showing modal
+        // to prevent showing on wrong screen if user navigated during async call
+        const currentRouteNameAfterAsync =
+          navigationRef.getCurrentRoute?.()?.name;
+        if (isRouteEligible(currentRouteNameAfterAsync)) {
+          showModal();
+          lastPromptCount.current = loginCount;
+        }
       }
     } catch {
       // Silently fail to avoid breaking the hook

@@ -61,7 +61,12 @@ describe('useRecoveryPrompts', () => {
     );
 
     (useModal as jest.Mock).mockReturnValue({ showModal, visible: false });
-    getAllDocuments.mockResolvedValue({ doc1: {} as any });
+    getAllDocuments.mockResolvedValue({
+      doc1: {
+        data: {} as any,
+        metadata: { isRegistered: true } as any,
+      },
+    });
     const mockAppState = getAppState();
     mockAppState.currentState = 'active';
     act(() => {
@@ -160,7 +165,7 @@ describe('useRecoveryPrompts', () => {
     showModal.mockClear();
 
     act(() => {
-      useSettingStore.setState({ loginCount: 8 }); // 8 should trigger per the formula
+      useSettingStore.setState({ loginCount: 6 }); // 6 should trigger per the formula
     });
 
     rerender();
@@ -173,19 +178,22 @@ describe('useRecoveryPrompts', () => {
     unmount();
   });
 
-  it('does not show modal when login count is 4', async () => {
-    act(() => {
-      useSettingStore.setState({ loginCount: 4 });
-    });
-    renderHook(() => useRecoveryPrompts());
-    await waitFor(() => {
-      expect(showModal).not.toHaveBeenCalled();
-    });
+  it('does not show modal when login count is 4 or 5', async () => {
+    for (const count of [4, 5]) {
+      showModal.mockClear();
+      act(() => {
+        useSettingStore.setState({ loginCount: count });
+      });
+      renderHook(() => useRecoveryPrompts());
+      await waitFor(() => {
+        expect(showModal).not.toHaveBeenCalled();
+      });
+    }
   });
 
-  it('shows modal on eighth login', async () => {
+  it('shows modal on sixth login', async () => {
     act(() => {
-      useSettingStore.setState({ loginCount: 8 });
+      useSettingStore.setState({ loginCount: 6 });
     });
     renderHook(() => useRecoveryPrompts());
     await waitFor(() => {
@@ -238,8 +246,48 @@ describe('useRecoveryPrompts', () => {
     });
   });
 
+  it('does not show modal when only unregistered documents exist', async () => {
+    getAllDocuments.mockResolvedValueOnce({
+      doc1: {
+        data: {} as any,
+        metadata: { isRegistered: false } as any,
+      },
+      doc2: {
+        data: {} as any,
+        metadata: { isRegistered: undefined } as any,
+      },
+    });
+    act(() => {
+      useSettingStore.setState({ loginCount: 1 });
+    });
+    renderHook(() => useRecoveryPrompts());
+    await waitFor(() => {
+      expect(showModal).not.toHaveBeenCalled();
+    });
+  });
+
+  it('shows modal when registered documents exist', async () => {
+    getAllDocuments.mockResolvedValueOnce({
+      doc1: {
+        data: {} as any,
+        metadata: { isRegistered: false } as any,
+      },
+      doc2: {
+        data: {} as any,
+        metadata: { isRegistered: true } as any,
+      },
+    });
+    act(() => {
+      useSettingStore.setState({ loginCount: 1 });
+    });
+    renderHook(() => useRecoveryPrompts());
+    await waitFor(() => {
+      expect(showModal).toHaveBeenCalled();
+    });
+  });
+
   it('shows modal for other valid login counts', async () => {
-    for (const count of [2, 3, 13, 18]) {
+    for (const count of [2, 3, 6, 9, 12]) {
       showModal.mockClear();
       act(() => {
         useSettingStore.setState({ loginCount: count });
