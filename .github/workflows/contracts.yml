@@ -46,7 +46,6 @@ jobs:
           corepack prepare yarn@4.6.0 --activate
           rm -rf .yarn/cache
           yarn cache clean --all
-          rm -rf node_modules contracts/node_modules
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Prettier Check - Code Formatting
