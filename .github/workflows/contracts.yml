@@ -70,6 +70,28 @@ jobs:
           process.exit(1);
           NODE
         working-directory: ./contracts
+      - name: Inspect @noble/hashes/_assert
+        run: |
+          node - <<'NODE'
+          const path = require('path');
+          const fs = require('fs');
+          const modPath = require.resolve('@noble/hashes/_assert');
+          console.log('path:', modPath);
+          const mod = require('@noble/hashes/_assert');
+          console.log('keys:', Object.keys(mod));
+          console.log('default keys:', mod && mod.default ? Object.keys(mod.default) : mod.default);
+          console.log('module:', mod);
+          const pkgPath = path.join(path.dirname(modPath), '..', 'package.json');
+          if (fs.existsSync(pkgPath)) {
+            console.log('pkg version:', JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version);
+          }
+          const data = fs.readFileSync(modPath, 'utf8').split('\n');
+          console.log('--- _assert.js head ---');
+          console.log(data.slice(0, 30).join('\n'));
+          console.log('--- _assert.js tail ---');
+          console.log(data.slice(-20).join('\n'));
+          NODE
+        working-directory: ./contracts
       - name: Dump ethereum-cryptography utils snippet
         run: |
           node - <<'NODE'
