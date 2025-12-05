@@ -96,8 +96,13 @@ try {
     stdio: isCI ? 'pipe' : 'inherit',
     timeout: 30000
   });
-  if (rootPatchRun.status === 0 && !isCI) {
-    console.log('✓ Patches applied to root workspace');
+  if (rootPatchRun.status === 0) {
+    if (!isCI) console.log('✓ Patches applied to root workspace');
+  } else {
+    const errorOutput = rootPatchRun.stderr?.toString() || rootPatchRun.stdout?.toString() || '';
+    console.error(`patch-package failed for root workspace (exit code ${rootPatchRun.status})`);
+    if (errorOutput) console.error(errorOutput);
+    if (!isCI) process.exit(1);
   }
 
   // Also patch app/node_modules if it exists
@@ -118,8 +123,13 @@ try {
       timeout: 30000
     });
 
-    if (workspacePatchRun.status === 0 && !isCI) {
-      console.log(`✓ Patches applied to ${workspace.name} workspace`);
+    if (workspacePatchRun.status === 0) {
+      if (!isCI) console.log(`✓ Patches applied to ${workspace.name} workspace`);
+    } else {
+      const errorOutput = workspacePatchRun.stderr?.toString() || workspacePatchRun.stdout?.toString() || '';
+      console.error(`patch-package failed for ${workspace.name} workspace (exit code ${workspacePatchRun.status})`);
+      if (errorOutput) console.error(errorOutput);
+      if (!isCI) process.exit(1);
     }
   }
 } catch (error) {
