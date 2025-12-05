@@ -15,6 +15,7 @@ export const apiPingUrl = 'https://api.self.xyz/ping';
 export const appStoreUrl = 'https://apps.apple.com/app/self-zk/id6478563710';
 export const appleICloudDocsUrl = 'https://support.apple.com/en-us/102651';
 export const appsUrl = 'https://apps.self.xyz';
+export const discordUrl = 'https://discord.gg/selfxyz';
 export const gitHubUrl = 'https://github.com/selfxyz/self';
 export const googleDriveAppDataScope =
   'https://www.googleapis.com/auth/drive.appdata';
@@ -34,7 +35,7 @@ export const selfLogoReverseUrl =
 export const selfUrl = 'https://self.xyz';
 export const supportedBiometricIdsUrl =
   'https://docs.self.xyz/use-self/self-map-countries-list';
-export const telegramUrl = 'https://t.me/selfprotocolbuilder';
+export const telegramUrl = 'https://t.me/selfxyz';
 export const termsUrl = 'https://self.xyz/terms';
 export const turnkeyOAuthRedirectAndroidUri = 'https://redirect.self.xyz';
 export const turnkeyOAuthRedirectIosUri = 'https://oauth-redirect.turnkey.com';
