@@ -5836,12 +5836,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts-upgradeable@npm:5.1.0":
-  version: 5.1.0
-  resolution: "@openzeppelin/contracts-upgradeable@npm:5.1.0"
+"@openzeppelin/contracts-upgradeable@npm:5.0.2":
+  version: 5.0.2
+  resolution: "@openzeppelin/contracts-upgradeable@npm:5.0.2"
   peerDependencies:
-    "@openzeppelin/contracts": 5.1.0
-  checksum: 10c0/8c91e7242b73647330458f2280aeaddd3ffb6708ced1e2ebc4af115b44aac86e04fe65d27b623efa90c74abb629a3c977151893b585f9d201470692462b6ad9b
+    "@openzeppelin/contracts": 5.0.2
+  checksum: 10c0/0bd47a4fa0ba8084c1df9573968ff02387bc21514d846b5feb4ad42f90f3ba26bb1e40f17f03e4fa24ffbe473b9ea06c137283297884ab7d5b98d2c112904dc9
   languageName: node
   linkType: hard
 
@@ -7679,7 +7679,7 @@ __metadata:
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
     "@openzeppelin/contracts": "npm:5.0.2"
-    "@openzeppelin/contracts-upgradeable": "npm:5.1.0"
+    "@openzeppelin/contracts-upgradeable": "npm:5.0.2"
     "@selfxyz/common": "workspace:^"
     "@typechain/ethers-v6": "npm:^0.4.3"
     "@typechain/hardhat": "npm:^8.0.3"
