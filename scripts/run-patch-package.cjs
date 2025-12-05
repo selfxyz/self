@@ -90,6 +90,16 @@ if (!isExecutableAvailableOnPath('patch-package')) {
 
 // Run patch-package with better error handling
 try {
+  const rootPatchRun = spawnSync('patch-package', ['--patch-dir', 'patches'], {
+    cwd: repositoryRootPath,
+    shell: true,
+    stdio: isCI ? 'pipe' : 'inherit',
+    timeout: 30000
+  });
+  if (rootPatchRun.status === 0 && !isCI) {
+    console.log('✓ Patches applied to root workspace');
+  }
+
   // Also patch app/node_modules if it exists
   const appPath = path.join(repositoryRootPath, 'app');
   const appNodeModules = path.join(appPath, 'node_modules');
