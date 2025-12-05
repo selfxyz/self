@@ -92,11 +92,9 @@ const accountScreens = {
           statusBarHidden: ShowRecoveryPhraseScreen.statusBarHidden,
         } as NativeStackNavigationOptions)
       : ({
-          options: {
-            title: 'Recovery Phrase',
-            headerStyle: {
-              backgroundColor: white,
-            },
+          title: 'Recovery Phrase',
+          headerStyle: {
+            backgroundColor: white,
           },
         } as NativeStackNavigationOptions),
   },

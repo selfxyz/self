@@ -9,6 +9,7 @@ import type { RecoveryPhraseVariant } from '@selfxyz/euclid';
 import { RecoveryPhraseScreen } from '@selfxyz/euclid';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Description } from '@selfxyz/mobile-sdk-alpha/components';
+import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import Mnemonic from '@/components/Mnemonic';
 import useMnemonic from '@/hooks/useMnemonic';
@@ -19,15 +20,13 @@ import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
 function useCopyRecoveryPhrase(mnemonic: string[] | undefined) {
   const [copied, setCopied] = React.useState(false);
-  const { setHasViewedRecoveryPhrase } = useSettingStore();
 
   const onCopy = useCallback(() => {
     if (!mnemonic) return;
     Clipboard.setString(mnemonic.join(' '));
     setCopied(true);
-    setHasViewedRecoveryPhrase(true);
     setTimeout(() => setCopied(false), 2500);
-  }, [mnemonic, setHasViewedRecoveryPhrase]);
+  }, [mnemonic]);
 
   return { copied, onCopy };
 }
@@ -39,6 +38,13 @@ const ShowRecoveryPhraseScreen: React.FC & {
   const { mnemonic, loadMnemonic } = useMnemonic();
   const self = useSelfClient();
   const { copied, onCopy } = useCopyRecoveryPhrase(mnemonic);
+  const { setHasViewedRecoveryPhrase } = useSettingStore();
+
+  const onReveal = useCallback(async () => {
+    await loadMnemonic();
+    setHasViewedRecoveryPhrase(true);
+  }, [loadMnemonic, setHasViewedRecoveryPhrase]);
+
   const insets = useSafeAreaInsets();
   if (IS_EUCLID_ENABLED) {
     const variant: RecoveryPhraseVariant = !mnemonic
@@ -50,7 +56,7 @@ const ShowRecoveryPhraseScreen: React.FC & {
       <>
         <RecoveryPhraseScreen
           insets={insets}
-          onReveal={loadMnemonic}
+          onReveal={onReveal}
           words={mnemonic}
           onBack={self.goBack}
           variant={variant}
