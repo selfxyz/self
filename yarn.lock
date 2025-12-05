@@ -5836,19 +5836,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts-upgradeable@npm:^5.1.0":
-  version: 5.5.0
-  resolution: "@openzeppelin/contracts-upgradeable@npm:5.5.0"
+"@openzeppelin/contracts-upgradeable@npm:5.4.0":
+  version: 5.4.0
+  resolution: "@openzeppelin/contracts-upgradeable@npm:5.4.0"
   peerDependencies:
-    "@openzeppelin/contracts": 5.5.0
-  checksum: 10c0/66a0050e8e4d2d68acbf14e272387a1b859a57353d32ac929389b40660d0bc1ff590c904f464f20e307a6632cfcaf86a9400e6c83bc466f5d174595bfc5e0e31
+    "@openzeppelin/contracts": 5.4.0
+  checksum: 10c0/0bf78ad1a42151eb41eb7ff6645714a65649766643514b704d398927fe72533d2a143557306610db93f625124dfef9ee06b2c9ca624ada16074962cbcb622b6b
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts@npm:^5.0.2":
-  version: 5.5.0
-  resolution: "@openzeppelin/contracts@npm:5.5.0"
-  checksum: 10c0/884ab2850ff380c11d042ce50ebecf8fad2f784105554d8826a4160126d17e96b8a636400e5640ac227d7e8f8754477835ead8acb2668355b83e2509ca7fca63
+"@openzeppelin/contracts@npm:5.4.0":
+  version: 5.4.0
+  resolution: "@openzeppelin/contracts@npm:5.4.0"
+  checksum: 10c0/7e05646dee4905fea4493f0fb2ad208abaff84b9f5ef1b9e1a5fc61d0e74d9bc30759bdf0d09a08049cfef6a290623330d83469eadc990a7bba6c2cd09a27e1d
   languageName: node
   linkType: hard
 
@@ -7678,8 +7678,8 @@ __metadata:
     "@nomiclabs/hardhat-ethers": "npm:^2.2.3"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
-    "@openzeppelin/contracts": "npm:^5.0.2"
-    "@openzeppelin/contracts-upgradeable": "npm:^5.1.0"
+    "@openzeppelin/contracts": "npm:5.4.0"
+    "@openzeppelin/contracts-upgradeable": "npm:5.4.0"
     "@selfxyz/common": "workspace:^"
     "@typechain/ethers-v6": "npm:^0.4.3"
     "@typechain/hardhat": "npm:^8.0.3"

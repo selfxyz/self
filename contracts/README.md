@@ -9,6 +9,7 @@ This is the implementation of contracts for verification and management of ident
 When you do the upgrade, be careful with this storage patterns
 
 - You can not change the order in which the contract state variables are declared, nor their type.
+- The upgradeable contracts currently target OpenZeppelin 5.x.
 
 Pls see this page for more details:
 https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable#modifying-your-contracts

@@ -1,0 +1,44 @@
+diff --git a/node_modules/ethereum-cryptography/utils.js b/node_modules/ethereum-cryptography/utils.js
+index cedfa36..b494c49 100644
+--- a/node_modules/ethereum-cryptography/utils.js
++++ b/node_modules/ethereum-cryptography/utils.js
+@@ -8,11 +8,18 @@ exports.bytesToUtf8 = bytesToUtf8;
+ exports.hexToBytes = hexToBytes;
+ exports.equalsBytes = equalsBytes;
+ exports.wrapHash = wrapHash;
+-const _assert_1 = __importDefault(require("@noble/hashes/_assert"));
++const assertModule = __importDefault(require("@noble/hashes/_assert"));
+ const utils_1 = require("@noble/hashes/utils");
+-const assertBool = _assert_1.default.bool;
++const assertBool = (assertModule.default && assertModule.default.bool) ||
++    assertModule.bool ||
++    ((value) => {
++        if (typeof value !== "boolean")
++            throw new TypeError(`Expected boolean, not ${value}`);
++    });
+ exports.assertBool = assertBool;
+-const assertBytes = _assert_1.default.bytes;
++const assertBytes = (assertModule.default && assertModule.default.bytes) ||
++    assertModule.bytes ||
++    assertModule.abytes;
+ exports.assertBytes = assertBytes;
+ var utils_2 = require("@noble/hashes/utils");
+ Object.defineProperty(exports, "bytesToHex", { enumerable: true, get: function () { return utils_2.bytesToHex; } });
+diff --git a/node_modules/ethereum-cryptography/esm/utils.js b/node_modules/ethereum-cryptography/esm/utils.js
+index 8e771ea..b3eed9d 100644
+--- a/node_modules/ethereum-cryptography/esm/utils.js
++++ b/node_modules/ethereum-cryptography/esm/utils.js
+@@ -1,7 +1,11 @@
+ import assert from "@noble/hashes/_assert";
+ import { hexToBytes as _hexToBytes } from "@noble/hashes/utils";
+-const assertBool = assert.bool;
+-const assertBytes = assert.bytes;
++const assertBool = (assert?.bool) ||
++    ((value) => {
++        if (typeof value !== "boolean")
++            throw new TypeError(`Expected boolean, not ${value}`);
++    });
++const assertBytes = assert.bytes || assert.abytes;
+ export { assertBool, assertBytes };
+ export { bytesToHex, bytesToHex as toHex, concatBytes, createView, utf8ToBytes } from "@noble/hashes/utils";
+ // buf.toString('utf8') -> bytesToUtf8(buf)
