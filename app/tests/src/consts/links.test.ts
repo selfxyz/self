@@ -29,8 +29,11 @@ describe('links', () => {
 
   describe('Critical URL validation', () => {
     it('should have correct Telegram URL', () => {
-      // This test would have caught the wrong Telegram URL bug!
-      expect(links.telegramUrl).toBe('https://t.me/selfprotocolbuilder');
+      expect(links.telegramUrl).toBe('https://t.me/selfxyz');
+    });
+
+    it('should have correct Discord URL', () => {
+      expect(links.discordUrl).toBe('https://discord.gg/selfxyz');
     });
 
     it('should have correct GitHub URL', () => {

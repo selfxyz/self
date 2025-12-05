@@ -23,6 +23,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import Discord from '@/assets/icons/discord.svg';
 import Github from '@/assets/icons/github.svg';
 import Cloud from '@/assets/icons/settings_cloud_backup.svg';
 import Data from '@/assets/icons/settings_data.svg';
@@ -35,6 +36,7 @@ import Web from '@/assets/icons/webpage.svg';
 import X from '@/assets/icons/x.svg';
 import {
   appStoreUrl,
+  discordUrl,
   gitHubUrl,
   playStoreUrl,
   selfUrl,
@@ -106,6 +108,7 @@ const social = [
   [Github, gitHubUrl],
   [Web, selfUrl],
   [Telegram, telegramUrl],
+  [Discord, discordUrl],
 ] as [React.FC<SvgProps>, string][];
 
 const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
