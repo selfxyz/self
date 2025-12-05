@@ -101,17 +101,25 @@ try {
   }
 
   // Also patch app/node_modules if it exists
-  const appPath = path.join(repositoryRootPath, 'app');
-  const appNodeModules = path.join(appPath, 'node_modules');
-  if (fs.existsSync(appNodeModules)) {
-    const appPatchRun = spawnSync('patch-package', ['--patch-dir', '../patches'], {
-      cwd: appPath,
+  // Workspaces with isolated node_modules due to limited hoisting
+  const workspaceRoots = [
+    { name: 'app', path: path.join(repositoryRootPath, 'app') },
+    { name: 'contracts', path: path.join(repositoryRootPath, 'contracts') }
+  ];
+
+  for (const workspace of workspaceRoots) {
+    const workspaceNodeModules = path.join(workspace.path, 'node_modules');
+    if (!fs.existsSync(workspaceNodeModules)) continue;
+
+    const workspacePatchRun = spawnSync('patch-package', ['--patch-dir', '../patches'], {
+      cwd: workspace.path,
       shell: true,
       stdio: isCI ? 'pipe' : 'inherit',
       timeout: 30000
     });
-    if (appPatchRun.status === 0 && !isCI) {
-      console.log('✓ Patches applied to app workspace');
+
+    if (workspacePatchRun.status === 0 && !isCI) {
+      console.log(`✓ Patches applied to ${workspace.name} workspace`);
     }
   }
 } catch (error) {
