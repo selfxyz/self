@@ -94,7 +94,7 @@ We are actively looking for contributors. Please check the [open issues](https:/
 
 ## Contact us
 
-- [Discord](https://discord.gg/Gq7Ka2eG) for technical support or reporting a bug.
+- [Discord](https://discord.gg/AQ3TrX6dce) for technical support or reporting a bug.
 - [Telegram's Self builder channel](https://t.me/selfprotocolbuilder) for technical questions about the sdk implementation.
 - [Telegram's Self public group](https://t.me/selfxyz) for general questions and updates.
 
