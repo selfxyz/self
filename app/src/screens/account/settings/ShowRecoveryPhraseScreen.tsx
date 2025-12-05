@@ -3,20 +3,62 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback } from 'react';
+import Clipboard from '@react-native-clipboard/clipboard';
 
+import type { RecoveryPhraseVariant } from '@selfxyz/euclid';
+import { RecoveryPhraseScreen } from '@selfxyz/euclid';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Description } from '@selfxyz/mobile-sdk-alpha/components';
 
 import Mnemonic from '@/components/Mnemonic';
 import useMnemonic from '@/hooks/useMnemonic';
+import { useSafeAreaInsets } from '@/hooks/useSafeAreaInsets';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { useSettingStore } from '@/stores/settingStore';
+import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
-const ShowRecoveryPhraseScreen: React.FC = () => {
+function useCopyRecoveryPhrase(mnemonic: string[] | undefined) {
+  const [copied, setCopied] = React.useState(false);
+  const { setHasViewedRecoveryPhrase } = useSettingStore();
+
+  const onCopy = useCallback(() => {
+    if (!mnemonic) return;
+    Clipboard.setString(mnemonic.join(' '));
+    setCopied(true);
+    setHasViewedRecoveryPhrase(true);
+    setTimeout(() => setCopied(false), 2500);
+  }, [mnemonic, setHasViewedRecoveryPhrase]);
+
+  return { copied, onCopy };
+}
+
+const ShowRecoveryPhraseScreen: React.FC & {
+  statusBarStyle?: string;
+  statusBarHidden?: boolean;
+} = () => {
   const { mnemonic, loadMnemonic } = useMnemonic();
-
-  const onRevealWords = useCallback(async () => {
-    await loadMnemonic();
-  }, [loadMnemonic]);
-
+  const self = useSelfClient();
+  const { copied, onCopy } = useCopyRecoveryPhrase(mnemonic);
+  const insets = useSafeAreaInsets();
+  if (IS_EUCLID_ENABLED) {
+    const variant: RecoveryPhraseVariant = !mnemonic
+      ? 'hidden'
+      : copied
+        ? 'copied'
+        : 'revealed';
+    return (
+      <>
+        <RecoveryPhraseScreen
+          insets={insets}
+          onReveal={loadMnemonic}
+          words={mnemonic}
+          onBack={self.goBack}
+          variant={variant}
+          onCopy={onCopy}
+        />
+      </>
+    );
+  }
   return (
     <ExpandableBottomLayout.Layout backgroundColor="white">
       <ExpandableBottomLayout.BottomSection
@@ -24,7 +66,7 @@ const ShowRecoveryPhraseScreen: React.FC = () => {
         justifyContent="center"
         gap={20}
       >
-        <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
+        <Mnemonic words={mnemonic} onRevealWords={loadMnemonic} />
         <Description>
           This phrase is the only way to recover your account. Keep it secret,
           keep it safe.
@@ -35,3 +77,7 @@ const ShowRecoveryPhraseScreen: React.FC = () => {
 };
 
 export default ShowRecoveryPhraseScreen;
+
+ShowRecoveryPhraseScreen.statusBarHidden =
+  RecoveryPhraseScreen.statusBar.hidden;
+ShowRecoveryPhraseScreen.statusBarStyle = RecoveryPhraseScreen.statusBar.style;

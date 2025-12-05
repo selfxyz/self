@@ -2,8 +2,15 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import SDKCountryPickerScreen from '@selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen';
+import SDKCountryPickerScreen, {
+  statusBar,
+} from '@selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen';
+
+import { useSafeAreaInsets } from '@/hooks/useSafeAreaInsets';
 
 export default function CountryPickerScreen() {
-  return <SDKCountryPickerScreen />;
+  const insets = useSafeAreaInsets();
+  return <SDKCountryPickerScreen insets={insets} />;
 }
+
+CountryPickerScreen.statusBar = statusBar;

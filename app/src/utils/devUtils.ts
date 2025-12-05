@@ -8,3 +8,4 @@
  * Use this constant instead of checking __DEV__ directly throughout the codebase.
  */
 export const IS_DEV_MODE = typeof __DEV__ !== 'undefined' && __DEV__;
+export const IS_EUCLID_ENABLED = IS_DEV_MODE; // just in case we forgot to turn it off before pushing to prod.
