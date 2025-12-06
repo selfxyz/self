@@ -71,7 +71,10 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
       navigation.goBack();
       unregisterModalCallbacks(params.callbackId);
     } catch (navigationError) {
-      console.error('Navigation error while dismissing modal:', navigationError);
+      console.error(
+        'Navigation error while dismissing modal:',
+        navigationError,
+      );
     }
 
     // Now execute the callback (which may navigate to another screen)
@@ -96,6 +99,9 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
         padding={20}
         borderRadius={10}
         marginHorizontal={8}
+        width="79.5%"
+        maxWidth={460}
+        alignSelf="center"
       >
         <YStack gap={40}>
           <XStack alignItems="center" justifyContent="space-between">
