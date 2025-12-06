@@ -21,20 +21,23 @@ type UseRecoveryPromptsOptions = {
 export default function useRecoveryPrompts({
   allowedRoutes = DEFAULT_ALLOWED_ROUTES,
 }: UseRecoveryPromptsOptions = {}) {
-  const { loginCount, cloudBackupEnabled, hasViewedRecoveryPhrase } =
+  const { homeScreenViewCount, cloudBackupEnabled, hasViewedRecoveryPhrase } =
     useSettingStore();
   const { getAllDocuments } = usePassport();
+  const hasRecoveryEnabled = cloudBackupEnabled || hasViewedRecoveryPhrase;
+
   const { showModal, visible } = useModal({
     titleText: 'Protect your account',
     bodyText:
       'Enable cloud backup or save your recovery phrase so you can recover your account.',
     buttonText: 'Back up now',
     onButtonPress: async () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('CloudBackupSettings', {
-          nextScreen: 'SaveRecoveryPhrase',
-        });
+      if (!navigationRef.isReady()) {
+        return;
       }
+      navigationRef.navigate('CloudBackupSettings', {
+        nextScreen: 'SaveRecoveryPhrase',
+      });
     },
     onModalDismiss: () => {},
   } as const);
@@ -53,9 +56,11 @@ export default function useRecoveryPrompts({
       if (!routeName) {
         return false;
       }
+
       if (!allowedRouteSet.has(routeName)) {
         return false;
       }
+
       return true;
     },
     [allowedRouteSet],
@@ -65,34 +70,46 @@ export default function useRecoveryPrompts({
     if (!navigationRef.isReady()) {
       return;
     }
+
     if (appStateStatus.current !== 'active') {
       return;
     }
+
     const currentRouteName = navigationRef.getCurrentRoute?.()?.name;
+
     if (!isRouteEligible(currentRouteName)) {
       return;
     }
-    if (cloudBackupEnabled || hasViewedRecoveryPhrase) {
+
+    if (hasRecoveryEnabled) {
       return;
     }
+
     try {
       const docs = await getAllDocuments();
       const hasRegisteredDocument = Object.values(docs).some(
         doc => doc.metadata.isRegistered === true,
       );
+
       if (!hasRegisteredDocument) {
         return;
       }
       const shouldPrompt =
-        loginCount > 0 && (loginCount <= 3 || (loginCount - 3) % 3 === 0);
-      if (shouldPrompt && !visible && lastPromptCount.current !== loginCount) {
+        homeScreenViewCount >= 5 && homeScreenViewCount % 5 === 0;
+
+      if (
+        shouldPrompt &&
+        !visible &&
+        lastPromptCount.current !== homeScreenViewCount
+      ) {
         // Double-check route eligibility right before showing modal
         // to prevent showing on wrong screen if user navigated during async call
         const currentRouteNameAfterAsync =
           navigationRef.getCurrentRoute?.()?.name;
+
         if (isRouteEligible(currentRouteNameAfterAsync)) {
           showModal();
-          lastPromptCount.current = loginCount;
+          lastPromptCount.current = homeScreenViewCount;
         }
       }
     } catch {
@@ -101,52 +118,48 @@ export default function useRecoveryPrompts({
       return;
     }
   }, [
-    cloudBackupEnabled,
     getAllDocuments,
-    hasViewedRecoveryPhrase,
+    hasRecoveryEnabled,
+    homeScreenViewCount,
     isRouteEligible,
-    loginCount,
     showModal,
     visible,
   ]);
 
   useEffect(() => {
-    maybePrompt().catch(() => {
-      // Ignore promise rejection - already handled in maybePrompt
-    });
-  }, [maybePrompt]);
+    const runMaybePrompt = () => {
+      maybePrompt().catch(() => {
+        // Ignore promise rejection - already handled in maybePrompt
+      });
+    };
 
-  useEffect(() => {
+    runMaybePrompt();
+
     const handleAppStateChange = (nextState: AppStateStatus) => {
       const previousState = appStateStatus.current;
       appStateStatus.current = nextState;
+
       if (
         (previousState === 'background' || previousState === 'inactive') &&
         nextState === 'active'
       ) {
-        maybePrompt().catch(() => {
-          // Ignore promise rejection - already handled in maybePrompt
-        });
+        runMaybePrompt();
       }
     };
-    const subscription = AppState.addEventListener(
+
+    const appStateSubscription = AppState.addEventListener(
       'change',
       handleAppStateChange,
     );
-    return () => {
-      subscription.remove();
-    };
-  }, [maybePrompt]);
+    const navigationUnsubscribe = navigationRef.addListener?.(
+      'state',
+      runMaybePrompt,
+    );
 
-  useEffect(() => {
-    const unsubscribe = navigationRef.addListener?.('state', () => {
-      maybePrompt().catch(() => {
-        // Ignore promise rejection - already handled in maybePrompt
-      });
-    });
     return () => {
-      if (typeof unsubscribe === 'function') {
-        unsubscribe();
+      appStateSubscription.remove();
+      if (typeof navigationUnsubscribe === 'function') {
+        navigationUnsubscribe();
       }
     };
   }, [maybePrompt]);

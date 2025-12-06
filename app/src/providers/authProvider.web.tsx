@@ -19,6 +19,7 @@ import React, {
 import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import analytics from '@/services/analytics';
+import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
 
 const { trackEvent } = analytics();
@@ -217,6 +218,7 @@ export const AuthProvider = ({
 
     setIsAuthenticatingPromise(null);
     setIsAuthenticated(true);
+    useSettingStore.getState().incrementLoginCount();
     trackEvent(AuthEvents.BIOMETRIC_LOGIN_SUCCESS);
     setAuthenticatedTimeout(previousTimeout => {
       if (previousTimeout) {

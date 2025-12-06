@@ -7,34 +7,34 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface PersistedSettingsState {
-  hasPrivacyNoteBeenDismissed: boolean;
-  dismissPrivacyNote: () => void;
+  addSubscribedTopic: (topic: string) => void;
   biometricsAvailable: boolean;
-  setBiometricsAvailable: (biometricsAvailable: boolean) => void;
   cloudBackupEnabled: boolean;
-  toggleCloudBackupEnabled: () => void;
-  loginCount: number;
-  incrementLoginCount: () => void;
-  hasViewedRecoveryPhrase: boolean;
-  setHasViewedRecoveryPhrase: (viewed: boolean) => void;
-  isDevMode: boolean;
-  setDevModeOn: () => void;
-  setDevModeOff: () => void;
-  hasCompletedKeychainMigration: boolean;
-  setKeychainMigrationCompleted: () => void;
+  dismissPrivacyNote: () => void;
   fcmToken: string | null;
+  hasCompletedBackupForPoints: boolean;
+  hasCompletedKeychainMigration: boolean;
+  hasPrivacyNoteBeenDismissed: boolean;
+  hasViewedRecoveryPhrase: boolean;
+  homeScreenViewCount: number;
+  incrementHomeScreenViewCount: () => void;
+  isDevMode: boolean;
+  pointsAddress: string | null;
+  removeSubscribedTopic: (topic: string) => void;
+  resetBackupForPoints: () => void;
+  setBackupForPointsCompleted: () => void;
+  setBiometricsAvailable: (biometricsAvailable: boolean) => void;
+  setDevModeOff: () => void;
+  setDevModeOn: () => void;
   setFcmToken: (token: string | null) => void;
-  turnkeyBackupEnabled: boolean;
+  setHasViewedRecoveryPhrase: (viewed: boolean) => void;
+  setKeychainMigrationCompleted: () => void;
+  setPointsAddress: (address: string | null) => void;
+  setSubscribedTopics: (topics: string[]) => void;
   setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
   subscribedTopics: string[];
-  setSubscribedTopics: (topics: string[]) => void;
-  addSubscribedTopic: (topic: string) => void;
-  removeSubscribedTopic: (topic: string) => void;
-  hasCompletedBackupForPoints: boolean;
-  setBackupForPointsCompleted: () => void;
-  resetBackupForPoints: () => void;
-  pointsAddress: string | null;
-  setPointsAddress: (address: string | null) => void;
+  toggleCloudBackupEnabled: () => void;
+  turnkeyBackupEnabled: boolean;
 }
 
 interface NonPersistedSettingsState {
@@ -64,20 +64,33 @@ export const useSettingStore = create<SettingsState>()(
       toggleCloudBackupEnabled: () =>
         set(oldState => ({
           cloudBackupEnabled: !oldState.cloudBackupEnabled,
-          loginCount: oldState.cloudBackupEnabled ? oldState.loginCount : 0,
+          homeScreenViewCount: oldState.cloudBackupEnabled
+            ? oldState.homeScreenViewCount
+            : 0,
         })),
 
-      loginCount: 0,
-      incrementLoginCount: () =>
-        set(oldState => ({ loginCount: oldState.loginCount + 1 })),
+      homeScreenViewCount: 0,
+      incrementHomeScreenViewCount: () =>
+        set(oldState => {
+          if (
+            oldState.cloudBackupEnabled ||
+            oldState.hasViewedRecoveryPhrase === true
+          ) {
+            return oldState;
+          }
+          const nextCount = oldState.homeScreenViewCount + 1;
+          return {
+            homeScreenViewCount: nextCount >= 100 ? 0 : nextCount,
+          };
+        }),
       hasViewedRecoveryPhrase: false,
       setHasViewedRecoveryPhrase: viewed =>
         set(oldState => ({
           hasViewedRecoveryPhrase: viewed,
-          loginCount:
+          homeScreenViewCount:
             viewed && !oldState.hasViewedRecoveryPhrase
               ? 0
-              : oldState.loginCount,
+              : oldState.homeScreenViewCount,
         })),
 
       isDevMode: false,

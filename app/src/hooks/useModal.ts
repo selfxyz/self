@@ -16,17 +16,31 @@ export const useModal = (params: ModalParams) => {
   const [visible, setVisible] = useState(false);
   const callbackIdRef = useRef<number>();
 
+  const handleModalDismiss = useCallback(() => {
+    setVisible(false);
+    params.onModalDismiss();
+  }, [params]);
+
+  const handleModalButtonPress = useCallback(() => {
+    setVisible(false);
+    return params.onButtonPress();
+  }, [params]);
+
   const showModal = useCallback(() => {
     if (!navigationRef.isReady()) {
       // Navigation not ready yet; avoid throwing and simply skip showing
       return;
     }
     setVisible(true);
-    const { onButtonPress, onModalDismiss, ...rest } = params;
-    const id = registerModalCallbacks({ onButtonPress, onModalDismiss });
+    const { onButtonPress: _ignored, onModalDismiss: _ignored2, ...rest } =
+      params;
+    const id = registerModalCallbacks({
+      onButtonPress: handleModalButtonPress,
+      onModalDismiss: handleModalDismiss,
+    });
     callbackIdRef.current = id;
     navigationRef.navigate('Modal', { ...rest, callbackId: id });
-  }, [params]);
+  }, [handleModalButtonPress, handleModalDismiss, params]);
 
   const dismissModal = useCallback(() => {
     setVisible(false);

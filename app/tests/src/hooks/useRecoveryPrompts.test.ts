@@ -70,21 +70,24 @@ describe('useRecoveryPrompts', () => {
     mockAppState.currentState = 'active';
     act(() => {
       useSettingStore.setState({
-        loginCount: 0,
+        homeScreenViewCount: 0,
         cloudBackupEnabled: false,
         hasViewedRecoveryPhrase: false,
       });
     });
   });
 
-  it('shows modal on first login for eligible route', async () => {
-    act(() => {
-      useSettingStore.setState({ loginCount: 1 });
-    });
-    renderHook(() => useRecoveryPrompts());
-    await waitFor(() => {
-      expect(showModal).toHaveBeenCalled();
-    });
+  it('does not show modal before the fifth home view', async () => {
+    for (const count of [1, 2, 3, 4]) {
+      showModal.mockClear();
+      act(() => {
+        useSettingStore.setState({ homeScreenViewCount: count });
+      });
+      renderHook(() => useRecoveryPrompts());
+      await waitFor(() => {
+        expect(showModal).not.toHaveBeenCalled();
+      });
+    }
   });
 
   it('waits for navigation readiness before prompting', async () => {
@@ -93,7 +96,7 @@ describe('useRecoveryPrompts', () => {
       () => isNavigationReady,
     );
     act(() => {
-      useSettingStore.setState({ loginCount: 1 });
+      useSettingStore.setState({ homeScreenViewCount: 5 });
     });
     renderHook(() => useRecoveryPrompts());
     await waitFor(() => {
@@ -110,7 +113,7 @@ describe('useRecoveryPrompts', () => {
 
   it('respects custom allow list overrides', async () => {
     act(() => {
-      useSettingStore.setState({ loginCount: 1 });
+      useSettingStore.setState({ homeScreenViewCount: 5 });
     });
     renderHook(() => useRecoveryPrompts({ allowedRoutes: ['Settings'] }));
     await waitFor(() => {
@@ -131,9 +134,9 @@ describe('useRecoveryPrompts', () => {
 
   it('prompts when returning from background on eligible route', async () => {
     // This test verifies that the hook registers an app state listener
-    // and that the prompt logic can be triggered multiple times for different login counts
+    // and that the prompt logic can be triggered multiple times for different view counts
     act(() => {
-      useSettingStore.setState({ loginCount: 1 });
+      useSettingStore.setState({ homeScreenViewCount: 5 });
     });
 
     const { rerender, unmount } = renderHook(() => useRecoveryPrompts());
@@ -147,7 +150,7 @@ describe('useRecoveryPrompts', () => {
     showModal.mockClear();
 
     act(() => {
-      useSettingStore.setState({ loginCount: 6 }); // 6 should trigger per the formula
+      useSettingStore.setState({ homeScreenViewCount: 10 }); // next multiple of 5
     });
 
     rerender();
@@ -160,11 +163,11 @@ describe('useRecoveryPrompts', () => {
     unmount();
   });
 
-  it('does not show modal when login count is 4 or 5', async () => {
-    for (const count of [4, 5]) {
+  it('does not show modal for non-multiple-of-five view counts', async () => {
+    for (const count of [6, 7, 8, 9]) {
       showModal.mockClear();
       act(() => {
-        useSettingStore.setState({ loginCount: count });
+        useSettingStore.setState({ homeScreenViewCount: count });
       });
       renderHook(() => useRecoveryPrompts());
       await waitFor(() => {
@@ -173,9 +176,9 @@ describe('useRecoveryPrompts', () => {
     }
   });
 
-  it('shows modal on sixth login', async () => {
+  it('shows modal on fifth home view', async () => {
     act(() => {
-      useSettingStore.setState({ loginCount: 6 });
+      useSettingStore.setState({ homeScreenViewCount: 5 });
     });
     renderHook(() => useRecoveryPrompts());
     await waitFor(() => {
@@ -185,7 +188,10 @@ describe('useRecoveryPrompts', () => {
 
   it('does not show modal if backup already enabled', async () => {
     act(() => {
-      useSettingStore.setState({ loginCount: 1, cloudBackupEnabled: true });
+      useSettingStore.setState({
+        homeScreenViewCount: 5,
+        cloudBackupEnabled: true,
+      });
     });
     renderHook(() => useRecoveryPrompts());
     await waitFor(() => {
@@ -207,7 +213,7 @@ describe('useRecoveryPrompts', () => {
   it('does not show modal when recovery phrase has been viewed', async () => {
     act(() => {
       useSettingStore.setState({
-        loginCount: 1,
+        homeScreenViewCount: 5,
         hasViewedRecoveryPhrase: true,
       });
     });
@@ -220,7 +226,7 @@ describe('useRecoveryPrompts', () => {
   it('does not show modal when no documents exist', async () => {
     getAllDocuments.mockResolvedValueOnce({});
     act(() => {
-      useSettingStore.setState({ loginCount: 1 });
+      useSettingStore.setState({ homeScreenViewCount: 5 });
     });
     renderHook(() => useRecoveryPrompts());
     await waitFor(() => {
@@ -240,7 +246,7 @@ describe('useRecoveryPrompts', () => {
       },
     });
     act(() => {
-      useSettingStore.setState({ loginCount: 1 });
+      useSettingStore.setState({ homeScreenViewCount: 5 });
     });
     renderHook(() => useRecoveryPrompts());
     await waitFor(() => {
@@ -260,7 +266,7 @@ describe('useRecoveryPrompts', () => {
       },
     });
     act(() => {
-      useSettingStore.setState({ loginCount: 1 });
+      useSettingStore.setState({ homeScreenViewCount: 5 });
     });
     renderHook(() => useRecoveryPrompts());
     await waitFor(() => {
@@ -268,11 +274,11 @@ describe('useRecoveryPrompts', () => {
     });
   });
 
-  it('shows modal for other valid login counts', async () => {
-    for (const count of [2, 3, 6, 9, 12]) {
+  it('shows modal for other valid view counts (multiples of five)', async () => {
+    for (const count of [5, 10, 15]) {
       showModal.mockClear();
       act(() => {
-        useSettingStore.setState({ loginCount: count });
+        useSettingStore.setState({ homeScreenViewCount: count });
       });
       renderHook(() => useRecoveryPrompts());
       await waitFor(() => {
@@ -283,7 +289,7 @@ describe('useRecoveryPrompts', () => {
 
   it('does not show modal again for same login count when state changes', async () => {
     act(() => {
-      useSettingStore.setState({ loginCount: 1 });
+      useSettingStore.setState({ homeScreenViewCount: 5 });
     });
     renderHook(() => useRecoveryPrompts());
     await waitFor(() => {
@@ -316,8 +322,9 @@ describe('useRecoveryPrompts', () => {
     renderHook(() => useRecoveryPrompts());
     expect(useModal).toHaveBeenCalledWith({
       titleText: 'Protect your account',
-      bodyText:
+      bodyText: expect.stringContaining(
         'Enable cloud backup or save your recovery phrase so you can recover your account.',
+      ),
       buttonText: 'Back up now',
       onButtonPress: expect.any(Function),
       onModalDismiss: expect.any(Function),
