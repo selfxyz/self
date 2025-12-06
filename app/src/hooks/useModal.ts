@@ -32,8 +32,13 @@ export const useModal = (params: ModalParams) => {
       return;
     }
     setVisible(true);
-    const { onButtonPress: _ignored, onModalDismiss: _ignored2, ...rest } =
-      params;
+    const {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      onButtonPress: _ignored,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      onModalDismiss: _ignored2,
+      ...rest
+    } = params;
     const id = registerModalCallbacks({
       onButtonPress: handleModalButtonPress,
       onModalDismiss: handleModalDismiss,
