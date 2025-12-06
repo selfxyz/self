@@ -75,9 +75,12 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
         'Navigation error while dismissing modal:',
         navigationError,
       );
+      // Don't execute callback if modal couldn't be dismissed
+      return;
     }
 
     // Now execute the callback (which may navigate to another screen)
+    // This only runs if dismissal succeeded
     try {
       await callbacks.onButtonPress();
     } catch (callbackError) {
