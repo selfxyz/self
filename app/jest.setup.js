@@ -63,29 +63,6 @@ const NativeModules = {
 // Assign to global so it's available everywhere
 global.NativeModules = NativeModules;
 
-// Also make it available for require() calls
-const Module = require('module');
-
-const originalRequire = Module.prototype.require;
-Module.prototype.require = function (id) {
-  if (id === 'react-native') {
-    const RN = originalRequire.apply(this, arguments);
-    if (!RN.PixelRatio || !RN.PixelRatio.getFontScale) {
-      RN.PixelRatio = mockPixelRatio;
-    }
-    // Ensure NativeModules includes our mocked modules
-    if (RN.NativeModules) {
-      Object.assign(RN.NativeModules, NativeModules);
-    } else {
-      RN.NativeModules = NativeModules;
-    }
-    return RN;
-  }
-  return originalRequire.apply(this, arguments);
-};
-
-require('react-native-gesture-handler/jestSetup');
-
 // Mock react-native comprehensively - single source of truth for all tests
 // Note: NativeModules will be defined later and assigned to global.NativeModules
 // This mock accesses it at runtime via global.NativeModules
@@ -174,6 +151,8 @@ jest.mock('react-native', () => {
   };
 });
 
+require('react-native-gesture-handler/jestSetup');
+
 // Mock NativeAnimatedHelper - using virtual mock during RN 0.76.9 prep phase
 jest.mock(
   'react-native/src/private/animated/NativeAnimatedHelper',
@@ -204,6 +183,10 @@ global.mockNavigationRef = {
   addListener: jest.fn(() => jest.fn()),
   removeListener: jest.fn(),
 };
+
+// Load grouped mocks
+require('./tests/__setup__/mocks/navigation');
+require('./tests/__setup__/mocks/ui');
 
 // Mock TurboModuleRegistry to provide required native modules for BOTH main app and mobile-sdk-alpha
 jest.mock('react-native/Libraries/TurboModule/TurboModuleRegistry', () => ({
@@ -1173,266 +1156,6 @@ jest.mock('react-native-svg', () => {
 });
 
 // Mock React Navigation
-jest.mock('@react-navigation/native', () => {
-  // Avoid nested requireActual to prevent OOM in CI
-  // Create mock navigator without requiring React
-  const MockNavigator = (props, _ref) => props.children;
-  MockNavigator.displayName = 'MockNavigator';
-
-  return {
-    useFocusEffect: jest.fn(callback => {
-      // Immediately invoke the effect for testing without requiring a container
-      return callback();
-    }),
-    useNavigation: jest.fn(() => ({
-      navigate: jest.fn(),
-      goBack: jest.fn(),
-      canGoBack: jest.fn(() => true),
-      dispatch: jest.fn(),
-      getState: jest.fn(() => ({ routes: [{ name: 'Home' }], index: 0 })),
-    })),
-    useRoute: jest.fn(() => ({
-      key: 'mock-route-key',
-      name: 'MockRoute',
-      params: {},
-    })),
-    useIsFocused: jest.fn(() => true),
-    useLinkTo: jest.fn(() => jest.fn()),
-    createNavigationContainerRef: jest.fn(() => global.mockNavigationRef),
-    createStaticNavigation: jest.fn(() => MockNavigator),
-    NavigationContainer: ({ children }) => children,
-    DefaultTheme: {},
-    DarkTheme: {},
-  };
-});
-
-jest.mock('@react-navigation/native-stack', () => ({
-  createNativeStackNavigator: jest.fn(config => config),
-  createNavigatorFactory: jest.fn(),
-}));
-
-// Mock core navigation to avoid requiring a NavigationContainer for hooks
-jest.mock('@react-navigation/core', () => {
-  // Avoid nested requireActual to prevent OOM in CI
-  return {
-    useNavigation: jest.fn(() => ({
-      navigate: jest.fn(),
-      goBack: jest.fn(),
-      canGoBack: jest.fn(() => true),
-      dispatch: jest.fn(),
-      getState: jest.fn(() => ({ routes: [{ name: 'Home' }], index: 0 })),
-    })),
-    useRoute: jest.fn(() => ({
-      key: 'mock-route-key',
-      name: 'MockRoute',
-      params: {},
-    })),
-    useIsFocused: jest.fn(() => true),
-    useLinkTo: jest.fn(() => jest.fn()),
-    NavigationContext: {
-      Provider: ({ children }) => children,
-      Consumer: ({ children }) => children(null),
-    },
-    NavigationRouteContext: {
-      Provider: ({ children }) => children,
-      Consumer: ({ children }) => children(null),
-    },
-  };
-});
-
-// Mock react-native-webview globally to avoid ESM parsing and native behaviors
-// Note: Individual test files can override this with their own more specific mocks
-jest.mock('react-native-webview', () => {
-  // Avoid requiring React to prevent nested require memory issues
-  // Return a simple pass-through mock - tests can override with JSX mocks if needed
-  const MockWebView = jest.fn(() => null);
-  MockWebView.displayName = 'MockWebView';
-  return {
-    __esModule: true,
-    default: MockWebView,
-    WebView: MockWebView,
-  };
-});
-
-// Mock ExpandableBottomLayout to simple containers to avoid SDK internals in tests
-jest.mock('@/layouts/ExpandableBottomLayout', () => {
-  // Avoid requiring React to prevent nested require memory issues
-  // These need to pass through children so WebView is rendered
-  const Layout = ({ children, ...props }) => children;
-  const TopSection = ({ children, ...props }) => children;
-  const BottomSection = ({ children, ...props }) => children;
-  const FullSection = ({ children, ...props }) => children;
-  return {
-    __esModule: true,
-    ExpandableBottomLayout: { Layout, TopSection, BottomSection, FullSection },
-  };
-});
-
-// Mock mobile-sdk-alpha components used by NavBar (Button, XStack)
-jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
-  // Avoid requiring React to prevent nested require memory issues
-  // Create mock components that work with React testing library
-  // Button needs to render a host element with onPress so tests can interact with it
-  const Button = jest.fn(({ testID, icon, onPress, children, ...props }) => {
-    // Render as a mock-touchable-opacity host element so fireEvent.press works
-    // This allows tests to query by testID and press the button
-    return (
-      <mock-touchable-opacity testID={testID} onPress={onPress} {...props}>
-        {icon || children || null}
-      </mock-touchable-opacity>
-    );
-  });
-  Button.displayName = 'MockButton';
-
-  const XStack = jest.fn(({ children, ...props }) => children || null);
-  XStack.displayName = 'MockXStack';
-
-  const Text = jest.fn(({ children, ...props }) => children || null);
-  Text.displayName = 'MockText';
-
-  return {
-    __esModule: true,
-    Button,
-    XStack,
-    // Provide minimal Text to satisfy potential usages
-    Text,
-  };
-});
-
-// Mock Tamagui to avoid hermes-parser WASM memory issues during transformation
-jest.mock('tamagui', () => {
-  // Avoid requiring React to prevent nested require memory issues
-  // Create mock components that work with React testing library
-
-  // Helper to create a simple pass-through mock component
-  const createMockComponent = displayName => {
-    const Component = jest.fn(props => props.children || null);
-    Component.displayName = displayName;
-    return Component;
-  };
-
-  // Mock styled function - simplified version that returns the component
-  const styled = jest.fn(Component => Component);
-
-  // Create all Tamagui component mocks
-  const Button = createMockComponent('MockButton');
-  const XStack = createMockComponent('MockXStack');
-  const YStack = createMockComponent('MockYStack');
-  const ZStack = createMockComponent('MockZStack');
-  const Text = createMockComponent('MockText');
-  const View = createMockComponent('MockView');
-  const ScrollView = createMockComponent('MockScrollView');
-  const Spinner = createMockComponent('MockSpinner');
-  const Image = createMockComponent('MockImage');
-  const Card = createMockComponent('MockCard');
-  const Separator = createMockComponent('MockSeparator');
-  const TextArea = createMockComponent('MockTextArea');
-  const Input = createMockComponent('MockInput');
-  const Anchor = createMockComponent('MockAnchor');
-
-  // Mock Select component with nested components
-  const Select = Object.assign(createMockComponent('MockSelect'), {
-    Trigger: createMockComponent('MockSelectTrigger'),
-    Value: createMockComponent('MockSelectValue'),
-    Content: createMockComponent('MockSelectContent'),
-    Item: createMockComponent('MockSelectItem'),
-    Group: createMockComponent('MockSelectGroup'),
-    Label: createMockComponent('MockSelectLabel'),
-    Viewport: createMockComponent('MockSelectViewport'),
-    ScrollUpButton: createMockComponent('MockSelectScrollUpButton'),
-    ScrollDownButton: createMockComponent('MockSelectScrollDownButton'),
-  });
-
-  // Mock Sheet component with nested components
-  const Sheet = Object.assign(createMockComponent('MockSheet'), {
-    Frame: createMockComponent('MockSheetFrame'),
-    Overlay: createMockComponent('MockSheetOverlay'),
-    Handle: createMockComponent('MockSheetHandle'),
-    ScrollView: createMockComponent('MockSheetScrollView'),
-  });
-
-  // Mock Adapt component
-  const Adapt = createMockComponent('MockAdapt');
-
-  // Mock TamaguiProvider - simple pass-through that renders children
-  const TamaguiProvider = jest.fn(({ children }) => children || null);
-  TamaguiProvider.displayName = 'MockTamaguiProvider';
-
-  // Mock configuration factory functions
-  const createFont = jest.fn(() => ({}));
-  const createTamagui = jest.fn(() => ({}));
-
-  return {
-    __esModule: true,
-    styled,
-    Button,
-    XStack,
-    YStack,
-    ZStack,
-    Text,
-    View,
-    ScrollView,
-    Spinner,
-    Image,
-    Card,
-    Separator,
-    TextArea,
-    Input,
-    Anchor,
-    Select,
-    Sheet,
-    Adapt,
-    TamaguiProvider,
-    createFont,
-    createTamagui,
-    // Provide default exports for other common components
-    default: jest.fn(() => null),
-  };
-});
-
-// Mock Tamagui lucide icons to simple components to avoid theme context
-jest.mock('@tamagui/lucide-icons', () => {
-  // Avoid requiring React to prevent nested require memory issues
-  // Return mock components that can be queried by testID
-  const makeIcon = name => {
-    // Use a mock element tag that React can render
-    const Icon = props => ({
-      $$typeof: Symbol.for('react.element'),
-      type: `mock-icon-${name}`,
-      props: { testID: `icon-${name}`, ...props },
-      key: null,
-      ref: null,
-    });
-    Icon.displayName = `MockIcon(${name})`;
-    return Icon;
-  };
-  return {
-    __esModule: true,
-    ExternalLink: makeIcon('external-link'),
-    X: makeIcon('x'),
-    Clipboard: makeIcon('clipboard'),
-  };
-});
-
-// Mock WebViewFooter to avoid SDK rendering complexity
-jest.mock('@/components/WebViewFooter', () => {
-  // Avoid requiring React to prevent nested require memory issues
-  const WebViewFooter = jest.fn(() => null);
-  return { __esModule: true, WebViewFooter };
-});
-
-// Mock screens that use mobile-sdk-alpha flows with PixelRatio issues or missing dependencies
-jest.mock('@/screens/documents/selection/ConfirmBelongingScreen', () => {
-  const MockScreen = jest.fn(() => null);
-  MockScreen.displayName = 'MockConfirmBelongingScreen';
-  return { __esModule: true, default: MockScreen };
-});
-
-jest.mock('@/screens/documents/selection/CountryPickerScreen', () => {
-  const MockScreen = jest.fn(() => null);
-  MockScreen.displayName = 'MockCountryPickerScreen';
-  return { __esModule: true, default: MockScreen };
-});
 
 // Mock react-native-biometrics to prevent NativeModules errors
 jest.mock('react-native-biometrics', () => {

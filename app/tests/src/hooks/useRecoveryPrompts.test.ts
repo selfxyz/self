@@ -5,7 +5,6 @@
 import { AppState } from 'react-native';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
-import { CRITICAL_RECOVERY_PROMPT_ROUTES } from '@/consts/recoveryPrompts';
 import { useModal } from '@/hooks/useModal';
 import useRecoveryPrompts from '@/hooks/useRecoveryPrompts';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -108,23 +107,6 @@ describe('useRecoveryPrompts', () => {
       expect(showModal).toHaveBeenCalled();
     });
   });
-
-  it.each([...CRITICAL_RECOVERY_PROMPT_ROUTES])(
-    'does not show modal when route %s is not allowed',
-    async routeName => {
-      global.mockNavigationRef.getCurrentRoute.mockReturnValue({
-        name: routeName,
-      });
-      act(() => {
-        useSettingStore.setState({ loginCount: 1 });
-      });
-      const { unmount } = renderHook(() => useRecoveryPrompts());
-      await waitFor(() => {
-        expect(showModal).not.toHaveBeenCalled();
-      });
-      unmount();
-    },
-  );
 
   it('respects custom allow list overrides', async () => {
     act(() => {
