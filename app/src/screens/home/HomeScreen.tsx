@@ -68,6 +68,7 @@ const HomeScreen: React.FC = () => {
     Record<string, { data: IDDocument; metadata: DocumentMetadata }>
   >({});
   const [loading, setLoading] = useState(true);
+  const hasIncrementedOnFocus = useRef(false);
 
   const { amount: selfPoints } = usePoints();
 
@@ -127,7 +128,36 @@ const HomeScreen: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
+      if (hasIncrementedOnFocus.current) {
+        if (__DEV__) {
+          console.log(
+            '[HomeScreen] focus hook skipped; already incremented. Count:',
+            useSettingStore.getState().homeScreenViewCount,
+          );
+        }
+        return;
+      }
+
+      hasIncrementedOnFocus.current = true;
       useSettingStore.getState().incrementHomeScreenViewCount();
+
+      if (__DEV__) {
+        console.log(
+          '[HomeScreen] focus hook incremented. Count:',
+          useSettingStore.getState().homeScreenViewCount,
+        );
+      }
+
+      return () => {
+        hasIncrementedOnFocus.current = false;
+
+        if (__DEV__) {
+          console.log(
+            '[HomeScreen] focus hook cleanup reset flag. Count:',
+            useSettingStore.getState().homeScreenViewCount,
+          );
+        }
+      };
     }, []),
   );
 
