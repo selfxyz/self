@@ -218,7 +218,6 @@ export const AuthProvider = ({
 
     setIsAuthenticatingPromise(null);
     setIsAuthenticated(true);
-    useSettingStore.getState().incrementLoginCount();
     trackEvent(AuthEvents.BIOMETRIC_LOGIN_SUCCESS);
     setAuthenticatedTimeout(previousTimeout => {
       if (previousTimeout) {

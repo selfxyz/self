@@ -201,9 +201,6 @@ describe('useRecoveryPrompts', () => {
 
   it('does not show modal if already visible', async () => {
     (useModal as jest.Mock).mockReturnValueOnce({ showModal, visible: true });
-    act(() => {
-      useSettingStore.setState({ loginCount: 1 });
-    });
     renderHook(() => useRecoveryPrompts());
     await waitFor(() => {
       expect(showModal).not.toHaveBeenCalled();
