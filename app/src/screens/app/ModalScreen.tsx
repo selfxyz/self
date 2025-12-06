@@ -65,32 +65,20 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
       return;
     }
 
+    // Dismiss the modal BEFORE calling the callback
+    // This prevents race conditions when the callback navigates to another screen
     try {
-      // Try to execute the callback first
-      await callbacks.onButtonPress();
+      navigation.goBack();
+      unregisterModalCallbacks(params.callbackId);
+    } catch (navigationError) {
+      console.error('Navigation error while dismissing modal:', navigationError);
+    }
 
-      try {
-        // If callback succeeds, try to navigate back
-        navigation.goBack();
-        // Only unregister after successful navigation
-        unregisterModalCallbacks(params.callbackId);
-      } catch (navigationError) {
-        console.error('Navigation error:', navigationError);
-        // Don't cleanup if navigation fails - modal might still be visible
-      }
+    // Now execute the callback (which may navigate to another screen)
+    try {
+      await callbacks.onButtonPress();
     } catch (callbackError) {
       console.error('Callback error:', callbackError);
-      // If callback fails, we should still try to navigate and cleanup
-      try {
-        navigation.goBack();
-        unregisterModalCallbacks(params.callbackId);
-      } catch (navigationError) {
-        console.error(
-          'Navigation error after callback failure:',
-          navigationError,
-        );
-        // Don't cleanup if navigation fails
-      }
     }
   }, [callbacks, navigation, params.callbackId]);
 
