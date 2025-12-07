@@ -68,7 +68,9 @@ const HomeScreen: React.FC = () => {
     Record<string, { data: IDDocument; metadata: DocumentMetadata }>
   >({});
   const [loading, setLoading] = useState(true);
+  const [lastFetchedAt, setLastFetchedAt] = useState(0);
   const hasIncrementedOnFocus = useRef(false);
+  const isMountedRef = useRef(true);
 
   const { amount: selfPoints } = usePoints();
 
@@ -107,23 +109,58 @@ const HomeScreen: React.FC = () => {
   }, [shouldTriggerReferralTest]);
 
   const loadDocuments = useCallback(async () => {
-    setLoading(true);
+    const hasExistingDocs =
+      documentCatalog.documents.length > 0 &&
+      Object.keys(allDocuments).length > 0;
+
+    // Only show spinner on cold start or explicit refresh
+    setLoading(!hasExistingDocs);
+
     try {
-      const catalog = await loadDocumentCatalog();
-      const docs = await getAllDocuments();
+      const [catalog, docs] = await Promise.all([
+        loadDocumentCatalog(),
+        getAllDocuments(),
+      ]);
+
+      if (!isMountedRef.current) {
+        return;
+      }
 
       setDocumentCatalog(catalog);
       setAllDocuments(docs);
+      setLastFetchedAt(Date.now());
     } catch (error) {
-      console.warn('Failed to load documents:', error);
+      if (isMountedRef.current) {
+        console.warn('Failed to load documents:', error);
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
-    setLoading(false);
-  }, [loadDocumentCatalog, getAllDocuments]);
+  }, [
+    allDocuments,
+    documentCatalog.documents.length,
+    getAllDocuments,
+    loadDocumentCatalog,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      loadDocuments();
-    }, [loadDocuments]),
+      const now = Date.now();
+      const shouldRefresh =
+        lastFetchedAt === 0 || now - lastFetchedAt > 1000 * 12; // ~12s throttle
+
+      if (shouldRefresh) {
+        loadDocuments();
+      }
+    }, [lastFetchedAt, loadDocuments]),
   );
 
   useFocusEffect(
@@ -150,12 +187,26 @@ const HomeScreen: React.FC = () => {
   // Prevents back navigation
   usePreventRemove(true, () => {});
 
+  // Calculate bottom padding to prevent button bleeding into system navigation
+  const bottomPadding = useSafeBottomPadding(20);
+
   const hasValidRegisteredDocument = useMemo(() => {
     return documentCatalog.documents.some(doc => doc.isRegistered === true);
   }, [documentCatalog]);
 
-  // Calculate bottom padding to prevent button bleeding into system navigation
-  const bottomPadding = useSafeBottomPadding(20);
+  const renderSkeletonCard = useCallback(() => {
+    return (
+      <View
+        width={cardWidth}
+        height={cardWidth * (418 / 640)}
+        borderRadius={8}
+        alignSelf="center"
+        backgroundColor={slate50}
+        borderColor={slate300}
+        borderWidth={1}
+      />
+    );
+  }, [cardWidth]);
 
   // Create a stable reference to avoid hook dependency issues
   const onEarnPointsPressRef = useRef<
@@ -218,7 +269,12 @@ const HomeScreen: React.FC = () => {
           paddingBottom: 35, // Add extra bottom padding for shadow
         }}
       >
-        {!hasValidRegisteredDocument ? (
+        {loading && !hasValidRegisteredDocument ? (
+          <YStack gap={12}>
+            {renderSkeletonCard()}
+            {renderSkeletonCard()}
+          </YStack>
+        ) : !hasValidRegisteredDocument ? (
           <Pressable
             onPress={() => {
               navigation.navigate('CountryPicker');

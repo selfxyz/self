@@ -83,8 +83,14 @@ const safeLoadDocumentCatalog = async (): Promise<DocumentCatalog> => {
 };
 
 const safeGetAllDocuments = async (selfClient: SelfClient) => {
+  if (allDocumentsCache) {
+    return allDocumentsCache;
+  }
+
   try {
-    return await getAllDocuments(selfClient);
+    const docs = await getAllDocuments(selfClient);
+    allDocumentsCache = docs;
+    return docs;
   } catch (error) {
     console.warn(
       'Error in safeGetAllDocuments, returning empty object:',
@@ -119,6 +125,17 @@ const notifyDocumentChange = (isMock: boolean) => {
 
 // Global flag to track if native modules are ready
 let nativeModulesReady = false;
+
+// Session-only caches to avoid repeated keychain reads
+let documentCatalogCache: DocumentCatalog | null = null;
+let allDocumentsCache: {
+  [documentId: string]: { data: IDDocument; metadata: DocumentMetadata };
+} | null = null;
+
+const invalidateDocumentCaches = () => {
+  documentCatalogCache = null;
+  allDocumentsCache = null;
+};
 
 // Test-only helper so unit tests can reset module-level state without re-importing
 export function __resetPassportProviderTestState() {
@@ -288,6 +305,7 @@ export async function clearDocumentCatalogForMigrationTesting() {
   console.log(
     'Document catalog cleared. Legacy storage preserved for migration testing.',
   );
+  invalidateDocumentCaches();
 }
 
 export async function clearSpecificPassportData(documentType: string) {
@@ -305,6 +323,7 @@ export async function deleteDocumentDirectlyFromKeychain(
   documentId: string,
 ): Promise<void> {
   await Keychain.resetGenericPassword({ service: `document-${documentId}` });
+  invalidateDocumentCaches();
 }
 
 export async function deleteDocument(documentId: string): Promise<void> {
@@ -330,6 +349,7 @@ export async function deleteDocument(documentId: string): Promise<void> {
   } catch {
     console.log(`Document ${documentId} not found or already cleared`);
   }
+  allDocumentsCache = null;
 }
 
 export async function getAvailableDocumentTypes(): Promise<string[]> {
@@ -431,6 +451,10 @@ async function loadAllPassportData(selfClient: SelfClient): Promise<{
 export async function loadDocumentByIdDirectlyFromKeychain(
   documentId: string,
 ): Promise<PassportData | null> {
+  if (allDocumentsCache && allDocumentsCache[documentId]) {
+    return allDocumentsCache[documentId].data as PassportData;
+  }
+
   try {
     // Check if native modules are ready
     if (!nativeModulesReady) {
@@ -461,6 +485,10 @@ export const selfClientDocumentsAdapter: DocumentsAdapter = {
 };
 
 export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<DocumentCatalog> {
+  if (documentCatalogCache) {
+    return documentCatalogCache;
+  }
+
   try {
     // Extra safety check for module initialization
     if (typeof Keychain === 'undefined' || !Keychain) {
@@ -488,14 +516,16 @@ export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<Documen
 
       console.log('Successfully loaded document catalog from keychain');
 
-      return parsed;
+      documentCatalogCache = parsed;
+      return documentCatalogCache;
     }
   } catch (error) {
     console.log('Error loading document catalog:', error);
   }
 
   // Return empty catalog if none exists
-  return { documents: [] };
+  documentCatalogCache = { documents: [] };
+  return documentCatalogCache;
 }
 
 export async function loadPassportData() {
@@ -696,6 +726,7 @@ export async function migrateFromLegacyStorage(): Promise<void> {
   }
 
   console.log('Migration completed');
+  invalidateDocumentCaches();
 }
 
 export async function reStorePassportDataWithRightCSCA(
@@ -751,6 +782,7 @@ export async function saveDocumentCatalogDirectlyToKeychain(
     ...setOptions,
     // securityLevel: Keychain.SECURITY_LEVEL.SECURE_HARDWARE,
   });
+  documentCatalogCache = catalog;
 }
 
 export async function setDefaultDocumentTypeIfNeeded() {
@@ -770,6 +802,7 @@ export async function setSelectedDocument(documentId: string): Promise<void> {
     await saveDocumentCatalogDirectlyToKeychain(catalog);
 
     notifyDocumentChange(metadata.mock);
+    allDocumentsCache = null;
   }
 }
 
@@ -783,6 +816,7 @@ async function storeDocumentDirectlyToKeychain(
     ...setOptions,
     // securityLevel: Keychain.SECURITY_LEVEL.SECURE_HARDWARE,
   });
+  allDocumentsCache = null;
 }
 
 // Duplicate funciton. prefer one on mobile sdk
@@ -805,6 +839,7 @@ export async function storeDocumentWithDeduplication(
     // Update selected document to this one
     catalog.selectedDocumentId = contentHash;
     await saveDocumentCatalogDirectlyToKeychain(catalog);
+    allDocumentsCache = null;
     return contentHash;
   }
 
@@ -830,6 +865,7 @@ export async function storeDocumentWithDeduplication(
   catalog.documents.push(metadata);
   catalog.selectedDocumentId = contentHash;
   await saveDocumentCatalogDirectlyToKeychain(catalog);
+  allDocumentsCache = null;
 
   return contentHash;
 }
@@ -856,6 +892,7 @@ export async function updateDocumentRegistrationState(
   } else {
     console.warn(`Document ${documentId} not found in catalog`);
   }
+  allDocumentsCache = null;
 }
 
 export const usePassport = () => {
@@ -873,6 +910,10 @@ export const usePassport = () => {
 export const getAllDocumentsDirectlyFromKeychain = async (): Promise<{
   [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
 }> => {
+  if (allDocumentsCache) {
+    return allDocumentsCache;
+  }
+
   const catalog = await loadDocumentCatalogDirectlyFromKeychain();
   const allDocs: {
     [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
@@ -885,5 +926,6 @@ export const getAllDocumentsDirectlyFromKeychain = async (): Promise<{
     }
   }
 
-  return allDocs;
+  allDocumentsCache = allDocs;
+  return allDocumentsCache;
 };
