@@ -392,12 +392,15 @@ jest.mock(
 // The mobile-sdk-alpha package imports CountryPickerScreen.statusBar from euclid
 jest.mock('@selfxyz/euclid', () => ({
   __esModule: true,
-  CountryPickerScreen: Object.assign(jest.fn(() => null), {
-    statusBar: {
-      hidden: false,
-      style: 'dark',
+  CountryPickerScreen: Object.assign(
+    jest.fn(() => null),
+    {
+      statusBar: {
+        hidden: false,
+        style: 'dark',
+      },
     },
-  }),
+  ),
   // Add other commonly used exports if needed
   HeadlessNavForEuclid: jest.fn(() => null),
 }));
