@@ -6,8 +6,8 @@
 // Use a simple object that can be modified directly
 import { Buffer } from 'buffer';
 
-import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
-import { PassportReader } from '@/integrations/nfc/passportReader';
+// Ensure the Node Buffer implementation is available BEFORE importing modules that use it
+global.Buffer = Buffer;
 
 const Platform = {
   OS: 'ios', // Default to iOS
@@ -18,8 +18,8 @@ jest.mock('react-native', () => ({
   Platform,
 }));
 
-// Ensure the Node Buffer implementation is available to the module under test
-global.Buffer = Buffer;
+import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
+import { PassportReader } from '@/integrations/nfc/passportReader';
 
 describe('parseScanResponse', () => {
   beforeEach(() => {

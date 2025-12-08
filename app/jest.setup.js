@@ -388,6 +388,20 @@ jest.mock(
   { virtual: true },
 );
 
+// Mock @selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen to prevent undefined statusBar errors
+jest.mock(
+  '@selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen',
+  () => ({
+    __esModule: true,
+    default: jest.fn(() => null),
+    statusBar: {
+      hidden: false,
+      style: 'dark',
+    },
+  }),
+  { virtual: true },
+);
+
 // Mock problematic mobile-sdk-alpha components that use React Native StyleSheet
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   NFCScannerScreen: jest.fn(() => null),
