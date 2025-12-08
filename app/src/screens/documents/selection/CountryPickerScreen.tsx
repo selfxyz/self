@@ -8,11 +8,16 @@ import SDKCountryPickerScreen, {
 
 import { useSafeAreaInsets } from '@/hooks/useSafeAreaInsets';
 
-function CountryPickerScreen() {
+type CountryPickerScreenComponent = React.FC & {
+  statusBar: typeof importedStatusBar;
+};
+
+const CountryPickerScreen: CountryPickerScreenComponent = () => {
   const insets = useSafeAreaInsets();
   return <SDKCountryPickerScreen insets={insets} />;
-}
+};
 
 export const statusBar = importedStatusBar;
+CountryPickerScreen.statusBar = importedStatusBar;
 
 export default CountryPickerScreen;
