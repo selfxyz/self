@@ -388,19 +388,19 @@ jest.mock(
   { virtual: true },
 );
 
-// Mock @selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen to prevent undefined statusBar errors
-jest.mock(
-  '@selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen',
-  () => ({
-    __esModule: true,
-    default: jest.fn(() => null),
+// Mock @selfxyz/euclid to prevent undefined statusBar errors
+// The mobile-sdk-alpha package imports CountryPickerScreen.statusBar from euclid
+jest.mock('@selfxyz/euclid', () => ({
+  __esModule: true,
+  CountryPickerScreen: Object.assign(jest.fn(() => null), {
     statusBar: {
       hidden: false,
       style: 'dark',
     },
   }),
-  { virtual: true },
-);
+  // Add other commonly used exports if needed
+  HeadlessNavForEuclid: jest.fn(() => null),
+}));
 
 // Mock problematic mobile-sdk-alpha components that use React Native StyleSheet
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({

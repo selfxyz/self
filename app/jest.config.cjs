@@ -59,6 +59,8 @@ module.exports = {
     // Fix @anon-aadhaar/core resolution
     '^@anon-aadhaar/core$':
       '<rootDir>/../common/node_modules/@anon-aadhaar/core/dist/index.js',
+    // Map common to source files in tests to avoid Buffer polyfill issues in built dist
+    '^@selfxyz/common/(.*)$': '<rootDir>/../common/src/$1',
   },
   transform: {
     '\\.[jt]sx?$': ['babel-jest', { configFile: './babel.config.test.cjs' }],
