@@ -3,14 +3,17 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import SDKCountryPickerScreen, {
-  statusBar,
+  statusBar as importedStatusBar,
 } from '@selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen';
 
 import { useSafeAreaInsets } from '@/hooks/useSafeAreaInsets';
 
-export default function CountryPickerScreen() {
+function CountryPickerScreen() {
   const insets = useSafeAreaInsets();
   return <SDKCountryPickerScreen insets={insets} />;
 }
 
-CountryPickerScreen.statusBar = statusBar;
+export const statusBar = importedStatusBar;
+CountryPickerScreen.statusBar = importedStatusBar;
+
+export default CountryPickerScreen;

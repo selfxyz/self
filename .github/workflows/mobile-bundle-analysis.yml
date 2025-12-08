@@ -5,6 +5,7 @@ env:
   JAVA_VERSION: 17
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app
+  NODE_ENV: 'production'
 
 on:
   pull_request:
