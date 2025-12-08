@@ -209,6 +209,7 @@
     "@typescript-eslint/parser": "^8.39.0",
     "@vitejs/plugin-react-swc": "^3.10.2",
     "babel-plugin-module-resolver": "^5.0.2",
+    "babel-plugin-transform-remove-console": "^6.9.4",
     "constants-browserify": "^1.0.0",
     "dompurify": "^3.2.6",
     "eslint": "^8.57.0",

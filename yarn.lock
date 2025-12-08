@@ -7840,6 +7840,7 @@ __metadata:
     asn1js: "npm:^3.0.6"
     axios: "npm:^1.13.2"
     babel-plugin-module-resolver: "npm:^5.0.2"
+    babel-plugin-transform-remove-console: "npm:^6.9.4"
     buffer: "npm:^6.0.3"
     constants-browserify: "npm:^1.0.0"
     country-emoji: "npm:^1.5.6"
@@ -15334,6 +15335,13 @@ __metadata:
   dependencies:
     "@babel/plugin-syntax-flow": "npm:^7.12.1"
   checksum: 10c0/aa9d022d8d4be0e7c4f1ff7e5308fe7e0ff4d6f9099449913e3a11c1e81916623a8f36432da180a9aa3f53ea534dca4401fe33d6528f043f40357cfa790ee778
+  languageName: node
+  linkType: hard
+
+"babel-plugin-transform-remove-console@npm:^6.9.4":
+  version: 6.9.4
+  resolution: "babel-plugin-transform-remove-console@npm:6.9.4"
+  checksum: 10c0/8bb152eed6685b92c371d72be3d9107d879f64b507f3e255edd6a1fb4806e9bcf39011d6f32ce1d8d745fb3533d1da4d5c706eefa633fae25151866c986f2e24
   languageName: node
   linkType: hard
 
