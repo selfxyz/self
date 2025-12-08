@@ -390,9 +390,19 @@ jest.mock(
 
 // Mock @selfxyz/euclid to prevent undefined statusBar errors
 // The mobile-sdk-alpha package imports CountryPickerScreen.statusBar from euclid
+// ShowRecoveryPhraseScreen imports RecoveryPhraseScreen.statusBar from euclid
 jest.mock('@selfxyz/euclid', () => ({
   __esModule: true,
   CountryPickerScreen: Object.assign(
+    jest.fn(() => null),
+    {
+      statusBar: {
+        hidden: false,
+        style: 'dark',
+      },
+    },
+  ),
+  RecoveryPhraseScreen: Object.assign(
     jest.fn(() => null),
     {
       statusBar: {
