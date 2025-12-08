@@ -20,7 +20,9 @@ import DocumentNFCMethodSelectionScreen from '@/screens/documents/scanning/Docum
 import DocumentNFCScanScreen from '@/screens/documents/scanning/DocumentNFCScanScreen';
 import DocumentNFCTroubleScreen from '@/screens/documents/scanning/DocumentNFCTroubleScreen';
 import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongingScreen';
-import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
+import CountryPickerScreen, {
+  statusBar as statusbarCountryPicker,
+} from '@/screens/documents/selection/CountryPickerScreen';
 import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
 import IDPickerScreen from '@/screens/documents/selection/IDPickerScreen';
 import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
@@ -80,8 +82,8 @@ const documentsScreens = {
     options: IS_EUCLID_ENABLED
       ? ({
           header: HeadlessNavForEuclid,
-          statusBarHidden: CountryPickerScreen.statusBar.hidden,
-          statusBarStyle: CountryPickerScreen.statusBar.style,
+          statusBarHidden: statusbarCountryPicker.hidden,
+          statusBarStyle: statusbarCountryPicker.style,
           headerShown: true,
         } as NativeStackNavigationOptions)
       : {

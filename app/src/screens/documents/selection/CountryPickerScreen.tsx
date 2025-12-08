@@ -14,6 +14,5 @@ function CountryPickerScreen() {
 }
 
 export const statusBar = importedStatusBar;
-CountryPickerScreen.statusBar = importedStatusBar;
 
 export default CountryPickerScreen;
