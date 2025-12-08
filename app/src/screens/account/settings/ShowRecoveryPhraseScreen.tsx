@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import type { RecoveryPhraseVariant } from '@selfxyz/euclid';
@@ -19,20 +19,37 @@ import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
 function useCopyRecoveryPhrase(mnemonic: string[] | undefined) {
   const [copied, setCopied] = React.useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const onCopy = useCallback(() => {
     if (!mnemonic) return;
     Clipboard.setString(mnemonic.join(' '));
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Set new timeout and store its ID
+    timeoutRef.current = setTimeout(() => setCopied(false), 2500);
   }, [mnemonic]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return { copied, onCopy };
 }
 
 const ShowRecoveryPhraseScreen: React.FC & {
-  statusBarStyle?: string;
-  statusBarHidden?: boolean;
+  statusBarStyle: string;
+  statusBarHidden: boolean;
 } = () => {
   const { mnemonic, loadMnemonic } = useMnemonic();
   const self = useSelfClient();
