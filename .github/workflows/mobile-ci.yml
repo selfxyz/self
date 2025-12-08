@@ -190,6 +190,8 @@ jobs:
         env:
           # Increase Node.js memory to prevent hermes-parser WASM memory errors
           NODE_OPTIONS: --max-old-space-size=4096
+          # Override production NODE_ENV for tests - React's production build doesn't include testing utilities
+          NODE_ENV: test
         run: |
           # Final verification from app directory perspective
           echo "Final verification before running tests (from app directory)..."
