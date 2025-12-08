@@ -5,8 +5,6 @@ on:
       - dev
       - staging
       - main
-    paths:
-      - "circuits/**"
 jobs:
   run_circuit_tests:
     if: github.event.pull_request.draft == false
@@ -20,8 +18,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Detect circuits changes
+        id: changes
+        run: |
+          git fetch --no-tags --prune --depth=1 origin "${{ github.event.pull_request.base.ref }}"
+          if git diff --name-only FETCH_HEAD...HEAD | grep -E '^(circuits/)' >/dev/null; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip Circuits workflow
+        if: steps.changes.outputs.changed == 'false'
+        run: echo "No circuits changes detected; skipping Circuits workflow."
+
       # Circom installation from https://github.com/erhant/circomkit/blob/main/.github/workflows/tests.yml
       - name: Install dependencies
+        if: steps.changes.outputs.changed == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install --yes \
@@ -32,9 +45,11 @@ jobs:
             nlohmann-json3-dev
 
       - name: Setup Rust
+        if: steps.changes.outputs.changed == 'true'
         uses: dtolnay/rust-toolchain@stable
 
       - name: Restore Circom binary
+        if: steps.changes.outputs.changed == 'true'
         id: circom-cache
         uses: actions/cache/restore@v4
         with:
@@ -42,7 +57,7 @@ jobs:
           key: circom-v2.1.9
 
       - name: Download Circom Binary v2.1.9
-        if: steps.circom-cache.outputs.cache-hit != 'true'
+        if: steps.changes.outputs.changed == 'true' && steps.circom-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p ~/.cache/circom
 
@@ -89,24 +104,27 @@ jobs:
           echo "${{ env.CIRCOM_SHA256 }}  $HOME/.cache/circom/circom" | sha256sum -c -
 
       - name: Save Circom cache
-        if: steps.circom-cache.outputs.cache-hit != 'true'
+        if: steps.changes.outputs.changed == 'true' && steps.circom-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: ~/.cache/circom
           key: circom-v2.1.9
 
       - name: Verify Circom checksum (cache hit)
-        if: steps.circom-cache.outputs.cache-hit == 'true'
+        if: steps.changes.outputs.changed == 'true' && steps.circom-cache.outputs.cache-hit == 'true'
         run: |
           echo "${{ env.CIRCOM_SHA256 }}  $HOME/.cache/circom/circom" | sha256sum -c -
 
       - name: Add Circom to PATH
+        if: steps.changes.outputs.changed == 'true'
         run: echo "$HOME/.cache/circom" >> "$GITHUB_PATH"
 
       - name: Print Circom version
+        if: steps.changes.outputs.changed == 'true'
         run: circom --version
 
       - name: Cache Yarn dependencies
+        if: steps.changes.outputs.changed == 'true'
         uses: ./.github/actions/cache-yarn
         with:
           path: |
@@ -116,13 +134,16 @@ jobs:
           cache-version: v1
 
       - name: Install Yarn dependencies
+        if: steps.changes.outputs.changed == 'true'
         uses: ./.github/actions/yarn-install
         with:
           working_directory: circuits
 
       - name: Run lint
+        if: steps.changes.outputs.changed == 'true'
         run: yarn workspace @selfxyz/circuits lint
       - name: Run Tests (Circuits)
+        if: steps.changes.outputs.changed == 'true'
         env:
           FULL_TEST_SUITE: false
         run: yarn workspace @selfxyz/circuits test
