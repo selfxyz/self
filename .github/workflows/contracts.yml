@@ -1,6 +1,7 @@
 name: Contracts CI
 on:
   pull_request:
+    # Run on upstream branches so required checks post before promoting to main
     branches:
       - dev
       - staging
