@@ -9,7 +9,6 @@ import type { RecoveryPhraseVariant } from '@selfxyz/euclid';
 import { RecoveryPhraseScreen } from '@selfxyz/euclid';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Description } from '@selfxyz/mobile-sdk-alpha/components';
-import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import Mnemonic from '@/components/Mnemonic';
 import useMnemonic from '@/hooks/useMnemonic';

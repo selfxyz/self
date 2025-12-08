@@ -15,7 +15,7 @@ import { SdkEvents } from '../../types/events';
 
 const CountryPickerScreen: React.FC<SafeArea> = ({ insets }: SafeArea) => {
   const selfClient = useSelfClient();
-  
+
   const [searchValue, setSearchValue] = useState('');
   const { countryData, countryList, loading, userCountryCode, showSuggestion } = useCountries();
 
@@ -79,4 +79,4 @@ CountryPickerScreen.displayName = 'CountryPickerScreen';
 
 export default CountryPickerScreen;
 
-export const statusBar = CountryPickerUI.statusBar
+export const statusBar = CountryPickerUI.statusBar;
