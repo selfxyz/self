@@ -393,15 +393,12 @@ jest.mock(
 // ShowRecoveryPhraseScreen imports RecoveryPhraseScreen.statusBar from euclid
 jest.mock('@selfxyz/euclid', () => ({
   __esModule: true,
-  CountryPickerScreen: Object.assign(
-    jest.fn(() => null),
-    {
-      statusBar: {
-        hidden: false,
-        style: 'dark',
-      },
+  CountryPickerScreen: Object.assign(jest.fn(() => null), {
+    statusBar: {
+      hidden: false,
+      style: 'dark',
     },
-  ),
+  }),
   RecoveryPhraseScreen: Object.assign(
     jest.fn(() => null),
     {
