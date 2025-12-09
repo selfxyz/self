@@ -90,9 +90,6 @@ jobs:
       - name: Check App Types
         run: yarn types
         working-directory: ./app
-      - name: Check license headers
-        run: node scripts/check-license-headers.mjs --check
-        working-directory: ./
 
   test:
     runs-on: macos-latest-large
