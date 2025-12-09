@@ -65,32 +65,26 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
       return;
     }
 
+    // Dismiss the modal BEFORE calling the callback
+    // This prevents race conditions when the callback navigates to another screen
     try {
-      // Try to execute the callback first
-      await callbacks.onButtonPress();
+      navigation.goBack();
+      unregisterModalCallbacks(params.callbackId);
+    } catch (navigationError) {
+      console.error(
+        'Navigation error while dismissing modal:',
+        navigationError,
+      );
+      // Don't execute callback if modal couldn't be dismissed
+      return;
+    }
 
-      try {
-        // If callback succeeds, try to navigate back
-        navigation.goBack();
-        // Only unregister after successful navigation
-        unregisterModalCallbacks(params.callbackId);
-      } catch (navigationError) {
-        console.error('Navigation error:', navigationError);
-        // Don't cleanup if navigation fails - modal might still be visible
-      }
+    // Now execute the callback (which may navigate to another screen)
+    // This only runs if dismissal succeeded
+    try {
+      await callbacks.onButtonPress();
     } catch (callbackError) {
       console.error('Callback error:', callbackError);
-      // If callback fails, we should still try to navigate and cleanup
-      try {
-        navigation.goBack();
-        unregisterModalCallbacks(params.callbackId);
-      } catch (navigationError) {
-        console.error(
-          'Navigation error after callback failure:',
-          navigationError,
-        );
-        // Don't cleanup if navigation fails
-      }
     }
   }, [callbacks, navigation, params.callbackId]);
 
@@ -108,6 +102,9 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
         padding={20}
         borderRadius={10}
         marginHorizontal={8}
+        width="79.5%"
+        maxWidth={460}
+        alignSelf="center"
       >
         <YStack gap={40}>
           <XStack alignItems="center" justifyContent="space-between">

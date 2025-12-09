@@ -76,6 +76,7 @@ jobs:
         with:
           path: |
             common/dist
+            sdk/sdk-common/dist
             sdk/qrcode/dist
           key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
 
@@ -128,6 +129,7 @@ jobs:
         with:
           path: |
             common/dist
+            sdk/sdk-common/dist
             sdk/qrcode/dist
           key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
           fail-on-cache-miss: true
@@ -195,6 +197,7 @@ jobs:
         with:
           path: |
             common/dist
+            sdk/sdk-common/dist
             sdk/qrcode/dist
           key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
           fail-on-cache-miss: true
@@ -203,6 +206,7 @@ jobs:
         run: |
           echo "Verifying build artifacts..."
           ls -la common/dist/
+          ls -la sdk/sdk-common/dist/
           ls -la sdk/qrcode/dist/
           echo "✅ Build artifacts verified"
 
@@ -255,12 +259,10 @@ jobs:
         with:
           path: |
             common/dist
+            sdk/sdk-common/dist
             sdk/qrcode/dist
           key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
           fail-on-cache-miss: true
-
-      - name: Build SDK common dependency
-        run: yarn workspace @selfxyz/sdk-common build
 
       - name: Run tests
         run: yarn workspace @selfxyz/qrcode test

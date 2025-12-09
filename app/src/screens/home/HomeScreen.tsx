@@ -47,6 +47,7 @@ import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
 import { useTestReferralFlow } from '@/hooks/useTestReferralFlow';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
+import { useSettingStore } from '@/stores/settingStore';
 import useUserStore from '@/stores/userStore';
 
 const HomeScreen: React.FC = () => {
@@ -67,6 +68,7 @@ const HomeScreen: React.FC = () => {
     Record<string, { data: IDDocument; metadata: DocumentMetadata }>
   >({});
   const [loading, setLoading] = useState(true);
+  const hasIncrementedOnFocus = useRef(false);
 
   const { amount: selfPoints } = usePoints();
 
@@ -122,6 +124,21 @@ const HomeScreen: React.FC = () => {
     useCallback(() => {
       loadDocuments();
     }, [loadDocuments]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (hasIncrementedOnFocus.current) {
+        return;
+      }
+
+      hasIncrementedOnFocus.current = true;
+      useSettingStore.getState().incrementHomeScreenViewCount();
+
+      return () => {
+        hasIncrementedOnFocus.current = false;
+      };
+    }, []),
   );
 
   useFocusEffect(() => {

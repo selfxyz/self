@@ -1,4 +1,5 @@
 import forge from 'node-forge';
+import { Buffer } from 'buffer';
 
 import { WS_DB_RELAYER, WS_DB_RELAYER_STAGING } from '../constants/index.js';
 import { initElliptic } from '../utils/certificate_parsing/elliptic.js';

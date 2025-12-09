@@ -50,7 +50,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   // const { turnkeyWallets, refreshWallets } = useTurnkeyUtils();
   // const { getMnemonic } = useTurnkeyUtils();
   // const { authState } = useTurnkey();
-  const [restoringFromTurnkey, setRestoringFromTurnkey] = useState(false);
+  const [_restoringFromTurnkey, _setRestoringFromTurnkey] = useState(false);
   const [restoringFromCloud, setRestoringFromCloud] = useState(false);
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
