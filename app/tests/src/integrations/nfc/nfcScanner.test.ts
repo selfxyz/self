@@ -45,8 +45,45 @@ describe('parseScanResponse', () => {
       passportPhoto: 'photo',
       documentSigningCertificate: JSON.stringify({ PEM: 'CERT' }),
     });
-
+    expect(response).toMatchInlineSnapshot(
+      `"{"dataGroupHashes":"{\\"DG1\\":{\\"sodHash\\":\\"abcd\\"},\\"DG2\\":{\\"sodHash\\":\\"1234\\"}}","eContentBase64":"ZWM=","signedAttributes":"c2E=","passportMRZ":"P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14","signatureBase64":"AQI=","dataGroupsPresent":[1,2],"passportPhoto":"photo","documentSigningCertificate":"{\\"PEM\\":\\"CERT\\"}"}"`,
+    );
     const result = parseScanResponse(response);
+    console.log('Parsed Result:', result);
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "dg1Hash": [
+          171,
+          205,
+        ],
+        "dg2Hash": [
+          18,
+          52,
+        ],
+        "dgPresents": [
+          1,
+          2,
+        ],
+        "documentCategory": "passport",
+        "documentType": "passport",
+        "dsc": "CERT",
+        "eContent": [
+          101,
+          99,
+        ],
+        "encryptedDigest": [
+          1,
+          2,
+        ],
+        "mock": false,
+        "mrz": "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14",
+        "parsed": false,
+        "signedAttr": [
+          115,
+          97,
+        ],
+      }
+    `);
     expect(result.mrz).toBe(mrz);
     expect(result.documentType).toBe('passport');
     // 'abcd' in hex: ab = 171, cd = 205
@@ -71,8 +108,50 @@ describe('parseScanResponse', () => {
       // Android format: '1' and '2' are hex strings, not arrays
       dataGroupHashes: JSON.stringify({ '1': 'abcd', '2': '1234' }),
     } as any;
-
+    expect(response).toMatchInlineSnapshot(`
+      {
+        "dataGroupHashes": "{"1":"abcd","2":"1234"}",
+        "documentSigningCertificate": "CERT",
+        "eContent": "[4,5]",
+        "encapContent": "[8,9]",
+        "encryptedDigest": "[6,7]",
+        "mrz": "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14",
+      }
+    `);
     const result = parseScanResponse(response);
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "dg1Hash": [
+          171,
+          205,
+        ],
+        "dg2Hash": [
+          18,
+          52,
+        ],
+        "dgPresents": [
+          1,
+          2,
+        ],
+        "documentCategory": "passport",
+        "documentType": "passport",
+        "dsc": "-----BEGIN CERTIFICATE-----CERT-----END CERTIFICATE-----",
+        "eContent": [
+          8,
+          9,
+        ],
+        "encryptedDigest": [
+          6,
+          7,
+        ],
+        "mock": false,
+        "mrz": "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14",
+        "signedAttr": [
+          4,
+          5,
+        ],
+      }
+    `);
     expect(result.documentType).toBe('passport');
     expect(result.mrz).toBe(mrz);
     // 'abcd' in hex: ab = 171, cd = 205
