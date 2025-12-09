@@ -37,16 +37,6 @@ module.exports = {
     '^@tests$': '<rootDir>/tests/src',
     // Map react-native-svg to app's node_modules for all packages
     '^react-native-svg$': '<rootDir>/node_modules/react-native-svg',
-    // Map @selfxyz/common to built CJS files
-    '^@selfxyz/common/constants$':
-      '<rootDir>/../common/dist/cjs/constants/index.cjs',
-    '^@selfxyz/common/constants/(.*)$':
-      '<rootDir>/../common/dist/cjs/constants/$1.cjs',
-    '^@selfxyz/common/utils$': '<rootDir>/../common/dist/cjs/utils/index.cjs',
-    '^@selfxyz/common/utils/(.*)$': '<rootDir>/../common/dist/cjs/utils/$1.cjs',
-    '^@selfxyz/common/types$': '<rootDir>/../common/dist/cjs/types/index.cjs',
-    '^@selfxyz/common/types/(.*)$': '<rootDir>/../common/dist/cjs/types/$1.cjs',
-    '^@selfxyz/common$': '<rootDir>/../common/dist/cjs/index.cjs',
     '^@selfxyz/mobile-sdk-alpha$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/index.cjs',
     '^@selfxyz/mobile-sdk-alpha/components$':
