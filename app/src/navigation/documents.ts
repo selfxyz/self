@@ -80,8 +80,8 @@ const documentsScreens = {
     options: IS_EUCLID_ENABLED
       ? ({
           header: HeadlessNavForEuclid,
-          statusBarHidden: CountryPickerScreen.statusBar.hidden,
-          statusBarStyle: CountryPickerScreen.statusBar.style,
+          statusBarHidden: CountryPickerScreen.statusBar?.hidden,
+          statusBarStyle: CountryPickerScreen.statusBar?.style,
           headerShown: true,
         } as NativeStackNavigationOptions)
       : {
