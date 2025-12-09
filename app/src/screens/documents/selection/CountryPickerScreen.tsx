@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import SDKCountryPickerScreen, {
-  statusBar as importedStatusBar,
-} from '@selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen';
+import SDKCountryPickerScreen from '@selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen';
 
 import { useSafeAreaInsets } from '@/hooks/useSafeAreaInsets';
 
 type CountryPickerScreenComponent = React.FC & {
-  statusBar: typeof importedStatusBar;
+  statusBar: typeof SDKCountryPickerScreen.statusBar;
 };
 
 const CountryPickerScreen: CountryPickerScreenComponent = () => {
@@ -17,7 +15,6 @@ const CountryPickerScreen: CountryPickerScreenComponent = () => {
   return <SDKCountryPickerScreen insets={insets} />;
 };
 
-export const statusBar = importedStatusBar;
-CountryPickerScreen.statusBar = importedStatusBar;
+CountryPickerScreen.statusBar = SDKCountryPickerScreen.statusBar;
 
 export default CountryPickerScreen;

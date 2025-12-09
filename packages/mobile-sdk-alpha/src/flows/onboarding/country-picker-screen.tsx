@@ -13,7 +13,9 @@ import { useCountries } from '../../documents/useCountries';
 import { buttonTap } from '../../haptic';
 import { SdkEvents } from '../../types/events';
 
-const CountryPickerScreen: React.FC<SafeArea> = ({ insets }: SafeArea) => {
+const CountryPickerScreen: React.FC<SafeArea> & { statusBar: typeof CountryPickerUI.statusBar } = ({
+  insets,
+}: SafeArea) => {
   const selfClient = useSelfClient();
 
   const [searchValue, setSearchValue] = useState('');
@@ -76,7 +78,5 @@ const CountryPickerScreen: React.FC<SafeArea> = ({ insets }: SafeArea) => {
   );
 };
 CountryPickerScreen.displayName = 'CountryPickerScreen';
-
+CountryPickerScreen.statusBar = CountryPickerUI.statusBar;
 export default CountryPickerScreen;
-
-export const statusBar = CountryPickerUI.statusBar;
