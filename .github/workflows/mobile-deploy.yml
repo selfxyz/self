@@ -31,7 +31,7 @@ name: Mobile Deploy
 env:
   # Build environment versions
   RUBY_VERSION: 3.2
-  NODE_ENV: 'production'
+  NODE_ENV: "production"
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 35
   ANDROID_NDK_VERSION: 27.0.12077973
