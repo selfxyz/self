@@ -8,7 +8,6 @@ env:
   XCODE_VERSION: 16.4
   # Path configuration
   WORKSPACE: ${{ github.workspace }}
-  NODE_ENV: 'production'
   APP_PATH: ${{ github.workspace }}/app
   # Cache versions
   GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
