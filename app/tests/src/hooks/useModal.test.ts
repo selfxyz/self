@@ -7,6 +7,7 @@ import { act, renderHook } from '@testing-library/react-native';
 
 import { useModal } from '@/hooks/useModal';
 import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
+import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
@@ -28,6 +29,9 @@ describe('useModal', () => {
     mockNavigate.mockClear();
     mockGoBack.mockClear();
     mockGetState.mockClear();
+    jest
+      .spyOn(CountryPickerScreen, 'statusBar', 'get')
+      .mockReturnValue({ style: 'dark', hidden: true });
   });
 
   it('should navigate to Modal with callbackId and handle dismissal', () => {

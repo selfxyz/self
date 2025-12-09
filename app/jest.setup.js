@@ -388,33 +388,6 @@ jest.mock(
   { virtual: true },
 );
 
-// Mock @selfxyz/euclid to prevent undefined statusBar errors
-// The mobile-sdk-alpha package imports CountryPickerScreen.statusBar from euclid
-// ShowRecoveryPhraseScreen imports RecoveryPhraseScreen.statusBar from euclid
-jest.mock('@selfxyz/euclid', () => ({
-  __esModule: true,
-  CountryPickerScreen: Object.assign(
-    jest.fn(() => null),
-    {
-      statusBar: {
-        hidden: false,
-        style: 'dark',
-      },
-    },
-  ),
-  RecoveryPhraseScreen: Object.assign(
-    jest.fn(() => null),
-    {
-      statusBar: {
-        hidden: false,
-        style: 'dark',
-      },
-    },
-  ),
-  // Add other commonly used exports if needed
-  HeadlessNavForEuclid: jest.fn(() => null),
-}));
-
 // Mock problematic mobile-sdk-alpha components that use React Native StyleSheet
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   NFCScannerScreen: jest.fn(() => null),
