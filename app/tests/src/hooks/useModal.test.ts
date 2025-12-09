@@ -5,8 +5,8 @@
 import { act, renderHook } from '@testing-library/react-native';
 
 import { useModal } from '@/hooks/useModal';
-import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
+import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 describe('useModal', () => {
   beforeEach(() => {
