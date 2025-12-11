@@ -47,12 +47,22 @@ const fallbackUrl = 'https://apps.self.xyz';
  * Trusted domains that are allowed to load in the WebView.
  * This list is controlled by the app - not by URL parameters that attackers could manipulate.
  *
+ * IMPORTANT: Keep this list in sync with the apps listed on apps.self.xyz.
+ * When a domain is trusted, it opens in the internal WebView; otherwise it opens in external wallet.
+ *
  * TODO: Migrate external URLs (like Figma) to self.xyz subdomains for cleaner security model
  */
 const TRUSTED_DOMAINS = [
-  'self.xyz', // Base domain and all subdomains (*.self.xyz)
-  'amity-lock-11401309.figma.site', // DeGen Tarot game - TODO: migrate to games.self.xyz or similar
-  'aave.com', // Aave protocol - testing internal webview support
+  'aave.com', // Aave protocol - DeFi lending network
+  'amity-lock-11401309.figma.site', // Degen Tarot game
+  'celo.org', // CELO Names - includes names.celo.org
+  'google.com', // Google Cloud - AI agents in the cloud (includes cloud.google.com)
+  'karmahq.xyz', // Karma - Launch & fund projects
+  'lemonade.social', // Lemonade - Events and communities
+  'self.xyz', // Base domain and all subdomains (*.self.xyz) - includes espresso.self.xyz
+  'talent.app', // Talent Protocol - Main app
+  'talentprotocol.com', // Talent Protocol - Marketing/info site
+  'velodrome.finance', // Velodrome - Swap, deposit, take the lead
 ];
 
 /**
@@ -130,8 +140,10 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
   const derivedTitle = pageTitle || title || currentUrl;
 
   const openUrl = useCallback(async (targetUrl: string) => {
-    // Allow only safe external schemes
-    if (!/^(https?|mailto|tel):/i.test(targetUrl)) {
+    // Allow any valid URI scheme (http, https, mailto, tel, wc://, metamask://, etc.)
+    // Linking.canOpenURL will validate if the scheme can actually be opened
+    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/i.test(targetUrl)) {
+      console.warn('Invalid URL scheme:', targetUrl);
       return;
     }
     try {
