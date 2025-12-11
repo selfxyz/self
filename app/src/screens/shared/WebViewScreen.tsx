@@ -93,7 +93,14 @@ const isSameOrigin = (url1: string, url2: string): boolean => {
 };
 
 // Export for testing
-export { TRUSTED_DOMAINS, isSameOrigin, isTrustedDomain };
+export { DISALLOWED_SCHEMES, TRUSTED_DOMAINS, isSameOrigin, isTrustedDomain };
+
+/**
+ * Schemes that are disallowed from being opened externally.
+ * Using a blacklist approach - block specific dangerous schemes, allow everything else.
+ */
+// eslint-disable-next-line no-script-url
+const DISALLOWED_SCHEMES = ['ftp://', 'file://', 'javascript:'];
 
 const styles = StyleSheet.create({
   webViewContainer: {
@@ -140,12 +147,21 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
   const derivedTitle = pageTitle || title || currentUrl;
 
   const openUrl = useCallback(async (targetUrl: string) => {
-    // Allow any valid URI scheme (http, https, mailto, tel, wc://, metamask://, etc.)
-    // Linking.canOpenURL will validate if the scheme can actually be opened
+    // Block disallowed schemes (blacklist approach)
+    // Allow everything else - more practical than maintaining a whitelist
+    const isDisallowed = DISALLOWED_SCHEMES.some(scheme =>
+      targetUrl.toLowerCase().startsWith(scheme.toLowerCase()),
+    );
+    if (isDisallowed) {
+      // Block disallowed schemes - don't attempt to open
+      return;
+    }
+    // Validate URL has a valid scheme pattern
     if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/i.test(targetUrl)) {
       console.warn('Invalid URL scheme:', targetUrl);
       return;
     }
+    // Attempt to open the URL
     try {
       const supported = await Linking.canOpenURL(targetUrl);
       if (supported) {
@@ -193,16 +209,23 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
       const subscription = BackHandler.addEventListener(
         'hardwareBackPress',
         () => {
+          // First try to go back in WebView if possible
           if (canGoBackInWebView) {
             webViewRef.current?.goBack();
             return true;
           }
+          // If WebView can't go back, close the WebView screen (go back in navigation)
+          if (navigation?.canGoBack()) {
+            navigation.goBack();
+            return true;
+          }
+          // Only allow default behavior (close app) if navigation can't go back
           return false;
         },
       );
 
       return () => subscription.remove();
-    }, [canGoBackInWebView]),
+    }, [canGoBackInWebView, navigation]),
   );
 
   return (

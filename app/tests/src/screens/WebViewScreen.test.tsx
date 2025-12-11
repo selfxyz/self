@@ -11,6 +11,7 @@ import {
 } from '@testing-library/react-native';
 
 import {
+  DISALLOWED_SCHEMES,
   isSameOrigin,
   isTrustedDomain,
   TRUSTED_DOMAINS,
@@ -254,6 +255,14 @@ describe('WebViewScreen same-origin security', () => {
     it('includes known partner domains', () => {
       // Figma game site - TODO: migrate to self.xyz subdomain
       expect(TRUSTED_DOMAINS).toContain('amity-lock-11401309.figma.site');
+    });
+  });
+
+  describe('DISALLOWED_SCHEMES blacklist', () => {
+    it('includes dangerous schemes that should be blocked', () => {
+      expect(DISALLOWED_SCHEMES).toContain('ftp://');
+      expect(DISALLOWED_SCHEMES).toContain('file://');
+      expect(DISALLOWED_SCHEMES).toContain('javascript:');
     });
   });
 
