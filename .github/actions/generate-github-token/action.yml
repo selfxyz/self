@@ -1,0 +1,35 @@
+name: "Generate GitHub App Token"
+description: "Generates a GitHub App token for accessing repositories in the selfxyz organization"
+
+inputs:
+  app-id:
+    description: "The GitHub App ID"
+    required: true
+  private-key:
+    description: "The GitHub App private key"
+    required: true
+  owner:
+    description: "The owner (organization) of the repositories"
+    required: false
+    default: "selfxyz"
+  repositories:
+    description: "Comma-separated list of repository names to grant access to"
+    required: false
+    default: "NFCPassportReader,android-passport-nfc-reader,react-native-passport-reader,mobile-sdk-native"
+
+outputs:
+  token:
+    description: "The generated GitHub App installation token"
+    value: ${{ steps.app-token.outputs.token }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Generate GitHub App Token
+      uses: actions/create-github-app-token@v1
+      id: app-token
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
+        owner: ${{ inputs.owner }}
+        repositories: ${{ inputs.repositories }}

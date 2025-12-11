@@ -52,7 +52,11 @@ target "Self" do
       # TODO: Replace with actual public NFCPassportReader repository URL
       nfc_repo_url = "https://github.com/PLACEHOLDER/NFCPassportReader.git"
       puts "📦 Using public NFCPassportReader for external fork (#{ENV["GITHUB_REPOSITORY"]})"
-    elsif ENV["GITHUB_ACTIONS"] == "true" && ENV["SELFXYZ_INTERNAL_REPO_PAT"]
+    elsif ENV["GITHUB_ACTIONS"] == "true" && ENV["SELFXYZ_APP_TOKEN"] && !ENV["SELFXYZ_APP_TOKEN"].empty?
+      # Running in selfxyz GitHub Actions with GitHub App token - use x-access-token format
+      nfc_repo_url = "https://x-access-token:#{ENV["SELFXYZ_APP_TOKEN"]}@github.com/selfxyz/NFCPassportReader.git"
+      puts "📦 Using private NFCPassportReader with GitHub App token (selfxyz GitHub Actions)"
+    elsif ENV["GITHUB_ACTIONS"] == "true" && ENV["SELFXYZ_INTERNAL_REPO_PAT"] && !ENV["SELFXYZ_INTERNAL_REPO_PAT"].empty?
       # Running in selfxyz GitHub Actions with PAT available - use private repo with token
       nfc_repo_url = "https://#{ENV["SELFXYZ_INTERNAL_REPO_PAT"]}@github.com/selfxyz/NFCPassportReader.git"
       puts "📦 Using private NFCPassportReader with PAT (selfxyz GitHub Actions)"

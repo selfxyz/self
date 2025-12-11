@@ -73,6 +73,13 @@ jobs:
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+      - name: Generate token for self repositories
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3
@@ -82,7 +89,7 @@ jobs:
           retry_wait_seconds: 5
           command: yarn install --immutable --silent
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
         uses: nick-fields/retry@v3
@@ -237,6 +244,13 @@ jobs:
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+      - name: Generate token for self repositories
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3
@@ -246,7 +260,7 @@ jobs:
           retry_wait_seconds: 5
           command: yarn install --immutable --silent
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
         uses: nick-fields/retry@v3
@@ -322,15 +336,15 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 10
           command: |
-            if [ -n "${SELFXYZ_INTERNAL_REPO_PAT}" ]; then
-              echo "🔑 Using SELFXYZ_INTERNAL_REPO_PAT for private pod access"
-              echo "::add-mask::${SELFXYZ_INTERNAL_REPO_PAT}"
+            if [ -n "${SELFXYZ_APP_TOKEN}" ]; then
+              echo "🔑 Using GitHub App token for private pod access"
+              echo "::add-mask::${SELFXYZ_APP_TOKEN}"
             fi
             cd packages/mobile-sdk-demo/ios
             echo "📦 Installing pods via cache-fix script…"
             bash scripts/pod-install-with-cache-fix.sh
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           GIT_TERMINAL_PROMPT: 0
       - name: Setup iOS Simulator
         run: |
