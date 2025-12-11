@@ -41,6 +41,67 @@ type WebViewScreenProps = NativeStackScreenProps<
 >;
 
 const defaultUrl = selfUrl;
+const fallbackUrl = 'https://apps.self.xyz';
+
+/**
+ * Trusted domains that are allowed to load in the WebView.
+ * This list is controlled by the app - not by URL parameters that attackers could manipulate.
+ *
+ * TODO: Migrate external URLs (like Figma) to self.xyz subdomains for cleaner security model
+ */
+const TRUSTED_DOMAINS = [
+  'self.xyz', // Base domain and all subdomains (*.self.xyz)
+  'amity-lock-11401309.figma.site', // DeGen Tarot game - TODO: migrate to games.self.xyz or similar
+  'aave.com', // Aave protocol - testing internal webview support
+];
+
+/**
+ * Check if a URL is from a trusted domain.
+ * Matches exact domain or any subdomain of trusted domains.
+ */
+const isTrustedDomain = (url: string): boolean => {
+  try {
+    const hostname = new URL(url).hostname;
+    return TRUSTED_DOMAINS.some(
+      domain => hostname === domain || hostname.endsWith(`.${domain}`),
+    );
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Check if two URLs have the same origin (protocol + host + port)
+ * Used for testing - kept for backward compatibility
+ */
+const isSameOrigin = (url1: string, url2: string): boolean => {
+  try {
+    return new URL(url1).origin === new URL(url2).origin;
+  } catch {
+    return false;
+  }
+};
+
+// Export for testing
+export { TRUSTED_DOMAINS, isSameOrigin, isTrustedDomain };
+
+const styles = StyleSheet.create({
+  webViewContainer: {
+    flex: 1,
+    alignSelf: 'stretch',
+    backgroundColor: white,
+  },
+  webView: {
+    flex: 1,
+    backgroundColor: white,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.5)',
+  },
+});
 
 export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
   const navigation = useNavigation();
@@ -50,10 +111,15 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
   const isHttpUrl = useCallback((value?: string) => {
     return typeof value === 'string' && /^https?:\/\//i.test(value);
   }, []);
-  const initialUrl = useMemo(
-    () => (isHttpUrl(url) ? url : defaultUrl),
-    [isHttpUrl, url],
-  );
+  const initialUrl = useMemo(() => {
+    if (isHttpUrl(url) && isTrustedDomain(url)) {
+      return url;
+    }
+    if (isHttpUrl(defaultUrl) && isTrustedDomain(defaultUrl)) {
+      return defaultUrl;
+    }
+    return fallbackUrl;
+  }, [isHttpUrl, url]);
   const webViewRef = useRef<WebViewType>(null);
   const [canGoBackInWebView, setCanGoBackInWebView] = useState(false);
   const [canGoForwardInWebView, setCanGoForwardInWebView] = useState(false);
@@ -137,7 +203,7 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
       >
         <WebViewNavBar
           title={derivedTitle}
-          onBackPress={handleClose}
+          onBackPress={handleGoBack}
           onOpenExternalPress={handleOpenExternal}
         />
         <View style={styles.webViewContainer}>
@@ -149,13 +215,40 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
           <WebView
             ref={webViewRef}
             onShouldStartLoadWithRequest={req => {
-              // Open non-http(s) externally, block in WebView
+              // Open non-http(s) schemes externally (mailto, tel, etc.)
               if (!/^https?:\/\//i.test(req.url)) {
                 openUrl(req.url);
                 return false;
               }
-              return true;
+
+              // Security: Allow navigation to trusted domains only
+              // This whitelist is controlled by the app, not URL parameters
+              if (isTrustedDomain(req.url)) {
+                return true;
+              }
+
+              // Untrusted navigation: open externally for safety
+              openUrl(req.url);
+              return false;
             }}
+            onOpenWindow={syntheticEvent => {
+              // Handle links that try to open in new window (target="_blank")
+              const { nativeEvent } = syntheticEvent;
+              const targetUrl = nativeEvent.targetUrl;
+
+              if (targetUrl) {
+                // Allow trusted domains to load in the current WebView
+                if (isTrustedDomain(targetUrl)) {
+                  webViewRef.current?.injectJavaScript(
+                    `window.location.href = ${JSON.stringify(targetUrl)};`,
+                  );
+                } else {
+                  // Open untrusted domains externally for security
+                  openUrl(targetUrl);
+                }
+              }
+            }}
+            setSupportMultipleWindows={false}
             source={{ uri: initialUrl }}
             onNavigationStateChange={(event: WebViewNavigation) => {
               setCanGoBackInWebView(event.canGoBack);
@@ -192,21 +285,3 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
     </ExpandableBottomLayout.Layout>
   );
 };
-
-const styles = StyleSheet.create({
-  webViewContainer: {
-    flex: 1,
-    alignSelf: 'stretch',
-    backgroundColor: white,
-  },
-  webView: {
-    flex: 1,
-    backgroundColor: white,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.5)',
-  },
-});

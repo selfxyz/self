@@ -10,7 +10,12 @@ import {
   waitFor,
 } from '@testing-library/react-native';
 
-import { WebViewScreen } from '@/screens/shared/WebViewScreen';
+import {
+  isSameOrigin,
+  isTrustedDomain,
+  TRUSTED_DOMAINS,
+  WebViewScreen,
+} from '@/screens/shared/WebViewScreen';
 
 jest.mock('react-native', () => {
   const mockLinking = {
@@ -151,17 +156,8 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
       navigationType: 'other',
       title: undefined,
     });
-    // Source remains the initial http URL since non-http(s) updates are ignored for currentUrl
-    expect(webview.props.source).toEqual({ uri: 'http://example.com' });
-  });
-
-  it('allows http(s) navigation via onShouldStartLoadWithRequest', () => {
-    render(<WebViewScreen {...createProps('https://example.com')} />);
-    const webview = screen.getByTestId('webview');
-    const allowed = webview.props.onShouldStartLoadWithRequest?.({
-      url: 'https://example.org',
-    });
-    expect(allowed).toBe(true);
+    // Non-trusted URL falls back to https://self.xyz, non-http(s) updates are ignored for currentUrl
+    expect(webview.props.source).toEqual({ uri: 'https://self.xyz' });
   });
 
   it('opens allowed external schemes externally and blocks in WebView (mailto, tel)', async () => {
@@ -215,5 +211,292 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
     const [msg] = (console.error as jest.Mock).mock.calls[0];
     expect(String(msg)).toContain('Failed to open externally');
     expect(String(msg)).not.toMatch(/Failed to open URL externally/);
+  });
+});
+
+describe('WebViewScreen same-origin security', () => {
+  const createProps = (initialUrl?: string, title?: string) => {
+    return {
+      navigation: {
+        goBack: jest.fn(),
+        canGoBack: jest.fn(() => true),
+      } as any,
+      route: {
+        key: 'WebView-1',
+        name: 'WebView',
+        params: initialUrl
+          ? { url: initialUrl, title }
+          : { url: 'https://self.xyz', title },
+      } as any,
+    };
+  };
+
+  beforeEach(() => {
+    (useNavigation as jest.Mock).mockReturnValue({
+      goBack: jest.fn(),
+      canGoBack: () => true,
+    });
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockLinking.canOpenURL.mockReset();
+    mockLinking.openURL.mockReset();
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    (console.error as jest.Mock).mockRestore?.();
+  });
+
+  describe('TRUSTED_DOMAINS whitelist', () => {
+    it('includes self.xyz base domain', () => {
+      expect(TRUSTED_DOMAINS).toContain('self.xyz');
+    });
+
+    it('includes known partner domains', () => {
+      // Figma game site - TODO: migrate to self.xyz subdomain
+      expect(TRUSTED_DOMAINS).toContain('amity-lock-11401309.figma.site');
+    });
+  });
+
+  describe('isTrustedDomain helper function', () => {
+    it('returns true for self.xyz base domain', () => {
+      expect(isTrustedDomain('https://self.xyz')).toBe(true);
+    });
+
+    it('returns true for self.xyz subdomains', () => {
+      expect(isTrustedDomain('https://apps.self.xyz')).toBe(true);
+      expect(isTrustedDomain('https://docs.self.xyz')).toBe(true);
+      expect(isTrustedDomain('https://games.self.xyz/path')).toBe(true);
+    });
+
+    it('returns true for whitelisted partner domains', () => {
+      expect(isTrustedDomain('https://amity-lock-11401309.figma.site')).toBe(
+        true,
+      );
+      expect(
+        isTrustedDomain('https://amity-lock-11401309.figma.site/page'),
+      ).toBe(true);
+    });
+
+    it('returns false for non-whitelisted domains', () => {
+      expect(isTrustedDomain('https://malicious.com')).toBe(false);
+      expect(isTrustedDomain('https://phishing-self.xyz')).toBe(false);
+      expect(isTrustedDomain('https://figma.site')).toBe(false); // Parent domain not allowed
+    });
+
+    it('returns false for malformed URLs', () => {
+      expect(isTrustedDomain('not-a-url')).toBe(false);
+      expect(isTrustedDomain('')).toBe(false);
+    });
+  });
+
+  describe('isSameOrigin helper function', () => {
+    it('returns true for same origin URLs', () => {
+      expect(
+        isSameOrigin('https://apps.self.xyz', 'https://apps.self.xyz/page'),
+      ).toBe(true);
+    });
+
+    it('returns true for same origin with different paths', () => {
+      expect(
+        isSameOrigin(
+          'https://apps.self.xyz/foo',
+          'https://apps.self.xyz/bar/baz',
+        ),
+      ).toBe(true);
+    });
+
+    it('returns true for same origin with query params', () => {
+      expect(
+        isSameOrigin(
+          'https://apps.self.xyz?a=1',
+          'https://apps.self.xyz/page?b=2',
+        ),
+      ).toBe(true);
+    });
+
+    it('returns false for different subdomains', () => {
+      expect(
+        isSameOrigin('https://apps.self.xyz', 'https://docs.self.xyz'),
+      ).toBe(false);
+    });
+
+    it('returns false for different protocols', () => {
+      expect(
+        isSameOrigin('https://apps.self.xyz', 'http://apps.self.xyz'),
+      ).toBe(false);
+    });
+
+    it('returns false for different domains', () => {
+      expect(
+        isSameOrigin('https://apps.self.xyz', 'https://malicious.com'),
+      ).toBe(false);
+    });
+
+    it('returns false for malformed URLs', () => {
+      expect(isSameOrigin('not-a-url', 'https://apps.self.xyz')).toBe(false);
+      expect(isSameOrigin('https://apps.self.xyz', '')).toBe(false);
+    });
+  });
+
+  describe('onShouldStartLoadWithRequest trusted domain policy', () => {
+    it('allows initial URL to load', () => {
+      const initialUrl = 'https://apps.self.xyz';
+      render(<WebViewScreen {...createProps(initialUrl)} />);
+      const webview = screen.getByTestId('webview');
+
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: initialUrl,
+      });
+      expect(result).toBe(true);
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('allows navigation within trusted self.xyz domains', () => {
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Different self.xyz subdomain - allowed because self.xyz is trusted
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://docs.self.xyz/guide',
+      });
+      expect(result).toBe(true);
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('allows navigation to whitelisted partner domains', () => {
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Whitelisted Figma game site
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://amity-lock-11401309.figma.site',
+      });
+      expect(result).toBe(true);
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('opens untrusted domains externally for security', async () => {
+      mockLinking.canOpenURL.mockResolvedValue(true as any);
+      mockLinking.openURL.mockResolvedValue(undefined as any);
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Non-whitelisted domain - should open externally
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://external-site.com',
+      });
+      expect(result).toBe(false);
+      await waitFor(() =>
+        expect(mockLinking.openURL).toHaveBeenCalledWith(
+          'https://external-site.com',
+        ),
+      );
+    });
+
+    it('blocks cross-origin JS redirect attacks to untrusted domains', async () => {
+      mockLinking.canOpenURL.mockResolvedValue(true as any);
+      mockLinking.openURL.mockResolvedValue(undefined as any);
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Simulate a malicious JS redirect (navigationType would be 'other')
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://malicious-phishing.com',
+        navigationType: 'other', // JS redirect, not a click
+      });
+      expect(result).toBe(false);
+      await waitFor(() =>
+        expect(mockLinking.openURL).toHaveBeenCalledWith(
+          'https://malicious-phishing.com',
+        ),
+      );
+    });
+
+    it('opens non-whitelisted domains externally even for same-origin navigation', async () => {
+      // Non-whitelisted URLs are no longer loaded - they fall back to trusted domains
+      // This test verifies the security enhancement
+      mockLinking.canOpenURL.mockResolvedValue(true as any);
+      mockLinking.openURL.mockResolvedValue(undefined as any);
+      render(<WebViewScreen {...createProps('https://example.com')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Initial URL falls back to defaultUrl (https://self.xyz) since example.com is not trusted
+      expect(webview.props.source.uri).toBe('https://self.xyz');
+
+      // Attempt to navigate to non-trusted domain opens externally
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://example.com/other-page',
+      });
+      expect(result).toBe(false);
+      await waitFor(() =>
+        expect(mockLinking.openURL).toHaveBeenCalledWith(
+          'https://example.com/other-page',
+        ),
+      );
+    });
+  });
+
+  describe('onOpenWindow security', () => {
+    it('loads trusted domain target="_blank" links in current WebView', () => {
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'https://docs.self.xyz',
+        },
+      });
+
+      // Trusted domains should NOT open externally - they navigate within the WebView
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('loads trusted partner domain target="_blank" links in current WebView', () => {
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'https://amity-lock-11401309.figma.site',
+        },
+      });
+
+      // Trusted partner domains (like figma game) should NOT open externally
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('opens untrusted target="_blank" links externally for security', async () => {
+      mockLinking.canOpenURL.mockResolvedValue(true as any);
+      mockLinking.openURL.mockResolvedValue(undefined as any);
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'https://external-site.com',
+        },
+      });
+
+      await waitFor(() =>
+        expect(mockLinking.openURL).toHaveBeenCalledWith(
+          'https://external-site.com',
+        ),
+      );
+    });
+
+    it('handles empty targetUrl gracefully', () => {
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      expect(() => {
+        webview.props.onOpenWindow?.({
+          nativeEvent: {
+            targetUrl: undefined,
+          },
+        });
+      }).not.toThrow();
+
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
   });
 });
