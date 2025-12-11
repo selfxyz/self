@@ -62,7 +62,7 @@ export const WebViewFooter: React.FC<WebViewFooterProps> = ({
   );
 
   return (
-    <YStack gap={12} paddingVertical={12} width="100%">
+    <YStack gap={4} paddingVertical={4} width="100%">
       <XStack justifyContent="space-between" alignItems="center" width="100%">
         {renderIconButton(
           'back',

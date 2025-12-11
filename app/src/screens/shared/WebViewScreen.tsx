@@ -279,8 +279,8 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection
         backgroundColor={white}
-        borderTopLeftRadius={30}
-        borderTopRightRadius={30}
+        borderTopLeftRadius={20}
+        borderTopRightRadius={20}
         borderTopWidth={1}
         borderColor={slate200}
         style={{ paddingTop: 0 }}
