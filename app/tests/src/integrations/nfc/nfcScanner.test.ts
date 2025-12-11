@@ -3,19 +3,35 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 // Mock Platform without requiring react-native to avoid memory issues
-// Use a simple object that can be modified directly
+// Use a global variable with getter to allow per-test platform switching
+// This pattern avoids hoisting issues with jest.mock
 import { Buffer } from 'buffer';
 
 import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
 import { PassportReader } from '@/integrations/nfc/passportReader';
 
-const Platform = {
-  OS: 'ios', // Default to iOS
-  Version: 14,
-};
+// Declare global variable for platform OS that can be modified per-test
+declare global {
+  // eslint-disable-next-line no-var
+  var mockPlatformOS: 'ios' | 'android';
+}
 
+// Initialize the global mock platform - default to iOS
+global.mockPlatformOS = 'ios';
+
+// Override the react-native mock from jest.setup.js with a getter-based Platform
+// This allows tests to change Platform.OS dynamically by modifying global.mockPlatformOS
 jest.mock('react-native', () => ({
-  Platform,
+  Platform: {
+    get OS() {
+      return global.mockPlatformOS;
+    },
+    Version: 14,
+    select: jest.fn((obj: Record<string, unknown>) => {
+      const os = global.mockPlatformOS;
+      return obj[os] || obj.default;
+    }),
+  },
 }));
 
 // Ensure the Node Buffer implementation is available to the module under test
@@ -25,7 +41,7 @@ describe('parseScanResponse', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset Platform.OS to default before each test to prevent pollution
-    Platform.OS = 'ios';
+    global.mockPlatformOS = 'ios';
   });
 
   it('parses iOS response', () => {
@@ -93,9 +109,8 @@ describe('parseScanResponse', () => {
   });
 
   it('parses Android response', () => {
-    // Temporarily override Platform.OS for this test
-    const originalOS = Platform.OS;
-    Platform.OS = 'android';
+    // Set Platform.OS to android for this test
+    global.mockPlatformOS = 'android';
 
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
@@ -159,9 +174,6 @@ describe('parseScanResponse', () => {
     // dg2Hash should be parsed from hex string '1234': 12 = 18, 34 = 52
     expect(result.dg2Hash).toEqual([18, 52]);
     expect(result.dgPresents).toEqual([1, 2]);
-
-    // Restore original value
-    Platform.OS = originalOS;
   });
 
   it('handles malformed iOS response', () => {
@@ -172,8 +184,8 @@ describe('parseScanResponse', () => {
   });
 
   it('handles malformed Android response', () => {
-    const originalOS = Platform.OS;
-    Platform.OS = 'android';
+    // Set Platform.OS to android for this test
+    global.mockPlatformOS = 'android';
 
     const response = {
       mrz: 'valid_mrz',
@@ -182,9 +194,6 @@ describe('parseScanResponse', () => {
     };
 
     expect(() => parseScanResponse(response)).toThrow();
-
-    // Restore original value
-    Platform.OS = originalOS;
   });
 
   it('handles missing required fields', () => {
@@ -232,7 +241,7 @@ describe('scan', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset Platform.OS to default before each test to prevent pollution
-    Platform.OS = 'ios';
+    global.mockPlatformOS = 'ios';
     // Reset PassportReader mock before each test
     // The implementation checks for scanPassport property, so we need to ensure it exists
     Object.defineProperty(PassportReader, 'scanPassport', {
