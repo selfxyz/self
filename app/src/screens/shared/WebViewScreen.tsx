@@ -215,7 +215,7 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
       >
         <WebViewNavBar
           title={derivedTitle}
-          onBackPress={handleGoBack}
+          onBackPress={handleClose}
           onOpenExternalPress={handleOpenExternal}
         />
         <View style={styles.webViewContainer}>
