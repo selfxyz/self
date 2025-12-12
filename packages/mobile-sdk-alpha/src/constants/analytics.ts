@@ -79,6 +79,7 @@ export const BackupEvents = {
 };
 
 export const DocumentEvents = {
+  COUNTRY_HELP_TAPPED: 'Document: Country Help Tapped',
   ADD_NEW_AADHAAR_SELECTED: 'Document: Add Aadhaar',
   ADD_NEW_MOCK_SELECTED: 'Document: Add New Document via Mock',
   ADD_NEW_SCAN_SELECTED: 'Document: Add New Document via Scan',
