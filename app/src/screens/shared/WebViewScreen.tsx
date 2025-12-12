@@ -108,9 +108,6 @@ const DISALLOWED_SCHEMES = ['ftp://', 'file://', 'javascript:'];
 const styles = StyleSheet.create({
   webViewContainer: {
     flex: 1,
-    width: '100%',
-    paddingHorizontal: 0,
-    marginHorizontal: 0,
     alignSelf: 'stretch',
     backgroundColor: white,
   },
@@ -248,7 +245,7 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
         alignItems="stretch"
         justifyContent="flex-start"
         padding={0}
-        paddingHorizontal={0}
+        paddingHorizontal={5}
       >
         <WebViewNavBar
           title={derivedTitle}

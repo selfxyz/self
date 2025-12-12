@@ -32,7 +32,7 @@ export const WebViewNavBar: React.FC<WebViewNavBarProps> = ({
     <XStack
       paddingVertical={10}
       paddingTop={insets.top + 10}
-      paddingHorizontal={0}
+      paddingHorizontal={5}
       gap={14}
       alignItems="center"
       backgroundColor="white"
