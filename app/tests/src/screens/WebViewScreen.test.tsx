@@ -262,6 +262,7 @@ describe('WebViewScreen same-origin security', () => {
     it('includes dangerous schemes that should be blocked', () => {
       expect(DISALLOWED_SCHEMES).toContain('ftp://');
       expect(DISALLOWED_SCHEMES).toContain('file://');
+      // eslint-disable-next-line no-script-url
       expect(DISALLOWED_SCHEMES).toContain('javascript:');
     });
   });

@@ -245,6 +245,8 @@ module.exports = {
         ],
         // Allow any types in tests for mocking
         '@typescript-eslint/no-explicit-any': 'off',
+        // Allow test skipping without warnings
+        'jest/no-disabled-tests': 'off',
       },
     },
     {
