@@ -77,29 +77,7 @@ jobs:
         with:
           app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
-      - name: Configure Git auth for CocoaPods (no token in Podfile URLs)
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -n "${SELFXYZ_APP_TOKEN:-}" ]; then
-            echo "::add-mask::${SELFXYZ_APP_TOKEN}"
-            printf "machine github.com\n  login x-access-token\n  password %s\n" "${SELFXYZ_APP_TOKEN}" > "${HOME}/.netrc"
-            chmod 600 "${HOME}/.netrc"
-          fi
-        env:
-          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
-      - name: Configure Git auth for CocoaPods (no token in Podfile URLs)
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -n "${SELFXYZ_APP_TOKEN:-}" ]; then
-            echo "::add-mask::${SELFXYZ_APP_TOKEN}"
-            printf "machine github.com\n  login x-access-token\n  password %s\n" "${SELFXYZ_APP_TOKEN}" > "${HOME}/.netrc"
-            chmod 600 "${HOME}/.netrc"
-          fi
-        env:
-          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
+          configure-netrc: "true"
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3
@@ -302,6 +280,7 @@ jobs:
         with:
           app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3

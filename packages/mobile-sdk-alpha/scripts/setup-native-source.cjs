@@ -92,12 +92,14 @@ function setupSubmodule() {
 
   if (isCI && appToken) {
     // CI environment with GitHub App installation token
-    log('CI detected: Using SELFXYZ_APP_TOKEN for submodule', 'info');
-    submoduleUrl = `https://x-access-token:${appToken}@github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
+    // Security: NEVER embed credentials in git URLs. Rely on CI-provided auth via:
+    // - ~/.netrc, a Git credential helper, or SSH agent configuration.
+    submoduleUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
   } else if (isCI && repoToken) {
     // CI environment with Personal Access Token
-    log('CI detected: Using SELFXYZ_INTERNAL_REPO_PAT for submodule', 'info');
-    submoduleUrl = `https://${repoToken}@github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
+    // Security: NEVER embed credentials in git URLs. Rely on CI-provided auth via:
+    // - ~/.netrc, a Git credential helper, or SSH agent configuration.
+    submoduleUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
   } else if (isCI) {
     log('CI environment detected but no token available - skipping private module setup', 'info');
     log('This is expected for forked PRs or environments without access to private modules', 'info');
@@ -106,7 +108,6 @@ function setupSubmodule() {
     submoduleUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
   } else {
     // Local development with SSH
-    log('Local development: Using SSH for submodule', 'info');
     submoduleUrl = `git@github.com:${GITHUB_ORG}/${REPO_NAME}.git`;
   }
 
@@ -130,10 +131,7 @@ function setupSubmodule() {
     return true; // Return true to indicate successful setup
   } catch (error) {
     if (isCI) {
-      log(
-        'Submodule setup failed in CI environment. Check SELFXYZ_APP_TOKEN or SELFXYZ_INTERNAL_REPO_PAT permissions.',
-        'error',
-      );
+      log('Submodule setup failed in CI environment. Check repository access/credentials configuration.', 'error');
     } else {
       log('Submodule setup failed. Ensure you have SSH access to the repository.', 'error');
     }

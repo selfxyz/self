@@ -29,7 +29,7 @@ const PRIVATE_MODULES = [
 
 // Environment detection
 // CI is set by GitHub Actions, CircleCI, etc. Check for truthy value
-const isCI = !!process.env.CI || process.env.GITHUB_ACTIONS === 'true';
+const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 const repoToken = process.env.SELFXYZ_INTERNAL_REPO_PAT;
 const appToken = process.env.SELFXYZ_APP_TOKEN; // GitHub App installation token
 const isDryRun = process.env.DRY_RUN === 'true';

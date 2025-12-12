@@ -322,24 +322,7 @@ jobs:
         with:
           app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
-      - name: Configure Git auth for CocoaPods (no token in Podfile URLs)
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Mask secrets
-          if [ -n "${SELFXYZ_APP_TOKEN:-}" ]; then
-            echo "::add-mask::${SELFXYZ_APP_TOKEN}"
-          fi
-
-          # Provide credentials to git without embedding them in URLs.
-          # CocoaPods uses `git` under the hood for :git pods.
-          if [ -n "${SELFXYZ_APP_TOKEN:-}" ]; then
-            printf "machine github.com\n  login x-access-token\n  password %s\n" "${SELFXYZ_APP_TOKEN}" > "${HOME}/.netrc"
-            chmod 600 "${HOME}/.netrc"
-          fi
-        env:
-          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
+          configure-netrc: "true"
       - name: Install iOS Dependencies
         uses: nick-fields/retry@v3
         with:

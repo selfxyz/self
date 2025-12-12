@@ -437,6 +437,7 @@ jobs:
         with:
           app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
 
       - name: Install Mobile Dependencies (main repo)
         if: inputs.platform != 'android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
