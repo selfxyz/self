@@ -705,15 +705,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             _performUserIdentifierCheck(userContextData, vcAndDiscloseProof, header.attestationId, indices);
         }
 
-        // Scope 2: Root and date checks
+        // Scope 2: Root, OFAC, and current date checks
         {
             _performRootCheck(header.attestationId, vcAndDiscloseProof, indices);
             _performOfacCheck(header.attestationId, vcAndDiscloseProof, indices);
-            if (header.attestationId == AttestationId.AADHAAR) {
-                _performNumericCurrentDateCheck(vcAndDiscloseProof, indices);
-            } else {
-                _performCurrentDateCheck(vcAndDiscloseProof, indices);
-            }
+            _performCurrentDateCheck(header.attestationId, vcAndDiscloseProof, indices);
         }
 
         // Scope 3: Groth16 proof verification
@@ -1009,41 +1005,56 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
-     * @notice Performs current date validation
+     * @notice Performs current date validation with format-aware parsing
+     * @dev Handles three date formats:
+     * - E_PASSPORT/EU_ID_CARD: 6 ASCII chars (YYMMDD)
+     * - SELFRICA_ID_CARD: 8 ASCII digits (YYYYMMDD)
+     * - AADHAAR: 3 numeric signals (year, month, day)
+     * @param attestationId The attestation type to determine date format
+     * @param vcAndDiscloseProof The proof containing date information
+     * @param indices Circuit-specific indices for extracting date values
      */
     function _performCurrentDateCheck(
+        bytes32 attestationId,
         GenericProofStruct memory vcAndDiscloseProof,
         CircuitConstantsV2.DiscloseIndices memory indices
     ) internal view {
-        uint256[6] memory dateNum;
-        for (uint256 i = 0; i < 6; i++) {
-            dateNum[i] = vcAndDiscloseProof.pubSignals[indices.currentDateIndex + i];
+        uint256 currentTimestamp;
+        uint256 startIndex = indices.currentDateIndex;
+
+        if (attestationId == AttestationId.E_PASSPORT || attestationId == AttestationId.EU_ID_CARD) {
+            // E_PASSPORT, EU_ID_CARD: 6 ASCII chars (YYMMDD)
+            uint256[6] memory dateNum;
+            unchecked {
+                for (uint256 i; i < 6; ++i) {
+                    dateNum[i] = vcAndDiscloseProof.pubSignals[startIndex + i];
+                }
+            }
+            currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
+        } else {
+            // AADHAAR: 3 numeric signals [year, month, day]
+            currentTimestamp = Formatter.proofDateToUnixTimestampNumeric(
+                [
+                    vcAndDiscloseProof.pubSignals[startIndex],
+                    vcAndDiscloseProof.pubSignals[startIndex + 1],
+                    vcAndDiscloseProof.pubSignals[startIndex + 2]
+                ]
+            );
         }
 
-        uint256 currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
-        uint256 startOfDay = _getStartOfDayTimestamp();
-        uint256 endOfDay = startOfDay + 1 days - 1;
-
-        if (currentTimestamp < startOfDay - 1 days + 1 || currentTimestamp > endOfDay + 1 days) {
-            revert CurrentDateNotInValidRange();
-        }
+        _validateDateInRange(currentTimestamp);
     }
 
-    function _performNumericCurrentDateCheck(
-        GenericProofStruct memory vcAndDiscloseProof,
-        CircuitConstantsV2.DiscloseIndices memory indices
-    ) internal view {
-        // date is going to be 2025, 12, 13
-        uint256[3] memory dateNum;
-        dateNum[0] = vcAndDiscloseProof.pubSignals[indices.currentDateIndex];
-        dateNum[1] = vcAndDiscloseProof.pubSignals[indices.currentDateIndex + 1];
-        dateNum[2] = vcAndDiscloseProof.pubSignals[indices.currentDateIndex + 2];
+    /**
+     * @notice Validates that a timestamp is within the acceptable range
+     * @param currentTimestamp The timestamp to validate
+     */
+    function _validateDateInRange(uint256 currentTimestamp) internal view {
+        // Calculate the timestamp for the start of current date by subtracting the remainder of block.timestamp modulo 1 day
+        uint256 startOfDay = block.timestamp - (block.timestamp % 1 days);
 
-        uint256 currentTimestamp = Formatter.proofDateToUnixTimestampNumeric(dateNum);
-        uint256 startOfDay = _getStartOfDayTimestamp();
-        uint256 endOfDay = startOfDay + 1 days - 1;
-
-        if (currentTimestamp < startOfDay - 1 days + 1 || currentTimestamp > endOfDay + 1 days) {
+        // Check if timestamp is within range
+        if (currentTimestamp < startOfDay - 1 days + 1 || currentTimestamp > startOfDay + 1 days - 1) {
             revert CurrentDateNotInValidRange();
         }
     }

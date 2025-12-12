@@ -46,12 +46,15 @@ target "SelfDemoApp" do
   nfc_repo_url = if !is_selfxyz_repo
       puts "📦 Using public NFCPassportReader for external fork (#{ENV["GITHUB_REPOSITORY"]})"
       "https://github.com/PLACEHOLDER/NFCPassportReader.git"
-    elsif ENV["GITHUB_ACTIONS"] == "true" && ENV["SELFXYZ_INTERNAL_REPO_PAT"] && !ENV["SELFXYZ_INTERNAL_REPO_PAT"].empty?
-      puts "📦 Using private NFCPassportReader with PAT (selfxyz GitHub Actions)"
-      "https://#{ENV["SELFXYZ_INTERNAL_REPO_PAT"]}@github.com/selfxyz/NFCPassportReader.git"
+    elsif ENV["GITHUB_ACTIONS"] == "true"
+      # CI: NEVER embed credentials in URLs. Rely on workflow-provided auth via:
+      # - ~/.netrc or a Git credential helper, and token masking in logs.
+      "https://github.com/selfxyz/NFCPassportReader.git"
     elsif using_https_git_auth?
+      # Local development with HTTPS GitHub auth via gh - use HTTPS to private repo
       "https://github.com/selfxyz/NFCPassportReader.git"
     else
+      # Local development in selfxyz repo - use SSH to private repo
       puts "📦 Using SSH for private NFCPassportReader (local selfxyz development)"
       "git@github.com:selfxyz/NFCPassportReader.git"
     end

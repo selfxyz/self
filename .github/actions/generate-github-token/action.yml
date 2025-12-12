@@ -1,0 +1,56 @@
+name: "Generate GitHub App Token"
+description: "Generates a GitHub App token for accessing repositories in the selfxyz organization"
+
+inputs:
+  app-id:
+    description: "The GitHub App ID"
+    required: true
+  private-key:
+    description: "The GitHub App private key"
+    required: true
+  configure-netrc:
+    description: "If true, writes a ~/.netrc entry for github.com using the generated token (useful for CocoaPods / git HTTPS fetches)"
+    required: false
+    default: "false"
+  netrc-machine:
+    description: "The machine hostname to write into ~/.netrc (default: github.com)"
+    required: false
+    default: "github.com"
+  owner:
+    description: "The owner (organization) of the repositories"
+    required: false
+    default: "selfxyz"
+  repositories:
+    description: "Comma-separated list of repository names to grant access to"
+    required: false
+    default: "NFCPassportReader,android-passport-nfc-reader,react-native-passport-reader,mobile-sdk-native"
+
+outputs:
+  token:
+    description: "The generated GitHub App installation token"
+    value: ${{ steps.app-token.outputs.token }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Generate GitHub App Token
+      uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2
+      id: app-token
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
+        owner: ${{ inputs.owner }}
+        repositories: ${{ inputs.repositories }}
+    - name: Configure Git auth via ~/.netrc (optional)
+      if: ${{ inputs.configure-netrc == 'true' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        TOKEN="${{ steps.app-token.outputs.token }}"
+        MACHINE="${{ inputs.netrc-machine }}"
+
+        # Mask the token in logs defensively (it shouldn't print, but this protects against future edits).
+        echo "::add-mask::${TOKEN}"
+
+        printf "machine %s\n  login x-access-token\n  password %s\n" "${MACHINE}" "${TOKEN}" > "${HOME}/.netrc"
+        chmod 600 "${HOME}/.netrc"

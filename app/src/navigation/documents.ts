@@ -77,16 +77,12 @@ const documentsScreens = {
   },
   CountryPicker: {
     screen: CountryPickerScreen,
-    options: IS_EUCLID_ENABLED
-      ? ({
-          header: HeadlessNavForEuclid,
-          statusBarHidden: CountryPickerScreen.statusBar?.hidden,
-          statusBarStyle: CountryPickerScreen.statusBar?.style,
-          headerShown: true,
-        } as NativeStackNavigationOptions)
-      : {
-          headerShown: false,
-        },
+    options: {
+      header: HeadlessNavForEuclid,
+      statusBarHidden: CountryPickerScreen.statusBar?.hidden,
+      statusBarStyle: CountryPickerScreen.statusBar?.style,
+      headerShown: true,
+    } as NativeStackNavigationOptions,
   },
   IDPicker: {
     screen: IDPickerScreen,

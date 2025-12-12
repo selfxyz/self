@@ -29,6 +29,7 @@ import {
   readContractVersion,
   getContractFilePath,
   addVersion,
+  updateVersionGitCommit,
   getExplorerUrl,
   shortenAddress,
   createGitTag,
@@ -628,7 +629,16 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
       const committed = gitCommit(commitMessage);
       if (committed) {
         const newGitCommit = getGitCommitShort();
-        log.success(`Committed: ${newGitCommit}`);
+
+        // Update registry with the actual commit hash and amend the commit
+        try {
+          updateVersionGitCommit(contractId, network, newVersion, newGitCommit);
+          execSync("git add -A && git commit --amend --no-edit", { cwd: process.cwd(), stdio: "pipe" });
+          log.success(`Committed: ${newGitCommit} (with gitCommit in registry)`);
+        } catch (e: any) {
+          log.warning(`Could not update gitCommit in registry: ${e.message}`);
+          log.success(`Committed: ${newGitCommit}`);
+        }
 
         const tagName = `${contractId.toLowerCase()}-v${newVersion}`;
         try {
@@ -647,6 +657,17 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
         }
       } else {
         log.warning("Could not create git commit - please commit manually");
+      }
+    } else {
+      // If skipping commit, record current HEAD as reference
+      const currentCommit = getGitCommitShort();
+      if (currentCommit !== "unknown") {
+        try {
+          updateVersionGitCommit(contractId, network, newVersion, currentCommit);
+          log.info(`Recorded current commit reference: ${currentCommit}`);
+        } catch {
+          // Non-critical, ignore
+        }
       }
     }
 

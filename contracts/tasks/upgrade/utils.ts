@@ -247,6 +247,25 @@ export function addVersion(
 }
 
 /**
+ * Update gitCommit for a specific version deployment
+ */
+export function updateVersionGitCommit(
+  contractId: string,
+  network: SupportedNetwork,
+  version: string,
+  gitCommit: string,
+): void {
+  const registry = readRegistry();
+
+  if (!registry.versions[contractId]?.[version]?.deployments?.[network]) {
+    throw new Error(`Deployment not found: ${contractId} v${version} on ${network}`);
+  }
+
+  registry.versions[contractId][version].deployments[network].gitCommit = gitCommit;
+  writeRegistry(registry);
+}
+
+/**
  * Update proxy address for a contract on a network
  */
 export function setProxyAddress(contractId: string, network: SupportedNetwork, proxyAddress: string): void {

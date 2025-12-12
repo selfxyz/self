@@ -29,8 +29,9 @@ const PRIVATE_MODULES = [
 
 // Environment detection
 // CI is set by GitHub Actions, CircleCI, etc. Check for truthy value
-const isCI = !!process.env.CI || process.env.GITHUB_ACTIONS === 'true';
+const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 const repoToken = process.env.SELFXYZ_INTERNAL_REPO_PAT;
+const appToken = process.env.SELFXYZ_APP_TOKEN; // GitHub App installation token
 const isDryRun = process.env.DRY_RUN === 'true';
 
 // Platform detection for Android-specific modules
@@ -150,13 +151,17 @@ function clonePrivateRepo(repoName, localPath) {
 
   let cloneUrl;
 
-  if (isCI && repoToken) {
+  if (isCI && appToken) {
+    // CI environment with GitHub App installation token
+    log('CI detected: Using SELFXYZ_APP_TOKEN for clone', 'info');
+    cloneUrl = `https://x-access-token:${appToken}@github.com/${GITHUB_ORG}/${repoName}.git`;
+  } else if (isCI && repoToken) {
     // CI environment with Personal Access Token
     log('CI detected: Using SELFXYZ_INTERNAL_REPO_PAT for clone', 'info');
     cloneUrl = `https://${repoToken}@github.com/${GITHUB_ORG}/${repoName}.git`;
   } else if (isCI) {
     log(
-      'CI environment detected but SELFXYZ_INTERNAL_REPO_PAT not available - skipping private module setup',
+      'CI environment detected but no token available - skipping private module setup',
       'info',
     );
     log(
@@ -173,7 +178,7 @@ function clonePrivateRepo(repoName, localPath) {
   }
 
   // Security: Use quiet mode for credentialed URLs to prevent token exposure
-  const isCredentialedUrl = isCI && repoToken;
+  const isCredentialedUrl = isCI && (appToken || repoToken);
   const quietFlag = isCredentialedUrl ? '--quiet' : '';
   const targetDir = path.basename(localPath);
   const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" "${targetDir}"`;
@@ -190,7 +195,7 @@ function clonePrivateRepo(repoName, localPath) {
   } catch (error) {
     if (isCI) {
       log(
-        'Clone failed in CI environment. Check SELFXYZ_INTERNAL_REPO_PAT permissions.',
+        'Clone failed in CI environment. Check SELFXYZ_APP_TOKEN or SELFXYZ_INTERNAL_REPO_PAT permissions.',
         'error',
       );
     } else {
@@ -231,7 +236,7 @@ function setupPrivateModule(module) {
   }
 
   // Security: Remove credential-embedded remote URL after clone
-  if (isCI && repoToken && !isDryRun) {
+  if (isCI && (appToken || repoToken) && !isDryRun) {
     scrubGitRemoteUrl(localPath, repoName);
   }
 
@@ -274,6 +279,11 @@ function setupAndroidPassportReader() {
     log(
       `Setup complete: ${successCount}/${PRIVATE_MODULES.length} modules cloned`,
       'warning',
+    );
+  } else {
+    log(
+      'No private modules were cloned - this is expected for forked PRs',
+      'info',
     );
   }
 }

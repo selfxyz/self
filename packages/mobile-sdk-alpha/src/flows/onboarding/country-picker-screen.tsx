@@ -8,6 +8,7 @@ import { commonNames } from '@selfxyz/common/constants/countries';
 import { CountryPickerScreen as CountryPickerUI, type SafeArea } from '@selfxyz/euclid';
 
 import { RoundFlag } from '../../components';
+import { DocumentEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';
 import { useCountries } from '../../documents/useCountries';
 import { buttonTap } from '../../haptic';
@@ -59,7 +60,6 @@ const CountryPickerScreen: React.FC<SafeArea> & { statusBar: typeof CountryPicke
   const onSearchChange = useCallback((value: string) => {
     setSearchValue(value);
   }, []);
-
   return (
     <CountryPickerUI
       insets={insets}
@@ -72,7 +72,7 @@ const CountryPickerScreen: React.FC<SafeArea> & { statusBar: typeof CountryPicke
       getCountryName={getCountryName}
       searchValue={searchValue}
       onClose={selfClient.goBack}
-      onInfoPress={() => console.log('Info pressed TODO: Implement')}
+      onInfoPress={() => selfClient.trackEvent(DocumentEvents.COUNTRY_HELP_TAPPED)}
       onSearchChange={onSearchChange}
     />
   );

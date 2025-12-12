@@ -58,6 +58,14 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
+      - name: Generate token for self repositories
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
@@ -66,7 +74,7 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Build dependencies
         shell: bash
         run: yarn workspace @selfxyz/common build
@@ -114,6 +122,14 @@ jobs:
         with:
           path: app/ios/Pods
           lockfile: app/ios/Podfile.lock
+      - name: Generate token for self repositories
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
@@ -122,7 +138,7 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Build dependencies
         shell: bash
         run: yarn workspace @selfxyz/common build
