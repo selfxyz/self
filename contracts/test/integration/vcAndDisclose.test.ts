@@ -760,7 +760,18 @@ describe("VC and Disclose", () => {
     it("should return maximum length of forbidden countries", async () => {
       const { hub } = deployedActors;
 
-      const localForbiddenCountriesList = ["AAA", "FRA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA"] as const;
+      const localForbiddenCountriesList = [
+        "AAA",
+        "FRA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+      ] as const;
       const forbiddenCountriesListPacked = getPackedForbiddenCountries([...localForbiddenCountriesList]);
       const readableForbiddenCountries = await hub.getReadableForbiddenCountries(forbiddenCountriesListPacked);
       expect(readableForbiddenCountries.length).to.equal(40);
@@ -778,7 +789,18 @@ describe("VC and Disclose", () => {
 
     it("should fail when getReadableForbiddenCountries is called by non-proxy", async () => {
       const { hubImpl } = deployedActors;
-      const localForbiddenCountriesList = ["AAA", "FRA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA"] as const;
+      const localForbiddenCountriesList = [
+        "AAA",
+        "FRA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+      ] as const;
       const forbiddenCountriesListPacked = getPackedForbiddenCountries([...localForbiddenCountriesList]);
       await expect(hubImpl.getReadableForbiddenCountries(forbiddenCountriesListPacked)).to.be.revertedWithCustomError(
         hubImpl,

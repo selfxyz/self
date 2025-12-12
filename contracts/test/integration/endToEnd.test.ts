@@ -76,7 +76,11 @@ describe("End to End Tests", function () {
       if (BigInt(dscKeys[0][i]) == dscProof.pubSignals[CIRCUIT_CONSTANTS.DSC_TREE_LEAF_INDEX]) {
         const previousRoot = await registry.getDscKeyCommitmentMerkleRoot();
         const previousSize = await registry.getDscKeyCommitmentTreeSize();
-        registerDscTx = await hub.registerDscKeyCommitment(attestationIdBytes32, DscVerifierId.dsc_sha256_rsa_65537_4096, dscProof);
+        registerDscTx = await hub.registerDscKeyCommitment(
+          attestationIdBytes32,
+          DscVerifierId.dsc_sha256_rsa_65537_4096,
+          dscProof,
+        );
         const receipt = (await registerDscTx.wait()) as TransactionReceipt;
         const event = receipt?.logs.find(
           (log) => log.topics[0] === registry.interface.getEvent("DscKeyCommitmentRegistered").topicHash,
@@ -231,11 +235,16 @@ describe("End to End Tests", function () {
     // Verify attestationId matches both the expected bytes32 and the proof pubSignals
     expect(lastOutput.attestationId).to.equal(attestationIdBytes32);
     expect(lastOutput.attestationId).to.equal(
-      ethers.zeroPadValue(ethers.toBeHex(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]), 32),
+      ethers.zeroPadValue(
+        ethers.toBeHex(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]),
+        32,
+      ),
     );
 
     // Verify nullifier matches the proof pubSignals
-    expect(lastOutput.nullifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX]);
+    expect(lastOutput.nullifier).to.equal(
+      vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX],
+    );
 
     // Verify userIdentifier is set
     expect(lastOutput.userIdentifier).to.not.equal(0n);
@@ -248,11 +257,7 @@ describe("End to End Tests", function () {
     await token.waitForDeployment();
 
     const airdropFactory = await ethers.getContractFactory("Airdrop");
-    const airdrop = await airdropFactory.connect(owner).deploy(
-      hub.target,
-      "test-scope",
-      token.target,
-    );
+    const airdrop = await airdropFactory.connect(owner).deploy(hub.target, "test-scope", token.target);
     await airdrop.waitForDeployment();
 
     // Set up verification config for the airdrop

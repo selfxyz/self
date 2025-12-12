@@ -246,7 +246,6 @@ export function addVersion(
   writeRegistry(registry);
 }
 
-
 /**
  * Update gitCommit for a specific version deployment
  */

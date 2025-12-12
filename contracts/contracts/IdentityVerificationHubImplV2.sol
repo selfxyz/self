@@ -1033,11 +1033,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
         } else {
             // AADHAAR: 3 numeric signals [year, month, day]
-            currentTimestamp = Formatter.proofDateToUnixTimestampNumeric([
-                vcAndDiscloseProof.pubSignals[startIndex],
-                vcAndDiscloseProof.pubSignals[startIndex + 1],
-                vcAndDiscloseProof.pubSignals[startIndex + 2]
-            ]);
+            currentTimestamp = Formatter.proofDateToUnixTimestampNumeric(
+                [
+                    vcAndDiscloseProof.pubSignals[startIndex],
+                    vcAndDiscloseProof.pubSignals[startIndex + 1],
+                    vcAndDiscloseProof.pubSignals[startIndex + 2]
+                ]
+            );
         }
 
         _validateDateInRange(currentTimestamp);
