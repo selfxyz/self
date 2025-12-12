@@ -46,15 +46,12 @@
 		<string>argent</string>
 		<string>cbwallet</string>
 		<string>coinbase</string>
-		<string>imtoken</string>
 		<string>metamask</string>
-		<string>phantom</string>
 		<string>rainbow</string>
 		<string>sms</string>
 		<string>trust</string>
 		<string>wc</string>
 		<string>whatsapp</string>
-		<string>zerion</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
