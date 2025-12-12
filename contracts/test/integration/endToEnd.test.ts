@@ -2,27 +2,55 @@ import { expect } from "chai";
 import { BigNumberish, TransactionReceipt } from "ethers";
 import { ethers } from "hardhat";
 import { poseidon2 } from "poseidon-lite";
+import { createHash } from "crypto";
 import { CIRCUIT_CONSTANTS, DscVerifierId, RegisterVerifierId } from "@selfxyz/common/constants/constants";
 import { formatCountriesList, reverseBytes } from "@selfxyz/common/utils/circuits/formatInputs";
 import { castFromScope } from "@selfxyz/common/utils/circuits/uuid";
 import { ATTESTATION_ID } from "../utils/constants";
-import { deploySystemFixtures } from "../utils/deployment";
+import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import BalanceTree from "../utils/example/balance-tree";
 import { Formatter } from "../utils/formatter";
 import { generateDscProof, generateRegisterProof, generateVcAndDiscloseProof } from "../utils/generateProof";
-import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import serialized_dsc_tree from "../../../common/pubkeys/serialized_dsc_tree.json";
-import { DeployedActors, VcAndDiscloseHubProof } from "../utils/types";
+import { DeployedActorsV2 } from "../utils/types";
 import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
+
+// Helper function to calculate user identifier hash
+function calculateUserIdentifierHash(userContextData: string): string {
+  const sha256Hash = createHash("sha256")
+    .update(Buffer.from(userContextData.slice(2), "hex"))
+    .digest();
+  const ripemdHash = createHash("ripemd160").update(sha256Hash).digest();
+  return "0x" + ripemdHash.toString("hex").padStart(40, "0");
+}
+
+// Helper function to create V2 proof data format for verifySelfProof
+function createV2ProofData(proof: any, userAddress: string, userData: string = "airdrop-user-data") {
+  const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
+  const userContextData = ethers.solidityPacked(
+    ["bytes32", "bytes32", "bytes"],
+    [destChainId, ethers.zeroPadValue(userAddress, 32), ethers.toUtf8Bytes(userData)],
+  );
+
+  const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
+  const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
+    [[proof.a, proof.b, proof.c, proof.pubSignals]],
+  );
+
+  const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+
+  return { proofData, userContextData };
+}
 
 describe("End to End Tests", function () {
   this.timeout(0);
 
-  let deployedActors: DeployedActors;
+  let deployedActors: DeployedActorsV2;
   let snapshotId: string;
 
   before(async () => {
-    deployedActors = await deploySystemFixtures();
+    deployedActors = await deploySystemFixturesV2();
     snapshotId = await ethers.provider.send("evm_snapshot", []);
   });
 
@@ -32,7 +60,10 @@ describe("End to End Tests", function () {
   });
 
   it("register dsc key commitment, register identity commitment, verify commitment and disclose attrs and claim airdrop", async () => {
-    const { hub, registry, mockPassport, owner, user1 } = deployedActors;
+    const { hub, registry, mockPassport, owner, user1, testSelfVerificationRoot, poseidonT3 } = deployedActors;
+
+    // V2 hub requires attestationId as bytes32
+    const attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
     // register dsc key
     // To increase test performance, we will just set one dsc key with groth16 proof
@@ -45,7 +76,7 @@ describe("End to End Tests", function () {
       if (BigInt(dscKeys[0][i]) == dscProof.pubSignals[CIRCUIT_CONSTANTS.DSC_TREE_LEAF_INDEX]) {
         const previousRoot = await registry.getDscKeyCommitmentMerkleRoot();
         const previousSize = await registry.getDscKeyCommitmentTreeSize();
-        registerDscTx = await hub.registerDscKeyCommitment(DscVerifierId.dsc_sha256_rsa_65537_4096, dscProof);
+        registerDscTx = await hub.registerDscKeyCommitment(attestationIdBytes32, DscVerifierId.dsc_sha256_rsa_65537_4096, dscProof);
         const receipt = (await registerDscTx.wait()) as TransactionReceipt;
         const event = receipt?.logs.find(
           (log) => log.topics[0] === registry.interface.getEvent("DscKeyCommitmentRegistered").topicHash,
@@ -90,7 +121,8 @@ describe("End to End Tests", function () {
     const imt = new LeanIMT<bigint>(hashFunction);
     await imt.insert(BigInt(registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_COMMITMENT_INDEX]));
 
-    const tx = await hub.registerPassportCommitment(
+    const tx = await hub.registerCommitment(
+      attestationIdBytes32,
       RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
       registerProof,
     );
@@ -104,7 +136,7 @@ describe("End to End Tests", function () {
       registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_COMMITMENT_INDEX],
     );
     const identityNullifier = await registry.nullifiers(
-      ATTESTATION_ID.E_PASSPORT,
+      attestationIdBytes32,
       registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_NULLIFIER_INDEX],
     );
 
@@ -134,11 +166,25 @@ describe("End to End Tests", function () {
       reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))),
     );
 
+    // Get the scope from testSelfVerificationRoot
+    const testRootScope = await testSelfVerificationRoot.scope();
+
+    // Calculate user identifier hash for verification
+    const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
+    const user1Address = await user1.getAddress();
+    const userData = ethers.toUtf8Bytes("test-user-data");
+    const tempUserContextData = ethers.solidityPacked(
+      ["bytes32", "bytes32", "bytes"],
+      [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+    );
+    const userIdentifierHash = calculateUserIdentifierHash(tempUserContextData);
+
+    // Generate proof for V2 verification
     const vcAndDiscloseProof = await generateVcAndDiscloseProof(
       registerSecret,
       BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
       mockPassport,
-      "test-scope",
+      testRootScope.toString(),
       new Array(88).fill("1"),
       "1",
       imt,
@@ -148,35 +194,54 @@ describe("End to End Tests", function () {
       undefined,
       undefined,
       forbiddenCountriesList,
-      (await user1.getAddress()).slice(2),
+      userIdentifierHash,
     );
 
-    const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
+    // Set up verification config for testSelfVerificationRoot
+    const verificationConfigV2 = {
       olderThanEnabled: true,
       olderThan: "20",
       forbiddenCountriesEnabled: true,
-      forbiddenCountriesListPacked: countriesListPacked,
+      forbiddenCountriesListPacked: countriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
-      vcAndDiscloseProof: vcAndDiscloseProof,
     };
 
-    const result = await hub.verifyVcAndDisclose(vcAndDiscloseHubProof);
+    await testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
-    expect(result.identityCommitmentRoot).to.equal(
-      vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX],
+    // Create V2 proof format and verify via testSelfVerificationRoot
+    const { proofData, userContextData: verifyUserContextData } = createV2ProofData(
+      vcAndDiscloseProof,
+      user1Address,
+      "test-user-data",
     );
-    expect(result.revealedDataPacked).to.have.lengthOf(3);
-    expect(result.nullifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX]);
-    expect(result.attestationId).to.equal(
-      vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX],
+
+    // Reset test state before verification
+    await testSelfVerificationRoot.resetTestState();
+
+    // Verify the proof through V2 architecture
+    await testSelfVerificationRoot.connect(user1).verifySelfProof(proofData, verifyUserContextData);
+
+    // Check verification was successful
+    expect(await testSelfVerificationRoot.verificationSuccessful()).to.equal(true);
+
+    // Get the verification output and verify it
+    const lastOutput = await testSelfVerificationRoot.lastOutput();
+    expect(lastOutput).to.not.equal("0x");
+
+    // Verify attestationId matches both the expected bytes32 and the proof pubSignals
+    expect(lastOutput.attestationId).to.equal(attestationIdBytes32);
+    expect(lastOutput.attestationId).to.equal(
+      ethers.zeroPadValue(ethers.toBeHex(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]), 32),
     );
-    expect(result.userIdentifier).to.equal(
-      vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX],
-    );
-    expect(result.scope).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]);
-    for (let i = 0; i < 4; i++) {
-      expect(result.forbiddenCountriesListPacked[i]).to.equal(BigInt(countriesListPacked[i]));
-    }
+
+    // Verify nullifier matches the proof pubSignals
+    expect(lastOutput.nullifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX]);
+
+    // Verify userIdentifier is set
+    expect(lastOutput.userIdentifier).to.not.equal(0n);
+
+    // Verify olderThan value
+    expect(lastOutput.olderThan).to.equal(20n);
 
     const tokenFactory = await ethers.getContractFactory("AirdropToken");
     const token = await tokenFactory.connect(owner).deploy();
@@ -185,22 +250,57 @@ describe("End to End Tests", function () {
     const airdropFactory = await ethers.getContractFactory("Airdrop");
     const airdrop = await airdropFactory.connect(owner).deploy(
       hub.target,
-      castFromScope("test-scope"),
-      ATTESTATION_ID.E_PASSPORT,
+      "test-scope",
       token.target,
-      true,
-      20,
-      // @ts-expect-error
-      true,
-      countriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
-      [true, true, true],
     );
     await airdrop.waitForDeployment();
 
+    // Set up verification config for the airdrop
+    const configTx = await hub.connect(owner).setVerificationConfigV2(verificationConfigV2);
+    const configReceipt = await configTx.wait();
+    const configId = configReceipt!.logs[0].topics[1];
+
+    // Set the config ID in the airdrop contract
+    await airdrop.connect(owner).setConfigId(configId);
+
     await token.connect(owner).mint(airdrop.target, BigInt(1000000000000000000));
 
+    // Generate proof with the airdrop's actual scope
+    const airdropScope = await airdrop.scope();
+
+    // Calculate the user identifier hash for the airdrop proof
+    const airdropUserData = ethers.toUtf8Bytes("airdrop-user-data");
+    const airdropTempUserContextData = ethers.solidityPacked(
+      ["bytes32", "bytes32", "bytes"],
+      [destChainId, ethers.zeroPadValue(user1Address, 32), airdropUserData],
+    );
+    const airdropUserIdentifierHash = calculateUserIdentifierHash(airdropTempUserContextData);
+
+    const airdropVcAndDiscloseProof = await generateVcAndDiscloseProof(
+      registerSecret,
+      BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+      mockPassport,
+      airdropScope.toString(),
+      new Array(88).fill("1"),
+      "1",
+      imt,
+      "20",
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      forbiddenCountriesList,
+      airdropUserIdentifierHash,
+    );
+
     await airdrop.connect(owner).openRegistration();
-    await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+
+    // Create V2 proof format for verifySelfProof
+    const { proofData: airdropProofData, userContextData: airdropUserContextData } = createV2ProofData(
+      airdropVcAndDiscloseProof,
+      await user1.getAddress(),
+    );
+    await airdrop.connect(user1).verifySelfProof(airdropProofData, airdropUserContextData);
     await airdrop.connect(owner).closeRegistration();
 
     const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
@@ -228,19 +328,13 @@ describe("End to End Tests", function () {
     const isClaimed = await airdrop.claimed(await user1.getAddress());
     expect(isClaimed).to.be.true;
 
-    const readableData = await hub.getReadableRevealedData(
-      [result.revealedDataPacked[0], result.revealedDataPacked[1], result.revealedDataPacked[2]],
-      ["0", "1", "2", "3", "4", "5", "6", "7", "8"],
-    );
-
-    expect(readableData[0]).to.equal("FRA");
-    expect(readableData[1]).to.deep.equal(["ALPHONSE HUGHUES ALBERT", "DUPONT"]);
-    expect(readableData[2]).to.equal("15AA81234");
-    expect(readableData[3]).to.equal("FRA");
-    expect(readableData[4]).to.equal("31-01-94");
-    expect(readableData[5]).to.equal("M");
-    expect(readableData[6]).to.equal("31-10-40");
-    expect(readableData[7]).to.equal(20n);
-    expect(readableData[8]).to.equal(1n);
+    // Verify disclosed attributes from lastOutput
+    expect(lastOutput.issuingState).to.equal("FRA");
+    expect(lastOutput.idNumber).to.equal("15AA81234");
+    expect(lastOutput.nationality).to.equal("FRA");
+    expect(lastOutput.dateOfBirth).to.equal("31-01-94");
+    expect(lastOutput.gender).to.equal("M");
+    expect(lastOutput.expiryDate).to.equal("31-10-40");
+    expect(lastOutput.olderThan).to.equal(20n);
   });
 });

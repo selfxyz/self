@@ -149,8 +149,10 @@ describe("Aadhaar Registration test", function () {
     });
 
     it("should not fail if timestamp is within 20 minutes", async () => {
-      // Fix the AADHAAR_REGISTRATION_WINDOW that was incorrectly set to 0
       await deployedActors.hub.setAadhaarRegistrationWindow(20);
+
+      const latestBlock = await ethers.provider.getBlock("latest");
+      const blockTimestamp = latestBlock!.timestamp;
 
       const newAadhaarData = prepareAadhaarRegisterTestData(
         privateKeyPem,
@@ -161,8 +163,7 @@ describe("Aadhaar Registration test", function () {
         "M",
         "110051",
         "WB",
-        //timestamp 10 minutes ago and converted to timestamp string
-        new Date(Date.now() - 10 * 60 * 1000).getTime().toString(),
+        (blockTimestamp - 10 * 60).toString(),
       );
       const newRegisterProof = await generateRegisterAadhaarProof(registerSecret, newAadhaarData.inputs);
 
@@ -171,8 +172,10 @@ describe("Aadhaar Registration test", function () {
     });
 
     it("should fail with InvalidUidaiTimestamp when UIDAI timestamp is not within 20 minutes of current time", async () => {
-      // Fix the AADHAAR_REGISTRATION_WINDOW that was incorrectly set to 0
       await deployedActors.hub.setAadhaarRegistrationWindow(20);
+
+      const latestBlock = await ethers.provider.getBlock("latest");
+      const blockTimestamp = latestBlock!.timestamp;
 
       const newAadhaarData = prepareAadhaarRegisterTestData(
         privateKeyPem,
@@ -183,8 +186,7 @@ describe("Aadhaar Registration test", function () {
         "M",
         "110051",
         "WB",
-        //timestamp 30 minutes ago and converted to timestamp string
-        new Date(Date.now() - 30 * 60 * 1000).getTime().toString(),
+        (blockTimestamp - 30 * 60).toString(),
       );
       const newRegisterProof = await generateRegisterAadhaarProof(registerSecret, newAadhaarData.inputs);
 

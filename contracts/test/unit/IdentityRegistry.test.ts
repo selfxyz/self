@@ -357,7 +357,7 @@ describe("Unit Tests for IdentityRegistry", () => {
 
       await expect(registry.connect(user1).updateHub(newHubAddress)).to.be.revertedWithCustomError(
         registry,
-        "OwnableUnauthorizedAccount",
+        "AccessControlUnauthorizedAccount",
       );
     });
 
@@ -498,7 +498,7 @@ describe("Unit Tests for IdentityRegistry", () => {
 
       await expect(
         registry.connect(user1).devAddIdentityCommitment(attestationId, nullifier, commitment),
-      ).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+      ).to.be.revertedWithCustomError(registry, "AccessControlUnauthorizedAccount");
     });
 
     it("should not add commitment if caller is not proxy", async () => {
@@ -546,7 +546,7 @@ describe("Unit Tests for IdentityRegistry", () => {
       const newCommitment = generateRandomFieldElement();
       await expect(
         registry.connect(user1).devUpdateCommitment(commitment, newCommitment, []),
-      ).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+      ).to.be.revertedWithCustomError(registry, "AccessControlUnauthorizedAccount");
     });
 
     it("should not update commitment if caller is not proxy", async () => {
@@ -592,7 +592,7 @@ describe("Unit Tests for IdentityRegistry", () => {
       await registry.devAddIdentityCommitment(attestationId, nullifier, commitment);
       await expect(registry.connect(user1).devRemoveCommitment(commitment, [])).to.be.revertedWithCustomError(
         registry,
-        "OwnableUnauthorizedAccount",
+        "AccessControlUnauthorizedAccount",
       );
     });
 
@@ -632,7 +632,7 @@ describe("Unit Tests for IdentityRegistry", () => {
       const dscCommitment = generateRandomFieldElement();
       await expect(registry.connect(user1).devAddDscKeyCommitment(dscCommitment)).to.be.revertedWithCustomError(
         registry,
-        "OwnableUnauthorizedAccount",
+        "AccessControlUnauthorizedAccount",
       );
     });
 
@@ -673,7 +673,7 @@ describe("Unit Tests for IdentityRegistry", () => {
       await registry.devAddDscKeyCommitment(dscCommitment);
       await expect(
         registry.connect(user1).devUpdateDscKeyCommitment(dscCommitment, newDscCommitment, []),
-      ).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+      ).to.be.revertedWithCustomError(registry, "AccessControlUnauthorizedAccount");
     });
 
     it("should not update dsc key commitment if caller is not proxy", async () => {
@@ -711,7 +711,7 @@ describe("Unit Tests for IdentityRegistry", () => {
       await registry.devAddDscKeyCommitment(dscCommitment);
       await expect(registry.connect(user1).devRemoveDscKeyCommitment(dscCommitment, [])).to.be.revertedWithCustomError(
         registry,
-        "OwnableUnauthorizedAccount",
+        "AccessControlUnauthorizedAccount",
       );
     });
 
@@ -751,7 +751,7 @@ describe("Unit Tests for IdentityRegistry", () => {
       const nullifier = generateRandomFieldElement();
       await expect(
         registry.connect(user1).devChangeNullifierState(attestationId, nullifier, false),
-      ).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+      ).to.be.revertedWithCustomError(registry, "AccessControlUnauthorizedAccount");
     });
 
     it("should not change nullifier state if caller is not proxy", async () => {
@@ -789,7 +789,7 @@ describe("Unit Tests for IdentityRegistry", () => {
       const state = true;
       await expect(
         registry.connect(user1).devChangeDscKeyCommitmentState(dscCommitment, state),
-      ).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+      ).to.be.revertedWithCustomError(registry, "AccessControlUnauthorizedAccount");
     });
 
     it("should not change dsc key commitment state if caller is not proxy", async () => {
@@ -915,7 +915,7 @@ describe("Unit Tests for IdentityRegistry", () => {
 
       await expect(
         registry.connect(user1).upgradeToAndCall(registryV2Implementation.target, "0x"),
-      ).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+      ).to.be.revertedWithCustomError(registry, "AccessControlUnauthorizedAccount");
     });
 
     it("should not allow implementation contract to be initialized directly", async () => {
