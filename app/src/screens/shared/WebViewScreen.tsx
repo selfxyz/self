@@ -169,20 +169,6 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
     }
     // Validate URL has a valid scheme pattern
     if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/i.test(targetUrl)) {
-      // Sanitize URL for logging - only log protocol, hostname, and pathname
-      // Strip query params and fragments to avoid logging sensitive data
-      try {
-        const url = new URL(targetUrl);
-        const sanitized = `${url.protocol}//${url.hostname}${url.pathname}`;
-        console.warn('Invalid URL scheme:', sanitized);
-      } catch {
-        // If URL parsing fails, only log the scheme portion
-        const schemeMatch = targetUrl.match(/^([a-zA-Z][a-zA-Z0-9+.-]*:)/i);
-        console.warn(
-          'Invalid URL scheme:',
-          schemeMatch ? schemeMatch[1] : '[unparseable URL]',
-        );
-      }
       return;
     }
     // Attempt to open the URL
