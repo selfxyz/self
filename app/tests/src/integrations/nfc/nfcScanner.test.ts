@@ -44,10 +44,7 @@ describe('parseScanResponse', () => {
     global.mockPlatformOS = 'ios';
   });
 
-  // TODO(@seshanth): Fix and review - test is failing due to hash parsing issues
-  // Expected dg1Hash/dg2Hash arrays but receiving empty arrays
-  // Also snapshot mismatches for eContent, signedAttributes, and signatureBase64
-  it.skip('parses iOS response', () => {
+  it('parses iOS response', () => {
     // Platform.OS is already mocked as 'ios' by default
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
