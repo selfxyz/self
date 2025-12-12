@@ -384,64 +384,44 @@ describe('WebViewScreen same-origin security', () => {
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('opens untrusted domains externally for security', async () => {
-      mockLinking.canOpenURL.mockResolvedValue(true as any);
-      mockLinking.openURL.mockResolvedValue(undefined as any);
+    it('allows HTTPS navigation to untrusted domains after trusted entry (parent-trusted session)', () => {
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
-      // Non-whitelisted domain - should open externally
       const result = webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://external-site.com',
       });
-      expect(result).toBe(false);
-      await waitFor(() =>
-        expect(mockLinking.openURL).toHaveBeenCalledWith(
-          'https://external-site.com',
-        ),
-      );
+      expect(result).toBe(true);
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('blocks cross-origin JS redirect attacks to untrusted domains', async () => {
-      mockLinking.canOpenURL.mockResolvedValue(true as any);
-      mockLinking.openURL.mockResolvedValue(undefined as any);
+    it('allows HTTPS JS redirects after trusted entry (parent-trusted session)', () => {
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
-      // Simulate a malicious JS redirect (navigationType would be 'other')
       const result = webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://malicious-phishing.com',
         navigationType: 'other', // JS redirect, not a click
       });
-      expect(result).toBe(false);
-      await waitFor(() =>
-        expect(mockLinking.openURL).toHaveBeenCalledWith(
-          'https://malicious-phishing.com',
-        ),
-      );
+      expect(result).toBe(true);
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('opens non-whitelisted domains externally even for same-origin navigation', async () => {
-      // Non-whitelisted URLs are no longer loaded - they fall back to trusted domains
-      // This test verifies the security enhancement
-      mockLinking.canOpenURL.mockResolvedValue(true as any);
-      mockLinking.openURL.mockResolvedValue(undefined as any);
-      render(<WebViewScreen {...createProps('https://example.com')} />);
+    it('allows about:blank/srcdoc during trusted session (wallet bootstrap)', () => {
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
-      // Initial URL falls back to defaultUrl (https://self.xyz) since example.com is not trusted
-      expect(webview.props.source.uri).toBe('https://self.xyz');
-
-      // Attempt to navigate to non-trusted domain opens externally
-      const result = webview.props.onShouldStartLoadWithRequest?.({
-        url: 'https://example.com/other-page',
+      const resultBlank = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'about:blank',
       });
-      expect(result).toBe(false);
-      await waitFor(() =>
-        expect(mockLinking.openURL).toHaveBeenCalledWith(
-          'https://example.com/other-page',
-        ),
-      );
+      expect(resultBlank).toBe(true);
+
+      const resultSrcdoc = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'about:srcdoc',
+      });
+      expect(resultSrcdoc).toBe(true);
+
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
   });
 
@@ -491,6 +471,25 @@ describe('WebViewScreen same-origin security', () => {
           'https://external-site.com',
         ),
       );
+    });
+
+    it('allows about:blank/srcdoc target="_blank" during trusted session without external open', () => {
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'about:blank',
+        },
+      });
+
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'about:srcdoc',
+        },
+      });
+
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
     it('handles empty targetUrl gracefully', () => {

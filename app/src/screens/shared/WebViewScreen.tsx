@@ -44,13 +44,11 @@ const defaultUrl = selfUrl;
 const fallbackUrl = 'https://apps.self.xyz';
 
 /**
- * Trusted domains that are allowed to load in the WebView.
- * This list is controlled by the app - not by URL parameters that attackers could manipulate.
- *
- * IMPORTANT: Keep this list in sync with the apps listed on apps.self.xyz.
- * When a domain is trusted, it opens in the internal WebView; otherwise it opens in external wallet.
- *
- * TODO: Migrate external URLs (like Figma) to self.xyz subdomains for cleaner security model
+ * Trusted entrypoints: these domains are allowed to start a session.
+ * Once a session starts from a trusted domain, HTTPS child navigations are
+ * allowed without expanding this list (parent-trusted session model).
+ * This keeps partners from breaking the WebView when they add dependencies,
+ * while still requiring the initial navigation to be curated.
  */
 const TRUSTED_DOMAINS = [
   'aave.com', // Aave protocol - DeFi lending network
@@ -78,6 +76,11 @@ const isTrustedDomain = (url: string): boolean => {
   } catch {
     return false;
   }
+};
+
+const isAllowedAboutUrl = (url: string): boolean => {
+  const lower = url.toLowerCase();
+  return lower === 'about:blank' || lower === 'about:srcdoc';
 };
 
 /**
@@ -143,6 +146,9 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUrl, setCurrentUrl] = useState(initialUrl);
   const [pageTitle, setPageTitle] = useState<string | undefined>(title);
+  const [isSessionTrusted, setIsSessionTrusted] = useState(
+    isTrustedDomain(initialUrl),
+  );
 
   const derivedTitle = pageTitle || title || currentUrl;
 
@@ -154,6 +160,11 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
     );
     if (isDisallowed) {
       // Block disallowed schemes - don't attempt to open
+      return;
+    }
+    // Block about:blank and similar about: URLs - they're not meant to be opened externally
+    if (targetUrl.toLowerCase().startsWith('about:')) {
+      // Silently ignore about: URLs - they're internal browser navigation
       return;
     }
     // Validate URL has a valid scheme pattern
@@ -250,19 +261,36 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
           <WebView
             ref={webViewRef}
             onShouldStartLoadWithRequest={req => {
+              const isHttps = /^https:\/\//i.test(req.url);
+
+              // Allow about:blank/srcdoc during trusted sessions (some wallets use this before redirecting)
+              if (isSessionTrusted && isAllowedAboutUrl(req.url)) {
+                return true;
+              }
+
               // Open non-http(s) schemes externally (mailto, tel, etc.)
               if (!/^https?:\/\//i.test(req.url)) {
                 openUrl(req.url);
                 return false;
               }
 
-              // Security: Allow navigation to trusted domains only
-              // This whitelist is controlled by the app, not URL parameters
-              if (isTrustedDomain(req.url)) {
+              const trusted = isTrustedDomain(req.url);
+
+              // Allow trusted entrypoints and mark session trusted
+              if (trusted) {
+                if (!isSessionTrusted) {
+                  setIsSessionTrusted(true);
+                }
                 return true;
               }
 
-              // Untrusted navigation: open externally for safety
+              // Parent-trusted session model: allow HTTPS child navigations
+              // after a trusted entrypoint to avoid breaking on partner deps.
+              if (isSessionTrusted && isHttps) {
+                return true;
+              }
+
+              // Untrusted navigation without a trusted session: open externally
               openUrl(req.url);
               return false;
             }}
@@ -272,23 +300,38 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
               const targetUrl = nativeEvent.targetUrl;
 
               if (targetUrl) {
+                // Some sites open about:blank/srcdoc before redirecting; allow silently
+                if (isSessionTrusted && isAllowedAboutUrl(targetUrl)) {
+                  return;
+                }
+
                 // Allow trusted domains to load in the current WebView
-                if (isTrustedDomain(targetUrl)) {
+                const trusted = isTrustedDomain(targetUrl);
+                if (trusted) {
+                  if (!isSessionTrusted) {
+                    setIsSessionTrusted(true);
+                  }
                   webViewRef.current?.injectJavaScript(
                     `window.location.href = ${JSON.stringify(targetUrl)};`,
                   );
-                } else {
-                  // Open untrusted domains externally for security
-                  openUrl(targetUrl);
+                  return;
                 }
+
+                // For window.open calls to non-trusted targets, open externally
+                openUrl(targetUrl);
               }
             }}
-            setSupportMultipleWindows={false}
+            // Enable multiple windows to let WKWebView forward window.open;
+            // we still force navigation into the same WebView via onOpenWindow.
+            setSupportMultipleWindows
             source={{ uri: initialUrl }}
             onNavigationStateChange={(event: WebViewNavigation) => {
               setCanGoBackInWebView(event.canGoBack);
               setCanGoForwardInWebView(event.canGoForward);
               setCurrentUrl(prev => (isHttpUrl(event.url) ? event.url : prev));
+              if (isTrustedDomain(event.url)) {
+                setIsSessionTrusted(true);
+              }
               if (!title && event.title) {
                 setPageTitle(event.title);
               }
