@@ -574,12 +574,13 @@ export function processQRDataSimple(qrData: string) {
   const extractedFields = extractQRDataFields(qrDataBytes);
 
   // Calculate qrHash exclude timestamp (positions 9-25, 17 bytes)
-  const qrDataWithoutTimestamp = [
-    ...Array.from(qrDataPadded.slice(0, 9)),
-    ...Array.from(qrDataPadded.slice(9, 26)).map((x) => 0),
-    ...Array.from(qrDataPadded.slice(26)),
-  ];
-  const qrHash = packBytesAndPoseidon(qrDataWithoutTimestamp);
+  // const qrDataWithoutTimestamp = [
+  //   ...Array.from(qrDataPadded.slice(0, 9)),
+  //   ...Array.from(qrDataPadded.slice(9, 26)).map((x) => 0),
+  //   ...Array.from(qrDataPadded.slice(26)),
+  // ];
+  // const qrHash = packBytesAndPoseidon(qrDataWithoutTimestamp);
+  const qrHash = packBytesAndPoseidon(Array.from(qrDataPadded));
   const photo = extractPhoto(Array.from(qrDataPadded), photoEOI + 1);
 
   const photoHash = packBytesAndPoseidon(photo.bytes.map(Number));
