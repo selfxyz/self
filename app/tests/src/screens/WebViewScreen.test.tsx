@@ -41,6 +41,11 @@ jest.mock('react-native', () => {
     openURL: jest.fn(),
   };
 
+  // Mock Alert to capture buttons and allow simulating user interaction
+  const mockAlert = {
+    alert: jest.fn(),
+  };
+
   const MockView = ({ children, ...props }: any) => (
     <mock-view {...props}>{children}</mock-view>
   );
@@ -51,6 +56,7 @@ jest.mock('react-native', () => {
 
   return {
     ActivityIndicator: (props: any) => <mock-activity-indicator {...props} />,
+    Alert: mockAlert,
     BackHandler: mockBackHandler,
     Linking: mockLinking,
     Platform: {
@@ -70,6 +76,10 @@ const mockLinking = jest.requireMock('react-native').Linking as jest.Mocked<{
   canOpenURL: jest.Mock;
   openURL: jest.Mock;
 }>;
+
+const mockAlert = jest.requireMock('react-native').Alert as {
+  alert: jest.Mock;
+};
 
 const mockPlatform = jest.requireMock('react-native').Platform as {
   OS: 'ios' | 'android';
@@ -146,6 +156,7 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
       canGoBack: () => true,
     });
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockAlert.alert.mockClear();
     mockLinking.canOpenURL.mockReset();
     mockLinking.openURL.mockReset();
   });
@@ -189,6 +200,17 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
   });
 
   it('opens allowed external schemes externally and blocks in WebView (mailto, tel)', async () => {
+    // Mock Alert to auto-confirm
+    mockAlert.alert.mockImplementation(
+      (
+        _title: string,
+        _message: string,
+        buttons: Array<{ text: string; onPress?: () => void }>,
+      ) => {
+        const openButton = buttons.find(b => b.text === 'Open');
+        openButton?.onPress?.();
+      },
+    );
     mockLinking.canOpenURL.mockResolvedValue(true as any);
     mockLinking.openURL.mockResolvedValue(undefined as any);
     render(<WebViewScreen {...createProps('https://self.xyz')} />);
@@ -226,6 +248,17 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
   });
 
   it('scrubs error log wording when external open fails', async () => {
+    // Mock Alert to auto-confirm
+    mockAlert.alert.mockImplementation(
+      (
+        _title: string,
+        _message: string,
+        buttons: Array<{ text: string; onPress?: () => void }>,
+      ) => {
+        const openButton = buttons.find(b => b.text === 'Open');
+        openButton?.onPress?.();
+      },
+    );
     mockLinking.canOpenURL.mockResolvedValue(true as any);
     mockLinking.openURL.mockRejectedValue(new Error('boom'));
     render(<WebViewScreen {...createProps('https://self.xyz')} />);
@@ -265,6 +298,7 @@ describe('WebViewScreen same-origin security', () => {
       canGoBack: () => true,
     });
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockAlert.alert.mockClear();
     mockLinking.canOpenURL.mockReset();
     mockLinking.openURL.mockReset();
   });
@@ -618,7 +652,18 @@ describe('WebViewScreen same-origin security', () => {
     });
 
     it('allows deep-link schemes from top frame on iOS (isTopFrame=true, click)', async () => {
-      // iOS-specific: user-initiated top-frame navigation is allowed
+      // iOS-specific: user-initiated top-frame navigation is allowed (with confirmation)
+      // Mock Alert to auto-confirm
+      mockAlert.alert.mockImplementation(
+        (
+          _title: string,
+          _message: string,
+          buttons: Array<{ text: string; onPress?: () => void }>,
+        ) => {
+          const openButton = buttons.find(b => b.text === 'Open');
+          openButton?.onPress?.();
+        },
+      );
       mockLinking.canOpenURL.mockResolvedValue(true);
 
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
@@ -633,7 +678,7 @@ describe('WebViewScreen same-origin security', () => {
 
       expect(result).toBe(false);
       await waitFor(() => {
-        // Should open because it's top-frame + user-initiated
+        // Should open because it's top-frame + user-initiated + confirmed
         expect(mockLinking.openURL).toHaveBeenCalledWith(
           'mailto:test@example.com',
         );
@@ -666,6 +711,17 @@ describe('WebViewScreen same-origin security', () => {
       const originalOS = mockPlatform.OS;
       mockPlatform.OS = 'android';
 
+      // Mock Alert to auto-confirm
+      mockAlert.alert.mockImplementation(
+        (
+          _title: string,
+          _message: string,
+          buttons: Array<{ text: string; onPress?: () => void }>,
+        ) => {
+          const openButton = buttons.find(b => b.text === 'Open');
+          openButton?.onPress?.();
+        },
+      );
       mockLinking.canOpenURL.mockResolvedValue(true);
 
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
@@ -844,9 +900,7 @@ describe('WebViewScreen same-origin security', () => {
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('handles Coinbase wallet special case - opens parent URL externally', async () => {
-      mockLinking.canOpenURL.mockResolvedValue(true);
-
+    it('handles Coinbase wallet special case - shows confirmation dialog', () => {
       render(
         <WebViewScreen {...createProps('https://apps.self.xyz/wallet')} />,
       );
@@ -858,14 +912,15 @@ describe('WebViewScreen same-origin security', () => {
         },
       });
 
-      // Wait for async openUrl to complete
-      await waitFor(() => {
-        // For Coinbase wallet, should open the current page (parent) externally
-        // to maintain window.opener relationship
-        expect(mockLinking.openURL).toHaveBeenCalledWith(
-          'https://apps.self.xyz/wallet',
-        );
-      });
+      // Should show wallet confirmation dialog
+      expect(mockAlert.alert).toHaveBeenCalledWith(
+        'Open in Browser',
+        'This will open in your browser to complete the wallet connection.',
+        expect.arrayContaining([
+          expect.objectContaining({ text: 'Cancel' }),
+          expect.objectContaining({ text: 'Open' }),
+        ]),
+      );
     });
 
     it('blocks data: URLs via target="_blank" (XSS prevention)', () => {
@@ -896,6 +951,165 @@ describe('WebViewScreen same-origin security', () => {
 
       // blob: URLs should be blocked (not HTTPS, not trusted)
       expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('external navigation confirmation dialog', () => {
+    it('shows wallet confirmation when Coinbase wallet is triggered', () => {
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'https://keys.coinbase.com/connect',
+        },
+      });
+
+      expect(mockAlert.alert).toHaveBeenCalledWith(
+        'Open in Browser',
+        'This will open in your browser to complete the wallet connection.',
+        expect.arrayContaining([
+          expect.objectContaining({ text: 'Cancel' }),
+          expect.objectContaining({ text: 'Open' }),
+        ]),
+      );
+    });
+
+    it('shows deep-link confirmation when opening mailto/tel schemes', () => {
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Trigger deep-link via onShouldStartLoadWithRequest
+      webview.props.onShouldStartLoadWithRequest?.({
+        url: 'mailto:test@example.com',
+        isTopFrame: true,
+        navigationType: 'click',
+      });
+
+      expect(mockAlert.alert).toHaveBeenCalledWith(
+        'Open External App',
+        'This will open an external app.',
+        expect.arrayContaining([
+          expect.objectContaining({ text: 'Cancel' }),
+          expect.objectContaining({ text: 'Open' }),
+        ]),
+      );
+    });
+
+    it('opens URL when user confirms deep-link dialog', async () => {
+      // Mock Alert to simulate user clicking "Open"
+      mockAlert.alert.mockImplementation(
+        (
+          _title: string,
+          _message: string,
+          buttons: Array<{ text: string; onPress?: () => void }>,
+        ) => {
+          const openButton = buttons.find(b => b.text === 'Open');
+          openButton?.onPress?.();
+        },
+      );
+      mockLinking.canOpenURL.mockResolvedValue(true);
+
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onShouldStartLoadWithRequest?.({
+        url: 'mailto:test@example.com',
+        isTopFrame: true,
+        navigationType: 'click',
+      });
+
+      await waitFor(() => {
+        expect(mockLinking.openURL).toHaveBeenCalledWith(
+          'mailto:test@example.com',
+        );
+      });
+    });
+
+    it('does not open URL when user cancels deep-link dialog', async () => {
+      // Mock Alert to simulate user clicking "Cancel"
+      mockAlert.alert.mockImplementation(
+        (
+          _title: string,
+          _message: string,
+          buttons: Array<{ text: string; onPress?: () => void }>,
+        ) => {
+          const cancelButton = buttons.find(b => b.text === 'Cancel');
+          cancelButton?.onPress?.();
+        },
+      );
+      mockLinking.canOpenURL.mockResolvedValue(true);
+
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onShouldStartLoadWithRequest?.({
+        url: 'tel:+1234567890',
+        isTopFrame: true,
+        navigationType: 'click',
+      });
+
+      // Wait a tick to ensure any async operations would have completed
+      await waitFor(() => {
+        expect(mockLinking.openURL).not.toHaveBeenCalled();
+      });
+    });
+
+    it('opens parent URL when user confirms Coinbase wallet dialog', async () => {
+      // Mock Alert to simulate user clicking "Open"
+      mockAlert.alert.mockImplementation(
+        (
+          _title: string,
+          _message: string,
+          buttons: Array<{ text: string; onPress?: () => void }>,
+        ) => {
+          const openButton = buttons.find(b => b.text === 'Open');
+          openButton?.onPress?.();
+        },
+      );
+      mockLinking.canOpenURL.mockResolvedValue(true);
+
+      render(
+        <WebViewScreen {...createProps('https://apps.self.xyz/wallet')} />,
+      );
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'https://keys.coinbase.com/connect',
+        },
+      });
+
+      await waitFor(() => {
+        // Should open the parent URL, not the Coinbase URL
+        expect(mockLinking.openURL).toHaveBeenCalledWith(
+          'https://apps.self.xyz/wallet',
+        );
+      });
+    });
+
+    it('shows external-site confirmation for untrusted HTTPS navigation', () => {
+      // Start from untrusted URL (falls back to default trusted URL, so we need
+      // to simulate a scenario where untrusted navigation would be blocked)
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Navigate to untrusted HTTP URL (not HTTPS, not trusted)
+      webview.props.onShouldStartLoadWithRequest?.({
+        url: 'http://malicious-site.com',
+        isTopFrame: true,
+        navigationType: 'click',
+      });
+
+      // Should show external-site confirmation
+      expect(mockAlert.alert).toHaveBeenCalledWith(
+        'Open in Browser',
+        'This will open an external website in your browser.',
+        expect.arrayContaining([
+          expect.objectContaining({ text: 'Cancel' }),
+          expect.objectContaining({ text: 'Open' }),
+        ]),
+      );
     });
   });
 });

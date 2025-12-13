@@ -5,6 +5,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   BackHandler,
   Linking,
   StyleSheet,
@@ -96,6 +97,42 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
   );
 
   const derivedTitle = pageTitle || title || currentUrl;
+
+  /**
+   * Show a confirmation dialog before opening a URL externally.
+   * Returns true if user confirms, false if they cancel.
+   */
+  const confirmExternalNavigation = useCallback(
+    (context: 'wallet' | 'deep-link' | 'external-site'): Promise<boolean> => {
+      return new Promise(resolve => {
+        const messages: Record<
+          typeof context,
+          { title: string; body: string }
+        > = {
+          wallet: {
+            title: 'Open in Browser',
+            body: 'This will open in your browser to complete the wallet connection.',
+          },
+          'deep-link': {
+            title: 'Open External App',
+            body: 'This will open an external app.',
+          },
+          'external-site': {
+            title: 'Open in Browser',
+            body: 'This will open an external website in your browser.',
+          },
+        };
+
+        const { title: alertTitle, body } = messages[context];
+
+        Alert.alert(alertTitle, body, [
+          { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+          { text: 'Open', onPress: () => resolve(true) },
+        ]);
+      });
+    },
+    [],
+  );
 
   const openUrl = useCallback(async (targetUrl: string) => {
     // Block disallowed schemes (blacklist approach)
@@ -218,7 +255,12 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
               // drive-by deep-linking via iframes on trusted partner sites
               if (!/^https?:\/\//i.test(req.url)) {
                 if (isUserInitiatedTopFrameNavigation(req)) {
-                  openUrl(req.url);
+                  // Show confirmation before opening deep-link schemes
+                  confirmExternalNavigation('deep-link').then(confirmed => {
+                    if (confirmed) {
+                      openUrl(req.url);
+                    }
+                  });
                 }
                 return false;
               }
@@ -242,7 +284,12 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
               // Untrusted navigation without a trusted session: open externally
               // iOS: only allow top-frame, user-initiated navigations
               if (isUserInitiatedTopFrameNavigation(req)) {
-                openUrl(req.url);
+                // Show confirmation before opening untrusted external site
+                confirmExternalNavigation('external-site').then(confirmed => {
+                  if (confirmed) {
+                    openUrl(req.url);
+                  }
+                });
               }
               return false;
             }}
@@ -259,7 +306,12 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
                 // context; if we somehow don't know the parent URL, fall back to opening
                 // the popup target directly.
                 if (shouldAlwaysOpenExternally(targetUrl)) {
-                  openUrl(currentUrl || targetUrl);
+                  // Show confirmation before redirecting to external wallet
+                  confirmExternalNavigation('wallet').then(confirmed => {
+                    if (confirmed) {
+                      openUrl(currentUrl || targetUrl);
+                    }
+                  });
                   return;
                 }
 
