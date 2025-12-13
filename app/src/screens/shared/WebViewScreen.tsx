@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   BackHandler,
   Linking,
-  Platform,
   StyleSheet,
   View,
 } from 'react-native';
@@ -27,6 +26,12 @@ import { WebViewFooter } from '@/components/WebViewFooter';
 import { selfUrl } from '@/consts/links';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';
+import {
+  DISALLOWED_SCHEMES,
+  isAllowedAboutUrl,
+  isTrustedDomain,
+  isUserInitiatedTopFrameNavigation,
+} from '@/utils/webview';
 
 export interface WebViewScreenParams {
   url: string;
@@ -43,116 +48,6 @@ type WebViewScreenProps = NativeStackScreenProps<
 
 const defaultUrl = selfUrl;
 const fallbackUrl = 'https://apps.self.xyz';
-
-/**
- * Trusted entrypoints: these domains are allowed to start a session.
- * Once a session starts from a trusted domain, HTTPS child navigations are
- * allowed without expanding this list (parent-trusted session model).
- * This keeps partners from breaking the WebView when they add dependencies,
- * while still requiring the initial navigation to be curated.
- */
-const TRUSTED_DOMAINS = Object.freeze([
-  'aave.com', // Aave protocol - DeFi lending network
-  'amity-lock-11401309.figma.site', // Degen Tarot game
-  'celo.org', // CELO Names - includes names.celo.org
-  'cloud.google.com', // Google Cloud - AI agents in the cloud (includes cloud.google.com)
-  'karmahq.xyz', // Karma - Launch & fund projects
-  'lemonade.social', // Lemonade - Events and communities
-  'self.xyz', // Base domain and all subdomains (*.self.xyz) - includes espresso.self.xyz
-  'talent.app', // Talent Protocol - Main app
-  'talentprotocol.com', // Talent Protocol - Marketing/info site
-  'velodrome.finance', // Velodrome - Swap, deposit, take the lead
-]) as readonly string[];
-
-/**
- * Check if a URL is from a trusted domain.
- * Matches exact domain or any subdomain of trusted domains.
- */
-const isTrustedDomain = (url: string): boolean => {
-  try {
-    const hostname = new URL(url).hostname;
-    return TRUSTED_DOMAINS.some(
-      domain => hostname === domain || hostname.endsWith(`.${domain}`),
-    );
-  } catch {
-    return false;
-  }
-};
-
-const isAllowedAboutUrl = (url: string): boolean => {
-  const lower = url.toLowerCase();
-  return lower === 'about:blank' || lower === 'about:srcdoc';
-};
-
-/**
- * Check if two URLs have the same origin (protocol + host + port)
- * Used for testing - kept for backward compatibility
- */
-const isSameOrigin = (url1: string, url2: string): boolean => {
-  try {
-    return new URL(url1).origin === new URL(url2).origin;
-  } catch {
-    return false;
-  }
-};
-
-/**
- * iOS-only mitigation for drive-by deep-linking via iframes.
- * Gates external URL opens to top-frame, user-initiated navigations.
- *
- * On iOS, isTopFrame and navigationType are available on the request object.
- * On Android, these properties are unavailable, so we allow all navigations.
- *
- * This prevents malicious iframes on trusted partner sites from invoking
- * external app opens (sms:, mailto:, etc.) without explicit user interaction.
- */
-interface WebViewRequestWithIosProps {
-  isTopFrame?: boolean;
-  navigationType?:
-    | 'click'
-    | 'formsubmit'
-    | 'formresubmit'
-    | 'backforward'
-    | 'reload'
-    | 'other';
-}
-
-const isUserInitiatedTopFrameNavigation = (
-  req: WebViewRequestWithIosProps,
-): boolean => {
-  // Android: these properties are unavailable, allow all navigations
-  if (Platform.OS !== 'ios') {
-    return true;
-  }
-
-  // iOS: block if explicitly from an iframe
-  if (req.isTopFrame === false) {
-    return false;
-  }
-
-  // iOS: only allow 'click' or undefined (backward compatibility) navigations
-  // Block 'other', 'reload', 'formsubmit', 'backforward' as non-user-initiated
-  const navType = req.navigationType;
-  if (navType !== undefined && navType !== 'click') {
-    return false;
-  }
-
-  return true;
-};
-
-// Export for testing
-export { DISALLOWED_SCHEMES, TRUSTED_DOMAINS, isSameOrigin, isTrustedDomain };
-
-/**
- * Schemes that are disallowed from being opened externally.
- * Using a blacklist approach - block specific dangerous schemes, allow everything else.
- */
-const DISALLOWED_SCHEMES = Object.freeze([
-  'ftp://',
-  'file://',
-  // eslint-disable-next-line no-script-url
-  'javascript:',
-]) as readonly string[];
 
 const styles = StyleSheet.create({
   webViewContainer: {

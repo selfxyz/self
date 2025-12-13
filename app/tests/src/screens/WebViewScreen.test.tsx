@@ -10,13 +10,13 @@ import {
   waitFor,
 } from '@testing-library/react-native';
 
+import { WebViewScreen } from '@/screens/shared/WebViewScreen';
 import {
   DISALLOWED_SCHEMES,
   isSameOrigin,
   isTrustedDomain,
   TRUSTED_DOMAINS,
-  WebViewScreen,
-} from '@/screens/shared/WebViewScreen';
+} from '@/utils/webview';
 
 jest.mock('react-native', () => {
   const mockLinking = {

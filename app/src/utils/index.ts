@@ -9,6 +9,19 @@
 
 // Crypto utilities
 export type { ModalCallbacks } from '@/utils/modalCallbackRegistry';
+
+// WebView utilities
+export type { WebViewRequestWithIosProps } from '@/utils/webview';
+
+export {
+  DISALLOWED_SCHEMES,
+  TRUSTED_DOMAINS,
+  isAllowedAboutUrl,
+  isSameOrigin,
+  isTrustedDomain,
+  isUserInitiatedTopFrameNavigation,
+} from '@/utils/webview';
+
 // Format utilities
 export { IS_DEV_MODE } from '@/utils/devUtils';
 
