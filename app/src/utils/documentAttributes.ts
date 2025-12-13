@@ -84,7 +84,7 @@ function getPassportAttributes(
   );
   const yobSlice = mrz.slice(
     attributePositions.date_of_birth[0],
-    attributePositions.date_of_birth[0] + 1,
+    attributePositions.date_of_birth[0] + 2,
   );
   const issuingStateSlice = mrz.slice(
     attributePositions.issuing_state[0],
@@ -149,9 +149,6 @@ export function checkDocumentExpiration(dateOfExpiry: string): boolean {
       0,
     ),
   );
-
-  console.log('todayUTC', todayUTC);
-  console.log('expiryDateUTC', expiryDateUTC);
 
   return todayUTC >= expiryDateUTC;
 }
