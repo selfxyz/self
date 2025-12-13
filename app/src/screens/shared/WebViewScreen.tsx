@@ -30,6 +30,7 @@ import {
   DISALLOWED_SCHEMES,
   isAllowedAboutUrl,
   isTrustedDomain,
+  shouldAlwaysOpenExternally,
   isUserInitiatedTopFrameNavigation,
 } from '@/utils/webview';
 
@@ -251,6 +252,16 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
               const targetUrl = nativeEvent.targetUrl;
 
               if (targetUrl) {
+                // Certain wallets (e.g., Coinbase) require the parent page to be in a
+                // full browser for popup postMessage to succeed. Redirect the
+                // current page externally instead of loading the popup in-webview.
+                if (shouldAlwaysOpenExternally(targetUrl)) {
+                  if (currentUrl) {
+                    openUrl(currentUrl);
+                  }
+                  return;
+                }
+
                 // Some sites open about:blank/srcdoc before redirecting; allow silently
                 if (isSessionTrusted && isAllowedAboutUrl(targetUrl)) {
                   return;
