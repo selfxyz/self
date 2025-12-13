@@ -252,13 +252,14 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
               const targetUrl = nativeEvent.targetUrl;
 
               if (targetUrl) {
-                // Certain wallets (e.g., Coinbase) require the parent page to be in a
-                // full browser for popup postMessage to succeed. Redirect the
-                // current page externally instead of loading the popup in-webview.
+                // Coinbase wallet uses window.opener.postMessage from the popup back to
+                // the parent page. If we only open the popup externally and keep the
+                // parent inside the WebView, the popup cannot find window.opener and the
+                // SDK times out. Redirect the parent page (currentUrl) to a real browser
+                // context; if we somehow don't know the parent URL, fall back to opening
+                // the popup target directly.
                 if (shouldAlwaysOpenExternally(targetUrl)) {
-                  if (currentUrl) {
-                    openUrl(currentUrl);
-                  }
+                  openUrl(currentUrl || targetUrl);
                   return;
                 }
 
