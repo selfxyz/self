@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   BackHandler,
   Linking,
+  Platform,
   StyleSheet,
   View,
 } from 'react-native';
@@ -50,7 +51,7 @@ const fallbackUrl = 'https://apps.self.xyz';
  * This keeps partners from breaking the WebView when they add dependencies,
  * while still requiring the initial navigation to be curated.
  */
-const TRUSTED_DOMAINS = [
+const TRUSTED_DOMAINS = Object.freeze([
   'aave.com', // Aave protocol - DeFi lending network
   'amity-lock-11401309.figma.site', // Degen Tarot game
   'celo.org', // CELO Names - includes names.celo.org
@@ -61,7 +62,7 @@ const TRUSTED_DOMAINS = [
   'talent.app', // Talent Protocol - Main app
   'talentprotocol.com', // Talent Protocol - Marketing/info site
   'velodrome.finance', // Velodrome - Swap, deposit, take the lead
-];
+]) as readonly string[];
 
 /**
  * Check if a URL is from a trusted domain.
@@ -95,6 +96,50 @@ const isSameOrigin = (url1: string, url2: string): boolean => {
   }
 };
 
+/**
+ * iOS-only mitigation for drive-by deep-linking via iframes.
+ * Gates external URL opens to top-frame, user-initiated navigations.
+ *
+ * On iOS, isTopFrame and navigationType are available on the request object.
+ * On Android, these properties are unavailable, so we allow all navigations.
+ *
+ * This prevents malicious iframes on trusted partner sites from invoking
+ * external app opens (sms:, mailto:, etc.) without explicit user interaction.
+ */
+interface WebViewRequestWithIosProps {
+  isTopFrame?: boolean;
+  navigationType?:
+    | 'click'
+    | 'formsubmit'
+    | 'formresubmit'
+    | 'backforward'
+    | 'reload'
+    | 'other';
+}
+
+const isUserInitiatedTopFrameNavigation = (
+  req: WebViewRequestWithIosProps,
+): boolean => {
+  // Android: these properties are unavailable, allow all navigations
+  if (Platform.OS !== 'ios') {
+    return true;
+  }
+
+  // iOS: block if explicitly from an iframe
+  if (req.isTopFrame === false) {
+    return false;
+  }
+
+  // iOS: only allow 'click' or undefined (backward compatibility) navigations
+  // Block 'other', 'reload', 'formsubmit', 'backforward' as non-user-initiated
+  const navType = req.navigationType;
+  if (navType !== undefined && navType !== 'click') {
+    return false;
+  }
+
+  return true;
+};
+
 // Export for testing
 export { DISALLOWED_SCHEMES, TRUSTED_DOMAINS, isSameOrigin, isTrustedDomain };
 
@@ -102,8 +147,12 @@ export { DISALLOWED_SCHEMES, TRUSTED_DOMAINS, isSameOrigin, isTrustedDomain };
  * Schemes that are disallowed from being opened externally.
  * Using a blacklist approach - block specific dangerous schemes, allow everything else.
  */
-// eslint-disable-next-line no-script-url
-const DISALLOWED_SCHEMES = ['ftp://', 'file://', 'javascript:'];
+const DISALLOWED_SCHEMES = Object.freeze([
+  'ftp://',
+  'file://',
+  // eslint-disable-next-line no-script-url
+  'javascript:',
+]) as readonly string[];
 
 const styles = StyleSheet.create({
   webViewContainer: {
@@ -269,8 +318,12 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
               }
 
               // Open non-http(s) schemes externally (mailto, tel, etc.)
+              // iOS: only allow top-frame, user-initiated navigations to prevent
+              // drive-by deep-linking via iframes on trusted partner sites
               if (!/^https?:\/\//i.test(req.url)) {
-                openUrl(req.url);
+                if (isUserInitiatedTopFrameNavigation(req)) {
+                  openUrl(req.url);
+                }
                 return false;
               }
 
@@ -291,7 +344,10 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
               }
 
               // Untrusted navigation without a trusted session: open externally
-              openUrl(req.url);
+              // iOS: only allow top-frame, user-initiated navigations
+              if (isUserInitiatedTopFrameNavigation(req)) {
+                openUrl(req.url);
+              }
               return false;
             }}
             onOpenWindow={syntheticEvent => {
@@ -311,6 +367,15 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
                   if (!isSessionTrusted) {
                     setIsSessionTrusted(true);
                   }
+                  webViewRef.current?.injectJavaScript(
+                    `window.location.href = ${JSON.stringify(targetUrl)};`,
+                  );
+                  return;
+                }
+
+                // Parent-trusted session model: allow HTTPS child navigations via window.open
+                // after a trusted entrypoint to avoid breaking on partner deps.
+                if (isSessionTrusted && /^https:\/\//i.test(targetUrl)) {
                   webViewRef.current?.injectJavaScript(
                     `window.location.href = ${JSON.stringify(targetUrl)};`,
                   );

@@ -23,7 +23,6 @@ import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongi
 import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
 import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
 import IDPickerScreen from '@/screens/documents/selection/IDPickerScreen';
-import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
 const documentsScreens = {
   DocumentCamera: {

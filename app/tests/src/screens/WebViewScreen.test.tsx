@@ -36,6 +36,11 @@ jest.mock('react-native', () => {
     ActivityIndicator: (props: any) => <mock-activity-indicator {...props} />,
     BackHandler: mockBackHandler,
     Linking: mockLinking,
+    Platform: {
+      OS: 'ios',
+      select: (specifics: { ios?: unknown; android?: unknown }) =>
+        specifics.ios ?? specifics.android,
+    },
     StyleSheet: {
       create: (styles: unknown) => styles,
       flatten: (style: unknown) => style,
@@ -455,9 +460,9 @@ describe('WebViewScreen same-origin security', () => {
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('opens untrusted target="_blank" links externally for security', async () => {
-      mockLinking.canOpenURL.mockResolvedValue(true as any);
-      mockLinking.openURL.mockResolvedValue(undefined as any);
+    it('allows HTTPS target="_blank" links in trusted session (parent-trusted model)', () => {
+      // When starting from a trusted domain (apps.self.xyz), HTTPS child navigations
+      // via window.open should stay in the WebView per the parent-trusted session model
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
@@ -467,11 +472,8 @@ describe('WebViewScreen same-origin security', () => {
         },
       });
 
-      await waitFor(() =>
-        expect(mockLinking.openURL).toHaveBeenCalledWith(
-          'https://external-site.com',
-        ),
-      );
+      // Parent-trusted session: HTTPS links should NOT open externally
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
     it('allows about:blank/srcdoc target="_blank" during trusted session without external open', () => {
