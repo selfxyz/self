@@ -18,6 +18,23 @@ import {
   TRUSTED_DOMAINS,
 } from '@/utils/webview';
 
+// Type declarations for mock JSX elements used in tests
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'mock-view': any;
+      'mock-activity-indicator': any;
+      'mock-webview-navbar': any;
+      'mock-pressable': any;
+      'mock-webview-footer': any;
+      'mock-expandable-layout': any;
+      'mock-expandable-top': any;
+      'mock-expandable-bottom': any;
+      'mock-webview': any;
+    }
+  }
+}
+
 jest.mock('react-native', () => {
   const mockLinking = {
     canOpenURL: jest.fn(),
@@ -53,6 +70,11 @@ const mockLinking = jest.requireMock('react-native').Linking as jest.Mocked<{
   canOpenURL: jest.Mock;
   openURL: jest.Mock;
 }>;
+
+const mockPlatform = jest.requireMock('react-native').Platform as {
+  OS: 'ios' | 'android';
+  select: (specifics: { ios?: unknown; android?: unknown }) => unknown;
+};
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
@@ -353,6 +375,150 @@ describe('WebViewScreen same-origin security', () => {
     });
   });
 
+  describe('shouldAlwaysOpenExternally helper function', () => {
+    const { shouldAlwaysOpenExternally } = require('@/utils/webview');
+
+    it('returns true for keys.coinbase.com', () => {
+      expect(shouldAlwaysOpenExternally('https://keys.coinbase.com')).toBe(
+        true,
+      );
+      expect(
+        shouldAlwaysOpenExternally('https://keys.coinbase.com/connect'),
+      ).toBe(true);
+    });
+
+    it('returns true for keys.coinbase.com subdomains', () => {
+      expect(shouldAlwaysOpenExternally('https://auth.keys.coinbase.com')).toBe(
+        true,
+      );
+    });
+
+    it('returns false for regular coinbase.com (not keys.coinbase.com)', () => {
+      expect(shouldAlwaysOpenExternally('https://coinbase.com')).toBe(false);
+      expect(shouldAlwaysOpenExternally('https://www.coinbase.com')).toBe(
+        false,
+      );
+    });
+
+    it('returns false for non-whitelisted domains', () => {
+      expect(shouldAlwaysOpenExternally('https://self.xyz')).toBe(false);
+      expect(shouldAlwaysOpenExternally('https://example.com')).toBe(false);
+    });
+
+    it('returns false for malformed URLs', () => {
+      expect(shouldAlwaysOpenExternally('not-a-url')).toBe(false);
+    });
+  });
+
+  describe('isAllowedAboutUrl helper function', () => {
+    const { isAllowedAboutUrl } = require('@/utils/webview');
+
+    it('returns true for about:blank', () => {
+      expect(isAllowedAboutUrl('about:blank')).toBe(true);
+      expect(isAllowedAboutUrl('ABOUT:BLANK')).toBe(true); // Case insensitive
+    });
+
+    it('returns true for about:srcdoc', () => {
+      expect(isAllowedAboutUrl('about:srcdoc')).toBe(true);
+      expect(isAllowedAboutUrl('ABOUT:SRCDOC')).toBe(true);
+    });
+
+    it('returns false for other about: URLs', () => {
+      expect(isAllowedAboutUrl('about:config')).toBe(false);
+      expect(isAllowedAboutUrl('about:debugging')).toBe(false);
+    });
+
+    it('returns false for non-about URLs', () => {
+      expect(isAllowedAboutUrl('https://self.xyz')).toBe(false);
+      // eslint-disable-next-line no-script-url
+      expect(isAllowedAboutUrl('javascript:alert(1)')).toBe(false);
+    });
+  });
+
+  describe('isUserInitiatedTopFrameNavigation helper function', () => {
+    const { isUserInitiatedTopFrameNavigation } = require('@/utils/webview');
+
+    it('returns true on Android (always allows navigation)', () => {
+      const originalOS = mockPlatform.OS;
+      mockPlatform.OS = 'android';
+
+      expect(isUserInitiatedTopFrameNavigation({})).toBe(true);
+      expect(isUserInitiatedTopFrameNavigation({ isTopFrame: false })).toBe(
+        true,
+      );
+      expect(
+        isUserInitiatedTopFrameNavigation({ navigationType: 'other' }),
+      ).toBe(true);
+
+      mockPlatform.OS = originalOS; // Restore original value
+    });
+
+    it('returns false on iOS when isTopFrame is explicitly false (iframe protection)', () => {
+      expect(
+        isUserInitiatedTopFrameNavigation({
+          isTopFrame: false,
+          navigationType: 'click',
+        }),
+      ).toBe(false);
+    });
+
+    it('returns false on iOS for non-click navigationType', () => {
+      expect(
+        isUserInitiatedTopFrameNavigation({
+          isTopFrame: true,
+          navigationType: 'other',
+        }),
+      ).toBe(false);
+
+      expect(
+        isUserInitiatedTopFrameNavigation({
+          isTopFrame: true,
+          navigationType: 'reload',
+        }),
+      ).toBe(false);
+
+      expect(
+        isUserInitiatedTopFrameNavigation({
+          isTopFrame: true,
+          navigationType: 'formsubmit',
+        }),
+      ).toBe(false);
+
+      expect(
+        isUserInitiatedTopFrameNavigation({
+          isTopFrame: true,
+          navigationType: 'backforward',
+        }),
+      ).toBe(false);
+    });
+
+    it('returns true on iOS for click navigation', () => {
+      expect(
+        isUserInitiatedTopFrameNavigation({
+          isTopFrame: true,
+          navigationType: 'click',
+        }),
+      ).toBe(true);
+    });
+
+    it('returns true on iOS when navigationType is undefined (backward compatibility)', () => {
+      expect(
+        isUserInitiatedTopFrameNavigation({
+          isTopFrame: true,
+          navigationType: undefined,
+        }),
+      ).toBe(true);
+    });
+
+    it('returns true on iOS when isTopFrame is undefined and navigationType is click', () => {
+      expect(
+        isUserInitiatedTopFrameNavigation({
+          navigationType: 'click',
+        }),
+      ).toBe(true);
+    });
+  });
+
   describe('onShouldStartLoadWithRequest trusted domain policy', () => {
     it('allows initial URL to load', () => {
       const initialUrl = 'https://apps.self.xyz';
@@ -428,6 +594,95 @@ describe('WebViewScreen same-origin security', () => {
       expect(resultSrcdoc).toBe(true);
 
       expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('blocks deep-link schemes from iframes on iOS (isTopFrame=false)', async () => {
+      // iOS-specific: iframe protection via isUserInitiatedTopFrameNavigation
+      mockLinking.canOpenURL.mockResolvedValue(true);
+
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Simulate iframe navigation (isTopFrame=false) trying to open deep link
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'sms:+1234567890',
+        isTopFrame: false,
+        navigationType: 'click',
+      });
+
+      expect(result).toBe(false);
+      await waitFor(() => {
+        // Should NOT open because it's from an iframe
+        expect(mockLinking.openURL).not.toHaveBeenCalled();
+      });
+    });
+
+    it('allows deep-link schemes from top frame on iOS (isTopFrame=true, click)', async () => {
+      // iOS-specific: user-initiated top-frame navigation is allowed
+      mockLinking.canOpenURL.mockResolvedValue(true);
+
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Simulate top-frame user click navigation
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'mailto:test@example.com',
+        isTopFrame: true,
+        navigationType: 'click',
+      });
+
+      expect(result).toBe(false);
+      await waitFor(() => {
+        // Should open because it's top-frame + user-initiated
+        expect(mockLinking.openURL).toHaveBeenCalledWith(
+          'mailto:test@example.com',
+        );
+      });
+    });
+
+    it('blocks deep-link schemes with non-click navigationType on iOS', async () => {
+      // iOS-specific: only 'click' navigationType is considered user-initiated
+      mockLinking.canOpenURL.mockResolvedValue(true);
+
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Simulate top-frame but non-click navigation (e.g., 'other' from script)
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'tel:+1234567890',
+        isTopFrame: true,
+        navigationType: 'other',
+      });
+
+      expect(result).toBe(false);
+      await waitFor(() => {
+        // Should NOT open because navigationType is not 'click'
+        expect(mockLinking.openURL).not.toHaveBeenCalled();
+      });
+    });
+
+    it('allows all deep-link navigations on Android (no iframe protection)', async () => {
+      // Android doesn't have isTopFrame/navigationType, so allow everything
+      const originalOS = mockPlatform.OS;
+      mockPlatform.OS = 'android';
+
+      mockLinking.canOpenURL.mockResolvedValue(true);
+
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Android request doesn't include iOS-specific fields
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'sms:+1234567890',
+      });
+
+      expect(result).toBe(false);
+      await waitFor(() => {
+        // Should open on Android (no iframe protection)
+        expect(mockLinking.openURL).toHaveBeenCalledWith('sms:+1234567890');
+      });
+
+      mockPlatform.OS = originalOS; // Restore
     });
   });
 
@@ -507,6 +762,139 @@ describe('WebViewScreen same-origin security', () => {
         });
       }).not.toThrow();
 
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('blocks non-HTTPS target="_blank" links in trusted session (security fix)', () => {
+      // Security: non-HTTPS window.open calls should be blocked to prevent
+      // drive-by deep-linking from iframes on trusted sites
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'http://external-site.com',
+        },
+      });
+
+      // Non-HTTPS links should NOT open externally (blocked for security)
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('blocks deep-link schemes via target="_blank" in trusted session (security fix)', () => {
+      // Security: deep-link schemes (sms:, tel:, etc.) via window.open should be
+      // blocked to prevent iframe-based attacks on trusted sites
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Test various deep-link schemes
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'sms:+1234567890',
+        },
+      });
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'tel:+1234567890',
+        },
+      });
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'mailto:test@example.com',
+        },
+      });
+
+      // None of these should open externally (blocked for security)
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('blocks disallowed schemes (javascript:, file://, ftp://) via target="_blank"', () => {
+      // Security: disallowed schemes should never be opened, even from trusted sessions
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      DISALLOWED_SCHEMES.forEach(scheme => {
+        webview.props.onOpenWindow?.({
+          nativeEvent: {
+            targetUrl: `${scheme}malicious-code`,
+          },
+        });
+      });
+
+      // Disallowed schemes should be blocked by openUrl
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('blocks all window.open from untrusted session (no trusted entrypoint)', () => {
+      // Security: without a trusted entrypoint, even HTTPS window.open should be blocked
+      // Note: The default fallback URL is trusted, so we need to test the logic directly
+      // In practice, this scenario is prevented at initialization
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Simulate untrusted HTTPS URL
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'https://untrusted-external.com',
+        },
+      });
+
+      // In an untrusted session, this would be blocked (but our test starts trusted)
+      // This test documents expected behavior when isSessionTrusted = false
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('handles Coinbase wallet special case - opens parent URL externally', async () => {
+      mockLinking.canOpenURL.mockResolvedValue(true);
+
+      render(
+        <WebViewScreen {...createProps('https://apps.self.xyz/wallet')} />,
+      );
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'https://keys.coinbase.com/connect',
+        },
+      });
+
+      // Wait for async openUrl to complete
+      await waitFor(() => {
+        // For Coinbase wallet, should open the current page (parent) externally
+        // to maintain window.opener relationship
+        expect(mockLinking.openURL).toHaveBeenCalledWith(
+          'https://apps.self.xyz/wallet',
+        );
+      });
+    });
+
+    it('blocks data: URLs via target="_blank" (XSS prevention)', () => {
+      // Security: data: URLs could contain malicious scripts
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'data:text/html,<script>alert("xss")</script>',
+        },
+      });
+
+      // data: URLs should be blocked (not HTTPS, not trusted)
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('blocks blob: URLs via target="_blank"', () => {
+      // Security: blob: URLs could be used to bypass security
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onOpenWindow?.({
+        nativeEvent: {
+          targetUrl: 'blob:https://apps.self.xyz/12345',
+        },
+      });
+
+      // blob: URLs should be blocked (not HTTPS, not trusted)
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
   });

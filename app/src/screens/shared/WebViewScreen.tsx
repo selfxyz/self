@@ -30,8 +30,8 @@ import {
   DISALLOWED_SCHEMES,
   isAllowedAboutUrl,
   isTrustedDomain,
-  shouldAlwaysOpenExternally,
   isUserInitiatedTopFrameNavigation,
+  shouldAlwaysOpenExternally,
 } from '@/utils/webview';
 
 export interface WebViewScreenParams {
@@ -289,8 +289,11 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
                   return;
                 }
 
-                // For window.open calls to non-trusted targets, open externally
-                openUrl(targetUrl);
+                // Security: Block non-HTTPS/non-trusted window.open calls to prevent
+                // drive-by deep-linking from iframes on trusted sites. Unlike
+                // onShouldStartLoadWithRequest, onOpenWindow doesn't expose frame-origin
+                // metadata, so we cannot verify if this is user-initiated top-frame
+                // navigation. Block silently to maintain security without breaking UX.
               }
             }}
             // Enable multiple windows to let WKWebView forward window.open;
