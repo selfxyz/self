@@ -21,9 +21,10 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
+import { isMRZDocument } from '@selfxyz/common';
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import miscAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
 import {
   BodyText,
@@ -48,6 +49,10 @@ import {
 import { getPointsAddress } from '@/services/points';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
+import {
+  checkDocumentExpiration,
+  getDocumentAttributes,
+} from '@/utils/documentAttributes';
 import { formatUserId } from '@/utils/formatUserId';
 
 const ProveScreen: React.FC = () => {
@@ -64,6 +69,8 @@ const ProveScreen: React.FC = () => {
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const [showFullAddress, setShowFullAddress] = useState(false);
+  const [isDocumentExpired, setIsDocumentExpired] = useState(false);
+  const isDocumentExpiredRef = useRef(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const isContentShorterThanScrollView = useMemo(
@@ -115,11 +122,43 @@ const ProveScreen: React.FC = () => {
 
     setDefaultDocumentTypeIfNeeded();
 
-    if (selectedAppRef.current?.sessionId !== selectedApp.sessionId) {
-      provingStore.init(selfClient, 'disclose');
-    }
-    selectedAppRef.current = selectedApp;
-  }, [selectedApp, isFocused, provingStore, selfClient]);
+    const checkExpirationAndInit = async () => {
+      let isExpired = false;
+      try {
+        const selectedDocument = await loadSelectedDocument(selfClient);
+        if (!selectedDocument || !isMRZDocument(selectedDocument.data)) {
+          setIsDocumentExpired(false);
+          isExpired = false;
+          isDocumentExpiredRef.current = false;
+        } else {
+          const { data: passportData } = selectedDocument;
+          const attributes = getDocumentAttributes(passportData);
+          const expiryDateSlice = attributes.expiryDateSlice;
+          isExpired = checkDocumentExpiration(expiryDateSlice);
+          setIsDocumentExpired(isExpired);
+          isDocumentExpiredRef.current = isExpired;
+        }
+      } catch (error) {
+        console.error('Error checking document expiration:', error);
+        setIsDocumentExpired(false);
+        isExpired = false;
+        isDocumentExpiredRef.current = false;
+      }
+
+      if (
+        !isExpired &&
+        selectedAppRef.current?.sessionId !== selectedApp.sessionId
+      ) {
+        provingStore.init(selfClient, 'disclose');
+      }
+      selectedAppRef.current = selectedApp;
+    };
+
+    checkExpirationAndInit();
+    //removed provingStore from dependencies because it causes infinite re-render on longpressing the button
+    //as it sets provingStore.setUserConfirmed()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedApp?.sessionId, isFocused, selfClient]);
 
   // Enhance selfApp with user's points address if not already set
   useEffect(() => {
@@ -206,7 +245,11 @@ const ProveScreen: React.FC = () => {
       const isCloseToBottom =
         layoutMeasurement.height + contentOffset.y >=
         contentSize.height - paddingToBottom;
-      if (isCloseToBottom && !hasScrolledToBottom) {
+      if (
+        isCloseToBottom &&
+        !hasScrolledToBottom &&
+        !isDocumentExpiredRef.current
+      ) {
         setHasScrolledToBottom(true);
         buttonTap();
         trackEvent(ProofEvents.PROOF_DISCLOSURES_SCROLLED, {
@@ -425,6 +468,7 @@ const ProveScreen: React.FC = () => {
           selectedAppSessionId={selectedApp?.sessionId}
           hasScrolledToBottom={hasScrolledToBottom}
           isReadyToProve={isReadyToProve}
+          isDocumentExpired={isDocumentExpired}
         />
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
