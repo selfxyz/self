@@ -33,6 +33,7 @@ import {
   isTrustedDomain,
   isUserInitiatedTopFrameNavigation,
   shouldAlwaysOpenExternally,
+  shouldOpenExternallyOnIOS,
 } from '@/utils/webview';
 
 export interface WebViewScreenParams {
@@ -310,6 +311,17 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
                   confirmExternalNavigation('wallet').then(confirmed => {
                     if (confirmed) {
                       openUrl(currentUrl || targetUrl);
+                    }
+                  });
+                  return;
+                }
+
+                // iOS-specific: Some domains require Safari for proper functionality
+                if (shouldOpenExternallyOnIOS(targetUrl)) {
+                  // Show confirmation before opening in external browser
+                  confirmExternalNavigation('external-site').then(confirmed => {
+                    if (confirmed) {
+                      openUrl(targetUrl);
                     }
                   });
                   return;

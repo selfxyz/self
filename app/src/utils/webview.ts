@@ -39,6 +39,14 @@ export const DISALLOWED_SCHEMES = Object.freeze([
 ]) as readonly string[];
 
 /**
+ * Domains that should open externally only on iOS.
+ * These domains have iOS-specific issues that require opening in Safari.
+ */
+export const IOS_OPEN_EXTERNALLY = Object.freeze([
+  'app.aave.com',
+]) as readonly string[];
+
+/**
  * Trusted entrypoints: these domains are allowed to start a session.
  * Once a session starts from a trusted domain, HTTPS child navigations are
  * allowed without expanding this list (parent-trusted session model).
@@ -139,6 +147,26 @@ export const shouldAlwaysOpenExternally = (url: string): boolean => {
   try {
     const hostname = new URL(url).hostname;
     return ALWAYS_OPEN_EXTERNALLY.some(
+      domain => hostname === domain || hostname.endsWith(`.${domain}`),
+    );
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Determine if a URL should be opened externally on iOS only.
+ * Used for domains that have iOS-specific issues requiring Safari.
+ * Returns false on Android or for malformed URLs.
+ */
+export const shouldOpenExternallyOnIOS = (url: string): boolean => {
+  if (Platform.OS !== 'ios') {
+    return false;
+  }
+
+  try {
+    const hostname = new URL(url).hostname;
+    return IOS_OPEN_EXTERNALLY.some(
       domain => hostname === domain || hostname.endsWith(`.${domain}`),
     );
   } catch {
