@@ -8,6 +8,7 @@ import {
   Alert,
   BackHandler,
   Linking,
+  Platform,
   StyleSheet,
   View,
 } from 'react-native';
@@ -33,7 +34,6 @@ import {
   isTrustedDomain,
   isUserInitiatedTopFrameNavigation,
   shouldAlwaysOpenExternally,
-  shouldOpenExternallyOnIOS,
 } from '@/utils/webview';
 
 export interface WebViewScreenParams {
@@ -251,6 +251,22 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
                 return true;
               }
 
+              // iOS-specific: Detect WalletConnect attestation from Aave and kick to Safari
+              // WalletConnect doesn't work properly in WKWebView for Coinbase Wallet connections
+              if (
+                Platform.OS === 'ios' &&
+                req.url.includes('verify.walletconnect.org') &&
+                req.mainDocumentURL?.includes('app.aave.com')
+              ) {
+                // Kick parent page to Safari for wallet connection
+                confirmExternalNavigation('wallet').then(confirmed => {
+                  if (confirmed) {
+                    openUrl(currentUrl);
+                  }
+                });
+                return false;
+              }
+
               // Open non-http(s) schemes externally (mailto, tel, etc.)
               // iOS: only allow top-frame, user-initiated navigations to prevent
               // drive-by deep-linking via iframes on trusted partner sites
@@ -311,17 +327,6 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
                   confirmExternalNavigation('wallet').then(confirmed => {
                     if (confirmed) {
                       openUrl(currentUrl || targetUrl);
-                    }
-                  });
-                  return;
-                }
-
-                // iOS-specific: Some domains require Safari for proper functionality
-                if (shouldOpenExternallyOnIOS(targetUrl)) {
-                  // Show confirmation before opening in external browser
-                  confirmExternalNavigation('external-site').then(confirmed => {
-                    if (confirmed) {
-                      openUrl(targetUrl);
                     }
                   });
                   return;

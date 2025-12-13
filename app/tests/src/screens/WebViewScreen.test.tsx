@@ -13,7 +13,6 @@ import {
 import { WebViewScreen } from '@/screens/shared/WebViewScreen';
 import {
   DISALLOWED_SCHEMES,
-  IOS_OPEN_EXTERNALLY,
   isSameOrigin,
   isTrustedDomain,
   TRUSTED_DOMAINS,
@@ -445,53 +444,6 @@ describe('WebViewScreen same-origin security', () => {
     });
   });
 
-  describe('IOS_OPEN_EXTERNALLY constant', () => {
-    it('includes app.aave.com for iOS-specific external opening', () => {
-      expect(IOS_OPEN_EXTERNALLY).toContain('app.aave.com');
-    });
-  });
-
-  describe('shouldOpenExternallyOnIOS helper function', () => {
-    const { shouldOpenExternallyOnIOS } = require('@/utils/webview');
-
-    it('returns true for app.aave.com on iOS', () => {
-      expect(shouldOpenExternallyOnIOS('https://app.aave.com')).toBe(true);
-      expect(shouldOpenExternallyOnIOS('https://app.aave.com/markets')).toBe(
-        true,
-      );
-    });
-
-    it('returns true for app.aave.com subdomains on iOS', () => {
-      expect(shouldOpenExternallyOnIOS('https://v3.app.aave.com')).toBe(true);
-    });
-
-    it('returns false for regular aave.com (not app.aave.com) on iOS', () => {
-      expect(shouldOpenExternallyOnIOS('https://aave.com')).toBe(false);
-      expect(shouldOpenExternallyOnIOS('https://www.aave.com')).toBe(false);
-    });
-
-    it('returns false for app.aave.com on Android', () => {
-      const originalOS = mockPlatform.OS;
-      mockPlatform.OS = 'android';
-
-      expect(shouldOpenExternallyOnIOS('https://app.aave.com')).toBe(false);
-      expect(shouldOpenExternallyOnIOS('https://app.aave.com/markets')).toBe(
-        false,
-      );
-
-      mockPlatform.OS = originalOS; // Restore
-    });
-
-    it('returns false for non-listed domains on iOS', () => {
-      expect(shouldOpenExternallyOnIOS('https://self.xyz')).toBe(false);
-      expect(shouldOpenExternallyOnIOS('https://example.com')).toBe(false);
-    });
-
-    it('returns false for malformed URLs', () => {
-      expect(shouldOpenExternallyOnIOS('not-a-url')).toBe(false);
-    });
-  });
-
   describe('isAllowedAboutUrl helper function', () => {
     const { isAllowedAboutUrl } = require('@/utils/webview');
 
@@ -675,6 +627,102 @@ describe('WebViewScreen same-origin security', () => {
       });
       expect(resultSrcdoc).toBe(true);
 
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('detects WalletConnect from Aave and shows wallet confirmation on iOS', () => {
+      // iOS-specific: WalletConnect attestation from Aave should trigger Safari kickout
+      render(<WebViewScreen {...createProps('https://app.aave.com')} />);
+      const webview = screen.getByTestId('webview');
+
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
+        mainDocumentURL: 'https://app.aave.com/',
+        isTopFrame: false,
+        navigationType: 'other',
+      });
+
+      expect(result).toBe(false);
+      expect(mockAlert.alert).toHaveBeenCalledWith(
+        'Open in Browser',
+        'This will open in your browser to complete the wallet connection.',
+        expect.arrayContaining([
+          expect.objectContaining({ text: 'Cancel' }),
+          expect.objectContaining({ text: 'Open' }),
+        ]),
+      );
+    });
+
+    it('opens Aave in Safari when user confirms WalletConnect kickout on iOS', async () => {
+      // Mock Alert to simulate user clicking "Open"
+      mockAlert.alert.mockImplementation(
+        (
+          _title: string,
+          _message: string,
+          buttons: Array<{ text: string; onPress?: () => void }>,
+        ) => {
+          const openButton = buttons.find(b => b.text === 'Open');
+          openButton?.onPress?.();
+        },
+      );
+      mockLinking.canOpenURL.mockResolvedValue(true);
+
+      render(<WebViewScreen {...createProps('https://app.aave.com')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
+        mainDocumentURL: 'https://app.aave.com/',
+        isTopFrame: false,
+        navigationType: 'other',
+      });
+
+      await waitFor(() => {
+        // Should open the Aave URL (currentUrl) in Safari
+        expect(mockLinking.openURL).toHaveBeenCalledWith(
+          'https://app.aave.com',
+        );
+      });
+    });
+
+    it('allows WalletConnect from Aave on Android (no kickout)', () => {
+      // Android: WalletConnect should work in WebView normally
+      const originalOS = mockPlatform.OS;
+      mockPlatform.OS = 'android';
+
+      render(<WebViewScreen {...createProps('https://app.aave.com')} />);
+      const webview = screen.getByTestId('webview');
+
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
+        mainDocumentURL: 'https://app.aave.com/',
+        isTopFrame: false,
+        navigationType: 'other',
+      });
+
+      // Should allow the request on Android
+      expect(result).toBe(true);
+      expect(mockAlert.alert).not.toHaveBeenCalled();
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+
+      mockPlatform.OS = originalOS; // Restore
+    });
+
+    it('allows WalletConnect from non-Aave domains on iOS (no kickout)', () => {
+      // iOS: WalletConnect from other domains should not trigger kickout
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
+        mainDocumentURL: 'https://apps.self.xyz/',
+        isTopFrame: false,
+        navigationType: 'other',
+      });
+
+      // Should allow the request (not from Aave)
+      expect(result).toBe(true);
+      expect(mockAlert.alert).not.toHaveBeenCalled();
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
@@ -999,80 +1047,6 @@ describe('WebViewScreen same-origin security', () => {
 
       // blob: URLs should be blocked (not HTTPS, not trusted)
       expect(mockLinking.openURL).not.toHaveBeenCalled();
-    });
-
-    it('opens app.aave.com externally on iOS with confirmation', () => {
-      // iOS-specific: app.aave.com should open in Safari
-      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
-      const webview = screen.getByTestId('webview');
-
-      webview.props.onOpenWindow?.({
-        nativeEvent: {
-          targetUrl: 'https://app.aave.com',
-        },
-      });
-
-      // Should show external-site confirmation dialog on iOS
-      expect(mockAlert.alert).toHaveBeenCalledWith(
-        'Open in Browser',
-        'This will open an external website in your browser.',
-        expect.arrayContaining([
-          expect.objectContaining({ text: 'Cancel' }),
-          expect.objectContaining({ text: 'Open' }),
-        ]),
-      );
-    });
-
-    it('opens app.aave.com externally when user confirms on iOS', async () => {
-      // Mock Alert to simulate user clicking "Open"
-      mockAlert.alert.mockImplementation(
-        (
-          _title: string,
-          _message: string,
-          buttons: Array<{ text: string; onPress?: () => void }>,
-        ) => {
-          const openButton = buttons.find(b => b.text === 'Open');
-          openButton?.onPress?.();
-        },
-      );
-      mockLinking.canOpenURL.mockResolvedValue(true);
-
-      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
-      const webview = screen.getByTestId('webview');
-
-      webview.props.onOpenWindow?.({
-        nativeEvent: {
-          targetUrl: 'https://app.aave.com/markets',
-        },
-      });
-
-      await waitFor(() => {
-        // Should open app.aave.com in external browser
-        expect(mockLinking.openURL).toHaveBeenCalledWith(
-          'https://app.aave.com/markets',
-        );
-      });
-    });
-
-    it('keeps app.aave.com in WebView on Android (no external opening)', () => {
-      // Android: app.aave.com should load in WebView normally
-      const originalOS = mockPlatform.OS;
-      mockPlatform.OS = 'android';
-
-      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
-      const webview = screen.getByTestId('webview');
-
-      webview.props.onOpenWindow?.({
-        nativeEvent: {
-          targetUrl: 'https://app.aave.com',
-        },
-      });
-
-      // Should NOT show confirmation dialog or open externally on Android
-      expect(mockAlert.alert).not.toHaveBeenCalled();
-      expect(mockLinking.openURL).not.toHaveBeenCalled();
-
-      mockPlatform.OS = originalOS; // Restore
     });
   });
 

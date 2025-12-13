@@ -42,7 +42,6 @@
 	<string></string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>about</string>
 		<string>argent</string>
 		<string>cbwallet</string>
 		<string>coinbase</string>
