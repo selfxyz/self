@@ -41,13 +41,22 @@ export const TRUSTED_DOMAINS = Object.freeze([
   'amity-lock-11401309.figma.site', // Degen Tarot game
   'celo.org', // CELO Names - includes names.celo.org
   'cloud.google.com', // Google Cloud - AI agents in the cloud (includes cloud.google.com)
+  'coinbase.com', // Coinbase - Main domain
   'karmahq.xyz', // Karma - Launch & fund projects
-  // 'keys.coinbase.com', // Coinbase Keys - Wallet for your crypto
+  'keys.coinbase.com', // Coinbase Keys - Wallet for your crypto
   'lemonade.social', // Lemonade - Events and communities
   'self.xyz', // Base domain and all subdomains (*.self.xyz) - includes espresso.self.xyz
   'talent.app', // Talent Protocol - Main app
   'talentprotocol.com', // Talent Protocol - Marketing/info site
   'velodrome.finance', // Velodrome - Swap, deposit, take the lead
+]) as readonly string[];
+
+/**
+ * Domains that should always open externally (e.g., wallet popups that require
+ * a full browser context).
+ */
+export const ALWAYS_OPEN_EXTERNALLY = Object.freeze([
+  'keys.coinbase.com',
 ]) as readonly string[];
 
 /**
@@ -72,6 +81,20 @@ export const isAllowedAboutUrl = (url: string): boolean => {
 export const isSameOrigin = (url1: string, url2: string): boolean => {
   try {
     return new URL(url1).origin === new URL(url2).origin;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Determine if a URL should always be opened externally.
+ */
+export const shouldAlwaysOpenExternally = (url: string): boolean => {
+  try {
+    const hostname = new URL(url).hostname;
+    return ALWAYS_OPEN_EXTERNALLY.some(
+      domain => hostname === domain || hostname.endsWith(`.${domain}`),
+    );
   } catch {
     return false;
   }
