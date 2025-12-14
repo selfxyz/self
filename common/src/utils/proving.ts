@@ -51,11 +51,36 @@ export function encryptAES256GCM(plaintext: string, key: forge.util.ByteStringBu
   cipher.update(forge.util.createBuffer(plaintext, 'utf8'));
   cipher.finish();
   const encrypted = cipher.output.getBytes();
+
+  // Defensive check: ensure tag exists and is valid
+  if (!cipher.mode?.tag) {
+    throw new Error(
+      'AES-GCM authentication tag is missing. This may indicate an issue with the cipher implementation or environment.'
+    );
+  }
+
   const authTag = cipher.mode.tag.getBytes();
+
+  // Validate tag is not empty
+  if (!authTag || authTag.length === 0) {
+    throw new Error(
+      'AES-GCM authentication tag is empty. Expected 16 bytes (128 bits) but got empty tag.'
+    );
+  }
+
+  const authTagBytes = Buffer.from(authTag, 'binary');
+
+  // Validate tag length (should be 16 bytes for 128-bit tag)
+  if (authTagBytes.length !== 16) {
+    throw new Error(
+      `AES-GCM authentication tag has invalid length. Expected 16 bytes (128 bits) but got ${authTagBytes.length} bytes.`
+    );
+  }
+
   return {
     nonce: Array.from(Buffer.from(iv, 'binary')),
     cipher_text: Array.from(Buffer.from(encrypted, 'binary')),
-    auth_tag: Array.from(Buffer.from(authTag, 'binary')),
+    auth_tag: Array.from(authTagBytes),
   };
 }
 

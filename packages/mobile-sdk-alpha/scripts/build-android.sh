@@ -52,9 +52,9 @@ if [ -d "$MOBILE_SDK_NATIVE" ]; then
         rm -f "dist/android/mobile-sdk-alpha-release.aar"
     fi
 
-    # Update submodule to latest
-    echo "🔄 Updating submodule to latest..."
-    git submodule update --init --recursive mobile-sdk-native
+    # Setup and update submodule using the setup script
+    echo "🔄 Setting up and updating submodule..."
+    node scripts/setup-native-source.cjs
 
     # Navigate to android directory
     cd android
