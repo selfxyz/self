@@ -433,6 +433,7 @@ jobs:
           echo "✅ Lock files exist"
       - name: Check Java installation
         run: |
+          echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"
           if command -v java &> /dev/null && java -version &> /dev/null; then
             echo "Java already installed: $(java -version 2>&1 | head -n 1)"
           else
