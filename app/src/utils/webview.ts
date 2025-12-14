@@ -30,10 +30,15 @@ export const ALWAYS_OPEN_EXTERNALLY = Object.freeze([
 /**
  * Schemes that are disallowed from being opened externally.
  * Using a blacklist approach - block specific dangerous schemes, allow everything else.
+ * Includes both variants (with and without '://') to catch all forms of these schemes.
  */
 export const DISALLOWED_SCHEMES = Object.freeze([
   'ftp://',
+  'ftp:',
+  'ftps://',
+  'ftps:',
   'file://',
+  'file:',
   // eslint-disable-next-line no-script-url
   'javascript:',
   'data:',

@@ -345,8 +345,15 @@ describe('WebViewScreen same-origin security', () => {
 
   describe('DISALLOWED_SCHEMES blacklist', () => {
     it('includes dangerous schemes that should be blocked', () => {
-      expect(DISALLOWED_SCHEMES).toContain('ftp://');
+      // File schemes (both variants)
       expect(DISALLOWED_SCHEMES).toContain('file://');
+      expect(DISALLOWED_SCHEMES).toContain('file:');
+      // FTP schemes (both variants)
+      expect(DISALLOWED_SCHEMES).toContain('ftp://');
+      expect(DISALLOWED_SCHEMES).toContain('ftp:');
+      expect(DISALLOWED_SCHEMES).toContain('ftps://');
+      expect(DISALLOWED_SCHEMES).toContain('ftps:');
+      // Other dangerous schemes
       // eslint-disable-next-line no-script-url
       expect(DISALLOWED_SCHEMES).toContain('javascript:');
       expect(DISALLOWED_SCHEMES).toContain('data:');
@@ -1198,7 +1205,7 @@ describe('WebViewScreen same-origin security', () => {
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('blocks disallowed schemes (javascript:, file://, ftp://) via target="_blank"', () => {
+    it('blocks disallowed schemes (javascript:, file://, file:, ftp://, ftp:, ftps://, ftps:) via target="_blank"', () => {
       // Security: disallowed schemes should never be opened, even from trusted sessions
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
