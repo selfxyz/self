@@ -598,58 +598,58 @@ describe('WebViewScreen same-origin security', () => {
       mockPlatform.OS = 'ios';
     });
 
-    it('allows initial URL to load', () => {
+    it('allows initial URL to load', async () => {
       const initialUrl = 'https://apps.self.xyz';
       render(<WebViewScreen {...createProps(initialUrl)} />);
       const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: initialUrl,
       });
       expect(result).toBe(true);
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('allows navigation within trusted self.xyz domains', () => {
+    it('allows navigation within trusted self.xyz domains', async () => {
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
       // Different self.xyz subdomain - allowed because self.xyz is trusted
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://docs.self.xyz/guide',
       });
       expect(result).toBe(true);
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('allows navigation to whitelisted partner domains', () => {
+    it('allows navigation to whitelisted partner domains', async () => {
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
       // Whitelisted Figma game site
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://amity-lock-11401309.figma.site',
       });
       expect(result).toBe(true);
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('allows HTTPS navigation to untrusted domains after trusted entry (parent-trusted session)', () => {
+    it('allows HTTPS navigation to untrusted domains after trusted entry (parent-trusted session)', async () => {
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://external-site.com',
       });
       expect(result).toBe(true);
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('allows HTTPS JS redirects after trusted entry (parent-trusted session)', () => {
+    it('allows HTTPS JS redirects after trusted entry (parent-trusted session)', async () => {
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://malicious-phishing.com',
         navigationType: 'other', // JS redirect, not a click
       });
@@ -657,16 +657,16 @@ describe('WebViewScreen same-origin security', () => {
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('allows about:blank/srcdoc during trusted session (wallet bootstrap)', () => {
+    it('allows about:blank/srcdoc during trusted session (wallet bootstrap)', async () => {
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
-      const resultBlank = webview.props.onShouldStartLoadWithRequest?.({
+      const resultBlank = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'about:blank',
       });
       expect(resultBlank).toBe(true);
 
-      const resultSrcdoc = webview.props.onShouldStartLoadWithRequest?.({
+      const resultSrcdoc = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'about:srcdoc',
       });
       expect(resultSrcdoc).toBe(true);
@@ -674,12 +674,12 @@ describe('WebViewScreen same-origin security', () => {
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('detects WalletConnect from Aave and shows wallet confirmation on iOS', () => {
+    it('detects WalletConnect from Aave and shows wallet confirmation on iOS', async () => {
       // iOS-specific: WalletConnect attestation from Aave should trigger Safari kickout
       render(<WebViewScreen {...createProps('https://app.aave.com')} />);
       const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
         mainDocumentURL: 'https://app.aave.com/',
         isTopFrame: false,
@@ -714,7 +714,7 @@ describe('WebViewScreen same-origin security', () => {
       render(<WebViewScreen {...createProps('https://app.aave.com')} />);
       const webview = screen.getByTestId('webview');
 
-      webview.props.onShouldStartLoadWithRequest?.({
+      await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
         mainDocumentURL: 'https://app.aave.com/',
         isTopFrame: false,
@@ -729,7 +729,7 @@ describe('WebViewScreen same-origin security', () => {
       });
     });
 
-    it('allows WalletConnect from Aave on Android (no kickout)', () => {
+    it('allows WalletConnect from Aave on Android (no kickout)', async () => {
       // Android: WalletConnect should work in WebView normally
       mockPlatform.OS = 'android';
 
@@ -737,7 +737,7 @@ describe('WebViewScreen same-origin security', () => {
         render(<WebViewScreen {...createProps('https://app.aave.com')} />);
         const webview = screen.getByTestId('webview');
 
-        const result = webview.props.onShouldStartLoadWithRequest?.({
+        const result = await webview.props.onShouldStartLoadWithRequest?.({
           url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
           mainDocumentURL: 'https://app.aave.com/',
           isTopFrame: false,
@@ -753,12 +753,12 @@ describe('WebViewScreen same-origin security', () => {
       }
     });
 
-    it('allows WalletConnect from non-Aave domains on iOS (no kickout)', () => {
+    it('allows WalletConnect from non-Aave domains on iOS (no kickout)', async () => {
       // iOS: WalletConnect from other domains should not trigger kickout
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
         mainDocumentURL: 'https://apps.self.xyz/',
         isTopFrame: false,
@@ -771,12 +771,12 @@ describe('WebViewScreen same-origin security', () => {
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('blocks spoofed WalletConnect URL with domain in query params on iOS', () => {
+    it('blocks spoofed WalletConnect URL with domain in query params on iOS', async () => {
       // Security: verify.walletconnect.org in query param should NOT trigger kickout
       render(<WebViewScreen {...createProps('https://app.aave.com')} />);
       const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://evil.com/?next=verify.walletconnect.org',
         mainDocumentURL: 'https://app.aave.com/',
         isTopFrame: false,
@@ -791,7 +791,7 @@ describe('WebViewScreen same-origin security', () => {
       expect(result).toBe(true);
     });
 
-    it('blocks spoofed Aave URL with domain in query params on iOS', () => {
+    it('blocks spoofed Aave URL with domain in query params on iOS', async () => {
       // Security: app.aave.com in query param should NOT trigger kickout
       render(
         <WebViewScreen
@@ -800,7 +800,7 @@ describe('WebViewScreen same-origin security', () => {
       );
       const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
         mainDocumentURL: 'https://evil.com/?page=app.aave.com',
         isTopFrame: false,
@@ -813,12 +813,12 @@ describe('WebViewScreen same-origin security', () => {
       expect(mockLinking.openURL).not.toHaveBeenCalled();
     });
 
-    it('blocks spoofed WalletConnect URL with domain in path on iOS', () => {
+    it('blocks spoofed WalletConnect URL with domain in path on iOS', async () => {
       // Security: verify.walletconnect.org in path should NOT trigger kickout
       render(<WebViewScreen {...createProps('https://app.aave.com')} />);
       const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://evil.com/verify.walletconnect.org/fake-path',
         mainDocumentURL: 'https://app.aave.com/',
         isTopFrame: false,
@@ -832,12 +832,12 @@ describe('WebViewScreen same-origin security', () => {
       expect(result).toBe(true);
     });
 
-    it('blocks spoofed WalletConnect URL with domain as subdomain prefix on iOS', () => {
+    it('blocks spoofed WalletConnect URL with domain as subdomain prefix on iOS', async () => {
       // Security: verify.walletconnect.org.evil.com should NOT match
       render(<WebViewScreen {...createProps('https://app.aave.com')} />);
       const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://verify.walletconnect.org.evil.com/attestation',
         mainDocumentURL: 'https://app.aave.com/',
         isTopFrame: false,
@@ -851,12 +851,12 @@ describe('WebViewScreen same-origin security', () => {
       expect(result).toBe(true);
     });
 
-    it('enforces "always open externally" policy in onShouldStartLoadWithRequest', () => {
+    it('enforces "always open externally" policy in onShouldStartLoadWithRequest', async () => {
       // keys.coinbase.com is in ALWAYS_OPEN_EXTERNALLY list
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://keys.coinbase.com/connect',
         isTopFrame: true,
         navigationType: 'click',
@@ -891,7 +891,7 @@ describe('WebViewScreen same-origin security', () => {
       render(<WebViewScreen {...createProps('https://app.aave.com')} />);
       const webview = screen.getByTestId('webview');
 
-      webview.props.onShouldStartLoadWithRequest?.({
+      await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://keys.coinbase.com/connect',
         isTopFrame: true,
         navigationType: 'click',
@@ -905,13 +905,13 @@ describe('WebViewScreen same-origin security', () => {
       });
     });
 
-    it('enforces "always open externally" policy for keys.coinbase.com', () => {
+    it('enforces "always open externally" policy for keys.coinbase.com', async () => {
       // keys.coinbase.com is in ALWAYS_OPEN_EXTERNALLY (not TRUSTED_DOMAINS)
       // It should always trigger external open, never load in WebView
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://keys.coinbase.com',
         isTopFrame: true,
         navigationType: 'click',
@@ -926,7 +926,7 @@ describe('WebViewScreen same-origin security', () => {
       );
     });
 
-    it('prevents keys.coinbase.com from being treated as trusted entrypoint', () => {
+    it('prevents keys.coinbase.com from being treated as trusted entrypoint', async () => {
       // Verify keys.coinbase.com cannot start a trusted session
       render(<WebViewScreen {...createProps('https://keys.coinbase.com')} />);
       const webview = screen.getByTestId('webview');
@@ -934,7 +934,7 @@ describe('WebViewScreen same-origin security', () => {
       // The initial URL should redirect externally, not load in WebView
       // Since keys.coinbase.com is not trusted, the fallback URL will be used
       // We can verify this by checking that a navigation to keys.coinbase.com blocks
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://keys.coinbase.com/wallet',
         isTopFrame: true,
         navigationType: 'click',
@@ -948,14 +948,14 @@ describe('WebViewScreen same-origin security', () => {
       );
     });
 
-    it('prevents keys.coinbase.com from loading in WebView despite being subdomain of coinbase.com', () => {
+    it('prevents keys.coinbase.com from loading in WebView despite being subdomain of coinbase.com', async () => {
       // keys.coinbase.com is a subdomain of coinbase.com (which IS trusted)
       // But keys.coinbase.com should be blocked because it's in always-external list
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
       // Try to navigate to keys.coinbase.com
-      const keysResult = webview.props.onShouldStartLoadWithRequest?.({
+      const keysResult = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'https://keys.coinbase.com',
         isTopFrame: true,
         navigationType: 'click',
@@ -978,7 +978,7 @@ describe('WebViewScreen same-origin security', () => {
       const webview = screen.getByTestId('webview');
 
       // Simulate iframe navigation (isTopFrame=false) trying to open deep link
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'sms:+1234567890',
         isTopFrame: false,
         navigationType: 'click',
@@ -1010,7 +1010,7 @@ describe('WebViewScreen same-origin security', () => {
       const webview = screen.getByTestId('webview');
 
       // Simulate top-frame user click navigation
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'mailto:test@example.com',
         isTopFrame: true,
         navigationType: 'click',
@@ -1033,7 +1033,7 @@ describe('WebViewScreen same-origin security', () => {
       const webview = screen.getByTestId('webview');
 
       // Simulate top-frame but non-click navigation (e.g., 'other' from script)
-      const result = webview.props.onShouldStartLoadWithRequest?.({
+      const result = await webview.props.onShouldStartLoadWithRequest?.({
         url: 'tel:+1234567890',
         isTopFrame: true,
         navigationType: 'other',
@@ -1068,7 +1068,7 @@ describe('WebViewScreen same-origin security', () => {
         const webview = screen.getByTestId('webview');
 
         // Android request doesn't include iOS-specific fields
-        const result = webview.props.onShouldStartLoadWithRequest?.({
+        const result = await webview.props.onShouldStartLoadWithRequest?.({
           url: 'sms:+1234567890',
         });
 
@@ -1316,12 +1316,12 @@ describe('WebViewScreen same-origin security', () => {
       );
     });
 
-    it('shows deep-link confirmation when opening mailto/tel schemes', () => {
+    it('shows deep-link confirmation when opening mailto/tel schemes', async () => {
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
       // Trigger deep-link via onShouldStartLoadWithRequest
-      webview.props.onShouldStartLoadWithRequest?.({
+      await webview.props.onShouldStartLoadWithRequest?.({
         url: 'mailto:test@example.com',
         isTopFrame: true,
         navigationType: 'click',
@@ -1354,7 +1354,7 @@ describe('WebViewScreen same-origin security', () => {
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
-      webview.props.onShouldStartLoadWithRequest?.({
+      await webview.props.onShouldStartLoadWithRequest?.({
         url: 'mailto:test@example.com',
         isTopFrame: true,
         navigationType: 'click',
@@ -1384,7 +1384,7 @@ describe('WebViewScreen same-origin security', () => {
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
-      webview.props.onShouldStartLoadWithRequest?.({
+      await webview.props.onShouldStartLoadWithRequest?.({
         url: 'tel:+1234567890',
         isTopFrame: true,
         navigationType: 'click',
@@ -1429,14 +1429,14 @@ describe('WebViewScreen same-origin security', () => {
       });
     });
 
-    it('shows external-site confirmation for untrusted HTTPS navigation', () => {
+    it('shows external-site confirmation for untrusted HTTPS navigation', async () => {
       // Start from untrusted URL (falls back to default trusted URL, so we need
       // to simulate a scenario where untrusted navigation would be blocked)
       render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
       const webview = screen.getByTestId('webview');
 
       // Navigate to untrusted HTTP URL (not HTTPS, not trusted)
-      webview.props.onShouldStartLoadWithRequest?.({
+      await webview.props.onShouldStartLoadWithRequest?.({
         url: 'http://malicious-site.com',
         isTopFrame: true,
         navigationType: 'click',
