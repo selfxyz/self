@@ -247,6 +247,30 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
     expect(mockLinking.openURL).not.toHaveBeenCalled();
   });
 
+  it('blocks data: URLs to prevent XSS and phishing', async () => {
+    render(<WebViewScreen {...createProps('https://self.xyz')} />);
+    const webview = screen.getByTestId('webview');
+
+    const result = await webview.props.onShouldStartLoadWithRequest?.({
+      url: 'data:text/html,<script>alert("XSS")</script>',
+    });
+    expect(result).toBe(false);
+    expect(mockLinking.canOpenURL).not.toHaveBeenCalled();
+    expect(mockLinking.openURL).not.toHaveBeenCalled();
+  });
+
+  it('blocks blob: URLs to prevent resource access', async () => {
+    render(<WebViewScreen {...createProps('https://self.xyz')} />);
+    const webview = screen.getByTestId('webview');
+
+    const result = await webview.props.onShouldStartLoadWithRequest?.({
+      url: 'blob:https://example.com/uuid-here',
+    });
+    expect(result).toBe(false);
+    expect(mockLinking.canOpenURL).not.toHaveBeenCalled();
+    expect(mockLinking.openURL).not.toHaveBeenCalled();
+  });
+
   it('scrubs error log wording when external open fails', async () => {
     // Mock Alert to auto-confirm
     mockAlert.alert.mockImplementation(
@@ -325,6 +349,8 @@ describe('WebViewScreen same-origin security', () => {
       expect(DISALLOWED_SCHEMES).toContain('file://');
       // eslint-disable-next-line no-script-url
       expect(DISALLOWED_SCHEMES).toContain('javascript:');
+      expect(DISALLOWED_SCHEMES).toContain('data:');
+      expect(DISALLOWED_SCHEMES).toContain('blob:');
     });
   });
 
@@ -472,19 +498,25 @@ describe('WebViewScreen same-origin security', () => {
   describe('isUserInitiatedTopFrameNavigation helper function', () => {
     const { isUserInitiatedTopFrameNavigation } = require('@/utils/webview');
 
+    // Ensure platform is always reset to iOS after each test
+    afterEach(() => {
+      mockPlatform.OS = 'ios';
+    });
+
     it('returns true on Android (always allows navigation)', () => {
-      const originalOS = mockPlatform.OS;
       mockPlatform.OS = 'android';
 
-      expect(isUserInitiatedTopFrameNavigation({})).toBe(true);
-      expect(isUserInitiatedTopFrameNavigation({ isTopFrame: false })).toBe(
-        true,
-      );
-      expect(
-        isUserInitiatedTopFrameNavigation({ navigationType: 'other' }),
-      ).toBe(true);
-
-      mockPlatform.OS = originalOS; // Restore original value
+      try {
+        expect(isUserInitiatedTopFrameNavigation({})).toBe(true);
+        expect(isUserInitiatedTopFrameNavigation({ isTopFrame: false })).toBe(
+          true,
+        );
+        expect(
+          isUserInitiatedTopFrameNavigation({ navigationType: 'other' }),
+        ).toBe(true);
+      } finally {
+        mockPlatform.OS = 'ios';
+      }
     });
 
     it('returns false on iOS when isTopFrame is explicitly false (iframe protection)', () => {
@@ -554,6 +586,11 @@ describe('WebViewScreen same-origin security', () => {
   });
 
   describe('onShouldStartLoadWithRequest trusted domain policy', () => {
+    // Ensure platform is always reset to iOS after each test
+    afterEach(() => {
+      mockPlatform.OS = 'ios';
+    });
+
     it('allows initial URL to load', () => {
       const initialUrl = 'https://apps.self.xyz';
       render(<WebViewScreen {...createProps(initialUrl)} />);
@@ -687,25 +724,26 @@ describe('WebViewScreen same-origin security', () => {
 
     it('allows WalletConnect from Aave on Android (no kickout)', () => {
       // Android: WalletConnect should work in WebView normally
-      const originalOS = mockPlatform.OS;
       mockPlatform.OS = 'android';
 
-      render(<WebViewScreen {...createProps('https://app.aave.com')} />);
-      const webview = screen.getByTestId('webview');
+      try {
+        render(<WebViewScreen {...createProps('https://app.aave.com')} />);
+        const webview = screen.getByTestId('webview');
 
-      const result = webview.props.onShouldStartLoadWithRequest?.({
-        url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
-        mainDocumentURL: 'https://app.aave.com/',
-        isTopFrame: false,
-        navigationType: 'other',
-      });
+        const result = webview.props.onShouldStartLoadWithRequest?.({
+          url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
+          mainDocumentURL: 'https://app.aave.com/',
+          isTopFrame: false,
+          navigationType: 'other',
+        });
 
-      // Should allow the request on Android
-      expect(result).toBe(true);
-      expect(mockAlert.alert).not.toHaveBeenCalled();
-      expect(mockLinking.openURL).not.toHaveBeenCalled();
-
-      mockPlatform.OS = originalOS; // Restore
+        // Should allow the request on Android
+        expect(result).toBe(true);
+        expect(mockAlert.alert).not.toHaveBeenCalled();
+        expect(mockLinking.openURL).not.toHaveBeenCalled();
+      } finally {
+        mockPlatform.OS = 'ios';
+      }
     });
 
     it('allows WalletConnect from non-Aave domains on iOS (no kickout)', () => {
@@ -724,6 +762,205 @@ describe('WebViewScreen same-origin security', () => {
       expect(result).toBe(true);
       expect(mockAlert.alert).not.toHaveBeenCalled();
       expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('blocks spoofed WalletConnect URL with domain in query params on iOS', () => {
+      // Security: verify.walletconnect.org in query param should NOT trigger kickout
+      render(<WebViewScreen {...createProps('https://app.aave.com')} />);
+      const webview = screen.getByTestId('webview');
+
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://evil.com/?next=verify.walletconnect.org',
+        mainDocumentURL: 'https://app.aave.com/',
+        isTopFrame: false,
+        navigationType: 'other',
+      });
+
+      // The key security fix: spoofed URL should NOT trigger WalletConnect Safari kickout
+      // It may be allowed in WebView (trusted session) or blocked, but no alert should show
+      expect(mockAlert.alert).not.toHaveBeenCalled();
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+      // In a trusted session, HTTPS URLs are allowed (parent-trusted session model)
+      expect(result).toBe(true);
+    });
+
+    it('blocks spoofed Aave URL with domain in query params on iOS', () => {
+      // Security: app.aave.com in query param should NOT trigger kickout
+      render(
+        <WebViewScreen
+          {...createProps('https://evil.com?page=app.aave.com')}
+        />,
+      );
+      const webview = screen.getByTestId('webview');
+
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://verify.walletconnect.org/v3/attestation?projectId=test',
+        mainDocumentURL: 'https://evil.com/?page=app.aave.com',
+        isTopFrame: false,
+        navigationType: 'other',
+      });
+
+      // Should NOT match as Aave (domain is spoofed in query param)
+      expect(result).toBe(true); // WalletConnect is trusted, so allowed
+      expect(mockAlert.alert).not.toHaveBeenCalled();
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('blocks spoofed WalletConnect URL with domain in path on iOS', () => {
+      // Security: verify.walletconnect.org in path should NOT trigger kickout
+      render(<WebViewScreen {...createProps('https://app.aave.com')} />);
+      const webview = screen.getByTestId('webview');
+
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://evil.com/verify.walletconnect.org/fake-path',
+        mainDocumentURL: 'https://app.aave.com/',
+        isTopFrame: false,
+        navigationType: 'other',
+      });
+
+      // The key security fix: spoofed URL should NOT trigger WalletConnect Safari kickout
+      expect(mockAlert.alert).not.toHaveBeenCalled();
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+      // In a trusted session, HTTPS URLs are allowed (parent-trusted session model)
+      expect(result).toBe(true);
+    });
+
+    it('blocks spoofed WalletConnect URL with domain as subdomain prefix on iOS', () => {
+      // Security: verify.walletconnect.org.evil.com should NOT match
+      render(<WebViewScreen {...createProps('https://app.aave.com')} />);
+      const webview = screen.getByTestId('webview');
+
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://verify.walletconnect.org.evil.com/attestation',
+        mainDocumentURL: 'https://app.aave.com/',
+        isTopFrame: false,
+        navigationType: 'other',
+      });
+
+      // The key security fix: spoofed URL should NOT trigger WalletConnect Safari kickout
+      expect(mockAlert.alert).not.toHaveBeenCalled();
+      expect(mockLinking.openURL).not.toHaveBeenCalled();
+      // In a trusted session, HTTPS URLs are allowed (parent-trusted session model)
+      expect(result).toBe(true);
+    });
+
+    it('enforces "always open externally" policy in onShouldStartLoadWithRequest', () => {
+      // keys.coinbase.com is in ALWAYS_OPEN_EXTERNALLY list
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://keys.coinbase.com/connect',
+        isTopFrame: true,
+        navigationType: 'click',
+      });
+
+      // Should block and show wallet confirmation
+      expect(result).toBe(false);
+      expect(mockAlert.alert).toHaveBeenCalledWith(
+        'Open in Browser',
+        'This will open in your browser to complete the wallet connection.',
+        expect.arrayContaining([
+          expect.objectContaining({ text: 'Cancel' }),
+          expect.objectContaining({ text: 'Open' }),
+        ]),
+      );
+    });
+
+    it('opens current page externally when "always open externally" URL is confirmed', async () => {
+      // Mock Alert to auto-confirm
+      mockAlert.alert.mockImplementation(
+        (
+          _title: string,
+          _message: string,
+          buttons: Array<{ text: string; onPress?: () => void }>,
+        ) => {
+          const openButton = buttons.find(b => b.text === 'Open');
+          openButton?.onPress?.();
+        },
+      );
+      mockLinking.canOpenURL.mockResolvedValue(true);
+
+      render(<WebViewScreen {...createProps('https://app.aave.com')} />);
+      const webview = screen.getByTestId('webview');
+
+      webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://keys.coinbase.com/connect',
+        isTopFrame: true,
+        navigationType: 'click',
+      });
+
+      await waitFor(() => {
+        // Should open the current page (app.aave.com), not the navigation target
+        expect(mockLinking.openURL).toHaveBeenCalledWith(
+          'https://app.aave.com',
+        );
+      });
+    });
+
+    it('enforces "always open externally" policy for keys.coinbase.com', () => {
+      // keys.coinbase.com is in ALWAYS_OPEN_EXTERNALLY (not TRUSTED_DOMAINS)
+      // It should always trigger external open, never load in WebView
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://keys.coinbase.com',
+        isTopFrame: true,
+        navigationType: 'click',
+      });
+
+      // Should block (not allow in WebView) and trigger external open
+      expect(result).toBe(false);
+      expect(mockAlert.alert).toHaveBeenCalledWith(
+        'Open in Browser',
+        'This will open in your browser to complete the wallet connection.',
+        expect.any(Array),
+      );
+    });
+
+    it('prevents keys.coinbase.com from being treated as trusted entrypoint', () => {
+      // Verify keys.coinbase.com cannot start a trusted session
+      render(<WebViewScreen {...createProps('https://keys.coinbase.com')} />);
+      const webview = screen.getByTestId('webview');
+
+      // The initial URL should redirect externally, not load in WebView
+      // Since keys.coinbase.com is not trusted, the fallback URL will be used
+      // We can verify this by checking that a navigation to keys.coinbase.com blocks
+      const result = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://keys.coinbase.com/wallet',
+        isTopFrame: true,
+        navigationType: 'click',
+      });
+
+      expect(result).toBe(false);
+      expect(mockAlert.alert).toHaveBeenCalledWith(
+        'Open in Browser',
+        'This will open in your browser to complete the wallet connection.',
+        expect.any(Array),
+      );
+    });
+
+    it('prevents keys.coinbase.com from loading in WebView despite being subdomain of coinbase.com', () => {
+      // keys.coinbase.com is a subdomain of coinbase.com (which IS trusted)
+      // But keys.coinbase.com should be blocked because it's in always-external list
+      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+      const webview = screen.getByTestId('webview');
+
+      // Try to navigate to keys.coinbase.com
+      const keysResult = webview.props.onShouldStartLoadWithRequest?.({
+        url: 'https://keys.coinbase.com',
+        isTopFrame: true,
+        navigationType: 'click',
+      });
+
+      // Should be blocked because it's in always-external list (not allowed in WebView)
+      expect(keysResult).toBe(false);
+      expect(mockAlert.alert).toHaveBeenCalledWith(
+        'Open in Browser',
+        'This will open in your browser to complete the wallet connection.',
+        expect.any(Array),
+      );
     });
 
     it('blocks deep-link schemes from iframes on iOS (isTopFrame=false)', async () => {
@@ -804,37 +1041,38 @@ describe('WebViewScreen same-origin security', () => {
 
     it('allows all deep-link navigations on Android (no iframe protection)', async () => {
       // Android doesn't have isTopFrame/navigationType, so allow everything
-      const originalOS = mockPlatform.OS;
       mockPlatform.OS = 'android';
 
-      // Mock Alert to auto-confirm
-      mockAlert.alert.mockImplementation(
-        (
-          _title: string,
-          _message: string,
-          buttons: Array<{ text: string; onPress?: () => void }>,
-        ) => {
-          const openButton = buttons.find(b => b.text === 'Open');
-          openButton?.onPress?.();
-        },
-      );
-      mockLinking.canOpenURL.mockResolvedValue(true);
+      try {
+        // Mock Alert to auto-confirm
+        mockAlert.alert.mockImplementation(
+          (
+            _title: string,
+            _message: string,
+            buttons: Array<{ text: string; onPress?: () => void }>,
+          ) => {
+            const openButton = buttons.find(b => b.text === 'Open');
+            openButton?.onPress?.();
+          },
+        );
+        mockLinking.canOpenURL.mockResolvedValue(true);
 
-      render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
-      const webview = screen.getByTestId('webview');
+        render(<WebViewScreen {...createProps('https://apps.self.xyz')} />);
+        const webview = screen.getByTestId('webview');
 
-      // Android request doesn't include iOS-specific fields
-      const result = webview.props.onShouldStartLoadWithRequest?.({
-        url: 'sms:+1234567890',
-      });
+        // Android request doesn't include iOS-specific fields
+        const result = webview.props.onShouldStartLoadWithRequest?.({
+          url: 'sms:+1234567890',
+        });
 
-      expect(result).toBe(false);
-      await waitFor(() => {
-        // Should open on Android (no iframe protection)
-        expect(mockLinking.openURL).toHaveBeenCalledWith('sms:+1234567890');
-      });
-
-      mockPlatform.OS = originalOS; // Restore
+        expect(result).toBe(false);
+        await waitFor(() => {
+          // Should open on Android (no iframe protection)
+          expect(mockLinking.openURL).toHaveBeenCalledWith('sms:+1234567890');
+        });
+      } finally {
+        mockPlatform.OS = 'ios';
+      }
     });
   });
 

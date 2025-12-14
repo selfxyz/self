@@ -31,6 +31,7 @@ import type { SharedRoutesParamList } from '@/navigation/types';
 import {
   DISALLOWED_SCHEMES,
   isAllowedAboutUrl,
+  isHostnameMatch,
   isTrustedDomain,
   isUserInitiatedTopFrameNavigation,
   shouldAlwaysOpenExternally,
@@ -253,10 +254,12 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
 
               // iOS-specific: Detect WalletConnect attestation from Aave and kick to Safari
               // WalletConnect doesn't work properly in WKWebView for Coinbase Wallet connections
+              // Use hostname matching to prevent spoofing (e.g., evil.com/?next=verify.walletconnect.org)
               if (
                 Platform.OS === 'ios' &&
-                req.url.includes('verify.walletconnect.org') &&
-                req.mainDocumentURL?.includes('app.aave.com')
+                isHostnameMatch(req.url, 'verify.walletconnect.org') &&
+                req.mainDocumentURL &&
+                isHostnameMatch(req.mainDocumentURL, 'app.aave.com')
               ) {
                 // Kick parent page to Safari for wallet connection
                 confirmExternalNavigation('wallet').then(confirmed => {
@@ -279,6 +282,19 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
                     }
                   });
                 }
+                return false;
+              }
+
+              // Enforce "always open externally" policy before any other checks
+              // (e.g., keys.coinbase.com requires window.opener in full browser)
+              if (shouldAlwaysOpenExternally(req.url)) {
+                // Show confirmation before redirecting to external wallet
+                confirmExternalNavigation('wallet').then(confirmed => {
+                  if (confirmed) {
+                    // Open the current page externally to maintain window.opener
+                    openUrl(currentUrl);
+                  }
+                });
                 return false;
               }
 
@@ -373,7 +389,12 @@ export const WebViewScreen: React.FC<WebViewScreenProps> = ({ route }) => {
               setCanGoBackInWebView(event.canGoBack);
               setCanGoForwardInWebView(event.canGoForward);
               setCurrentUrl(prev => (isHttpUrl(event.url) ? event.url : prev));
-              if (isTrustedDomain(event.url)) {
+              // Only mark session as trusted if the domain is trusted AND not in always-external list
+              // (e.g., keys.coinbase.com should never establish a trusted session)
+              if (
+                isTrustedDomain(event.url) &&
+                !shouldAlwaysOpenExternally(event.url)
+              ) {
                 setIsSessionTrusted(true);
               }
               if (!title && event.title) {
