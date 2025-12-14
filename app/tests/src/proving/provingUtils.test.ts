@@ -2,44 +2,18 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import forge from 'node-forge';
-
-import { encryptAES256GCM, getPayload, getWSDbRelayerUrl } from '@/proving';
+import { getPayload, getWSDbRelayerUrl } from '@/proving';
 
 describe('provingUtils', () => {
-  it('encryptAES256GCM encrypts and decrypts correctly', () => {
-    const key = forge.random.getBytesSync(32);
-    const plaintext = 'hello world';
-    const encrypted = encryptAES256GCM(plaintext, forge.util.createBuffer(key));
-
-    // Convert arrays to Uint8Array first to ensure proper byte conversion
-    const nonceBytes = new Uint8Array(encrypted.nonce);
-    const authTagBytes = new Uint8Array(encrypted.auth_tag);
-    const cipherTextBytes = new Uint8Array(encrypted.cipher_text);
-
-    // Validate tag length (128 bits = 16 bytes)
-    expect(authTagBytes.length).toBe(16);
-
-    const decipher = forge.cipher.createDecipher(
-      'AES-GCM',
-      forge.util.createBuffer(key),
-    );
-    decipher.start({
-      iv: forge.util.createBuffer(Buffer.from(nonceBytes).toString('binary')),
-      tagLength: 128,
-      tag: forge.util.createBuffer(
-        Buffer.from(authTagBytes).toString('binary'),
-      ),
-    });
-    decipher.update(
-      forge.util.createBuffer(Buffer.from(cipherTextBytes).toString('binary')),
-    );
-    const success = decipher.finish();
-    const decrypted = decipher.output.toString();
-
-    expect(success).toBe(true);
-    expect(decrypted).toBe(plaintext);
-  });
+  /**
+   * Note: encryptAES256GCM is tested in @selfxyz/common where it's defined.
+   * Testing it here would require mixing node-forge instances (app uses
+   * node-forge@^1.3.1, common uses a forked version) which causes silent
+   * failures in CI where the packages are built separately.
+   *
+   * The encryption/decryption roundtrip test belongs in the common package
+   * where both the function and node-forge are from the same source.
+   */
 
   it('getPayload returns disclose payload', () => {
     const inputs = { foo: 'bar' };
