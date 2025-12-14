@@ -52,7 +52,15 @@ describe('encryptAES256GCM', () => {
 describe('getPayload', () => {
   it('returns disclose payload', () => {
     const inputs = { foo: 'bar' };
-    const payload = getPayload(inputs, 'disclose', 'vc_and_disclose', 'https', 'https://example.com', 2, '0xabc');
+    const payload = getPayload(
+      inputs,
+      'disclose',
+      'vc_and_disclose',
+      'https',
+      'https://example.com',
+      2,
+      '0xabc'
+    );
 
     expect(payload).toEqual({
       type: 'disclose',
@@ -67,7 +75,13 @@ describe('getPayload', () => {
   });
 
   it('returns register payload', () => {
-    const payload = getPayload({ a: 1 }, 'register', 'register_circuit', 'celo', 'https://self.xyz');
+    const payload = getPayload(
+      { a: 1 },
+      'register',
+      'register_circuit',
+      'celo',
+      'https://self.xyz'
+    );
 
     expect(payload).toEqual({
       type: 'register',
@@ -79,7 +93,13 @@ describe('getPayload', () => {
 
   it('returns disclose_aadhaar payload for vc_and_disclose_aadhaar circuit', () => {
     const inputs = { test: 'data' };
-    const payload = getPayload(inputs, 'disclose', 'vc_and_disclose_aadhaar', 'https', 'https://example.com');
+    const payload = getPayload(
+      inputs,
+      'disclose',
+      'vc_and_disclose_aadhaar',
+      'https',
+      'https://example.com'
+    );
 
     expect(payload).toEqual({
       type: 'disclose_aadhaar',
@@ -94,7 +114,13 @@ describe('getPayload', () => {
   });
 
   it('returns register_aadhaar payload for register_aadhaar circuit', () => {
-    const payload = getPayload({ a: 1 }, 'register', 'register_aadhaar', 'celo', 'https://self.xyz');
+    const payload = getPayload(
+      { a: 1 },
+      'register',
+      'register_aadhaar',
+      'celo',
+      'https://self.xyz'
+    );
 
     expect(payload).toEqual({
       type: 'register_aadhaar',
