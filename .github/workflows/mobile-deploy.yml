@@ -75,8 +75,7 @@ on:
         description: "Test mode (skip upload to stores)"
         required: false
         type: boolean
-        # TODO(jcortejoso): Restore to false when testing is done
-        default: true
+        default: false
       deployment_track:
         description: "Deployment track (internal/production)"
         required: false
