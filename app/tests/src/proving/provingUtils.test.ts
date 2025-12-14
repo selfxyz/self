@@ -5,16 +5,6 @@
 import { getPayload, getWSDbRelayerUrl } from '@/proving';
 
 describe('provingUtils', () => {
-  /**
-   * Note: encryptAES256GCM is tested in @selfxyz/common where it's defined.
-   * Testing it here would require mixing node-forge instances (app uses
-   * node-forge@^1.3.1, common uses a forked version) which causes silent
-   * failures in CI where the packages are built separately.
-   *
-   * The encryption/decryption roundtrip test belongs in the common package
-   * where both the function and node-forge are from the same source.
-   */
-
   it('getPayload returns disclose payload', () => {
     const inputs = { foo: 'bar' };
     const payload = getPayload(
