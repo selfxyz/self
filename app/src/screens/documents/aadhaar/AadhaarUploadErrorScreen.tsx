@@ -99,7 +99,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
               Try Again
             </PrimaryButton>
           </YStack>
-          <YStack flex={1}>
+          {/* <YStack flex={1}>
             <SecondaryButton
               onPress={() => {
                 trackEvent(AadhaarEvents.HELP_BUTTON_PRESSED, { errorType });
@@ -108,7 +108,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
             >
               Need Help?
             </SecondaryButton>
-          </YStack>
+          </YStack> */}
         </XStack>
       </YStack>
     </YStack>
