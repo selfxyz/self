@@ -398,7 +398,7 @@ export async function getAadharRegistrationWindow() {
 }
 
 export function returnNewDateString(timestamp?: string): string {
-  const newDate = timestamp ? new Date(+timestamp * 1000) : new Date();
+  const newDate = timestamp ? new Date(+timestamp) : new Date();
 
   // Convert the UTC date to IST by adding 5 hours and 30 minutes
   const offsetHours = 5;
