@@ -120,15 +120,10 @@ function setupSubmodule() {
     const isSubmoduleRegistered =
       gitmodulesExists && gitmodulesContent.includes('[submodule "packages/mobile-sdk-alpha/mobile-sdk-native"]');
 
-    log(`Environment: CI=${isCI}, appToken=${!!appToken}, repoToken=${!!repoToken}`, 'info');
-    log(
-      `Token values: appToken length=${appToken ? appToken.length : 0}, repoToken length=${repoToken ? repoToken.length : 0}`,
-      'info',
-    );
-    log(`Gitmodules path: ${gitmodulesPath}`, 'info');
-    log(`Gitmodules exists: ${gitmodulesExists}`, 'info');
-    log(`Submodule registered: ${isSubmoduleRegistered}`, 'info');
-    log(`Submodule URL: ${submoduleUrl}`, 'info');
+    if (process.env.DEBUG_SETUP === 'true') {
+      log(`Environment: CI=${isCI}, hasAppToken=${!!appToken}, hasRepoToken=${!!repoToken}`, 'info');
+      log(`Submodule registered: ${isSubmoduleRegistered}`, 'info');
+    }
 
     // Check if submodule directory exists and has content
     const submoduleExists = fs.existsSync(PRIVATE_MODULE_PATH);
