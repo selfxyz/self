@@ -154,14 +154,19 @@ const SettingsScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<MinimalRootStackParamList>>();
   const { loadDocumentCatalog } = usePassport();
-  const [hasRealDocument, setHasRealDocument] = useState(false);
+  const [hasRealDocument, setHasRealDocument] = useState<boolean | null>(null);
 
   const refreshDocumentAvailability = useCallback(async () => {
     try {
       const catalog = await loadDocumentCatalog();
+      if (!catalog?.documents || !Array.isArray(catalog.documents)) {
+        console.warn('SettingsScreen: invalid catalog structure');
+        setHasRealDocument(false);
+        return;
+      }
       setHasRealDocument(catalog.documents.some(doc => !doc.mock));
-    } catch (error) {
-      console.warn('SettingsScreen: failed to load document catalog', error);
+    } catch {
+      console.warn('SettingsScreen: failed to load document catalog');
       setHasRealDocument(false);
     }
   }, [loadDocumentCatalog]);
@@ -175,10 +180,12 @@ const SettingsScreen: React.FC = () => {
   const screenRoutes = useMemo(() => {
     const baseRoutes = isDevMode ? [...routes, ...DEBUG_MENU] : routes;
 
-    if (hasRealDocument) {
+    // Show all routes while loading or if user has a real document
+    if (hasRealDocument === null || hasRealDocument === true) {
       return baseRoutes;
     }
 
+    // Only filter out document-related routes if we've confirmed user has no real documents
     return baseRoutes.filter(
       ([, , route]) =>
         !['DocumentDataInfo', 'ShowRecoveryPhrase'].includes(route),
