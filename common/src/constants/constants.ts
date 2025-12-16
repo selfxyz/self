@@ -161,7 +161,7 @@ export const OFAC_TREE_LEVELS = 64;
 // we make it global here because passing it to generateCircuitInputsRegister caused trouble
 export const PASSPORT_ATTESTATION_ID = '1';
 
-export const PCR0_MANAGER_ADDRESS = '0x9743fe2C1c3D2b068c56dE314e9B10DA9c904717';
+export const PCR0_MANAGER_ADDRESS = '0xE36d4EE5Fd3916e703A46C21Bb3837dB7680C8B8';
 
 export const REDIRECT_URL = 'https://redirect.self.xyz';
 
