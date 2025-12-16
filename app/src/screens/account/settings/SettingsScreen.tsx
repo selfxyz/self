@@ -3,14 +3,14 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PropsWithChildren } from 'react';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Linking, Platform, Share, View as RNView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bug, FileText } from '@tamagui/lucide-icons';
 
@@ -44,6 +44,7 @@ import {
   xUrl,
 } from '@/consts/links';
 import { impactLight } from '@/integrations/haptics';
+import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';
 
@@ -152,10 +153,36 @@ const SettingsScreen: React.FC = () => {
   const { isDevMode, setDevModeOn } = useSettingStore();
   const navigation =
     useNavigation<NativeStackNavigationProp<MinimalRootStackParamList>>();
+  const { loadDocumentCatalog } = usePassport();
+  const [hasRealDocument, setHasRealDocument] = useState(false);
+
+  const refreshDocumentAvailability = useCallback(async () => {
+    try {
+      const catalog = await loadDocumentCatalog();
+      setHasRealDocument(catalog.documents.some(doc => !doc.mock));
+    } catch (error) {
+      console.warn('SettingsScreen: failed to load document catalog', error);
+      setHasRealDocument(false);
+    }
+  }, [loadDocumentCatalog]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshDocumentAvailability();
+    }, [refreshDocumentAvailability]),
+  );
 
   const screenRoutes = useMemo(() => {
-    return isDevMode ? [...routes, ...DEBUG_MENU] : routes;
-  }, [isDevMode]);
+    const baseRoutes = isDevMode ? [...routes, ...DEBUG_MENU] : routes;
+
+    if (hasRealDocument) {
+      return baseRoutes;
+    }
+
+    return baseRoutes.filter(
+      ([, , route]) => !['DocumentDataInfo', 'ShowRecoveryPhrase'].includes(route),
+    );
+  }, [hasRealDocument, isDevMode]);
 
   const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
