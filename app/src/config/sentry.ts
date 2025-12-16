@@ -166,11 +166,9 @@ export const initSentry = () => {
     },
     integrations: [
       mobileReplayIntegration({
-        // Privacy-first: mask sensitive text data only
-        maskAllText: true, // Masks names, DOB, passport numbers, etc.
-        maskAllImages: false, // Show images (country flags, UI graphics - no document photos stored)
-        maskAllVectors: false, // Show SVG icons/graphics (UI elements, navigation)
-        // This allows full UI debugging while protecting PII text data
+        maskAllText: true,
+        maskAllImages: false,
+        maskAllVectors: false,
       }),
       consoleLoggingIntegration({
         levels: ['log', 'error', 'warn', 'info', 'debug'],
