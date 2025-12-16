@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useEffect, useRef } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import type { RecoveryPhraseVariant } from '@selfxyz/euclid';
@@ -12,7 +13,6 @@ import { Description } from '@selfxyz/mobile-sdk-alpha/components';
 
 import Mnemonic from '@/components/Mnemonic';
 import useMnemonic from '@/hooks/useMnemonic';
-import { useSafeAreaInsets } from '@/hooks/useSafeAreaInsets';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useSettingStore } from '@/stores/settingStore';
 import { IS_EUCLID_ENABLED } from '@/utils/devUtils';

@@ -3,10 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import SDKCountryPickerScreen from '@selfxyz/mobile-sdk-alpha/onboarding/country-picker-screen';
-
-import { useSafeAreaInsets } from '@/hooks/useSafeAreaInsets';
 
 type CountryPickerScreenComponent = React.FC & {
   statusBar: typeof SDKCountryPickerScreen.statusBar;
