@@ -10,6 +10,11 @@ import {
 import type { PassportData } from '@selfxyz/common/types/passport';
 import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 
+/**
+ * Gets the scan prompt for a document type.
+ * @param documentType - Document type code ('p' = Passport, 'i' = ID card, 'a' = Aadhaar)
+ * @returns Scan prompt text
+ */
 export interface DocumentAttributes {
   nameSlice: string;
   dobSlice: string;
@@ -20,6 +25,71 @@ export interface DocumentAttributes {
   sexSlice: string;
   expiryDateSlice: string;
   isPassportType: boolean;
+}
+
+/**
+ * Checks if a document expiration date (in YYMMDD format) has passed.
+ * we assume dateOfExpiry is this century because ICAO standard for biometric passport
+ * became standard around 2002
+ * @param dateOfExpiry - Expiration date in YYMMDD format from MRZ
+ * @returns true if the document is expired, false otherwise
+ */
+export function checkDocumentExpiration(dateOfExpiry: string): boolean {
+  if (!dateOfExpiry || dateOfExpiry.length !== 6) {
+    return false; // Invalid format, don't treat as expired
+  }
+
+  const year = parseInt(dateOfExpiry.slice(0, 2), 10);
+  const fullyear = 2000 + year;
+  const month = parseInt(dateOfExpiry.slice(2, 4), 10) - 1; // JS months are 0-indexed
+  const day = parseInt(dateOfExpiry.slice(4, 6), 10);
+
+  const expiryDateUTC = new Date(Date.UTC(fullyear, month, day, 0, 0, 0, 0));
+  const nowUTC = new Date();
+  const todayUTC = new Date(
+    Date.UTC(
+      nowUTC.getFullYear(),
+      nowUTC.getMonth(),
+      nowUTC.getDate(),
+      0,
+      0,
+      0,
+      0,
+    ),
+  );
+
+  return todayUTC >= expiryDateUTC;
+}
+
+/**
+ * Formats date from YYMMDD format to DD/MM/YYYY format
+ * For expiry (isDOB is false), we assume its this century because ICAO standard for biometric passport
+ * became standard around 2002
+ */
+export function formatDateFromYYMMDD(
+  dateString: string,
+  isDOB: boolean = false,
+): string {
+  if (dateString.length !== 6) {
+    return dateString;
+  }
+
+  const yy = parseInt(dateString.substring(0, 2), 10);
+  const mm = dateString.substring(2, 4);
+  const dd = dateString.substring(4, 6);
+
+  const currentYear = new Date().getFullYear();
+  const century = Math.floor(currentYear / 100) * 100;
+  let year = century + yy;
+
+  if (isDOB) {
+    // For birth: if year is in the future, assume previous century
+    if (year > currentYear) {
+      year -= 100;
+    }
+  }
+
+  return `${dd}/${mm}/${year}`;
 }
 
 /**
@@ -119,71 +189,6 @@ function getPassportAttributes(
   };
 }
 
-/**
- * Checks if a document expiration date (in YYMMDD format) has passed.
- * we assume dateOfExpiry is this century because ICAO standard for biometric passport
- * became standard around 2002
- * @param dateOfExpiry - Expiration date in YYMMDD format from MRZ
- * @returns true if the document is expired, false otherwise
- */
-export function checkDocumentExpiration(dateOfExpiry: string): boolean {
-  if (!dateOfExpiry || dateOfExpiry.length !== 6) {
-    return false; // Invalid format, don't treat as expired
-  }
-
-  const year = parseInt(dateOfExpiry.slice(0, 2), 10);
-  const fullyear = 2000 + year;
-  const month = parseInt(dateOfExpiry.slice(2, 4), 10) - 1; // JS months are 0-indexed
-  const day = parseInt(dateOfExpiry.slice(4, 6), 10);
-
-  const expiryDateUTC = new Date(Date.UTC(fullyear, month, day, 0, 0, 0, 0));
-  const nowUTC = new Date();
-  const todayUTC = new Date(
-    Date.UTC(
-      nowUTC.getFullYear(),
-      nowUTC.getMonth(),
-      nowUTC.getDate(),
-      0,
-      0,
-      0,
-      0,
-    ),
-  );
-
-  return todayUTC >= expiryDateUTC;
-}
-
-/**
- * Formats date from YYMMDD format to DD/MM/YYYY format
- * For expiry (isDOB is false), we assume its this century because ICAO standard for biometric passport
- * became standard around 2002
- */
-export function formatDateFromYYMMDD(
-  dateString: string,
-  isDOB: boolean = false,
-): string {
-  if (dateString.length !== 6) {
-    return dateString;
-  }
-
-  const yy = parseInt(dateString.substring(0, 2), 10);
-  const mm = dateString.substring(2, 4);
-  const dd = dateString.substring(4, 6);
-
-  const currentYear = new Date().getFullYear();
-  const century = Math.floor(currentYear / 100) * 100;
-  let year = century + yy;
-
-  if (isDOB) {
-    // For birth: if year is in the future, assume previous century
-    if (year > currentYear) {
-      year -= 100;
-    }
-  }
-
-  return `${dd}/${mm}/${year}`;
-}
-
 // Helper functions to safely extract document data
 export function getDocumentAttributes(
   document: PassportData | AadhaarData,
@@ -205,6 +210,31 @@ export function getDocumentAttributes(
       expiryDateSlice: '',
       isPassportType: false,
     };
+  }
+}
+
+/**
+ * Gets the display name for a document type code.
+ * @param documentType - Document type code ('p' = Passport, 'i' = ID card, 'a' = Aadhaar)
+ * @returns Human-readable document name
+ */
+export function getDocumentScanPrompt(
+  documentType: string | undefined,
+): string {
+  const documentName = getDocumentTypeName(documentType);
+  return `Scan your ${documentName}`;
+}
+
+export function getDocumentTypeName(documentType: string | undefined): string {
+  switch (documentType) {
+    case 'p':
+      return 'Passport';
+    case 'i':
+      return 'ID';
+    case 'a':
+      return 'Aadhaar';
+    default:
+      return 'ID';
   }
 }
 

@@ -35,6 +35,7 @@ import Scan from '@/assets/icons/passport_camera_scan.svg';
 import { PassportCamera } from '@/components/native/PassportCamera';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { getDocumentScanPrompt } from '@/utils/documentAttributes';
 
 const DocumentCameraScreen: React.FC = () => {
   const isFocused = useIsFocused();
@@ -47,8 +48,7 @@ const DocumentCameraScreen: React.FC = () => {
   const scanStartTimeRef = useRef(Date.now());
   const { onPassportRead } = useReadMRZ(scanStartTimeRef);
 
-  const documentName = selectedDocumentType === 'p' ? 'Passport' : 'ID';
-  const scanPrompt = `Scan your ${documentName}`;
+  const scanPrompt = getDocumentScanPrompt(selectedDocumentType);
 
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',

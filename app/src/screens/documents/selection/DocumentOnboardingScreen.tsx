@@ -29,6 +29,7 @@ import passportOnboardingAnimation from '@/assets/animations/passport_onboarding
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { getDocumentScanPrompt } from '@/utils/documentAttributes';
 
 const DocumentOnboardingScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -39,8 +40,7 @@ const DocumentOnboardingScreen: React.FC = () => {
   const handleCameraPress = useHapticNavigation('DocumentCamera');
   const animationRef = useRef<LottieView>(null);
 
-  const documentName = selectedDocumentType === 'p' ? 'Passport' : 'ID';
-  const scanPrompt = `Scan your ${documentName}`;
+  const scanPrompt = getDocumentScanPrompt(selectedDocumentType);
 
   const onCancelPress = () => {
     impactLight();
