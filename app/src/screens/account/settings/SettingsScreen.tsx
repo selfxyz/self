@@ -180,7 +180,8 @@ const SettingsScreen: React.FC = () => {
     }
 
     return baseRoutes.filter(
-      ([, , route]) => !['DocumentDataInfo', 'ShowRecoveryPhrase'].includes(route),
+      ([, , route]) =>
+        !['DocumentDataInfo', 'ShowRecoveryPhrase'].includes(route),
     );
   }, [hasRealDocument, isDevMode]);
 

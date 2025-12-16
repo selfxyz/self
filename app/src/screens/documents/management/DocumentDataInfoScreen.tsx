@@ -5,13 +5,12 @@
 import React, { useCallback, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Separator, XStack, YStack } from 'tamagui';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 
 import type { PassportMetadata } from '@selfxyz/common/types';
 import type { AadhaarData } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { Caption, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
@@ -19,7 +18,6 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { extraYPadding } from '@/utils/styleUtils';
 
@@ -79,30 +77,18 @@ const InfoRow: React.FC<{
 const DocumentDataInfoScreen: React.FC = () => {
   const { trackEvent } = useSelfClient();
   const { getData } = usePassport();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [metadata, setMetadata] = useState<DocumentMetadata | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasVerifiedDocument, setHasVerifiedDocument] = useState(true);
   const { bottom } = useSafeAreaInsets();
 
   const loadData = useCallback(async () => {
-    setIsLoading(true);
-    const result = await getData();
-
-    if (!result || !result.data) {
-      setHasVerifiedDocument(false);
-      setMetadata(null);
-      setIsLoading(false);
-      trackEvent(DocumentEvents.NO_DOCUMENTS_FOUND);
+    if (metadata) {
       return;
     }
 
-    if (result.data.mock) {
-      setHasVerifiedDocument(false);
-      setMetadata(null);
-      setIsLoading(false);
-      trackEvent(DocumentEvents.NO_DOCUMENTS_FOUND);
+    const result = await getData();
+
+    if (!result || !result.data) {
+      // maybe handle error instead
       return;
     }
 
@@ -125,9 +111,6 @@ const DocumentDataInfoScreen: React.FC = () => {
     } else {
       if (!('passportMetadata' in result.data)) {
         console.warn('DocumentDataInfoScreen: passportMetadata is missing');
-        setHasVerifiedDocument(false);
-        setMetadata(null);
-        setIsLoading(false);
         return;
       }
 
@@ -139,9 +122,7 @@ const DocumentDataInfoScreen: React.FC = () => {
       setMetadata(passportMetadataWithCategory);
       trackEvent(DocumentEvents.PASSPORT_METADATA_LOADED);
     }
-    setHasVerifiedDocument(true);
-    setIsLoading(false);
-  }, [getData, trackEvent]);
+  }, [metadata, getData, trackEvent]);
 
   useFocusEffect(() => {
     trackEvent(DocumentEvents.PASSPORT_INFO_OPENED);
@@ -152,47 +133,6 @@ const DocumentDataInfoScreen: React.FC = () => {
   const dataKeysToLabels = isAadhaarDocument
     ? aadhaarDataKeysToLabels
     : passportDataKeysToLabels;
-
-  if (isLoading) {
-    return (
-      <YStack
-        flex={1}
-        alignItems="center"
-        justifyContent="center"
-        backgroundColor={white}
-      >
-        <Caption style={{ fontSize: 16, color: black }}>
-          Loading document data...
-        </Caption>
-      </YStack>
-    );
-  }
-
-  if (!hasVerifiedDocument) {
-    return (
-      <YStack
-        flex={1}
-        justifyContent="center"
-        alignItems="center"
-        gap="$4"
-        padding="$4"
-        backgroundColor={white}
-      >
-        <Caption style={{ fontSize: 18, color: black }}>
-          No verified document found
-        </Caption>
-        <Caption style={{ fontSize: 16, textAlign: 'center' }}>
-          Add a document to view its data and verification details.
-        </Caption>
-        <PrimaryButton
-          onPress={() => navigation.navigate('CountryPicker')}
-          style={{ alignSelf: 'stretch' }}
-        >
-          Add a document
-        </PrimaryButton>
-      </YStack>
-    );
-  }
 
   return (
     <YStack
