@@ -74,6 +74,7 @@ const CountryPickerScreen: React.FC<SafeArea> & { statusBar: typeof CountryPicke
       onClose={selfClient.goBack}
       onInfoPress={() => selfClient.trackEvent(DocumentEvents.COUNTRY_HELP_TAPPED)}
       onSearchChange={onSearchChange}
+      showInfoIcon={false}
     />
   );
 };
