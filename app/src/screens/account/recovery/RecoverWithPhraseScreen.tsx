@@ -4,7 +4,7 @@
 
 import { ethers } from 'ethers';
 import React, { useCallback, useState } from 'react';
-import { Keyboard, StyleSheet } from 'react-native';
+import { Keyboard, Pressable, StyleSheet } from 'react-native';
 import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
@@ -177,19 +177,12 @@ const RecoverWithPhraseScreen: React.FC = () => {
           }
           onChangeText={setMnemonic}
         />
-        <XStack
-          gap="$2"
-          position="absolute"
-          bottom={0}
-          width="100%"
-          alignItems="flex-end"
-          justifyContent="center"
-          paddingBottom="$4"
-          onPress={onPaste}
-        >
-          <Paste color={white} height={20} width={20} />
-          <Text style={styles.pasteText}>PASTE</Text>
-        </XStack>
+        <Pressable style={styles.pasteButton} onPress={onPaste}>
+          <XStack gap="$2" alignItems="center">
+            <Paste color={white} height={20} width={20} />
+            <Text style={styles.pasteText}>PASTE</Text>
+          </XStack>
+        </Pressable>
       </View>
 
       <SecondaryButton
@@ -216,5 +209,13 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontSize: 15,
     color: white,
+  },
+  pasteButton: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 16,
   },
 });
