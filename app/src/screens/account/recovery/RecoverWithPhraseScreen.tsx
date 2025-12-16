@@ -177,7 +177,13 @@ const RecoverWithPhraseScreen: React.FC = () => {
           }
           onChangeText={setMnemonic}
         />
-        <Pressable style={styles.pasteButton} onPress={onPaste}>
+        <Pressable
+          style={styles.pasteButton}
+          onPress={onPaste}
+          hitSlop={pasteButtonHitSlop}
+          accessibilityRole="button"
+          accessibilityLabel="Paste recovery phrase"
+        >
           <XStack gap="$2" alignItems="center">
             <Paste color={white} height={20} width={20} />
             <Text style={styles.pasteText}>PASTE</Text>
@@ -196,6 +202,8 @@ const RecoverWithPhraseScreen: React.FC = () => {
 };
 
 export default RecoverWithPhraseScreen;
+
+const pasteButtonHitSlop = { top: 10, bottom: 10, left: 24, right: 24 };
 
 const styles = StyleSheet.create({
   layout: {
