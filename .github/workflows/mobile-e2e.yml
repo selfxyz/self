@@ -17,6 +17,15 @@ env:
   MAESTRO_VERSION: 1.41.0
 
 on:
+  push:
+    branches:
+      - dev
+      - staging
+      - main
+    paths:
+      - "app/**"
+      - "packages/mobile-sdk-alpha/**"
+      - ".github/workflows/mobile-e2e.yml"
   pull_request:
     branches:
       - dev
@@ -26,6 +35,8 @@ on:
       - "app/**"
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-e2e.yml"
+  issue_comment:
+    types: [created]
 
 jobs:
   android-build-test:
@@ -231,6 +242,12 @@ jobs:
     timeout-minutes: 120
     # runs-on: macos-latest-large
     runs-on: namespace-profile-apple-silicon-6cpu
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(github.event.comment.body, '/run-ios-e2e'))
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
       cancel-in-progress: true

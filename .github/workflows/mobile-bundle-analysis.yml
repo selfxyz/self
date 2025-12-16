@@ -8,7 +8,21 @@ env:
   NODE_ENV: "production"
 
 on:
+  push:
+    branches:
+      - dev
+      - staging
+      - main
+    paths:
+      - "app/**"
+      - "packages/mobile-sdk-alpha/**"
+      - ".github/workflows/mobile-bundle-analysis.yml"
+      - ".github/actions/**"
   pull_request:
+    branches:
+      - dev
+      - staging
+      - main
     paths:
       - "app/**"
       - "packages/mobile-sdk-alpha/**"
@@ -83,6 +97,7 @@ jobs:
         working-directory: ./app
 
   analyze-ios:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     # runs-on: macos-latest-large
     runs-on: namespace-profile-apple-silicon-6cpu
     steps:
