@@ -19,15 +19,6 @@ env:
   E2E_TESTING: 1
 
 on:
-  push:
-    branches:
-      - dev
-      - staging
-      - main
-    paths:
-      - "packages/mobile-sdk-demo/**"
-      - "packages/mobile-sdk-alpha/**"
-      - ".github/workflows/mobile-sdk-demo-e2e.yml"
   pull_request:
     branches:
       - dev
@@ -213,7 +204,6 @@ jobs:
     timeout-minutes: 60
     # runs-on: macos-latest-large
     runs-on: namespace-profile-apple-silicon-6cpu
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     name: iOS E2E Tests Demo App
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}

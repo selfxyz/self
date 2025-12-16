@@ -8,16 +8,6 @@ env:
   NODE_ENV: "production"
 
 on:
-  push:
-    branches:
-      - dev
-      - staging
-      - main
-    paths:
-      - "app/**"
-      - "packages/mobile-sdk-alpha/**"
-      - ".github/workflows/mobile-bundle-analysis.yml"
-      - ".github/actions/**"
   pull_request:
     paths:
       - "app/**"
@@ -95,8 +85,6 @@ jobs:
   analyze-ios:
     # runs-on: macos-latest-large
     runs-on: namespace-profile-apple-silicon-6cpu
-    # Only run when pushing/merging to main/staging/dev
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version

@@ -16,17 +16,6 @@ env:
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.caching=true
   CI: true
 on:
-  push:
-    branches:
-      - dev
-      - staging
-      - main
-    paths:
-      - "common/**"
-      - "app/**"
-      - "packages/mobile-sdk-alpha/**"
-      - ".github/workflows/mobile-ci.yml"
-      - ".github/actions/**"
   pull_request:
     branches:
       - dev
