@@ -203,8 +203,8 @@ jobs:
           yarn test:ci
         working-directory: ./app
   build-ios:
-    # Only run when pushing/merging to main/staging/dev
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    # This is mostly covered in mobile-e2e.yml so we don't need to run it here frequently
+    if: github.event_name == 'workflow_dispatch'
     # runs-on: macos-latest-large
     runs-on: namespace-profile-apple-silicon-6cpu
     needs: build-deps
@@ -424,6 +424,8 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     needs: build-deps
+    # This is mostly covered in mobile-e2e.yml so we don't need to run it here frequently
+    if: github.event_name == 'workflow_dispatch'
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
