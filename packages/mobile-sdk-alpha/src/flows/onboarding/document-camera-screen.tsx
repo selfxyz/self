@@ -29,10 +29,7 @@ type Props = {
 export const DocumentCameraScreen = ({ onBack, onSuccess, safeAreaInsets }: Props) => {
   const scanStartTimeRef = useRef(Date.now());
   const selfClient = useSelfClient();
-  const selectedDocumentType = selfClient.useMRZStore(state => state.documentType?.toLowerCase());
   const { onPassportRead } = useReadMRZ(scanStartTimeRef);
-
-  const scanPrompt = selectedDocumentType === 'p' ? 'Scan your Passport' : 'Scan your ID';
 
   const handleMRZDetected = useCallback(
     (mrzData: MRZInfo) => {
@@ -70,7 +67,7 @@ export const DocumentCameraScreen = ({ onBack, onSuccess, safeAreaInsets }: Prop
       <ExpandableBottomLayout.BottomSection backgroundColor={white} safeAreaBottom={safeAreaInsets?.bottom}>
         <YStack alignItems="center" gap="$2.5">
           <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
-            <Title>{scanPrompt}</Title>
+            <Title>Scan your ID</Title>
             <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
               <View paddingTop="$2">
                 <Scan height={40} width={40} color={slate800} />

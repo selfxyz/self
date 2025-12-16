@@ -7,7 +7,11 @@ import { StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
 import { useIsFocused } from '@react-navigation/native';
 
-import { DelayedLottieView, dinot } from '@selfxyz/mobile-sdk-alpha';
+import {
+  DelayedLottieView,
+  dinot,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   Description,
@@ -34,10 +38,17 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 
 const DocumentCameraScreen: React.FC = () => {
   const isFocused = useIsFocused();
+  const selfClient = useSelfClient();
+  const selectedDocumentType = selfClient.useMRZStore(
+    state => state.documentType,
+  );
 
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
   const { onPassportRead } = useReadMRZ(scanStartTimeRef);
+
+  const documentName = selectedDocumentType === 'p' ? 'Passport' : 'ID';
+  const scanPrompt = `Scan your ${documentName}`;
 
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
@@ -63,7 +74,7 @@ const DocumentCameraScreen: React.FC = () => {
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <YStack alignItems="center" gap="$2.5">
           <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
-            <Title>Scan your ID</Title>
+            <Title>{scanPrompt}</Title>
             <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
               <View paddingTop="$2">
                 <Scan height={40} width={40} color={slate800} />

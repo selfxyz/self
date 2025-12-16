@@ -8,6 +8,7 @@ import { StyleSheet } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { useNavigation } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   ButtonsContainer,
@@ -31,8 +32,15 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 
 const DocumentOnboardingScreen: React.FC = () => {
   const navigation = useNavigation();
+  const selfClient = useSelfClient();
+  const selectedDocumentType = selfClient.useMRZStore(
+    state => state.documentType,
+  );
   const handleCameraPress = useHapticNavigation('DocumentCamera');
   const animationRef = useRef<LottieView>(null);
+
+  const documentName = selectedDocumentType === 'p' ? 'Passport' : 'ID';
+  const scanPrompt = `Scan your ${documentName}`;
 
   const onCancelPress = () => {
     impactLight();
@@ -69,7 +77,7 @@ const DocumentOnboardingScreen: React.FC = () => {
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <TextsContainer>
-          <Title>Scan your ID</Title>
+          <Title>{scanPrompt}</Title>
           <Description textBreakStrategy="balanced">
             Open to the photo page
           </Description>
