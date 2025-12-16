@@ -67,7 +67,7 @@ export const DocumentCameraScreen = ({ onBack, onSuccess, safeAreaInsets }: Prop
           renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
-          <ExpandableBottomLayout.BottomSection backgroundColor={white} safeAreaBottom={safeAreaInsets?.bottom}>
+      <ExpandableBottomLayout.BottomSection backgroundColor={white} safeAreaBottom={safeAreaInsets?.bottom}>
         <YStack alignItems="center" gap="$2.5">
           <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
             <Title>{scanPrompt}</Title>
