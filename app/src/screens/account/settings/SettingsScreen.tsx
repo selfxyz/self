@@ -104,6 +104,12 @@ const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption][] = [
   [Bug as React.FC<SvgProps>, 'Debug menu', 'DevSettings'],
 ];
 
+const DOCUMENT_DEPENDENT_ROUTES: RouteOption[] = [
+  'CloudBackupSettings',
+  'DocumentDataInfo',
+  'ShowRecoveryPhrase',
+];
+
 const social = [
   [X, xUrl],
   [Github, gitHubUrl],
@@ -187,8 +193,7 @@ const SettingsScreen: React.FC = () => {
 
     // Only filter out document-related routes if we've confirmed user has no real documents
     return baseRoutes.filter(
-      ([, , route]) =>
-        !['DocumentDataInfo', 'ShowRecoveryPhrase'].includes(route),
+      ([, , route]) => !DOCUMENT_DEPENDENT_ROUTES.includes(route),
     );
   }, [hasRealDocument, isDevMode]);
 
