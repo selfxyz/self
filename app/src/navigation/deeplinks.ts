@@ -125,7 +125,9 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
       selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 
-      navigationRef.navigate('Prove' as never);
+      navigationRef.reset(
+        createDeeplinkNavigationState('Prove', correctParentScreen),
+      );
 
       return;
     } catch (error) {
@@ -140,7 +142,9 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
     selfClient.getSelfAppState().cleanSelfApp();
     selfClient.getSelfAppState().startAppListener(sessionId);
 
-    navigationRef.navigate('Prove' as never);
+    navigationRef.reset(
+      createDeeplinkNavigationState('Prove', correctParentScreen),
+    );
   } else if (mock_passport) {
     try {
       const data = JSON.parse(mock_passport);
