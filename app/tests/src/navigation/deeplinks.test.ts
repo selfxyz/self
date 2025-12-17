@@ -90,7 +90,10 @@ describe('deeplinks', () => {
       expect(mockStartAppListener).toHaveBeenCalledWith('abc');
 
       const { navigationRef } = require('@/navigation');
-      expect(navigationRef.navigate).toHaveBeenCalledWith('Prove');
+      expect(navigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'Prove' }],
+      });
     });
 
     it('handles sessionId parameter', () => {
@@ -113,7 +116,10 @@ describe('deeplinks', () => {
       expect(mockStartAppListener).toHaveBeenCalledWith('123');
 
       const { navigationRef } = require('@/navigation');
-      expect(navigationRef.navigate).toHaveBeenCalledWith('Prove');
+      expect(navigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'Prove' }],
+      });
     });
 
     it('handles mock_passport parameter', () => {
