@@ -8,11 +8,7 @@ import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import {
-  BodyText,
-  PrimaryButton,
-  SecondaryButton,
-} from '@selfxyz/mobile-sdk-alpha/components';
+import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
@@ -99,7 +95,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
               Try Again
             </PrimaryButton>
           </YStack>
-          <YStack flex={1}>
+          {/* <YStack flex={1}>
             <SecondaryButton
               onPress={() => {
                 trackEvent(AadhaarEvents.HELP_BUTTON_PRESSED, { errorType });
@@ -108,7 +104,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
             >
               Need Help?
             </SecondaryButton>
-          </YStack>
+          </YStack> */}
         </XStack>
       </YStack>
     </YStack>

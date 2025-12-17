@@ -11,8 +11,9 @@ import { BigNumberish } from "ethers";
 import { generateRandomFieldElement, getStartOfDayTimestamp, splitHexFromBack } from "../utils/utils";
 import { Formatter, CircuitAttributeHandler } from "../utils/formatter";
 import { formatCountriesList, reverseBytes, reverseCountryBytes } from "@selfxyz/common/utils/circuits/formatInputs";
-import { getPackedForbiddenCountries } from "@selfxyz/common/utils/sanctions";
+import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
 import { countries, Country3LetterCode } from "@selfxyz/common/constants/countries";
+import { castFromScope } from "@selfxyz/common/utils/circuits/uuid";
 import path from "path";
 
 describe("VC and Disclose", () => {
@@ -100,7 +101,7 @@ describe("VC and Disclose", () => {
       registerSecret,
       BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
       deployedActors.mockPassport,
-      "test-scope",
+      castFromScope("test-scope"),
       new Array(88).fill("1"),
       "1",
       imt,
@@ -110,7 +111,7 @@ describe("VC and Disclose", () => {
       undefined,
       undefined,
       forbiddenCountriesList,
-      (await deployedActors.user1.getAddress()).slice(2),
+      await deployedActors.user1.getAddress(),
     );
     snapshotId = await ethers.provider.send("evm_snapshot", []);
   });
@@ -439,6 +440,7 @@ describe("VC and Disclose", () => {
       const { hub, registry, owner, mockPassport } = deployedActors;
 
       const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
       const imt = new LeanIMT<bigint>(hashFunction);
       imt.insert(BigInt(commitment));
 
@@ -448,7 +450,7 @@ describe("VC and Disclose", () => {
         registerSecret,
         BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
         mockPassport,
-        "test-scope",
+        castFromScope("test-scope"),
         new Array(88).fill("1"),
         "1",
         imt,
@@ -746,43 +748,60 @@ describe("VC and Disclose", () => {
     it("should parse forbidden countries with CircuitAttributeHandler", async () => {
       const { hub } = deployedActors;
 
-      const forbiddenCountriesListPacked = splitHexFromBack(
-        reverseCountryBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))),
-      );
+      const localForbiddenCountriesList = ["AFG", "ABC", "CBA"] as const;
+      const forbiddenCountriesListPacked = getPackedForbiddenCountries([...localForbiddenCountriesList]);
       const readableForbiddenCountries = await hub.getReadableForbiddenCountries(forbiddenCountriesListPacked);
 
-      expect(readableForbiddenCountries[0]).to.equal(forbiddenCountriesList[0]);
-      expect(readableForbiddenCountries[1]).to.equal(forbiddenCountriesList[1]);
-      expect(readableForbiddenCountries[2]).to.equal(forbiddenCountriesList[2]);
+      expect(readableForbiddenCountries[0]).to.equal(localForbiddenCountriesList[0]);
+      expect(readableForbiddenCountries[1]).to.equal(localForbiddenCountriesList[1]);
+      expect(readableForbiddenCountries[2]).to.equal(localForbiddenCountriesList[2]);
     });
 
     it("should return maximum length of forbidden countries", async () => {
       const { hub } = deployedActors;
 
-      const forbiddenCountriesList = ["AAA", "FRA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA"];
-      const forbiddenCountriesListPacked = splitHexFromBack(
-        reverseCountryBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))),
-      );
+      const localForbiddenCountriesList = [
+        "AAA",
+        "FRA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+      ] as const;
+      const forbiddenCountriesListPacked = getPackedForbiddenCountries([...localForbiddenCountriesList]);
       const readableForbiddenCountries = await hub.getReadableForbiddenCountries(forbiddenCountriesListPacked);
       expect(readableForbiddenCountries.length).to.equal(40);
-      expect(readableForbiddenCountries[0]).to.equal(forbiddenCountriesList[0]);
-      expect(readableForbiddenCountries[1]).to.equal(forbiddenCountriesList[1]);
-      expect(readableForbiddenCountries[2]).to.equal(forbiddenCountriesList[2]);
-      expect(readableForbiddenCountries[3]).to.equal(forbiddenCountriesList[3]);
-      expect(readableForbiddenCountries[4]).to.equal(forbiddenCountriesList[4]);
-      expect(readableForbiddenCountries[5]).to.equal(forbiddenCountriesList[5]);
-      expect(readableForbiddenCountries[6]).to.equal(forbiddenCountriesList[6]);
-      expect(readableForbiddenCountries[7]).to.equal(forbiddenCountriesList[7]);
-      expect(readableForbiddenCountries[8]).to.equal(forbiddenCountriesList[8]);
-      expect(readableForbiddenCountries[9]).to.equal(forbiddenCountriesList[9]);
+      expect(readableForbiddenCountries[0]).to.equal(localForbiddenCountriesList[0]);
+      expect(readableForbiddenCountries[1]).to.equal(localForbiddenCountriesList[1]);
+      expect(readableForbiddenCountries[2]).to.equal(localForbiddenCountriesList[2]);
+      expect(readableForbiddenCountries[3]).to.equal(localForbiddenCountriesList[3]);
+      expect(readableForbiddenCountries[4]).to.equal(localForbiddenCountriesList[4]);
+      expect(readableForbiddenCountries[5]).to.equal(localForbiddenCountriesList[5]);
+      expect(readableForbiddenCountries[6]).to.equal(localForbiddenCountriesList[6]);
+      expect(readableForbiddenCountries[7]).to.equal(localForbiddenCountriesList[7]);
+      expect(readableForbiddenCountries[8]).to.equal(localForbiddenCountriesList[8]);
+      expect(readableForbiddenCountries[9]).to.equal(localForbiddenCountriesList[9]);
     });
 
     it("should fail when getReadableForbiddenCountries is called by non-proxy", async () => {
       const { hubImpl } = deployedActors;
-      const forbiddenCountriesList = ["AAA", "FRA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA", "CBA"];
-      const forbiddenCountriesListPacked = splitHexFromBack(
-        reverseCountryBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))),
-      );
+      const localForbiddenCountriesList = [
+        "AAA",
+        "FRA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+        "CBA",
+      ] as const;
+      const forbiddenCountriesListPacked = getPackedForbiddenCountries([...localForbiddenCountriesList]);
       await expect(hubImpl.getReadableForbiddenCountries(forbiddenCountriesListPacked)).to.be.revertedWithCustomError(
         hubImpl,
         "UUPSUnauthorizedCallContext",

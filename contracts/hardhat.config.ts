@@ -1,12 +1,15 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import "@openzeppelin/hardhat-upgrades";
 import dotenv from "dotenv";
 dotenv.config();
 import "hardhat-contract-sizer";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import "solidity-coverage";
 import "hardhat-gas-reporter";
-import "hardhat-contract-sizer";
+
+// Import custom upgrade tasks
+import "./tasks/upgrade";
 
 // Use a dummy private key for CI/local development (not used for actual deployments)
 const DUMMY_PRIVATE_KEY = "0x0000000000000000000000000000000000000000000000000000000000000001";
@@ -16,9 +19,10 @@ const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.28",
     settings: {
+      evmVersion: "cancun",
       optimizer: {
         enabled: true,
-        runs: 100000,
+        runs: 200,
       },
     },
   },
@@ -37,7 +41,7 @@ const config: HardhatUserConfig = {
       chainId: 31337,
       url: "http://127.0.0.1:8545",
       accounts: {
-        mnemonic: "test test test test test test test test test test test test",
+        mnemonic: "test test test test test test test test test test test junk",
         count: 20,
       },
     },

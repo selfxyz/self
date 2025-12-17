@@ -73,11 +73,13 @@ export const BackupEvents = {
   CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED: 'Backup: Cloud Restore Failed: Passport Not Registered',
   CLOUD_RESTORE_FAILED_UNKNOWN: 'Backup: Cloud Restore Failed: Unknown Error',
   CLOUD_RESTORE_SUCCESS: 'Backup: Cloud Restore Success',
+  TURNKEY_RESTORE_FAILED: 'Backup: Turnkey Restore Failed',
   CREATE_NEW_ACCOUNT: 'Backup: Create New Account',
   MANUAL_RECOVERY_SELECTED: 'Backup: Manual Recovery Selected',
 };
 
 export const DocumentEvents = {
+  COUNTRY_HELP_TAPPED: 'Document: Country Help Tapped',
   ADD_NEW_AADHAAR_SELECTED: 'Document: Add Aadhaar',
   ADD_NEW_MOCK_SELECTED: 'Document: Add New Document via Mock',
   ADD_NEW_SCAN_SELECTED: 'Document: Add New Document via Scan',

@@ -40,7 +40,6 @@
     "@babel/core": "^7.28.4",
     "@babel/runtime": "^7.28.4",
     "@noble/curves": "1.9.7",
-    "@noble/hashes": "1.8.0",
     "@swc/core": "1.7.36",
     "@tamagui/animations-react-native": "1.126.14",
     "@tamagui/toast": "1.126.14",

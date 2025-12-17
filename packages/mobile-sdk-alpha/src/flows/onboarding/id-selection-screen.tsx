@@ -80,6 +80,8 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
   const onSelectDocumentType = (docType: string) => {
     buttonTap();
 
+    selfClient.getMRZState().update({ documentType: docType });
+
     selfClient.emit(SdkEvents.DOCUMENT_TYPE_SELECTED, {
       documentType: docType,
       documentName: getDocumentNameForEvent(docType),

@@ -5,7 +5,7 @@ import ScreenLayout from '../components/ScreenLayout';
 export default function CountrySelection({ onBack }: { onBack: () => void }) {
   return (
     <ScreenLayout title="GETTING STARTED" onBack={onBack}>
-      <SDKCountryPickerScreen />
+      <SDKCountryPickerScreen insets={{ top: 0, bottom: 0 }} />
     </ScreenLayout>
   );
 }

@@ -8,10 +8,6 @@ import { Dimensions } from 'react-native';
 import { Separator, Text, XStack, YStack } from 'tamagui';
 
 import type { AadhaarData } from '@selfxyz/common';
-import {
-  attributeToPosition,
-  attributeToPosition_ID,
-} from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types/passport';
 import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 import {
@@ -28,6 +24,11 @@ import EPassport from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport.svg';
 
 import LogoGray from '@/assets/images/logo_gray.svg';
 import { SvgXml } from '@/components/homescreen/SvgXmlWrapper';
+import {
+  formatDateFromYYMMDD,
+  getDocumentAttributes,
+  getNameAndSurname,
+} from '@/utils/documentAttributes';
 
 // Import the logo SVG as a string
 const logoSvg = `<svg width="47" height="46" viewBox="0 0 47 46" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -332,6 +333,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
                     name="DOB"
                     value={formatDateFromYYMMDD(
                       getDocumentAttributes(idDocument).dobSlice,
+                      true,
                     )}
                     maskValue="XX/XX/XXXX"
                     hidden={hidden}
@@ -342,7 +344,6 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
                     name="EXPIRY DATE"
                     value={formatDateFromYYMMDD(
                       getDocumentAttributes(idDocument).expiryDateSlice,
-                      true,
                     )}
                     maskValue="XX/XX/XXXX"
                     hidden={hidden}
@@ -520,164 +521,3 @@ const IdAttribute: FC<IdAttributeProps> = ({
 };
 
 export default IdCardLayout;
-
-// Helper functions to safely extract document data
-function getDocumentAttributes(document: PassportData | AadhaarData) {
-  if (isAadhaarDocument(document)) {
-    return getAadhaarAttributes(document);
-  } else if (isMRZDocument(document)) {
-    return getPassportAttributes(document.mrz, document.documentCategory);
-  } else {
-    // Fallback for unknown document types
-    return {
-      nameSlice: '',
-      dobSlice: '',
-      yobSlice: '',
-      issuingStateSlice: '',
-      nationalitySlice: '',
-      passNoSlice: '',
-      sexSlice: '',
-      expiryDateSlice: '',
-      isPassportType: false,
-    };
-  }
-}
-
-function getAadhaarAttributes(document: AadhaarData) {
-  const extractedFields = document.extractedFields;
-  // For Aadhaar, we format the name to work with the existing getNameAndSurname function
-  // We'll put the full name in the "surname" position and leave names empty
-  const fullName = extractedFields?.name || '';
-  const nameSliceFormatted = fullName ? `${fullName}<<` : ''; // Format like MRZ
-
-  // Format DOB to YYMMDD for consistency with passport format
-  let dobFormatted = '';
-  if (extractedFields?.dob && extractedFields?.mob && extractedFields?.yob) {
-    const year =
-      extractedFields.yob.length === 4
-        ? extractedFields.yob.slice(-2)
-        : extractedFields.yob;
-    const month = extractedFields.mob.padStart(2, '0');
-    const day = extractedFields.dob.padStart(2, '0');
-    dobFormatted = `${year}${month}${day}`;
-  }
-
-  return {
-    nameSlice: nameSliceFormatted,
-    dobSlice: dobFormatted,
-    yobSlice: extractedFields?.yob || '',
-    issuingStateSlice: extractedFields?.state || '',
-    nationalitySlice: 'IND', // Aadhaar is always Indian
-    passNoSlice: extractedFields?.aadhaarLast4Digits || '',
-    sexSlice:
-      extractedFields?.gender === 'M'
-        ? 'M'
-        : extractedFields?.gender === 'F'
-          ? 'F'
-          : extractedFields?.gender || '',
-    expiryDateSlice: '', // Aadhaar doesn't expire
-    isPassportType: false,
-  };
-}
-
-function getPassportAttributes(mrz: string, documentCategory: string) {
-  const isPassportType = documentCategory === 'passport';
-  const attributePositions = isPassportType
-    ? attributeToPosition
-    : attributeToPosition_ID;
-
-  const nameSlice = mrz.slice(
-    attributePositions.name[0],
-    attributePositions.name[1],
-  );
-  const dobSlice = mrz.slice(
-    attributePositions.date_of_birth[0],
-    attributePositions.date_of_birth[1] + 1,
-  );
-  const yobSlice = mrz.slice(
-    attributePositions.date_of_birth[0],
-    attributePositions.date_of_birth[0] + 1,
-  );
-  const issuingStateSlice = mrz.slice(
-    attributePositions.issuing_state[0],
-    attributePositions.issuing_state[1] + 1,
-  );
-  const nationalitySlice = mrz.slice(
-    attributePositions.nationality[0],
-    attributePositions.nationality[1] + 1,
-  );
-  const passNoSlice = mrz.slice(
-    attributePositions.passport_number[0],
-    attributePositions.passport_number[1] + 1,
-  );
-  const sexSlice = mrz.slice(
-    attributePositions.gender[0],
-    attributePositions.gender[1] + 1,
-  );
-  const expiryDateSlice = mrz.slice(
-    attributePositions.expiry_date[0],
-    attributePositions.expiry_date[1] + 1,
-  );
-  return {
-    nameSlice,
-    dobSlice,
-    yobSlice,
-    issuingStateSlice,
-    nationalitySlice,
-    passNoSlice,
-    sexSlice,
-    expiryDateSlice,
-    isPassportType,
-  };
-}
-
-function getNameAndSurname(nameSlice: string) {
-  // Split by double << to separate surname from names
-  const parts = nameSlice.split('<<');
-  if (parts.length < 2) {
-    return { surname: [], names: [] };
-  }
-
-  // First part is surname, second part contains names separated by single <
-  const surname = parts[0].replace(/</g, '').trim();
-  const namesString = parts[1];
-
-  // Split names by single < and filter out empty strings
-  const names = namesString.split('<').filter(name => name.length > 0);
-
-  return {
-    surname: surname ? [surname] : [],
-    names: names[0] ? [names[0]] : [],
-  };
-}
-
-function formatDateFromYYMMDD(
-  dateString: string,
-  isExpiry: boolean = false,
-): string {
-  if (dateString.length !== 6) {
-    return dateString;
-  }
-
-  const yy = parseInt(dateString.substring(0, 2), 10);
-  const mm = dateString.substring(2, 4);
-  const dd = dateString.substring(4, 6);
-
-  const currentYear = new Date().getFullYear();
-  const century = Math.floor(currentYear / 100) * 100;
-  let year = century + yy;
-
-  if (isExpiry) {
-    // For expiry: if year is in the past, assume next century
-    if (year < currentYear) {
-      year += 100;
-    }
-  } else {
-    // For birth: if year is in the future, assume previous century
-    if (year > currentYear) {
-      year -= 100;
-    }
-  }
-
-  return `${dd}/${mm}/${year}`;
-}

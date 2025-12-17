@@ -70,6 +70,8 @@ abstract contract IdentityRegistryAadhaarStorageV1 is ImplRoot {
  * @title IdentityRegistryAadhaarImplV1
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
  * @dev Inherits from IdentityRegistryAadhaarStorageV1 and implements IIdentityRegistryAadhaarV1.
+ *
+ * @custom:version 1.2.0
  */
 contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIdentityRegistryAadhaarV1 {
     using InternalLeanIMT for LeanIMTData;
@@ -151,6 +153,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     // ====================================================
 
     /// @notice Constructor for the IdentityRegistryAadhaarImplV1 contract.
+    /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
@@ -166,6 +169,19 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
         __ImplRoot_init();
         _hub = _hub;
         emit RegistryInitialized(_hub);
+    }
+
+    /**
+     * @notice Initializes AccessControl governance.
+     * @dev Used when upgrading from Ownable to AccessControl governance.
+     * This function sets up AccessControl roles on an already-initialized contract.
+     * It does NOT modify existing state (hub, roots, etc.).
+     *
+     * SECURITY: This function can only be called once - enforced by reinitializer(2).
+     * The previous version used reinitializer(1), so this upgrade uses version 2.
+     */
+    function initializeGovernance() external reinitializer(2) {
+        __ImplRoot_init();
     }
 
     // ====================================================
@@ -280,7 +296,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @notice Updates the hub address.
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param newHubAddress The new address of the hub.
-    function updateHub(address newHubAddress) external onlyProxy onlyOwner {
+    function updateHub(address newHubAddress) external onlyProxy onlyRole(SECURITY_ROLE) {
         if (newHubAddress == address(0)) revert HUB_ADDRESS_ZERO();
         _hub = newHubAddress;
         emit HubUpdated(newHubAddress);
@@ -289,7 +305,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @notice Updates the name and date of birth OFAC root.
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param newNameAndDobOfacRoot The new name and date of birth OFAC root value.
-    function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyOwner {
+    function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
         _nameAndDobOfacRoot = newNameAndDobOfacRoot;
         emit NameAndDobOfacRootUpdated(newNameAndDobOfacRoot);
     }
@@ -297,7 +313,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @notice Updates the name and year of birth OFAC root.
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param newNameAndYobOfacRoot The new name and year of birth OFAC root value.
-    function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyOwner {
+    function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
         _nameAndYobOfacRoot = newNameAndYobOfacRoot;
         emit NameAndYobOfacRootUpdated(newNameAndYobOfacRoot);
     }
@@ -305,7 +321,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @notice Registers a new UIDAI pubkey commitment.
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param commitment The UIDAI pubkey commitment to register.
-    function registerUidaiPubkeyCommitment(uint256 commitment) external onlyProxy onlyOwner {
+    function registerUidaiPubkeyCommitment(uint256 commitment) external onlyProxy onlyRole(SECURITY_ROLE) {
         _uidaiPubkeyCommitments[commitment] = true;
         emit UidaiPubkeyCommitmentRegistered(commitment, block.timestamp);
     }
@@ -313,7 +329,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @notice Removes a UIDAI pubkey commitment.
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param commitment The UIDAI pubkey commitment to remove.
-    function removeUidaiPubkeyCommitment(uint256 commitment) external onlyProxy onlyOwner {
+    function removeUidaiPubkeyCommitment(uint256 commitment) external onlyProxy onlyRole(SECURITY_ROLE) {
         delete _uidaiPubkeyCommitments[commitment];
         emit UidaiPubkeyCommitmentRemoved(commitment, block.timestamp);
     }
@@ -321,7 +337,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @notice Updates a UIDAI pubkey commitment.
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param commitment The UIDAI pubkey commitment to update.
-    function updateUidaiPubkeyCommitment(uint256 commitment) external onlyProxy onlyOwner {
+    function updateUidaiPubkeyCommitment(uint256 commitment) external onlyProxy onlyRole(SECURITY_ROLE) {
         _uidaiPubkeyCommitments[commitment] = true;
         emit UidaiPubkeyCommitmentUpdated(commitment, block.timestamp);
     }
@@ -335,7 +351,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
         bytes32 attestationId,
         uint256 nullifier,
         uint256 commitment
-    ) external onlyProxy onlyOwner {
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         _nullifiers[nullifier] = true;
         uint256 imt_root = _identityCommitmentIMT._insert(commitment);
         _rootTimestamps[imt_root] = block.timestamp;
@@ -352,7 +368,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
         uint256 oldLeaf,
         uint256 newLeaf,
         uint256[] calldata siblingNodes
-    ) external onlyProxy onlyOwner {
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         uint256 imt_root = _identityCommitmentIMT._update(oldLeaf, newLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
@@ -362,7 +378,10 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @dev Caller must be the owner. Provides sibling nodes for proof of position.
     /// @param oldLeaf The identity commitment to remove.
     /// @param siblingNodes An array of sibling nodes for Merkle proof generation.
-    function devRemoveCommitment(uint256 oldLeaf, uint256[] calldata siblingNodes) external onlyProxy onlyOwner {
+    function devRemoveCommitment(
+        uint256 oldLeaf,
+        uint256[] calldata siblingNodes
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         uint256 imt_root = _identityCommitmentIMT._remove(oldLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);

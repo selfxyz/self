@@ -2,32 +2,22 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useNavigation } from '@react-navigation/native';
 import { act, renderHook } from '@testing-library/react-native';
 
 import { useModal } from '@/hooks/useModal';
 import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
-}));
-
-const mockNavigate = jest.fn();
-const mockGoBack = jest.fn();
-const mockGetState = jest.fn(() => ({
-  routes: [{ name: 'Home' }, { name: 'Modal' }],
-}));
-
 describe('useModal', () => {
   beforeEach(() => {
-    (useNavigation as jest.Mock).mockReturnValue({
-      navigate: mockNavigate,
-      goBack: mockGoBack,
-      getState: mockGetState,
+    // Reset all mocks including the global navigationRef
+    jest.clearAllMocks();
+
+    // Set up the navigation ref mock with proper methods
+    global.mockNavigationRef.isReady.mockReturnValue(true);
+    global.mockNavigationRef.getState.mockReturnValue({
+      routes: [{ name: 'Home' }, { name: 'Modal' }],
+      index: 1,
     });
-    mockNavigate.mockClear();
-    mockGoBack.mockClear();
-    mockGetState.mockClear();
   });
 
   it('should navigate to Modal with callbackId and handle dismissal', () => {
@@ -45,8 +35,10 @@ describe('useModal', () => {
 
     act(() => result.current.showModal());
 
-    expect(mockNavigate).toHaveBeenCalledTimes(1);
-    const params = mockNavigate.mock.calls[0][1];
+    expect(global.mockNavigationRef.navigate).toHaveBeenCalledTimes(1);
+    const [screenName, params] =
+      global.mockNavigationRef.navigate.mock.calls[0];
+    expect(screenName).toBe('Modal');
     expect(params).toMatchObject({
       titleText: 'Title',
       bodyText: 'Body',
@@ -58,7 +50,7 @@ describe('useModal', () => {
 
     act(() => result.current.dismissModal());
 
-    expect(mockGoBack).toHaveBeenCalled();
+    expect(global.mockNavigationRef.goBack).toHaveBeenCalled();
     expect(onModalDismiss).toHaveBeenCalled();
     expect(getModalCallbacks(id)).toBeUndefined();
   });

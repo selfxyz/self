@@ -31,6 +31,7 @@ name: Mobile Deploy
 env:
   # Build environment versions
   RUBY_VERSION: 3.2
+  NODE_ENV: "production"
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 35
   ANDROID_NDK_VERSION: 27.0.12077973
@@ -385,6 +386,7 @@ jobs:
         id: gems-cache
         uses: ./.github/actions/cache-bundler
         with:
+          # TODO(jcortejoso): Confirm the path of the bundle cache
           path: ${{ env.APP_PATH }}/ios/vendor/bundle
           lock-file: app/Gemfile.lock
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
@@ -428,6 +430,14 @@ jobs:
           fi
 
           echo "✅ Lock files exist"
+      - name: Generate token for self repositories
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
 
       - name: Install Mobile Dependencies (main repo)
         if: inputs.platform != 'android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
@@ -438,7 +448,7 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
 
       - name: Install Mobile Dependencies (forked PRs - no secrets)
         if: inputs.platform != 'android' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true
@@ -691,7 +701,7 @@ jobs:
           IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
           NODE_OPTIONS: "--max-old-space-size=8192"
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
           TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
@@ -1046,6 +1056,14 @@ jobs:
 
           echo "✅ Lock files exist"
 
+      - name: Generate token for self repositories
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+
       - name: Install Mobile Dependencies (main repo)
         if: inputs.platform != 'ios' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
         uses: ./.github/actions/mobile-setup
@@ -1055,7 +1073,7 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           PLATFORM: ${{ inputs.platform }}
 
       - name: Install Mobile Dependencies (forked PRs - no secrets)
@@ -1112,7 +1130,7 @@ jobs:
           cd ${{ env.APP_PATH }}
           PLATFORM=android node scripts/setup-private-modules.cjs
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           CI: true
 
       - name: Build Dependencies (Android)

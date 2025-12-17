@@ -1,0 +1,225 @@
+{
+  "$schema": "./registry.schema.json",
+  "lastUpdated": "2025-12-10T06:17:50.863Z",
+  "contracts": {
+    "IdentityVerificationHub": {
+      "source": "IdentityVerificationHubImplV2",
+      "type": "uups-proxy",
+      "description": "Main identity verification hub for all document types"
+    },
+    "IdentityRegistry": {
+      "source": "IdentityRegistryImplV1",
+      "type": "uups-proxy",
+      "description": "Passport identity registry"
+    },
+    "IdentityRegistryIdCard": {
+      "source": "IdentityRegistryIdCardImplV1",
+      "type": "uups-proxy",
+      "description": "EU ID Card identity registry"
+    },
+    "IdentityRegistryAadhaar": {
+      "source": "IdentityRegistryAadhaarImplV1",
+      "type": "uups-proxy",
+      "description": "Aadhaar identity registry"
+    },
+    "PCR0Manager": {
+      "source": "PCR0Manager",
+      "type": "non-upgradeable",
+      "description": "PCR0 value management for TEE verification"
+    },
+    "VerifyAll": {
+      "source": "VerifyAll",
+      "type": "non-upgradeable",
+      "description": "SDK verification helper contract"
+    }
+  },
+  "networks": {
+    "celo": {
+      "chainId": 42220,
+      "governance": {
+        "securityMultisig": "0x738f0bb37FD3b6C4Cdf8eb6FcdFaAA0CA208CB4A",
+        "operationsMultisig": "0x067b18e09A10Fa03d027c1D60A098CEbbE5637f0",
+        "securityThreshold": "3/5",
+        "operationsThreshold": "2/5"
+      },
+      "deployments": {
+        "IdentityVerificationHub": {
+          "proxy": "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF",
+          "currentVersion": "2.12.0",
+          "currentImpl": "0x05FB9D7830889cc389E88198f6A224eA87F01151"
+        },
+        "IdentityRegistry": {
+          "proxy": "0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968",
+          "currentVersion": "1.2.0",
+          "currentImpl": "0x81E7F74560FAF7eE8DE3a36A5a68B6cbc429Cd36"
+        },
+        "IdentityRegistryIdCard": {
+          "proxy": "0xeAD1E6Ec29c1f3D33a0662f253a3a94D189566E1",
+          "currentVersion": "1.2.0",
+          "currentImpl": "0x7d5e4b7D4c3029aF134D50642674Af8F875118a4"
+        },
+        "IdentityRegistryAadhaar": {
+          "proxy": "0xd603Fa8C8f4694E8DD1DcE1f27C0C3fc91e32Ac4",
+          "currentVersion": "1.2.0",
+          "currentImpl": "0xbD861A9cecf7B0A9631029d55A8CE1155e50697c"
+        },
+        "PCR0Manager": {
+          "address": "0x9743fe2C1c3D2b068c56dE314e9B10DA9c904717",
+          "currentVersion": "1.2.0"
+        },
+        "VerifyAll": {
+          "address": "",
+          "currentVersion": "1.0.0"
+        }
+      }
+    },
+    "localhost": {
+      "chainId": 31337,
+      "governance": {
+        "securityMultisig": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "operationsMultisig": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "securityThreshold": "1/1",
+        "operationsThreshold": "1/1"
+      },
+      "deployments": {}
+    }
+  },
+  "versions": {
+    "IdentityVerificationHub": {
+      "2.12.0": {
+        "initializerVersion": 12,
+        "initializerFunction": "initializeGovernance",
+        "changelog": "Governance upgrade - migrated to AccessControlUpgradeable with multi-tier governance",
+        "gitTag": "hub-v2.12.0",
+        "deployments": {
+          "celo": {
+            "impl": "0x05FB9D7830889cc389E88198f6A224eA87F01151",
+            "deployedAt": "2025-12-10T05:43:58.258Z",
+            "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
+            "gitCommit": ""
+          }
+        }
+      },
+      "2.11.0": {
+        "initializerVersion": 11,
+        "initializerFunction": "initialize",
+        "changelog": "V2 hub deployment with Ownable2StepUpgradeable governance",
+        "gitTag": "hub-v2.11.0",
+        "deployments": {
+          "celo": {
+            "impl": "",
+            "deployedAt": "",
+            "deployedBy": "",
+            "gitCommit": ""
+          }
+        }
+      }
+    },
+    "IdentityRegistry": {
+      "1.2.0": {
+        "initializerVersion": 2,
+        "initializerFunction": "initializeGovernance",
+        "changelog": "Governance upgrade - migrated to AccessControlUpgradeable",
+        "gitTag": "registry-passport-v1.2.0",
+        "deployments": {
+          "celo": {
+            "impl": "0x81E7F74560FAF7eE8DE3a36A5a68B6cbc429Cd36",
+            "deployedAt": "2025-12-10T05:53:12.534Z",
+            "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
+            "gitCommit": ""
+          }
+        }
+      },
+      "1.1.0": {
+        "initializerVersion": 1,
+        "initializerFunction": "initialize",
+        "changelog": "Initial deployment with Ownable2StepUpgradeable governance",
+        "gitTag": "registry-passport-v1.1.0",
+        "deployments": {
+          "celo": {
+            "impl": "",
+            "deployedAt": "",
+            "deployedBy": "",
+            "gitCommit": ""
+          }
+        }
+      }
+    },
+    "IdentityRegistryIdCard": {
+      "1.2.0": {
+        "initializerVersion": 2,
+        "initializerFunction": "initializeGovernance",
+        "changelog": "Governance upgrade - migrated to AccessControlUpgradeable",
+        "gitTag": "registry-idcard-v1.2.0",
+        "deployments": {
+          "celo": {
+            "impl": "0x7d5e4b7D4c3029aF134D50642674Af8F875118a4",
+            "deployedAt": "2025-12-10T05:45:56.772Z",
+            "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
+            "gitCommit": ""
+          }
+        }
+      },
+      "1.1.0": {
+        "initializerVersion": 1,
+        "initializerFunction": "initialize",
+        "changelog": "Initial deployment",
+        "gitTag": "registry-idcard-v1.1.0",
+        "deployments": {
+          "celo": {
+            "impl": "",
+            "deployedAt": "",
+            "deployedBy": "",
+            "gitCommit": ""
+          }
+        }
+      }
+    },
+    "IdentityRegistryAadhaar": {
+      "1.2.0": {
+        "initializerVersion": 2,
+        "initializerFunction": "initializeGovernance",
+        "changelog": "Governance upgrade - migrated to AccessControlUpgradeable",
+        "gitTag": "registry-aadhaar-v1.2.0",
+        "deployments": {
+          "celo": {
+            "impl": "0xbD861A9cecf7B0A9631029d55A8CE1155e50697c",
+            "deployedAt": "2025-12-10T05:47:22.844Z",
+            "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
+            "gitCommit": ""
+          }
+        }
+      },
+      "1.1.0": {
+        "initializerVersion": 1,
+        "initializerFunction": "initialize",
+        "changelog": "Initial deployment",
+        "gitTag": "registry-aadhaar-v1.1.0",
+        "deployments": {
+          "celo": {
+            "impl": "",
+            "deployedAt": "",
+            "deployedBy": "",
+            "gitCommit": ""
+          }
+        }
+      }
+    },
+    "PCR0Manager": {
+      "1.2.0": {
+        "initializerVersion": 0,
+        "initializerFunction": "",
+        "changelog": "Multisig governance deployment - migrated from single owner to AccessControl",
+        "gitTag": "pcr0manager-v1.2.0",
+        "deployments": {
+          "celo": {
+            "impl": "0x9743fe2C1c3D2b068c56dE314e9B10DA9c904717",
+            "deployedAt": "2025-12-10T06:17:50.863Z",
+            "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
+            "gitCommit": "5787cff3bcbea870b50eccd7164fbd45b758568e"
+          }
+        }
+      }
+    }
+  }
+}

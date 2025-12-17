@@ -70,6 +70,14 @@ jobs:
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+      - name: Generate token for self repositories
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3
@@ -79,7 +87,7 @@ jobs:
           retry_wait_seconds: 5
           command: yarn install --immutable --silent
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
         uses: nick-fields/retry@v3
@@ -138,7 +146,7 @@ jobs:
           cd app
           PLATFORM=android node scripts/setup-private-modules.cjs
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           CI: true
       - name: Build Android APK
         run: |
@@ -149,6 +157,8 @@ jobs:
       - name: Clean up Gradle build artifacts
         uses: ./.github/actions/cleanup-gradle-artifacts
       - name: Verify APK and android-passport-nfc-reader integration
+        env:
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
         run: |
           echo "🔍 Verifying build artifacts..."
           APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
@@ -160,8 +170,8 @@ jobs:
           echo "📱 APK size: $APK_SIZE bytes"
 
           # Verify private modules were properly integrated (skip for forks)
-          if [ -z "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]; then
-            echo "🔕 No PAT available — skipping private module verification"
+          if [ -z "${SELFXYZ_APP_TOKEN:-}" ]; then
+            echo "🔕 No SELFXYZ_APP_TOKEN available — skipping private module verification"
           else
             # Verify android-passport-nfc-reader
             if [ -d "app/android/android-passport-nfc-reader" ]; then
@@ -263,6 +273,14 @@ jobs:
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+      - name: Generate token for self repositories
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3
@@ -272,7 +290,7 @@ jobs:
           retry_wait_seconds: 5
           command: yarn install --immutable --silent
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
         uses: nick-fields/retry@v3
@@ -360,7 +378,7 @@ jobs:
             echo "📦 Installing pods via centralized script…"
             BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Setup iOS Simulator
         run: |
           echo "Setting up iOS Simulator..."

@@ -71,7 +71,10 @@
     "update:ofacroot": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK} npx tsx scripts/updateRegistryOfacRoot.ts'",
     "update:pcr0": "npx dotenv-cli -- bash -c 'PCR0_ACTION=${PCR0_ACTION:-add} PCR0_KEY=${PCR0_KEY} yarn hardhat ignition deploy ignition/modules/scripts/updatePCR0.ts --network ${NETWORK:-localhost} --reset'",
     "upgrade:hub": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/upgrade/deployNewHubAndUpgrade.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
-    "upgrade:registry": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/upgrade/deployNewRegistryAndUpgrade.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'"
+    "upgrade:registry": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/upgrade/deployNewRegistryAndUpgrade.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
+    "upgrade": "npx dotenv-cli -- bash -c 'yarn hardhat upgrade --network ${NETWORK:-localhost}'",
+    "upgrade:status": "npx dotenv-cli -- bash -c 'yarn hardhat upgrade:status --network ${NETWORK:-localhost}'",
+    "upgrade:history": "yarn hardhat upgrade:history"
   },
   "dependencies": {
     "@ashpect/smt": "https://github.com/ashpect/smt#main",
@@ -79,8 +82,11 @@
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@openpassport/zk-kit-smt": "^0.0.1",
-    "@openzeppelin/contracts": "^5.0.2",
-    "@openzeppelin/contracts-upgradeable": "^5.1.0",
+    "@openzeppelin/contracts": "5.4.0",
+    "@openzeppelin/contracts-upgradeable": "5.4.0",
+    "@safe-global/api-kit": "^4.0.1",
+    "@safe-global/protocol-kit": "^6.1.2",
+    "@safe-global/safe-core-sdk-types": "^5.1.0",
     "@selfxyz/common": "workspace:^",
     "@zk-kit/imt": "^2.0.0-beta.4",
     "@zk-kit/imt.sol": "^2.0.0-beta.12",
@@ -103,6 +109,7 @@
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.6",
     "@nomicfoundation/ignition-core": "^0.15.12",
+    "@openzeppelin/hardhat-upgrades": "^3.9.1",
     "@typechain/ethers-v6": "^0.4.3",
     "@typechain/hardhat": "^8.0.3",
     "@types/chai": "^4.3.16",

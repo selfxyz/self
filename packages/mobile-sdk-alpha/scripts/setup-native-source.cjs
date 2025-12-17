@@ -18,6 +18,7 @@ const BRANCH = 'main';
 // Environment detection
 const isCI = process.env.CI === 'true';
 const repoToken = process.env.SELFXYZ_INTERNAL_REPO_PAT;
+const appToken = process.env.SELFXYZ_APP_TOKEN; // GitHub App installation token
 const isDryRun = process.env.DRY_RUN === 'true';
 
 function log(message, type = 'info') {
@@ -89,19 +90,24 @@ function setupSubmodule() {
 
   let submoduleUrl;
 
-  if (isCI && repoToken) {
+  if (isCI && appToken) {
+    // CI environment with GitHub App installation token
+    // Security: NEVER embed credentials in git URLs. Rely on CI-provided auth via:
+    // - ~/.netrc, a Git credential helper, or SSH agent configuration.
+    submoduleUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
+  } else if (isCI && repoToken) {
     // CI environment with Personal Access Token
-    log('CI detected: Using SELFXYZ_INTERNAL_REPO_PAT for submodule', 'info');
-    submoduleUrl = `https://${repoToken}@github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
+    // Security: NEVER embed credentials in git URLs. Rely on CI-provided auth via:
+    // - ~/.netrc, a Git credential helper, or SSH agent configuration.
+    submoduleUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
   } else if (isCI) {
-    log('CI environment detected but SELFXYZ_INTERNAL_REPO_PAT not available - skipping private module setup', 'info');
+    log('CI environment detected but no token available - skipping private module setup', 'info');
     log('This is expected for forked PRs or environments without access to private modules', 'info');
     return false; // Return false to indicate setup was skipped
   } else if (usingHTTPSGitAuth()) {
     submoduleUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
   } else {
     // Local development with SSH
-    log('Local development: Using SSH for submodule', 'info');
     submoduleUrl = `git@github.com:${GITHUB_ORG}/${REPO_NAME}.git`;
   }
 
@@ -113,7 +119,7 @@ function setupSubmodule() {
     } else {
       // Add submodule
       const addCommand = `git submodule add -b ${BRANCH} "${submoduleUrl}" mobile-sdk-native`;
-      if (isCI && repoToken) {
+      if (isCI && (appToken || repoToken)) {
         // Security: Run command silently to avoid token exposure in logs
         runCommand(addCommand, { stdio: 'pipe' });
       } else {
@@ -125,7 +131,7 @@ function setupSubmodule() {
     return true; // Return true to indicate successful setup
   } catch (error) {
     if (isCI) {
-      log('Submodule setup failed in CI environment. Check SELFXYZ_INTERNAL_REPO_PAT permissions.', 'error');
+      log('Submodule setup failed in CI environment. Check repository access/credentials configuration.', 'error');
     } else {
       log('Submodule setup failed. Ensure you have SSH access to the repository.', 'error');
     }
@@ -169,7 +175,7 @@ function setupMobileSDKNative() {
   }
 
   // Security: Remove credential-embedded remote URL after setup
-  if (isCI && repoToken && !isDryRun) {
+  if (isCI && (appToken || repoToken) && !isDryRun) {
     scrubGitRemoteUrl();
   }
 

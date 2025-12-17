@@ -11,6 +11,7 @@ import {
   consoleLoggingIntegration,
   feedbackIntegration,
   init as sentryInit,
+  mobileReplayIntegration,
   withScope,
   wrap,
 } from '@sentry/react-native';
@@ -164,6 +165,11 @@ export const initSentry = () => {
       return event;
     },
     integrations: [
+      mobileReplayIntegration({
+        maskAllText: true,
+        maskAllImages: false,
+        maskAllVectors: false,
+      }),
       consoleLoggingIntegration({
         levels: ['log', 'error', 'warn', 'info', 'debug'],
       }),

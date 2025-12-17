@@ -6,11 +6,7 @@ import React from 'react';
 import { ArrowLeft, ArrowRight, RotateCcw } from '@tamagui/lucide-icons';
 
 import { Button, XStack, YStack } from '@selfxyz/mobile-sdk-alpha/components';
-import {
-  black,
-  slate50,
-  slate400,
-} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { black, slate400 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { buttonTap } from '@/integrations/haptics';
 
@@ -23,8 +19,7 @@ export interface WebViewFooterProps {
   onOpenInBrowser: () => void;
 }
 
-const iconSize = 22;
-const buttonSize = 36;
+const iconSize = 24;
 
 export const WebViewFooter: React.FC<WebViewFooterProps> = ({
   canGoBack,
@@ -42,19 +37,13 @@ export const WebViewFooter: React.FC<WebViewFooterProps> = ({
   ) => (
     <Button
       key={key}
-      size="$4"
       unstyled
       disabled={disabled}
+      hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
       onPress={() => {
         buttonTap();
         onPress();
       }}
-      backgroundColor={slate50}
-      borderRadius={buttonSize / 2}
-      width={buttonSize}
-      height={buttonSize}
-      alignItems="center"
-      justifyContent="center"
       opacity={disabled ? 0.5 : 1}
     >
       {icon}
@@ -62,7 +51,7 @@ export const WebViewFooter: React.FC<WebViewFooterProps> = ({
   );
 
   return (
-    <YStack gap={12} paddingVertical={12} width="100%">
+    <YStack gap={4} paddingVertical={4} paddingHorizontal={5} width="100%">
       <XStack justifyContent="space-between" alignItems="center" width="100%">
         {renderIconButton(
           'back',

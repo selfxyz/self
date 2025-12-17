@@ -48,7 +48,8 @@ const RecoverWithPhraseScreen: React.FC = () => {
   const [restoring, setRestoring] = useState(false);
   const onPaste = useCallback(async () => {
     const clipboard = (await Clipboard.getString()).trim();
-    if (ethers.Mnemonic.isValidMnemonic(clipboard)) {
+    // bugfix: perform a simple clipboard check; ethers.Mnemonic.isValidMnemonic doesn't work
+    if (clipboard) {
       setMnemonic(clipboard);
       Keyboard.dismiss();
     }

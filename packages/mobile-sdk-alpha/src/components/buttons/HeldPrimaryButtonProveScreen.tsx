@@ -19,6 +19,7 @@ interface HeldPrimaryButtonProveScreenProps {
   selectedAppSessionId: string | undefined | null;
   hasScrolledToBottom: boolean;
   isReadyToProve: boolean;
+  isDocumentExpired: boolean;
 }
 
 interface ButtonContext {
@@ -26,6 +27,7 @@ interface ButtonContext {
   hasScrolledToBottom: boolean;
   isReadyToProve: boolean;
   onVerify: () => void;
+  isDocumentExpired: boolean;
 }
 
 type ButtonEvent =
@@ -34,6 +36,7 @@ type ButtonEvent =
       selectedAppSessionId: string | undefined | null;
       hasScrolledToBottom: boolean;
       isReadyToProve: boolean;
+      isDocumentExpired: boolean;
     }
   | { type: 'VERIFY' };
 
@@ -51,6 +54,7 @@ const buttonMachine = createMachine(
       hasScrolledToBottom: false,
       isReadyToProve: false,
       onVerify: input.onVerify,
+      isDocumentExpired: false,
     }),
     on: {
       PROPS_UPDATED: {
@@ -88,7 +92,7 @@ const buttonMachine = createMachine(
           },
           {
             target: 'ready',
-            guard: ({ context }) => context.isReadyToProve,
+            guard: ({ context }) => context.isReadyToProve && !context.isDocumentExpired,
           },
         ],
         after: {
@@ -107,7 +111,7 @@ const buttonMachine = createMachine(
           },
           {
             target: 'ready',
-            guard: ({ context }) => context.isReadyToProve,
+            guard: ({ context }) => context.isReadyToProve && !context.isDocumentExpired,
           },
         ],
         after: {
@@ -126,7 +130,7 @@ const buttonMachine = createMachine(
           },
           {
             target: 'ready',
-            guard: ({ context }) => context.isReadyToProve,
+            guard: ({ context }) => context.isReadyToProve && !context.isDocumentExpired,
           },
         ],
       },
@@ -167,12 +171,14 @@ const buttonMachine = createMachine(
           if (
             context.selectedAppSessionId !== event.selectedAppSessionId ||
             context.hasScrolledToBottom !== event.hasScrolledToBottom ||
-            context.isReadyToProve !== event.isReadyToProve
+            context.isReadyToProve !== event.isReadyToProve ||
+            context.isDocumentExpired !== event.isDocumentExpired
           ) {
             return {
               selectedAppSessionId: event.selectedAppSessionId,
               hasScrolledToBottom: event.hasScrolledToBottom,
               isReadyToProve: event.isReadyToProve,
+              isDocumentExpired: event.isDocumentExpired,
             };
           }
         }
@@ -190,6 +196,7 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
   selectedAppSessionId,
   hasScrolledToBottom,
   isReadyToProve,
+  isDocumentExpired,
 }) => {
   const [state, send] = useMachine(buttonMachine, {
     input: { onVerify },
@@ -201,12 +208,16 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
       selectedAppSessionId,
       hasScrolledToBottom,
       isReadyToProve,
+      isDocumentExpired,
     });
-  }, [selectedAppSessionId, hasScrolledToBottom, isReadyToProve, send]);
+  }, [selectedAppSessionId, hasScrolledToBottom, isReadyToProve, isDocumentExpired, send]);
 
   const isDisabled = !state.matches('ready');
 
   const renderButtonContent = () => {
+    if (isDocumentExpired) {
+      return 'Document expired';
+    }
     if (state.matches('waitingForSession')) {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>

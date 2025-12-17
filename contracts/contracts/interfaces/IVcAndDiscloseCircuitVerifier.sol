@@ -49,3 +49,21 @@ interface IVcAndDiscloseAadhaarCircuitVerifier {
         uint256[19] calldata pubSignals
     ) external view returns (bool);
 }
+
+interface IVcAndDiscloseSelfricaCircuitVerifier {
+    /**
+     * @notice Verifies a given VC and Disclose zero-knowledge proof.
+     * @dev This function checks the validity of the provided proof parameters.
+     * @param a The 'a' component of the proof.
+     * @param b The 'b' component of the proof.
+     * @param c The 'c' component of the proof.
+     * @param pubSignals The public signals associated with the proof.
+     * @return A boolean value indicating whether the proof is valid (true) or not (false).
+     */
+    function verifyProof(
+        uint256[2] calldata a,
+        uint256[2][2] calldata b,
+        uint256[2] calldata c,
+        uint256[30] calldata pubSignals
+    ) external view returns (bool);
+}

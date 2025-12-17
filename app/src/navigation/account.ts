@@ -10,6 +10,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import { HeadlessNavForEuclid } from '@/components/navbar/HeadlessNavForEuclid';
 import AccountRecoveryChoiceScreen from '@/screens/account/recovery/AccountRecoveryChoiceScreen';
 import AccountRecoveryScreen from '@/screens/account/recovery/AccountRecoveryScreen';
 import DocumentDataNotFoundScreen from '@/screens/account/recovery/DocumentDataNotFoundScreen';
@@ -17,6 +18,7 @@ import RecoverWithPhraseScreen from '@/screens/account/recovery/RecoverWithPhras
 import CloudBackupScreen from '@/screens/account/settings/CloudBackupScreen';
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 import ShowRecoveryPhraseScreen from '@/screens/account/settings/ShowRecoveryPhraseScreen';
+import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
 const accountScreens = {
   AccountRecovery: {
@@ -79,14 +81,22 @@ const accountScreens = {
       screens: {},
     },
   },
+
   ShowRecoveryPhrase: {
     screen: ShowRecoveryPhraseScreen,
-    options: {
-      title: 'Recovery Phrase',
-      headerStyle: {
-        backgroundColor: white,
-      },
-    } as NativeStackNavigationOptions,
+    options: IS_EUCLID_ENABLED
+      ? ({
+          headerShown: true,
+          header: HeadlessNavForEuclid,
+          statusBarStyle: ShowRecoveryPhraseScreen.statusBarStyle,
+          statusBarHidden: ShowRecoveryPhraseScreen.statusBarHidden,
+        } as NativeStackNavigationOptions)
+      : ({
+          title: 'Recovery Phrase',
+          headerStyle: {
+            backgroundColor: white,
+          },
+        } as NativeStackNavigationOptions),
   },
 };
 

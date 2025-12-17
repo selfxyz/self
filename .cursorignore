@@ -214,9 +214,6 @@ NOTICE
 **/*.zip
 **/*.tar.gz
 
-# Patch files
-patches/
-
 # ========================================
 # Project Specific Patterns
 # ========================================

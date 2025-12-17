@@ -19,7 +19,9 @@ jest.mock('@/navigation', () => {
     // Documents screens
     IDPicker: {},
     IdDetails: {},
-    CountryPicker: {},
+    CountryPicker: {
+      statusBar: { hidden: true, style: 'dark' },
+    },
     DocumentCamera: {},
     DocumentCameraTrouble: {},
     DocumentDataInfo: {},

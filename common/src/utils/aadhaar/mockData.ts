@@ -208,8 +208,6 @@ export function prepareAadhaarDiscloseData(
     secret,
     qrDataHash: formatInput(BigInt(sharedData.qrHash)),
     gender: formatInput(genderAscii),
-    // qrDataHash: BigInt(sharedData.qrHash).toString(),
-    // gender: genderAscii.toString(),
     yob: stringToAsciiArray(sharedData.extractedFields.yob),
     mob: stringToAsciiArray(sharedData.extractedFields.mob),
     dob: stringToAsciiArray(sharedData.extractedFields.dob),
@@ -551,7 +549,6 @@ export function processQRData(
     QRData = newTestData.testQRData;
   } else {
     QRData = testQRData.testQRData;
-    // console.log('testQRData:', testQRData);
   }
 
   return processQRDataSimple(QRData);
@@ -576,6 +573,13 @@ export function processQRDataSimple(qrData: string) {
   // Extract actual fields from QR data instead of using hardcoded values
   const extractedFields = extractQRDataFields(qrDataBytes);
 
+  // Calculate qrHash exclude timestamp (positions 9-25, 17 bytes)
+  // const qrDataWithoutTimestamp = [
+  //   ...Array.from(qrDataPadded.slice(0, 9)),
+  //   ...Array.from(qrDataPadded.slice(9, 26)).map((x) => 0),
+  //   ...Array.from(qrDataPadded.slice(26)),
+  // ];
+  // const qrHash = packBytesAndPoseidon(qrDataWithoutTimestamp);
   const qrHash = packBytesAndPoseidon(Array.from(qrDataPadded));
   const photo = extractPhoto(Array.from(qrDataPadded), photoEOI + 1);
 

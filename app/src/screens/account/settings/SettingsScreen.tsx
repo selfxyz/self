@@ -3,14 +3,14 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PropsWithChildren } from 'react';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Linking, Platform, Share, View as RNView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bug, FileText } from '@tamagui/lucide-icons';
 
@@ -23,6 +23,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import Discord from '@/assets/icons/discord.svg';
 import Github from '@/assets/icons/github.svg';
 import Cloud from '@/assets/icons/settings_cloud_backup.svg';
 import Data from '@/assets/icons/settings_data.svg';
@@ -35,6 +36,7 @@ import Web from '@/assets/icons/webpage.svg';
 import X from '@/assets/icons/x.svg';
 import {
   appStoreUrl,
+  discordUrl,
   gitHubUrl,
   playStoreUrl,
   selfUrl,
@@ -42,6 +44,7 @@ import {
   xUrl,
 } from '@/consts/links';
 import { impactLight } from '@/integrations/haptics';
+import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';
 
@@ -101,11 +104,18 @@ const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption][] = [
   [Bug as React.FC<SvgProps>, 'Debug menu', 'DevSettings'],
 ];
 
+const DOCUMENT_DEPENDENT_ROUTES: RouteOption[] = [
+  'CloudBackupSettings',
+  'DocumentDataInfo',
+  'ShowRecoveryPhrase',
+];
+
 const social = [
   [X, xUrl],
   [Github, gitHubUrl],
   [Web, selfUrl],
   [Telegram, telegramUrl],
+  [Discord, discordUrl],
 ] as [React.FC<SvgProps>, string][];
 
 const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
@@ -149,10 +159,43 @@ const SettingsScreen: React.FC = () => {
   const { isDevMode, setDevModeOn } = useSettingStore();
   const navigation =
     useNavigation<NativeStackNavigationProp<MinimalRootStackParamList>>();
+  const { loadDocumentCatalog } = usePassport();
+  const [hasRealDocument, setHasRealDocument] = useState<boolean | null>(null);
+
+  const refreshDocumentAvailability = useCallback(async () => {
+    try {
+      const catalog = await loadDocumentCatalog();
+      if (!catalog?.documents || !Array.isArray(catalog.documents)) {
+        console.warn('SettingsScreen: invalid catalog structure');
+        setHasRealDocument(false);
+        return;
+      }
+      setHasRealDocument(catalog.documents.some(doc => !doc.mock));
+    } catch {
+      console.warn('SettingsScreen: failed to load document catalog');
+      setHasRealDocument(false);
+    }
+  }, [loadDocumentCatalog]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshDocumentAvailability();
+    }, [refreshDocumentAvailability]),
+  );
 
   const screenRoutes = useMemo(() => {
-    return isDevMode ? [...routes, ...DEBUG_MENU] : routes;
-  }, [isDevMode]);
+    const baseRoutes = isDevMode ? [...routes, ...DEBUG_MENU] : routes;
+
+    // Show all routes while loading or if user has a real document
+    if (hasRealDocument === null || hasRealDocument === true) {
+      return baseRoutes;
+    }
+
+    // Only filter out document-related routes if we've confirmed user has no real documents
+    return baseRoutes.filter(
+      ([, , route]) => !DOCUMENT_DEPENDENT_ROUTES.includes(route),
+    );
+  }, [hasRealDocument, isDevMode]);
 
   const devModeTap = Gesture.Tap()
     .numberOfTaps(5)

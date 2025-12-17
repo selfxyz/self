@@ -1,4 +1,4 @@
-# OpenPassport App
+# Self.xyz Mobile App
 
 ## Requirements
 

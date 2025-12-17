@@ -24,7 +24,7 @@ Currently, Self supports electronic passports, biometric ID cards following the 
 
 **Passports:** Biometric passports have the [biometric passport logo](https://en.wikipedia.org/wiki/Biometric_passport) on their front cover.
 
-**Aadhaar:** Indian [Aadhaar](https://en.wikipedia.org/wiki/Aadhaar) cards are supported for privacy-preserving identity verification.
+**Aadhaar:** Indian [Aadhaar](https://en.wikipedia.org/wiki/Aadhaar) cards are supported for privacy-preserving identity verification. Use the mAadhaar app to generate a QR code and import it into Self.
 
 **Coverage:** Checkout our [coverage map here](http://map.self.xyz/) to see supported documents and countries.
 
@@ -90,11 +90,13 @@ These guides provide comprehensive context for AI-assisted development with Chat
 
 We are actively looking for contributors. Please check the [open issues](https://github.com/selfxyz/self/issues) if you don't know where to start! We offer bounties for significant contributions.
 
-> **Important:** Please open your pull request from the `staging` branch. Pull requests from other branches will be automatically closed.
+> **Important:** Please read and follow the guidelines in [contribute.md](contribute.md) when opening your pull request.
 
 ## Contact us
 
-[Contact us](https://t.me/selfprotocolbuilder) on telegram for feedback or questions.
+- [Discord](https://discord.gg/AQ3TrX6dce) for technical support or reporting a bug.
+- [Telegram's Self builder channel](https://t.me/selfprotocolbuilder) for technical questions about the sdk implementation.
+- [Telegram's Self public group](https://t.me/selfxyz) for general questions and updates.
 
 Thanks [Rémi](https://github.com/remicolin), [Florent](https://github.com/0xturboblitz), [Ayman](https://github.com/Nesopie), [Justin](https://github.com/transphorm), [Seshanth](https://github.com/seshanthS), [Nico](https://github.com/motemotech) and all other contributors for building Self.
 

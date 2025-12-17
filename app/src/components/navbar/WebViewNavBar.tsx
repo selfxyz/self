@@ -30,9 +30,9 @@ export const WebViewNavBar: React.FC<WebViewNavBarProps> = ({
 
   return (
     <XStack
-      paddingHorizontal={20}
       paddingVertical={10}
       paddingTop={insets.top + 10}
+      paddingHorizontal={16}
       gap={14}
       alignItems="center"
       backgroundColor="white"
@@ -50,7 +50,12 @@ export const WebViewNavBar: React.FC<WebViewNavBarProps> = ({
       />
 
       {/* Center: Title */}
-      <XStack flex={1} alignItems="center" justifyContent="center">
+      <XStack
+        flex={1}
+        alignItems="center"
+        justifyContent="center"
+        paddingHorizontal={8}
+      >
         <Text style={styles.title} numberOfLines={1}>
           {title?.toUpperCase() || 'PAGE TITLE'}
         </Text>

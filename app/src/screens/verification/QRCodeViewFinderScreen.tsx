@@ -5,6 +5,7 @@
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, XStack, YStack } from 'tamagui';
 import {
   useFocusEffect,
@@ -30,8 +31,10 @@ import qrScanAnimation from '@/assets/animations/qr_scan.json';
 import QRScan from '@/assets/icons/qr_code.svg';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
+import { NavBar } from '@/components/navbar/BaseNavBar';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
@@ -44,6 +47,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
+  const { top: safeAreaTop } = useSafeAreaInsets();
   const navigateToProve = useHapticNavigation('Prove');
 
   // This resets to the default state when we navigate back to this screen
@@ -52,6 +56,11 @@ const QRCodeViewFinderScreen: React.FC = () => {
       setDoneScanningQR(false);
     }, []),
   );
+
+  const handleGoBack = useCallback(() => {
+    buttonTap();
+    navigation.goBack();
+  }, [navigation]);
 
   const onQRData = useCallback<QRCodeScannerViewProps['onQRData']>(
     async (error, uri) => {
@@ -129,6 +138,23 @@ const QRCodeViewFinderScreen: React.FC = () => {
     <>
       <ExpandableBottomLayout.Layout backgroundColor={white}>
         <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
+          <NavBar.Container
+            paddingTop={safeAreaTop}
+            paddingHorizontal="$4"
+            paddingBottom="$2"
+            position="absolute"
+            top={0}
+            left={0}
+            right={0}
+            backgroundColor="transparent"
+            zIndex={1}
+          >
+            <NavBar.LeftAction
+              component="back"
+              color={white}
+              onPress={handleGoBack}
+            />
+          </NavBar.Container>
           {shouldRenderCamera && (
             <>
               <QRCodeScannerView onQRData={onQRData} isMounted={isFocused} />

@@ -10,6 +10,7 @@ import { poseidon2 } from "poseidon-lite";
 import { generateVcAndDiscloseProof, parseSolidityCalldata } from "../utils/generateProof";
 import { Formatter } from "../utils/formatter";
 import { formatCountriesList, reverseBytes } from "@selfxyz/common/utils/circuits/formatInputs";
+import { stringToBigInt } from "@selfxyz/common/utils/scope";
 import { VerifyAll } from "../../typechain-types";
 import { getSMTs } from "../utils/generateProof";
 import { Groth16Proof, PublicSignals, groth16 } from "snarkjs";
@@ -102,7 +103,7 @@ describe("VerifyAll", () => {
       registerSecret,
       BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
       deployedActors.mockPassport,
-      "test-scope",
+      stringToBigInt("test-scope").toString(),
       new Array(88).fill("1"),
       "1",
       imt,
@@ -112,7 +113,7 @@ describe("VerifyAll", () => {
       undefined,
       undefined,
       forbiddenCountriesList,
-      (await deployedActors.user1.getAddress()).slice(2),
+      await deployedActors.user1.getAddress(),
     );
     snapshotId = await ethers.provider.send("evm_snapshot", []);
   });
@@ -293,7 +294,7 @@ describe("VerifyAll", () => {
           registerSecret,
           BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
           deployedActors.mockPassport,
-          "test-scope",
+          stringToBigInt("test-scope").toString(),
           new Array(88).fill("1"),
           "1",
           imt,
@@ -460,7 +461,7 @@ describe("VerifyAll", () => {
       const newHubAddress = await deployedActors.user1.getAddress();
       await expect(verifyAll.connect(deployedActors.user1).setHub(newHubAddress)).to.be.revertedWithCustomError(
         verifyAll,
-        "OwnableUnauthorizedAccount",
+        "AccessControlUnauthorizedAccount",
       );
     });
 
@@ -468,7 +469,7 @@ describe("VerifyAll", () => {
       const newRegistryAddress = await deployedActors.user1.getAddress();
       await expect(
         verifyAll.connect(deployedActors.user1).setRegistry(newRegistryAddress),
-      ).to.be.revertedWithCustomError(verifyAll, "OwnableUnauthorizedAccount");
+      ).to.be.revertedWithCustomError(verifyAll, "AccessControlUnauthorizedAccount");
     });
   });
 

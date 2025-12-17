@@ -35,7 +35,7 @@ concurrency:
 
 jobs:
   build-deps:
-    runs-on: macos-latest-large
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -90,12 +90,9 @@ jobs:
       - name: Check App Types
         run: yarn types
         working-directory: ./app
-      - name: Check license headers
-        run: node scripts/check-license-headers.mjs --check
-        working-directory: ./
 
   test:
-    runs-on: macos-latest-large
+    runs-on: ubuntu-latest
     needs: build-deps
     timeout-minutes: 60
     steps:
@@ -190,6 +187,8 @@ jobs:
         env:
           # Increase Node.js memory to prevent hermes-parser WASM memory errors
           NODE_OPTIONS: --max-old-space-size=4096
+          # Override production NODE_ENV for tests - React's production build doesn't include testing utilities
+          NODE_ENV: test
         run: |
           # Final verification from app directory perspective
           echo "Final verification before running tests (from app directory)..."
@@ -268,6 +267,7 @@ jobs:
       - name: Cache Ruby gems
         uses: ./.github/actions/cache-bundler
         with:
+          # TODO(jcortejoso): Confirm the path of the bundle cache
           path: app/ios/vendor/bundle
           lock-file: app/Gemfile.lock
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
@@ -315,6 +315,14 @@ jobs:
           bundle config set --local path 'vendor/bundle'
           bundle install --jobs 4 --retry 3
         working-directory: ./app
+      - name: Generate token for self repositories
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
       - name: Install iOS Dependencies
         uses: nick-fields/retry@v3
         with:
@@ -325,7 +333,7 @@ jobs:
             cd app/ios
             bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Resolve iOS workspace
         run: |
           WORKSPACE_OPEN="ios/OpenPassport.xcworkspace"
@@ -470,12 +478,19 @@ jobs:
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Generate token for self repositories
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
       - name: Setup Android private modules
         run: |
           cd ${{ env.APP_PATH }}
           PLATFORM=android node scripts/setup-private-modules.cjs
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           CI: true
       - name: Build Android (with AAPT2 symlink fix)
         run: yarn android:ci
