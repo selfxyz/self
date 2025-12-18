@@ -15596,22 +15596,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"abitype@npm:^1.0.2":
-  version: 1.2.0
-  resolution: "abitype@npm:1.2.0"
-  peerDependencies:
-    typescript: ">=5.0.4"
-    zod: ^3.22.0 || ^4.0.0
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-    zod:
-      optional: true
-  checksum: 10c0/c599b2ef365d9ae891cfc34ac104d1f6760904d730906d55bfbb146fc19215713bdad982992fc2573df726b9ba19b70ce3fdaa75903c3d402dc644ad8b6b38b9
-  languageName: node
-  linkType: hard
-
-"abitype@npm:^1.0.9":
+"abitype@npm:^1.0.2, abitype@npm:^1.0.9":
   version: 1.2.0
   resolution: "abitype@npm:1.2.0"
   peerDependencies:
