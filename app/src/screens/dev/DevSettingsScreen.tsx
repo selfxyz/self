@@ -273,6 +273,8 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
   const subscribedTopics = useSettingStore(state => state.subscribedTopics);
+  const loggingSeverity = useSettingStore(state => state.loggingSeverity);
+  const setLoggingSeverity = useSettingStore(state => state.setLoggingSeverity);
   const [hasNotificationPermission, setHasNotificationPermission] =
     useState(false);
   const paddingBottom = useSafeBottomPadding(20);
@@ -665,6 +667,45 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                 handleTopicToggle(['nova', 'general'], 'both topics')
               }
             />
+          </YStack>
+        </ParameterSection>
+
+        <ParameterSection
+          icon={<BugIcon />}
+          title="Log Level"
+          description="Configure logging verbosity"
+        >
+          <YStack gap="$2">
+            {(['debug', 'info', 'warn', 'error'] as const).map(level => (
+              <Button
+                key={level}
+                backgroundColor={
+                  loggingSeverity === level ? '$green9' : slate200
+                }
+                borderRadius="$2"
+                height="$5"
+                onPress={() => {
+                  setLoggingSeverity(level);
+                }}
+                flexDirection="row"
+                justifyContent="space-between"
+                paddingHorizontal="$4"
+                pressStyle={{
+                  opacity: 0.8,
+                  scale: 0.98,
+                }}
+              >
+                <Text
+                  color={loggingSeverity === level ? white : slate600}
+                  fontSize="$5"
+                  fontFamily={dinot}
+                  fontWeight="600"
+                >
+                  {level.toUpperCase()}
+                </Text>
+                {loggingSeverity === level && <Check color={white} size={20} />}
+              </Button>
+            ))}
           </YStack>
         </ParameterSection>
 

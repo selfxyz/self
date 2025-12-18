@@ -19,6 +19,7 @@ interface PersistedSettingsState {
   homeScreenViewCount: number;
   incrementHomeScreenViewCount: () => void;
   isDevMode: boolean;
+  loggingSeverity: 'debug' | 'info' | 'warn' | 'error';
   pointsAddress: string | null;
   removeSubscribedTopic: (topic: string) => void;
   resetBackupForPoints: () => void;
@@ -29,6 +30,7 @@ interface PersistedSettingsState {
   setFcmToken: (token: string | null) => void;
   setHasViewedRecoveryPhrase: (viewed: boolean) => void;
   setKeychainMigrationCompleted: () => void;
+  setLoggingSeverity: (severity: 'debug' | 'info' | 'warn' | 'error') => void;
   setPointsAddress: (address: string | null) => void;
   setSubscribedTopics: (topics: string[]) => void;
   setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
@@ -96,6 +98,10 @@ export const useSettingStore = create<SettingsState>()(
       isDevMode: false,
       setDevModeOn: () => set({ isDevMode: true }),
       setDevModeOff: () => set({ isDevMode: false }),
+
+      loggingSeverity: __DEV__ ? 'debug' : 'warn',
+      setLoggingSeverity: (severity: 'debug' | 'info' | 'warn' | 'error') =>
+        set({ loggingSeverity: severity }),
 
       hasCompletedKeychainMigration: false,
       setKeychainMigrationCompleted: () =>

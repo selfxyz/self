@@ -12,13 +12,17 @@ import {
 import { interceptConsole } from '@/services/logging/logger/consoleInterceptor';
 import { lokiTransport } from '@/services/logging/logger/lokiTransport';
 import { setupNativeLoggerBridge } from '@/services/logging/logger/nativeLoggerBridge';
+import { useSettingStore } from '@/stores/settingStore';
+
+// Read initial logging severity from settings store
+const initialSeverity = useSettingStore.getState().loggingSeverity;
 
 const defaultConfig: configLoggerType<
   transportFunctionType<object> | transportFunctionType<object>[],
   defLvlType
 > = {
   enabled: __DEV__ ? false : true,
-  severity: __DEV__ ? 'debug' : 'warn', //TODO configure this using remote-config
+  severity: initialSeverity,
   transport: [lokiTransport as unknown as transportFunctionType<object>],
   transportOptions: {
     colors: {
@@ -34,6 +38,15 @@ const defaultConfig: configLoggerType<
 };
 
 const Logger = logger.createLogger(defaultConfig);
+
+// Subscribe to settings store changes to update logger severity dynamically
+let previousSeverity = initialSeverity;
+useSettingStore.subscribe(state => {
+  if (state.loggingSeverity !== previousSeverity) {
+    Logger.setSeverity(state.loggingSeverity);
+    previousSeverity = state.loggingSeverity;
+  }
+});
 
 type RootLogger = typeof Logger;
 type LoggerExtension = ReturnType<RootLogger['extend']>;
