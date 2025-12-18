@@ -17,6 +17,7 @@ const verificationScreens = {
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
+      gestureEnabled: false,
     } as NativeStackNavigationOptions,
   },
   Prove: {
@@ -29,6 +30,7 @@ const verificationScreens = {
       headerTitleStyle: {
         color: white,
       },
+      gestureEnabled: false,
     } as NativeStackNavigationOptions,
   },
   QRCodeTrouble: {
