@@ -340,7 +340,19 @@ async function analyzeFile(
 
       const entry = ensureEntry(entries, 'default');
       entry.exported = true;
+
+      // Check if the export statement itself is documented
       entry.documented ||= hasDocComment(statement, sourceFile);
+
+      // If exporting an identifier (export default Foo), inherit documentation from the referenced declaration
+      if (ts.isIdentifier(statement.expression)) {
+        const referencedName = statement.expression.text;
+        const referencedEntry = entries.get(referencedName);
+        if (referencedEntry?.documented) {
+          entry.documented = true;
+        }
+      }
+
       entry.kinds.add('default');
       entry.exportedAs.add('default');
       continue;
