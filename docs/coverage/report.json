@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2025-10-29T04:29:01.442Z",
+  "generatedAt": "2025-12-18T19:07:39.092Z",
   "label": "App + SDK",
   "totals": {
-    "exports": 618,
-    "documented": 73,
-    "undocumented": 545,
-    "coverage": 11.81
+    "exports": 731,
+    "documented": 152,
+    "undocumented": 579,
+    "coverage": 20.79
   },
-  "undocumentedTotal": 545,
+  "undocumentedTotal": 579,
   "undocumentedSampled": 50,
   "undocumented": [
     {
@@ -43,27 +43,27 @@
       "symbol": "default export"
     },
     {
-      "file": "app/src/components/homeScreen/idCard.tsx",
+      "file": "app/src/components/homescreen/IdCard.tsx",
       "symbol": "default export"
     },
     {
-      "file": "app/src/components/homeScreen/SvgXmlWrapper.native.tsx",
+      "file": "app/src/components/homescreen/SvgXmlWrapper.native.tsx",
       "symbol": "SvgXml"
     },
     {
-      "file": "app/src/components/homeScreen/SvgXmlWrapper.native.tsx",
+      "file": "app/src/components/homescreen/SvgXmlWrapper.native.tsx",
       "symbol": "default export"
     },
     {
-      "file": "app/src/components/homeScreen/SvgXmlWrapper.web.tsx",
+      "file": "app/src/components/homescreen/SvgXmlWrapper.web.tsx",
       "symbol": "SvgXml"
     },
     {
-      "file": "app/src/components/homeScreen/SvgXmlWrapper.web.tsx",
+      "file": "app/src/components/homescreen/SvgXmlWrapper.web.tsx",
       "symbol": "default export"
     },
     {
-      "file": "app/src/components/loading/LoadingUI.tsx",
+      "file": "app/src/components/LoadingUI.tsx",
       "symbol": "default export"
     },
     {
@@ -119,96 +119,96 @@
       "symbol": "RCTFragment"
     },
     {
-      "file": "app/src/components/NavBar/AadhaarNavBar.tsx",
+      "file": "app/src/components/navbar/AadhaarNavBar.tsx",
       "symbol": "AadhaarNavBar"
     },
     {
-      "file": "app/src/components/NavBar/BaseNavBar.tsx",
+      "file": "app/src/components/navbar/BaseNavBar.tsx",
       "symbol": "LeftAction"
     },
     {
-      "file": "app/src/components/NavBar/BaseNavBar.tsx",
+      "file": "app/src/components/navbar/BaseNavBar.tsx",
       "symbol": "RightAction"
     },
     {
-      "file": "app/src/components/NavBar/BaseNavBar.tsx",
+      "file": "app/src/components/navbar/BaseNavBar.tsx",
       "symbol": "NavBar"
     },
     {
-      "file": "app/src/components/NavBar/DefaultNavBar.tsx",
+      "file": "app/src/components/navbar/DefaultNavBar.tsx",
       "symbol": "DefaultNavBar"
     },
     {
-      "file": "app/src/components/NavBar/DocumentFlowNavBar.tsx",
+      "file": "app/src/components/navbar/DocumentFlowNavBar.tsx",
       "symbol": "DocumentFlowNavBar"
     },
     {
-      "file": "app/src/components/NavBar/HomeNavBar.tsx",
+      "file": "app/src/components/navbar/HeadlessNavForEuclid.tsx",
+      "symbol": "HeadlessNavForEuclid"
+    },
+    {
+      "file": "app/src/components/navbar/HomeNavBar.tsx",
       "symbol": "HomeNavBar"
     },
     {
-      "file": "app/src/components/NavBar/IdDetailsNavBar.tsx",
+      "file": "app/src/components/navbar/IdDetailsNavBar.tsx",
       "symbol": "IdDetailsNavBar"
     },
     {
-      "file": "app/src/components/NavBar/WebViewNavBar.tsx",
+      "file": "app/src/components/navbar/Points.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/navbar/PointsNavBar.tsx",
+      "symbol": "PointsNavBar"
+    },
+    {
+      "file": "app/src/components/navbar/WebViewNavBar.tsx",
       "symbol": "WebViewNavBarProps"
     },
     {
-      "file": "app/src/components/NavBar/WebViewNavBar.tsx",
+      "file": "app/src/components/navbar/WebViewNavBar.tsx",
       "symbol": "WebViewNavBar"
     },
     {
-      "file": "app/src/components/Tips.tsx",
-      "symbol": "TipProps"
+      "file": "app/src/components/PointHistoryList.tsx",
+      "symbol": "PointHistoryListProps"
     },
     {
-      "file": "app/src/components/Tips.tsx",
-      "symbol": "Tips"
+      "file": "app/src/components/PointHistoryList.tsx",
+      "symbol": "PointHistoryList"
     },
     {
-      "file": "app/src/components/WebViewFooter.tsx",
-      "symbol": "WebViewFooterProps"
+      "file": "app/src/components/PointHistoryList.tsx",
+      "symbol": "default export"
     },
     {
-      "file": "app/src/components/WebViewFooter.tsx",
-      "symbol": "WebViewFooter"
+      "file": "app/src/components/referral/CopyReferralButton.tsx",
+      "symbol": "CopyReferralButtonProps"
     },
     {
-      "file": "app/src/consts/links.ts",
-      "symbol": "appStoreUrl"
+      "file": "app/src/components/referral/CopyReferralButton.tsx",
+      "symbol": "CopyReferralButton"
     },
     {
-      "file": "app/src/consts/links.ts",
-      "symbol": "gitHubUrl"
+      "file": "app/src/components/referral/ReferralHeader.tsx",
+      "symbol": "ReferralHeaderProps"
     },
     {
-      "file": "app/src/consts/links.ts",
-      "symbol": "playStoreUrl"
+      "file": "app/src/components/referral/ReferralHeader.tsx",
+      "symbol": "ReferralHeader"
     },
     {
-      "file": "app/src/consts/links.ts",
-      "symbol": "privacyUrl"
+      "file": "app/src/components/referral/ReferralInfo.tsx",
+      "symbol": "ReferralInfoProps"
     },
     {
-      "file": "app/src/consts/links.ts",
-      "symbol": "selfUrl"
+      "file": "app/src/components/referral/ReferralInfo.tsx",
+      "symbol": "ReferralInfo"
     },
     {
-      "file": "app/src/consts/links.ts",
-      "symbol": "supportedBiometricIdsUrl"
-    },
-    {
-      "file": "app/src/consts/links.ts",
-      "symbol": "telegramUrl"
-    },
-    {
-      "file": "app/src/consts/links.ts",
-      "symbol": "termsUrl"
-    },
-    {
-      "file": "app/src/consts/links.ts",
-      "symbol": "xUrl"
+      "file": "app/src/components/referral/ShareButton.tsx",
+      "symbol": "ShareButtonProps"
     }
   ]
 }

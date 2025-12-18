@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2025-10-29T04:28:54.782Z",
+  "generatedAt": "2025-12-18T19:07:23.722Z",
   "label": "Mobile SDK Alpha",
   "totals": {
-    "exports": 229,
-    "documented": 35,
-    "undocumented": 194,
-    "coverage": 15.28
+    "exports": 234,
+    "documented": 77,
+    "undocumented": 157,
+    "coverage": 32.91
   },
-  "undocumentedTotal": 194,
+  "undocumentedTotal": 157,
   "undocumentedSampled": 50,
   "undocumented": [
     {
