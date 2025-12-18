@@ -12,13 +12,17 @@ import {
 import { interceptConsole } from '@/services/logging/logger/consoleInterceptor';
 import { lokiTransport } from '@/services/logging/logger/lokiTransport';
 import { setupNativeLoggerBridge } from '@/services/logging/logger/nativeLoggerBridge';
+import { useSettingStore } from '@/stores/settingStore';
+
+// Read initial logging severity from settings store
+const initialSeverity = useSettingStore.getState().loggingSeverity;
 
 const defaultConfig: configLoggerType<
   transportFunctionType<object> | transportFunctionType<object>[],
   defLvlType
 > = {
   enabled: __DEV__ ? false : true,
-  severity: __DEV__ ? 'debug' : 'warn', //TODO configure this using remote-config
+  severity: initialSeverity,
   transport: [lokiTransport as unknown as transportFunctionType<object>],
   transportOptions: {
     colors: {
@@ -51,6 +55,37 @@ const DocumentLogger = Logger.extend('DOCUMENT');
 
 //Native Modules
 const NfcLogger = Logger.extend('NFC');
+
+// Collect all extended loggers for severity updates
+const extendedLoggers = [
+  AppLogger,
+  NotificationLogger,
+  AuthLogger,
+  PassportLogger,
+  ProofLogger,
+  SettingsLogger,
+  BackupLogger,
+  MockDataLogger,
+  DocumentLogger,
+  NfcLogger,
+];
+
+// Subscribe to settings store changes to update logger severity dynamically
+// Extended loggers are independent instances, so we need to update each one
+// Note: Dynamically created loggers (e.g., in nativeLoggerBridge for unknown categories)
+// will inherit the severity at creation time but won't receive runtime updates
+let previousSeverity = initialSeverity;
+useSettingStore.subscribe(state => {
+  if (state.loggingSeverity !== previousSeverity) {
+    Logger.setSeverity(state.loggingSeverity);
+    // Update all extended loggers since they don't inherit runtime changes
+    // Extended loggers have setSeverity at runtime, even if not in type definition
+    extendedLoggers.forEach(extLogger => {
+      (extLogger as typeof Logger).setSeverity(state.loggingSeverity);
+    });
+    previousSeverity = state.loggingSeverity;
+  }
+});
 
 // Initialize console interceptor to route console logs to Loki
 interceptConsole(AppLogger);

@@ -6,6 +6,8 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+type LoggingSeverity = 'debug' | 'info' | 'warn' | 'error';
+
 interface PersistedSettingsState {
   addSubscribedTopic: (topic: string) => void;
   biometricsAvailable: boolean;
@@ -19,6 +21,7 @@ interface PersistedSettingsState {
   homeScreenViewCount: number;
   incrementHomeScreenViewCount: () => void;
   isDevMode: boolean;
+  loggingSeverity: LoggingSeverity;
   pointsAddress: string | null;
   removeSubscribedTopic: (topic: string) => void;
   resetBackupForPoints: () => void;
@@ -29,6 +32,7 @@ interface PersistedSettingsState {
   setFcmToken: (token: string | null) => void;
   setHasViewedRecoveryPhrase: (viewed: boolean) => void;
   setKeychainMigrationCompleted: () => void;
+  setLoggingSeverity: (severity: LoggingSeverity) => void;
   setPointsAddress: (address: string | null) => void;
   setSubscribedTopics: (topics: string[]) => void;
   setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
@@ -96,6 +100,10 @@ export const useSettingStore = create<SettingsState>()(
       isDevMode: false,
       setDevModeOn: () => set({ isDevMode: true }),
       setDevModeOff: () => set({ isDevMode: false }),
+
+      loggingSeverity: __DEV__ ? 'debug' : 'warn',
+      setLoggingSeverity: (severity: LoggingSeverity) =>
+        set({ loggingSeverity: severity }),
 
       hasCompletedKeychainMigration: false,
       setKeychainMigrationCompleted: () =>
