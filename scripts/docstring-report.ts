@@ -386,7 +386,11 @@ async function analyzeFile(
       entry.documented ||= hasDocComment(statement, sourceFile);
       if (hasExportModifier(statement.modifiers)) {
         entry.exported = true;
-        entry.exportedAs.add(name);
+        // For inline default exports (export default function foo), add "default" not the name
+        const exportName = hasDefaultModifier(statement.modifiers)
+          ? 'default'
+          : name;
+        entry.exportedAs.add(exportName);
       }
       continue;
     }
@@ -450,6 +454,14 @@ function hasExportModifier(
         modifier.kind === ts.SyntaxKind.ExportKeyword ||
         modifier.kind === ts.SyntaxKind.DefaultKeyword,
     ),
+  );
+}
+
+function hasDefaultModifier(
+  modifiers: ts.NodeArray<ts.Modifier> | undefined,
+): boolean {
+  return Boolean(
+    modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.DefaultKeyword),
   );
 }
 
