@@ -37,6 +37,7 @@ on:
       - ".github/workflows/mobile-e2e.yml"
   issue_comment:
     types: [created]
+  workflow_dispatch:
 
 jobs:
   android-build-test:

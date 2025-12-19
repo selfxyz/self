@@ -39,6 +39,7 @@ on:
       - ".github/workflows/mobile-sdk-demo-e2e.yml"
   issue_comment:
     types: [created]
+  workflow_dispatch:
 
 jobs:
   android-e2e:
