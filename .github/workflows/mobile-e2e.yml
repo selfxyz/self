@@ -17,6 +17,15 @@ env:
   MAESTRO_VERSION: 1.41.0
 
 on:
+  push:
+    branches:
+      - dev
+      - staging
+      - main
+    paths:
+      - "app/**"
+      - "packages/mobile-sdk-alpha/**"
+      - ".github/workflows/mobile-e2e.yml"
   pull_request:
     branches:
       - dev
@@ -26,6 +35,7 @@ on:
       - "app/**"
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-e2e.yml"
+  workflow_dispatch:
 
 jobs:
   android-build-test:
@@ -229,7 +239,8 @@ jobs:
 
   e2e-ios:
     timeout-minutes: 120
-    runs-on: macos-latest-large
+    # runs-on: macos-latest-large
+    runs-on: namespace-profile-apple-silicon-6cpu
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
       cancel-in-progress: true
@@ -273,6 +284,21 @@ jobs:
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+      - name: Check Java installation
+        run: |
+          echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"
+          if command -v java &> /dev/null && java -version &> /dev/null; then
+            echo "Java already installed: $(java -version 2>&1 | head -n 1)"
+          else
+            echo "Java not found or not working, will install..."
+            echo "INSTALL_JAVA=true" >> "$GITHUB_ENV"
+          fi
+      - name: Setup Java environment
+        if: env.INSTALL_JAVA == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
       - name: Generate token for self repositories
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: ./.github/actions/generate-github-token

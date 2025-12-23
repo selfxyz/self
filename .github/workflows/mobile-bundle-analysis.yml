@@ -8,7 +8,21 @@ env:
   NODE_ENV: "production"
 
 on:
+  push:
+    branches:
+      - dev
+      - staging
+      - main
+    paths:
+      - "app/**"
+      - "packages/mobile-sdk-alpha/**"
+      - ".github/workflows/mobile-bundle-analysis.yml"
+      - ".github/actions/**"
   pull_request:
+    branches:
+      - dev
+      - staging
+      - main
     paths:
       - "app/**"
       - "packages/mobile-sdk-alpha/**"
@@ -18,7 +32,7 @@ on:
 
 jobs:
   analyze-android:
-    runs-on: macos-latest-large
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version
@@ -83,7 +97,9 @@ jobs:
         working-directory: ./app
 
   analyze-ios:
-    runs-on: macos-latest-large
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    # runs-on: macos-latest-large
+    runs-on: namespace-profile-apple-silicon-6cpu
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version
@@ -122,6 +138,21 @@ jobs:
         with:
           path: app/ios/Pods
           lockfile: app/ios/Podfile.lock
+      - name: Check Java installation
+        run: |
+          echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"
+          if command -v java &> /dev/null && java -version &> /dev/null; then
+            echo "Java already installed: $(java -version 2>&1 | head -n 1)"
+          else
+            echo "Java not found or not working, will install..."
+            echo "INSTALL_JAVA=true" >> "$GITHUB_ENV"
+          fi
+      - name: Setup Java environment
+        if: env.INSTALL_JAVA == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
       - name: Generate token for self repositories
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: ./.github/actions/generate-github-token

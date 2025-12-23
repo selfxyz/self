@@ -265,7 +265,8 @@ jobs:
 
   build-ios:
     needs: [bump-version]
-    runs-on: macos-latest-large
+    # runs-on: macos-latest-large
+    runs-on: namespace-profile-apple-silicon-6cpu
     permissions:
       contents: read
       actions: write
@@ -430,6 +431,21 @@ jobs:
           fi
 
           echo "✅ Lock files exist"
+      - name: Check Java installation
+        run: |
+          echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"
+          if command -v java &> /dev/null && java -version &> /dev/null; then
+            echo "Java already installed: $(java -version 2>&1 | head -n 1)"
+          else
+            echo "Java not found or not working, will install..."
+            echo "INSTALL_JAVA=true" >> "$GITHUB_ENV"
+          fi
+      - name: Setup Java environment
+        if: env.INSTALL_JAVA == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
       - name: Generate token for self repositories
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: ./.github/actions/generate-github-token
