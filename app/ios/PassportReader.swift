@@ -119,9 +119,14 @@ class PassportReader: NSObject {
   }
 
   func pad( _ value : String, fieldLength:Int ) -> String {
-    // Pad out field lengths with < if they are too short
-    let paddedValue = (value + String(repeating: "<", count: fieldLength)).prefix(fieldLength)
-    return String(paddedValue)
+    // for values shorter than fieldLength, we pad with < characters
+    // for values equal to or longer than fieldLength, we use the value as-is (we don't truncate)
+    // this is critical for TD1 documents with overflow format where document numbers exceed 9 characters
+    if value.count >= fieldLength {
+      return value
+    }
+    let paddedValue = value + String(repeating: "<", count: fieldLength - value.count)
+    return paddedValue
   }
 
   func calcCheckSum( _ checkString : String ) -> Int {
