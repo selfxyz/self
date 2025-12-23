@@ -84,11 +84,22 @@ async function main(): Promise<void> {
     }
 
     const summaries: FileExportSummary[] = [];
+    const failedFiles: Array<{ path: string; error: string }> = [];
 
     for (const filePath of files) {
-      const summary = await analyzeFile(filePath, root);
-      if (summary.totalExports > 0) {
-        summaries.push(summary);
+      try {
+        const summary = await analyzeFile(filePath, root);
+        if (summary.totalExports > 0) {
+          summaries.push(summary);
+        }
+      } catch (error) {
+        const relativePath = path.relative(root, filePath);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        failedFiles.push({ path: relativePath, error: errorMessage });
+        console.error(
+          `Failed to analyze ${relativePath}: ${errorMessage}`,
+        );
       }
     }
 
@@ -128,6 +139,14 @@ async function main(): Promise<void> {
     printTable(summaries, options.label);
     printSummary(totalExports, documentedExports, overallCoverage);
     printUndocumentedHighlights(summaries);
+
+    if (failedFiles.length > 0) {
+      console.log();
+      console.log(`Failed to analyze ${failedFiles.length} file(s):`);
+      for (const failure of failedFiles) {
+        console.log(`  ${failure.path}: ${failure.error}`);
+      }
+    }
 
     if (options.writeReport) {
       const missingEntries = summaries.flatMap(file =>
@@ -200,7 +219,7 @@ function parseArgs(args: string[]): CliOptions {
       process.exit(0);
     }
 
-    if (arg.startsWith('--write-report')) {
+    if (arg === '--write-report' || arg.startsWith('--write-report=')) {
       if (arg.includes('=')) {
         writeReport = arg.split('=')[1] ?? '';
         if (!writeReport) {
@@ -213,7 +232,7 @@ function parseArgs(args: string[]): CliOptions {
       continue;
     }
 
-    if (arg.startsWith('--label')) {
+    if (arg === '--label' || arg.startsWith('--label=')) {
       if (arg.includes('=')) {
         label = arg.split('=')[1] ?? '';
       } else {
@@ -314,9 +333,16 @@ async function analyzeFile(
 
   const entries = new Map<string, ExportEntry>();
   const exportSpecifiers: Array<{ localName: string; exportedAs: string }> = [];
+  const exportDefaultStatements: ts.ExportAssignment[] = [];
+  const exportedDeclarations: Array<{
+    statement: ts.Statement;
+    hasDefault: boolean;
+  }> = [];
 
+  // First pass: Collect all declarations with their documentation status
   for (const statement of sourceFile.statements) {
     if (ts.isExportDeclaration(statement)) {
+      // Collect export specifiers for second pass
       if (
         !statement.moduleSpecifier &&
         statement.exportClause &&
@@ -334,27 +360,9 @@ async function analyzeFile(
     }
 
     if (ts.isExportAssignment(statement)) {
-      if (statement.isExportEquals) {
-        continue;
+      if (!statement.isExportEquals) {
+        exportDefaultStatements.push(statement);
       }
-
-      const entry = ensureEntry(entries, 'default');
-      entry.exported = true;
-
-      // Check if the export statement itself is documented
-      entry.documented ||= hasDocComment(statement, sourceFile);
-
-      // If exporting an identifier (export default Foo), inherit documentation from the referenced declaration
-      if (ts.isIdentifier(statement.expression)) {
-        const referencedName = statement.expression.text;
-        const referencedEntry = entries.get(referencedName);
-        if (referencedEntry?.documented) {
-          entry.documented = true;
-        }
-      }
-
-      entry.kinds.add('default');
-      entry.exportedAs.add('default');
       continue;
     }
 
@@ -372,9 +380,9 @@ async function analyzeFile(
         entry.kinds.add('variable');
         entry.documented ||=
           statementDoc || hasDocComment(declaration, sourceFile);
+
         if (exported) {
-          entry.exported = true;
-          entry.exportedAs.add(name);
+          exportedDeclarations.push({ statement, hasDefault: false });
         }
       }
       continue;
@@ -396,23 +404,73 @@ async function analyzeFile(
       const entry = ensureEntry(entries, name);
       entry.kinds.add(getKindLabel(statement));
       entry.documented ||= hasDocComment(statement, sourceFile);
+
       if (hasExportModifier(statement.modifiers)) {
-        entry.exported = true;
-        // For inline default exports (export default function foo), add "default" not the name
-        const exportName = hasDefaultModifier(statement.modifiers)
-          ? 'default'
-          : name;
-        entry.exportedAs.add(exportName);
+        const hasDefault = hasDefaultModifier(statement.modifiers);
+        exportedDeclarations.push({ statement, hasDefault });
       }
       continue;
     }
   }
 
+  // Second pass: Process all exports now that all declarations are collected
+  // Process inline exported declarations
+  for (const { statement, hasDefault } of exportedDeclarations) {
+    if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        const name = getDeclarationName(declaration, sourceFile);
+        if (!name) {
+          continue;
+        }
+
+        const entry = entries.get(name);
+        if (entry) {
+          entry.exported = true;
+          entry.exportedAs.add(name);
+        }
+      }
+    } else {
+      const name = getDeclarationName(statement, sourceFile);
+      if (!name) {
+        continue;
+      }
+
+      const entry = entries.get(name);
+      if (entry) {
+        entry.exported = true;
+        // For inline default exports (export default function foo), add "default" not the name
+        const exportName = hasDefault ? 'default' : name;
+        entry.exportedAs.add(exportName);
+      }
+    }
+  }
+
+  // Process export specifiers (export { Foo, Bar })
   for (const specifier of exportSpecifiers) {
     const entry = entries.get(specifier.localName);
     if (entry) {
       entry.exported = true;
       entry.exportedAs.add(specifier.exportedAs);
+    }
+  }
+
+  // Process export default statements (export default Foo)
+  for (const statement of exportDefaultStatements) {
+    const entry = ensureEntry(entries, 'default');
+    entry.exported = true;
+    entry.kinds.add('default');
+    entry.exportedAs.add('default');
+
+    // Check if the export statement itself is documented
+    entry.documented ||= hasDocComment(statement, sourceFile);
+
+    // If exporting an identifier (export default Foo), inherit documentation from the referenced declaration
+    if (ts.isIdentifier(statement.expression)) {
+      const referencedName = statement.expression.text;
+      const referencedEntry = entries.get(referencedName);
+      if (referencedEntry?.documented) {
+        entry.documented = true;
+      }
     }
   }
 
