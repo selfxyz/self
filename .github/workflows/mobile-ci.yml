@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -96,7 +96,7 @@ jobs:
     needs: build-deps
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -211,7 +211,7 @@ jobs:
       IOS_PROJECT_NAME: "Self"
       IOS_PROJECT_SCHEME: "OpenPassport"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -407,7 +407,7 @@ jobs:
     needs: build-deps
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |

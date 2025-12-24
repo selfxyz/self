@@ -20,7 +20,7 @@ jobs:
   analyze-android:
     runs-on: macos-latest-large
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -85,7 +85,7 @@ jobs:
   analyze-ios:
     runs-on: macos-latest-large
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |

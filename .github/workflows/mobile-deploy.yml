@@ -168,7 +168,7 @@ jobs:
       version_bump_type: ${{ steps.determine-bump.outputs.version_bump }}
       platform: ${{ steps.determine-platform.outputs.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           # Build from the branch that triggered the workflow (staging, feature branch, etc.)
@@ -291,7 +291,7 @@ jobs:
             fi
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           # Checkout the branch that triggered the workflow
@@ -872,7 +872,7 @@ jobs:
             fi
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: inputs.platform != 'ios'
         with:
           fetch-depth: 0
@@ -1282,7 +1282,7 @@ jobs:
     env:
       APP_PATH: ${{ github.workspace }}/app
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           # Checkout target branch for version bump PR (default: dev, override with bump_target_branch input)
@@ -1471,7 +1471,7 @@ jobs:
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
       (inputs.deployment_track == 'production')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           # Checkout target branch for tagging (usually dev)
