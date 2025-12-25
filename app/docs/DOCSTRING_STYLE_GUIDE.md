@@ -11,4 +11,4 @@ Docstrings for the React Native app live alongside the source in `app/src`. We f
 
 ## Coverage expectations
 
-Docstring coverage is now monitored through `yarn docstrings:app` (or `yarn docstrings` for both app and SDK). The GitHub Actions workflow uploads JSON snapshots from `docs/coverage/*.json`, but coverage targets are not enforced yet—missing docstrings will not block builds. Treat the reports as guardrails and follow up in subsequent PRs if you need to land behaviour quickly.
+Docstring coverage can be checked locally by running `yarn docstrings:app` (or `yarn docstrings` for both app and SDK). The reports generate JSON snapshots in `docs/coverage/*.json` that can be committed to track progress over time. Coverage targets are not enforced—treat the reports as guardrails to identify documentation gaps.

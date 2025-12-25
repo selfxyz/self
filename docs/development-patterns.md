@@ -7,7 +7,7 @@
 - Run `yarn docstrings:sdk` to focus on `@selfxyz/mobile-sdk-alpha` only.
 - Add `--details` to any command when you want a full per-file JSON breakdown for ad-hoc analysis—the default snapshots include only top-level totals and a small sample of undocumented exports to keep the tracked files compact.
 
-The `Docstring coverage` GitHub Actions workflow executes all three commands for every PR and push to the shared branches. It uploads the JSON files as build artifacts so reviewers can inspect coverage deltas without checking out the branch. The workflow is advisory—the job always succeeds, even when coverage drops.
+Run the docstring reports locally before committing to track coverage changes. The reports are advisory—use them to identify documentation gaps but they won't block builds.
 
 ## React Native Architecture
 

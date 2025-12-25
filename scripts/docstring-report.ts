@@ -97,9 +97,7 @@ async function main(): Promise<void> {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
         failedFiles.push({ path: relativePath, error: errorMessage });
-        console.error(
-          `Failed to analyze ${relativePath}: ${errorMessage}`,
-        );
+        console.error(`Failed to analyze ${relativePath}: ${errorMessage}`);
       }
     }
 
@@ -599,9 +597,7 @@ function getDeclarationName(
  * Extract all binding identifiers from a declaration.
  * Handles destructuring patterns like { a, b } and [x, y].
  */
-function getBindingIdentifiers(
-  declaration: ts.VariableDeclaration,
-): string[] {
+function getBindingIdentifiers(declaration: ts.VariableDeclaration): string[] {
   const identifiers: string[] = [];
 
   function collectIdentifiers(name: ts.BindingName): void {
