@@ -65,6 +65,7 @@
     "knip": "^5.63.1",
     "patch-package": "^8.0.0",
     "prettier": "^3.6.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.2"
   },
   "packageManager": "yarn@4.6.0",

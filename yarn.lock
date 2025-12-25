@@ -8349,7 +8349,7 @@ __metadata:
     snarkjs: "npm:^0.7.1"
     ts-mocha: "npm:^10.0.0"
     tsconfig-paths: "npm:^4.2.0"
-    tsx: "npm:^4.20.3"
+    tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.2"
   languageName: unknown
   linkType: soft
@@ -31388,6 +31388,7 @@ __metadata:
     prettier: "npm:^3.6.2"
     react: "npm:^18.3.1"
     react-native: "npm:0.76.9"
+    tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.2"
     uuid: "npm:^13.0.0"
   languageName: unknown
@@ -33746,9 +33747,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:^4.20.3":
-  version: 4.20.6
-  resolution: "tsx@npm:4.20.6"
+"tsx@npm:^4.21.0":
+  version: 4.21.0
+  resolution: "tsx@npm:4.21.0"
   dependencies:
     esbuild: "npm:~0.25.0"
     fsevents: "npm:~2.3.3"
