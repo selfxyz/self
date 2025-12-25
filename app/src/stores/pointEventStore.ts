@@ -129,12 +129,10 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
 
   loadDisclosureEvents: async () => {
     try {
-      const { getDisclosurePointEvents } = await import(
-        '@/services/points/getEvents'
-      );
-      const { useProofHistoryStore } = await import(
-        '@/stores/proofHistoryStore'
-      );
+      const { getDisclosurePointEvents } =
+        await import('@/services/points/getEvents');
+      const { useProofHistoryStore } =
+        await import('@/stores/proofHistoryStore');
       await useProofHistoryStore.getState().initDatabase();
       const disclosureEvents = await getDisclosurePointEvents();
       const existingEvents = get().events.filter(e => e.type !== 'disclosure');

@@ -132,9 +132,8 @@ export const getWhiteListedDisclosureAddresses = async (): Promise<
 export const hasUserAnIdentityDocumentRegistered =
   async (): Promise<boolean> => {
     try {
-      const { loadDocumentCatalogDirectlyFromKeychain } = await import(
-        '@/providers/passportDataProvider'
-      );
+      const { loadDocumentCatalogDirectlyFromKeychain } =
+        await import('@/providers/passportDataProvider');
       const catalog = await loadDocumentCatalogDirectlyFromKeychain();
 
       return catalog.documents.some(doc => doc.isRegistered === true);
