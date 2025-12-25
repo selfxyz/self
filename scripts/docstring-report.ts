@@ -279,10 +279,22 @@ async function resolveFiles(
   for (const pattern of patterns) {
     for await (const match of glob(pattern, {
       cwd: root,
-      nodir: true,
-      dot: false,
+      // Exclude dotfiles and dot-directories
+      exclude: (name: string) => path.basename(name).startsWith('.'),
     })) {
       const resolved = path.resolve(root, String(match));
+
+      // Skip directories (glob may return them despite file extension patterns)
+      try {
+        const stat = await fs.stat(resolved);
+        if (stat.isDirectory()) {
+          continue;
+        }
+      } catch {
+        // File doesn't exist or can't be accessed, skip it
+        continue;
+      }
+
       if (shouldIncludeFile(resolved, root)) {
         files.add(resolved);
       }
@@ -371,15 +383,19 @@ async function analyzeFile(
       const statementDoc = hasDocComment(statement, sourceFile);
 
       for (const declaration of statement.declarationList.declarations) {
-        const name = getDeclarationName(declaration, sourceFile);
-        if (!name) {
+        // Extract all binding identifiers (handles destructuring)
+        const identifiers = getBindingIdentifiers(declaration);
+        if (identifiers.length === 0) {
           continue;
         }
 
-        const entry = ensureEntry(entries, name);
-        entry.kinds.add('variable');
-        entry.documented ||=
-          statementDoc || hasDocComment(declaration, sourceFile);
+        const declarationDoc = hasDocComment(declaration, sourceFile);
+
+        for (const name of identifiers) {
+          const entry = ensureEntry(entries, name);
+          entry.kinds.add('variable');
+          entry.documented ||= statementDoc || declarationDoc;
+        }
 
         if (exported) {
           exportedDeclarations.push({ statement, hasDefault: false });
@@ -397,16 +413,22 @@ async function analyzeFile(
       ts.isModuleDeclaration(statement)
     ) {
       const name = getDeclarationName(statement, sourceFile);
-      if (!name) {
+      const hasExport = hasExportModifier(statement.modifiers);
+      const hasDefault = hasDefaultModifier(statement.modifiers);
+
+      // For anonymous default exports (e.g., export default function() {}),
+      // use "default" as the name so they're tracked in coverage
+      const effectiveName = !name && hasExport && hasDefault ? 'default' : name;
+
+      if (!effectiveName) {
         continue;
       }
 
-      const entry = ensureEntry(entries, name);
+      const entry = ensureEntry(entries, effectiveName);
       entry.kinds.add(getKindLabel(statement));
       entry.documented ||= hasDocComment(statement, sourceFile);
 
-      if (hasExportModifier(statement.modifiers)) {
-        const hasDefault = hasDefaultModifier(statement.modifiers);
+      if (hasExport) {
         exportedDeclarations.push({ statement, hasDefault });
       }
       continue;
@@ -418,28 +440,32 @@ async function analyzeFile(
   for (const { statement, hasDefault } of exportedDeclarations) {
     if (ts.isVariableStatement(statement)) {
       for (const declaration of statement.declarationList.declarations) {
-        const name = getDeclarationName(declaration, sourceFile);
-        if (!name) {
-          continue;
-        }
+        // Extract all binding identifiers (handles destructuring)
+        const identifiers = getBindingIdentifiers(declaration);
 
-        const entry = entries.get(name);
-        if (entry) {
-          entry.exported = true;
-          entry.exportedAs.add(name);
+        for (const name of identifiers) {
+          const entry = entries.get(name);
+          if (entry) {
+            entry.exported = true;
+            entry.exportedAs.add(name);
+          }
         }
       }
     } else {
       const name = getDeclarationName(statement, sourceFile);
-      if (!name) {
+
+      // For anonymous default exports, use "default" as the name
+      const effectiveName = !name && hasDefault ? 'default' : name;
+
+      if (!effectiveName) {
         continue;
       }
 
-      const entry = entries.get(name);
+      const entry = entries.get(effectiveName);
       if (entry) {
         entry.exported = true;
         // For inline default exports (export default function foo), add "default" not the name
-        const exportName = hasDefault ? 'default' : name;
+        const exportName = hasDefault ? 'default' : effectiveName;
         entry.exportedAs.add(exportName);
       }
     }
@@ -567,6 +593,35 @@ function getDeclarationName(
   }
 
   return undefined;
+}
+
+/**
+ * Extract all binding identifiers from a declaration.
+ * Handles destructuring patterns like { a, b } and [x, y].
+ */
+function getBindingIdentifiers(
+  declaration: ts.VariableDeclaration,
+): string[] {
+  const identifiers: string[] = [];
+
+  function collectIdentifiers(name: ts.BindingName): void {
+    if (ts.isIdentifier(name)) {
+      identifiers.push(name.text);
+    } else if (ts.isObjectBindingPattern(name)) {
+      for (const element of name.elements) {
+        collectIdentifiers(element.name);
+      }
+    } else if (ts.isArrayBindingPattern(name)) {
+      for (const element of name.elements) {
+        if (ts.isBindingElement(element)) {
+          collectIdentifiers(element.name);
+        }
+      }
+    }
+  }
+
+  collectIdentifiers(declaration.name);
+  return identifiers;
 }
 
 function getKindLabel(node: ts.Node): string {

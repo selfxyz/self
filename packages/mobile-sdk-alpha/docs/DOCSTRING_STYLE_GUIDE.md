@@ -11,4 +11,4 @@ All exported APIs from `packages/mobile-sdk-alpha/src` must carry TSDoc-complian
 
 ## Coverage expectations
 
-`yarn docstrings:sdk` and the aggregate `yarn docstrings:report` surface the current coverage numbers in `docs/coverage/*.json`. The CI workflow uploads those JSON files as artifacts so teams can track progress, but the thresholds are advisory for now—missing docstrings will not fail the build. Use the reports to plan follow-up work even when you need to land code without full documentation.
+`yarn docstrings:sdk` (or `yarn docstrings` for both app and SDK) surfaces the current coverage numbers in `docs/coverage/*.json`. The CI workflow uploads those JSON files as artifacts so teams can track progress, but the thresholds are advisory for now—missing docstrings will not fail the build. Use the reports to plan follow-up work even when you need to land code without full documentation.

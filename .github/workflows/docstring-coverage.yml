@@ -36,15 +36,7 @@ jobs:
 
       - name: Generate docstring coverage reports
         run: |
-          yarn docstrings:app > /tmp/docstrings-app.log
-          yarn docstrings:sdk > /tmp/docstrings-sdk.log
-          yarn docstrings:report
-          echo "::group::Mobile app coverage (tail)"
-          tail -n 25 /tmp/docstrings-app.log || true
-          echo "::endgroup::"
-          echo "::group::Mobile SDK coverage (tail)"
-          tail -n 25 /tmp/docstrings-sdk.log || true
-          echo "::endgroup::"
+          yarn docstrings
 
       - name: Upload coverage snapshots
         uses: actions/upload-artifact@v4

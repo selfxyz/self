@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2025-12-18T19:07:11.648Z",
+  "generatedAt": "2025-12-25T18:56:55.583Z",
   "label": "Mobile App",
   "totals": {
     "exports": 497,
@@ -24,7 +24,7 @@
     },
     {
       "file": "app/src/components/Disclosures.tsx",
-      "symbol": "Disclosures"
+      "symbol": "default (local: Disclosures)"
     },
     {
       "file": "app/src/components/ErrorBoundary.tsx",

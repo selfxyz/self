@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2025-12-18T19:07:23.722Z",
+  "generatedAt": "2025-12-25T18:56:56.987Z",
   "label": "Mobile SDK Alpha",
   "totals": {
     "exports": 234,
@@ -48,7 +48,7 @@
     },
     {
       "file": "packages/mobile-sdk-alpha/src/components/buttons/AbstractButton.tsx",
-      "symbol": "AbstractButton"
+      "symbol": "default (local: AbstractButton)"
     },
     {
       "file": "packages/mobile-sdk-alpha/src/components/buttons/HeldPrimaryButtonProveScreen.tsx",

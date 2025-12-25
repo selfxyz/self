@@ -261,6 +261,9 @@ circuits/ptau/
 !metro.config.*
 !tamagui.config.ts
 
+# Allow docstring coverage reports (tracked in git for coverage tracking)
+!docs/coverage/*.json
+
 # Ensure source code is accessible
 !**/*.ts
 !**/*.tsx
