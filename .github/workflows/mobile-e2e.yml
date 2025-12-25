@@ -65,7 +65,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare yarn@4.6.0 --activate
+      - run: corepack prepare yarn@4.12.0 --activate
       - name: Compute .yarnrc.yml hash
         id: yarnrc-hash
         uses: ./.github/actions/yarnrc-hash
@@ -148,7 +148,7 @@ jobs:
           echo "Building dependencies..."
           # Ensure Yarn 4.6.0 is active
           corepack enable
-          corepack prepare yarn@4.6.0 --activate
+          corepack prepare yarn@4.12.0 --activate
           yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Setup Android private modules
@@ -269,7 +269,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare yarn@4.6.0 --activate
+      - run: corepack prepare yarn@4.12.0 --activate
       - name: Compute .yarnrc.yml hash
         id: yarnrc-hash
         uses: ./.github/actions/yarnrc-hash

@@ -68,7 +68,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare yarn@4.6.0 --activate
+      - run: corepack prepare yarn@4.12.0 --activate
       - name: Compute .yarnrc.yml hash
         id: yarnrc-hash
         uses: ./.github/actions/yarnrc-hash
@@ -243,7 +243,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare yarn@4.6.0 --activate
+      - run: corepack prepare yarn@4.12.0 --activate
       - name: Compute .yarnrc.yml hash
         id: yarnrc-hash
         uses: ./.github/actions/yarnrc-hash
