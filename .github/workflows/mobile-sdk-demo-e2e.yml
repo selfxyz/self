@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -225,7 +225,7 @@ jobs:
       IOS_WORKSPACE_PATH: packages/mobile-sdk-demo/ios/SelfDemoApp.xcworkspace
       IOS_PROJECT_SCHEME: SelfDemoApp
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |

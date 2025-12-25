@@ -28,7 +28,7 @@ jobs:
       qrcode_angular_changed: ${{ steps.check-version.outputs.qrcode_angular_changed }}
       msdk_changed: ${{ steps.check-version.outputs.msdk_changed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 2
 
@@ -63,7 +63,7 @@ jobs:
             echo "qrcode_angular_changed=true" >> $GITHUB_OUTPUT
           fi
 
-          if git diff HEAD^ HEAD -- sdk/mobile-sdk-alpha/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if git diff HEAD^ HEAD -- packages/mobile-sdk-alpha/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "msdk_changed=true" >> $GITHUB_OUTPUT
           fi
 
@@ -72,7 +72,7 @@ jobs:
     if: needs.detect-changes.outputs.core_changed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -100,7 +100,7 @@ jobs:
     if: needs.detect-changes.outputs.qrcode_changed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -128,13 +128,12 @@ jobs:
     if: needs.detect-changes.outputs.common_changed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           registry-url: "https://registry.npmjs.org"
-      - uses: actions/checkout@v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
@@ -155,7 +154,7 @@ jobs:
     if: needs.detect-changes.outputs.contracts_changed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -179,7 +178,7 @@ jobs:
     if: needs.detect-changes.outputs.qrcode_angular_changed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -207,7 +206,7 @@ jobs:
     if: needs.detect-changes.outputs.msdk_changed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

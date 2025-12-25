@@ -77,7 +77,7 @@ jobs:
 
       - name: Check out repository
         if: ${{ steps.guard_schedule.outputs.continue == 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -256,7 +256,7 @@ jobs:
 
       - name: Check out repository
         if: ${{ steps.guard_schedule.outputs.continue == 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
