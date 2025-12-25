@@ -8671,9 +8671,9 @@ __metadata:
     react-native-safe-area-context: "npm:^5.6.1"
     react-native-screens: "npm:4.15.3"
     react-native-sqlite-storage: "npm:^6.0.1"
-    react-native-svg: "npm:^15.14.0"
+    react-native-svg: "npm:15.14.0"
     react-native-svg-transformer: "npm:^1.5.1"
-    react-native-svg-web: "npm:^1.0.9"
+    react-native-svg-web: "npm:1.0.9"
     react-native-url-polyfill: "npm:^3.0.0"
     react-native-web: "npm:^0.19.0"
     react-native-webview: "npm:^13.16.0"
@@ -30016,7 +30016,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-svg-web@npm:^1.0.9":
+"react-native-svg-web@npm:1.0.9":
   version: 1.0.9
   resolution: "react-native-svg-web@npm:1.0.9"
   peerDependencies:
@@ -30041,9 +30041,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-svg@npm:^15.14.0":
-  version: 15.15.1
-  resolution: "react-native-svg@npm:15.15.1"
+"react-native-svg@npm:15.14.0":
+  version: 15.14.0
+  resolution: "react-native-svg@npm:15.14.0"
   dependencies:
     css-select: "npm:^5.1.0"
     css-tree: "npm:^1.1.3"
@@ -30051,7 +30051,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/9e047e8afdd5121296a3402c5c37363b9b37fbddc41f7b0b49b923ac4d2898954c8b57a6784a625321236987e494ee54f594e22f9de815f807e03a3433d7fefd
+  checksum: 10c0/5855bee2a76313f580ac3f8c476d07bb63d1a8e5e0883154275be5a1f4224e35f2416b0ba3b03f5d4c637c3b2f9320df34ede918da27188adb6881b3b8ac96c8
   languageName: node
   linkType: hard
 
