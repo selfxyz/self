@@ -146,7 +146,7 @@ jobs:
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
-          # Ensure Yarn 4.6.0 is active
+          # Ensure Yarn 4.12.0 is active
           corepack enable
           corepack prepare yarn@4.12.0 --activate
           yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
