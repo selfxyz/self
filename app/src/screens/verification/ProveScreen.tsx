@@ -171,14 +171,14 @@ const ProveScreen: React.FC = () => {
       return;
     }
 
-    if (processedSessionsRef.current.has(selectedApp.sessionId)) {
+    const sessionId = selectedApp.sessionId;
+
+    if (processedSessionsRef.current.has(sessionId)) {
       return;
     }
 
     const enhanceApp = async () => {
-      const currentSessionId = selectedApp.sessionId;
-
-      processedSessionsRef.current.add(currentSessionId);
+      const currentSessionId = sessionId;
 
       try {
         const address = await getPointsAddress();
@@ -202,6 +202,8 @@ const ProveScreen: React.FC = () => {
             });
           }
         }
+
+        processedSessionsRef.current.add(currentSessionId);
       } catch (error) {
         console.error('Failed enhancing app:', error);
       }
