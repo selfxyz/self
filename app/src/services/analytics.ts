@@ -96,6 +96,8 @@ function validateParams(
 /*
   Records analytics events and screen views
   In development mode, events are logged to console instead of being sent to Segment
+
+  NOTE: Screen views are tracked as 'Screen Viewed' events for Mixpanel compatibility
  */
 const analytics = () => {
   function _track(
@@ -103,12 +105,27 @@ const analytics = () => {
     eventName: string,
     properties?: Record<string, unknown>,
   ) {
+    // Transform screen events for Mixpanel compatibility
+    let finalEventName = eventName;
+    let finalProperties = properties;
+
+    if (type === 'screen') {
+      finalEventName = 'Screen Viewed';
+      // Remove duplicate screenName property and use only screen_name (Mixpanel standard)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { screenName, ...restProperties } = properties || {};
+      finalProperties = {
+        screen_name: eventName,
+        ...restProperties,
+      };
+    }
+
     // Validate and clean properties
-    const validatedProps = validateParams(properties);
+    const validatedProps = validateParams(finalProperties);
 
     if (__DEV__) {
       console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
-        name: eventName,
+        name: finalEventName,
         properties: validatedProps,
       });
       return;
@@ -117,18 +134,15 @@ const analytics = () => {
     if (!segmentClient) {
       return;
     }
-    const trackMethod = (e: string, p?: JsonMap) =>
-      type === 'screen'
-        ? segmentClient.screen(e, p)
-        : segmentClient.track(e, p);
 
+    // Always use track() for both events and screen views (Mixpanel compatibility)
     if (!validatedProps) {
       // you may need to remove the catch when debugging
-      return trackMethod(eventName).catch(console.info);
+      return segmentClient.track(finalEventName).catch(console.info);
     }
 
     // you may need to remove the catch when debugging
-    trackMethod(eventName, validatedProps).catch(console.info);
+    segmentClient.track(finalEventName, validatedProps).catch(console.info);
   }
 
   return {
@@ -158,6 +172,31 @@ export default analytics;
 export const cleanupAnalytics = () => {
   eventQueue.length = 0;
   eventCount = 0;
+};
+
+// --- Mixpanel NFC Analytics ---
+export const configureNfcAnalytics = async () => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
+  const enableDebugLogs =
+    String(ENABLE_DEBUG_LOGS ?? '')
+      .trim()
+      .toLowerCase() === 'true';
+
+  // Check if PassportReader and configure method exist (Android doesn't have configure)
+  if (PassportReader && typeof PassportReader.configure === 'function') {
+    try {
+      // iOS configure method only accepts token and enableDebugLogs
+      // Android doesn't have this method at all
+      await Promise.resolve(
+        PassportReader.configure(MIXPANEL_NFC_PROJECT_TOKEN, enableDebugLogs),
+      );
+    } catch (error) {
+      console.warn('Failed to configure NFC analytics:', error);
+    }
+  }
+
+  setupFlushPolicies();
+  mixpanelConfigured = true;
 };
 
 const setupFlushPolicies = () => {
@@ -219,31 +258,6 @@ const flushMixpanelEvents = async () => {
     if (__DEV__) console.warn('Mixpanel flush failed', err);
     // Events have been re-queued on failure, so they're not lost
   }
-};
-
-// --- Mixpanel NFC Analytics ---
-export const configureNfcAnalytics = async () => {
-  if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
-  const enableDebugLogs =
-    String(ENABLE_DEBUG_LOGS ?? '')
-      .trim()
-      .toLowerCase() === 'true';
-
-  // Check if PassportReader and configure method exist (Android doesn't have configure)
-  if (PassportReader && typeof PassportReader.configure === 'function') {
-    try {
-      // iOS configure method only accepts token and enableDebugLogs
-      // Android doesn't have this method at all
-      await Promise.resolve(
-        PassportReader.configure(MIXPANEL_NFC_PROJECT_TOKEN, enableDebugLogs),
-      );
-    } catch (error) {
-      console.warn('Failed to configure NFC analytics:', error);
-    }
-  }
-
-  setupFlushPolicies();
-  mixpanelConfigured = true;
 };
 
 /**
