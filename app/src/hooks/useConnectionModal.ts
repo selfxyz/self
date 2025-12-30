@@ -11,10 +11,8 @@ import { apiPingUrl } from '@/consts/links';
 import { useModal } from '@/hooks/useModal';
 import { useNetInfo } from '@/hooks/useNetInfo';
 import { navigationRef } from '@/navigation';
-import analytics from '@/services/analytics';
+import { trackEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
-
-const { trackEvent } = analytics();
 
 const connectionModalParams = {
   titleText: 'Internet connection error',

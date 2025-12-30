@@ -19,6 +19,9 @@ jest.mock('@/services/analytics', () => ({
     trackScreenView: jest.fn(),
     flush: jest.fn(),
   })),
+  trackEvent: jest.fn(),
+  trackScreenView: jest.fn(),
+  flush: jest.fn(),
 }));
 
 describe('navigation', () => {

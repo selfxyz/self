@@ -93,78 +93,57 @@ function validateParams(
   return cleanParams(validatedProps);
 }
 
-/*
-  Records analytics events and screen views
-  In development mode, events are logged to console instead of being sent to Segment
-
-  NOTE: Screen views are tracked as 'Screen Viewed' events for Mixpanel compatibility
+/**
+ * Internal tracking function used by trackEvent and trackScreenView
+ * Records analytics events and screen views
+ * In development mode, events are logged to console instead of being sent to Segment
+ *
+ * NOTE: Screen views are tracked as 'Screen Viewed' events for Mixpanel compatibility
  */
-const analytics = () => {
-  function _track(
-    type: 'event' | 'screen',
-    eventName: string,
-    properties?: Record<string, unknown>,
-  ) {
-    // Transform screen events for Mixpanel compatibility
-    let finalEventName = eventName;
-    let finalProperties = properties;
+function _track(
+  type: 'event' | 'screen',
+  eventName: string,
+  properties?: Record<string, unknown>,
+) {
+  // Transform screen events for Mixpanel compatibility
+  let finalEventName = eventName;
+  let finalProperties = properties;
 
-    if (type === 'screen') {
-      finalEventName = 'Screen Viewed';
-      // Remove duplicate screenName property and use only screen_name (Mixpanel standard)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { screenName, ...restProperties } = properties || {};
-      finalProperties = {
-        screen_name: eventName,
-        ...restProperties,
-      };
-    }
-
-    // Validate and clean properties
-    const validatedProps = validateParams(finalProperties);
-
-    if (__DEV__) {
-      console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
-        name: finalEventName,
-        properties: validatedProps,
-      });
-      return;
-    }
-
-    if (!segmentClient) {
-      return;
-    }
-
-    // Always use track() for both events and screen views (Mixpanel compatibility)
-    if (!validatedProps) {
-      // you may need to remove the catch when debugging
-      return segmentClient.track(finalEventName).catch(console.info);
-    }
-
-    // you may need to remove the catch when debugging
-    segmentClient.track(finalEventName, validatedProps).catch(console.info);
+  if (type === 'screen') {
+    finalEventName = 'Screen Viewed';
+    // Remove duplicate screenName property and use only screen_name (Mixpanel standard)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { screenName, ...restProperties } = properties || {};
+    finalProperties = {
+      screen_name: eventName,
+      ...restProperties,
+    };
   }
 
-  return {
-    // Using LiteralCheck will allow constants but not plain string literals
-    trackEvent: (eventName: string, properties?: TrackEventParams) => {
-      _track('event', eventName, properties);
-    },
-    trackScreenView: (
-      screenName: string,
-      properties?: Record<string, unknown>,
-    ) => {
-      _track('screen', screenName, properties);
-    },
-    flush: () => {
-      if (!__DEV__ && segmentClient) {
-        segmentClient.flush();
-      }
-    },
-  };
-};
+  // Validate and clean properties
+  const validatedProps = validateParams(finalProperties);
 
-export default analytics;
+  if (__DEV__) {
+    console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
+      name: finalEventName,
+      properties: validatedProps,
+    });
+    return;
+  }
+
+  if (!segmentClient) {
+    return;
+  }
+
+  // Always use track() for both events and screen views (Mixpanel compatibility)
+  if (!validatedProps) {
+    // you may need to remove the catch when debugging
+    return segmentClient.track(finalEventName).catch(console.info);
+  }
+
+  // you may need to remove the catch when debugging
+  segmentClient.track(finalEventName, validatedProps).catch(console.info);
+}
 
 /**
  * Cleanup function to clear event queues
@@ -197,6 +176,60 @@ export const configureNfcAnalytics = async () => {
 
   setupFlushPolicies();
   mixpanelConfigured = true;
+};
+
+/**
+ * Flush any pending analytics events immediately
+ */
+export const flush = () => {
+  if (!__DEV__ && segmentClient) {
+    segmentClient.flush();
+  }
+};
+
+/**
+ * @deprecated Use named exports (trackEvent, trackScreenView, flush) instead
+ * Factory function that returns analytics methods
+ * Kept for backward compatibility
+ */
+const analytics = () => {
+  return {
+    trackEvent,
+    trackScreenView,
+    flush,
+  };
+};
+
+export default analytics;
+
+/**
+ * Consolidated analytics flush function that flushes both Segment and Mixpanel events
+ * This should be called when you want to ensure all analytics events are sent immediately
+ */
+export const flushAllAnalytics = () => {
+  // Flush Segment analytics
+  flush();
+
+  // Never flush Mixpanel during active NFC scanning to prevent interference
+  if (!isNfcScanningActive) {
+    flushMixpanelEvents().catch(console.warn);
+  }
+};
+
+/**
+ * Set NFC scanning state to prevent analytics flush interference
+ */
+export const setNfcScanningActive = (active: boolean) => {
+  isNfcScanningActive = active;
+  if (__DEV__)
+    console.log(
+      `[NFC Analytics] Scanning state: ${active ? 'active' : 'inactive'}`,
+    );
+
+  // Flush queued events when scanning completes
+  if (!active && eventQueue.length > 0) {
+    flushMixpanelEvents().catch(console.warn);
+  }
 };
 
 const setupFlushPolicies = () => {
@@ -261,34 +294,15 @@ const flushMixpanelEvents = async () => {
 };
 
 /**
- * Consolidated analytics flush function that flushes both Segment and Mixpanel events
- * This should be called when you want to ensure all analytics events are sent immediately
+ * Track an analytics event
+ * @param eventName - Name of the event to track
+ * @param properties - Optional properties to attach to the event
  */
-export const flushAllAnalytics = () => {
-  // Flush Segment analytics
-  const { flush: flushAnalytics } = analytics();
-  flushAnalytics();
-
-  // Never flush Mixpanel during active NFC scanning to prevent interference
-  if (!isNfcScanningActive) {
-    flushMixpanelEvents().catch(console.warn);
-  }
-};
-
-/**
- * Set NFC scanning state to prevent analytics flush interference
- */
-export const setNfcScanningActive = (active: boolean) => {
-  isNfcScanningActive = active;
-  if (__DEV__)
-    console.log(
-      `[NFC Analytics] Scanning state: ${active ? 'active' : 'inactive'}`,
-    );
-
-  // Flush queued events when scanning completes
-  if (!active && eventQueue.length > 0) {
-    flushMixpanelEvents().catch(console.warn);
-  }
+export const trackEvent = (
+  eventName: string,
+  properties?: TrackEventParams,
+) => {
+  _track('event', eventName, properties);
 };
 
 export const trackNfcEvent = async (
@@ -315,4 +329,16 @@ export const trackNfcEvent = async (
   } catch {
     eventQueue.push({ name, properties });
   }
+};
+
+/**
+ * Track a screen view
+ * @param screenName - Name of the screen to track
+ * @param properties - Optional properties to attach to the screen view
+ */
+export const trackScreenView = (
+  screenName: string,
+  properties?: Record<string, unknown>,
+) => {
+  _track('screen', screenName, properties);
 };

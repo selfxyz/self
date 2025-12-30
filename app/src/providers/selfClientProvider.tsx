@@ -25,7 +25,7 @@ import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
-import analytics, { trackNfcEvent } from '@/services/analytics';
+import { trackEvent, trackNfcEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
@@ -130,7 +130,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       },
       analytics: {
         trackEvent: (event: string, data?: TrackEventParams) => {
-          analytics().trackEvent(event, data);
+          trackEvent(event, data);
         },
         trackNfcEvent: (name: string, data?: Record<string, unknown>) => {
           trackNfcEvent(name, data);
@@ -211,21 +211,21 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
 
         if (fcmToken) {
           try {
-            analytics().trackEvent('DEVICE_TOKEN_REG_STARTED');
+            trackEvent('DEVICE_TOKEN_REG_STARTED');
             logProofEvent('info', 'Device token registration started', context);
 
             const { registerDeviceToken: registerFirebaseDeviceToken } =
               await import('@/services/notifications/notificationService');
             await registerFirebaseDeviceToken(uuid, fcmToken, isMock);
 
-            analytics().trackEvent('DEVICE_TOKEN_REG_SUCCESS');
+            trackEvent('DEVICE_TOKEN_REG_SUCCESS');
             logProofEvent('info', 'Device token registration success', context);
           } catch (error) {
             logProofEvent('warn', 'Device token registration failed', context, {
               error: error instanceof Error ? error.message : String(error),
             });
             console.error('Error registering device token:', error);
-            analytics().trackEvent('DEVICE_TOKEN_REG_FAILED', {
+            trackEvent('DEVICE_TOKEN_REG_FAILED', {
               message: error instanceof Error ? error.message : String(error),
             });
           }
