@@ -123,22 +123,10 @@ function _track(
   properties?: Record<string, unknown>,
 ) {
   // Transform screen events for Mixpanel compatibility
-  let finalEventName = eventName;
-  let finalProperties = properties;
-
-  if (type === 'screen') {
-    finalEventName = 'Screen Viewed';
-    // Remove duplicate screenName property and use only screen_name (Mixpanel standard)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { screenName, ...restProperties } = properties || {};
-    finalProperties = {
-      screen_name: eventName,
-      ...restProperties,
-    };
-  }
+  const finalEventName = type === 'screen' ? `Viewed ${eventName}` : eventName;
 
   // Validate and clean properties
-  const validatedProps = validateParams(finalProperties);
+  const validatedProps = validateParams(properties);
 
   if (__DEV__) {
     console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
