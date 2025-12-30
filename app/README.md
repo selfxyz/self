@@ -19,7 +19,7 @@
 | Android SDK                 | Latest        | See instructions for Android below                                                   |
 | Android NDK                 | 27.0.12077973 | See instructions for Android below                                                   |
 
-\* To facilitate the installation of the SDK and the NDK, and to pair with development devices with a conventient QR code, you can use Android Studio.
+\* To facilitate the installation of the SDK and the NDK, and to pair with development devices with a convenient QR code, you can use Android Studio.
 
 ### iOS
 
