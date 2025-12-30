@@ -25,10 +25,8 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { notificationError } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';
-import analytics from '@/services/analytics';
+import { flush as flushAnalytics } from '@/services/analytics';
 import { sendCountrySupportNotification } from '@/services/email';
-
-const { flush: flushAnalytics } = analytics();
 
 type ComingSoonScreenProps = NativeStackScreenProps<
   SharedRoutesParamList,
