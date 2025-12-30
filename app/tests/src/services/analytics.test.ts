@@ -13,7 +13,6 @@ jest.mock('@/config/segment', () => ({
 }));
 
 describe('analytics', () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
   });

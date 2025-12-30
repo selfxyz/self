@@ -6,6 +6,13 @@ import type { PassportData } from '@selfxyz/common/types';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
+// Import functions to test AFTER mocks are set up
+import {
+  checkAndUpdateRegistrationStates,
+  getAlternativeCSCA,
+} from '@/proving/validateDocument';
+import { trackEvent } from '@/services/analytics';
+
 // Mock the analytics module to avoid side effects in tests
 jest.mock('@/services/analytics', () => ({
   __esModule: true,
@@ -18,13 +25,6 @@ jest.mock('@/services/analytics', () => ({
   trackScreenView: jest.fn(),
   flush: jest.fn(),
 }));
-
-// Import functions to test AFTER mocks are set up
-import {
-  checkAndUpdateRegistrationStates,
-  getAlternativeCSCA,
-} from '@/proving/validateDocument';
-import { trackEvent } from '@/services/analytics';
 
 // Mock the passport data provider to avoid database operations
 const mockGetAllDocumentsDirectlyFromKeychain = jest.fn();

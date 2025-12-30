@@ -118,9 +118,7 @@ function _track(
     return;
   }
   const trackMethod = (e: string, p?: JsonMap) =>
-    type === 'screen'
-      ? segmentClient.screen(e, p)
-      : segmentClient.track(e, p);
+    type === 'screen' ? segmentClient.screen(e, p) : segmentClient.track(e, p);
 
   if (!validatedProps) {
     // you may need to remove the catch when debugging
@@ -132,27 +130,36 @@ function _track(
 }
 
 /**
- * Track an analytics event
- * @param eventName - Name of the event to track
- * @param properties - Optional properties to attach to the event
+ * Cleanup function to clear event queues
  */
-export const trackEvent = (
-  eventName: string,
-  properties?: TrackEventParams,
-) => {
-  _track('event', eventName, properties);
+export const cleanupAnalytics = () => {
+  eventQueue.length = 0;
+  eventCount = 0;
 };
 
-/**
- * Track a screen view
- * @param screenName - Name of the screen to track
- * @param properties - Optional properties to attach to the screen view
- */
-export const trackScreenView = (
-  screenName: string,
-  properties?: Record<string, unknown>,
-) => {
-  _track('screen', screenName, properties);
+// --- Mixpanel NFC Analytics ---
+export const configureNfcAnalytics = async () => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
+  const enableDebugLogs =
+    String(ENABLE_DEBUG_LOGS ?? '')
+      .trim()
+      .toLowerCase() === 'true';
+
+  // Check if PassportReader and configure method exist (Android doesn't have configure)
+  if (PassportReader && typeof PassportReader.configure === 'function') {
+    try {
+      // iOS configure method only accepts token and enableDebugLogs
+      // Android doesn't have this method at all
+      await Promise.resolve(
+        PassportReader.configure(MIXPANEL_NFC_PROJECT_TOKEN, enableDebugLogs),
+      );
+    } catch (error) {
+      console.warn('Failed to configure NFC analytics:', error);
+    }
+  }
+
+  setupFlushPolicies();
+  mixpanelConfigured = true;
 };
 
 /**
@@ -180,11 +187,17 @@ const analytics = () => {
 export default analytics;
 
 /**
- * Cleanup function to clear event queues
+ * Consolidated analytics flush function that flushes both Segment and Mixpanel events
+ * This should be called when you want to ensure all analytics events are sent immediately
  */
-export const cleanupAnalytics = () => {
-  eventQueue.length = 0;
-  eventCount = 0;
+export const flushAllAnalytics = () => {
+  // Flush Segment analytics
+  flush();
+
+  // Never flush Mixpanel during active NFC scanning to prevent interference
+  if (!isNfcScanningActive) {
+    flushMixpanelEvents().catch(console.warn);
+  }
 };
 
 const setupFlushPolicies = () => {
@@ -248,45 +261,6 @@ const flushMixpanelEvents = async () => {
   }
 };
 
-// --- Mixpanel NFC Analytics ---
-export const configureNfcAnalytics = async () => {
-  if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
-  const enableDebugLogs =
-    String(ENABLE_DEBUG_LOGS ?? '')
-      .trim()
-      .toLowerCase() === 'true';
-
-  // Check if PassportReader and configure method exist (Android doesn't have configure)
-  if (PassportReader && typeof PassportReader.configure === 'function') {
-    try {
-      // iOS configure method only accepts token and enableDebugLogs
-      // Android doesn't have this method at all
-      await Promise.resolve(
-        PassportReader.configure(MIXPANEL_NFC_PROJECT_TOKEN, enableDebugLogs),
-      );
-    } catch (error) {
-      console.warn('Failed to configure NFC analytics:', error);
-    }
-  }
-
-  setupFlushPolicies();
-  mixpanelConfigured = true;
-};
-
-/**
- * Consolidated analytics flush function that flushes both Segment and Mixpanel events
- * This should be called when you want to ensure all analytics events are sent immediately
- */
-export const flushAllAnalytics = () => {
-  // Flush Segment analytics
-  flush();
-
-  // Never flush Mixpanel during active NFC scanning to prevent interference
-  if (!isNfcScanningActive) {
-    flushMixpanelEvents().catch(console.warn);
-  }
-};
-
 /**
  * Set NFC scanning state to prevent analytics flush interference
  */
@@ -301,6 +275,18 @@ export const setNfcScanningActive = (active: boolean) => {
   if (!active && eventQueue.length > 0) {
     flushMixpanelEvents().catch(console.warn);
   }
+};
+
+/**
+ * Track an analytics event
+ * @param eventName - Name of the event to track
+ * @param properties - Optional properties to attach to the event
+ */
+export const trackEvent = (
+  eventName: string,
+  properties?: TrackEventParams,
+) => {
+  _track('event', eventName, properties);
 };
 
 export const trackNfcEvent = async (
@@ -327,4 +313,16 @@ export const trackNfcEvent = async (
   } catch {
     eventQueue.push({ name, properties });
   }
+};
+
+/**
+ * Track a screen view
+ * @param screenName - Name of the screen to track
+ * @param properties - Optional properties to attach to the screen view
+ */
+export const trackScreenView = (
+  screenName: string,
+  properties?: Record<string, unknown>,
+) => {
+  _track('screen', screenName, properties);
 };
