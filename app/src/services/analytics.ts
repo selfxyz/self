@@ -18,6 +18,7 @@ import { PassportReader } from '@/integrations/nfc/passportReader';
 // ============================================================================
 
 const MIXPANEL_AUTO_FLUSH_THRESHOLD = 5;
+const MAX_EVENT_QUEUE_SIZE = 100;
 
 // ============================================================================
 // State Management
@@ -167,8 +168,7 @@ export const cleanupAnalytics = () => {
 // ============================================================================
 export const configureNfcAnalytics = async () => {
   if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
-  // Handle both string (native) and boolean (web) types from different env sources
-  const enableDebugLogs = String(ENABLE_DEBUG_LOGS).toLowerCase() === 'true';
+  const enableDebugLogs = ENABLE_DEBUG_LOGS;
 
   // Check if PassportReader and configure method exist (Android doesn't have configure)
   if (PassportReader && typeof PassportReader.configure === 'function') {
@@ -246,6 +246,11 @@ export const trackNfcEvent = async (
   if (!mixpanelConfigured) await configureNfcAnalytics();
 
   if (!isConnected || isNfcScanningActive) {
+    if (eventQueue.length >= MAX_EVENT_QUEUE_SIZE) {
+      if (__DEV__)
+        console.warn('[Mixpanel] Event queue full, dropping oldest event');
+      eventQueue.shift();
+    }
     eventQueue.push({ name, properties });
     return;
   }
@@ -260,6 +265,11 @@ export const trackNfcEvent = async (
       flushMixpanelEvents().catch(console.warn);
     }
   } catch {
+    if (eventQueue.length >= MAX_EVENT_QUEUE_SIZE) {
+      if (__DEV__)
+        console.warn('[Mixpanel] Event queue full, dropping oldest event');
+      eventQueue.shift();
+    }
     eventQueue.push({ name, properties });
   }
 };

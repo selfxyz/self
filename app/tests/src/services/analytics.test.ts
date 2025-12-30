@@ -250,22 +250,37 @@ describe('analytics', () => {
       const originalDev = (global as any).__DEV__;
       (global as any).__DEV__ = false;
 
-      // Get the mocked segment client
-      const { createSegmentClient } = require('@/config/segment');
-      const mockTrack = jest.fn().mockResolvedValue(undefined);
-      createSegmentClient.mockReturnValue({
-        track: mockTrack,
-        flush: jest.fn(),
-      });
+      try {
+        // Reset modules first to clear the cache
+        jest.resetModules();
 
-      trackScreenView('HomeScreen', { user_type: 'premium' });
+        // Get the mocked segment client factory after reset
+        const segmentModule = require('@/config/segment');
+        const mockTrack = jest.fn().mockResolvedValue(undefined);
 
-      expect(mockTrack).toHaveBeenCalledWith('Viewed HomeScreen', {
-        user_type: 'premium',
-      });
+        // Set up the mock implementation before re-requiring analytics
+        // This ensures the mock is properly configured when analytics module loads
+        segmentModule.createSegmentClient.mockImplementation(() => ({
+          track: mockTrack,
+          flush: jest.fn().mockResolvedValue(undefined),
+        }));
 
-      // Restore original __DEV__ value
-      (global as any).__DEV__ = originalDev;
+        // Now re-require analytics to get a fresh segmentClient instance
+        // that uses our mocked createSegmentClient
+        const analyticsModule = require('@/services/analytics');
+
+        analyticsModule.trackScreenView('HomeScreen', { user_type: 'premium' });
+
+        expect(mockTrack).toHaveBeenCalledWith('Viewed HomeScreen', {
+          user_type: 'premium',
+        });
+      } finally {
+        // Restore original __DEV__ value
+        (global as any).__DEV__ = originalDev;
+
+        // Reset modules again to restore original state for other tests
+        jest.resetModules();
+      }
     });
   });
 
