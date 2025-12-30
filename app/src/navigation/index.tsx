@@ -30,7 +30,7 @@ import sharedScreens from '@/navigation/shared';
 import verificationScreens from '@/navigation/verification';
 import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
 import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
-import analytics from '@/services/analytics';
+import { trackScreenView } from '@/services/analytics';
 import type { ProofHistory } from '@/stores/proofTypes';
 
 export const navigationScreens = {
@@ -195,7 +195,6 @@ declare global {
   }
 }
 
-const { trackScreenView } = analytics();
 const Navigation = createStaticNavigation(AppNavigation);
 
 const NavigationWithTracking = () => {

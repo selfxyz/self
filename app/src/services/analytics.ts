@@ -93,60 +93,87 @@ function validateParams(
   return cleanParams(validatedProps);
 }
 
-/*
-  Records analytics events and screen views
-  In development mode, events are logged to console instead of being sent to Segment
+/**
+ * Internal tracking function used by trackEvent and trackScreenView
+ * Records analytics events and screen views
+ * In development mode, events are logged to console instead of being sent to Segment
  */
-const analytics = () => {
-  function _track(
-    type: 'event' | 'screen',
-    eventName: string,
-    properties?: Record<string, unknown>,
-  ) {
-    // Validate and clean properties
-    const validatedProps = validateParams(properties);
+function _track(
+  type: 'event' | 'screen',
+  eventName: string,
+  properties?: Record<string, unknown>,
+) {
+  // Validate and clean properties
+  const validatedProps = validateParams(properties);
 
-    if (__DEV__) {
-      console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
-        name: eventName,
-        properties: validatedProps,
-      });
-      return;
-    }
-
-    if (!segmentClient) {
-      return;
-    }
-    const trackMethod = (e: string, p?: JsonMap) =>
-      type === 'screen'
-        ? segmentClient.screen(e, p)
-        : segmentClient.track(e, p);
-
-    if (!validatedProps) {
-      // you may need to remove the catch when debugging
-      return trackMethod(eventName).catch(console.info);
-    }
-
-    // you may need to remove the catch when debugging
-    trackMethod(eventName, validatedProps).catch(console.info);
+  if (__DEV__) {
+    console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
+      name: eventName,
+      properties: validatedProps,
+    });
+    return;
   }
 
+  if (!segmentClient) {
+    return;
+  }
+  const trackMethod = (e: string, p?: JsonMap) =>
+    type === 'screen'
+      ? segmentClient.screen(e, p)
+      : segmentClient.track(e, p);
+
+  if (!validatedProps) {
+    // you may need to remove the catch when debugging
+    return trackMethod(eventName).catch(console.info);
+  }
+
+  // you may need to remove the catch when debugging
+  trackMethod(eventName, validatedProps).catch(console.info);
+}
+
+/**
+ * Track an analytics event
+ * @param eventName - Name of the event to track
+ * @param properties - Optional properties to attach to the event
+ */
+export const trackEvent = (
+  eventName: string,
+  properties?: TrackEventParams,
+) => {
+  _track('event', eventName, properties);
+};
+
+/**
+ * Track a screen view
+ * @param screenName - Name of the screen to track
+ * @param properties - Optional properties to attach to the screen view
+ */
+export const trackScreenView = (
+  screenName: string,
+  properties?: Record<string, unknown>,
+) => {
+  _track('screen', screenName, properties);
+};
+
+/**
+ * Flush any pending analytics events immediately
+ */
+export const flush = () => {
+  if (!__DEV__ && segmentClient) {
+    segmentClient.flush();
+  }
+};
+
+/**
+ * @deprecated Use named exports (trackEvent, trackScreenView, flush) instead
+ * Factory function that returns analytics methods
+ * Kept for backward compatibility
+ */
+const analytics = () => {
   return {
-    // Using LiteralCheck will allow constants but not plain string literals
-    trackEvent: (eventName: string, properties?: TrackEventParams) => {
-      _track('event', eventName, properties);
-    },
-    trackScreenView: (
-      screenName: string,
-      properties?: Record<string, unknown>,
-    ) => {
-      _track('screen', screenName, properties);
-    },
-    flush: () => {
-      if (!__DEV__ && segmentClient) {
-        segmentClient.flush();
-      }
-    },
+    trackEvent,
+    trackScreenView,
+    flush,
   };
 };
 
@@ -252,8 +279,7 @@ export const configureNfcAnalytics = async () => {
  */
 export const flushAllAnalytics = () => {
   // Flush Segment analytics
-  const { flush: flushAnalytics } = analytics();
-  flushAnalytics();
+  flush();
 
   // Never flush Mixpanel during active NFC scanning to prevent interference
   if (!isNfcScanningActive) {

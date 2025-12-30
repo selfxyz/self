@@ -6,21 +6,25 @@ import type { PassportData } from '@selfxyz/common/types';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
+// Mock the analytics module to avoid side effects in tests
+jest.mock('@/services/analytics', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    trackEvent: jest.fn(),
+    trackScreenView: jest.fn(),
+    flush: jest.fn(),
+  })),
+  trackEvent: jest.fn(),
+  trackScreenView: jest.fn(),
+  flush: jest.fn(),
+}));
+
 // Import functions to test AFTER mocks are set up
 import {
   checkAndUpdateRegistrationStates,
   getAlternativeCSCA,
 } from '@/proving/validateDocument';
-import analytics from '@/services/analytics';
-
-// Mock the analytics module to avoid side effects in tests
-jest.mock('@/services/analytics', () => {
-  // Create mock inside factory to avoid temporal dead zone
-  const mockTrackEvent = jest.fn();
-  return jest.fn(() => ({
-    trackEvent: mockTrackEvent,
-  }));
-});
+import { trackEvent } from '@/services/analytics';
 
 // Mock the passport data provider to avoid database operations
 const mockGetAllDocumentsDirectlyFromKeychain = jest.fn();
@@ -153,8 +157,7 @@ describe('getAlternativeCSCA', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Get the mocked trackEvent from the analytics module
-    const mockAnalytics = jest.mocked(analytics);
-    mockTrackEvent = mockAnalytics().trackEvent as jest.Mock;
+    mockTrackEvent = jest.mocked(trackEvent) as jest.Mock;
   });
 
   it('should return public keys in Record format for Aadhaar with valid public keys', () => {
@@ -245,8 +248,7 @@ describe('checkAndUpdateRegistrationStates', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Get the mocked trackEvent from the analytics module
-    const mockAnalytics = jest.mocked(analytics);
-    mockTrackEvent = mockAnalytics().trackEvent as jest.Mock;
+    mockTrackEvent = jest.mocked(trackEvent) as jest.Mock;
 
     mockGetState.mockReturnValue(
       buildState({

@@ -22,11 +22,9 @@ import {
   createKeychainOptions,
   detectSecurityCapabilities,
 } from '@/integrations/keychain';
-import analytics from '@/services/analytics';
+import { trackEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
-
-const { trackEvent } = analytics();
 
 const SERVICE_NAME = 'secret';
 

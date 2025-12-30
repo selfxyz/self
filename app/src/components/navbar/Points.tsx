@@ -33,7 +33,7 @@ import { appsUrl } from '@/consts/links';
 import { useIncomingPoints, usePoints } from '@/hooks/usePoints';
 import { usePointsGuardrail } from '@/hooks/usePointsGuardrail';
 import type { RootStackParamList } from '@/navigation';
-import analytics from '@/services/analytics';
+import { trackScreenView } from '@/services/analytics';
 import {
   isTopicSubscribed,
   requestNotificationPermission,
@@ -70,7 +70,6 @@ const Points: React.FC = () => {
   // Track NavBar view analytics
   useFocusEffect(
     React.useCallback(() => {
-      const { trackScreenView } = analytics();
       trackScreenView('Points NavBar', {
         screenName: 'Points NavBar',
       });
