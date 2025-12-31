@@ -11,8 +11,8 @@ import React, {
   useState,
 } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { Alert, ScrollView } from 'react-native';
-import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
+import { Alert, ScrollView, TouchableOpacity } from 'react-native';
+import { Button, Sheet, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
@@ -187,82 +187,100 @@ function ParameterSection({
 const ScreenSelector = ({}) => {
   const navigation = useNavigation();
   const [open, setOpen] = useState(false);
+
+  const screenList = useMemo(
+    () =>
+      (
+        Object.keys(navigationScreens) as (keyof typeof navigationScreens)[]
+      ).sort(),
+    [],
+  );
+
   return (
-    <Select
-      open={open}
-      onOpenChange={setOpen}
-      onValueChange={(screen: keyof RootStackParamList) => {
-        navigation.navigate(screen as never);
-      }}
-      disablePreventBodyScroll
-    >
-      <Select.Trigger asChild>
-        <Button
-          style={{ backgroundColor: 'white' }}
-          borderColor={slate200}
-          borderRadius="$2"
-          height="$5"
-          padding={0}
-          onPress={() => setOpen(true)}
+    <>
+      <Button
+        style={{ backgroundColor: 'white' }}
+        borderColor={slate200}
+        borderRadius="$2"
+        height="$5"
+        padding={0}
+        onPress={() => setOpen(true)}
+      >
+        <XStack
+          width="100%"
+          justifyContent="space-between"
+          paddingVertical="$3"
+          paddingLeft="$4"
+          paddingRight="$1.5"
         >
-          <XStack
-            width="100%"
-            justifyContent="space-between"
-            paddingVertical="$3"
-            paddingLeft="$4"
-            paddingRight="$1.5"
-          >
-            <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-              Select screen
-            </Text>
-            <ChevronDown color={slate500} strokeWidth={2.5} />
-          </XStack>
-        </Button>
-      </Select.Trigger>
+          <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+            Select screen
+          </Text>
+          <ChevronDown color={slate500} strokeWidth={2.5} />
+        </XStack>
+      </Button>
 
-      <Adapt when={true} platform="touch">
-        <Sheet native modal dismissOnSnapToBottom animation="medium">
-          <Sheet.Frame>
-            <Sheet.ScrollView>
-              <Adapt.Contents />
-            </Sheet.ScrollView>
-          </Sheet.Frame>
-          <Sheet.Overlay
-            backgroundColor="$shadowColor"
-            animation="lazy"
-            enterStyle={{ opacity: 0 }}
-            exitStyle={{ opacity: 0 }}
-          />
-        </Sheet>
-      </Adapt>
-
-      <Select.Content zIndex={200000}>
-        <Select.Viewport minWidth={200}>
-          <Select.Group>
-            {useMemo(
-              () =>
-                (
-                  Object.keys(
-                    navigationScreens,
-                  ) as (keyof typeof navigationScreens)[]
-                )
-                  .sort()
-                  .map((item, i) => {
-                    return (
-                      <Select.Item index={i} key={item} value={item}>
-                        <Select.ItemText>{item}</Select.ItemText>
-                        <Select.ItemIndicator marginLeft="auto">
-                          <Check size={16} />
-                        </Select.ItemIndicator>
-                      </Select.Item>
-                    );
-                  }),
-              [],
-            )}
-          </Select.Group>
-        </Select.Viewport>
-      </Select.Content>
-    </Select>
+      <Sheet
+        modal
+        open={open}
+        onOpenChange={setOpen}
+        snapPoints={[85]}
+        animation="medium"
+        dismissOnSnapToBottom
+      >
+        <Sheet.Overlay />
+        <Sheet.Frame
+          backgroundColor={white}
+          borderTopLeftRadius="$9"
+          borderTopRightRadius="$9"
+        >
+          <YStack padding="$4">
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              marginBottom="$4"
+            >
+              <Text fontSize="$8" fontFamily={dinot}>
+                Select screen
+              </Text>
+              <Button
+                onPress={() => setOpen(false)}
+                padding="$2"
+                backgroundColor="transparent"
+              >
+                <ChevronDown
+                  color={slate500}
+                  strokeWidth={2.5}
+                  style={{ transform: [{ rotate: '180deg' }] }}
+                />
+              </Button>
+            </XStack>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {screenList.map(item => (
+                <TouchableOpacity
+                  key={item}
+                  onPress={() => {
+                    setOpen(false);
+                    navigation.navigate(item as never);
+                  }}
+                >
+                  <XStack
+                    paddingVertical="$3"
+                    paddingHorizontal="$2"
+                    borderBottomWidth={1}
+                    borderBottomColor={slate200}
+                  >
+                    <Text fontSize="$5" color={slate600} fontFamily={dinot}>
+                      {item}
+                    </Text>
+                  </XStack>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </YStack>
+        </Sheet.Frame>
+      </Sheet>
+    </>
   );
 };
 
