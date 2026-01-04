@@ -5380,6 +5380,69 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@layerzerolabs/lz-evm-messagelib-v2@npm:^3.0.151":
+  version: 3.0.151
+  resolution: "@layerzerolabs/lz-evm-messagelib-v2@npm:3.0.151"
+  peerDependencies:
+    "@arbitrum/nitro-contracts": ^1.1.0
+    "@axelar-network/axelar-gmp-sdk-solidity": ^5.6.4
+    "@chainlink/contracts-ccip": ^0.7.6
+    "@eth-optimism/contracts": ^0.6.0
+    "@layerzerolabs/lz-evm-protocol-v2": ^3.0.151
+    "@layerzerolabs/lz-evm-v1-0.7": ^3.0.151
+    "@openzeppelin/contracts": ^4.8.1 || ^5.0.0
+    "@openzeppelin/contracts-upgradeable": ^4.8.1 || ^5.0.0
+    hardhat-deploy: ^0.12.4
+    solidity-bytes-utils: ^0.8.0
+  peerDependenciesMeta:
+    "@arbitrum/nitro-contracts":
+      optional: true
+  checksum: 10c0/a0900ef170347ada88c29ea7fd43d00f4876ad184f3aa7501021930b424ee93273ee86856f04414409a0bf8e5ad13dd90bd082caa4376fb74fff727f178115b7
+  languageName: node
+  linkType: hard
+
+"@layerzerolabs/lz-evm-protocol-v2@npm:^3.0.151":
+  version: 3.0.151
+  resolution: "@layerzerolabs/lz-evm-protocol-v2@npm:3.0.151"
+  peerDependencies:
+    "@openzeppelin/contracts": ^4.8.1 || ^5.0.0
+    "@openzeppelin/contracts-upgradeable": ^4.8.1 || ^5.0.0
+    hardhat-deploy: ^0.12.4
+    solidity-bytes-utils: ^0.8.0
+  checksum: 10c0/0318754f1c5f5b5a124018efa5fe7199b9c425ab501827ea851e254a75e7e619db9a7f0d30f4739ac10ae5549dfd5b2f1bf91cc15a83f7da72bb633aa6cbcedf
+  languageName: node
+  linkType: hard
+
+"@layerzerolabs/oapp-evm-upgradeable@npm:0.1.3":
+  version: 0.1.3
+  resolution: "@layerzerolabs/oapp-evm-upgradeable@npm:0.1.3"
+  dependencies:
+    ethers: "npm:^5.7.2"
+  peerDependencies:
+    "@layerzerolabs/lz-evm-messagelib-v2": ^3.0.148
+    "@layerzerolabs/lz-evm-protocol-v2": ^3.0.148
+    "@layerzerolabs/lz-evm-v1-0.7": ^3.0.148
+    "@openzeppelin/contracts": ^4.8.1 || ^5.0.0
+    "@openzeppelin/contracts-upgradeable": ^4.8.1 || ^5.0.0
+  checksum: 10c0/8fd995812987aed35160378a45698e92b76e602de4271e13fd8921df432ebb09e27c7f6fdb4749b19b61031d6e5418c8de0af652b048a476692ce30920a3c7c9
+  languageName: node
+  linkType: hard
+
+"@layerzerolabs/oapp-evm@npm:^0.4.1":
+  version: 0.4.1
+  resolution: "@layerzerolabs/oapp-evm@npm:0.4.1"
+  dependencies:
+    ethers: "npm:^5.7.2"
+  peerDependencies:
+    "@layerzerolabs/lz-evm-messagelib-v2": ^3.0.148
+    "@layerzerolabs/lz-evm-protocol-v2": ^3.0.148
+    "@layerzerolabs/lz-evm-v1-0.7": ^3.0.148
+    "@openzeppelin/contracts": ^4.8.1 || ^5.0.0
+    "@openzeppelin/contracts-upgradeable": ^4.8.1 || ^5.0.0
+  checksum: 10c0/d4b7c6e81e7cdf5d8c6503795eef7c389da1e3a08419b861d17d2a2ba6f4bb5072055721fe00233f5e88ebe2c6130862fbab9af1bc9a4dbe64bdc7cd1ba8e896
+  languageName: node
+  linkType: hard
+
 "@leichtgewicht/ip-codec@npm:^2.0.1":
   version: 2.0.5
   resolution: "@leichtgewicht/ip-codec@npm:2.0.5"
@@ -8412,6 +8475,10 @@ __metadata:
   dependencies:
     "@ashpect/smt": "https://github.com/ashpect/smt#main"
     "@eth-optimism/hardhat-ovm": "npm:^0.2.4"
+    "@layerzerolabs/lz-evm-messagelib-v2": "npm:^3.0.151"
+    "@layerzerolabs/lz-evm-protocol-v2": "npm:^3.0.151"
+    "@layerzerolabs/oapp-evm": "npm:^0.4.1"
+    "@layerzerolabs/oapp-evm-upgradeable": "npm:0.1.3"
     "@nomicfoundation/hardhat-chai-matchers": "npm:^2.0.6"
     "@nomicfoundation/hardhat-ethers": "npm:^3.0.5"
     "@nomicfoundation/hardhat-ignition": "npm:^0.15.12"
@@ -8458,6 +8525,7 @@ __metadata:
     prettier: "npm:3.5.3"
     prettier-plugin-solidity: "npm:^2.1.0"
     snarkjs: "npm:^0.7.4"
+    solidity-bytes-utils: "npm:^0.8.4"
     solidity-coverage: "npm:^0.8.14"
     ts-node: "npm:^10.9.2"
     tsup: "npm:^8.5.0"
@@ -32089,6 +32157,13 @@ __metadata:
   version: 0.4.61
   resolution: "solidity-ast@npm:0.4.61"
   checksum: 10c0/525f4f2f52d580a23fdaa6975d09e7507074a5892aa0a0964ce3865463392f16a831177856377f7022ba2ea83cff0c18f3513ee8c281ce080aca70fd8e1d5c36
+  languageName: node
+  linkType: hard
+
+"solidity-bytes-utils@npm:^0.8.4":
+  version: 0.8.4
+  resolution: "solidity-bytes-utils@npm:0.8.4"
+  checksum: 10c0/a9cc2b96143a54dffce884162d5222dfed6ebb76a2e55a6b407facc2b73d59c83598691ba0f0fd452e90eb4519003cebe180bd94a7dcf0d3e0ce6b84046f2778
   languageName: node
   linkType: hard
 

@@ -285,6 +285,9 @@ describe("VerifyAll", () => {
       });
 
       it("should return error code 'INVALID_OFAC' when OFAC check fails", async () => {
+        // Increase timeout for proof generation (can take 60+ seconds)
+        this.timeout(120000); // 2 minutes
+        
         const { registry, owner } = deployedActors;
         await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 

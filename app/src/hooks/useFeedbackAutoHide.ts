@@ -4,21 +4,11 @@
 
 import { useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { hideFeedbackButton } from '@sentry/react-native';
-
-/**
- * Hook to automatically hide the Sentry feedback button when the screen loses focus.
- * This should be used within screens that have navigation context.
- */
+// Sentry feedback widget is disabled; no-op to avoid calling unstable native APIs.
 export const useFeedbackAutoHide = () => {
   useFocusEffect(
     useCallback(() => {
-      // When screen comes into focus, do nothing (button might be shown by user action)
-
-      // When screen goes out of focus, hide the feedback button
-      return () => {
-        hideFeedbackButton();
-      };
+      return () => undefined;
     }, []),
   );
 };

@@ -2,8 +2,13 @@
 pragma solidity 0.8.28;
 
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import {ISelfVerificationRoot} from "./abstract/SelfVerificationRoot.sol";
+import {Origin} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
+import {OAppReceiverUpgradeable} from
+    "@layerzerolabs/oapp-evm-upgradeable/contracts/oapp/OAppReceiverUpgradeable.sol";
+import {OAppCoreUpgradeable} from "@layerzerolabs/oapp-evm-upgradeable/contracts/oapp/OAppCoreUpgradeable.sol";
 
 /**
  * @title IdentityVerificationHubMultichain
@@ -12,13 +17,21 @@ import {ISelfVerificationRoot} from "./abstract/SelfVerificationRoot.sol";
  * verification outputs from the source chain (Celo). It validates bridge messages and
  * forwards them to the appropriate dApp contracts.
  *
+ * Uses LayerZero's official OAppReceiverUpgradeable for cross-chain message receiving.
+ * Overrides OApp's OwnableUpgradeable with AccessControlUpgradeable for role-based control.
+ *
  * @custom:version 1.0.0
  */
-contract IdentityVerificationHubMultichain is UUPSUpgradeable, AccessControlUpgradeable {
+contract IdentityVerificationHubMultichain is
+    UUPSUpgradeable,
+    OAppReceiverUpgradeable,
+    AccessControlUpgradeable
+{
     /// @custom:storage-location erc7201:self.storage.MultichainHub
     struct MultichainHubStorage {
-        address bridgeEndpoint;
-        mapping(uint256 chainId => bytes32 sourceHub) sourceHubs;
+        mapping(uint256 chainId => uint32 eid) chainIdToEid; // Map chainId to EID for backward compatibility
+        mapping(uint32 eid => uint256 chainId) eidToChainId; // Reverse mapping for efficient lookup
+        mapping(bytes32 messageId => bool processed) processedMessages;
     }
 
     /// @dev keccak256(abi.encode(uint256(keccak256("self.storage.MultichainHub")) - 1)) & ~bytes32(uint256(0xff))
@@ -56,13 +69,6 @@ contract IdentityVerificationHubMultichain is UUPSUpgradeable, AccessControlUpgr
     );
 
     /**
-     * @notice Emitted when the bridge endpoint address is updated.
-     * @param oldEndpoint The previous bridge endpoint address.
-     * @param newEndpoint The new bridge endpoint address.
-     */
-    event BridgeEndpointUpdated(address indexed oldEndpoint, address indexed newEndpoint);
-
-    /**
      * @notice Emitted when a source hub address is updated for a chain.
      * @param chainId The source chain identifier.
      * @param hubAddress The trusted hub address on the source chain.
@@ -73,18 +79,6 @@ contract IdentityVerificationHubMultichain is UUPSUpgradeable, AccessControlUpgr
     // Errors
     // ====================================================
 
-    /// @notice Thrown when caller is not the authorized bridge endpoint.
-    /// @dev Ensures only the configured bridge can deliver messages.
-    error UnauthorizedBridgeEndpoint();
-
-    /// @notice Thrown when the source chain is not configured as trusted.
-    /// @dev Indicates no source hub is registered for the given chain ID.
-    error UntrustedSourceChain();
-
-    /// @notice Thrown when the source hub address doesn't match the trusted hub.
-    /// @dev Ensures messages only come from authorized hubs on the source chain.
-    error UntrustedSourceHub();
-
     /// @notice Thrown when the config ID validation fails.
     /// @dev Used to ensure verification config matches the destination dApp requirements.
     error InvalidConfigId();
@@ -93,17 +87,20 @@ contract IdentityVerificationHubMultichain is UUPSUpgradeable, AccessControlUpgr
     /// @dev Ensures the message has a valid target dApp contract.
     error InvalidDestinationContract();
 
+    /// @notice Thrown when a bridged message is processed more than once.
+    error MessageAlreadyProcessed();
+
     // ====================================================
     // Constructor
     // ====================================================
 
     /**
-     * @notice Constructor that disables initializers for the implementation contract.
-     * @dev This prevents the implementation contract from being initialized directly.
-     * The actual initialization should only happen through the proxy.
+     * @notice Constructor sets the LayerZero endpoint (immutable).
+     * @dev Disables initializers for the implementation contract.
+     * @param _endpoint The LayerZero endpoint address
      * @custom:oz-upgrades-unsafe-allow constructor
      */
-    constructor() {
+    constructor(address _endpoint) OAppCoreUpgradeable(_endpoint) {
         _disableInitializers();
     }
 
@@ -115,101 +112,88 @@ contract IdentityVerificationHubMultichain is UUPSUpgradeable, AccessControlUpgr
      * @notice Initializes the Multichain Hub contract.
      * @dev Sets up UUPS upgradeability and access control with admin and security roles.
      * This function can only be called once due to the initializer modifier.
-     * @param admin The address to grant DEFAULT_ADMIN_ROLE and SECURITY_ROLE.
+     * @param admin The address to grant DEFAULT_ADMIN_ROLE and SECURITY_ROLE (also owner for OApp).
+     * @param delegate The delegate address for LayerZero configuration
      */
-    function initialize(address admin) external initializer {
+    function initialize(address admin, address delegate) external initializer {
         __UUPSUpgradeable_init();
         __AccessControl_init();
+        __Ownable_init(admin); // Required by OAppCoreUpgradeable
+        __OAppReceiver_init(delegate);
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(SECURITY_ROLE, admin);
     }
 
     // ====================================================
-    // External Functions
+    // OApp Overrides (use AccessControl instead of Ownable)
     // ====================================================
 
     /**
-     * @notice Receives and processes a bridged verification message from the source chain.
-     * @dev This function is called by the bridge endpoint (LayerZero/Wormhole) to deliver
-     * verification results. It performs multiple validation steps before forwarding to the dApp:
-     * 1. Validates the caller is the authorized bridge endpoint
-     * 2. Validates the source chain is trusted (has a configured source hub)
-     * 3. Validates the source hub matches the expected hub for that chain
-     * 4. Validates the destination contract address is not zero
-     * 5. Validates the configId used for verification matches the destination dApp's configId
-     * 6. Forwards the verification output to the destination dApp contract
-     *
-     * @param sourceChainId The source chain identifier (e.g., Celo mainnet = 42220).
-     * @param sourceHub The source hub address on the source chain (encoded as bytes32).
-     * @param payload The bridged payload containing: (destDAppAddress, output, userDataToPass).
+     * @notice Sets the peer (source hub) for a LayerZero endpoint ID.
+     * @param _eid The LayerZero endpoint ID
+     * @param _peer The peer address (bytes32)
+     * @dev Overrides OAppCoreUpgradeable to use SECURITY_ROLE instead of owner
      */
-    function receiveMessage(
-        uint256 sourceChainId,
-        bytes32 sourceHub,
-        bytes calldata payload
-    ) external {
-        MultichainHubStorage storage $ = _getMultichainHubStorage();
-
-        // Validate the caller is the authorized bridge endpoint
-        if (msg.sender != $.bridgeEndpoint) {
-            revert UnauthorizedBridgeEndpoint();
-        }
-
-        // Validate the source chain is trusted (has a configured source hub)
-        if ($.sourceHubs[sourceChainId] == bytes32(0)) {
-            revert UntrustedSourceChain();
-        }
-
-        // Validate the source hub matches the expected hub for that chain
-        if ($.sourceHubs[sourceChainId] != sourceHub) {
-            revert UntrustedSourceHub();
-        }
-
-        // Decode the payload
-        (address destDAppAddress, bytes memory output, bytes memory userDataToPass) =
-            abi.decode(payload, (address, bytes, bytes));
-
-        // Validate the destination contract address is not zero
-        if (destDAppAddress == address(0)) {
-            revert InvalidDestinationContract();
-        }
-
-        // TODO: Add configId validation when dApp contracts expose getConfigId()
-        // For now, we use bytes32(0) as a placeholder in the event
-        bytes32 configId;
-
-        // Call the destination contracts onVerificationSuccess() hook function
-        ISelfVerificationRoot(destDAppAddress).onVerificationSuccess(output, userDataToPass);
-
-        emit VerificationBridged(destDAppAddress, configId, output, userDataToPass, block.timestamp);
+    function setPeer(uint32 _eid, bytes32 _peer) public override onlyRole(SECURITY_ROLE) {
+        _setPeer(_eid, _peer);
     }
 
     /**
-     * @notice Sets the bridge endpoint address that is authorized to deliver messages.
-     * @dev Only callable by accounts with SECURITY_ROLE.
-     * The bridge endpoint is the address of the LayerZero/Wormhole receiver contract
-     * that will call receiveMessage().
-     * @param endpoint The address of the bridge endpoint contract.
+     * @notice Internal function to set a peer without access control (for use in other functions)
+     * @param _eid The LayerZero endpoint ID
+     * @param _peer The peer address (bytes32)
      */
-    function setBridgeEndpoint(address endpoint) external onlyRole(SECURITY_ROLE) {
-        MultichainHubStorage storage $ = _getMultichainHubStorage();
-        address oldEndpoint = $.bridgeEndpoint;
-        $.bridgeEndpoint = endpoint;
-        emit BridgeEndpointUpdated(oldEndpoint, endpoint);
+    function _setPeer(uint32 _eid, bytes32 _peer) internal virtual {
+        OAppCoreUpgradeable.OAppCoreStorage storage $ = _getOAppCoreStorage();
+        $.peers[_eid] = _peer;
+        emit PeerSet(_eid, _peer);
     }
 
+    // Note: setDelegate() uses onlyOwner from OAppCoreUpgradeable
+
+    // ====================================================
+    // LayerZero OApp Implementation
+    // ====================================================
+
     /**
-     * @notice Sets the trusted source hub address for a specific source chain.
+     * @notice Internal function called by OAppReceiverUpgradeable.lzReceive
+     * @dev This is where we process the incoming LayerZero message.
+     * OAppReceiverUpgradeable already validates:
+     * - Caller is the endpoint
+     * - Sender matches the expected peer for srcEid
+     */
+    function _lzReceive(
+        Origin calldata _origin,
+        bytes32 _guid,
+        bytes calldata _message,
+        address /*_executor*/,
+        bytes calldata /*_extraData*/
+    ) internal override {
+        // Convert srcEid to chainId for backward compatibility
+        uint256 sourceChainId = _getChainIdFromEid(_origin.srcEid);
+
+        _processIncomingPayload(sourceChainId, _origin.sender, _message, _guid);
+    }
+
+    // ====================================================
+    // External Functions (Backward Compatibility)
+    // ====================================================
+
+    /**
+     * @notice Sets the trusted source hub address for a specific source chain (backward compatibility).
      * @dev Only callable by accounts with SECURITY_ROLE.
      * Each source chain can have one trusted hub address. Messages from other hubs
      * on the same chain will be rejected.
      * @param chainId The source chain identifier (e.g., Celo mainnet = 42220).
      * @param hubAddress The trusted hub address on the source chain (encoded as bytes32).
+     * @param eid The LayerZero endpoint ID for this chain
      */
-    function setSourceHub(uint256 chainId, bytes32 hubAddress) external onlyRole(SECURITY_ROLE) {
+    function setSourceHub(uint256 chainId, bytes32 hubAddress, uint32 eid) external onlyRole(SECURITY_ROLE) {
         MultichainHubStorage storage $ = _getMultichainHubStorage();
-        $.sourceHubs[chainId] = hubAddress;
+        $.chainIdToEid[chainId] = eid;
+        $.eidToChainId[eid] = chainId;
+        _setPeer(eid, hubAddress);
         emit SourceHubUpdated(chainId, hubAddress);
     }
 
@@ -219,28 +203,76 @@ contract IdentityVerificationHubMultichain is UUPSUpgradeable, AccessControlUpgr
 
     /**
      * @notice Returns the configured bridge endpoint address.
-     * @dev The bridge endpoint is the address authorized to call receiveMessage().
+     * @dev The bridge endpoint is the LayerZero endpoint.
      * @return The bridge endpoint contract address.
      */
     function getBridgeEndpoint() external view returns (address) {
-        MultichainHubStorage storage $ = _getMultichainHubStorage();
-        return $.bridgeEndpoint;
+        return address(endpoint);
     }
 
     /**
-     * @notice Returns the trusted source hub address for a specific chain.
+     * @notice Returns the trusted source hub address for a specific chain (backward compatibility).
      * @dev Returns bytes32(0) if no hub is configured for the given chain ID.
      * @param chainId The source chain identifier to query.
      * @return The trusted hub address on the source chain (encoded as bytes32).
      */
     function getSourceHub(uint256 chainId) external view returns (bytes32) {
         MultichainHubStorage storage $ = _getMultichainHubStorage();
-        return $.sourceHubs[chainId];
+        uint32 eid = $.chainIdToEid[chainId];
+        if (eid == 0) return bytes32(0);
+        return peers(eid);
     }
 
     // ====================================================
     // Internal Functions
     // ====================================================
+
+    /**
+     * @dev Helper to convert EID to chainId (for backward compatibility)
+     * @param eid The LayerZero endpoint ID
+     * @return chainId The chain ID (or eid if no mapping exists)
+     */
+    function _getChainIdFromEid(uint32 eid) private view returns (uint256) {
+        MultichainHubStorage storage $ = _getMultichainHubStorage();
+        uint256 chainId = $.eidToChainId[eid];
+        // If no mapping exists (chainId is 0), use EID as chainId
+        // This works for testnet/mainnet where EIDs are unique
+        return chainId != 0 ? chainId : uint256(eid);
+    }
+
+    /**
+     * @dev Shared message validation/decoding for LayerZero lzReceive.
+     * @param sourceChainId The source chain ID (converted from EID)
+     * @param sourceHub The source hub address (already validated by OAppReceiver)
+     * @param payload The message payload
+     * @param guid The message GUID for replay protection
+     */
+    function _processIncomingPayload(uint256 sourceChainId, bytes32 sourceHub, bytes calldata payload, bytes32 guid)
+        private
+    {
+        MultichainHubStorage storage $ = _getMultichainHubStorage();
+
+        (address destDAppAddress, bytes memory output, bytes memory userDataToPass) =
+            abi.decode(payload, (address, bytes, bytes));
+
+        if (destDAppAddress == address(0)) {
+            revert InvalidDestinationContract();
+        }
+
+        // Replay protection: ensure each message is processed only once
+        bytes32 messageId = guid == bytes32(0) ? keccak256(abi.encode(sourceChainId, sourceHub, payload)) : guid;
+        if ($.processedMessages[messageId]) {
+            revert MessageAlreadyProcessed();
+        }
+        $.processedMessages[messageId] = true;
+
+        // TODO: Add configId validation when dApp contracts expose getConfigId()
+        // For now, we use bytes32(0) as a placeholder in the event
+        bytes32 configId;
+
+        ISelfVerificationRoot(destDAppAddress).onVerificationSuccess(output, userDataToPass);
+        emit VerificationBridged(destDAppAddress, configId, output, userDataToPass, block.timestamp);
+    }
 
     /**
      * @notice Authorizes contract upgrades.

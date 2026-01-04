@@ -70,6 +70,9 @@ export function getPayload(
   userDefinedData: string = '',
   selfDefinedData: string = ''
 ) {
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/c221fb1a-a001-4333-87b7-a57e506cd0d8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'proving.ts:getPayload:entry',message:'getPayload called',data:{circuitType,circuitName,endpointType,endpoint,version,userDefinedData:userDefinedData?.slice(0,50),isOnchainFn:typeof isOnchainEndpointType},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,D,E'})}).catch(()=>{});
+  // #endregion
   if (circuitType === 'disclose') {
     const type =
       circuitName === 'vc_and_disclose'
@@ -77,11 +80,15 @@ export function getPayload(
         : circuitName === 'vc_and_disclose_aadhaar'
           ? 'disclose_aadhaar'
           : 'disclose_id';
+    // #region agent log
+    const isOnchain = isOnchainEndpointType(endpointType);
+    fetch('http://127.0.0.1:7243/ingest/c221fb1a-a001-4333-87b7-a57e506cd0d8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'proving.ts:getPayload:disclose',message:'isOnchainEndpointType result',data:{endpointType,isOnchain,type},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,C'})}).catch(()=>{});
+    // #endregion
     const payload: TEEPayloadDisclose = {
       type,
       endpointType: endpointType,
       endpoint: endpoint,
-      onchain: isOnchainEndpointType(endpointType),
+      onchain: isOnchain,
       circuit: {
         name: circuitName,
         inputs: JSON.stringify(inputs),
@@ -90,6 +97,9 @@ export function getPayload(
       userDefinedData,
       selfDefinedData,
     };
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/c221fb1a-a001-4333-87b7-a57e506cd0d8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'proving.ts:getPayload:return',message:'TEEPayloadDisclose built',data:{payloadType:payload.type,payloadEndpointType:payload.endpointType,payloadOnchain:payload.onchain,payloadVersion:payload.version,circuitName:payload.circuit.name},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C,D'})}).catch(()=>{});
+    // #endregion
     return payload;
   } else {
     const type = circuitName === 'register_aadhaar' ? 'register_aadhaar' : circuitType;

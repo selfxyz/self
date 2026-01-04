@@ -158,6 +158,36 @@ verifier, err := self.NewBackendVerifier(
 )
 ```
 
+## Multichain Support
+
+Self protocol supports verification on Celo with results automatically bridged to multiple destination chains including Base, Gnosis, and Optimism.
+
+**Important for Backend Verification**: The Go SDK always connects to Celo RPC (mainnet or testnet) for verification, regardless of where your dApp contract is deployed. This is because:
+
+1. All zero-knowledge proof verification happens on Celo (for security and cost efficiency)
+2. For multichain dApps, the verification result is automatically bridged to the destination chain
+3. The backend verifier only needs to validate the proof - it doesn't need to know about destination chains
+
+### Example: Verifying for a Base dApp
+
+Even if your dApp contract is on Base, your Go backend verifier still connects to Celo:
+
+```go
+// This verifier connects to Celo, even though the dApp is on Base
+verifier, err := self.NewBackendVerifier(
+    "my-base-dapp-scope",
+    "https://my-base-dapp.com",  // Your Base dApp endpoint
+    false,                        // Use Celo mainnet for verification
+    allowedIds,
+    configStore,
+    self.UserIDTypeHex,
+)
+
+// The verification happens on Celo
+// Results are automatically bridged to Base by the Self protocol
+result, err := verifier.Verify(ctx, attestationId, proof, signals, contextData)
+```
+
 ## User Identifier Types
 
 Choose how user identifiers are formatted:

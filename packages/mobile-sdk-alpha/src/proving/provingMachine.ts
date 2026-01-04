@@ -593,6 +593,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           }
           get()._startSocketIOStatusListener(statusUuid, endpointType, selfClient);
         } else if (result.error) {
+          // #region agent log
+          console.log('[DEBUG:provingMachine] TEE ERROR received:', JSON.stringify({code:result.error?.code,message:result.error?.message,selfAppEndpointType:selfClient.getSelfAppState().selfApp?.endpointType}));
+          fetch('http://127.0.0.1:7243/ingest/c221fb1a-a001-4333-87b7-a57e506cd0d8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'provingMachine.ts:_handleWebSocketMessage:TEE_ERROR',message:'TEE returned error',data:{errorCode:result.error?.code,errorMessage:result.error?.message,fullError:JSON.stringify(result.error).slice(0,500)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C,D'})}).catch(()=>{});
+          // #endregion
           selfClient.logProofEvent('error', 'TEE returned error', context, {
             failure: 'PROOF_FAILED_TEE_PROCESSING',
             error: result.error,
@@ -1310,6 +1314,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       const context = createProofContext(selfClient, 'startProving', {
         sessionId: uuid || get().uuid || 'unknown-session',
       });
+      // #region agent log
+      const selfApp = selfClient.getSelfAppState().selfApp;
+      console.log('[DEBUG:provingMachine] startProving called:', JSON.stringify({endpointType:selfApp?.endpointType,endpoint:selfApp?.endpoint?.slice(0,20),currentState:get().currentState}));
+      fetch('http://127.0.0.1:7243/ingest/c221fb1a-a001-4333-87b7-a57e506cd0d8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'provingMachine.ts:startProving:entry',message:'startProving called',data:{endpointType:selfApp?.endpointType,endpoint:selfApp?.endpoint?.slice(0,42),currentState:get().currentState,hasWs:!!wsConnection,hasSharedKey:!!sharedKey},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D,E'})}).catch(()=>{});
+      // #endregion
 
       if (get().currentState !== 'ready_to_prove') {
         selfClient.logProofEvent('error', 'Not in ready_to_prove state', context, {

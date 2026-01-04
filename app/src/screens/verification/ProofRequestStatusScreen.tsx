@@ -76,9 +76,24 @@ const SuccessScreen: React.FC = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check if this is a multichain verification
+  // #region agent log
+  const checkIsOnchainEndpointType = () => {
+    try {
+      fetch('http://127.0.0.1:7243/ingest/c221fb1a-a001-4333-87b7-a57e506cd0d8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProofRequestStatusScreen.tsx:isMultichain',message:'Checking isOnchainEndpointType',data:{endpointType:selfApp?.endpointType,isOnchainEndpointTypeDefined:typeof isOnchainEndpointType !== 'undefined',isOnchainEndpointTypeType:typeof isOnchainEndpointType},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
+      if (typeof isOnchainEndpointType !== 'function') {
+        fetch('http://127.0.0.1:7243/ingest/c221fb1a-a001-4333-87b7-a57e506cd0d8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProofRequestStatusScreen.tsx:isMultichain:ERROR',message:'isOnchainEndpointType is NOT a function!',data:{typeofValue:typeof isOnchainEndpointType},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
+        return false;
+      }
+      return selfApp?.endpointType ? isOnchainEndpointType(selfApp.endpointType) : false;
+    } catch (e) {
+      fetch('http://127.0.0.1:7243/ingest/c221fb1a-a001-4333-87b7-a57e506cd0d8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProofRequestStatusScreen.tsx:isMultichain:CATCH',message:'Exception in isOnchainEndpointType',data:{error:String(e)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
+      return false;
+    }
+  };
+  // #endregion
   const isMultichain =
     selfApp?.endpointType &&
-    isOnchainEndpointType(selfApp.endpointType) &&
+    checkIsOnchainEndpointType() &&
     !['celo', 'staging_celo'].includes(selfApp.endpointType);
 
   const onOkPress = useCallback(async () => {

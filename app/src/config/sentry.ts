@@ -167,22 +167,26 @@ export const initSentry = () => {
       consoleLoggingIntegration({
         levels: ['log', 'error', 'warn', 'info', 'debug'],
       }),
-      feedbackIntegration({
-        buttonOptions: {
-          styles: {
-            triggerButton: {
-              position: 'absolute',
-              top: 20,
-              right: 20,
-              bottom: undefined,
-              marginTop: 100,
-            },
-          },
-        },
-        enableTakeScreenshot: true,
-        namePlaceholder: 'Fullname',
-        emailPlaceholder: 'Email',
-      }),
+      // NOTE: Temporarily disable Sentry's feedback widget integration to avoid
+      // runtime crashes on native (`this._setVisibility is not a function` from
+      // FeedbackWidgetManager). This only impacts the Sentry feedback UI; logging
+      // and error capture remain enabled.
+      // feedbackIntegration({
+      //   buttonOptions: {
+      //     styles: {
+      //       triggerButton: {
+      //         position: 'absolute',
+      //         top: 20,
+      //         right: 20,
+      //         bottom: undefined,
+      //         marginTop: 100,
+      //       },
+      //     },
+      //   },
+      //   enableTakeScreenshot: true,
+      //   namePlaceholder: 'Fullname',
+      //   emailPlaceholder: 'Email',
+      // }),
     ],
     _experiments: {
       enableLogs: true,

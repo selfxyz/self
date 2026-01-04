@@ -116,5 +116,9 @@ export function isOnchainEndpointType(endpointType: EndpointType): boolean {
     'optimism',
     // TODO: [SOLANA] Add 'solana', 'staging_solana' when implemented
   ];
-  return onchainTypes.includes(endpointType);
+  const result = onchainTypes.includes(endpointType);
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/c221fb1a-a001-4333-87b7-a57e506cd0d8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chains.ts:isOnchainEndpointType',message:'isOnchainEndpointType called',data:{endpointType,result,onchainTypesLength:onchainTypes.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
+  return result;
 }

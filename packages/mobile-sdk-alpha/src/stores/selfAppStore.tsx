@@ -84,6 +84,10 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
       socket.once('self_app', (data: unknown) => {
         try {
           const appData: SelfApp = typeof data === 'string' ? JSON.parse(data) : (data as SelfApp);
+          // #region agent log
+          console.log('[DEBUG:selfAppStore] Received selfApp:', JSON.stringify({endpointType:appData?.endpointType,endpoint:appData?.endpoint,scope:appData?.scope}));
+          fetch('http://127.0.0.1:7243/ingest/c221fb1a-a001-4333-87b7-a57e506cd0d8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'selfAppStore.tsx:self_app',message:'Received selfApp from relayer',data:{endpointType:appData?.endpointType,endpoint:appData?.endpoint,scope:appData?.scope,sessionId:appData?.sessionId?.substring(0,8)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+          // #endregion
 
           // Basic validation
           if (!appData || typeof appData !== 'object' || !appData.sessionId) {

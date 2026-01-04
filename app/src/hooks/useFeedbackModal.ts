@@ -3,11 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  hideFeedbackButton,
-  showFeedbackButton,
-  showFeedbackWidget,
-} from '@sentry/react-native';
+// Sentry feedback widget APIs are unstable in our native setup.
+// To avoid crashes (`_setVisibility` undefined), always use the custom modal
+// and never call the native widget/button helpers.
+// (captureFeedback still works; only the UI is swapped out.)
 
 import type { FeedbackModalScreenParams } from '@/components/FeedbackModalScreen';
 import { captureFeedback } from '@/config/sentry';
@@ -27,28 +26,8 @@ export const useFeedbackModal = () => {
       timeoutRef.current = null;
     }
 
-    switch (type) {
-      case 'button':
-        showFeedbackButton();
-        break;
-      case 'widget':
-        showFeedbackWidget();
-        break;
-      case 'custom':
-        setIsVisible(true);
-        break;
-      default:
-        showFeedbackButton();
-    }
-
-    // we can close the feedback modals(sentry and custom modals), but can't do so for the Feedback button.
-    // This hides the button after 10 seconds.
-    if (type === 'button') {
-      timeoutRef.current = setTimeout(() => {
-        hideFeedbackButton();
-        timeoutRef.current = null;
-      }, 10000);
-    }
+    // Always use our custom modal; never invoke Sentry's native feedback UI.
+    setIsVisible(true);
   }, []);
 
   const hideFeedbackModal = useCallback(() => {
@@ -56,8 +35,6 @@ export const useFeedbackModal = () => {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-
-    hideFeedbackButton();
 
     setIsVisible(false);
   }, []);

@@ -936,7 +936,7 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       // verify() should now reject multichain requests and direct to use verifyMultichain()
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
-      ).to.be.revertedWithCustomError(deployedActors.hubImplV2, "MultichainRequiresCallingVerifyMultichain");
+      ).to.be.revertedWithCustomError(deployedActors.hubImplV2, "UseVerifyMultichain");
     });
 
     it("should fail verification with invalid msg sender to call onVerificationSuccess", async () => {

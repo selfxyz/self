@@ -1,0 +1,38 @@
+.rotatingTitle {
+  font-size: 3rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #1e40af, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: rotate3D 3s infinite linear;
+  transform-style: preserve-3d;
+  perspective: 800px;
+  padding: 1rem;
+  position: relative;
+  display: inline-block;
+}
+
+@keyframes rotate3D {
+  0% {
+    transform: rotateY(0deg) rotateX(0deg);
+  }
+
+  25% {
+    transform: rotateY(20deg) rotateX(10deg);
+  }
+
+  50% {
+    transform: rotateY(0deg) rotateX(0deg);
+  }
+
+  75% {
+    transform: rotateY(-20deg) rotateX(-10deg);
+  }
+
+  100% {
+    transform: rotateY(0deg) rotateX(0deg);
+  }
+}
+
+

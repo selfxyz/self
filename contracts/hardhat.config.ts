@@ -60,9 +60,19 @@ const config: HardhatUserConfig = {
       url: process.env.CELO_RPC_URL || "https://forno.celo.org",
       accounts: [PRIVATE_KEY],
     },
+    base: {
+      chainId: 8453,
+      url: process.env.BASE_RPC_URL || "https://mainnet.base.org",
+      accounts: [PRIVATE_KEY],
+    },
     "celo-sepolia": {
       chainId: 11142220,
       url: process.env.CELO_SEPOLIA_RPC_URL || "https://rpc.ankr.com/celo_sepolia",
+      accounts: [PRIVATE_KEY],
+    },
+    "base-sepolia": {
+      chainId: 84532,
+      url: process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org",
       accounts: [PRIVATE_KEY],
     },
   },
@@ -86,6 +96,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://celo-sepolia.blockscout.com/api",
           browserURL: "https://celo-sepolia.blockscout.com",
+        },
+      },
+      {
+        network: "base",
+        chainId: 8453,
+        urls: {
+          apiURL: "https://api.basescan.org/api",
+          browserURL: "https://basescan.org/",
+        },
+      },
+      {
+        network: "base-sepolia",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org/",
         },
       },
     ],

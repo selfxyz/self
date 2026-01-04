@@ -198,18 +198,57 @@ const configStore = new DefaultConfigStore({
 });
 ```
 
-## Integration with SelfQRcode
+## Multichain Support
 
-This backend SDK is designed to work with the `@selfxyz/qrcode` package. When configuring your QR code, set the verification endpoint to point to your API that uses this SDK:
+Self protocol supports verification on Celo with results automatically bridged to multiple destination chains:
+
+- **Celo** (`celo` / `staging_celo`) - Same-chain verification
+- **Base** (`base` / `staging_base`) - Multichain verification
+- **Gnosis** (`gnosis`) - Multichain verification
+- **Optimism** (`optimism`) - Multichain verification
+
+**Important**: All verification happens on Celo (for security and cost efficiency), regardless of the destination chain. For multichain flows, the verification result is automatically bridged to your destination chain.
+
+### Same-Chain Example (Celo)
 
 ```typescript
 import { SelfAppBuilder } from '@selfxyz/qrcode';
 
 const selfApp = new SelfAppBuilder({
+  appName: 'My Celo dApp',
+  scope: 'my-application-scope',
+  endpoint: '0x1234...', // Your dApp contract address on Celo
+  endpointType: 'celo', // or 'staging_celo' for testnet
+  userId,
+  disclosures: { /* ... */ }
+}).build();
+```
+
+### Multichain Example (Base)
+
+```typescript
+import { SelfAppBuilder } from '@selfxyz/qrcode';
+
+const selfApp = new SelfAppBuilder({
+  appName: 'My Base dApp',
+  scope: 'my-application-scope',
+  endpoint: '0x1234...', // Your dApp contract address on Base
+  endpointType: 'base', // or 'staging_base' for testnet
+  userId,
+  disclosures: { /* ... */ }
+}).build();
+```
+
+### Offchain Verification Example
+
+For offchain verification (no blockchain interaction):
+
+```typescript
+const selfApp = new SelfAppBuilder({
   appName: 'My Application',
   scope: 'my-application-scope',
   endpoint: 'https://my-api.com/api/verify', // Your API using SelfBackendVerifier
-  logoBase64: myLogoBase64,
+  endpointType: 'https', // or 'staging_https' for testnet
   userId,
   disclosures: {
     name: true,
