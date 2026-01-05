@@ -21,7 +21,10 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
+import CheckmarkIcon from '@/assets/icons/checkmark_white.svg';
 import StarfallBackground from '@/assets/images/bg_starfall_push.png';
+import OperaLogo from '@/assets/logos/opera_minipay.svg';
+import SelfLogo from '@/assets/logos/self.svg';
 import { StarfallPIN } from '@/components/starfall/StarfallPIN';
 import { confirmTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
@@ -76,31 +79,17 @@ const StarfallPushCodeScreen: React.FC = () => {
         <YStack flex={1} justifyContent="center" alignItems="center">
           {/* App logos section */}
           <XStack gap={10} alignItems="center" marginBottom={20}>
-            {/* Aave logo placeholder */}
-            <View
-              width={46}
-              height={46}
-              backgroundColor="#9391f7"
-              borderRadius={3}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Text color={white} fontSize={20} fontWeight="bold">
-                A
-              </Text>
+            {/* Opera MiniPay logo */}
+            <View width={46} height={46} borderRadius={3} overflow="hidden">
+              <OperaLogo width={46} height={46} />
             </View>
 
-            {/* Arrow symbol */}
-            <Text
-              fontFamily="SF Pro"
-              fontSize={18}
-              fontWeight="600"
-              color={white}
-            >
-              􁁛
-            </Text>
+            {/* Checkmark icon */}
+            <View width={32} height={32}>
+              <CheckmarkIcon width={32} height={32} />
+            </View>
 
-            {/* Self logo placeholder */}
+            {/* Self logo */}
             <View
               width={46}
               height={46}
@@ -111,9 +100,7 @@ const StarfallPushCodeScreen: React.FC = () => {
               alignItems="center"
               justifyContent="center"
             >
-              <Text color={white} fontSize={20} fontWeight="bold">
-                S
-              </Text>
+              <SelfLogo width={28} height={28} />
             </View>
           </XStack>
 
