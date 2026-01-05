@@ -167,8 +167,18 @@ fi
 echo ""
 if confirm "Run 'yarn install' in repo root?"; then
   info "Running yarn install..."
+  set +e  # Temporarily disable exit-on-error
   cd "$REPO_ROOT" && yarn install
-  ok "Done!"
+  yarn_exit=$?
+  set -e  # Re-enable exit-on-error
+
+  if [[ $yarn_exit -eq 0 ]]; then
+    ok "Done!"
+  else
+    err "Yarn install failed (exit code: $yarn_exit)"
+    warn "This may be due to network issues or registry timeouts"
+    info "Try running manually: cd $REPO_ROOT && yarn install"
+  fi
 fi
 
 echo -e "\n${G}${BOLD}Setup complete!${NC} Open a new terminal, then: cd $APP_DIR && yarn ios\n"
