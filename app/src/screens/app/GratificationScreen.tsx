@@ -26,8 +26,8 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot, dinotBold } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import SelfLogo from '@/assets/logos/self.svg';
 import GratificationBg from '@/assets/images/gratification_bg.svg';
+import SelfLogo from '@/assets/logos/self.svg';
 import type { RootStackParamList } from '@/navigation';
 
 const GratificationScreen: React.FC = () => {
