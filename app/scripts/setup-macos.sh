@@ -37,18 +37,18 @@ confirm() {
 # Check functions - return "ok:version" or "missing" or "wrong:version"
 chk_brew()    { command -v brew &>/dev/null && echo "ok:$(brew --version | head -1 | cut -d' ' -f2)" || echo "missing"; }
 chk_nvm()     { [[ -s "$HOME/.nvm/nvm.sh" ]] && echo "ok" || echo "missing"; }
-chk_node()    { v=$(node -v 2>/dev/null | tr -d 'v'); [[ -n "$v" && "${v%%.*}" -ge $NODE_MAJOR ]] && echo "ok:$v" || echo "missing"; }
+chk_node()    { command -v node &>/dev/null && { v=$(node -v 2>/dev/null | tr -d 'v'); [[ -n "$v" && "${v%%.*}" -ge $NODE_MAJOR ]] && echo "ok:$v" || echo "wrong:$v"; } || echo "missing"; }
 chk_watch()   { command -v watchman &>/dev/null && echo "ok:$(watchman --version 2>/dev/null)" || echo "missing"; }
 chk_rbenv()   { command -v rbenv &>/dev/null && echo "ok" || echo "missing"; }
-chk_ruby()    { v=$(ruby -v 2>/dev/null | cut -d' ' -f2); [[ "$v" == "$RUBY_VERSION"* ]] && echo "ok:$v" || echo "wrong:$v"; }
+chk_ruby()    { command -v ruby &>/dev/null && { v=$(ruby -v 2>/dev/null | cut -d' ' -f2); [[ "$v" == "$RUBY_VERSION"* ]] && echo "ok:$v" || echo "wrong:$v"; } || echo "missing"; }
 chk_pods()    { command -v pod &>/dev/null && echo "ok:$(pod --version 2>/dev/null)" || echo "missing"; }
 chk_bundler() { command -v bundle &>/dev/null && echo "ok" || echo "missing"; }
-chk_java()    { v=$(java -version 2>&1 | head -1 | cut -d'"' -f2); [[ "$v" == 17* ]] && echo "ok:$v" || echo "missing"; }
+chk_java()    { command -v java &>/dev/null && { v=$(java -version 2>&1 | head -1 | cut -d'"' -f2); [[ "$v" == 17* ]] && echo "ok:$v" || echo "wrong:$v"; } || echo "missing"; }
 chk_xcode()   { xcode-select -p &>/dev/null && [[ "$(xcode-select -p)" == *Xcode.app* ]] && echo "ok" || echo "missing"; }
 chk_studio()  { [[ -d "/Applications/Android Studio.app" ]] && echo "ok" || echo "missing"; }
 chk_sdk()     { [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}" ]] && echo "ok" || echo "missing"; }
 chk_ndk()     { [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}/ndk/27.0.12077973" ]] && echo "ok" || echo "missing"; }
-chk_shell()   { grep -q "ANDROID_HOME" ~/.zshrc 2>/dev/null && echo "ok" || echo "missing"; }
+chk_shell()   { local rc=~/.zshrc; [[ "$SHELL" == *bash* ]] && rc=~/.bashrc; grep -q "ANDROID_HOME" "$rc" 2>/dev/null && echo "ok" || echo "missing"; }
 
 # Install functions
 inst_brew()    { /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; }
@@ -64,6 +64,13 @@ inst_java()    { brew install openjdk@17; sudo ln -sfn "$(brew --prefix openjdk@
 inst_shell() {
   local rc=~/.zshrc
   [[ "$SHELL" == *bash* ]] && rc=~/.bashrc
+
+  # Check if already configured
+  if grep -q "# Self.xyz Dev Environment" "$rc" 2>/dev/null; then
+    ok "Shell already configured"
+    return 0
+  fi
+
   info "Adding environment to $rc..."
   cat >> "$rc" << 'EOF'
 
