@@ -4,15 +4,15 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import NovaPushCodeScreen from '@/screens/nova/NovaPushCodeScreen';
+import StarfallPushCodeScreen from '@/screens/starfall/StarfallPushCodeScreen';
 
-const novaScreens = {
-  NovaPushCode: {
-    screen: NovaPushCodeScreen,
+const starfallScreens = {
+  StarfallPushCode: {
+    screen: StarfallPushCodeScreen,
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
   },
 };
 
-export default novaScreens;
+export default starfallScreens;

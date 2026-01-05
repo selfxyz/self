@@ -22,13 +22,13 @@ import {
 import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
-import { NovaPIN } from '@/components/nova/NovaPIN';
+import { StarfallPIN } from '@/components/starfall/StarfallPIN';
 import { confirmTap } from '@/integrations/haptics';
 
 // Placeholder code for initial implementation
 const PLACEHOLDER_CODE = '8024';
 
-const NovaCodeScreen: React.FC = () => {
+const StarfallPushCodeScreen: React.FC = () => {
   const navigation = useNavigation();
   const bottomPadding = useSafeBottomPadding();
   const [isCopied, setIsCopied] = useState(false);
@@ -125,7 +125,7 @@ const NovaCodeScreen: React.FC = () => {
             textAlign="center"
             letterSpacing={1}
           >
-            Your Nova code awaits
+            Your Starfall code awaits
           </Text>
 
           <YStack gap={16} width="100%" alignItems="center">
@@ -137,13 +137,13 @@ const NovaCodeScreen: React.FC = () => {
                 color={white}
                 textAlign="center"
               >
-                Open Nova in Opera MiniPay and enter this four digit code to
-                continue your journey.
+                Open Starfall in Opera MiniPay and enter this four digit code
+                to continue your journey.
               </Text>
             </View>
 
             <View width="100%">
-              <NovaPIN code={PLACEHOLDER_CODE} />
+              <StarfallPIN code={PLACEHOLDER_CODE} />
             </View>
           </YStack>
         </YStack>
@@ -171,4 +171,4 @@ const NovaCodeScreen: React.FC = () => {
   );
 };
 
-export default NovaCodeScreen;
+export default StarfallPushCodeScreen;

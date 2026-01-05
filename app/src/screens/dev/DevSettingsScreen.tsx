@@ -660,11 +660,12 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         >
           <YStack gap="$2">
             <TopicToggleButton
-              label="Nova"
+              label="Starfall"
               isSubscribed={
-                hasNotificationPermission && subscribedTopics.includes('nova')
+                hasNotificationPermission &&
+                subscribedTopics.includes('starfall')
               }
-              onToggle={() => handleTopicToggle(['nova'], 'Nova')}
+              onToggle={() => handleTopicToggle(['starfall'], 'Starfall')}
             />
             <TopicToggleButton
               label="General"
@@ -675,14 +676,14 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
               onToggle={() => handleTopicToggle(['general'], 'General')}
             />
             <TopicToggleButton
-              label="Both (Nova + General)"
+              label="Both (Starfall + General)"
               isSubscribed={
                 hasNotificationPermission &&
-                subscribedTopics.includes('nova') &&
+                subscribedTopics.includes('starfall') &&
                 subscribedTopics.includes('general')
               }
               onToggle={() =>
-                handleTopicToggle(['nova', 'general'], 'both topics')
+                handleTopicToggle(['starfall', 'general'], 'both topics')
               }
             />
           </YStack>

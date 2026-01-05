@@ -8,11 +8,11 @@ import { Text, XStack, YStack } from 'tamagui';
 import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-export interface NovaPINProps {
+export interface StarfallPINProps {
   code: string;
 }
 
-export const NovaPIN: React.FC<NovaPINProps> = ({ code }) => {
+export const StarfallPIN: React.FC<StarfallPINProps> = ({ code }) => {
   // Split the code into individual digits (expects 4 digits)
   const digits = code.split('').slice(0, 4);
 
