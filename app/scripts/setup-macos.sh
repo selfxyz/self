@@ -92,16 +92,16 @@ echo -e "\n${C}${BOLD}═══ Self.xyz macOS Setup ═══${NC}\n"
 if [[ "$CHECK_ONLY" == false && "$AUTO_YES" == false ]]; then
   echo "How would you like to run the setup?"
   echo ""
-  echo "  1) Full setup - check and install missing dependencies (recommended)"
-  echo "  2) Check only - just show what's installed/missing"
+  echo "  1) Check only - just show what's installed/missing"
+  echo "  2) Interactive setup - check and confirm before installing (recommended)"
   echo "  3) Auto-install - install everything without prompts"
   echo ""
   read -p "Enter choice [1]: " -n 1 -r choice
   echo ""
   case $choice in
-    2) CHECK_ONLY=true ;;
+    2) ;; # interactive setup
     3) AUTO_YES=true ;;
-    *) ;; # default: interactive full setup
+    *) CHECK_ONLY=true ;; # default: check only
   esac
   echo ""
 fi
