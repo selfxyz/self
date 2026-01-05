@@ -25,6 +25,7 @@ import { setupUniversalLinkListenerInNavigation } from '@/navigation/deeplinks';
 import devScreens from '@/navigation/devTools';
 import documentsScreens from '@/navigation/documents';
 import homeScreens from '@/navigation/home';
+import novaScreens from '@/navigation/nova';
 import onboardingScreens from '@/navigation/onboarding';
 import sharedScreens from '@/navigation/shared';
 import verificationScreens from '@/navigation/verification';
@@ -41,6 +42,7 @@ export const navigationScreens = {
   ...verificationScreens,
   ...accountScreens,
   ...sharedScreens,
+  ...novaScreens,
   ...devScreens, // allow in production for testing
 };
 
@@ -158,7 +160,7 @@ export type RootStackParamList = Omit<
   Gratification: {
     points?: number;
   };
-  NovaCode: undefined;
+  NovaPushCode: undefined;
 
   // Home screens
   Home: {
