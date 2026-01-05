@@ -20,18 +20,17 @@ import {
   zinc800,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import StarfallBackground from '@/assets/images/bg_starfall_push.png';
 import { StarfallPIN } from '@/components/starfall/StarfallPIN';
 import { confirmTap } from '@/integrations/haptics';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 
 // Placeholder code for initial implementation
 const PLACEHOLDER_CODE = '8024';
 
 const StarfallPushCodeScreen: React.FC = () => {
   const navigation = useNavigation();
-  const bottomPadding = useSafeBottomPadding();
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopyCode = async () => {
@@ -55,127 +54,129 @@ const StarfallPushCodeScreen: React.FC = () => {
   };
 
   return (
-    <View flex={1} backgroundColor={black}>
-      {/* Colorful background image */}
-      <ImageBackground
-        source={StarfallBackground}
-        style={StyleSheet.absoluteFill}
-        resizeMode="cover"
-      >
-        {/* Fade to black overlay - stronger at bottom */}
-        <LinearGradient
-          colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.6)', black]}
-          locations={[0.1, 0.45, 0.6]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
+    <ExpandableBottomLayout.Layout backgroundColor={black}>
+      <ExpandableBottomLayout.TopSection backgroundColor={black}>
+        {/* Colorful background image */}
+        <ImageBackground
+          source={StarfallBackground}
           style={StyleSheet.absoluteFill}
-        />
-      </ImageBackground>
-
-      {/* Content container */}
-      <YStack flex={1} justifyContent="center" alignItems="center">
-        {/* App logos section */}
-        <XStack gap={10} alignItems="center" marginBottom={20}>
-          {/* Aave logo placeholder */}
-          <View
-            width={46}
-            height={46}
-            backgroundColor="#9391f7"
-            borderRadius={3}
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Text color={white} fontSize={20} fontWeight="bold">
-              A
-            </Text>
-          </View>
-
-          {/* Arrow symbol */}
-          <Text
-            fontFamily="SF Pro"
-            fontSize={18}
-            fontWeight="600"
-            color={white}
-          >
-            􁁛
-          </Text>
-
-          {/* Self logo placeholder */}
-          <View
-            width={46}
-            height={46}
-            backgroundColor={black}
-            borderRadius={3}
-            borderWidth={1}
-            borderColor={zinc800}
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Text color={white} fontSize={20} fontWeight="bold">
-              S
-            </Text>
-          </View>
-        </XStack>
-
-        {/* Title and content */}
-        <YStack
-          paddingHorizontal={20}
-          paddingVertical={20}
-          gap={12}
-          alignItems="center"
-          width="100%"
+          resizeMode="cover"
         >
-          <Text
-            fontFamily={advercase}
-            fontSize={28}
-            fontWeight="400"
-            color={white}
-            textAlign="center"
-            letterSpacing={1}
-          >
-            Your Starfall code awaits
-          </Text>
+          {/* Fade to black overlay - stronger at bottom */}
+          <LinearGradient
+            colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.6)', black]}
+            locations={[0.1, 0.45, 0.6]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+        </ImageBackground>
 
-          <YStack gap={16} width="100%" alignItems="center">
-            <View paddingHorizontal={40} width="100%">
-              <Text
-                fontFamily={dinot}
-                fontSize={14}
-                fontWeight="500"
-                color={white}
-                textAlign="center"
-              >
-                Open Starfall in Opera MiniPay and enter this four digit code to
-                continue your journey.
+        {/* Content container */}
+        <YStack flex={1} justifyContent="center" alignItems="center">
+          {/* App logos section */}
+          <XStack gap={10} alignItems="center" marginBottom={20}>
+            {/* Aave logo placeholder */}
+            <View
+              width={46}
+              height={46}
+              backgroundColor="#9391f7"
+              borderRadius={3}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text color={white} fontSize={20} fontWeight="bold">
+                A
               </Text>
             </View>
 
-            <View width="100%">
-              <StarfallPIN code={PLACEHOLDER_CODE} />
+            {/* Arrow symbol */}
+            <Text
+              fontFamily="SF Pro"
+              fontSize={18}
+              fontWeight="600"
+              color={white}
+            >
+              􁁛
+            </Text>
+
+            {/* Self logo placeholder */}
+            <View
+              width={46}
+              height={46}
+              backgroundColor={black}
+              borderRadius={3}
+              borderWidth={1}
+              borderColor={zinc800}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text color={white} fontSize={20} fontWeight="bold">
+                S
+              </Text>
             </View>
+          </XStack>
+
+          {/* Title and content */}
+          <YStack
+            paddingHorizontal={20}
+            paddingVertical={20}
+            gap={12}
+            alignItems="center"
+            width="100%"
+          >
+            <Text
+              fontFamily={advercase}
+              fontSize={28}
+              fontWeight="400"
+              color={white}
+              textAlign="center"
+              letterSpacing={1}
+            >
+              Your Starfall code awaits
+            </Text>
+
+            <YStack gap={16} width="100%" alignItems="center">
+              <View paddingHorizontal={40} width="100%">
+                <Text
+                  fontFamily={dinot}
+                  fontSize={14}
+                  fontWeight="500"
+                  color={white}
+                  textAlign="center"
+                >
+                  Open Starfall in Opera MiniPay and enter this four digit code
+                  to continue your journey.
+                </Text>
+              </View>
+
+              <View width="100%">
+                <StarfallPIN code={PLACEHOLDER_CODE} />
+              </View>
+            </YStack>
           </YStack>
         </YStack>
-      </YStack>
+      </ExpandableBottomLayout.TopSection>
 
-      {/* Bottom buttons */}
-      <YStack
-        gap={10}
-        paddingHorizontal={20}
-        paddingBottom={bottomPadding + 20}
-        width="100%"
+      <ExpandableBottomLayout.BottomSection
+        backgroundColor={black}
+        style={{ backgroundColor: black }}
       >
-        <PrimaryButton
-          onPress={handleCopyCode}
-          disabled={isCopied}
-          style={{
-            backgroundColor: isCopied ? green500 : undefined,
-          }}
-        >
-          {isCopied ? 'Code copied!' : 'Copy code'}
-        </PrimaryButton>
-        <SecondaryButton onPress={handleDismiss}>Dismiss</SecondaryButton>
-      </YStack>
-    </View>
+        {/* Bottom buttons */}
+        <YStack gap={10} width="100%">
+          <PrimaryButton
+            onPress={handleCopyCode}
+            disabled={isCopied}
+            style={{
+              backgroundColor: isCopied ? green500 : undefined,
+            }}
+          >
+            {isCopied ? 'Code copied!' : 'Copy code'}
+          </PrimaryButton>
+          <SecondaryButton onPress={handleDismiss}>Dismiss</SecondaryButton>
+        </YStack>
+      </ExpandableBottomLayout.BottomSection>
+    </ExpandableBottomLayout.Layout>
   );
 };
 
