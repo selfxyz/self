@@ -158,6 +158,7 @@ export type RootStackParamList = Omit<
   Gratification: {
     points?: number;
   };
+  NovaCode: undefined;
 
   // Home screens
   Home: {

@@ -14,6 +14,7 @@ import LoadingScreen from '@/screens/app/LoadingScreen';
 import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
 import ModalScreen from '@/screens/app/ModalScreen';
 import SplashScreen from '@/screens/app/SplashScreen';
+import NovaCodeScreen from '@/screens/nova/NovaCodeScreen';
 
 const appScreens = {
   Loading: {
@@ -59,6 +60,12 @@ const appScreens = {
     params: {} as {
       points?: number;
     },
+  },
+  NovaCode: {
+    screen: NovaCodeScreen,
+    options: {
+      headerShown: false,
+    } as NativeStackNavigationOptions,
   },
 };
 
