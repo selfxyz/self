@@ -8633,6 +8633,7 @@ __metadata:
     eslint-plugin-sort-exports: "npm:^0.9.1"
     ethers: "npm:^6.11.0"
     expo-application: "npm:^7.0.7"
+    expo-linear-gradient: "npm:^15.0.8"
     expo-modules-core: "npm:^2.2.1"
     hash.js: "npm:^1.1.7"
     hermes-eslint: "npm:^0.19.1"
@@ -21322,6 +21323,17 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: 10c0/3926cb3e0be1ea82ee991cab55c0b7baf40a5b4ec5812857fc4c8fe1cb63b9dc5e94b2a7030b0cb1d6288d2a4877459f775118075d72b868fd19b57b5b789981
+  languageName: node
+  linkType: hard
+
+"expo-linear-gradient@npm:^15.0.8":
+  version: 15.0.8
+  resolution: "expo-linear-gradient@npm:15.0.8"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/2ac3bff62143083e3d5b894fccc4c76de058277f65ed123232636cf26c88da6d566fa3cd46be4101f86e66b89ede7c058e12c93493b752df562da2fa971dcd66
   languageName: node
   linkType: hard
 

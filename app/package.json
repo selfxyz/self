@@ -128,6 +128,7 @@
     "elliptic": "^6.6.1",
     "ethers": "^6.11.0",
     "expo-application": "^7.0.7",
+    "expo-linear-gradient": "^15.0.8",
     "expo-modules-core": "^2.2.1",
     "hash.js": "^1.1.7",
     "js-sha1": "^0.7.0",
