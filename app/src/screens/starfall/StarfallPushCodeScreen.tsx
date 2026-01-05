@@ -3,9 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { ImageBackground, StyleSheet } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { Text, View, XStack, YStack } from 'tamagui';
-import { LinearGradient } from 'tamagui/linear-gradient';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 
@@ -22,6 +22,7 @@ import {
 import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
+import StarfallBackground from '@/assets/images/bg_starfall_push.png';
 import { StarfallPIN } from '@/components/starfall/StarfallPIN';
 import { confirmTap } from '@/integrations/haptics';
 
@@ -55,14 +56,21 @@ const StarfallPushCodeScreen: React.FC = () => {
 
   return (
     <View flex={1} backgroundColor={black}>
-      {/* Background gradient overlay */}
-      <LinearGradient
-        colors={['rgba(0, 0, 0, 0)', black]}
-        locations={[0.46562, 0.86729]}
-        start={[0, 0]}
-        end={[0, 1]}
+      {/* Colorful background image */}
+      <ImageBackground
+        source={StarfallBackground}
         style={StyleSheet.absoluteFill}
-      />
+        resizeMode="cover"
+      >
+        {/* Fade to black overlay - stronger at bottom */}
+        <LinearGradient
+          colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.6)', black]}
+          locations={[0.1, 0.45, 0.6]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </ImageBackground>
 
       {/* Content container */}
       <YStack flex={1} justifyContent="center" alignItems="center">
@@ -137,8 +145,8 @@ const StarfallPushCodeScreen: React.FC = () => {
                 color={white}
                 textAlign="center"
               >
-                Open Starfall in Opera MiniPay and enter this four digit code
-                to continue your journey.
+                Open Starfall in Opera MiniPay and enter this four digit code to
+                continue your journey.
               </Text>
             </View>
 
