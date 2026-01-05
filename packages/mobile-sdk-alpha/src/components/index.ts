@@ -33,6 +33,7 @@ export { PrimaryButton } from './buttons/PrimaryButton';
 export { RoundFlag } from './flag/RoundFlag';
 
 export { SecondaryButton } from './buttons/SecondaryButton';
+export type { SecondaryButtonProps } from './buttons/SecondaryButton';
 
 export { SubHeader } from './typography/SubHeader';
 

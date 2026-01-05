@@ -167,13 +167,26 @@ const StarfallPushCodeScreen: React.FC = () => {
           <PrimaryButton
             onPress={handleCopyCode}
             disabled={isCopied}
+            fontSize={16}
             style={{
               backgroundColor: isCopied ? green500 : undefined,
+              borderColor: '#374151',
+              borderWidth: 1,
+              borderRadius: 60,
+              height: 46,
+              paddingVertical: 0,
             }}
           >
             {isCopied ? 'Code copied!' : 'Copy code'}
           </PrimaryButton>
-          <SecondaryButton onPress={handleDismiss}>Dismiss</SecondaryButton>
+          <SecondaryButton
+            onPress={handleDismiss}
+            textColor={black}
+            fontSize={16}
+            style={{ borderRadius: 60, height: 46, paddingVertical: 0 }}
+          >
+            Dismiss
+          </SecondaryButton>
         </YStack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

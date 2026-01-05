@@ -44,8 +44,6 @@ export const StarfallPIN: React.FC<StarfallPINProps> = ({ code }) => {
           borderWidth={1}
           borderColor="rgba(255, 255, 255, 0.2)"
           paddingHorizontal={12}
-          paddingTop={0}
-          paddingBottom={6}
         >
           <Text
             fontFamily={dinot}
