@@ -13,6 +13,7 @@ import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
+import IDSelectorTestScreen from '@/screens/dev/IDSelectorTestScreen';
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {
@@ -78,6 +79,13 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'Dev Loading Screen',
+    } as NativeStackNavigationOptions,
+  },
+  IDSelectorTest: {
+    screen: IDSelectorTestScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'ID Selector Test',
     } as NativeStackNavigationOptions,
   },
 };

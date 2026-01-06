@@ -175,6 +175,9 @@ jest.mock('@tamagui/lucide-icons', () => {
     ExternalLink: makeIcon('external-link'),
     X: makeIcon('x'),
     Clipboard: makeIcon('clipboard'),
+    Check: makeIcon('check'),
+    Circle: makeIcon('circle'),
+    ChevronDown: makeIcon('chevron-down'),
   };
 });
 

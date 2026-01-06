@@ -65,6 +65,7 @@ describe('navigation', () => {
         'Gratification',
         'Home',
         'IDPicker',
+        'IDSelectorTest',
         'IdDetails',
         'Loading',
         'ManageDocuments',

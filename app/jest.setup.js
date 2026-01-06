@@ -139,6 +139,7 @@ jest.mock('react-native', () => {
     ScrollView: 'ScrollView',
     TouchableOpacity: 'TouchableOpacity',
     TouchableHighlight: 'TouchableHighlight',
+    Pressable: 'Pressable',
     Image: 'Image',
     ActivityIndicator: 'ActivityIndicator',
     SafeAreaView: 'SafeAreaView',
