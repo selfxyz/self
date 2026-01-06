@@ -9,36 +9,26 @@ export type { ViewProps } from './layout/View';
 
 // Button components
 export { default as AbstractButton } from './buttons/AbstractButton';
-export { Button } from './layout/Button';
-export { HeldPrimaryButton } from './buttons/PrimaryButtonLongHold';
-export { HeldPrimaryButtonProveScreen } from './buttons/HeldPrimaryButtonProveScreen';
-export { PrimaryButton } from './buttons/PrimaryButton';
-export { SecondaryButton } from './buttons/SecondaryButton';
-export { pressedStyle } from './buttons/pressedStyle';
-
-// Typography components
 export { default as Additional } from './typography/Additional';
 export { BodyText } from './typography/BodyText';
+export { Button } from './layout/Button';
+export { default as ButtonsContainer } from './ButtonsContainer';
 export { Caption } from './typography/Caption';
 export { default as Caution } from './typography/Caution';
 export { default as Description } from './typography/Description';
 export { DescriptionTitle } from './typography/DescriptionTitle';
+export { HeldPrimaryButton } from './buttons/PrimaryButtonLongHold';
+export { HeldPrimaryButtonProveScreen } from './buttons/HeldPrimaryButtonProveScreen';
+export { MRZScannerView } from './MRZScannerView';
+export { PrimaryButton } from './buttons/PrimaryButton';
+export { RoundFlag } from './flag/RoundFlag';
+export { SecondaryButton } from './buttons/SecondaryButton';
 export { SubHeader } from './typography/SubHeader';
-export { Title } from './typography/Title';
-export { typography } from './typography/styles';
-
-// Layout components
 export { Text } from './layout/Text';
+export { default as TextsContainer } from './TextsContainer';
+export { Title } from './typography/Title';
 export { View } from './layout/View';
 export { XStack } from './layout/XStack';
 export { YStack } from './layout/YStack';
-
-// Container components
-export { default as ButtonsContainer } from './ButtonsContainer';
-export { default as TextsContainer } from './TextsContainer';
-
-// Scanner components
-export { MRZScannerView } from './MRZScannerView';
-
-// Flag components
-export { RoundFlag } from './flag/RoundFlag';
+export { pressedStyle } from './buttons/pressedStyle';
+export { typography } from './typography/styles';
