@@ -84,6 +84,7 @@ describe('navigation', () => {
         'Settings',
         'ShowRecoveryPhrase',
         'Splash',
+        'StarfallPushCode',
         'WebView',
       ]);
     });

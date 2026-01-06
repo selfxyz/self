@@ -54,6 +54,7 @@ const StarfallPushCodeScreen: React.FC = () => {
     } catch (err) {
       console.error('Failed to fetch push code:', err);
       setError('Failed to generate code. Please try again.');
+      setCode(null); // Clear stale code on error
     } finally {
       setIsLoading(false);
     }
