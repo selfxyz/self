@@ -1031,6 +1031,9 @@ jest.mock('@react-native-clipboard/clipboard', () => ({
   hasString: jest.fn().mockResolvedValue(false),
 }));
 
+// Mock react-native-linear-gradient
+jest.mock('react-native-linear-gradient', () => 'LinearGradient');
+
 // Mock react-native-localize
 jest.mock('react-native-localize', () => ({
   getLocales: jest.fn().mockReturnValue([

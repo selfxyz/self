@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ImageBackground, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text, View, XStack, YStack } from 'tamagui';
@@ -39,6 +39,7 @@ const StarfallPushCodeScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleFetchCode = async () => {
     try {
@@ -58,6 +59,15 @@ const StarfallPushCodeScreen: React.FC = () => {
     }
   };
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleRetry = () => {
     handleFetchCode();
   };
@@ -72,9 +82,15 @@ const StarfallPushCodeScreen: React.FC = () => {
       await Clipboard.setString(code);
       setIsCopied(true);
 
+      // Clear any existing timeout before creating a new one
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+
       // Reset after 1.65 seconds
-      setTimeout(() => {
+      copyTimeoutRef.current = setTimeout(() => {
         setIsCopied(false);
+        copyTimeoutRef.current = null;
       }, 1650);
     } catch (copyError) {
       console.error('Failed to copy to clipboard:', copyError);

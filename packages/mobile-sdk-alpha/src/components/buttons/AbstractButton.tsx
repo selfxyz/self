@@ -62,8 +62,7 @@ export default function AbstractButton({
 
   // Extract border from style prop if provided there
   const flatStyle = StyleSheet.flatten(style) as ViewStyle | undefined;
-  const { borderColor: styleBorderColor, borderWidth: styleBorderWidth, restStyle } =
-    extractBorderFromStyle(flatStyle);
+  const { borderColor: styleBorderColor, borderWidth: styleBorderWidth, restStyle } = extractBorderFromStyle(flatStyle);
 
   // Props take precedence over style
   const borderColor = propBorderColor ?? styleBorderColor;

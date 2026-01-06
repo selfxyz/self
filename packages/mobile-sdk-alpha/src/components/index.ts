@@ -2,18 +2,23 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+export type { SecondaryButtonProps } from './buttons/SecondaryButton';
+
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 export type { ViewProps } from './layout/View';
 
+// Typography components
 export { default as AbstractButton } from './buttons/AbstractButton';
 
-// Typography components
-export { default as Additional } from './typography/Additional';
-
 // Layout components
+export { default as Additional } from './typography/Additional';
 export { BodyText } from './typography/BodyText';
 export { Button } from './layout/Button';
 export { default as ButtonsContainer } from './ButtonsContainer';
 export { Caption } from './typography/Caption';
+
 export { default as Caution } from './typography/Caution';
 
 export { default as Description } from './typography/Description';
@@ -24,16 +29,14 @@ export { HeldPrimaryButton } from './buttons/PrimaryButtonLongHold';
 
 export { HeldPrimaryButtonProveScreen } from './buttons/HeldPrimaryButtonProveScreen';
 
+// Button components
 export { MRZScannerView } from './MRZScannerView';
 
-// Button components
+// Flag components
 export { PrimaryButton } from './buttons/PrimaryButton';
 
-// Flag components
 export { RoundFlag } from './flag/RoundFlag';
-
 export { SecondaryButton } from './buttons/SecondaryButton';
-export type { SecondaryButtonProps } from './buttons/SecondaryButton';
 
 export { SubHeader } from './typography/SubHeader';
 
