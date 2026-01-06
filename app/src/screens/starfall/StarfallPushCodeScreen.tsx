@@ -28,26 +28,56 @@ import SelfLogo from '@/assets/logos/self.svg';
 import { StarfallPIN } from '@/components/starfall/StarfallPIN';
 import { confirmTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { getOrGeneratePointsAddress } from '@/providers/authProvider';
+import { fetchPushCode } from '@/services/starfall/pushCodeService';
 
-// Placeholder code for initial implementation
-const PLACEHOLDER_CODE = '8024';
+const DASH_CODE = '----';
 
 const StarfallPushCodeScreen: React.FC = () => {
   const navigation = useNavigation();
+  const [code, setCode] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
 
+  const handleFetchCode = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      confirmTap();
+
+      const walletAddress = await getOrGeneratePointsAddress();
+      const fetchedCode = await fetchPushCode(walletAddress);
+
+      setCode(fetchedCode);
+    } catch (err) {
+      console.error('Failed to fetch push code:', err);
+      setError('Failed to generate code. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRetry = () => {
+    handleFetchCode();
+  };
+
   const handleCopyCode = async () => {
+    if (!code || code === DASH_CODE) {
+      return;
+    }
+
     try {
       confirmTap();
-      await Clipboard.setString(PLACEHOLDER_CODE);
+      await Clipboard.setString(code);
       setIsCopied(true);
 
       // Reset after 1.65 seconds
       setTimeout(() => {
         setIsCopied(false);
       }, 1650);
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
+    } catch (copyError) {
+      console.error('Failed to copy to clipboard:', copyError);
     }
   };
 
@@ -138,8 +168,27 @@ const StarfallPushCodeScreen: React.FC = () => {
               </View>
 
               <View width="100%">
-                <StarfallPIN code={PLACEHOLDER_CODE} />
+                <StarfallPIN
+                  code={
+                    code === null || isLoading || error !== null
+                      ? DASH_CODE
+                      : code
+                  }
+                />
               </View>
+
+              {/* Error message */}
+              {error && (
+                <Text
+                  fontFamily={dinot}
+                  fontSize={14}
+                  fontWeight="500"
+                  color="#ef4444"
+                  textAlign="center"
+                >
+                  {error}
+                </Text>
+              )}
             </YStack>
           </YStack>
         </YStack>
@@ -151,9 +200,42 @@ const StarfallPushCodeScreen: React.FC = () => {
       >
         {/* Bottom buttons */}
         <YStack gap={10} width="100%">
+          {/* Debug: Fetch code button or Retry button on error */}
+          {error ? (
+            <PrimaryButton
+              onPress={handleRetry}
+              disabled={isLoading}
+              fontSize={16}
+              style={{
+                borderColor: '#374151',
+                borderWidth: 1,
+                borderRadius: 60,
+                height: 46,
+                paddingVertical: 0,
+              }}
+            >
+              Retry
+            </PrimaryButton>
+          ) : (
+            <PrimaryButton
+              onPress={handleFetchCode}
+              disabled={isLoading}
+              fontSize={16}
+              style={{
+                borderColor: '#374151',
+                borderWidth: 1,
+                borderRadius: 60,
+                height: 46,
+                paddingVertical: 0,
+              }}
+            >
+              {isLoading ? 'Fetching...' : 'Fetch code'}
+            </PrimaryButton>
+          )}
+
           <PrimaryButton
             onPress={handleCopyCode}
-            disabled={isCopied}
+            disabled={isCopied || !code || code === DASH_CODE || isLoading}
             fontSize={16}
             style={{
               backgroundColor: isCopied ? green500 : undefined,
