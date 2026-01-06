@@ -5,7 +5,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ImageBackground, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { Text, View, XStack, YStack } from 'tamagui';
+import { Text, View, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 
@@ -17,14 +17,11 @@ import {
   black,
   green500,
   white,
-  zinc800,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import CheckmarkIcon from '@/assets/icons/checkmark_white.svg';
 import StarfallBackground from '@/assets/images/bg_starfall_push.png';
-import OperaLogo from '@/assets/logos/opera_minipay.svg';
-import SelfLogo from '@/assets/logos/self.svg';
+import { StarfallLogoHeader } from '@/components/starfall/StarfallLogoHeader';
 import { StarfallPIN } from '@/components/starfall/StarfallPIN';
 import { confirmTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
@@ -125,31 +122,7 @@ const StarfallPushCodeScreen: React.FC = () => {
         {/* Content container */}
         <YStack flex={1} justifyContent="center" alignItems="center">
           {/* App logos section */}
-          <XStack gap={10} alignItems="center" marginBottom={20}>
-            {/* Opera MiniPay logo */}
-            <View width={46} height={46} borderRadius={3} overflow="hidden">
-              <OperaLogo width={46} height={46} />
-            </View>
-
-            {/* Checkmark icon */}
-            <View width={32} height={32}>
-              <CheckmarkIcon width={32} height={32} />
-            </View>
-
-            {/* Self logo */}
-            <View
-              width={46}
-              height={46}
-              backgroundColor={black}
-              borderRadius={3}
-              borderWidth={1}
-              borderColor={zinc800}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <SelfLogo width={28} height={28} />
-            </View>
-          </XStack>
+          <StarfallLogoHeader />
 
           {/* Title and content */}
           <YStack
