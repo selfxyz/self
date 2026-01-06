@@ -20,6 +20,16 @@ export interface ButtonProps extends PressableProps {
   onLayout?: (event: LayoutChangeEvent) => void;
 }
 
+/**
+ * Standard interface for extracting style props from button components.
+ * Use this to separate style-related props from other button props.
+ */
+export interface ExtractedButtonStyleProps {
+  borderWidth?: number;
+  borderColor?: string;
+  fontSize?: number;
+}
+
 interface AbstractButtonProps extends ButtonProps {
   bgColor: string;
   borderColor?: string;
