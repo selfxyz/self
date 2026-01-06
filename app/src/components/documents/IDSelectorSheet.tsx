@@ -132,7 +132,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
               borderWidth={1}
               borderColor={slate300}
               borderRadius={8}
-              paddingVertical={16}
+              height={52}
               onPress={onDismiss}
               testID={`${testID}-dismiss-button`}
             >
@@ -149,7 +149,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
               flex={1}
               backgroundColor={blue600}
               borderRadius={8}
-              paddingVertical={16}
+              height={52}
               onPress={onApprove}
               testID={`${testID}-approve-button`}
             >

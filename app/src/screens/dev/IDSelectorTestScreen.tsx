@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { Switch } from 'react-native';
-import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { Button, ScrollView, Text, YStack } from 'tamagui';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import type { DocumentMetadata } from '@selfxyz/mobile-sdk-alpha';
@@ -25,35 +25,12 @@ import type {
   IDSelectorState,
 } from '@/components/documents';
 import { IDSelectorSheet } from '@/components/documents';
+import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import {
   checkDocumentExpiration,
   getDocumentAttributes,
 } from '@/utils/documentAttributes';
-
-// Mock documents representing all 4 states
-const MOCK_DOCUMENTS: IDSelectorDocument[] = [
-  {
-    id: 'mock-eu-id',
-    name: 'EU ID',
-    state: 'active',
-  },
-  {
-    id: 'mock-french-passport',
-    name: 'French Passport',
-    state: 'verified',
-  },
-  {
-    id: 'mock-developer-passport',
-    name: 'Developer Passport',
-    state: 'not_accepted',
-  },
-  {
-    id: 'mock-aadhaar',
-    name: 'Aadhaar ID',
-    state: 'expired',
-  },
-];
 
 function getDocumentDisplayName(metadata: DocumentMetadata): string {
   const docType = metadata.documentType?.toUpperCase() || 'Document';
@@ -105,18 +82,15 @@ function determineDocumentState(
 }
 
 const IDSelectorTestScreen: React.FC = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { getAllDocuments, loadDocumentCatalog, setSelectedDocument } =
     usePassport();
   const bottomPadding = useSafeBottomPadding(20);
 
-  // Mode toggle
-  const [useMockData, setUseMockData] = useState(true);
-
   // Sheet state
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | undefined>(
-    MOCK_DOCUMENTS[0].id,
-  );
+  const [selectedId, setSelectedId] = useState<string | undefined>();
 
   // Real documents state
   const [documentCatalog, setDocumentCatalog] = useState<DocumentCatalog>({
@@ -146,27 +120,16 @@ const IDSelectorTestScreen: React.FC = () => {
     setLoading(false);
   }, [loadDocumentCatalog, getAllDocuments]);
 
-  // Load real documents on focus if in real mode
+  // Load real documents on focus
   useFocusEffect(
     useCallback(() => {
-      if (!useMockData) {
-        loadRealDocuments();
-      }
-    }, [useMockData, loadRealDocuments]),
+      loadRealDocuments();
+    }, [loadRealDocuments]),
   );
 
-  // Switch to mock data when toggled
-  useEffect(() => {
-    if (useMockData) {
-      setSelectedId(MOCK_DOCUMENTS[0].id);
-    } else {
-      loadRealDocuments();
-    }
-  }, [useMockData, loadRealDocuments]);
-
   // Convert real documents to IDSelectorDocument format
-  const realDocumentsForSheet: IDSelectorDocument[] =
-    documentCatalog.documents.map(metadata => {
+  const documents: IDSelectorDocument[] = documentCatalog.documents.map(
+    metadata => {
       const docData = allDocuments[metadata.id];
       const isSelected = metadata.id === documentCatalog.selectedDocumentId;
 
@@ -175,9 +138,8 @@ const IDSelectorTestScreen: React.FC = () => {
         name: getDocumentDisplayName(metadata),
         state: determineDocumentState(metadata, docData?.data, isSelected),
       };
-    });
-
-  const documents = useMockData ? MOCK_DOCUMENTS : realDocumentsForSheet;
+    },
+  );
 
   const selectedDocument = documents.find(doc => doc.id === selectedId);
   const selectedName = selectedDocument?.name || 'None';
@@ -189,8 +151,7 @@ const IDSelectorTestScreen: React.FC = () => {
   const handleApprove = async () => {
     setSheetOpen(false);
 
-    // If in real mode, actually persist the selection
-    if (!useMockData && selectedId) {
+    if (selectedId) {
       try {
         await setSelectedDocument(selectedId);
         // Reload to reflect changes
@@ -204,11 +165,13 @@ const IDSelectorTestScreen: React.FC = () => {
   const handleDismiss = () => {
     setSheetOpen(false);
     // Reset selection to previous on dismiss
-    if (!useMockData && documentCatalog.selectedDocumentId) {
+    if (documentCatalog.selectedDocumentId) {
       setSelectedId(documentCatalog.selectedDocumentId);
-    } else if (useMockData) {
-      setSelectedId(MOCK_DOCUMENTS[0].id);
     }
+  };
+
+  const handleGenerateMock = () => {
+    navigation.navigate('CreateMock');
   };
 
   return (
@@ -225,105 +188,121 @@ const IDSelectorTestScreen: React.FC = () => {
             ID Selector Test
           </Text>
 
-          {/* Mode Toggle */}
-          <YStack
-            backgroundColor={white}
-            borderRadius={12}
-            padding={16}
-            borderWidth={1}
-            borderColor={slate300}
-          >
-            <XStack alignItems="center" justifyContent="space-between">
-              <YStack gap={4}>
+          {documents.length === 0 ? (
+            /* Empty State */
+            <YStack
+              backgroundColor={white}
+              borderRadius={12}
+              padding={24}
+              borderWidth={1}
+              borderColor={slate300}
+              gap={16}
+              alignItems="center"
+            >
+              <Text
+                fontFamily={dinot}
+                fontSize={18}
+                fontWeight="600"
+                color={black}
+                textAlign="center"
+              >
+                No documents available
+              </Text>
+              <Text
+                fontFamily={dinot}
+                fontSize={14}
+                color={slate500}
+                textAlign="center"
+              >
+                Generate a mock document to test the ID selector
+              </Text>
+              <Button
+                backgroundColor={blue600}
+                borderRadius={8}
+                height={52}
+                onPress={handleGenerateMock}
+                testID="generate-mock-document-button"
+              >
                 <Text
                   fontFamily={dinot}
                   fontSize={16}
                   fontWeight="500"
+                  color={white}
+                >
+                  Generate Mock Document
+                </Text>
+              </Button>
+            </YStack>
+          ) : (
+            <>
+              {/* Current Selection Display */}
+              <YStack
+                backgroundColor={white}
+                borderRadius={12}
+                padding={16}
+                borderWidth={1}
+                borderColor={slate300}
+                gap={8}
+              >
+                <Text fontFamily={dinot} fontSize={14} color={slate500}>
+                  Current Selection:
+                </Text>
+                <Text
+                  fontFamily={dinot}
+                  fontSize={18}
+                  fontWeight="600"
                   color={black}
                 >
-                  {useMockData ? 'Mock Data Mode' : 'Real Documents Mode'}
-                </Text>
-                <Text fontFamily={dinot} fontSize={14} color={slate500}>
-                  {useMockData
-                    ? 'Using hardcoded test data'
-                    : 'Using documents from storage'}
+                  {loading ? 'Loading...' : `Selected: ${selectedName}`}
                 </Text>
               </YStack>
-              <Switch
-                value={!useMockData}
-                onValueChange={value => setUseMockData(!value)}
-                trackColor={{ false: slate300, true: blue600 }}
-                thumbColor={white}
-              />
-            </XStack>
-          </YStack>
 
-          {/* Current Selection Display */}
-          <YStack
-            backgroundColor={white}
-            borderRadius={12}
-            padding={16}
-            borderWidth={1}
-            borderColor={slate300}
-            gap={8}
-          >
-            <Text fontFamily={dinot} fontSize={14} color={slate500}>
-              Current Selection:
-            </Text>
-            <Text
-              fontFamily={dinot}
-              fontSize={18}
-              fontWeight="600"
-              color={black}
-            >
-              {loading ? 'Loading...' : `Selected: ${selectedName}`}
-            </Text>
-          </YStack>
-
-          {/* Document Count */}
-          <YStack
-            backgroundColor={white}
-            borderRadius={12}
-            padding={16}
-            borderWidth={1}
-            borderColor={slate300}
-            gap={8}
-          >
-            <Text fontFamily={dinot} fontSize={14} color={slate500}>
-              Available Documents:
-            </Text>
-            <Text fontFamily={dinot} fontSize={16} color={black}>
-              {documents.length} document{documents.length !== 1 ? 's' : ''}
-            </Text>
-            {documents.map(doc => (
-              <Text
-                key={doc.id}
-                fontFamily={dinot}
-                fontSize={14}
-                color={slate500}
+              {/* Document Count */}
+              <YStack
+                backgroundColor={white}
+                borderRadius={12}
+                padding={16}
+                borderWidth={1}
+                borderColor={slate300}
+                gap={8}
               >
-                • {doc.name} ({doc.state})
-              </Text>
-            ))}
-          </YStack>
+                <Text fontFamily={dinot} fontSize={14} color={slate500}>
+                  Available Documents:
+                </Text>
+                <Text fontFamily={dinot} fontSize={16} color={black}>
+                  {documents.length} document{documents.length !== 1 ? 's' : ''}
+                </Text>
+                {documents.map(doc => (
+                  <Text
+                    key={doc.id}
+                    fontFamily={dinot}
+                    fontSize={14}
+                    color={slate500}
+                  >
+                    • {doc.name} ({doc.state})
+                  </Text>
+                ))}
+              </YStack>
 
-          {/* Open Sheet Button */}
-          <Button
-            backgroundColor={blue600}
-            borderRadius={8}
-            paddingVertical={16}
-            onPress={() => setSheetOpen(true)}
-            testID="open-id-selector-button"
-          >
-            <Text
-              fontFamily={dinot}
-              fontSize={16}
-              fontWeight="500"
-              color={white}
-            >
-              Open ID Selector
-            </Text>
-          </Button>
+              {/* Open Sheet Button */}
+              <Button
+                backgroundColor={blue600}
+                borderRadius={8}
+                height={52}
+                onPress={() => setSheetOpen(true)}
+                testID="open-id-selector-button"
+              >
+                <Text
+                  fontFamily={dinot}
+                  fontSize={16}
+                  fontWeight="500"
+                  color={white}
+                >
+                  Open ID Selector
+                </Text>
+              </Button>
+            </>
+          )}
         </YStack>
       </ScrollView>
 
