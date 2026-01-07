@@ -126,7 +126,10 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
       selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 
       navigationRef.reset(
-        createDeeplinkNavigationState('Prove', correctParentScreen),
+        createDeeplinkNavigationState(
+          'DocumentSelectorForProving',
+          correctParentScreen,
+        ),
       );
 
       return;
@@ -143,7 +146,10 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
     selfClient.getSelfAppState().startAppListener(sessionId);
 
     navigationRef.reset(
-      createDeeplinkNavigationState('Prove', correctParentScreen),
+      createDeeplinkNavigationState(
+        'DocumentSelectorForProving',
+        correctParentScreen,
+      ),
     );
   } else if (mock_passport) {
     try {

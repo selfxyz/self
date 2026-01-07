@@ -7,6 +7,7 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import ProofRequestStatusScreen from '@/screens/verification/ProofRequestStatusScreen';
+import DocumentSelectorForProvingScreen from '@/screens/verification/DocumentSelectorForProvingScreen';
 import ProveScreen from '@/screens/verification/ProveScreen';
 import QRCodeTroubleScreen from '@/screens/verification/QRCodeTroubleScreen';
 import QRCodeViewFinderScreen from '@/screens/verification/QRCodeViewFinderScreen';
@@ -17,6 +18,19 @@ const verificationScreens = {
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
+      gestureEnabled: false,
+    } as NativeStackNavigationOptions,
+  },
+  DocumentSelectorForProving: {
+    screen: DocumentSelectorForProvingScreen,
+    options: {
+      title: 'Select ID',
+      headerStyle: {
+        backgroundColor: black,
+      },
+      headerTitleStyle: {
+        color: white,
+      },
       gestureEnabled: false,
     } as NativeStackNavigationOptions,
   },

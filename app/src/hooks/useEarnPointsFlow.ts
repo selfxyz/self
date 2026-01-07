@@ -40,7 +40,7 @@ export const useEarnPointsFlow = ({
 
     // Use setTimeout to ensure modal dismisses before navigating
     setTimeout(() => {
-      navigation.navigate('Prove');
+      navigation.navigate('DocumentSelectorForProving');
     }, 100);
   }, [selfClient, navigation]);
 
