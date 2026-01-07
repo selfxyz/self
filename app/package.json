@@ -148,7 +148,7 @@
     "react-native-cloud-storage": "^2.2.2",
     "react-native-device-info": "^14.0.4",
     "react-native-dotenv": "^3.4.11",
-    "react-native-edge-to-edge": "^1.6.2",
+    "react-native-edge-to-edge": "^1.7.0",
     "react-native-gesture-handler": "2.19.0",
     "react-native-get-random-values": "^1.11.0",
     "react-native-haptic-feedback": "^2.3.3",
