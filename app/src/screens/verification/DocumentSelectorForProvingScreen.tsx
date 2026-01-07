@@ -216,6 +216,13 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     };
   }, []);
 
+  // Auto-redirect to "no documents" screen when no documents are available
+  useEffect(() => {
+    if (!loading && !error && documentCatalog.documents.length === 0) {
+      navigation.replace('DocumentDataNotFound');
+    }
+  }, [loading, error, documentCatalog.documents.length, navigation]);
+
   const documents = useMemo(() => {
     return documentCatalog.documents.map(metadata => {
       const docData = allDocuments[metadata.id];
@@ -260,10 +267,6 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleAddDocument = () => {
-    navigation.navigate('DocumentOnboarding');
   };
 
   return (
@@ -315,16 +318,10 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
             </View>
           ) : documents.length === 0 ? (
             <View style={styles.statusContainer}>
+              <ActivityIndicator color={blue600} size="small" />
               <Text style={styles.statusText} testID="document-selector-empty">
-                No documents available.
+                Redirecting to add a document...
               </Text>
-              <Pressable
-                onPress={handleAddDocument}
-                style={[styles.actionButton, styles.primaryButton]}
-                testID="document-selector-add-document"
-              >
-                <Text style={styles.primaryButtonText}>Add a Document</Text>
-              </Pressable>
             </View>
           ) : (
             <ScrollView
@@ -432,14 +429,6 @@ const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: 16,
     color: slate500,
-    fontFamily: dinot,
-  },
-  primaryButton: {
-    backgroundColor: blue600,
-  },
-  primaryButtonText: {
-    fontSize: 16,
-    color: white,
     fontFamily: dinot,
   },
   continueButton: {
