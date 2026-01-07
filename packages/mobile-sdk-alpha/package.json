@@ -36,7 +36,7 @@
     },
     "./constants": {
       "types": "./dist/esm/constants/index.d.ts",
-      "react-native": "./src/constants/index.ts",
+      "react-native": "./dist/esm/constants/index.js",
       "import": "./dist/esm/constants/index.js",
       "require": "./dist/cjs/constants/index.cjs"
     },
@@ -47,19 +47,19 @@
     },
     "./constants/analytics": {
       "types": "./dist/esm/constants/analytics.d.ts",
-      "react-native": "./src/constants/analytics.ts",
+      "react-native": "./dist/esm/constants/analytics.js",
       "import": "./dist/esm/constants/analytics.js",
       "require": "./dist/cjs/constants/analytics.cjs"
     },
     "./constants/colors": {
       "types": "./dist/esm/constants/colors.d.ts",
-      "react-native": "./src/constants/colors.ts",
+      "react-native": "./dist/esm/constants/colors.js",
       "import": "./dist/esm/constants/colors.js",
       "require": "./dist/cjs/constants/colors.cjs"
     },
     "./constants/fonts": {
       "types": "./dist/esm/constants/fonts.d.ts",
-      "react-native": "./src/constants/fonts.ts",
+      "react-native": "./dist/esm/constants/fonts.js",
       "import": "./dist/esm/constants/fonts.js",
       "require": "./dist/cjs/constants/fonts.cjs"
     },

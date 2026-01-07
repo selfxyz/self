@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 export {
   AadhaarEvents,
   AppEvents,
@@ -11,6 +15,9 @@ export {
   ProofEvents,
 } from './analytics';
 
+export { NFC_IMAGE } from './images';
+
+export { advercase, dinot, dinotBold, plexMono } from './fonts';
 export {
   amber50,
   amber500,
@@ -48,7 +55,4 @@ export {
   zinc800,
   zinc900,
 } from './colors';
-
-export { advercase, dinot, dinotBold, plexMono } from './fonts';
-export { NFC_IMAGE } from './images';
 export { extraYPadding } from './layout';
