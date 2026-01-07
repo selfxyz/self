@@ -136,8 +136,9 @@ app/android/android-passport-nfc-reader/app/src/main/assets/tessdata/
 # Development & Testing
 # ========================================
 
-# Test coverage
+# Test coverage (but allow docs/coverage for docstring reports)
 **/coverage/
+!docs/coverage/
 **/.nyc_output/
 
 # Test files (optional - you might want AI to see tests)
@@ -260,6 +261,9 @@ circuits/ptau/
 !babel.config.*
 !metro.config.*
 !tamagui.config.ts
+
+# Allow docstring coverage reports (tracked in git for coverage tracking)
+!docs/coverage/*.json
 
 # Ensure source code is accessible
 !**/*.ts

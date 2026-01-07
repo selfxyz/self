@@ -5,12 +5,45 @@ on:
       - dev
       - staging
       - main
-    paths:
-      - "circuits/**"
 jobs:
+  check_changes:
+    runs-on: ubuntu-slim
+    outputs:
+      should_run: ${{ steps.filter.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check if should run
+        id: filter
+        run: |
+          set -e
+          if [[ "${{ github.base_ref }}" == "main" ]] || [[ "${{ github.base_ref }}" == "staging" ]]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "Running for ${{ github.base_ref }} - no path filter"
+          else
+            # For dev branch, check if circuits files changed
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD) || {
+              echo "Error: Failed to diff against base branch"
+              exit 1
+            }
+            if echo "$CHANGED_FILES" | grep -qE "^circuits/"; then
+              echo "should_run=true" >> $GITHUB_OUTPUT
+              echo "Running for dev - circuits files changed"
+            else
+              echo "should_run=false" >> $GITHUB_OUTPUT
+              echo "Skipping for dev - no circuits files changed"
+            fi
+          fi
+
   run_circuit_tests:
-    if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
+    needs: check_changes
+    if: github.event.pull_request.draft == false && needs.check_changes.outputs.should_run == 'true'
+    runs-on:
+      - "self-hosted"
+      - "selfxyz-org"
+      - "ubuntu-24-04"
     environment: development
     permissions:
       contents: read
@@ -18,7 +51,7 @@ jobs:
       CIRCOM_VERSION: "2.1.9"
       CIRCOM_SHA256: "e5575829252d763b7818049df9de2ef9304df834697de77fa63ce7babc23c967"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Circom installation from https://github.com/erhant/circomkit/blob/main/.github/workflows/tests.yml
       - name: Install dependencies
@@ -105,6 +138,14 @@ jobs:
 
       - name: Print Circom version
         run: circom --version
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn

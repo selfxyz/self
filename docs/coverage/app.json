@@ -1,0 +1,214 @@
+{
+  "generatedAt": "2025-12-25T18:56:55.583Z",
+  "label": "Mobile App",
+  "totals": {
+    "exports": 497,
+    "documented": 75,
+    "undocumented": 422,
+    "coverage": 15.09
+  },
+  "undocumentedTotal": 422,
+  "undocumentedSampled": 50,
+  "undocumented": [
+    {
+      "file": "app/src/assets/animations/loader.ts",
+      "symbol": "loadMiscAnimation"
+    },
+    {
+      "file": "app/src/assets/animations/loader.ts",
+      "symbol": "loadPassportAnimation"
+    },
+    {
+      "file": "app/src/components/BackupDocumentationLink.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/Disclosures.tsx",
+      "symbol": "default (local: Disclosures)"
+    },
+    {
+      "file": "app/src/components/ErrorBoundary.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/FeedbackModal.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/FeedbackModalScreen.tsx",
+      "symbol": "FeedbackModalScreenParams"
+    },
+    {
+      "file": "app/src/components/FeedbackModalScreen.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/homescreen/IdCard.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/homescreen/SvgXmlWrapper.native.tsx",
+      "symbol": "SvgXml"
+    },
+    {
+      "file": "app/src/components/homescreen/SvgXmlWrapper.native.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/homescreen/SvgXmlWrapper.web.tsx",
+      "symbol": "SvgXml"
+    },
+    {
+      "file": "app/src/components/homescreen/SvgXmlWrapper.web.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/LoadingUI.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/Mnemonic.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/native/PassportCamera.tsx",
+      "symbol": "PassportCameraProps"
+    },
+    {
+      "file": "app/src/components/native/PassportCamera.tsx",
+      "symbol": "PassportCamera"
+    },
+    {
+      "file": "app/src/components/native/PassportCamera.web.tsx",
+      "symbol": "PassportCameraProps"
+    },
+    {
+      "file": "app/src/components/native/PassportCamera.web.tsx",
+      "symbol": "PassportCamera"
+    },
+    {
+      "file": "app/src/components/native/QRCodeScanner.tsx",
+      "symbol": "QRCodeScannerViewProps"
+    },
+    {
+      "file": "app/src/components/native/QRCodeScanner.tsx",
+      "symbol": "QRCodeScannerView"
+    },
+    {
+      "file": "app/src/components/native/QRCodeScanner.web.tsx",
+      "symbol": "QRCodeScannerViewProps"
+    },
+    {
+      "file": "app/src/components/native/QRCodeScanner.web.tsx",
+      "symbol": "QRCodeScannerView"
+    },
+    {
+      "file": "app/src/components/native/QRCodeScanner.web.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/native/RCTFragment.tsx",
+      "symbol": "FragmentProps"
+    },
+    {
+      "file": "app/src/components/native/RCTFragment.tsx",
+      "symbol": "RCTFragmentViewManagerProps"
+    },
+    {
+      "file": "app/src/components/native/RCTFragment.tsx",
+      "symbol": "RCTFragment"
+    },
+    {
+      "file": "app/src/components/navbar/AadhaarNavBar.tsx",
+      "symbol": "AadhaarNavBar"
+    },
+    {
+      "file": "app/src/components/navbar/BaseNavBar.tsx",
+      "symbol": "LeftAction"
+    },
+    {
+      "file": "app/src/components/navbar/BaseNavBar.tsx",
+      "symbol": "RightAction"
+    },
+    {
+      "file": "app/src/components/navbar/BaseNavBar.tsx",
+      "symbol": "NavBar"
+    },
+    {
+      "file": "app/src/components/navbar/DefaultNavBar.tsx",
+      "symbol": "DefaultNavBar"
+    },
+    {
+      "file": "app/src/components/navbar/DocumentFlowNavBar.tsx",
+      "symbol": "DocumentFlowNavBar"
+    },
+    {
+      "file": "app/src/components/navbar/HeadlessNavForEuclid.tsx",
+      "symbol": "HeadlessNavForEuclid"
+    },
+    {
+      "file": "app/src/components/navbar/HomeNavBar.tsx",
+      "symbol": "HomeNavBar"
+    },
+    {
+      "file": "app/src/components/navbar/IdDetailsNavBar.tsx",
+      "symbol": "IdDetailsNavBar"
+    },
+    {
+      "file": "app/src/components/navbar/Points.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/navbar/PointsNavBar.tsx",
+      "symbol": "PointsNavBar"
+    },
+    {
+      "file": "app/src/components/navbar/WebViewNavBar.tsx",
+      "symbol": "WebViewNavBarProps"
+    },
+    {
+      "file": "app/src/components/navbar/WebViewNavBar.tsx",
+      "symbol": "WebViewNavBar"
+    },
+    {
+      "file": "app/src/components/PointHistoryList.tsx",
+      "symbol": "PointHistoryListProps"
+    },
+    {
+      "file": "app/src/components/PointHistoryList.tsx",
+      "symbol": "PointHistoryList"
+    },
+    {
+      "file": "app/src/components/PointHistoryList.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "app/src/components/referral/CopyReferralButton.tsx",
+      "symbol": "CopyReferralButtonProps"
+    },
+    {
+      "file": "app/src/components/referral/CopyReferralButton.tsx",
+      "symbol": "CopyReferralButton"
+    },
+    {
+      "file": "app/src/components/referral/ReferralHeader.tsx",
+      "symbol": "ReferralHeaderProps"
+    },
+    {
+      "file": "app/src/components/referral/ReferralHeader.tsx",
+      "symbol": "ReferralHeader"
+    },
+    {
+      "file": "app/src/components/referral/ReferralInfo.tsx",
+      "symbol": "ReferralInfoProps"
+    },
+    {
+      "file": "app/src/components/referral/ReferralInfo.tsx",
+      "symbol": "ReferralInfo"
+    },
+    {
+      "file": "app/src/components/referral/ShareButton.tsx",
+      "symbol": "ShareButtonProps"
+    }
+  ]
+}

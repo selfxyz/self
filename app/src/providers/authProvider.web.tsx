@@ -18,10 +18,8 @@ import React, {
 
 import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import analytics from '@/services/analytics';
+import { trackEvent } from '@/services/analytics';
 import type { Mnemonic } from '@/types/mnemonic';
-
-const { trackEvent } = analytics();
 
 type SignedPayload<T> = { signature: string; data: T };
 

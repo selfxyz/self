@@ -1,0 +1,214 @@
+{
+  "generatedAt": "2025-12-25T18:56:56.987Z",
+  "label": "Mobile SDK Alpha",
+  "totals": {
+    "exports": 234,
+    "documented": 77,
+    "undocumented": 157,
+    "coverage": 32.91
+  },
+  "undocumentedTotal": 157,
+  "undocumentedSampled": 50,
+  "undocumented": [
+    {
+      "file": "packages/mobile-sdk-alpha/src/adapters/react-native/nfc-scanner.ts",
+      "symbol": "reactNativeScannerAdapter"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/adapters/web/shims.ts",
+      "symbol": "webNFCScannerShim"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/bridge/nativeEvents.native.ts",
+      "symbol": "addListener"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/bridge/nativeEvents.native.ts",
+      "symbol": "removeListener"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/bridge/nativeEvents.ts",
+      "symbol": "EventHandler"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/bridge/nativeEvents.ts",
+      "symbol": "NativeEventBridge"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/bridge/nativeEvents.ts",
+      "symbol": "addListener"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/bridge/nativeEvents.ts",
+      "symbol": "removeListener"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/AbstractButton.tsx",
+      "symbol": "ButtonProps"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/AbstractButton.tsx",
+      "symbol": "default (local: AbstractButton)"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/HeldPrimaryButtonProveScreen.tsx",
+      "symbol": "HeldPrimaryButtonProveScreen"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/pressedStyle.tsx",
+      "symbol": "pressedStyle"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/PrimaryButton.tsx",
+      "symbol": "PrimaryButton"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/PrimaryButtonLongHold.shared.ts",
+      "symbol": "HeldPrimaryButtonProps"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/PrimaryButtonLongHold.shared.ts",
+      "symbol": "RGBA"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/PrimaryButtonLongHold.shared.ts",
+      "symbol": "ACTION_TIMER"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/PrimaryButtonLongHold.shared.ts",
+      "symbol": "COLORS"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/PrimaryButtonLongHold.tsx",
+      "symbol": "HeldPrimaryButton"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/PrimaryButtonLongHold.web.tsx",
+      "symbol": "HeldPrimaryButton"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/buttons/SecondaryButton.tsx",
+      "symbol": "SecondaryButton"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/ButtonsContainer.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/flag/RoundFlag.tsx",
+      "symbol": "RoundFlag"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/layout/Button.tsx",
+      "symbol": "Button"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/layout/Text.tsx",
+      "symbol": "Text"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/layout/View.tsx",
+      "symbol": "ViewProps"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/layout/View.tsx",
+      "symbol": "View"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/layout/XStack.tsx",
+      "symbol": "XStack"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/layout/YStack.tsx",
+      "symbol": "YStack"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/MRZScannerView.tsx",
+      "symbol": "MRZScannerViewProps"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/MRZScannerView.tsx",
+      "symbol": "MRZScannerView"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/MRZScannerView.tsx",
+      "symbol": "SelfMRZScannerModule"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/RCTFragment.tsx",
+      "symbol": "FragmentProps"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/RCTFragment.tsx",
+      "symbol": "RCTFragmentViewManagerProps"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/RCTFragment.tsx",
+      "symbol": "RCTFragment"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/screens/NFCScannerScreen.tsx",
+      "symbol": "NFCScannerScreen"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/screens/PassportCameraScreen.tsx",
+      "symbol": "PassportCameraScreen"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/screens/QRCodeScreen.tsx",
+      "symbol": "QRCodeScreen"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/TextsContainer.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/typography/Additional.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/typography/BodyText.tsx",
+      "symbol": "BodyText"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/typography/Caption.tsx",
+      "symbol": "Caption"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/typography/Caution.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/typography/Description.tsx",
+      "symbol": "default export"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/typography/DescriptionTitle.tsx",
+      "symbol": "DescriptionTitle"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/typography/styles.ts",
+      "symbol": "typography"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/typography/SubHeader.tsx",
+      "symbol": "SubHeader"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/components/typography/Title.tsx",
+      "symbol": "Title"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/config/defaults.ts",
+      "symbol": "defaultConfig"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/config/merge.ts",
+      "symbol": "mergeConfig"
+    },
+    {
+      "file": "packages/mobile-sdk-alpha/src/constants/analytics.ts",
+      "symbol": "AadhaarEvents"
+    }
+  ]
+}

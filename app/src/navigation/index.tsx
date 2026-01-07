@@ -27,10 +27,11 @@ import documentsScreens from '@/navigation/documents';
 import homeScreens from '@/navigation/home';
 import onboardingScreens from '@/navigation/onboarding';
 import sharedScreens from '@/navigation/shared';
+import starfallScreens from '@/navigation/starfall';
 import verificationScreens from '@/navigation/verification';
 import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
 import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
-import analytics from '@/services/analytics';
+import { trackScreenView } from '@/services/analytics';
 import type { ProofHistory } from '@/stores/proofTypes';
 
 export const navigationScreens = {
@@ -41,6 +42,7 @@ export const navigationScreens = {
   ...verificationScreens,
   ...accountScreens,
   ...sharedScreens,
+  ...starfallScreens,
   ...devScreens, // allow in production for testing
 };
 
@@ -158,6 +160,7 @@ export type RootStackParamList = Omit<
   Gratification: {
     points?: number;
   };
+  StarfallPushCode: undefined;
 
   // Home screens
   Home: {
@@ -195,7 +198,6 @@ declare global {
   }
 }
 
-const { trackScreenView } = analytics();
 const Navigation = createStaticNavigation(AppNavigation);
 
 const NavigationWithTracking = () => {

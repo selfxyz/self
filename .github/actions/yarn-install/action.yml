@@ -15,7 +15,7 @@ runs:
       shell: bash
       run: |
         corepack enable
-        corepack prepare yarn@4.6.0 --activate
+        corepack prepare yarn@4.12.0 --activate
         # Ensure we're using the correct version
         yarn --version
 

@@ -14,7 +14,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build dependencies
@@ -38,11 +38,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Corepack
         run: |
           corepack enable
-          corepack prepare yarn@4.6.0 --activate
+          corepack prepare yarn@4.12.0 --activate
       - name: Restore build artifacts
         id: build-cache
         uses: actions/cache/restore@v4
@@ -67,11 +67,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Corepack
         run: |
           corepack enable
-          corepack prepare yarn@4.6.0 --activate
+          corepack prepare yarn@4.12.0 --activate
       - name: Restore build artifacts
         id: build-cache
         uses: actions/cache/restore@v4
@@ -96,11 +96,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Corepack
         run: |
           corepack enable
-          corepack prepare yarn@4.6.0 --activate
+          corepack prepare yarn@4.12.0 --activate
       - name: Restore build artifacts
         id: build-cache
         uses: actions/cache/restore@v4

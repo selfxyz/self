@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     if: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build dependencies

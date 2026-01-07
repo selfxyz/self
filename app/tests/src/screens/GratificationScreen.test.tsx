@@ -97,7 +97,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
 }));
 
 jest.mock('@/assets/icons/arrow_left.svg', () => 'ArrowLeft');
-jest.mock('@/assets/icons/logo_white.svg', () => 'LogoWhite');
+jest.mock('@/assets/logos/self.svg', () => 'SelfLogo');
 
 const mockUseNavigation = useNavigation as jest.MockedFunction<
   typeof useNavigation

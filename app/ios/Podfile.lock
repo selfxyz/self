@@ -2131,7 +2131,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - Sentry/HybridSDK (= 8.53.2)
     - Yoga
-  - RNSVG (15.15.0):
+  - RNSVG (15.14.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2151,9 +2151,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNSVG/common (= 15.15.0)
+    - RNSVG/common (= 15.14.0)
     - Yoga
-  - RNSVG/common (15.15.0):
+  - RNSVG/common (15.14.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2635,7 +2635,7 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: e526ac4a7ca9fb23c7843ea4fd7d823166054c73
   RNScreens: 806e1449a8ec63c2a4e4cf8a63cc80203ccda9b8
   RNSentry: 6ad982be2c8e32dab912afb4132b6a0d88484ea0
-  RNSVG: 39476f26bbbe72ffe6194c6fc8f6acd588087957
+  RNSVG: e1cf5a9a5aa12c69f2ec47031defbd87ae7fb697
   segment-analytics-react-native: a0c29c75ede1989118b50cac96b9495ea5c91a1d
   Sentry: 59993bffde4a1ac297ba6d268dc4bbce068d7c1b
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748

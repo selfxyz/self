@@ -11,16 +11,20 @@ import {
   checkAndUpdateRegistrationStates,
   getAlternativeCSCA,
 } from '@/proving/validateDocument';
-import analytics from '@/services/analytics';
+import { trackEvent } from '@/services/analytics';
 
 // Mock the analytics module to avoid side effects in tests
-jest.mock('@/services/analytics', () => {
-  // Create mock inside factory to avoid temporal dead zone
-  const mockTrackEvent = jest.fn();
-  return jest.fn(() => ({
-    trackEvent: mockTrackEvent,
-  }));
-});
+jest.mock('@/services/analytics', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    trackEvent: jest.fn(),
+    trackScreenView: jest.fn(),
+    flush: jest.fn(),
+  })),
+  trackEvent: jest.fn(),
+  trackScreenView: jest.fn(),
+  flush: jest.fn(),
+}));
 
 // Mock the passport data provider to avoid database operations
 const mockGetAllDocumentsDirectlyFromKeychain = jest.fn();
@@ -153,8 +157,7 @@ describe('getAlternativeCSCA', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Get the mocked trackEvent from the analytics module
-    const mockAnalytics = jest.mocked(analytics);
-    mockTrackEvent = mockAnalytics().trackEvent as jest.Mock;
+    mockTrackEvent = jest.mocked(trackEvent) as jest.Mock;
   });
 
   it('should return public keys in Record format for Aadhaar with valid public keys', () => {
@@ -245,8 +248,7 @@ describe('checkAndUpdateRegistrationStates', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Get the mocked trackEvent from the analytics module
-    const mockAnalytics = jest.mocked(analytics);
-    mockTrackEvent = mockAnalytics().trackEvent as jest.Mock;
+    mockTrackEvent = jest.mocked(trackEvent) as jest.Mock;
 
     mockGetState.mockReturnValue(
       buildState({

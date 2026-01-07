@@ -46,7 +46,10 @@ import {
   setDefaultDocumentTypeIfNeeded,
   usePassport,
 } from '@/providers/passportDataProvider';
-import { getPointsAddress } from '@/services/points';
+import {
+  getPointsAddress,
+  getWhiteListedDisclosureAddresses,
+} from '@/services/points';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
 import { registerModalCallbacks } from '@/utils';
@@ -66,6 +69,7 @@ const ProveScreen: React.FC = () => {
   const { useProvingStore, useSelfAppStore } = selfClient;
   const selectedApp = useSelfAppStore(state => state.selfApp);
   const selectedAppRef = useRef<typeof selectedApp>(null);
+  const processedSessionsRef = useRef<Set<string>>(new Set());
 
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
@@ -253,16 +257,41 @@ const ProveScreen: React.FC = () => {
       return;
     }
 
-    const enhanceApp = async () => {
-      const address = await getPointsAddress();
+    const sessionId = selectedApp.sessionId;
 
-      // Only update if still the same session
-      if (selectedAppRef.current?.sessionId === selectedApp.sessionId) {
-        console.log('enhancing app with points address', address);
-        selfClient.getSelfAppState().setSelfApp({
-          ...selectedApp,
-          selfDefinedData: address.toLowerCase(),
-        });
+    if (processedSessionsRef.current.has(sessionId)) {
+      return;
+    }
+
+    const enhanceApp = async () => {
+      const currentSessionId = sessionId;
+
+      try {
+        const address = await getPointsAddress();
+        const whitelistedAddresses = await getWhiteListedDisclosureAddresses();
+
+        const isWhitelisted = whitelistedAddresses.some(
+          contract =>
+            contract.contract_address.toLowerCase() === address.toLowerCase(),
+        );
+
+        const currentApp = selfClient.getSelfAppState().selfApp;
+        if (currentApp?.sessionId === currentSessionId) {
+          if (isWhitelisted) {
+            console.log(
+              'enhancing app with whitelisted points address',
+              address,
+            );
+            selfClient.getSelfAppState().setSelfApp({
+              ...currentApp,
+              selfDefinedData: address.toLowerCase(),
+            });
+          }
+        }
+
+        processedSessionsRef.current.add(currentSessionId);
+      } catch (error) {
+        console.error('Failed enhancing app:', error);
       }
     };
 
