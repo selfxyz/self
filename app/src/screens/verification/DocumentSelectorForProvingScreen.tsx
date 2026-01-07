@@ -81,11 +81,9 @@ function determineDocumentState(
     }
   }
 
-  if (metadata.isRegistered) {
-    return 'verified';
-  }
-
-  return 'not_accepted';
+  // Both registered and non-registered documents are valid for selection
+  // They will be registered during the proving flow if needed
+  return 'verified';
 }
 
 const DocumentSelectorForProvingScreen: React.FC = () => {
@@ -453,8 +451,6 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
     gap: 16,
   },
   list: {

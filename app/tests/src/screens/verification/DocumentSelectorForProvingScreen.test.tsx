@@ -315,20 +315,20 @@ describe('DocumentSelectorForProvingScreen', () => {
     });
   });
 
-  it('continue button is disabled when no valid document selected', async () => {
+  it('continue button is disabled when only expired documents exist', async () => {
     const expiredPassport = createMetadata({
       id: 'doc-1',
       documentType: 'us',
       isRegistered: true,
     });
-    const unregisteredCard = createMetadata({
+    const expiredCard = createMetadata({
       id: 'doc-2',
       documentType: 'ca',
       documentCategory: 'id_card',
-      isRegistered: false,
+      isRegistered: true,
     });
     const catalog: DocumentCatalog = {
-      documents: [expiredPassport, unregisteredCard],
+      documents: [expiredPassport, expiredCard],
       selectedDocumentId: 'doc-1',
     };
 
@@ -336,7 +336,7 @@ describe('DocumentSelectorForProvingScreen', () => {
     mockGetAllDocuments.mockResolvedValue(
       createAllDocuments([
         createDocumentEntry(expiredPassport, 'expired'),
-        createDocumentEntry(unregisteredCard),
+        createDocumentEntry(expiredCard, 'expired'),
       ]),
     );
 
@@ -345,6 +345,32 @@ describe('DocumentSelectorForProvingScreen', () => {
     await waitFor(() => {
       expect(getByTestId('document-selector-continue').props.disabled).toBe(
         true,
+      );
+    });
+  });
+
+  it('unregistered documents are selectable for proving', async () => {
+    const unregisteredPassport = createMetadata({
+      id: 'doc-1',
+      documentType: 'us',
+      isRegistered: false,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [unregisteredPassport],
+      selectedDocumentId: 'doc-1',
+    };
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(
+      createAllDocuments([createDocumentEntry(unregisteredPassport)]),
+    );
+
+    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+    await waitFor(() => {
+      // Unregistered documents should be selectable
+      expect(getByTestId('document-selector-continue').props.disabled).toBe(
+        false,
       );
     });
   });
