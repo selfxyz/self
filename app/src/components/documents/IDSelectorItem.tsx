@@ -56,10 +56,6 @@ function getSubtitleColor(state: IDSelectorState): string {
   }
 }
 
-function isDisabledState(state: IDSelectorState): boolean {
-  return state === 'not_accepted' || state === 'expired';
-}
-
 export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
   documentName,
   state,
@@ -124,3 +120,7 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
     </>
   );
 };
+
+export function isDisabledState(state: IDSelectorState): boolean {
+  return state === 'not_accepted' || state === 'expired';
+}

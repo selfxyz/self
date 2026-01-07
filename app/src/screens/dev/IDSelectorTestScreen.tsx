@@ -24,7 +24,7 @@ import type {
   IDSelectorDocument,
   IDSelectorState,
 } from '@/components/documents';
-import { IDSelectorSheet } from '@/components/documents';
+import { IDSelectorSheet, isDisabledState } from '@/components/documents';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import {
@@ -50,13 +50,7 @@ function getDocumentDisplayName(metadata: DocumentMetadata): string {
 function determineDocumentState(
   metadata: DocumentMetadata,
   documentData: IDDocument | undefined,
-  isSelected: boolean,
 ): IDSelectorState {
-  // If selected, show as active
-  if (isSelected) {
-    return 'active';
-  }
-
   // Check if expired
   if (documentData) {
     try {
@@ -110,9 +104,30 @@ const IDSelectorTestScreen: React.FC = () => {
       setDocumentCatalog(catalog);
       setAllDocuments(docs);
 
-      // Set selected to match catalog's selected
+      // Determine the best document to select
       if (catalog.selectedDocumentId) {
-        setSelectedId(catalog.selectedDocumentId);
+        const selectedMeta = catalog.documents.find(
+          d => d.id === catalog.selectedDocumentId,
+        );
+        const docData = docs[catalog.selectedDocumentId];
+
+        // Check if selected doc is still valid (not expired or unregistered)
+        if (selectedMeta && docData) {
+          const state = determineDocumentState(selectedMeta, docData.data);
+          if (isDisabledState(state)) {
+            // Find first valid document instead
+            const firstValid = catalog.documents.find(d => {
+              const dd = docs[d.id];
+              const st = determineDocumentState(d, dd?.data);
+              return !isDisabledState(st);
+            });
+            setSelectedId(firstValid?.id);
+          } else {
+            setSelectedId(catalog.selectedDocumentId);
+          }
+        } else {
+          setSelectedId(catalog.selectedDocumentId);
+        }
       }
     } catch (error) {
       console.warn('Failed to load documents:', error);
@@ -131,12 +146,11 @@ const IDSelectorTestScreen: React.FC = () => {
   const documents: IDSelectorDocument[] = documentCatalog.documents.map(
     metadata => {
       const docData = allDocuments[metadata.id];
-      const isSelected = metadata.id === documentCatalog.selectedDocumentId;
 
       return {
         id: metadata.id,
         name: getDocumentDisplayName(metadata),
-        state: determineDocumentState(metadata, docData?.data, isSelected),
+        state: determineDocumentState(metadata, docData?.data),
       };
     },
   );

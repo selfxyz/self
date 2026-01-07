@@ -23,7 +23,10 @@ import {
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import type { IDSelectorState } from '@/components/documents/IDSelectorItem';
-import { IDSelectorItem } from '@/components/documents/IDSelectorItem';
+import {
+  IDSelectorItem,
+  isDisabledState,
+} from '@/components/documents/IDSelectorItem';
 
 export interface IDSelectorDocument {
   id: string;
@@ -52,6 +55,10 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
   onApprove,
   testID = 'id-selector-sheet',
 }) => {
+  // Check if the selected document is valid (not expired or unregistered)
+  const selectedDoc = documents.find(d => d.id === selectedId);
+  const canApprove = selectedDoc && !isDisabledState(selectedDoc.state);
+
   return (
     <Sheet
       modal
@@ -108,9 +115,11 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
           >
             {documents.map(doc => {
               const isSelected = doc.id === selectedId;
-              const itemState: IDSelectorState = isSelected
-                ? 'active'
-                : doc.state;
+              // Don't override to 'active' if the document is in a disabled state
+              const itemState: IDSelectorState =
+                isSelected && !isDisabledState(doc.state)
+                  ? 'active'
+                  : doc.state;
 
               return (
                 <IDSelectorItem
@@ -147,10 +156,12 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
             </Button>
             <Button
               flex={1}
-              backgroundColor={blue600}
+              backgroundColor={canApprove ? blue600 : slate300}
               borderRadius={8}
               height={52}
               onPress={onApprove}
+              disabled={!canApprove}
+              opacity={canApprove ? 1 : 0.5}
               testID={`${testID}-approve-button`}
             >
               <Text

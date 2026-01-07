@@ -11,5 +11,8 @@ export type {
   IDSelectorItemProps,
   IDSelectorState,
 } from '@/components/documents/IDSelectorItem';
-export { IDSelectorItem } from '@/components/documents/IDSelectorItem';
+export {
+  IDSelectorItem,
+  isDisabledState,
+} from '@/components/documents/IDSelectorItem';
 export { IDSelectorSheet } from '@/components/documents/IDSelectorSheet';
