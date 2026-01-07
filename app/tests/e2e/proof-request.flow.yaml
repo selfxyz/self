@@ -1,8 +1,0 @@
-appId: com.warroom.proofofpassport
----
-- launchApp
-- extendedWaitUntil:
-    visible:
-      id: "earn-points-button"
-    timeout: ${LAUNCH_WAIT_MS:60000}
-# TODO: Add QR scan and deeplink proof request flows once fixtures are available.

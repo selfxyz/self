@@ -42,6 +42,7 @@ import { IDSelectorItem, isDisabledState } from '@/components/documents';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
+import { useSettingStore } from '@/stores/settingStore';
 import {
   checkDocumentExpiration,
   getDocumentAttributes,
@@ -95,6 +96,8 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   const selfApp = useSelfAppStore(state => state.selfApp);
   const { loadDocumentCatalog, getAllDocuments, setSelectedDocument } =
     usePassport();
+  const { skipDocumentSelector, skipDocumentSelectorIfSingle } =
+    useSettingStore();
 
   const [documentCatalog, setDocumentCatalog] = useState<DocumentCatalog>({
     documents: [],
@@ -109,6 +112,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const hasAttemptedSkipRef = useRef(false);
 
   const logoSource = useMemo(() => {
     if (!selfApp?.logoBase64) {
@@ -175,6 +179,9 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
+    // Reset skip attempt flag when reloading
+    hasAttemptedSkipRef.current = false;
+
     setLoading(true);
     setError(null);
     try {
@@ -216,13 +223,6 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     };
   }, []);
 
-  // Auto-redirect to "no documents" screen when no documents are available
-  useEffect(() => {
-    if (!loading && !error && documentCatalog.documents.length === 0) {
-      navigation.replace('DocumentDataNotFound');
-    }
-  }, [loading, error, documentCatalog.documents.length, navigation]);
-
   const documents = useMemo(() => {
     return documentCatalog.documents.map(metadata => {
       const docData = allDocuments[metadata.id];
@@ -239,9 +239,57 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     });
   }, [allDocuments, documentCatalog.documents, selectedDocumentId]);
 
+  const validDocuments = useMemo(
+    () => documents.filter(doc => !isDisabledState(doc.state)),
+    [documents],
+  );
+
   const selectedDocument = documents.find(doc => doc.id === selectedDocumentId);
   const canContinue =
     !!selectedDocument && !isDisabledState(selectedDocument.state);
+
+  // Auto-redirect based on document availability and skip settings
+  useEffect(() => {
+    if (loading || error || hasAttemptedSkipRef.current) {
+      return;
+    }
+
+    // No documents - redirect to onboarding
+    if (validDocuments.length === 0) {
+      hasAttemptedSkipRef.current = true;
+      navigation.replace('DocumentDataNotFound');
+      return;
+    }
+
+    // Check skip settings
+    const shouldSkip =
+      skipDocumentSelector ||
+      (skipDocumentSelectorIfSingle && validDocuments.length === 1);
+
+    if (shouldSkip) {
+      hasAttemptedSkipRef.current = true;
+      // Auto-select and navigate to Prove screen
+      const docToSelect = selectedDocumentId || validDocuments[0].id;
+      setSelectedDocument(docToSelect)
+        .then(() => {
+          navigation.replace('Prove');
+        })
+        .catch(skipError => {
+          console.error('Failed to auto-select document:', skipError);
+          // On error, reset flag to allow retry or manual selection
+          hasAttemptedSkipRef.current = false;
+        });
+    }
+  }, [
+    loading,
+    error,
+    validDocuments,
+    skipDocumentSelector,
+    skipDocumentSelectorIfSingle,
+    selectedDocumentId,
+    setSelectedDocument,
+    navigation,
+  ]);
 
   const handleSelect = (documentId: string) => {
     const document = documents.find(doc => doc.id === documentId);
@@ -316,11 +364,19 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
                 <Text style={styles.retryButtonText}>Retry</Text>
               </Pressable>
             </View>
-          ) : documents.length === 0 ? (
+          ) : validDocuments.length === 0 ? (
             <View style={styles.statusContainer}>
               <ActivityIndicator color={blue600} size="small" />
               <Text style={styles.statusText} testID="document-selector-empty">
                 Redirecting to add a document...
+              </Text>
+            </View>
+          ) : skipDocumentSelector ||
+            (skipDocumentSelectorIfSingle && validDocuments.length === 1) ? (
+            <View style={styles.statusContainer}>
+              <ActivityIndicator color={blue600} size="small" />
+              <Text style={styles.statusText} testID="document-selector-skip">
+                Preparing proof...
               </Text>
             </View>
           ) : (

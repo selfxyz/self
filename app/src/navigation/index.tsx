@@ -143,6 +143,7 @@ export type RootStackParamList = Omit<
         returnToScreen?: 'Points';
       }
     | undefined;
+  ProofSettings: undefined;
   AccountVerifiedSuccess: undefined;
 
   // Proof/Verification screens

@@ -9,10 +9,23 @@ jest.mock('@react-navigation/native', () => {
   const MockNavigator = (props, _ref) => props.children;
   MockNavigator.displayName = 'MockNavigator';
 
+  // `useFocusEffect` should behave like an effect: it should not synchronously run
+  // on every re-render, otherwise any state updates inside the callback can cause
+  // an infinite render loop in tests.
+  const focusEffectCallbacks = new WeakSet();
+
   return {
     useFocusEffect: jest.fn(callback => {
-      // Immediately invoke the effect for testing without requiring a container
-      return callback();
+      // Invoke only once per callback instance (per component mount), similar to
+      // how a real focus effect would run on focus rather than every render.
+      if (
+        typeof callback === 'function' &&
+        !focusEffectCallbacks.has(callback)
+      ) {
+        focusEffectCallbacks.add(callback);
+        return callback();
+      }
+      return undefined;
     }),
     useNavigation: jest.fn(() => ({
       navigate: jest.fn(),

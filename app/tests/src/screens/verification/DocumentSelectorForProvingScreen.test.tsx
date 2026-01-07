@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
@@ -14,10 +13,15 @@ import type {
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { usePassport } from '@/providers/passportDataProvider';
-import DocumentSelectorForProvingScreen from '@/screens/verification/DocumentSelectorForProvingScreen';
+import { DocumentSelectorForProvingScreen } from '@/screens/verification/DocumentSelectorForProvingScreen';
+import { useSettingStore } from '@/stores/settingStore';
 
 jest.mock('@/providers/passportDataProvider', () => ({
   usePassport: jest.fn(),
+}));
+
+jest.mock('@/stores/settingStore', () => ({
+  useSettingStore: jest.fn(),
 }));
 
 jest.mock('@/utils/documentAttributes', () => ({
@@ -38,6 +42,9 @@ const mockUseSelfClient = useSelfClient as jest.MockedFunction<
   typeof useSelfClient
 >;
 const mockUsePassport = usePassport as jest.MockedFunction<typeof usePassport>;
+const mockUseSettingStore = useSettingStore as jest.MockedFunction<
+  typeof useSettingStore
+>;
 
 type MockDocumentEntry = {
   metadata: DocumentMetadata;
@@ -87,30 +94,56 @@ const mockSelfApp = {
   sessionId: 'session-id',
 };
 
+// Stable mock objects to prevent infinite re-renders
+const defaultSettingsState = {
+  skipDocumentSelector: false,
+  skipDocumentSelectorIfSingle: false,
+};
+
+const mockNavigate = jest.fn();
+const mockReplace = jest.fn();
+const mockLoadDocumentCatalog = jest.fn();
+const mockGetAllDocuments = jest.fn();
+const mockSetSelectedDocument = jest.fn();
+
+// Stable passport context to prevent infinite re-renders
+const stablePassportContext = {
+  loadDocumentCatalog: mockLoadDocumentCatalog,
+  getAllDocuments: mockGetAllDocuments,
+  setSelectedDocument: mockSetSelectedDocument,
+};
+
+// Stable navigation object
+const stableNavigation = {
+  navigate: mockNavigate,
+  replace: mockReplace,
+};
+
+// Stable self client selector function
+const stableSelfAppSelector = (
+  selector: (state: { selfApp: typeof mockSelfApp }) => unknown,
+) => selector({ selfApp: mockSelfApp });
+
+// Stable self client object
+const stableSelfClient = {
+  useSelfAppStore: stableSelfAppSelector,
+};
+
 describe('DocumentSelectorForProvingScreen', () => {
-  const mockNavigate = jest.fn();
-  const mockLoadDocumentCatalog = jest.fn();
-  const mockGetAllDocuments = jest.fn();
-  const mockSetSelectedDocument = jest.fn();
+  let currentSettingsState = { ...defaultSettingsState };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    currentSettingsState = { ...defaultSettingsState };
 
-    mockUseNavigation.mockReturnValue({
-      navigate: mockNavigate,
-    } as any);
+    mockUseNavigation.mockReturnValue(stableNavigation as any);
 
-    mockUseSelfClient.mockReturnValue({
-      useSelfAppStore: (
-        selector: (state: { selfApp: typeof mockSelfApp }) => any,
-      ) => selector({ selfApp: mockSelfApp }),
-    } as any);
+    mockUseSelfClient.mockReturnValue(stableSelfClient as any);
 
-    mockUsePassport.mockReturnValue({
-      loadDocumentCatalog: mockLoadDocumentCatalog,
-      getAllDocuments: mockGetAllDocuments,
-      setSelectedDocument: mockSetSelectedDocument,
-    } as any);
+    mockUsePassport.mockReturnValue(stablePassportContext as any);
+
+    // Default: skip settings disabled
+    mockUseSettingStore.mockImplementation(() => currentSettingsState);
   });
 
   it('renders loading state initially', () => {
@@ -140,11 +173,16 @@ describe('DocumentSelectorForProvingScreen', () => {
   });
 
   it('loads and displays all documents from catalog', async () => {
-    const passport = createMetadata({ id: 'doc-1', documentType: 'us' });
+    const passport = createMetadata({
+      id: 'doc-1',
+      documentType: 'us',
+      isRegistered: true,
+    });
     const idCard = createMetadata({
       id: 'doc-2',
       documentType: 'ca',
       documentCategory: 'id_card',
+      isRegistered: true,
     });
     const catalog: DocumentCatalog = {
       documents: [passport, idCard],
@@ -159,10 +197,13 @@ describe('DocumentSelectorForProvingScreen', () => {
       ]),
     );
 
-    const { findByText } = render(<DocumentSelectorForProvingScreen />);
+    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
-    expect(await findByText('US Passport')).toBeTruthy();
-    expect(await findByText('CA ID Card')).toBeTruthy();
+    await waitFor(() => {
+      expect(getByTestId('document-selector-list')).toBeTruthy();
+      expect(getByTestId('document-selector-item-doc-1')).toBeTruthy();
+      expect(getByTestId('document-selector-item-doc-2')).toBeTruthy();
+    });
   });
 
   it('auto-selects currently selected document if valid', async () => {
@@ -419,10 +460,305 @@ describe('DocumentSelectorForProvingScreen', () => {
     mockLoadDocumentCatalog.mockRejectedValue(new Error('failure'));
     mockGetAllDocuments.mockResolvedValue({});
 
+    const consoleWarnSpy = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {});
+
     const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
     await waitFor(() => {
       expect(getByTestId('document-selector-error')).toBeTruthy();
+    });
+
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('retry button reloads documents after an error', async () => {
+    const passport = createMetadata({
+      id: 'doc-1',
+      documentType: 'us',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [passport],
+      selectedDocumentId: 'doc-1',
+    };
+
+    // First attempt fails, retry succeeds
+    mockLoadDocumentCatalog
+      .mockRejectedValueOnce(new Error('failure'))
+      .mockResolvedValueOnce(catalog);
+    mockGetAllDocuments
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce(
+        createAllDocuments([createDocumentEntry(passport)]),
+      );
+
+    const consoleWarnSpy = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {});
+
+    const { getByTestId, queryByTestId } = render(
+      <DocumentSelectorForProvingScreen />,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('document-selector-error')).toBeTruthy();
+    });
+
+    fireEvent.press(getByTestId('document-selector-retry'));
+
+    await waitFor(() => {
+      expect(queryByTestId('document-selector-error')).toBeNull();
+      expect(getByTestId('document-selector-list')).toBeTruthy();
+      expect(getByTestId('document-selector-item-doc-1')).toBeTruthy();
+    });
+
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('shows an error when Continue fails to select the document', async () => {
+    const passport = createMetadata({
+      id: 'doc-1',
+      documentType: 'us',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [passport],
+      selectedDocumentId: 'doc-1',
+    };
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(
+      createAllDocuments([createDocumentEntry(passport)]),
+    );
+    mockSetSelectedDocument.mockRejectedValue(new Error('Selection failed'));
+
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const { getByTestId, getByText } = render(
+      <DocumentSelectorForProvingScreen />,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('document-selector-continue').props.disabled).toBe(
+        false,
+      );
+    });
+
+    fireEvent.press(getByTestId('document-selector-continue'));
+
+    await waitFor(() => {
+      expect(getByTestId('document-selector-error')).toBeTruthy();
+    });
+
+    expect(
+      getByText('Failed to select document. Please try again.'),
+    ).toBeTruthy();
+    expect(mockNavigate).not.toHaveBeenCalledWith('Prove');
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  describe('skip settings', () => {
+    it('redirects to DocumentDataNotFound when no valid documents', async () => {
+      const expiredDoc = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [expiredDoc],
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(expiredDoc, 'expired')]),
+      );
+
+      render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(mockReplace).toHaveBeenCalledWith('DocumentDataNotFound');
+      });
+    });
+
+    it('skips to Prove when skipDocumentSelector is true', async () => {
+      currentSettingsState = {
+        skipDocumentSelector: true,
+        skipDocumentSelectorIfSingle: false,
+      };
+
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const idCard = createMetadata({
+        id: 'doc-2',
+        documentType: 'ca',
+        documentCategory: 'id_card',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport, idCard],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([
+          createDocumentEntry(passport),
+          createDocumentEntry(idCard),
+        ]),
+      );
+      mockSetSelectedDocument.mockResolvedValue(undefined);
+
+      render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
+        expect(mockReplace).toHaveBeenCalledWith('Prove');
+      });
+    });
+
+    it('skips to Prove when single document and skipDocumentSelectorIfSingle is true', async () => {
+      currentSettingsState = {
+        skipDocumentSelector: false,
+        skipDocumentSelectorIfSingle: true,
+      };
+
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(passport)]),
+      );
+      mockSetSelectedDocument.mockResolvedValue(undefined);
+
+      render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
+        expect(mockReplace).toHaveBeenCalledWith('Prove');
+      });
+    });
+
+    it('does not skip with multiple documents when only skipDocumentSelectorIfSingle is true', async () => {
+      currentSettingsState = {
+        skipDocumentSelector: false,
+        skipDocumentSelectorIfSingle: true,
+      };
+
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const idCard = createMetadata({
+        id: 'doc-2',
+        documentType: 'ca',
+        documentCategory: 'id_card',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport, idCard],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([
+          createDocumentEntry(passport),
+          createDocumentEntry(idCard),
+        ]),
+      );
+
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(getByTestId('document-selector-list')).toBeTruthy();
+      });
+
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('shows "Preparing proof..." when skipping', async () => {
+      currentSettingsState = {
+        skipDocumentSelector: true,
+        skipDocumentSelectorIfSingle: false,
+      };
+
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(passport)]),
+      );
+      // Keep the promise pending so it stays in the "Preparing proof..." state
+      mockSetSelectedDocument.mockReturnValue(new Promise(() => {}));
+
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(getByTestId('document-selector-skip')).toBeTruthy();
+      });
+    });
+
+    it('handles auto-select error gracefully when skipping', async () => {
+      currentSettingsState = {
+        skipDocumentSelector: true,
+        skipDocumentSelectorIfSingle: false,
+      };
+
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(passport)]),
+      );
+      mockSetSelectedDocument.mockRejectedValue(new Error('Selection failed'));
+
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(mockSetSelectedDocument).toHaveBeenCalled();
+      });
+
+      // Should not navigate on error
+      expect(mockReplace).not.toHaveBeenCalledWith('Prove');
+
+      consoleErrorSpy.mockRestore();
     });
   });
 });
