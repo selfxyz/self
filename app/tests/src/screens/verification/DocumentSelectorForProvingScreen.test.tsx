@@ -3,8 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useNavigation } from '@react-navigation/native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import type {
   DocumentCatalog,
@@ -13,20 +13,22 @@ import type {
 } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import DocumentSelectorForProvingScreen from '@/screens/verification/DocumentSelectorForProvingScreen';
 import { usePassport } from '@/providers/passportDataProvider';
+import DocumentSelectorForProvingScreen from '@/screens/verification/DocumentSelectorForProvingScreen';
 
 jest.mock('@/providers/passportDataProvider', () => ({
   usePassport: jest.fn(),
 }));
 
 jest.mock('@/utils/documentAttributes', () => ({
-  checkDocumentExpiration: jest.fn((expiryDateSlice: string) =>
-    expiryDateSlice === 'expired',
+  checkDocumentExpiration: jest.fn(
+    (expiryDateSlice: string) => expiryDateSlice === 'expired',
   ),
-  getDocumentAttributes: jest.fn((documentData: { expiryDateSlice?: string }) => ({
-    expiryDateSlice: documentData.expiryDateSlice,
-  })),
+  getDocumentAttributes: jest.fn(
+    (documentData: { expiryDateSlice?: string }) => ({
+      expiryDateSlice: documentData.expiryDateSlice,
+    }),
+  ),
 }));
 
 const mockUseNavigation = useNavigation as jest.MockedFunction<
@@ -68,16 +70,15 @@ const createDocumentEntry = (
 });
 
 const createAllDocuments = (entries: MockDocumentEntry[]) =>
-  entries.reduce<Record<string, { data: IDDocument; metadata: DocumentMetadata }>>(
-    (acc, entry) => {
-      acc[entry.metadata.id] = {
-        data: entry.data,
-        metadata: entry.metadata,
-      };
-      return acc;
-    },
-    {},
-  );
+  entries.reduce<
+    Record<string, { data: IDDocument; metadata: DocumentMetadata }>
+  >((acc, entry) => {
+    acc[entry.metadata.id] = {
+      data: entry.data,
+      metadata: entry.metadata,
+    };
+    return acc;
+  }, {});
 
 const mockSelfApp = {
   appName: 'Example App',
@@ -100,8 +101,9 @@ describe('DocumentSelectorForProvingScreen', () => {
     } as any);
 
     mockUseSelfClient.mockReturnValue({
-      useSelfAppStore: (selector: (state: { selfApp: typeof mockSelfApp }) => any) =>
-        selector({ selfApp: mockSelfApp }),
+      useSelfAppStore: (
+        selector: (state: { selfApp: typeof mockSelfApp }) => any,
+      ) => selector({ selfApp: mockSelfApp }),
     } as any);
 
     mockUsePassport.mockReturnValue({

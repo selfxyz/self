@@ -14,12 +14,12 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import type {
   DocumentCatalog,
   DocumentMetadata,
   IDDocument,
 } from '@selfxyz/common/utils/types';
-import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   black,
@@ -140,10 +140,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
           : undefined;
 
         if (selectedMeta && selectedData) {
-          const state = determineDocumentState(
-            selectedMeta,
-            selectedData.data,
-          );
+          const state = determineDocumentState(selectedMeta, selectedData.data);
           if (!isDisabledState(state)) {
             return catalog.selectedDocumentId;
           }
@@ -249,9 +246,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
             </Text>
           ) : null}
           <Text style={styles.title}>
-            <Text style={styles.appName}>
-              {selfApp?.appName || 'Self'}
-            </Text>{' '}
+            <Text style={styles.appName}>{selfApp?.appName || 'Self'}</Text>{' '}
             <Text style={styles.titleMuted}>
               is requesting you to select an ID to prove your information.
             </Text>
