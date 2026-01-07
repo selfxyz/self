@@ -409,6 +409,7 @@ const config = {
         'react-native-reanimated',
         '@react-native-masked-view/masked-view',
         '@react-native-firebase/analytics',
+        'react-native-b4a',
       ];
 
       if (optionalPeerDependencies.includes(moduleName)) {
