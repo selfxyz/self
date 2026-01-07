@@ -16,7 +16,7 @@ name: Mobile Deploy
 #   - This allows testing from feature branches before merging to dev/staging
 #
 # Version Bump PR: After successful build, creates PR to bump version
-#   - Default target: 'dev' branch (can be overridden with bump_target_branch input)
+#   - Target: 'dev' branch
 #   - Workflow checks out the target branch, applies version changes, and creates PR
 #   - This separates the build source from the version bump destination
 #
@@ -25,8 +25,6 @@ name: Mobile Deploy
 #      - Merge PR to staging → builds from staging → creates version bump PR to dev
 #   2. Testing from feature branch:
 #      - Manually trigger from feature branch → builds from feature branch → creates version bump PR to dev
-#   3. Custom version bump target:
-#      - Set bump_target_branch input → creates version bump PR to specified branch instead of dev
 
 env:
   # Build environment versions
@@ -99,11 +97,6 @@ on:
         required: false
         type: boolean
         default: false
-      bump_target_branch:
-        description: "Target branch for version bump PR (default: dev). NOTE: This is where the version bump PR will be created, NOT the branch to build from. The workflow always builds from the triggering branch."
-        required: false
-        type: string
-        default: "dev"
 
   pull_request:
     types: [closed]
@@ -1301,8 +1294,8 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          # Checkout target branch for version bump PR (default: dev, override with bump_target_branch input)
-          ref: ${{ inputs.bump_target_branch || 'dev' }}
+          # Checkout target branch for version bump PR (always dev)
+          ref: "dev"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -1414,7 +1407,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ needs.bump-version.outputs.version }}"
-          TARGET_BRANCH="${{ inputs.bump_target_branch || 'dev' }}"
+          TARGET_BRANCH="dev"
           # Add timestamp to branch name to avoid collisions
           TIMESTAMP=$(date +%s%N | cut -b1-13)  # Milliseconds since epoch (13 digits)
           BRANCH_NAME="ci/bump-mobile-version-${VERSION}-${TIMESTAMP}"
@@ -1490,8 +1483,8 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          # Checkout target branch for tagging (usually dev)
-          ref: ${{ inputs.bump_target_branch || 'dev' }}
+          # Checkout target branch for tagging (always dev)
+          ref: "dev"
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git

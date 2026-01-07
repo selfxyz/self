@@ -70,11 +70,11 @@
     "update:hub": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK} npx tsx scripts/setRegistry.ts'",
     "update:ofacroot": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK} npx tsx scripts/updateRegistryOfacRoot.ts'",
     "update:pcr0": "npx dotenv-cli -- bash -c 'PCR0_ACTION=${PCR0_ACTION:-add} PCR0_KEY=${PCR0_KEY} yarn hardhat ignition deploy ignition/modules/scripts/updatePCR0.ts --network ${NETWORK:-localhost} --reset'",
+    "upgrade": "npx dotenv-cli -- bash -c 'yarn hardhat upgrade --network ${NETWORK:-localhost}'",
+    "upgrade:history": "yarn hardhat upgrade:history",
     "upgrade:hub": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/upgrade/deployNewHubAndUpgrade.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "upgrade:registry": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/upgrade/deployNewRegistryAndUpgrade.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
-    "upgrade": "npx dotenv-cli -- bash -c 'yarn hardhat upgrade --network ${NETWORK:-localhost}'",
-    "upgrade:status": "npx dotenv-cli -- bash -c 'yarn hardhat upgrade:status --network ${NETWORK:-localhost}'",
-    "upgrade:history": "yarn hardhat upgrade:history"
+    "upgrade:status": "npx dotenv-cli -- bash -c 'yarn hardhat upgrade:status --network ${NETWORK:-localhost}'"
   },
   "dependencies": {
     "@ashpect/smt": "https://github.com/ashpect/smt#main",

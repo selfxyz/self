@@ -8657,7 +8657,7 @@ __metadata:
     react-native-cloud-storage: "npm:^2.2.2"
     react-native-device-info: "npm:^14.0.4"
     react-native-dotenv: "npm:^3.4.11"
-    react-native-edge-to-edge: "npm:^1.6.2"
+    react-native-edge-to-edge: "npm:^1.7.0"
     react-native-gesture-handler: "npm:2.19.0"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-haptic-feedback: "npm:^2.3.3"
@@ -29819,7 +29819,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-edge-to-edge@npm:^1.6.2":
+"react-native-edge-to-edge@npm:^1.7.0":
   version: 1.7.0
   resolution: "react-native-edge-to-edge@npm:1.7.0"
   peerDependencies:
