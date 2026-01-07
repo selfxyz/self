@@ -20,6 +20,7 @@ interface HeldPrimaryButtonProveScreenProps {
   hasScrolledToBottom: boolean;
   isReadyToProve: boolean;
   isDocumentExpired: boolean;
+  hasCheckedForInactiveDocument: boolean;
 }
 
 interface ButtonContext {
@@ -28,6 +29,7 @@ interface ButtonContext {
   isReadyToProve: boolean;
   onVerify: () => void;
   isDocumentExpired: boolean;
+  hasCheckedForInactiveDocument: boolean;
 }
 
 type ButtonEvent =
@@ -37,6 +39,7 @@ type ButtonEvent =
       hasScrolledToBottom: boolean;
       isReadyToProve: boolean;
       isDocumentExpired: boolean;
+      hasCheckedForInactiveDocument: boolean;
     }
   | { type: 'VERIFY' };
 
@@ -55,6 +58,7 @@ const buttonMachine = createMachine(
       isReadyToProve: false,
       onVerify: input.onVerify,
       isDocumentExpired: false,
+      hasCheckedForInactiveDocument: false,
     }),
     on: {
       PROPS_UPDATED: {
@@ -172,13 +176,15 @@ const buttonMachine = createMachine(
             context.selectedAppSessionId !== event.selectedAppSessionId ||
             context.hasScrolledToBottom !== event.hasScrolledToBottom ||
             context.isReadyToProve !== event.isReadyToProve ||
-            context.isDocumentExpired !== event.isDocumentExpired
+            context.isDocumentExpired !== event.isDocumentExpired ||
+            context.hasCheckedForInactiveDocument !== event.hasCheckedForInactiveDocument
           ) {
             return {
               selectedAppSessionId: event.selectedAppSessionId,
               hasScrolledToBottom: event.hasScrolledToBottom,
               isReadyToProve: event.isReadyToProve,
               isDocumentExpired: event.isDocumentExpired,
+              hasCheckedForInactiveDocument: event.hasCheckedForInactiveDocument,
             };
           }
         }
@@ -197,6 +203,7 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
   hasScrolledToBottom,
   isReadyToProve,
   isDocumentExpired,
+  hasCheckedForInactiveDocument,
 }) => {
   const [state, send] = useMachine(buttonMachine, {
     input: { onVerify },
@@ -209,10 +216,18 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
       hasScrolledToBottom,
       isReadyToProve,
       isDocumentExpired,
+      hasCheckedForInactiveDocument,
     });
-  }, [selectedAppSessionId, hasScrolledToBottom, isReadyToProve, isDocumentExpired, send]);
+  }, [
+    selectedAppSessionId,
+    hasScrolledToBottom,
+    isReadyToProve,
+    isDocumentExpired,
+    hasCheckedForInactiveDocument,
+    send,
+  ]);
 
-  const isDisabled = !state.matches('ready');
+  const isDisabled = !state.matches('ready') || !hasCheckedForInactiveDocument;
 
   const renderButtonContent = () => {
     if (isDocumentExpired) {

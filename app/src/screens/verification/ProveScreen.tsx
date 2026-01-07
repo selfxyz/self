@@ -336,12 +336,8 @@ const ProveScreen: React.FC = () => {
   );
 
   function onVerify() {
-    if (!hasCheckedForInactiveDocument) {
-      return;
-    }
-
-    provingStore.setUserConfirmed(selfClient);
     buttonTap();
+    provingStore.setUserConfirmed(selfClient);
     trackEvent(ProofEvents.PROOF_VERIFY_CONFIRMATION_ACCEPTED, {
       appName: selectedApp?.appName,
       sessionId: provingStore.uuid,
@@ -588,6 +584,7 @@ const ProveScreen: React.FC = () => {
           hasScrolledToBottom={hasScrolledToBottom}
           isReadyToProve={isReadyToProve}
           isDocumentExpired={isDocumentExpired}
+          hasCheckedForInactiveDocument={hasCheckedForInactiveDocument}
         />
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
