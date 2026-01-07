@@ -7,6 +7,7 @@ import { Button, ScrollView, Text, YStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { commonNames } from '@selfxyz/common/constants/countries';
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import type { DocumentMetadata } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -32,25 +33,61 @@ import {
   getDocumentAttributes,
 } from '@/utils/documentAttributes';
 
-function getDocumentDisplayName(metadata: DocumentMetadata): string {
-  const docType = metadata.documentType?.toUpperCase() || 'Document';
-  const category = metadata.documentCategory || '';
+/**
+ * Converts a 3-letter country code to its full country name
+ */
+function getCountryName(countryCode: string | null): string | null {
+  if (!countryCode) return null;
+  return commonNames[countryCode as keyof typeof commonNames] || null;
+}
 
-  if (category === 'passport') {
-    return `${docType} Passport`;
-  } else if (category === 'id_card') {
-    return `${docType} ID Card`;
-  } else if (category === 'aadhaar') {
-    return 'Aadhaar ID';
+function getDocumentDisplayName(
+  metadata: DocumentMetadata,
+  documentData?: IDDocument,
+): string {
+  const category = metadata.documentCategory || '';
+  const isMock = metadata.mock;
+
+  // Extract country information from document data
+  let countryCode: string | null = null;
+  if (documentData) {
+    try {
+      const attributes = getDocumentAttributes(documentData);
+      countryCode = attributes.nationalitySlice || null;
+    } catch {
+      // If we can't extract attributes, continue without country
+    }
   }
 
-  return docType;
+  const countryName = getCountryName(countryCode);
+  const mockPrefix = isMock ? 'Developer ' : '';
+
+  if (category === 'passport') {
+    const base = 'Passport';
+    return countryName
+      ? `${mockPrefix}${countryName} ${base}`
+      : `${mockPrefix}${base}`;
+  } else if (category === 'id_card') {
+    const base = 'ID Card';
+    return countryName
+      ? `${mockPrefix}${countryName} ${base}`
+      : `${mockPrefix}${base}`;
+  } else if (category === 'aadhaar') {
+    return isMock ? 'Developer Aadhaar ID' : 'Aadhaar ID';
+  }
+
+  return isMock ? `Developer ${metadata.documentType}` : metadata.documentType;
 }
 
 function determineDocumentState(
   metadata: DocumentMetadata,
   documentData: IDDocument | undefined,
 ): IDSelectorState {
+  // Mock documents are not accepted
+  if (metadata.mock) {
+    return 'not_accepted';
+  }
+
   // Check if expired
   if (documentData) {
     try {
@@ -71,8 +108,8 @@ function determineDocumentState(
     return 'verified';
   }
 
-  // Otherwise, not accepted (not registered)
-  return 'not_accepted';
+  // Real non-registered docs still selectable
+  return 'verified';
 }
 
 const IDSelectorTestScreen: React.FC = () => {
@@ -142,18 +179,32 @@ const IDSelectorTestScreen: React.FC = () => {
     }, [loadRealDocuments]),
   );
 
-  // Convert real documents to IDSelectorDocument format
-  const documents: IDSelectorDocument[] = documentCatalog.documents.map(
-    metadata => {
+  // Convert real documents to IDSelectorDocument format and sort them
+  const documents: IDSelectorDocument[] = documentCatalog.documents
+    .map(metadata => {
       const docData = allDocuments[metadata.id];
 
       return {
         id: metadata.id,
-        name: getDocumentDisplayName(metadata),
+        name: getDocumentDisplayName(metadata, docData?.data),
         state: determineDocumentState(metadata, docData?.data),
       };
-    },
-  );
+    })
+    .sort((a, b) => {
+      // Get metadata for both documents
+      const metaA = documentCatalog.documents.find(d => d.id === a.id);
+      const metaB = documentCatalog.documents.find(d => d.id === b.id);
+
+      // Sort real documents before mock documents
+      if (metaA && metaB) {
+        if (metaA.mock !== metaB.mock) {
+          return metaA.mock ? 1 : -1; // Real first
+        }
+      }
+
+      // Within same type (real/mock), sort alphabetically by name
+      return a.name.localeCompare(b.name);
+    });
 
   const selectedDocument = documents.find(doc => doc.id === selectedId);
   const selectedName = selectedDocument?.name || 'None';
@@ -202,7 +253,36 @@ const IDSelectorTestScreen: React.FC = () => {
             ID Selector Test
           </Text>
 
-          {documents.length === 0 ? (
+          {loading ? (
+            /* Loading State */
+            <YStack
+              backgroundColor={white}
+              borderRadius={12}
+              padding={24}
+              borderWidth={1}
+              borderColor={slate300}
+              gap={16}
+              alignItems="center"
+            >
+              <Text
+                fontFamily={dinot}
+                fontSize={18}
+                fontWeight="600"
+                color={black}
+                textAlign="center"
+              >
+                Loading documents...
+              </Text>
+              <Text
+                fontFamily={dinot}
+                fontSize={14}
+                color={slate500}
+                textAlign="center"
+              >
+                Please wait while we fetch your documents
+              </Text>
+            </YStack>
+          ) : documents.length === 0 ? (
             /* Empty State */
             <YStack
               backgroundColor={white}

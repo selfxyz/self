@@ -21,6 +21,7 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { commonNames } from '@selfxyz/common/constants/countries';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import type {
   DocumentCatalog,
@@ -48,25 +49,62 @@ import {
   getDocumentAttributes,
 } from '@/utils/documentAttributes';
 
-function getDocumentDisplayName(metadata: DocumentMetadata): string {
-  const docType = metadata.documentType?.toUpperCase() || 'Document';
-  const category = metadata.documentCategory || '';
+/**
+ * Converts a 3-letter country code to its full country name
+ */
+function getCountryName(countryCode: string | null): string | null {
+  if (!countryCode) return null;
+  return commonNames[countryCode as keyof typeof commonNames] || null;
+}
 
-  if (category === 'passport') {
-    return `${docType} Passport`;
-  } else if (category === 'id_card') {
-    return `${docType} ID Card`;
-  } else if (category === 'aadhaar') {
-    return 'Aadhaar ID';
+function getDocumentDisplayName(
+  metadata: DocumentMetadata,
+  documentData?: IDDocument,
+): string {
+  const category = metadata.documentCategory || '';
+  const isMock = metadata.mock;
+
+  // Extract country information from document data
+  let countryCode: string | null = null;
+  if (documentData) {
+    try {
+      const attributes = getDocumentAttributes(documentData);
+      countryCode = attributes.nationalitySlice || null;
+    } catch {
+      // If we can't extract attributes, continue without country
+    }
   }
 
-  return docType;
+  const countryName = getCountryName(countryCode);
+  const mockPrefix = isMock ? 'Developer ' : '';
+
+  if (category === 'passport') {
+    const base = 'Passport';
+    return countryName
+      ? `${mockPrefix}${countryName} ${base}`
+      : `${mockPrefix}${base}`;
+  } else if (category === 'id_card') {
+    const base = 'ID Card';
+    return countryName
+      ? `${mockPrefix}${countryName} ${base}`
+      : `${mockPrefix}${base}`;
+  } else if (category === 'aadhaar') {
+    return isMock ? 'Developer Aadhaar ID' : 'Aadhaar ID';
+  }
+
+  return isMock ? `Developer ${metadata.documentType}` : metadata.documentType;
 }
 
 function determineDocumentState(
   metadata: DocumentMetadata,
   documentData: IDDocument | undefined,
 ): IDSelectorState {
+  // Mock documents are not accepted
+  if (metadata.mock) {
+    return 'not_accepted';
+  }
+
+  // Check if expired
   if (documentData) {
     try {
       const attributes = getDocumentAttributes(documentData);
@@ -81,7 +119,7 @@ function determineDocumentState(
     }
   }
 
-  // Both registered and non-registered documents are valid for selection
+  // Both registered and non-registered real documents are valid for selection
   // They will be registered during the proving flow if needed
   return 'verified';
 }
@@ -222,19 +260,35 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   }, []);
 
   const documents = useMemo(() => {
-    return documentCatalog.documents.map(metadata => {
-      const docData = allDocuments[metadata.id];
-      const baseState = determineDocumentState(metadata, docData?.data);
-      const isSelected = metadata.id === selectedDocumentId;
-      const itemState =
-        isSelected && !isDisabledState(baseState) ? 'active' : baseState;
+    return documentCatalog.documents
+      .map(metadata => {
+        const docData = allDocuments[metadata.id];
+        const baseState = determineDocumentState(metadata, docData?.data);
+        const isSelected = metadata.id === selectedDocumentId;
+        const itemState =
+          isSelected && !isDisabledState(baseState) ? 'active' : baseState;
 
-      return {
-        id: metadata.id,
-        name: getDocumentDisplayName(metadata),
-        state: itemState,
-      };
-    });
+        return {
+          id: metadata.id,
+          name: getDocumentDisplayName(metadata, docData?.data),
+          state: itemState,
+        };
+      })
+      .sort((a, b) => {
+        // Get metadata for both documents
+        const metaA = documentCatalog.documents.find(d => d.id === a.id);
+        const metaB = documentCatalog.documents.find(d => d.id === b.id);
+
+        // Sort real documents before mock documents
+        if (metaA && metaB) {
+          if (metaA.mock !== metaB.mock) {
+            return metaA.mock ? 1 : -1; // Real first
+          }
+        }
+
+        // Within same type (real/mock), sort alphabetically by name
+        return a.name.localeCompare(b.name);
+      });
   }, [allDocuments, documentCatalog.documents, selectedDocumentId]);
 
   const validDocuments = useMemo(

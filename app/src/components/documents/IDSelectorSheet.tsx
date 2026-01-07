@@ -2,15 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import {
-  Button,
-  ScrollView,
-  Separator,
-  Sheet,
-  Text,
-  XStack,
-  YStack,
-} from 'tamagui';
+import { Button, ScrollView, Sheet, Text, XStack, YStack } from 'tamagui';
 import { X } from '@tamagui/lucide-icons';
 
 import {
@@ -21,6 +13,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import type { IDSelectorState } from '@/components/documents/IDSelectorItem';
 import {
@@ -55,6 +48,8 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
   onApprove,
   testID = 'id-selector-sheet',
 }) => {
+  const bottomPadding = useSafeBottomPadding(16);
+
   // Check if the selected document is valid (not expired or unregistered)
   const selectedDoc = documents.find(d => d.id === selectedId);
   const canApprove = selectedDoc && !isDisabledState(selectedDoc.state);
@@ -105,15 +100,13 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
             </XStack>
           </XStack>
 
-          <Separator borderColor={slate300} marginBottom="$2" />
-
           {/* Document List */}
           <ScrollView
             flex={1}
             showsVerticalScrollIndicator={false}
             testID={`${testID}-list`}
           >
-            {documents.map(doc => {
+            {documents.map((doc, index) => {
               const isSelected = doc.id === selectedId;
               // Don't override to 'active' if the document is in a disabled state
               const itemState: IDSelectorState =
@@ -127,6 +120,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                   documentName={doc.name}
                   state={itemState}
                   onPress={() => onSelect(doc.id)}
+                  isLastItem={index === documents.length - 1}
                   testID={`${testID}-item-${doc.id}`}
                 />
               );
@@ -134,7 +128,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
           </ScrollView>
 
           {/* Footer Buttons */}
-          <XStack gap={12} marginTop="$4" paddingBottom="$2">
+          <XStack gap={12} marginTop="$4" paddingBottom={bottomPadding}>
             <Button
               flex={1}
               backgroundColor={white}
