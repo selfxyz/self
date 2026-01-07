@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
@@ -17,7 +18,6 @@ import { black, white } from '../../constants/colors';
 import { useSelfClient } from '../../context';
 import { loadSelectedDocument } from '../../documents/utils';
 import { notificationSuccess } from '../../haptic';
-import { useSafeBottomPadding } from '../../hooks/useSafeBottomPadding';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { SdkEvents } from '../../types/events';
 import type { SelfClient } from '../../types/public';
@@ -41,7 +41,8 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
 
   // Calculate bottom padding to prevent button bleeding into system navigation
   // ExpandableBottomLayout.BottomSection handles safe areas internally
-  const paddingBottom = useSafeBottomPadding(20);
+  const { bottom } = useSafeAreaInsets();
+  const paddingBottom = bottom + 20;
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>

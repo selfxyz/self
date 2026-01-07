@@ -6,6 +6,7 @@ import React from 'react';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
@@ -17,14 +18,14 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import BlueCheckIcon from '@/assets/images/blue_check.svg';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
 
 const AadhaarUploadedSuccessScreen: React.FC = () => {
-  const paddingBottom = useSafeBottomPadding(extraYPadding + 35);
+  const { bottom } = useSafeAreaInsets();
+  const paddingBottom = bottom + extraYPadding + 35;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { trackEvent } = useSelfClient();

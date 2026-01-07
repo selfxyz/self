@@ -8,6 +8,7 @@ import { Linking } from 'react-native';
 import { Image, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
@@ -19,7 +20,6 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import { useAadhaar } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
 import AadhaarImage from '@/assets/images/512w.png';
@@ -32,7 +32,8 @@ import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
 
 const AadhaarUploadScreen: React.FC = () => {
-  const paddingBottom = useSafeBottomPadding(extraYPadding + 50);
+  const { bottom } = useSafeAreaInsets();
+  const paddingBottom = bottom + extraYPadding + 50;
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();

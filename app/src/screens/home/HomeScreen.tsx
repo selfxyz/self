@@ -19,6 +19,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import type { DocumentMetadata } from '@selfxyz/mobile-sdk-alpha';
@@ -34,7 +35,6 @@ import {
   slate300,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import LogoInversed from '@/assets/images/logo_inversed.svg';
 import UnverifiedHumanImage from '@/assets/images/unverified_human.png';
@@ -155,7 +155,8 @@ const HomeScreen: React.FC = () => {
   }, [documentCatalog]);
 
   // Calculate bottom padding to prevent button bleeding into system navigation
-  const bottomPadding = useSafeBottomPadding(20);
+  const { bottom } = useSafeAreaInsets();
+  const bottomPadding = bottom + 20;
 
   // Create a stable reference to avoid hook dependency issues
   const onEarnPointsPressRef = useRef<

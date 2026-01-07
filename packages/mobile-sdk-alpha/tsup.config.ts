@@ -41,8 +41,6 @@ const entry = {
   'constants/colors': 'src/constants/colors.ts',
   'constants/fonts': 'src/constants/fonts.ts',
   'components/index': 'src/components/index.ts',
-  'hooks/index': 'src/hooks/index.ts',
-  'hooks/useSafeBottomPadding': 'src/hooks/useSafeBottomPadding.ts',
   stores: 'src/stores/index.ts',
   'utils/utils': 'src/utils/utils.ts',
   ...flowEntries,
@@ -78,6 +76,7 @@ export default defineConfig([
       'lottie-react-native',
       'react-native-haptic-feedback',
       'react-native-localize',
+      'react-native-safe-area-context',
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
     ],
@@ -129,6 +128,7 @@ export default defineConfig([
       'lottie-react-native',
       'react-native-haptic-feedback',
       'react-native-localize',
+      'react-native-safe-area-context',
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
     ],

@@ -6,6 +6,7 @@ import React from 'react';
 import { XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
@@ -17,7 +18,6 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import { getErrorMessages } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
 import WarningIcon from '@/assets/images/warning.svg';
@@ -33,7 +33,8 @@ type AadhaarUploadErrorRoute = RouteProp<
 >;
 
 const AadhaarUploadErrorScreen: React.FC = () => {
-  const paddingBottom = useSafeBottomPadding(extraYPadding + 35);
+  const { bottom } = useSafeAreaInsets();
+  const paddingBottom = bottom + extraYPadding + 35;
   const navigation = useNavigation();
   const route = useRoute<AadhaarUploadErrorRoute>();
   const { trackEvent } = useSelfClient();

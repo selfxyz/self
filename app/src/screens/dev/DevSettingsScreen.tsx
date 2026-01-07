@@ -16,6 +16,7 @@ import { Button, Sheet, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   red500,
@@ -30,7 +31,6 @@ import {
   yellow500,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import BugIcon from '@/assets/icons/bug_icon.svg';
 import IdIcon from '@/assets/icons/id_icon.svg';
@@ -298,7 +298,8 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const setLoggingSeverity = useSettingStore(state => state.setLoggingSeverity);
   const [hasNotificationPermission, setHasNotificationPermission] =
     useState(false);
-  const paddingBottom = useSafeBottomPadding(20);
+  const { bottom } = useSafeAreaInsets();
+  const paddingBottom = bottom + 20;
 
   // Check notification permissions on mount
   useEffect(() => {
