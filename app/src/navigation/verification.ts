@@ -6,7 +6,7 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import DocumentSelectorForProvingScreen from '@/screens/verification/DocumentSelectorForProvingScreen';
+import { DocumentSelectorForProvingScreen } from '@/screens/verification/DocumentSelectorForProvingScreen';
 import ProofRequestStatusScreen from '@/screens/verification/ProofRequestStatusScreen';
 import ProveScreen from '@/screens/verification/ProveScreen';
 import QRCodeTroubleScreen from '@/screens/verification/QRCodeTroubleScreen';

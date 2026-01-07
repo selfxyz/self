@@ -2,8 +2,15 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
+  ActivityIndicator,
   Image,
   Pressable,
   ScrollView,
@@ -99,7 +106,9 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     string | undefined
   >();
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const logoSource = useMemo(() => {
     if (!selfApp?.logoBase64) {
@@ -161,19 +170,36 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   );
 
   const loadDocuments = useCallback(async () => {
+    // Cancel any in-flight request
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     setError(null);
     try {
       const catalog = await loadDocumentCatalog();
       const docs = await getAllDocuments();
+
+      // Don't update state if this request was aborted
+      if (controller.signal.aborted) {
+        return;
+      }
+
       setDocumentCatalog(catalog);
       setAllDocuments(docs);
       setSelectedDocumentId(pickInitialDocument(catalog, docs));
     } catch (loadError) {
+      // Don't show error if this request was aborted
+      if (controller.signal.aborted) {
+        return;
+      }
       console.warn('Failed to load documents:', loadError);
       setError('Unable to load documents.');
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     }
   }, [getAllDocuments, loadDocumentCatalog, pickInitialDocument]);
 
@@ -182,6 +208,13 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
       loadDocuments();
     }, [loadDocuments]),
   );
+
+  // Cleanup abort controller on unmount
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const documents = useMemo(() => {
     return documentCatalog.documents.map(metadata => {
@@ -212,15 +245,20 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    if (!selectedDocumentId || !canContinue) {
+    if (!selectedDocumentId || !canContinue || submitting) {
       return;
     }
 
+    setSubmitting(true);
+    setError(null);
     try {
       await setSelectedDocument(selectedDocumentId);
       navigation.navigate('Prove');
     } catch (selectionError) {
       console.error('Failed to set selected document:', selectionError);
+      setError('Failed to select document. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -307,17 +345,22 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
           )}
           <Pressable
             onPress={handleContinue}
-            disabled={!canContinue}
+            disabled={!canContinue || submitting}
             style={({ pressed }) => [
               styles.continueButton,
               {
-                backgroundColor: canContinue ? blue600 : slate300,
-                opacity: canContinue ? (pressed ? 0.8 : 1) : 0.5,
+                backgroundColor:
+                  canContinue && !submitting ? blue600 : slate300,
+                opacity: canContinue && !submitting ? (pressed ? 0.8 : 1) : 0.5,
               },
             ]}
             testID="document-selector-continue"
           >
-            <Text style={styles.continueButtonText}>Continue to Proof</Text>
+            {submitting ? (
+              <ActivityIndicator color={white} size="small" />
+            ) : (
+              <Text style={styles.continueButtonText}>Continue to Proof</Text>
+            )}
           </Pressable>
         </View>
       </ExpandableBottomLayout.BottomSection>
@@ -412,4 +455,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DocumentSelectorForProvingScreen;
+export { DocumentSelectorForProvingScreen };
