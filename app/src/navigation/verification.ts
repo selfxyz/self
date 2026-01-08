@@ -47,7 +47,7 @@ const verificationScreens = {
   Prove: {
     screen: ProveScreen,
     options: {
-      title: 'Request Proof',
+      title: 'Proof Requested',
       headerStyle: {
         backgroundColor: black,
       },
