@@ -22,14 +22,11 @@ export interface IDSelectorItemProps {
   testID?: string;
 }
 
-export type IDSelectorState =
-  | 'active'
-  | 'verified'
-  | 'not_accepted'
-  | 'expired';
+export type IDSelectorState = 'active' | 'verified' | 'expired' | 'mock';
 
 const green500 = '#22C55E';
 const red500 = '#EF4444';
+const orange500 = '#F97316';
 
 function getSubtitleText(state: IDSelectorState): string {
   switch (state) {
@@ -37,10 +34,10 @@ function getSubtitleText(state: IDSelectorState): string {
       return 'Currently active';
     case 'verified':
       return 'Verified ID';
-    case 'not_accepted':
-      return 'Not accepted';
     case 'expired':
       return 'Expired';
+    case 'mock':
+      return 'Developer ID';
   }
 }
 
@@ -50,10 +47,10 @@ function getSubtitleColor(state: IDSelectorState): string {
       return green500;
     case 'verified':
       return slate500;
-    case 'not_accepted':
-      return slate500;
     case 'expired':
       return red500;
+    case 'mock':
+      return orange500;
   }
 }
 
@@ -124,5 +121,5 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
 };
 
 export function isDisabledState(state: IDSelectorState): boolean {
-  return state === 'not_accepted' || state === 'expired';
+  return state === 'expired';
 }

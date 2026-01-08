@@ -89,11 +89,11 @@ describe('IDSelectorItem', () => {
     );
     expect(getByTestId('test-item')).toBeTruthy();
 
-    // Rerender with not_accepted state
+    // Rerender with mock state
     rerender(
       <IDSelectorItem
         documentName="Developer Passport"
-        state="not_accepted"
+        state="mock"
         onPress={mockOnPress}
         testID="test-item"
       />,
@@ -106,7 +106,7 @@ describe('IDSelectorSheet', () => {
   const mockDocuments: IDSelectorDocument[] = [
     { id: 'doc1', name: 'EU ID', state: 'verified' },
     { id: 'doc2', name: 'French Passport', state: 'verified' },
-    { id: 'doc3', name: 'Developer Passport', state: 'not_accepted' },
+    { id: 'doc3', name: 'Developer Passport', state: 'mock' },
     { id: 'doc4', name: 'Aadhaar ID', state: 'expired' },
   ];
 

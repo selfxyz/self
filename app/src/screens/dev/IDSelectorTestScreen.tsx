@@ -83,12 +83,7 @@ function determineDocumentState(
   metadata: DocumentMetadata,
   documentData: IDDocument | undefined,
 ): IDSelectorState {
-  // Mock documents are not accepted
-  if (metadata.mock) {
-    return 'not_accepted';
-  }
-
-  // Check if expired
+  // Check if expired first (applies to both real and mock documents)
   if (documentData) {
     try {
       const attributes = getDocumentAttributes(documentData);
@@ -103,12 +98,12 @@ function determineDocumentState(
     }
   }
 
-  // If registered, show as verified
-  if (metadata.isRegistered) {
-    return 'verified';
+  // Mock documents are selectable but marked as developer/mock
+  if (metadata.mock) {
+    return 'mock';
   }
 
-  // Real non-registered docs still selectable
+  // Both registered and non-registered real documents are valid for selection
   return 'verified';
 }
 
