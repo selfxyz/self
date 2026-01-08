@@ -678,9 +678,7 @@ describe('DocumentSelectorForProvingScreen', () => {
       createAllDocuments([createDocumentEntry(passport)]),
     );
 
-    const { getByTestId } = render(
-      <DocumentSelectorForProvingScreen />,
-    );
+    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
     await waitFor(() => {
       expect(getByTestId('document-selector-action-bar')).toBeTruthy();

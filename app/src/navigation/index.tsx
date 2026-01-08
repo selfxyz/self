@@ -151,7 +151,11 @@ export type RootStackParamList = Omit<
   ProofHistoryDetail: {
     data: ProofHistory;
   };
-  Prove: undefined;
+  Prove:
+    | {
+        scrollOffset?: number;
+      }
+    | undefined;
   ProvingScreenRouter: undefined;
   DocumentSelectorForProving: undefined;
 

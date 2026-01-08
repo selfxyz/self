@@ -3,7 +3,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import type { ImageSourcePropType } from 'react-native';
+import type {
+  ImageSourcePropType,
+  LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView as ScrollViewType,
+} from 'react-native';
 import { ScrollView } from 'react-native';
 import { Text, View } from 'tamagui';
 
@@ -27,6 +33,11 @@ export interface ProofRequestCardProps {
   timestamp?: Date;
   children?: React.ReactNode;
   testID?: string;
+  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  scrollViewRef?: React.RefObject<ScrollViewType>;
+  onContentSizeChange?: (width: number, height: number) => void;
+  onLayout?: (event: LayoutChangeEvent) => void;
+  initialScrollOffset?: number;
 }
 
 /**
@@ -42,6 +53,11 @@ export const ProofRequestCard: React.FC<ProofRequestCardProps> = ({
   timestamp = new Date(),
   children,
   testID = 'proof-request-card',
+  onScroll,
+  scrollViewRef,
+  onContentSizeChange,
+  onLayout,
+  initialScrollOffset,
 }) => {
   // Build request message with highlighted app name and document type
   const requestMessage = (
@@ -96,8 +112,18 @@ export const ProofRequestCard: React.FC<ProofRequestCardProps> = ({
           borderBottomRightRadius={proofRequestSpacing.borderRadius}
         >
           <ScrollView
+            ref={scrollViewRef}
             showsVerticalScrollIndicator={true}
             contentContainerStyle={{ flexGrow: 1 }}
+            onScroll={onScroll}
+            scrollEventThrottle={16}
+            onContentSizeChange={onContentSizeChange}
+            onLayout={onLayout}
+            contentOffset={
+              typeof initialScrollOffset === 'number'
+                ? { x: 0, y: initialScrollOffset }
+                : undefined
+            }
           >
             {children}
           </ScrollView>

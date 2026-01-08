@@ -9,13 +9,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 import { Text, View, YStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import type { Country3LetterCode } from '@selfxyz/common/constants';
-import { countryCodes } from '@selfxyz/common/constants';
 import { commonNames } from '@selfxyz/common/constants/countries';
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
@@ -45,6 +44,7 @@ import {
 } from '@/components/proof-request';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
+import { getDisclosureItems } from '@/utils/disclosureUtils';
 import { formatUserId } from '@/utils/formatUserId';
 
 /**
@@ -128,95 +128,6 @@ function determineDocumentState(
   return 'verified';
 }
 
-/**
- * Converts a list of strings to a sentence with "nor" conjunctions.
- */
-function listToString(list: string[]): string {
-  if (list.length === 1) {
-    return list[0];
-  } else if (list.length === 2) {
-    return list.join(' nor ');
-  }
-  return `${list.slice(0, -1).join(', ')} nor ${list.at(-1)}`;
-}
-
-/**
- * Converts country codes to a readable sentence.
- */
-function countriesToSentence(countries: Country3LetterCode[]): string {
-  return listToString(countries.map(country => countryCodes[country]));
-}
-
-/**
- * Generates disclosure items from the selfApp disclosure config.
- */
-function getDisclosureItems(
-  disclosures: SelfAppDisclosureConfig,
-): Array<{ key: string; text: string }> {
-  const ORDERED_KEYS: Array<keyof SelfAppDisclosureConfig> = [
-    'issuing_state',
-    'name',
-    'passport_number',
-    'nationality',
-    'date_of_birth',
-    'gender',
-    'expiry_date',
-    'ofac',
-    'excludedCountries',
-    'minimumAge',
-  ] as const;
-
-  const items: Array<{ key: string; text: string }> = [];
-
-  for (const key of ORDERED_KEYS) {
-    const isEnabled = disclosures[key];
-    if (!isEnabled || (Array.isArray(isEnabled) && isEnabled.length === 0)) {
-      continue;
-    }
-
-    let text = '';
-    switch (key) {
-      case 'ofac':
-        text = 'Not on the OFAC list';
-        break;
-      case 'excludedCountries':
-        text = `Not a citizen of: ${countriesToSentence(
-          (disclosures.excludedCountries as Country3LetterCode[]) || [],
-        )}`;
-        break;
-      case 'minimumAge':
-        text = `Age is over ${disclosures.minimumAge}`;
-        break;
-      case 'name':
-        text = 'Name';
-        break;
-      case 'passport_number':
-        text = 'Passport Number';
-        break;
-      case 'date_of_birth':
-        text = 'Date of Birth';
-        break;
-      case 'gender':
-        text = 'Gender';
-        break;
-      case 'expiry_date':
-        text = 'Passport Expiry Date';
-        break;
-      case 'issuing_state':
-        text = 'Issuing State';
-        break;
-      case 'nationality':
-        text = 'Nationality';
-        break;
-      default:
-        continue;
-    }
-    items.push({ key, text });
-  }
-
-  return items;
-}
-
 const DocumentSelectorForProvingScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -241,6 +152,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const scrollOffsetRef = useRef(0);
 
   // Memoized values from selfApp
   const logoSource = useMemo(() => {
@@ -423,7 +335,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     setSheetOpen(false);
     try {
       await setSelectedDocument(selectedDocumentId);
-      navigation.navigate('Prove');
+      navigation.navigate('Prove', { scrollOffset: scrollOffsetRef.current });
     } catch (selectionError) {
       console.error('Failed to set selected document:', selectionError);
       setError('Failed to select document. Please try again.');
@@ -431,6 +343,13 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
       setSubmitting(false);
     }
   };
+
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+    },
+    [],
+  );
 
   // Loading state
   if (loading) {
@@ -528,6 +447,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         appName={selfApp?.appName || 'Self'}
         appUrl={url}
         documentType={selectedDocumentType}
+        onScroll={handleScroll}
         testID="document-selector-card"
       >
         {/* Connected Wallet Badge */}
