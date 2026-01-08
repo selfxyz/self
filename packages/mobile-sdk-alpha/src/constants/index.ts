@@ -30,6 +30,8 @@ export {
   cyan300,
   emerald500,
   green500,
+  green600,
+  iosSeparator,
   neutral400,
   neutral700,
   red500,

@@ -99,7 +99,6 @@ export {
   triggerFeedback,
 } from './haptic';
 
-/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export {
   checkDocumentExpiration,
   getDocumentAttributes,
@@ -123,8 +122,10 @@ export { defaultConfig } from './config/defaults';
 
 export { defaultOptions } from './haptic/shared';
 
-export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
+/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
+export { extractMRZInfo } from './mrz';
 export { extractNameFromDocument } from './documents/utils';
+export { extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 

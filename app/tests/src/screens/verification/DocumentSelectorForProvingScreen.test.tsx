@@ -20,26 +20,25 @@ import { usePassport } from '@/providers/passportDataProvider';
 import { DocumentSelectorForProvingScreen } from '@/screens/verification/DocumentSelectorForProvingScreen';
 
 // Mock useFocusEffect to behave like useEffect in tests
-// Note: We use jest.requireActual for React to avoid nested require() which causes OOM in CI
+// Note: We call the callback directly without requiring React to avoid OOM in CI
 jest.mock('@react-navigation/native', () => {
   const actual = jest.requireActual('@react-navigation/native');
-  const ReactActual = jest.requireActual('react');
   return {
     ...actual,
     useFocusEffect: (callback: () => void) => {
-      ReactActual.useEffect(() => {
+      // Call the callback immediately, simulating focus effect in tests
+      // We use setTimeout to defer execution similar to useEffect
+      setTimeout(() => {
         callback();
-      }, [callback]);
+      }, 0);
     },
   };
 });
 
 // Mock the WalletAddressModal to avoid Modal rendering issues in tests
+// Note: We return a simple string component directly to avoid requiring React (prevents OOM in CI)
 jest.mock('@/components/proof-request/WalletAddressModal', () => ({
-  WalletAddressModal: ({ testID }: { testID?: string }) => {
-    const React = jest.requireActual('react');
-    return React.createElement('View', { testID });
-  },
+  WalletAddressModal: jest.fn(() => null),
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({

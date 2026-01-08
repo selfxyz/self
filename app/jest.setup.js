@@ -574,7 +574,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   // Override only the specific mocks we need
   NFCScannerScreen: jest.fn(() => null),
   SelfClientProvider: jest.fn(({ children }) => children),
-  useSafeBottomPadding: jest.fn((basePadding = 20) => basePadding + 50),
   useSelfClient: jest.fn(() => {
     // Create a consistent mock instance for memoization testing
     if (!global.mockSelfClientInstance) {

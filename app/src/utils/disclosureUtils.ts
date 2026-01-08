@@ -8,8 +8,8 @@ import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 
 function listToString(list: string[]): string {
   if (list.length === 1) return list[0];
-  if (list.length === 2) return list.join(' nor ');
-  return `${list.slice(0, -1).join(', ')} nor ${list.at(-1)}`;
+  if (list.length === 2) return list.join(' or ');
+  return `${list.slice(0, -1).join(', ')} or ${list.at(-1)}`;
 }
 
 function countriesToSentence(countries: Country3LetterCode[]): string {

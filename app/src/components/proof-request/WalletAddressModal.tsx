@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet } from 'react-native';
 import { Text, View, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -32,6 +32,7 @@ export const WalletAddressModal: React.FC<WalletAddressModalProps> = ({
   testID = 'wallet-address-modal',
 }) => {
   const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const label = userIdType === 'hex' ? 'Connected Wallet' : 'Connected ID';
 
   // Reset copied state when modal closes
@@ -41,14 +42,31 @@ export const WalletAddressModal: React.FC<WalletAddressModalProps> = ({
     }
   }, [visible]);
 
+  // Clear timeout on unmount or when modal closes/address changes
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [visible, address, onClose]);
+
   const handleCopy = useCallback(() => {
+    // Clear any existing timeout before setting a new one
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
     Clipboard.setString(address);
     setCopied(true);
 
     // Reset copied state and close after a brief delay
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setCopied(false);
       onClose();
+      timeoutRef.current = null;
     }, 800);
   }, [address, onClose]);
 
