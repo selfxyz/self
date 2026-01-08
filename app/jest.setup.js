@@ -100,6 +100,7 @@ jest.mock('react-native', () => {
     get NativeModules() {
       return global.NativeModules || {};
     },
+    useColorScheme: jest.fn(() => 'light'),
     NativeEventEmitter: jest.fn().mockImplementation(nativeModule => {
       return {
         addListener: jest.fn(),

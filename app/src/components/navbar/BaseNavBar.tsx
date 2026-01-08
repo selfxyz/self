@@ -88,6 +88,7 @@ export const LeftAction: React.FC<LeftActionProps> = ({
 const NavBarTitle: React.FC<NavBarTitleProps> = ({
   children,
   color,
+  style,
   ...props
 }) => {
   if (!children) {
@@ -95,7 +96,7 @@ const NavBarTitle: React.FC<NavBarTitleProps> = ({
   }
 
   return typeof children === 'string' ? (
-    <Title color={color} {...props}>
+    <Title style={[color ? { color } : undefined, style]} {...props}>
       {children}
     </Title>
   ) : (

@@ -54,10 +54,18 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
   const Text = jest.fn(({ children, ...props }) => children || null);
   Text.displayName = 'MockText';
 
+  const Title = jest.fn(({ children, ...props }) => children || null);
+  Title.displayName = 'MockTitle';
+
+  const View = jest.fn(({ children, ...props }) => children || null);
+  View.displayName = 'MockView';
+
   return {
     __esModule: true,
     Button,
     XStack,
+    Title,
+    View,
     // Provide minimal Text to satisfy potential usages
     Text,
   };
@@ -178,6 +186,7 @@ jest.mock('@tamagui/lucide-icons', () => {
     Check: makeIcon('check'),
     Circle: makeIcon('circle'),
     ChevronDown: makeIcon('chevron-down'),
+    ChevronLeft: makeIcon('chevron-left'),
   };
 });
 
