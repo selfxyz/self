@@ -27,6 +27,7 @@ interface Inputs {
   usePacePolling?: boolean;
   sessionId: string;
   userId?: string;
+  skipReselect?: boolean;
 }
 
 interface DataGroupHash {
