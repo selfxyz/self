@@ -344,6 +344,13 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     }
   };
 
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+    },
+    [],
+  );
+
   // Loading state
   if (loading) {
     return (
@@ -431,13 +438,6 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
       </View>
     );
   }
-
-  const handleScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
-    },
-    [],
-  );
 
   return (
     <View style={[styles.container, { paddingTop: 0 }]}>
