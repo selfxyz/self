@@ -13,6 +13,22 @@ import { ProvingScreenRouter } from '@/screens/verification/ProvingScreenRouter'
 import QRCodeTroubleScreen from '@/screens/verification/QRCodeTroubleScreen';
 import QRCodeViewFinderScreen from '@/screens/verification/QRCodeViewFinderScreen';
 
+/**
+ * Shared header configuration for proof request screens
+ */
+const proofRequestHeaderOptions: NativeStackNavigationOptions = {
+  title: 'Proof Requested',
+  headerStyle: {
+    backgroundColor: black,
+  },
+  headerTitleStyle: {
+    color: white,
+    fontWeight: '600',
+  },
+  headerTintColor: white,
+  gestureEnabled: false,
+};
+
 const verificationScreens = {
   ProofRequestStatus: {
     screen: ProofRequestStatusScreen,
@@ -24,38 +40,15 @@ const verificationScreens = {
   },
   ProvingScreenRouter: {
     screen: ProvingScreenRouter,
-    options: {
-      headerShown: false,
-      gestureEnabled: false,
-    } as NativeStackNavigationOptions,
+    options: proofRequestHeaderOptions,
   },
   DocumentSelectorForProving: {
     screen: DocumentSelectorForProvingScreen,
-    options: {
-      title: 'Proof Requested',
-      headerStyle: {
-        backgroundColor: black,
-      },
-      headerTitleStyle: {
-        color: white,
-        fontWeight: '600',
-      },
-      headerTintColor: white,
-      gestureEnabled: false,
-    } as NativeStackNavigationOptions,
+    options: proofRequestHeaderOptions,
   },
   Prove: {
     screen: ProveScreen,
-    options: {
-      title: 'Proof Requested',
-      headerStyle: {
-        backgroundColor: black,
-      },
-      headerTitleStyle: {
-        color: white,
-      },
-      gestureEnabled: false,
-    } as NativeStackNavigationOptions,
+    options: proofRequestHeaderOptions,
   },
   QRCodeTrouble: {
     screen: QRCodeTroubleScreen,
