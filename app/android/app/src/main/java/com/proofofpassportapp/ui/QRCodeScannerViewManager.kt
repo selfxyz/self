@@ -77,6 +77,7 @@ class QRCodeScannerViewManager(
         val parentView = root.findViewById<ViewGroup>(reactNativeViewId)
         setupLayout(parentView)
 
+        destroyFragment(root, reactNativeViewId)
         val qrScannerFragment = QrCodeScannerFragment(this)
         val activity = reactContext.currentActivity as FragmentActivity
         activity.supportFragmentManager

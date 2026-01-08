@@ -49,6 +49,9 @@ function dispatchCommand(
     console.warn(e);
     if (command === 'create') {
       dispatchCommand(fragmentComponentName, viewId, 'destroy');
+      setTimeout(() => {
+        dispatchCommand(fragmentComponentName, viewId, 'create');
+      }, 0);
     }
   }
 }
