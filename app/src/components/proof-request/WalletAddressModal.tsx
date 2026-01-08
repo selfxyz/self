@@ -122,7 +122,8 @@ export const WalletAddressModal: React.FC<WalletAddressModalProps> = ({
                   fontFamily={plexMono}
                   fontSize={14}
                   color={proofRequestColors.slate900}
-                  style={{ wordBreak: 'break-all' }}
+                  numberOfLines={undefined}
+                  ellipsizeMode="middle"
                   testID={`${testID}-full-address`}
                 >
                   {address}
@@ -185,7 +186,7 @@ export const WalletAddressModal: React.FC<WalletAddressModalProps> = ({
                       <Text
                         fontFamily={dinot}
                         fontSize={16}
-                        color={proofRequestColors.slate600}
+                        color={proofRequestColors.slate500}
                         fontWeight="600"
                       >
                         Close

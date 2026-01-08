@@ -362,15 +362,6 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         testID="document-selector-loading-container"
       >
         <ActivityIndicator color={blue600} size="large" />
-        <Text
-          fontFamily={dinot}
-          fontSize={16}
-          color={proofRequestColors.slate500}
-          marginTop={16}
-          testID="document-selector-loading"
-        >
-          Loading documents...
-        </Text>
       </View>
     );
   }
