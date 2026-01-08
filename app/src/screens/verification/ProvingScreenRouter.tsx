@@ -28,17 +28,13 @@ import {
 } from '@/utils/documentAttributes';
 
 /**
- * Determines if a document is valid for selection (not mock, not expired).
+ * Determines if a document is valid for selection (not expired).
+ * Mock documents are valid for testing with staging environments.
  */
 function isValidDocument(
   metadata: DocumentMetadata,
   documentData: IDDocument | undefined,
 ): boolean {
-  // Mock documents are not valid
-  if (metadata.mock) {
-    return false;
-  }
-
   // Check if expired
   if (documentData) {
     try {

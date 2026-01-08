@@ -9,20 +9,16 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, View, YStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import type { Country3LetterCode } from '@selfxyz/common/constants';
+import { countryCodes } from '@selfxyz/common/constants';
 import { commonNames } from '@selfxyz/common/constants/countries';
+import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import type {
   DocumentCatalog,
@@ -30,23 +26,26 @@ import type {
   IDDocument,
 } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import {
-  black,
-  blue600,
-  slate300,
-  slate500,
-  white,
-} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { blue600, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import type { IDSelectorState } from '@/components/documents';
-import { IDSelectorItem, isDisabledState } from '@/components/documents';
+import { IDSelectorSheet, isDisabledState } from '@/components/documents';
+import {
+  BottomActionBar,
+  ConnectedWalletBadge,
+  DisclosureItem,
+  ProofRequestCard,
+  proofRequestColors,
+  truncateAddress,
+} from '@/components/proof-request';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import {
   checkDocumentExpiration,
   getDocumentAttributes,
 } from '@/utils/documentAttributes';
+import { formatUserId } from '@/utils/formatUserId';
 
 /**
  * Converts a 3-letter country code to its full country name
@@ -94,6 +93,22 @@ function getDocumentDisplayName(
   return isMock ? `Developer ${metadata.documentType}` : metadata.documentType;
 }
 
+/**
+ * Gets the document type display name for the proof request message.
+ */
+function getDocumentTypeName(category: string | undefined): string {
+  switch (category) {
+    case 'passport':
+      return 'Passport';
+    case 'id_card':
+      return 'ID Card';
+    case 'aadhaar':
+      return 'Aadhaar';
+    default:
+      return 'Document';
+  }
+}
+
 function determineDocumentState(
   metadata: DocumentMetadata,
   documentData: IDDocument | undefined,
@@ -123,6 +138,95 @@ function determineDocumentState(
   return 'verified';
 }
 
+/**
+ * Converts a list of strings to a sentence with "nor" conjunctions.
+ */
+function listToString(list: string[]): string {
+  if (list.length === 1) {
+    return list[0];
+  } else if (list.length === 2) {
+    return list.join(' nor ');
+  }
+  return `${list.slice(0, -1).join(', ')} nor ${list.at(-1)}`;
+}
+
+/**
+ * Converts country codes to a readable sentence.
+ */
+function countriesToSentence(countries: Country3LetterCode[]): string {
+  return listToString(countries.map(country => countryCodes[country]));
+}
+
+/**
+ * Generates disclosure items from the selfApp disclosure config.
+ */
+function getDisclosureItems(
+  disclosures: SelfAppDisclosureConfig,
+): Array<{ key: string; text: string }> {
+  const ORDERED_KEYS: Array<keyof SelfAppDisclosureConfig> = [
+    'issuing_state',
+    'name',
+    'passport_number',
+    'nationality',
+    'date_of_birth',
+    'gender',
+    'expiry_date',
+    'ofac',
+    'excludedCountries',
+    'minimumAge',
+  ] as const;
+
+  const items: Array<{ key: string; text: string }> = [];
+
+  for (const key of ORDERED_KEYS) {
+    const isEnabled = disclosures[key];
+    if (!isEnabled || (Array.isArray(isEnabled) && isEnabled.length === 0)) {
+      continue;
+    }
+
+    let text = '';
+    switch (key) {
+      case 'ofac':
+        text = 'Not on the OFAC list';
+        break;
+      case 'excludedCountries':
+        text = `Not a citizen of: ${countriesToSentence(
+          (disclosures.excludedCountries as Country3LetterCode[]) || [],
+        )}`;
+        break;
+      case 'minimumAge':
+        text = `Age is over ${disclosures.minimumAge}`;
+        break;
+      case 'name':
+        text = 'Name';
+        break;
+      case 'passport_number':
+        text = 'Passport Number';
+        break;
+      case 'date_of_birth':
+        text = 'Date of Birth';
+        break;
+      case 'gender':
+        text = 'Gender';
+        break;
+      case 'expiry_date':
+        text = 'Passport Expiry Date';
+        break;
+      case 'issuing_state':
+        text = 'Issuing State';
+        break;
+      case 'nationality':
+        text = 'Nationality';
+        break;
+      default:
+        continue;
+    }
+    items.push({ key, text });
+  }
+
+  return items;
+}
+
 const DocumentSelectorForProvingScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -145,8 +249,10 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Memoized values from selfApp
   const logoSource = useMemo(() => {
     if (!selfApp?.logoBase64) {
       return null;
@@ -171,6 +277,21 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     }
     return formatEndpoint(selfApp.endpoint);
   }, [selfApp?.endpoint]);
+
+  const disclosures = useMemo(
+    () => (selfApp?.disclosures as SelfAppDisclosureConfig) || {},
+    [selfApp?.disclosures],
+  );
+
+  const disclosureItems = useMemo(
+    () => getDisclosureItems(disclosures),
+    [disclosures],
+  );
+
+  const formattedUserId = useMemo(
+    () => formatUserId(selfApp?.userId, selfApp?.userIdType),
+    [selfApp?.userId, selfApp?.userIdType],
+  );
 
   const pickInitialDocument = useCallback(
     (
@@ -289,21 +410,27 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   const canContinue =
     !!selectedDocument && !isDisabledState(selectedDocument.state);
 
-  const handleSelect = (documentId: string) => {
-    const document = documents.find(doc => doc.id === documentId);
-    if (!document || isDisabledState(document.state)) {
-      return;
-    }
-    setSelectedDocumentId(documentId);
-  };
+  // Get document type for the proof request message
+  const selectedDocumentType = useMemo(() => {
+    if (!selectedDocumentId) return 'Document';
+    const metadata = documentCatalog.documents.find(
+      d => d.id === selectedDocumentId,
+    );
+    return getDocumentTypeName(metadata?.documentCategory);
+  }, [selectedDocumentId, documentCatalog.documents]);
 
-  const handleContinue = async () => {
+  const handleSelect = useCallback((documentId: string) => {
+    setSelectedDocumentId(documentId);
+  }, []);
+
+  const handleApprove = async () => {
     if (!selectedDocumentId || !canContinue || submitting) {
       return;
     }
 
     setSubmitting(true);
     setError(null);
+    setSheetOpen(false);
     try {
       await setSelectedDocument(selectedDocumentId);
       navigation.navigate('Prove');
@@ -315,111 +442,155 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      {/* Compact Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <View style={styles.headerRow}>
-          {logoSource ? (
-            <Image
-              source={logoSource}
-              style={styles.logo}
-              resizeMode="contain"
-              testID="document-selector-logo"
-            />
-          ) : null}
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.appName} numberOfLines={1}>
-              {selfApp?.appName || 'Self'}
-            </Text>
-            {url ? (
-              <Text
-                style={styles.appUrl}
-                numberOfLines={1}
-                testID="document-selector-app-url"
-              >
-                {url}
-              </Text>
-            ) : null}
-          </View>
-        </View>
-        <Text style={styles.headerDescription}>
-          Select an ID to prove your information
+  // Loading state
+  if (loading) {
+    return (
+      <View
+        flex={1}
+        backgroundColor={proofRequestColors.white}
+        alignItems="center"
+        justifyContent="center"
+        paddingTop={insets.top}
+        testID="document-selector-loading-container"
+      >
+        <ActivityIndicator color={blue600} size="large" />
+        <Text
+          fontFamily={dinot}
+          fontSize={16}
+          color={proofRequestColors.slate500}
+          marginTop={16}
+          testID="document-selector-loading"
+        >
+          Loading documents...
         </Text>
       </View>
+    );
+  }
 
-      {/* Main Content - Document List */}
-      <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Select an ID</Text>
-        {loading ? (
-          <View style={styles.statusContainer}>
-            <ActivityIndicator color={blue600} size="small" />
-            <Text style={styles.statusText} testID="document-selector-loading">
-              Loading documents...
-            </Text>
-          </View>
-        ) : error ? (
-          <View style={styles.statusContainer}>
-            <Text style={styles.statusText} testID="document-selector-error">
-              {error}
-            </Text>
-            <Pressable
-              onPress={loadDocuments}
-              style={[styles.actionButton, styles.retryButton]}
-              testID="document-selector-retry"
-            >
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </Pressable>
-          </View>
-        ) : documents.length === 0 ? (
-          <View style={styles.statusContainer}>
-            <Text style={styles.statusText} testID="document-selector-empty">
-              No documents found. Please scan a document first.
-            </Text>
-          </View>
-        ) : (
-          <ScrollView
-            style={styles.scrollView}
-            showsVerticalScrollIndicator={true}
-            contentContainerStyle={styles.list}
-            testID="document-selector-list"
-          >
-            {documents.map(doc => (
-              <IDSelectorItem
-                key={doc.id}
-                documentName={doc.name}
-                state={doc.state}
-                onPress={() => handleSelect(doc.id)}
-                testID={`document-selector-item-${doc.id}`}
-              />
-            ))}
-          </ScrollView>
-        )}
-      </View>
-
-      {/* Footer Button */}
+  // Error state
+  if (error) {
+    return (
       <View
-        style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}
+        flex={1}
+        backgroundColor={proofRequestColors.white}
+        alignItems="center"
+        justifyContent="center"
+        paddingTop={insets.top}
+        gap={16}
       >
-        <Pressable
-          onPress={handleContinue}
-          disabled={!canContinue || submitting}
-          style={({ pressed }) => [
-            styles.continueButton,
-            {
-              backgroundColor: canContinue && !submitting ? blue600 : slate300,
-              opacity: canContinue && !submitting ? (pressed ? 0.8 : 1) : 0.5,
-            },
-          ]}
-          testID="document-selector-continue"
+        <Text
+          fontFamily={dinot}
+          fontSize={16}
+          color={proofRequestColors.slate500}
+          textAlign="center"
+          testID="document-selector-error"
         >
-          {submitting ? (
-            <ActivityIndicator color={white} size="small" />
-          ) : (
-            <Text style={styles.continueButtonText}>Continue to Proof</Text>
-          )}
-        </Pressable>
+          {error}
+        </Text>
+        <View
+          paddingHorizontal={24}
+          paddingVertical={12}
+          borderRadius={8}
+          borderWidth={1}
+          borderColor={proofRequestColors.slate200}
+          onPress={loadDocuments}
+          pressStyle={{ opacity: 0.7 }}
+          testID="document-selector-retry"
+        >
+          <Text
+            fontFamily={dinot}
+            fontSize={16}
+            color={proofRequestColors.slate500}
+          >
+            Retry
+          </Text>
+        </View>
       </View>
+    );
+  }
+
+  // Empty state
+  if (documents.length === 0) {
+    return (
+      <View
+        flex={1}
+        backgroundColor={proofRequestColors.white}
+        alignItems="center"
+        justifyContent="center"
+        paddingTop={insets.top}
+      >
+        <Text
+          fontFamily={dinot}
+          fontSize={16}
+          color={proofRequestColors.slate500}
+          textAlign="center"
+          paddingHorizontal={40}
+          testID="document-selector-empty"
+        >
+          No documents found. Please scan a document first.
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Main Content - Proof Request Card */}
+      <ProofRequestCard
+        logoSource={logoSource}
+        appName={selfApp?.appName || 'Self'}
+        appUrl={url}
+        documentType={selectedDocumentType}
+        testID="document-selector-card"
+      >
+        {/* Connected Wallet Badge */}
+        {formattedUserId && (
+          <ConnectedWalletBadge
+            address={
+              selfApp?.userIdType === 'hex'
+                ? truncateAddress(selfApp?.userId || '')
+                : formattedUserId
+            }
+            userIdType={selfApp?.userIdType}
+            testID="document-selector-wallet-badge"
+          />
+        )}
+
+        {/* Disclosure Items */}
+        <YStack marginTop={formattedUserId ? 16 : 0}>
+          {disclosureItems.map((item, index) => (
+            <DisclosureItem
+              key={item.key}
+              text={item.text}
+              verified={true}
+              isLast={index === disclosureItems.length - 1}
+              testID={`document-selector-disclosure-${item.key}`}
+            />
+          ))}
+        </YStack>
+      </ProofRequestCard>
+
+      {/* Bottom Action Bar */}
+      <BottomActionBar
+        selectedDocumentName={selectedDocument?.name || 'Select ID'}
+        onDocumentSelectorPress={() => setSheetOpen(true)}
+        onApprovePress={handleApprove}
+        approveDisabled={!canContinue}
+        approving={submitting}
+        testID="document-selector-action-bar"
+      />
+
+      {/* ID Selector Sheet */}
+      <IDSelectorSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        documents={documents}
+        selectedId={selectedDocumentId}
+        onSelect={handleSelect}
+        onDismiss={() => setSheetOpen(false)}
+        onApprove={handleApprove}
+        testID="document-selector-sheet"
+      />
     </View>
   );
 };
@@ -428,106 +599,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: white,
-  },
-  header: {
-    backgroundColor: black,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  headerTextContainer: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  logo: {
-    width: 40,
-    height: 40,
-  },
-  appName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: white,
-    fontFamily: dinot,
-  },
-  appUrl: {
-    fontSize: 12,
-    color: slate300,
-    fontFamily: dinot,
-    marginTop: 2,
-  },
-  headerDescription: {
-    fontSize: 14,
-    color: slate300,
-    fontFamily: dinot,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: black,
-    fontFamily: dinot,
-    marginBottom: 16,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  list: {
-    paddingBottom: 16,
-  },
-  statusContainer: {
-    flex: 1,
-    gap: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statusText: {
-    fontSize: 16,
-    color: slate500,
-    textAlign: 'center',
-    fontFamily: dinot,
-  },
-  actionButton: {
-    borderRadius: 8,
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-  },
-  retryButton: {
-    borderWidth: 1,
-    borderColor: slate300,
-    backgroundColor: white,
-  },
-  retryButtonText: {
-    fontSize: 16,
-    color: slate500,
-    fontFamily: dinot,
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    backgroundColor: white,
-    borderTopWidth: 1,
-    borderTopColor: slate300,
-  },
-  continueButton: {
-    borderRadius: 8,
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  continueButtonText: {
-    fontSize: 16,
-    color: white,
-    fontFamily: dinot,
   },
 });
 

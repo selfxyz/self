@@ -127,32 +127,13 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
             })}
           </ScrollView>
 
-          {/* Footer Buttons */}
-          <XStack gap={12} marginTop="$4" paddingBottom={bottomPadding}>
-            <Button
-              flex={1}
-              backgroundColor={white}
-              borderWidth={1}
-              borderColor={slate300}
-              borderRadius={8}
-              height={52}
-              onPress={onDismiss}
-              testID={`${testID}-dismiss-button`}
-            >
-              <Text
-                fontFamily={dinot}
-                fontSize={16}
-                fontWeight="500"
-                color={black}
-              >
-                Dismiss
-              </Text>
-            </Button>
+          {/* Footer Button */}
+          <XStack marginTop="$4" paddingBottom={bottomPadding}>
             <Button
               flex={1}
               backgroundColor={canApprove ? blue600 : slate300}
-              borderRadius={8}
-              height={52}
+              borderRadius={4}
+              height={48}
               onPress={onApprove}
               disabled={!canApprove}
               opacity={canApprove ? 1 : 0.5}
@@ -160,7 +141,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
             >
               <Text
                 fontFamily={dinot}
-                fontSize={16}
+                fontSize={18}
                 fontWeight="500"
                 color={white}
               >
