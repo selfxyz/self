@@ -20,17 +20,27 @@ import { usePassport } from '@/providers/passportDataProvider';
 import { DocumentSelectorForProvingScreen } from '@/screens/verification/DocumentSelectorForProvingScreen';
 
 // Mock useFocusEffect to behave like useEffect in tests
-// Note: We call the callback directly without requiring React to avoid OOM in CI
+// Note: We use a closure-based approach to avoid requiring React (prevents OOM per test-memory-optimization rules)
 jest.mock('@react-navigation/native', () => {
   const actual = jest.requireActual('@react-navigation/native');
+
+  // Track execution per component instance using a Map
+  const executionMap = new Map<object, boolean>();
+
   return {
     ...actual,
-    useFocusEffect: (callback: () => void) => {
-      // Call the callback immediately, simulating focus effect in tests
-      // We use setTimeout to defer execution similar to useEffect
-      setTimeout(() => {
-        callback();
-      }, 0);
+    useFocusEffect: (callback: () => void | (() => void)) => {
+      // Use a stable object as key - in real usage, callback is stable due to useCallback
+      if (!executionMap.has(callback)) {
+        executionMap.set(callback, true);
+        // Schedule callback to run after current render (simulates focus effect)
+        Promise.resolve().then(() => {
+          const cleanup = callback();
+          if (typeof cleanup === 'function') {
+            cleanup();
+          }
+        });
+      }
     },
   };
 });
