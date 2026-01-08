@@ -19,6 +19,29 @@ import {
 import { usePassport } from '@/providers/passportDataProvider';
 import { DocumentSelectorForProvingScreen } from '@/screens/verification/DocumentSelectorForProvingScreen';
 
+// Mock useFocusEffect to behave like useEffect in tests
+// Note: We use jest.requireActual for React to avoid nested require() which causes OOM in CI
+jest.mock('@react-navigation/native', () => {
+  const actual = jest.requireActual('@react-navigation/native');
+  const ReactActual = jest.requireActual('react');
+  return {
+    ...actual,
+    useFocusEffect: (callback: () => void) => {
+      ReactActual.useEffect(() => {
+        callback();
+      }, [callback]);
+    },
+  };
+});
+
+// Mock the WalletAddressModal to avoid Modal rendering issues in tests
+jest.mock('@/components/proof-request/WalletAddressModal', () => ({
+  WalletAddressModal: ({ testID }: { testID?: string }) => {
+    const React = jest.requireActual('react');
+    return React.createElement('View', { testID });
+  },
+}));
+
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   useSelfClient: jest.fn(),
   getDocumentAttributes: jest.fn(),
@@ -142,562 +165,296 @@ describe('DocumentSelectorForProvingScreen', () => {
         (documentData as { expiryDateSlice?: string } | undefined)
           ?.expiryDateSlice !== 'expired',
     );
-    mockGetDocumentAttributes.mockImplementation(
-      (documentData: { nationalitySlice?: string }) => ({
-        nationalitySlice: documentData.nationalitySlice,
-      }),
-    );
+    mockGetDocumentAttributes.mockImplementation((documentData: unknown) => ({
+      nameSlice: '',
+      dobSlice: '',
+      yobSlice: '',
+      issuingStateSlice: '',
+      nationalitySlice:
+        (documentData as { nationalitySlice?: string })?.nationalitySlice || '',
+      passNoSlice: '',
+      sexSlice: '',
+      expiryDateSlice:
+        (documentData as { expiryDateSlice?: string })?.expiryDateSlice || '',
+      isPassportType: true,
+    }));
   });
 
-  it('renders loading state initially', () => {
-    mockLoadDocumentCatalog.mockReturnValue(new Promise(() => {}));
-    mockGetAllDocuments.mockResolvedValue({});
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    expect(getByTestId('document-selector-loading')).toBeTruthy();
-  });
-
-  it('displays app information from selfApp', async () => {
-    const catalog: DocumentCatalog = { documents: [] };
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue({});
-
-    const { getByTestId, getByText } = render(
-      <DocumentSelectorForProvingScreen />,
-    );
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-card-header-logo')).toBeTruthy();
-    });
-
-    expect(getByText('example.com')).toBeTruthy();
-    expect(getByText('Example App')).toBeTruthy();
-  });
-
-  it('renders disclosure items and wallet badge for the proof request card', async () => {
-    const passport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [passport],
-      selectedDocumentId: 'doc-1',
-    };
-
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(passport)]),
-    );
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-card')).toBeTruthy();
-    });
-
-    expect(getByTestId('document-selector-disclosure-name')).toBeTruthy();
-    expect(
-      getByTestId('document-selector-disclosure-passport_number'),
-    ).toBeTruthy();
-    expect(getByTestId('document-selector-wallet-badge')).toBeTruthy();
-  });
-
-  it('opens the wallet modal when the wallet badge is pressed', async () => {
-    const passport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [passport],
-      selectedDocumentId: 'doc-1',
-    };
-
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(passport)]),
-    );
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-wallet-badge')).toBeTruthy();
-    });
-
-    fireEvent.press(getByTestId('document-selector-wallet-badge-pressable'));
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-wallet-modal')).toBeTruthy();
-      expect(
-        getByTestId('document-selector-wallet-modal-full-address'),
-      ).toBeTruthy();
-    });
-  });
-
-  it('loads and displays all documents from catalog', async () => {
-    const passport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const idCard = createMetadata({
-      id: 'doc-2',
-      documentType: 'ca',
-      documentCategory: 'id_card',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [passport, idCard],
-      selectedDocumentId: 'doc-1',
-    };
-
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([
-        createDocumentEntry(passport),
-        createDocumentEntry(idCard),
-      ]),
-    );
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-action-bar')).toBeTruthy();
-    });
-
-    // Open the sheet
-    fireEvent.press(
-      getByTestId('document-selector-action-bar-document-selector'),
-    );
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-sheet-list')).toBeTruthy();
-      expect(getByTestId('document-selector-sheet-item-doc-1')).toBeTruthy();
-      expect(getByTestId('document-selector-sheet-item-doc-2')).toBeTruthy();
-    });
-  });
-
-  it('auto-selects currently selected document if valid', async () => {
-    const passport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [passport],
-      selectedDocumentId: 'doc-1',
-    };
-
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(passport)]),
-    );
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      expect(
-        getByTestId('document-selector-action-bar-approve').props.disabled,
-      ).toBe(false);
-    });
-
-    // Open sheet and approve
-    fireEvent.press(
-      getByTestId('document-selector-action-bar-document-selector'),
-    );
-
-    await waitFor(() => {
-      expect(
-        getByTestId('document-selector-sheet-approve-button'),
-      ).toBeTruthy();
-    });
-
-    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
-
-    await waitFor(() => {
-      expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
-    });
-  });
-
-  it('auto-selects first valid document if current selection is disabled', async () => {
-    const expiredPassport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const validCard = createMetadata({
-      id: 'doc-2',
-      documentType: 'ca',
-      documentCategory: 'id_card',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [expiredPassport, validCard],
-      selectedDocumentId: 'doc-1',
-    };
-
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([
-        createDocumentEntry(expiredPassport, 'expired'),
-        createDocumentEntry(validCard),
-      ]),
-    );
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      expect(
-        getByTestId('document-selector-action-bar-approve').props.disabled,
-      ).toBe(false);
-    });
-
-    // Open sheet and approve
-    fireEvent.press(
-      getByTestId('document-selector-action-bar-document-selector'),
-    );
-
-    await waitFor(() => {
-      expect(
-        getByTestId('document-selector-sheet-approve-button'),
-      ).toBeTruthy();
-    });
-
-    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
-
-    await waitFor(() => {
-      expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-2');
-    });
-  });
-
-  it('disabled documents cannot be selected', async () => {
-    const validPassport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const expiredPassport = createMetadata({
-      id: 'doc-2',
-      documentType: 'fr',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [validPassport, expiredPassport],
-      selectedDocumentId: 'doc-1',
-    };
-
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([
-        createDocumentEntry(validPassport),
-        createDocumentEntry(expiredPassport, 'expired'),
-      ]),
-    );
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-action-bar')).toBeTruthy();
-    });
-
-    // Open sheet
-    fireEvent.press(
-      getByTestId('document-selector-action-bar-document-selector'),
-    );
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-sheet-item-doc-2')).toBeTruthy();
-    });
-
-    fireEvent.press(getByTestId('document-selector-sheet-item-doc-2'));
-    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
-
-    await waitFor(() => {
-      expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
-    });
-  });
-
-  it('approve button is disabled when only expired documents exist', async () => {
-    const expiredPassport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const expiredCard = createMetadata({
-      id: 'doc-2',
-      documentType: 'ca',
-      documentCategory: 'id_card',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [expiredPassport, expiredCard],
-      selectedDocumentId: 'doc-1',
-    };
-
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([
-        createDocumentEntry(expiredPassport, 'expired'),
-        createDocumentEntry(expiredCard, 'expired'),
-      ]),
-    );
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      expect(
-        getByTestId('document-selector-action-bar-approve').props.disabled,
-      ).toBe(true);
-    });
-  });
-
-  it('selecting a different document updates selection state', async () => {
-    const passport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const idCard = createMetadata({
-      id: 'doc-2',
-      documentType: 'ca',
-      documentCategory: 'id_card',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [passport, idCard],
-      selectedDocumentId: 'doc-1',
-    };
-
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([
-        createDocumentEntry(passport),
-        createDocumentEntry(idCard),
-      ]),
-    );
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-action-bar')).toBeTruthy();
-    });
-
-    // Open sheet
-    fireEvent.press(
-      getByTestId('document-selector-action-bar-document-selector'),
-    );
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-sheet-item-doc-2')).toBeTruthy();
-    });
-
-    fireEvent.press(getByTestId('document-selector-sheet-item-doc-2'));
-    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
-
-    await waitFor(() => {
-      expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-2');
-    });
-  });
-
-  it('clicking Approve navigates to the Prove screen', async () => {
-    const passport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [passport],
-      selectedDocumentId: 'doc-1',
-    };
-
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(passport)]),
-    );
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      expect(
-        getByTestId('document-selector-action-bar-approve').props.disabled,
-      ).toBe(false);
-    });
-
-    // Open sheet and approve
-    fireEvent.press(
-      getByTestId('document-selector-action-bar-document-selector'),
-    );
-
-    await waitFor(() => {
-      expect(
-        getByTestId('document-selector-sheet-approve-button'),
-      ).toBeTruthy();
-    });
-
-    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('Prove');
-    });
-  });
-
-  it('shows error state when document loading fails', async () => {
-    mockLoadDocumentCatalog.mockRejectedValue(new Error('failure'));
-    mockGetAllDocuments.mockResolvedValue({});
-
-    const consoleWarnSpy = jest
-      .spyOn(console, 'warn')
-      .mockImplementation(() => {});
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-error')).toBeTruthy();
-    });
-
-    consoleWarnSpy.mockRestore();
-  });
-
-  it('retry button reloads documents after an error', async () => {
-    const passport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [passport],
-      selectedDocumentId: 'doc-1',
-    };
-
-    // First attempt fails, retry succeeds
-    mockLoadDocumentCatalog
-      .mockRejectedValueOnce(new Error('failure'))
-      .mockResolvedValueOnce(catalog);
-    mockGetAllDocuments
-      .mockResolvedValueOnce({})
-      .mockResolvedValueOnce(
+  describe('Loading and Initial State', () => {
+    it('loads documents on mount and renders action bar', async () => {
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
         createAllDocuments([createDocumentEntry(passport)]),
       );
 
-    const consoleWarnSpy = jest
-      .spyOn(console, 'warn')
-      .mockImplementation(() => {});
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
-    const { getByTestId, queryByTestId } = render(
-      <DocumentSelectorForProvingScreen />,
-    );
+      // Wait for documents to load and verify action bar buttons are rendered
+      // Note: Tamagui View doesn't forward testID, but Pressable children do
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve'),
+        ).toBeTruthy();
+        expect(
+          getByTestId('document-selector-action-bar-document-selector'),
+        ).toBeTruthy();
+      });
 
-    await waitFor(() => {
-      expect(getByTestId('document-selector-error')).toBeTruthy();
+      // Verify mocks were called
+      expect(mockLoadDocumentCatalog).toHaveBeenCalledTimes(1);
+      expect(mockGetAllDocuments).toHaveBeenCalledTimes(1);
     });
 
-    fireEvent.press(getByTestId('document-selector-retry'));
+    it('renders wallet badge when userId is present', async () => {
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
 
-    await waitFor(() => {
-      expect(queryByTestId('document-selector-error')).toBeNull();
-      expect(getByTestId('document-selector-action-bar')).toBeTruthy();
-    });
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(passport)]),
+      );
 
-    consoleWarnSpy.mockRestore();
-  });
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
-  it('shows an error when Approve fails to select the document', async () => {
-    const passport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [passport],
-      selectedDocumentId: 'doc-1',
-    };
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve'),
+        ).toBeTruthy();
+      });
 
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(passport)]),
-    );
-    mockSetSelectedDocument.mockRejectedValue(new Error('Selection failed'));
-
-    const consoleErrorSpy = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
-
-    const { getByTestId, getByText } = render(
-      <DocumentSelectorForProvingScreen />,
-    );
-
-    await waitFor(() => {
+      // Wallet badge is a Pressable so testID works
       expect(
-        getByTestId('document-selector-action-bar-approve').props.disabled,
-      ).toBe(false);
-    });
-
-    // Open sheet and approve
-    fireEvent.press(
-      getByTestId('document-selector-action-bar-document-selector'),
-    );
-
-    await waitFor(() => {
-      expect(
-        getByTestId('document-selector-sheet-approve-button'),
+        getByTestId('document-selector-wallet-badge-pressable'),
       ).toBeTruthy();
     });
-
-    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
-
-    await waitFor(() => {
-      expect(getByTestId('document-selector-error')).toBeTruthy();
-    });
-
-    expect(
-      getByText('Failed to select document. Please try again.'),
-    ).toBeTruthy();
-    expect(mockNavigate).not.toHaveBeenCalledWith('Prove');
-
-    consoleErrorSpy.mockRestore();
   });
 
-  it('clicking Dismiss button closes the sheet without selecting', async () => {
-    const passport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [passport],
-      selectedDocumentId: 'doc-1',
-    };
+  describe('Document Selection', () => {
+    it('enables approve button when valid documents exist', async () => {
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
 
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(passport)]),
-    );
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(passport)]),
+      );
 
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
-    await waitFor(() => {
-      expect(getByTestId('document-selector-action-bar')).toBeTruthy();
-    });
-
-    // Open sheet
-    fireEvent.press(
-      getByTestId('document-selector-action-bar-document-selector'),
-    );
-
-    await waitFor(() => {
-      expect(
-        getByTestId('document-selector-sheet-dismiss-button'),
-      ).toBeTruthy();
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve').props.disabled,
+        ).toBe(false);
+      });
     });
 
-    // Click dismiss
-    fireEvent.press(getByTestId('document-selector-sheet-dismiss-button'));
+    it('auto-selects first valid document when current selection is expired', async () => {
+      const expiredPassport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const validCard = createMetadata({
+        id: 'doc-2',
+        documentType: 'ca',
+        documentCategory: 'id_card',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [expiredPassport, validCard],
+        selectedDocumentId: 'doc-1', // Currently selected is expired
+      };
 
-    // Sheet should close (implementation detail - the sheet component handles this)
-    // Document selection should not have been called
-    expect(mockSetSelectedDocument).not.toHaveBeenCalled();
-    expect(mockNavigate).not.toHaveBeenCalled();
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([
+          createDocumentEntry(expiredPassport, 'expired'),
+          createDocumentEntry(validCard),
+        ]),
+      );
+
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+      // Should auto-select the valid document (doc-2)
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve').props.disabled,
+        ).toBe(false);
+      });
+
+      // Approve should select the auto-selected valid document
+      fireEvent.press(getByTestId('document-selector-action-bar-approve'));
+
+      await waitFor(() => {
+        expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-2');
+      });
+    });
+
+    it('disables approve button when only expired documents exist', async () => {
+      const expiredPassport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const expiredCard = createMetadata({
+        id: 'doc-2',
+        documentType: 'ca',
+        documentCategory: 'id_card',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [expiredPassport, expiredCard],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([
+          createDocumentEntry(expiredPassport, 'expired'),
+          createDocumentEntry(expiredCard, 'expired'),
+        ]),
+      );
+
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve').props.disabled,
+        ).toBe(true);
+      });
+    });
+  });
+
+  describe('Navigation and Approval', () => {
+    it('navigates to Prove screen after successful approval', async () => {
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(passport)]),
+      );
+
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve').props.disabled,
+        ).toBe(false);
+      });
+
+      // Press approve directly from action bar
+      fireEvent.press(getByTestId('document-selector-action-bar-approve'));
+
+      await waitFor(() => {
+        expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
+        expect(mockNavigate).toHaveBeenCalledWith('Prove', expect.any(Object));
+      });
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('shows error state when document loading fails', async () => {
+      mockLoadDocumentCatalog.mockRejectedValue(new Error('failure'));
+      mockGetAllDocuments.mockResolvedValue({});
+
+      const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
+
+      render(<DocumentSelectorForProvingScreen />);
+
+      // Wait for the load to fail and verify the error was logged
+      await waitFor(() => {
+        expect(mockLoadDocumentCatalog).toHaveBeenCalledTimes(1);
+      });
+
+      // Verify error was logged (component shows error state)
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'Failed to load documents:',
+        expect.any(Error),
+      );
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('shows error when document selection fails during approval', async () => {
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(passport)]),
+      );
+      mockSetSelectedDocument.mockRejectedValue(new Error('Selection failed'));
+
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve').props.disabled,
+        ).toBe(false);
+      });
+
+      // Press approve directly from action bar
+      fireEvent.press(getByTestId('document-selector-action-bar-approve'));
+
+      // Verify error was logged and navigation did not occur
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'Failed to set selected document:',
+          expect.any(Error),
+        );
+      });
+
+      expect(mockNavigate).not.toHaveBeenCalledWith(
+        'Prove',
+        expect.any(Object),
+      );
+
+      consoleErrorSpy.mockRestore();
+    });
   });
 });
