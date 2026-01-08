@@ -186,15 +186,6 @@ const ProvingScreenRouter: React.FC = () => {
       ) : (
         <>
           <ActivityIndicator color={blue600} size="large" />
-          <Text
-            fontFamily={dinot}
-            fontSize={16}
-            color={proofRequestColors.slate500}
-            marginTop={16}
-            testID="proving-router-loading"
-          >
-            Loading documents...
-          </Text>
         </>
       )}
     </View>
