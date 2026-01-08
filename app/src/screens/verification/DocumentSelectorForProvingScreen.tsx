@@ -345,6 +345,11 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     setSelectedDocumentId(documentId);
   }, []);
 
+  const handleSheetSelect = useCallback(() => {
+    // Just close the sheet when "Select" is pressed
+    setSheetOpen(false);
+  }, []);
+
   const handleApprove = async () => {
     if (!selectedDocumentId || !canContinue || submitting) {
       return;
@@ -352,7 +357,6 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
 
     setSubmitting(true);
     setError(null);
-    setSheetOpen(false);
     try {
       await setSelectedDocument(selectedDocumentId);
       navigation.navigate('Prove', { scrollOffset: scrollOffsetRef.current });
@@ -507,7 +511,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         selectedId={selectedDocumentId}
         onSelect={handleSelect}
         onDismiss={() => setSheetOpen(false)}
-        onApprove={handleApprove}
+        onApprove={handleSheetSelect}
         testID="document-selector-sheet"
       />
 

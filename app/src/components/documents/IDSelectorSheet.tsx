@@ -150,7 +150,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
               onPress={onApprove}
               disabled={!canApprove}
               opacity={canApprove ? 1 : 0.5}
-              testID={`${testID}-approve-button`}
+              testID={`${testID}-select-button`}
               pressStyle={{ opacity: 0.7 }}
             >
               <Text
@@ -159,7 +159,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                 fontWeight="500"
                 color={white}
               >
-                Approve
+                Select
               </Text>
             </Button>
           </XStack>

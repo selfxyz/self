@@ -44,11 +44,11 @@ export const ConnectedWalletBadge: React.FC<ConnectedWalletBadgeProps> = ({
       {/* Label with icon */}
       <XStack
         backgroundColor={proofRequestColors.blue700}
-        paddingHorizontal={8}
-        paddingVertical={6}
+        paddingHorizontal={6}
+        paddingVertical={4}
         borderRadius={3}
         alignItems="center"
-        gap={8}
+        gap={6}
       >
         <WalletIcon size={16} color={proofRequestColors.white} />
         <Text
@@ -70,7 +70,7 @@ export const ConnectedWalletBadge: React.FC<ConnectedWalletBadgeProps> = ({
           textAlign="right"
           testID={`${testID}-address`}
         >
-          {address}
+          {truncateAddress(address)}
         </Text>
       </View>
     </XStack>
