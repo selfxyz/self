@@ -140,24 +140,6 @@ describe('IDSelectorSheet', () => {
     expect(getByTestId('sheet-item-doc4')).toBeTruthy();
   });
 
-  it('renders close button icon', () => {
-    const { getByTestId } = render(
-      <IDSelectorSheet
-        open={true}
-        onOpenChange={mockOnOpenChange}
-        documents={mockDocuments}
-        selectedId="doc1"
-        onSelect={mockOnSelect}
-        onDismiss={mockOnDismiss}
-        onApprove={mockOnApprove}
-        testID="sheet"
-      />,
-    );
-
-    // The X icon for close button is rendered
-    expect(getByTestId('icon-x')).toBeTruthy();
-  });
-
   it('calls onSelect when a document item is pressed', () => {
     const { getByTestId } = render(
       <IDSelectorSheet

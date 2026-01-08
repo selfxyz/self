@@ -35,8 +35,9 @@ const mockUseNavigation = useNavigation as jest.MockedFunction<
 const mockUseSelfClient = useSelfClient as jest.MockedFunction<
   typeof useSelfClient
 >;
-const mockGetDocumentAttributes =
-  getDocumentAttributes as jest.MockedFunction<typeof getDocumentAttributes>;
+const mockGetDocumentAttributes = getDocumentAttributes as jest.MockedFunction<
+  typeof getDocumentAttributes
+>;
 const mockIsDocumentValidForProving =
   isDocumentValidForProving as jest.MockedFunction<
     typeof isDocumentValidForProving
@@ -196,9 +197,7 @@ describe('DocumentSelectorForProvingScreen', () => {
       expect(getByTestId('document-selector-card')).toBeTruthy();
     });
 
-    expect(
-      getByTestId('document-selector-disclosure-name'),
-    ).toBeTruthy();
+    expect(getByTestId('document-selector-disclosure-name')).toBeTruthy();
     expect(
       getByTestId('document-selector-disclosure-passport_number'),
     ).toBeTruthy();
@@ -227,9 +226,7 @@ describe('DocumentSelectorForProvingScreen', () => {
       expect(getByTestId('document-selector-wallet-badge')).toBeTruthy();
     });
 
-    fireEvent.press(
-      getByTestId('document-selector-wallet-badge-pressable'),
-    );
+    fireEvent.press(getByTestId('document-selector-wallet-badge-pressable'));
 
     await waitFor(() => {
       expect(getByTestId('document-selector-wallet-modal')).toBeTruthy();

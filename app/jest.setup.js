@@ -110,10 +110,15 @@ jest.mock('react-native', () => {
     }),
     PixelRatio: mockPixelRatio,
     Dimensions: {
-      get: jest.fn(() => ({
-        window: { width: 375, height: 667, scale: 2 },
-        screen: { width: 375, height: 667, scale: 2 },
-      })),
+      get: jest.fn((dimension) => {
+        const dimensions = {
+          window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+          screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
+        };
+        return dimension ? dimensions[dimension] : dimensions;
+      }),
+      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+      removeEventListener: jest.fn(),
     },
     Linking: {
       getInitialURL: jest.fn().mockResolvedValue(null),
@@ -274,10 +279,15 @@ jest.mock(
         Version: 14,
       },
       Dimensions: {
-        get: jest.fn(() => ({
-          window: { width: 375, height: 667, scale: 2 },
-          screen: { width: 375, height: 667, scale: 2 },
-        })),
+        get: jest.fn((dimension) => {
+          const dimensions = {
+            window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+            screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
+          };
+          return dimension ? dimensions[dimension] : dimensions;
+        }),
+        addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+        removeEventListener: jest.fn(),
       },
       StyleSheet: {
         create: jest.fn(styles => styles),
@@ -360,15 +370,18 @@ jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/Utilities/Dimensions',
   () => ({
     getConstants: jest.fn(() => ({
-      window: { width: 375, height: 667, scale: 2 },
-      screen: { width: 375, height: 667, scale: 2 },
+      window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+      screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
     })),
     set: jest.fn(),
-    get: jest.fn(() => ({
-      window: { width: 375, height: 667, scale: 2 },
-      screen: { width: 375, height: 667, scale: 2 },
-    })),
-    addEventListener: jest.fn(),
+    get: jest.fn((dimension) => {
+      const dimensions = {
+        window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+        screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
+      };
+      return dimension ? dimensions[dimension] : dimensions;
+    }),
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
     removeEventListener: jest.fn(),
   }),
   { virtual: true },
@@ -551,122 +564,129 @@ jest.mock(
   { virtual: true },
 );
 
+// Mock the hooks subpath from mobile-sdk-alpha
+jest.mock('@selfxyz/mobile-sdk-alpha/hooks', () => ({
+  useSafeBottomPadding: jest.fn((basePadding = 20) => basePadding + 50),
+}));
+
 // Mock problematic mobile-sdk-alpha components that use React Native StyleSheet
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  // Override only the specific mocks we need
   NFCScannerScreen: jest.fn(() => null),
-  SelfClientProvider: jest.fn(({ children }) => children),
-  useSelfClient: jest.fn(() => {
-    // Create a consistent mock instance for memoization testing
-    if (!global.mockSelfClientInstance) {
-      global.mockSelfClientInstance = {
-        // Mock selfClient object with common methods
-        connect: jest.fn(),
-        disconnect: jest.fn(),
-        isConnected: false,
-        extractMRZInfo: jest.fn(mrzString => {
-          // Mock extractMRZInfo with realistic behavior
-          if (!mrzString || typeof mrzString !== 'string') {
-            throw new Error('Invalid MRZ string provided');
-          }
+    SelfClientProvider: jest.fn(({ children }) => children),
+    useSafeBottomPadding: jest.fn((basePadding = 20) => basePadding + 50),
+    useSelfClient: jest.fn(() => {
+      // Create a consistent mock instance for memoization testing
+      if (!global.mockSelfClientInstance) {
+        global.mockSelfClientInstance = {
+          // Mock selfClient object with common methods
+          connect: jest.fn(),
+          disconnect: jest.fn(),
+          isConnected: false,
+          extractMRZInfo: jest.fn(mrzString => {
+            // Mock extractMRZInfo with realistic behavior
+            if (!mrzString || typeof mrzString !== 'string') {
+              throw new Error('Invalid MRZ string provided');
+            }
 
-          // Valid MRZ example from the test
-          if (mrzString.includes('L898902C3')) {
-            return {
-              documentNumber: 'L898902C3',
-              validation: {
-                overall: true,
-              },
-              // Add other expected MRZ fields
-              firstName: 'ANNA',
-              lastName: 'ERIKSSON',
-              nationality: 'UTO',
-              dateOfBirth: '740812',
-              sex: 'F',
-              expirationDate: '120415',
-            };
-          }
+            // Valid MRZ example from the test
+            if (mrzString.includes('L898902C3')) {
+              return {
+                documentNumber: 'L898902C3',
+                validation: {
+                  overall: true,
+                },
+                // Add other expected MRZ fields
+                firstName: 'ANNA',
+                lastName: 'ERIKSSON',
+                nationality: 'UTO',
+                dateOfBirth: '740812',
+                sex: 'F',
+                expirationDate: '120415',
+              };
+            }
 
-          // For malformed/invalid MRZ strings, throw an error
-          throw new Error('Invalid MRZ format');
-        }),
-        trackEvent: jest.fn(),
-      };
-    }
-    return global.mockSelfClientInstance;
-  }),
-  createSelfClient: jest.fn(() => ({
-    // Mock createSelfClient return value
-    connect: jest.fn(),
-    disconnect: jest.fn(),
-    isConnected: false,
-    extractMRZInfo: jest.fn(mrzString => {
-      // Mock extractMRZInfo with realistic behavior
-      if (!mrzString || typeof mrzString !== 'string') {
-        throw new Error('Invalid MRZ string provided');
-      }
-
-      // Valid MRZ example from the test
-      if (mrzString.includes('L898902C3')) {
-        return {
-          documentNumber: 'L898902C3',
-          validation: {
-            overall: true,
-          },
-          // Add other expected MRZ fields
-          firstName: 'ANNA',
-          lastName: 'ERIKSSON',
-          nationality: 'UTO',
-          dateOfBirth: '740812',
-          sex: 'F',
-          expirationDate: '120415',
+            // For malformed/invalid MRZ strings, throw an error
+            throw new Error('Invalid MRZ format');
+          }),
+          trackEvent: jest.fn(),
         };
       }
-
-      // For malformed/invalid MRZ strings, throw an error
-      throw new Error('Invalid MRZ format');
+      return global.mockSelfClientInstance;
     }),
-    trackEvent: jest.fn(),
-  })),
-  createListenersMap: jest.fn(() => ({
-    // Mock createListenersMap return value
-    map: new Map(),
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-  })),
-  isPassportDataValid: jest.fn((data, callbacks) => {
-    // Mock validation function with realistic behavior
-    if (!data || !data.passportMetadata) {
-      // Call appropriate callbacks for missing data
-      if (callbacks?.onPassportMetadataNull) {
-        callbacks.onPassportMetadataNull();
+    createSelfClient: jest.fn(() => ({
+      // Mock createSelfClient return value
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+      isConnected: false,
+      extractMRZInfo: jest.fn(mrzString => {
+        // Mock extractMRZInfo with realistic behavior
+        if (!mrzString || typeof mrzString !== 'string') {
+          throw new Error('Invalid MRZ string provided');
+        }
+
+        // Valid MRZ example from the test
+        if (mrzString.includes('L898902C3')) {
+          return {
+            documentNumber: 'L898902C3',
+            validation: {
+              overall: true,
+            },
+            // Add other expected MRZ fields
+            firstName: 'ANNA',
+            lastName: 'ERIKSSON',
+            nationality: 'UTO',
+            dateOfBirth: '740812',
+            sex: 'F',
+            expirationDate: '120415',
+          };
+        }
+
+        // For malformed/invalid MRZ strings, throw an error
+        throw new Error('Invalid MRZ format');
+      }),
+      trackEvent: jest.fn(),
+    })),
+    createListenersMap: jest.fn(() => ({
+      // Mock createListenersMap return value
+      map: new Map(),
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    })),
+    isPassportDataValid: jest.fn((data, callbacks) => {
+      // Mock validation function with realistic behavior
+      if (!data || !data.passportMetadata) {
+        // Call appropriate callbacks for missing data
+        if (callbacks?.onPassportMetadataNull) {
+          callbacks.onPassportMetadataNull();
+        }
+        return false;
       }
-      return false;
-    }
-    // Return true for valid data, false for invalid
-    return data.valid !== false;
-  }),
-  SdkEvents: {
-    // Mock SDK events object
-    PROVING_PASSPORT_DATA_NOT_FOUND: 'PROVING_PASSPORT_DATA_NOT_FOUND',
-    PROVING_STARTED: 'PROVING_STARTED',
-    PROVING_COMPLETED: 'PROVING_COMPLETED',
-    PROVING_FAILED: 'PROVING_FAILED',
-    // Add other events as needed
-  },
-  // Mock haptic functions
-  buttonTap: jest.fn(),
-  cancelTap: jest.fn(),
-  confirmTap: jest.fn(),
-  feedbackProgress: jest.fn(),
-  feedbackSuccess: jest.fn(),
-  feedbackUnsuccessful: jest.fn(),
-  impactLight: jest.fn(),
-  impactMedium: jest.fn(),
-  loadingScreenProgress: jest.fn(),
-  notificationError: jest.fn(),
-  notificationSuccess: jest.fn(),
-  notificationWarning: jest.fn(),
-  selectionChange: jest.fn(),
+      // Return true for valid data, false for invalid
+      return data.valid !== false;
+    }),
+    SdkEvents: {
+      // Mock SDK events object
+      PROVING_PASSPORT_DATA_NOT_FOUND: 'PROVING_PASSPORT_DATA_NOT_FOUND',
+      PROVING_STARTED: 'PROVING_STARTED',
+      PROVING_COMPLETED: 'PROVING_COMPLETED',
+      PROVING_FAILED: 'PROVING_FAILED',
+      // Add other events as needed
+    },
+    // Mock haptic functions
+    buttonTap: jest.fn(),
+    cancelTap: jest.fn(),
+    confirmTap: jest.fn(),
+    feedbackProgress: jest.fn(),
+    feedbackSuccess: jest.fn(),
+    feedbackUnsuccessful: jest.fn(),
+    impactLight: jest.fn(),
+    impactMedium: jest.fn(),
+    loadingScreenProgress: jest.fn(),
+    notificationError: jest.fn(),
+    notificationSuccess: jest.fn(),
+    notificationWarning: jest.fn(),
+    selectionChange: jest.fn(),
   triggerFeedback: jest.fn(),
   // Add other components and hooks as needed
 }));

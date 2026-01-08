@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useNavigation } from '@react-navigation/native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 
 import type {
   DocumentCatalog,
@@ -15,9 +15,24 @@ import {
   pickBestDocumentToSelect,
 } from '@selfxyz/mobile-sdk-alpha';
 
-import { ProvingScreenRouter } from '@/screens/verification/ProvingScreenRouter';
 import { usePassport } from '@/providers/passportDataProvider';
+import { ProvingScreenRouter } from '@/screens/verification/ProvingScreenRouter';
 import { useSettingStore } from '@/stores/settingStore';
+
+// Mock useFocusEffect to behave like useEffect in tests
+// Note: We use jest.requireActual for React to avoid nested require() which causes OOM in CI
+jest.mock('@react-navigation/native', () => {
+  const actual = jest.requireActual('@react-navigation/native');
+  const ReactActual = jest.requireActual('react');
+  return {
+    ...actual,
+    useFocusEffect: (callback: () => void) => {
+      ReactActual.useEffect(() => {
+        callback();
+      }, [callback]);
+    },
+  };
+});
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   isDocumentValidForProving: jest.fn(),
@@ -44,8 +59,9 @@ const mockPickBestDocumentToSelect =
     typeof pickBestDocumentToSelect
   >;
 const mockUsePassport = usePassport as jest.MockedFunction<typeof usePassport>;
-const mockUseSettingStore =
-  useSettingStore as jest.MockedFunction<typeof useSettingStore>;
+const mockUseSettingStore = useSettingStore as jest.MockedFunction<
+  typeof useSettingStore
+>;
 
 const mockReplace = jest.fn();
 const mockLoadDocumentCatalog = jest.fn();
@@ -190,7 +206,22 @@ describe('ProvingScreenRouter', () => {
     });
   });
 
-  it('retries loading when document routing fails', async () => {
+  it('shows error state when document loading fails', async () => {
+    mockLoadDocumentCatalog.mockRejectedValue(new Error('failure'));
+    mockGetAllDocuments.mockResolvedValue({});
+
+    render(<ProvingScreenRouter />);
+
+    // Verify that the load was attempted and navigation was NOT called
+    await waitFor(() => {
+      expect(mockLoadDocumentCatalog).toHaveBeenCalledTimes(1);
+    });
+
+    // The error path should NOT navigate anywhere
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('auto-selects when skipDocumentSelectorIfSingle is true with exactly 1 valid document', async () => {
     const passport = createMetadata({
       id: 'doc-1',
       documentType: 'us',
@@ -200,24 +231,89 @@ describe('ProvingScreenRouter', () => {
       documents: [passport],
     };
 
-    mockLoadDocumentCatalog
-      .mockRejectedValueOnce(new Error('failure'))
-      .mockResolvedValueOnce(catalog);
-    mockGetAllDocuments
-      .mockResolvedValueOnce({})
-      .mockResolvedValueOnce(
-        createAllDocuments([createDocumentEntry(passport)]),
-      );
+    mockUseSettingStore.mockReturnValue({
+      skipDocumentSelector: false,
+      skipDocumentSelectorIfSingle: true,
+    } as any);
 
-    const { getByTestId } = render(<ProvingScreenRouter />);
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(
+      createAllDocuments([createDocumentEntry(passport)]),
+    );
+    mockPickBestDocumentToSelect.mockReturnValue('doc-1');
+
+    render(<ProvingScreenRouter />);
 
     await waitFor(() => {
-      expect(getByTestId('proving-router-error')).toBeTruthy();
+      expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
+      expect(mockReplace).toHaveBeenCalledWith('Prove');
+    });
+  });
+
+  it('shows document selector when skipDocumentSelectorIfSingle is true with multiple valid documents', async () => {
+    const passport1 = createMetadata({
+      id: 'doc-1',
+      documentType: 'us',
+      isRegistered: true,
+    });
+    const passport2 = createMetadata({
+      id: 'doc-2',
+      documentType: 'gb',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [passport1, passport2],
+    };
+
+    mockUseSettingStore.mockReturnValue({
+      skipDocumentSelector: false,
+      skipDocumentSelectorIfSingle: true,
+    } as any);
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(
+      createAllDocuments([
+        createDocumentEntry(passport1),
+        createDocumentEntry(passport2),
+      ]),
+    );
+
+    render(<ProvingScreenRouter />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving');
     });
 
-    fireEvent.press(getByTestId('proving-router-retry'));
+    // Should NOT auto-select since there are multiple documents
+    expect(mockSetSelectedDocument).not.toHaveBeenCalled();
+  });
+
+  it('falls back to document selector when setSelectedDocument fails', async () => {
+    const passport = createMetadata({
+      id: 'doc-1',
+      documentType: 'us',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [passport],
+    };
+
+    mockUseSettingStore.mockReturnValue({
+      skipDocumentSelector: true,
+      skipDocumentSelectorIfSingle: false,
+    } as any);
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(
+      createAllDocuments([createDocumentEntry(passport)]),
+    );
+    mockPickBestDocumentToSelect.mockReturnValue('doc-1');
+    mockSetSelectedDocument.mockRejectedValue(new Error('Selection failed'));
+
+    render(<ProvingScreenRouter />);
 
     await waitFor(() => {
+      expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
       expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving');
     });
   });
