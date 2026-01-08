@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 export type { BottomActionBarProps } from '@/components/proof-request/BottomActionBar';
+export type { BottomVerifyBarProps } from '@/components/proof-request/BottomVerifyBar';
 
 // Metadata bar
 export type { ConnectedWalletBadgeProps } from '@/components/proof-request/ConnectedWalletBadge';
@@ -28,6 +29,7 @@ export type { WalletAddressModalProps } from '@/components/proof-request/WalletA
 
 // Icons
 export { BottomActionBar } from '@/components/proof-request/BottomActionBar';
+export { BottomVerifyBar } from '@/components/proof-request/BottomVerifyBar';
 
 // Bottom action bar
 export {
