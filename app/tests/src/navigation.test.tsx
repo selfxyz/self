@@ -79,6 +79,7 @@ describe('navigation', () => {
         'ProofRequestStatus',
         'ProofSettings',
         'Prove',
+        'ProvingScreenRouter',
         'QRCodeTrouble',
         'QRCodeViewFinder',
         'RecoverWithPhrase',

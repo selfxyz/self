@@ -74,6 +74,7 @@ export type RootStackParamList = Omit<
   | 'DocumentNFCScan'
   | 'DocumentOnboarding'
   | 'DocumentSelectorForProving'
+  | 'ProvingScreenRouter'
   | 'Gratification'
   | 'Home'
   | 'IDPicker'
@@ -151,6 +152,7 @@ export type RootStackParamList = Omit<
     data: ProofHistory;
   };
   Prove: undefined;
+  ProvingScreenRouter: undefined;
   DocumentSelectorForProving: undefined;
 
   // App screens
