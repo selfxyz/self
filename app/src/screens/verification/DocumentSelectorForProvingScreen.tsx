@@ -18,6 +18,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -40,7 +41,6 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import type { IDSelectorState } from '@/components/documents';
 import { IDSelectorItem, isDisabledState } from '@/components/documents';
-import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import {
@@ -126,6 +126,7 @@ function determineDocumentState(
 const DocumentSelectorForProvingScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
   const selfClient = useSelfClient();
   const { useSelfAppStore } = selfClient;
   const selfApp = useSelfAppStore(state => state.selfApp);
@@ -315,9 +316,10 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   };
 
   return (
-    <ExpandableBottomLayout.Layout flex={1} backgroundColor={black}>
-      <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <View style={styles.topSection}>
+    <View style={styles.container}>
+      {/* Compact Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.headerRow}>
           {logoSource ? (
             <Image
               source={logoSource}
@@ -326,129 +328,165 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
               testID="document-selector-logo"
             />
           ) : null}
-          {url ? (
-            <Text style={styles.appUrl} testID="document-selector-app-url">
-              {url}
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.appName} numberOfLines={1}>
+              {selfApp?.appName || 'Self'}
             </Text>
-          ) : null}
-          <Text style={styles.title}>
-            <Text style={styles.appName}>{selfApp?.appName || 'Self'}</Text>{' '}
-            <Text style={styles.titleMuted}>
-              is requesting you to select an ID to prove your information.
-            </Text>
-          </Text>
-        </View>
-      </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection
-        backgroundColor={white}
-        maxHeight="60%"
-      >
-        <View style={styles.bottomSection}>
-          {loading ? (
-            <View style={styles.statusContainer}>
-              <ActivityIndicator color={blue600} size="small" />
+            {url ? (
               <Text
-                style={styles.statusText}
-                testID="document-selector-loading"
+                style={styles.appUrl}
+                numberOfLines={1}
+                testID="document-selector-app-url"
               >
-                Loading documents...
+                {url}
               </Text>
-            </View>
-          ) : error ? (
-            <View style={styles.statusContainer}>
-              <Text style={styles.statusText} testID="document-selector-error">
-                {error}
-              </Text>
-              <Pressable
-                onPress={loadDocuments}
-                style={[styles.actionButton, styles.retryButton]}
-                testID="document-selector-retry"
-              >
-                <Text style={styles.retryButtonText}>Retry</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.list}
-              testID="document-selector-list"
-            >
-              {documents.map(doc => (
-                <IDSelectorItem
-                  key={doc.id}
-                  documentName={doc.name}
-                  state={doc.state}
-                  onPress={() => handleSelect(doc.id)}
-                  testID={`document-selector-item-${doc.id}`}
-                />
-              ))}
-            </ScrollView>
-          )}
-          <Pressable
-            onPress={handleContinue}
-            disabled={!canContinue || submitting}
-            style={({ pressed }) => [
-              styles.continueButton,
-              {
-                backgroundColor:
-                  canContinue && !submitting ? blue600 : slate300,
-                opacity: canContinue && !submitting ? (pressed ? 0.8 : 1) : 0.5,
-              },
-            ]}
-            testID="document-selector-continue"
-          >
-            {submitting ? (
-              <ActivityIndicator color={white} size="small" />
-            ) : (
-              <Text style={styles.continueButtonText}>Continue to Proof</Text>
-            )}
-          </Pressable>
+            ) : null}
+          </View>
         </View>
-      </ExpandableBottomLayout.BottomSection>
-    </ExpandableBottomLayout.Layout>
+        <Text style={styles.headerDescription}>
+          Select an ID to prove your information
+        </Text>
+      </View>
+
+      {/* Main Content - Document List */}
+      <View style={styles.content}>
+        <Text style={styles.sectionTitle}>Select an ID</Text>
+        {loading ? (
+          <View style={styles.statusContainer}>
+            <ActivityIndicator color={blue600} size="small" />
+            <Text style={styles.statusText} testID="document-selector-loading">
+              Loading documents...
+            </Text>
+          </View>
+        ) : error ? (
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusText} testID="document-selector-error">
+              {error}
+            </Text>
+            <Pressable
+              onPress={loadDocuments}
+              style={[styles.actionButton, styles.retryButton]}
+              testID="document-selector-retry"
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </Pressable>
+          </View>
+        ) : documents.length === 0 ? (
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusText} testID="document-selector-empty">
+              No documents found. Please scan a document first.
+            </Text>
+          </View>
+        ) : (
+          <ScrollView
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={true}
+            contentContainerStyle={styles.list}
+            testID="document-selector-list"
+          >
+            {documents.map(doc => (
+              <IDSelectorItem
+                key={doc.id}
+                documentName={doc.name}
+                state={doc.state}
+                onPress={() => handleSelect(doc.id)}
+                testID={`document-selector-item-${doc.id}`}
+              />
+            ))}
+          </ScrollView>
+        )}
+      </View>
+
+      {/* Footer Button */}
+      <View
+        style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}
+      >
+        <Pressable
+          onPress={handleContinue}
+          disabled={!canContinue || submitting}
+          style={({ pressed }) => [
+            styles.continueButton,
+            {
+              backgroundColor: canContinue && !submitting ? blue600 : slate300,
+              opacity: canContinue && !submitting ? (pressed ? 0.8 : 1) : 0.5,
+            },
+          ]}
+          testID="document-selector-continue"
+        >
+          {submitting ? (
+            <ActivityIndicator color={white} size="small" />
+          ) : (
+            <Text style={styles.continueButtonText}>Continue to Proof</Text>
+          )}
+        </Pressable>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  topSection: {
-    alignItems: 'center',
+  container: {
+    flex: 1,
+    backgroundColor: white,
+  },
+  header: {
+    backgroundColor: black,
     paddingHorizontal: 20,
+    paddingBottom: 16,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  headerTextContainer: {
+    flex: 1,
+    marginLeft: 12,
   },
   logo: {
-    width: 64,
-    height: 64,
-    marginBottom: 20,
+    width: 40,
+    height: 40,
+  },
+  appName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: white,
+    fontFamily: dinot,
   },
   appUrl: {
     fontSize: 12,
     color: slate300,
-    marginBottom: 20,
     fontFamily: dinot,
+    marginTop: 2,
   },
-  title: {
-    fontSize: 24,
-    textAlign: 'center',
+  headerDescription: {
+    fontSize: 14,
     color: slate300,
     fontFamily: dinot,
   },
-  appName: {
-    color: white,
-    fontFamily: dinot,
-  },
-  titleMuted: {
-    color: slate300,
-    fontFamily: dinot,
-  },
-  bottomSection: {
+  content: {
     flex: 1,
-    gap: 16,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: black,
+    fontFamily: dinot,
+    marginBottom: 16,
+  },
+  scrollView: {
+    flex: 1,
   },
   list: {
-    paddingBottom: 12,
+    paddingBottom: 16,
   },
   statusContainer: {
+    flex: 1,
     gap: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   statusText: {
     fontSize: 16,
@@ -472,6 +510,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: slate500,
     fontFamily: dinot,
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: white,
+    borderTopWidth: 1,
+    borderTopColor: slate300,
   },
   continueButton: {
     borderRadius: 8,
