@@ -34,6 +34,8 @@ export const ProofRequestHeader: React.FC<ProofRequestHeaderProps> = ({
   requestMessage,
   testID = 'proof-request-header',
 }) => {
+  const hasLogo = logoSource !== null;
+
   return (
     <View
       backgroundColor={proofRequestColors.black}
@@ -70,14 +72,18 @@ export const ProofRequestHeader: React.FC<ProofRequestHeaderProps> = ({
             {appName}
           </Text>
           {appUrl && (
-            <Text
-              fontFamily={plexMono}
-              fontSize={12}
-              color={proofRequestColors.zinc500}
-              testID={`${testID}-app-url`}
-            >
-              {appUrl}
-            </Text>
+            <View marginRight={hasLogo ? 50 : 0}>
+              <Text
+                fontFamily={plexMono}
+                fontSize={12}
+                color={proofRequestColors.zinc500}
+                testID={`${testID}-app-url`}
+                numberOfLines={1}
+                ellipsizeMode="middle"
+              >
+                {appUrl}
+              </Text>
+            </View>
           )}
         </YStack>
       </View>
