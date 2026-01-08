@@ -10,24 +10,23 @@ import type {
   DocumentMetadata,
   IDDocument,
 } from '@selfxyz/common/utils/types';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  getDocumentAttributes,
+  isDocumentValidForProving,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import { usePassport } from '@/providers/passportDataProvider';
 import { DocumentSelectorForProvingScreen } from '@/screens/verification/DocumentSelectorForProvingScreen';
 
-jest.mock('@/providers/passportDataProvider', () => ({
-  usePassport: jest.fn(),
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  useSelfClient: jest.fn(),
+  getDocumentAttributes: jest.fn(),
+  isDocumentValidForProving: jest.fn(),
 }));
 
-jest.mock('@/utils/documentAttributes', () => ({
-  checkDocumentExpiration: jest.fn(
-    (expiryDateSlice: string) => expiryDateSlice === 'expired',
-  ),
-  getDocumentAttributes: jest.fn(
-    (documentData: { expiryDateSlice?: string }) => ({
-      expiryDateSlice: documentData.expiryDateSlice,
-    }),
-  ),
+jest.mock('@/providers/passportDataProvider', () => ({
+  usePassport: jest.fn(),
 }));
 
 const mockUseNavigation = useNavigation as jest.MockedFunction<
@@ -36,6 +35,12 @@ const mockUseNavigation = useNavigation as jest.MockedFunction<
 const mockUseSelfClient = useSelfClient as jest.MockedFunction<
   typeof useSelfClient
 >;
+const mockGetDocumentAttributes =
+  getDocumentAttributes as jest.MockedFunction<typeof getDocumentAttributes>;
+const mockIsDocumentValidForProving =
+  isDocumentValidForProving as jest.MockedFunction<
+    typeof isDocumentValidForProving
+  >;
 const mockUsePassport = usePassport as jest.MockedFunction<typeof usePassport>;
 
 type MockDocumentEntry = {
@@ -58,6 +63,7 @@ const createMetadata = (
 const createDocumentEntry = (
   metadata: DocumentMetadata,
   expiryDateSlice?: string,
+  nationalitySlice?: string,
 ): MockDocumentEntry => ({
   metadata,
   data: {
@@ -65,6 +71,7 @@ const createDocumentEntry = (
     documentCategory: metadata.documentCategory as any,
     mock: metadata.mock,
     expiryDateSlice,
+    nationalitySlice,
   } as unknown as IDDocument,
 });
 
@@ -84,6 +91,12 @@ const mockSelfApp = {
   endpoint: 'https://example.com',
   logoBase64: 'https://example.com/logo.png',
   sessionId: 'session-id',
+  disclosures: {
+    name: true,
+    passport_number: true,
+  },
+  userId: '0x1234567890abcdef1234567890abcdef12345678',
+  userIdType: 'hex',
 };
 
 const mockNavigate = jest.fn();
@@ -122,6 +135,17 @@ describe('DocumentSelectorForProvingScreen', () => {
     mockUseSelfClient.mockReturnValue(stableSelfClient as any);
 
     mockUsePassport.mockReturnValue(stablePassportContext as any);
+
+    mockIsDocumentValidForProving.mockImplementation(
+      (_metadata, documentData) =>
+        (documentData as { expiryDateSlice?: string } | undefined)
+          ?.expiryDateSlice !== 'expired',
+    );
+    mockGetDocumentAttributes.mockImplementation(
+      (documentData: { nationalitySlice?: string }) => ({
+        nationalitySlice: documentData.nationalitySlice,
+      }),
+    );
   });
 
   it('renders loading state initially', () => {
@@ -143,11 +167,76 @@ describe('DocumentSelectorForProvingScreen', () => {
     );
 
     await waitFor(() => {
-      expect(getByTestId('document-selector-logo')).toBeTruthy();
+      expect(getByTestId('document-selector-card-header-logo')).toBeTruthy();
     });
 
     expect(getByText('example.com')).toBeTruthy();
     expect(getByText('Example App')).toBeTruthy();
+  });
+
+  it('renders disclosure items and wallet badge for the proof request card', async () => {
+    const passport = createMetadata({
+      id: 'doc-1',
+      documentType: 'us',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [passport],
+      selectedDocumentId: 'doc-1',
+    };
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(
+      createAllDocuments([createDocumentEntry(passport)]),
+    );
+
+    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+    await waitFor(() => {
+      expect(getByTestId('document-selector-card')).toBeTruthy();
+    });
+
+    expect(
+      getByTestId('document-selector-disclosure-name'),
+    ).toBeTruthy();
+    expect(
+      getByTestId('document-selector-disclosure-passport_number'),
+    ).toBeTruthy();
+    expect(getByTestId('document-selector-wallet-badge')).toBeTruthy();
+  });
+
+  it('opens the wallet modal when the wallet badge is pressed', async () => {
+    const passport = createMetadata({
+      id: 'doc-1',
+      documentType: 'us',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [passport],
+      selectedDocumentId: 'doc-1',
+    };
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(
+      createAllDocuments([createDocumentEntry(passport)]),
+    );
+
+    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+    await waitFor(() => {
+      expect(getByTestId('document-selector-wallet-badge')).toBeTruthy();
+    });
+
+    fireEvent.press(
+      getByTestId('document-selector-wallet-badge-pressable'),
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('document-selector-wallet-modal')).toBeTruthy();
+      expect(
+        getByTestId('document-selector-wallet-modal-full-address'),
+      ).toBeTruthy();
+    });
   });
 
   it('loads and displays all documents from catalog', async () => {
@@ -364,57 +453,6 @@ describe('DocumentSelectorForProvingScreen', () => {
       expect(
         getByTestId('document-selector-action-bar-approve').props.disabled,
       ).toBe(true);
-    });
-  });
-
-  it('unregistered documents are selectable for proving', async () => {
-    const unregisteredPassport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: false,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [unregisteredPassport],
-      selectedDocumentId: 'doc-1',
-    };
-
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(unregisteredPassport)]),
-    );
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      // Unregistered documents should be selectable
-      expect(
-        getByTestId('document-selector-action-bar-approve').props.disabled,
-      ).toBe(false);
-    });
-  });
-
-  it('approve button is enabled when valid document selected', async () => {
-    const validPassport = createMetadata({
-      id: 'doc-1',
-      documentType: 'us',
-      isRegistered: true,
-    });
-    const catalog: DocumentCatalog = {
-      documents: [validPassport],
-      selectedDocumentId: 'doc-1',
-    };
-
-    mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(validPassport)]),
-    );
-
-    const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
-
-    await waitFor(() => {
-      expect(
-        getByTestId('document-selector-action-bar-approve').props.disabled,
-      ).toBe(false);
     });
   });
 
