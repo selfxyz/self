@@ -8,8 +8,8 @@ import type {
   LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  ScrollView as ScrollViewType,
 } from 'react-native';
-import type { ScrollView as ScrollViewType } from 'react-native';
 import { ScrollView } from 'react-native';
 import { Text, View } from 'tamagui';
 

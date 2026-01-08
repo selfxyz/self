@@ -13,12 +13,16 @@ import type {
   LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  ScrollView as ScrollViewType,
 } from 'react-native';
-import type { ScrollView as ScrollViewType } from 'react-native';
 import { StyleSheet } from 'react-native';
 import { View, YStack } from 'tamagui';
-import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
+import {
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { isMRZDocument } from '@selfxyz/common';
@@ -48,11 +52,11 @@ import {
 } from '@/services/points';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
+import { getDisclosureItems } from '@/utils/disclosureUtils';
 import {
   checkDocumentExpiration,
   getDocumentAttributes,
 } from '@/utils/documentAttributes';
-import { getDisclosureItems } from '@/utils/disclosureUtils';
 import { formatUserId } from '@/utils/formatUserId';
 
 function getDocumentTypeName(category: string | undefined): string {
