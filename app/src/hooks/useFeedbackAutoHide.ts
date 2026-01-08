@@ -17,7 +17,13 @@ export const useFeedbackAutoHide = () => {
 
       // When screen goes out of focus, hide the feedback button
       return () => {
-        hideFeedbackButton();
+        try {
+          hideFeedbackButton();
+        } catch (error) {
+          if (__DEV__) {
+            console.debug('Failed to hide feedback button:', error);
+          }
+        }
       };
     }, []),
   );
