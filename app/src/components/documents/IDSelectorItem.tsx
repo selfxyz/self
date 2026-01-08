@@ -18,6 +18,7 @@ export interface IDSelectorItemProps {
   state: IDSelectorState;
   onPress?: () => void;
   disabled?: boolean;
+  isLastItem?: boolean;
   testID?: string;
 }
 
@@ -61,6 +62,7 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
   state,
   onPress,
   disabled,
+  isLastItem,
   testID,
 }) => {
   const isDisabled = disabled || isDisabledState(state);
@@ -116,7 +118,7 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
           </YStack>
         </XStack>
       </Pressable>
-      <Separator borderColor={slate300} />
+      {!isLastItem && <Separator borderColor={slate300} />}
     </>
   );
 };

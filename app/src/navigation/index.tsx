@@ -73,6 +73,8 @@ export type RootStackParamList = Omit<
   | 'Disclaimer'
   | 'DocumentNFCScan'
   | 'DocumentOnboarding'
+  | 'DocumentSelectorForProving'
+  | 'ProvingScreenRouter'
   | 'Gratification'
   | 'Home'
   | 'IDPicker'
@@ -142,6 +144,7 @@ export type RootStackParamList = Omit<
         returnToScreen?: 'Points';
       }
     | undefined;
+  ProofSettings: undefined;
   AccountVerifiedSuccess: undefined;
 
   // Proof/Verification screens
@@ -149,6 +152,8 @@ export type RootStackParamList = Omit<
     data: ProofHistory;
   };
   Prove: undefined;
+  ProvingScreenRouter: undefined;
+  DocumentSelectorForProving: undefined;
 
   // App screens
   Loading: {

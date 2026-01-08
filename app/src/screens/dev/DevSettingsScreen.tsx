@@ -255,7 +255,10 @@ const ScreenSelector = ({}) => {
                 />
               </Button>
             </XStack>
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 100 }}
+            >
               {screenList.map(item => (
                 <TouchableOpacity
                   key={item}

@@ -268,7 +268,7 @@ describe('useEarnPointsFlow', () => {
         jest.advanceTimersByTime(100);
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith('Prove');
+      expect(mockNavigate).toHaveBeenCalledWith('ProvingScreenRouter');
     });
 
     it('should clear referrer when points disclosure modal is dismissed with referrer', async () => {
