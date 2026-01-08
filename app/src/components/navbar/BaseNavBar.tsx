@@ -84,13 +84,19 @@ export const LeftAction: React.FC<LeftActionProps> = ({
   return <View {...props}>{children}</View>;
 };
 
-const NavBarTitle: React.FC<NavBarTitleProps> = ({ children, color, ...props }) => {
+const NavBarTitle: React.FC<NavBarTitleProps> = ({
+  children,
+  color,
+  ...props
+}) => {
   if (!children) {
     return null;
   }
 
   return typeof children === 'string' ? (
-    <Title color={color} {...props}>{children}</Title>
+    <Title color={color} {...props}>
+      {children}
+    </Title>
   ) : (
     children
   );

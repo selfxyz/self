@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { Button, ScrollView, Sheet, Text, XStack, YStack } from 'tamagui';
-import { X } from '@tamagui/lucide-icons';
+import { Button, ScrollView, Sheet, Text, View, XStack, YStack } from 'tamagui';
 
 import {
   black,
   blue600,
-  slate300,
-  slate500,
+  slate200,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
@@ -75,69 +73,85 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
         borderTopRightRadius="$9"
         testID={testID}
       >
-        <YStack padding="$4" flex={1}>
+        <YStack padding={20} paddingTop={30} flex={1}>
           {/* Header */}
-          <XStack
-            alignItems="center"
-            justifyContent="space-between"
-            marginBottom="$4"
+          <Text
+            fontSize={20}
+            fontFamily={dinot}
+            fontWeight="500"
+            color={black}
+            marginBottom={32}
           >
-            <Text
-              fontSize={20}
-              fontFamily={dinot}
-              fontWeight="600"
-              color={black}
-            >
-              Select an ID
-            </Text>
-            <XStack
-              onPress={onDismiss}
-              padding="$2"
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              testID={`${testID}-close-button`}
-            >
-              <X color={slate500} size={24} />
-            </XStack>
-          </XStack>
+            Select an ID
+          </Text>
 
-          {/* Document List */}
-          <ScrollView
+          {/* Document List Container with border radius */}
+          <View
             flex={1}
-            showsVerticalScrollIndicator={false}
-            testID={`${testID}-list`}
+            backgroundColor={white}
+            borderRadius={10}
+            overflow="hidden"
+            marginBottom={32}
           >
-            {documents.map((doc, index) => {
-              const isSelected = doc.id === selectedId;
-              // Don't override to 'active' if the document is in a disabled state
-              const itemState: IDSelectorState =
-                isSelected && !isDisabledState(doc.state)
-                  ? 'active'
-                  : doc.state;
+            <ScrollView
+              flex={1}
+              showsVerticalScrollIndicator={false}
+              testID={`${testID}-list`}
+            >
+              {documents.map((doc, index) => {
+                const isSelected = doc.id === selectedId;
+                // Don't override to 'active' if the document is in a disabled state
+                const itemState: IDSelectorState =
+                  isSelected && !isDisabledState(doc.state)
+                    ? 'active'
+                    : doc.state;
 
-              return (
-                <IDSelectorItem
-                  key={doc.id}
-                  documentName={doc.name}
-                  state={itemState}
-                  onPress={() => onSelect(doc.id)}
-                  isLastItem={index === documents.length - 1}
-                  testID={`${testID}-item-${doc.id}`}
-                />
-              );
-            })}
-          </ScrollView>
+                return (
+                  <IDSelectorItem
+                    key={doc.id}
+                    documentName={doc.name}
+                    state={itemState}
+                    onPress={() => onSelect(doc.id)}
+                    isLastItem={index === documents.length - 1}
+                    testID={`${testID}-item-${doc.id}`}
+                  />
+                );
+              })}
+            </ScrollView>
+          </View>
 
-          {/* Footer Button */}
-          <XStack marginTop="$4" paddingBottom={bottomPadding}>
+          {/* Footer Buttons */}
+          <XStack gap={10} paddingBottom={bottomPadding}>
             <Button
               flex={1}
-              backgroundColor={canApprove ? blue600 : slate300}
+              backgroundColor={white}
+              borderWidth={1}
+              borderColor={slate200}
               borderRadius={4}
               height={48}
               onPress={onDismiss}
+              testID={`${testID}-dismiss-button`}
+              pressStyle={{ opacity: 0.7 }}
+            >
+              <Text
+                fontFamily={dinot}
+                fontSize={18}
+                fontWeight="500"
+                color={black}
+              >
+                Dismiss
+              </Text>
+            </Button>
+            <Button
+              flex={1}
+              backgroundColor={blue600}
+              borderRadius={4}
+              height={48}
+              onPress={onApprove}
               disabled={!canApprove}
               opacity={canApprove ? 1 : 0.5}
-              testID={`${testID}-select-button`}
+              testID={`${testID}-approve-button`}
+              pressStyle={{ opacity: 0.7 }}
             >
               <Text
                 fontFamily={dinot}
@@ -145,7 +159,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                 fontWeight="500"
                 color={white}
               >
-                Select
+                Approve
               </Text>
             </Button>
           </XStack>

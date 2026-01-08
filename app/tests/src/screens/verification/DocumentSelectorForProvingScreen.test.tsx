@@ -178,9 +178,18 @@ describe('DocumentSelectorForProvingScreen', () => {
     const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
     await waitFor(() => {
-      expect(getByTestId('document-selector-list')).toBeTruthy();
-      expect(getByTestId('document-selector-item-doc-1')).toBeTruthy();
-      expect(getByTestId('document-selector-item-doc-2')).toBeTruthy();
+      expect(getByTestId('document-selector-action-bar')).toBeTruthy();
+    });
+
+    // Open the sheet
+    fireEvent.press(
+      getByTestId('document-selector-action-bar-document-selector'),
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('document-selector-sheet-list')).toBeTruthy();
+      expect(getByTestId('document-selector-sheet-item-doc-1')).toBeTruthy();
+      expect(getByTestId('document-selector-sheet-item-doc-2')).toBeTruthy();
     });
   });
 
@@ -203,12 +212,23 @@ describe('DocumentSelectorForProvingScreen', () => {
     const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
     await waitFor(() => {
-      expect(getByTestId('document-selector-continue').props.disabled).toBe(
-        false,
-      );
+      expect(
+        getByTestId('document-selector-action-bar-approve').props.disabled,
+      ).toBe(false);
     });
 
-    fireEvent.press(getByTestId('document-selector-continue'));
+    // Open sheet and approve
+    fireEvent.press(
+      getByTestId('document-selector-action-bar-document-selector'),
+    );
+
+    await waitFor(() => {
+      expect(
+        getByTestId('document-selector-sheet-approve-button'),
+      ).toBeTruthy();
+    });
+
+    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
 
     await waitFor(() => {
       expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
@@ -243,12 +263,23 @@ describe('DocumentSelectorForProvingScreen', () => {
     const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
     await waitFor(() => {
-      expect(getByTestId('document-selector-continue').props.disabled).toBe(
-        false,
-      );
+      expect(
+        getByTestId('document-selector-action-bar-approve').props.disabled,
+      ).toBe(false);
     });
 
-    fireEvent.press(getByTestId('document-selector-continue'));
+    // Open sheet and approve
+    fireEvent.press(
+      getByTestId('document-selector-action-bar-document-selector'),
+    );
+
+    await waitFor(() => {
+      expect(
+        getByTestId('document-selector-sheet-approve-button'),
+      ).toBeTruthy();
+    });
+
+    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
 
     await waitFor(() => {
       expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-2');
@@ -282,18 +313,27 @@ describe('DocumentSelectorForProvingScreen', () => {
     const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
     await waitFor(() => {
-      expect(getByTestId('document-selector-item-doc-2')).toBeTruthy();
+      expect(getByTestId('document-selector-action-bar')).toBeTruthy();
     });
 
-    fireEvent.press(getByTestId('document-selector-item-doc-2'));
-    fireEvent.press(getByTestId('document-selector-continue'));
+    // Open sheet
+    fireEvent.press(
+      getByTestId('document-selector-action-bar-document-selector'),
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('document-selector-sheet-item-doc-2')).toBeTruthy();
+    });
+
+    fireEvent.press(getByTestId('document-selector-sheet-item-doc-2'));
+    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
 
     await waitFor(() => {
       expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
     });
   });
 
-  it('continue button is disabled when only expired documents exist', async () => {
+  it('approve button is disabled when only expired documents exist', async () => {
     const expiredPassport = createMetadata({
       id: 'doc-1',
       documentType: 'us',
@@ -321,9 +361,9 @@ describe('DocumentSelectorForProvingScreen', () => {
     const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
     await waitFor(() => {
-      expect(getByTestId('document-selector-continue').props.disabled).toBe(
-        true,
-      );
+      expect(
+        getByTestId('document-selector-action-bar-approve').props.disabled,
+      ).toBe(true);
     });
   });
 
@@ -347,13 +387,13 @@ describe('DocumentSelectorForProvingScreen', () => {
 
     await waitFor(() => {
       // Unregistered documents should be selectable
-      expect(getByTestId('document-selector-continue').props.disabled).toBe(
-        false,
-      );
+      expect(
+        getByTestId('document-selector-action-bar-approve').props.disabled,
+      ).toBe(false);
     });
   });
 
-  it('continue button is enabled when valid document selected', async () => {
+  it('approve button is enabled when valid document selected', async () => {
     const validPassport = createMetadata({
       id: 'doc-1',
       documentType: 'us',
@@ -372,9 +412,9 @@ describe('DocumentSelectorForProvingScreen', () => {
     const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
     await waitFor(() => {
-      expect(getByTestId('document-selector-continue').props.disabled).toBe(
-        false,
-      );
+      expect(
+        getByTestId('document-selector-action-bar-approve').props.disabled,
+      ).toBe(false);
     });
   });
 
@@ -406,18 +446,27 @@ describe('DocumentSelectorForProvingScreen', () => {
     const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
     await waitFor(() => {
-      expect(getByTestId('document-selector-item-doc-2')).toBeTruthy();
+      expect(getByTestId('document-selector-action-bar')).toBeTruthy();
     });
 
-    fireEvent.press(getByTestId('document-selector-item-doc-2'));
-    fireEvent.press(getByTestId('document-selector-continue'));
+    // Open sheet
+    fireEvent.press(
+      getByTestId('document-selector-action-bar-document-selector'),
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('document-selector-sheet-item-doc-2')).toBeTruthy();
+    });
+
+    fireEvent.press(getByTestId('document-selector-sheet-item-doc-2'));
+    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
 
     await waitFor(() => {
       expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-2');
     });
   });
 
-  it('clicking Continue navigates to the Prove screen', async () => {
+  it('clicking Approve navigates to the Prove screen', async () => {
     const passport = createMetadata({
       id: 'doc-1',
       documentType: 'us',
@@ -436,12 +485,23 @@ describe('DocumentSelectorForProvingScreen', () => {
     const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
     await waitFor(() => {
-      expect(getByTestId('document-selector-continue').props.disabled).toBe(
-        false,
-      );
+      expect(
+        getByTestId('document-selector-action-bar-approve').props.disabled,
+      ).toBe(false);
     });
 
-    fireEvent.press(getByTestId('document-selector-continue'));
+    // Open sheet and approve
+    fireEvent.press(
+      getByTestId('document-selector-action-bar-document-selector'),
+    );
+
+    await waitFor(() => {
+      expect(
+        getByTestId('document-selector-sheet-approve-button'),
+      ).toBeTruthy();
+    });
+
+    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('Prove');
@@ -502,14 +562,13 @@ describe('DocumentSelectorForProvingScreen', () => {
 
     await waitFor(() => {
       expect(queryByTestId('document-selector-error')).toBeNull();
-      expect(getByTestId('document-selector-list')).toBeTruthy();
-      expect(getByTestId('document-selector-item-doc-1')).toBeTruthy();
+      expect(getByTestId('document-selector-action-bar')).toBeTruthy();
     });
 
     consoleWarnSpy.mockRestore();
   });
 
-  it('shows an error when Continue fails to select the document', async () => {
+  it('shows an error when Approve fails to select the document', async () => {
     const passport = createMetadata({
       id: 'doc-1',
       documentType: 'us',
@@ -535,12 +594,23 @@ describe('DocumentSelectorForProvingScreen', () => {
     );
 
     await waitFor(() => {
-      expect(getByTestId('document-selector-continue').props.disabled).toBe(
-        false,
-      );
+      expect(
+        getByTestId('document-selector-action-bar-approve').props.disabled,
+      ).toBe(false);
     });
 
-    fireEvent.press(getByTestId('document-selector-continue'));
+    // Open sheet and approve
+    fireEvent.press(
+      getByTestId('document-selector-action-bar-document-selector'),
+    );
+
+    await waitFor(() => {
+      expect(
+        getByTestId('document-selector-sheet-approve-button'),
+      ).toBeTruthy();
+    });
+
+    fireEvent.press(getByTestId('document-selector-sheet-approve-button'));
 
     await waitFor(() => {
       expect(getByTestId('document-selector-error')).toBeTruthy();
@@ -552,5 +622,49 @@ describe('DocumentSelectorForProvingScreen', () => {
     expect(mockNavigate).not.toHaveBeenCalledWith('Prove');
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it('clicking Dismiss button closes the sheet without selecting', async () => {
+    const passport = createMetadata({
+      id: 'doc-1',
+      documentType: 'us',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [passport],
+      selectedDocumentId: 'doc-1',
+    };
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(
+      createAllDocuments([createDocumentEntry(passport)]),
+    );
+
+    const { getByTestId } = render(
+      <DocumentSelectorForProvingScreen />,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('document-selector-action-bar')).toBeTruthy();
+    });
+
+    // Open sheet
+    fireEvent.press(
+      getByTestId('document-selector-action-bar-document-selector'),
+    );
+
+    await waitFor(() => {
+      expect(
+        getByTestId('document-selector-sheet-dismiss-button'),
+      ).toBeTruthy();
+    });
+
+    // Click dismiss
+    fireEvent.press(getByTestId('document-selector-sheet-dismiss-button'));
+
+    // Sheet should close (implementation detail - the sheet component handles this)
+    // Document selection should not have been called
+    expect(mockSetSelectedDocument).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

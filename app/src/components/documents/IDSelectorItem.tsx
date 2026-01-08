@@ -4,12 +4,16 @@
 
 import { Pressable } from 'react-native';
 import { Separator, Text, View, XStack, YStack } from 'tamagui';
-import { Check, Circle } from '@tamagui/lucide-icons';
+import { Check } from '@tamagui/lucide-icons';
 
 import {
   black,
+  green500,
+  green600,
+  iosSeparator,
+  slate200,
   slate300,
-  slate500,
+  slate400,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
@@ -24,10 +28,6 @@ export interface IDSelectorItemProps {
 
 export type IDSelectorState = 'active' | 'verified' | 'expired' | 'mock';
 
-const green500 = '#22C55E';
-const red500 = '#EF4444';
-const orange500 = '#F97316';
-
 function getSubtitleText(state: IDSelectorState): string {
   switch (state) {
     case 'active':
@@ -37,20 +37,20 @@ function getSubtitleText(state: IDSelectorState): string {
     case 'expired':
       return 'Expired';
     case 'mock':
-      return 'Developer ID';
+      return 'Testing document';
   }
 }
 
 function getSubtitleColor(state: IDSelectorState): string {
   switch (state) {
     case 'active':
-      return green500;
+      return green600;
     case 'verified':
-      return slate500;
+      return slate400;
     case 'expired':
-      return red500;
+      return slate400;
     case 'mock':
-      return orange500;
+      return slate400;
   }
 }
 
@@ -66,7 +66,10 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
   const isActive = state === 'active';
   const subtitleText = getSubtitleText(state);
   const subtitleColor = getSubtitleColor(state);
-  const textColor = isDisabled ? slate500 : black;
+  const textColor = isDisabled ? slate400 : black;
+
+  // Determine circle color based on state
+  const circleColor = isDisabled ? slate200 : slate300;
 
   return (
     <>
@@ -76,34 +79,38 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
         testID={testID}
       >
         <XStack
-          paddingVertical={16}
-          paddingHorizontal={8}
+          paddingVertical={6}
+          paddingHorizontal={0}
           alignItems="center"
-          gap={12}
+          gap={13}
           opacity={isDisabled ? 0.6 : 1}
         >
           {/* Radio button indicator */}
           <View
-            width={24}
+            width={29}
             height={24}
-            borderRadius={12}
-            borderWidth={isActive ? 0 : 2}
-            borderColor={slate300}
-            backgroundColor={isActive ? green500 : 'transparent'}
             alignItems="center"
             justifyContent="center"
           >
-            {isActive && <Check size={16} color="white" strokeWidth={3} />}
-            {!isActive && !isDisabled && (
-              <Circle size={20} color={slate300} strokeWidth={0} />
-            )}
+            <View
+              width={24}
+              height={24}
+              borderRadius={12}
+              borderWidth={isActive ? 0 : 2}
+              borderColor={circleColor}
+              backgroundColor={isActive ? green500 : 'transparent'}
+              alignItems="center"
+              justifyContent="center"
+            >
+              {isActive && <Check size={16} color="white" strokeWidth={3} />}
+            </View>
           </View>
 
           {/* Document info */}
-          <YStack flex={1} gap={2}>
+          <YStack flex={1} gap={2} paddingVertical={8} paddingBottom={9}>
             <Text
               fontFamily={dinot}
-              fontSize={16}
+              fontSize={18}
               fontWeight="500"
               color={textColor}
             >
@@ -115,7 +122,7 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
           </YStack>
         </XStack>
       </Pressable>
-      {!isLastItem && <Separator borderColor={slate300} />}
+      {!isLastItem && <Separator borderColor={iosSeparator} />}
     </>
   );
 };

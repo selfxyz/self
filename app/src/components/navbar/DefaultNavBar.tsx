@@ -19,7 +19,7 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const headerStyle = (options.headerStyle || {}) as ViewStyle;
   const insets = useSafeAreaInsets();
   const headerTitleStyle = (options.headerTitleStyle || {}) as TextStyle;
-  
+
   return (
     <NavBar.Container
       gap={14}
@@ -28,8 +28,7 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
       paddingBottom={20}
       backgroundColor={headerStyle.backgroundColor as string}
       barStyle={
-        options.headerTintColor === white ||
-        headerTitleStyle?.color === white
+        options.headerTintColor === white || headerTitleStyle?.color === white
           ? 'light'
           : 'dark'
       }
@@ -44,7 +43,7 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
         }}
         color={options.headerTintColor as string}
       />
-      <NavBar.Title 
+      <NavBar.Title
         color={headerTitleStyle.color as string}
         style={headerTitleStyle}
       >

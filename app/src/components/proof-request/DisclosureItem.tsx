@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { Pressable } from 'react-native';
-import { View, XStack, Text } from 'tamagui';
+import { Text, View, XStack } from 'tamagui';
 
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 

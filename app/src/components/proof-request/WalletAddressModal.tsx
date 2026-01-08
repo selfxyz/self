@@ -44,7 +44,7 @@ export const WalletAddressModal: React.FC<WalletAddressModalProps> = ({
   const handleCopy = useCallback(() => {
     Clipboard.setString(address);
     setCopied(true);
-    
+
     // Reset copied state and close after a brief delay
     setTimeout(() => {
       setCopied(false);

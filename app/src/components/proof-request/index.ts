@@ -7,9 +7,9 @@ export type { BottomActionBarProps } from '@/components/proof-request/BottomActi
 // Metadata bar
 export type { ConnectedWalletBadgeProps } from '@/components/proof-request/ConnectedWalletBadge';
 
-export type { WalletAddressModalProps } from '@/components/proof-request/WalletAddressModal';
-
 export type { DisclosureItemProps } from '@/components/proof-request/DisclosureItem';
+
+export type { IconProps } from '@/components/proof-request/icons';
 
 // Header section
 export type { ProofMetadataBarProps } from '@/components/proof-request/ProofMetadataBar';
@@ -24,30 +24,12 @@ export type { ProofMetadataBarProps } from '@/components/proof-request/ProofMeta
 export type { ProofRequestCardProps } from '@/components/proof-request/ProofRequestCard';
 export type { ProofRequestHeaderProps } from '@/components/proof-request/ProofRequestHeader';
 
+export type { WalletAddressModalProps } from '@/components/proof-request/WalletAddressModal';
+
+// Icons
 export { BottomActionBar } from '@/components/proof-request/BottomActionBar';
 
 // Bottom action bar
-export {
-  ConnectedWalletBadge,
-  truncateAddress,
-} from '@/components/proof-request/ConnectedWalletBadge';
-
-export { DisclosureItem } from '@/components/proof-request/DisclosureItem';
-
-// Connected wallet badge
-export {
-  ProofMetadataBar,
-  formatTimestamp,
-} from '@/components/proof-request/ProofMetadataBar';
-
-// Disclosure item
-export { ProofRequestCard } from '@/components/proof-request/ProofRequestCard';
-
-export { ProofRequestHeader } from '@/components/proof-request/ProofRequestHeader';
-
-export { WalletAddressModal } from '@/components/proof-request/WalletAddressModal';
-
-// Icons
 export {
   ChevronUpDownIcon,
   CopyIcon,
@@ -57,7 +39,25 @@ export {
   WalletIcon,
 } from '@/components/proof-request/icons';
 
-export type { IconProps } from '@/components/proof-request/icons';
+export {
+  ConnectedWalletBadge,
+  truncateAddress,
+} from '@/components/proof-request/ConnectedWalletBadge';
+
+// Connected wallet badge
+export { DisclosureItem } from '@/components/proof-request/DisclosureItem';
+
+// Disclosure item
+export {
+  ProofMetadataBar,
+  formatTimestamp,
+} from '@/components/proof-request/ProofMetadataBar';
+
+export { ProofRequestCard } from '@/components/proof-request/ProofRequestCard';
+
+export { ProofRequestHeader } from '@/components/proof-request/ProofRequestHeader';
+
+export { WalletAddressModal } from '@/components/proof-request/WalletAddressModal';
 
 // Design tokens
 export {

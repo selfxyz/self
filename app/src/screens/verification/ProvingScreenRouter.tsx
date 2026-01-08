@@ -3,7 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator } from 'react-native';
+import { Text, View } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -11,13 +12,10 @@ import {
   isDocumentValidForProving,
   pickBestDocumentToSelect,
 } from '@selfxyz/mobile-sdk-alpha';
-import {
-  black,
-  blue600,
-  white,
-} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { blue600 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
+import { proofRequestColors } from '@/components/proof-request';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
@@ -145,58 +143,62 @@ const ProvingScreenRouter: React.FC = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View
+      flex={1}
+      backgroundColor={proofRequestColors.white}
+      alignItems="center"
+      justifyContent="center"
+      testID="proving-router-container"
+    >
       {error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
+        <View alignItems="center" gap={16}>
           <Text
-            style={styles.retryText}
+            fontFamily={dinot}
+            fontSize={16}
+            color={proofRequestColors.slate500}
+            textAlign="center"
+            testID="proving-router-error"
+          >
+            {error}
+          </Text>
+          <View
+            paddingHorizontal={24}
+            paddingVertical={12}
+            borderRadius={8}
+            borderWidth={1}
+            borderColor={proofRequestColors.slate200}
             onPress={() => {
               hasRoutedRef.current = false;
               loadAndRoute();
             }}
+            pressStyle={{ opacity: 0.7 }}
+            testID="proving-router-retry"
           >
-            Tap to retry
-          </Text>
+            <Text
+              fontFamily={dinot}
+              fontSize={16}
+              color={proofRequestColors.slate500}
+            >
+              Retry
+            </Text>
+          </View>
         </View>
       ) : (
         <>
           <ActivityIndicator color={blue600} size="large" />
-          <Text style={styles.loadingText}>Loading documents...</Text>
+          <Text
+            fontFamily={dinot}
+            fontSize={16}
+            color={proofRequestColors.slate500}
+            marginTop={16}
+            testID="proving-router-loading"
+          >
+            Loading documents...
+          </Text>
         </>
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: black,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: white,
-    fontFamily: dinot,
-  },
-  errorContainer: {
-    alignItems: 'center',
-    gap: 12,
-  },
-  errorText: {
-    fontSize: 16,
-    color: white,
-    fontFamily: dinot,
-    textAlign: 'center',
-  },
-  retryText: {
-    fontSize: 14,
-    color: blue600,
-    fontFamily: dinot,
-  },
-});
 
 export { ProvingScreenRouter };

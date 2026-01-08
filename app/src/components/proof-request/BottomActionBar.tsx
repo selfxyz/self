@@ -70,7 +70,10 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
               {selectedDocumentName}
             </Text>
             <View marginLeft={8}>
-              <ChevronUpDownIcon size={20} color={proofRequestColors.slate400} />
+              <ChevronUpDownIcon
+                size={20}
+                color={proofRequestColors.slate400}
+              />
             </View>
           </XStack>
         </Pressable>

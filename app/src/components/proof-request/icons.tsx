@@ -11,44 +11,6 @@ export interface IconProps {
 }
 
 /**
- * Filled circle icon (checkmark/bullet point)
- */
-export const FilledCircleIcon: React.FC<IconProps> = ({
-  size = 18,
-  color = '#10B981',
-}) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Circle cx="12" cy="12" r="10" fill={color} />
-  </Svg>
-);
-
-/**
- * Info circle icon
- */
-export const InfoCircleIcon: React.FC<IconProps> = ({
-  size = 20,
-  color = '#3B82F6',
-}) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Circle
-      cx="12"
-      cy="12"
-      r="10"
-      stroke={color}
-      strokeWidth="2"
-      fill="none"
-    />
-    <Path
-      d="M12 16V12M12 8H12.01"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
-);
-
-/**
  * Chevron up/down icon (dropdown)
  */
 export const ChevronUpDownIcon: React.FC<IconProps> = ({
@@ -67,17 +29,17 @@ export const ChevronUpDownIcon: React.FC<IconProps> = ({
 );
 
 /**
- * Wallet icon
+ * Copy icon
  */
-export const WalletIcon: React.FC<IconProps> = ({
+export const CopyIcon: React.FC<IconProps> = ({
   size = 16,
   color = '#FFFFFF',
 }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Rect
-      x="3"
-      y="6"
-      width="18"
+      x="9"
+      y="9"
+      width="13"
       height="13"
       rx="2"
       stroke={color}
@@ -85,12 +47,12 @@ export const WalletIcon: React.FC<IconProps> = ({
       fill="none"
     />
     <Path
-      d="M3 10H21M7 6V4C7 3.44772 7.44772 3 8 3H16C16.5523 3 17 3.44772 17 4V6"
+      d="M5 15H4C3.46957 15 2.96086 14.7893 2.58579 14.4142C2.21071 14.0391 2 13.5304 2 13V4C2 3.46957 2.21071 2.96086 2.58579 2.58579C2.96086 2.21071 3.46957 2 4 2H13C13.5304 2 14.0391 2.21071 14.4142 2.58579C14.7893 2.96086 15 3.46957 15 4V5"
       stroke={color}
       strokeWidth="2"
       strokeLinecap="round"
+      strokeLinejoin="round"
     />
-    <Circle cx="17" cy="13" r="1.5" fill={color} />
   </Svg>
 );
 
@@ -128,17 +90,48 @@ export const DocumentIcon: React.FC<IconProps> = ({
 );
 
 /**
- * Copy icon
+ * Filled circle icon (checkmark/bullet point)
  */
-export const CopyIcon: React.FC<IconProps> = ({
+export const FilledCircleIcon: React.FC<IconProps> = ({
+  size = 18,
+  color = '#10B981',
+}) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Circle cx="12" cy="12" r="10" fill={color} />
+  </Svg>
+);
+
+/**
+ * Info circle icon
+ */
+export const InfoCircleIcon: React.FC<IconProps> = ({
+  size = 20,
+  color = '#3B82F6',
+}) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth="2" fill="none" />
+    <Path
+      d="M12 16V12M12 8H12.01"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+/**
+ * Wallet icon
+ */
+export const WalletIcon: React.FC<IconProps> = ({
   size = 16,
   color = '#FFFFFF',
 }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Rect
-      x="9"
-      y="9"
-      width="13"
+      x="3"
+      y="6"
+      width="18"
       height="13"
       rx="2"
       stroke={color}
@@ -146,11 +139,11 @@ export const CopyIcon: React.FC<IconProps> = ({
       fill="none"
     />
     <Path
-      d="M5 15H4C3.46957 15 2.96086 14.7893 2.58579 14.4142C2.21071 14.0391 2 13.5304 2 13V4C2 3.46957 2.21071 2.96086 2.58579 2.58579C2.96086 2.21071 3.46957 2 4 2H13C13.5304 2 14.0391 2.21071 14.4142 2.58579C14.7893 2.96086 15 3.46957 15 4V5"
+      d="M3 10H21M7 6V4C7 3.44772 7.44772 3 8 3H16C16.5523 3 17 3.44772 17 4V6"
       stroke={color}
       strokeWidth="2"
       strokeLinecap="round"
-      strokeLinejoin="round"
     />
+    <Circle cx="17" cy="13" r="1.5" fill={color} />
   </Svg>
 );
