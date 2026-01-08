@@ -27,6 +27,7 @@ const proofRequestHeaderOptions: NativeStackNavigationOptions = {
   },
   headerTintColor: white,
   gestureEnabled: false,
+  animation: 'none',
 };
 
 const verificationScreens = {
