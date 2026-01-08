@@ -18,6 +18,7 @@ import {
 
 import { usePassport } from '@/providers/passportDataProvider';
 import { DocumentSelectorForProvingScreen } from '@/screens/verification/DocumentSelectorForProvingScreen';
+import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 
 // Mock useFocusEffect to behave like useEffect in tests
 // Note: We use a closure-based approach to avoid requiring React (prevents OOM per test-memory-optimization rules)
@@ -61,6 +62,10 @@ jest.mock('@/providers/passportDataProvider', () => ({
   usePassport: jest.fn(),
 }));
 
+jest.mock('@/stores/documentCacheStore', () => ({
+  useDocumentCacheStore: jest.fn(),
+}));
+
 const mockUseNavigation = useNavigation as jest.MockedFunction<
   typeof useNavigation
 >;
@@ -75,6 +80,9 @@ const mockIsDocumentValidForProving =
     typeof isDocumentValidForProving
   >;
 const mockUsePassport = usePassport as jest.MockedFunction<typeof usePassport>;
+const mockUseDocumentCacheStore = useDocumentCacheStore as jest.MockedFunction<
+  typeof useDocumentCacheStore
+>;
 
 type MockDocumentEntry = {
   metadata: DocumentMetadata;
@@ -136,6 +144,10 @@ const mockNavigate = jest.fn();
 const mockLoadDocumentCatalog = jest.fn();
 const mockGetAllDocuments = jest.fn();
 const mockSetSelectedDocument = jest.fn();
+const mockGetCache = jest.fn();
+const mockSetCache = jest.fn();
+const mockIsValid = jest.fn();
+const mockClearCache = jest.fn();
 
 // Stable passport context to prevent infinite re-renders
 const stablePassportContext = {
@@ -169,6 +181,17 @@ describe('DocumentSelectorForProvingScreen', () => {
 
     mockUsePassport.mockReturnValue(stablePassportContext as any);
 
+    // Default: cache is invalid (force fresh load)
+    mockUseDocumentCacheStore.mockReturnValue({
+      getCache: mockGetCache,
+      setCache: mockSetCache,
+      isValid: mockIsValid,
+      clearCache: mockClearCache,
+    } as any);
+
+    mockIsValid.mockReturnValue(false);
+    mockGetCache.mockReturnValue(null);
+
     mockIsDocumentValidForProving.mockImplementation(
       (_metadata, documentData) =>
         (documentData as { expiryDateSlice?: string } | undefined)
@@ -200,11 +223,10 @@ describe('DocumentSelectorForProvingScreen', () => {
         documents: [passport],
         selectedDocumentId: 'doc-1',
       };
+      const allDocs = createAllDocuments([createDocumentEntry(passport)]);
 
       mockLoadDocumentCatalog.mockResolvedValue(catalog);
-      mockGetAllDocuments.mockResolvedValue(
-        createAllDocuments([createDocumentEntry(passport)]),
-      );
+      mockGetAllDocuments.mockResolvedValue(allDocs);
 
       const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
 
@@ -222,6 +244,9 @@ describe('DocumentSelectorForProvingScreen', () => {
       // Verify mocks were called
       expect(mockLoadDocumentCatalog).toHaveBeenCalledTimes(1);
       expect(mockGetAllDocuments).toHaveBeenCalledTimes(1);
+
+      // Verify cache was set
+      expect(mockSetCache).toHaveBeenCalledWith(catalog, allDocs);
     });
 
     it('renders wallet badge when userId is present', async () => {
@@ -464,6 +489,76 @@ describe('DocumentSelectorForProvingScreen', () => {
       );
 
       consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe('Cache Integration', () => {
+    it('uses cached data when cache is valid', async () => {
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
+      const allDocs = createAllDocuments([createDocumentEntry(passport)]);
+
+      // Mock cache as valid
+      mockIsValid.mockReturnValue(true);
+      mockGetCache.mockReturnValue({ catalog, allDocuments: allDocs });
+
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+      // Wait for action bar to render (indicating screen is ready)
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve'),
+        ).toBeTruthy();
+      });
+
+      // Should NOT load fresh data
+      expect(mockLoadDocumentCatalog).not.toHaveBeenCalled();
+      expect(mockGetAllDocuments).not.toHaveBeenCalled();
+
+      // Should NOT set cache again
+      expect(mockSetCache).not.toHaveBeenCalled();
+    });
+
+    it('loads fresh data when cache is invalid', async () => {
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
+      const allDocs = createAllDocuments([createDocumentEntry(passport)]);
+
+      // Mock cache as invalid
+      mockIsValid.mockReturnValue(false);
+      mockGetCache.mockReturnValue(null);
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(allDocs);
+
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve'),
+        ).toBeTruthy();
+      });
+
+      // Should load fresh data
+      expect(mockLoadDocumentCatalog).toHaveBeenCalledTimes(1);
+      expect(mockGetAllDocuments).toHaveBeenCalledTimes(1);
+
+      // Should set cache
+      expect(mockSetCache).toHaveBeenCalledWith(catalog, allDocs);
     });
   });
 });

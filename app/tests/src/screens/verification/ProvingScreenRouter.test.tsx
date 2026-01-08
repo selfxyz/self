@@ -17,6 +17,7 @@ import {
 
 import { usePassport } from '@/providers/passportDataProvider';
 import { ProvingScreenRouter } from '@/screens/verification/ProvingScreenRouter';
+import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 import { useSettingStore } from '@/stores/settingStore';
 
 // Mock useFocusEffect to behave like useEffect in tests
@@ -47,6 +48,10 @@ jest.mock('@/stores/settingStore', () => ({
   useSettingStore: jest.fn(),
 }));
 
+jest.mock('@/stores/documentCacheStore', () => ({
+  useDocumentCacheStore: jest.fn(),
+}));
+
 const mockUseNavigation = useNavigation as jest.MockedFunction<
   typeof useNavigation
 >;
@@ -62,11 +67,18 @@ const mockUsePassport = usePassport as jest.MockedFunction<typeof usePassport>;
 const mockUseSettingStore = useSettingStore as jest.MockedFunction<
   typeof useSettingStore
 >;
+const mockUseDocumentCacheStore = useDocumentCacheStore as jest.MockedFunction<
+  typeof useDocumentCacheStore
+>;
 
 const mockReplace = jest.fn();
 const mockLoadDocumentCatalog = jest.fn();
 const mockGetAllDocuments = jest.fn();
 const mockSetSelectedDocument = jest.fn();
+const mockGetCache = jest.fn();
+const mockSetCache = jest.fn();
+const mockIsValid = jest.fn();
+const mockClearCache = jest.fn();
 
 type MockDocumentEntry = {
   metadata: DocumentMetadata;
@@ -126,6 +138,17 @@ describe('ProvingScreenRouter', () => {
       skipDocumentSelectorIfSingle: false,
     } as any);
 
+    // Default: cache is invalid (force fresh load)
+    mockUseDocumentCacheStore.mockReturnValue({
+      getCache: mockGetCache,
+      setCache: mockSetCache,
+      isValid: mockIsValid,
+      clearCache: mockClearCache,
+    } as any);
+
+    mockIsValid.mockReturnValue(false);
+    mockGetCache.mockReturnValue(null);
+
     mockIsDocumentValidForProving.mockImplementation(
       (_metadata, documentData) =>
         (documentData as { expiryDateSlice?: string } | undefined)
@@ -142,17 +165,21 @@ describe('ProvingScreenRouter', () => {
     const catalog: DocumentCatalog = {
       documents: [passport],
     };
+    const allDocs = createAllDocuments([
+      createDocumentEntry(passport, 'expired'),
+    ]);
 
     mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(passport, 'expired')]),
-    );
+    mockGetAllDocuments.mockResolvedValue(allDocs);
 
     render(<ProvingScreenRouter />);
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('DocumentDataNotFound');
     });
+
+    // Verify cache was set
+    expect(mockSetCache).toHaveBeenCalledWith(catalog, allDocs);
   });
 
   it('auto-selects and routes to Prove when skipping the selector', async () => {
@@ -164,6 +191,7 @@ describe('ProvingScreenRouter', () => {
     const catalog: DocumentCatalog = {
       documents: [passport],
     };
+    const allDocs = createAllDocuments([createDocumentEntry(passport)]);
 
     mockUseSettingStore.mockReturnValue({
       skipDocumentSelector: true,
@@ -171,9 +199,7 @@ describe('ProvingScreenRouter', () => {
     } as any);
 
     mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(passport)]),
-    );
+    mockGetAllDocuments.mockResolvedValue(allDocs);
     mockPickBestDocumentToSelect.mockReturnValue('doc-1');
 
     render(<ProvingScreenRouter />);
@@ -182,6 +208,9 @@ describe('ProvingScreenRouter', () => {
       expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
       expect(mockReplace).toHaveBeenCalledWith('Prove');
     });
+
+    // Verify cache was set
+    expect(mockSetCache).toHaveBeenCalledWith(catalog, allDocs);
   });
 
   it('routes to the document selector when skipping is disabled', async () => {
@@ -193,17 +222,19 @@ describe('ProvingScreenRouter', () => {
     const catalog: DocumentCatalog = {
       documents: [passport],
     };
+    const allDocs = createAllDocuments([createDocumentEntry(passport)]);
 
     mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(passport)]),
-    );
+    mockGetAllDocuments.mockResolvedValue(allDocs);
 
     render(<ProvingScreenRouter />);
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving');
     });
+
+    // Verify cache was set
+    expect(mockSetCache).toHaveBeenCalledWith(catalog, allDocs);
   });
 
   it('shows error state when document loading fails', async () => {
@@ -230,6 +261,7 @@ describe('ProvingScreenRouter', () => {
     const catalog: DocumentCatalog = {
       documents: [passport],
     };
+    const allDocs = createAllDocuments([createDocumentEntry(passport)]);
 
     mockUseSettingStore.mockReturnValue({
       skipDocumentSelector: false,
@@ -237,9 +269,7 @@ describe('ProvingScreenRouter', () => {
     } as any);
 
     mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(passport)]),
-    );
+    mockGetAllDocuments.mockResolvedValue(allDocs);
     mockPickBestDocumentToSelect.mockReturnValue('doc-1');
 
     render(<ProvingScreenRouter />);
@@ -248,6 +278,9 @@ describe('ProvingScreenRouter', () => {
       expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
       expect(mockReplace).toHaveBeenCalledWith('Prove');
     });
+
+    // Verify cache was set
+    expect(mockSetCache).toHaveBeenCalledWith(catalog, allDocs);
   });
 
   it('shows document selector when skipDocumentSelectorIfSingle is true with multiple valid documents', async () => {
@@ -264,6 +297,10 @@ describe('ProvingScreenRouter', () => {
     const catalog: DocumentCatalog = {
       documents: [passport1, passport2],
     };
+    const allDocs = createAllDocuments([
+      createDocumentEntry(passport1),
+      createDocumentEntry(passport2),
+    ]);
 
     mockUseSettingStore.mockReturnValue({
       skipDocumentSelector: false,
@@ -271,12 +308,7 @@ describe('ProvingScreenRouter', () => {
     } as any);
 
     mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([
-        createDocumentEntry(passport1),
-        createDocumentEntry(passport2),
-      ]),
-    );
+    mockGetAllDocuments.mockResolvedValue(allDocs);
 
     render(<ProvingScreenRouter />);
 
@@ -286,6 +318,9 @@ describe('ProvingScreenRouter', () => {
 
     // Should NOT auto-select since there are multiple documents
     expect(mockSetSelectedDocument).not.toHaveBeenCalled();
+
+    // Verify cache was set
+    expect(mockSetCache).toHaveBeenCalledWith(catalog, allDocs);
   });
 
   it('falls back to document selector when setSelectedDocument fails', async () => {
@@ -297,6 +332,7 @@ describe('ProvingScreenRouter', () => {
     const catalog: DocumentCatalog = {
       documents: [passport],
     };
+    const allDocs = createAllDocuments([createDocumentEntry(passport)]);
 
     mockUseSettingStore.mockReturnValue({
       skipDocumentSelector: true,
@@ -304,9 +340,7 @@ describe('ProvingScreenRouter', () => {
     } as any);
 
     mockLoadDocumentCatalog.mockResolvedValue(catalog);
-    mockGetAllDocuments.mockResolvedValue(
-      createAllDocuments([createDocumentEntry(passport)]),
-    );
+    mockGetAllDocuments.mockResolvedValue(allDocs);
     mockPickBestDocumentToSelect.mockReturnValue('doc-1');
     mockSetSelectedDocument.mockRejectedValue(new Error('Selection failed'));
 
@@ -316,5 +350,37 @@ describe('ProvingScreenRouter', () => {
       expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
       expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving');
     });
+
+    // Verify cache was still set before the selection failure
+    expect(mockSetCache).toHaveBeenCalledWith(catalog, allDocs);
+  });
+
+  it('uses cached data when cache is valid', async () => {
+    const passport = createMetadata({
+      id: 'doc-1',
+      documentType: 'us',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [passport],
+    };
+    const allDocs = createAllDocuments([createDocumentEntry(passport)]);
+
+    // Mock cache as valid
+    mockIsValid.mockReturnValue(true);
+    mockGetCache.mockReturnValue({ catalog, allDocuments: allDocs });
+
+    render(<ProvingScreenRouter />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving');
+    });
+
+    // Should NOT load fresh data
+    expect(mockLoadDocumentCatalog).not.toHaveBeenCalled();
+    expect(mockGetAllDocuments).not.toHaveBeenCalled();
+
+    // Should NOT set cache again
+    expect(mockSetCache).not.toHaveBeenCalled();
   });
 });

@@ -34,6 +34,7 @@ import {
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { getWhiteListedDisclosureAddresses } from '@/services/points/utils';
+import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
 
@@ -67,6 +68,9 @@ const SuccessScreen: React.FC = () => {
 
   const onOkPress = useCallback(async () => {
     buttonTap();
+
+    // Clear document cache when proving flow completes
+    useDocumentCacheStore.getState().clearCache();
 
     if (whitelistedPoints !== null) {
       navigation.navigate('Gratification', {

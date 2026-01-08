@@ -50,6 +50,7 @@ import {
   getPointsAddress,
   getWhiteListedDisclosureAddresses,
 } from '@/services/points';
+import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
 import { getDisclosureItems } from '@/utils/disclosureUtils';
@@ -103,11 +104,23 @@ const ProveScreen: React.FC = () => {
 
   const { addProofHistory } = useProofHistoryStore();
   const { loadDocumentCatalog } = usePassport();
+  const { getCache, isValid } = useDocumentCacheStore();
 
   useEffect(() => {
     const addHistory = async () => {
       if (provingStore.uuid && selectedApp) {
-        const catalog = await loadDocumentCatalog();
+        // Try to use cached catalog first
+        let catalog;
+        const cachedData = isValid() ? getCache() : null;
+
+        if (cachedData) {
+          catalog = cachedData.catalog;
+        } else {
+          catalog = await loadDocumentCatalog();
+          // Note: We don't have allDocuments here, so we only partially cache
+          // This is okay since upstream screens will have the full cache
+        }
+
         const selectedDocumentId = catalog.selectedDocumentId;
 
         addProofHistory({
@@ -125,7 +138,14 @@ const ProveScreen: React.FC = () => {
       }
     };
     addHistory();
-  }, [addProofHistory, provingStore.uuid, selectedApp, loadDocumentCatalog]);
+  }, [
+    addProofHistory,
+    getCache,
+    isValid,
+    loadDocumentCatalog,
+    provingStore.uuid,
+    selectedApp,
+  ]);
 
   useEffect(() => {
     if (isContentShorterThanScrollView) {
