@@ -7,11 +7,10 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import type {
-  DocumentCatalog,
-  DocumentMetadata,
-  IDDocument,
-} from '@selfxyz/common/utils/types';
+import {
+  isDocumentValidForProving,
+  pickBestDocumentToSelect,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   black,
   blue600,
@@ -22,67 +21,6 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
-import {
-  checkDocumentExpiration,
-  getDocumentAttributes,
-} from '@/utils/documentAttributes';
-
-/**
- * Determines if a document is valid for selection (not expired).
- * Mock documents are valid for testing with staging environments.
- */
-function isValidDocument(
-  metadata: DocumentMetadata,
-  documentData: IDDocument | undefined,
-): boolean {
-  // Check if expired
-  if (documentData) {
-    try {
-      const attributes = getDocumentAttributes(documentData);
-      if (
-        attributes.expiryDateSlice &&
-        checkDocumentExpiration(attributes.expiryDateSlice)
-      ) {
-        return false;
-      }
-    } catch {
-      // If we can't check expiry, assume valid
-    }
-  }
-
-  return true;
-}
-
-/**
- * Picks the best document to auto-select.
- * Prefers the currently selected document if valid, otherwise picks the first valid one.
- */
-function pickDocumentToSelect(
-  catalog: DocumentCatalog,
-  docs: Record<string, { data: IDDocument; metadata: DocumentMetadata }>,
-): string | undefined {
-  // Check if currently selected document is valid
-  if (catalog.selectedDocumentId) {
-    const selectedMeta = catalog.documents.find(
-      doc => doc.id === catalog.selectedDocumentId,
-    );
-    const selectedData = selectedMeta
-      ? docs[catalog.selectedDocumentId]
-      : undefined;
-
-    if (selectedMeta && isValidDocument(selectedMeta, selectedData?.data)) {
-      return catalog.selectedDocumentId;
-    }
-  }
-
-  // Find first valid document
-  const firstValid = catalog.documents.find(doc => {
-    const docData = docs[doc.id];
-    return isValidDocument(doc, docData?.data);
-  });
-
-  return firstValid?.id;
-}
 
 /**
  * Router screen for the proving flow that decides whether to skip the document selector.
@@ -131,7 +69,7 @@ const ProvingScreenRouter: React.FC = () => {
       // Count valid documents
       const validDocuments = catalog.documents.filter(doc => {
         const docData = docs[doc.id];
-        return isValidDocument(doc, docData?.data);
+        return isDocumentValidForProving(doc, docData?.data);
       });
 
       const validCount = validDocuments.length;
@@ -153,7 +91,7 @@ const ProvingScreenRouter: React.FC = () => {
 
       if (shouldSkip) {
         // Auto-select and navigate to Prove
-        const docToSelect = pickDocumentToSelect(catalog, docs);
+        const docToSelect = pickBestDocumentToSelect(catalog, docs);
         if (docToSelect) {
           try {
             await setSelectedDocument(docToSelect);

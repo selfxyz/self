@@ -25,7 +25,11 @@ import type {
   DocumentMetadata,
   IDDocument,
 } from '@selfxyz/common/utils/types';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  getDocumentAttributes,
+  isDocumentValidForProving,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { blue600, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
@@ -41,10 +45,6 @@ import {
 } from '@/components/proof-request';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
-import {
-  checkDocumentExpiration,
-  getDocumentAttributes,
-} from '@/utils/documentAttributes';
 import { formatUserId } from '@/utils/formatUserId';
 
 /**
@@ -113,22 +113,12 @@ function determineDocumentState(
   metadata: DocumentMetadata,
   documentData: IDDocument | undefined,
 ): IDSelectorState {
-  // Check if expired first (applies to both real and mock documents)
-  if (documentData) {
-    try {
-      const attributes = getDocumentAttributes(documentData);
-      if (
-        attributes.expiryDateSlice &&
-        checkDocumentExpiration(attributes.expiryDateSlice)
-      ) {
-        return 'expired';
-      }
-    } catch {
-      // If we can't check expiry, assume valid
-    }
+  // Use SDK to check if document is valid (not expired)
+  if (!isDocumentValidForProving(metadata, documentData)) {
+    return 'expired';
   }
 
-  // Mock documents are selectable but marked as developer/mock
+  // UI-specific state mapping: Mock documents are selectable but marked as developer/mock
   if (metadata.mock) {
     return 'mock';
   }
