@@ -3,15 +3,16 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Platform, Pressable } from 'react-native';
-import { Text, View, XStack } from 'tamagui';
+import { Pressable } from 'react-native';
+import { View, XStack, Text } from 'tamagui';
 
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
+import { proofRequestColors } from '@/components/proof-request/designTokens';
 import {
-  proofRequestColors,
-  sfSymbols,
-} from '@/components/proof-request/designTokens';
+  FilledCircleIcon,
+  InfoCircleIcon,
+} from '@/components/proof-request/icons';
 
 export interface DisclosureItemProps {
   text: string;
@@ -42,19 +43,15 @@ export const DisclosureItem: React.FC<DisclosureItemProps> = ({
       testID={testID}
     >
       {/* Status Icon */}
-      <View width={25} alignItems="center" justifyContent="center">
-        <Text
-          fontSize={9}
-          fontWeight="600"
+      <View width={20} alignItems="center" justifyContent="center">
+        <FilledCircleIcon
+          size={18}
           color={
             verified
               ? proofRequestColors.emerald500
               : proofRequestColors.slate400
           }
-          fontFamily={Platform.OS === 'ios' ? 'SF Pro' : undefined}
-        >
-          {sfSymbols.filledCircle}
-        </Text>
+        />
       </View>
 
       {/* Disclosure Text */}
@@ -79,14 +76,7 @@ export const DisclosureItem: React.FC<DisclosureItemProps> = ({
           testID={`${testID}-info-button`}
         >
           <View width={25} alignItems="center" justifyContent="center">
-            <Text
-              fontSize={16}
-              fontWeight="700"
-              color={proofRequestColors.blue500}
-              fontFamily={Platform.OS === 'ios' ? 'SF Pro' : undefined}
-            >
-              {sfSymbols.infoCircle}
-            </Text>
+            <InfoCircleIcon size={20} color={proofRequestColors.blue500} />
           </View>
         </Pressable>
       )}

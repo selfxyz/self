@@ -7,6 +7,8 @@ export type { BottomActionBarProps } from '@/components/proof-request/BottomActi
 // Metadata bar
 export type { ConnectedWalletBadgeProps } from '@/components/proof-request/ConnectedWalletBadge';
 
+export type { WalletAddressModalProps } from '@/components/proof-request/WalletAddressModal';
+
 export type { DisclosureItemProps } from '@/components/proof-request/DisclosureItem';
 
 // Header section
@@ -43,9 +45,22 @@ export { ProofRequestCard } from '@/components/proof-request/ProofRequestCard';
 
 export { ProofRequestHeader } from '@/components/proof-request/ProofRequestHeader';
 
+export { WalletAddressModal } from '@/components/proof-request/WalletAddressModal';
+
+// Icons
+export {
+  ChevronUpDownIcon,
+  CopyIcon,
+  DocumentIcon,
+  FilledCircleIcon,
+  InfoCircleIcon,
+  WalletIcon,
+} from '@/components/proof-request/icons';
+
+export type { IconProps } from '@/components/proof-request/icons';
+
 // Design tokens
 export {
   proofRequestColors,
   proofRequestSpacing,
-  sfSymbols,
 } from '@/components/proof-request/designTokens';

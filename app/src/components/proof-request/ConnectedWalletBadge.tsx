@@ -3,15 +3,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Platform, Pressable } from 'react-native';
+import { Pressable } from 'react-native';
 import { Text, View, XStack } from 'tamagui';
 
 import { plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import {
-  proofRequestColors,
-  sfSymbols,
-} from '@/components/proof-request/designTokens';
+import { proofRequestColors } from '@/components/proof-request/designTokens';
+import { WalletIcon } from '@/components/proof-request/icons';
 
 export interface ConnectedWalletBadgeProps {
   address: string;
@@ -46,20 +44,13 @@ export const ConnectedWalletBadge: React.FC<ConnectedWalletBadgeProps> = ({
       {/* Label with icon */}
       <XStack
         backgroundColor={proofRequestColors.blue700}
-        paddingHorizontal={6}
-        paddingVertical={4}
+        paddingHorizontal={8}
+        paddingVertical={6}
         borderRadius={3}
         alignItems="center"
-        gap={6}
+        gap={8}
       >
-        <Text
-          fontSize={11}
-          fontWeight="600"
-          color={proofRequestColors.white}
-          fontFamily={Platform.OS === 'ios' ? 'SF Pro' : undefined}
-        >
-          {sfSymbols.wallet}
-        </Text>
+        <WalletIcon size={16} color={proofRequestColors.white} />
         <Text
           fontFamily={plexMono}
           fontSize={12}

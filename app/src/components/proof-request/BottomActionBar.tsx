@@ -3,21 +3,14 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import {
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, XStack } from 'tamagui';
 
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import {
-  proofRequestColors,
-  sfSymbols,
-} from '@/components/proof-request/designTokens';
+import { proofRequestColors } from '@/components/proof-request/designTokens';
+import { ChevronUpDownIcon } from '@/components/proof-request/icons';
 
 export interface BottomActionBarProps {
   selectedDocumentName: string;
@@ -45,12 +38,12 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
   return (
     <View
       backgroundColor={proofRequestColors.white}
-      paddingHorizontal={10}
-      paddingTop={10}
-      paddingBottom={Math.max(insets.bottom, 20) + 10}
+      paddingHorizontal={16}
+      paddingTop={12}
+      paddingBottom={Math.max(insets.bottom, 12) + 12}
       testID={testID}
     >
-      <XStack gap={10}>
+      <XStack gap={12}>
         {/* Document Selector Button */}
         <Pressable
           onPress={onDocumentSelectorPress}
@@ -64,26 +57,21 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
             flex={1}
             alignItems="center"
             justifyContent="space-between"
-            paddingHorizontal={10}
-            paddingVertical={12}
+            paddingHorizontal={16}
+            paddingVertical={16}
           >
             <Text
               fontFamily={dinot}
-              fontSize={18}
-              color={proofRequestColors.black}
+              fontSize={16}
+              color={proofRequestColors.slate900}
               flex={1}
               numberOfLines={1}
             >
               {selectedDocumentName}
             </Text>
-            <Text
-              fontSize={17}
-              fontWeight="700"
-              color={proofRequestColors.black}
-              fontFamily={Platform.OS === 'ios' ? 'SF Pro' : undefined}
-            >
-              {sfSymbols.chevronUpDown}
-            </Text>
+            <View marginLeft={8}>
+              <ChevronUpDownIcon size={20} color={proofRequestColors.slate400} />
+            </View>
           </XStack>
         </Pressable>
 
@@ -102,11 +90,10 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
           testID={`${testID}-approve`}
         >
           <View
-            flex={1}
             alignItems="center"
             justifyContent="center"
-            paddingHorizontal={10}
-            paddingVertical={12}
+            paddingHorizontal={24}
+            paddingVertical={16}
           >
             {approving ? (
               <ActivityIndicator
@@ -116,7 +103,7 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
             ) : (
               <Text
                 fontFamily={dinot}
-                fontSize={18}
+                fontSize={16}
                 color={proofRequestColors.white}
                 textAlign="center"
               >
@@ -132,24 +119,24 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
 
 const styles = StyleSheet.create({
   documentButton: {
-    flex: 1,
+    flex: 2,
     backgroundColor: proofRequestColors.white,
     borderWidth: 1,
     borderColor: proofRequestColors.slate200,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   documentButtonPressed: {
-    opacity: 0.7,
+    backgroundColor: proofRequestColors.slate100,
   },
   approveButton: {
     flex: 1,
     backgroundColor: proofRequestColors.blue600,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   approveButtonDisabled: {
     opacity: 0.5,
   },
   approveButtonPressed: {
-    opacity: 0.8,
+    backgroundColor: proofRequestColors.blue700,
   },
 });

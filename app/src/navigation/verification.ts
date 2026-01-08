@@ -32,13 +32,15 @@ const verificationScreens = {
   DocumentSelectorForProving: {
     screen: DocumentSelectorForProvingScreen,
     options: {
-      title: 'Select ID',
+      title: 'Proof Requested',
       headerStyle: {
         backgroundColor: black,
       },
       headerTitleStyle: {
         color: white,
+        fontWeight: '600',
       },
+      headerTintColor: white,
       gestureEnabled: false,
     } as NativeStackNavigationOptions,
   },

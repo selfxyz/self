@@ -10,7 +10,6 @@ import React, {
   useState,
 } from 'react';
 import { ActivityIndicator, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, YStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -42,6 +41,7 @@ import {
   ProofRequestCard,
   proofRequestColors,
   truncateAddress,
+  WalletAddressModal,
 } from '@/components/proof-request';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -220,7 +220,6 @@ function getDisclosureItems(
 const DocumentSelectorForProvingScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const insets = useSafeAreaInsets();
   const selfClient = useSelfClient();
   const { useSelfAppStore } = selfClient;
   const selfApp = useSelfAppStore(state => state.selfApp);
@@ -240,6 +239,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Memoized values from selfApp
@@ -440,7 +440,6 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         backgroundColor={proofRequestColors.white}
         alignItems="center"
         justifyContent="center"
-        paddingTop={insets.top}
         testID="document-selector-loading-container"
       >
         <ActivityIndicator color={blue600} size="large" />
@@ -465,7 +464,6 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         backgroundColor={proofRequestColors.white}
         alignItems="center"
         justifyContent="center"
-        paddingTop={insets.top}
         gap={16}
       >
         <Text
@@ -507,7 +505,6 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         backgroundColor={proofRequestColors.white}
         alignItems="center"
         justifyContent="center"
-        paddingTop={insets.top}
       >
         <Text
           fontFamily={dinot}
@@ -524,7 +521,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: 0 }]}>
       {/* Main Content - Proof Request Card */}
       <ProofRequestCard
         logoSource={logoSource}
@@ -542,6 +539,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
                 : formattedUserId
             }
             userIdType={selfApp?.userIdType}
+            onToggle={() => setWalletModalOpen(true)}
             testID="document-selector-wallet-badge"
           />
         )}
@@ -581,6 +579,17 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         onApprove={handleApprove}
         testID="document-selector-sheet"
       />
+
+      {/* Wallet Address Modal */}
+      {formattedUserId && selfApp?.userId && (
+        <WalletAddressModal
+          visible={walletModalOpen}
+          onClose={() => setWalletModalOpen(false)}
+          address={selfApp.userId}
+          userIdType={selfApp?.userIdType}
+          testID="document-selector-wallet-modal"
+        />
+      )}
     </View>
   );
 };

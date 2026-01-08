@@ -38,15 +38,3 @@ export const proofRequestSpacing = {
   borderRadius: 10,
   borderRadiusSmall: 4,
 } as const;
-
-/**
- * SF Symbols for proof request UI.
- * These render as icons on iOS and need fallback on Android.
- */
-export const sfSymbols = {
-  filledCircle: '􀀁', // Green checkmark circle
-  infoCircle: '􀅴', // Blue info circle
-  chevronUpDown: '􀆏', // Dropdown chevron
-  wallet: '􀟿', // Wallet icon
-  document: '􀥅', // Document icon
-} as const;

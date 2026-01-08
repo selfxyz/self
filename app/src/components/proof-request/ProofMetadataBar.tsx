@@ -3,15 +3,12 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Platform } from 'react-native';
 import { Text, View, XStack } from 'tamagui';
 
 import { plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import {
-  proofRequestColors,
-  sfSymbols,
-} from '@/components/proof-request/designTokens';
+import { proofRequestColors } from '@/components/proof-request/designTokens';
+import { DocumentIcon } from '@/components/proof-request/icons';
 
 export interface ProofMetadataBarProps {
   timestamp: string;
@@ -29,29 +26,22 @@ export const ProofMetadataBar: React.FC<ProofMetadataBarProps> = ({
   return (
     <View
       backgroundColor={proofRequestColors.slate200}
-      paddingVertical={6}
-      alignItems="center"
-      justifyContent="center"
+      paddingVertical={8}
+      paddingHorizontal={16}
       borderBottomWidth={1}
       borderBottomColor={proofRequestColors.slate200}
       testID={testID}
     >
-      <XStack gap={6} alignItems="center">
+      <XStack gap={8} alignItems="center" width="100%">
         {/* Document icon */}
-        <Text
-          fontSize={14}
-          fontWeight="700"
-          color={proofRequestColors.slate400}
-          fontFamily={Platform.OS === 'ios' ? 'SF Pro' : undefined}
-        >
-          {sfSymbols.document}
-        </Text>
+        <DocumentIcon size={18} color={proofRequestColors.slate400} />
 
         <Text
           fontFamily={plexMono}
           fontSize={12}
           color={proofRequestColors.slate400}
           textTransform="uppercase"
+          flex={1}
         >
           Proofs Requested
         </Text>
