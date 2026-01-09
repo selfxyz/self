@@ -47,7 +47,6 @@ jest.mock('@/stores/settingStore', () => ({
   useSettingStore: jest.fn(),
 }));
 
-
 const mockUseNavigation = useNavigation as jest.MockedFunction<
   typeof useNavigation
 >;
@@ -154,7 +153,6 @@ describe('ProvingScreenRouter', () => {
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('DocumentDataNotFound');
     });
-
   });
 
   it('auto-selects and routes to Prove when skipping the selector', async () => {
@@ -183,7 +181,6 @@ describe('ProvingScreenRouter', () => {
       expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
       expect(mockReplace).toHaveBeenCalledWith('Prove');
     });
-
   });
 
   it('routes to the document selector when skipping is disabled', async () => {
@@ -207,7 +204,6 @@ describe('ProvingScreenRouter', () => {
         documentType: 'Passport',
       });
     });
-
   });
 
   it('shows error state when document loading fails', async () => {
@@ -251,7 +247,6 @@ describe('ProvingScreenRouter', () => {
       expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
       expect(mockReplace).toHaveBeenCalledWith('Prove');
     });
-
   });
 
   it('shows document selector when skipDocumentSelectorIfSingle is true with multiple valid documents', async () => {
@@ -291,7 +286,6 @@ describe('ProvingScreenRouter', () => {
 
     // Should NOT auto-select since there are multiple documents
     expect(mockSetSelectedDocument).not.toHaveBeenCalled();
-
   });
 
   it('falls back to document selector when setSelectedDocument fails', async () => {
@@ -323,6 +317,5 @@ describe('ProvingScreenRouter', () => {
         documentType: 'Passport',
       });
     });
-
   });
 });

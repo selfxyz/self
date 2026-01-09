@@ -330,7 +330,6 @@ export async function deleteDocument(documentId: string): Promise<void> {
   } catch {
     console.log(`Document ${documentId} not found or already cleared`);
   }
-
 }
 
 export async function getAvailableDocumentTypes(): Promise<string[]> {
@@ -832,7 +831,6 @@ export async function storeDocumentWithDeduplication(
   catalog.selectedDocumentId = contentHash;
   await saveDocumentCatalogDirectlyToKeychain(catalog);
 
-
   return contentHash;
 }
 // Duplicate function. prefer one in mobile sdk
@@ -855,7 +853,6 @@ export async function updateDocumentRegistrationState(
     console.log(
       `Updated registration state for document ${documentId}: ${isRegistered}`,
     );
-
   } else {
     console.warn(`Document ${documentId} not found in catalog`);
   }

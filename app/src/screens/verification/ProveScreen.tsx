@@ -125,12 +125,7 @@ const ProveScreen: React.FC = () => {
       }
     };
     addHistory();
-  }, [
-    addProofHistory,
-    loadDocumentCatalog,
-    provingStore.uuid,
-    selectedApp,
-  ]);
+  }, [addProofHistory, loadDocumentCatalog, provingStore.uuid, selectedApp]);
 
   useEffect(() => {
     // Only update hasScrolledToBottom once we have real layout measurements

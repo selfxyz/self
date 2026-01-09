@@ -206,11 +206,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         setLoading(false);
       }
     }
-  }, [
-    getAllDocuments,
-    loadDocumentCatalog,
-    pickInitialDocument,
-  ]);
+  }, [getAllDocuments, loadDocumentCatalog, pickInitialDocument]);
 
   useFocusEffect(
     useCallback(() => {

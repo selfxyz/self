@@ -61,7 +61,6 @@ jest.mock('@/providers/passportDataProvider', () => ({
   usePassport: jest.fn(),
 }));
 
-
 const mockUseNavigation = useNavigation as jest.MockedFunction<
   typeof useNavigation
 >;
@@ -222,7 +221,6 @@ describe('DocumentSelectorForProvingScreen', () => {
       // Verify mocks were called
       expect(mockLoadDocumentCatalog).toHaveBeenCalledTimes(1);
       expect(mockGetAllDocuments).toHaveBeenCalledTimes(1);
-
     });
 
     it('renders wallet badge when userId is present', async () => {
