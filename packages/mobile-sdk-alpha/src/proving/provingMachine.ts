@@ -460,7 +460,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
 
         // Disable keychain error modal when proving flow ends
-        selfClient.navigation.disableKeychainErrorModal?.();
+        selfClient.navigation?.disableKeychainErrorModal?.();
       }
 
       if (state.value === 'passport_not_supported') {
@@ -486,7 +486,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient.getSelfAppState().handleProofResult(false, 'error', 'error');
         }
         // Disable keychain error modal when proving flow ends
-        selfClient.navigation.disableKeychainErrorModal?.();
+        selfClient.navigation?.disableKeychainErrorModal?.();
       }
     });
   }
@@ -851,7 +851,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       // Enable keychain error modal for proving flows
       // This ensures users are notified if keychain access fails during critical operations
-      selfClient.navigation.enableKeychainErrorModal?.();
+      selfClient.navigation?.enableKeychainErrorModal?.();
 
       if (actor) {
         try {
