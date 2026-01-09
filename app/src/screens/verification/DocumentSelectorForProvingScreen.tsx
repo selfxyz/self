@@ -347,7 +347,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
       return preloadedType;
     }
 
-    if (!selectedDocumentId) return preloadedType || 'Document';
+    if (!selectedDocumentId) return preloadedType || '';
     const metadata = documentCatalog.documents.find(
       d => d.id === selectedDocumentId,
     );

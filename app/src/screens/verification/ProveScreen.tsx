@@ -90,7 +90,7 @@ const ProveScreen: React.FC = () => {
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const [hasLayoutMeasurements, setHasLayoutMeasurements] = useState(false);
   const [isDocumentExpired, setIsDocumentExpired] = useState(false);
-  const [documentType, setDocumentType] = useState('Document');
+  const [documentType, setDocumentType] = useState('');
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const isDocumentExpiredRef = useRef(false);
   const scrollViewRef = useRef<ScrollViewType>(null);

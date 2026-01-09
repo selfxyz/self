@@ -49,7 +49,7 @@ export const ProofRequestCard: React.FC<ProofRequestCardProps> = ({
   logoSource,
   appName,
   appUrl,
-  documentType = 'Passport',
+  documentType = '',
   timestamp = new Date(),
   children,
   testID = 'proof-request-card',
