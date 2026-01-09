@@ -71,9 +71,17 @@ class PassportOCRViewManager(
         val parentView = root.findViewById<ViewGroup>(reactNativeViewId)
         setupLayout(parentView)
 
-        val cameraFragment = CameraMLKitFragment(this)
         val activity = reactContext.currentActivity as FragmentActivity
-        activity.supportFragmentManager
+        val fragmentManager = activity.supportFragmentManager
+        fragmentManager.findFragmentByTag(reactNativeViewId.toString())?.let {
+            fragmentManager
+                .beginTransaction()
+                .remove(it)
+                .commit()
+        }
+
+        val cameraFragment = CameraMLKitFragment(this)
+        fragmentManager
             .beginTransaction()
             .replace(reactNativeViewId, cameraFragment, reactNativeViewId.toString())
             .commit()

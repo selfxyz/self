@@ -77,12 +77,23 @@ class QRCodeScannerViewManager(
         val parentView = root.findViewById<ViewGroup>(reactNativeViewId)
         setupLayout(parentView)
 
-        val qrScannerFragment = QrCodeScannerFragment(this)
         val activity = reactContext.currentActivity as FragmentActivity
-        activity.supportFragmentManager
+        val fragmentManager = activity.supportFragmentManager
+        fragmentManager.findFragmentByTag(reactNativeViewId.toString())?.let {
+            if (it is QrCodeScannerFragment) {
+                it.forceStopCamera()
+            }
+            fragmentManager
+                .beginTransaction()
+                .remove(it)
+                .commitNowAllowingStateLoss()
+        }
+
+        val qrScannerFragment = QrCodeScannerFragment(this)
+        fragmentManager
             .beginTransaction()
             .replace(reactNativeViewId, qrScannerFragment, reactNativeViewId.toString())
-            .commit()
+            .commitNowAllowingStateLoss()
     }
 
     private fun destroyFragment(root: FrameLayout, reactNativeViewId: Int) {
@@ -95,7 +106,7 @@ class QRCodeScannerViewManager(
             activity.supportFragmentManager
                 .beginTransaction()
                 .remove(it)
-                .commit()
+                .commitNowAllowingStateLoss()
         }
     }
 
