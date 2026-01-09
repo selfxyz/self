@@ -20,22 +20,7 @@ import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 import { useSettingStore } from '@/stores/settingStore';
-
-/**
- * Gets the document type display name for the proof request message.
- */
-function getDocumentTypeName(category: string | undefined): string {
-  switch (category) {
-    case 'passport':
-      return 'Passport';
-    case 'id_card':
-      return 'ID Card';
-    case 'aadhaar':
-      return 'Aadhaar';
-    default:
-      return 'Document';
-  }
-}
+import { getDocumentTypeName } from '@/utils/documentUtils';
 
 /**
  * Router screen for the proving flow that decides whether to skip the document selector.

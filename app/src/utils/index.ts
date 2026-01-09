@@ -39,6 +39,9 @@ export { extraYPadding, normalizeBorderWidth } from '@/utils/styleUtils';
 // JSON utilities
 export { formatUserId } from '@/utils/formatUserId';
 
+// Document utilities
+export { getDocumentTypeName } from '@/utils/documentUtils';
+
 export {
   getModalCallbacks,
   registerModalCallbacks,

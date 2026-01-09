@@ -21,8 +21,6 @@ import {
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { commonNames } from '@selfxyz/common/constants/countries';
-import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
-import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import type {
   DocumentCatalog,
   DocumentMetadata,
@@ -47,11 +45,12 @@ import {
   truncateAddress,
   WalletAddressModal,
 } from '@/components/proof-request';
+import { useSelfAppData } from '@/hooks/useSelfAppData';
+import { useSelfAppStalenessCheck } from '@/hooks/useSelfAppStalenessCheck';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useDocumentCacheStore } from '@/stores/documentCacheStore';
-import { getDisclosureItems } from '@/utils/disclosureUtils';
-import { formatUserId } from '@/utils/formatUserId';
+import { getDocumentTypeName } from '@/utils/documentUtils';
 
 /**
  * Converts a 3-letter country code to its full country name
@@ -99,22 +98,6 @@ function getDocumentDisplayName(
   return isMock ? `Developer ${metadata.documentType}` : metadata.documentType;
 }
 
-/**
- * Gets the document type display name for the proof request message.
- */
-function getDocumentTypeName(category: string | undefined): string {
-  switch (category) {
-    case 'passport':
-      return 'Passport';
-    case 'id_card':
-      return 'ID Card';
-    case 'aadhaar':
-      return 'Aadhaar';
-    default:
-      return 'Document';
-  }
-}
-
 function determineDocumentState(
   metadata: DocumentMetadata,
   documentData: IDDocument | undefined,
@@ -146,6 +129,13 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     usePassport();
   const { getCache, setCache, isValid } = useDocumentCacheStore();
 
+  // Extract SelfApp data using hook
+  const { logoSource, url, formattedUserId, disclosureItems } =
+    useSelfAppData(selfApp);
+
+  // Check for stale data and navigate to Home if needed
+  useSelfAppStalenessCheck(selfApp, disclosureItems, navigation);
+
   const [documentCatalog, setDocumentCatalog] = useState<DocumentCatalog>({
     documents: [],
   });
@@ -162,47 +152,6 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollOffsetRef = useRef(0);
-
-  // Memoized values from selfApp
-  const logoSource = useMemo(() => {
-    if (!selfApp?.logoBase64) {
-      return null;
-    }
-
-    if (
-      selfApp.logoBase64.startsWith('http://') ||
-      selfApp.logoBase64.startsWith('https://')
-    ) {
-      return { uri: selfApp.logoBase64 };
-    }
-
-    const base64String = selfApp.logoBase64.startsWith('data:image')
-      ? selfApp.logoBase64
-      : `data:image/png;base64,${selfApp.logoBase64}`;
-    return { uri: base64String };
-  }, [selfApp?.logoBase64]);
-
-  const url = useMemo(() => {
-    if (!selfApp?.endpoint) {
-      return null;
-    }
-    return formatEndpoint(selfApp.endpoint);
-  }, [selfApp?.endpoint]);
-
-  const disclosures = useMemo(
-    () => (selfApp?.disclosures as SelfAppDisclosureConfig) || {},
-    [selfApp?.disclosures],
-  );
-
-  const disclosureItems = useMemo(
-    () => getDisclosureItems(disclosures),
-    [disclosures],
-  );
-
-  const formattedUserId = useMemo(
-    () => formatUserId(selfApp?.userId, selfApp?.userIdType),
-    [selfApp?.userId, selfApp?.userIdType],
-  );
 
   const pickInitialDocument = useCallback(
     (

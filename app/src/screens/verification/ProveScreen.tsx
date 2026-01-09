@@ -26,8 +26,6 @@ import {
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { isMRZDocument } from '@selfxyz/common';
-import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
-import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
@@ -40,6 +38,8 @@ import {
   truncateAddress,
   WalletAddressModal,
 } from '@/components/proof-request';
+import { useSelfAppData } from '@/hooks/useSelfAppData';
+import { useSelfAppStalenessCheck } from '@/hooks/useSelfAppStalenessCheck';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import {
@@ -53,35 +53,33 @@ import {
 import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
-import { getDisclosureItems } from '@/utils/disclosureUtils';
 import {
   checkDocumentExpiration,
   getDocumentAttributes,
 } from '@/utils/documentAttributes';
-import { formatUserId } from '@/utils/formatUserId';
-
-function getDocumentTypeName(category: string | undefined): string {
-  switch (category) {
-    case 'passport':
-      return 'Passport';
-    case 'id_card':
-      return 'ID Card';
-    case 'aadhaar':
-      return 'Aadhaar';
-    default:
-      return 'Document';
-  }
-}
+import { getDocumentTypeName } from '@/utils/documentUtils';
 
 const ProveScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
-  const { navigate } =
+  const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { navigate } = navigation;
   const route = useRoute<RouteProp<RootStackParamList, 'Prove'>>();
   const isFocused = useIsFocused();
   const { useProvingStore, useSelfAppStore } = selfClient;
   const selectedApp = useSelfAppStore(state => state.selfApp);
+
+  // Extract SelfApp data using hook
+  const { logoSource, url, formattedUserId, disclosureItems } =
+    useSelfAppData(selectedApp);
+
+  // Check for stale data and navigate to Home if needed
+  useSelfAppStalenessCheck(
+    selectedApp,
+    disclosureItems,
+    navigation as NativeStackNavigationProp<RootStackParamList>,
+  );
   const selectedAppRef = useRef<typeof selectedApp>(null);
   const processedSessionsRef = useRef<Set<string>>(new Set());
 
@@ -254,47 +252,6 @@ const ProveScreen: React.FC = () => {
 
     enhanceApp();
   }, [selectedApp, selfClient]);
-
-  const disclosureItems = useMemo(
-    () =>
-      getDisclosureItems(
-        (selectedApp?.disclosures as SelfAppDisclosureConfig) || {},
-      ),
-    [selectedApp?.disclosures],
-  );
-
-  // Format the logo source based on whether it's a URL or base64 string
-  const logoSource = useMemo(() => {
-    if (!selectedApp?.logoBase64) {
-      return null;
-    }
-
-    // Check if the logo is already a URL
-    if (
-      selectedApp.logoBase64.startsWith('http://') ||
-      selectedApp.logoBase64.startsWith('https://')
-    ) {
-      return { uri: selectedApp.logoBase64 };
-    }
-
-    // Otherwise handle as base64 as before
-    const base64String = selectedApp.logoBase64.startsWith('data:image')
-      ? selectedApp.logoBase64
-      : `data:image/png;base64,${selectedApp.logoBase64}`;
-    return { uri: base64String };
-  }, [selectedApp?.logoBase64]);
-
-  const url = useMemo(() => {
-    if (!selectedApp?.endpoint) {
-      return null;
-    }
-    return formatEndpoint(selectedApp.endpoint);
-  }, [selectedApp?.endpoint]);
-
-  const formattedUserId = useMemo(
-    () => formatUserId(selectedApp?.userId, selectedApp?.userIdType),
-    [selectedApp?.userId, selectedApp?.userIdType],
-  );
 
   function onVerify() {
     provingStore.setUserConfirmed(selfClient);
