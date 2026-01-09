@@ -145,6 +145,7 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
     fun forceStopCamera() {
         frameProcessor?.stop()
         fotoapparat?.stop()
+        isDecoding = false
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -160,9 +161,8 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
                 override fun process(frame: Frame) {
                     try {
                         if (!isDecoding) {
-                            isDecoding = true
-
                             if (frameProcessor != null) {
+                                isDecoding = true
                                 val subscribe = Single.fromCallable({
                                     frameProcessor?.process(
                                         frame = frame,
