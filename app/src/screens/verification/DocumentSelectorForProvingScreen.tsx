@@ -20,7 +20,6 @@ import {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { commonNames } from '@selfxyz/common/constants/countries';
 import type {
   DocumentCatalog,
   DocumentMetadata,
@@ -52,14 +51,6 @@ import { usePassport } from '@/providers/passportDataProvider';
 import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 import { getDocumentTypeName } from '@/utils/documentUtils';
 
-/**
- * Converts a 3-letter country code to its full country name
- */
-function getCountryName(countryCode: string | null): string | null {
-  if (!countryCode) return null;
-  return commonNames[countryCode as keyof typeof commonNames] || null;
-}
-
 function getDocumentDisplayName(
   metadata: DocumentMetadata,
   documentData?: IDDocument,
@@ -78,24 +69,23 @@ function getDocumentDisplayName(
     }
   }
 
-  const countryName = getCountryName(countryCode);
-  const mockPrefix = isMock ? 'Developer ' : '';
+  const mockPrefix = isMock ? 'Dev ' : '';
 
   if (category === 'passport') {
     const base = 'Passport';
-    return countryName
-      ? `${mockPrefix}${countryName} ${base}`
+    return countryCode
+      ? `${mockPrefix}${countryCode} ${base}`
       : `${mockPrefix}${base}`;
   } else if (category === 'id_card') {
     const base = 'ID Card';
-    return countryName
-      ? `${mockPrefix}${countryName} ${base}`
+    return countryCode
+      ? `${mockPrefix}${countryCode} ${base}`
       : `${mockPrefix}${base}`;
   } else if (category === 'aadhaar') {
-    return isMock ? 'Developer Aadhaar ID' : 'Aadhaar ID';
+    return isMock ? 'Dev Aadhaar ID' : 'Aadhaar ID';
   }
 
-  return isMock ? `Developer ${metadata.documentType}` : metadata.documentType;
+  return isMock ? `Dev ${metadata.documentType}` : metadata.documentType;
 }
 
 function determineDocumentState(

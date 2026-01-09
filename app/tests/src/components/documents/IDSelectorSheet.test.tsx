@@ -44,7 +44,7 @@ describe('IDSelectorItem', () => {
   it('calls onPress when pressed on verified state', () => {
     const { getByTestId } = render(
       <IDSelectorItem
-        documentName="French Passport"
+        documentName="FRA Passport"
         state="verified"
         onPress={mockOnPress}
         testID="test-item"
@@ -70,7 +70,7 @@ describe('IDSelectorItem', () => {
     // Rerender with verified state
     rerender(
       <IDSelectorItem
-        documentName="French Passport"
+        documentName="FRA Passport"
         state="verified"
         onPress={mockOnPress}
         testID="test-item"
@@ -92,7 +92,7 @@ describe('IDSelectorItem', () => {
     // Rerender with mock state
     rerender(
       <IDSelectorItem
-        documentName="Developer Passport"
+        documentName="Dev USA Passport"
         state="mock"
         onPress={mockOnPress}
         testID="test-item"
@@ -105,8 +105,8 @@ describe('IDSelectorItem', () => {
 describe('IDSelectorSheet', () => {
   const mockDocuments: IDSelectorDocument[] = [
     { id: 'doc1', name: 'EU ID', state: 'verified' },
-    { id: 'doc2', name: 'French Passport', state: 'verified' },
-    { id: 'doc3', name: 'Developer Passport', state: 'mock' },
+    { id: 'doc2', name: 'FRA Passport', state: 'verified' },
+    { id: 'doc3', name: 'Dev USA Passport', state: 'mock' },
     { id: 'doc4', name: 'Aadhaar ID', state: 'expired' },
   ];
 
