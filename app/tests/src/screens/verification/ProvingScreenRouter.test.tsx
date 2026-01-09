@@ -230,7 +230,9 @@ describe('ProvingScreenRouter', () => {
     render(<ProvingScreenRouter />);
 
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving');
+      expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving', {
+        documentType: 'Passport',
+      });
     });
 
     // Verify cache was set
@@ -313,7 +315,9 @@ describe('ProvingScreenRouter', () => {
     render(<ProvingScreenRouter />);
 
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving');
+      expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving', {
+        documentType: 'Passport',
+      });
     });
 
     // Should NOT auto-select since there are multiple documents
@@ -348,7 +352,9 @@ describe('ProvingScreenRouter', () => {
 
     await waitFor(() => {
       expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
-      expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving');
+      expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving', {
+        documentType: 'Passport',
+      });
     });
 
     // Verify cache was still set before the selection failure
@@ -373,7 +379,9 @@ describe('ProvingScreenRouter', () => {
     render(<ProvingScreenRouter />);
 
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving');
+      expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving', {
+        documentType: 'Passport',
+      });
     });
 
     // Should NOT load fresh data
