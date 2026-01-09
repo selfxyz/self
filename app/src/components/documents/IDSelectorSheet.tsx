@@ -159,7 +159,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                 fontWeight="500"
                 color={white}
               >
-                Select
+                Approve
               </Text>
             </Button>
           </XStack>
