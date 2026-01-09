@@ -371,11 +371,11 @@ export function showKeychainErrorModal(
   const callbackId = registerModalCallbacks({
     onButtonPress: () => {
       unregisterModalCallbacks(callbackId);
-      navigationRef.navigate('Home');
+      navigationRef.navigate({ name: 'Home', params: {} });
     },
     onModalDismiss: () => {
       unregisterModalCallbacks(callbackId);
-      navigationRef.navigate('Home');
+      navigationRef.navigate({ name: 'Home', params: {} });
     },
   });
 
