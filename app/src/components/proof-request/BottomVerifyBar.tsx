@@ -34,7 +34,7 @@ export const BottomVerifyBar: React.FC<BottomVerifyBarProps> = ({
       backgroundColor={proofRequestColors.white}
       paddingHorizontal={16}
       paddingTop={12}
-      paddingBottom={Math.max(insets.bottom, 12) + 12}
+      paddingBottom={Math.max(insets.bottom, 12) + 20}
       testID={testID}
     >
       <HeldPrimaryButtonProveScreen

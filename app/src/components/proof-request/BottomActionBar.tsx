@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     backgroundColor: proofRequestColors.white,
     borderWidth: 1,
     borderColor: proofRequestColors.slate200,
-    borderRadius: 8,
+    borderRadius: 4,
   },
   documentButtonPressed: {
     backgroundColor: proofRequestColors.slate100,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   approveButton: {
     flex: 1,
     backgroundColor: proofRequestColors.blue600,
-    borderRadius: 8,
+    borderRadius: 4,
   },
   approveButtonDisabled: {
     opacity: 0.5,

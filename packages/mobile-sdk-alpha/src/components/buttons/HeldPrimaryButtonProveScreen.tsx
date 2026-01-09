@@ -254,7 +254,7 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
       );
     }
     if (state.matches('ready')) {
-      return 'Hold to verify';
+      return 'Press and hold to verify';
     }
     if (state.matches('verifying')) {
       return (
