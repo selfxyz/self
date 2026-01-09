@@ -229,6 +229,8 @@ export type RouteName =
 export interface NavigationAdapter {
   goBack(): void;
   goTo(routeName: RouteName, params?: Record<string, unknown>): void;
+  enableKeychainErrorModal?(): void;
+  disableKeychainErrorModal?(): void;
 }
 
 /**
@@ -316,6 +318,7 @@ export interface SelfClient {
   extractMRZInfo(mrz: string): MRZInfo;
   goBack(): void;
   goTo(routeName: RouteName, params?: Record<string, unknown>): void;
+  navigation: NavigationAdapter;
 
   /**
    * Convenience wrapper around {@link AnalyticsAdapter.trackEvent}. Calls are
