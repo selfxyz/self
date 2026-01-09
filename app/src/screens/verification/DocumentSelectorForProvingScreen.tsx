@@ -48,7 +48,6 @@ import { useSelfAppData } from '@/hooks/useSelfAppData';
 import { useSelfAppStalenessCheck } from '@/hooks/useSelfAppStalenessCheck';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
-import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 import { getDocumentTypeName } from '@/utils/documentUtils';
 
 function getDocumentDisplayName(
@@ -117,8 +116,6 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   const selfApp = useSelfAppStore(state => state.selfApp);
   const { loadDocumentCatalog, getAllDocuments, setSelectedDocument } =
     usePassport();
-  const { getCache, setCache, isValid } = useDocumentCacheStore();
-
   // Extract SelfApp data using hook
   const { logoSource, url, formattedUserId, disclosureItems } =
     useSelfAppData(selfApp);
@@ -186,19 +183,8 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // Try to use cached data first
-      let catalog, docs;
-      const cachedData = isValid() ? getCache() : null;
-
-      if (cachedData) {
-        catalog = cachedData.catalog;
-        docs = cachedData.allDocuments;
-      } else {
-        // Load fresh data and cache it
-        catalog = await loadDocumentCatalog();
-        docs = await getAllDocuments();
-        setCache(catalog, docs);
-      }
+      const catalog = await loadDocumentCatalog();
+      const docs = await getAllDocuments();
 
       // Don't update state if this request was aborted
       if (controller.signal.aborted) {
@@ -222,11 +208,8 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     }
   }, [
     getAllDocuments,
-    getCache,
-    isValid,
     loadDocumentCatalog,
     pickInitialDocument,
-    setCache,
   ]);
 
   useFocusEffect(
