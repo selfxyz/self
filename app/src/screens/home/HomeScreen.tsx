@@ -209,7 +209,7 @@ const HomeScreen: React.FC = () => {
         justifyContent="center"
         alignItems="center"
       >
-        <Spinner size="large" />
+        <Spinner size="large" color={black} />
       </YStack>
     );
   }
