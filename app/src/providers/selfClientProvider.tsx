@@ -355,7 +355,7 @@ export function showKeychainErrorModal(
     user_cancelled: {
       titleText: 'Authentication Required',
       bodyText:
-        'You need to authenticate with your fingerprint or PIN to continue the verification process. Please try again.',
+        'You need to authenticate with your fingerprint, PIN or faceID to continue the verification process. Please try again.',
       buttonText: 'Try Again',
     },
     crypto_failed: {
