@@ -13,6 +13,9 @@ import type { RootStackParamList } from '@/navigation';
 /**
  * Hook that checks if SelfApp data is stale (missing or empty disclosures)
  * and navigates to Home screen if stale data is detected.
+ *
+ * Uses a small delay to allow store updates to propagate after navigation
+ * (e.g., after QR code scan sets selfApp data).
  */
 export function useSelfAppStalenessCheck(
   selfApp: SelfApp | null,
@@ -21,9 +24,17 @@ export function useSelfAppStalenessCheck(
 ) {
   useFocusEffect(
     useCallback(() => {
-      if (!selfApp || disclosureItems.length === 0) {
-        navigation.navigate({ name: 'Home', params: {} });
-      }
+      // Add a small delay to allow Zustand store updates to propagate
+      // after navigation (e.g., when selfApp is set from QR scan)
+      const timeoutId = setTimeout(() => {
+        if (!selfApp || disclosureItems.length === 0) {
+          navigation.navigate({ name: 'Home', params: {} });
+        }
+      }, 300);
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }, [selfApp, disclosureItems.length, navigation]),
   );
 }
