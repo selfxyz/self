@@ -148,6 +148,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
         _;
     }
 
+
     // ====================================================
     // Constructor
     // ====================================================
@@ -305,7 +306,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @notice Updates the name and date of birth OFAC root.
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param newNameAndDobOfacRoot The new name and date of birth OFAC root value.
-    function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+    function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyTEE {
         _nameAndDobOfacRoot = newNameAndDobOfacRoot;
         emit NameAndDobOfacRootUpdated(newNameAndDobOfacRoot);
     }
@@ -313,7 +314,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @notice Updates the name and year of birth OFAC root.
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param newNameAndYobOfacRoot The new name and year of birth OFAC root value.
-    function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+    function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyTEE {
         _nameAndYobOfacRoot = newNameAndYobOfacRoot;
         emit NameAndYobOfacRootUpdated(newNameAndYobOfacRoot);
     }

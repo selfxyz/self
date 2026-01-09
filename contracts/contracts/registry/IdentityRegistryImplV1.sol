@@ -164,6 +164,7 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
         _;
     }
 
+
     // ====================================================
     // Constructor
     // ====================================================
@@ -429,7 +430,7 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newPassportNoOfacRoot The new passport number OFAC root value.
      */
-    function updatePassportNoOfacRoot(uint256 newPassportNoOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+    function updatePassportNoOfacRoot(uint256 newPassportNoOfacRoot) external onlyProxy onlyTEE {
         _passportNoOfacRoot = newPassportNoOfacRoot;
         emit PassportNoOfacRootUpdated(newPassportNoOfacRoot);
     }
@@ -439,7 +440,7 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newNameAndDobOfacRoot The new name and date of birth OFAC root value.
      */
-    function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+    function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyTEE {
         _nameAndDobOfacRoot = newNameAndDobOfacRoot;
         emit NameAndDobOfacRootUpdated(newNameAndDobOfacRoot);
     }
@@ -449,7 +450,7 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newNameAndYobOfacRoot The new name and year of birth OFAC root value.
      */
-    function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+    function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyTEE {
         _nameAndYobOfacRoot = newNameAndYobOfacRoot;
         emit NameAndYobOfacRootUpdated(newNameAndYobOfacRoot);
     }

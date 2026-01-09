@@ -26,97 +26,61 @@ Connect to NordLayer VPN before running any commands.
 
 ---
 
-## Production Deployment
+## Single-Shot Auto Update (Docker/TEE)
 
-### First Signer
+This is the unified flow that runs the pipeline, updates on-chain roots directly,
+and performs the prestaged upload + atomic move in one run.
+
+### Docker
+
+Build the image:
 
 ```bash
-cd /path/to/self
-
-# Download OFAC list and build trees
-yarn dlx tsx common/scripts/ofac/index.ts
-
-# Propose and sign
-cd contracts
-PRIVATE_KEY=0x... \
-NETWORK=celo \
-yarn dlx tsx scripts/ofac/prepareMultisigUpdate.ts
+docker build -f common/scripts/ofac/Dockerfile -t ofac-auto-updater .
 ```
 
-### Final Signer (2nd of 2/5)
+Run with a single mount (all inputs/outputs live under `/data/ofac`):
 
 ```bash
-cd /path/to/self/contracts
-
-PRIVATE_KEY=0x... \
-NETWORK=celo \
-SSH_HOST=self-infra-prod \
-yarn dlx tsx scripts/ofac/signExecuteAndUpload.ts
+docker run --rm \\
+  -e PRIVATE_KEY=0x... \\
+  -e NETWORK=celo \\
+  -e SSH_HOST=self-infra-prod \\
+  -e UPLOAD_PATH=/home/ec2-user/self-infra/merkle-tree-reader/common/constants/ofac \\
+  -v /local/ofac:/data \\
+  -v ~/.ssh:/root/.ssh:ro \\
+  ofac-auto-updater
 ```
 
-This script:
-1. Pre-stages trees to server `/tmp/`
-2. Signs the pending transaction
-3. Executes on-chain
-4. Moves trees to production (~6-7s mismatch)
+Environment variables:
+- `PRIVATE_KEY` (required): signer key used for on-chain updates
+- Signer must have `TEE_ROLE` on the registry contracts
+- `NETWORK`: `celo`, `celo-sepolia`, or `sepolia`
+- `RPC_URL` or network-specific RPC envs (`CELO_RPC_URL`, `CELO_SEPOLIA_RPC_URL`, `SEPOLIA_RPC_URL`)
+- `OFAC_DATA_DIR` (default: `/data/ofac`)
+- `SSH_HOST` (default: `self-infra-staging`)
+- `UPLOAD_PATH` (default: production path for the chosen network)
+- `DRY_RUN=true` to skip on-chain update and upload
+- `SKIP_PRESTAGE=true` to skip pre-staging (not recommended)
 
----
+If deploying this change to existing registries, call `initializeTeeRole(TEE_ADDRESS)` after upgrade to set role admin and grant `TEE_ROLE`.
 
-## E2E Testing (Sepolia)
-
-Test Safe: `0x4264a631c5E685a622b5C8171b5f17BeD7FB30c6` (2/2 threshold)
-
-### First Signer
-
-```bash
-cd /path/to/self
-
-# Download and build trees (if not already done)
-yarn dlx tsx common/scripts/ofac/index.ts
-
-# Propose test transaction
-cd contracts
-PRIVATE_KEY=0x_SIGNER_1_KEY_ \
-yarn dlx tsx scripts/ofac/test-e2e/testSafeProposal.ts
-```
-
-### Second Signer
+### Local (no Docker)
 
 ```bash
-cd /path/to/self/contracts
-
-PRIVATE_KEY=0x_SIGNER_2_KEY_ \
-NETWORK=sepolia \
-SSH_HOST=self-infra-staging \
-UPLOAD_PATH=/home/ec2-user/ofac-e2e-test \
-yarn dlx tsx scripts/ofac/signExecuteAndUpload.ts
-```
-
-### Cleanup
-
-```bash
-ssh self-infra-staging "rm -rf /home/ec2-user/ofac-e2e-test /tmp/ofac-prestage-*"
+PRIVATE_KEY=0x... \\
+NETWORK=celo \\
+SSH_HOST=self-infra-prod \\
+yarn tsx common/scripts/ofac/runOfacAutoUpdate.ts
 ```
 
 ---
+## How SSH Is Used
 
-## Configuration
+The updater uses SSH only for the file staging + atomic move:
+1. Pre-stage generated tree files to a temp directory on the server.
+2. After on-chain updates complete, atomically move the files into production.
+3. Optionally verify the production directory contents.
 
-| Environment | Safe Address | SSH Host |
-|-------------|--------------|----------|
-| Production (Celo) | `0x067b18e09A10Fa03d027c1D60A098CEbbE5637f0` | `self-infra-prod` |
-| Staging (Celo Sepolia) | `0x067b18e09A10Fa03d027c1D60A098CEbbE5637f0` | `self-infra-staging` |
-| E2E Test (Eth Sepolia) | `0x4264a631c5E685a622b5C8171b5f17BeD7FB30c6` | `self-infra-staging` |
-
-Default RPC URLs: Celo (`forno.celo.org`), Eth Sepolia (`rpc.sepolia.org`).
-Celo Sepolia requires `CELO_SEPOLIA_RPC_URL` env var.
-
----
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| `tsx: command not found` | Use `yarn dlx tsx` |
-| SSH timeout | Connect to NordLayer VPN |
-| Orphaned pre-staged files | `ssh <host> "rm -rf /tmp/ofac-prestage-*"` |
+If SSH isn’t available (e.g., missing VPN/host config), the on-chain updates can still run,
+but the tree deployment step will fail unless `DRY_RUN=true`.

@@ -157,6 +157,7 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
         _;
     }
 
+
     // ====================================================
     // Constructor
     // ====================================================
@@ -406,7 +407,7 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newNameAndDobOfacRoot The new name and date of birth OFAC root value.
      */
-    function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+    function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyTEE {
         _nameAndDobOfacRoot = newNameAndDobOfacRoot;
         emit NameAndDobOfacRootUpdated(newNameAndDobOfacRoot);
     }
@@ -416,7 +417,7 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newNameAndYobOfacRoot The new name and year of birth OFAC root value.
      */
-    function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+    function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyTEE {
         _nameAndYobOfacRoot = newNameAndYobOfacRoot;
         emit NameAndYobOfacRootUpdated(newNameAndYobOfacRoot);
     }
