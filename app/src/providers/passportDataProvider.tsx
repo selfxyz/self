@@ -83,10 +83,10 @@ function isUserCancellation(error: unknown): boolean {
   // User cancelled biometric/PIN authentication
   return Boolean(
     err?.code === 'E_AUTHENTICATION_FAILED' ||
-      err?.code === 'USER_CANCELED' ||
-      err?.message?.includes('User canceled') ||
-      err?.message?.includes('Authentication canceled') ||
-      err?.message?.includes('cancelled by user'),
+    err?.code === 'USER_CANCELED' ||
+    err?.message?.includes('User canceled') ||
+    err?.message?.includes('Authentication canceled') ||
+    err?.message?.includes('cancelled by user'),
   );
 }
 
@@ -99,7 +99,7 @@ function isKeychainCryptoError(error: unknown): boolean {
       err?.message?.includes('CryptoFailedException') ||
       err?.message?.includes('Decryption failed') ||
       err?.message?.includes('Authentication tag verification failed')) &&
-      !isUserCancellation(error),
+    !isUserCancellation(error),
   );
 }
 
