@@ -380,7 +380,13 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     } finally {
       setSubmitting(false);
     }
-  }, [selectedDocumentId, canContinue, submitting, setSelectedDocument, navigation]);
+  }, [
+    selectedDocumentId,
+    canContinue,
+    submitting,
+    setSelectedDocument,
+    navigation,
+  ]);
 
   const handleApprove = async () => {
     if (!selectedDocumentId || !canContinue || submitting) {

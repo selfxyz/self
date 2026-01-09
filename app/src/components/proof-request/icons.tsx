@@ -138,11 +138,6 @@ export const WalletIcon: React.FC<IconProps> = ({
       strokeWidth="2"
       fill="none"
     />
-    <Path
-      d="M2 10H22"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
+    <Path d="M2 10H22" stroke={color} strokeWidth="2" strokeLinecap="round" />
   </Svg>
 );

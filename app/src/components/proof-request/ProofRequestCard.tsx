@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import type {
   ImageSourcePropType,
   LayoutChangeEvent,
@@ -50,7 +50,7 @@ export const ProofRequestCard: React.FC<ProofRequestCardProps> = ({
   appName,
   appUrl,
   documentType = '',
-  timestamp = new Date(),
+  timestamp,
   children,
   testID = 'proof-request-card',
   onScroll,
@@ -59,6 +59,10 @@ export const ProofRequestCard: React.FC<ProofRequestCardProps> = ({
   onLayout,
   initialScrollOffset,
 }) => {
+  // Create default timestamp once and reuse it to avoid unnecessary re-renders
+  const defaultTimestamp = useMemo(() => new Date(), []);
+  const effectiveTimestamp = timestamp ?? defaultTimestamp;
+
   // Build request message with highlighted app name and document type
   const requestMessage = (
     <>
@@ -99,7 +103,7 @@ export const ProofRequestCard: React.FC<ProofRequestCardProps> = ({
 
         {/* Metadata Bar */}
         <ProofMetadataBar
-          timestamp={formatTimestamp(timestamp)}
+          timestamp={formatTimestamp(effectiveTimestamp)}
           testID={`${testID}-metadata`}
         />
 
