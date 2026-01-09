@@ -2,12 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useMemo } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  Pressable,
+  StyleSheet,
+} from 'react-native';
 import { Text, View, XStack } from 'tamagui';
 
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import { proofRequestColors } from '@/components/proof-request/designTokens';
 import { ChevronUpDownIcon } from '@/components/proof-request/icons';
@@ -33,14 +38,37 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
   approving = false,
   testID = 'bottom-action-bar',
 }) => {
-  const insets = useSafeAreaInsets();
+  // Reduce top padding to balance with safe area bottom padding
+  // The safe area hook adds significant padding on small screens for system UI
+  const topPadding = 8;
+
+  // Calculate dynamic bottom padding based on screen height
+  // Scales proportionally to better center the select box beneath the disclosure list
+  const { height: screenHeight } = Dimensions.get('window');
+  const basePadding = 12;
+
+  // Get safe area padding (handles small screens < 900px with extra padding)
+  const safeAreaPadding = useSafeBottomPadding(basePadding);
+
+  // Dynamic padding calculation:
+  // - Start with safe area padding (includes base + small screen adjustment)
+  // - Add additional padding that scales with screen height
+  // - Formula: safeAreaPadding + (screenHeight - 800) * 0.12
+  // - This provides base padding, safe area handling, plus 0-50px extra on larger screens
+  // - The multiplier (0.12) ensures smooth scaling across different screen sizes
+  const dynamicPadding = useMemo(() => {
+    const heightMultiplier = Math.max(0, (screenHeight - 800) * 0.12);
+    return Math.round(safeAreaPadding + heightMultiplier);
+  }, [screenHeight, safeAreaPadding]);
+
+  const bottomPadding = dynamicPadding;
 
   return (
     <View
       backgroundColor={proofRequestColors.white}
       paddingHorizontal={16}
-      paddingTop={12}
-      paddingBottom={Math.max(insets.bottom, 12) + 12}
+      paddingTop={topPadding}
+      paddingBottom={bottomPadding}
       testID={testID}
     >
       <XStack gap={12}>
@@ -54,17 +82,15 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
           testID={`${testID}-document-selector`}
         >
           <XStack
-            flex={1}
             alignItems="center"
             justifyContent="space-between"
-            paddingHorizontal={16}
-            paddingVertical={16}
+            paddingHorizontal={12}
+            paddingVertical={12}
           >
             <Text
               fontFamily={dinot}
-              fontSize={16}
+              fontSize={18}
               color={proofRequestColors.slate900}
-              flex={1}
               numberOfLines={1}
             >
               {selectedDocumentName}
@@ -95,8 +121,8 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
           <View
             alignItems="center"
             justifyContent="center"
-            paddingHorizontal={24}
-            paddingVertical={16}
+            paddingHorizontal={12}
+            paddingVertical={12}
           >
             {approving ? (
               <ActivityIndicator
@@ -106,7 +132,7 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
             ) : (
               <Text
                 fontFamily={dinot}
-                fontSize={16}
+                fontSize={18}
                 color={proofRequestColors.white}
                 textAlign="center"
               >
@@ -122,7 +148,6 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
 
 const styles = StyleSheet.create({
   documentButton: {
-    flex: 2,
     backgroundColor: proofRequestColors.white,
     borderWidth: 1,
     borderColor: proofRequestColors.slate200,
