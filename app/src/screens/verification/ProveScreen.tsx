@@ -76,8 +76,9 @@ function getDocumentTypeName(category: string | undefined): string {
 const ProveScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
-  const { navigate } =
+  const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { navigate } = navigation;
   const route = useRoute<RouteProp<RootStackParamList, 'Prove'>>();
   const isFocused = useIsFocused();
   const { useProvingStore, useSelfAppStore } = selfClient;
@@ -101,6 +102,7 @@ const ProveScreen: React.FC = () => {
   );
   const provingStore = useProvingStore();
   const currentState = useProvingStore(state => state.currentState);
+  const provingSessionId = useProvingStore(state => state.uuid);
   const isReadyToProve = currentState === 'ready_to_prove';
 
   const { addProofHistory } = useProofHistoryStore();
@@ -206,6 +208,22 @@ const ProveScreen: React.FC = () => {
     //as it sets provingStore.setUserConfirmed()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedApp?.sessionId, isFocused, selfClient]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+
+    if (
+      !selectedApp?.sessionId ||
+      (provingSessionId && selectedApp.sessionId !== provingSessionId)
+    ) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Home' }],
+      });
+    }
+  }, [isFocused, navigation, provingSessionId, selectedApp?.sessionId]);
 
   // Enhance selfApp with user's points address if not already set
   useEffect(() => {

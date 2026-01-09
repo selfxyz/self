@@ -303,6 +303,43 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', event => {
+      if (
+        event.data.action.type !== 'GO_BACK' &&
+        event.data.action.type !== 'POP'
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      const state = navigation.getState();
+      const routerIndex = state.routes.findIndex(
+        route => route.name === 'ProvingScreenRouter',
+      );
+
+      if (routerIndex > 0) {
+        const targetIndex = routerIndex - 1;
+        const routes = state.routes.slice(0, targetIndex + 1).map(route => ({
+          name: route.name as keyof RootStackParamList,
+          params: route.params,
+        }));
+        navigation.reset({
+          index: targetIndex,
+          routes,
+        });
+        return;
+      }
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Home' }],
+      });
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
   const documents = useMemo(() => {
     return documentCatalog.documents
       .map(metadata => {
