@@ -22,6 +22,22 @@ import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 import { useSettingStore } from '@/stores/settingStore';
 
 /**
+ * Gets the document type display name for the proof request message.
+ */
+function getDocumentTypeName(category: string | undefined): string {
+  switch (category) {
+    case 'passport':
+      return 'Passport';
+    case 'id_card':
+      return 'ID Card';
+    case 'aadhaar':
+      return 'Aadhaar';
+    default:
+      return 'Document';
+  }
+}
+
+/**
  * Router screen for the proving flow that decides whether to skip the document selector.
  *
  * This screen:
@@ -96,6 +112,10 @@ const ProvingScreenRouter: React.FC = () => {
         return;
       }
 
+      // Determine document type from first valid document for display
+      const firstValidDoc = validDocuments[0];
+      const documentType = getDocumentTypeName(firstValidDoc?.documentCategory);
+
       // Determine if we should skip the selector
       const shouldSkip =
         skipDocumentSelector ||
@@ -112,15 +132,21 @@ const ProvingScreenRouter: React.FC = () => {
             console.error('Failed to auto-select document:', selectError);
             // On error, fall back to showing the selector
             hasRoutedRef.current = false;
-            navigation.replace('DocumentSelectorForProving');
+            navigation.replace('DocumentSelectorForProving', {
+              documentType,
+            });
           }
         } else {
           // No valid document to select, show selector
-          navigation.replace('DocumentSelectorForProving');
+          navigation.replace('DocumentSelectorForProving', {
+            documentType,
+          });
         }
       } else {
         // Show the document selector
-        navigation.replace('DocumentSelectorForProving');
+        navigation.replace('DocumentSelectorForProving', {
+          documentType,
+        });
       }
     } catch (loadError) {
       // Don't show error if this request was aborted

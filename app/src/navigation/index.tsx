@@ -157,7 +157,11 @@ export type RootStackParamList = Omit<
       }
     | undefined;
   ProvingScreenRouter: undefined;
-  DocumentSelectorForProving: undefined;
+  DocumentSelectorForProving:
+    | {
+        documentType?: string;
+      }
+    | undefined;
 
   // App screens
   Loading: {

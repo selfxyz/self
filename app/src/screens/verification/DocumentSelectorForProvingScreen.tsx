@@ -12,7 +12,12 @@ import React, {
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 import { Text, View, YStack } from 'tamagui';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { commonNames } from '@selfxyz/common/constants/countries';
@@ -132,6 +137,8 @@ function determineDocumentState(
 const DocumentSelectorForProvingScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route =
+    useRoute<RouteProp<RootStackParamList, 'DocumentSelectorForProving'>>();
   const selfClient = useSelfClient();
   const { useSelfAppStore } = selfClient;
   const selfApp = useSelfAppStore(state => state.selfApp);
@@ -334,12 +341,23 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
 
   // Get document type for the proof request message
   const selectedDocumentType = useMemo(() => {
-    if (!selectedDocumentId) return 'Document';
+    // If we have a preloaded document type from route params, use it while loading
+    const preloadedType = route.params?.documentType;
+    if (loading && preloadedType) {
+      return preloadedType;
+    }
+
+    if (!selectedDocumentId) return preloadedType || 'Document';
     const metadata = documentCatalog.documents.find(
       d => d.id === selectedDocumentId,
     );
     return getDocumentTypeName(metadata?.documentCategory);
-  }, [selectedDocumentId, documentCatalog.documents]);
+  }, [
+    selectedDocumentId,
+    documentCatalog.documents,
+    loading,
+    route.params?.documentType,
+  ]);
 
   const handleSelect = useCallback((documentId: string) => {
     setSelectedDocumentId(documentId);
