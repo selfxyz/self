@@ -18,7 +18,6 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { proofRequestColors } from '@/components/proof-request';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
-import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 import { useSettingStore } from '@/stores/settingStore';
 import { getDocumentTypeName } from '@/utils/documentUtils';
 
@@ -26,10 +25,9 @@ import { getDocumentTypeName } from '@/utils/documentUtils';
  * Router screen for the proving flow that decides whether to skip the document selector.
  *
  * This screen:
- * 1. Loads document catalog and counts valid documents (or uses cache)
- * 2. Caches loaded data for downstream screens to avoid duplicate loads
- * 3. Checks skip settings (skipDocumentSelector, skipDocumentSelectorIfSingle)
- * 4. Routes to appropriate screen:
+ * 1. Loads document catalog and counts valid documents
+ * 2. Checks skip settings (skipDocumentSelector, skipDocumentSelectorIfSingle)
+ * 3. Routes to appropriate screen:
  *    - No valid documents -> DocumentDataNotFound
  *    - Skip enabled -> auto-select and go to Prove
  *    - Otherwise -> DocumentSelectorForProving
@@ -41,8 +39,6 @@ const ProvingScreenRouter: React.FC = () => {
     usePassport();
   const { skipDocumentSelector, skipDocumentSelectorIfSingle } =
     useSettingStore();
-  const { getCache, setCache, isValid } = useDocumentCacheStore();
-
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const hasRoutedRef = useRef(false);
@@ -60,19 +56,8 @@ const ProvingScreenRouter: React.FC = () => {
 
     setError(null);
     try {
-      // Try to use cached data first
-      let catalog, docs;
-      const cachedData = isValid() ? getCache() : null;
-
-      if (cachedData) {
-        catalog = cachedData.catalog;
-        docs = cachedData.allDocuments;
-      } else {
-        // Load fresh data and cache it
-        catalog = await loadDocumentCatalog();
-        docs = await getAllDocuments();
-        setCache(catalog, docs);
-      }
+      const catalog = await loadDocumentCatalog();
+      const docs = await getAllDocuments();
 
       // Don't continue if this request was aborted
       if (controller.signal.aborted) {
@@ -145,11 +130,8 @@ const ProvingScreenRouter: React.FC = () => {
     }
   }, [
     getAllDocuments,
-    getCache,
-    isValid,
     loadDocumentCatalog,
     navigation,
-    setCache,
     setSelectedDocument,
     skipDocumentSelector,
     skipDocumentSelectorIfSingle,
@@ -163,13 +145,10 @@ const ProvingScreenRouter: React.FC = () => {
     }, [loadAndRoute]),
   );
 
-  // Cleanup abort controller and optionally cache on unmount
+  // Cleanup abort controller on unmount
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
-      // Note: We don't clear cache here because user might be navigating
-      // to DocumentSelectorForProving or Prove which need the cache.
-      // Cache will be cleared on proving completion or document changes.
     };
   }, []);
 

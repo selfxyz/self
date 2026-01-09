@@ -50,7 +50,6 @@ import {
   getPointsAddress,
   getWhiteListedDisclosureAddresses,
 } from '@/services/points';
-import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
 import {
@@ -103,22 +102,11 @@ const ProveScreen: React.FC = () => {
 
   const { addProofHistory } = useProofHistoryStore();
   const { loadDocumentCatalog } = usePassport();
-  const { getCache, isValid } = useDocumentCacheStore();
 
   useEffect(() => {
     const addHistory = async () => {
       if (provingStore.uuid && selectedApp) {
-        // Try to use cached catalog first
-        let catalog;
-        const cachedData = isValid() ? getCache() : null;
-
-        if (cachedData) {
-          catalog = cachedData.catalog;
-        } else {
-          catalog = await loadDocumentCatalog();
-          // Note: We don't have allDocuments here, so we only partially cache
-          // This is okay since upstream screens will have the full cache
-        }
+        const catalog = await loadDocumentCatalog();
 
         const selectedDocumentId = catalog.selectedDocumentId;
 
@@ -139,8 +127,6 @@ const ProveScreen: React.FC = () => {
     addHistory();
   }, [
     addProofHistory,
-    getCache,
-    isValid,
     loadDocumentCatalog,
     provingStore.uuid,
     selectedApp,

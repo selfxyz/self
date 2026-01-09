@@ -67,7 +67,6 @@ import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { createKeychainOptions } from '@/integrations/keychain';
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
-import { useDocumentCacheStore } from '@/stores/documentCacheStore';
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
@@ -332,8 +331,6 @@ export async function deleteDocument(documentId: string): Promise<void> {
     console.log(`Document ${documentId} not found or already cleared`);
   }
 
-  // Clear document cache since catalog has changed
-  useDocumentCacheStore.getState().clearCache();
 }
 
 export async function getAvailableDocumentTypes(): Promise<string[]> {
@@ -835,8 +832,6 @@ export async function storeDocumentWithDeduplication(
   catalog.selectedDocumentId = contentHash;
   await saveDocumentCatalogDirectlyToKeychain(catalog);
 
-  // Clear document cache since a new document was added
-  useDocumentCacheStore.getState().clearCache();
 
   return contentHash;
 }
@@ -861,8 +856,6 @@ export async function updateDocumentRegistrationState(
       `Updated registration state for document ${documentId}: ${isRegistered}`,
     );
 
-    // Clear document cache since registration state changed
-    useDocumentCacheStore.getState().clearCache();
   } else {
     console.warn(`Document ${documentId} not found in catalog`);
   }
