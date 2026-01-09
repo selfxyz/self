@@ -94,6 +94,7 @@ export const ProofRequestHeader: React.FC<ProofRequestHeaderProps> = ({
         fontSize={16}
         color={proofRequestColors.slate400}
         lineHeight={24}
+        minHeight={75}
         testID={`${testID}-request-message`}
       >
         {requestMessage}
