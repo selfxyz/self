@@ -74,10 +74,13 @@ class PassportOCRViewManager(
         val activity = reactContext.currentActivity as FragmentActivity
         val fragmentManager = activity.supportFragmentManager
         fragmentManager.findFragmentByTag(reactNativeViewId.toString())?.let {
+            if (it is CameraMLKitFragment) {
+                it.forceStopCamera()
+            }
             fragmentManager
                 .beginTransaction()
                 .remove(it)
-                .commit()
+                .commitNowAllowingStateLoss()
         }
 
         val cameraFragment = CameraMLKitFragment(this)
@@ -94,10 +97,13 @@ class PassportOCRViewManager(
         val activity = reactContext.currentActivity as FragmentActivity
         val cameraFragment = activity.supportFragmentManager.findFragmentByTag(reactNativeViewId.toString())
         cameraFragment?.let {
+            if (it is CameraMLKitFragment) {
+                it.forceStopCamera()
+            }
             activity.supportFragmentManager
                 .beginTransaction()
                 .remove(it)
-                .commit()
+                .commitNowAllowingStateLoss()
         }
     }
 

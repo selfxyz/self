@@ -162,6 +162,12 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
 
     }
 
+    fun forceStopCamera() {
+        frameProcessor?.stop()
+        frameProcessor = null
+        fotoapparat?.stop()
+    }
+
 
 
     ////////////////////////////////////////////////////////////////////////////////////////
