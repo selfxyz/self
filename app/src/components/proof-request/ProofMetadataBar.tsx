@@ -17,7 +17,7 @@ export interface ProofMetadataBarProps {
 
 /**
  * Gray metadata bar showing "PROOFS REQUESTED" label and timestamp.
- * Matches Figma design 15234:9267.
+ * Matches Figma design 15234:9281.
  */
 export const ProofMetadataBar: React.FC<ProofMetadataBarProps> = ({
   timestamp,
@@ -26,37 +26,41 @@ export const ProofMetadataBar: React.FC<ProofMetadataBarProps> = ({
   return (
     <View
       backgroundColor={proofRequestColors.slate200}
-      paddingVertical={8}
-      paddingHorizontal={16}
+      paddingVertical={6}
       borderBottomWidth={1}
       borderBottomColor={proofRequestColors.slate200}
       testID={testID}
     >
-      <XStack gap={8} alignItems="center" width="100%">
-        {/* Document icon */}
-        <DocumentIcon size={18} color={proofRequestColors.slate400} />
+      <XStack gap={10} alignItems="center" justifyContent="center" width="100%">
+        {/* Icon + Label group */}
+        <XStack gap={6} alignItems="center">
+          <DocumentIcon size={14} color={proofRequestColors.slate400} />
+          <Text
+            fontFamily={plexMono}
+            fontSize={12}
+            fontWeight="500"
+            color={proofRequestColors.slate400}
+            textTransform="uppercase"
+          >
+            Proofs Requested
+          </Text>
+        </XStack>
 
+        {/* Dot separator */}
         <Text
           fontFamily={plexMono}
           fontSize={12}
-          color={proofRequestColors.slate400}
-          textTransform="uppercase"
-          flex={1}
-        >
-          Proofs Requested
-        </Text>
-
-        <Text
-          fontFamily={plexMono}
-          fontSize={12}
+          fontWeight="500"
           color={proofRequestColors.slate400}
         >
           •
         </Text>
 
+        {/* Timestamp */}
         <Text
           fontFamily={plexMono}
           fontSize={12}
+          fontWeight="500"
           color={proofRequestColors.slate400}
           testID={`${testID}-timestamp`}
         >

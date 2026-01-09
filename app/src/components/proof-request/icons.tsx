@@ -57,7 +57,7 @@ export const CopyIcon: React.FC<IconProps> = ({
 );
 
 /**
- * Document icon
+ * Document icon (lighter stroke to match SF Symbol design)
  */
 export const DocumentIcon: React.FC<IconProps> = ({
   size = 18,
@@ -67,7 +67,7 @@ export const DocumentIcon: React.FC<IconProps> = ({
     <Path
       d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
       stroke={color}
-      strokeWidth="2"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
       fill="none"
@@ -75,14 +75,14 @@ export const DocumentIcon: React.FC<IconProps> = ({
     <Path
       d="M14 2V8H20"
       stroke={color}
-      strokeWidth="2"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <Path
       d="M16 13H8M16 17H8M10 9H8"
       stroke={color}
-      strokeWidth="2"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
@@ -121,7 +121,7 @@ export const InfoCircleIcon: React.FC<IconProps> = ({
 );
 
 /**
- * Wallet icon
+ * Wallet icon (credit card style to match SF Symbol creditcard 􀟿)
  */
 export const WalletIcon: React.FC<IconProps> = ({
   size = 16,
@@ -129,21 +129,20 @@ export const WalletIcon: React.FC<IconProps> = ({
 }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Rect
-      x="3"
-      y="6"
-      width="18"
-      height="13"
+      x="2"
+      y="5"
+      width="20"
+      height="14"
       rx="2"
       stroke={color}
       strokeWidth="2"
       fill="none"
     />
     <Path
-      d="M3 10H21M7 6V4C7 3.44772 7.44772 3 8 3H16C16.5523 3 17 3.44772 17 4V6"
+      d="M2 10H22"
       stroke={color}
       strokeWidth="2"
       strokeLinecap="round"
     />
-    <Circle cx="17" cy="13" r="1.5" fill={color} />
   </Svg>
 );

@@ -20,7 +20,7 @@ export interface ConnectedWalletBadgeProps {
 
 /**
  * Blue badge showing connected wallet address.
- * Matches Figma design 15234:9267.
+ * Matches Figma design 15234:9295 (icon).
  */
 export const ConnectedWalletBadge: React.FC<ConnectedWalletBadgeProps> = ({
   address,
@@ -50,7 +50,7 @@ export const ConnectedWalletBadge: React.FC<ConnectedWalletBadgeProps> = ({
         alignItems="center"
         gap={6}
       >
-        <WalletIcon size={16} color={proofRequestColors.white} />
+        <WalletIcon size={11} color={proofRequestColors.white} />
         <Text
           fontFamily={plexMono}
           fontSize={12}

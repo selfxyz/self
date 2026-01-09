@@ -45,7 +45,7 @@ export const DisclosureItem: React.FC<DisclosureItemProps> = ({
       {/* Status Icon */}
       <View width={20} alignItems="center" justifyContent="center">
         <FilledCircleIcon
-          size={18}
+          size={9}
           color={
             verified
               ? proofRequestColors.emerald500
