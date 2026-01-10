@@ -8,7 +8,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { assign, createMachine } from 'xstate';
 
 import { ProofEvents } from '../../constants/analytics';
-import { black, white } from '../../constants/colors';
+import { black } from '../../constants/colors';
 import Description from '../typography/Description';
 import { HeldPrimaryButton } from './PrimaryButtonLongHold';
 
@@ -220,63 +220,40 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
 
   const isDisabled = !state.matches('ready') && !state.matches('verifying');
 
+  const LoadingContent: React.FC<{ text: string }> = ({ text }) => (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <ActivityIndicator color={black} style={{ marginRight: 8 }} />
+      <Description color={black}>{text}</Description>
+    </View>
+  );
+
   const renderButtonContent = () => {
     if (isDocumentExpired) {
       return 'Document expired';
     }
     if (state.matches('waitingForSession')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Wait...</Description>
-        </View>
-      );
+      return <LoadingContent text="Waiting for app..." />;
     }
     if (state.matches('needsScroll')) {
       if (isScrollable) {
         return 'Scroll to read full request';
       }
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Wait...</Description>
-        </View>
-      );
+      return <LoadingContent text="Waiting for app..." />;
     }
     if (state.matches('preparing')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Accessing to Keychain data</Description>
-        </View>
-      );
+      return <LoadingContent text="Accessing to Keychain data" />;
     }
     if (state.matches('preparing2')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Parsing passport data</Description>
-        </View>
-      );
+      return <LoadingContent text="Parsing passport data" />;
     }
     if (state.matches('preparing3')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Preparing for verification</Description>
-        </View>
-      );
+      return <LoadingContent text="Preparing for verification" />;
     }
     if (state.matches('ready')) {
       return 'Press and hold to verify';
     }
     if (state.matches('verifying')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Generating proof</Description>
-        </View>
-      );
+      return <LoadingContent text="Generating proof" />;
     }
     return null;
   };
