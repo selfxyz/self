@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { SelfApp } from '@selfxyz/common';
 import { act, renderHook } from '@testing-library/react-native';
+
+import type { SelfApp } from '@selfxyz/common';
 
 import { useProofDisclosureStalenessCheck } from '@/hooks/useProofDisclosureStalenessCheck';
 

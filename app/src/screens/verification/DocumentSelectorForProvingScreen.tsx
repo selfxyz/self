@@ -44,8 +44,8 @@ import {
   truncateAddress,
   WalletAddressModal,
 } from '@/components/proof-request';
-import { useSelfAppData } from '@/hooks/useSelfAppData';
 import { useProofDisclosureStalenessCheck } from '@/hooks/useProofDisclosureStalenessCheck';
+import { useSelfAppData } from '@/hooks/useSelfAppData';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { getDocumentTypeName } from '@/utils/documentUtils';

@@ -38,8 +38,8 @@ import {
   truncateAddress,
   WalletAddressModal,
 } from '@/components/proof-request';
-import { useSelfAppData } from '@/hooks/useSelfAppData';
 import { useProofDisclosureStalenessCheck } from '@/hooks/useProofDisclosureStalenessCheck';
+import { useSelfAppData } from '@/hooks/useSelfAppData';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import {
