@@ -51,9 +51,6 @@ export function buildAadhaarSMT(field: any[], treetype: string): [number, number
   for (let i = 0; i < field.length; i++) {
     const entry = field[i];
 
-    if (i !== 0) {
-      console.log('Processing', treetype, 'number', i, 'out of', field.length);
-    }
 
     let leaf = BigInt(0);
     let reverse_leaf = BigInt(0);
@@ -66,18 +63,107 @@ export function buildAadhaarSMT(field: any[], treetype: string): [number, number
     }
 
     if (leaf == BigInt(0) || tree.createProof(leaf).membership) {
-      console.log('This entry already exists in the tree, skipping...');
+      // Suppressed verbose log - duplicates are expected
+      // console.log('This entry already exists in the tree, skipping...');
       continue;
     }
 
     count += 1;
     tree.add(leaf, BigInt(1));
     if (reverse_leaf == BigInt(0) || tree.createProof(reverse_leaf).membership) {
-      console.log('This entry already exists in the tree, skipping...');
+      // Suppressed verbose log - duplicates are expected
+      // console.log('This entry already exists in the tree, skipping...');
       continue;
     }
     tree.add(reverse_leaf, BigInt(1));
     count += 1;
+  }
+
+  return [count, performance.now() - startTime, tree];
+}
+
+// Async version of buildAadhaarSMT with progress updates
+export async function buildAadhaarSMTAsync(
+  field: any[],
+  treetype: string,
+  monitor?: any,
+  treeIndex?: number
+): Promise<[number, number, SMT]> {
+  let count = 0;
+  const startTime = performance.now();
+
+  const hash2 = (childNodes: ChildNodes) =>
+    childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes);
+  const tree = new SMT(hash2, true);
+
+  // Yield immediately to allow other trees to start
+  await yieldToEventLoop();
+  await new Promise(resolve => setTimeout(resolve, 10));
+
+  for (let i = 0; i < field.length; i++) {
+    const entry = field[i];
+
+    let leaf = BigInt(0);
+    let reverse_leaf = BigInt(0);
+    if (treetype == 'name_and_dob') {
+      leaf = processNameAndDobAadhaar(entry, i);
+      reverse_leaf = processNameAndDobAadhaar(entry, i, true);
+    } else if (treetype == 'name_and_yob') {
+      leaf = processNameAndYobAadhaar(entry, i);
+      reverse_leaf = processNameAndYobAadhaar(entry, i, true);
+    }
+
+    if (leaf == BigInt(0) || tree.createProof(leaf).membership) {
+      // Update progress even if entry is skipped
+      if (monitor && treeIndex !== undefined) {
+        monitor.updateTree(treeIndex, {
+          entriesAdded: count,
+          entriesProcessed: i + 1,
+        });
+      }
+      continue;
+    }
+
+    count += 1;
+    tree.add(leaf, BigInt(1));
+
+    if (reverse_leaf == BigInt(0) || tree.createProof(reverse_leaf).membership) {
+      // Update progress after adding first leaf
+      if (monitor && treeIndex !== undefined) {
+        monitor.updateTree(treeIndex, {
+          entriesAdded: count,
+          entriesProcessed: i + 1,
+        });
+        await yieldToEventLoop(); // Yield to allow render
+      }
+      continue;
+    }
+
+    tree.add(reverse_leaf, BigInt(1));
+    count += 1;
+
+    // Update progress monitor EVERY entry AFTER processing
+    // Yield every entry when monitor is present to allow smooth rendering
+    if (monitor && treeIndex !== undefined) {
+      monitor.updateTree(treeIndex, {
+        entriesAdded: count,
+        entriesProcessed: i + 1,
+      });
+      // Yield every entry to allow monitor render interval to pick up updates
+      // This ensures smooth progress display (1, 2, 3...) instead of jumps
+      await yieldToEventLoop();
+    } else if (i !== 0 && i % 50 === 0) {
+      // If no monitor, only yield every 50 entries for parallelism
+      await yieldToEventLoop();
+    }
+  }
+
+  // Final progress update
+  if (monitor && treeIndex !== undefined) {
+    monitor.updateTree(treeIndex, {
+      entriesAdded: count,
+      entriesProcessed: field.length,
+    });
   }
 
   return [count, performance.now() - startTime, tree];
@@ -88,6 +174,9 @@ export function buildAadhaarSMT(field: any[], treetype: string): [number, number
 // 2. Name and date of birth combo tree : level 2 (High Probability Match)
 // 3. Name and year of birth combo tree : level 1 (Partial Match)
 // NEW: ID card specific trees
+// Helper to yield control to event loop for parallel execution
+const yieldToEventLoop = () => new Promise(resolve => setImmediate(resolve));
+
 export function buildSMT(field: any[], treetype: string): [number, number, SMT] {
   let count = 0;
   const startTime = performance.now();
@@ -99,10 +188,11 @@ export function buildSMT(field: any[], treetype: string): [number, number, SMT] 
   for (let i = 0; i < field.length; i++) {
     const entry = field[i];
 
+    // Suppressed verbose log - dashboard shows progress instead
     // Optimization: Log progress less frequently
-    if (i !== 0 && i % 100 === 0) {
-      console.log('Processing', treetype, 'number', i, 'out of', field.length);
-    }
+    // if (i !== 0 && i % 100 === 0) {
+    //   console.log('Processing', treetype, 'number', i, 'out of', field.length);
+    // }
 
     let leaf = BigInt(0);
     // Determine document type based on treetype for name processing
@@ -143,8 +233,104 @@ export function buildSMT(field: any[], treetype: string): [number, number, SMT] 
     tree.add(leaf, BigInt(1));
   }
 
-  console.log('Total', treetype, 'entries added:', count, 'out of', field.length);
-  console.log(treetype, 'tree built in', (performance.now() - startTime).toFixed(2), 'ms');
+  return [count, performance.now() - startTime, tree];
+}
+
+// Async wrapper for parallel execution - yields control every N iterations
+export async function buildSMTAsync(
+  field: any[],
+  treetype: string,
+  monitor?: any,
+  treeIndex?: number
+): Promise<[number, number, SMT]> {
+  let count = 0;
+  const startTime = performance.now();
+
+  const hash2 = (childNodes: ChildNodes) =>
+    childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes);
+  const tree = new SMT(hash2, true);
+
+  // CRITICAL: Yield immediately to allow other promises in Promise.all to start
+  await yieldToEventLoop();
+
+  // Also yield after a tiny delay to ensure all promises have started
+  await new Promise(resolve => setTimeout(resolve, 10));
+
+  for (let i = 0; i < field.length; i++) {
+    const entry = field[i];
+
+    let leaf = BigInt(0);
+    let docType: 'passport' | 'id_card' = 'passport';
+    if (treetype.endsWith('_id_card')) {
+      docType = 'id_card';
+    }
+
+    if (treetype == 'passport_no_and_nationality') {
+      leaf = processPassportNoAndNationality(entry.Pass_No, entry.Pass_Country, i);
+    } else if (treetype == 'name_and_dob') {
+      leaf = processNameAndDob(entry, i, 'passport');
+    } else if (treetype == 'name_and_yob') {
+      leaf = processNameAndYob(entry, i, 'passport');
+    } else if (treetype == 'name_and_dob_id_card') {
+      leaf = processNameAndDob(entry, i, 'id_card');
+    } else if (treetype == 'name_and_yob_id_card') {
+      leaf = processNameAndYob(entry, i, 'id_card');
+    } else if (treetype == 'country') {
+      const keys = Object.keys(entry);
+      leaf = processCountry(keys[0], entry[keys[0]], i);
+    }
+
+    if (leaf == BigInt(0)) {
+      // Still update progress even if entry is skipped
+      if (monitor && treeIndex !== undefined) {
+        monitor.updateTree(treeIndex, {
+          entriesAdded: count,
+          entriesProcessed: i + 1
+        });
+        await yieldToEventLoop(); // Yield to allow render
+      }
+      continue;
+    }
+
+    if (tree.createProof(leaf).membership) {
+      // Still update progress even if entry is duplicate
+      if (monitor && treeIndex !== undefined) {
+        monitor.updateTree(treeIndex, {
+          entriesAdded: count,
+          entriesProcessed: i + 1
+        });
+        await yieldToEventLoop(); // Yield to allow render
+      }
+      continue;
+    }
+
+    count += 1;
+    tree.add(leaf, BigInt(1));
+
+    // Update progress monitor EVERY entry AFTER processing
+    // Yield every entry to allow monitor to render smoothly
+    if (monitor && treeIndex !== undefined) {
+      monitor.updateTree(treeIndex, {
+        entriesAdded: count,
+        entriesProcessed: i + 1
+      });
+      // Yield every entry to allow monitor render interval to pick up updates
+      // This ensures smooth progress display (1, 2, 3...) instead of jumps
+      await yieldToEventLoop();
+    } else if (i !== 0 && i % 50 === 0) {
+      // If no monitor, only yield every 50 entries for parallelism
+      await yieldToEventLoop();
+    }
+  }
+
+  // Final progress update
+  if (monitor && treeIndex !== undefined) {
+    monitor.updateTree(treeIndex, {
+      entriesAdded: count,
+      entriesProcessed: field.length // All entries processed
+    });
+  }
+
   return [count, performance.now() - startTime, tree];
 }
 
@@ -228,7 +414,8 @@ export function getCountryLeaf(
   i?: number
 ): bigint {
   if (country_by.length !== 3 || country_to.length !== 3) {
-    console.log('parsed passport length is not 3:', i, country_to, country_by);
+    // Suppressed verbose debug log
+    // console.log('parsed passport length is not 3:', i, country_to, country_by);
     return;
   }
   try {
@@ -319,7 +506,8 @@ function processPassportNoAndNationality(
   index: number
 ): bigint {
   if (passno.length > 9) {
-    console.log('passport number length is greater than 9:', index, passno);
+    // Suppressed verbose debug log - invalid passport numbers are skipped
+    // console.log('passport number length is greater than 9:', index, passno);
   } else if (passno.length < 9) {
     while (passno.length != 9) {
       passno += '<';
@@ -328,10 +516,12 @@ function processPassportNoAndNationality(
 
   const countryCode = getCountryCode(nationality);
   if (!countryCode) {
-    console.log('Error getting country code', index, nationality);
+    // Suppressed verbose debug log - invalid country codes are skipped
+    // console.log('Error getting country code', index, nationality);
     return BigInt(0);
   }
-  console.log('nationality and countryCode', nationality, countryCode);
+  // Suppressed verbose debug log
+  // console.log('nationality and countryCode', nationality, countryCode);
 
   const leaf = getPassportNumberAndNationalityLeaf(
     stringToAsciiBigIntArray(passno),
@@ -339,7 +529,8 @@ function processPassportNoAndNationality(
     index
   );
   if (!leaf) {
-    console.log('Error creating leaf value', index, passno, nationality);
+    // Suppressed verbose debug log - invalid entries are skipped
+    // console.log('Error creating leaf value', index, passno, nationality);
     return BigInt(0);
   }
   return leaf;
@@ -464,7 +655,7 @@ function processName(
       arr += '<';
     }
   }
-  console.log('arr', arr, 'arr.length', arr.length);
+  // Debug log removed for clean parallel tree building output
   const nameArr = stringToAsciiBigIntArray(arr);
   // getNameLeaf will select the correct Poseidon hash based on nameArr.length
   return getNameLeaf(nameArr, i);
@@ -515,7 +706,8 @@ function processCountry(country1: string, country2: string, i: number) {
 
   const leaf = getCountryLeaf(arr, arr2, i);
   if (!leaf) {
-    console.log('Error creating leaf value', i, country1, country2);
+    // Suppressed verbose debug log - invalid entries are skipped
+    // console.log('Error creating leaf value', i, country1, country2);
     return BigInt(0);
   }
   return leaf;
@@ -690,7 +882,8 @@ export function getPassportNumberAndNationalityLeaf(
   i?: number
 ): bigint {
   if (passport.length !== 9) {
-    console.log('parsed passport length is not 9:', i, passport);
+    // Suppressed verbose debug log - invalid passport numbers are skipped
+    // console.log('parsed passport length is not 9:', i, passport);
     return;
   }
   if (nationality.length !== 3) {

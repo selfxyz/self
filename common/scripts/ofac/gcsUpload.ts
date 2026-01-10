@@ -28,6 +28,7 @@ export interface GcsUploadResult {
 export interface PointerUpdateResult {
   success: boolean;
   durationMs: number;
+  completedAt?: number;
   error?: string;
 }
 
@@ -147,7 +148,7 @@ export async function updatePointerFile(
 
   if (dryRun) {
     log('   [DRY RUN] Would update pointer to: ' + versionPath);
-    return { success: true, durationMs: 0 };
+    return { success: true, durationMs: 0, completedAt: Date.now() };
   }
 
   const startTime = Date.now();
@@ -172,9 +173,10 @@ export async function updatePointerFile(
     });
 
     const durationMs = Date.now() - startTime;
+    const completedAt = Date.now();
     log(`Pointer updated in ${durationMs}ms`);
 
-    return { success: true, durationMs };
+    return { success: true, durationMs, completedAt };
   } catch (error) {
     const durationMs = Date.now() - startTime;
     return {

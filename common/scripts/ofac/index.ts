@@ -16,6 +16,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 import { buildAllOfacTrees, type AllTreesResult } from './buildAllTrees.js';
+import { buildAllOfacTreesParallel } from './buildAllTreesParallel.js';
 import { downloadOfacSdn } from './downloadSdn.js';
 import { parseOfacSdn, saveOfacData } from './parseSdn.js';
 
@@ -33,6 +34,7 @@ export interface PipelineOptions {
   rawDir?: string;
   inputDir?: string;
   outputDir?: string;
+  parallel?: boolean;
 }
 
 /**
@@ -98,7 +100,16 @@ export async function runOfacPipeline(options: PipelineOptions = {}): Promise<Pi
     console.log('\n🌳 STEP 3: Building Merkle trees...');
     console.log('-'.repeat(50));
     const namesPath = path.join(inputDir, 'names.json');
-    const treesResult = await buildAllOfacTrees(namesPath, outputDir);
+
+    const useParallel = options.parallel !== false;
+
+    let treesResult: AllTreesResult;
+
+    if (useParallel) {
+      treesResult = await buildAllOfacTreesParallel(namesPath, outputDir);
+    } else {
+      treesResult = await buildAllOfacTrees(namesPath, outputDir);
+    }
 
     if (!treesResult.success) {
       return {
@@ -164,11 +175,6 @@ async function main() {
   console.log('\n' + '═'.repeat(70));
   if (result.success) {
     console.log('✅ OFAC UPDATE PIPELINE COMPLETED SUCCESSFULLY');
-    console.log('');
-    console.log('Next steps:');
-    console.log('  1. Upload trees to tree server');
-    console.log('  2. Prepare multisig transaction with new roots');
-    console.log('  3. Get 2/5 dev approvals on Safe');
   } else {
     console.log('❌ OFAC UPDATE PIPELINE FAILED');
     console.log(`   Error: ${result.error}`);

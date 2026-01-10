@@ -27,15 +27,23 @@ const DEFAULT_RPC_URLS: Record<string, string> = {
 };
 
 const DEFAULT_GCS_BUCKETS: Record<string, string> = {
-  celo: 'self-ofac-prod',
+  celo: 'self-ofac-test',
   'celo-sepolia': 'self-ofac-staging',
 };
 
-// Hardcoded registry addresses (Celo Mainnet)
-const CELO_REGISTRY_ADDRESSES: Record<string, string> = {
-  IdentityRegistry: '0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968',
-  IdentityRegistryIdCard: '0xeAD1E6Ec29c1f3D33a0662f253a3a94D189566E1',
-  IdentityRegistryAadhaar: '0xd603Fa8C8f4694E8DD1DcE1f27C0C3fc91e32Ac4',
+// Hardcoded registry addresses
+const REGISTRY_ADDRESSES: Record<string, Record<string, string>> = {
+  celo: {
+    IdentityRegistry: '0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968',
+    IdentityRegistryIdCard: '0xeAD1E6Ec29c1f3D33a0662f253a3a94D189566E1',
+    IdentityRegistryAadhaar: '0xd603Fa8C8f4694E8DD1DcE1f27C0C3fc91e32Ac4',
+  },
+  'celo-sepolia': {
+    // Use same addresses for dry-run testing (or configure testnet addresses)
+    IdentityRegistry: '0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968',
+    IdentityRegistryIdCard: '0xeAD1E6Ec29c1f3D33a0662f253a3a94D189566E1',
+    IdentityRegistryAadhaar: '0xd603Fa8C8f4694E8DD1DcE1f27C0C3fc91e32Ac4',
+  },
 };
 
 // Registry configuration
@@ -75,6 +83,12 @@ const REGISTRY_ABI = [
   'function updatePassportNoOfacRoot(uint256 root)',
   'function updateNameAndDobOfacRoot(uint256 root)',
   'function updateNameAndYobOfacRoot(uint256 root)',
+  'function getRoleMember(bytes32 role, uint256 index) view returns (address)',
+  'function getRoleMemberCount(bytes32 role) view returns (uint256)',
+];
+
+const OWNER_ABI = [
+  'function owner() view returns (address)',
 ];
 
 
@@ -95,10 +109,11 @@ function getRpcUrl(network: string): string | undefined {
 }
 
 function getRegistryAddress(registryKey: string, network: string): string | null {
-  if (network === 'celo') {
-    return CELO_REGISTRY_ADDRESSES[registryKey] || null;
+  const addresses = REGISTRY_ADDRESSES[network];
+  if (!addresses) {
+    return null;
   }
-  return null;
+  return addresses[registryKey] || null;
 }
 
 function loadRoots(rootsPath: string): Record<string, string> {
@@ -153,59 +168,30 @@ async function getCurrentRoot(
   }
 }
 
-async function updateRegistryRoots(
+async function verifyRegistryRoots(
   config: RegistryConfig,
   registryAddress: string,
-  signer: ethers.Wallet,
-  roots: Record<string, string>,
-  dryRun: boolean
-): Promise<number> {
-  const contract = new ethers.Contract(registryAddress, REGISTRY_ABI, signer);
-  let updates = 0;
-
-  async function updateRoot(
-    rootType: 'passportNo' | 'nameAndDob' | 'nameAndYob',
-    updateFn: keyof ethers.Contract
-  ) {
-    const newRoot = getRootForRegistry(roots, config, rootType);
-    if (!newRoot) return;
-
-    const oldRoot = await getCurrentRoot(contract, rootType);
-    if (oldRoot === newRoot) {
-      log(`Skipping ${config.name} ${rootType}: on-chain root already matches`);
-      return;
-    }
-
-    log(`Updating ${config.name} ${rootType}`);
-    if (dryRun) {
-      log('[DRY RUN] Skipping on-chain update');
-      updates += 1;
-      return;
-    }
-
-    const tx = await (contract[updateFn] as any)(newRoot);
-    log(`TX submitted: ${tx.hash}`);
-    const receipt = await tx.wait(1);
-    if (receipt?.status !== 1) {
-      throw new Error(`Update failed for ${config.name} ${rootType}`);
-    }
-    log(`Confirmed in block ${receipt.blockNumber}`);
-    updates += 1;
-  }
-
+  contract: ethers.Contract,
+  roots: Record<string, string>
+): Promise<boolean> {
+  let allMatch = true;
   for (const rootType of config.rootTypes) {
-    if (rootType === 'passportNo') {
-      await updateRoot('passportNo', 'updatePassportNoOfacRoot');
-    } else if (rootType === 'nameAndDob') {
-      await updateRoot('nameAndDob', 'updateNameAndDobOfacRoot');
+    const expectedRoot = getRootForRegistry(roots, config, rootType);
+    if (!expectedRoot) continue;
+
+    const onChainRoot = await getCurrentRoot(contract, rootType);
+    const matches = onChainRoot === expectedRoot;
+    if (matches) {
+      log(`✅ ${config.name} ${rootType}: matches (${onChainRoot.slice(0, 10)}...)`);
     } else {
-      await updateRoot('nameAndYob', 'updateNameAndYobOfacRoot');
+      log(`❌ ${config.name} ${rootType}: mismatch`);
+      log(`   Expected: ${expectedRoot}`);
+      log(`   On-chain: ${onChainRoot}`);
+      allMatch = false;
     }
   }
-
-  return updates;
+  return allMatch;
 }
-
 
 async function main() {
   console.log('');
@@ -218,6 +204,7 @@ async function main() {
   const privateKey = process.env.PRIVATE_KEY;
   const rpcUrl = process.env.RPC_URL || getRpcUrl(network);
   const dryRun = process.env.DRY_RUN === 'true';
+  const skipPipeline = process.env.SKIP_PIPELINE === 'true' || process.argv.includes('--skip-pipeline');
 
   if (!privateKey) {
     console.error('ERROR: PRIVATE_KEY environment variable required');
@@ -250,19 +237,28 @@ async function main() {
   log(`GCS bucket: ${bucketName}`);
   log(`GCS base path: ${basePath}`);
   log(`Dry Run: ${dryRun}`);
+  log(`Skip Pipeline: ${skipPipeline}`);
   console.log('');
 
-  // Step 1-3: Pipeline
-  log('Running OFAC pipeline...');
-  const pipeline = await runOfacPipeline({
-    rawDir,
-    inputDir,
-    outputDir,
-  });
+  if (!skipPipeline) {
+    log('Running OFAC pipeline...');
 
-  if (!pipeline.success) {
-    console.error('ERROR: Pipeline failed:', pipeline.error);
-    process.exit(1);
+    const pipeline = await runOfacPipeline({
+      rawDir,
+      inputDir,
+      outputDir,
+    });
+
+    if (!pipeline.success) {
+      console.error('ERROR: Pipeline failed:', pipeline.error);
+      process.exit(1);
+    }
+  } else {
+    log('Skipping pipeline (using existing trees)...');
+    if (!fs.existsSync(rootsPath) && !fs.existsSync(path.join(outputDir, 'roots.json'))) {
+      console.error(`ERROR: Roots file not found. Expected: ${rootsPath} or ${path.join(outputDir, 'roots.json')}`);
+      process.exit(1);
+    }
   }
 
   // Step 4: On-chain updates
@@ -280,79 +276,248 @@ async function main() {
   const signer = new ethers.Wallet(privateKey, provider);
   log(`Signer: ${signer.address}`);
 
-  let totalUpdates = 0;
+  const jsonRpcProvider = provider as ethers.JsonRpcProvider;
+  const rpcUrlStr = (jsonRpcProvider as any).connection?.url || (jsonRpcProvider as any)._getConnection?.()?.url || '';
+  const isFork = rpcUrlStr.includes('localhost') || rpcUrlStr.includes('127.0.0.1') || rpcUrlStr.includes('8545');
+
+  let adminAddress: string | null = null;
+  let adminSigner: ethers.Signer | null = null;
+
+  if (isFork && !dryRun) {
+    if (network === 'celo') {
+      adminAddress = '0x067b18e09A10Fa03d027c1D60A098CEbbE5637f0';
+      log(`[FORK] Using Celo operations multisig (OPERATIONS_ROLE): ${adminAddress}`);
+    } else if (network === 'celo-sepolia') {
+      const firstRegistry = REGISTRY_CONFIGS.find(c => getRegistryAddress(c.registryKey, network));
+      if (firstRegistry) {
+        const address = getRegistryAddress(firstRegistry.registryKey, network);
+        if (address) {
+          const registryOwner = new ethers.Contract(address, OWNER_ABI, jsonRpcProvider);
+          adminAddress = await registryOwner.owner();
+          log(`[FORK] Using Celo Sepolia owner: ${adminAddress}`);
+        }
+      }
+    }
+
+    if (adminAddress) {
+      if (rpcUrlStr.includes('anvil') || rpcUrlStr.includes('8545')) {
+        await jsonRpcProvider.send('anvil_impersonateAccount', [adminAddress]);
+      } else if (rpcUrlStr.includes('hardhat') || rpcUrlStr.includes('1337')) {
+        await jsonRpcProvider.send('hardhat_impersonateAccount', [adminAddress]);
+      }
+
+      adminSigner = await jsonRpcProvider.getSigner(adminAddress);
+
+      const balance = await jsonRpcProvider.getBalance(adminAddress);
+      if (balance === 0n) {
+        const funder = await jsonRpcProvider.getSigner('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266');
+        await funder.sendTransaction({
+          to: adminAddress,
+          value: ethers.parseEther('1'),
+        });
+      }
+      log(`[FORK] Impersonating ${adminAddress} to call update functions`);
+    }
+  }
+
+  const allUpdates: Array<{
+    config: RegistryConfig;
+    address: string;
+    rootType: 'passportNo' | 'nameAndDob' | 'nameAndYob';
+    updateFn: keyof ethers.Contract;
+    newRoot: string;
+  }> = [];
+
   for (const config of REGISTRY_CONFIGS) {
     const address = getRegistryAddress(config.registryKey, network);
     if (!address) {
-      log(`Registry not configured for network: ${config.name}`);
+      if (dryRun) {
+        log(`[DRY RUN] Registry not configured for ${network}: ${config.name} (skipping)`);
+      } else {
+        log(`Registry not configured for network: ${config.name}`);
+      }
       continue;
     }
 
-    log(`Updating ${config.name} at ${address}`);
-    totalUpdates += await updateRegistryRoots(config, address, signer, roots, dryRun);
+    const contract = adminSigner
+      ? new ethers.Contract(address, REGISTRY_ABI, adminSigner)
+      : new ethers.Contract(address, REGISTRY_ABI, signer);
+
+    for (const rootType of config.rootTypes) {
+      const newRoot = getRootForRegistry(roots, config, rootType);
+      if (!newRoot) continue;
+
+      const oldRoot = await getCurrentRoot(contract, rootType);
+      if (oldRoot === newRoot) {
+        log(`Skipping ${config.name} ${rootType}: on-chain root already matches`);
+        continue;
+      }
+
+      let updateFn: keyof ethers.Contract;
+      if (rootType === 'passportNo') {
+        updateFn = 'updatePassportNoOfacRoot';
+      } else if (rootType === 'nameAndDob') {
+        updateFn = 'updateNameAndDobOfacRoot';
+      } else {
+        updateFn = 'updateNameAndYobOfacRoot';
+      }
+
+      allUpdates.push({ config, address, rootType, updateFn, newRoot });
+    }
   }
 
-  log(`Total updates submitted: ${totalUpdates}`);
-  if (totalUpdates === 0) {
-    log('No on-chain updates needed; skipping tree deployment.');
-    return;
-  }
-
-  // Step 5: Upload to GCS (versioned path)
+  // Step 4: Upload to GCS FIRST (before on-chain updates)
+  // This reduces mismatch window by doing slow uploads before fast on-chain updates
   console.log('');
   console.log('-'.repeat(70));
   console.log('  PHASE: UPLOAD TO GCS');
   console.log('-'.repeat(70));
   console.log('');
 
+  let uploadResult;
   if (skipUpload) {
     log('Skipping upload (SKIP_UPLOAD=true)');
-    return;
-  }
-
-  const uploadResult = await uploadToGcs({
-    bucketName,
-    basePath,
-    treesDir,
-    roots,
-    timestamp,
-    dryRun,
-  });
-
-  if (!uploadResult.success) {
-    console.error('ERROR: GCS upload failed:', uploadResult.error);
-    console.error('On-chain updates succeeded but file upload failed.');
-    process.exit(1);
-  }
-
-  log(`Uploaded ${uploadResult.filesUploaded} files to ${uploadResult.versionPath}`);
-
-  // Step 6: Update pointer file (atomic switch)
-  console.log('');
-  console.log('-'.repeat(70));
-  console.log('  PHASE: ATOMIC POINTER UPDATE');
-  console.log('-'.repeat(70));
-  console.log('');
-
-  const pointerResult = await updatePointerFile(
-    bucketName,
-    basePath,
-    uploadResult.versionPath!,
-    roots,
-    dryRun
-  );
-
-  if (pointerResult.success) {
-    await verifyGcsFiles(bucketName, uploadResult.versionPath!, dryRun);
-    log(
-      `Mismatch window: ${pointerResult.durationMs}ms (~${(pointerResult.durationMs / 1000).toFixed(1)}s)`
-    );
+    if (allUpdates.length === 0 && !dryRun) {
+      log('No on-chain updates needed; skipping.');
+      return;
+    }
   } else {
-    console.error('WARNING: On-chain updates succeeded but pointer update failed.');
-    console.error(`Error: ${pointerResult.error}`);
-    console.error(`Files are at: gs://${bucketName}/${uploadResult.versionPath}`);
-    console.error('Manual pointer update may be required.');
-    process.exit(1);
+    uploadResult = await uploadToGcs({
+      bucketName,
+      basePath,
+      treesDir,
+      roots,
+      timestamp,
+      dryRun,
+    });
+
+    if (!uploadResult.success) {
+      console.error('ERROR: GCS upload failed:', uploadResult.error);
+      console.error('Cannot proceed with on-chain updates if files are not uploaded.');
+      process.exit(1);
+    }
+
+    log(`Uploaded ${uploadResult.filesUploaded} files to ${uploadResult.versionPath}`);
+  }
+
+  // Step 5: On-chain updates (after files are uploaded)
+  console.log('');
+  console.log('-'.repeat(70));
+  console.log('  PHASE: ON-CHAIN UPDATES');
+  console.log('-'.repeat(70));
+  console.log('');
+
+  let totalUpdates = 0;
+  let onChainConfirmedTime: number | null = null;
+
+  if (allUpdates.length === 0) {
+    log('No on-chain updates needed (all roots already match).');
+  } else if (dryRun) {
+    log(`[DRY RUN] Would update ${allUpdates.length} roots across ${new Set(allUpdates.map(u => u.config.name)).size} registries`);
+    totalUpdates = allUpdates.length;
+  } else {
+    log(`Batching ${allUpdates.length} updates across ${new Set(allUpdates.map(u => u.config.name)).size} registries into one block...`);
+
+    const contracts = new Map<string, ethers.Contract>();
+    for (const { address } of allUpdates) {
+      if (!contracts.has(address)) {
+        contracts.set(address, adminSigner
+          ? new ethers.Contract(address, REGISTRY_ABI, adminSigner)
+          : new ethers.Contract(address, REGISTRY_ABI, signer));
+      }
+    }
+
+    const txs = allUpdates.map(({ address, updateFn, newRoot, config, rootType }) => {
+      const contract = contracts.get(address)!;
+      log(`Preparing ${config.name} ${String(updateFn)}`);
+      return (contract[updateFn] as any)(newRoot);
+    });
+
+    const txPromises = await Promise.all(txs);
+    log(`Submitted ${txPromises.length} transactions`);
+
+    const receipts = await Promise.all(txPromises.map(tx => tx.wait(1)));
+
+    const blockNumbers = new Set(receipts.map(r => r.blockNumber));
+    onChainConfirmedTime = Date.now();
+
+    if (blockNumbers.size === 1) {
+      log(`✅ All ${receipts.length} transactions confirmed in block ${Array.from(blockNumbers)[0]}`);
+    } else {
+      log(`⚠️  Transactions confirmed in ${blockNumbers.size} different blocks: ${Array.from(blockNumbers).join(', ')}`);
+    }
+
+    for (let i = 0; i < receipts.length; i++) {
+      const receipt = receipts[i];
+      const { config, rootType } = allUpdates[i];
+      if (receipt?.status !== 1) {
+        throw new Error(`Update failed for ${config.name} ${rootType}`);
+      }
+      log(`✅ ${config.name} ${rootType} updated in block ${receipt.blockNumber}`);
+    }
+
+    totalUpdates = receipts.length;
+  }
+
+  log(`Total updates submitted: ${totalUpdates}`);
+
+  // Step 6: Verify on-chain updates
+  if (!dryRun && totalUpdates > 0) {
+    console.log('');
+    console.log('-'.repeat(70));
+    console.log('  PHASE: VERIFY ON-CHAIN UPDATES');
+    console.log('-'.repeat(70));
+    console.log('');
+
+    for (const config of REGISTRY_CONFIGS) {
+      const registryAddress = getRegistryAddress(config.registryKey, network);
+      if (!registryAddress) continue;
+
+      const contract = new ethers.Contract(registryAddress, REGISTRY_ABI, provider);
+      const verified = await verifyRegistryRoots(config, registryAddress, contract, roots);
+      if (!verified) {
+        throw new Error(`Verification failed for ${config.name}`);
+      }
+    }
+    log('✅ All on-chain roots verified successfully');
+  }
+
+  // Step 7: Atomic pointer update (immediately after on-chain confirmation)
+  if (!skipUpload && uploadResult) {
+    console.log('');
+    console.log('-'.repeat(70));
+    console.log('  PHASE: ATOMIC POINTER UPDATE');
+    console.log('-'.repeat(70));
+    console.log('');
+
+    const pointerResult = await updatePointerFile(
+      bucketName,
+      basePath,
+      uploadResult.versionPath!,
+      roots,
+      dryRun
+    );
+
+    if (pointerResult.success) {
+      await verifyGcsFiles(bucketName, uploadResult.versionPath!, dryRun);
+
+      if (onChainConfirmedTime !== null && totalUpdates > 0 && pointerResult.completedAt) {
+        const mismatchWindowMs = pointerResult.completedAt - onChainConfirmedTime;
+        log(
+          `Mismatch window: ${mismatchWindowMs}ms (~${(mismatchWindowMs / 1000).toFixed(1)}s)`
+        );
+      } else {
+        log(
+          `Pointer update duration: ${pointerResult.durationMs}ms (~${(pointerResult.durationMs / 1000).toFixed(1)}s)`
+        );
+      }
+    } else {
+      console.error('WARNING: On-chain updates succeeded but pointer update failed.');
+      console.error(`Error: ${pointerResult.error}`);
+      console.error(`Files are at: gs://${bucketName}/${uploadResult.versionPath}`);
+      console.error('Manual pointer update may be required.');
+      process.exit(1);
+    }
   }
 
   console.log('');
