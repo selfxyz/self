@@ -173,6 +173,43 @@ describe('database (SQLite)', () => {
         rowsAffected: 1,
       });
     });
+
+    it('handles duplicate sessionId gracefully (INSERT OR IGNORE skips)', async () => {
+      const mockProof = {
+        appName: 'TestApp',
+        sessionId: 'session-123',
+        userId: 'user-456',
+        userIdType: 'uuid' as const,
+        endpointType: 'https' as const,
+        status: ProofStatus.PENDING,
+        disclosures: '{"test": "data"}',
+        logoBase64: 'base64-logo',
+        documentId: 'document-123',
+        endpoint: 'https://example.com/endpoint',
+      };
+
+      // Simulate INSERT OR IGNORE behavior when a duplicate sessionId exists
+      const mockInsertResult = {
+        insertId: 0, // SQLite returns 0 for ignored inserts
+        rowsAffected: 0,
+      };
+
+      mockDb.executeSql.mockResolvedValueOnce([mockInsertResult]);
+
+      const result = await database.insertProof(mockProof);
+
+      expect(mockDb.executeSql).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT OR IGNORE INTO proof_history'),
+        expect.any(Array),
+      );
+
+      // Should handle undefined/0 insertId gracefully
+      expect(result).toEqual({
+        id: '0',
+        timestamp: expect.any(Number),
+        rowsAffected: 0,
+      });
+    });
   });
 
   describe('updateProofStatus', () => {

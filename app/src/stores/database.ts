@@ -127,8 +127,9 @@ export const database: ProofDB = {
           proof.documentId,
         ],
       );
+      // Handle case where INSERT OR IGNORE skips insertion due to duplicate sessionId
       return {
-        id: insertResult.insertId.toString(),
+        id: insertResult.insertId ? insertResult.insertId.toString() : '0',
         timestamp,
         rowsAffected: insertResult.rowsAffected,
       };
@@ -154,8 +155,9 @@ export const database: ProofDB = {
             proof.documentId,
           ],
         );
+        // Handle case where INSERT OR IGNORE skips insertion due to duplicate sessionId
         return {
-          id: insertResult.insertId.toString(),
+          id: insertResult.insertId ? insertResult.insertId.toString() : '0',
           timestamp,
           rowsAffected: insertResult.rowsAffected,
         };
@@ -182,8 +184,9 @@ export const database: ProofDB = {
             proof.documentId,
           ],
         );
+        // Handle case where INSERT OR IGNORE skips insertion due to duplicate sessionId
         return {
-          id: insertResult.insertId.toString(),
+          id: insertResult.insertId ? insertResult.insertId.toString() : '0',
           timestamp,
           rowsAffected: insertResult.rowsAffected,
         };
