@@ -25,6 +25,11 @@ import {
 import { trackEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
+import {
+  getKeychainErrorIdentity,
+  isKeychainCryptoError,
+  isUserCancellation,
+} from '@/utils/keychainErrors';
 
 const SERVICE_NAME = 'secret';
 
@@ -151,29 +156,6 @@ let keychainCryptoFailureCallback:
   | ((errorType: 'user_cancelled' | 'crypto_failed') => void)
   | null = null;
 
-function isUserCancellation(error: unknown): boolean {
-  const err = error as { code?: string; message?: string };
-  return Boolean(
-    err?.code === 'E_AUTHENTICATION_FAILED' ||
-    err?.code === 'USER_CANCELED' ||
-    err?.message?.includes('User canceled') ||
-    err?.message?.includes('Authentication canceled') ||
-    err?.message?.includes('cancelled by user'),
-  );
-}
-
-function isKeychainCryptoError(error: unknown): boolean {
-  const err = error as { code?: string; name?: string; message?: string };
-  return Boolean(
-    (err?.code === 'E_CRYPTO_FAILED' ||
-      err?.name === 'com.oblador.keychain.exceptions.CryptoFailedException' ||
-      err?.message?.includes('CryptoFailedException') ||
-      err?.message?.includes('Decryption failed') ||
-      err?.message?.includes('Authentication tag verification failed')) &&
-    !isUserCancellation(error),
-  );
-}
-
 async function loadOrCreateMnemonic(
   keychainOptions: KeychainOptions,
 ): Promise<string | false> {
@@ -214,7 +196,7 @@ async function loadOrCreateMnemonic(
     }
 
     if (isKeychainCryptoError(error)) {
-      const err = error as { code?: string; name?: string };
+      const err = getKeychainErrorIdentity(error);
       console.error('Keychain crypto error:', {
         code: err?.code,
         name: err?.name,
