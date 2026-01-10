@@ -14,6 +14,7 @@ export interface BottomVerifyBarProps {
   onVerify: () => void;
   selectedAppSessionId: string | undefined | null;
   hasScrolledToBottom: boolean;
+  isScrollable: boolean;
   isReadyToProve: boolean;
   isDocumentExpired: boolean;
   testID?: string;
@@ -23,6 +24,7 @@ export const BottomVerifyBar: React.FC<BottomVerifyBarProps> = ({
   onVerify,
   selectedAppSessionId,
   hasScrolledToBottom,
+  isScrollable,
   isReadyToProve,
   isDocumentExpired,
   testID = 'bottom-verify-bar',
@@ -41,6 +43,7 @@ export const BottomVerifyBar: React.FC<BottomVerifyBarProps> = ({
         onVerify={onVerify}
         selectedAppSessionId={selectedAppSessionId}
         hasScrolledToBottom={hasScrolledToBottom}
+        isScrollable={isScrollable}
         isReadyToProve={isReadyToProve}
         isDocumentExpired={isDocumentExpired}
       />

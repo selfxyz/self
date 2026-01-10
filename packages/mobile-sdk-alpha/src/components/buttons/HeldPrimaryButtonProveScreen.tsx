@@ -18,6 +18,7 @@ interface HeldPrimaryButtonProveScreenProps {
   onVerify: () => void;
   selectedAppSessionId: string | undefined | null;
   hasScrolledToBottom: boolean;
+  isScrollable: boolean;
   isReadyToProve: boolean;
   isDocumentExpired: boolean;
 }
@@ -195,6 +196,7 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
   onVerify,
   selectedAppSessionId,
   hasScrolledToBottom,
+  isScrollable,
   isReadyToProve,
   isDocumentExpired,
 }) => {
@@ -222,12 +224,20 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Waiting for app...</Description>
+          <Description color={black}>Wait...</Description>
         </View>
       );
     }
     if (state.matches('needsScroll')) {
-      return 'Please read all disclosures';
+      if (isScrollable) {
+        return 'Scroll to read full request';
+      }
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
+          <Description color={black}>Wait...</Description>
+        </View>
+      );
     }
     if (state.matches('preparing')) {
       return (

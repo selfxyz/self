@@ -93,8 +93,13 @@ const ProveScreen: React.FC = () => {
   const scrollViewRef = useRef<ScrollViewType>(null);
 
   const isContentShorterThanScrollView = useMemo(
-    () => scrollViewContentHeight <= scrollViewHeight,
+    () => scrollViewContentHeight <= scrollViewHeight + 10,
     [scrollViewContentHeight, scrollViewHeight],
+  );
+
+  const isScrollable = useMemo(
+    () => !isContentShorterThanScrollView && hasLayoutMeasurements,
+    [isContentShorterThanScrollView, hasLayoutMeasurements],
   );
   const provingStore = useProvingStore();
   const currentState = useProvingStore(state => state.currentState);
@@ -287,7 +292,7 @@ const ProveScreen: React.FC = () => {
       // If we now have both measurements and content fits on screen, enable button immediately
       if (contentHeight > 0 && scrollViewHeight > 0) {
         setHasLayoutMeasurements(true);
-        if (contentHeight <= scrollViewHeight) {
+        if (contentHeight <= scrollViewHeight + 10) {
           setHasScrolledToBottom(true);
         }
       }
@@ -302,7 +307,7 @@ const ProveScreen: React.FC = () => {
       // If we now have both measurements and content fits on screen, enable button immediately
       if (layoutHeight > 0 && scrollViewContentHeight > 0) {
         setHasLayoutMeasurements(true);
-        if (scrollViewContentHeight <= layoutHeight) {
+        if (scrollViewContentHeight <= layoutHeight + 10) {
           setHasScrolledToBottom(true);
         }
       }
@@ -354,6 +359,7 @@ const ProveScreen: React.FC = () => {
         onVerify={onVerify}
         selectedAppSessionId={selectedApp?.sessionId}
         hasScrolledToBottom={hasScrolledToBottom}
+        isScrollable={isScrollable}
         isReadyToProve={isReadyToProve}
         isDocumentExpired={isDocumentExpired}
         testID="prove-screen-verify-bar"
