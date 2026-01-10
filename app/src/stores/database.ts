@@ -14,6 +14,9 @@ const STALE_PROOF_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 SQLite.enablePromise(true);
 
+const toInsertId = (result: SQLite.ResultSet) =>
+  result.insertId ? result.insertId.toString() : '0';
+
 async function openDatabase() {
   return SQLite.openDatabase({
     name: DB_NAME,
@@ -129,7 +132,7 @@ export const database: ProofDB = {
       );
       // Handle case where INSERT OR IGNORE skips insertion due to duplicate sessionId
       return {
-        id: insertResult.insertId ? insertResult.insertId.toString() : '0',
+        id: toInsertId(insertResult),
         timestamp,
         rowsAffected: insertResult.rowsAffected,
       };
@@ -157,7 +160,7 @@ export const database: ProofDB = {
         );
         // Handle case where INSERT OR IGNORE skips insertion due to duplicate sessionId
         return {
-          id: insertResult.insertId ? insertResult.insertId.toString() : '0',
+          id: toInsertId(insertResult),
           timestamp,
           rowsAffected: insertResult.rowsAffected,
         };
@@ -186,7 +189,7 @@ export const database: ProofDB = {
         );
         // Handle case where INSERT OR IGNORE skips insertion due to duplicate sessionId
         return {
-          id: insertResult.insertId ? insertResult.insertId.toString() : '0',
+          id: toInsertId(insertResult),
           timestamp,
           rowsAffected: insertResult.rowsAffected,
         };
