@@ -17,7 +17,7 @@ import type { RootStackParamList } from '@/navigation';
  * Uses a small delay to allow store updates to propagate after navigation
  * (e.g., after QR code scan sets selfApp data).
  */
-export function useSelfAppStalenessCheck(
+export function useProofDisclosureStalenessCheck(
   selfApp: SelfApp | null,
   disclosureItems: Array<{ key: string; text: string }>,
   navigation: NativeStackNavigationProp<RootStackParamList>,
