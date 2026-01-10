@@ -68,6 +68,41 @@ import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { createKeychainOptions } from '@/integrations/keychain';
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
 
+let keychainCryptoFailureCallback:
+  | ((errorType: 'user_cancelled' | 'crypto_failed') => void)
+  | null = null;
+
+export function setPassportKeychainErrorCallback(
+  callback: ((errorType: 'user_cancelled' | 'crypto_failed') => void) | null,
+) {
+  keychainCryptoFailureCallback = callback;
+}
+
+function isUserCancellation(error: unknown): boolean {
+  const err = error as { code?: string; message?: string };
+  // User cancelled biometric/PIN authentication
+  return Boolean(
+    err?.code === 'E_AUTHENTICATION_FAILED' ||
+    err?.code === 'USER_CANCELED' ||
+    err?.message?.includes('User canceled') ||
+    err?.message?.includes('Authentication canceled') ||
+    err?.message?.includes('cancelled by user'),
+  );
+}
+
+function isKeychainCryptoError(error: unknown): boolean {
+  const err = error as { code?: string; name?: string; message?: string };
+  // Only true crypto failures, not user cancellations
+  return Boolean(
+    (err?.code === 'E_CRYPTO_FAILED' ||
+      err?.name === 'com.oblador.keychain.exceptions.CryptoFailedException' ||
+      err?.message?.includes('CryptoFailedException') ||
+      err?.message?.includes('Decryption failed') ||
+      err?.message?.includes('Authentication tag verification failed')) &&
+    !isUserCancellation(error),
+  );
+}
+
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
 const safeLoadDocumentCatalog = async (): Promise<DocumentCatalog> => {
@@ -447,6 +482,24 @@ export async function loadDocumentByIdDirectlyFromKeychain(
       return JSON.parse(documentCreds.password);
     }
   } catch (error) {
+    if (isUserCancellation(error)) {
+      console.log(`User cancelled authentication for document ${documentId}`);
+      if (keychainCryptoFailureCallback) {
+        keychainCryptoFailureCallback('user_cancelled');
+      }
+    }
+
+    if (isKeychainCryptoError(error)) {
+      const err = error as { code?: string; name?: string };
+      console.error(`Keychain crypto error loading document ${documentId}:`, {
+        code: err?.code,
+        name: err?.name,
+      });
+
+      if (keychainCryptoFailureCallback) {
+        keychainCryptoFailureCallback('crypto_failed');
+      }
+    }
     console.log(`Error loading document ${documentId}:`, error);
   }
   return null;
@@ -491,6 +544,26 @@ export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<Documen
       return parsed;
     }
   } catch (error) {
+    if (isUserCancellation(error)) {
+      console.log('User cancelled authentication for document catalog');
+      if (keychainCryptoFailureCallback) {
+        keychainCryptoFailureCallback('user_cancelled');
+      }
+
+      throw error;
+    }
+
+    if (isKeychainCryptoError(error)) {
+      const err = error as { code?: string; name?: string };
+      console.error('Keychain crypto error loading document catalog:', {
+        code: err?.code,
+        name: err?.name,
+      });
+
+      if (keychainCryptoFailureCallback) {
+        keychainCryptoFailureCallback('crypto_failed');
+      }
+    }
     console.log('Error loading document catalog:', error);
   }
 

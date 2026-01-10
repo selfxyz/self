@@ -458,6 +458,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(true);
         }
+
+        // Disable keychain error modal when proving flow ends
+        selfClient.navigation?.disableKeychainErrorModal?.();
       }
 
       if (state.value === 'passport_not_supported') {
@@ -482,6 +485,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, 'error', 'error');
         }
+        // Disable keychain error modal when proving flow ends
+        selfClient.navigation?.disableKeychainErrorModal?.();
       }
     });
   }
@@ -844,6 +849,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       selfClient.trackEvent(ProofEvents.PROVING_INIT);
       get()._closeConnections(selfClient);
 
+      // Enable keychain error modal for proving flows
+      // This ensures users are notified if keychain access fails during critical operations
+      selfClient.navigation?.enableKeychainErrorModal?.();
+
       if (actor) {
         try {
           actor.stop();
@@ -884,7 +893,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       const { data: passportData } = selectedDocument;
-
       const secret = await selfClient.getPrivateKey();
       if (!secret) {
         console.error('Could not load secret');

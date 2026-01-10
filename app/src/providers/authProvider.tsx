@@ -147,31 +147,96 @@ async function restoreFromMnemonic(
   }
 }
 
+let keychainCryptoFailureCallback:
+  | ((errorType: 'user_cancelled' | 'crypto_failed') => void)
+  | null = null;
+
+function isUserCancellation(error: unknown): boolean {
+  const err = error as { code?: string; message?: string };
+  return Boolean(
+    err?.code === 'E_AUTHENTICATION_FAILED' ||
+    err?.code === 'USER_CANCELED' ||
+    err?.message?.includes('User canceled') ||
+    err?.message?.includes('Authentication canceled') ||
+    err?.message?.includes('cancelled by user'),
+  );
+}
+
+function isKeychainCryptoError(error: unknown): boolean {
+  const err = error as { code?: string; name?: string; message?: string };
+  return Boolean(
+    (err?.code === 'E_CRYPTO_FAILED' ||
+      err?.name === 'com.oblador.keychain.exceptions.CryptoFailedException' ||
+      err?.message?.includes('CryptoFailedException') ||
+      err?.message?.includes('Decryption failed') ||
+      err?.message?.includes('Authentication tag verification failed')) &&
+    !isUserCancellation(error),
+  );
+}
+
 async function loadOrCreateMnemonic(
   keychainOptions: KeychainOptions,
 ): Promise<string | false> {
   // Get adaptive security configuration
   const { setOptions, getOptions } = keychainOptions;
 
-  const storedMnemonic = await Keychain.getGenericPassword({
-    ...getOptions,
-    service: SERVICE_NAME,
-  });
-  if (storedMnemonic) {
-    try {
-      JSON.parse(storedMnemonic.password);
-      trackEvent(AuthEvents.MNEMONIC_LOADED);
-      return storedMnemonic.password;
-    } catch (e: unknown) {
-      console.error(
-        'Error parsing stored mnemonic, old secret format was used',
-        e,
-      );
-      trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-        reason: 'unknown_error',
-        error: e instanceof Error ? e.message : String(e),
-      });
+  try {
+    const storedMnemonic = await Keychain.getGenericPassword({
+      ...getOptions,
+      service: SERVICE_NAME,
+    });
+    if (storedMnemonic) {
+      try {
+        JSON.parse(storedMnemonic.password);
+        trackEvent(AuthEvents.MNEMONIC_LOADED);
+        return storedMnemonic.password;
+      } catch (e: unknown) {
+        console.error(
+          'Error parsing stored mnemonic, old secret format was used',
+          e,
+        );
+        trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+          reason: 'unknown_error',
+          error: e instanceof Error ? e.message : String(e),
+        });
+      }
     }
+  } catch (error: unknown) {
+    if (isUserCancellation(error)) {
+      console.log('User cancelled authentication');
+      trackEvent(AuthEvents.BIOMETRIC_LOGIN_CANCELLED);
+
+      if (keychainCryptoFailureCallback) {
+        keychainCryptoFailureCallback('user_cancelled');
+      }
+
+      throw error;
+    }
+
+    if (isKeychainCryptoError(error)) {
+      const err = error as { code?: string; name?: string };
+      console.error('Keychain crypto error:', {
+        code: err?.code,
+        name: err?.name,
+      });
+      trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+        reason: 'keychain_crypto_failed',
+        errorCode: err?.code,
+      });
+
+      if (keychainCryptoFailureCallback) {
+        keychainCryptoFailureCallback('crypto_failed');
+      }
+
+      throw error;
+    }
+
+    console.error('Error loading mnemonic:', error);
+    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+      reason: 'unknown_error',
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   }
   try {
     const { mnemonic } = ethers.HDNodeWallet.fromMnemonic(
@@ -424,6 +489,13 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
   }
 }
 
+// Global callback for keychain crypto failures
+export function setKeychainCryptoFailureCallback(
+  callback: ((errorType: 'user_cancelled' | 'crypto_failed') => void) | null,
+) {
+  keychainCryptoFailureCallback = callback;
+}
+
 export async function unsafe_clearSecrets() {
   if (__DEV__) {
     await Keychain.resetGenericPassword({ service: SERVICE_NAME });
@@ -456,10 +528,6 @@ export async function unsafe_getPointsPrivateKey(
   return wallet.privateKey;
 }
 
-/**
- * The only reason this is exported without being locked behind user biometrics is to allow `loadPassportDataAndSecret`
- * to access both the privatekey and the passport data with the user only authenticating once
- */
 export async function unsafe_getPrivateKey(keychainOptions?: KeychainOptions) {
   const options =
     keychainOptions ||
