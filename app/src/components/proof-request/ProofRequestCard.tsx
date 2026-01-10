@@ -32,6 +32,7 @@ export interface ProofRequestCardProps {
   documentType?: string;
   timestamp?: Date;
   children?: React.ReactNode;
+  connectedWalletBadge?: React.ReactNode;
   testID?: string;
   onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   scrollViewRef?: React.RefObject<ScrollViewType>;
@@ -52,6 +53,7 @@ export const ProofRequestCard: React.FC<ProofRequestCardProps> = ({
   documentType = '',
   timestamp,
   children,
+  connectedWalletBadge,
   testID = 'proof-request-card',
   onScroll,
   scrollViewRef,
@@ -111,26 +113,35 @@ export const ProofRequestCard: React.FC<ProofRequestCardProps> = ({
         <View
           flex={1}
           backgroundColor={proofRequestColors.slate100}
-          padding={proofRequestSpacing.cardPadding}
           borderBottomLeftRadius={proofRequestSpacing.borderRadius}
           borderBottomRightRadius={proofRequestSpacing.borderRadius}
         >
-          <ScrollView
-            ref={scrollViewRef}
-            showsVerticalScrollIndicator={true}
-            contentContainerStyle={{ flexGrow: 1 }}
-            onScroll={onScroll}
-            scrollEventThrottle={16}
-            onContentSizeChange={onContentSizeChange}
-            onLayout={onLayout}
-            contentOffset={
-              typeof initialScrollOffset === 'number'
-                ? { x: 0, y: initialScrollOffset }
-                : undefined
-            }
-          >
-            {children}
-          </ScrollView>
+          {/* Connected Wallet Badge - Fixed position under metadata bar */}
+          {connectedWalletBadge && (
+            <View paddingHorizontal={proofRequestSpacing.cardPadding} paddingTop={proofRequestSpacing.cardPadding} paddingBottom={0}>
+              {connectedWalletBadge}
+            </View>
+          )}
+
+          {/* Scrollable Content */}
+          <View flex={1} padding={proofRequestSpacing.cardPadding} paddingTop={connectedWalletBadge ? proofRequestSpacing.itemPadding : proofRequestSpacing.cardPadding}>
+            <ScrollView
+              ref={scrollViewRef}
+              showsVerticalScrollIndicator={true}
+              contentContainerStyle={{ flexGrow: 1 }}
+              onScroll={onScroll}
+              scrollEventThrottle={16}
+              onContentSizeChange={onContentSizeChange}
+              onLayout={onLayout}
+              contentOffset={
+                typeof initialScrollOffset === 'number'
+                  ? { x: 0, y: initialScrollOffset }
+                  : undefined
+              }
+            >
+              {children}
+            </ScrollView>
+          </View>
         </View>
       </View>
     </View>

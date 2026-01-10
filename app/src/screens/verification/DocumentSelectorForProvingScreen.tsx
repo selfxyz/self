@@ -418,25 +418,25 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         appName={selfApp?.appName || 'Self'}
         appUrl={url}
         documentType={selectedDocumentType}
+        connectedWalletBadge={
+          formattedUserId ? (
+            <ConnectedWalletBadge
+              address={
+                selfApp?.userIdType === 'hex'
+                  ? truncateAddress(selfApp?.userId || '')
+                  : formattedUserId
+              }
+              userIdType={selfApp?.userIdType}
+              onToggle={() => setWalletModalOpen(true)}
+              testID="document-selector-wallet-badge"
+            />
+          ) : undefined
+        }
         onScroll={handleScroll}
         testID="document-selector-card"
       >
-        {/* Connected Wallet Badge */}
-        {formattedUserId && (
-          <ConnectedWalletBadge
-            address={
-              selfApp?.userIdType === 'hex'
-                ? truncateAddress(selfApp?.userId || '')
-                : formattedUserId
-            }
-            userIdType={selfApp?.userIdType}
-            onToggle={() => setWalletModalOpen(true)}
-            testID="document-selector-wallet-badge"
-          />
-        )}
-
         {/* Disclosure Items */}
-        <YStack marginTop={formattedUserId ? 16 : 0}>
+        <YStack marginTop={0}>
           {disclosureItems.map((item, index) => (
             <DisclosureItem
               key={item.key}

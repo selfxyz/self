@@ -322,6 +322,20 @@ const ProveScreen: React.FC = () => {
         appName={selectedApp?.appName || 'Self'}
         appUrl={url}
         documentType={documentType}
+        connectedWalletBadge={
+          formattedUserId ? (
+            <ConnectedWalletBadge
+              address={
+                selectedApp?.userIdType === 'hex'
+                  ? truncateAddress(selectedApp?.userId || '')
+                  : formattedUserId
+              }
+              userIdType={selectedApp?.userIdType}
+              onToggle={() => setWalletModalOpen(true)}
+              testID="prove-screen-wallet-badge"
+            />
+          ) : undefined
+        }
         onScroll={handleScroll}
         scrollViewRef={scrollViewRef}
         onContentSizeChange={handleContentSizeChange}
@@ -329,20 +343,8 @@ const ProveScreen: React.FC = () => {
         initialScrollOffset={route.params?.scrollOffset}
         testID="prove-screen-card"
       >
-        {formattedUserId && (
-          <ConnectedWalletBadge
-            address={
-              selectedApp?.userIdType === 'hex'
-                ? truncateAddress(selectedApp?.userId || '')
-                : formattedUserId
-            }
-            userIdType={selectedApp?.userIdType}
-            onToggle={() => setWalletModalOpen(true)}
-            testID="prove-screen-wallet-badge"
-          />
-        )}
-
-        <YStack marginTop={formattedUserId ? 16 : 0}>
+        {/* Disclosure Items */}
+        <YStack marginTop={0}>
           {disclosureItems.map((item, index) => (
             <DisclosureItem
               key={item.key}
