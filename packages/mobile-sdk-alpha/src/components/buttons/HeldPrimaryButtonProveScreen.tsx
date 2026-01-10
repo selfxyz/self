@@ -8,7 +8,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { assign, createMachine } from 'xstate';
 
 import { ProofEvents } from '../../constants/analytics';
-import { black } from '../../constants/colors';
+import { black, white } from '../../constants/colors';
 import Description from '../typography/Description';
 import { HeldPrimaryButton } from './PrimaryButtonLongHold';
 
@@ -77,15 +77,11 @@ const buttonMachine = createMachine(
           },
           {
             target: 'preparing',
-            guard: ({ context }) =>
-              context.hasScrolledToBottom && !context.isReadyToProve,
+            guard: ({ context }) => context.hasScrolledToBottom && !context.isReadyToProve,
           },
           {
             target: 'ready',
-            guard: ({ context }) =>
-              context.hasScrolledToBottom &&
-              context.isReadyToProve &&
-              !context.isDocumentExpired,
+            guard: ({ context }) => context.hasScrolledToBottom && context.isReadyToProve && !context.isDocumentExpired,
           },
         ],
       },
@@ -222,7 +218,7 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
     });
   }, [selectedAppSessionId, hasScrolledToBottom, isReadyToProve, isDocumentExpired, send]);
 
-  const isDisabled = !state.matches('ready');
+  const isDisabled = !state.matches('ready') && !state.matches('verifying');
 
   const renderButtonContent = () => {
     if (isDocumentExpired) {
