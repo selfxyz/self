@@ -125,12 +125,12 @@ echo ""
 echo "📊 Results:"
 echo ""
 echo "  📦 Check GCS Bucket:"
-echo "     Web UI: https://console.cloud.google.com/storage/browser/$GCS_BUCKET/$GCS_BASE_PATH?project=ofac-upload-test"
+echo "     Web UI: https://console.cloud.google.com/storage/browser/${GCS_BUCKET}/${GCS_BASE_PATH}"
 echo ""
 if command -v gsutil &> /dev/null; then
   echo "     Command line:"
-  echo "       gsutil ls gs://$GCS_BUCKET/$GCS_BASE_PATH/"
-  echo "       gsutil cat gs://$GCS_BUCKET/$GCS_BASE_PATH/current.json"
+  echo "       gsutil ls gs://${GCS_BUCKET}/${GCS_BASE_PATH}/"
+  echo "       gsutil cat gs://${GCS_BUCKET}/${GCS_BASE_PATH}/current.json"
 else
   echo "     💡 Install gsutil for command-line access:"
   echo "        brew install google-cloud-sdk"
@@ -138,4 +138,3 @@ else
 fi
 echo ""
 echo "  🔗 Fork transactions logged in your terminal above"
-echo ""

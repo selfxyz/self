@@ -20,6 +20,7 @@ export class ProgressMonitor {
   private startTime: number = Date.now();
   private updateInterval?: NodeJS.Timeout;
   private lastOutput: string = '';
+  private static readonly COL_TIME_WIDTH = 10;
 
   constructor(treeNames: string[]) {
     treeNames.forEach((name, index) => {
@@ -160,15 +161,16 @@ export class ProgressMonitor {
   }
 
   private getTimeDisplay(tree: TreeProgress): string {
+    const COL_TIME_WIDTH = ProgressMonitor.COL_TIME_WIDTH;
     if (tree.status === 'completed' && tree.startTime && tree.endTime) {
       const duration = ((tree.endTime - tree.startTime) / 1000).toFixed(1);
-      return `${duration}s`;
+      return `${duration}s`.padEnd(COL_TIME_WIDTH);
     }
     if (tree.status === 'building' && tree.startTime) {
       const duration = ((Date.now() - tree.startTime) / 1000).toFixed(1);
-      return `${duration}s...`;
+      return `${duration}s...`.padEnd(COL_TIME_WIDTH);
     }
-    return '-';
+    return '-'.padEnd(COL_TIME_WIDTH);
   }
 
   // Method to suppress console.log during tree building
