@@ -118,13 +118,25 @@ export const ProofRequestCard: React.FC<ProofRequestCardProps> = ({
         >
           {/* Connected Wallet Badge - Fixed position under metadata bar */}
           {connectedWalletBadge && (
-            <View paddingHorizontal={proofRequestSpacing.cardPadding} paddingTop={proofRequestSpacing.cardPadding} paddingBottom={0}>
+            <View
+              paddingHorizontal={proofRequestSpacing.cardPadding}
+              paddingTop={proofRequestSpacing.cardPadding}
+              paddingBottom={0}
+            >
               {connectedWalletBadge}
             </View>
           )}
 
           {/* Scrollable Content */}
-          <View flex={1} padding={proofRequestSpacing.cardPadding} paddingTop={connectedWalletBadge ? proofRequestSpacing.itemPadding : proofRequestSpacing.cardPadding}>
+          <View
+            flex={1}
+            padding={proofRequestSpacing.cardPadding}
+            paddingTop={
+              connectedWalletBadge
+                ? proofRequestSpacing.itemPadding
+                : proofRequestSpacing.cardPadding
+            }
+          >
             <ScrollView
               ref={scrollViewRef}
               showsVerticalScrollIndicator={true}
