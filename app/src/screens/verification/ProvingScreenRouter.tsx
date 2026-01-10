@@ -12,7 +12,7 @@ import {
   isDocumentValidForProving,
   pickBestDocumentToSelect,
 } from '@selfxyz/mobile-sdk-alpha';
-import { blue600 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import { proofRequestColors } from '@/components/proof-request';
@@ -195,7 +195,7 @@ const ProvingScreenRouter: React.FC = () => {
         </View>
       ) : (
         <>
-          <ActivityIndicator color={blue600} size="large" />
+          <ActivityIndicator color={black} size="large" />
         </>
       )}
     </View>
