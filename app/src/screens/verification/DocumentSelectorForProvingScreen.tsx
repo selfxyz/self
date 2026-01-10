@@ -44,7 +44,6 @@ import {
   truncateAddress,
   WalletAddressModal,
 } from '@/components/proof-request';
-import { useProofDisclosureStalenessCheck } from '@/hooks/useProofDisclosureStalenessCheck';
 import { useSelfAppData } from '@/hooks/useSelfAppData';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -119,9 +118,6 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
   // Extract SelfApp data using hook
   const { logoSource, url, formattedUserId, disclosureItems } =
     useSelfAppData(selfApp);
-
-  // Check for stale data and navigate to Home if needed
-  useProofDisclosureStalenessCheck(selfApp, disclosureItems, navigation);
 
   const [documentCatalog, setDocumentCatalog] = useState<DocumentCatalog>({
     documents: [],

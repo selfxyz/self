@@ -38,7 +38,6 @@ import {
   truncateAddress,
   WalletAddressModal,
 } from '@/components/proof-request';
-import { useProofDisclosureStalenessCheck } from '@/hooks/useProofDisclosureStalenessCheck';
 import { useSelfAppData } from '@/hooks/useSelfAppData';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
@@ -73,12 +72,6 @@ const ProveScreen: React.FC = () => {
   const { logoSource, url, formattedUserId, disclosureItems } =
     useSelfAppData(selectedApp);
 
-  // Check for stale data and navigate to Home if needed
-  useProofDisclosureStalenessCheck(
-    selectedApp,
-    disclosureItems,
-    navigation as NativeStackNavigationProp<RootStackParamList>,
-  );
   const selectedAppRef = useRef<typeof selectedApp>(null);
   const processedSessionsRef = useRef<Set<string>>(new Set());
 
