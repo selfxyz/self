@@ -77,7 +77,15 @@ const buttonMachine = createMachine(
           },
           {
             target: 'preparing',
-            guard: ({ context }) => context.hasScrolledToBottom,
+            guard: ({ context }) =>
+              context.hasScrolledToBottom && !context.isReadyToProve,
+          },
+          {
+            target: 'ready',
+            guard: ({ context }) =>
+              context.hasScrolledToBottom &&
+              context.isReadyToProve &&
+              !context.isDocumentExpired,
           },
         ],
       },
@@ -97,7 +105,7 @@ const buttonMachine = createMachine(
           },
         ],
         after: {
-          500: { target: 'preparing2' },
+          100: { target: 'preparing2' },
         },
       },
       preparing2: {
@@ -116,7 +124,7 @@ const buttonMachine = createMachine(
           },
         ],
         after: {
-          500: { target: 'preparing3' },
+          100: { target: 'preparing3' },
         },
       },
       preparing3: {

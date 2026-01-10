@@ -93,7 +93,7 @@ const ProveScreen: React.FC = () => {
   const scrollViewRef = useRef<ScrollViewType>(null);
 
   const isContentShorterThanScrollView = useMemo(
-    () => scrollViewContentHeight <= scrollViewHeight + 10,
+    () => scrollViewContentHeight <= scrollViewHeight + 50,
     [scrollViewContentHeight, scrollViewHeight],
   );
 
@@ -260,7 +260,7 @@ const ProveScreen: React.FC = () => {
       }
       const { layoutMeasurement, contentOffset, contentSize } =
         event.nativeEvent;
-      const paddingToBottom = 10;
+      const paddingToBottom = 50;
       const isCloseToBottom =
         layoutMeasurement.height + contentOffset.y >=
         contentSize.height - paddingToBottom;
@@ -292,7 +292,7 @@ const ProveScreen: React.FC = () => {
       // If we now have both measurements and content fits on screen, enable button immediately
       if (contentHeight > 0 && scrollViewHeight > 0) {
         setHasLayoutMeasurements(true);
-        if (contentHeight <= scrollViewHeight + 10) {
+        if (contentHeight <= scrollViewHeight + 50) {
           setHasScrolledToBottom(true);
         }
       }
@@ -307,7 +307,7 @@ const ProveScreen: React.FC = () => {
       // If we now have both measurements and content fits on screen, enable button immediately
       if (layoutHeight > 0 && scrollViewContentHeight > 0) {
         setHasLayoutMeasurements(true);
-        if (scrollViewContentHeight <= layoutHeight + 10) {
+        if (scrollViewContentHeight <= layoutHeight + 50) {
           setHasScrolledToBottom(true);
         }
       }
