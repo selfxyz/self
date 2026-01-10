@@ -178,8 +178,6 @@ async function main() {
 }
 
 // Run if executed directly
-import { fileURLToPath } from 'url';
-
 const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMainModule) {
   main().catch((error) => {

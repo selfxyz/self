@@ -3,7 +3,7 @@ FROM node:22-slim
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends git openssh-client ca-certificates \
+  && apt-get install -y --no-install-recommends git ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable && corepack prepare yarn@stable --activate

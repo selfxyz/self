@@ -1,21 +1,21 @@
 /**
  * OFAC Auto Updater (Single-Shot)
  *
- * Pipeline + on-chain update + prestaged upload in one run:
+ * Pipeline + on-chain update + GCS upload in one run:
  * 1. Download + parse OFAC SDN list
  * 2. Build all OFAC Merkle trees
- * 3. Pre-stage trees to server
+ * 3. Upload trees to versioned GCS path
  * 4. Update on-chain OFAC roots (direct signer, no multisig)
- * 5. Atomically move trees into production
+ * 5. Atomically update GCS pointer file
  */
 
 import { ethers } from 'ethers';
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
 import { runOfacPipeline } from './index.js';
+import { uploadToGcs, updatePointerFile, verifyGcsFiles } from './gcsUpload.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,13 +24,11 @@ const __dirname = path.dirname(__filename);
 const DEFAULT_RPC_URLS: Record<string, string> = {
   celo: 'https://forno.celo.org',
   'celo-sepolia': 'https://celo-sepolia.drpc.org',
-  sepolia: 'https://rpc.sepolia.org',
 };
 
-const DEFAULT_UPLOAD_PATHS: Record<string, string> = {
-  celo: '/home/ec2-user/self-infra/merkle-tree-reader/common/constants/ofac',
-  'celo-sepolia': '/home/ec2-user/self-infra-staging/merkle-tree-reader/common/constants/ofac',
-  sepolia: '/home/ec2-user/ofac-e2e-test',
+const DEFAULT_GCS_BUCKETS: Record<string, string> = {
+  celo: 'self-ofac-prod',
+  'celo-sepolia': 'self-ofac-staging',
 };
 
 // Hardcoded registry addresses (Celo Mainnet)
@@ -44,9 +42,7 @@ const CELO_REGISTRY_ADDRESSES: Record<string, string> = {
 interface RegistryConfig {
   name: string;
   registryKey: string;
-  hasPassportNo: boolean;
-  hasNameAndDob: boolean;
-  hasNameAndYob: boolean;
+  rootTypes: Array<'passportNo' | 'nameAndDob' | 'nameAndYob'>;
   rootTreePrefix: string;
 }
 
@@ -54,25 +50,19 @@ const REGISTRY_CONFIGS: RegistryConfig[] = [
   {
     name: 'Passport Registry',
     registryKey: 'IdentityRegistry',
-    hasPassportNo: true,
-    hasNameAndDob: true,
-    hasNameAndYob: true,
+    rootTypes: ['passportNo', 'nameAndDob', 'nameAndYob'],
     rootTreePrefix: '',
   },
   {
     name: 'ID Card Registry',
     registryKey: 'IdentityRegistryIdCard',
-    hasPassportNo: false,
-    hasNameAndDob: true,
-    hasNameAndYob: true,
+    rootTypes: ['nameAndDob', 'nameAndYob'],
     rootTreePrefix: '_id_card',
   },
   {
     name: 'Aadhaar Registry',
     registryKey: 'IdentityRegistryAadhaar',
-    hasPassportNo: false,
-    hasNameAndDob: true,
-    hasNameAndYob: true,
+    rootTypes: ['nameAndDob', 'nameAndYob'],
     rootTreePrefix: '_aadhaar',
   },
 ];
@@ -87,18 +77,6 @@ const REGISTRY_ABI = [
   'function updateNameAndYobOfacRoot(uint256 root)',
 ];
 
-// Tree files to upload
-const TREE_FILES = [
-  'passportNoAndNationalitySMT.json',
-  'nameAndDobSMT.json',
-  'nameAndYobSMT.json',
-  'nameAndDobSMT_ID.json',
-  'nameAndYobSMT_ID.json',
-  'nameAndDobSMT_AADHAAR.json',
-  'nameAndYobSMT_AADHAAR.json',
-  'roots.json',
-  'latest-roots.json',
-];
 
 function log(msg: string) {
   const timestamp = new Date().toISOString().slice(11, 23);
@@ -111,8 +89,6 @@ function getRpcUrl(network: string): string | undefined {
       return process.env.CELO_RPC_URL || DEFAULT_RPC_URLS.celo;
     case 'celo-sepolia':
       return process.env.CELO_SEPOLIA_RPC_URL || DEFAULT_RPC_URLS['celo-sepolia'];
-    case 'sepolia':
-      return process.env.SEPOLIA_RPC_URL || DEFAULT_RPC_URLS.sepolia;
     default:
       return process.env.RPC_URL;
   }
@@ -187,7 +163,7 @@ async function updateRegistryRoots(
   const contract = new ethers.Contract(registryAddress, REGISTRY_ABI, signer);
   let updates = 0;
 
-  async function maybeUpdate(
+  async function updateRoot(
     rootType: 'passportNo' | 'nameAndDob' | 'nameAndYob',
     updateFn: keyof ethers.Contract
   ) {
@@ -196,7 +172,7 @@ async function updateRegistryRoots(
 
     const oldRoot = await getCurrentRoot(contract, rootType);
     if (oldRoot === newRoot) {
-      log(`No change for ${config.name} ${rootType}`);
+      log(`Skipping ${config.name} ${rootType}: on-chain root already matches`);
       return;
     }
 
@@ -217,106 +193,19 @@ async function updateRegistryRoots(
     updates += 1;
   }
 
-  if (config.hasPassportNo) {
-    await maybeUpdate('passportNo', 'updatePassportNoOfacRoot');
-  }
-  if (config.hasNameAndDob) {
-    await maybeUpdate('nameAndDob', 'updateNameAndDobOfacRoot');
-  }
-  if (config.hasNameAndYob) {
-    await maybeUpdate('nameAndYob', 'updateNameAndYobOfacRoot');
+  for (const rootType of config.rootTypes) {
+    if (rootType === 'passportNo') {
+      await updateRoot('passportNo', 'updatePassportNoOfacRoot');
+    } else if (rootType === 'nameAndDob') {
+      await updateRoot('nameAndDob', 'updateNameAndDobOfacRoot');
+    } else {
+      await updateRoot('nameAndYob', 'updateNameAndYobOfacRoot');
+    }
   }
 
   return updates;
 }
 
-function prestageFiles(
-  treesDir: string,
-  sshHost: string,
-  stagingPath: string,
-  dryRun: boolean
-): boolean {
-  log(`PRE-STAGING: Uploading trees to ${sshHost}:${stagingPath}`);
-
-  const filesToUpload = TREE_FILES
-    .map((f) => path.join(treesDir, f))
-    .filter((f) => fs.existsSync(f));
-
-  if (filesToUpload.length === 0) {
-    log('ERROR: No tree files found to upload!');
-    return false;
-  }
-
-  log(`   Found ${filesToUpload.length} files`);
-
-  if (dryRun) {
-    log('   [DRY RUN] Would upload:');
-    filesToUpload.forEach((f) => log(`     - ${path.basename(f)}`));
-    return true;
-  }
-
-  try {
-    execSync(`ssh ${sshHost} "mkdir -p ${stagingPath}"`, { stdio: 'pipe' });
-
-    for (const file of filesToUpload) {
-      const basename = path.basename(file);
-      process.stdout.write(`   Uploading ${basename}...`);
-      execSync(`scp "${file}" "${sshHost}:${stagingPath}/"`, { stdio: 'pipe' });
-      console.log(' ok');
-    }
-
-    log(`Pre-staged ${filesToUpload.length} files`);
-    return true;
-  } catch (error) {
-    log(`ERROR: Pre-staging failed: ${error}`);
-    return false;
-  }
-}
-
-function atomicMove(
-  sshHost: string,
-  stagingPath: string,
-  productionPath: string,
-  dryRun: boolean
-): { success: boolean; durationMs: number } {
-  log(`ATOMIC MOVE: ${stagingPath} -> ${productionPath}`);
-
-  if (dryRun) {
-    log('   [DRY RUN] Would move files');
-    return { success: true, durationMs: 0 };
-  }
-
-  const startTime = Date.now();
-
-  try {
-    execSync(`ssh ${sshHost} "mkdir -p ${productionPath}"`, { stdio: 'pipe' });
-
-    const moveCmd = `ssh ${sshHost} "mv ${stagingPath}/*.json ${productionPath}/ && rm -rf ${stagingPath}"`;
-    execSync(moveCmd, { stdio: 'pipe' });
-
-    const durationMs = Date.now() - startTime;
-    log(`Atomic move completed in ${durationMs}ms`);
-
-    return { success: true, durationMs };
-  } catch (error) {
-    const durationMs = Date.now() - startTime;
-    log(`ERROR: Atomic move failed after ${durationMs}ms: ${error}`);
-    return { success: false, durationMs };
-  }
-}
-
-function verifyProduction(sshHost: string, productionPath: string): void {
-  log('Verifying production files...');
-  try {
-    const result = execSync(
-      `ssh ${sshHost} "ls -la ${productionPath}/*.json 2>/dev/null | tail -10"`,
-      { encoding: 'utf-8' }
-    );
-    console.log(result);
-  } catch {
-    log('Could not verify (may still be successful)');
-  }
-}
 
 async function main() {
   console.log('');
@@ -347,21 +236,19 @@ async function main() {
   const rootsPath = process.env.ROOTS_PATH || path.join(outputDir, 'latest-roots.json');
 
   const treesDir = process.env.TREES_DIR || outputDir;
-  const sshHost = process.env.SSH_HOST || 'self-infra-staging';
-  const productionPath =
-    process.env.UPLOAD_PATH || DEFAULT_UPLOAD_PATHS[network] || DEFAULT_UPLOAD_PATHS.celo;
-  const skipPrestage = process.env.SKIP_PRESTAGE === 'true';
+  const bucketName =
+    process.env.GCS_BUCKET_NAME || DEFAULT_GCS_BUCKETS[network] || DEFAULT_GCS_BUCKETS.celo;
+  const basePath = process.env.GCS_BASE_PATH || 'ofac';
+  const skipUpload = process.env.SKIP_UPLOAD === 'true';
 
   const timestamp = Date.now();
-  const stagingPath = process.env.STAGING_PATH || `/tmp/ofac-prestage-${timestamp}`;
 
   log(`Network: ${network}`);
   log(`RPC: ${rpcUrl}`);
   log(`Data dir: ${dataDir}`);
   log(`Trees dir: ${treesDir}`);
-  log(`SSH host: ${sshHost}`);
-  log(`Staging: ${stagingPath}`);
-  log(`Production: ${productionPath}`);
+  log(`GCS bucket: ${bucketName}`);
+  log(`GCS base path: ${basePath}`);
   log(`Dry Run: ${dryRun}`);
   console.log('');
 
@@ -378,24 +265,7 @@ async function main() {
     process.exit(1);
   }
 
-  // Step 4: Pre-stage files
-  console.log('');
-  console.log('-'.repeat(70));
-  console.log('  PHASE: PRE-STAGE FILES');
-  console.log('-'.repeat(70));
-  console.log('');
-
-  if (!skipPrestage) {
-    const prestageSuccess = prestageFiles(treesDir, sshHost, stagingPath, dryRun);
-    if (!prestageSuccess && !dryRun) {
-      console.error('ERROR: Pre-staging failed. Aborting before on-chain update.');
-      process.exit(1);
-    }
-  } else {
-    log('Skipping pre-stage (SKIP_PRESTAGE=true)');
-  }
-
-  // Step 5: On-chain updates
+  // Step 4: On-chain updates
   console.log('');
   console.log('-'.repeat(70));
   console.log('  PHASE: ON-CHAIN UPDATES');
@@ -423,21 +293,65 @@ async function main() {
   }
 
   log(`Total updates submitted: ${totalUpdates}`);
+  if (totalUpdates === 0) {
+    log('No on-chain updates needed; skipping tree deployment.');
+    return;
+  }
 
-  // Step 6: Atomic move to production
+  // Step 5: Upload to GCS (versioned path)
   console.log('');
   console.log('-'.repeat(70));
-  console.log('  PHASE: ATOMIC MOVE');
+  console.log('  PHASE: UPLOAD TO GCS');
   console.log('-'.repeat(70));
   console.log('');
 
-  const moveResult = atomicMove(sshHost, stagingPath, productionPath, dryRun);
-  if (moveResult.success) {
-    verifyProduction(sshHost, productionPath);
-    log(`Mismatch window: ${moveResult.durationMs}ms (~${(moveResult.durationMs / 1000).toFixed(1)}s)`);
+  if (skipUpload) {
+    log('Skipping upload (SKIP_UPLOAD=true)');
+    return;
+  }
+
+  const uploadResult = await uploadToGcs({
+    bucketName,
+    basePath,
+    treesDir,
+    roots,
+    timestamp,
+    dryRun,
+  });
+
+  if (!uploadResult.success) {
+    console.error('ERROR: GCS upload failed:', uploadResult.error);
+    console.error('On-chain updates succeeded but file upload failed.');
+    process.exit(1);
+  }
+
+  log(`Uploaded ${uploadResult.filesUploaded} files to ${uploadResult.versionPath}`);
+
+  // Step 6: Update pointer file (atomic switch)
+  console.log('');
+  console.log('-'.repeat(70));
+  console.log('  PHASE: ATOMIC POINTER UPDATE');
+  console.log('-'.repeat(70));
+  console.log('');
+
+  const pointerResult = await updatePointerFile(
+    bucketName,
+    basePath,
+    uploadResult.versionPath!,
+    roots,
+    dryRun
+  );
+
+  if (pointerResult.success) {
+    await verifyGcsFiles(bucketName, uploadResult.versionPath!, dryRun);
+    log(
+      `Mismatch window: ${pointerResult.durationMs}ms (~${(pointerResult.durationMs / 1000).toFixed(1)}s)`
+    );
   } else {
-    console.error('WARNING: On-chain updates succeeded but move failed. Manual move required.');
-    console.error(`    ssh ${sshHost} "mv ${stagingPath}/*.json ${productionPath}/"`);
+    console.error('WARNING: On-chain updates succeeded but pointer update failed.');
+    console.error(`Error: ${pointerResult.error}`);
+    console.error(`Files are at: gs://${bucketName}/${uploadResult.versionPath}`);
+    console.error('Manual pointer update may be required.');
     process.exit(1);
   }
 

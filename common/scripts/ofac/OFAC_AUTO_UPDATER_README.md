@@ -1,35 +1,23 @@
 # OFAC Sanctions List Automation
 
-Automated pipeline for updating OFAC sanctions list with ~6-7 second mismatch window.
+Automated pipeline for updating OFAC sanctions list with ~200-500ms mismatch window using Google Cloud Storage.
 
 ## Prerequisites
 
-### SSH Access
+### Google Cloud Storage Access
 
-Add to `~/.ssh/config`:
-
-```
-Host self-infra-prod
-    HostName <PRODUCTION_IP>
-    User ec2-user
-    IdentityFile ~/.ssh/infra.pem
-
-Host self-infra-staging
-    HostName 54.71.62.30
-    User ec2-user
-    IdentityFile ~/.ssh/infra.pem
-```
-
-### VPN
-
-Connect to NordLayer VPN before running any commands.
+1. Create a GCS bucket for OFAC data (e.g., `self-ofac-prod`, `self-ofac-staging`)
+2. Enable versioning on the bucket for rollback capability
+3. Create a service account with `roles/storage.objectAdmin` permission
+4. Download the service account key JSON file
+5. Set `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the key file path
 
 ---
 
 ## Single-Shot Auto Update (Docker/TEE)
 
 This is the unified flow that runs the pipeline, updates on-chain roots directly,
-and performs the prestaged upload + atomic move in one run.
+and uploads files to Google Cloud Storage with atomic pointer updates.
 
 ### Docker
 
@@ -39,29 +27,30 @@ Build the image:
 docker build -f common/scripts/ofac/Dockerfile -t ofac-auto-updater .
 ```
 
-Run with a single mount (all inputs/outputs live under `/data/ofac`):
+Run with GCS credentials:
 
 ```bash
 docker run --rm \\
   -e PRIVATE_KEY=0x... \\
   -e NETWORK=celo \\
-  -e SSH_HOST=self-infra-prod \\
-  -e UPLOAD_PATH=/home/ec2-user/self-infra/merkle-tree-reader/common/constants/ofac \\
+  -e GCS_BUCKET_NAME=self-ofac-prod \\
+  -e GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs-key.json \\
   -v /local/ofac:/data \\
-  -v ~/.ssh:/root/.ssh:ro \\
+  -v /local/gcs-key.json:/secrets/gcs-key.json:ro \\
   ofac-auto-updater
 ```
 
 Environment variables:
 - `PRIVATE_KEY` (required): signer key used for on-chain updates
 - Signer must have `TEE_ROLE` on the registry contracts
-- `NETWORK`: `celo`, `celo-sepolia`, or `sepolia`
-- `RPC_URL` or network-specific RPC envs (`CELO_RPC_URL`, `CELO_SEPOLIA_RPC_URL`, `SEPOLIA_RPC_URL`)
+- `NETWORK`: `celo` or `celo-sepolia`
+- `RPC_URL` or network-specific RPC envs (`CELO_RPC_URL`, `CELO_SEPOLIA_RPC_URL`)
 - `OFAC_DATA_DIR` (default: `/data/ofac`)
-- `SSH_HOST` (default: `self-infra-staging`)
-- `UPLOAD_PATH` (default: production path for the chosen network)
+- `GCS_BUCKET_NAME` (default: `self-ofac-prod` for celo, `self-ofac-staging` for celo-sepolia)
+- `GCS_BASE_PATH` (default: `ofac`)
+- `GOOGLE_APPLICATION_CREDENTIALS` (required): path to GCS service account key JSON
 - `DRY_RUN=true` to skip on-chain update and upload
-- `SKIP_PRESTAGE=true` to skip pre-staging (not recommended)
+- `SKIP_UPLOAD=true` to skip GCS upload (not recommended)
 
 If deploying this change to existing registries, call `initializeTeeRole(TEE_ADDRESS)` after upgrade to set role admin and grant `TEE_ROLE`.
 
@@ -70,17 +59,59 @@ If deploying this change to existing registries, call `initializeTeeRole(TEE_ADD
 ```bash
 PRIVATE_KEY=0x... \\
 NETWORK=celo \\
-SSH_HOST=self-infra-prod \\
+GCS_BUCKET_NAME=self-ofac-prod \\
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/gcs-key.json \\
 yarn tsx common/scripts/ofac/runOfacAutoUpdate.ts
 ```
 
 ---
-## How SSH Is Used
+## How GCS Is Used
 
-The updater uses SSH only for the file staging + atomic move:
-1. Pre-stage generated tree files to a temp directory on the server.
-2. After on-chain updates complete, atomically move the files into production.
-3. Optionally verify the production directory contents.
+The updater uses Google Cloud Storage for atomic file deployment:
 
-If SSH isn’t available (e.g., missing VPN/host config), the on-chain updates can still run,
-but the tree deployment step will fail unless `DRY_RUN=true`.
+1. **Upload Phase**: Upload all tree files to a versioned path (e.g., `ofac/2026-01-09-1736437890/`)
+2. **On-Chain Update**: Submit transactions to update OFAC roots on smart contracts
+3. **Atomic Switch**: Update `current.json` pointer file to reference the new version path
+
+### Mismatch Window
+
+- **Old (SSH)**: 6-7 seconds during file move operation
+- **New (GCS)**: 200-500ms during `current.json` upload
+- **Consistency**: Readers always see a complete snapshot (all files from the same version)
+
+### File Structure
+
+```
+gs://self-ofac-prod/
+  ofac/
+    current.json                    # Pointer to active version
+    2026-01-09-1736437890/         # Versioned directory
+      passportNoAndNationalitySMT.json
+      nameAndDobSMT.json
+      nameAndYobSMT.json
+      nameAndDobSMT_ID.json
+      nameAndYobSMT_ID.json
+      nameAndDobSMT_AADHAAR.json
+      nameAndYobSMT_AADHAAR.json
+      roots.json
+      latest-roots.json
+```
+
+### current.json Format
+
+```json
+{
+  "timestamp": "2026-01-09T12:34:56.789Z",
+  "path": "ofac/2026-01-09-1736437890",
+  "roots": {
+    "passport_no_and_nationality": "12345...",
+    "name_and_dob": "67890...",
+    "name_and_yob": "11111..."
+  }
+}
+```
+
+Readers should:
+1. Fetch `gs://bucket/ofac/current.json`
+2. Parse the `path` field
+3. Fetch tree files from `gs://bucket/{path}/`
