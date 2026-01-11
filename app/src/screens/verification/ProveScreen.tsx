@@ -313,7 +313,12 @@ const ProveScreen: React.FC = () => {
         scrollViewRef={scrollViewRef}
         onContentSizeChange={handleContentSizeChange}
         onLayout={handleScrollViewLayout}
-        initialScrollOffset={route.params?.scrollOffset}
+        initialScrollOffset={
+          route.params?.scrollOffset !== undefined
+            ? // add 3.25px padding to fix the scroll offset
+              route.params.scrollOffset + 3.25
+            : undefined
+        }
         testID="prove-screen-card"
       >
         {/* Disclosure Items */}
