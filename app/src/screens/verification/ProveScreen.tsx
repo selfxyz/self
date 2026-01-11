@@ -15,7 +15,7 @@ import type {
   NativeSyntheticEvent,
   ScrollView as ScrollViewType,
 } from 'react-native';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { View, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import {
@@ -96,6 +96,14 @@ const ProveScreen: React.FC = () => {
   const provingStore = useProvingStore();
   const currentState = useProvingStore(state => state.currentState);
   const isReadyToProve = currentState === 'ready_to_prove';
+
+  const initialScrollOffset = useMemo(() => {
+    if (route.params?.scrollOffset === undefined) {
+      return undefined;
+    }
+    const padding = Platform.OS === 'ios' ? 3 : 15;
+    return route.params.scrollOffset + padding;
+  }, [route.params?.scrollOffset]);
 
   const { addProofHistory } = useProofHistoryStore();
   const { loadDocumentCatalog } = usePassport();
@@ -313,12 +321,7 @@ const ProveScreen: React.FC = () => {
         scrollViewRef={scrollViewRef}
         onContentSizeChange={handleContentSizeChange}
         onLayout={handleScrollViewLayout}
-        initialScrollOffset={
-          route.params?.scrollOffset !== undefined
-            ? // add 3.25px padding to fix the scroll offset
-              route.params.scrollOffset + 3.25
-            : undefined
-        }
+        initialScrollOffset={initialScrollOffset}
         testID="prove-screen-card"
       >
         {/* Disclosure Items */}
