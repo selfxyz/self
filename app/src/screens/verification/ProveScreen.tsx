@@ -15,7 +15,7 @@ import type {
   NativeSyntheticEvent,
   ScrollView as ScrollViewType,
 } from 'react-native';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import { View, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import {
@@ -97,13 +97,19 @@ const ProveScreen: React.FC = () => {
   const currentState = useProvingStore(state => state.currentState);
   const isReadyToProve = currentState === 'ready_to_prove';
 
+  // Use window dimensions for dynamic scroll offset padding
+  // This scales with viewport height rather than using hardcoded platform values
+  const { height: windowHeight } = useWindowDimensions();
+
   const initialScrollOffset = useMemo(() => {
     if (route.params?.scrollOffset === undefined) {
       return undefined;
     }
-    const padding = Platform.OS === 'ios' ? 3 : 15;
+    // Use ~1.5% of window height as padding to account for minor layout differences
+    // This scales appropriately across different device sizes
+    const padding = windowHeight * 0.01;
     return route.params.scrollOffset + padding;
-  }, [route.params?.scrollOffset]);
+  }, [route.params?.scrollOffset, windowHeight]);
 
   const { addProofHistory } = useProofHistoryStore();
   const { loadDocumentCatalog } = usePassport();
