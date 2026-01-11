@@ -83,6 +83,7 @@ const ProveScreen: React.FC = () => {
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const isDocumentExpiredRef = useRef(false);
   const scrollViewRef = useRef<ScrollViewType>(null);
+  const hasInitializedScrollStateRef = useRef(false);
 
   const isContentShorterThanScrollView = useMemo(
     () => scrollViewContentHeight <= scrollViewHeight + 50,
@@ -139,17 +140,38 @@ const ProveScreen: React.FC = () => {
   }, [addProofHistory, loadDocumentCatalog, provingStore.uuid, selectedApp]);
 
   useEffect(() => {
-    // Update hasScrolledToBottom based on content size
+    // Wait for actual measurements before determining initial scroll state
+    // Both start at 0, causing false-positive on first render
+    const hasMeasurements = scrollViewContentHeight > 0 && scrollViewHeight > 0;
+
+    if (!hasMeasurements || hasInitializedScrollStateRef.current) {
+      return;
+    }
+
+    // Only auto-enable if content is short enough that no scrolling is needed
     if (isContentShorterThanScrollView) {
       setHasScrolledToBottom(true);
-    } else {
-      setHasScrolledToBottom(false);
     }
-  }, [isContentShorterThanScrollView]);
+    // If content is long, leave hasScrolledToBottom as false (require scroll)
+    // Don't explicitly set to false to avoid resetting user's scroll progress
+
+    // Mark as initialized so we don't override user's scroll state later
+    hasInitializedScrollStateRef.current = true;
+  }, [
+    isContentShorterThanScrollView,
+    scrollViewContentHeight,
+    scrollViewHeight,
+  ]);
 
   useEffect(() => {
     if (!isFocused || !selectedApp) {
       return;
+    }
+
+    // Reset scroll state tracking for new session
+    if (selectedAppRef.current?.sessionId !== selectedApp.sessionId) {
+      hasInitializedScrollStateRef.current = false;
+      setHasScrolledToBottom(false);
     }
 
     setDefaultDocumentTypeIfNeeded();
