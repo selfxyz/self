@@ -78,7 +78,6 @@ const ProveScreen: React.FC = () => {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
-  const [hasLayoutMeasurements, setHasLayoutMeasurements] = useState(false);
   const [isDocumentExpired, setIsDocumentExpired] = useState(false);
   const [documentType, setDocumentType] = useState('');
   const [walletModalOpen, setWalletModalOpen] = useState(false);
@@ -91,8 +90,8 @@ const ProveScreen: React.FC = () => {
   );
 
   const isScrollable = useMemo(
-    () => !isContentShorterThanScrollView && hasLayoutMeasurements,
-    [isContentShorterThanScrollView, hasLayoutMeasurements],
+    () => !isContentShorterThanScrollView,
+    [isContentShorterThanScrollView],
   );
   const provingStore = useProvingStore();
   const currentState = useProvingStore(state => state.currentState);
@@ -126,15 +125,13 @@ const ProveScreen: React.FC = () => {
   }, [addProofHistory, loadDocumentCatalog, provingStore.uuid, selectedApp]);
 
   useEffect(() => {
-    // Only update hasScrolledToBottom once we have real layout measurements
-    if (hasLayoutMeasurements) {
-      if (isContentShorterThanScrollView) {
-        setHasScrolledToBottom(true);
-      } else {
-        setHasScrolledToBottom(false);
-      }
+    // Update hasScrolledToBottom based on content size
+    if (isContentShorterThanScrollView) {
+      setHasScrolledToBottom(true);
+    } else {
+      setHasScrolledToBottom(false);
     }
-  }, [isContentShorterThanScrollView, hasLayoutMeasurements]);
+  }, [isContentShorterThanScrollView]);
 
   useEffect(() => {
     if (!isFocused || !selectedApp) {
@@ -282,31 +279,14 @@ const ProveScreen: React.FC = () => {
   const handleContentSizeChange = useCallback(
     (contentWidth: number, contentHeight: number) => {
       setScrollViewContentHeight(contentHeight);
-      // If we now have both measurements and content fits on screen, enable button immediately
-      if (contentHeight > 0 && scrollViewHeight > 0) {
-        setHasLayoutMeasurements(true);
-        if (contentHeight <= scrollViewHeight + 50) {
-          setHasScrolledToBottom(true);
-        }
-      }
     },
-    [scrollViewHeight],
+    [],
   );
 
-  const handleScrollViewLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      const layoutHeight = event.nativeEvent.layout.height;
-      setScrollViewHeight(layoutHeight);
-      // If we now have both measurements and content fits on screen, enable button immediately
-      if (layoutHeight > 0 && scrollViewContentHeight > 0) {
-        setHasLayoutMeasurements(true);
-        if (scrollViewContentHeight <= layoutHeight + 50) {
-          setHasScrolledToBottom(true);
-        }
-      }
-    },
-    [scrollViewContentHeight],
-  );
+  const handleScrollViewLayout = useCallback((event: LayoutChangeEvent) => {
+    const layoutHeight = event.nativeEvent.layout.height;
+    setScrollViewHeight(layoutHeight);
+  }, []);
 
   return (
     <View style={styles.container}>
