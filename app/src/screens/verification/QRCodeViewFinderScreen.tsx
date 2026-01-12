@@ -48,7 +48,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
   const isFocused = useIsFocused();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
   const { top: safeAreaTop } = useSafeAreaInsets();
-  const navigateToProve = useHapticNavigation('Prove');
+  const navigateToDocumentSelector = useHapticNavigation('ProvingScreenRouter');
 
   // This resets to the default state when we navigate back to this screen
   useFocusEffect(
@@ -91,7 +91,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
               .startAppListener(selfAppJson.sessionId);
 
             setTimeout(() => {
-              navigateToProve();
+              navigateToDocumentSelector();
             }, 100);
           } catch (parseError) {
             trackEvent(ProofEvents.QR_SCAN_FAILED, {
@@ -115,7 +115,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
           selfClient.getSelfAppState().startAppListener(sessionId);
 
           setTimeout(() => {
-            navigateToProve();
+            navigateToDocumentSelector();
           }, 100);
         } else {
           trackEvent(ProofEvents.QR_SCAN_FAILED, {
@@ -129,7 +129,13 @@ const QRCodeViewFinderScreen: React.FC = () => {
         }
       }
     },
-    [doneScanningQR, navigation, navigateToProve, trackEvent, selfClient],
+    [
+      doneScanningQR,
+      navigation,
+      navigateToDocumentSelector,
+      trackEvent,
+      selfClient,
+    ],
   );
 
   const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;

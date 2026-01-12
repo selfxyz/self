@@ -27,6 +27,7 @@ interface Inputs {
   usePacePolling?: boolean;
   sessionId: string;
   userId?: string;
+  skipReselect?: boolean;
 }
 
 interface DataGroupHash {
@@ -91,6 +92,7 @@ const scanAndroid = async (
     canNumber: inputs.canNumber ?? '',
     useCan: inputs.useCan ?? false,
     sessionId: inputs.sessionId,
+    skipReselect: inputs.skipReselect ?? false,
   });
 };
 

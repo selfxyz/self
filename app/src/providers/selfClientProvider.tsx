@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PropsWithChildren } from 'react';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Platform } from 'react-native';
 
 import {
@@ -23,10 +23,20 @@ import {
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
-import { unsafe_getPrivateKey } from '@/providers/authProvider';
-import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
+import {
+  setKeychainCryptoFailureCallback,
+  unsafe_getPrivateKey,
+} from '@/providers/authProvider';
+import {
+  selfClientDocumentsAdapter,
+  setPassportKeychainErrorCallback,
+} from '@/providers/passportDataProvider';
 import { trackEvent, trackNfcEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
+import {
+  registerModalCallbacks,
+  unregisterModalCallbacks,
+} from '@/utils/modalCallbackRegistry';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
 /**
@@ -105,6 +115,8 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
             }
           }
         },
+        enableKeychainErrorModal,
+        disableKeychainErrorModal,
       },
       crypto: {
         async hash(
@@ -321,5 +333,56 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     </SDKSelfClientProvider>
   );
 };
+
+export function disableKeychainErrorModal() {
+  setKeychainCryptoFailureCallback(null);
+  setPassportKeychainErrorCallback(null);
+}
+
+// Functions to enable/disable keychain error modals
+// These should be called by the provingMachine when entering/exiting proving flows
+export function enableKeychainErrorModal() {
+  setKeychainCryptoFailureCallback(showKeychainErrorModal);
+  setPassportKeychainErrorCallback(showKeychainErrorModal);
+}
+
+export function showKeychainErrorModal(
+  errorType: 'user_cancelled' | 'crypto_failed',
+) {
+  if (!navigationRef.isReady()) return;
+
+  const errorContent = {
+    user_cancelled: {
+      titleText: 'Authentication Required',
+      bodyText:
+        'You need to authenticate with your fingerprint, PIN or faceID to continue the verification process. Please try again.',
+      buttonText: 'Try Again',
+    },
+    crypto_failed: {
+      titleText: 'Keychain Error',
+      bodyText:
+        'Unable to access your keychain. This may happen if your device security settings have changed or if the encrypted data was corrupted. Please contact support if the issue persists.',
+      buttonText: 'Go to Home',
+    },
+  };
+
+  const content = errorContent[errorType];
+
+  const callbackId = registerModalCallbacks({
+    onButtonPress: () => {
+      unregisterModalCallbacks(callbackId);
+      navigationRef.navigate({ name: 'Home', params: {} });
+    },
+    onModalDismiss: () => {
+      unregisterModalCallbacks(callbackId);
+      navigationRef.navigate({ name: 'Home', params: {} });
+    },
+  });
+
+  navigationRef.navigate('Modal', {
+    ...content,
+    callbackId,
+  });
+}
 
 export default SelfClientProvider;

@@ -33,6 +33,7 @@ interface RightActionProps extends ViewProps {
 interface NavBarTitleProps extends TextProps {
   children?: React.ReactNode;
   size?: 'large' | undefined;
+  color?: string;
 }
 
 export const LeftAction: React.FC<LeftActionProps> = ({
@@ -84,13 +85,20 @@ export const LeftAction: React.FC<LeftActionProps> = ({
   return <View {...props}>{children}</View>;
 };
 
-const NavBarTitle: React.FC<NavBarTitleProps> = ({ children, ...props }) => {
+const NavBarTitle: React.FC<NavBarTitleProps> = ({
+  children,
+  color,
+  style,
+  ...props
+}) => {
   if (!children) {
     return null;
   }
 
   return typeof children === 'string' ? (
-    <Title {...props}>{children}</Title>
+    <Title style={[color ? { color } : undefined, style]} {...props}>
+      {children}
+    </Title>
   ) : (
     children
   );

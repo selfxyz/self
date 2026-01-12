@@ -100,6 +100,7 @@ jest.mock('react-native', () => {
     get NativeModules() {
       return global.NativeModules || {};
     },
+    useColorScheme: jest.fn(() => 'light'),
     NativeEventEmitter: jest.fn().mockImplementation(nativeModule => {
       return {
         addListener: jest.fn(),
@@ -110,10 +111,15 @@ jest.mock('react-native', () => {
     }),
     PixelRatio: mockPixelRatio,
     Dimensions: {
-      get: jest.fn(() => ({
-        window: { width: 375, height: 667, scale: 2 },
-        screen: { width: 375, height: 667, scale: 2 },
-      })),
+      get: jest.fn(dimension => {
+        const dimensions = {
+          window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+          screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
+        };
+        return dimension ? dimensions[dimension] : dimensions;
+      }),
+      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+      removeEventListener: jest.fn(),
     },
     Linking: {
       getInitialURL: jest.fn().mockResolvedValue(null),
@@ -139,6 +145,7 @@ jest.mock('react-native', () => {
     ScrollView: 'ScrollView',
     TouchableOpacity: 'TouchableOpacity',
     TouchableHighlight: 'TouchableHighlight',
+    Pressable: 'Pressable',
     Image: 'Image',
     ActivityIndicator: 'ActivityIndicator',
     SafeAreaView: 'SafeAreaView',
@@ -273,10 +280,15 @@ jest.mock(
         Version: 14,
       },
       Dimensions: {
-        get: jest.fn(() => ({
-          window: { width: 375, height: 667, scale: 2 },
-          screen: { width: 375, height: 667, scale: 2 },
-        })),
+        get: jest.fn(dimension => {
+          const dimensions = {
+            window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+            screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
+          };
+          return dimension ? dimensions[dimension] : dimensions;
+        }),
+        addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+        removeEventListener: jest.fn(),
       },
       StyleSheet: {
         create: jest.fn(styles => styles),
@@ -359,15 +371,18 @@ jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/Utilities/Dimensions',
   () => ({
     getConstants: jest.fn(() => ({
-      window: { width: 375, height: 667, scale: 2 },
-      screen: { width: 375, height: 667, scale: 2 },
+      window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+      screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
     })),
     set: jest.fn(),
-    get: jest.fn(() => ({
-      window: { width: 375, height: 667, scale: 2 },
-      screen: { width: 375, height: 667, scale: 2 },
-    })),
-    addEventListener: jest.fn(),
+    get: jest.fn(dimension => {
+      const dimensions = {
+        window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+        screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
+      };
+      return dimension ? dimensions[dimension] : dimensions;
+    }),
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
     removeEventListener: jest.fn(),
   }),
   { virtual: true },
@@ -550,8 +565,14 @@ jest.mock(
   { virtual: true },
 );
 
+// Mock the hooks subpath from mobile-sdk-alpha
+jest.mock('@selfxyz/mobile-sdk-alpha/hooks', () => ({
+  useSafeBottomPadding: jest.fn((basePadding = 20) => basePadding + 50),
+}));
+
 // Mock problematic mobile-sdk-alpha components that use React Native StyleSheet
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  // Override only the specific mocks we need
   NFCScannerScreen: jest.fn(() => null),
   SelfClientProvider: jest.fn(({ children }) => children),
   useSelfClient: jest.fn(() => {

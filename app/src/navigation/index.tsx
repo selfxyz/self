@@ -73,6 +73,8 @@ export type RootStackParamList = Omit<
   | 'Disclaimer'
   | 'DocumentNFCScan'
   | 'DocumentOnboarding'
+  | 'DocumentSelectorForProving'
+  | 'ProvingScreenRouter'
   | 'Gratification'
   | 'Home'
   | 'IDPicker'
@@ -142,13 +144,24 @@ export type RootStackParamList = Omit<
         returnToScreen?: 'Points';
       }
     | undefined;
+  ProofSettings: undefined;
   AccountVerifiedSuccess: undefined;
 
   // Proof/Verification screens
   ProofHistoryDetail: {
     data: ProofHistory;
   };
-  Prove: undefined;
+  Prove:
+    | {
+        scrollOffset?: number;
+      }
+    | undefined;
+  ProvingScreenRouter: undefined;
+  DocumentSelectorForProving:
+    | {
+        documentType?: string;
+      }
+    | undefined;
 
   // App screens
   Loading: {

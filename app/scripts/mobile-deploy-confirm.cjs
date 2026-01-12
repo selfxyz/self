@@ -441,6 +441,14 @@ function displayWarningsAndGitStatus() {
 function displayFullConfirmation(platform, versions, deploymentMethod) {
   displayDeploymentHeader(platform);
   displayDeploymentMethod(deploymentMethod);
+  if (
+    deploymentMethod === DEPLOYMENT_METHODS.LOCAL_FASTLANE &&
+    (platform === PLATFORMS.ANDROID || platform === PLATFORMS.BOTH)
+  ) {
+    console.log(
+      `${CONSOLE_SYMBOLS.WARNING} Local Android uploads are disabled. You'll need to manually upload the AAB in Play Console.`,
+    );
+  }
   displayPlatformVersions(platform, versions);
   displayWarningsAndGitStatus();
 }

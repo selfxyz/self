@@ -40,6 +40,13 @@ const NFC_METHODS = [
     params: {},
   },
   {
+    key: 'skipReselect',
+    label: 'Skip Re-select',
+    description: 'Skip the re-select step after the NFC scan.',
+    platform: ['android'],
+    params: { skipReselect: true },
+  },
+  {
     key: 'usePacePolling',
     label: 'Use PACE Polling',
     description: 'To be used with certain ID cards.',

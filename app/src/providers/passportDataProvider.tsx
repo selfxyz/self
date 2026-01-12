@@ -67,6 +67,59 @@ import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { createKeychainOptions } from '@/integrations/keychain';
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
+import type { KeychainErrorType } from '@/utils/keychainErrors';
+import {
+  getKeychainErrorIdentity,
+  isKeychainCryptoError,
+  isUserCancellation,
+} from '@/utils/keychainErrors';
+
+let keychainCryptoFailureCallback:
+  | ((errorType: 'user_cancelled' | 'crypto_failed') => void)
+  | null = null;
+
+export function setPassportKeychainErrorCallback(
+  callback: ((errorType: 'user_cancelled' | 'crypto_failed') => void) | null,
+) {
+  keychainCryptoFailureCallback = callback;
+}
+
+function notifyKeychainFailure(type: KeychainErrorType) {
+  if (keychainCryptoFailureCallback) {
+    keychainCryptoFailureCallback(type);
+  }
+}
+
+function handleKeychainReadError({
+  contextLabel,
+  error,
+  throwOnUserCancel = false,
+}: {
+  contextLabel: string;
+  error: unknown;
+  throwOnUserCancel?: boolean;
+}) {
+  if (isUserCancellation(error)) {
+    console.log(`User cancelled authentication for ${contextLabel}`);
+    notifyKeychainFailure('user_cancelled');
+
+    if (throwOnUserCancel) {
+      throw error;
+    }
+  }
+
+  if (isKeychainCryptoError(error)) {
+    const err = getKeychainErrorIdentity(error);
+    console.error(`Keychain crypto error loading ${contextLabel}:`, {
+      code: err?.code,
+      name: err?.name,
+    });
+
+    notifyKeychainFailure('crypto_failed');
+  }
+
+  console.log(`Error loading ${contextLabel}:`, error);
+}
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
@@ -447,7 +500,10 @@ export async function loadDocumentByIdDirectlyFromKeychain(
       return JSON.parse(documentCreds.password);
     }
   } catch (error) {
-    console.log(`Error loading document ${documentId}:`, error);
+    handleKeychainReadError({
+      contextLabel: `document ${documentId}`,
+      error,
+    });
   }
   return null;
 }
@@ -491,7 +547,11 @@ export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<Documen
       return parsed;
     }
   } catch (error) {
-    console.log('Error loading document catalog:', error);
+    handleKeychainReadError({
+      contextLabel: 'document catalog',
+      error,
+      throwOnUserCancel: true,
+    });
   }
 
   // Return empty catalog if none exists

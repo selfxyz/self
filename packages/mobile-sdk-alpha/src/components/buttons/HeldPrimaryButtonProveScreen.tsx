@@ -18,6 +18,7 @@ interface HeldPrimaryButtonProveScreenProps {
   onVerify: () => void;
   selectedAppSessionId: string | undefined | null;
   hasScrolledToBottom: boolean;
+  isScrollable: boolean;
   isReadyToProve: boolean;
   isDocumentExpired: boolean;
   hasCheckedForInactiveDocument: boolean;
@@ -80,7 +81,11 @@ const buttonMachine = createMachine(
           },
           {
             target: 'preparing',
-            guard: ({ context }) => context.hasScrolledToBottom,
+            guard: ({ context }) => context.hasScrolledToBottom && !context.isReadyToProve,
+          },
+          {
+            target: 'ready',
+            guard: ({ context }) => context.hasScrolledToBottom && context.isReadyToProve && !context.isDocumentExpired,
           },
         ],
       },
@@ -100,7 +105,7 @@ const buttonMachine = createMachine(
           },
         ],
         after: {
-          500: { target: 'preparing2' },
+          100: { target: 'preparing2' },
         },
       },
       preparing2: {
@@ -119,7 +124,7 @@ const buttonMachine = createMachine(
           },
         ],
         after: {
-          500: { target: 'preparing3' },
+          100: { target: 'preparing3' },
         },
       },
       preparing3: {
@@ -201,6 +206,7 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
   onVerify,
   selectedAppSessionId,
   hasScrolledToBottom,
+  isScrollable,
   isReadyToProve,
   isDocumentExpired,
   hasCheckedForInactiveDocument,
@@ -227,57 +233,42 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
     send,
   ]);
 
-  const isDisabled = !state.matches('ready') || !hasCheckedForInactiveDocument;
+  const isDisabled = (!state.matches('ready') && !state.matches('verifying')) || !hasCheckedForInactiveDocument;
+
+  const LoadingContent: React.FC<{ text: string }> = ({ text }) => (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <ActivityIndicator color={black} style={{ marginRight: 8 }} />
+      <Description color={black}>{text}</Description>
+    </View>
+  );
 
   const renderButtonContent = () => {
     if (isDocumentExpired) {
       return 'Document expired';
     }
     if (state.matches('waitingForSession')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Waiting for app...</Description>
-        </View>
-      );
+      return <LoadingContent text="Waiting for app..." />;
     }
     if (state.matches('needsScroll')) {
-      return 'Please read all disclosures';
+      if (isScrollable) {
+        return 'Scroll to read full request';
+      }
+      return <LoadingContent text="Waiting for app..." />;
     }
     if (state.matches('preparing')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Accessing to Keychain data</Description>
-        </View>
-      );
+      return <LoadingContent text="Accessing to Keychain data" />;
     }
     if (state.matches('preparing2')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Parsing passport data</Description>
-        </View>
-      );
+      return <LoadingContent text="Parsing passport data" />;
     }
     if (state.matches('preparing3')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Preparing for verification</Description>
-        </View>
-      );
+      return <LoadingContent text="Preparing for verification" />;
     }
     if (state.matches('ready')) {
-      return 'Hold to verify';
+      return 'Press and hold to verify';
     }
     if (state.matches('verifying')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Generating proof</Description>
-        </View>
-      );
+      return <LoadingContent text="Generating proof" />;
     }
     return null;
   };
