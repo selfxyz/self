@@ -289,12 +289,10 @@ describe('document processing helpers (refactor guardrail via proving store)', (
     });
 
     it('emits ALREADY_REGISTERED when already registered and sets circuitType', async () => {
-      const { loadSelectedDocument, reStorePassportDataWithRightCSCA, markCurrentDocumentAsRegistered } = await import(
-        '../../../src/documents/utils'
-      );
-      const { checkDocumentSupported, isUserRegisteredWithAlternativeCSCA } = await import(
-        '@selfxyz/common/utils/passports/validate'
-      );
+      const { loadSelectedDocument, reStorePassportDataWithRightCSCA, markCurrentDocumentAsRegistered } =
+        await import('../../../src/documents/utils');
+      const { checkDocumentSupported, isUserRegisteredWithAlternativeCSCA } =
+        await import('@selfxyz/common/utils/passports/validate');
 
       loadSelectedDocument.mockResolvedValue({
         data: { documentCategory: 'passport', mock: false },
@@ -320,9 +318,8 @@ describe('document processing helpers (refactor guardrail via proving store)', (
 
     it('emits ACCOUNT_RECOVERY_CHOICE when nullified', async () => {
       const { loadSelectedDocument } = await import('../../../src/documents/utils');
-      const { checkDocumentSupported, isUserRegisteredWithAlternativeCSCA, isDocumentNullified } = await import(
-        '@selfxyz/common/utils/passports/validate'
-      );
+      const { checkDocumentSupported, isUserRegisteredWithAlternativeCSCA, isDocumentNullified } =
+        await import('@selfxyz/common/utils/passports/validate');
 
       loadSelectedDocument.mockResolvedValue({
         data: { documentCategory: 'passport', mock: false },

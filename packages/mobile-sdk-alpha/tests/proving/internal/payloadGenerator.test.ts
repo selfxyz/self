@@ -167,7 +167,9 @@ describe('payload generator (refactor guardrail via _generatePayload)', () => {
       env: 'prod',
     });
 
-    await expect(useProvingStore.getState()._generatePayload(selfClient)).rejects.toThrow('Invalid circuit type:invalid');
+    await expect(useProvingStore.getState()._generatePayload(selfClient)).rejects.toThrow(
+      'Invalid circuit type:invalid',
+    );
   });
 
   it('uses register_id for id cards', async () => {
