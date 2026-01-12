@@ -4,8 +4,8 @@
 
 import type { SelfClient } from '../../../src';
 import * as documentUtils from '../../../src/documents/utils';
-import { useProvingStore } from '../../../src/proving/provingMachine';
 import { _startSocketIOStatusListener as startSocketIOStatusListener } from '../../../src/proving/internal/socketIOListener';
+import { useProvingStore } from '../../../src/proving/provingMachine';
 import { useProtocolStore } from '../../../src/stores/protocolStore';
 import { useSelfAppStore } from '../../../src/stores/selfAppStore';
 import { actorMock } from '../actorMock';
