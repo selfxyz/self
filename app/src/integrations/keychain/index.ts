@@ -11,9 +11,17 @@ import type {
 } from 'react-native-keychain';
 import Keychain from 'react-native-keychain';
 
+import {
+  isKeychainCryptoError,
+  isUserCancellation,
+} from '@/utils/keychainErrors';
+
 /**
- * Security configuration for keychain operations
+ * Delay helper for retry logic
  */
+async function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 export interface AdaptiveSecurityConfig {
   accessible: ACCESSIBLE;
   securityLevel?: SECURITY_LEVEL;
@@ -178,6 +186,99 @@ export async function getAdaptiveSecurityConfig(
     securityLevel,
     accessControl,
   };
+}
+
+/**
+ * Get value from keychain with automatic retry logic for recoverable errors
+ *
+ * @param service - The service name to retrieve from keychain
+ * @param options - Keychain get options
+ * @returns The credentials or false if not found
+ * @throws Only on non-recoverable errors (user cancellation, crypto failures, etc.)
+ */
+export async function getGenericPasswordWithRetry(
+  service: string,
+  options?: GetOptions,
+): Promise<
+  | false
+  | { username: string; password: string; service: string; storage: string }
+> {
+  console.log('[keychain]: getGenericPasswordWithRetry', { service });
+
+  async function _get(
+    attempts = 0,
+  ): Promise<
+    | false
+    | { username: string; password: string; service: string; storage: string }
+  > {
+    if (attempts > 0) {
+      console.log(`[keychain]: get attempt ${attempts}`, { service });
+    }
+
+    try {
+      const result = await Keychain.getGenericPassword({
+        ...options,
+        service,
+      });
+
+      return result;
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.log(`[keychain]: _get() failed`, {
+        service,
+        error: errorMessage,
+      });
+
+      // Handle specific error cases
+      if (isUserCancellation(error)) {
+        console.log('[keychain]: user canceled operation');
+        throw error;
+      }
+
+      if (isKeychainCryptoError(error)) {
+        console.error('[keychain]: crypto error, cannot recover');
+        throw error;
+      }
+
+      // Check for specific recoverable error messages
+      if (
+        errorMessage.includes(
+          'The user name or passphrase you entered is not correct',
+        ) ||
+        errorMessage.includes('Wrapped error: User not authenticated')
+      ) {
+        console.log('[keychain]: authentication error, retrying...');
+
+        if (attempts >= 2) {
+          console.error('[keychain]: max retry attempts reached');
+          throw error;
+        }
+
+        // Wait and retry
+        await delay(1000);
+        return _get(attempts + 1);
+      }
+
+      // Check for "too many attempts" error
+      if (errorMessage.includes('Too many attempts. Try again later')) {
+        console.log('[keychain]: too many attempts, cannot retry');
+        throw error;
+      }
+
+      // Check for "no fingerprints enrolled" error
+      if (errorMessage.includes('No fingerprints enrolled')) {
+        console.log('[keychain]: no fingerprints enrolled');
+        throw error;
+      }
+
+      // For any other error, throw it
+      console.error('[keychain]: unhandled error');
+      throw error;
+    }
+  }
+
+  return _get();
 }
 
 /**

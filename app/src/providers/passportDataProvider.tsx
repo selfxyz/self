@@ -65,7 +65,10 @@ import { isMRZDocument } from '@selfxyz/common/utils/types';
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import { createKeychainOptions } from '@/integrations/keychain';
+import {
+  createKeychainOptions,
+  getGenericPasswordWithRetry,
+} from '@/integrations/keychain';
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
 import type { KeychainErrorType } from '@/utils/keychainErrors';
 import {
@@ -493,9 +496,9 @@ export async function loadDocumentByIdDirectlyFromKeychain(
       return null;
     }
 
-    const documentCreds = await Keychain.getGenericPassword({
-      service: `document-${documentId}`,
-    });
+    const documentCreds = await getGenericPasswordWithRetry(
+      `document-${documentId}`,
+    );
     if (documentCreds !== false) {
       return JSON.parse(documentCreds.password);
     }
@@ -532,9 +535,8 @@ export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<Documen
       return { documents: [] };
     }
 
-    const catalogCreds = await Keychain.getGenericPassword({
-      service: 'documentCatalog',
-    });
+    const catalogCreds = await getGenericPasswordWithRetry('documentCatalog');
+    //TODO-seshanth: check this as getGenericPasswordWithRetry() might throw without returning false
     if (catalogCreds !== false) {
       const parsed = JSON.parse(catalogCreds.password);
       // Handle case where JSON.parse(null) returns null
@@ -582,7 +584,8 @@ export async function loadPassportData() {
       'mockIdCardData',
     ];
     for (const service of services) {
-      const passportDataCreds = await Keychain.getGenericPassword({ service });
+      const passportDataCreds = await getGenericPasswordWithRetry(service);
+      //TODO-seshanth: check this as getGenericPasswordWithRetry() might throw without returning false
       if (passportDataCreds !== false) {
         // Migrate this document
         const passportData: PassportData = JSON.parse(
@@ -741,7 +744,8 @@ export async function migrateFromLegacyStorage(): Promise<void> {
   ];
   for (const service of legacyServices) {
     try {
-      const passportDataCreds = await Keychain.getGenericPassword({ service });
+      const passportDataCreds = await getGenericPasswordWithRetry(service);
+      //TODO-seshanth: check this as getGenericPasswordWithRetry() might throw without returning false
       if (passportDataCreds !== false) {
         const passportData: PassportData = JSON.parse(
           passportDataCreds.password,

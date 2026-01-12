@@ -30,6 +30,7 @@ import { loadingScreenProgress } from '@/integrations/haptics';
 import { getLoadingScreenText } from '@/proving/loadingScreenStateText';
 import { setupNotifications } from '@/services/notifications/notificationService';
 import { useSettingStore } from '@/stores/settingStore';
+import { isUserCancellation } from '@/utils/keychainErrors';
 
 type LoadingScreenParams = {
   documentCategory?: DocumentCategory;
@@ -107,8 +108,14 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
         } else {
           await init(selfClient, 'dsc', true);
         }
-      } catch {
+      } catch (error) {
         console.error('Error loading selected document:');
+
+        // Don't retry if user cancelled because we are already retrying in keychain.ts
+        if (isUserCancellation(error)) {
+          return;
+        }
+
         await init(selfClient, 'dsc', true);
       } finally {
         setIsInitializing(false);

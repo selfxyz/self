@@ -21,6 +21,7 @@ import type { GetSecureOptions } from '@/integrations/keychain';
 import {
   createKeychainOptions,
   detectSecurityCapabilities,
+  getGenericPasswordWithRetry,
 } from '@/integrations/keychain';
 import { trackEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
@@ -159,14 +160,16 @@ let keychainCryptoFailureCallback:
 async function loadOrCreateMnemonic(
   keychainOptions: KeychainOptions,
 ): Promise<string | false> {
+  console.log('loadOrCreateMnemonic', keychainOptions);
   // Get adaptive security configuration
   const { setOptions, getOptions } = keychainOptions;
 
   try {
-    const storedMnemonic = await Keychain.getGenericPassword({
-      ...getOptions,
-      service: SERVICE_NAME,
-    });
+    const storedMnemonic = await getGenericPasswordWithRetry(
+      SERVICE_NAME,
+      getOptions,
+    );
+
     if (storedMnemonic) {
       try {
         JSON.parse(storedMnemonic.password);
@@ -419,7 +422,8 @@ export function getPrivateKeyFromMnemonic(mnemonic: string) {
 }
 
 export async function hasSecretStored() {
-  const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
+  const seed = await getGenericPasswordWithRetry(SERVICE_NAME);
+  //TODO-seshanth: check this as getGenericPasswordWithRetry() might throw without returning false
   return !!seed;
 }
 
@@ -434,10 +438,8 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
     }
 
     // we try to get with old settings (no accessControl)
-    const existingMnemonic = await Keychain.getGenericPassword({
-      service: SERVICE_NAME,
-    });
-
+    const existingMnemonic = await getGenericPasswordWithRetry(SERVICE_NAME);
+    //TODO-seshanth: check this as getGenericPasswordWithRetry() might throw without returning false
     if (!existingMnemonic) {
       setKeychainMigrationCompleted();
       return false;
