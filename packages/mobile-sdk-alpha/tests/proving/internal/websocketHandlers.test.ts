@@ -73,7 +73,7 @@ describe('websocket handlers (refactor guardrail via proving store)', () => {
     getProvingState: () => useProvingStore.getState(),
     getProtocolState: () => useProtocolStore.getState(),
   } as unknown as SelfClient;
-  let loadSelectedDocumentSpy: ReturnType<typeof vitest.spyOn>;
+  let loadSelectedDocumentSpy: any;
 
   beforeEach(() => {
     vitest.clearAllMocks();

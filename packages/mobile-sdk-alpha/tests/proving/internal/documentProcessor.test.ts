@@ -101,14 +101,14 @@ describe('document processing helpers (refactor guardrail via proving store)', (
       const { loadSelectedDocument, storePassportData } = await import('../../../src/documents/utils');
       const { initPassportDataParsing } = await import('@selfxyz/common/utils');
 
-      loadSelectedDocument.mockResolvedValue({
-        data: { documentCategory: 'passport', mock: false },
-      });
+      vi.mocked(loadSelectedDocument).mockResolvedValue({
+        data: { documentCategory: 'passport', mock: false } as any,
+      } as any);
 
-      initPassportDataParsing.mockReturnValue({
+      vi.mocked(initPassportDataParsing).mockReturnValue({
         documentCategory: 'passport',
         passportMetadata: {
-          dataGroups: [],
+          dataGroups: '',
           dg1Size: 1,
           dg1HashSize: 2,
           dg1HashFunction: 'sha256',
@@ -130,8 +130,8 @@ describe('document processing helpers (refactor guardrail via proving store)', (
           cscaSaltLength: 0,
           cscaCurveOrExponent: 'exp',
           cscaSignatureAlgorithmBits: 2048,
-        },
-      });
+        } as any,
+      } as any);
 
       await useProvingStore.getState().init(mockSelfClient, 'dsc');
       useProvingStore.setState({
@@ -151,9 +151,9 @@ describe('document processing helpers (refactor guardrail via proving store)', (
     it('emits PARSE_ERROR when passport data is missing', async () => {
       const { loadSelectedDocument } = await import('../../../src/documents/utils');
 
-      loadSelectedDocument.mockResolvedValue({
-        data: { documentCategory: 'passport', mock: false },
-      });
+      vi.mocked(loadSelectedDocument).mockResolvedValue({
+        data: { documentCategory: 'passport', mock: false } as any,
+      } as any);
 
       await useProvingStore.getState().init(mockSelfClient, 'dsc');
       useProvingStore.setState({ passportData: null });
@@ -167,10 +167,10 @@ describe('document processing helpers (refactor guardrail via proving store)', (
       const { loadSelectedDocument } = await import('../../../src/documents/utils');
       const { initPassportDataParsing } = await import('@selfxyz/common/utils');
 
-      loadSelectedDocument.mockResolvedValue({
-        data: { documentCategory: 'passport', mock: false },
-      });
-      initPassportDataParsing.mockReturnValue(null);
+      vi.mocked(loadSelectedDocument).mockResolvedValue({
+        data: { documentCategory: 'passport', mock: false } as any,
+      } as any);
+      vi.mocked(initPassportDataParsing).mockReturnValue(null as any);
 
       await useProvingStore.getState().init(mockSelfClient, 'dsc');
       useProvingStore.setState({
@@ -188,9 +188,9 @@ describe('document processing helpers (refactor guardrail via proving store)', (
     it('emits FETCH_ERROR when dsc_parsed is missing', async () => {
       const { loadSelectedDocument } = await import('../../../src/documents/utils');
 
-      loadSelectedDocument.mockResolvedValue({
-        data: { documentCategory: 'passport', mock: false },
-      });
+      vi.mocked(loadSelectedDocument).mockResolvedValue({
+        data: { documentCategory: 'passport', mock: false } as any,
+      } as any);
 
       await useProvingStore.getState().init(mockSelfClient, 'register');
       useProvingStore.setState({
@@ -207,9 +207,9 @@ describe('document processing helpers (refactor guardrail via proving store)', (
       const { fetchAllTreesAndCircuits } = await import('../../../src/stores');
       const { loadSelectedDocument } = await import('../../../src/documents/utils');
 
-      loadSelectedDocument.mockResolvedValue({
-        data: { documentCategory: 'passport', mock: false, dsc_parsed: { authorityKeyIdentifier: 'aki' } },
-      });
+      vi.mocked(loadSelectedDocument).mockResolvedValue({
+        data: { documentCategory: 'passport', mock: false, dsc_parsed: { authorityKeyIdentifier: 'aki' } as any },
+      } as any);
 
       await useProvingStore.getState().init(mockSelfClient, 'register');
       useProvingStore.setState({
@@ -226,9 +226,9 @@ describe('document processing helpers (refactor guardrail via proving store)', (
     it('fetches protocol data for aadhaar and emits FETCH_SUCCESS', async () => {
       const { loadSelectedDocument } = await import('../../../src/documents/utils');
 
-      loadSelectedDocument.mockResolvedValue({
-        data: { documentCategory: 'aadhaar', mock: false },
-      });
+      vi.mocked(loadSelectedDocument).mockResolvedValue({
+        data: { documentCategory: 'aadhaar', mock: false } as any,
+      } as any);
 
       await useProvingStore.getState().init(mockSelfClient, 'register');
       useProvingStore.setState({
@@ -248,10 +248,13 @@ describe('document processing helpers (refactor guardrail via proving store)', (
       const { loadSelectedDocument, clearPassportData } = await import('../../../src/documents/utils');
       const { checkDocumentSupported } = await import('@selfxyz/common/utils/passports/validate');
 
-      loadSelectedDocument.mockResolvedValue({
-        data: { documentCategory: 'passport', mock: false },
+      vi.mocked(loadSelectedDocument).mockResolvedValue({
+        data: { documentCategory: 'passport', mock: false } as any,
+      } as any);
+      vi.mocked(checkDocumentSupported).mockResolvedValue({
+        status: 'passport_not_supported' as any,
+        details: 'unsupported',
       });
-      checkDocumentSupported.mockResolvedValue({ status: 'passport_not_supported', details: 'unsupported' });
 
       await useProvingStore.getState().init(mockSelfClient, 'register');
       useProvingStore.setState({
@@ -270,11 +273,11 @@ describe('document processing helpers (refactor guardrail via proving store)', (
       const { loadSelectedDocument } = await import('../../../src/documents/utils');
       const { checkDocumentSupported, isUserRegistered } = await import('@selfxyz/common/utils/passports/validate');
 
-      loadSelectedDocument.mockResolvedValue({
-        data: { documentCategory: 'passport', mock: false },
-      });
-      checkDocumentSupported.mockResolvedValue({ status: 'passport_supported' });
-      isUserRegistered.mockResolvedValue(false);
+      vi.mocked(loadSelectedDocument).mockResolvedValue({
+        data: { documentCategory: 'passport', mock: false } as any,
+      } as any);
+      vi.mocked(checkDocumentSupported).mockResolvedValue({ status: 'passport_supported', details: '' });
+      vi.mocked(isUserRegistered).mockResolvedValue(false);
 
       await useProvingStore.getState().init(mockSelfClient, 'disclose');
       useProvingStore.setState({
@@ -294,11 +297,11 @@ describe('document processing helpers (refactor guardrail via proving store)', (
       const { checkDocumentSupported, isUserRegisteredWithAlternativeCSCA } =
         await import('@selfxyz/common/utils/passports/validate');
 
-      loadSelectedDocument.mockResolvedValue({
-        data: { documentCategory: 'passport', mock: false },
-      });
-      checkDocumentSupported.mockResolvedValue({ status: 'passport_supported' });
-      isUserRegisteredWithAlternativeCSCA.mockResolvedValue({ isRegistered: true, csca: 'csca' });
+      vi.mocked(loadSelectedDocument).mockResolvedValue({
+        data: { documentCategory: 'passport', mock: false } as any,
+      } as any);
+      vi.mocked(checkDocumentSupported).mockResolvedValue({ status: 'passport_supported', details: '' });
+      vi.mocked(isUserRegisteredWithAlternativeCSCA).mockResolvedValue({ isRegistered: true, csca: 'csca' });
 
       await useProvingStore.getState().init(mockSelfClient, 'register');
       useProvingStore.setState({
@@ -321,12 +324,12 @@ describe('document processing helpers (refactor guardrail via proving store)', (
       const { checkDocumentSupported, isUserRegisteredWithAlternativeCSCA, isDocumentNullified } =
         await import('@selfxyz/common/utils/passports/validate');
 
-      loadSelectedDocument.mockResolvedValue({
-        data: { documentCategory: 'passport', mock: false },
-      });
-      checkDocumentSupported.mockResolvedValue({ status: 'passport_supported' });
-      isUserRegisteredWithAlternativeCSCA.mockResolvedValue({ isRegistered: false });
-      isDocumentNullified.mockResolvedValue(true);
+      vi.mocked(loadSelectedDocument).mockResolvedValue({
+        data: { documentCategory: 'passport', mock: false } as any,
+      } as any);
+      vi.mocked(checkDocumentSupported).mockResolvedValue({ status: 'passport_supported', details: '' });
+      vi.mocked(isUserRegisteredWithAlternativeCSCA).mockResolvedValue({ isRegistered: false, csca: null });
+      vi.mocked(isDocumentNullified).mockResolvedValue(true);
 
       await useProvingStore.getState().init(mockSelfClient, 'register');
       useProvingStore.setState({
@@ -349,13 +352,13 @@ describe('document processing helpers (refactor guardrail via proving store)', (
         checkIfPassportDscIsInTree,
       } = await import('@selfxyz/common/utils/passports/validate');
 
-      loadSelectedDocument.mockResolvedValue({
-        data: { documentCategory: 'passport', mock: false },
-      });
-      checkDocumentSupported.mockResolvedValue({ status: 'passport_supported' });
-      isUserRegisteredWithAlternativeCSCA.mockResolvedValue({ isRegistered: false });
-      isDocumentNullified.mockResolvedValue(false);
-      checkIfPassportDscIsInTree.mockResolvedValue(true);
+      vi.mocked(loadSelectedDocument).mockResolvedValue({
+        data: { documentCategory: 'passport', mock: false } as any,
+      } as any);
+      vi.mocked(checkDocumentSupported).mockResolvedValue({ status: 'passport_supported', details: '' });
+      vi.mocked(isUserRegisteredWithAlternativeCSCA).mockResolvedValue({ isRegistered: false, csca: null });
+      vi.mocked(isDocumentNullified).mockResolvedValue(false);
+      vi.mocked(checkIfPassportDscIsInTree).mockResolvedValue(true);
 
       await useProvingStore.getState().init(mockSelfClient, 'dsc');
       useProvingStore.setState({

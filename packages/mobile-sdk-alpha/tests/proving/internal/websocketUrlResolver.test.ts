@@ -41,7 +41,7 @@ describe('websocket URL resolution (refactor guardrail via initTeeConnection)', 
     addEventListener: wsAddEventListener,
     send: wsSend,
   }));
-  let loadSelectedDocumentSpy: ReturnType<typeof vitest.spyOn>;
+  let loadSelectedDocumentSpy: any;
 
   const makeSelfClient = (): SelfClient =>
     ({
