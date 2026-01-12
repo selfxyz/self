@@ -6,7 +6,6 @@ import { EventEmitter } from 'events';
 import type { Socket } from 'socket.io-client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as statusHandlers from '../../../src/proving/internal/statusHandlers';
 import { useProvingStore } from '../../../src/proving/provingMachine';
 import { actorMock } from '../actorMock';
 
@@ -125,15 +124,6 @@ describe('Socket.IO status handler wiring', () => {
   });
 
   it('applies success updates and emits PROVE_SUCCESS', async () => {
-    vi.spyOn(statusHandlers, 'parseStatusMessage').mockReturnValue({ status: 4 });
-    vi.spyOn(statusHandlers, 'handleStatusCode').mockReturnValue({
-      shouldDisconnect: true,
-      stateUpdate: {
-        socketConnection: null,
-      },
-      actorEvent: { type: 'PROVE_SUCCESS' },
-    });
-
     const store = useProvingStore.getState();
     store._startSocketIOStatusListener('test-uuid', 'https', mockSelfClient);
 
@@ -147,27 +137,16 @@ describe('Socket.IO status handler wiring', () => {
   });
 
   it('applies failure updates and emits PROVE_FAILURE', async () => {
-    vi.spyOn(statusHandlers, 'parseStatusMessage').mockReturnValue({
-      status: 5,
-      error_code: 'E001',
-      reason: 'TEE failed',
-    });
-    vi.spyOn(statusHandlers, 'handleStatusCode').mockReturnValue({
-      shouldDisconnect: true,
-      stateUpdate: {
-        error_code: 'E001',
-        reason: 'TEE failed',
-        socketConnection: null,
-      },
-      actorEvent: { type: 'PROVE_FAILURE' },
-    });
-
     const store = useProvingStore.getState();
     store._startSocketIOStatusListener('test-uuid', 'https', mockSelfClient);
 
     await new Promise(resolve => setImmediate(resolve));
 
-    (mockSocket as any).emit('status', { status: 5 });
+    (mockSocket as any).emit('status', {
+      status: 5,
+      error_code: 'E001',
+      reason: 'TEE failed',
+    });
 
     const finalState = useProvingStore.getState();
     expect(finalState.error_code).toBe('E001');
@@ -177,16 +156,12 @@ describe('Socket.IO status handler wiring', () => {
   });
 
   it('emits PROVE_ERROR without updating state for retryable errors', async () => {
-    vi.spyOn(statusHandlers, 'parseStatusMessage').mockImplementation(() => {
-      throw new Error('Transient failure');
-    });
-
     const store = useProvingStore.getState();
     store._startSocketIOStatusListener('test-uuid', 'https', mockSelfClient);
 
     await new Promise(resolve => setImmediate(resolve));
 
-    (mockSocket as any).emit('status', { status: 2 });
+    (mockSocket as any).emit('status', '{"invalid": json}');
 
     const finalState = useProvingStore.getState();
     expect(finalState.socketConnection).toBe(mockSocket);
