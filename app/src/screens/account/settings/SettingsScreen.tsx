@@ -107,10 +107,10 @@ const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption][] = [
 ];
 
 const DOCUMENT_DEPENDENT_ROUTES: RouteOption[] = [
-  'CloudBackupSettings',
   'DocumentDataInfo',
   'ShowRecoveryPhrase',
 ];
+const CLOUD_BACKUP_ROUTE: RouteOption = 'CloudBackupSettings';
 
 const social = [
   [X, xUrl],
@@ -193,10 +193,20 @@ const SettingsScreen: React.FC = () => {
       return baseRoutes;
     }
 
+    const shouldHideCloudBackup = Platform.OS === 'android';
+
     // Only filter out document-related routes if we've confirmed user has no real documents
-    return baseRoutes.filter(
-      ([, , route]) => !DOCUMENT_DEPENDENT_ROUTES.includes(route),
-    );
+    return baseRoutes.filter(([, , route]) => {
+      if (DOCUMENT_DEPENDENT_ROUTES.includes(route)) {
+        return false;
+      }
+
+      if (shouldHideCloudBackup && route === CLOUD_BACKUP_ROUTE) {
+        return false;
+      }
+
+      return true;
+    });
   }, [hasRealDocument, isDevMode]);
 
   const devModeTap = Gesture.Tap()
