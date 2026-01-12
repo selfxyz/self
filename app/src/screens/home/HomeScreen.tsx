@@ -282,8 +282,6 @@ const HomeScreen: React.FC = () => {
               return null;
             }
 
-            // const isInactive = await isDocumentInactive(selfClient, documentData.data, secret);
-
             return (
               <Pressable
                 key={metadata.id}
