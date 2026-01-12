@@ -19,6 +19,9 @@ export const cyan300 = '#67E8F9';
 export const emerald500 = '#10B981';
 
 export const green500 = '#22C55E';
+export const green600 = '#16A34A';
+
+export const iosSeparator = 'rgba(60,60,67,0.36)';
 
 export const neutral400 = '#A3A3A3';
 

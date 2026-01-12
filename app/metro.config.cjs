@@ -34,9 +34,8 @@ const config = {
   ],
 
   transformer: {
-    babelTransformerPath: require.resolve(
-      'react-native-svg-transformer/react-native',
-    ),
+    babelTransformerPath:
+      require.resolve('react-native-svg-transformer/react-native'),
     disableImportExportTransform: true,
     inlineRequires: true,
   },
@@ -410,6 +409,7 @@ const config = {
         'react-native-reanimated',
         '@react-native-masked-view/masked-view',
         '@react-native-firebase/analytics',
+        'react-native-b4a',
       ];
 
       if (optionalPeerDependencies.includes(moduleName)) {

@@ -27,25 +27,38 @@ export const useFeedbackModal = () => {
       timeoutRef.current = null;
     }
 
-    switch (type) {
-      case 'button':
-        showFeedbackButton();
-        break;
-      case 'widget':
-        showFeedbackWidget();
-        break;
-      case 'custom':
-        setIsVisible(true);
-        break;
-      default:
-        showFeedbackButton();
+    try {
+      switch (type) {
+        case 'button':
+          showFeedbackButton();
+          break;
+        case 'widget':
+          showFeedbackWidget();
+          break;
+        case 'custom':
+          setIsVisible(true);
+          break;
+        default:
+          showFeedbackButton();
+      }
+    } catch (error) {
+      if (__DEV__) {
+        console.debug('Failed to show feedback button/widget:', error);
+      }
+      setIsVisible(true);
     }
 
     // we can close the feedback modals(sentry and custom modals), but can't do so for the Feedback button.
     // This hides the button after 10 seconds.
     if (type === 'button') {
       timeoutRef.current = setTimeout(() => {
-        hideFeedbackButton();
+        try {
+          hideFeedbackButton();
+        } catch (error) {
+          if (__DEV__) {
+            console.debug('Failed to hide feedback button:', error);
+          }
+        }
         timeoutRef.current = null;
       }, 10000);
     }
@@ -57,7 +70,13 @@ export const useFeedbackModal = () => {
       timeoutRef.current = null;
     }
 
-    hideFeedbackButton();
+    try {
+      hideFeedbackButton();
+    } catch (error) {
+      if (__DEV__) {
+        console.debug('Failed to hide feedback button:', error);
+      }
+    }
 
     setIsVisible(false);
   }, []);

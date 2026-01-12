@@ -11,6 +11,7 @@ declare module 'react-native-passport-reader' {
     useCan: boolean;
     quality?: number;
     sessionId?: string;
+    skipReselect?: boolean;
   }
 
   interface PassportReader {

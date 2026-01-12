@@ -16,6 +16,7 @@ type ScanOptions = {
   usePacePolling?: boolean;
   sessionId?: string;
   quality?: number;
+  skipReselect?: boolean;
 };
 
 export interface AndroidScanResponse {
@@ -91,6 +92,8 @@ if (Platform.OS === 'android') {
           canNumber = '',
           useCan = false,
           quality = 1,
+          skipReselect = false,
+          sessionId,
         } = options;
 
         return androidScan({
@@ -100,6 +103,8 @@ if (Platform.OS === 'android') {
           canNumber,
           useCan,
           quality,
+          skipReselect,
+          sessionId,
         });
       };
     }

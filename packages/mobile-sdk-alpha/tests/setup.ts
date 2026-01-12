@@ -7,6 +7,8 @@
  * Reduces console noise during testing and mocks React Native modules
  */
 
+import { createElement } from 'react';
+
 const originalConsole = {
   warn: console.warn,
   error: console.error,
@@ -48,10 +50,22 @@ vi.mock('react-native', () => ({
   requireNativeComponent: vi.fn(() => 'div'),
   StyleSheet: {
     create: vi.fn(styles => styles),
+    flatten: vi.fn(style => {
+      if (!style) return {};
+      if (Array.isArray(style)) {
+        return style.reduce((acc, s) => ({ ...acc, ...s }), {});
+      }
+      return style;
+    }),
   },
   Image: 'div',
   Text: 'span',
   View: 'div',
+  Pressable: vi.fn(({ children, style, ...props }) => {
+    // Handle style as function (for pressed state)
+    const computedStyle = typeof style === 'function' ? style({ pressed: false }) : style;
+    return createElement('button', { ...props, style: computedStyle }, children);
+  }),
   TouchableOpacity: 'button',
   ScrollView: 'div',
   FlatList: 'div',

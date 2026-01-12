@@ -94,10 +94,9 @@ describe('Logging Service - Severity Updates', () => {
     });
   });
 
-  it('should update severity on root logger and all extended loggers when settings change', async () => {
+  it('should update severity on root logger when settings change', async () => {
     // Clear any calls from initialization
     mockRootSetSeverity.mockClear();
-    mockLoggerInstances.forEach(logger => logger.setSeverity.mockClear());
 
     // Change the logging severity in the store
     useSettingStore.getState().setLoggingSeverity('debug');
@@ -106,30 +105,21 @@ describe('Logging Service - Severity Updates', () => {
     await new Promise(resolve => setTimeout(resolve, 10));
 
     // Verify root logger was updated
+    // Extended loggers inherit severity from root logger automatically
     expect(mockRootSetSeverity).toHaveBeenCalledTimes(1);
     expect(mockRootSetSeverity).toHaveBeenCalledWith('debug');
-
-    // Verify each extended logger was updated
-    mockLoggerInstances.forEach(logger => {
-      expect(logger.setSeverity).toHaveBeenCalledTimes(1);
-      expect(logger.setSeverity).toHaveBeenCalledWith('debug');
-    });
   });
 
-  it('should update each specific extended logger individually', async () => {
+  it('should update root logger severity which extends to all loggers', async () => {
     mockRootSetSeverity.mockClear();
-    mockLoggerInstances.forEach(logger => logger.setSeverity.mockClear());
 
     useSettingStore.getState().setLoggingSeverity('info');
     await new Promise(resolve => setTimeout(resolve, 10));
 
-    // Verify specific loggers by name
-    const specificLoggers = ['APP', 'NFC', 'PASSPORT', 'PROOF'];
-    specificLoggers.forEach(loggerName => {
-      const logger = mockLoggerInstances.get(loggerName);
-      expect(logger).toBeDefined();
-      expect(logger?.setSeverity).toHaveBeenCalledWith('info');
-    });
+    // Verify root logger was updated
+    // Extended loggers (APP, NFC, PASSPORT, PROOF, etc.) inherit from root
+    expect(mockRootSetSeverity).toHaveBeenCalledTimes(1);
+    expect(mockRootSetSeverity).toHaveBeenCalledWith('info');
   });
 
   it('should update severity for all severity levels', async () => {
@@ -142,24 +132,18 @@ describe('Logging Service - Severity Updates', () => {
 
     for (const level of severityLevels) {
       mockRootSetSeverity.mockClear();
-      mockLoggerInstances.forEach(logger => logger.setSeverity.mockClear());
 
       useSettingStore.getState().setLoggingSeverity(level);
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      // Verify root logger
+      // Verify root logger was updated
+      // Extended loggers inherit severity from root automatically
       expect(mockRootSetSeverity).toHaveBeenCalledWith(level);
-
-      // Verify all extended loggers
-      mockLoggerInstances.forEach(logger => {
-        expect(logger.setSeverity).toHaveBeenCalledWith(level);
-      });
     }
   });
 
   it('should not call setSeverity if severity has not changed', async () => {
     mockRootSetSeverity.mockClear();
-    mockLoggerInstances.forEach(logger => logger.setSeverity.mockClear());
 
     // Get current severity
     const currentSeverity = useSettingStore.getState().loggingSeverity;
@@ -171,16 +155,10 @@ describe('Logging Service - Severity Updates', () => {
 
     // Should not call setSeverity on root logger
     expect(mockRootSetSeverity).not.toHaveBeenCalled();
-
-    // Should not call setSeverity on any extended logger
-    mockLoggerInstances.forEach(logger => {
-      expect(logger.setSeverity).not.toHaveBeenCalled();
-    });
   });
 
   it('should handle rapid severity changes correctly', async () => {
     mockRootSetSeverity.mockClear();
-    mockLoggerInstances.forEach(logger => logger.setSeverity.mockClear());
 
     // Rapidly change severity multiple times
     useSettingStore.getState().setLoggingSeverity('debug');
@@ -192,15 +170,10 @@ describe('Logging Service - Severity Updates', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Should have been called 4 times (once per change)
+    // Extended loggers inherit severity from root automatically
     expect(mockRootSetSeverity).toHaveBeenCalledTimes(4);
 
     // The last call should be 'error'
     expect(mockRootSetSeverity).toHaveBeenLastCalledWith('error');
-
-    // Each extended logger should also have been called 4 times
-    mockLoggerInstances.forEach(logger => {
-      expect(logger.setSeverity).toHaveBeenCalledTimes(4);
-      expect(logger.setSeverity).toHaveBeenLastCalledWith('error');
-    });
   });
 });

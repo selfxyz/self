@@ -12,7 +12,7 @@ import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Bug, FileText } from '@tamagui/lucide-icons';
+import { Bug, FileText, Settings2 } from '@tamagui/lucide-icons';
 
 import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
 import {
@@ -78,6 +78,7 @@ const routes =
         [Data, 'View document info', 'DocumentDataInfo'],
         [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
         [Cloud, 'Cloud backup', 'CloudBackupSettings'],
+        [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
         [Feedback, 'Send feedback', 'email_feedback'],
         [ShareIcon, 'Share Self app', 'share'],
         [
@@ -88,6 +89,7 @@ const routes =
       ] satisfies [React.FC<SvgProps>, string, RouteOption][])
     : ([
         [Data, 'View document info', 'DocumentDataInfo'],
+        [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
         [Feedback, 'Send feeback', 'email_feedback'],
         [
           FileText as React.FC<SvgProps>,

@@ -27,9 +27,7 @@ import {
   storePassportData,
   updateDocumentRegistrationState,
 } from '@/providers/passportDataProvider';
-import analytics from '@/services/analytics';
-
-const { trackEvent } = analytics();
+import { trackEvent } from '@/services/analytics';
 
 /**
  * This function checks and updates registration states for all documents and updates the `isRegistered`.

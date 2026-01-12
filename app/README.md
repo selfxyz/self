@@ -1,32 +1,80 @@
 # Self.xyz Mobile App
 
+## Quick Start
+
+Run the interactive setup script to check and install all dependencies:
+
+```bash
+./scripts/setup-macos.sh
+```
+
+The script will prompt you to choose between:
+1. **Check only** - Just show what's installed/missing
+2. **Interactive setup** - Check and confirm before installing (recommended)
+3. **Auto-install** - Install everything without prompts
+
+You can also pass flags directly: `--check-only` or `--yes`
+
 ## Requirements
 
-| Requirement | Version  | Installation Guide                                                       |
-| ----------- | -------- | ------------------------------------------------------------------------ |
-| nodejs      | >= 22    | [Install nodejs](https://nodejs.org/)                                    |
-| ruby        | >= 3.1.0 | [Install ruby](https://www.ruby-lang.org/en/documentation/installation/) |
-| circom      | Latest   | [Install circom](https://docs.circom.io/)                                |
-| snarkjs     | Latest   | [Install snarkjs](https://github.com/iden3/snarkjs)                      |
-| watchman    | Latest   | [Install watchman](https://facebook.github.io/watchman/)                 |
+### macOS Setup
 
-### Android
+#### Core Dependencies
 
-| Requirement                 | Version       | Installation Guide                                                                   |
-| --------------------------- | ------------- | ------------------------------------------------------------------------------------ |
-| Java                        | 17            | [Install Java](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html) |
-| Android Studio (Optional)\* | Latest        | [Install Android Studio](https://developer.android.com/studio)                       |
-| Android SDK                 | Latest        | See instructions for Android below                                                   |
-| Android NDK                 | 27.0.12077973 | See instructions for Android below                                                   |
+```bash
+# Node.js 22+ (via nvm)
+nvm install 22
+nvm use 22
 
-\* To facilitate the installation of the SDK and the NDK, and to pair with development devices with a conventient QR code, you can use Android Studio.
+# Watchman
+brew install watchman
 
-### iOS
+# Ruby (via rbenv) - version specified in .ruby-version
+brew install rbenv
+echo 'eval "$(rbenv init -)"' >> ~/.zshrc
+source ~/.zshrc
+rbenv install   # Reads version from .ruby-version
+rbenv rehash
 
-| Requirement | Version | Installation Guide                                  |
-| ----------- | ------- | --------------------------------------------------- |
-| Xcode       | Latest  | [Install Xcode](https://developer.apple.com/xcode/) |
-| cocoapods   | Latest  | [Install cocoapods](https://cocoapods.org/)         |
+# Ruby gems
+gem install cocoapods bundler
+
+# circom and snarkjs (for ZK circuits)
+# Follow: https://docs.circom.io/ and https://github.com/iden3/snarkjs
+```
+
+#### Android Dependencies
+
+```bash
+# Java 17
+brew install openjdk@17
+```
+
+Then install [Android Studio](https://developer.android.com/studio) and configure SDK/NDK (see [Android Setup](#android) below).
+
+#### iOS Dependencies
+
+Install [Xcode](https://developer.apple.com/xcode/) from the App Store (includes Command Line Tools).
+
+### Shell Configuration
+
+Add the following to your `~/.zshrc` (or `~/.bashrc`):
+
+```bash
+# Java
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+
+# Android
+export ANDROID_HOME=~/Library/Android/sdk
+export ANDROID_SDK_ROOT=$ANDROID_HOME
+export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools
+```
+
+Then reload your shell:
+
+```bash
+source ~/.zshrc
+```
 
 ## Installation
 
@@ -54,47 +102,41 @@ and rerun the command.
 
 ### Android
 
-#### Using Android Studio
+#### Using Android Studio (Recommended)
 
-In Android Studio, go to **Tools** > **SDK Manager** in the menu
+1. Download and install [Android Studio](https://developer.android.com/studio)
+2. Open Android Studio → **Settings** (or **Preferences** on macOS) → **SDK Manager**
+3. Under **SDK Platforms**, install the platform with the highest API number
+4. Under **SDK Tools**, check **Show Package Details**, expand **NDK (Side by side)**, select version **27.0.12077973** and install
+5. Enable **USB debugging** on your Android device (Settings → Developer options → USB debugging)
 
-Under **SDK Platforms**, install the platform with the highest API number
+#### Using sdkmanager via CLI (Alternative)
 
-Under **SDK Tools**, check the **Show Package Details** checkbox, expand **NDK (Side by side)**, select version **27.0.12077973** and install.
+If you prefer not to use Android Studio, you can install the SDK via command line:
 
-#### Using sdkmanager via CLI
-
-Create a directory for the Android SDK. For example `~/android_sdk`. Define the environment variable `ANDROID_HOME` to point that directory.
-
-Install sdkmanager under `ANDROID_HOME` according to the instructions on https://developer.android.com/tools/sdkmanager
-
-List available SDK platforms
+1. Create a directory for the Android SDK (e.g., `~/android_sdk`) and set `ANDROID_HOME` to point to it
+2. Install sdkmanager according to the [official instructions](https://developer.android.com/tools/sdkmanager)
 
 ```bash
+# List available SDK platforms
 $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list | grep platforms
-```
 
-In the list of platforms, find the latest version and install it. (Replace _NN_ with the latest version number)
-
-```bash
+# Install the latest platform (replace NN with version number)
 $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-NN"
-```
 
-Install the NDK
-
-```bash
+# Install the NDK
 $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.12077973"
-```
 
-Define the environment variable `ANDROID_NDK_VERSION` to `27.0.12077973` and `ANDROID_NDK` to `$ANDROID_HOME/ndk/27.0.12077973`
-
-Install Platform Tools, needed for the `adb` tool
-
-```bash
+# Install Platform Tools (for adb)
 $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install platform-tools
 ```
 
-Add `$ANDROID_HOME/platform-tools` to your `$PATH` variable
+Set additional environment variables:
+
+```bash
+export ANDROID_NDK_VERSION=27.0.12077973
+export ANDROID_NDK=$ANDROID_HOME/ndk/27.0.12077973
+```
 
 ## Run the app
 
@@ -149,13 +191,14 @@ To view the Android logs, use the Logcat feature in Android Studio, or use the `
 > :warning: To run the app on iOS, you will need a paying Apple Developer account. Free accounts can't run apps that use NFC reading.<br/>
 > Contact us if you need it to contribute.
 
-Open the ios project on Xcode and add your provisioning profile in Targets > OpenPassport > Signing and Capabilities
+Open the ios project in Xcode and add your provisioning profile in Targets > OpenPassport > Signing and Capabilities.
 
-Then, install pods:
+Then, install Ruby dependencies and CocoaPods:
 
-```
+```bash
 cd ios
-pod install
+bundle install
+bundle exec pod install
 ```
 
 And run the app in Xcode.

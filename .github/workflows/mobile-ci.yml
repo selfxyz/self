@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -58,8 +58,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Enable Corepack
         run: corepack enable
-      - name: Activate Yarn 4.6.0
-        run: corepack prepare yarn@4.6.0 --activate
+      - name: Activate Yarn 4.12.0
+        run: corepack prepare yarn@4.12.0 --activate
       - name: Cache Yarn
         uses: ./.github/actions/cache-yarn
         with:
@@ -96,7 +96,7 @@ jobs:
     needs: build-deps
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -116,8 +116,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Enable Corepack
         run: corepack enable
-      - name: Activate Yarn 4.6.0
-        run: corepack prepare yarn@4.6.0 --activate
+      - name: Activate Yarn 4.12.0
+        run: corepack prepare yarn@4.12.0 --activate
       - name: Cache Yarn
         uses: ./.github/actions/cache-yarn
         with:
@@ -214,7 +214,7 @@ jobs:
       IOS_PROJECT_NAME: "Self"
       IOS_PROJECT_SCHEME: "OpenPassport"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -234,8 +234,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Enable Corepack
         run: corepack enable
-      - name: Activate Yarn 4.6.0
-        run: corepack prepare yarn@4.6.0 --activate
+      - name: Activate Yarn 4.12.0
+        run: corepack prepare yarn@4.12.0 --activate
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -428,7 +428,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -448,8 +448,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Enable Corepack
         run: corepack enable
-      - name: Activate Yarn 4.6.0
-        run: corepack prepare yarn@4.6.0 --activate
+      - name: Activate Yarn 4.12.0
+        run: corepack prepare yarn@4.12.0 --activate
       - name: Cache Yarn
         uses: ./.github/actions/cache-yarn
         with:

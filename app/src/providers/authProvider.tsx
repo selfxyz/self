@@ -22,11 +22,14 @@ import {
   createKeychainOptions,
   detectSecurityCapabilities,
 } from '@/integrations/keychain';
-import analytics from '@/services/analytics';
+import { trackEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
-
-const { trackEvent } = analytics();
+import {
+  getKeychainErrorIdentity,
+  isKeychainCryptoError,
+  isUserCancellation,
+} from '@/utils/keychainErrors';
 
 const SERVICE_NAME = 'secret';
 
@@ -149,31 +152,73 @@ async function restoreFromMnemonic(
   }
 }
 
+let keychainCryptoFailureCallback:
+  | ((errorType: 'user_cancelled' | 'crypto_failed') => void)
+  | null = null;
+
 async function loadOrCreateMnemonic(
   keychainOptions: KeychainOptions,
 ): Promise<string | false> {
   // Get adaptive security configuration
   const { setOptions, getOptions } = keychainOptions;
 
-  const storedMnemonic = await Keychain.getGenericPassword({
-    ...getOptions,
-    service: SERVICE_NAME,
-  });
-  if (storedMnemonic) {
-    try {
-      JSON.parse(storedMnemonic.password);
-      trackEvent(AuthEvents.MNEMONIC_LOADED);
-      return storedMnemonic.password;
-    } catch (e: unknown) {
-      console.error(
-        'Error parsing stored mnemonic, old secret format was used',
-        e,
-      );
-      trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-        reason: 'unknown_error',
-        error: e instanceof Error ? e.message : String(e),
-      });
+  try {
+    const storedMnemonic = await Keychain.getGenericPassword({
+      ...getOptions,
+      service: SERVICE_NAME,
+    });
+    if (storedMnemonic) {
+      try {
+        JSON.parse(storedMnemonic.password);
+        trackEvent(AuthEvents.MNEMONIC_LOADED);
+        return storedMnemonic.password;
+      } catch (e: unknown) {
+        console.error(
+          'Error parsing stored mnemonic, old secret format was used',
+          e,
+        );
+        trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+          reason: 'unknown_error',
+          error: e instanceof Error ? e.message : String(e),
+        });
+      }
     }
+  } catch (error: unknown) {
+    if (isUserCancellation(error)) {
+      console.log('User cancelled authentication');
+      trackEvent(AuthEvents.BIOMETRIC_LOGIN_CANCELLED);
+
+      if (keychainCryptoFailureCallback) {
+        keychainCryptoFailureCallback('user_cancelled');
+      }
+
+      throw error;
+    }
+
+    if (isKeychainCryptoError(error)) {
+      const err = getKeychainErrorIdentity(error);
+      console.error('Keychain crypto error:', {
+        code: err?.code,
+        name: err?.name,
+      });
+      trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+        reason: 'keychain_crypto_failed',
+        errorCode: err?.code,
+      });
+
+      if (keychainCryptoFailureCallback) {
+        keychainCryptoFailureCallback('crypto_failed');
+      }
+
+      throw error;
+    }
+
+    console.error('Error loading mnemonic:', error);
+    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+      reason: 'unknown_error',
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   }
   try {
     const { mnemonic } = ethers.HDNodeWallet.fromMnemonic(
@@ -426,6 +471,13 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
   }
 }
 
+// Global callback for keychain crypto failures
+export function setKeychainCryptoFailureCallback(
+  callback: ((errorType: 'user_cancelled' | 'crypto_failed') => void) | null,
+) {
+  keychainCryptoFailureCallback = callback;
+}
+
 export async function unsafe_clearSecrets() {
   if (__DEV__) {
     await Keychain.resetGenericPassword({ service: SERVICE_NAME });
@@ -458,10 +510,6 @@ export async function unsafe_getPointsPrivateKey(
   return wallet.privateKey;
 }
 
-/**
- * The only reason this is exported without being locked behind user biometrics is to allow `loadPassportDataAndSecret`
- * to access both the privatekey and the passport data with the user only authenticating once
- */
 export async function unsafe_getPrivateKey(keychainOptions?: KeychainOptions) {
   const options =
     keychainOptions ||

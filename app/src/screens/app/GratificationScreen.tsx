@@ -26,8 +26,8 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot, dinotBold } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import LogoWhite from '@/assets/icons/logo_white.svg';
 import GratificationBg from '@/assets/images/gratification_bg.svg';
+import SelfLogo from '@/assets/logos/self.svg';
 import type { RootStackParamList } from '@/navigation';
 
 const GratificationScreen: React.FC = () => {
@@ -160,7 +160,7 @@ const GratificationScreen: React.FC = () => {
         >
           {/* Logo icon */}
           <View marginBottom={12} style={styles.logoContainer}>
-            <LogoWhite width={37} height={37} />
+            <SelfLogo width={37} height={37} />
           </View>
 
           {/* Points display */}

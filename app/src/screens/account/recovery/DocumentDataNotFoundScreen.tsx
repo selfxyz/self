@@ -21,9 +21,7 @@ import {
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import analytics from '@/services/analytics';
-
-const { flush: flushAnalytics } = analytics();
+import { flush as flushAnalytics } from '@/services/analytics';
 
 const DocumentDataNotFoundScreen: React.FC = () => {
   const selfClient = useSelfClient();

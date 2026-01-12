@@ -10,7 +10,15 @@ import React, {
   useState,
 } from 'react';
 import { Dimensions, Image, Pressable } from 'react-native';
-import { Button, ScrollView, Text, View, XStack, YStack } from 'tamagui';
+import {
+  Button,
+  ScrollView,
+  Spinner,
+  Text,
+  View,
+  XStack,
+  YStack,
+} from 'tamagui';
 import {
   useFocusEffect,
   useIsFocused,
@@ -201,7 +209,7 @@ const HomeScreen: React.FC = () => {
         justifyContent="center"
         alignItems="center"
       >
-        <Text>Loading documents...</Text>
+        <Spinner size="large" color={black} />
       </YStack>
     );
   }

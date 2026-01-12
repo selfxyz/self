@@ -47,10 +47,7 @@ interface PressableViewProps {
 }
 
 export interface ViewProps
-  extends Omit<RNViewProps, 'hitSlop'>,
-    SpacingProps,
-    Omit<ViewStyle, keyof SpacingProps>,
-    PressableViewProps {}
+  extends Omit<RNViewProps, 'hitSlop'>, SpacingProps, Omit<ViewStyle, keyof SpacingProps>, PressableViewProps {}
 
 const sizeTokens: Record<string, number> = {
   $0: 0,
