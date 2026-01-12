@@ -168,6 +168,24 @@ describe('websocket handlers (refactor guardrail via proving store)', () => {
     expect(startListener).toHaveBeenCalledWith('status-uuid', 'https', selfClient);
   });
 
+  it('uses hello ack uuid when it differs from stored uuid', async () => {
+    await useProvingStore.getState().init(selfClient, 'register');
+    const startListener = vitest.fn();
+    useProvingStore.setState({
+      endpointType: 'https',
+      uuid: 'uuid-123',
+      _startSocketIOStatusListener: startListener,
+    } as any);
+
+    const event = new MessageEvent('message', {
+      data: JSON.stringify({ id: 2, result: 'uuid-456' }),
+    });
+
+    await useProvingStore.getState()._handleWebSocketMessage(event, selfClient);
+
+    expect(startListener).toHaveBeenCalledWith('uuid-456', 'https', selfClient);
+  });
+
   it('emits PROVE_ERROR on websocket error payloads', async () => {
     await useProvingStore.getState().init(selfClient, 'register');
 
