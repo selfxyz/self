@@ -4,13 +4,13 @@
 
 import { Platform } from 'react-native';
 import type { Socket } from 'socket.io-client';
-import { getCircuitNameFromPassportData } from '@selfxyz/common/utils';
-import type { PassportData } from '@selfxyz/common/types';
 import type { AnyActorRef, AnyEventObject, StateFrom } from 'xstate';
 import { createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 
+import type { PassportData } from '@selfxyz/common/types';
 import type { EndpointType } from '@selfxyz/common/utils';
+import { getCircuitNameFromPassportData } from '@selfxyz/common/utils';
 import type { IDDocument } from '@selfxyz/common/utils/types';
 
 import { PassportEvents, ProofEvents } from '../constants/analytics';
