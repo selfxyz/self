@@ -63,7 +63,7 @@ vitest.mock('@selfxyz/common/utils/proving', async () => {
   };
 });
 
-describe('websocket handlers (via proving store)', () => {
+describe('websocket handlers (refactor guardrail via proving store)', () => {
   const selfClient: SelfClient = {
     trackEvent: vitest.fn(),
     emit: vitest.fn(),

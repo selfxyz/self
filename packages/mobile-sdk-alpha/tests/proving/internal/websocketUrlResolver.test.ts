@@ -34,7 +34,7 @@ vitest.mock('@selfxyz/common/utils', async () => {
   };
 });
 
-describe('websocket URL resolution (via initTeeConnection)', () => {
+describe('websocket URL resolution (refactor guardrail via initTeeConnection)', () => {
   const wsSend = vitest.fn();
   const wsAddEventListener = vitest.fn();
   const wsMock = vitest.fn(() => ({

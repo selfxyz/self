@@ -66,7 +66,7 @@ vitest.mock('@selfxyz/common/utils/circuits/registerInputs', async () => {
   };
 });
 
-describe('payload generator (via _generatePayload)', () => {
+describe('payload generator (refactor guardrail via _generatePayload)', () => {
   const selfClient: SelfClient = {
     trackEvent: vitest.fn(),
     emit: vitest.fn(),

@@ -90,7 +90,7 @@ const setProtocolFetchers = () => {
   }));
 };
 
-describe('document processing helpers (via proving store)', () => {
+describe('document processing helpers (refactor guardrail via proving store)', () => {
   beforeEach(() => {
     vitest.clearAllMocks();
     setProtocolFetchers();
