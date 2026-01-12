@@ -71,8 +71,34 @@ jobs:
             echo "📈 Version bump: build only"
           fi
 
-          # Always deploy both platforms for now (can be enhanced later)
-          echo 'platforms=["ios", "android"]' >> $GITHUB_OUTPUT
+          # Determine platforms based on deploy labels
+          # If both deploy:ios and deploy:android labels exist, deploy both
+          # If neither label exists, deploy both (default behavior)
+          # If only one label exists, deploy only that platform
+          has_ios_label=false
+          has_android_label=false
+
+          if [[ "$labels" =~ deploy:ios ]]; then
+            has_ios_label=true
+          fi
+          if [[ "$labels" =~ deploy:android ]]; then
+            has_android_label=true
+          fi
+
+          if [[ "$has_ios_label" == "true" && "$has_android_label" == "true" ]]; then
+            echo 'platforms=["ios", "android"]' >> $GITHUB_OUTPUT
+            echo "📱 Deploying both iOS and Android (both labels present)"
+          elif [[ "$has_ios_label" == "true" ]]; then
+            echo 'platforms=["ios"]' >> $GITHUB_OUTPUT
+            echo "📱 Deploying iOS only (deploy:ios label present)"
+          elif [[ "$has_android_label" == "true" ]]; then
+            echo 'platforms=["android"]' >> $GITHUB_OUTPUT
+            echo "📱 Deploying Android only (deploy:android label present)"
+          else
+            echo 'platforms=["ios", "android"]' >> $GITHUB_OUTPUT
+            echo "📱 Deploying both iOS and Android (no platform labels, default behavior)"
+          fi
+
           echo "should_deploy=true" >> $GITHUB_OUTPUT
 
       - name: Log deployment info
