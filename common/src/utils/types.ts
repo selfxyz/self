@@ -36,7 +36,8 @@ export interface DocumentCatalog {
 
 export type DocumentCategory = 'passport' | 'id_card' | 'aadhaar';
 
-export interface DocumentMetadata {
+export type DocumentMetadata = PassportDocumentMetadata | IdCardDocumentMetadata | AadhaarDocumentMetadata;
+interface DocumentMetadataBase {
   id: string; // contentHash as ID for deduplication
   documentType: string; // passport, mock_passport, id_card, etc.
   documentCategory: DocumentCategory; // passport, id_card, aadhaar
@@ -44,6 +45,20 @@ export interface DocumentMetadata {
   mock: boolean; // whether this is a mock document
   isRegistered?: boolean; // whether the document is registered onChain
   registeredAt?: number; // timestamp (epoch ms) when document was registered
+}
+
+interface PassportDocumentMetadata extends DocumentMetadataBase {
+  documentCategory: 'passport';
+}
+
+interface IdCardDocumentMetadata extends DocumentMetadataBase {
+  documentCategory: 'id_card';
+}
+
+interface AadhaarDocumentMetadata extends DocumentMetadataBase {
+  documentCategory: 'aadhaar';
+  firstNameIndex?: number; // index of selected first name for Aadhaar
+  lastNameIndex?: number; // index of selected last name for Aadhaar
 }
 
 export type DocumentType =

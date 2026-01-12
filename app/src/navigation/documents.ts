@@ -8,6 +8,9 @@ import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { AadhaarNavBar, IdDetailsNavBar } from '@/components/navbar';
 import { HeadlessNavForEuclid } from '@/components/navbar/HeadlessNavForEuclid';
+import AadhaarFirstNameChooserScreen from '@/screens/documents/aadhaar/AadhaarFirstNameChooserScreen';
+import AadhaarLastNameChooserScreen from '@/screens/documents/aadhaar/AadhaarLastNameChooserScreen';
+import AadhaarNameConfirmationScreen from '@/screens/documents/aadhaar/AadhaarNameConfirmationScreen';
 import AadhaarUploadedSuccessScreen from '@/screens/documents/aadhaar/AadhaarUploadedSuccessScreen';
 import AadhaarUploadErrorScreen from '@/screens/documents/aadhaar/AadhaarUploadErrorScreen';
 import AadhaarUploadScreen from '@/screens/documents/aadhaar/AadhaarUploadScreen';
@@ -135,6 +138,30 @@ const documentsScreens = {
   },
   AadhaarUpload: {
     screen: AadhaarUploadScreen,
+    options: {
+      title: 'AADHAAR REGISTRATION',
+      header: AadhaarNavBar,
+      headerBackVisible: false,
+    } as NativeStackNavigationOptions,
+  },
+  AadhaarFirstNameChooser: {
+    screen: AadhaarFirstNameChooserScreen,
+    options: {
+      title: 'AADHAAR REGISTRATION',
+      header: AadhaarNavBar,
+      headerBackVisible: false,
+    } as NativeStackNavigationOptions,
+  },
+  AadhaarLastNameChooser: {
+    screen: AadhaarLastNameChooserScreen,
+    options: {
+      title: 'AADHAAR REGISTRATION',
+      header: AadhaarNavBar,
+      headerBackVisible: false,
+    } as NativeStackNavigationOptions,
+  },
+  AadhaarNameConfirmation: {
+    screen: AadhaarNameConfirmationScreen,
     options: {
       title: 'AADHAAR REGISTRATION',
       header: AadhaarNavBar,

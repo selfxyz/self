@@ -60,6 +60,9 @@ type BaseRootStackParamList = StaticParamList<typeof AppNavigation>;
 export type RootStackParamList = Omit<
   BaseRootStackParamList,
   | 'AadhaarUpload'
+  | 'AadhaarFirstNameChooser'
+  | 'AadhaarLastNameChooser'
+  | 'AadhaarNameConfirmation'
   | 'AadhaarUploadError'
   | 'AadhaarUploadSuccess'
   | 'AccountRecovery'
@@ -118,6 +121,9 @@ export type RootStackParamList = Omit<
   AadhaarUpload: {
     countryCode: string;
   };
+  AadhaarFirstNameChooser: undefined;
+  AadhaarLastNameChooser: undefined;
+  AadhaarNameConfirmation: undefined;
   AadhaarUploadSuccess: undefined;
   AadhaarUploadError: {
     errorType: string;

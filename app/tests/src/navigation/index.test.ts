@@ -62,6 +62,9 @@ jest.mock('@/navigation', () => {
     MockDataDeepLink: {},
     // Aadhaar screens
     AadhaarUpload: {},
+    AadhaarFirstNameChooser: {},
+    AadhaarLastNameChooser: {},
+    AadhaarNameConfirmation: {},
     AadhaarUploadSuccess: {},
     AadhaarUploadError: {},
   };
@@ -77,6 +80,9 @@ describe('navigation', () => {
     const navigationScreens = require('@/navigation').navigationScreens;
     const listOfScreens = Object.keys(navigationScreens).sort();
     expect(listOfScreens).toEqual([
+      'AadhaarFirstNameChooser',
+      'AadhaarLastNameChooser',
+      'AadhaarNameConfirmation',
       'AadhaarUpload',
       'AadhaarUploadError',
       'AadhaarUploadSuccess',

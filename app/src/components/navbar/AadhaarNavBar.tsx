@@ -19,14 +19,22 @@ import { NavBar } from '@/components/navbar/BaseNavBar';
 import { buttonTap } from '@/integrations/haptics';
 import { extraYPadding } from '@/utils/styleUtils';
 
+const routeToStepMap: Record<string, number> = {
+  AadhaarUpload: 1,
+  AadhaarFirstNameChooser: 2,
+  AadhaarLastNameChooser: 3,
+  AadhaarNameConfirmation: 4,
+  AadhaarUploadSuccess: 5,
+  AadhaarUploadError: 5,
+};
+
+const TOTAL_STEPS = 5;
+
 export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();
 
   const currentRouteName = props.route.name;
-  const isFirstStep = currentRouteName === 'AadhaarUpload';
-  const isSecondStep =
-    currentRouteName === 'AadhaarUploadSuccess' ||
-    currentRouteName === 'AadhaarUploadError';
+  const currentStep = routeToStepMap[currentRouteName] || 1;
 
   const handleClose = () => {
     buttonTap();
@@ -102,18 +110,19 @@ export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
         backgroundColor={slate100}
       >
         <XStack gap={8}>
-          <YStack
-            flex={1}
-            height={4}
-            backgroundColor={isFirstStep ? '#00D4FF' : slate300}
-            borderRadius={2}
-          />
-          <YStack
-            flex={1}
-            height={4}
-            backgroundColor={isSecondStep ? '#00D4FF' : slate300}
-            borderRadius={2}
-          />
+          {Array.from({ length: TOTAL_STEPS }).map((_, index) => {
+            const stepNumber = index + 1;
+            const isActive = stepNumber === currentStep;
+            return (
+              <YStack
+                key={stepNumber}
+                flex={1}
+                height={4}
+                backgroundColor={isActive ? '#00D4FF' : slate300}
+                borderRadius={2}
+              />
+            );
+          })}
         </XStack>
       </YStack>
     </YStack>

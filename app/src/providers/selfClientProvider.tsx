@@ -252,8 +252,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS, () => {
-      navigateIfReady('AadhaarUploadSuccess');
+      navigateIfReady('AadhaarFirstNameChooser');
     });
+
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
       navigateIfReady('AadhaarUploadError', { errorType });
     });
