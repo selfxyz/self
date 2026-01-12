@@ -349,6 +349,7 @@ export function enableKeychainErrorModal() {
 export function showKeychainErrorModal(
   errorType: 'user_cancelled' | 'crypto_failed',
 ) {
+  if (Platform.OS !== 'android') return;
   if (!navigationRef.isReady()) return;
 
   const errorContent = {
