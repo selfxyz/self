@@ -5,6 +5,7 @@
 import type { SelfClient } from '../../../src';
 import * as documentUtils from '../../../src/documents/utils';
 import { useProvingStore } from '../../../src/proving/provingMachine';
+import { _startSocketIOStatusListener as startSocketIOStatusListener } from '../../../src/proving/internal/socketIOListener';
 import { useProtocolStore } from '../../../src/stores/protocolStore';
 import { useSelfAppStore } from '../../../src/stores/selfAppStore';
 import { actorMock } from '../actorMock';
@@ -62,6 +63,10 @@ vitest.mock('@selfxyz/common/utils/proving', async () => {
     },
   };
 });
+
+vitest.mock('../../../src/proving/internal/socketIOListener', () => ({
+  _startSocketIOStatusListener: vitest.fn(),
+}));
 
 describe('websocket handlers (refactor guardrail via proving store)', () => {
   const selfClient: SelfClient = {
@@ -152,11 +157,9 @@ describe('websocket handlers (refactor guardrail via proving store)', () => {
 
   it('starts socket listener on hello ack', async () => {
     await useProvingStore.getState().init(selfClient, 'register');
-    const startListener = vitest.fn();
     useProvingStore.setState({
       endpointType: 'https',
       uuid: 'uuid-123',
-      _startSocketIOStatusListener: startListener,
     } as any);
 
     const event = new MessageEvent('message', {
@@ -165,16 +168,14 @@ describe('websocket handlers (refactor guardrail via proving store)', () => {
 
     await useProvingStore.getState()._handleWebSocketMessage(event, selfClient);
 
-    expect(startListener).toHaveBeenCalledWith('status-uuid', 'https', selfClient);
+    expect(startSocketIOStatusListener).toHaveBeenCalledWith('status-uuid', 'https', selfClient, expect.any(Object));
   });
 
   it('uses hello ack uuid when it differs from stored uuid', async () => {
     await useProvingStore.getState().init(selfClient, 'register');
-    const startListener = vitest.fn();
     useProvingStore.setState({
       endpointType: 'https',
       uuid: 'uuid-123',
-      _startSocketIOStatusListener: startListener,
     } as any);
 
     const event = new MessageEvent('message', {
@@ -183,7 +184,7 @@ describe('websocket handlers (refactor guardrail via proving store)', () => {
 
     await useProvingStore.getState()._handleWebSocketMessage(event, selfClient);
 
-    expect(startListener).toHaveBeenCalledWith('uuid-456', 'https', selfClient);
+    expect(startSocketIOStatusListener).toHaveBeenCalledWith('uuid-456', 'https', selfClient, expect.any(Object));
   });
 
   it('emits PROVE_ERROR on websocket error payloads', async () => {
