@@ -109,7 +109,7 @@ const PassportDataSelector = () => {
     try {
       await setSelectedDocument(documentId);
       navigation.navigate('ConfirmBelonging', {});
-    } catch (error) {
+    } catch {
       Alert.alert(
         'Registration Error',
         'Failed to prepare document for registration. Please try again.',
