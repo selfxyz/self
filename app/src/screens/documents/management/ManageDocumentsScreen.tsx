@@ -106,8 +106,16 @@ const PassportDataSelector = () => {
   };
 
   const handleRegisterDocument = async (documentId: string) => {
-    await setSelectedDocument(documentId);
-    navigation.navigate('ConfirmBelonging', {});
+    try {
+      await setSelectedDocument(documentId);
+      navigation.navigate('ConfirmBelonging', {});
+    } catch (error) {
+      Alert.alert(
+        'Registration Error',
+        'Failed to prepare document for registration. Please try again.',
+        [{ text: 'OK', style: 'cancel' }],
+      );
+    }
   };
 
   const handleDeleteButtonPress = (
