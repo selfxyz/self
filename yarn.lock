@@ -8700,6 +8700,7 @@ __metadata:
   resolution: "@selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha"
   dependencies:
     "@babel/runtime": "npm:^7.28.3"
+    "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@selfxyz/common": "workspace:^"
     "@selfxyz/euclid": "npm:^0.6.1"
     "@testing-library/react": "npm:^14.1.2"
@@ -8719,6 +8720,7 @@ __metadata:
     jsdom: "npm:^25.0.1"
     lottie-react-native: "npm:7.2.2"
     node-forge: "npm:^1.3.1"
+    poseidon-lite: "npm:^0.3.0"
     prettier: "npm:^3.5.3"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
