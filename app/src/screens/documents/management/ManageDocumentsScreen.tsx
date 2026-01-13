@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Check, Eraser } from '@tamagui/lucide-icons';
+import { Check, Eraser, HousePlus } from '@tamagui/lucide-icons';
 
 import type {
   DocumentCatalog,
@@ -33,6 +33,8 @@ import { usePassport } from '@/providers/passportDataProvider';
 import { extraYPadding } from '@/utils/styleUtils';
 
 const PassportDataSelector = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
   const {
     loadDocumentCatalog,
@@ -73,7 +75,20 @@ const PassportDataSelector = () => {
     loadPassportDataInfo();
   }, [loadPassportDataInfo]);
 
-  const handleDocumentSelection = async (documentId: string) => {
+  const handleDocumentSelection = async (
+    documentId: string,
+    isRegistered: boolean | undefined,
+  ) => {
+    if (!isRegistered) {
+      Alert.alert(
+        'Document not registered',
+        'This document cannot be selected as active, because it is not registered. Click the add button next to it to register it first.',
+        [{ text: 'OK', style: 'cancel' }],
+      );
+
+      return;
+    }
+
     await setSelectedDocument(documentId);
     // Reload to update UI without loading state for quick operations
     const catalog = await loadDocumentCatalog();
@@ -90,24 +105,32 @@ const PassportDataSelector = () => {
     await loadPassportDataInfo();
   };
 
-  const handleDeleteButtonPress = (documentId: string) => {
-    Alert.alert(
-      '⚠️ Delete Document ⚠️',
-      'Are you sure you want to delete this document?\n\nThis document is already linked to your identity in Self Protocol and cannot be linked by another person.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
+  const handleRegisterDocument = async (documentId: string) => {
+    await setSelectedDocument(documentId);
+    navigation.navigate('ConfirmBelonging', {});
+  };
+
+  const handleDeleteButtonPress = (
+    documentId: string,
+    isRegistered: boolean | undefined,
+  ) => {
+    const message = isRegistered
+      ? 'Are you sure you want to delete this document?\n\nThis document is already linked to your identity in Self Protocol and cannot be linked by another person.'
+      : 'Are you sure you want to delete this document?';
+
+    Alert.alert('⚠️ Delete Document ⚠️', message, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await handleDeleteSpecific(documentId);
         },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            await handleDeleteSpecific(documentId);
-          },
-        },
-      ],
-    );
+      },
+    ]);
   };
 
   const getDisplayName = (documentType: string): string => {
@@ -156,6 +179,16 @@ const PassportDataSelector = () => {
     }
   };
 
+  const getDocumentBackgroundColor = (
+    isSelected: boolean,
+    isRegistered: boolean | undefined,
+  ): string => {
+    if (!isRegistered) {
+      return '#ffebee'; // Light red for unregistered documents
+    }
+    return isSelected ? '$gray2' : 'white';
+  };
+
   if (loading) {
     return (
       <YStack gap="$3" alignItems="center" padding="$4">
@@ -196,6 +229,10 @@ const PassportDataSelector = () => {
     );
   }
 
+  const hasUnregisteredDocuments = documentCatalog.documents.some(
+    doc => !doc.isRegistered,
+  );
+
   return (
     <YStack gap="$3" width="100%">
       <Text
@@ -206,6 +243,21 @@ const PassportDataSelector = () => {
       >
         Available Documents
       </Text>
+      {hasUnregisteredDocuments && (
+        <YStack
+          padding="$3"
+          backgroundColor="#fff3cd"
+          borderRadius="$3"
+          borderWidth={1}
+          borderColor="#ffc107"
+        >
+          <Text color="#856404" fontSize="$3" textAlign="center">
+            ⚠️ We've detected some documents that are not registered. In order
+            to use them, you'll have to register them first by clicking the plus
+            icon next to them.
+          </Text>
+        </YStack>
+      )}
       {documentCatalog.documents.map((metadata: DocumentMetadata) => (
         <YStack
           key={metadata.id}
@@ -217,12 +269,13 @@ const PassportDataSelector = () => {
               : borderColor
           }
           borderRadius="$3"
-          backgroundColor={
-            documentCatalog.selectedDocumentId === metadata.id
-              ? '$gray2'
-              : 'white'
+          backgroundColor={getDocumentBackgroundColor(
+            documentCatalog.selectedDocumentId === metadata.id,
+            metadata.isRegistered,
+          )}
+          onPress={() =>
+            handleDocumentSelection(metadata.id, metadata.isRegistered)
           }
-          onPress={() => handleDocumentSelection(metadata.id)}
           pressStyle={{ opacity: 0.8 }}
         >
           <XStack
@@ -241,7 +294,9 @@ const PassportDataSelector = () => {
                 }
                 borderColor={textBlack}
                 borderWidth={1}
-                onPress={() => handleDocumentSelection(metadata.id)}
+                onPress={() =>
+                  handleDocumentSelection(metadata.id, metadata.isRegistered)
+                }
               >
                 {documentCatalog.selectedDocumentId === metadata.id && (
                   <Check size={12} color="white" />
@@ -256,19 +311,36 @@ const PassportDataSelector = () => {
                 </Text>
               </YStack>
             </XStack>
-            <Button
-              backgroundColor="white"
-              justifyContent="center"
-              borderColor={borderColor}
-              borderWidth={1}
-              size="$3"
-              onPress={e => {
-                e.stopPropagation();
-                handleDeleteButtonPress(metadata.id);
-              }}
-            >
-              <Eraser color={textBlack} size={16} />
-            </Button>
+            <XStack gap="$3">
+              {metadata.isRegistered !== true && (
+                <Button
+                  backgroundColor="white"
+                  justifyContent="center"
+                  borderColor={borderColor}
+                  borderWidth={1}
+                  size="$3"
+                  onPress={e => {
+                    e.stopPropagation();
+                    handleRegisterDocument(metadata.id);
+                  }}
+                >
+                  <HousePlus color={textBlack} size={16} />
+                </Button>
+              )}
+              <Button
+                backgroundColor="white"
+                justifyContent="center"
+                borderColor={borderColor}
+                borderWidth={1}
+                size="$3"
+                onPress={e => {
+                  e.stopPropagation();
+                  handleDeleteButtonPress(metadata.id, metadata.isRegistered);
+                }}
+              >
+                <Eraser color={textBlack} size={16} />
+              </Button>
+            </XStack>
           </XStack>
         </YStack>
       ))}
