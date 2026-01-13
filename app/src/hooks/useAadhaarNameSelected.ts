@@ -62,7 +62,10 @@ export const useAadhaarNameSelected = ({
           }
 
           await selfClient.saveDocumentCatalog(catalog);
-          // trackEvent(config.savedEvent);
+          trackEvent(AadhaarEvents.NAME_INDEX_SAVED, {
+            part,
+            selectedNameIndex,
+          });
         }
 
         if (part === 'first') {
@@ -71,8 +74,7 @@ export const useAadhaarNameSelected = ({
           navigation.navigate('AadhaarNameConfirmation');
         }
       } catch (error) {
-        // @ts-expect-error
-        trackEvent(AadhaarEvents.AADHAAR_NAME_SELECTION_ERROR, {
+        trackEvent(AadhaarEvents.NAME_SELECTION_ERROR, {
           error:
             error instanceof Error
               ? error.message
