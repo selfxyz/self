@@ -112,14 +112,20 @@ export const getAndClearQueuedUrl = (): string | null => {
 const safeNavigate = (
   navigationState: ReturnType<typeof createDeeplinkNavigationState>,
 ): void => {
-  const targetScreen = navigationState.routes[1]
-    ?.name as keyof RootStackParamList;
+  const targetScreen = navigationState.routes[1]?.name as
+    | keyof RootStackParamList
+    | undefined;
 
   const currentRoute = navigationRef.getCurrentRoute();
   const isColdLaunch = currentRoute?.name === 'Splash';
 
-  if (!isColdLaunch) {
-    navigationRef.navigate(targetScreen as any);
+  if (!isColdLaunch && targetScreen) {
+    // Use object syntax to satisfy TypeScript's strict typing for navigate
+    // The params will be undefined for screens that don't require them
+    navigationRef.navigate({
+      name: targetScreen,
+      params: undefined,
+    } as Parameters<typeof navigationRef.navigate>[0]);
   } else {
     navigationRef.reset(navigationState);
   }

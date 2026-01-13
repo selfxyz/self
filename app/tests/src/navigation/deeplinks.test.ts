@@ -604,7 +604,7 @@ describe('deeplinks', () => {
     mockLinking.getInitialURL.mockResolvedValue(undefined as any);
     mockLinking.addEventListener.mockReturnValue({ remove });
 
-    const cleanup = setupUniversalLinkListenerInNavigation();
+    const cleanup = setupUniversalLinkListenerInNavigation({} as SelfClient);
     expect(mockLinking.addEventListener).toHaveBeenCalled();
     cleanup();
     expect(remove).toHaveBeenCalled();
