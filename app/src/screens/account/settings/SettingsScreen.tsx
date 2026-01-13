@@ -187,22 +187,16 @@ const SettingsScreen: React.FC = () => {
 
   const screenRoutes = useMemo(() => {
     const baseRoutes = isDevMode ? [...routes, ...DEBUG_MENU] : routes;
-
-    // Show all routes while loading or if user has a real document
-    if (hasRealDocument === null || hasRealDocument === true) {
-      return baseRoutes;
-    }
-
     const shouldHideCloudBackup = Platform.OS === 'android';
+    const hasConfirmedRealDocument = hasRealDocument === true;
 
-    // Only filter out document-related routes if we've confirmed user has no real documents
     return baseRoutes.filter(([, , route]) => {
       if (DOCUMENT_DEPENDENT_ROUTES.includes(route)) {
-        return false;
+        return hasConfirmedRealDocument;
       }
 
       if (shouldHideCloudBackup && route === CLOUD_BACKUP_ROUTE) {
-        return false;
+        return hasConfirmedRealDocument;
       }
 
       return true;
