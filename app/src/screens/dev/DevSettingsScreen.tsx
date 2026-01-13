@@ -33,7 +33,6 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import BugIcon from '@/assets/icons/bug_icon.svg';
-import IdIcon from '@/assets/icons/id_icon.svg';
 import WarningIcon from '@/assets/icons/warning.svg';
 import type { RootStackParamList } from '@/navigation';
 import { navigationScreens } from '@/navigation';
@@ -276,6 +275,110 @@ const ScreenSelector = ({}) => {
                     <Text fontSize="$5" color={slate600} fontFamily={dinot}>
                       {item}
                     </Text>
+                  </XStack>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </YStack>
+        </Sheet.Frame>
+      </Sheet>
+    </>
+  );
+};
+
+const LogLevelSelector = ({
+  currentLevel,
+  onSelect,
+}: {
+  currentLevel: string;
+  onSelect: (level: 'debug' | 'info' | 'warn' | 'error') => void;
+}) => {
+  const [open, setOpen] = useState(false);
+
+  const logLevels = ['debug', 'info', 'warn', 'error'] as const;
+
+  return (
+    <>
+      <Button
+        style={{ backgroundColor: 'white' }}
+        borderColor={slate200}
+        borderRadius="$2"
+        height="$5"
+        padding={0}
+        onPress={() => setOpen(true)}
+      >
+        <XStack
+          width="100%"
+          justifyContent="space-between"
+          paddingVertical="$3"
+          paddingLeft="$4"
+          paddingRight="$1.5"
+        >
+          <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+            {currentLevel.toUpperCase()}
+          </Text>
+          <ChevronDown color={slate500} strokeWidth={2.5} />
+        </XStack>
+      </Button>
+
+      <Sheet
+        modal
+        open={open}
+        onOpenChange={setOpen}
+        snapPoints={[50]}
+        animation="medium"
+        dismissOnSnapToBottom
+      >
+        <Sheet.Overlay />
+        <Sheet.Frame
+          backgroundColor={white}
+          borderTopLeftRadius="$9"
+          borderTopRightRadius="$9"
+        >
+          <YStack padding="$4">
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              marginBottom="$4"
+            >
+              <Text fontSize="$8" fontFamily={dinot}>
+                Select log level
+              </Text>
+              <Button
+                onPress={() => setOpen(false)}
+                padding="$2"
+                backgroundColor="transparent"
+              >
+                <ChevronDown
+                  color={slate500}
+                  strokeWidth={2.5}
+                  style={{ transform: [{ rotate: '180deg' }] }}
+                />
+              </Button>
+            </XStack>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {logLevels.map(level => (
+                <TouchableOpacity
+                  key={level}
+                  onPress={() => {
+                    setOpen(false);
+                    onSelect(level);
+                  }}
+                >
+                  <XStack
+                    paddingVertical="$3"
+                    paddingHorizontal="$2"
+                    borderBottomWidth={1}
+                    borderBottomColor={slate200}
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <Text fontSize="$5" color={slate600} fontFamily={dinot}>
+                      {level.toUpperCase()}
+                    </Text>
+                    {currentLevel === level && (
+                      <Check color={slate600} size={20} />
+                    )}
                   </XStack>
                 </TouchableOpacity>
               ))}
@@ -548,57 +651,6 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         paddingBottom={paddingBottom}
       >
         <ParameterSection
-          icon={<IdIcon />}
-          title="Manage ID Documents"
-          description="Register new IDs and generate test IDs"
-        >
-          {[
-            {
-              label: 'Manage available IDs',
-              onPress: () => {
-                navigation.navigate('ManageDocuments');
-              },
-            },
-            {
-              label: 'Generate Test ID',
-              onPress: () => {
-                navigation.navigate('CreateMock');
-              },
-            },
-            {
-              label: 'Scan new ID Document',
-              onPress: () => {
-                navigation.navigate('DocumentOnboarding');
-              },
-            },
-          ].map(({ label, onPress }) => (
-            <YStack gap="$2" key={label}>
-              <Button
-                style={{ backgroundColor: 'white' }}
-                borderColor={slate200}
-                borderRadius="$2"
-                height="$5"
-                padding={0}
-                onPress={onPress}
-              >
-                <XStack
-                  width="100%"
-                  justifyContent="space-between"
-                  paddingVertical="$3"
-                  paddingLeft="$4"
-                  paddingRight="$1.5"
-                >
-                  <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-                    {label}
-                  </Text>
-                  <ChevronRight color={slate500} strokeWidth={2.5} />
-                </XStack>
-              </Button>
-            </YStack>
-          ))}
-        </ParameterSection>
-
-        <ParameterSection
           icon={<BugIcon />}
           title="Debug Shortcuts"
           description="Jump directly to any screen for testing"
@@ -696,38 +748,10 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           title="Log Level"
           description="Configure logging verbosity"
         >
-          <YStack gap="$2">
-            {(['debug', 'info', 'warn', 'error'] as const).map(level => (
-              <Button
-                key={level}
-                backgroundColor={
-                  loggingSeverity === level ? '$green9' : slate200
-                }
-                borderRadius="$2"
-                height="$5"
-                onPress={() => {
-                  setLoggingSeverity(level);
-                }}
-                flexDirection="row"
-                justifyContent="space-between"
-                paddingHorizontal="$4"
-                pressStyle={{
-                  opacity: 0.8,
-                  scale: 0.98,
-                }}
-              >
-                <Text
-                  color={loggingSeverity === level ? white : slate600}
-                  fontSize="$5"
-                  fontFamily={dinot}
-                  fontWeight="600"
-                >
-                  {level.toUpperCase()}
-                </Text>
-                {loggingSeverity === level && <Check color={white} size={20} />}
-              </Button>
-            ))}
-          </YStack>
+          <LogLevelSelector
+            currentLevel={loggingSeverity}
+            onSelect={setLoggingSeverity}
+          />
         </ParameterSection>
 
         <ParameterSection
