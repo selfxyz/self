@@ -820,25 +820,26 @@ describe('validatingDocument', () => {
 
     loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
 
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = vi.fn(() =>
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ data: true }),
       } as Response),
     );
 
-    await useProvingStore.getState().init(selfClient, 'register');
-    actorMock.send.mockClear();
-    vi.mocked(selfClient.trackEvent).mockClear();
+    try {
+      await useProvingStore.getState().init(selfClient, 'register');
+      actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
 
-    useProvingStore.setState({ passportData, secret, circuitType: 'register' });
+      useProvingStore.setState({ passportData, secret, circuitType: 'register' });
 
-    await useProvingStore.getState().validatingDocument(selfClient);
+      await useProvingStore.getState().validatingDocument(selfClient);
 
-    expect(actorMock.send).toHaveBeenCalledWith({ type: 'ACCOUNT_RECOVERY_CHOICE' });
-
-    globalThis.fetch = originalFetch;
+      expect(actorMock.send).toHaveBeenCalledWith({ type: 'ACCOUNT_RECOVERY_CHOICE' });
+    } finally {
+      fetchSpy.mockRestore();
+    }
   });
 
   it('switches to register circuit when DSC is already in the tree', async () => {
@@ -866,26 +867,27 @@ describe('validatingDocument', () => {
 
     loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
 
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = vi.fn(() =>
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ data: false }),
       } as Response),
     );
 
-    await useProvingStore.getState().init(selfClient, 'dsc');
-    actorMock.send.mockClear();
-    vi.mocked(selfClient.trackEvent).mockClear();
+    try {
+      await useProvingStore.getState().init(selfClient, 'dsc');
+      actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
 
-    useProvingStore.setState({ passportData, secret, circuitType: 'dsc' });
+      useProvingStore.setState({ passportData, secret, circuitType: 'dsc' });
 
-    await useProvingStore.getState().validatingDocument(selfClient);
+      await useProvingStore.getState().validatingDocument(selfClient);
 
-    expect(useProvingStore.getState().circuitType).toBe('register');
-    expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
-
-    globalThis.fetch = originalFetch;
+      expect(useProvingStore.getState().circuitType).toBe('register');
+      expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
+    } finally {
+      fetchSpy.mockRestore();
+    }
   });
 
   it('emits VALIDATION_ERROR when validation throws', async () => {
