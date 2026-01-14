@@ -172,6 +172,10 @@ jobs:
           echo "✅ Android build succeeded"
       - name: Clean up Gradle build artifacts
         uses: ./.github/actions/cleanup-gradle-artifacts
+      - name: Trim Gradle caches before emulator
+        run: |
+          echo "🧹 Removing Gradle caches to free disk space..."
+          rm -rf ~/.gradle/caches ~/.gradle/wrapper/dists
       - name: Verify APK and android-passport-nfc-reader integration
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
