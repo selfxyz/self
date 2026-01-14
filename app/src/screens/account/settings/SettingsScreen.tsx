@@ -222,7 +222,16 @@ const SettingsScreen: React.FC = () => {
             break;
 
           case 'discord_support':
-            await openDiscordSupport();
+            try {
+              await openDiscordSupport();
+            } catch (error) {
+              console.warn(
+                'SettingsScreen: failed to open Discord support:',
+                error instanceof Error ? error.message : String(error),
+              );
+              // Error is already handled and displayed to user in openDiscordSupport,
+              // but we log here for debugging purposes
+            }
             break;
 
           case 'ManageDocuments':

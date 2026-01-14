@@ -58,7 +58,10 @@ const QRCodeTrouble: React.FC = () => {
       onDismiss={go}
       footer={
         <>
-          <Caption size="large" style={{ color: slate500, textAlign: 'center' }}>
+          <Caption
+            size="large"
+            style={{ color: slate500, textAlign: 'center' }}
+          >
             Support is in Discord—join to open a ticket and get help faster.
           </Caption>
           <SecondaryButton onPress={openDiscordSupport}>
