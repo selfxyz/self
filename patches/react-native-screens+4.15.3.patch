@@ -1,0 +1,16 @@
+diff --git a/node_modules/react-native-screens/src/fabric/ScreenStackHeaderSubviewNativeComponent.ts b/node_modules/react-native-screens/src/fabric/ScreenStackHeaderSubviewNativeComponent.ts
+index f7776a8..89e08cf 100644
+--- a/node_modules/react-native-screens/src/fabric/ScreenStackHeaderSubviewNativeComponent.ts
++++ b/node_modules/react-native-screens/src/fabric/ScreenStackHeaderSubviewNativeComponent.ts
+@@ -14,7 +14,10 @@ export type HeaderSubviewTypes =
+   | 'searchBar';
+ 
+ export interface NativeProps extends ViewProps {
+-  type?: WithDefault<HeaderSubviewTypes, 'left'>;
++  type?: WithDefault<
++    'back' | 'right' | 'left' | 'title' | 'center' | 'searchBar',
++    'left'
++  >;
+ }
+ 
+ export default codegenNativeComponent<NativeProps>(
