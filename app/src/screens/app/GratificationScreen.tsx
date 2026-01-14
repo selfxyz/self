@@ -9,7 +9,7 @@ import {
   StyleSheet,
   Text as RNText,
 } from 'react-native';
-import { SystemBars } from 'react-native-edge-to-edge';
+import { SystemBars } from '@/components/SystemBars';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, YStack } from 'tamagui';
 import { useNavigation, useRoute } from '@react-navigation/native';

@@ -5,7 +5,7 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
-import { SystemBars } from 'react-native-edge-to-edge';
+import { SystemBars } from '@/components/SystemBars';
 import { useNavigation } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';

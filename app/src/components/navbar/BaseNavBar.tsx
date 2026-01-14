@@ -4,8 +4,8 @@
 
 import React, { useMemo } from 'react';
 import type { TextProps } from 'react-native';
-import type { SystemBarStyle } from 'react-native-edge-to-edge';
-import { SystemBars } from 'react-native-edge-to-edge';
+import { SystemBars } from '@/components/SystemBars';
+import type { SystemBarStyle } from '@/components/SystemBars';
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 
 import type { ViewProps } from '@selfxyz/mobile-sdk-alpha/components';

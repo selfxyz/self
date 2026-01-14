@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { SystemBars } from 'react-native-edge-to-edge';
+import { SystemBars } from '@/components/SystemBars';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type {
