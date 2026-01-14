@@ -23,6 +23,8 @@ export interface AdaptiveSecurityConfig {
 export interface GetSecureOptions {
   requireAuth?: boolean;
   promptMessage?: string;
+  /** Whether to use StrongBox-backed key generation on Android. Default: true */
+  useStrongBox?: boolean;
 }
 
 /**
@@ -90,6 +92,9 @@ export async function createKeychainOptions(
     accessible: config.accessible,
     ...(config.securityLevel && { securityLevel: config.securityLevel }),
     ...(config.accessControl && { accessControl: config.accessControl }),
+    ...(options.useStrongBox !== undefined && {
+      useStrongBox: options.useStrongBox,
+    }),
   };
 
   const getOptions: GetOptions = {
