@@ -16,7 +16,7 @@ import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
-import { sendFeedbackEmail } from '@/services/email';
+import { openDiscordSupport } from '@/services/support';
 
 const tips: TipProps[] = [
   {
@@ -73,16 +73,14 @@ const DocumentNFCTroubleScreen: React.FC = () => {
       footer={
         // Add top padding before buttons and normalize spacing
         <YStack marginTop={16} marginBottom={0} gap={10}>
+          <Caption size="large" style={{ color: slate500, textAlign: 'center' }}>
+            Support is in Discord—join to open a ticket and get help faster.
+          </Caption>
           <SecondaryButton
-            onPress={() =>
-              sendFeedbackEmail({
-                message: 'User reported an issue from NFC trouble screen',
-                origin: 'passport/nfc-trouble',
-              })
-            }
+            onPress={openDiscordSupport}
             style={{ marginBottom: 0 }}
           >
-            Report Issue
+            Get support in Discord
           </SecondaryButton>
         </YStack>
       }

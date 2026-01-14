@@ -73,7 +73,7 @@ import {
   setNfcScanningActive,
   trackNfcEvent,
 } from '@/services/analytics';
-import { sendFeedbackEmail } from '@/services/email';
+import { openDiscordSupport } from '@/services/support';
 
 const emitter =
   Platform.OS === 'android'
@@ -170,10 +170,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     });
 
   const onReportIssue = useCallback(() => {
-    sendFeedbackEmail({
-      message: 'User reported an issue from NFC scan screen',
-      origin: 'passport/nfc',
-    });
+    openDiscordSupport();
   }, []);
 
   const openErrorModal = useCallback(
@@ -191,14 +188,10 @@ const DocumentNFCScanScreen: React.FC = () => {
       showModal({
         titleText: 'NFC Scan Error',
         bodyText: message,
-        buttonText: 'Report Issue',
+        buttonText: 'Get support in Discord',
         secondaryButtonText: 'Help',
         preventDismiss: false,
-        onButtonPress: () =>
-          sendFeedbackEmail({
-            message: sanitizeErrorMessage(message),
-            origin: 'passport/nfc',
-          }),
+        onButtonPress: openDiscordSupport,
         onSecondaryButtonPress: goToNFCTrouble,
         onModalDismiss: () => {},
       });
@@ -612,6 +605,10 @@ const DocumentNFCScanScreen: React.FC = () => {
                   </BodyText>
                 </>
               )}
+              <BodyText style={[styles.disclaimer, { marginTop: 12 }]}>
+                Need help? Support is in Discord—join to open a ticket and get
+                help faster.
+              </BodyText>
             </TextsContainer>
             <ButtonsContainer>
               <PrimaryButton
@@ -634,7 +631,7 @@ const DocumentNFCScanScreen: React.FC = () => {
                 Cancel
               </SecondaryButton>
               <SecondaryButton onPress={onReportIssue}>
-                Report Issue
+                Get support in Discord
               </SecondaryButton>
             </ButtonsContainer>
           </>

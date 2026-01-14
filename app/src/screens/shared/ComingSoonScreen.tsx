@@ -26,7 +26,7 @@ import { notificationError } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';
 import { flush as flushAnalytics } from '@/services/analytics';
-import { sendCountrySupportNotification } from '@/services/email';
+import { openDiscordSupport } from '@/services/support';
 
 type ComingSoonScreenProps = NativeStackScreenProps<
   SharedRoutesParamList,
@@ -83,13 +83,9 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
 
   const onNotifyMe = async () => {
     try {
-      await sendCountrySupportNotification({
-        countryName,
-        countryCode: countryCode !== 'Unknown' ? countryCode : '',
-        documentCategory: route.params?.documentCategory,
-      });
+      await openDiscordSupport();
     } catch (error) {
-      console.error('Failed to open email client:', error);
+      console.error('Failed to open Discord:', error);
     }
   };
 
@@ -150,7 +146,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
               paddingHorizontal: 10,
             }}
           >
-            Sign up for live updates.
+            Get updates and support in our Discord community.
           </BodyText>
         </YStack>
       </ExpandableBottomLayout.TopSection>
@@ -164,7 +160,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
           onPress={onNotifyMe}
           trackEvent={PassportEvents.NOTIFY_COMING_SOON}
         >
-          Sign up for updates
+          Get updates in Discord
         </PrimaryButton>
         <SecondaryButton
           trackEvent={PassportEvents.DISMISS_COMING_SOON}
