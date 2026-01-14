@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { SystemBars } from '@/components/SystemBars';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type {
@@ -14,6 +13,8 @@ import type {
 } from '@selfxyz/mobile-sdk-alpha';
 import { ExpandableBottomLayout as BaseExpandableBottomLayout } from '@selfxyz/mobile-sdk-alpha';
 import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
+import { SystemBars } from '@/components/SystemBars';
 
 const Layout: React.FC<LayoutProps> = ({
   children,

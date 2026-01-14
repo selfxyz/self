@@ -6,7 +6,6 @@ import type { LottieViewProps } from 'lottie-react-native';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
-import { SystemBars } from '@/components/SystemBars';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -25,6 +24,7 @@ import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
+import { SystemBars } from '@/components/SystemBars';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import {
   buttonTap,

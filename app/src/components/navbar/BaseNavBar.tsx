@@ -4,8 +4,6 @@
 
 import React, { useMemo } from 'react';
 import type { TextProps } from 'react-native';
-import { SystemBars } from '@/components/SystemBars';
-import type { SystemBarStyle } from '@/components/SystemBars';
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 
 import type { ViewProps } from '@selfxyz/mobile-sdk-alpha/components';
@@ -15,6 +13,9 @@ import {
   View,
   XStack,
 } from '@selfxyz/mobile-sdk-alpha/components';
+
+import type { SystemBarStyle } from '@/components/SystemBars';
+import { SystemBars } from '@/components/SystemBars';
 
 interface NavBarProps extends ViewProps {
   children: React.ReactNode;
