@@ -39,8 +39,7 @@ on:
 
 jobs:
   android-build-test:
-    # Currently build-only for Android with private repos. E2E steps are preserved but skipped (if: false).
-    # To re-enable full E2E: change `if: false` to `if: true` on Maestro and emulator steps.
+    # Android build + E2E flow.
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
@@ -107,21 +106,23 @@ jobs:
           retry_wait_seconds: 5
           command: yarn install --immutable --silent
       - name: Validate Maestro test file
-        if: false # Skip for build-only test - keep logic for future E2E
         run: |
           [ -f app/tests/e2e/launch.android.flow.yaml ] || { echo "❌ Android E2E test file missing"; exit 1; }
       - name: Cache Maestro
-        if: false # Skip for build-only test - keep logic for future E2E
         id: cache-maestro
         uses: actions/cache@v4
         with:
           path: ~/.maestro
           key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
       - name: Install Maestro
-        if: false # Skip for build-only test - keep logic for future E2E
-        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+        if: steps.cache-maestro.outputs.cache-hit != 'true'
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: curl -Ls "https://get.maestro.mobile.dev" | bash
       - name: Add Maestro to path
-        if: false # Skip for build-only test - keep logic for future E2E
         run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
       - name: Free up disk space
         uses: ./.github/actions/free-disk-space
@@ -143,6 +144,11 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 10
           command: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
@@ -205,9 +211,7 @@ jobs:
           fi
 
           echo "🎉 Build verification completed successfully!"
-          echo "ℹ️  Emulator testing is temporarily disabled - build testing only"
       - name: Install and Test on Android
-        if: false # Skip emulator/E2E for build-only test - keep logic for future E2E
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
@@ -230,7 +234,6 @@ jobs:
             export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
             maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
       - name: Upload test results
-        if: false # Skip for build-only test - keep logic for future E2E
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-android
