@@ -1,0 +1,15 @@
+diff --git a/node_modules/react-native-gesture-handler/android/build.gradle b/node_modules/react-native-gesture-handler/android/build.gradle
+--- a/node_modules/react-native-gesture-handler/android/build.gradle
++++ b/node_modules/react-native-gesture-handler/android/build.gradle
+@@ -178,8 +178,10 @@
+ }
+ 
+ def kotlin_version = safeExtGet('kotlinVersion', project.properties['RNGH_kotlinVersion'])
++def reactNativeDependency = safeExtGet("reactNativeDependency", "com.facebook.react:react-android")
++
+ dependencies {
+-    implementation 'com.facebook.react:react-native:+' // from node_modules
++    implementation reactNativeDependency
+ 
+ 
+     if (shouldUseCommonInterfaceFromReanimated()) {
