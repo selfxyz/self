@@ -16,6 +16,8 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
+import { openDiscordSupport } from '@/services/support';
+
 interface FeedbackModalProps {
   visible: boolean;
   onClose: () => void;
@@ -86,6 +88,10 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
     } else {
       onClose();
     }
+  };
+
+  const handleDiscordSupport = async () => {
+    await openDiscordSupport();
   };
 
   return (
@@ -181,6 +187,22 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
             >
               {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
             </Button>
+            <YStack gap="$2">
+              <Caption style={styles.supportText}>
+                Need help? Support is in Discord—join to open a ticket and get
+                help faster.
+              </Caption>
+              <Button
+                size="$3"
+                variant="outlined"
+                borderColor={white}
+                color={white}
+                onPress={handleDiscordSupport}
+                disabled={isSubmitting}
+              >
+                Get support in Discord
+              </Button>
+            </YStack>
           </YStack>
         </View>
       </View>
@@ -227,6 +249,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: dinot,
     minHeight: 120,
+  },
+  supportText: {
+    fontFamily: dinot,
+    color: slate400,
+    fontSize: 13,
+    textAlign: 'center',
   },
 });
 

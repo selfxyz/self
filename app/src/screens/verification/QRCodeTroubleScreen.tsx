@@ -4,7 +4,7 @@
 
 import React, { useEffect } from 'react';
 
-import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import type { TipProps } from '@/components/Tips';
@@ -12,6 +12,7 @@ import Tips from '@/components/Tips';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
+import { openDiscordSupport } from '@/services/support';
 
 const tips: TipProps[] = [
   {
@@ -39,7 +40,7 @@ const tips: TipProps[] = [
 const tipsDeeplink: TipProps[] = [
   {
     title: 'Coming from another app/website?',
-    body: 'Please contact the support, a telegram group is available in the options menu.',
+    body: 'Join our Discord from the options menu to get support and open a ticket.',
   },
 ];
 
@@ -55,6 +56,16 @@ const QRCodeTrouble: React.FC = () => {
     <SimpleScrolledTitleLayout
       title="Having trouble scanning the QR code?"
       onDismiss={go}
+      footer={
+        <>
+          <Caption size="large" style={{ color: slate500, textAlign: 'center' }}>
+            Support is in Discord—join to open a ticket and get help faster.
+          </Caption>
+          <SecondaryButton onPress={openDiscordSupport}>
+            Get support in Discord
+          </SecondaryButton>
+        </>
+      }
     >
       <Caption size="large" style={{ color: slate500 }}>
         Here are some tips to help you successfully scan the QR code:

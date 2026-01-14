@@ -419,7 +419,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         });
         openErrorModal(message);
         // We deliberately avoid opening any external feedback widgets here;
-        // users can send feedback via the email action in the modal.
+        // users can request support via the Discord action in the modal.
       } finally {
         if (scanTimeoutRef.current) {
           clearTimeout(scanTimeoutRef.current);
