@@ -108,7 +108,7 @@
     "@selfxyz/euclid": "^0.6.1",
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
     "@sentry/react": "^9.32.0",
-    "@sentry/react-native": "7.0.1",
+    "@sentry/react-native": "7.0.0",
     "@stablelib/cbor": "^2.0.1",
     "@tamagui/animations-css": "1.126.14",
     "@tamagui/animations-react-native": "1.126.14",

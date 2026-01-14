@@ -9089,7 +9089,7 @@ __metadata:
     "@selfxyz/euclid": "npm:^0.6.1"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@sentry/react": "npm:^9.32.0"
-    "@sentry/react-native": "npm:7.0.1"
+    "@sentry/react-native": "npm:7.0.0"
     "@stablelib/cbor": "npm:^2.0.1"
     "@tamagui/animations-css": "npm:1.126.14"
     "@tamagui/animations-react-native": "npm:1.126.14"
@@ -9437,10 +9437,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/babel-plugin-component-annotate@npm:4.3.0":
-  version: 4.3.0
-  resolution: "@sentry/babel-plugin-component-annotate@npm:4.3.0"
-  checksum: 10c0/3b75b9fe408d777f2a1601c636c980bec46cbca7d80715b5cb4a32c51173d8b400886637ef1453627408dc10884289c7e186267775737e08a23851ed9485c956
+"@sentry/babel-plugin-component-annotate@npm:4.2.0":
+  version: 4.2.0
+  resolution: "@sentry/babel-plugin-component-annotate@npm:4.2.0"
+  checksum: 10c0/595a46e9436665371c668a7522ca59ee1b37bf72ac79d762de6e148f7ca2c6e7f67cee0cb07c3f42c35286401b0dd74e85e1a29368812befa8e66d3b35b83b50
   languageName: node
   linkType: hard
 
@@ -9632,11 +9632,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/react-native@npm:7.0.1":
-  version: 7.0.1
-  resolution: "@sentry/react-native@npm:7.0.1"
+"@sentry/react-native@npm:7.0.0":
+  version: 7.0.0
+  resolution: "@sentry/react-native@npm:7.0.0"
   dependencies:
-    "@sentry/babel-plugin-component-annotate": "npm:4.3.0"
+    "@sentry/babel-plugin-component-annotate": "npm:4.2.0"
     "@sentry/browser": "npm:10.8.0"
     "@sentry/cli": "npm:2.53.0"
     "@sentry/core": "npm:10.8.0"
@@ -9651,7 +9651,7 @@ __metadata:
       optional: true
   bin:
     sentry-expo-upload-sourcemaps: scripts/expo-upload-sourcemaps.js
-  checksum: 10c0/c8d877c8a64d01777ba68ae75594140ee1795b53cbe6130bc1319bab56ce92a63404fe346231efa42e030ecf05f969a02d40eb175495553bc3c32c1853d1f8b6
+  checksum: 10c0/3b74712c9d79467aea969394b5bda1b2d954ac94997274abb686b0ba299341cfd3e96032eee71951e6e6627c02d3f6c947f617bae317ef2050618a04730a3c5b
   languageName: node
   linkType: hard
 
