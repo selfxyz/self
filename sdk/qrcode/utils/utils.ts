@@ -43,7 +43,7 @@ export const getStatusText = (proofStep: number): string => {
       return 'Prove your Self';
     case QRcodeSteps.MOBILE_CONNECTED:
     case QRcodeSteps.PROOF_GENERATION_STARTED:
-      return 'Connecting to Self';
+      return 'Connected to Self';
     case QRcodeSteps.PROOF_GENERATED:
       return 'Proof Generated';
     case QRcodeSteps.PROOF_VERIFIED:
