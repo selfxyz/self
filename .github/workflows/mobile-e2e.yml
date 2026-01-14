@@ -182,7 +182,7 @@ jobs:
       - name: Trim Gradle caches before emulator
         run: |
           echo "🧹 Removing Gradle caches to free disk space..."
-          rm -rf ~/.gradle/caches ~/.gradle/wrapper/dists
+          rm -rf ~/.gradle/caches ~/.gradle/wrapper/dists || true
       - name: Verify APK and android-passport-nfc-reader integration
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
