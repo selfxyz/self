@@ -1314,14 +1314,8 @@ jobs:
 
           echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD, Android: $ANDROID_BUILD)"
 
-          # Update package.json version
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            pkg.version = '$VERSION';
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-            console.log('✅ Updated package.json');
-          "
+          # Update package.json, version.json, and platform build files
+          node scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
 
           # Update version.json build numbers and deployment timestamps
           node -e "
@@ -1428,14 +1422,14 @@ jobs:
 
           # Commit the version changes
           cd ${{ env.APP_PATH }}
-          git add package.json version.json
+          git add package.json version.json android/app/build.gradle ios/Self.xcodeproj/project.pbxproj
 
           if git diff --cached --quiet; then
             echo "⚠️  No version changes to commit"
             exit 0
           fi
 
-          git commit -m "chore: bump mobile app version to $VERSION" -m "Update build numbers and deployment timestamps after successful deployment."
+          git commit -m "chore: bump mobile app version to $VERSION" -m "Update build numbers, platform build files, and deployment timestamps after successful deployment."
 
           # Create new branch from current HEAD (bump target branch with version bump)
           git checkout -b ${BRANCH_NAME}

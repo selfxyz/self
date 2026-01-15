@@ -30,6 +30,13 @@ const path = require('path');
 const APP_DIR = path.resolve(__dirname, '..');
 const PACKAGE_JSON_PATH = path.join(APP_DIR, 'package.json');
 const VERSION_JSON_PATH = path.join(APP_DIR, 'version.json');
+const ANDROID_GRADLE_PATH = path.join(APP_DIR, 'android', 'app', 'build.gradle');
+const IOS_PBXPROJ_PATH = path.join(
+  APP_DIR,
+  'ios',
+  'Self.xcodeproj',
+  'project.pbxproj',
+);
 
 /**
  * Read package.json
@@ -81,6 +88,30 @@ function writeVersionJson(data) {
   } catch (error) {
     throw new Error(`Failed to write version.json: ${error.message}`);
   }
+}
+
+/**
+ * Update a file with a regex replacement, ensuring at least one match.
+ */
+function updateFileWithRegex(filePath, regex, replacement) {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`File not found at ${filePath}`);
+  }
+
+  const contents = fs.readFileSync(filePath, 'utf8');
+  const matches = contents.match(regex);
+
+  if (!matches) {
+    throw new Error(`No matches for ${regex} in ${filePath}`);
+  }
+
+  const updated = contents.replace(regex, replacement);
+
+  if (updated !== contents) {
+    fs.writeFileSync(filePath, updated);
+  }
+
+  return matches.length;
 }
 
 /**
@@ -244,6 +275,40 @@ function applyVersions(version, iosBuild, androidBuild) {
   versionData.android.build = androidNum;
   writeVersionJson(versionData);
   console.log(`✅ Updated version.json`);
+
+  // Update Android build.gradle versionCode
+  const androidMatches = updateFileWithRegex(
+    ANDROID_GRADLE_PATH,
+    /versionCode\s+\d+/g,
+    `versionCode ${androidNum}`,
+  );
+  console.log(
+    `✅ Updated Android versionCode (${androidMatches} occurrence${
+      androidMatches === 1 ? '' : 's'
+    })`,
+  );
+
+  // Update iOS project version and marketing version
+  const iosBuildMatches = updateFileWithRegex(
+    IOS_PBXPROJ_PATH,
+    /CURRENT_PROJECT_VERSION = \d+;/g,
+    `CURRENT_PROJECT_VERSION = ${iosNum};`,
+  );
+  const iosMarketingMatches = updateFileWithRegex(
+    IOS_PBXPROJ_PATH,
+    /MARKETING_VERSION = \d+\.\d+\.\d+;/g,
+    `MARKETING_VERSION = ${version};`,
+  );
+  console.log(
+    `✅ Updated iOS CURRENT_PROJECT_VERSION (${iosBuildMatches} occurrence${
+      iosBuildMatches === 1 ? '' : 's'
+    })`,
+  );
+  console.log(
+    `✅ Updated iOS MARKETING_VERSION (${iosMarketingMatches} occurrence${
+      iosMarketingMatches === 1 ? '' : 's'
+    })`,
+  );
 }
 
 /**
