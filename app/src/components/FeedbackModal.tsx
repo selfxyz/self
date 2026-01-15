@@ -45,17 +45,17 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }) => {
         <View style={styles.modalContainer}>
           <YStack gap="$4" padding="$4">
             <XStack justifyContent="space-between" alignItems="center">
-              <Text style={styles.title}>Get Help</Text>
+              <Text style={styles.title}>Send Feedback</Text>
               <ModalClose onPress={onClose} />
             </XStack>
 
             <YStack gap="$3" alignItems="center" paddingVertical="$2">
               <Caption style={styles.messageText}>
-                Have questions, feedback, or running into issues?
+                Have feedback, suggestions, or found a bug?
               </Caption>
               <Caption style={styles.messageText}>
-                Fill out our tech support form and we'll get back to you as soon
-                as possible.
+                Fill out our feedback form and we'll review it as soon as
+                possible.
               </Caption>
             </YStack>
 
@@ -65,7 +65,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }) => {
               color="$black"
               onPress={handleSupportForm}
             >
-              Open Support Form
+              Open Feedback Form
             </Button>
           </YStack>
         </View>

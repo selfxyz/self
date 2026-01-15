@@ -6,19 +6,16 @@ import { Alert, Linking } from 'react-native';
 
 import { supportFormUrl } from '@/consts/links';
 
-export const SUPPORT_FORM_BUTTON_TEXT = 'Get help';
+export const SUPPORT_FORM_BUTTON_TEXT = 'Send feedback';
 
 export const SUPPORT_FORM_COMING_SOON_BUTTON_TEXT = 'Let us know';
 
 export const SUPPORT_FORM_COMING_SOON_MESSAGE =
   'Want your document supported? Let us know.';
 
-export const SUPPORT_FORM_MESSAGE =
-  "Need help? Reach out and we'll get back to you.";
+export const SUPPORT_FORM_MESSAGE = 'Have feedback? Please fill out our form.';
 
-export const SUPPORT_FORM_MESSAGE_SHORT = 'Reach out if you need help.';
-
-export const SUPPORT_FORM_TIP_MESSAGE = 'Having issues? Let us know.';
+export const SUPPORT_FORM_TIP_MESSAGE = 'Have feedback? Let us know.';
 
 export const openSupportForm = async (): Promise<void> => {
   try {

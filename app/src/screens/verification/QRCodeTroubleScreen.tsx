@@ -16,7 +16,6 @@ import { flushAllAnalytics } from '@/services/analytics';
 import {
   openSupportForm,
   SUPPORT_FORM_BUTTON_TEXT,
-  SUPPORT_FORM_MESSAGE_SHORT,
   SUPPORT_FORM_TIP_MESSAGE,
 } from '@/services/support';
 
@@ -63,17 +62,9 @@ const QRCodeTrouble: React.FC = () => {
       title="Having trouble scanning the QR code?"
       onDismiss={go}
       footer={
-        <>
-          <Caption
-            size="large"
-            style={{ color: slate500, textAlign: 'center', marginBottom: 16 }}
-          >
-            {SUPPORT_FORM_MESSAGE_SHORT}
-          </Caption>
-          <SecondaryButton onPress={openSupportForm}>
-            {SUPPORT_FORM_BUTTON_TEXT}
-          </SecondaryButton>
-        </>
+        <SecondaryButton onPress={openSupportForm}>
+          {SUPPORT_FORM_BUTTON_TEXT}
+        </SecondaryButton>
       }
     >
       <Caption size="large" style={{ color: slate500, marginBottom: 16 }}>

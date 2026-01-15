@@ -54,7 +54,7 @@ export default function SimpleScrolledTitleLayout({
           </YStack>
         </ScrollView>
         {footer && (
-          <YStack marginTop={8} marginBottom={12}>
+          <YStack marginTop={16} marginBottom={12}>
             {footer}
           </YStack>
         )}
