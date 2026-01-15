@@ -8,4 +8,3 @@
  * Use this constant instead of checking __DEV__ directly throughout the codebase.
  */
 export const IS_DEV_MODE = typeof __DEV__ !== 'undefined' && __DEV__;
-export const IS_EUCLID_ENABLED = false; // Enabled for proof request UI redesign

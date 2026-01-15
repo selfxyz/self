@@ -2,172 +2,77 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { PropsWithChildren } from 'react';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Linking, Platform, Share, View as RNView } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Linking, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { SvgProps } from 'react-native-svg';
-import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Bug, FileText, Settings, Settings2 } from '@tamagui/lucide-icons';
-
-import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
 import {
-  amber500,
-  black,
-  neutral700,
-  slate800,
-  white,
-} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+  Bell,
+  Cloud,
+  FileText,
+  Heart,
+  HelpCircle,
+  Info,
+  MessageCircle,
+  Send,
+  Settings2,
+  Shield,
+  SlidersHorizontal,
+  X,
+} from '@tamagui/lucide-icons';
 
-import Discord from '@/assets/icons/discord.svg';
-import Github from '@/assets/icons/github.svg';
-import Cloud from '@/assets/icons/settings_cloud_backup.svg';
-import Data from '@/assets/icons/settings_data.svg';
-import Feedback from '@/assets/icons/settings_feedback.svg';
-import Lock from '@/assets/icons/settings_lock.svg';
-import ShareIcon from '@/assets/icons/share.svg';
-import Star from '@/assets/icons/star.svg';
-import Telegram from '@/assets/icons/telegram.svg';
-import Web from '@/assets/icons/webpage.svg';
-import X from '@/assets/icons/x.svg';
+import {
+  type BottomSectionItem,
+  type MenuSection,
+  type MenuSectionItem,
+  SettingsViewScreen,
+} from '@selfxyz/euclid';
+
 import {
   appStoreUrl,
   discordUrl,
-  gitHubUrl,
   playStoreUrl,
+  privacyUrl,
   selfUrl,
-  telegramUrl,
+  supportFormUrl,
+  termsUrl,
   xUrl,
 } from '@/consts/links';
 import { impactLight } from '@/integrations/haptics';
 import { usePassport } from '@/providers/passportDataProvider';
-import { openSupportForm } from '@/services/support';
+import { STORAGE_NAME } from '@/services/cloud-backup';
 import { useSettingStore } from '@/stores/settingStore';
-import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
-import { extraYPadding } from '@/utils/styleUtils';
+
+import { version } from '../../../../package.json';
 
 // Avoid importing RootStackParamList to prevent type cycles; use minimal typing
 type MinimalRootStackParamList = Record<string, object | undefined>;
 
-interface MenuButtonProps extends PropsWithChildren {
-  Icon: React.FC<SvgProps>;
-  onPress: () => void;
-}
-interface SocialButtonProps {
-  Icon: React.FC<SvgProps>;
-  href: string;
-}
-
-// Avoid importing RootStackParamList; we only need string route names plus a few literals
-type RouteOption = string | 'share' | 'support_form' | 'ManageDocuments';
+type IconComponent = React.ComponentType<{ size?: number; color?: string }>;
 
 const storeURL = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 
-const goToStore = () => {
-  impactLight();
-  Linking.openURL(storeURL);
+const iconFor = (Icon: IconComponent) => {
+  const IconWrapper = ({
+    size = 24,
+    color = '#000',
+  }: {
+    size?: number;
+    color?: string;
+  }) => <Icon size={size} color={color} />;
+  IconWrapper.displayName = `IconWrapper(${Icon.displayName || Icon.name || 'Icon'})`;
+  return IconWrapper;
 };
 
-const routes =
-  Platform.OS !== 'web'
-    ? ([
-        [Data, 'View document info', 'DocumentDataInfo'],
-        [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
-        [Cloud, 'Cloud backup', 'CloudBackupSettings'],
-        [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
-        [Feedback, 'Get support', 'support_form'],
-        [ShareIcon, 'Share Self app', 'share'],
-        [
-          FileText as React.FC<SvgProps>,
-          'Manage ID documents',
-          'ManageDocuments',
-        ],
-      ] satisfies [React.FC<SvgProps>, string, RouteOption][])
-    : ([
-        [Data, 'View document info', 'DocumentDataInfo'],
-        [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
-        [Feedback, 'Get support', 'support_form'],
-        [
-          FileText as React.FC<SvgProps>,
-          'Manage ID documents',
-          'ManageDocuments',
-        ],
-      ] satisfies [React.FC<SvgProps>, string, RouteOption][]);
-
-// get the actual type of the routes so we can use in the onMenuPress function so it
-// doesnt worry about us linking to screens with required props which we dont want to go to anyway
-type RouteLinks =
-  | (typeof routes)[number][2]
-  | (typeof DEBUG_MENU)[number][2]
-  | (typeof EUCLID_SETTINGS_ROUTE)[2];
-
-const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption][] = [
-  [Bug as React.FC<SvgProps>, 'Debug menu', 'DevSettings'],
-];
-const EUCLID_SETTINGS_ROUTE = [
-  Settings as React.FC<SvgProps>,
-  'Euclid settings',
-  'EuclidSettings',
-] satisfies [React.FC<SvgProps>, string, RouteOption];
-
-const DOCUMENT_DEPENDENT_ROUTES: RouteOption[] = [
-  'DocumentDataInfo',
-  'ShowRecoveryPhrase',
-];
-const CLOUD_BACKUP_ROUTE: RouteOption = 'CloudBackupSettings';
-
-const social = [
-  [X, xUrl],
-  [Github, gitHubUrl],
-  [Web, selfUrl],
-  [Telegram, telegramUrl],
-  [Discord, discordUrl],
-] as [React.FC<SvgProps>, string][];
-
-const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
-  <Button
-    unstyled
-    onPress={onPress}
-    pressStyle={pressedStyle}
-    width="100%"
-    flexDirection="row"
-    gap={6}
-    paddingVertical={20}
-    paddingHorizontal={10}
-    borderBottomColor={neutral700}
-    borderBottomWidth={1}
-    hitSlop={4}
-  >
-    <Icon height={24} width={21} color={white} />
-    <BodyText style={{ color: white, fontSize: 18, lineHeight: 23 }}>
-      {children}
-    </BodyText>
-  </Button>
-);
-
-const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
-  const onPress = useCallback(() => {
-    impactLight();
-    Linking.openURL(href);
-  }, [href]);
-
-  return (
-    <Button
-      unstyled
-      hitSlop={8}
-      onPress={onPress}
-      icon={<Icon height={32} width={32} color={amber500} />}
-    />
-  );
-};
-
-const SettingsScreen: React.FC = () => {
-  const { isDevMode, setDevModeOn } = useSettingStore();
+const SettingsScreen: React.FC & {
+  statusBarStyle: string;
+  statusBarHidden: boolean;
+} = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<MinimalRootStackParamList>>();
+  const insets = useSafeAreaInsets();
+  const { cloudBackupEnabled } = useSettingStore();
   const { loadDocumentCatalog } = usePassport();
   const [hasRealDocument, setHasRealDocument] = useState<boolean | null>(null);
 
@@ -192,146 +97,256 @@ const SettingsScreen: React.FC = () => {
     }, [refreshDocumentAvailability]),
   );
 
-  const screenRoutes = useMemo(() => {
-    const baseRoutes = isDevMode ? [...routes, ...DEBUG_MENU] : routes;
-    const euclidRoutes = IS_EUCLID_ENABLED
-      ? [EUCLID_SETTINGS_ROUTE, ...baseRoutes]
-      : baseRoutes;
-    const shouldHideCloudBackup = Platform.OS === 'android';
-    const hasConfirmedRealDocument = hasRealDocument === true;
-
-    return euclidRoutes.filter(([, , route]) => {
-      if (DOCUMENT_DEPENDENT_ROUTES.includes(route)) {
-        return hasConfirmedRealDocument;
-      }
-
-      if (shouldHideCloudBackup && route === CLOUD_BACKUP_ROUTE) {
-        return hasConfirmedRealDocument;
-      }
-
-      return true;
-    });
-  }, [hasRealDocument, isDevMode]);
-
-  const devModeTap = Gesture.Tap()
-    .numberOfTaps(5)
-    .onStart(() => {
-      setDevModeOn();
-    });
-
-  const onMenuPress = useCallback(
-    (menuRoute: RouteLinks) => {
-      return async () => {
-        impactLight();
-        switch (menuRoute) {
-          case 'share':
-            await Share.share(
-              Platform.OS === 'android'
-                ? { message: `Install Self App ${storeURL}` }
-                : { url: storeURL, message: 'Install Self App' },
-            );
-            break;
-
-          case 'support_form':
-            try {
-              await openSupportForm();
-            } catch (error) {
-              console.warn(
-                'SettingsScreen: failed to open support form:',
-                error instanceof Error ? error.message : String(error),
-              );
-              // Error is already handled and displayed to user in openSupportForm,
-              // but we log here for debugging purposes
-            }
-            break;
-
-          case 'ManageDocuments':
-            navigation.navigate('ManageDocuments');
-            break;
-
-          default:
-            navigation.navigate(menuRoute as never);
-            break;
-        }
-      };
+  const handleNavigate = useCallback(
+    (routeName: string) => {
+      impactLight();
+      navigation.navigate(routeName as never);
     },
     [navigation],
   );
-  const { bottom } = useSafeAreaInsets();
+
+  const handleOpenUrl = useCallback((url: string) => {
+    impactLight();
+    Linking.openURL(url);
+  }, []);
+
+  const handleOpenSupportForm = useCallback(() => {
+    impactLight();
+    Linking.openURL(supportFormUrl);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    impactLight();
+    navigation.goBack();
+  }, [navigation]);
+
+  const hasConfirmedRealDocument = hasRealDocument === true;
+  const showCloudBackup = Platform.OS !== 'android' || hasConfirmedRealDocument;
+
+  // Feature cards (CTAs) - Backup enabled, Referrals, Push notifications
+  const CTAs = useMemo<MenuSectionItem[]>(() => {
+    const cards: MenuSectionItem[] = [];
+
+    // Backup enabled card (only show if backup is enabled)
+    if (cloudBackupEnabled && hasConfirmedRealDocument) {
+      cards.push({
+        icon: iconFor(Cloud),
+        label: 'Backup enabled',
+        description: 'Your account is safe.',
+        onPress: () => handleNavigate('CloudBackupSettings'),
+      });
+    }
+
+    // Referrals card
+    cards.push({
+      icon: iconFor(Heart),
+      label: 'Referrals',
+      description: 'Invite & earn Self Points.',
+      onPress: () => handleNavigate('Referral'),
+    });
+
+    // Push notifications card (placeholder - can be enabled when notification settings exist)
+    cards.push({
+      icon: iconFor(Bell),
+      label: 'Enable push notifications',
+      description: 'Never miss an update from Self.',
+      onPress: () => {
+        // TODO: Navigate to notification settings when available
+        impactLight();
+      },
+    });
+
+    // Enable backup CTA (only show if backup is not enabled)
+    if (!cloudBackupEnabled && showCloudBackup) {
+      cards.push({
+        icon: iconFor(Cloud),
+        label: `Enable ${STORAGE_NAME} backup`,
+        description: 'Secure your account with encrypted cloud backup.',
+        onPress: () => handleNavigate('CloudBackupSettings'),
+      });
+    }
+
+    return cards;
+  }, [
+    cloudBackupEnabled,
+    handleNavigate,
+    showCloudBackup,
+    hasConfirmedRealDocument,
+  ]);
+
+  const sections = useMemo<MenuSection[]>(() => {
+    // App settings section
+    const appSettingsItems: MenuSectionItem[] = [];
+
+    appSettingsItems.push({
+      icon: iconFor(Settings2),
+      label: 'Manage Documents',
+      description: 'Recovery phrase, passport data.',
+      onPress: () => handleNavigate('ManageDocuments'),
+    });
+
+    // Security item - combines recovery phrase and cloud backup
+    const securitySubItems: string[] = [];
+    if (hasConfirmedRealDocument) {
+      securitySubItems.push('Recovery phrase');
+    }
+    if (showCloudBackup) {
+      securitySubItems.push('Passport data');
+    }
+    const securityDescription =
+      securitySubItems.length > 0
+        ? securitySubItems.join(', ')
+        : 'Recovery phrase, passport data.';
+
+    appSettingsItems.push({
+      icon: iconFor(Shield),
+      label: 'Security',
+      description: securityDescription,
+      onPress: () => {
+        // Navigate to recovery phrase if available, otherwise show security options
+        if (hasConfirmedRealDocument) {
+          handleNavigate('ShowRecoveryPhrase');
+        } else if (showCloudBackup) {
+          handleNavigate('CloudBackupSettings');
+        }
+      },
+    });
+
+    // Notifications item
+    appSettingsItems.push({
+      icon: iconFor(Bell),
+      label: 'Notifications',
+      description: 'Preferences, notification types.',
+      onPress: () => {
+        // TODO: Navigate to notification settings when available
+        impactLight();
+      },
+    });
+
+    // Proof settings item
+    appSettingsItems.push({
+      icon: iconFor(SlidersHorizontal),
+      label: 'Proof settings',
+      description: 'Control how proofs are shared and stored.',
+      onPress: () => handleNavigate('ProofSettings'),
+    });
+
+    // Support & feedback section
+    const supportItems: MenuSectionItem[] = [];
+
+    supportItems.push({
+      icon: iconFor(HelpCircle),
+      label: 'Support',
+      description: 'Help center & support.',
+      onPress: () => handleOpenUrl(selfUrl),
+    });
+
+    supportItems.push({
+      icon: iconFor(Send),
+      label: 'Send feedback',
+      description: 'Reach out to the Self team.',
+      onPress: handleOpenSupportForm,
+    });
+
+    return [
+      {
+        title: 'App settings',
+        items: appSettingsItems,
+      },
+      {
+        title: 'Support & feedback',
+        items: supportItems,
+      },
+    ];
+  }, [
+    handleNavigate,
+    handleOpenUrl,
+    handleOpenSupportForm,
+    hasConfirmedRealDocument,
+    showCloudBackup,
+  ]);
+
+  // Social links grid (2x2) - replaces connect buttons
+  const connectButtons = useMemo(
+    () =>
+      [
+        {
+          variant: 'primary-stacked' as const,
+          text: 'Follow on X',
+          icon: iconFor(X),
+          onPress: () => handleOpenUrl(xUrl),
+        },
+        {
+          variant: 'secondary-stacked' as const,
+          text: 'Send feedback',
+          icon: iconFor(Send),
+          onPress: handleOpenSupportForm,
+        },
+        {
+          variant: 'secondary-stacked' as const,
+          text: 'Join Discord',
+          icon: iconFor(MessageCircle),
+          onPress: () => handleOpenUrl(discordUrl),
+        },
+        {
+          variant: 'secondary-stacked' as const,
+          text: 'Visit the blog',
+          icon: iconFor(FileText),
+          onPress: () => handleOpenUrl(selfUrl),
+        },
+      ] as unknown as Parameters<
+        typeof SettingsViewScreen
+      >[0]['connectButtons'],
+    [handleOpenUrl, handleOpenSupportForm],
+  );
+
+  const bottomSectionItems = useMemo<BottomSectionItem[]>(
+    () => [
+      {
+        label: 'Version',
+        description: `v${version}`,
+      },
+      {
+        label: 'Rate the app',
+        description: 'Leave us a review in the store.',
+        onPress: () => handleOpenUrl(storeURL),
+      },
+      {
+        label: 'Terms of service',
+        onPress: () => handleOpenUrl(termsUrl),
+      },
+      {
+        label: 'Privacy policy',
+        onPress: () => handleOpenUrl(privacyUrl),
+      },
+      {
+        label: 'Uninstalling this app will clear your history.',
+        description:
+          "You won't lose your points, but your proof history will reset.",
+      },
+    ],
+    [handleOpenUrl],
+  );
+
   return (
-    <GestureDetector gesture={devModeTap}>
-      <RNView collapsable={false}>
-        <View backgroundColor={white}>
-          <YStack
-            backgroundColor={black}
-            gap={20}
-            justifyContent="space-between"
-            height={'100%'}
-            paddingHorizontal={20}
-            paddingBottom={bottom + extraYPadding}
-            borderTopLeftRadius={30}
-            borderTopRightRadius={30}
-          >
-            <ScrollView>
-              <YStack
-                alignItems="flex-start"
-                justifyContent="flex-start"
-                width="100%"
-              >
-                {screenRoutes.map(([Icon, menuText, menuRoute], idx) => (
-                  <MenuButton
-                    key={
-                      typeof menuRoute === 'string' ? menuRoute : String(idx)
-                    }
-                    Icon={Icon}
-                    onPress={onMenuPress(menuRoute)}
-                  >
-                    {menuText}
-                  </MenuButton>
-                ))}
-              </YStack>
-            </ScrollView>
-            <YStack
-              alignItems="center"
-              gap={20}
-              justifyContent="center"
-              paddingBottom={50}
-            >
-              <Button
-                unstyled
-                icon={<Star color={white} height={24} width={21} />}
-                width="100%"
-                padding={20}
-                backgroundColor={slate800}
-                color={white}
-                flexDirection="row"
-                justifyContent="center"
-                alignItems="center"
-                gap={6}
-                borderRadius={4}
-                pressStyle={pressedStyle}
-                onPress={goToStore}
-              >
-                <BodyText style={{ color: white }}>
-                  Leave an app store review
-                </BodyText>
-              </Button>
-              <XStack gap={32}>
-                {social.map(([Icon, href], i) => (
-                  <SocialButton key={i} Icon={Icon} href={href} />
-                ))}
-              </XStack>
-              <BodyText style={{ color: amber500, fontSize: 15 }}>
-                SELF
-              </BodyText>
-              {/* Dont remove if not viewing on ios */}
-              <View marginBottom={bottom} />
-            </YStack>
-          </YStack>
-        </View>
-      </RNView>
-    </GestureDetector>
+    <SettingsViewScreen
+      insets={insets}
+      escapeIcon={iconFor(X)}
+      infoIcon={iconFor(Info)}
+      onClose={handleClose}
+      showBackupInfoBox={hasConfirmedRealDocument}
+      isBackupEnabled={cloudBackupEnabled}
+      CTAs={CTAs}
+      sections={sections}
+      connectHeading="CTA Label Placeholder"
+      connectSubheading="This is a CTA description."
+      connectButtons={connectButtons}
+      bottomSectionItems={bottomSectionItems}
+    />
   );
 };
+
+SettingsScreen.statusBarHidden = SettingsViewScreen.statusBar.hidden;
+SettingsScreen.statusBarStyle = SettingsViewScreen.statusBar.style;
 
 export default SettingsScreen;

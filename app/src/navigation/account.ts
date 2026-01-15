@@ -16,11 +16,9 @@ import AccountRecoveryScreen from '@/screens/account/recovery/AccountRecoveryScr
 import DocumentDataNotFoundScreen from '@/screens/account/recovery/DocumentDataNotFoundScreen';
 import RecoverWithPhraseScreen from '@/screens/account/recovery/RecoverWithPhraseScreen';
 import CloudBackupScreen from '@/screens/account/settings/CloudBackupScreen';
-import EuclidSettingsScreen from '@/screens/account/settings/EuclidSettingsScreen';
 import { ProofSettingsScreen } from '@/screens/account/settings/ProofSettingsScreen';
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 import ShowRecoveryPhraseScreen from '@/screens/account/settings/ShowRecoveryPhraseScreen';
-import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
 const accountScreens = {
   AccountRecovery: {
@@ -82,44 +80,21 @@ const accountScreens = {
   Settings: {
     screen: SettingsScreen,
     options: {
-      animation: 'slide_from_bottom',
-      title: 'Settings',
-      headerStyle: {
-        backgroundColor: white,
-      },
-      headerTitleStyle: {
-        color: black,
-      },
-    } as NativeStackNavigationOptions,
-    config: {
-      screens: {},
-    },
-  },
-  EuclidSettings: {
-    screen: EuclidSettingsScreen,
-    options: {
       headerShown: true,
       header: HeadlessNavForEuclid,
-      statusBarStyle: EuclidSettingsScreen.statusBarStyle,
-      statusBarHidden: EuclidSettingsScreen.statusBarHidden,
+      statusBarStyle: SettingsScreen.statusBarStyle,
+      statusBarHidden: SettingsScreen.statusBarHidden,
     } as NativeStackNavigationOptions,
   },
 
   ShowRecoveryPhrase: {
     screen: ShowRecoveryPhraseScreen,
-    options: IS_EUCLID_ENABLED
-      ? ({
-          headerShown: true,
-          header: HeadlessNavForEuclid,
-          statusBarStyle: ShowRecoveryPhraseScreen.statusBarStyle,
-          statusBarHidden: ShowRecoveryPhraseScreen.statusBarHidden,
-        } as NativeStackNavigationOptions)
-      : ({
-          title: 'Recovery Phrase',
-          headerStyle: {
-            backgroundColor: white,
-          },
-        } as NativeStackNavigationOptions),
+    options: {
+      headerShown: true,
+      header: HeadlessNavForEuclid,
+      statusBarStyle: ShowRecoveryPhraseScreen.statusBarStyle,
+      statusBarHidden: ShowRecoveryPhraseScreen.statusBarHidden,
+    } as NativeStackNavigationOptions,
   },
 };
 

@@ -9,14 +9,9 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import type { RecoveryPhraseVariant } from '@selfxyz/euclid';
 import { RecoveryPhraseScreen } from '@selfxyz/euclid';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { Description } from '@selfxyz/mobile-sdk-alpha/components';
 
-import Mnemonic from '@/components/Mnemonic';
 import useMnemonic from '@/hooks/useMnemonic';
-import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useSettingStore } from '@/stores/settingStore';
-import { getRecoveryPhraseWarningMessage } from '@/utils/crypto/mnemonic';
-import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
 function useCopyRecoveryPhrase(mnemonic: string[] | undefined) {
   const [copied, setCopied] = React.useState(false);
@@ -63,36 +58,22 @@ const ShowRecoveryPhraseScreen: React.FC & {
   }, [loadMnemonic, setHasViewedRecoveryPhrase]);
 
   const insets = useSafeAreaInsets();
-  if (IS_EUCLID_ENABLED) {
-    const variant: RecoveryPhraseVariant = !mnemonic
-      ? 'hidden'
-      : copied
-        ? 'copied'
-        : 'revealed';
-    return (
-      <>
-        <RecoveryPhraseScreen
-          insets={insets}
-          onReveal={onReveal}
-          words={mnemonic}
-          onBack={self.goBack}
-          variant={variant}
-          onCopy={onCopy}
-        />
-      </>
-    );
-  }
+  const variant: RecoveryPhraseVariant = !mnemonic
+    ? 'hidden'
+    : copied
+      ? 'copied'
+      : 'revealed';
   return (
-    <ExpandableBottomLayout.Layout backgroundColor="white">
-      <ExpandableBottomLayout.BottomSection
-        backgroundColor="white"
-        justifyContent="center"
-        gap={20}
-      >
-        <Mnemonic words={mnemonic} onRevealWords={loadMnemonic} />
-        <Description>{getRecoveryPhraseWarningMessage()}</Description>
-      </ExpandableBottomLayout.BottomSection>
-    </ExpandableBottomLayout.Layout>
+    <>
+      <RecoveryPhraseScreen
+        insets={insets}
+        onReveal={onReveal}
+        words={mnemonic}
+        onBack={self.goBack}
+        variant={variant}
+        onCopy={onCopy}
+      />
+    </>
   );
 };
 

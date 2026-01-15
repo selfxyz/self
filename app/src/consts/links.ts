@@ -36,7 +36,7 @@ export const selfUrl = 'https://self.xyz';
 export const supportFormUrl =
   'https://hail-jonquil-ef8.notion.site/2b057801cd128041985dfd6e1722eca1';
 export const supportedBiometricIdsUrl =
-  'https://docs.self.xyz/use-self/self-map-countries-list';
+  'https://docs.self.xyz/use-self/self-map-countries-list'; // TODO: Replace with actual Notion support form URL
 export const telegramUrl = 'https://t.me/selfxyz';
 export const termsUrl = 'https://self.xyz/terms';
 export const turnkeyOAuthRedirectAndroidUri = 'https://redirect.self.xyz';
