@@ -9,7 +9,7 @@ import {
   showFeedbackWidget,
 } from '@sentry/react-native';
 
-import type { FeedbackModalScreenParams } from '@/components/FeedbackModalScreen';
+import type { AlertModalParams } from '@/components/AlertModal';
 import { captureFeedback } from '@/config/sentry';
 
 export type FeedbackType = 'button' | 'widget' | 'custom';
@@ -19,7 +19,7 @@ export const useFeedbackModal = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalParams, setModalParams] =
-    useState<FeedbackModalScreenParams | null>(null);
+    useState<AlertModalParams | null>(null);
 
   const showFeedbackModal = useCallback((type: FeedbackType = 'button') => {
     if (timeoutRef.current) {
@@ -81,7 +81,7 @@ export const useFeedbackModal = () => {
     setIsVisible(false);
   }, []);
 
-  const showModal = useCallback((params: FeedbackModalScreenParams) => {
+  const showModal = useCallback((params: AlertModalParams) => {
     setModalParams(params);
     setIsModalVisible(true);
   }, []);
