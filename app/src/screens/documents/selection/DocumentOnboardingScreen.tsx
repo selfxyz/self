@@ -25,7 +25,6 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
-import { SystemBars } from '@/components/SystemBars';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
@@ -58,7 +57,6 @@ const DocumentOnboardingScreen: React.FC = () => {
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
-      <SystemBars style="light" />
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
         <LottieView
           ref={animationRef}

@@ -24,7 +24,6 @@ import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
-import { SystemBars } from '@/components/SystemBars';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import {
   buttonTap,
@@ -210,7 +209,6 @@ const SuccessScreen: React.FC = () => {
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
-      <SystemBars style="dark" />
       <ExpandableBottomLayout.TopSection
         roundTop
         marginTop={20}

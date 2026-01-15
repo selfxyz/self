@@ -11,7 +11,7 @@ export type { SystemBarStyle } from 'react-native-edge-to-edge';
 type SystemBarsProps = React.ComponentProps<typeof EdgeToEdgeSystemBars>;
 
 export const SystemBars: React.FC<SystemBarsProps> = props => {
-  if (Platform.OS === 'android') {
+  if (Platform.OS === 'android' || Platform.OS === 'web') {
     return null;
   }
 
