@@ -18,7 +18,6 @@ import {
   amber500,
   black,
   neutral700,
-  slate400,
   slate800,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';

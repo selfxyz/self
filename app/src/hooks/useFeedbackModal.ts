@@ -18,8 +18,7 @@ export const useFeedbackModal = () => {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalParams, setModalParams] =
-    useState<AlertModalParams | null>(null);
+  const [modalParams, setModalParams] = useState<AlertModalParams | null>(null);
 
   const showFeedbackModal = useCallback((type: FeedbackType = 'button') => {
     if (timeoutRef.current) {

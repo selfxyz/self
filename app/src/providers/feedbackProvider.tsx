@@ -5,8 +5,8 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useContext } from 'react';
 
-import AlertModal from '@/components/AlertModal';
 import type { AlertModalParams } from '@/components/AlertModal';
+import AlertModal from '@/components/AlertModal';
 import FeedbackModal from '@/components/FeedbackModal';
 import type { FeedbackType } from '@/hooks/useFeedbackModal';
 import { useFeedbackModal } from '@/hooks/useFeedbackModal';
