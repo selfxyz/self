@@ -71,7 +71,7 @@ const StarfallPushCodeScreen: React.FC = () => {
   };
 
   const handleCopyCode = async () => {
-    if (!code || code === DASH_CODE) {
+    if (isLoading || isCopied || !code || code === DASH_CODE) {
       return;
     }
 
@@ -225,14 +225,18 @@ const StarfallPushCodeScreen: React.FC = () => {
 
           <PrimaryButton
             onPress={handleCopyCode}
-            disabled={isCopied || !code || code === DASH_CODE || isLoading}
             fontSize={16}
+            accessibilityState={{
+              disabled: isCopied || !code || code === DASH_CODE || isLoading,
+            }}
             style={{
               backgroundColor: isCopied ? green500 : undefined,
               borderColor: '#374151',
               borderWidth: 1,
               borderRadius: 60,
               height: 46,
+              opacity:
+                isCopied || !code || code === DASH_CODE || isLoading ? 0.6 : 1,
               paddingVertical: 0,
             }}
           >
