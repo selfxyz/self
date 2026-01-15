@@ -11,7 +11,7 @@ import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Bug, FileText, Settings2 } from '@tamagui/lucide-icons';
+import { Bug, FileText, Settings, Settings2 } from '@tamagui/lucide-icons';
 
 import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
 import {
@@ -46,6 +46,7 @@ import { impactLight } from '@/integrations/haptics';
 import { usePassport } from '@/providers/passportDataProvider';
 import { openSupportForm } from '@/services/support';
 import { useSettingStore } from '@/stores/settingStore';
+import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 import { extraYPadding } from '@/utils/styleUtils';
 
 // Avoid importing RootStackParamList to prevent type cycles; use minimal typing
@@ -98,11 +99,19 @@ const routes =
 
 // get the actual type of the routes so we can use in the onMenuPress function so it
 // doesnt worry about us linking to screens with required props which we dont want to go to anyway
-type RouteLinks = (typeof routes)[number][2] | (typeof DEBUG_MENU)[number][2];
+type RouteLinks =
+  | (typeof routes)[number][2]
+  | (typeof DEBUG_MENU)[number][2]
+  | (typeof EUCLID_SETTINGS_ROUTE)[2];
 
 const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption][] = [
   [Bug as React.FC<SvgProps>, 'Debug menu', 'DevSettings'],
 ];
+const EUCLID_SETTINGS_ROUTE = [
+  Settings as React.FC<SvgProps>,
+  'Euclid settings',
+  'EuclidSettings',
+] satisfies [React.FC<SvgProps>, string, RouteOption];
 
 const DOCUMENT_DEPENDENT_ROUTES: RouteOption[] = [
   'DocumentDataInfo',
@@ -185,10 +194,13 @@ const SettingsScreen: React.FC = () => {
 
   const screenRoutes = useMemo(() => {
     const baseRoutes = isDevMode ? [...routes, ...DEBUG_MENU] : routes;
+    const euclidRoutes = IS_EUCLID_ENABLED
+      ? [EUCLID_SETTINGS_ROUTE, ...baseRoutes]
+      : baseRoutes;
     const shouldHideCloudBackup = Platform.OS === 'android';
     const hasConfirmedRealDocument = hasRealDocument === true;
 
-    return baseRoutes.filter(([, , route]) => {
+    return euclidRoutes.filter(([, , route]) => {
       if (DOCUMENT_DEPENDENT_ROUTES.includes(route)) {
         return hasConfirmedRealDocument;
       }

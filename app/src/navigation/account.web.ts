@@ -6,6 +6,7 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import EuclidSettingsScreen from '@/screens/account/settings/EuclidSettingsScreen';
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 
 const accountScreens = {
@@ -14,6 +15,22 @@ const accountScreens = {
     options: {
       animation: 'slide_from_bottom',
       title: 'Settings',
+      headerStyle: {
+        backgroundColor: white,
+      },
+      headerTitleStyle: {
+        color: black,
+      },
+    } as NativeStackNavigationOptions,
+    config: {
+      screens: {},
+    },
+  },
+  EuclidSettings: {
+    screen: EuclidSettingsScreen,
+    options: {
+      animation: 'slide_from_right',
+      title: 'Euclid Settings',
       headerStyle: {
         backgroundColor: white,
       },

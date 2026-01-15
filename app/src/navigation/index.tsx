@@ -74,6 +74,7 @@ export type RootStackParamList = Omit<
   | 'DocumentNFCScan'
   | 'DocumentOnboarding'
   | 'DocumentSelectorForProving'
+  | 'EuclidSettings'
   | 'ProvingScreenRouter'
   | 'Gratification'
   | 'Home'
@@ -145,6 +146,7 @@ export type RootStackParamList = Omit<
       }
     | undefined;
   ProofSettings: undefined;
+  EuclidSettings: undefined;
   AccountVerifiedSuccess: undefined;
 
   // Proof/Verification screens

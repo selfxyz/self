@@ -16,6 +16,7 @@ import AccountRecoveryScreen from '@/screens/account/recovery/AccountRecoveryScr
 import DocumentDataNotFoundScreen from '@/screens/account/recovery/DocumentDataNotFoundScreen';
 import RecoverWithPhraseScreen from '@/screens/account/recovery/RecoverWithPhraseScreen';
 import CloudBackupScreen from '@/screens/account/settings/CloudBackupScreen';
+import EuclidSettingsScreen from '@/screens/account/settings/EuclidSettingsScreen';
 import { ProofSettingsScreen } from '@/screens/account/settings/ProofSettingsScreen';
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 import ShowRecoveryPhraseScreen from '@/screens/account/settings/ShowRecoveryPhraseScreen';
@@ -93,6 +94,15 @@ const accountScreens = {
     config: {
       screens: {},
     },
+  },
+  EuclidSettings: {
+    screen: EuclidSettingsScreen,
+    options: {
+      headerShown: true,
+      header: HeadlessNavForEuclid,
+      statusBarStyle: EuclidSettingsScreen.statusBarStyle,
+      statusBarHidden: EuclidSettingsScreen.statusBarHidden,
+    } as NativeStackNavigationOptions,
   },
 
   ShowRecoveryPhrase: {
