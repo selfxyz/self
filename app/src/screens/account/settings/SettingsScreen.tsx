@@ -45,10 +45,7 @@ import {
 } from '@/consts/links';
 import { impactLight } from '@/integrations/haptics';
 import { usePassport } from '@/providers/passportDataProvider';
-import {
-  DISCORD_SUPPORT_MESSAGE,
-  openDiscordSupport,
-} from '@/services/support';
+import { openSupportForm, SUPPORT_FORM_MESSAGE } from '@/services/support';
 import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';
 
@@ -65,7 +62,7 @@ interface SocialButtonProps {
 }
 
 // Avoid importing RootStackParamList; we only need string route names plus a few literals
-type RouteOption = string | 'share' | 'discord_support' | 'ManageDocuments';
+type RouteOption = string | 'share' | 'support_form' | 'ManageDocuments';
 
 const storeURL = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 
@@ -81,7 +78,7 @@ const routes =
         [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
         [Cloud, 'Cloud backup', 'CloudBackupSettings'],
         [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
-        [Feedback, 'Get support', 'discord_support'],
+        [Feedback, 'Get support', 'support_form'],
         [ShareIcon, 'Share Self app', 'share'],
         [
           FileText as React.FC<SvgProps>,
@@ -92,7 +89,7 @@ const routes =
     : ([
         [Data, 'View document info', 'DocumentDataInfo'],
         [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
-        [Feedback, 'Get support', 'discord_support'],
+        [Feedback, 'Get support', 'support_form'],
         [
           FileText as React.FC<SvgProps>,
           'Manage ID documents',
@@ -224,15 +221,15 @@ const SettingsScreen: React.FC = () => {
             );
             break;
 
-          case 'discord_support':
+          case 'support_form':
             try {
-              await openDiscordSupport();
+              await openSupportForm();
             } catch (error) {
               console.warn(
-                'SettingsScreen: failed to open Discord support:',
+                'SettingsScreen: failed to open support form:',
                 error instanceof Error ? error.message : String(error),
               );
-              // Error is already handled and displayed to user in openDiscordSupport,
+              // Error is already handled and displayed to user in openSupportForm,
               // but we log here for debugging purposes
             }
             break;
@@ -290,7 +287,7 @@ const SettingsScreen: React.FC = () => {
                     lineHeight: 18,
                   }}
                 >
-                  {DISCORD_SUPPORT_MESSAGE}
+                  {SUPPORT_FORM_MESSAGE}
                 </BodyText>
               </YStack>
             </ScrollView>

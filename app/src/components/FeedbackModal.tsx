@@ -17,9 +17,9 @@ import {
 import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import {
-  DISCORD_SUPPORT_BUTTON_TEXT,
-  DISCORD_SUPPORT_MESSAGE,
-  openDiscordSupport,
+  openSupportForm,
+  SUPPORT_FORM_BUTTON_TEXT,
+  SUPPORT_FORM_MESSAGE,
 } from '@/services/support';
 
 interface FeedbackModalProps {
@@ -94,8 +94,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
     }
   };
 
-  const handleDiscordSupport = async () => {
-    await openDiscordSupport();
+  const handleSupportForm = async () => {
+    await openSupportForm();
   };
 
   return (
@@ -193,17 +193,17 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
             </Button>
             <YStack gap="$2">
               <Caption style={styles.supportText}>
-                {DISCORD_SUPPORT_MESSAGE}
+                {SUPPORT_FORM_MESSAGE}
               </Caption>
               <Button
                 size="$3"
                 variant="outlined"
                 borderColor={white}
                 color={white}
-                onPress={handleDiscordSupport}
+                onPress={handleSupportForm}
                 disabled={isSubmitting}
               >
-                {DISCORD_SUPPORT_BUTTON_TEXT}
+                {SUPPORT_FORM_BUTTON_TEXT}
               </Button>
             </YStack>
           </YStack>

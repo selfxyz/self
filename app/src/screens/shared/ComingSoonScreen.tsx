@@ -27,9 +27,9 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';
 import { flush as flushAnalytics } from '@/services/analytics';
 import {
-  DISCORD_COMING_SOON_BUTTON_TEXT,
-  DISCORD_COMING_SOON_MESSAGE,
-  openDiscordSupport,
+  openSupportForm,
+  SUPPORT_FORM_COMING_SOON_BUTTON_TEXT,
+  SUPPORT_FORM_COMING_SOON_MESSAGE,
 } from '@/services/support';
 
 type ComingSoonScreenProps = NativeStackScreenProps<
@@ -87,9 +87,9 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
 
   const onNotifyMe = async () => {
     try {
-      await openDiscordSupport();
+      await openSupportForm();
     } catch (error) {
-      console.error('Failed to open Discord:', error);
+      console.error('Failed to open support form:', error);
     }
   };
 
@@ -149,7 +149,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
               paddingHorizontal: 10,
             }}
           >
-            {DISCORD_COMING_SOON_MESSAGE}
+            {SUPPORT_FORM_COMING_SOON_MESSAGE}
           </BodyText>
         </YStack>
       </ExpandableBottomLayout.TopSection>
@@ -164,7 +164,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
           onPress={onNotifyMe}
           trackEvent={PassportEvents.NOTIFY_COMING_SOON}
         >
-          {DISCORD_COMING_SOON_BUTTON_TEXT}
+          {SUPPORT_FORM_COMING_SOON_BUTTON_TEXT}
         </PrimaryButton>
         <SecondaryButton
           trackEvent={PassportEvents.DISMISS_COMING_SOON}

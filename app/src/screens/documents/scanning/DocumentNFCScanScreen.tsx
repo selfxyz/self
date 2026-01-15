@@ -74,9 +74,9 @@ import {
   trackNfcEvent,
 } from '@/services/analytics';
 import {
-  DISCORD_SUPPORT_BUTTON_TEXT,
-  DISCORD_SUPPORT_MESSAGE,
-  openDiscordSupport,
+  openSupportForm,
+  SUPPORT_FORM_BUTTON_TEXT,
+  SUPPORT_FORM_MESSAGE,
 } from '@/services/support';
 
 const emitter =
@@ -174,7 +174,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     });
 
   const onReportIssue = useCallback(() => {
-    openDiscordSupport();
+    openSupportForm();
   }, []);
 
   const openErrorModal = useCallback(
@@ -192,10 +192,10 @@ const DocumentNFCScanScreen: React.FC = () => {
       showModal({
         titleText: 'NFC Scan Error',
         bodyText: message,
-        buttonText: DISCORD_SUPPORT_BUTTON_TEXT,
+        buttonText: SUPPORT_FORM_BUTTON_TEXT,
         secondaryButtonText: 'Help',
         preventDismiss: false,
-        onButtonPress: openDiscordSupport,
+        onButtonPress: openSupportForm,
         onSecondaryButtonPress: goToNFCTrouble,
         onModalDismiss: () => {},
       });
@@ -423,7 +423,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         });
         openErrorModal(message);
         // We deliberately avoid opening any external feedback widgets here;
-        // users can request support via the Discord action in the modal.
+        // users can request support via the support form action in the modal.
       } finally {
         if (scanTimeoutRef.current) {
           clearTimeout(scanTimeoutRef.current);
@@ -610,7 +610,7 @@ const DocumentNFCScanScreen: React.FC = () => {
                 </>
               )}
               <BodyText style={[styles.disclaimer, { marginTop: 12 }]}>
-                {DISCORD_SUPPORT_MESSAGE}
+                {SUPPORT_FORM_MESSAGE}
               </BodyText>
             </TextsContainer>
             <ButtonsContainer>
@@ -634,7 +634,7 @@ const DocumentNFCScanScreen: React.FC = () => {
                 Cancel
               </SecondaryButton>
               <SecondaryButton onPress={onReportIssue}>
-                {DISCORD_SUPPORT_BUTTON_TEXT}
+                {SUPPORT_FORM_BUTTON_TEXT}
               </SecondaryButton>
             </ButtonsContainer>
           </>

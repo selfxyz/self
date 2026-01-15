@@ -17,9 +17,9 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
 import {
-  DISCORD_SUPPORT_BUTTON_TEXT,
-  DISCORD_SUPPORT_MESSAGE_SHORT,
-  openDiscordSupport,
+  openSupportForm,
+  SUPPORT_FORM_BUTTON_TEXT,
+  SUPPORT_FORM_MESSAGE_SHORT,
 } from '@/services/support';
 
 const tips: TipProps[] = [
@@ -81,13 +81,13 @@ const DocumentNFCTroubleScreen: React.FC = () => {
             size="large"
             style={{ color: slate500, textAlign: 'center' }}
           >
-            {DISCORD_SUPPORT_MESSAGE_SHORT}
+            {SUPPORT_FORM_MESSAGE_SHORT}
           </Caption>
           <SecondaryButton
-            onPress={openDiscordSupport}
+            onPress={openSupportForm}
             style={{ marginBottom: 0 }}
           >
-            {DISCORD_SUPPORT_BUTTON_TEXT}
+            {SUPPORT_FORM_BUTTON_TEXT}
           </SecondaryButton>
         </YStack>
       }

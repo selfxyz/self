@@ -14,10 +14,10 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
 import {
-  DISCORD_SUPPORT_BUTTON_TEXT,
-  DISCORD_SUPPORT_MESSAGE_SHORT,
-  DISCORD_TIP_MESSAGE,
-  openDiscordSupport,
+  openSupportForm,
+  SUPPORT_FORM_BUTTON_TEXT,
+  SUPPORT_FORM_MESSAGE_SHORT,
+  SUPPORT_FORM_TIP_MESSAGE,
 } from '@/services/support';
 
 const tips: TipProps[] = [
@@ -46,7 +46,7 @@ const tips: TipProps[] = [
 const tipsDeeplink: TipProps[] = [
   {
     title: 'Coming from another app/website?',
-    body: DISCORD_TIP_MESSAGE,
+    body: SUPPORT_FORM_TIP_MESSAGE,
   },
 ];
 
@@ -68,10 +68,10 @@ const QRCodeTrouble: React.FC = () => {
             size="large"
             style={{ color: slate500, textAlign: 'center', marginBottom: 16 }}
           >
-            {DISCORD_SUPPORT_MESSAGE_SHORT}
+            {SUPPORT_FORM_MESSAGE_SHORT}
           </Caption>
-          <SecondaryButton onPress={openDiscordSupport}>
-            {DISCORD_SUPPORT_BUTTON_TEXT}
+          <SecondaryButton onPress={openSupportForm}>
+            {SUPPORT_FORM_BUTTON_TEXT}
           </SecondaryButton>
         </>
       }

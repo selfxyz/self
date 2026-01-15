@@ -4,44 +4,42 @@
 
 import { Alert, Linking } from 'react-native';
 
-import { discordUrl } from '@/consts/links';
+import { supportFormUrl } from '@/consts/links';
 
-export const DISCORD_COMING_SOON_BUTTON_TEXT = 'Get updates in Discord';
+export const SUPPORT_FORM_BUTTON_TEXT = 'Get help';
 
-export const DISCORD_COMING_SOON_MESSAGE =
-  'Get updates and support in our Discord community.';
+export const SUPPORT_FORM_COMING_SOON_BUTTON_TEXT = 'Let us know';
 
-export const DISCORD_SUPPORT_BUTTON_TEXT = 'Get support in Discord';
+export const SUPPORT_FORM_COMING_SOON_MESSAGE =
+  'Want your document supported? Let us know.';
 
-export const DISCORD_SUPPORT_MESSAGE =
-  'Need help? Join our Discord to open a support ticket.';
+export const SUPPORT_FORM_MESSAGE =
+  "Need help? Reach out and we'll get back to you.";
 
-export const DISCORD_SUPPORT_MESSAGE_SHORT =
-  'Join our Discord to open a support ticket.';
+export const SUPPORT_FORM_MESSAGE_SHORT = 'Reach out if you need help.';
 
-export const DISCORD_TIP_MESSAGE =
-  'Join our Discord to get support and open a ticket.';
+export const SUPPORT_FORM_TIP_MESSAGE = 'Having issues? Let us know.';
 
-export const openDiscordSupport = async (): Promise<void> => {
+export const openSupportForm = async (): Promise<void> => {
   try {
-    const canOpen = await Linking.canOpenURL(discordUrl);
+    const canOpen = await Linking.canOpenURL(supportFormUrl);
     if (canOpen) {
-      await Linking.openURL(discordUrl);
+      await Linking.openURL(supportFormUrl);
     } else {
-      console.warn('Cannot open Discord URL - no handler available');
+      console.warn('Cannot open support form URL - no handler available');
       Alert.alert(
         'Unable to Open Link',
-        'No app is available to open the Discord support link. Please install Discord or use a web browser.',
+        'No app is available to open the support form. Please try again using a web browser.',
       );
     }
   } catch (error) {
     console.error(
-      'Failed to open Discord support:',
+      'Failed to open support form:',
       error instanceof Error ? error.message : String(error),
     );
     Alert.alert(
       'Error',
-      'Unable to open Discord support. Please try again later or contact support through another method.',
+      'Unable to open support form. Please try again later or contact support through another method.',
     );
   }
 };
