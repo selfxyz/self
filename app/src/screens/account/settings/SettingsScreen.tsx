@@ -45,7 +45,7 @@ import {
 } from '@/consts/links';
 import { impactLight } from '@/integrations/haptics';
 import { usePassport } from '@/providers/passportDataProvider';
-import { openSupportForm, SUPPORT_FORM_MESSAGE } from '@/services/support';
+import { openSupportForm } from '@/services/support';
 import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';
 
@@ -278,17 +278,6 @@ const SettingsScreen: React.FC = () => {
                     {menuText}
                   </MenuButton>
                 ))}
-                <BodyText
-                  style={{
-                    color: slate400,
-                    fontSize: 13,
-                    marginTop: 12,
-                    paddingHorizontal: 10,
-                    lineHeight: 18,
-                  }}
-                >
-                  {SUPPORT_FORM_MESSAGE}
-                </BodyText>
               </YStack>
             </ScrollView>
             <YStack
