@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect } from 'react';
+import { View } from 'tamagui';
 
 import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -65,7 +66,7 @@ const QRCodeTrouble: React.FC = () => {
         <>
           <Caption
             size="large"
-            style={{ color: slate500, textAlign: 'center' }}
+            style={{ color: slate500, textAlign: 'center', marginBottom: 16 }}
           >
             {DISCORD_SUPPORT_MESSAGE_SHORT}
           </Caption>
@@ -75,11 +76,13 @@ const QRCodeTrouble: React.FC = () => {
         </>
       }
     >
-      <Caption size="large" style={{ color: slate500 }}>
+      <Caption size="large" style={{ color: slate500, marginBottom: 16 }}>
         Here are some tips to help you successfully scan the QR code:
       </Caption>
-      <Tips items={tips} />
-      <Tips items={tipsDeeplink} />
+      <View marginBottom={24}>
+        <Tips items={tips} />
+        <Tips items={tipsDeeplink} />
+      </View>
     </SimpleScrolledTitleLayout>
   );
 };

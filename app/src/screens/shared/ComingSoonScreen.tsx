@@ -101,13 +101,11 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
-      <ExpandableBottomLayout.TopSection backgroundColor={white}>
-        <YStack
-          flex={1}
-          justifyContent="center"
-          alignItems="center"
-          marginTop={100}
-        >
+      <ExpandableBottomLayout.TopSection
+        backgroundColor={white}
+        overflow="visible"
+      >
+        <YStack flex={1} justifyContent="center" alignItems="center">
           <XStack
             justifyContent="center"
             alignItems="center"
@@ -124,6 +122,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
               textAlign: 'center',
               color: black,
               marginBottom: 16,
+              paddingTop: 10,
             }}
           >
             Coming Soon
@@ -158,7 +157,8 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
         gap={16}
         backgroundColor={white}
         paddingHorizontal={20}
-        paddingVertical={20}
+        paddingTop={20}
+        paddingBottom={20}
       >
         <PrimaryButton
           onPress={onNotifyMe}
