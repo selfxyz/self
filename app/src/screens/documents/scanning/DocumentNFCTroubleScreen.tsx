@@ -16,7 +16,11 @@ import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
-import { openDiscordSupport } from '@/services/support';
+import {
+  DISCORD_SUPPORT_BUTTON_TEXT,
+  DISCORD_SUPPORT_MESSAGE_SHORT,
+  openDiscordSupport,
+} from '@/services/support';
 
 const tips: TipProps[] = [
   {
@@ -77,13 +81,13 @@ const DocumentNFCTroubleScreen: React.FC = () => {
             size="large"
             style={{ color: slate500, textAlign: 'center' }}
           >
-            Support is in Discord—join to open a ticket and get help faster.
+            {DISCORD_SUPPORT_MESSAGE_SHORT}
           </Caption>
           <SecondaryButton
             onPress={openDiscordSupport}
             style={{ marginBottom: 0 }}
           >
-            Get support in Discord
+            {DISCORD_SUPPORT_BUTTON_TEXT}
           </SecondaryButton>
         </YStack>
       }

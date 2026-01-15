@@ -6,6 +6,22 @@ import { Alert, Linking } from 'react-native';
 
 import { discordUrl } from '@/consts/links';
 
+export const DISCORD_COMING_SOON_BUTTON_TEXT = 'Get updates in Discord';
+
+export const DISCORD_COMING_SOON_MESSAGE =
+  'Get updates and support in our Discord community.';
+
+export const DISCORD_SUPPORT_BUTTON_TEXT = 'Get support in Discord';
+
+export const DISCORD_SUPPORT_MESSAGE =
+  'Need help? Join our Discord to open a support ticket.';
+
+export const DISCORD_SUPPORT_MESSAGE_SHORT =
+  'Join our Discord to open a support ticket.';
+
+export const DISCORD_TIP_MESSAGE =
+  'Join our Discord to get support and open a ticket.';
+
 export const openDiscordSupport = async (): Promise<void> => {
   try {
     const canOpen = await Linking.canOpenURL(discordUrl);

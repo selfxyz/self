@@ -45,7 +45,10 @@ import {
 } from '@/consts/links';
 import { impactLight } from '@/integrations/haptics';
 import { usePassport } from '@/providers/passportDataProvider';
-import { openDiscordSupport } from '@/services/support';
+import {
+  DISCORD_SUPPORT_MESSAGE,
+  openDiscordSupport,
+} from '@/services/support';
 import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';
 
@@ -287,8 +290,7 @@ const SettingsScreen: React.FC = () => {
                     lineHeight: 18,
                   }}
                 >
-                  Need help? Support is now in Discord—join to open a ticket and
-                  get help faster.
+                  {DISCORD_SUPPORT_MESSAGE}
                 </BodyText>
               </YStack>
             </ScrollView>

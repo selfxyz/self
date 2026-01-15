@@ -12,7 +12,12 @@ import Tips from '@/components/Tips';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
-import { openDiscordSupport } from '@/services/support';
+import {
+  DISCORD_SUPPORT_BUTTON_TEXT,
+  DISCORD_SUPPORT_MESSAGE_SHORT,
+  DISCORD_TIP_MESSAGE,
+  openDiscordSupport,
+} from '@/services/support';
 
 const tips: TipProps[] = [
   {
@@ -40,7 +45,7 @@ const tips: TipProps[] = [
 const tipsDeeplink: TipProps[] = [
   {
     title: 'Coming from another app/website?',
-    body: 'Join our Discord from the options menu to get support and open a ticket.',
+    body: DISCORD_TIP_MESSAGE,
   },
 ];
 
@@ -62,10 +67,10 @@ const QRCodeTrouble: React.FC = () => {
             size="large"
             style={{ color: slate500, textAlign: 'center' }}
           >
-            Support is in Discord—join to open a ticket and get help faster.
+            {DISCORD_SUPPORT_MESSAGE_SHORT}
           </Caption>
           <SecondaryButton onPress={openDiscordSupport}>
-            Get support in Discord
+            {DISCORD_SUPPORT_BUTTON_TEXT}
           </SecondaryButton>
         </>
       }

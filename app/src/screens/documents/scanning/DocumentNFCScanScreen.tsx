@@ -73,7 +73,11 @@ import {
   setNfcScanningActive,
   trackNfcEvent,
 } from '@/services/analytics';
-import { openDiscordSupport } from '@/services/support';
+import {
+  DISCORD_SUPPORT_BUTTON_TEXT,
+  DISCORD_SUPPORT_MESSAGE,
+  openDiscordSupport,
+} from '@/services/support';
 
 const emitter =
   Platform.OS === 'android'
@@ -188,7 +192,7 @@ const DocumentNFCScanScreen: React.FC = () => {
       showModal({
         titleText: 'NFC Scan Error',
         bodyText: message,
-        buttonText: 'Get support in Discord',
+        buttonText: DISCORD_SUPPORT_BUTTON_TEXT,
         secondaryButtonText: 'Help',
         preventDismiss: false,
         onButtonPress: openDiscordSupport,
@@ -606,8 +610,7 @@ const DocumentNFCScanScreen: React.FC = () => {
                 </>
               )}
               <BodyText style={[styles.disclaimer, { marginTop: 12 }]}>
-                Need help? Support is in Discord—join to open a ticket and get
-                help faster.
+                {DISCORD_SUPPORT_MESSAGE}
               </BodyText>
             </TextsContainer>
             <ButtonsContainer>
@@ -631,7 +634,7 @@ const DocumentNFCScanScreen: React.FC = () => {
                 Cancel
               </SecondaryButton>
               <SecondaryButton onPress={onReportIssue}>
-                Get support in Discord
+                {DISCORD_SUPPORT_BUTTON_TEXT}
               </SecondaryButton>
             </ButtonsContainer>
           </>

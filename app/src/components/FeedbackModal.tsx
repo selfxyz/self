@@ -16,7 +16,11 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import { openDiscordSupport } from '@/services/support';
+import {
+  DISCORD_SUPPORT_BUTTON_TEXT,
+  DISCORD_SUPPORT_MESSAGE,
+  openDiscordSupport,
+} from '@/services/support';
 
 interface FeedbackModalProps {
   visible: boolean;
@@ -189,8 +193,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
             </Button>
             <YStack gap="$2">
               <Caption style={styles.supportText}>
-                Need help? Support is in Discord—join to open a ticket and get
-                help faster.
+                {DISCORD_SUPPORT_MESSAGE}
               </Caption>
               <Button
                 size="$3"
@@ -200,7 +203,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
                 onPress={handleDiscordSupport}
                 disabled={isSubmitting}
               >
-                Get support in Discord
+                {DISCORD_SUPPORT_BUTTON_TEXT}
               </Button>
             </YStack>
           </YStack>
