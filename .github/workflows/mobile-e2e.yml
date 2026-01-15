@@ -229,8 +229,8 @@ jobs:
           arch: x86_64
           target: google_apis
           force-avd-creation: true
-          emulator-boot-timeout: 900
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on -partition-size 2048
+          emulator-boot-timeout: 1800
+          emulator-options: -no-snapshot-save -no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 4096 -cores 2 -accel on -partition-size 2048 -wipe-data
           disable-animations: true
           script: |
             echo "Installing app on emulator..."
