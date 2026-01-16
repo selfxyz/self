@@ -13,8 +13,6 @@ import { WS_DB_RELAYER } from '@selfxyz/common';
  * Zustand state backing the in-app handoff between the SDK and the hosted Self
  * application. The store tracks the active websocket session, latest
  * {@link SelfApp} payload, and helper callbacks used by the proving machine.
- * Consumers should treat the state as ephemeral and expect it to reset whenever
- * the socket disconnects.
  */
 export interface SelfAppState {
   selfApp: SelfApp | null;
@@ -110,8 +108,8 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
 
       socket.on('connect_error', error => {
         console.error('[SelfAppStore] Mobile WS connection error:', error);
-        // Clean up on connection error
-        get().cleanSelfApp();
+        // Clean up on connection error, keeping selfApp to allow retry upon reconnection
+        set({ socket: null, sessionId: null });
       });
 
       socket.on('error', error => {
@@ -122,7 +120,7 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
       socket.on('disconnect', (_reason: string) => {
         // Prevent cleaning up if disconnect was initiated by cleanSelfApp
         if (get().socket === socket) {
-          set({ socket: null, sessionId: null, selfApp: null });
+          set({ socket: null, sessionId: null });
         }
       });
     } catch (error) {
