@@ -149,8 +149,8 @@ export const useSettingStore = create<SettingsState>()(
       setSkipDocumentSelectorIfSingle: (value: boolean) =>
         set({ skipDocumentSelectorIfSingle: value }),
 
-      // StrongBox setting for Android keystore (default: true)
-      useStrongBox: true,
+      // StrongBox setting for Android keystore (default: false)
+      useStrongBox: false,
       setUseStrongBox: (useStrongBox: boolean) => set({ useStrongBox }),
 
       // Non-persisted state (will not be saved to storage)
