@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { Buffer } from 'buffer';
 import { Platform } from 'react-native';
 
 import type { PassportData } from '@selfxyz/common/types';
@@ -28,6 +27,7 @@ interface Inputs {
   usePacePolling?: boolean;
   sessionId: string;
   userId?: string;
+  skipReselect?: boolean;
 }
 
 interface DataGroupHash {
@@ -92,6 +92,7 @@ const scanAndroid = async (
     canNumber: inputs.canNumber ?? '',
     useCan: inputs.useCan ?? false,
     sessionId: inputs.sessionId,
+    skipReselect: inputs.skipReselect ?? false,
   });
 };
 

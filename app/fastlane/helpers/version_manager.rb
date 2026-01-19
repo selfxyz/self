@@ -44,6 +44,20 @@ module Fastlane
         data["android"]["build"]
       end
 
+      def bump_local_build_number(platform)
+        unless %w[ios android].include?(platform)
+          UI.user_error!("Invalid platform: #{platform}. Must be 'ios' or 'android'")
+        end
+
+        data = read_version_file
+        data[platform]["build"] += 1
+
+        write_version_file(data)
+        UI.success("Bumped #{platform} build number to #{data[platform]["build"]}")
+
+        data[platform]["build"]
+      end
+
       def verify_ci_version_match
         # Verify that versions were pre-set by CI
         unless ENV["CI_VERSION"] && ENV["CI_IOS_BUILD"] && ENV["CI_ANDROID_BUILD"]

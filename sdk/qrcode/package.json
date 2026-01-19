@@ -69,7 +69,7 @@
     "prepublishOnly": "yarn build",
     "publish": "yarn npm publish --access public",
     "test": "echo 'no tests found'",
-    "types": "yarn build"
+    "types": "yarn workspace @selfxyz/sdk-common build && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@selfxyz/sdk-common": "workspace:^",

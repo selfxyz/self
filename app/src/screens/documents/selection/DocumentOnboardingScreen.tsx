@@ -5,9 +5,9 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
-import { SystemBars } from 'react-native-edge-to-edge';
 import { useNavigation } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   ButtonsContainer,
@@ -28,11 +28,18 @@ import passportOnboardingAnimation from '@/assets/animations/passport_onboarding
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { getDocumentScanPrompt } from '@/utils/documentAttributes';
 
 const DocumentOnboardingScreen: React.FC = () => {
   const navigation = useNavigation();
+  const selfClient = useSelfClient();
+  const selectedDocumentType = selfClient.useMRZStore(
+    state => state.documentType,
+  );
   const handleCameraPress = useHapticNavigation('DocumentCamera');
   const animationRef = useRef<LottieView>(null);
+
+  const scanPrompt = getDocumentScanPrompt(selectedDocumentType);
 
   const onCancelPress = () => {
     impactLight();
@@ -50,7 +57,6 @@ const DocumentOnboardingScreen: React.FC = () => {
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
-      <SystemBars style="light" />
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
         <LottieView
           ref={animationRef}
@@ -69,7 +75,7 @@ const DocumentOnboardingScreen: React.FC = () => {
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <TextsContainer>
-          <Title>Scan your ID</Title>
+          <Title>{scanPrompt}</Title>
           <Description textBreakStrategy="balanced">
             Open to the photo page
           </Description>

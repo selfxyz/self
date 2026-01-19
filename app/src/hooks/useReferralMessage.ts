@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import { referralBaseUrl } from '@/consts/links';
 import { getOrGeneratePointsAddress } from '@/providers/authProvider';
 import { useSettingStore } from '@/stores/settingStore';
 
@@ -15,8 +16,7 @@ interface ReferralMessageResult {
 const buildReferralMessageFromAddress = (
   userPointsAddress: string,
 ): ReferralMessageResult => {
-  const baseDomain = 'https://referral.self.xyz';
-  const referralLink = `${baseDomain}/referral/${userPointsAddress}`;
+  const referralLink = `${referralBaseUrl}/referral/${userPointsAddress}`;
   return {
     message: `Join Self and use my referral link:\n\n${referralLink}`,
     referralLink,

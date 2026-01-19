@@ -10,7 +10,15 @@ import React, {
   useState,
 } from 'react';
 import { Dimensions, Image, Pressable } from 'react-native';
-import { Button, ScrollView, Text, View, XStack, YStack } from 'tamagui';
+import {
+  Button,
+  ScrollView,
+  Spinner,
+  Text,
+  View,
+  XStack,
+  YStack,
+} from 'tamagui';
 import {
   useFocusEffect,
   useIsFocused,
@@ -47,6 +55,7 @@ import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
 import { useTestReferralFlow } from '@/hooks/useTestReferralFlow';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
+import { useSettingStore } from '@/stores/settingStore';
 import useUserStore from '@/stores/userStore';
 
 const HomeScreen: React.FC = () => {
@@ -67,6 +76,7 @@ const HomeScreen: React.FC = () => {
     Record<string, { data: IDDocument; metadata: DocumentMetadata }>
   >({});
   const [loading, setLoading] = useState(true);
+  const hasIncrementedOnFocus = useRef(false);
 
   const { amount: selfPoints } = usePoints();
 
@@ -122,6 +132,21 @@ const HomeScreen: React.FC = () => {
     useCallback(() => {
       loadDocuments();
     }, [loadDocuments]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (hasIncrementedOnFocus.current) {
+        return;
+      }
+
+      hasIncrementedOnFocus.current = true;
+      useSettingStore.getState().incrementHomeScreenViewCount();
+
+      return () => {
+        hasIncrementedOnFocus.current = false;
+      };
+    }, []),
   );
 
   useFocusEffect(() => {
@@ -184,7 +209,7 @@ const HomeScreen: React.FC = () => {
         justifyContent="center"
         alignItems="center"
       >
-        <Text>Loading documents...</Text>
+        <Spinner size="large" color={black} />
       </YStack>
     );
   }

@@ -15,14 +15,38 @@ export interface ButtonProps extends PressableProps {
   animatedComponent?: React.ReactNode;
   trackEvent?: string;
   borderWidth?: number;
+  borderColor?: string;
+  fontSize?: number;
   onLayout?: (event: LayoutChangeEvent) => void;
+}
+
+/**
+ * Standard interface for extracting style props from button components.
+ * Use this to separate style-related props from other button props.
+ */
+export interface ExtractedButtonStyleProps {
+  borderWidth?: number;
+  borderColor?: string;
+  fontSize?: number;
 }
 
 interface AbstractButtonProps extends ButtonProps {
   bgColor: string;
   borderColor?: string;
   borderWidth?: number;
+  fontSize?: number;
   color: string;
+}
+
+// Helper to extract border props from style object
+function extractBorderFromStyle(style: ViewStyle | undefined): {
+  borderColor?: string;
+  borderWidth?: number;
+  restStyle: ViewStyle;
+} {
+  if (!style) return { restStyle: {} };
+  const { borderColor, borderWidth, ...restStyle } = style;
+  return { borderColor: borderColor as string | undefined, borderWidth, restStyle };
 }
 
 /*
@@ -35,8 +59,9 @@ export default function AbstractButton({
   children,
   bgColor,
   color,
-  borderColor,
-  borderWidth = 4,
+  borderColor: propBorderColor,
+  borderWidth: propBorderWidth,
+  fontSize,
   style,
   animatedComponent,
   trackEvent,
@@ -44,7 +69,15 @@ export default function AbstractButton({
   ...props
 }: AbstractButtonProps) {
   const selfClient = useSelfClient();
-  const hasBorder = borderColor ? true : false;
+
+  // Extract border from style prop if provided there
+  const flatStyle = StyleSheet.flatten(style) as ViewStyle | undefined;
+  const { borderColor: styleBorderColor, borderWidth: styleBorderWidth, restStyle } = extractBorderFromStyle(flatStyle);
+
+  // Props take precedence over style
+  const borderColor = propBorderColor ?? styleBorderColor;
+  const borderWidth = propBorderWidth ?? styleBorderWidth;
+  const hasBorder = borderColor != null;
 
   const handlePress = (e: GestureResponderEvent) => {
     if (trackEvent) {
@@ -69,17 +102,16 @@ export default function AbstractButton({
         { backgroundColor: bgColor },
         hasBorder
           ? {
-              borderWidth: borderWidth,
+              borderWidth: borderWidth ?? 1,
               borderColor: borderColor,
-              padding: 20 - borderWidth, // Adjust padding to maintain total size
             }
           : Platform.select({ web: { borderWidth: 0 }, default: {} }),
         !animatedComponent && pressed ? pressedStyle : {},
-        style as ViewStyle,
+        restStyle as ViewStyle,
       ]}
     >
       {animatedComponent}
-      <Text style={[styles.text, { color: color }]}>{children}</Text>
+      <Text style={[styles.text, { color, fontSize: fontSize ?? 18 }]}>{children}</Text>
     </Pressable>
   );
 }

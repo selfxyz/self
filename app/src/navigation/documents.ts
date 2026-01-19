@@ -7,6 +7,7 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { AadhaarNavBar, IdDetailsNavBar } from '@/components/navbar';
+import { HeadlessNavForEuclid } from '@/components/navbar/HeadlessNavForEuclid';
 import AadhaarUploadedSuccessScreen from '@/screens/documents/aadhaar/AadhaarUploadedSuccessScreen';
 import AadhaarUploadErrorScreen from '@/screens/documents/aadhaar/AadhaarUploadErrorScreen';
 import AadhaarUploadScreen from '@/screens/documents/aadhaar/AadhaarUploadScreen';
@@ -76,7 +77,10 @@ const documentsScreens = {
   CountryPicker: {
     screen: CountryPickerScreen,
     options: {
-      headerShown: false,
+      header: HeadlessNavForEuclid,
+      statusBarHidden: CountryPickerScreen.statusBar?.hidden,
+      statusBarStyle: CountryPickerScreen.statusBar?.style,
+      headerShown: true,
     } as NativeStackNavigationOptions,
   },
   IDPicker: {

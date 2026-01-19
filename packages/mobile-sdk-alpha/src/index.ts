@@ -17,8 +17,10 @@ export type {
   MRZValidation,
   NFCScanResult,
   NFCScannerAdapter,
+  NavigationAdapter,
   NetworkAdapter,
   Progress,
+  RouteName,
   SelfClient,
   StorageAdapter,
   TrackEventParams,
@@ -30,6 +32,8 @@ export type {
 export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
 
 export type { DG1, DG2, ParsedNFCResponse } from './nfc';
+
+export type { DocumentAttributes } from './documents/validation';
 
 export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
 
@@ -95,7 +99,13 @@ export {
   triggerFeedback,
 } from './haptic';
 
-/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
+export {
+  checkDocumentExpiration,
+  getDocumentAttributes,
+  isDocumentValidForProving,
+  pickBestDocumentToSelect,
+} from './documents/validation';
+
 export {
   clearPassportData,
   getAllDocuments,
@@ -112,9 +122,10 @@ export { defaultConfig } from './config/defaults';
 
 export { defaultOptions } from './haptic/shared';
 
-export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
-
+/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
+export { extractMRZInfo } from './mrz';
 export { extractNameFromDocument } from './documents/utils';
+export { extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 

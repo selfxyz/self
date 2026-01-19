@@ -3,22 +3,36 @@ pragma solidity 0.8.28;
 
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
 import {IIdentityRegistryV1} from "../interfaces/IIdentityRegistryV1.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {CircuitConstants} from "../constants/CircuitConstants.sol";
 
 /// @title VerifyAll
 /// @notice A contract for verifying identity proofs and revealing selected data
 /// @dev This contract interacts with IdentityVerificationHub and IdentityRegistry
-contract VerifyAll is Ownable {
+contract VerifyAll is AccessControl {
+    /// @notice Critical operations and role management requiring 3/5 multisig consensus
+    bytes32 public constant SECURITY_ROLE = keccak256("SECURITY_ROLE");
+
+    /// @notice Standard operations requiring 2/5 multisig consensus
+    bytes32 public constant OPERATIONS_ROLE = keccak256("OPERATIONS_ROLE");
+
     IIdentityVerificationHubV1 public hub;
     IIdentityRegistryV1 public registry;
 
     /// @notice Initializes the contract with hub and registry addresses
     /// @param hubAddress The address of the IdentityVerificationHub contract
     /// @param registryAddress The address of the IdentityRegistry contract
-    constructor(address hubAddress, address registryAddress) Ownable(msg.sender) {
+    constructor(address hubAddress, address registryAddress) {
         hub = IIdentityVerificationHubV1(hubAddress);
         registry = IIdentityRegistryV1(registryAddress);
+
+        // Grant all roles to deployer initially
+        _grantRole(SECURITY_ROLE, msg.sender);
+        _grantRole(OPERATIONS_ROLE, msg.sender);
+
+        // Set role admins - SECURITY_ROLE manages all roles
+        _setRoleAdmin(SECURITY_ROLE, SECURITY_ROLE);
+        _setRoleAdmin(OPERATIONS_ROLE, SECURITY_ROLE);
     }
 
     /// @notice Verifies identity proof and reveals selected data
@@ -107,15 +121,15 @@ contract VerifyAll is Ownable {
 
     /// @notice Updates the hub contract address
     /// @param hubAddress The new hub contract address
-    /// @dev Only callable by the contract owner
-    function setHub(address hubAddress) external onlyOwner {
+    /// @dev Only callable by accounts with SECURITY_ROLE
+    function setHub(address hubAddress) external onlyRole(SECURITY_ROLE) {
         hub = IIdentityVerificationHubV1(hubAddress);
     }
 
     /// @notice Updates the registry contract address
     /// @param registryAddress The new registry contract address
-    /// @dev Only callable by the contract owner
-    function setRegistry(address registryAddress) external onlyOwner {
+    /// @dev Only callable by accounts with SECURITY_ROLE
+    function setRegistry(address registryAddress) external onlyRole(SECURITY_ROLE) {
         registry = IIdentityRegistryV1(registryAddress);
     }
 }

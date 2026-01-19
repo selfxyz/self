@@ -18,7 +18,9 @@ interface HeldPrimaryButtonProveScreenProps {
   onVerify: () => void;
   selectedAppSessionId: string | undefined | null;
   hasScrolledToBottom: boolean;
+  isScrollable: boolean;
   isReadyToProve: boolean;
+  isDocumentExpired: boolean;
 }
 
 interface ButtonContext {
@@ -26,6 +28,7 @@ interface ButtonContext {
   hasScrolledToBottom: boolean;
   isReadyToProve: boolean;
   onVerify: () => void;
+  isDocumentExpired: boolean;
 }
 
 type ButtonEvent =
@@ -34,6 +37,7 @@ type ButtonEvent =
       selectedAppSessionId: string | undefined | null;
       hasScrolledToBottom: boolean;
       isReadyToProve: boolean;
+      isDocumentExpired: boolean;
     }
   | { type: 'VERIFY' };
 
@@ -51,6 +55,7 @@ const buttonMachine = createMachine(
       hasScrolledToBottom: false,
       isReadyToProve: false,
       onVerify: input.onVerify,
+      isDocumentExpired: false,
     }),
     on: {
       PROPS_UPDATED: {
@@ -72,7 +77,11 @@ const buttonMachine = createMachine(
           },
           {
             target: 'preparing',
-            guard: ({ context }) => context.hasScrolledToBottom,
+            guard: ({ context }) => context.hasScrolledToBottom && !context.isReadyToProve,
+          },
+          {
+            target: 'ready',
+            guard: ({ context }) => context.hasScrolledToBottom && context.isReadyToProve && !context.isDocumentExpired,
           },
         ],
       },
@@ -88,11 +97,11 @@ const buttonMachine = createMachine(
           },
           {
             target: 'ready',
-            guard: ({ context }) => context.isReadyToProve,
+            guard: ({ context }) => context.isReadyToProve && !context.isDocumentExpired,
           },
         ],
         after: {
-          500: { target: 'preparing2' },
+          100: { target: 'preparing2' },
         },
       },
       preparing2: {
@@ -107,11 +116,11 @@ const buttonMachine = createMachine(
           },
           {
             target: 'ready',
-            guard: ({ context }) => context.isReadyToProve,
+            guard: ({ context }) => context.isReadyToProve && !context.isDocumentExpired,
           },
         ],
         after: {
-          500: { target: 'preparing3' },
+          100: { target: 'preparing3' },
         },
       },
       preparing3: {
@@ -126,7 +135,7 @@ const buttonMachine = createMachine(
           },
           {
             target: 'ready',
-            guard: ({ context }) => context.isReadyToProve,
+            guard: ({ context }) => context.isReadyToProve && !context.isDocumentExpired,
           },
         ],
       },
@@ -167,12 +176,14 @@ const buttonMachine = createMachine(
           if (
             context.selectedAppSessionId !== event.selectedAppSessionId ||
             context.hasScrolledToBottom !== event.hasScrolledToBottom ||
-            context.isReadyToProve !== event.isReadyToProve
+            context.isReadyToProve !== event.isReadyToProve ||
+            context.isDocumentExpired !== event.isDocumentExpired
           ) {
             return {
               selectedAppSessionId: event.selectedAppSessionId,
               hasScrolledToBottom: event.hasScrolledToBottom,
               isReadyToProve: event.isReadyToProve,
+              isDocumentExpired: event.isDocumentExpired,
             };
           }
         }
@@ -189,7 +200,9 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
   onVerify,
   selectedAppSessionId,
   hasScrolledToBottom,
+  isScrollable,
   isReadyToProve,
+  isDocumentExpired,
 }) => {
   const [state, send] = useMachine(buttonMachine, {
     input: { onVerify },
@@ -201,57 +214,46 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
       selectedAppSessionId,
       hasScrolledToBottom,
       isReadyToProve,
+      isDocumentExpired,
     });
-  }, [selectedAppSessionId, hasScrolledToBottom, isReadyToProve, send]);
+  }, [selectedAppSessionId, hasScrolledToBottom, isReadyToProve, isDocumentExpired, send]);
 
-  const isDisabled = !state.matches('ready');
+  const isDisabled = !state.matches('ready') && !state.matches('verifying');
+
+  const LoadingContent: React.FC<{ text: string }> = ({ text }) => (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <ActivityIndicator color={black} style={{ marginRight: 8 }} />
+      <Description color={black}>{text}</Description>
+    </View>
+  );
 
   const renderButtonContent = () => {
+    if (isDocumentExpired) {
+      return 'Document expired';
+    }
     if (state.matches('waitingForSession')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Waiting for app...</Description>
-        </View>
-      );
+      return <LoadingContent text="Waiting for app..." />;
     }
     if (state.matches('needsScroll')) {
-      return 'Please read all disclosures';
+      if (isScrollable) {
+        return 'Scroll to read full request';
+      }
+      return <LoadingContent text="Waiting for app..." />;
     }
     if (state.matches('preparing')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Accessing to Keychain data</Description>
-        </View>
-      );
+      return <LoadingContent text="Accessing to Keychain data" />;
     }
     if (state.matches('preparing2')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Parsing passport data</Description>
-        </View>
-      );
+      return <LoadingContent text="Parsing passport data" />;
     }
     if (state.matches('preparing3')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Preparing for verification</Description>
-        </View>
-      );
+      return <LoadingContent text="Preparing for verification" />;
     }
     if (state.matches('ready')) {
-      return 'Hold to verify';
+      return 'Press and hold to verify';
     }
     if (state.matches('verifying')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Generating proof</Description>
-        </View>
-      );
+      return <LoadingContent text="Generating proof" />;
     }
     return null;
   };

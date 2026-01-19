@@ -9,7 +9,7 @@ import {
   showFeedbackWidget,
 } from '@sentry/react-native';
 
-import type { FeedbackModalScreenParams } from '@/components/FeedbackModalScreen';
+import type { AlertModalParams } from '@/components/AlertModal';
 import { captureFeedback } from '@/config/sentry';
 
 export type FeedbackType = 'button' | 'widget' | 'custom';
@@ -18,8 +18,7 @@ export const useFeedbackModal = () => {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalParams, setModalParams] =
-    useState<FeedbackModalScreenParams | null>(null);
+  const [modalParams, setModalParams] = useState<AlertModalParams | null>(null);
 
   const showFeedbackModal = useCallback((type: FeedbackType = 'button') => {
     if (timeoutRef.current) {
@@ -27,25 +26,38 @@ export const useFeedbackModal = () => {
       timeoutRef.current = null;
     }
 
-    switch (type) {
-      case 'button':
-        showFeedbackButton();
-        break;
-      case 'widget':
-        showFeedbackWidget();
-        break;
-      case 'custom':
-        setIsVisible(true);
-        break;
-      default:
-        showFeedbackButton();
+    try {
+      switch (type) {
+        case 'button':
+          showFeedbackButton();
+          break;
+        case 'widget':
+          showFeedbackWidget();
+          break;
+        case 'custom':
+          setIsVisible(true);
+          break;
+        default:
+          showFeedbackButton();
+      }
+    } catch (error) {
+      if (__DEV__) {
+        console.debug('Failed to show feedback button/widget:', error);
+      }
+      setIsVisible(true);
     }
 
     // we can close the feedback modals(sentry and custom modals), but can't do so for the Feedback button.
     // This hides the button after 10 seconds.
     if (type === 'button') {
       timeoutRef.current = setTimeout(() => {
-        hideFeedbackButton();
+        try {
+          hideFeedbackButton();
+        } catch (error) {
+          if (__DEV__) {
+            console.debug('Failed to hide feedback button:', error);
+          }
+        }
         timeoutRef.current = null;
       }, 10000);
     }
@@ -57,12 +69,18 @@ export const useFeedbackModal = () => {
       timeoutRef.current = null;
     }
 
-    hideFeedbackButton();
+    try {
+      hideFeedbackButton();
+    } catch (error) {
+      if (__DEV__) {
+        console.debug('Failed to hide feedback button:', error);
+      }
+    }
 
     setIsVisible(false);
   }, []);
 
-  const showModal = useCallback((params: FeedbackModalScreenParams) => {
+  const showModal = useCallback((params: AlertModalParams) => {
     setModalParams(params);
     setIsModalVisible(true);
   }, []);

@@ -1,0 +1,10 @@
+# Actionlint configuration to register custom runner labels
+# This prevents actionlint warnings about unrecognized runner labels
+
+# Custom runner labels used in this repository
+labels:
+  # Namespace-managed Apple Silicon runners
+  - namespace-profile-apple-silicon-6cpu
+
+  # High-memory runners for circuit compilation
+  - "128ram"

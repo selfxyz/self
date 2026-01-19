@@ -16,9 +16,7 @@ import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
-import analytics from '@/services/analytics';
-
-const { flush: flushAnalytics } = analytics();
+import { flush as flushAnalytics } from '@/services/analytics';
 
 const tips: TipProps[] = [
   {

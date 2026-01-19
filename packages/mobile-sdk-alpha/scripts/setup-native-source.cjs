@@ -9,6 +9,7 @@ const path = require('path');
 // Constants
 const SCRIPT_DIR = __dirname;
 const SDK_DIR = path.dirname(SCRIPT_DIR);
+const REPO_ROOT = path.resolve(SDK_DIR, '../../');
 const PRIVATE_MODULE_PATH = path.join(SDK_DIR, 'mobile-sdk-native');
 
 const GITHUB_ORG = 'selfxyz';
@@ -18,6 +19,7 @@ const BRANCH = 'main';
 // Environment detection
 const isCI = process.env.CI === 'true';
 const repoToken = process.env.SELFXYZ_INTERNAL_REPO_PAT;
+const appToken = process.env.SELFXYZ_APP_TOKEN; // GitHub App installation token
 const isDryRun = process.env.DRY_RUN === 'true';
 
 function log(message, type = 'info') {
@@ -33,10 +35,10 @@ function log(message, type = 'info') {
   console.log(`${prefix} ${message}`);
 }
 
-function runCommand(command, options = {}) {
+function runCommand(command, options = {}, cwd = SDK_DIR) {
   const defaultOptions = {
     stdio: isDryRun ? 'pipe' : 'inherit',
-    cwd: SDK_DIR,
+    cwd: cwd,
     encoding: 'utf8',
     ...options,
   };
@@ -89,35 +91,120 @@ function setupSubmodule() {
 
   let submoduleUrl;
 
-  if (isCI && repoToken) {
+  if (isCI && appToken) {
+    // CI environment with GitHub App installation token
+    // Security: NEVER embed credentials in git URLs. Rely on CI-provided auth via:
+    // - ~/.netrc, a Git credential helper, or SSH agent configuration.
+    submoduleUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
+  } else if (isCI && repoToken) {
     // CI environment with Personal Access Token
-    log('CI detected: Using SELFXYZ_INTERNAL_REPO_PAT for submodule', 'info');
-    submoduleUrl = `https://${repoToken}@github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
+    // Security: NEVER embed credentials in git URLs. Rely on CI-provided auth via:
+    // - ~/.netrc, a Git credential helper, or SSH agent configuration.
+    submoduleUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
   } else if (isCI) {
-    log('CI environment detected but SELFXYZ_INTERNAL_REPO_PAT not available - skipping private module setup', 'info');
+    log('CI environment detected but no token available - skipping private module setup', 'info');
     log('This is expected for forked PRs or environments without access to private modules', 'info');
     return false; // Return false to indicate setup was skipped
   } else if (usingHTTPSGitAuth()) {
     submoduleUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
   } else {
     // Local development with SSH
-    log('Local development: Using SSH for submodule', 'info');
     submoduleUrl = `git@github.com:${GITHUB_ORG}/${REPO_NAME}.git`;
   }
 
   try {
-    // Check if submodule already exists
-    if (fs.existsSync(PRIVATE_MODULE_PATH)) {
-      log('Submodule already exists, updating...', 'info');
-      runCommand(`git submodule update --init --recursive mobile-sdk-native`);
+    // Check if submodule is registered in .gitmodules (at repo root)
+    const gitmodulesPath = path.join(REPO_ROOT, '.gitmodules');
+    const gitmodulesExists = fs.existsSync(gitmodulesPath);
+    const gitmodulesContent = gitmodulesExists ? fs.readFileSync(gitmodulesPath, 'utf8') : '';
+    const isSubmoduleRegistered =
+      gitmodulesExists && gitmodulesContent.includes('[submodule "packages/mobile-sdk-alpha/mobile-sdk-native"]');
+
+    if (process.env.DEBUG_SETUP === 'true') {
+      log(`Environment: CI=${isCI}, hasAppToken=${!!appToken}, hasRepoToken=${!!repoToken}`, 'info');
+      log(`Submodule registered: ${isSubmoduleRegistered}`, 'info');
+    }
+
+    // Check if submodule directory exists and has content
+    const submoduleExists = fs.existsSync(PRIVATE_MODULE_PATH);
+    let submoduleHasContent = false;
+    try {
+      submoduleHasContent = submoduleExists && fs.readdirSync(PRIVATE_MODULE_PATH).length > 0;
+    } catch {
+      // Directory might not be readable, treat as empty
+      submoduleHasContent = false;
+    }
+
+    log(`Submodule directory exists: ${submoduleExists}, has content: ${submoduleHasContent}`, 'info');
+
+    // If submodule is registered, update its URL first (important for CI where we switch from SSH to HTTPS)
+    if (isSubmoduleRegistered) {
+      log(`Submodule is registered, updating URL from SSH to HTTPS...`, 'info');
+      log(`Target URL: ${submoduleUrl}`, 'info');
+
+      // Update submodule URL using git submodule set-url (Git 2.25+)
+      try {
+        const setUrlResult = runCommand(
+          `git submodule set-url packages/mobile-sdk-alpha/mobile-sdk-native "${submoduleUrl}"`,
+          { stdio: 'pipe' },
+          REPO_ROOT,
+        );
+        log('Updated submodule URL using git submodule set-url', 'success');
+        log(`Command result: ${setUrlResult}`, 'info');
+      } catch (error) {
+        log(`git submodule set-url failed: ${error.message}`, 'warning');
+        // Fallback: Update .gitmodules file directly
+        try {
+          let gitmodulesContent = fs.readFileSync(gitmodulesPath, 'utf8');
+          log(`Current .gitmodules content:\n${gitmodulesContent}`, 'info');
+          // Replace the URL for mobile-sdk-native submodule
+          const oldContent = gitmodulesContent;
+          gitmodulesContent = gitmodulesContent.replace(
+            /(\[submodule\s+"packages\/mobile-sdk-alpha\/mobile-sdk-native"\]\s+path\s*=\s*packages\/mobile-sdk-alpha\/mobile-sdk-native\s+url\s*=\s*)[^\s]+/,
+            `$1${submoduleUrl}`,
+          );
+          if (oldContent !== gitmodulesContent) {
+            fs.writeFileSync(gitmodulesPath, gitmodulesContent, 'utf8');
+            log('Updated .gitmodules with new submodule URL', 'success');
+            log(`New .gitmodules content:\n${gitmodulesContent}`, 'info');
+          } else {
+            log('No changes made to .gitmodules - regex may not match', 'warning');
+          }
+        } catch (fallbackError) {
+          log(`Could not update .gitmodules: ${fallbackError.message}`, 'error');
+        }
+      }
+    }
+
+    // If directory exists but is empty, remove it so we can re-initialize
+    if (submoduleExists && !submoduleHasContent) {
+      log('Submodule directory exists but is empty, removing...', 'info');
+      runCommand(`rm -rf "${path.relative(REPO_ROOT, PRIVATE_MODULE_PATH)}"`, { stdio: 'pipe' }, REPO_ROOT);
+    }
+
+    if (isSubmoduleRegistered) {
+      // Submodule is registered, update/init it
+      log('Updating and initializing submodule...', 'info');
+      try {
+        const updateResult = runCommand(
+          `git submodule update --init --recursive packages/mobile-sdk-alpha/mobile-sdk-native`,
+          {},
+          REPO_ROOT,
+        );
+        log(`Submodule update completed: ${updateResult}`, 'success');
+      } catch (error) {
+        log(`Submodule update failed: ${error.message}`, 'error');
+        throw error;
+      }
     } else {
-      // Add submodule
-      const addCommand = `git submodule add -b ${BRANCH} "${submoduleUrl}" mobile-sdk-native`;
-      if (isCI && repoToken) {
+      // Submodule not registered, add it
+      log('Adding submodule...', 'info');
+      const addCommand = `git submodule add -b ${BRANCH} "${submoduleUrl}" packages/mobile-sdk-alpha/mobile-sdk-native`;
+      if (isCI && (appToken || repoToken)) {
         // Security: Run command silently to avoid token exposure in logs
-        runCommand(addCommand, { stdio: 'pipe' });
+        runCommand(addCommand, { stdio: 'pipe' }, REPO_ROOT);
       } else {
-        runCommand(addCommand);
+        runCommand(addCommand, {}, REPO_ROOT);
       }
     }
 
@@ -125,7 +212,7 @@ function setupSubmodule() {
     return true; // Return true to indicate successful setup
   } catch (error) {
     if (isCI) {
-      log('Submodule setup failed in CI environment. Check SELFXYZ_INTERNAL_REPO_PAT permissions.', 'error');
+      log('Submodule setup failed in CI environment. Check repository access/credentials configuration.', 'error');
     } else {
       log('Submodule setup failed. Ensure you have SSH access to the repository.', 'error');
     }
@@ -169,7 +256,7 @@ function setupMobileSDKNative() {
   }
 
   // Security: Remove credential-embedded remote URL after setup
-  if (isCI && repoToken && !isDryRun) {
+  if (isCI && (appToken || repoToken) && !isDryRun) {
     scrubGitRemoteUrl();
   }
 

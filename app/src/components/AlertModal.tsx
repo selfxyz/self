@@ -30,7 +30,7 @@ const ModalBackDrop = styled(View, {
   height: '100%',
 });
 
-export interface FeedbackModalScreenParams {
+export interface AlertModalParams {
   titleText: string;
   bodyText: string;
   buttonText: string;
@@ -41,13 +41,13 @@ export interface FeedbackModalScreenParams {
   preventDismiss?: boolean;
 }
 
-interface FeedbackModalScreenProps {
+interface AlertModalProps {
   visible: boolean;
-  modalParams: FeedbackModalScreenParams | null;
+  modalParams: AlertModalParams | null;
   onHideModal?: () => void;
 }
 
-const FeedbackModalScreen: React.FC<FeedbackModalScreenProps> = ({
+const AlertModal: React.FC<AlertModalProps> = ({
   visible,
   modalParams,
   onHideModal,
@@ -145,4 +145,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeedbackModalScreen;
+export default AlertModal;

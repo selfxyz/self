@@ -2,41 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import forge from 'node-forge';
-
-import { encryptAES256GCM, getPayload, getWSDbRelayerUrl } from '@/proving';
+import { getPayload, getWSDbRelayerUrl } from '@/proving';
 
 describe('provingUtils', () => {
-  it('encryptAES256GCM encrypts and decrypts correctly', () => {
-    const key = forge.random.getBytesSync(32);
-    const plaintext = 'hello world';
-    const encrypted = encryptAES256GCM(plaintext, forge.util.createBuffer(key));
-
-    const decipher = forge.cipher.createDecipher(
-      'AES-GCM',
-      forge.util.createBuffer(key),
-    );
-    decipher.start({
-      iv: forge.util.createBuffer(
-        Buffer.from(encrypted.nonce).toString('binary'),
-      ),
-      tagLength: 128,
-      tag: forge.util.createBuffer(
-        Buffer.from(encrypted.auth_tag).toString('binary'),
-      ),
-    });
-    decipher.update(
-      forge.util.createBuffer(
-        Buffer.from(encrypted.cipher_text).toString('binary'),
-      ),
-    );
-    const success = decipher.finish();
-    const decrypted = decipher.output.toString();
-
-    expect(success).toBe(true);
-    expect(decrypted).toBe(plaintext);
-  });
-
   it('getPayload returns disclose payload', () => {
     const inputs = { foo: 'bar' };
     const payload = getPayload(

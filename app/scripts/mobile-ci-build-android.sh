@@ -109,7 +109,13 @@ clone_private_module() {
   local dir_name=$(basename "$target_dir")
 
   # Use different clone methods based on environment
-  if is_ci && [[ -n "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]]; then
+  if is_ci && [[ -n "${SELFXYZ_APP_TOKEN:-}" ]]; then
+    # CI environment with GitHub App installation token
+    git clone "https://x-access-token:${SELFXYZ_APP_TOKEN}@github.com/selfxyz/${repo_name}.git" "$dir_name" || {
+      log "ERROR: Failed to clone $repo_name with GitHub App token"
+      exit 1
+    }
+  elif is_ci && [[ -n "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]]; then
     # CI environment with PAT (fallback if action didn't run)
     git clone "https://${SELFXYZ_INTERNAL_REPO_PAT}@github.com/selfxyz/${repo_name}.git" "$dir_name" || {
       log "ERROR: Failed to clone $repo_name with PAT"
@@ -119,14 +125,14 @@ clone_private_module() {
     # Local development with SSH
     git clone "git@github.com:selfxyz/${repo_name}.git" "$dir_name" || {
       log "ERROR: Failed to clone $repo_name with SSH"
-      log "Please ensure you have SSH access to the repository or set SELFXYZ_INTERNAL_REPO_PAT"
+      log "Please ensure you have SSH access to the repository or set SELFXYZ_APP_TOKEN/SELFXYZ_INTERNAL_REPO_PAT"
       exit 1
     }
   else
     log "ERROR: No authentication method available for cloning $repo_name"
     log "Please either:"
     log "  - Set up SSH access (for local development)"
-    log "  - Set SELFXYZ_INTERNAL_REPO_PAT environment variable (for CI)"
+    log "  - Set SELFXYZ_APP_TOKEN or SELFXYZ_INTERNAL_REPO_PAT environment variable (for CI)"
     exit 1
   fi
 
@@ -194,14 +200,15 @@ log "✅ Package files backed up successfully"
 # Install SDK from tarball in app with timeout
 log "Installing SDK as real files..."
 if is_ci; then
-  # Temporarily unset PAT to skip private modules during SDK installation
-  env -u SELFXYZ_INTERNAL_REPO_PAT timeout 180 yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH" || {
+  # Temporarily unset both auth tokens to skip private modules during SDK installation
+  # Both tokens must be unset to prevent setup-private-modules.cjs from attempting clones
+  env -u SELFXYZ_INTERNAL_REPO_PAT -u SELFXYZ_APP_TOKEN timeout 180 yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH" || {
     log "SDK installation timed out after 3 minutes"
     exit 1
   }
 else
-  # Temporarily unset PAT to skip private modules during SDK installation
-  env -u SELFXYZ_INTERNAL_REPO_PAT yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH"
+  # Temporarily unset both auth tokens to skip private modules during SDK installation
+  env -u SELFXYZ_INTERNAL_REPO_PAT -u SELFXYZ_APP_TOKEN yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH"
 fi
 
 # Verify installation (check for AAR file in both local and hoisted locations)

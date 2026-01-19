@@ -42,7 +42,7 @@ const optionalDefaults: Required<Pick<Adapters, 'clock' | 'logger'>> = {
   },
 };
 
-const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] as const;
+const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents', 'navigation'] as const;
 
 export const createListenersMap = (): {
   map: Map<SDKEvent, Set<(p: any) => void>>;
@@ -212,7 +212,13 @@ export function createSelfClient({
     getMRZState: () => {
       return useMRZStore.getState();
     },
-
+    goBack: () => {
+      adapters.navigation.goBack();
+    },
+    goTo: (routeName, params) => {
+      adapters.navigation.goTo(routeName, params);
+    },
+    navigation: adapters.navigation,
     // for reactivity (if needed)
     useProvingStore,
     useSelfAppStore,

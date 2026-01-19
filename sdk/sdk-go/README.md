@@ -291,4 +291,4 @@ For support and questions:
 
 - Create an issue in this repository
 - Check the [Self Protocol documentation](https://docs.self.id)
-- Join our [Discord community](https://discord.gg/worldcoin)
+- Join our [Discord community](https://discord.gg/selfxyz)

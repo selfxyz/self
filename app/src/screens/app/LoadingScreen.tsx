@@ -9,6 +9,7 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha';
 import {
   advercase,
   dinot,
@@ -17,7 +18,6 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
 import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
-import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
 import {
   black,
   slate400,

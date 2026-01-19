@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PropsWithChildren } from 'react';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Platform } from 'react-native';
 
 import {
@@ -23,10 +23,20 @@ import {
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
-import { unsafe_getPrivateKey } from '@/providers/authProvider';
-import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
-import analytics, { trackNfcEvent } from '@/services/analytics';
+import {
+  setKeychainCryptoFailureCallback,
+  unsafe_getPrivateKey,
+} from '@/providers/authProvider';
+import {
+  selfClientDocumentsAdapter,
+  setPassportKeychainErrorCallback,
+} from '@/providers/passportDataProvider';
+import { trackEvent, trackNfcEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
+import {
+  registerModalCallbacks,
+  unregisterModalCallbacks,
+} from '@/utils/modalCallbackRegistry';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
 /**
@@ -89,6 +99,25 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         },
       },
       documents: selfClientDocumentsAdapter,
+      navigation: {
+        goBack: () => {
+          if (navigationRef.isReady()) {
+            navigationRef.goBack();
+          }
+        },
+        goTo: (routeName, params) => {
+          if (navigationRef.isReady()) {
+            if (params !== undefined) {
+              // @ts-expect-error
+              navigationRef.navigate(routeName, params);
+            } else {
+              navigationRef.navigate(routeName as never);
+            }
+          }
+        },
+        enableKeychainErrorModal,
+        disableKeychainErrorModal,
+      },
       crypto: {
         async hash(
           data: Uint8Array,
@@ -113,7 +142,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       },
       analytics: {
         trackEvent: (event: string, data?: TrackEventParams) => {
-          analytics().trackEvent(event, data);
+          trackEvent(event, data);
         },
         trackNfcEvent: (name: string, data?: Record<string, unknown>) => {
           trackNfcEvent(name, data);
@@ -194,21 +223,21 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
 
         if (fcmToken) {
           try {
-            analytics().trackEvent('DEVICE_TOKEN_REG_STARTED');
+            trackEvent('DEVICE_TOKEN_REG_STARTED');
             logProofEvent('info', 'Device token registration started', context);
 
             const { registerDeviceToken: registerFirebaseDeviceToken } =
               await import('@/services/notifications/notificationService');
             await registerFirebaseDeviceToken(uuid, fcmToken, isMock);
 
-            analytics().trackEvent('DEVICE_TOKEN_REG_SUCCESS');
+            trackEvent('DEVICE_TOKEN_REG_SUCCESS');
             logProofEvent('info', 'Device token registration success', context);
           } catch (error) {
             logProofEvent('warn', 'Device token registration failed', context, {
               error: error instanceof Error ? error.message : String(error),
             });
             console.error('Error registering device token:', error);
-            analytics().trackEvent('DEVICE_TOKEN_REG_FAILED', {
+            trackEvent('DEVICE_TOKEN_REG_FAILED', {
               message: error instanceof Error ? error.message : String(error),
             });
           }
@@ -304,5 +333,57 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     </SDKSelfClientProvider>
   );
 };
+
+export function disableKeychainErrorModal() {
+  setKeychainCryptoFailureCallback(null);
+  setPassportKeychainErrorCallback(null);
+}
+
+// Functions to enable/disable keychain error modals
+// These should be called by the provingMachine when entering/exiting proving flows
+export function enableKeychainErrorModal() {
+  setKeychainCryptoFailureCallback(showKeychainErrorModal);
+  setPassportKeychainErrorCallback(showKeychainErrorModal);
+}
+
+export function showKeychainErrorModal(
+  errorType: 'user_cancelled' | 'crypto_failed',
+) {
+  if (Platform.OS !== 'android') return;
+  if (!navigationRef.isReady()) return;
+
+  const errorContent = {
+    user_cancelled: {
+      titleText: 'Authentication Required',
+      bodyText:
+        'You need to authenticate with your fingerprint, PIN or faceID to continue the verification process. Please try again.',
+      buttonText: 'Try Again',
+    },
+    crypto_failed: {
+      titleText: 'Keychain Error',
+      bodyText:
+        'Unable to access your keychain. This may happen if your device security settings have changed or if the encrypted data was corrupted. Please contact support if the issue persists.',
+      buttonText: 'Go to Home',
+    },
+  };
+
+  const content = errorContent[errorType];
+
+  const callbackId = registerModalCallbacks({
+    onButtonPress: () => {
+      unregisterModalCallbacks(callbackId);
+      navigationRef.navigate({ name: 'Home', params: {} });
+    },
+    onModalDismiss: () => {
+      unregisterModalCallbacks(callbackId);
+      navigationRef.navigate({ name: 'Home', params: {} });
+    },
+  });
+
+  navigationRef.navigate('Modal', {
+    ...content,
+    callbackId,
+  });
+}
 
 export default SelfClientProvider;

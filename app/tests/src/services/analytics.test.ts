@@ -2,19 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import analytics from '@/services/analytics';
+import { trackEvent, trackScreenView } from '@/services/analytics';
 
 // Mock the Segment client
 jest.mock('@/config/segment', () => ({
   createSegmentClient: jest.fn(() => ({
-    track: jest.fn(),
-    screen: jest.fn(),
+    track: jest.fn().mockResolvedValue(undefined),
+    flush: jest.fn().mockResolvedValue(undefined),
   })),
 }));
 
 describe('analytics', () => {
-  const { trackEvent, trackScreenView } = analytics();
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -38,7 +36,7 @@ describe('analytics', () => {
     });
 
     it('should handle event tracking with null properties', () => {
-      expect(() => trackEvent('test_event', null)).not.toThrow();
+      expect(() => trackEvent('test_event', null as any)).not.toThrow();
     });
 
     it('should handle event tracking with undefined properties', () => {
@@ -87,7 +85,7 @@ describe('analytics', () => {
 
     it('should handle invalid duration values gracefully', () => {
       const properties = {
-        duration_seconds: 'not_a_number',
+        duration_seconds: 'not_a_number' as any,
       };
 
       expect(() => trackEvent('test_event', properties)).not.toThrow();
@@ -144,6 +142,22 @@ describe('analytics', () => {
 
       expect(() => trackEvent('test_event', properties)).not.toThrow();
     });
+
+    it('should NOT transform regular event names (only screen views get "Viewed" prefix)', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      trackEvent('user_login', { method: 'google' });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[DEV: Analytics EVENT]',
+        expect.objectContaining({
+          name: 'user_login', // No "Viewed" prefix for regular events
+          properties: expect.objectContaining({ method: 'google' }),
+        }),
+      );
+
+      consoleSpy.mockRestore();
+    });
   });
 
   describe('trackScreenView', () => {
@@ -175,6 +189,98 @@ describe('analytics', () => {
       };
 
       expect(() => trackScreenView('test_screen', properties)).not.toThrow();
+    });
+
+    it('should transform screen views to "Viewed ScreenName" format', () => {
+      // Mock console.log to capture dev mode output
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      trackScreenView('SplashScreen', { user_id: 123 });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[DEV: Analytics SCREEN]',
+        expect.objectContaining({
+          name: 'Viewed SplashScreen',
+          properties: expect.objectContaining({ user_id: 123 }),
+        }),
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should transform screen names correctly without properties', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      trackScreenView('DocumentNFCScanScreen');
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[DEV: Analytics SCREEN]',
+        expect.objectContaining({
+          name: 'Viewed DocumentNFCScanScreen',
+          properties: undefined,
+        }),
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should pass through properties unchanged', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const properties = {
+        referrer: 'home',
+        user_id: 456,
+        navigation_method: 'swipe',
+      };
+
+      trackScreenView('SettingsScreen', properties);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[DEV: Analytics SCREEN]',
+        expect.objectContaining({
+          name: 'Viewed SettingsScreen',
+          properties: expect.objectContaining(properties),
+        }),
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should call segment client with transformed event name in production', () => {
+      // Temporarily mock __DEV__ to false for production testing
+      const originalDev = (global as any).__DEV__;
+      (global as any).__DEV__ = false;
+
+      try {
+        // Reset modules first to clear the cache
+        jest.resetModules();
+
+        // Get the mocked segment client factory after reset
+        const segmentModule = require('@/config/segment');
+        const mockTrack = jest.fn().mockResolvedValue(undefined);
+
+        // Set up the mock implementation before re-requiring analytics
+        // This ensures the mock is properly configured when analytics module loads
+        segmentModule.createSegmentClient.mockImplementation(() => ({
+          track: mockTrack,
+          flush: jest.fn().mockResolvedValue(undefined),
+        }));
+
+        // Now re-require analytics to get a fresh segmentClient instance
+        // that uses our mocked createSegmentClient
+        const analyticsModule = require('@/services/analytics');
+
+        analyticsModule.trackScreenView('HomeScreen', { user_type: 'premium' });
+
+        expect(mockTrack).toHaveBeenCalledWith('Viewed HomeScreen', {
+          user_type: 'premium',
+        });
+      } finally {
+        // Restore original __DEV__ value
+        (global as any).__DEV__ = originalDev;
+
+        // Reset modules again to restore original state for other tests
+        jest.resetModules();
+      }
     });
   });
 
