@@ -124,7 +124,7 @@ export interface ProtocolState {
     fetch_identity_tree: (environment: Environment) => Promise<void>;
     fetch_all: (environment: Environment) => Promise<void>;
     fetch_ofac_trees: (environment: Environment) => Promise<void>;
-  }
+  };
 }
 
 /**
@@ -549,11 +549,11 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     deployed_circuits: null,
     circuits_dns_mapping: null,
     ofac_trees: null,
-    fetch_all: async (environment: 'prod' | 'stg') => {},
-    fetch_deployed_circuits: async (environment: 'prod' | 'stg') => {},
-    fetch_circuits_dns_mapping: async (environment: 'prod' | 'stg') => {},
-    fetch_public_keys: async (environment: 'prod' | 'stg') => {},
-    fetch_identity_tree: async (environment: 'prod' | 'stg') => {},
-    fetch_ofac_trees: async (environment: 'prod' | 'stg') => {},
+    fetch_all: async (_environment: 'prod' | 'stg') => {},
+    fetch_deployed_circuits: async (_environment: 'prod' | 'stg') => {},
+    fetch_circuits_dns_mapping: async (_environment: 'prod' | 'stg') => {},
+    fetch_public_keys: async (_environment: 'prod' | 'stg') => {},
+    fetch_identity_tree: async (_environment: 'prod' | 'stg') => {},
+    fetch_ofac_trees: async (_environment: 'prod' | 'stg') => {},
   },
 }));

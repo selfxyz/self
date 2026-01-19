@@ -138,7 +138,8 @@ export const revealedDataIndices: Record<
     ofacStart: 116,
     ofacEnd: 117,
   },
-  4: { //put everything as 99
+  4: {
+    //put everything as 99
     issuingStateStart: 99,
     issuingStateEnd: 99,
     nameStart: 99,
