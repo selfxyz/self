@@ -760,16 +760,18 @@ const processNameAndDobKyc = (entry: any, i: number): bigint => {
   const dobHash = processDobKyc(day, month, year, i);
 
   return generateSmallKey(poseidon2([dobHash, nameHash]));
-}
-
+};
 
 export const getNameDobLeafKyc = (name: string, dob: string) => {
   const namePaddingLength = 64;
-  const paddedName = name.padEnd(namePaddingLength, '\0').split('').map(char => char.charCodeAt(0));
+  const paddedName = name
+    .padEnd(namePaddingLength, '\0')
+    .split('')
+    .map((char) => char.charCodeAt(0));
   const nameHash = BigInt(packBytesAndPoseidon(paddedName));
   const dobHash = BigInt(poseidon8(stringToAsciiBigIntArray(dob)));
   return generateSmallKey(poseidon2([dobHash, nameHash]));
-}
+};
 
 const processNameKyc = (firstName: string, lastName: string, i: number): bigint => {
   const namePaddingLength = 64;
@@ -782,10 +784,12 @@ const processNameKyc = (firstName: string, lastName: string, i: number): bigint 
   lastName = lastName.replace(/\./g, '');
 
   //TODO: check if smile id does first name and last name || last name and first name
-  const nameArr = (lastName + ' ' + firstName).padEnd(namePaddingLength, '\0').split('').map(char => char.charCodeAt(0));
+  const nameArr = (lastName + ' ' + firstName)
+    .padEnd(namePaddingLength, '\0')
+    .split('')
+    .map((char) => char.charCodeAt(0));
   return BigInt(packBytesAndPoseidon(nameArr));
-}
-
+};
 
 const processDobKyc = (day: string, month: string, year: string, i: number): bigint => {
   const monthMap: { [key: string]: string } = {
@@ -807,17 +811,19 @@ const processDobKyc = (day: string, month: string, year: string, i: number): big
   const dob = year + month + day;
   let arr = stringToAsciiBigIntArray(dob);
   return BigInt(poseidon8(arr));
-}
-
+};
 
 export const getNameYobLeafKyc = (name: string, yob: string) => {
   const namePaddingLength = 64;
-  const paddedName = name.padEnd(namePaddingLength, '\0').split('').map(char => char.charCodeAt(0));
+  const paddedName = name
+    .padEnd(namePaddingLength, '\0')
+    .split('')
+    .map((char) => char.charCodeAt(0));
   const nameHash = BigInt(packBytesAndPoseidon(paddedName));
 
   const yearHash = processYearKyc(yob, 0);
   return generateSmallKey(poseidon2([yearHash, nameHash]));
-}
+};
 
 const processNameAndYobKyc = (entry: any, i: number): bigint => {
   const firstName = entry.First_Name;
@@ -831,9 +837,9 @@ const processNameAndYobKyc = (entry: any, i: number): bigint => {
   const nameHash = processNameKyc(firstName, lastName, i);
   const yearHash = processYearKyc(year, i);
   return generateSmallKey(poseidon2([yearHash, nameHash]));
-}
+};
 
 const processYearKyc = (year: string, i: number): bigint => {
   const yearArr = stringToAsciiBigIntArray(year);
   return BigInt(poseidon4(yearArr));
-}
+};

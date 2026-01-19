@@ -243,10 +243,15 @@ library CircuitAttributeHandlerV2 {
      * @param charcodes The byte array containing attribute data.
      * @return The formatted expiry date as a string.
      */
-    function getExpiryDateFullYear(bytes32 attestationId, bytes memory charcodes) internal pure returns (string memory) {
+    function getExpiryDateFullYear(
+        bytes32 attestationId,
+        bytes memory charcodes
+    ) internal pure returns (string memory) {
         FieldPositions memory positions = getFieldPositions(attestationId);
         return
-            Formatter.formatDateFullYear(extractStringAttribute(charcodes, positions.expiryDateStart, positions.expiryDateEnd));
+            Formatter.formatDateFullYear(
+                extractStringAttribute(charcodes, positions.expiryDateStart, positions.expiryDateEnd)
+            );
     }
 
     /**

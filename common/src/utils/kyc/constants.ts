@@ -78,20 +78,49 @@ export const KYC_REVEAL_DATA_INDICES = {
 export const KYC_SELECTOR_BITS = {
   COUNTRY: Array.from({ length: KYC_COUNTRY_LENGTH }, (_, i) => i) as number[], // 0-2
   ID_TYPE: Array.from({ length: KYC_ID_TYPE_LENGTH }, (_, i) => i + KYC_COUNTRY_LENGTH) as number[], // 3-29
-  ID_NUMBER: Array.from({ length: KYC_ID_NUMBER_LENGTH }, (_, i) => i + KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH) as number[], // 30-61 (updated)
-  ISSUANCE_DATE: Array.from({ length: KYC_ISSUANCE_DATE_LENGTH }, (_, i) => i + KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH) as number[], // 62-69 (updated)
-  EXPIRY_DATE: Array.from({ length: KYC_EXPIRY_DATE_LENGTH }, (_, i) => i + KYC_ISSUANCE_DATE_INDEX + KYC_ISSUANCE_DATE_LENGTH) as number[], // 70-77 (updated)
-  FULL_NAME: Array.from({ length: KYC_FULL_NAME_LENGTH }, (_, i) => i + KYC_EXPIRY_DATE_INDEX + KYC_EXPIRY_DATE_LENGTH) as number[], // 78-141 (updated)
-  DOB: Array.from({ length: KYC_DOB_LENGTH }, (_, i) => i + KYC_FULL_NAME_INDEX + KYC_FULL_NAME_LENGTH) as number[], // 142-149 (updated)
-  PHOTO_HASH: Array.from({ length: KYC_PHOTO_HASH_LENGTH }, (_, i) => i + KYC_DOB_INDEX + KYC_DOB_LENGTH) as number[], // 150-181 (updated)
-  PHONE_NUMBER: Array.from({ length: KYC_PHONE_NUMBER_LENGTH }, (_, i) => i + KYC_PHOTO_HASH_INDEX + KYC_PHOTO_HASH_LENGTH) as number[], // 182-193 (updated)
-  DOCUMENT: Array.from({ length: KYC_DOCUMENT_LENGTH }, (_, i) => i + KYC_PHONE_NUMBER_INDEX + KYC_PHONE_NUMBER_LENGTH) as number[], // 194-225 (updated)
-  GENDER: Array.from({ length: KYC_GENDER_LENGTH }, (_, i) => i + KYC_DOCUMENT_INDEX + KYC_DOCUMENT_LENGTH) as number[], // 226-231 (updated)
-  ADDRESS: Array.from({ length: KYC_ADDRESS_LENGTH }, (_, i) => i + KYC_GENDER_INDEX + KYC_GENDER_LENGTH) as number[], // 232-331 (updated)
+  ID_NUMBER: Array.from(
+    { length: KYC_ID_NUMBER_LENGTH },
+    (_, i) => i + KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH
+  ) as number[], // 30-61 (updated)
+  ISSUANCE_DATE: Array.from(
+    { length: KYC_ISSUANCE_DATE_LENGTH },
+    (_, i) => i + KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH
+  ) as number[], // 62-69 (updated)
+  EXPIRY_DATE: Array.from(
+    { length: KYC_EXPIRY_DATE_LENGTH },
+    (_, i) => i + KYC_ISSUANCE_DATE_INDEX + KYC_ISSUANCE_DATE_LENGTH
+  ) as number[], // 70-77 (updated)
+  FULL_NAME: Array.from(
+    { length: KYC_FULL_NAME_LENGTH },
+    (_, i) => i + KYC_EXPIRY_DATE_INDEX + KYC_EXPIRY_DATE_LENGTH
+  ) as number[], // 78-141 (updated)
+  DOB: Array.from(
+    { length: KYC_DOB_LENGTH },
+    (_, i) => i + KYC_FULL_NAME_INDEX + KYC_FULL_NAME_LENGTH
+  ) as number[], // 142-149 (updated)
+  PHOTO_HASH: Array.from(
+    { length: KYC_PHOTO_HASH_LENGTH },
+    (_, i) => i + KYC_DOB_INDEX + KYC_DOB_LENGTH
+  ) as number[], // 150-181 (updated)
+  PHONE_NUMBER: Array.from(
+    { length: KYC_PHONE_NUMBER_LENGTH },
+    (_, i) => i + KYC_PHOTO_HASH_INDEX + KYC_PHOTO_HASH_LENGTH
+  ) as number[], // 182-193 (updated)
+  DOCUMENT: Array.from(
+    { length: KYC_DOCUMENT_LENGTH },
+    (_, i) => i + KYC_PHONE_NUMBER_INDEX + KYC_PHONE_NUMBER_LENGTH
+  ) as number[], // 194-225 (updated)
+  GENDER: Array.from(
+    { length: KYC_GENDER_LENGTH },
+    (_, i) => i + KYC_DOCUMENT_INDEX + KYC_DOCUMENT_LENGTH
+  ) as number[], // 226-231 (updated)
+  ADDRESS: Array.from(
+    { length: KYC_ADDRESS_LENGTH },
+    (_, i) => i + KYC_GENDER_INDEX + KYC_GENDER_LENGTH
+  ) as number[], // 232-331 (updated)
 } as const;
 
 export type KycField = keyof typeof KYC_FIELD_LENGTHS;
-
 
 // ------------------------------
 // Public Signals Indices

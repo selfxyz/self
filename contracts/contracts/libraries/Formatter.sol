@@ -449,7 +449,14 @@ library Formatter {
         return timestamp;
     }
 
-    function toTimeStampWithSeconds(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second) internal pure returns (uint256) {
+    function toTimeStampWithSeconds(
+        uint256 year,
+        uint256 month,
+        uint256 day,
+        uint256 hour,
+        uint256 minute,
+        uint256 second
+    ) internal pure returns (uint256) {
         return toTimestamp(year, month, day) + hour * 1 hours + minute * 1 minutes + second * 1 seconds;
     }
 

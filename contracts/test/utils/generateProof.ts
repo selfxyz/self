@@ -5,7 +5,12 @@ import type { CircuitSignals, Groth16Proof, PublicSignals } from "snarkjs";
 import { groth16 } from "snarkjs";
 import { PassportData } from "@selfxyz/common/utils/types";
 import { CircuitArtifacts, DscCircuitProof, RegisterCircuitProof, VcAndDiscloseProof } from "./types.js";
-import { generateMockKycRegisterInput, generateKycDiscloseInput, prepareAadhaarDiscloseTestData, prepareAadhaarRegisterTestData } from "@selfxyz/common";
+import {
+  generateMockKycRegisterInput,
+  generateKycDiscloseInput,
+  prepareAadhaarDiscloseTestData,
+  prepareAadhaarRegisterTestData,
+} from "@selfxyz/common";
 
 import { BigNumberish } from "ethers";
 import {
@@ -584,8 +589,12 @@ export function getSMTs() {
   ) as typeof SMT;
   const nameAndDob_id_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndDobSMT_ID.json") as typeof SMT;
   const nameAndYob_id_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndYobSMT_ID.json") as typeof SMT;
-  const nameAndDob_selfrica_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndDobSelfricaSMT.json") as typeof SMT;
-  const nameAndYob_selfrica_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndYobSelfricaSMT.json") as typeof SMT;
+  const nameAndDob_selfrica_smt = importSMTFromJsonFile(
+    "../circuits/tests/consts/ofac/nameAndDobSelfricaSMT.json",
+  ) as typeof SMT;
+  const nameAndYob_selfrica_smt = importSMTFromJsonFile(
+    "../circuits/tests/consts/ofac/nameAndYobSelfricaSMT.json",
+  ) as typeof SMT;
 
   return {
     passportNo_smt,

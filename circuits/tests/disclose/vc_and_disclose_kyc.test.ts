@@ -1,6 +1,11 @@
 import { wasm as wasmTester } from 'circom_tester';
 import * as path from 'path';
-import { NON_OFAC_DUMMY_INPUT, OFAC_DUMMY_INPUT, KYC_MAX_LENGTH, serializeKycData } from '@selfxyz/common';
+import {
+  NON_OFAC_DUMMY_INPUT,
+  OFAC_DUMMY_INPUT,
+  KYC_MAX_LENGTH,
+  serializeKycData,
+} from '@selfxyz/common';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { poseidon2 } from 'poseidon-lite';
 import { unpackReveal } from '@selfxyz/common/utils/circuits/formatOutputs.js';
@@ -44,7 +49,9 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
   const getRevealedDataPacked = async (witness: any): Promise<string[]> => {
     // circuit.getOutput with the array length returns all elements 0 to length-1
     const revealedData = await circuit.getOutput(witness, [`revealedData_packed[${chunkLength}]`]);
-    return Array.from({ length: chunkLength }, (_, i) => revealedData[`revealedData_packed[${i}]`].toString());
+    return Array.from({ length: chunkLength }, (_, i) =>
+      revealedData[`revealedData_packed[${i}]`].toString()
+    );
   };
 
   before(async function () {
@@ -73,31 +80,70 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
 
   it('should verify for correct Circuit Input and output', async function () {
     this.timeout(0);
-    const input = generateKycDiscloseInput(false, namedob_smt, nameyob_smt, tree as any, false, '0', '1234567890', undefined, undefined, undefined, true, '1234');
+    const input = generateKycDiscloseInput(
+      false,
+      namedob_smt,
+      nameyob_smt,
+      tree as any,
+      false,
+      '0',
+      '1234567890',
+      undefined,
+      undefined,
+      undefined,
+      true,
+      '1234'
+    );
     const witness = await circuit.calculateWitness(input);
     await circuit.checkConstraints(witness);
   });
 
   it('should fail for invalid msg ascii', async function () {
     this.timeout(0);
-    const input = generateKycDiscloseInput(false, namedob_smt, nameyob_smt, tree as any, false, '0', '1234567890', undefined, undefined, undefined, true, '1234');
+    const input = generateKycDiscloseInput(
+      false,
+      namedob_smt,
+      nameyob_smt,
+      tree as any,
+      false,
+      '0',
+      '1234567890',
+      undefined,
+      undefined,
+      undefined,
+      true,
+      '1234'
+    );
 
-    input.data_padded[4] = "9999999";
+    input.data_padded[4] = '9999999';
     try {
       const witness = await circuit.calculateWitness(input);
       await circuit.checkConstraints(witness);
-      throw new Error("Circuit verified for invalid msg byte ascii");
+      throw new Error('Circuit verified for invalid msg byte ascii');
     } catch (e) {
-      const errMsg = e?.message || e?.toString?.() || "";
-      if (!errMsg.includes("Num2Bits")) {
+      const errMsg = e?.message || e?.toString?.() || '';
+      if (!errMsg.includes('Num2Bits')) {
         throw new Error(`Expected error message to include "Num2Bits", but got:\n${errMsg}`);
       }
     }
   });
 
-  it("should return 0 for an OFAC person", async function () {
+  it('should return 0 for an OFAC person', async function () {
     this.timeout(0);
-    const input = generateKycDiscloseInput(true, namedob_smt, nameyob_smt, tree as any, true, '0', '1234567890', undefined, undefined, undefined, true, '1234');
+    const input = generateKycDiscloseInput(
+      true,
+      namedob_smt,
+      nameyob_smt,
+      tree as any,
+      true,
+      '0',
+      '1234567890',
+      undefined,
+      undefined,
+      undefined,
+      true,
+      '1234'
+    );
     const witness = await circuit.calculateWitness(input);
     await circuit.checkConstraints(witness);
 
@@ -108,9 +154,22 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
     deepEqual(ofac_results, ['\x00', '\x00']);
   });
 
-  it("should return 1 for a non OFAC person", async function () {
+  it('should return 1 for a non OFAC person', async function () {
     this.timeout(0);
-    const input = generateKycDiscloseInput(false, namedob_smt, nameyob_smt, tree as any, true, '0', '1234567890', undefined, undefined, undefined, true, '1234');
+    const input = generateKycDiscloseInput(
+      false,
+      namedob_smt,
+      nameyob_smt,
+      tree as any,
+      true,
+      '0',
+      '1234567890',
+      undefined,
+      undefined,
+      undefined,
+      true,
+      '1234'
+    );
     const witness = await circuit.calculateWitness(input);
     await circuit.checkConstraints(witness);
 
@@ -121,14 +180,37 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
     deepEqual(ofac_results, ['\x01', '\x01']);
   });
 
-  it("should return revealed data that matches the actual data", async function () {
+  it('should return revealed data that matches the actual data', async function () {
     this.timeout(0);
 
     const fieldsToReveal: KycField[] = [
-      'COUNTRY', 'ID_TYPE', 'ID_NUMBER', 'ISSUANCE_DATE', 'EXPIRY_DATE',
-      'FULL_NAME', 'DOB', 'PHOTO_HASH', 'PHONE_NUMBER', 'DOCUMENT', 'GENDER', 'ADDRESS'
+      'COUNTRY',
+      'ID_TYPE',
+      'ID_NUMBER',
+      'ISSUANCE_DATE',
+      'EXPIRY_DATE',
+      'FULL_NAME',
+      'DOB',
+      'PHOTO_HASH',
+      'PHONE_NUMBER',
+      'DOCUMENT',
+      'GENDER',
+      'ADDRESS',
     ];
-    const input = generateKycDiscloseInput(false, namedob_smt, nameyob_smt, tree as any, true, '0', '1234567890', fieldsToReveal, undefined, 18, true, '1234');
+    const input = generateKycDiscloseInput(
+      false,
+      namedob_smt,
+      nameyob_smt,
+      tree as any,
+      true,
+      '0',
+      '1234567890',
+      fieldsToReveal,
+      undefined,
+      18,
+      true,
+      '1234'
+    );
     const witness = await circuit.calculateWitness(input);
     await circuit.checkConstraints(witness);
 
@@ -143,7 +225,10 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
       const expectedChar = String.fromCharCode(expectedByte);
       const revealedChar = revealedDataUnpacked[i];
       const revealedByte = revealedChar.charCodeAt(0);
-      expect(revealedByte).to.equal(expectedByte, `Mismatch at position ${i}: expected '${expectedChar}' (${expectedByte}) but got '${revealedChar}' (${revealedByte})`);
+      expect(revealedByte).to.equal(
+        expectedByte,
+        `Mismatch at position ${i}: expected '${expectedChar}' (${expectedByte}) but got '${revealedChar}' (${revealedByte})`
+      );
     }
 
     const ofac_results = revealedDataUnpacked.slice(maxLength, maxLength + 2);
@@ -153,14 +238,37 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
     expect(age_result_byte).to.equal(18);
   });
 
-  it("should return revealed data that matches the actual data for OFAC person", async function () {
+  it('should return revealed data that matches the actual data for OFAC person', async function () {
     this.timeout(0);
 
     const fieldsToReveal: KycField[] = [
-      'COUNTRY', 'ID_TYPE', 'ID_NUMBER', 'ISSUANCE_DATE', 'EXPIRY_DATE',
-      'FULL_NAME', 'DOB', 'PHOTO_HASH', 'PHONE_NUMBER', 'DOCUMENT', 'GENDER', 'ADDRESS'
+      'COUNTRY',
+      'ID_TYPE',
+      'ID_NUMBER',
+      'ISSUANCE_DATE',
+      'EXPIRY_DATE',
+      'FULL_NAME',
+      'DOB',
+      'PHOTO_HASH',
+      'PHONE_NUMBER',
+      'DOCUMENT',
+      'GENDER',
+      'ADDRESS',
     ];
-    const input = generateKycDiscloseInput(true, namedob_smt, nameyob_smt, tree as any, true, '0', '1234567890', fieldsToReveal, undefined, undefined, true, '1234');
+    const input = generateKycDiscloseInput(
+      true,
+      namedob_smt,
+      nameyob_smt,
+      tree as any,
+      true,
+      '0',
+      '1234567890',
+      fieldsToReveal,
+      undefined,
+      undefined,
+      true,
+      '1234'
+    );
 
     const witness = await circuit.calculateWitness(input);
     await circuit.checkConstraints(witness);
@@ -176,7 +284,10 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
       const expectedChar = String.fromCharCode(expectedByte);
       const revealedChar = revealedDataUnpacked[i];
       const revealedByte = revealedChar.charCodeAt(0);
-      expect(revealedByte).to.equal(expectedByte, `Mismatch at position ${i}: expected '${expectedChar}' (${expectedByte}) but got '${revealedChar}' (${revealedByte})`);
+      expect(revealedByte).to.equal(
+        expectedByte,
+        `Mismatch at position ${i}: expected '${expectedChar}' (${expectedByte}) but got '${revealedChar}' (${revealedByte})`
+      );
     }
 
     const ofac_results = revealedDataUnpacked.slice(maxLength, maxLength + 2);

@@ -348,13 +348,19 @@ library CustomVerifier {
             userIdentifier: selfricaOutput.userIdentifier,
             nullifier: selfricaOutput.nullifier,
             forbiddenCountriesListPacked: selfricaOutput.forbiddenCountriesListPacked,
-            issuingState: 'UNAVAILABLE',
+            issuingState: "UNAVAILABLE",
             name: CircuitAttributeHandlerV2.getName(AttestationId.KYC, selfricaOutput.revealedDataPacked),
             idNumber: CircuitAttributeHandlerV2.getDocumentNumber(AttestationId.KYC, selfricaOutput.revealedDataPacked),
             nationality: CircuitAttributeHandlerV2.getNationality(AttestationId.KYC, selfricaOutput.revealedDataPacked),
-            dateOfBirth: CircuitAttributeHandlerV2.getDateOfBirthFullYear(AttestationId.KYC, selfricaOutput.revealedDataPacked),
+            dateOfBirth: CircuitAttributeHandlerV2.getDateOfBirthFullYear(
+                AttestationId.KYC,
+                selfricaOutput.revealedDataPacked
+            ),
             gender: CircuitAttributeHandlerV2.getGender(AttestationId.KYC, selfricaOutput.revealedDataPacked),
-            expiryDate: CircuitAttributeHandlerV2.getExpiryDateFullYear(AttestationId.KYC, selfricaOutput.revealedDataPacked),
+            expiryDate: CircuitAttributeHandlerV2.getExpiryDateFullYear(
+                AttestationId.KYC,
+                selfricaOutput.revealedDataPacked
+            ),
             olderThan: verificationConfig.olderThan,
             ofac: [
                 false,

@@ -902,18 +902,23 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             // SELFRICA: 8 ASCII digits (YYYYMMDD)
             uint256[3] memory dateNum; // [year, month, day]
             unchecked {
-                for (uint256 i; i < 4; ++i) dateNum[0] = dateNum[0] * 10 + vcAndDiscloseProof.pubSignals[startIndex + i];
-                for (uint256 i = 4; i < 6; ++i) dateNum[1] = dateNum[1] * 10 + vcAndDiscloseProof.pubSignals[startIndex + i];
-                for (uint256 i = 6; i < 8; ++i) dateNum[2] = dateNum[2] * 10 + vcAndDiscloseProof.pubSignals[startIndex + i];
+                for (uint256 i; i < 4; ++i)
+                    dateNum[0] = dateNum[0] * 10 + vcAndDiscloseProof.pubSignals[startIndex + i];
+                for (uint256 i = 4; i < 6; ++i)
+                    dateNum[1] = dateNum[1] * 10 + vcAndDiscloseProof.pubSignals[startIndex + i];
+                for (uint256 i = 6; i < 8; ++i)
+                    dateNum[2] = dateNum[2] * 10 + vcAndDiscloseProof.pubSignals[startIndex + i];
             }
             currentTimestamp = Formatter.proofDateToUnixTimestampNumeric(dateNum);
         } else {
             // AADHAAR: 3 numeric signals [year, month, day]
-            currentTimestamp = Formatter.proofDateToUnixTimestampNumeric([
-                vcAndDiscloseProof.pubSignals[startIndex],
-                vcAndDiscloseProof.pubSignals[startIndex + 1],
-                vcAndDiscloseProof.pubSignals[startIndex + 2]
-            ]);
+            currentTimestamp = Formatter.proofDateToUnixTimestampNumeric(
+                [
+                    vcAndDiscloseProof.pubSignals[startIndex],
+                    vcAndDiscloseProof.pubSignals[startIndex + 1],
+                    vcAndDiscloseProof.pubSignals[startIndex + 2]
+                ]
+            );
         }
 
         _validateDateInRange(currentTimestamp);
@@ -942,11 +947,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         GenericProofStruct memory vcAndDiscloseProof
     ) internal view {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
-        ProofVerifierLib.verifyGroth16Proof(
-            attestationId,
-            $._discloseVerifiers[attestationId],
-            vcAndDiscloseProof
-        );
+        ProofVerifierLib.verifyGroth16Proof(attestationId, $._discloseVerifiers[attestationId], vcAndDiscloseProof);
     }
 
     // ====================================================

@@ -5,18 +5,9 @@ import {
   getNameDobLeafKyc,
   getNameYobLeafKyc,
 } from '../trees.js';
-import {
-  KycDiscloseInput,
-  KycRegisterInput,
-  serializeKycData,
-  KycData,
-} from './types.js';
+import { KycDiscloseInput, KycRegisterInput, serializeKycData, KycData } from './types.js';
 import { findIndexInTree, formatInput } from '../circuits/generateInputs.js';
-import {
-  createKycSelector,
-  KYC_MAX_LENGTH,
-  KycField,
-} from './constants.js';
+import { createKycSelector, KYC_MAX_LENGTH, KycField } from './constants.js';
 import { poseidon2 } from 'poseidon-lite';
 import { Base8, inCurve, mulPointEscalar, subOrder } from '@zk-kit/baby-jubjub';
 import { signEdDSA } from './ecdsa/ecdsa.js';
@@ -67,8 +58,11 @@ export const createKycDiscloseSelFromFields = (fieldsToReveal: KycField[]): stri
   return [lowResult.toString(), highResult.toString()];
 };
 
-
-export const generateMockKycRegisterInput = async (secretKey?: bigint, ofac?: boolean, secret?: string) => {
+export const generateMockKycRegisterInput = async (
+  secretKey?: bigint,
+  ofac?: boolean,
+  secret?: string
+) => {
   const kycData = ofac ? OFAC_DUMMY_INPUT : NON_OFAC_DUMMY_INPUT;
   const serializedData = serializeKycData(kycData).padEnd(KYC_MAX_LENGTH, '\0');
 
@@ -88,7 +82,7 @@ export const generateMockKycRegisterInput = async (secretKey?: bigint, ofac?: bo
     s: BigInt(sig.S),
     R: sig.R8 as [bigint, bigint],
     pubKey,
-    secret: secret || "1234",
+    secret: secret || '1234',
   };
 
   return kycRegisterInput;
@@ -130,7 +124,7 @@ export const generateKycDiscloseInput = (
   forbiddenCountriesList?: string[],
   minimumAge?: number,
   updateTree?: boolean,
-  secret: string = "1234"
+  secret: string = '1234'
 ) => {
   const data = ofac_input ? OFAC_DUMMY_INPUT : NON_OFAC_DUMMY_INPUT;
   const serializedData = serializeKycData(data).padEnd(KYC_MAX_LENGTH, '\0');
@@ -160,9 +154,9 @@ export const generateKycDiscloseInput = (
         .map((x) => x.charCodeAt(0))
     : ['0', '0', '0'].map((x) => x.charCodeAt(0));
 
-    const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '').split('');
+  const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '').split('');
 
-    const circuitInput: KycDiscloseInput = {
+  const circuitInput: KycDiscloseInput = {
     data_padded: formatInput(msgPadded),
     compressed_disclose_sel: compressed_disclose_sel,
     scope: scope,

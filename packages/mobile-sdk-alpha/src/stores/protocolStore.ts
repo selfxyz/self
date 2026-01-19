@@ -112,6 +112,19 @@ export interface ProtocolState {
     fetch_all: (environment: Environment) => Promise<void>;
     fetch_ofac_trees: (environment: Environment) => Promise<void>;
   };
+  kyc: {
+    commitment_tree: any;
+    public_keys: string[] | null;
+    deployed_circuits: DeployedCircuits | null;
+    circuits_dns_mapping: any;
+    ofac_trees: OfacTree | null;
+    fetch_deployed_circuits: (environment: Environment) => Promise<void>;
+    fetch_circuits_dns_mapping: (environment: Environment) => Promise<void>;
+    fetch_public_keys: (environment: Environment) => Promise<void>;
+    fetch_identity_tree: (environment: Environment) => Promise<void>;
+    fetch_all: (environment: Environment) => Promise<void>;
+    fetch_ofac_trees: (environment: Environment) => Promise<void>;
+  }
 }
 
 /**
@@ -134,6 +147,10 @@ export async function fetchAllTreesAndCircuits(
  * public key list instead.
  */
 export function getAltCSCAPublicKeys(selfClient: SelfClient, docCategory: DocumentCategory) {
+  if (docCategory === 'kyc') {
+    //TODO
+    throw new Error('KYC is not supported yet');
+  }
   if (docCategory === 'aadhaar') {
     return selfClient.getProtocolState()[docCategory].public_keys;
   }
@@ -524,5 +541,19 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
         set({ aadhaar: { ...get().aadhaar, ofac_trees: null } });
       }
     },
+  },
+  //add empty functions for kyc
+  kyc: {
+    commitment_tree: null,
+    public_keys: null,
+    deployed_circuits: null,
+    circuits_dns_mapping: null,
+    ofac_trees: null,
+    fetch_all: async (environment: 'prod' | 'stg') => {},
+    fetch_deployed_circuits: async (environment: 'prod' | 'stg') => {},
+    fetch_circuits_dns_mapping: async (environment: 'prod' | 'stg') => {},
+    fetch_public_keys: async (environment: 'prod' | 'stg') => {},
+    fetch_identity_tree: async (environment: 'prod' | 'stg') => {},
+    fetch_ofac_trees: async (environment: 'prod' | 'stg') => {},
   },
 }));

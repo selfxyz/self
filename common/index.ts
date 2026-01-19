@@ -143,10 +143,7 @@ export {
 export {
   KYC_MAX_LENGTH,
   KYC_ID_NUMBER_INDEX,
-  KYC_ID_NUMBER_LENGTH
+  KYC_ID_NUMBER_LENGTH,
 } from './src/utils/kyc/constants.js';
 
-export {
-  serializeKycData,
-  KycData,
-} from './src/utils/kyc/types.js';
+export { serializeKycData, KycData } from './src/utils/kyc/types.js';

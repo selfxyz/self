@@ -4,8 +4,10 @@ import { TestGCPJWTHelper, MockGCPJWTVerifier } from "../../typechain-types";
 
 // Helper to pack a string into field elements (max 31 bytes per field)
 function packStringToFieldElements(str: string): [bigint, bigint, bigint] {
-  const bytes = Buffer.from(str, 'utf8');
-  let p0 = 0n, p1 = 0n, p2 = 0n;
+  const bytes = Buffer.from(str, "utf8");
+  let p0 = 0n,
+    p1 = 0n,
+    p2 = 0n;
 
   for (let i = 0; i < Math.min(31, bytes.length); i++) {
     p0 |= BigInt(bytes[i]) << BigInt(i * 8);
@@ -42,22 +44,14 @@ describe("GCPJWTHelper", function () {
     const expectedHashHex = "d2221a0ee83901980c607ceff2edbedf3f6ce5f437eafa5d89be39e9e7487c04";
 
     it("should return 48 bytes with correct structure", async function () {
-      const result = await testHelper.testUnpackAndConvertImageHash(
-        testDigest.p0,
-        testDigest.p1,
-        testDigest.p2,
-      );
+      const result = await testHelper.testUnpackAndConvertImageHash(testDigest.p0, testDigest.p1, testDigest.p2);
 
       // Should be 48 bytes total
       expect(ethers.getBytes(result).length).to.equal(48);
     });
 
     it("should have 16 leading zero bytes (PCR0 padding)", async function () {
-      const result = await testHelper.testUnpackAndConvertImageHash(
-        testDigest.p0,
-        testDigest.p1,
-        testDigest.p2,
-      );
+      const result = await testHelper.testUnpackAndConvertImageHash(testDigest.p0, testDigest.p1, testDigest.p2);
 
       const bytes = ethers.getBytes(result);
 
@@ -68,11 +62,7 @@ describe("GCPJWTHelper", function () {
     });
 
     it("should correctly convert hex string to hash bytes", async function () {
-      const result = await testHelper.testUnpackAndConvertImageHash(
-        testDigest.p0,
-        testDigest.p1,
-        testDigest.p2,
-      );
+      const result = await testHelper.testUnpackAndConvertImageHash(testDigest.p0, testDigest.p1, testDigest.p2);
 
       const bytes = ethers.getBytes(result);
 
@@ -81,10 +71,7 @@ describe("GCPJWTHelper", function () {
       const expectedHashBytes = ethers.getBytes("0x" + expectedHashHex);
 
       for (let i = 0; i < 32; i++) {
-        expect(actualHashBytes[i]).to.equal(
-          expectedHashBytes[i],
-          `Hash byte at index ${i} mismatch`,
-        );
+        expect(actualHashBytes[i]).to.equal(expectedHashBytes[i], `Hash byte at index ${i} mismatch`);
       }
     });
 
@@ -101,12 +88,7 @@ describe("GCPJWTHelper", function () {
     it("should correctly parse individual hex characters", async function () {
       // Test that the first byte of the hash (after padding) is correct
       // The hex string starts with "d2", so first hash byte should be 0xd2 = 210
-      const byte16 = await testHelper.testGetImageHashByte(
-        testDigest.p0,
-        testDigest.p1,
-        testDigest.p2,
-        16,
-      );
+      const byte16 = await testHelper.testGetImageHashByte(testDigest.p0, testDigest.p1, testDigest.p2, 16);
 
       expect(byte16).to.equal(0xd2);
     });
@@ -115,11 +97,7 @@ describe("GCPJWTHelper", function () {
       // The test digest contains lowercase hex chars like 'e', 'f', 'a', 'b', 'c', 'd'
       // Hex string: d2221a0ee83901980c607ceff2edbedf3f6ce5f437eafa5d89be39e9e7487c04
       // Verify specific bytes that use these chars
-      const result = await testHelper.testUnpackAndConvertImageHash(
-        testDigest.p0,
-        testDigest.p1,
-        testDigest.p2,
-      );
+      const result = await testHelper.testUnpackAndConvertImageHash(testDigest.p0, testDigest.p1, testDigest.p2);
 
       const bytes = ethers.getBytes(result);
 
@@ -236,18 +214,11 @@ describe("MockGCPJWTVerifier", function () {
     [3n, 4n],
   ];
   const mockProofC: [bigint, bigint] = [1n, 2n];
-  const mockPubSignals: [bigint, bigint, bigint, bigint, bigint, bigint, bigint] = [
-    1n, 2n, 3n, 4n, 5n, 6n, 7n,
-  ];
+  const mockPubSignals: [bigint, bigint, bigint, bigint, bigint, bigint, bigint] = [1n, 2n, 3n, 4n, 5n, 6n, 7n];
 
   describe("Default behavior", function () {
     it("should return true by default", async function () {
-      const result = await mockVerifier.verifyProof(
-        mockProofA,
-        mockProofB,
-        mockProofC,
-        mockPubSignals,
-      );
+      const result = await mockVerifier.verifyProof(mockProofA, mockProofB, mockProofC, mockPubSignals);
       expect(result).to.be.true;
     });
 
@@ -261,12 +232,7 @@ describe("MockGCPJWTVerifier", function () {
       await mockVerifier.setShouldVerify(false);
       expect(await mockVerifier.getShouldVerify()).to.be.false;
 
-      const result = await mockVerifier.verifyProof(
-        mockProofA,
-        mockProofB,
-        mockProofC,
-        mockPubSignals,
-      );
+      const result = await mockVerifier.verifyProof(mockProofA, mockProofB, mockProofC, mockPubSignals);
 
       expect(result).to.be.false;
     });
@@ -276,12 +242,7 @@ describe("MockGCPJWTVerifier", function () {
       await mockVerifier.setShouldVerify(true);
       expect(await mockVerifier.getShouldVerify()).to.be.true;
 
-      const result = await mockVerifier.verifyProof(
-        mockProofA,
-        mockProofB,
-        mockProofC,
-        mockPubSignals,
-      );
+      const result = await mockVerifier.verifyProof(mockProofA, mockProofB, mockProofC, mockPubSignals);
 
       expect(result).to.be.true;
     });

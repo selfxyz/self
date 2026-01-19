@@ -15,11 +15,7 @@ contract TestGCPJWTHelper {
      * @param p2 Third packed field element (up to 2 bytes of hex chars)
      * @return 48-byte result with 16 leading zeros + 32-byte hash
      */
-    function testUnpackAndConvertImageHash(
-        uint256 p0,
-        uint256 p1,
-        uint256 p2
-    ) external pure returns (bytes memory) {
+    function testUnpackAndConvertImageHash(uint256 p0, uint256 p1, uint256 p2) external pure returns (bytes memory) {
         return GCPJWTHelper.unpackAndConvertImageHash(p0, p1, p2);
     }
 
@@ -30,11 +26,7 @@ contract TestGCPJWTHelper {
      * @param p2 Third packed field element (remaining hex chars)
      * @return The decoded pubkey commitment as uint256
      */
-    function testUnpackPubkeyString(
-        uint256 p0,
-        uint256 p1,
-        uint256 p2
-    ) external pure returns (uint256) {
+    function testUnpackPubkeyString(uint256 p0, uint256 p1, uint256 p2) external pure returns (uint256) {
         return GCPJWTHelper.unpackAndDecodeHexPubkey(p0, p1, p2);
     }
 
@@ -46,12 +38,7 @@ contract TestGCPJWTHelper {
      * @param index The byte index to retrieve (0-47)
      * @return The byte at the specified index
      */
-    function testGetImageHashByte(
-        uint256 p0,
-        uint256 p1,
-        uint256 p2,
-        uint256 index
-    ) external pure returns (uint8) {
+    function testGetImageHashByte(uint256 p0, uint256 p1, uint256 p2, uint256 index) external pure returns (uint8) {
         bytes memory result = GCPJWTHelper.unpackAndConvertImageHash(p0, p1, p2);
         require(index < result.length, "Index out of bounds");
         return uint8(result[index]);

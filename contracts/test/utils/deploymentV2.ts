@@ -327,7 +327,10 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   // Deploy Selfrica registry with temporary hub address and local PCR0Manager
   let registrySelfricaInitData, registrySelfricaProxyFactory;
   {
-    registrySelfricaInitData = identityRegistrySelfricaImpl.interface.encodeFunctionData("initialize", [temporaryHubAddress, pcr0Manager.target]);
+    registrySelfricaInitData = identityRegistrySelfricaImpl.interface.encodeFunctionData("initialize", [
+      temporaryHubAddress,
+      pcr0Manager.target,
+    ]);
     registrySelfricaProxyFactory = await ethers.getContractFactory("IdentityRegistry");
     identityRegistrySelfricaProxy = await registrySelfricaProxyFactory
       .connect(owner)
@@ -373,7 +376,10 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
 
   let registrySelfricaContract, updateSelfricaHubTx;
   {
-    registrySelfricaContract = await ethers.getContractAt("IdentityRegistrySelfricaImplV1", identityRegistrySelfricaProxy.target);
+    registrySelfricaContract = await ethers.getContractAt(
+      "IdentityRegistrySelfricaImplV1",
+      identityRegistrySelfricaProxy.target,
+    );
     updateSelfricaHubTx = await registrySelfricaContract.updateHub(identityVerificationHubV2.target);
     await updateSelfricaHubTx.wait();
 
@@ -400,7 +406,15 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     from: owner,
   });
 
-  const { passportNo_smt, nameAndDob_smt, nameAndYob_smt, nameDobAadhar_smt, nameYobAadhar_smt, nameAndDob_selfrica_smt, nameAndYob_selfrica_smt } = getSMTs();
+  const {
+    passportNo_smt,
+    nameAndDob_smt,
+    nameAndYob_smt,
+    nameDobAadhar_smt,
+    nameYobAadhar_smt,
+    nameAndDob_selfrica_smt,
+    nameAndYob_selfrica_smt,
+  } = getSMTs();
 
   // Update passport roots
   await registryContract.updatePassportNoOfacRoot(passportNo_smt.root, { from: owner });

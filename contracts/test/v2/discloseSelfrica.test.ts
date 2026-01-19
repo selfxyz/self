@@ -1,4 +1,10 @@
-import { calculateUserIdentifierHash, hashEndpointWithScope, KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_LENGTH, packBytesAndPoseidon } from "@selfxyz/common";
+import {
+  calculateUserIdentifierHash,
+  hashEndpointWithScope,
+  KYC_ID_NUMBER_INDEX,
+  KYC_ID_NUMBER_LENGTH,
+  packBytesAndPoseidon,
+} from "@selfxyz/common";
 import { Country3LetterCode } from "@selfxyz/common/constants/countries";
 import { DeployedActorsV2 } from "../utils/types";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
@@ -34,7 +40,10 @@ describe("Self Verification Flow V2 - Selfrica", () => {
   before(async () => {
     deployedActors = await deploySystemFixturesV2();
 
-    const expectedScopeFromHash = hashEndpointWithScope(deployedActors.testSelfVerificationRoot.target.toString().toLowerCase(), "test-scope");
+    const expectedScopeFromHash = hashEndpointWithScope(
+      deployedActors.testSelfVerificationRoot.target.toString().toLowerCase(),
+      "test-scope",
+    );
     scopeAsBigInt = BigInt(expectedScopeFromHash);
 
     const destChainId = 31337;
@@ -57,17 +66,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
       false,
       scopeAsBigInt.toString(),
       userIdentifierHash.toString(),
-      [
-        "GENDER",
-        "FULL_NAME",
-        "DOB",
-        "ID_NUMBER",
-        "ISSUANCE_DATE",
-        "EXPIRY_DATE",
-        "COUNTRY",
-        "GENDER",
-        "ADDRESS",
-      ],
+      ["GENDER", "FULL_NAME", "DOB", "ID_NUMBER", "ISSUANCE_DATE", "EXPIRY_DATE", "COUNTRY", "GENDER", "ADDRESS"],
       undefined,
       0,
       true,
@@ -100,7 +99,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
     await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
     baseVcAndDiscloseProof = await generateVcAndDiscloseSelfricaProof(testInputs);
     snapshotId = await ethers.provider.send("evm_snapshot", []);
-  })
+  });
 
   afterEach(async () => {
     await ethers.provider.send("evm_revert", [snapshotId]);
@@ -308,22 +307,17 @@ describe("Self Verification Flow V2 - Selfrica", () => {
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
-        [
-          [
-            baseVcAndDiscloseProof.a,
-            baseVcAndDiscloseProof.b,
-            baseVcAndDiscloseProof.c,
-            clonedPubSignal,
-          ],
-        ],
+        [[baseVcAndDiscloseProof.a, baseVcAndDiscloseProof.b, baseVcAndDiscloseProof.c, clonedPubSignal]],
       );
 
       const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
-      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(deployedActors.hubImplV2, "ScopeMismatch");
-    })
+      await expect(
+        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
+      ).to.be.revertedWithCustomError(deployedActors.hubImplV2, "ScopeMismatch");
+    });
 
     it("should fail with invalid user identifier", async () => {
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
@@ -359,22 +353,17 @@ describe("Self Verification Flow V2 - Selfrica", () => {
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
-        [
-          [
-            baseVcAndDiscloseProof.a,
-            baseVcAndDiscloseProof.b,
-            baseVcAndDiscloseProof.c,
-            clonedPubSignal,
-          ],
-        ],
+        [[baseVcAndDiscloseProof.a, baseVcAndDiscloseProof.b, baseVcAndDiscloseProof.c, clonedPubSignal]],
       );
 
       const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
-      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(deployedActors.hubImplV2, "InvalidUserIdentifierInProof");
-    })
+      await expect(
+        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
+      ).to.be.revertedWithCustomError(deployedActors.hubImplV2, "InvalidUserIdentifierInProof");
+    });
 
     it("should fail with invalid current date + 2 day", async () => {
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
@@ -411,14 +400,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
-        [
-          [
-            baseVcAndDiscloseProof.a,
-            baseVcAndDiscloseProof.b,
-            baseVcAndDiscloseProof.c,
-            clonedPubSignal,
-          ],
-        ],
+        [[baseVcAndDiscloseProof.a, baseVcAndDiscloseProof.b, baseVcAndDiscloseProof.c, clonedPubSignal]],
       );
 
       const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
@@ -426,7 +408,9 @@ describe("Self Verification Flow V2 - Selfrica", () => {
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
       // Modifying the year component triggers InvalidYearRange from the Formatter
-      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(deployedActors.hubImplV2, "InvalidYearRange");
+      await expect(
+        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
+      ).to.be.revertedWithCustomError(deployedActors.hubImplV2, "InvalidYearRange");
     });
 
     it("should fail with invalid current date -1 day", async () => {
@@ -464,14 +448,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
-        [
-          [
-            baseVcAndDiscloseProof.a,
-            baseVcAndDiscloseProof.b,
-            baseVcAndDiscloseProof.c,
-            clonedPubSignal,
-          ],
-        ],
+        [[baseVcAndDiscloseProof.a, baseVcAndDiscloseProof.b, baseVcAndDiscloseProof.c, clonedPubSignal]],
       );
 
       const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
@@ -479,7 +456,9 @@ describe("Self Verification Flow V2 - Selfrica", () => {
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
       // Modifying the year component triggers InvalidYearRange from the Formatter
-      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(deployedActors.hubImplV2, "InvalidYearRange");
+      await expect(
+        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
+      ).to.be.revertedWithCustomError(deployedActors.hubImplV2, "InvalidYearRange");
     });
 
     it("should fail with invalid groth16 proof", async () => {
@@ -520,14 +499,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
-        [
-          [
-            clonedGrothProof.a,
-            clonedGrothProof.b,
-            clonedGrothProof.c,
-            clonedGrothProof.pubSignals,
-          ],
-        ],
+        [[clonedGrothProof.a, clonedGrothProof.b, clonedGrothProof.c, clonedGrothProof.pubSignals]],
       );
 
       const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
@@ -625,9 +597,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
       const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
 
       // The proof validation fails before reaching custom verifier checks
-      await expect(
-        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
-      ).to.be.reverted;
+      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.reverted;
     });
 
     it("should fail verification with invalid forbidden countries check", async () => {
@@ -667,9 +637,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
       const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
 
       // The proof validation fails before reaching custom verifier checks
-      await expect(
-        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
-      ).to.be.reverted;
+      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.reverted;
     });
 
     it("should fail verification with invalid older than check", async () => {
@@ -714,9 +682,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
       const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
 
       // The proof validation fails before reaching custom verifier checks
-      await expect(
-        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
-      ).to.be.reverted;
+      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.reverted;
     });
 
     it("should fail verification with invalid dest chain id", async () => {
@@ -760,17 +726,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
         false,
         scopeAsBigInt.toString(),
         newUserIdentifierHash.toString(),
-        [
-          "GENDER",
-          "FULL_NAME",
-          "DOB",
-          "ID_NUMBER",
-          "ISSUANCE_DATE",
-          "EXPIRY_DATE",
-          "COUNTRY",
-          "GENDER",
-          "ADDRESS",
-        ],
+        ["GENDER", "FULL_NAME", "DOB", "ID_NUMBER", "ISSUANCE_DATE", "EXPIRY_DATE", "COUNTRY", "GENDER", "ADDRESS"],
         undefined,
         18,
         false,
@@ -781,16 +737,12 @@ describe("Self Verification Flow V2 - Selfrica", () => {
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(KYC_ATTESTATION_ID)), 32);
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
-        [
-          [newProof.a, newProof.b, newProof.c, newProof.pubSignals],
-        ],
+        [[newProof.a, newProof.b, newProof.c, newProof.pubSignals]],
       );
       const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
 
       // The proof validation fails before reaching cross-chain checks
-      await expect(
-        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
-      ).to.be.reverted;
+      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.reverted;
     });
 
     it("should fail verification with invalid msg sender to call onVerificationSuccess", async () => {

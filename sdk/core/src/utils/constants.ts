@@ -138,6 +138,26 @@ export const revealedDataIndices: Record<
     ofacStart: 116,
     ofacEnd: 117,
   },
+  4: { //put everything as 99
+    issuingStateStart: 99,
+    issuingStateEnd: 99,
+    nameStart: 99,
+    nameEnd: 99,
+    idNumberStart: 99,
+    idNumberEnd: 99,
+    nationalityStart: 99,
+    nationalityEnd: 99,
+    dateOfBirthStart: 99,
+    dateOfBirthEnd: 99,
+    genderStart: 99,
+    genderEnd: 99,
+    expiryDateStart: 99,
+    expiryDateEnd: 99,
+    olderThanStart: 99,
+    olderThanEnd: 99,
+    ofacStart: 99,
+    ofacEnd: 99,
+  },
 } as const;
 
 const allIdEntries = Object.keys(discloseIndices).map(

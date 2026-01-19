@@ -26,7 +26,6 @@ import { KycField } from '../kyc/constants.js';
 
 export { generateCircuitInputsRegister } from './generateInputs.js';
 
-
 // export function generateTEEInputsKycDisclose(  secret: string,
 //   kycData: KycData,
 //   selfApp: SelfApp,
@@ -241,13 +240,13 @@ export function generateTEEInputsDiscloseStateless(
     return { inputs, circuitName, endpointType, endpoint };
   }
   // if (passportData.documentCategory === 'kyc') {
-    // const { inputs, circuitName, endpointType, endpoint } = generateTEEInputsKycDisclose(
-    //   secret,
-    //   passportData,
-    //   selfApp,
-    //   getTree
-    // );
-    // return { inputs, circuitName, endpointType, endpoint };
+  // const { inputs, circuitName, endpointType, endpoint } = generateTEEInputsKycDisclose(
+  //   secret,
+  //   passportData,
+  //   selfApp,
+  //   getTree
+  // );
+  // return { inputs, circuitName, endpointType, endpoint };
   // }
   const { scope, disclosures, endpoint, userId, userDefinedData, chainID } = selfApp;
   const userIdentifierHash = calculateUserIdentifierHash(chainID, userId, userDefinedData);

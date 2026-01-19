@@ -614,9 +614,8 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
 
       // Note: When currentDay - 1 results in 0, the Formatter library throws InvalidDayRange
       // before the Hub can check if date is in valid range
-      await expect(
-        deployedActors.testSelfVerificationRoot.verifySelfProof(differentScopeProofData, userContextData),
-      ).to.be.reverted;
+      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(differentScopeProofData, userContextData)).to
+        .be.reverted;
     });
 
     it("should fail verification with invalid groth16 proof", async () => {

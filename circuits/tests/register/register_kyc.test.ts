@@ -38,9 +38,15 @@ describe('REGISTER KYC Circuit Tests', () => {
   it('should generate the correct nullifier and commitment', async function () {
     this.timeout(0);
 
-    let idnumber = input.data_padded.slice(KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH);
+    let idnumber = input.data_padded.slice(
+      KYC_ID_NUMBER_INDEX,
+      KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH
+    );
     const nullifier = packBytesAndPoseidon(idnumber.map((x) => Number(x)));
-    const commitment = poseidon2([input.secret, packBytesAndPoseidon(input.data_padded.map((x) => Number(x)))]);
+    const commitment = poseidon2([
+      input.secret,
+      packBytesAndPoseidon(input.data_padded.map((x) => Number(x))),
+    ]);
 
     const w = await circuit.calculateWitness(input);
     await circuit.checkConstraints(w);
@@ -90,7 +96,9 @@ describe('REGISTER KYC Circuit Tests', () => {
 
   it('should fail if s is greater than subgroup order', async function () {
     this.timeout(0);
-    input.s = BigInt("2736030358979909402780800718157159386076813972158567259200215660948447373041");
+    input.s = BigInt(
+      '2736030358979909402780800718157159386076813972158567259200215660948447373041'
+    );
     try {
       const w = await circuit.calculateWitness(input);
       await circuit.checkConstraints(w);
@@ -113,11 +121,13 @@ describe('REGISTER KYC Circuit Tests', () => {
     }
   });
 
-  it("should fail if R is not on the curve", async function () {
+  it('should fail if R is not on the curve', async function () {
     this.timeout(0);
     input = await generateMockKycRegisterInput(null, true, undefined);
     //go beyond the suborder
-    input.R[0] = BigInt(BigInt("9736030358979909402780800718157159386076813972158567259200215660948447373049") + 1n);
+    input.R[0] = BigInt(
+      BigInt('9736030358979909402780800718157159386076813972158567259200215660948447373049') + 1n
+    );
     input.R[1] = BigInt(1);
     try {
       const w = await circuit.calculateWitness(input);
@@ -128,11 +138,15 @@ describe('REGISTER KYC Circuit Tests', () => {
     }
   });
 
-  it("should fail if pubKey is not on the curve", async function () {
+  it('should fail if pubKey is not on the curve', async function () {
     this.timeout(0);
     input = await generateMockKycRegisterInput(null, true, undefined);
-    input.pubKey[0] = BigInt("2736030358979909402780800718157159386076813972158567259200215660948447373049");
-    input.pubKey[1] = BigInt("2736030358979909402780800718157159386076813972158567259200215660948447373049");
+    input.pubKey[0] = BigInt(
+      '2736030358979909402780800718157159386076813972158567259200215660948447373049'
+    );
+    input.pubKey[1] = BigInt(
+      '2736030358979909402780800718157159386076813972158567259200215660948447373049'
+    );
     try {
       const w = await circuit.calculateWitness(input);
       await circuit.checkConstraints(w);

@@ -29,7 +29,7 @@ import {Formatter} from "../libraries/Formatter.sol";
  *
  * ⚠️ VIOLATION OF THESE RULES WILL CAUSE CATASTROPHIC STORAGE COLLISIONS IN FUTURE UPGRADES ⚠️
  * =============================================
-*/
+ */
 
 /**
  * @title IdentityRegistrySelfricaStorageV1
@@ -88,7 +88,12 @@ interface IGCPJWTVerifier {
      * @param pubSignals Public signals from the circuit.
      * @return True if the proof is valid, false otherwise.
      */
-    function verifyProof(uint256[2] calldata pA, uint256[2][2] calldata pB, uint256[2] calldata pC, uint256[19] calldata pubSignals) external view returns (bool);
+    function verifyProof(
+        uint256[2] calldata pA,
+        uint256[2][2] calldata pB,
+        uint256[2] calldata pC,
+        uint256[19] calldata pubSignals
+    ) external view returns (bool);
 }
 
 /**
@@ -467,7 +472,14 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
         uint256 currentHour = pubSignals[13] * 10 + pubSignals[14];
         uint256 currentMinute = pubSignals[15] * 10 + pubSignals[16];
         uint256 currentSecond = pubSignals[17] * 10 + pubSignals[18];
-        uint256 currentTimestamp = Formatter.toTimeStampWithSeconds(currentYear, currentMonth, currentDay, currentHour, currentMinute, currentSecond);
+        uint256 currentTimestamp = Formatter.toTimeStampWithSeconds(
+            currentYear,
+            currentMonth,
+            currentDay,
+            currentHour,
+            currentMinute,
+            currentSecond
+        );
 
         if (currentTimestamp + 1 hours < block.timestamp) revert INVALID_TIMESTAMP(); //1 hour in the past
         if (currentTimestamp > block.timestamp + 1 hours) revert INVALID_TIMESTAMP(); //1 hour in the future
@@ -479,10 +491,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @dev Callable only by the owner for testing or administration.
     /// @param nullifier The nullifier associated with the identity commitment.
     /// @param commitment The identity commitment to add.
-    function devAddIdentityCommitment(
-        uint256 nullifier,
-        uint256 commitment
-    ) external onlyProxy onlyOwner {
+    function devAddIdentityCommitment(uint256 nullifier, uint256 commitment) external onlyProxy onlyOwner {
         _nullifiers[nullifier] = true;
         uint256 imt_root = _identityCommitmentIMT._insert(commitment);
         _rootTimestamps[imt_root] = block.timestamp;
