@@ -165,6 +165,7 @@ export const ProofEvents = {
   DEVICE_TOKEN_REG_FAILED: 'Proof: Device Token Registration Failed',
   DEVICE_TOKEN_REG_STARTED: 'Proof: Device Token Registration Started',
   DEVICE_TOKEN_REG_SUCCESS: 'Proof: Device Token Registration Succeeded',
+  DISCLOSURE_NEEDS_REGISTRATION: 'Proof: Disclosure Needs Registration First',
   DOCUMENT_LOAD_STARTED: 'Proof: Load Selected Document Started',
   DSC_IN_TREE: 'Proof: DSC Already In Tree',
   FCM_TOKEN_STORED: 'Proof: FCM Token Stored Successfully',

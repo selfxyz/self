@@ -221,10 +221,13 @@ export interface ProvingState {
   reason: string | null;
   endpointType: EndpointType | null;
   env: 'prod' | 'stg' | null;
+  pendingDisclose: boolean; // True when disclosure was requested but registration needed first
+  autoChainInProgress: boolean; // True when auto-chaining from register→disclosure, blocks external init calls
   init: (
     selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
     userConfirmed?: boolean,
+    isChainedDisclosure?: boolean,
   ) => Promise<void>;
   parseIDDocument: (selfClient: SelfClient) => Promise<void>;
   startFetchingData: (selfClient: SelfClient) => Promise<void>;
@@ -451,12 +454,37 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           })();
         }
 
+        // If registration completed and disclosure was pending, auto-start disclosure
+        // Note: DSC → Register chaining is already handled by postProving()
+        if (get().circuitType === 'register' && get().pendingDisclose) {
+          const autoDisclosureContext = createProofContext(selfClient, 'autoDisclosure');
+          selfClient.logProofEvent('info', 'Registration complete, auto-starting pending disclosure', autoDisclosureContext);
+          // Set autoChainInProgress to block any external init calls until our chained disclosure completes
+          set({ pendingDisclose: false, autoChainInProgress: true });
+          // Give a short delay for state to settle, then start disclosure
+          // Pass isChainedDisclosure=true to prevent pendingDisclose from being set again
+          setTimeout(() => {
+            get().init(selfClient, 'disclose', true, true);
+          }, 500);
+          return; // Skip normal completion handling
+        }
+
         if (get().circuitType !== 'disclose') {
           get()._handleAccountVerifiedSuccess(selfClient);
         }
 
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(true);
+          // If autoChainInProgress is true, this was a chained disclosure after auto-registration
+          // Clear the flag and clean up selfApp to prevent ProveScreen from re-triggering another disclosure
+          if (get().autoChainInProgress) {
+            const chainedContext = createProofContext(selfClient, 'chainedDisclosureCleanup');
+            selfClient.logProofEvent('info', 'Chained disclosure complete, cleaning up selfApp to prevent re-trigger', chainedContext);
+            set({ autoChainInProgress: false });
+            setTimeout(() => {
+              selfClient.getSelfAppState().cleanSelfApp();
+            }, 2000); // Delay to allow success UI to show
+          }
         }
 
         // Disable keychain error modal when proving flow ends
@@ -479,11 +507,19 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         if (get().circuitType === 'disclose') {
           const { error_code, reason } = get();
           selfClient.getSelfAppState().handleProofResult(false, error_code ?? undefined, reason ?? undefined);
+          // Clear autoChainInProgress if this was a chained disclosure that failed
+          if (get().autoChainInProgress) {
+            set({ autoChainInProgress: false });
+          }
         }
       }
       if (state.value === 'error') {
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, 'error', 'error');
+          // Clear autoChainInProgress if this was a chained disclosure that errored
+          if (get().autoChainInProgress) {
+            set({ autoChainInProgress: false });
+          }
         }
         // Disable keychain error modal when proving flow ends
         selfClient.navigation?.disableKeychainErrorModal?.();
@@ -508,6 +544,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     error_code: null,
     reason: null,
     endpointType: null,
+    pendingDisclose: false,
+    autoChainInProgress: false,
     _handleWebSocketMessage: async (event: MessageEvent, selfClient: SelfClient) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
@@ -845,7 +883,29 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       selfClient: SelfClient,
       circuitType: 'dsc' | 'disclose' | 'register',
       userConfirmed: boolean = false,
+      isChainedDisclosure: boolean = false,
     ) => {
+      const currentCircuitType = get().circuitType;
+      const currentState = get().currentState ?? 'idle';
+
+      // Guard against duplicate disclosure init calls during auto-chaining
+      // If auto-chain is in progress (register→disclosure), block ALL external init calls
+      if (get().autoChainInProgress && !isChainedDisclosure) {
+        console.log(`[init] Blocking init during auto-chain. circuitType=${circuitType}, autoChainInProgress=true`);
+        return;
+      }
+
+      // Guard against duplicate disclosure init calls
+      // If we're already in a disclosure flow (not in terminal state), skip duplicate init
+      // unless it's an intentional chained disclosure or has userConfirmed=true
+      const terminalStates = ['idle', 'completed', 'failure', 'error', 'passport_not_supported', 'passport_data_not_found'];
+      const isInActiveDisclosure = currentCircuitType === 'disclose' && !terminalStates.includes(currentState);
+
+      if (circuitType === 'disclose' && isInActiveDisclosure && !userConfirmed && !isChainedDisclosure) {
+        console.log(`[init] Skipping duplicate disclosure init. currentState=${currentState}, currentCircuitType=${currentCircuitType}`);
+        return;
+      }
+
       selfClient.trackEvent(ProofEvents.PROVING_INIT);
       get()._closeConnections(selfClient);
 
@@ -874,6 +934,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType,
         endpointType: null,
         env: null,
+        // For fresh disclosures (user scans QR), set pendingDisclose=true so we can auto-register if needed
+        // For chained disclosures (after auto-registration), keep pendingDisclose=false to indicate completion
+        // For DSC/Register, preserve the existing value to maintain the chain state
+        pendingDisclose: circuitType === 'disclose' && !isChainedDisclosure ? true : get().pendingDisclose,
+        // For chained disclosures, keep autoChainInProgress true; for fresh flows, reset to false
+        autoChainInProgress: isChainedDisclosure ? get().autoChainInProgress : false,
       });
 
       actor = createActor(provingMachine);
@@ -1103,6 +1169,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
 
         /// disclosure
+        let needsRegistration = circuitType !== 'disclose';
         if (circuitType === 'disclose') {
           const isRegisteredWithLocalCSCA = await isUserRegistered(
             passportData,
@@ -1120,17 +1187,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'VALIDATION_SUCCESS' });
             return;
           } else {
-            selfClient.logProofEvent('error', 'Passport data not found', context, {
-              failure: 'PROOF_FAILED_VALIDATION',
-              duration_ms: Date.now() - startTime,
-            });
-            actor!.send({ type: 'PASSPORT_DATA_NOT_FOUND' });
-            return;
+            // Document not registered - switch to registration flow first
+            // After registration completes, disclosure will auto-start (pendingDisclose flag)
+            selfClient.logProofEvent('info', 'Document not registered, switching to registration flow', context);
+            selfClient.trackEvent(ProofEvents.DISCLOSURE_NEEDS_REGISTRATION);
+            needsRegistration = true;
+            // Set circuit type to 'dsc' - the registration validation will upgrade to 'register' if DSC is already in tree
+            set({ circuitType: 'dsc' });
           }
         }
 
-        /// registration
-        else {
+        /// registration (runs for registration flows OR when disclosure needs registration first)
+        if (needsRegistration) {
           const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
             getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
             getAltCSCA: (docType: DocumentCategory) => {
