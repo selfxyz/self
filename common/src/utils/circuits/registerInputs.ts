@@ -22,8 +22,72 @@ import type { AadhaarData, Environment, IDDocument, OfacTree } from '../../utils
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
+import { KycField } from '../kyc/constants.js';
 
 export { generateCircuitInputsRegister } from './generateInputs.js';
+
+// export function generateTEEInputsKycDisclose(  secret: string,
+//   kycData: KycData,
+//   selfApp: SelfApp,
+//   getTree: <T extends 'ofac' | 'commitment'>(
+//     doc: DocumentCategory,
+//     tree: T
+//   ) => T extends 'ofac' ? OfacTree : any
+
+// ) {
+
+//   const {generateKycInputWithOutSig} = require('../kyc/generateInputs.js');
+
+//   const { scope, disclosures, userId, userDefinedData, chainID } = selfApp;
+//   const userIdentifierHash = calculateUserIdentifierHash(chainID, userId, userDefinedData);
+
+//   // Map SelfAppDisclosureConfig to KycField array
+//   const mapDisclosuresToKycFields = (config: SelfAppDisclosureConfig): KycField[] => {
+//     const mapping: [keyof SelfAppDisclosureConfig, KycField][] = [
+//       ['issuing_state', 'ADDRESS'],
+//       ['nationality', 'COUNTRY'],
+//       ['name', 'FULL_NAME'],
+//       ['passport_number', 'ID_NUMBER'],
+//       ['date_of_birth', 'DOB'],
+//       ['gender', 'GENDER'],
+//       ['expiry_date', 'EXPIRY_DATE'],
+//     ];
+//     return mapping.filter(([key]) => config[key]).map(([_, field]) => field);
+//   };
+
+//   const ofac_trees = getTree('kyc', 'ofac');
+//   if (!ofac_trees) {
+//     throw new Error('OFAC trees not loaded');
+//   }
+
+//   if (!ofac_trees.nameAndDob || !ofac_trees.nameAndYob) {
+//     throw new Error('Invalid OFAC tree structure: missing required fields');
+//   }
+
+//   const nameAndDobSMT = new SMT(poseidon2, true);
+//   const nameAndYobSMT = new SMT(poseidon2, true);
+//   nameAndDobSMT.import(ofac_trees.nameAndDob);
+//   nameAndYobSMT.import(ofac_trees.nameAndYob);
+
+//   const inputs = generateKycInputWithOutSig(
+//     kycData.serializedRealData,
+//     nameAndDobSMT,
+//     nameAndYobSMT,
+//     disclosures.ofac,
+//     scope,
+//     userIdentifierHash.toString(),
+//     mapDisclosuresToKycFields(disclosures),
+//     disclosures.excludedCountries,
+//     disclosures.minimumAge
+//   );
+
+//   return {
+//     inputs,
+//     circuitName: 'vc_and_disclose_kyc',
+//     endpointType: selfApp.endpointType,
+//     endpoint: selfApp.endpoint,
+//   };
+// }
 
 export function generateTEEInputsAadhaarDisclose(
   secret: string,
@@ -175,6 +239,15 @@ export function generateTEEInputsDiscloseStateless(
     );
     return { inputs, circuitName, endpointType, endpoint };
   }
+  // if (passportData.documentCategory === 'kyc') {
+  // const { inputs, circuitName, endpointType, endpoint } = generateTEEInputsKycDisclose(
+  //   secret,
+  //   passportData,
+  //   selfApp,
+  //   getTree
+  // );
+  // return { inputs, circuitName, endpointType, endpoint };
+  // }
   const { scope, disclosures, endpoint, userId, userDefinedData, chainID } = selfApp;
   const userIdentifierHash = calculateUserIdentifierHash(chainID, userId, userDefinedData);
   const scope_hash = hashEndpointWithScope(endpoint, scope);
@@ -252,6 +325,10 @@ export async function generateTEEInputsRegister(
     );
     return { inputs, circuitName, endpointType, endpoint };
   }
+
+  // if (passportData.documentCategory === 'kyc') {
+  //   throw new Error('Kyc does not support registration');
+  // }
 
   const inputs = generateCircuitInputsRegister(secret, passportData, dscTree as string);
   const circuitName = getCircuitNameFromPassportData(passportData, 'register');

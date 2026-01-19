@@ -6,6 +6,8 @@ include "../utils/passport/customHashers.circom";
 include "../utils/gcp_jwt/extractAndValidatePubkey.circom";
 include "../utils/gcp_jwt/verifyCertificateSignature.circom";
 include "../utils/gcp_jwt/verifyJSONFieldExtraction.circom";
+include "../utils/gcp_jwt/singleOccurance.circom";
+include "../utils/gcp_jwt/validityChecker.circom";
 include "circomlib/circuits/comparators.circom";
 include "@openpassport/zk-email-circuits/utils/array.circom";
 include "@openpassport/zk-email-circuits/utils/bytes.circom";
@@ -53,12 +55,6 @@ template GCPJWTVerifier(
     signal input intermediate_pubkey_offset;
     signal input intermediate_pubkey_actual_size;
 
-    // x5c[2] - Root CA certificate
-    signal input root_cert[MAX_CERT_LENGTH];
-    signal input root_cert_padded_length;
-    signal input root_pubkey_offset;
-    signal input root_pubkey_actual_size;
-
     // Public keys (extracted from certificates)
     signal input leaf_pubkey[kScaled]; // From x5c[0]
     signal input intermediate_pubkey[kScaled]; // From x5c[1]
@@ -69,11 +65,14 @@ template GCPJWTVerifier(
     signal input leaf_signature[kScaled]; // x5c[0] signature
     signal input intermediate_signature[kScaled]; // x5c[1] signature
 
+    signal input leaf_validity_offset;
+    signal input intermediate_validity_offset;
+    signal input current_date[12];
 
     // GCP spec: nonce must be 10-74 bytes decoded
     // https://cloud.google.com/confidential-computing/confidential-space/docs/connect-external-resources
     // EAT nonce (payload.eat_nonce[0])
-    var MAX_EAT_NONCE_B64_LENGTH = 74; // Max length for base64url string (74 bytes decoded = 99 b64url chars)
+    var MAX_EAT_NONCE_B64_LENGTH = 99; // Max length for base64url string (74 bytes decoded = 99 b64url chars)
     var MAX_EAT_NONCE_KEY_LENGTH = 10; // Length of "eat_nonce" key (without quotes)
 	var EAT_NONCE_PACKED_CHUNKS = computeIntChunkLength(MAX_EAT_NONCE_B64_LENGTH);
     signal input eat_nonce_0_b64_length; // Length of base64url string
@@ -110,12 +109,44 @@ template GCPJWTVerifier(
     signal payload[maxPayloadLength];
     payload <== jwtVerifier.payload;
 
+    component singleOccuranceImageDigest = SingleOccurance(maxPayloadLength, 14);
+    singleOccuranceImageDigest.in <== payload;
+    singleOccuranceImageDigest.word[0] <== 34; // '"'
+    singleOccuranceImageDigest.word[1] <== 105; // 'i'
+    singleOccuranceImageDigest.word[2] <== 109; // 'm'
+    singleOccuranceImageDigest.word[3] <== 97;  // 'a'
+    singleOccuranceImageDigest.word[4] <== 103; // 'g'
+    singleOccuranceImageDigest.word[5] <== 101; // 'e'
+    singleOccuranceImageDigest.word[6] <== 95;  // '_'
+    singleOccuranceImageDigest.word[7] <== 100; // 'd'
+    singleOccuranceImageDigest.word[8] <== 105; // 'i'
+    singleOccuranceImageDigest.word[9] <== 103; // 'g'
+    singleOccuranceImageDigest.word[10] <== 101; // 'e'
+    singleOccuranceImageDigest.word[11] <== 115; // 's'
+    singleOccuranceImageDigest.word[12] <== 116; // 't'
+    singleOccuranceImageDigest.word[13] <== 34; // '"'
+
+    component singleOccuranceEatNonce = SingleOccurance(maxPayloadLength, 11);
+    singleOccuranceEatNonce.in <== payload;
+    singleOccuranceEatNonce.word[0] <== 34; // '"'
+    singleOccuranceEatNonce.word[1] <== 101; // 'e'
+    singleOccuranceEatNonce.word[2] <== 97;  // 'a'
+    singleOccuranceEatNonce.word[3] <== 116; // 't'
+    singleOccuranceEatNonce.word[4] <== 95;  // '_'
+    singleOccuranceEatNonce.word[5] <== 110; // 'n'
+    singleOccuranceEatNonce.word[6] <== 111; // 'o'
+    singleOccuranceEatNonce.word[7] <== 110; // 'n'
+    singleOccuranceEatNonce.word[8] <== 99; // 'c'
+    singleOccuranceEatNonce.word[9] <== 101; // 'e'
+    singleOccuranceEatNonce.word[10] <== 34; // '"'
+
     // Extract and validate x5c[0] Public Key
     ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
         leaf_cert,
         leaf_pubkey_offset,
         leaf_pubkey_actual_size,
-        leaf_pubkey
+        leaf_pubkey,
+        leaf_cert_padded_length
     );
 
     // Extract and validate x5c[1] public key
@@ -123,7 +154,22 @@ template GCPJWTVerifier(
         intermediate_cert,
         intermediate_pubkey_offset,
         intermediate_pubkey_actual_size,
-        intermediate_pubkey
+        intermediate_pubkey,
+        intermediate_cert_padded_length
+    );
+
+    ValidityChecker(MAX_CERT_LENGTH)(
+        leaf_cert,
+        leaf_cert_padded_length,
+        leaf_validity_offset,
+        current_date
+    );
+
+    ValidityChecker(MAX_CERT_LENGTH)(
+        intermediate_cert,
+        intermediate_cert_padded_length,
+        intermediate_validity_offset,
+        current_date
     );
 
     // Verify x5c[0] signature using x5c[1] public key
@@ -132,14 +178,6 @@ template GCPJWTVerifier(
         leaf_cert_padded_length,
         intermediate_pubkey,
         leaf_signature
-    );
-
-    // Extract and validate x5c[2] public key
-    ExtractAndValidatePubkey(signatureAlgorithm, n, k, MAX_CERT_LENGTH, MAX_PUBKEY_PREFIX, MAX_PUBKEY_LENGTH)(
-        root_cert,
-        root_pubkey_offset,
-        root_pubkey_actual_size,
-        root_pubkey
     );
 
     // Verify x5c[1] signature using x5c[2] public key
@@ -254,4 +292,4 @@ template GCPJWTVerifier(
     image_hash_packed <== PackBytes(IMAGE_HASH_LENGTH)(image_hash_bytes);
 }
 
-component main = GCPJWTVerifier(1, 120, 35);
+component main { public [current_date] } = GCPJWTVerifier(1, 120, 35);

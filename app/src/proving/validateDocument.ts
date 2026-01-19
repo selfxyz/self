@@ -202,6 +202,10 @@ export function getAlternativeCSCA(
   useProtocolStore: SelfClient['useProtocolStore'],
   docCategory: DocumentCategory,
 ): AlternativeCSCA {
+  if (docCategory === 'kyc') {
+    //TODO
+    throw new Error('KYC is not supported yet');
+  }
   if (docCategory === 'aadhaar') {
     const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
     // Convert string[] to Record<string, string> format expected by AlternativeCSCA

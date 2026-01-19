@@ -43,6 +43,8 @@ export {
   IDENTITY_TREE_URL_STAGING_ID_CARD,
   ID_CARD_ATTESTATION_ID,
   PASSPORT_ATTESTATION_ID,
+  AADHAAR_ATTESTATION_ID,
+  KYC_ATTESTATION_ID,
   PCR0_MANAGER_ADDRESS,
   REDIRECT_URL,
   RPC_URL,
@@ -130,3 +132,18 @@ export {
   prepareAadhaarRegisterData,
   prepareAadhaarRegisterTestData,
 } from './src/utils/aadhaar/mockData.js';
+
+export {
+  generateKycDiscloseInput,
+  generateMockKycRegisterInput,
+  NON_OFAC_DUMMY_INPUT,
+  OFAC_DUMMY_INPUT,
+} from './src/utils/kyc/generateInputs.js';
+
+export {
+  KYC_MAX_LENGTH,
+  KYC_ID_NUMBER_INDEX,
+  KYC_ID_NUMBER_LENGTH,
+} from './src/utils/kyc/constants.js';
+
+export { serializeKycData, KycData } from './src/utils/kyc/types.js';
