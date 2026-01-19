@@ -37,6 +37,20 @@ jest.mock('react-native', () => ({
 // Ensure the Node Buffer implementation is available to the module under test
 global.Buffer = Buffer;
 
+// The static import above captures Platform.OS at load time. To test different platforms,
+// we need to clear the module cache and re-import with the current global.mockPlatformOS.
+const getFreshParseScanResponse = () => {
+  jest.resetModules();
+  jest.doMock('react-native', () => ({
+    Platform: {
+      get OS() { return global.mockPlatformOS; },
+      Version: 14,
+      select: (obj: Record<string, unknown>) => obj[global.mockPlatformOS] || obj.default,
+    },
+  }));
+  return require('@/integrations/nfc/nfcScanner').parseScanResponse; // eslint-disable-line
+};
+
 describe('parseScanResponse', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -44,8 +58,9 @@ describe('parseScanResponse', () => {
     global.mockPlatformOS = 'ios';
   });
 
-  it.skip('parses iOS response', () => {
+  it('parses iOS response', () => {
     // Platform.OS is already mocked as 'ios' by default
+    const parseScanResponse = getFreshParseScanResponse();
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
     const response = JSON.stringify({
@@ -65,7 +80,6 @@ describe('parseScanResponse', () => {
       `"{"dataGroupHashes":"{\\"DG1\\":{\\"sodHash\\":\\"abcd\\"},\\"DG2\\":{\\"sodHash\\":\\"1234\\"}}","eContentBase64":"ZWM=","signedAttributes":"c2E=","passportMRZ":"P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14","signatureBase64":"AQI=","dataGroupsPresent":[1,2],"passportPhoto":"photo","documentSigningCertificate":"{\\"PEM\\":\\"CERT\\"}"}"`,
     );
     const result = parseScanResponse(response);
-    console.log('Parsed Result:', result);
     expect(result).toMatchInlineSnapshot(`
       {
         "dg1Hash": [
@@ -108,9 +122,10 @@ describe('parseScanResponse', () => {
     expect(result.dg2Hash).toEqual([18, 52]);
   });
 
-  it.skip('parses Android response', () => {
+  it('parses Android response', () => {
     // Set Platform.OS to android for this test
     global.mockPlatformOS = 'android';
+    const parseScanResponse = getFreshParseScanResponse();
 
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
@@ -178,6 +193,7 @@ describe('parseScanResponse', () => {
 
   it('handles malformed iOS response', () => {
     // Platform.OS is already mocked as 'ios' by default
+    const parseScanResponse = getFreshParseScanResponse();
     const response = '{"invalid": "json"';
 
     expect(() => parseScanResponse(response)).toThrow();
@@ -186,6 +202,7 @@ describe('parseScanResponse', () => {
   it('handles malformed Android response', () => {
     // Set Platform.OS to android for this test
     global.mockPlatformOS = 'android';
+    const parseScanResponse = getFreshParseScanResponse();
 
     const response = {
       mrz: 'valid_mrz',
@@ -198,6 +215,7 @@ describe('parseScanResponse', () => {
 
   it('handles missing required fields', () => {
     // Platform.OS is already mocked as 'ios' by default
+    const parseScanResponse = getFreshParseScanResponse();
     const response = JSON.stringify({
       // Providing minimal data but missing critical passportMRZ field
       dataGroupHashes: JSON.stringify({
@@ -217,6 +235,7 @@ describe('parseScanResponse', () => {
 
   it('handles invalid hex data in dataGroupHashes', () => {
     // Platform.OS is already mocked as 'ios' by default
+    const parseScanResponse = getFreshParseScanResponse();
     const response = JSON.stringify({
       dataGroupHashes: JSON.stringify({
         DG1: { sodHash: 'invalid_hex' },
