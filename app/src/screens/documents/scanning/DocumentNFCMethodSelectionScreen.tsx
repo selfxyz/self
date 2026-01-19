@@ -29,6 +29,7 @@ type NFCParams = {
   skipCA?: boolean;
   extendedMode?: boolean;
   usePacePolling?: boolean;
+  reselect?: boolean;
 };
 
 const NFC_METHODS = [
@@ -40,11 +41,11 @@ const NFC_METHODS = [
     params: {},
   },
   {
-    key: 'skipReselect',
-    label: 'Skip Re-select',
-    description: 'Skip the re-select step after the NFC scan.',
+    key: 'reselect',
+    label: 'Reselect',
+    description: 'Enable the re-select step after the NFC scan.',
     platform: ['android'],
-    params: { skipReselect: true },
+    params: { reselect: true },
   },
   {
     key: 'usePacePolling',

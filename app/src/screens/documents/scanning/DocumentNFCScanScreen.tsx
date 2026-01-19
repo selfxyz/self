@@ -85,7 +85,7 @@ const emitter =
     : null;
 
 type DocumentNFCScanRouteParams = {
-  skipReselect?: boolean;
+  reselect?: boolean;
   usePacePolling?: boolean;
   canNumber?: string;
   useCan?: boolean;
@@ -260,7 +260,17 @@ const DocumentNFCScanScreen: React.FC = () => {
     }
   };
 
+  const shouldReselect = (): boolean => {
+    const { reselect } = route.params ?? {};
+    const enabledCountries = ['IDFRA'];
+    const shouldReselectByCountry = enabledCountries.some(
+      country => documentType + countryCode === country,
+    );
+    return reselect !== undefined ? reselect : shouldReselectByCountry;
+  };
+
   const isPacePolling = usePacePolling();
+  const isReselect = shouldReselect();
 
   const onVerifyPress = useCallback(async () => {
     buttonTap();
@@ -324,14 +334,8 @@ const DocumentNFCScanScreen: React.FC = () => {
       }, 30000);
 
       try {
-        const {
-          canNumber,
-          useCan,
-          skipPACE,
-          skipCA,
-          extendedMode,
-          skipReselect,
-        } = route.params ?? {};
+        const { canNumber, useCan, skipPACE, skipCA, extendedMode } =
+          route.params ?? {};
 
         await configureNfcAnalytics();
         const scanResponse = await scan({
@@ -345,7 +349,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           extendedMode,
           usePacePolling: isPacePolling,
           sessionId: sessionIdRef.current,
-          skipReselect,
+          skipReselect: !isReselect,
         });
 
         // Check if scan was cancelled by timeout
@@ -449,6 +453,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     dateOfBirth,
     dateOfExpiry,
     isPacePolling,
+    isReselect,
     navigation,
     openErrorModal,
     trackEvent,
