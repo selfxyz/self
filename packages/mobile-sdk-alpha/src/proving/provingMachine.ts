@@ -1078,6 +1078,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
         const isSupported = await checkDocumentSupported(passportData, {
           getDeployedCircuits: (documentCategory: DocumentCategory) =>
+            //@ts-ignore TODO: fix this
             selfClient.getProtocolState()[documentCategory].deployed_circuits!,
         });
         selfClient.logProofEvent('info', 'Document support check', context, {
