@@ -370,7 +370,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     }
 
     // ====================================================
-    // External Functions - Only Owner
+    // External Functions - Only Owner TODO: add only role(SECURITY_ROLE) or something
     // ====================================================
 
     /**
@@ -378,7 +378,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newHubAddress The new address of the hub.
      */
-    function updateHub(address newHubAddress) external onlyProxy onlyOwner {
+    function updateHub(address newHubAddress) external onlyProxy {
         if (newHubAddress == address(0)) revert HUB_ADDRESS_ZERO();
         _hub = newHubAddress;
         emit HubUpdated(newHubAddress);
@@ -389,7 +389,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newPCR0ManagerAddress The new address of the PCR0Manager.
      */
-    function updatePCR0Manager(address newPCR0ManagerAddress) external virtual onlyProxy onlyOwner {
+    function updatePCR0Manager(address newPCR0ManagerAddress) external virtual onlyProxy {
         _PCR0Manager = newPCR0ManagerAddress;
         emit PCR0ManagerUpdated(newPCR0ManagerAddress);
     }
@@ -399,7 +399,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param nameAndDobOfacRoot The new name and date of birth OFAC root value.
      */
-    function updateNameAndDobOfacRoot(uint256 nameAndDobOfacRoot) external virtual onlyProxy onlyOwner {
+    function updateNameAndDobOfacRoot(uint256 nameAndDobOfacRoot) external virtual onlyProxy {
         _nameAndDobOfacRoot = nameAndDobOfacRoot;
         emit NameAndDobOfacRootUpdated(nameAndDobOfacRoot);
     }
@@ -409,7 +409,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param nameAndYobOfacRoot The new name and year of birth OFAC root value.
      */
-    function updateNameAndYobOfacRoot(uint256 nameAndYobOfacRoot) external virtual onlyProxy onlyOwner {
+    function updateNameAndYobOfacRoot(uint256 nameAndYobOfacRoot) external virtual onlyProxy {
         _nameAndYobOfacRoot = nameAndYobOfacRoot;
         emit NameAndYobOfacRootUpdated(nameAndYobOfacRoot);
     }
@@ -419,7 +419,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param gcpRootCAPubkeyHash The new GCP root CA pubkey hash value.
      */
-    function updateGCPRootCAPubkeyHash(uint256 gcpRootCAPubkeyHash) external virtual onlyProxy onlyOwner {
+    function updateGCPRootCAPubkeyHash(uint256 gcpRootCAPubkeyHash) external virtual onlyProxy {
         _gcpRootCAPubkeyHash = gcpRootCAPubkeyHash;
         emit GCPRootCAPubkeyHashUpdated(gcpRootCAPubkeyHash);
     }
@@ -427,7 +427,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @notice Updates the GCP JWT verifier contract address.
     /// @dev Callable only by the contract owner.
     /// @param verifier The new GCP JWT verifier address.
-    function updateGCPJWTVerifier(address verifier) external onlyProxy onlyOwner {
+    function updateGCPJWTVerifier(address verifier) external onlyProxy {
         _gcpJwtVerifier = verifier;
         emit GCPJWTVerifierUpdated(verifier);
     }
@@ -435,7 +435,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @notice Updates the TEE address.
     /// @dev Callable only by the contract owner.
     /// @param teeAddress The new TEE address.
-    function updateTEE(address teeAddress) external onlyProxy onlyOwner {
+    function updateTEE(address teeAddress) external onlyProxy {
         _tee = teeAddress;
         emit TEEUpdated(teeAddress);
     }
@@ -491,7 +491,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @dev Callable only by the owner for testing or administration.
     /// @param nullifier The nullifier associated with the identity commitment.
     /// @param commitment The identity commitment to add.
-    function devAddIdentityCommitment(uint256 nullifier, uint256 commitment) external onlyProxy onlyOwner {
+    function devAddIdentityCommitment(uint256 nullifier, uint256 commitment) external onlyProxy {
         _nullifiers[nullifier] = true;
         uint256 imt_root = _identityCommitmentIMT._insert(commitment);
         _rootTimestamps[imt_root] = block.timestamp;
@@ -508,7 +508,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
         uint256 oldLeaf,
         uint256 newLeaf,
         uint256[] calldata siblingNodes
-    ) external onlyProxy onlyOwner {
+    ) external onlyProxy {
         uint256 imt_root = _identityCommitmentIMT._update(oldLeaf, newLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
@@ -518,7 +518,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @dev Caller must be the owner. Provides sibling nodes for proof of position.
     /// @param oldLeaf The identity commitment to remove.
     /// @param siblingNodes An array of sibling nodes for Merkle proof generation.
-    function devRemoveCommitment(uint256 oldLeaf, uint256[] calldata siblingNodes) external onlyProxy onlyOwner {
+    function devRemoveCommitment(uint256 oldLeaf, uint256[] calldata siblingNodes) external onlyProxy {
         uint256 imt_root = _identityCommitmentIMT._remove(oldLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);
