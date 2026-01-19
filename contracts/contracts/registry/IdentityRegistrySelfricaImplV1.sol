@@ -504,11 +504,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @param oldLeaf The current identity commitment to update.
     /// @param newLeaf The new identity commitment.
     /// @param siblingNodes An array of sibling nodes for Merkle proof generation.
-    function devUpdateCommitment(
-        uint256 oldLeaf,
-        uint256 newLeaf,
-        uint256[] calldata siblingNodes
-    ) external onlyProxy {
+    function devUpdateCommitment(uint256 oldLeaf, uint256 newLeaf, uint256[] calldata siblingNodes) external onlyProxy {
         uint256 imt_root = _identityCommitmentIMT._update(oldLeaf, newLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
