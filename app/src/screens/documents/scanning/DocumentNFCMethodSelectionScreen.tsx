@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import { Platform, ScrollView } from 'react-native';
-import { Input, YStack } from 'tamagui';
+import { Input, Switch, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -54,16 +54,6 @@ const NFC_METHODS = [
     params: { usePacePolling: true },
   },
   {
-    // We try PACE first, but if it fails, we try BAC authentication.
-    // Some chips will invalidate the session if PACE fails.
-    key: 'skipPACE',
-    label: 'Skip PACE',
-    description:
-      'Skip PACE protocol during NFC scan. Useful if your passport does not support PACE.',
-    platform: ['ios'],
-    params: { skipPACE: true },
-  },
-  {
     key: 'can',
     label: 'CAN Authentication',
     description:
@@ -106,6 +96,7 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState('standard');
   const [canValue, setCanValue] = useState('');
   const [error, setError] = useState('');
+  const [skipPACE, setSkipPACE] = useState(false);
 
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
@@ -142,6 +133,10 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
     if (selectedMethod === 'can') {
       params.canNumber = canValue;
     }
+
+    if (skipPACE) {
+      params.skipPACE = true;
+    }
     // Type assertion needed because static navigation doesn't infer optional params
     navigation.navigate('DocumentNFCScan', params as never);
   };
@@ -152,6 +147,28 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack paddingTop={20} gap={20}>
             <Title>Choose NFC Scan Method</Title>
+
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              paddingVertical="$3"
+              paddingHorizontal="$2"
+              borderWidth={1}
+              borderColor="#ccc"
+              borderRadius={10}
+              backgroundColor="#fff"
+            >
+              <Description>Skip PACE</Description>
+              <Switch
+                size="$4"
+                checked={skipPACE}
+                onCheckedChange={setSkipPACE}
+                backgroundColor={skipPACE ? '$green7Light' : '$gray4'}
+                style={{ minWidth: 48, minHeight: 36 }}
+              >
+                <Switch.Thumb animation="quick" backgroundColor="$white" />
+              </Switch>
+            </XStack>
 
             {NFC_METHODS.filter(method =>
               method.platform.includes(Platform.OS),
