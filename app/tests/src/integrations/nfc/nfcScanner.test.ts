@@ -43,12 +43,15 @@ const getFreshParseScanResponse = () => {
   jest.resetModules();
   jest.doMock('react-native', () => ({
     Platform: {
-      get OS() { return global.mockPlatformOS; },
+      get OS() {
+        return global.mockPlatformOS;
+      },
       Version: 14,
-      select: (obj: Record<string, unknown>) => obj[global.mockPlatformOS] || obj.default,
+      select: (obj: Record<string, unknown>) =>
+        obj[global.mockPlatformOS] || obj.default,
     },
   }));
-  return require('@/integrations/nfc/nfcScanner').parseScanResponse; // eslint-disable-line
+  return require('@/integrations/nfc/nfcScanner').parseScanResponse;
 };
 
 describe('parseScanResponse', () => {
