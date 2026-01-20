@@ -43,6 +43,13 @@ interface PersistedSettingsState {
   subscribedTopics: string[];
   toggleCloudBackupEnabled: () => void;
   turnkeyBackupEnabled: boolean;
+  // Pending registration tracking - for resuming registration after app restart
+  pendingRegistrationUuid: string | null;
+  pendingRegistrationDocumentId: string | null;
+  pendingRegistrationTimestamp: number | null;
+  pendingRegistrationIsMock: boolean;
+  setPendingRegistration: (uuid: string, documentId: string, isMock: boolean) => void;
+  clearPendingRegistration: () => void;
 }
 
 interface NonPersistedSettingsState {
@@ -146,6 +153,26 @@ export const useSettingStore = create<SettingsState>()(
       skipDocumentSelectorIfSingle: true,
       setSkipDocumentSelectorIfSingle: (value: boolean) =>
         set({ skipDocumentSelectorIfSingle: value }),
+
+      // Pending registration tracking - for resuming registration after app restart
+      pendingRegistrationUuid: null,
+      pendingRegistrationDocumentId: null,
+      pendingRegistrationTimestamp: null,
+      pendingRegistrationIsMock: false,
+      setPendingRegistration: (uuid: string, documentId: string, isMock: boolean) =>
+        set({
+          pendingRegistrationUuid: uuid,
+          pendingRegistrationDocumentId: documentId,
+          pendingRegistrationTimestamp: Date.now(),
+          pendingRegistrationIsMock: isMock,
+        }),
+      clearPendingRegistration: () =>
+        set({
+          pendingRegistrationUuid: null,
+          pendingRegistrationDocumentId: null,
+          pendingRegistrationTimestamp: null,
+          pendingRegistrationIsMock: false,
+        }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,
