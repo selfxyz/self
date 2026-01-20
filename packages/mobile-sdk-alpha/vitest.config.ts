@@ -12,4 +12,12 @@ export default defineConfig({
     include: ['tests/**/*.test.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
     exclude: ['node_modules/**'],
   },
+  resolve: {
+    conditions: ['import', 'module', 'browser', 'default'],
+  },
+  server: {
+    deps: {
+      inline: ['blakejs', '@zk-kit/eddsa-poseidon'],
+    },
+  },
 });

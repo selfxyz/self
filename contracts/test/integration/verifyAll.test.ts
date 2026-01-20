@@ -15,6 +15,7 @@ import { VerifyAll } from "../../typechain-types";
 import { getSMTs } from "../utils/generateProof";
 import { Groth16Proof, PublicSignals, groth16 } from "snarkjs";
 import { VcAndDiscloseProof } from "../utils/types";
+import { stringToBigInt } from "@selfxyz/common/utils/scope";
 
 describe("VerifyAll", () => {
   let deployedActors: DeployedActors;

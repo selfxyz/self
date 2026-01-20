@@ -630,6 +630,26 @@
       "types": "./dist/esm/src/utils/ofac.d.ts",
       "import": "./dist/esm/src/utils/ofac.js",
       "require": "./dist/cjs/src/utils/ofac.cjs"
+    },
+    "./utils/kyc/generateInputs": {
+      "import": {
+        "types": "./dist/esm/src/utils/kyc/generateInputs.d.ts",
+        "default": "./dist/esm/src/utils/kyc/generateInputs.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/utils/kyc/generateInputs.d.ts",
+        "default": "./dist/cjs/src/utils/kyc/generateInputs.cjs"
+      }
+    },
+    "./utils/kyc/constants": {
+      "import": {
+        "types": "./dist/esm/src/utils/kyc/constants.d.ts",
+        "default": "./dist/esm/src/utils/kyc/constants.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/utils/kyc/constants.d.ts",
+        "default": "./dist/cjs/src/utils/kyc/constants.cjs"
+      }
     }
   },
   "main": "./dist/cjs/index.cjs",
@@ -667,6 +687,8 @@
     "@openpassport/zk-kit-smt": "^0.0.1",
     "@peculiar/x509": "^1.12.3",
     "@stablelib/cbor": "^2.0.1",
+    "@zk-kit/baby-jubjub": "^1.0.3",
+    "@zk-kit/eddsa-poseidon": "^1.1.0",
     "asn1.js": "^5.4.1",
     "asn1js": "^3.0.5",
     "axios": "^1.7.2",

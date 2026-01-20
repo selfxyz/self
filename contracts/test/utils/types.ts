@@ -10,9 +10,12 @@ import {
   IdentityRegistry,
   IdentityRegistryImplV1,
   IdentityRegistryIdCardImplV1,
+  IdentityRegistrySelfricaImplV1,
   TestSelfVerificationRoot,
   Verifier_vc_and_disclose_staging as LocalVerifier,
   Verifier_vc_and_disclose_id_staging as LocalIdCardVerifier,
+  Verifier_vc_and_disclose_aadhaar_staging as LocalAadhaarVerifier,
+  Verifier_vc_and_disclose_selfrica_staging as LocalSelfricaVerifier,
   Verifier_vc_and_disclose as ProdVerifier,
   Verifier_vc_and_disclose_id as ProdIdCardVerifier,
   Verifier_register_sha256_sha256_sha256_rsa_65537_4096 as ProdRegisterVerifier,
@@ -22,6 +25,8 @@ import {
   Verifier_dsc_sha256_rsa_65537_4096 as ProdDscVerifier,
   Verifier_dsc_sha256_rsa_65537_4096_staging as LocalDscVerifier,
   IIdentityVerificationHubV1,
+  IVcAndDiscloseSelfricaCircuitVerifier,
+  IVcAndDiscloseAadhaarCircuitVerifier,
   IIdentityVerificationHubV2,
   IIdentityRegistryIdCardV1,
   IIdentityRegistryV1,
@@ -29,6 +34,7 @@ import {
   IDscCircuitVerifier,
   IVcAndDiscloseCircuitVerifier,
   IdentityRegistryAadhaarImplV1,
+  PCR0Manager,
 } from "../../typechain-types";
 
 import { DscVerifierId, RegisterVerifierId } from "@selfxyz/common";
@@ -76,8 +82,11 @@ export interface DeployedActorsV2 {
   registryId: IdentityRegistryIdCardImplV1;
   registryAadhaarImpl: IdentityRegistryAadhaarImplV1;
   registryAadhaar: IdentityRegistryAadhaarImplV1;
+  registrySelfrica: IdentityRegistrySelfricaImplV1;
+  registrySelfricaImpl: IdentityRegistrySelfricaImplV1;
   vcAndDisclose: VcAndDiscloseVerifier;
-  vcAndDiscloseAadhaar: VcAndDiscloseAadhaarVerifier;
+  vcAndDiscloseAadhaar: LocalAadhaarVerifier;
+  vcAndDiscloseSelfrica: LocalSelfricaVerifier;
   aadhaarPubkey: bigint;
   vcAndDiscloseId: VcAndDiscloseIdVerifier;
   register: RegisterVerifier;
@@ -86,6 +95,9 @@ export interface DeployedActorsV2 {
   dscId: DscVerifierId;
   testSelfVerificationRoot: TestSelfVerificationRoot;
   customVerifier: any;
+  poseidonT3: any;
+  gcpJwtVerifier: any;
+  pcr0Manager: PCR0Manager;
   owner: Signer;
   user1: Signer;
   user2: Signer;
