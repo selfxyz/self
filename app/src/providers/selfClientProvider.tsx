@@ -236,10 +236,14 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
             if (documentId) {
               setPendingRegistration(uuid, documentId, isMock);
             } else {
-              console.warn('Cannot save pending registration: no selectedDocumentId');
+              console.warn(
+                'Cannot save pending registration: no selectedDocumentId',
+              );
             }
           } catch {
-            console.warn('Cannot save pending registration: failed to load catalog');
+            console.warn(
+              'Cannot save pending registration: failed to load catalog',
+            );
           }
         }
 

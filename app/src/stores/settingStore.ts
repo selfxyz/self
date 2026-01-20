@@ -48,7 +48,11 @@ interface PersistedSettingsState {
   pendingRegistrationDocumentId: string | null;
   pendingRegistrationTimestamp: number | null;
   pendingRegistrationIsMock: boolean;
-  setPendingRegistration: (uuid: string, documentId: string, isMock: boolean) => void;
+  setPendingRegistration: (
+    uuid: string,
+    documentId: string,
+    isMock: boolean,
+  ) => void;
   clearPendingRegistration: () => void;
 }
 
@@ -159,7 +163,11 @@ export const useSettingStore = create<SettingsState>()(
       pendingRegistrationDocumentId: null,
       pendingRegistrationTimestamp: null,
       pendingRegistrationIsMock: false,
-      setPendingRegistration: (uuid: string, documentId: string, isMock: boolean) =>
+      setPendingRegistration: (
+        uuid: string,
+        documentId: string,
+        isMock: boolean,
+      ) =>
         set({
           pendingRegistrationUuid: uuid,
           pendingRegistrationDocumentId: documentId,
