@@ -37,10 +37,12 @@ interface PersistedSettingsState {
   setSkipDocumentSelector: (value: boolean) => void;
   setSubscribedTopics: (topics: string[]) => void;
   setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
+  setUseStrongBox: (useStrongBox: boolean) => void;
   skipDocumentSelector: boolean;
   subscribedTopics: string[];
   toggleCloudBackupEnabled: () => void;
   turnkeyBackupEnabled: boolean;
+  useStrongBox: boolean;
 }
 
 interface NonPersistedSettingsState {
@@ -141,6 +143,10 @@ export const useSettingStore = create<SettingsState>()(
       skipDocumentSelector: false,
       setSkipDocumentSelector: (value: boolean) =>
         set({ skipDocumentSelector: value }),
+
+      // StrongBox setting for Android keystore (default: false)
+      useStrongBox: false,
+      setUseStrongBox: (useStrongBox: boolean) => set({ useStrongBox }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,
