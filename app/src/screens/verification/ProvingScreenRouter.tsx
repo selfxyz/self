@@ -89,7 +89,9 @@ const ProvingScreenRouter: React.FC = () => {
       // Determine if we should skip the selector
       const shouldSkip =
         skipDocumentSelector ||
-        (skipDocumentSelectorIfSingle && validCount === 1);
+        (skipDocumentSelectorIfSingle &&
+          validCount === 1 &&
+          firstValidDoc.isRegistered);
 
       if (shouldSkip) {
         // Auto-select and navigate to Prove
