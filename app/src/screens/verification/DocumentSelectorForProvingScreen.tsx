@@ -219,6 +219,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
 
   const documents = useMemo(() => {
     return documentCatalog.documents
+      .filter(metadata => metadata.isRegistered)
       .map(metadata => {
         const docData = allDocuments[metadata.id];
         const baseState = determineDocumentState(metadata, docData?.data);

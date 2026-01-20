@@ -21,6 +21,7 @@ import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
+import { useSettingStore } from '@/stores/settingStore';
 
 type NFCParams = {
   skipPACE?: boolean;
@@ -102,6 +103,10 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
   const { useMRZStore } = selfClient;
   const { update, passportNumber, dateOfBirth, dateOfExpiry } = useMRZStore();
 
+  const loggingSeverity = useSettingStore(state => state.loggingSeverity);
+  const setLoggingSeverity = useSettingStore(state => state.setLoggingSeverity);
+  const isDebugMode = loggingSeverity === 'debug';
+
   const handleSelect = (key: string) => {
     setSelectedMethod(key);
     setError('');
@@ -164,6 +169,30 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
                 checked={skipPACE}
                 onCheckedChange={setSkipPACE}
                 backgroundColor={skipPACE ? '$green7Light' : '$gray4'}
+                style={{ minWidth: 48, minHeight: 36 }}
+              >
+                <Switch.Thumb animation="quick" backgroundColor="$white" />
+              </Switch>
+            </XStack>
+
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              paddingVertical="$3"
+              paddingHorizontal="$2"
+              borderWidth={1}
+              borderColor="#ccc"
+              borderRadius={10}
+              backgroundColor="#fff"
+            >
+              <Description>Debug Logging</Description>
+              <Switch
+                size="$4"
+                checked={isDebugMode}
+                onCheckedChange={checked => {
+                  setLoggingSeverity(checked ? 'debug' : 'warn');
+                }}
+                backgroundColor={isDebugMode ? '$green7Light' : '$gray4'}
                 style={{ minWidth: 48, minHeight: 36 }}
               >
                 <Switch.Thumb animation="quick" backgroundColor="$white" />
