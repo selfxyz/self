@@ -18,10 +18,7 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSettingStore } from '@/stores/settingStore';
 
 const ProofSettingsScreen: React.FC = () => {
-  const {
-    skipDocumentSelector,
-    setSkipDocumentSelector,
-  } = useSettingStore();
+  const { skipDocumentSelector, setSkipDocumentSelector } = useSettingStore();
 
   return (
     <YStack flex={1} backgroundColor={white}>
@@ -47,7 +44,6 @@ const ProofSettingsScreen: React.FC = () => {
               testID="skip-document-selector-toggle"
             />
           </View>
-
         </YStack>
       </ScrollView>
     </YStack>
