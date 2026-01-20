@@ -35,7 +35,7 @@ describe('AbstractButton', () => {
 
       const button = container.querySelector('button');
       expect(button).toBeTruthy();
-      // Note: In jsdom, styles are applied as inline styles or style objects
+      // Note: In happy-dom, styles are applied as inline styles or style objects
       // The actual style checking depends on how react-native-web or mocks handle it
     });
 
@@ -312,7 +312,7 @@ describe('AbstractButton', () => {
       const button = container.querySelector('button');
       expect(button).toBeTruthy();
 
-      // Note: In jsdom environment, we can't easily simulate Pressable's onPress
+      // Note: In happy-dom environment, we can't easily simulate Pressable's onPress
       // This test verifies the button is renderable with onPress prop
     });
   });
