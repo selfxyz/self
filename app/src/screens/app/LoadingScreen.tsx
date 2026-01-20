@@ -89,7 +89,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
 
   // States where it's safe to close the app
   const safeToCloseStates = ['proving', 'post_proving', 'completed'];
-  const canCloseApp = safeToCloseStates.includes(currentState);
+  const canCloseApp =
+    safeToCloseStates.includes(currentState) && circuitType === 'register';
 
   // Initialize proving process
   useEffect(() => {

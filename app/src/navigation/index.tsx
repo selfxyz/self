@@ -3,7 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect } from 'react';
-import { Platform } from 'react-native';
+import type { AppStateStatus } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { StaticParamList } from '@react-navigation/native';
 import {
@@ -32,7 +33,9 @@ import verificationScreens from '@/navigation/verification';
 import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
 import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
 import { trackScreenView } from '@/services/analytics';
+import { checkPendingRegistrationWithRetry } from '@/services/registration/pendingRegistrationService';
 import type { ProofHistory } from '@/stores/proofTypes';
+import { useSettingStore } from '@/stores/settingStore';
 
 export const navigationScreens = {
   ...appScreens,
@@ -233,6 +236,58 @@ const NavigationWithTracking = () => {
     return () => {
       cleanup();
     };
+  }, [selfClient]);
+
+  // Pending registration check with AppState-based foreground retry
+  useEffect(() => {
+    const appStateRef = { current: AppState.currentState };
+    const isCheckingRef = { current: false };
+
+    const runCheck = async () => {
+      if (isCheckingRef.current || !selfClient) return;
+      const { pendingRegistrationUuid } = useSettingStore.getState();
+      if (!pendingRegistrationUuid) return;
+
+      isCheckingRef.current = true;
+      try {
+        await checkPendingRegistrationWithRetry();
+      } finally {
+        isCheckingRef.current = false;
+      }
+    };
+
+    // Wait for zustand to rehydrate from AsyncStorage before initial check
+    const runCheckAfterHydration = () => {
+      if (useSettingStore.persist.hasHydrated()) {
+        runCheck();
+      } else {
+        const unsubscribe = useSettingStore.persist.onFinishHydration(() => {
+          unsubscribe();
+          runCheck();
+        });
+      }
+    };
+
+    // Initial check on mount (after hydration)
+    runCheckAfterHydration();
+
+    // Check when app comes to foreground
+    const subscription = AppState.addEventListener(
+      'change',
+      (nextState: AppStateStatus) => {
+        const prevState = appStateRef.current;
+        appStateRef.current = nextState;
+
+        if (
+          (prevState === 'background' || prevState === 'inactive') &&
+          nextState === 'active'
+        ) {
+          runCheck();
+        }
+      },
+    );
+
+    return () => subscription.remove();
   }, [selfClient]);
 
   return (

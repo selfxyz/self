@@ -28,6 +28,7 @@ import {
   unsafe_getPrivateKey,
 } from '@/providers/authProvider';
 import {
+  loadDocumentCatalogDirectlyFromKeychain,
   selfClientDocumentsAdapter,
   setPassportKeychainErrorCallback,
 } from '@/providers/passportDataProvider';
@@ -173,6 +174,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS, () => {
+      // Clear pending registration since verification completed successfully
+      useSettingStore.getState().clearPendingRegistration();
+
       setTimeout(() => {
         if (navigationRef.isReady()) {
           navigationRef.navigate({
@@ -186,6 +190,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     addListener(
       SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE,
       async ({ hasValidDocument: _hasValidDocument }) => {
+        // Clear pending registration since registration failed
+        useSettingStore.getState().clearPendingRegistration();
+
         setTimeout(() => {
           if (navigationRef.isReady()) {
             navigationRef.navigate({ name: 'Home', params: {} });
@@ -219,7 +226,26 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     addListener(
       SdkEvents.PROVING_BEGIN_GENERATION,
       async ({ uuid, isMock, context }) => {
-        const { fcmToken } = useSettingStore.getState();
+        const { fcmToken, setPendingRegistration } = useSettingStore.getState();
+
+        // Persist pending registration only for register circuit (after 2nd fingerprint)
+        if (context.circuitType === 'register') {
+          try {
+            const catalog = await loadDocumentCatalogDirectlyFromKeychain();
+            const documentId = catalog.selectedDocumentId;
+            if (documentId) {
+              setPendingRegistration(uuid, documentId, isMock);
+            } else {
+              console.warn(
+                'Cannot save pending registration: no selectedDocumentId',
+              );
+            }
+          } catch {
+            console.warn(
+              'Cannot save pending registration: failed to load catalog',
+            );
+          }
+        }
 
         if (fcmToken) {
           try {
