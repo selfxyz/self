@@ -176,6 +176,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sort-exports": "^0.9.1",
+    "happy-dom": "^16.6.0",
     "jsdom": "^25.0.1",
     "lottie-react-native": "7.2.2",
     "poseidon-lite": "^0.3.0",

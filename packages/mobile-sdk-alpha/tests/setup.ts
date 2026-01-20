@@ -9,6 +9,27 @@
 
 import { createElement } from 'react';
 
+class MockWebSocket {
+  static CONNECTING = 0;
+  static OPEN = 1;
+  static CLOSING = 2;
+  static CLOSED = 3;
+
+  readyState = MockWebSocket.CLOSED;
+
+  addEventListener() {}
+  removeEventListener() {}
+  close() {
+    this.readyState = MockWebSocket.CLOSED;
+  }
+  send() {}
+}
+
+vi.mock('ws', () => ({
+  WebSocket: MockWebSocket,
+  default: { WebSocket: MockWebSocket },
+}));
+
 const originalConsole = {
   warn: console.warn,
   error: console.error,
