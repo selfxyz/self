@@ -17,9 +17,6 @@ const originalConsole = {
 
 const shouldShowOutput = process.env.DEBUG_TESTS === 'true';
 
-// Avoid EventEmitter listener warnings in Vitest runs.
-process.setMaxListeners(25);
-
 // Suppress console noise in tests unless explicitly debugging
 if (!shouldShowOutput) {
   console.warn = () => {}; // Suppress warnings
@@ -175,6 +172,18 @@ vi.mock('react-native', () => ({
   experimental_useFormState: vi.fn(),
   experimental_useCacheRefresh: vi.fn(),
 }));
+
+vi.mock('socket.io-client', () => {
+  const socket = {
+    on: vi.fn(),
+    emit: vi.fn(),
+    disconnect: vi.fn(),
+  };
+
+  return {
+    default: vi.fn(() => socket),
+  };
+});
 
 // Mock window.matchMedia for Tamagui components
 if (typeof window !== 'undefined') {
