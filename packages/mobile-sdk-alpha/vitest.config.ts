@@ -11,13 +11,11 @@ export default defineConfig({
     setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.test.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
     exclude: ['node_modules/**'],
-  },
-  resolve: {
-    conditions: ['import', 'module', 'browser', 'default'],
-  },
-  server: {
-    deps: {
-      inline: ['blakejs', '@zk-kit/eddsa-poseidon'],
+    server: {
+      deps: {
+        // Inline these CommonJS modules to transform them for ESM compatibility
+        inline: ['blakejs', '@zk-kit/eddsa-poseidon', '@selfxyz/common'],
+      },
     },
   },
 });
