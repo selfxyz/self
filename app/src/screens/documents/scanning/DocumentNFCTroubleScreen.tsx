@@ -16,7 +16,7 @@ import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
-import { sendFeedbackEmail } from '@/services/email';
+import { openSupportForm, SUPPORT_FORM_BUTTON_TEXT } from '@/services/support';
 
 const tips: TipProps[] = [
   {
@@ -71,20 +71,9 @@ const DocumentNFCTroubleScreen: React.FC = () => {
       secondaryButtonText="Open NFC Options"
       onSecondaryButtonPress={goToNFCMethodSelection}
       footer={
-        // Add top padding before buttons and normalize spacing
-        <YStack marginTop={16} marginBottom={0} gap={10}>
-          <SecondaryButton
-            onPress={() =>
-              sendFeedbackEmail({
-                message: 'User reported an issue from NFC trouble screen',
-                origin: 'passport/nfc-trouble',
-              })
-            }
-            style={{ marginBottom: 0 }}
-          >
-            Report Issue
-          </SecondaryButton>
-        </YStack>
+        <SecondaryButton onPress={openSupportForm} style={{ marginBottom: 0 }}>
+          {SUPPORT_FORM_BUTTON_TEXT}
+        </SecondaryButton>
       }
     >
       <YStack

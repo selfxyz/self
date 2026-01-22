@@ -56,6 +56,10 @@ const entry = {
   'src/utils/contracts/forbiddenCountries': 'src/utils/contracts/forbiddenCountries.ts',
   'src/utils/csca': 'src/utils/csca.ts',
   'src/utils/ofac': 'src/utils/ofac.ts',
+  // KYC exports
+  'src/utils/kyc/generateInputs': 'src/utils/kyc/generateInputs.ts',
+  'src/utils/kyc/constants': 'src/utils/kyc/constants.ts',
+  'src/utils/kyc/types': 'src/utils/kyc/types.ts',
   // Level 3 Hash Function Exports
   'src/utils/hash/poseidon': 'src/utils/hash/poseidon.ts',
   'src/utils/hash/sha': 'src/utils/hash/sha.ts',

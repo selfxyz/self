@@ -1,19 +1,13 @@
 import type { SelfApp } from '@selfxyz/sdk-common';
 import { getUniversalLink, REDIRECT_URL, WS_DB_RELAYER } from '@selfxyz/sdk-common';
-import Lottie from 'lottie-react';
-import { QRCodeSVG } from 'qrcode.react';
 import React, { useEffect, useRef, useState } from 'react';
-import { BounceLoader } from 'react-spinners';
 import { v4 as uuidv4 } from 'uuid';
 
-import CHECK_ANIMATION from '../animations/check_animation.json' with { type: 'json' };
-import X_ANIMATION from '../animations/x_animation.json' with { type: 'json' };
-import { containerStyle, ledContainerStyle, qrContainerStyle } from '../utils/styles.js';
+import { qrWrapperStyle } from '../utils/styles.js';
 import { QRcodeSteps } from '../utils/utils.js';
 import { initWebSocket } from '../utils/websocket.js';
-import LED from './LED.js';
-
-const LottieComponent = Lottie.default || Lottie;
+import QRCode from './QRCode.js';
+import StatusBanner from './StatusBanner.js';
 
 interface SelfQRcodeProps {
   selfApp: SelfApp;
@@ -23,7 +17,8 @@ interface SelfQRcodeProps {
   websocketUrl?: string;
   size?: number;
   darkMode?: boolean;
-  children?: React.ReactNode;
+  showBorder?: boolean;
+  showStatusText?: boolean;
 }
 
 const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
@@ -46,10 +41,23 @@ const SelfQRcode = ({
   websocketUrl = WS_DB_RELAYER,
   size = 300,
   darkMode = false,
+  showBorder = true,
+  showStatusText = true,
 }: SelfQRcodeProps) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [sessionId, setSessionId] = useState('');
   const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
+
+  // Refs for callbacks to avoid unnecessary WebSocket reconnections.
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
+  const selfAppRef = useRef(selfApp);
+
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+    onErrorRef.current = onError;
+    selfAppRef.current = selfApp;
+  }, [onSuccess, onError, selfApp]);
 
   useEffect(() => {
     setSessionId(uuidv4());
@@ -61,13 +69,13 @@ const SelfQRcode = ({
       socketRef.current = initWebSocket(
         websocketUrl,
         {
-          ...selfApp,
+          ...selfAppRef.current,
           sessionId: sessionId,
         },
         type,
         setProofStep,
-        onSuccess,
-        onError
+        () => onSuccessRef.current(),
+        (data) => onErrorRef.current(data)
       );
     }
 
@@ -78,70 +86,30 @@ const SelfQRcode = ({
         socketRef.current = null;
       }
     };
-  }, [sessionId, type, websocketUrl, onSuccess, selfApp]);
+  }, [sessionId, type, websocketUrl]);
 
   if (!sessionId) {
     return null;
   }
 
-  const renderProofStatus = () => (
-    <div style={containerStyle}>
-      <div style={ledContainerStyle}>
-        <LED connectionStatus={proofStep} />
-      </div>
-      <div style={qrContainerStyle(size)}>
-        {(() => {
-          switch (proofStep) {
-            case QRcodeSteps.PROOF_GENERATION_STARTED:
-            case QRcodeSteps.PROOF_GENERATED:
-              return <BounceLoader loading={true} size={200} color="#94FBAB" />;
-            case QRcodeSteps.PROOF_GENERATION_FAILED:
-              return (
-                // @ts-expect-error Lottie typings don't match the default export shape
-                <LottieComponent
-                  animationData={X_ANIMATION}
-                  style={{ width: 200, height: 200 }}
-                  onComplete={() => {
-                    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
-                  }}
-                  loop={false}
-                />
-              );
-            case QRcodeSteps.PROOF_VERIFIED:
-              return (
-                // @ts-expect-error Lottie typings don't match the default export shape
-                <LottieComponent
-                  animationData={CHECK_ANIMATION}
-                  style={{ width: 200, height: 200 }}
-                  onComplete={() => {
-                    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
-                  }}
-                  loop={false}
-                />
-              );
-            default:
-              return (
-                <QRCodeSVG
-                  value={
-                    type === 'websocket'
-                      ? `${REDIRECT_URL}?sessionId=${sessionId}`
-                      : getUniversalLink({
-                          ...selfApp,
-                          sessionId: sessionId,
-                        })
-                  }
-                  size={size}
-                  bgColor={darkMode ? '#000000' : '#ffffff'}
-                  fgColor={darkMode ? '#ffffff' : '#000000'}
-                />
-              );
-          }
-        })()}
-      </div>
+  const qrValue =
+    type === 'websocket'
+      ? `${REDIRECT_URL}?sessionId=${sessionId}`
+      : getUniversalLink({
+          ...selfAppRef.current,
+          sessionId: sessionId,
+        });
+
+  return (
+    <div
+      style={qrWrapperStyle(proofStep, showBorder)}
+      role="img"
+      aria-label="Self authentication QR code"
+    >
+      <QRCode value={qrValue} size={size} darkMode={darkMode} proofStep={proofStep} />
+      {showStatusText && <StatusBanner proofStep={proofStep} qrSize={size} />}
     </div>
   );
-
-  return <div style={containerStyle}>{renderProofStatus()}</div>;
 };
 
 // Also export other components/types that might be needed

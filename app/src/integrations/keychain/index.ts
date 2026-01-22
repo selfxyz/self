@@ -7,9 +7,11 @@ import type {
   ACCESSIBLE,
   GetOptions,
   SECURITY_LEVEL,
-  SetOptions,
 } from 'react-native-keychain';
 import Keychain from 'react-native-keychain';
+
+import { useSettingStore } from '@/stores/settingStore';
+import type { ExtendedSetOptions } from '@/types/react-native-keychain';
 
 /**
  * Security configuration for keychain operations
@@ -23,6 +25,8 @@ export interface AdaptiveSecurityConfig {
 export interface GetSecureOptions {
   requireAuth?: boolean;
   promptMessage?: string;
+  /** Whether to use StrongBox-backed key generation on Android. Default: true */
+  useStrongBox?: boolean;
 }
 
 /**
@@ -61,7 +65,8 @@ export async function checkPasscodeAvailable(): Promise<boolean> {
     await Keychain.setGenericPassword('test', 'test', {
       service: testService,
       accessible: Keychain.ACCESSIBLE.WHEN_PASSCODE_SET_THIS_DEVICE_ONLY,
-    });
+      useStrongBox: false,
+    } as ExtendedSetOptions);
     // Clean up test entry
     await Keychain.resetGenericPassword({ service: testService });
     return true;
@@ -78,7 +83,7 @@ export async function createKeychainOptions(
   options: GetSecureOptions,
   capabilities?: SecurityCapabilities,
 ): Promise<{
-  setOptions: SetOptions;
+  setOptions: ExtendedSetOptions;
   getOptions: GetOptions;
 }> {
   const config = await getAdaptiveSecurityConfig(
@@ -86,10 +91,14 @@ export async function createKeychainOptions(
     capabilities,
   );
 
-  const setOptions: SetOptions = {
+  const useStrongBox =
+    options.useStrongBox ?? useSettingStore.getState().useStrongBox;
+
+  const setOptions: ExtendedSetOptions = {
     accessible: config.accessible,
     ...(config.securityLevel && { securityLevel: config.securityLevel }),
     ...(config.accessControl && { accessControl: config.accessControl }),
+    useStrongBox,
   };
 
   const getOptions: GetOptions = {

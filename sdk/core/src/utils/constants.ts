@@ -4,6 +4,7 @@ export const ATTESTATION_ID = {
   PASSPORT: 1,
   BIOMETRIC_ID_CARD: 2,
   AADHAAR: 3,
+  SELFRICA_ID_CARD: 4,
 } as const;
 
 export const discloseIndices = {
@@ -44,6 +45,20 @@ export const discloseIndices = {
     nameyobSmtRootIndex: 15,
     scopeIndex: 17,
     userIdentifierIndex: 18,
+    passportNoSmtRootIndex: 99,
+  },
+  // Selfrica ID Card - see CircuitConstantsV2.sol for layout documentation
+  4: {
+    revealedDataPackedIndex: 0,
+    forbiddenCountriesListPackedIndex: 9,
+    nullifierIndex: 13,
+    attestationIdIndex: 29,
+    merkleRootIndex: 17,
+    currentDateIndex: 21,
+    namedobSmtRootIndex: 18,
+    nameyobSmtRootIndex: 19,
+    scopeIndex: 16,
+    userIdentifierIndex: 20,
     passportNoSmtRootIndex: 99,
   },
 } as const;
@@ -122,6 +137,27 @@ export const revealedDataIndices: Record<
     olderThanEnd: 118,
     ofacStart: 116,
     ofacEnd: 117,
+  },
+  4: {
+    //put everything as 99
+    issuingStateStart: 99,
+    issuingStateEnd: 99,
+    nameStart: 99,
+    nameEnd: 99,
+    idNumberStart: 99,
+    idNumberEnd: 99,
+    nationalityStart: 99,
+    nationalityEnd: 99,
+    dateOfBirthStart: 99,
+    dateOfBirthEnd: 99,
+    genderStart: 99,
+    genderEnd: 99,
+    expiryDateStart: 99,
+    expiryDateEnd: 99,
+    olderThanStart: 99,
+    olderThanEnd: 99,
+    ofacStart: 99,
+    ofacEnd: 99,
   },
 } as const;
 

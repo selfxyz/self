@@ -26,6 +26,7 @@ interface CertificateInfo {
   publicKey: forge.pki.rsa.PublicKey;
   pubkeyOffset: number;
   pubkeyLength: number;
+  validityOffset: number;
   signature: Buffer;
   cert: forge.pki.Certificate;
 }
@@ -55,6 +56,19 @@ function parseCertificate(certDer: Buffer): CertificateInfo {
   const pubkeyOffset = rawOffset / 2 + 1;
 
   const pubkeyLength = pubkeyDer.length > 256 ? pubkeyDer.length - 1 : pubkeyDer.length;
+
+  // Locate validity sequence within TBS to provide `validity_offset` for the circuit
+  const validityAsn1 = (tbsAsn1 as forge.asn1.Asn1).value[4];
+  if (typeof validityAsn1 === 'string') {
+    throw new Error('Expected ASN.1 object for validity sequence, got string');
+  }
+  const validityDer = forge.asn1.toDer(validityAsn1);
+  const validityHex = Buffer.from(validityDer.getBytes(), 'binary').toString('hex');
+  const validityOffsetHex = tbsHex.indexOf(validityHex);
+  if (validityOffsetHex === -1) {
+    throw new Error('Could not find validity sequence in TBS certificate DER encoding');
+  }
+  const validityOffset = validityOffsetHex / 2;
 
   // Validate TBS certificate size before padding
   if (tbsBytes.length > MAX_CERT_LENGTH) {
@@ -86,6 +100,7 @@ function parseCertificate(certDer: Buffer): CertificateInfo {
   console.log(`  TBS padded length: ${paddedLength} bytes`);
   console.log(`  Public key offset (in TBS): ${pubkeyOffset}`);
   console.log(`  Public key length: ${pubkeyLength} bytes`);
+  console.log(`  Validity offset (in TBS): ${validityOffset}`);
   console.log(`  Signature length: ${signature.length} bytes`);
 
   return {
@@ -95,6 +110,7 @@ function parseCertificate(certDer: Buffer): CertificateInfo {
     publicKey,
     pubkeyOffset,
     pubkeyLength,
+    validityOffset,
     signature,
     cert,
   };
@@ -177,6 +193,18 @@ function bufferToByteArray(buffer: Buffer, maxLength: number): string[] {
     arr[i] = buffer[i].toString();
   }
   return arr;
+}
+
+function getCurrentDateDigitsYYMMDDHHMMSS(): string[] {
+  const now = new Date();
+  const pad2 = (n: number) => n.toString().padStart(2, '0');
+  const yy = pad2(now.getUTCFullYear() % 100);
+  const mm = pad2(now.getUTCMonth() + 1);
+  const dd = pad2(now.getUTCDate());
+  const hh = pad2(now.getUTCHours());
+  const min = pad2(now.getUTCMinutes());
+  const ss = pad2(now.getUTCSeconds());
+  return `${yy}${mm}${dd}${hh}${min}${ss}`.split('');
 }
 
 async function main() {
@@ -357,6 +385,10 @@ async function main() {
       imageDigestCharCodes[i] = imageDigest.charCodeAt(i);
     }
 
+    // Current UTC date (YYMMDDHHMMSS) for validity checks
+    const currentDateDigits = getCurrentDateDigitsYYMMDDHHMMSS();
+    console.log(`[INFO] Current UTC date (YYMMDDHHMMSS): ${currentDateDigits.join('')}`);
+
     // Build circuit inputs
     const circuitInputs = {
       // JWT inputs
@@ -369,18 +401,17 @@ async function main() {
       leaf_cert_padded_length: leafCert.paddedLength.toString(),
       leaf_pubkey_offset: leafCert.pubkeyOffset.toString(),
       leaf_pubkey_actual_size: leafCert.pubkeyLength.toString(),
+      leaf_validity_offset: leafCert.validityOffset.toString(),
 
       // x5c[1] - Intermediate certificate
       intermediate_cert: bufferToByteArray(intermediateCert.derPadded, MAX_CERT_LENGTH),
       intermediate_cert_padded_length: intermediateCert.paddedLength.toString(),
       intermediate_pubkey_offset: intermediateCert.pubkeyOffset.toString(),
       intermediate_pubkey_actual_size: intermediateCert.pubkeyLength.toString(),
+      intermediate_validity_offset: intermediateCert.validityOffset.toString(),
 
-      // x5c[2] - Root certificate
-      root_cert: bufferToByteArray(rootCert.derPadded, MAX_CERT_LENGTH),
-      root_cert_padded_length: rootCert.paddedLength.toString(),
-      root_pubkey_offset: rootCert.pubkeyOffset.toString(),
-      root_pubkey_actual_size: rootCert.pubkeyLength.toString(),
+      // Current date for validity checks
+      current_date: currentDateDigits,
 
       // Public keys (chunked for RSA circuit)
       leaf_pubkey: pubkeyToChunks(leafCert.publicKey),
@@ -397,9 +428,6 @@ async function main() {
       eat_nonce_0_b64_length: eatNonce0Base64url.length.toString(),
       eat_nonce_0_key_offset: eatNonce0KeyOffset.toString(),
       eat_nonce_0_value_offset: eatNonce0ValueOffset.toString(),
-
-      // EAT nonce[1] (circuit will extract value directly from payload)
-      eat_nonce_1_b64_length: eatNonce1Base64url.length.toString(),
 
       // Container image digest (circuit will extract value directly from payload)
       image_digest_length: imageDigest.length.toString(),

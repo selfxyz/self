@@ -111,6 +111,10 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
                 return useProtocolStore.getState()[docCategory].commitment_tree;
               },
               getAltCSCA(docCategory) {
+                if (docCategory === 'kyc') {
+                  //TODO
+                  throw new Error('KYC is not supported yet');
+                }
                 if (docCategory === 'aadhaar') {
                   const publicKeys =
                     useProtocolStore.getState().aadhaar.public_keys;
