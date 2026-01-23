@@ -299,7 +299,14 @@ platform :android do
     end
 
     # Map deployment track to Play Store track
-    play_store_track = deployment_track == "production" ? "production" : "internal"
+    play_store_track = case deployment_track
+    when "production"
+      "production"
+    when "closed"
+      "alpha"
+    else
+      "internal"
+    end
 
     # Build and deploy
     upload_android_build(track: play_store_track, test_mode: test_mode, deployment_track: deployment_track, version_bump: version_bump)

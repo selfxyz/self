@@ -46,6 +46,13 @@ jobs:
             exit 0
           fi
 
+          # Check for deploy:closed-testing label
+          if [[ "$labels" =~ deploy:closed-testing ]]; then
+            echo "deployment_track=closed" >> $GITHUB_OUTPUT
+            echo "🧪 Deployment track: closed testing (alpha)"
+            exit 0
+          fi
+
           # Determine deployment track based on target branch
           if [[ "${{ github.base_ref }}" == "main" ]]; then
             echo "deployment_track=production" >> $GITHUB_OUTPUT
