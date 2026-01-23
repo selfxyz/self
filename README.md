@@ -101,3 +101,4 @@ We are actively looking for contributors. Please check the [open issues](https:/
 Thanks [Rémi](https://github.com/remicolin), [Florent](https://github.com/0xturboblitz), [Ayman](https://github.com/Nesopie), [Justin](https://github.com/transphorm), [Seshanth](https://github.com/seshanthS), [Nico](https://github.com/motemotech) and all other contributors for building Self.
 
 Thanks [Aayush](https://twitter.com/yush_g), [Vivek](https://twitter.com/viv_boop), [Andy](https://twitter.com/AndyGuzmanEth) and [Vitalik](https://github.com/vbuterin) for contributing ideas and inspiring us to build this technology, and [PSE](https://pse.dev/) for supporting the initial work through grants!
+

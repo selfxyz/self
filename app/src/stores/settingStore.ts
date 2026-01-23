@@ -35,12 +35,10 @@ interface PersistedSettingsState {
   setLoggingSeverity: (severity: LoggingSeverity) => void;
   setPointsAddress: (address: string | null) => void;
   setSkipDocumentSelector: (value: boolean) => void;
-  setSkipDocumentSelectorIfSingle: (value: boolean) => void;
   setSubscribedTopics: (topics: string[]) => void;
   setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
   setUseStrongBox: (useStrongBox: boolean) => void;
   skipDocumentSelector: boolean;
-  skipDocumentSelectorIfSingle: boolean;
   subscribedTopics: string[];
   toggleCloudBackupEnabled: () => void;
   turnkeyBackupEnabled: boolean;
@@ -145,9 +143,6 @@ export const useSettingStore = create<SettingsState>()(
       skipDocumentSelector: false,
       setSkipDocumentSelector: (value: boolean) =>
         set({ skipDocumentSelector: value }),
-      skipDocumentSelectorIfSingle: true,
-      setSkipDocumentSelectorIfSingle: (value: boolean) =>
-        set({ skipDocumentSelectorIfSingle: value }),
 
       // StrongBox setting for Android keystore (default: false)
       useStrongBox: false,
