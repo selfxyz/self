@@ -161,12 +161,14 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           import json
+          import os
           import pathlib
 
           package_json = pathlib.Path("app/package.json")
           version = json.loads(package_json.read_text())["version"]
           print(f"app_version={version}")
-          with open("${GITHUB_OUTPUT}", "a", encoding="utf-8") as output:
+          output_path = os.environ["GITHUB_OUTPUT"]
+          with open(output_path, "a", encoding="utf-8") as output:
             output.write(f"app_version={version}\n")
           PY
 
@@ -345,12 +347,14 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           import json
+          import os
           import pathlib
 
           package_json = pathlib.Path("app/package.json")
           version = json.loads(package_json.read_text())["version"]
           print(f"app_version={version}")
-          with open("${GITHUB_OUTPUT}", "a", encoding="utf-8") as output:
+          output_path = os.environ["GITHUB_OUTPUT"]
+          with open(output_path, "a", encoding="utf-8") as output:
             output.write(f"app_version={version}\n")
           PY
 
