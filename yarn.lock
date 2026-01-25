@@ -8486,7 +8486,7 @@ __metadata:
     "@sentry/react": "npm:^9.32.0"
     "@sentry/react-native": "npm:7.0.1"
     "@stablelib/cbor": "npm:^2.0.1"
-    "@sumsub/react-native-mobilesdk-module": "npm:^1.40.2"
+    "@sumsub/react-native-mobilesdk-module": "npm:1.40.2"
     "@tamagui/animations-css": "npm:1.126.14"
     "@tamagui/animations-react-native": "npm:1.126.14"
     "@tamagui/config": "npm:1.126.14"
@@ -11148,7 +11148,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sumsub/react-native-mobilesdk-module@npm:^1.40.2":
+"@sumsub/react-native-mobilesdk-module@npm:1.40.2":
   version: 1.40.2
   resolution: "@sumsub/react-native-mobilesdk-module@npm:1.40.2"
   peerDependencies:
