@@ -1251,7 +1251,11 @@ jest.mock('@sumsub/react-native-mobilesdk-module', () => {
   });
 
   const MockSNSMobileSDK = {
-    init: jest.fn().mockImplementation((accessToken, tokenExpirationHandler) => createBuilder()),
+    init: jest
+      .fn()
+      .mockImplementation((accessToken, tokenExpirationHandler) =>
+        createBuilder(),
+      ),
   };
 
   return {
