@@ -5,7 +5,7 @@
 import { SUMSUB_TEE_URL } from '@env';
 import SNSMobileSDK from '@sumsub/react-native-mobilesdk-module';
 
-import type { AccessTokenResponse } from './types';
+import type { AccessTokenResponse } from '@/integrations/sumsub/types';
 
 export interface SumsubConfig {
   accessToken: string;

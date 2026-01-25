@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-export type { AccessTokenResponse, SumsubApplicantInfo } from './types';
+export type {
+  AccessTokenResponse,
+  SumsubApplicantInfo,
+} from '@/integrations/sumsub/types';
 export {
   type SumsubConfig,
   type SumsubResult,
   fetchAccessToken,
   launchSumsub,
-} from './sumsubService';
+} from '@/integrations/sumsub/sumsubService';

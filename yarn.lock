@@ -8578,7 +8578,7 @@ __metadata:
     react-native-safe-area-context: "npm:^5.6.1"
     react-native-screens: "npm:4.15.3"
     react-native-sqlite-storage: "npm:^6.0.1"
-    react-native-svg: "npm:15.14.0"
+    react-native-svg: "npm:15.15.0"
     react-native-svg-transformer: "npm:^1.5.1"
     react-native-svg-web: "npm:1.0.9"
     react-native-url-polyfill: "npm:^3.0.0"
@@ -29850,9 +29850,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-svg@npm:15.14.0":
-  version: 15.14.0
-  resolution: "react-native-svg@npm:15.14.0"
+"react-native-svg@npm:15.15.0":
+  version: 15.15.0
+  resolution: "react-native-svg@npm:15.15.0"
   dependencies:
     css-select: "npm:^5.1.0"
     css-tree: "npm:^1.1.3"
@@ -29860,7 +29860,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/5855bee2a76313f580ac3f8c476d07bb63d1a8e5e0883154275be5a1f4224e35f2416b0ba3b03f5d4c637c3b2f9320df34ede918da27188adb6881b3b8ac96c8
+  checksum: 10c0/0da39529fedcc84d2deaad19e261453069675520cb446a08d97eebc10f1205ce0393a9760ad58bc7b80feaa60e94c30d2d5b90d3111451f260b3888a4fbc2e06
   languageName: node
   linkType: hard
 

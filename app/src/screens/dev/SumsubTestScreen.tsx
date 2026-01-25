@@ -81,15 +81,15 @@ const SumsubTestScreen: React.FC = () => {
     });
 
     socketRef.current = socket;
-    hasSubscribedRef.current = true;
 
     socket.on('connect', () => {
       console.log('Socket connected, subscribing to userId:', userId);
+      hasSubscribedRef.current = true;
       socket.emit('subscribe', userId);
     });
 
     socket.on('success', (data: SumsubApplicantInfo) => {
-      console.log('Received applicant info:', data);
+      console.log('Received applicant info for id:', data.id);
       setApplicantInfo(data);
       Alert.alert(
         'Verification Complete',
@@ -107,10 +107,12 @@ const SumsubTestScreen: React.FC = () => {
     socket.on('error', (errorMessage: string) => {
       console.error('Socket error:', errorMessage);
       setError(errorMessage);
+      hasSubscribedRef.current = false;
     });
 
     socket.on('disconnect', () => {
       console.log('Socket disconnected');
+      hasSubscribedRef.current = false;
     });
   }, [userId]);
 
