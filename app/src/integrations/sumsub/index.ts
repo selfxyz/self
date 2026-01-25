@@ -5,10 +5,10 @@
 export type {
   AccessTokenResponse,
   SumsubApplicantInfo,
+  SumsubResult,
 } from '@/integrations/sumsub/types';
 export {
   type SumsubConfig,
-  type SumsubResult,
   fetchAccessToken,
   launchSumsub,
 } from '@/integrations/sumsub/sumsubService';
