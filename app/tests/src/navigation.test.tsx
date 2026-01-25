@@ -26,19 +26,19 @@ jest.mock('@/services/analytics', () => ({
 
 // Mock Sumsub SDK to prevent ES module parsing errors in isolateModules
 jest.mock('@sumsub/react-native-mobilesdk-module', () => {
-  const MockSNSMobileSDK = {
-    Builder: jest.fn().mockImplementation(() => ({
-      withAccessToken: jest.fn().mockReturnThis(),
-      withHandlers: jest.fn().mockReturnThis(),
-      withDebug: jest.fn().mockReturnThis(),
-      build: jest.fn().mockReturnThis(),
+  const createBuilder = () => ({
+    withHandlers: jest.fn().mockReturnThis(),
+    withDebug: jest.fn().mockReturnThis(),
+    withLocale: jest.fn().mockReturnThis(),
+    withAnalyticsEnabled: jest.fn().mockReturnThis(),
+    build: jest.fn().mockReturnValue({
       launch: jest.fn().mockResolvedValue({ success: true }),
-    })),
-  };
+    }),
+  });
 
   return {
     __esModule: true,
-    default: MockSNSMobileSDK,
+    default: { init: jest.fn(() => createBuilder()) },
   };
 });
 
