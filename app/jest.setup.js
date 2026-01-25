@@ -1237,3 +1237,21 @@ jest.mock('react-native/Libraries/AppState/AppState', () => {
     },
   };
 });
+
+// Mock @sumsub/react-native-mobilesdk-module
+jest.mock('@sumsub/react-native-mobilesdk-module', () => {
+  const MockSNSMobileSDK = {
+    Builder: jest.fn().mockImplementation(() => ({
+      withAccessToken: jest.fn().mockReturnThis(),
+      withHandlers: jest.fn().mockReturnThis(),
+      withDebug: jest.fn().mockReturnThis(),
+      build: jest.fn().mockReturnThis(),
+      launch: jest.fn().mockResolvedValue({ success: true }),
+    })),
+  };
+
+  return {
+    __esModule: true,
+    default: MockSNSMobileSDK,
+  };
+});

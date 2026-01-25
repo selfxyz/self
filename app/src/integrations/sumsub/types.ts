@@ -14,15 +14,15 @@ export interface SumsubApplicantInfo {
   clientId: string;
   inspectionId: string;
   externalUserId: string;
-  info: {
-    firstName: string;
-    lastName: string;
-    dob: string;
-    country: string;
-    phone: string;
+  info?: {
+    firstName?: string;
+    lastName?: string;
+    dob?: string;
+    country?: string;
+    phone?: string;
   };
-  email: string;
-  phone: string;
+  email?: string;
+  phone?: string;
   review: {
     reviewAnswer: string;
     reviewResult: {
@@ -30,4 +30,11 @@ export interface SumsubApplicantInfo {
     };
   };
   type: string;
+}
+
+export interface SumsubResult {
+  success: boolean;
+  status: string;
+  errorType?: string;
+  errorMsg?: string;
 }

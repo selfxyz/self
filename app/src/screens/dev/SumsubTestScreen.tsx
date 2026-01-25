@@ -42,6 +42,7 @@ const SumsubTestScreen: React.FC = () => {
 
   const socketRef = useRef<Socket | null>(null);
   const hasSubscribedRef = useRef<boolean>(false);
+  const isMountedRef = useRef<boolean>(true);
 
   const paddingBottom = useSafeBottomPadding(20);
 
@@ -54,19 +55,23 @@ const SumsubTestScreen: React.FC = () => {
 
     try {
       const response = await fetchAccessToken(phoneNumber);
+      if (!isMountedRef.current) return;
       setAccessToken(response.token);
       setUserId(response.userId);
       Alert.alert('Success', 'Access token generated successfully', [
         { text: 'OK' },
       ]);
     } catch (err) {
+      if (!isMountedRef.current) return;
       const message = err instanceof Error ? err.message : 'Unknown error';
       setError(message);
       Alert.alert('Error', `Failed to fetch access token: ${message}`, [
         { text: 'OK' },
       ]);
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }, [phoneNumber]);
 
@@ -83,13 +88,14 @@ const SumsubTestScreen: React.FC = () => {
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      console.log('Socket connected, subscribing to userId:', userId);
+      console.log('Socket connected, subscribing to user');
       hasSubscribedRef.current = true;
       socket.emit('subscribe', userId);
     });
 
     socket.on('success', (data: SumsubApplicantInfo) => {
-      console.log('Received applicant info for id:', data.id);
+      console.log('Received applicant info');
+      if (!isMountedRef.current) return;
       setApplicantInfo(data);
       Alert.alert(
         'Verification Complete',
@@ -100,12 +106,14 @@ const SumsubTestScreen: React.FC = () => {
 
     socket.on('verification_failed', (reason: string) => {
       console.log('Verification failed:', reason);
+      if (!isMountedRef.current) return;
       setError(`Verification failed: ${reason}`);
       Alert.alert('Verification Failed', reason, [{ text: 'OK' }]);
     });
 
     socket.on('error', (errorMessage: string) => {
       console.error('Socket error:', errorMessage);
+      if (!isMountedRef.current) return;
       setError(errorMessage);
       hasSubscribedRef.current = false;
     });
@@ -144,6 +152,7 @@ const SumsubTestScreen: React.FC = () => {
         },
       });
 
+      if (!isMountedRef.current) return;
       setResult(sdkResult);
 
       if (sdkResult.success) {
@@ -161,13 +170,16 @@ const SumsubTestScreen: React.FC = () => {
       }
     } catch (err) {
       console.error('Sumsub launch error:', err);
+      if (!isMountedRef.current) return;
       const message = err instanceof Error ? err.message : 'Unknown error';
       setError(message);
       Alert.alert('Error', `Failed to launch Sumsub SDK: ${message}`, [
         { text: 'OK' },
       ]);
     } finally {
-      setSdkLaunching(false);
+      if (isMountedRef.current) {
+        setSdkLaunching(false);
+      }
     }
   }, [accessToken, subscribeToWebSocket]);
 
@@ -186,6 +198,7 @@ const SumsubTestScreen: React.FC = () => {
 
   useEffect(() => {
     return () => {
+      isMountedRef.current = false;
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
@@ -256,7 +269,8 @@ const SumsubTestScreen: React.FC = () => {
                   fontFamily={dinot}
                   fontWeight="600"
                 >
-                  {applicantInfo.info.firstName} {applicantInfo.info.lastName}
+                  {applicantInfo.info?.firstName || 'N/A'}{' '}
+                  {applicantInfo.info?.lastName || 'N/A'}
                 </Text>
               </XStack>
 
@@ -270,7 +284,7 @@ const SumsubTestScreen: React.FC = () => {
                   fontFamily={dinot}
                   fontWeight="600"
                 >
-                  {applicantInfo.info.dob}
+                  {applicantInfo.info?.dob || 'N/A'}
                 </Text>
               </XStack>
 
@@ -284,7 +298,7 @@ const SumsubTestScreen: React.FC = () => {
                   fontFamily={dinot}
                   fontWeight="600"
                 >
-                  {applicantInfo.info.country}
+                  {applicantInfo.info?.country || 'N/A'}
                 </Text>
               </XStack>
 
@@ -298,7 +312,7 @@ const SumsubTestScreen: React.FC = () => {
                   fontFamily={dinot}
                   fontWeight="600"
                 >
-                  {applicantInfo.info.phone}
+                  {applicantInfo.info?.phone || 'N/A'}
                 </Text>
               </XStack>
 
@@ -312,7 +326,7 @@ const SumsubTestScreen: React.FC = () => {
                   fontFamily={dinot}
                   fontWeight="600"
                 >
-                  {applicantInfo.email}
+                  {applicantInfo.email || 'N/A'}
                 </Text>
               </XStack>
 
