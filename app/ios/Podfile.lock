@@ -11,6 +11,7 @@ PODS:
   - DoubleConversion (1.1.6)
   - fast_float (6.1.4)
   - FBLazyVector (0.76.9)
+  - FingerprintPro (2.12.0)
   - Firebase (10.24.0):
     - Firebase/Core (= 10.24.0)
   - Firebase/Core (10.24.0):
@@ -149,6 +150,19 @@ PODS:
   - hermes-engine (0.76.9):
     - hermes-engine/Pre-built (= 0.76.9)
   - hermes-engine/Pre-built (0.76.9)
+  - IdensicMobileSDK (1.40.2):
+    - IdensicMobileSDK/Default (= 1.40.2)
+  - IdensicMobileSDK/Core (1.40.2)
+  - IdensicMobileSDK/Default (1.40.2):
+    - IdensicMobileSDK/Core
+  - IdensicMobileSDK/Fisherman (1.40.2):
+    - FingerprintPro (~> 2.11)
+    - IdensicMobileSDK/Core
+  - IdensicMobileSDK/VideoIdent (1.40.2):
+    - IdensicMobileSDK/VideoIdent-latest
+  - IdensicMobileSDK/VideoIdent-latest (1.40.2):
+    - IdensicMobileSDK/Core
+    - TwilioVideo (>= 5.8.2)
   - lottie-ios (4.5.0)
   - lottie-react-native (7.2.2):
     - DoubleConversion
@@ -1537,6 +1551,11 @@ PODS:
     - Yoga
   - react-native-get-random-values (1.11.0):
     - React-Core
+  - react-native-mobilesdk-module (1.40.2):
+    - IdensicMobileSDK (= 1.40.2)
+    - IdensicMobileSDK/Fisherman (= 1.40.2)
+    - IdensicMobileSDK/VideoIdent (= 1.40.2)
+    - React-Core
   - react-native-netinfo (11.4.1):
     - React-Core
   - react-native-nfc-manager (3.16.3):
@@ -2185,6 +2204,7 @@ PODS:
     - React-Core
   - SwiftQRScanner (1.1.6)
   - SwiftyTesseract (3.1.3)
+  - TwilioVideo (5.11.1)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -2243,6 +2263,7 @@ DEPENDENCIES:
   - react-native-cloud-storage (from `../node_modules/react-native-cloud-storage`)
   - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
+  - "react-native-mobilesdk-module (from `../node_modules/@sumsub/react-native-mobilesdk-module`)"
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-nfc-manager (from `../node_modules/react-native-nfc-manager`)
   - react-native-passkey (from `../node_modules/react-native-passkey`)
@@ -2296,8 +2317,11 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
+  https://github.com/SumSubstance/Specs.git:
+    - IdensicMobileSDK
   trunk:
     - AppAuth
+    - FingerprintPro
     - Firebase
     - FirebaseABTesting
     - FirebaseAnalytics
@@ -2322,6 +2346,7 @@ SPEC REPOS:
     - Sentry
     - SocketRocket
     - SwiftyTesseract
+    - TwilioVideo
 
 EXTERNAL SOURCES:
   boost:
@@ -2416,6 +2441,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@walletconnect/react-native-compat"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
+  react-native-mobilesdk-module:
+    :path: "../node_modules/@sumsub/react-native-mobilesdk-module"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-nfc-manager:
@@ -2534,6 +2561,7 @@ SPEC CHECKSUMS:
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 7605ea4810e0e10ae4815292433c09bf4324ba45
+  FingerprintPro: 035517a1b4e3e4fc073486b53b9956509010f8db
   Firebase: 91fefd38712feb9186ea8996af6cbdef41473442
   FirebaseABTesting: d87f56707159bae64e269757a6e963d490f2eebe
   FirebaseAnalytics: b5efc493eb0f40ec560b04a472e3e1a15d39ca13
@@ -2551,6 +2579,7 @@ SPEC CHECKSUMS:
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
   hermes-engine: 9e868dc7be781364296d6ee2f56d0c1a9ef0bb11
+  IdensicMobileSDK: 00b13320e1b1e0574e68475bd0fbc7cd30fce26e
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 7bb65bc88d3f9996ea2f646a96694285405df2f9
   Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
@@ -2595,6 +2624,7 @@ SPEC CHECKSUMS:
   react-native-cloud-storage: 8d89f2bc574cf11068dfd90933905974087fb9e9
   react-native-compat: b80530ebcd3d574be5dd99cb27b984a17c119abc
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
+  react-native-mobilesdk-module: 4770cb45fdd19dc4eed04615f0fcdab013b3dfe2
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-nfc-manager: 66a00e5ddab9704efebe19d605b1b8afb0bb1bd7
   react-native-passkey: 8853c3c635164864da68a6dbbcec7148506c3bcf
@@ -2648,8 +2678,9 @@ SPEC CHECKSUMS:
   sovran-react-native: a3ad3f8ff90c2002b2aa9790001a78b0b0a38594
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
+  TwilioVideo: 9f51085d4e4fb3aff8e168b8215b31cb0f486a2f
   Yoga: 1259c7a8cbaccf7b4c3ddf8ee36ca11be9dee407
 
-PODFILE CHECKSUM: 0aa47f53692543349c43673cda7380fa23049eba
+PODFILE CHECKSUM: f03c12b5d96fb6e22afe20fba517840fef44e76f
 
 COCOAPODS: 1.16.2

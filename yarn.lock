@@ -8486,6 +8486,7 @@ __metadata:
     "@sentry/react": "npm:^9.32.0"
     "@sentry/react-native": "npm:7.0.1"
     "@stablelib/cbor": "npm:^2.0.1"
+    "@sumsub/react-native-mobilesdk-module": "npm:^1.40.2"
     "@tamagui/animations-css": "npm:1.126.14"
     "@tamagui/animations-react-native": "npm:1.126.14"
     "@tamagui/config": "npm:1.126.14"
@@ -8586,7 +8587,7 @@ __metadata:
     react-qr-barcode-scanner: "npm:^2.1.8"
     react-test-renderer: "npm:^18.3.1"
     rollup-plugin-visualizer: "npm:^6.0.3"
-    socket.io-client: "npm:^4.8.1"
+    socket.io-client: "npm:^4.8.3"
     stream-browserify: "npm:^3.0.0"
     tamagui: "npm:1.126.14"
     ts-morph: "npm:^22.0.0"
@@ -11144,6 +11145,15 @@ __metadata:
     "@stdlib/utils-global": "npm:^0.0.x"
   checksum: 10c0/fa73f1ed19d1ba999487870cb2cd7eb68a0891cbbaab0785aa41c5e1cef5ae430f459c94fc5181d6f5d26e6e2fbb2ae6873a596ff48142b5de51de1d435723eb
   conditions: (os=aix | os=darwin | os=freebsd | os=linux | os=macos | os=openbsd | os=sunos | os=win32 | os=windows)
+  languageName: node
+  linkType: hard
+
+"@sumsub/react-native-mobilesdk-module@npm:^1.40.2":
+  version: 1.40.2
+  resolution: "@sumsub/react-native-mobilesdk-module@npm:1.40.2"
+  peerDependencies:
+    react-native: ">=0.60.0-rc.0 <1.0.x"
+  checksum: 10c0/fc5f368d3afdffdb27496ab3b152b38bb0ee8b52f8592b2b48e0a3941197de33fd445502123eeca676d0ee1ecaeaa2e7c6573601e06c4eea79dfa2aec64ed75b
   languageName: node
   linkType: hard
 
@@ -31782,7 +31792,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"socket.io-client@npm:^4.8.1":
+"socket.io-client@npm:^4.8.1, socket.io-client@npm:^4.8.3":
   version: 4.8.3
   resolution: "socket.io-client@npm:4.8.3"
   dependencies:
