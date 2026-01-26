@@ -18,20 +18,22 @@ NC='\033[0m' # No Color
 
 print_usage() {
     echo "🎭 Local E2E Testing"
-    echo "Usage: $0 [ios|android] [--workflow-match]"
+    echo "Usage: $0 [ios|android] [--ci-match|--workflow-match]"
+    echo ""
+    echo "Modes:"
+    echo "  (default)         - Debug builds, requires Metro server running"
+    echo "  --ci-match        - Debug builds with bundled JS (matches GitHub CI exactly)"
+    echo "  --workflow-match  - Release builds (legacy, for quick local testing)"
     echo ""
     echo "Examples:"
-    echo "  $0 ios      - Run iOS e2e tests locally"
-    echo "  $0 android  - Run Android e2e tests locally"
-    echo "  $0 android --workflow-match  - Run Android tests matching GitHub Actions workflow"
+    echo "  $0 ios              - Run iOS e2e tests locally (requires Metro)"
+    echo "  $0 ios --ci-match   - Run iOS tests matching GitHub CI exactly"
+    echo "  $0 android          - Run Android e2e tests locally (requires Metro)"
+    echo "  $0 android --ci-match  - Run Android tests matching GitHub CI exactly"
     echo ""
     echo "Prerequisites:"
     echo "  iOS:     Xcode, iOS Simulator, CocoaPods"
     echo "  Android: Android SDK, running emulator"
-    echo ""
-    echo "Workflow Match Mode:"
-    echo "  --workflow-match  - Use Release builds and exact workflow steps"
-    echo "                     (No Metro dependency, matches CI environment)"
 }
 
 log_info() {
@@ -249,18 +251,39 @@ build_ios_app() {
     # Set environment variable for e2e testing to enable OpenSSL fixes
     export E2E_TESTING=1
 
-    # Set build configuration based on workflow match
-    if [ "$WORKFLOW_MATCH" = "true" ]; then
+    if [ "$CI_MATCH" = "true" ]; then
+        log_info "Using Debug configuration with bundled JS (matches CI)"
+        BUILD_CONFIG="Debug"
+        # Match CI xcodebuild flags exactly with FORCE_BUNDLING and RCT_NO_LAUNCH_PACKAGER
+        if ! FORCE_BUNDLING=1 RCT_NO_LAUNCH_PACKAGER=1 \
+            xcodebuild -workspace ios/OpenPassport.xcworkspace \
+            -scheme OpenPassport \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath ios/build \
+            -jobs "$(sysctl -n hw.ncpu)" \
+            -parallelizeTargets \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            ONLY_ACTIVE_ARCH=YES \
+            SWIFT_COMPILATION_MODE=wholemodule \
+            SWIFT_ACTIVE_COMPILATION_CONDITIONS="E2E_TESTING"; then
+            log_error "iOS build failed"
+            exit 1
+        fi
+    elif [ "$WORKFLOW_MATCH" = "true" ]; then
         log_info "Using Release configuration for workflow match"
         BUILD_CONFIG="Release"
+        if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration "$BUILD_CONFIG" -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="E2E_TESTING"; then
+            log_error "iOS build failed"
+            exit 1
+        fi
     else
         log_info "Using Debug configuration for local development"
         BUILD_CONFIG="Debug"
-    fi
-
-    if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration "$BUILD_CONFIG" -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="E2E_TESTING"; then
-        log_error "iOS build failed"
-        exit 1
+        if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration "$BUILD_CONFIG" -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="E2E_TESTING"; then
+            log_error "iOS build failed"
+            exit 1
+        fi
     fi
     log_success "iOS build succeeded"
 }
@@ -436,17 +459,25 @@ setup_android_environment() {
 
 build_android_app() {
     log_info "🔨 Building Android APK..."
-    # Note: Using Release builds to avoid Metro dependency in CI
-    # Debug builds require Metro server, Release builds have JS bundled
     # Run the build inside the android directory so gradlew is available
     echo "Current working directory: $(pwd)"
     echo "Checking if gradlew exists:"
     ls -la android/gradlew || echo "gradlew not found in android/"
 
     cd android
-    if ! ./gradlew assembleRelease --quiet; then
-        log_error "Android build failed"
-        exit 1
+    if [ "$CI_MATCH" = "true" ]; then
+        log_info "Using Debug build with bundled JS (matches CI)"
+        if ! ./gradlew assembleDebug --quiet; then
+            log_error "Android build failed"
+            exit 1
+        fi
+    else
+        # Use Release builds for workflow-match and default (requires Metro for default)
+        log_info "Using Release build"
+        if ! ./gradlew assembleRelease --quiet; then
+            log_error "Android build failed"
+            exit 1
+        fi
     fi
     log_success "Android build succeeded"
     cd ..
@@ -454,8 +485,12 @@ build_android_app() {
 
 install_android_app() {
     log_info "📦 Installing app on emulator..."
-    # Check if APK was built successfully (matching workflow)
-    APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+    # Check if APK was built successfully
+    if [ "$CI_MATCH" = "true" ]; then
+        APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+    else
+        APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+    fi
     log_info "Looking for APK at: $APK_PATH"
     if [ ! -f "$APK_PATH" ]; then
         log_error "APK not found at expected location"
@@ -575,7 +610,10 @@ run_ios_tests() {
     echo "🍎 Starting local iOS e2e testing..."
 
     shutdown_all_simulators
-    check_metro_running
+    # Skip Metro check for CI_MATCH (bundled JS) and WORKFLOW_MATCH (Release)
+    if [ "$WORKFLOW_MATCH" != "true" ] && [ "$CI_MATCH" != "true" ]; then
+        check_metro_running
+    fi
     setup_ios_environment
     setup_ios_simulator
     build_ios_app
@@ -600,8 +638,8 @@ run_android_tests() {
     # Set up trap to cleanup emulator on script exit
     trap cleanup_android_emulator EXIT
 
-    # Only check Metro if not in workflow match mode
-    if [ "$WORKFLOW_MATCH" != "true" ]; then
+    # Skip Metro check for CI_MATCH (bundled JS) and WORKFLOW_MATCH (Release)
+    if [ "$WORKFLOW_MATCH" != "true" ] && [ "$CI_MATCH" != "true" ]; then
         check_metro_running
     fi
 
@@ -628,13 +666,16 @@ main() {
         exit 1
     fi
 
-    # Check for workflow match mode
+    # Check for workflow match mode and CI match mode
     WORKFLOW_MATCH="false"
+    CI_MATCH="false"
     for arg in "$@"; do
         if [ "$arg" = "--workflow-match" ]; then
             WORKFLOW_MATCH="true"
             log_info "🔧 Running in workflow match mode (Release builds, no Metro)"
-            break
+        elif [ "$arg" = "--ci-match" ]; then
+            CI_MATCH="true"
+            log_info "🔧 Running in CI match mode (Debug builds with bundled JS, matches GitHub CI)"
         fi
     done
 
