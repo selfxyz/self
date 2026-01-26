@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import React from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -13,7 +15,31 @@ import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
-import SumsubTestScreen from '@/screens/dev/SumsubTestScreen';
+
+// Lazy load SumsubTestScreen to avoid loading Sumsub SDK on app startup
+// This prevents the SDK from blocking app initialization and E2E tests
+const LazySumsubTestScreen = React.lazy(
+  () => import('@/screens/dev/SumsubTestScreen'),
+);
+
+const SumsubTestScreenWrapper: React.FC = () => (
+  <React.Suspense
+    fallback={
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: white,
+        }}
+      >
+        <ActivityIndicator size="large" color={black} />
+      </View>
+    }
+  >
+    <LazySumsubTestScreen />
+  </React.Suspense>
+);
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {
@@ -82,7 +108,7 @@ const devScreens = {
     } as NativeStackNavigationOptions,
   },
   SumsubTest: {
-    screen: SumsubTestScreen,
+    screen: SumsubTestScreenWrapper,
     options: {
       ...devHeaderOptions,
       title: 'Sumsub Test',

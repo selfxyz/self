@@ -7,6 +7,8 @@ import { Alert, ScrollView, TextInput } from 'react-native';
 import { io, type Socket } from 'socket.io-client';
 import { Button, Text, XStack, YStack } from 'tamagui';
 import { SUMSUB_TEE_URL } from '@env';
+import { useNavigation } from '@react-navigation/native';
+import { ChevronLeft } from '@tamagui/lucide-icons';
 
 import {
   green500,
@@ -30,6 +32,7 @@ import {
 } from '@/integrations/sumsub';
 
 const SumsubTestScreen: React.FC = () => {
+  const navigation = useNavigation();
   const [phoneNumber, setPhoneNumber] = useState('+11234567890');
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -220,6 +223,26 @@ const SumsubTestScreen: React.FC = () => {
           paddingTop="$4"
           paddingBottom={paddingBottom}
         >
+          {/* Back Button */}
+          <XStack width="100%" justifyContent="flex-start">
+            <Button
+              backgroundColor="transparent"
+              borderRadius="$2"
+              paddingHorizontal="$0"
+              onPress={() => navigation.goBack()}
+              icon={<ChevronLeft size={24} color={slate600} />}
+            >
+              <Text
+                color={slate600}
+                fontSize="$5"
+                fontFamily={dinot}
+                fontWeight="600"
+              >
+                Back
+              </Text>
+            </Button>
+          </XStack>
+
           {/* Success Header */}
           <YStack
             width="100%"
@@ -399,6 +422,26 @@ const SumsubTestScreen: React.FC = () => {
         paddingTop="$4"
         paddingBottom={paddingBottom}
       >
+        {/* Back Button */}
+        <XStack width="100%" justifyContent="flex-start">
+          <Button
+            backgroundColor="transparent"
+            borderRadius="$2"
+            paddingHorizontal="$0"
+            onPress={() => navigation.goBack()}
+            icon={<ChevronLeft size={24} color={slate600} />}
+          >
+            <Text
+              color={slate600}
+              fontSize="$5"
+              fontFamily={dinot}
+              fontWeight="600"
+            >
+              Back
+            </Text>
+          </Button>
+        </XStack>
+
         {/* TEE Service Status */}
         <YStack
           width="100%"
