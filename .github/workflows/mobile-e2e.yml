@@ -592,17 +592,40 @@ jobs:
           echo "🎭 Running Maestro tests..."
           echo "Starting test execution..."
 
+          # Create directory for test artifacts
+          mkdir -p app/test-artifacts
+
           # Verify Maestro test file exists
           if [ ! -f "app/tests/e2e/launch.ios.flow.yaml" ]; then
             echo "❌ Maestro test file not found: app/tests/e2e/launch.ios.flow.yaml"
             exit 1
           fi
 
-          # Run Maestro with error handling for cleanup issues
+          # Run Maestro with video recording and error handling for cleanup issues
           # Note: Maestro may show NSPOSIXErrorDomain code=3 errors during cleanup when
           # terminating the test runner app that's already terminated. This is harmless.
-          MAESTRO_OUTPUT=$(maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml 2>&1)
+          echo "📹 Starting video recording..."
+          MAESTRO_OUTPUT=$(maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml --record app/test-artifacts/maestro-recording.mp4 2>&1)
           MAESTRO_EXIT_CODE=$?
+
+          # Check if video was created
+          if [ -f "app/test-artifacts/maestro-recording.mp4" ]; then
+            echo "✅ Video recording saved to app/test-artifacts/maestro-recording.mp4"
+            ls -lh app/test-artifacts/maestro-recording.mp4
+            echo ""
+            echo "📹 ===================================================="
+            echo "📹 VIDEO RECORDING AVAILABLE"
+            echo "📹 ===================================================="
+            echo "📹 To view the test recording:"
+            echo "📹 1. Go to: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo "📹 2. Scroll to the 'Artifacts' section at the bottom"
+            echo "📹 3. Download 'maestro-artifacts-ios'"
+            echo "📹 4. Extract and open 'maestro-recording.mp4'"
+            echo "📹 ===================================================="
+            echo ""
+          else
+            echo "⚠️ Video recording not created"
+          fi
 
           # Check if tests actually passed (ignore cleanup errors)
           if echo "$MAESTRO_OUTPUT" | grep -q "Flow Passed"; then
@@ -633,3 +656,35 @@ jobs:
           name: maestro-results-ios
           path: app/maestro-results.xml
           if-no-files-found: warn
+      - name: Upload test artifacts (video and screenshots)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-artifacts-ios
+          path: app/test-artifacts/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Artifact download instructions
+        if: always()
+        run: |
+          echo ""
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║                    📹 TEST ARTIFACTS UPLOADED                  ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "📦 Artifact name: maestro-artifacts-ios"
+          echo "🎬 Contains: maestro-recording.mp4"
+          echo "⏰ Retention: 7 days"
+          echo ""
+          echo "🔗 Direct link to this run:"
+          echo "   https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo ""
+          echo "💡 How to download:"
+          echo "   1. Click the link above (or find this run in the Actions tab)"
+          echo "   2. Scroll down to the 'Artifacts' section"
+          echo "   3. Click 'maestro-artifacts-ios' to download the ZIP"
+          echo "   4. Extract and play maestro-recording.mp4 with any video player"
+          echo ""
+          echo "📝 Alternative - Using GitHub CLI:"
+          echo "   gh run download ${{ github.run_id }} -n maestro-artifacts-ios"
+          echo ""
