@@ -699,37 +699,9 @@ jobs:
           fi
           echo ""
 
-          # Kill any existing Maestro daemon to ensure fresh start
-          echo "🧹 Cleaning up any existing Maestro daemon..."
-          maestro daemon stop 2>&1 || echo "ℹ️ No daemon to stop"
-          sleep 2
-          echo ""
-
-          # Start Maestro daemon explicitly
-          echo "🚀 Starting Maestro daemon..."
-          maestro daemon start 2>&1 || echo "⚠️ Failed to start daemon explicitly"
-          sleep 5  # Give daemon time to fully start
-          echo ""
-
-          # Check Maestro daemon status
-          echo "🔧 Maestro daemon status:"
-          maestro daemon status 2>&1 || echo "⚠️ Maestro daemon status check failed"
-          echo ""
-
-          # Check Maestro can see the device
-          echo "🔍 Maestro device detection:"
-          maestro devices 2>&1 || {
-            echo "⚠️ Failed to list devices"
-            echo "This often indicates daemon connection issues"
-            echo ""
-            echo "Attempting to restart daemon..."
-            maestro daemon stop 2>&1 || true
-            sleep 2
-            maestro daemon start 2>&1 || true
-            sleep 5
-            echo "Retrying device detection..."
-            maestro devices 2>&1 || echo "⚠️ Still cannot detect devices - check the video and logs"
-          }
+          # Note: Maestro 1.41.0 doesn't have daemon or devices commands
+          # The test command handles daemon management internally
+          echo "🔧 Maestro will manage its daemon automatically during test execution"
           echo ""
 
           # Take a screenshot before running tests (if recording enabled)
