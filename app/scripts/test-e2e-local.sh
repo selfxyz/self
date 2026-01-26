@@ -467,14 +467,21 @@ build_android_app() {
     cd android
     if [ "$CI_MATCH" = "true" ]; then
         log_info "Using Debug build with bundled JS (matches CI)"
-        if ! ./gradlew assembleDebug --quiet; then
+        # Force JS bundling in debug build to match CI behavior
+        if ! ./gradlew assembleDebug -PbundleInDebug=true --quiet; then
+            log_error "Android build failed"
+            exit 1
+        fi
+    elif [ "$WORKFLOW_MATCH" = "true" ]; then
+        log_info "Using Release build for workflow match"
+        if ! ./gradlew assembleRelease --quiet; then
             log_error "Android build failed"
             exit 1
         fi
     else
-        # Use Release builds for workflow-match and default (requires Metro for default)
-        log_info "Using Release build"
-        if ! ./gradlew assembleRelease --quiet; then
+        # Default local dev uses Debug (requires Metro, like iOS default)
+        log_info "Using Debug build for local development"
+        if ! ./gradlew assembleDebug --quiet; then
             log_error "Android build failed"
             exit 1
         fi
@@ -486,10 +493,12 @@ build_android_app() {
 install_android_app() {
     log_info "📦 Installing app on emulator..."
     # Check if APK was built successfully
-    if [ "$CI_MATCH" = "true" ]; then
-        APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
-    else
+    if [ "$WORKFLOW_MATCH" = "true" ]; then
+        # WORKFLOW_MATCH uses Release builds
         APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+    else
+        # CI_MATCH and default mode both use Debug builds
+        APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
     fi
     log_info "Looking for APK at: $APK_PATH"
     if [ ! -f "$APK_PATH" ]; then
