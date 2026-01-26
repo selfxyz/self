@@ -108,7 +108,9 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
 
       socket.on('connect_error', error => {
         console.error('[SelfAppStore] Mobile WS connection error:', error);
-        // Clean up on connection error, keeping selfApp to allow retry upon reconnection
+        // Properly disconnect the socket before clearing state to prevent resource leak
+        socket.disconnect();
+        // Keep selfApp to allow retry upon reconnection
         set({ socket: null, sessionId: null });
       });
 
