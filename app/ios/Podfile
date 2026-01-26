@@ -5,10 +5,10 @@ unless ENV["E2E_TESTING"] == "1"
   source "https://github.com/SumSubstance/Specs.git"
 
   # Enable Fisherman (Device Intelligence) module
-  ENV['IDENSIC_WITH_FISHERMAN'] = 'true'
+  ENV["IDENSIC_WITH_FISHERMAN"] = "true"
 
   # Enable VideoIdent module
-  ENV['IDENSIC_WITH_VIDEOIDENT'] = 'true'
+  ENV["IDENSIC_WITH_VIDEOIDENT"] = "true"
 end
 
 use_frameworks!
@@ -51,7 +51,13 @@ def using_https_git_auth?
 end
 
 target "Self" do
-  config = use_native_modules!
+  # Configure native modules, excluding Sumsub during E2E testing
+  excluded_modules = []
+  if ENV["E2E_TESTING"] == "1"
+    excluded_modules << "react-native-mobilesdk-module"
+  end
+
+  config = use_native_modules!(exclude: excluded_modules)
 
   use_frameworks!
   # Skip NFCPassportReader for e2e testing to avoid build issues
