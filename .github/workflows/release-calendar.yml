@@ -159,17 +159,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
+          python - <<PY >> "$GITHUB_OUTPUT"
           import json
-          import os
           import pathlib
 
           package_json = pathlib.Path("app/package.json")
           version = json.loads(package_json.read_text())["version"]
           print(f"app_version={version}")
-          output_path = os.environ["GITHUB_OUTPUT"]
-          with open(output_path, "a", encoding="utf-8") as output:
-            output.write(f"app_version={version}\n")
           PY
 
       - name: Create dev to staging release PR
@@ -345,17 +341,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
+          python - <<PY >> "$GITHUB_OUTPUT"
           import json
-          import os
           import pathlib
 
           package_json = pathlib.Path("app/package.json")
           version = json.loads(package_json.read_text())["version"]
           print(f"app_version={version}")
-          output_path = os.environ["GITHUB_OUTPUT"]
-          with open(output_path, "a", encoding="utf-8") as output:
-            output.write(f"app_version={version}\n")
           PY
 
       - name: Create staging to main release PR
