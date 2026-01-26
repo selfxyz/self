@@ -3,6 +3,7 @@ export type document_type = 'passport' | 'id_card';
 export type hashAlgosTypes = 'sha512' | 'sha384' | 'sha256' | 'sha224' | 'sha1';
 export const AADHAAR_ATTESTATION_ID = '3';
 export const API_URL = 'https://api.self.xyz';
+export const KYC_ATTESTATION_ID = '4';
 
 export const API_URL_STAGING = 'https://api.staging.self.xyz';
 
