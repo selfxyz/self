@@ -15,6 +15,7 @@ env:
   # Disable Maestro analytics in CI
   MAESTRO_CLI_NO_ANALYTICS: true
   MAESTRO_VERSION: 1.41.0
+  MAESTRO_CACHE_VERSION: v1 # Bump this to clear Maestro cache
 
 on:
   push:
@@ -333,9 +334,35 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.maestro
-          key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
+          key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}-${{ env.MAESTRO_CACHE_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}-
+      - name: Validate Maestro cache
+        if: steps.cache-maestro.outputs.cache-hit == 'true'
+        run: |
+          echo "✅ Maestro restored from cache"
+          echo "Validating cached Maestro installation..."
+          
+          if [ ! -f "$HOME/.maestro/bin/maestro" ]; then
+            echo "❌ Maestro binary not found in cache - cache is corrupted"
+            echo "Clearing corrupted cache..."
+            rm -rf ~/.maestro
+            echo "MAESTRO_CACHE_VALID=false" >> $GITHUB_ENV
+          else
+            echo "✅ Maestro binary found in cache"
+            # Test if Maestro is executable
+            if "$HOME/.maestro/bin/maestro" --version &>/dev/null; then
+              echo "✅ Maestro cache is valid"
+              echo "MAESTRO_CACHE_VALID=true" >> $GITHUB_ENV
+            else
+              echo "❌ Maestro binary is not executable - cache is corrupted"
+              echo "Clearing corrupted cache..."
+              rm -rf ~/.maestro
+              echo "MAESTRO_CACHE_VALID=false" >> $GITHUB_ENV
+            fi
+          fi
       - name: Install Maestro
-        if: steps.cache-maestro.outputs.cache-hit != 'true'
+        if: steps.cache-maestro.outputs.cache-hit != 'true' || env.MAESTRO_CACHE_VALID == 'false'
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 5
@@ -344,6 +371,20 @@ jobs:
           command: curl -Ls "https://get.maestro.mobile.dev" | bash
       - name: Add Maestro to path
         run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Verify Maestro installation
+        run: |
+          echo "🔍 Verifying Maestro installation..."
+          echo "Maestro path: $(which maestro)"
+          echo "Maestro version:"
+          maestro --version || {
+            echo "❌ Maestro installation verification failed"
+            echo "Maestro binary location:"
+            find ~/.maestro -name maestro -type f 2>/dev/null || echo "No maestro binary found"
+            echo ""
+            echo "To fix: Bump MAESTRO_CACHE_VERSION in workflow file"
+            exit 1
+          }
+          echo "✅ Maestro installation verified"
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -591,29 +632,209 @@ jobs:
           # Final readiness check (suppress errors to avoid annotations)
           xcrun simctl get_app_container "$SIMULATOR_ID" "$IOS_BUNDLE_ID" app >/dev/null 2>&1 || sleep 5
 
-          echo "🎭 Running Maestro tests..."
-          echo "Starting test execution..."
+          echo ""
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║                  🔍 PRE-TEST DIAGNOSTICS                       ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+          echo ""
 
           # Create directory for test artifacts
           mkdir -p app/test-artifacts
 
-          # Verify Maestro test file exists
-          if [ ! -f "app/tests/e2e/launch.ios.flow.yaml" ]; then
-            echo "❌ Maestro test file not found: app/tests/e2e/launch.ios.flow.yaml"
+          # Check Maestro version and health
+          echo "📦 Maestro installation details:"
+          echo "Binary location: $(which maestro)"
+          echo "Maestro version:"
+          maestro --version || {
+            echo "❌ Failed to get Maestro version"
+            echo "This is a critical error - Maestro is not working"
             exit 1
-          fi
+          }
+          echo ""
 
-          # Run Maestro with video recording and error handling for cleanup issues
-          # Note: Maestro may show NSPOSIXErrorDomain code=3 errors during cleanup when
-          # terminating the test runner app that's already terminated. This is harmless.
-          echo "📹 Starting video recording..."
-          MAESTRO_OUTPUT=$(maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml --record app/test-artifacts/maestro-recording.mp4 2>&1)
+          # Check Java (required by Maestro)
+          echo "☕ Java status (required by Maestro):"
+          if command -v java &>/dev/null; then
+            java -version 2>&1 | head -3
+            echo "✅ Java is available"
+          else
+            echo "⚠️ Java not found - this may cause Maestro to fail"
+          fi
+          echo ""
+
+          # Check simulator state
+          echo "📱 Simulator state:"
+          xcrun simctl list devices | grep -A 2 "$SIMULATOR_ID" || echo "⚠️ Simulator not found"
+          echo ""
+
+          # Check if app is installed
+          echo "📲 Checking app installation:"
+          xcrun simctl listapps "$SIMULATOR_ID" | grep -i "$IOS_BUNDLE_ID" && echo "✅ App is installed" || echo "⚠️ App not found in installed apps"
+          echo ""
+
+          # Check if app is running
+          echo "🏃 Checking if app is running:"
+          APP_PID=$(xcrun simctl spawn "$SIMULATOR_ID" launchctl list | grep "$IOS_BUNDLE_ID" | awk '{print $1}' || echo "")
+          if [ -n "$APP_PID" ]; then
+            echo "✅ App process found (PID: $APP_PID)"
+          else
+            echo "ℹ️ App not currently running (will be launched by Maestro)"
+          fi
+          echo ""
+
+          # Verify test file
+          echo "📄 Maestro test file:"
+          if [ -f "app/tests/e2e/launch.ios.flow.yaml" ]; then
+            echo "✅ Found: app/tests/e2e/launch.ios.flow.yaml"
+            echo "Contents:"
+            cat app/tests/e2e/launch.ios.flow.yaml
+          else
+            echo "❌ Test file not found"
+          fi
+          echo ""
+
+          # Kill any existing Maestro daemon to ensure fresh start
+          echo "🧹 Cleaning up any existing Maestro daemon..."
+          maestro daemon stop 2>&1 || echo "ℹ️ No daemon to stop"
+          sleep 2
+          echo ""
+
+          # Start Maestro daemon explicitly
+          echo "🚀 Starting Maestro daemon..."
+          maestro daemon start 2>&1 || echo "⚠️ Failed to start daemon explicitly"
+          sleep 5  # Give daemon time to fully start
+          echo ""
+
+          # Check Maestro daemon status
+          echo "🔧 Maestro daemon status:"
+          maestro daemon status 2>&1 || echo "⚠️ Maestro daemon status check failed"
+          echo ""
+
+          # Check Maestro can see the device
+          echo "🔍 Maestro device detection:"
+          maestro devices 2>&1 || {
+            echo "⚠️ Failed to list devices"
+            echo "This often indicates daemon connection issues"
+            echo ""
+            echo "Attempting to restart daemon..."
+            maestro daemon stop 2>&1 || true
+            sleep 2
+            maestro daemon start 2>&1 || true
+            sleep 5
+            echo "Retrying device detection..."
+            maestro devices 2>&1 || echo "⚠️ Still cannot detect devices - check the video and logs"
+          }
+          echo ""
+
+          # Take a screenshot before running tests
+          echo "📸 Taking pre-test screenshot..."
+          xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/pre-test-screenshot.png || echo "⚠️ Screenshot failed"
+          echo ""
+
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║                  🎭 STARTING MAESTRO TEST                      ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+          echo ""
+
+          # Start native simulator recording BEFORE running tests
+          # This ensures we capture everything even if Maestro fails immediately
+          echo "📹 Starting native simulator recording..."
+          xcrun simctl io "$SIMULATOR_ID" recordVideo --codec=h264 app/test-artifacts/simulator-recording.mp4 &
+          RECORDING_PID=$!
+          echo "✅ Recording started (PID: $RECORDING_PID)"
+          
+          # Give recording a moment to initialize
+          sleep 2
+
+          # Run Maestro with verbose output and capture all output (including errors)
+          echo "🎭 Starting Maestro test with verbose logging..."
+          echo "Command: maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml"
+          echo "Environment variables:"
+          echo "  MAESTRO_DEVICE_ID: $SIMULATOR_ID"
+          echo "  MAESTRO_DRIVER_STARTUP_TIMEOUT: 180000"
+          echo "  MAESTRO_CLI_NO_ANALYTICS: $MAESTRO_CLI_NO_ANALYTICS"
+          echo "  Working directory: $(pwd)"
+          echo ""
+          
+          set +e  # Don't exit on error
+          # Run with explicit device ID, increased timeout, and verbose output
+          # Note: exit code 2 typically means Maestro couldn't connect to device or daemon
+          MAESTRO_OUTPUT=$(MAESTRO_DEVICE_ID="$SIMULATOR_ID" MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml 2>&1)
           MAESTRO_EXIT_CODE=$?
+          set -e
+          
+          echo "Maestro command completed with exit code: $MAESTRO_EXIT_CODE"
+          echo ""
+
+          # Stop the simulator recording
+          echo ""
+          echo "🛑 Stopping recording..."
+          kill -SIGINT $RECORDING_PID 2>/dev/null || true
+          wait $RECORDING_PID 2>/dev/null || true
+          sleep 2  # Give time for video to finalize
+
+          # Take a screenshot after test
+          echo "📸 Taking post-test screenshot..."
+          xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/post-test-screenshot.png || echo "⚠️ Screenshot failed"
+          echo ""
+
+          # Save Maestro output to file for debugging
+          echo "$MAESTRO_OUTPUT" > app/test-artifacts/maestro-output.log
+          echo "📝 Maestro output saved to maestro-output.log"
+
+          # Show Maestro output
+          echo ""
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║                     📋 MAESTRO OUTPUT                          ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+          echo "$MAESTRO_OUTPUT"
+          echo ""
+
+          # Post-test diagnostics
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║                  🔍 POST-TEST DIAGNOSTICS                      ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+          echo ""
+
+          # Check if app is still running
+          echo "🏃 App status after test:"
+          APP_PID_AFTER=$(xcrun simctl spawn "$SIMULATOR_ID" launchctl list | grep "$IOS_BUNDLE_ID" | awk '{print $1}' || echo "")
+          if [ -n "$APP_PID_AFTER" ]; then
+            echo "✅ App still running (PID: $APP_PID_AFTER)"
+          else
+            echo "⚠️ App not running"
+          fi
+          echo ""
+
+          # Check simulator logs for any crashes
+          echo "🔍 Checking for crash logs..."
+          CRASH_LOGS=$(find ~/Library/Logs/DiagnosticReports -name "Self*.crash" -o -name "OpenPassport*.crash" -mmin -5 2>/dev/null | head -5)
+          if [ -n "$CRASH_LOGS" ]; then
+            echo "⚠️ Recent crash logs found:"
+            echo "$CRASH_LOGS"
+            # Copy crash logs to artifacts
+            for log in $CRASH_LOGS; do
+              cp "$log" app/test-artifacts/ 2>/dev/null || true
+            done
+          else
+            echo "✅ No recent crash logs"
+          fi
+          echo ""
+
+          # Check system log for relevant messages
+          echo "📋 Recent simulator system logs (last 50 lines):"
+          xcrun simctl spawn "$SIMULATOR_ID" log show --predicate 'process == "Self" OR process == "OpenPassport"' --last 5m --style compact 2>/dev/null | tail -50 > app/test-artifacts/simulator-system.log || echo "⚠️ Could not retrieve system logs"
+          if [ -f app/test-artifacts/simulator-system.log ]; then
+            echo "✅ System logs saved to simulator-system.log"
+            echo "Last 20 lines:"
+            tail -20 app/test-artifacts/simulator-system.log
+          fi
+          echo ""
 
           # Check if video was created
-          if [ -f "app/test-artifacts/maestro-recording.mp4" ]; then
-            echo "✅ Video recording saved to app/test-artifacts/maestro-recording.mp4"
-            ls -lh app/test-artifacts/maestro-recording.mp4
+          if [ -f "app/test-artifacts/simulator-recording.mp4" ]; then
+            VIDEO_SIZE=$(ls -lh app/test-artifacts/simulator-recording.mp4 | awk '{print $5}')
+            echo "✅ Video recording saved: simulator-recording.mp4 ($VIDEO_SIZE)"
             echo ""
             echo "📹 ===================================================="
             echo "📹 VIDEO RECORDING AVAILABLE"
@@ -622,13 +843,17 @@ jobs:
             echo "📹 1. Go to: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             echo "📹 2. Scroll to the 'Artifacts' section at the bottom"
             echo "📹 3. Download 'maestro-artifacts-ios'"
-            echo "📹 4. Extract and open 'maestro-recording.mp4'"
+            echo "📹 4. Extract and open 'simulator-recording.mp4'"
             echo "📹 ===================================================="
             echo ""
           else
             echo "⚠️ Video recording not created"
           fi
 
+          # Analyze test results
+          echo "🔍 Analyzing test results..."
+          echo "Maestro exit code: $MAESTRO_EXIT_CODE"
+          
           # Check if tests actually passed (ignore cleanup errors)
           if echo "$MAESTRO_OUTPUT" | grep -q "Flow Passed"; then
             echo "✅ Maestro tests passed"
@@ -641,13 +866,15 @@ jobs:
             fi
           elif echo "$MAESTRO_OUTPUT" | grep -q "Flow Failed"; then
             echo "❌ Maestro tests failed"
+            echo "Check the video recording and maestro-output.log for details"
             exit 1
           elif [ $MAESTRO_EXIT_CODE -ne 0 ]; then
             # Check results file if exit code is non-zero
             if [ -f "app/maestro-results.xml" ] && ! grep -q "<failure" app/maestro-results.xml; then
               echo "✅ Tests passed (cleanup error caused non-zero exit)"
             else
-              echo "❌ Maestro test failed"
+              echo "❌ Maestro test failed with exit code: $MAESTRO_EXIT_CODE"
+              echo "Check the video recording and maestro-output.log for details"
               exit 1
             fi
           fi
@@ -675,7 +902,14 @@ jobs:
           echo "╚════════════════════════════════════════════════════════════════╝"
           echo ""
           echo "📦 Artifact name: maestro-artifacts-ios"
-          echo "🎬 Contains: maestro-recording.mp4"
+          echo "🎬 Contains:"
+          echo "   📹 simulator-recording.mp4 - Full video of simulator during test"
+          echo "   📝 maestro-output.log - Complete Maestro command output"
+          echo "   📋 simulator-system.log - iOS simulator system logs"
+          echo "   📸 pre-test-screenshot.png - Simulator state before test"
+          echo "   📸 post-test-screenshot.png - Simulator state after test"
+          echo "   📊 maestro-results.xml - Test results (if generated)"
+          echo "   💥 *.crash - Crash logs (if any crashes occurred)"
           echo "⏰ Retention: 7 days"
           echo ""
           echo "🔗 Direct link to this run:"
@@ -685,10 +919,20 @@ jobs:
           echo "   1. Click the link above (or find this run in the Actions tab)"
           echo "   2. Scroll down to the 'Artifacts' section"
           echo "   3. Click 'maestro-artifacts-ios' to download the ZIP"
-          echo "   4. Extract and play maestro-recording.mp4 with any video player"
+          echo "   4. Extract and review:"
+          echo "      🎬 Play simulator-recording.mp4 to see what happened"
+          echo "      📝 Read maestro-output.log for Maestro errors"
+          echo "      📋 Check simulator-system.log for iOS system errors"
+          echo "      📸 Compare pre/post screenshots to see UI state"
+          echo "      💥 Review crash logs if app crashed"
           echo ""
           echo "📝 Alternative - Using GitHub CLI:"
           echo "   gh run download ${{ github.run_id }} -n maestro-artifacts-ios"
+          echo ""
+          
+          # List what files were actually created
+          echo "📂 Files in test-artifacts directory:"
+          ls -lh app/test-artifacts/ 2>/dev/null || echo "   (No artifacts directory found)"
           echo ""
       - name: Fail job if tests failed
         if: steps.maestro-test.outcome == 'failure'
