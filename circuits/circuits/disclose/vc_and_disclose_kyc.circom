@@ -50,7 +50,7 @@ template VC_AND_DISCLOSE_KYC(
     var country_length = COUNTRY_LENGTH();
     var id_number_length = ID_NUMBER_LENGTH();
     var idNumberIdx = ID_NUMBER_INDEX();
-    var compressed_bit_len = max_length/2;
+    var compressed_bit_len = max_length % 2 == 1 ? (max_length - 1)/2 : max_length / 2;
 
     signal input data_padded[max_length];
     signal input compressed_disclose_sel[2];
@@ -86,14 +86,14 @@ template VC_AND_DISCLOSE_KYC(
     low_bits.in <== compressed_disclose_sel[0];
 
     // Convert disclose_sel_high (next 133 bits) to bit array
-    component high_bits = Num2Bits(compressed_bit_len);
+    component high_bits = Num2Bits(max_length - compressed_bit_len);
     high_bits.in <== compressed_disclose_sel[1];
 
     // Combine the bit arrays (little-endian format)
     for(var i = 0; i < compressed_bit_len; i++){
         disclose_sel[i] <== low_bits.out[i];
     }
-    for(var i = 0; i < compressed_bit_len; i++){
+    for(var i = 0; i < max_length - compressed_bit_len; i++){
         disclose_sel[compressed_bit_len + i] <== high_bits.out[i];
     }
 
@@ -135,3 +135,14 @@ template VC_AND_DISCLOSE_KYC(
     signal output nullifier <== Poseidon(2)([secret, scope]);
     signal output attestation_id <== 4;
 }
+
+component main {
+    public [
+        scope,
+        merkle_root,
+        ofac_name_dob_smt_root,
+        ofac_name_yob_smt_root,
+        user_identifier,
+        current_date
+    ]
+} = VC_AND_DISCLOSE_KYC(40, 64, 64, 33);

@@ -193,7 +193,6 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
       'DOB',
       'PHOTO_HASH',
       'PHONE_NUMBER',
-      'DOCUMENT',
       'GENDER',
       'ADDRESS',
     ];
@@ -251,7 +250,6 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
       'DOB',
       'PHOTO_HASH',
       'PHONE_NUMBER',
-      'DOCUMENT',
       'GENDER',
       'ADDRESS',
     ];

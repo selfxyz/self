@@ -723,20 +723,26 @@ export function buildKycSMT(field: any[], treetype: string): [number, number, SM
       console.log(`Processing ${providerName}`, treetype, 'number', i, 'out of', field.length);
     }
 
-    let leaf = BigInt(0);
+    let leafs = [BigInt(0), BigInt(0)];
     if (treetype == 'name_and_dob') {
-      leaf = processNameAndDobKyc(entry, i);
+      leafs[0] = processNameAndDobKyc(entry, i, false);
+      leafs[1] = processNameAndDobKyc(entry, i, true);
     } else if (treetype == 'name_and_yob') {
-      leaf = processNameAndYobKyc(entry, i);
+      leafs[0] = processNameAndYobKyc(entry, i, false);
+      leafs[1] = processNameAndYobKyc(entry, i, true);
     }
 
-    if (leaf == BigInt(0) || tree.createProof(leaf).membership) {
+    if (leafs[0] == BigInt(0) || tree.createProof(leafs[0]).membership) {
+      console.log('This entry already exists in the tree, skipping...');
+      continue;
+    } else if (leafs[1] == BigInt(0) || tree.createProof(leafs[1]).membership) {
       console.log('This entry already exists in the tree, skipping...');
       continue;
     }
 
     count += 1;
-    tree.add(leaf, BigInt(1));
+    tree.add(leafs[0], BigInt(1));
+    tree.add(leafs[1], BigInt(1));
   }
 
   console.log(`Total ${providerName}`, treetype, 'parsed are : ', count, ' over ', field.length);
@@ -744,7 +750,7 @@ export function buildKycSMT(field: any[], treetype: string): [number, number, SM
   return [count, performance.now() - startTime, tree];
 }
 
-const processNameAndDobKyc = (entry: any, i: number): bigint => {
+const processNameAndDobKyc = (entry: any, i: number, reverse: boolean): bigint => {
   const firstName = entry.First_Name;
   const lastName = entry.Last_Name;
   const day = entry.day;
@@ -756,7 +762,7 @@ const processNameAndDobKyc = (entry: any, i: number): bigint => {
     return BigInt(0);
   }
 
-  const nameHash = processNameKyc(firstName, lastName, i);
+  const nameHash = processNameKyc(firstName, lastName, i, reverse);
   const dobHash = processDobKyc(day, month, year, i);
 
   return generateSmallKey(poseidon2([dobHash, nameHash]));
@@ -773,7 +779,7 @@ export const getNameDobLeafKyc = (name: string, dob: string) => {
   return generateSmallKey(poseidon2([dobHash, nameHash]));
 };
 
-const processNameKyc = (firstName: string, lastName: string, i: number): bigint => {
+const processNameKyc = (firstName: string, lastName: string, i: number, reverse: boolean): bigint => {
   const namePaddingLength = 64;
 
   firstName = firstName.replace(/'/g, '');
@@ -783,8 +789,8 @@ const processNameKyc = (firstName: string, lastName: string, i: number): bigint 
   lastName = lastName.replace(/[- ]/g, '<');
   lastName = lastName.replace(/\./g, '');
 
-  //TODO: check if smile id does first name and last name || last name and first name
-  const nameArr = (lastName + ' ' + firstName)
+  let nameStr = reverse ? (lastName + ' ' + firstName) : (firstName + ' ' + lastName);
+  const nameArr = nameStr
     .padEnd(namePaddingLength, '\0')
     .split('')
     .map((char) => char.charCodeAt(0));
@@ -825,7 +831,7 @@ export const getNameYobLeafKyc = (name: string, yob: string) => {
   return generateSmallKey(poseidon2([yearHash, nameHash]));
 };
 
-const processNameAndYobKyc = (entry: any, i: number): bigint => {
+const processNameAndYobKyc = (entry: any, i: number, reverse: boolean): bigint => {
   const firstName = entry.First_Name;
   const lastName = entry.Last_Name;
   const year = entry.year;
@@ -834,7 +840,7 @@ const processNameAndYobKyc = (entry: any, i: number): bigint => {
     return BigInt(0);
   }
 
-  const nameHash = processNameKyc(firstName, lastName, i);
+  const nameHash = processNameKyc(firstName, lastName, i, reverse);
   const yearHash = processYearKyc(year, i);
   return generateSmallKey(poseidon2([yearHash, nameHash]));
 };

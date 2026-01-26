@@ -16,9 +16,9 @@ import RegisterVerifierArtifactLocal from "../../artifacts/contracts/verifiers/l
 import RegisterIdVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/register_id/Verifier_register_id_sha256_sha256_sha256_rsa_65537_4096_staging.sol/Verifier_register_id_sha256_sha256_sha256_rsa_65537_4096_staging.json";
 import RegisterAadhaarVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/register/Verifier_register_aadhaar_staging.sol/Verifier_register_aadhaar_staging.json";
 import DscVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/dsc/Verifier_dsc_sha256_rsa_65537_4096_staging.sol/Verifier_dsc_sha256_rsa_65537_4096_staging.json";
-import RegisterSelfricaVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/register/Verifier_register_selfrica_staging.sol/Verifier_register_selfrica_staging.json";
+import RegisterSelfricaVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/register/Verifier_register_kyc_staging.sol/Verifier_register_kyc_staging.json";
 // import GCPJWTVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/gcp_jwt_verifier/Verifier_gcp_jwt_verifier_staging.sol/Verifier_gcp_jwt_verifier_staging.json";
-import VcAndDiscloseSelfricaVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/disclose/Verifier_vc_and_disclose_selfrica_staging.sol/Verifier_vc_and_disclose_selfrica_staging.json";
+import VcAndDiscloseSelfricaVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/disclose/Verifier_vc_and_disclose_kyc_staging.sol/Verifier_vc_and_disclose_kyc_staging.json";
 
 export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   let identityVerificationHubV2: any;
