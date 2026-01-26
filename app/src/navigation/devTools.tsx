@@ -48,6 +48,7 @@ const devHeaderOptions: NativeStackNavigationOptions = {
   headerTitleStyle: {
     color: white,
   },
+  headerTintColor: white,
   headerBackTitle: 'close',
 };
 
