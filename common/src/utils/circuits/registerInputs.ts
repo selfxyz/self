@@ -193,12 +193,17 @@ function getSelectorDg1(document: DocumentCategory, disclosures: SelfAppDisclosu
   }
 }
 
-function getSelectorDg1Passport(disclosures: SelfAppDisclosureConfig) {
+export function getSelectorDg1Passport(disclosures: SelfAppDisclosureConfig) {
   const selector_dg1 = Array(88).fill('0');
   Object.entries(disclosures).forEach(([attribute, reveal]) => {
     if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
       return;
     }
+
+    if (!Object.keys(attributeToPosition).includes(attribute)) {
+      return;
+    }
+
     if (reveal) {
       const [start, end] = attributeToPosition[attribute as keyof typeof attributeToPosition];
       selector_dg1.fill('1', start, end + 1);
@@ -207,12 +212,17 @@ function getSelectorDg1Passport(disclosures: SelfAppDisclosureConfig) {
   return selector_dg1;
 }
 
-function getSelectorDg1IdCard(disclosures: SelfAppDisclosureConfig) {
+export function getSelectorDg1IdCard(disclosures: SelfAppDisclosureConfig) {
   const selector_dg1 = Array(90).fill('0');
   Object.entries(disclosures).forEach(([attribute, reveal]) => {
     if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
       return;
     }
+
+    if (!Object.keys(attributeToPosition_ID).includes(attribute)) {
+      return;
+    }
+
     if (reveal) {
       const [start, end] = attributeToPosition_ID[attribute as keyof typeof attributeToPosition_ID];
       selector_dg1.fill('1', start, end + 1);
