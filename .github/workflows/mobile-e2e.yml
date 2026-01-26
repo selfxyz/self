@@ -16,6 +16,8 @@ env:
   MAESTRO_CLI_NO_ANALYTICS: true
   MAESTRO_VERSION: 1.41.0
   MAESTRO_CACHE_VERSION: v1 # Bump this to clear Maestro cache
+  # Disable Maestro recording/artifacts (keep for debugging - set to "true" to re-enable)
+  ENABLE_MAESTRO_RECORDING: false
 
 on:
   push:
@@ -342,7 +344,7 @@ jobs:
         run: |
           echo "✅ Maestro restored from cache"
           echo "Validating cached Maestro installation..."
-          
+
           if [ ! -f "$HOME/.maestro/bin/maestro" ]; then
             echo "❌ Maestro binary not found in cache - cache is corrupted"
             echo "Clearing corrupted cache..."
@@ -458,6 +460,7 @@ jobs:
             BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
+          E2E_TESTING: 1
       - name: Setup iOS Simulator
         run: |
           echo "Setting up iOS Simulator..."
@@ -545,6 +548,8 @@ jobs:
           echo "WORKSPACE_PATH=$WORKSPACE_PATH" >> "$GITHUB_ENV"
           echo "Resolved workspace: $WORKSPACE_PATH"
       - name: Build iOS App
+        env:
+          E2E_TESTING: 1
         run: |
           echo "Building iOS app..."
           echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
@@ -726,25 +731,31 @@ jobs:
           }
           echo ""
 
-          # Take a screenshot before running tests
-          echo "📸 Taking pre-test screenshot..."
-          xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/pre-test-screenshot.png || echo "⚠️ Screenshot failed"
-          echo ""
+          # Take a screenshot before running tests (if recording enabled)
+          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ]; then
+            echo "📸 Taking pre-test screenshot..."
+            xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/pre-test-screenshot.png || echo "⚠️ Screenshot failed"
+            echo ""
+          fi
 
           echo "╔════════════════════════════════════════════════════════════════╗"
           echo "║                  🎭 STARTING MAESTRO TEST                      ║"
           echo "╚════════════════════════════════════════════════════════════════╝"
           echo ""
 
-          # Start native simulator recording BEFORE running tests
+          # Start native simulator recording BEFORE running tests (if recording enabled)
           # This ensures we capture everything even if Maestro fails immediately
-          echo "📹 Starting native simulator recording..."
-          xcrun simctl io "$SIMULATOR_ID" recordVideo --codec=h264 app/test-artifacts/simulator-recording.mp4 &
-          RECORDING_PID=$!
-          echo "✅ Recording started (PID: $RECORDING_PID)"
-          
-          # Give recording a moment to initialize
-          sleep 2
+          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ]; then
+            echo "📹 Starting native simulator recording..."
+            xcrun simctl io "$SIMULATOR_ID" recordVideo --codec=h264 app/test-artifacts/simulator-recording.mp4 &
+            RECORDING_PID=$!
+            echo "✅ Recording started (PID: $RECORDING_PID)"
+
+            # Give recording a moment to initialize
+            sleep 2
+          else
+            echo "ℹ️ Maestro recording disabled (ENABLE_MAESTRO_RECORDING=false)"
+          fi
 
           # Run Maestro with verbose output and capture all output (including errors)
           echo "🎭 Starting Maestro test with verbose logging..."
@@ -755,28 +766,32 @@ jobs:
           echo "  MAESTRO_CLI_NO_ANALYTICS: $MAESTRO_CLI_NO_ANALYTICS"
           echo "  Working directory: $(pwd)"
           echo ""
-          
+
           set +e  # Don't exit on error
           # Run with explicit device ID, increased timeout, and verbose output
           # Note: exit code 2 typically means Maestro couldn't connect to device or daemon
           MAESTRO_OUTPUT=$(MAESTRO_DEVICE_ID="$SIMULATOR_ID" MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml 2>&1)
           MAESTRO_EXIT_CODE=$?
           set -e
-          
+
           echo "Maestro command completed with exit code: $MAESTRO_EXIT_CODE"
           echo ""
 
-          # Stop the simulator recording
-          echo ""
-          echo "🛑 Stopping recording..."
-          kill -SIGINT $RECORDING_PID 2>/dev/null || true
-          wait $RECORDING_PID 2>/dev/null || true
-          sleep 2  # Give time for video to finalize
+          # Stop the simulator recording (if recording was started)
+          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ] && [ -n "${RECORDING_PID:-}" ]; then
+            echo ""
+            echo "🛑 Stopping recording..."
+            kill -SIGINT $RECORDING_PID 2>/dev/null || true
+            wait $RECORDING_PID 2>/dev/null || true
+            sleep 2  # Give time for video to finalize
+          fi
 
-          # Take a screenshot after test
-          echo "📸 Taking post-test screenshot..."
-          xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/post-test-screenshot.png || echo "⚠️ Screenshot failed"
-          echo ""
+          # Take a screenshot after test (if recording enabled)
+          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ]; then
+            echo "📸 Taking post-test screenshot..."
+            xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/post-test-screenshot.png || echo "⚠️ Screenshot failed"
+            echo ""
+          fi
 
           # Save Maestro output to file for debugging
           echo "$MAESTRO_OUTPUT" > app/test-artifacts/maestro-output.log
@@ -831,29 +846,33 @@ jobs:
           fi
           echo ""
 
-          # Check if video was created
-          if [ -f "app/test-artifacts/simulator-recording.mp4" ]; then
-            VIDEO_SIZE=$(ls -lh app/test-artifacts/simulator-recording.mp4 | awk '{print $5}')
-            echo "✅ Video recording saved: simulator-recording.mp4 ($VIDEO_SIZE)"
-            echo ""
-            echo "📹 ===================================================="
-            echo "📹 VIDEO RECORDING AVAILABLE"
-            echo "📹 ===================================================="
-            echo "📹 To view the test recording:"
-            echo "📹 1. Go to: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            echo "📹 2. Scroll to the 'Artifacts' section at the bottom"
-            echo "📹 3. Download 'maestro-artifacts-ios'"
-            echo "📹 4. Extract and open 'simulator-recording.mp4'"
-            echo "📹 ===================================================="
-            echo ""
+          # Check if video was created (if recording was enabled)
+          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ]; then
+            if [ -f "app/test-artifacts/simulator-recording.mp4" ]; then
+              VIDEO_SIZE=$(ls -lh app/test-artifacts/simulator-recording.mp4 | awk '{print $5}')
+              echo "✅ Video recording saved: simulator-recording.mp4 ($VIDEO_SIZE)"
+              echo ""
+              echo "📹 ===================================================="
+              echo "📹 VIDEO RECORDING AVAILABLE"
+              echo "📹 ===================================================="
+              echo "📹 To view the test recording:"
+              echo "📹 1. Go to: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              echo "📹 2. Scroll to the 'Artifacts' section at the bottom"
+              echo "📹 3. Download 'maestro-artifacts-ios'"
+              echo "📹 4. Extract and open 'simulator-recording.mp4'"
+              echo "📹 ===================================================="
+              echo ""
+            else
+              echo "⚠️ Video recording not created"
+            fi
           else
-            echo "⚠️ Video recording not created"
+            echo "ℹ️ Video recording disabled (ENABLE_MAESTRO_RECORDING=false)"
           fi
 
           # Analyze test results
           echo "🔍 Analyzing test results..."
           echo "Maestro exit code: $MAESTRO_EXIT_CODE"
-          
+
           # Check if tests actually passed (ignore cleanup errors)
           if echo "$MAESTRO_OUTPUT" | grep -q "Flow Passed"; then
             echo "✅ Maestro tests passed"
@@ -879,14 +898,14 @@ jobs:
             fi
           fi
       - name: Upload test results
-        if: always()
+        if: always() && env.ENABLE_MAESTRO_RECORDING == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-ios
           path: app/maestro-results.xml
           if-no-files-found: warn
       - name: Upload test artifacts (video and screenshots)
-        if: always()
+        if: always() && env.ENABLE_MAESTRO_RECORDING == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: maestro-artifacts-ios
@@ -894,7 +913,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
       - name: Artifact download instructions
-        if: always()
+        if: always() && env.ENABLE_MAESTRO_RECORDING == 'true'
         run: |
           echo ""
           echo "╔════════════════════════════════════════════════════════════════╗"
@@ -929,7 +948,7 @@ jobs:
           echo "📝 Alternative - Using GitHub CLI:"
           echo "   gh run download ${{ github.run_id }} -n maestro-artifacts-ios"
           echo ""
-          
+
           # List what files were actually created
           echo "📂 Files in test-artifacts directory:"
           ls -lh app/test-artifacts/ 2>/dev/null || echo "   (No artifacts directory found)"

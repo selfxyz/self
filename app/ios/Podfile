@@ -1,13 +1,18 @@
 source "https://cdn.cocoapods.org/"
-source "https://github.com/SumSubstance/Specs.git"
+
+# Skip Sumsub configuration for E2E testing
+unless ENV["E2E_TESTING"] == "1"
+  source "https://github.com/SumSubstance/Specs.git"
+
+  # Enable Fisherman (Device Intelligence) module
+  ENV['IDENSIC_WITH_FISHERMAN'] = 'true'
+
+  # Enable VideoIdent module
+  ENV['IDENSIC_WITH_VIDEOIDENT'] = 'true'
+end
+
 use_frameworks!
 require "tmpdir"
-
-# Enable Fisherman (Device Intelligence) module
-ENV['IDENSIC_WITH_FISHERMAN'] = 'true'
-
-# Enable VideoIdent module
-ENV['IDENSIC_WITH_VIDEOIDENT'] = 'true'
 
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command("node", ["-p",
