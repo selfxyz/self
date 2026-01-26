@@ -51,13 +51,8 @@ def using_https_git_auth?
 end
 
 target "Self" do
-  # Configure native modules, excluding Sumsub during E2E testing
-  excluded_modules = []
-  if ENV["E2E_TESTING"] == "1"
-    excluded_modules << "react-native-mobilesdk-module"
-  end
-
-  config = use_native_modules!(exclude: excluded_modules)
+  # Native module exclusion for E2E testing is handled in react-native.config.cjs
+  config = use_native_modules!
 
   use_frameworks!
   # Skip NFCPassportReader for e2e testing to avoid build issues
