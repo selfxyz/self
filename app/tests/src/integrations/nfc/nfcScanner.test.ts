@@ -7,7 +7,7 @@
 // This pattern avoids hoisting issues with jest.mock
 import { Buffer } from 'buffer';
 
-import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
+import { scan } from '@/integrations/nfc/nfcScanner';
 import { PassportReader } from '@/integrations/nfc/passportReader';
 
 // Declare global variable for platform OS that can be modified per-test
