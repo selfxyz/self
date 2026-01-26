@@ -38,6 +38,8 @@ export interface SelfAppDisclosureConfig {
   // dg1
   issuing_state?: boolean;
   name?: boolean;
+  first_name?: boolean;
+  last_name?: boolean;
   passport_number?: boolean;
   nationality?: boolean;
   date_of_birth?: boolean;
