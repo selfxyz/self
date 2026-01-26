@@ -542,6 +542,8 @@ jobs:
             xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Debug -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
+        continue-on-error: true
+        id: maestro-test
         run: |
           echo "Installing app on simulator..."
           APP_PATH=$(find app/ios/build/Build/Products/Debug-iphonesimulator -name "*.app" | head -1)
@@ -688,3 +690,8 @@ jobs:
           echo "📝 Alternative - Using GitHub CLI:"
           echo "   gh run download ${{ github.run_id }} -n maestro-artifacts-ios"
           echo ""
+      - name: Fail job if tests failed
+        if: steps.maestro-test.outcome == 'failure'
+        run: |
+          echo "❌ Maestro tests failed - failing job after artifact upload"
+          exit 1
