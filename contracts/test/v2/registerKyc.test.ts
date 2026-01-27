@@ -240,10 +240,10 @@ describe("Selfrica Registration test", function () {
       expect(contractHash).to.equal(newHash);
     });
 
-    it.skip("should not allow non-owner to update GCP root CA pubkey hash", async () => {
+    it("should not allow non-owner to update GCP root CA pubkey hash", async () => {
       await expect(
         deployedActors.registrySelfrica.connect(deployedActors.user1).updateGCPRootCAPubkeyHash(12345n),
-      ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "OwnableUnauthorizedAccount");
+      ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "AccessControlUnauthorizedAccount");
     });
 
     it("should fail with INVALID_IMAGE when image hash not in PCR0Manager", async () => {
@@ -263,12 +263,12 @@ describe("Selfrica Registration test", function () {
       ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "INVALID_IMAGE");
     });
 
-    it.skip("should not allow non-owner to update GCP JWT verifier", async () => {
+    it("should not allow non-owner to update GCP JWT verifier", async () => {
       await expect(
         deployedActors.registrySelfrica
           .connect(deployedActors.user1)
           .updateGCPJWTVerifier(ethers.Wallet.createRandom().address),
-      ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "OwnableUnauthorizedAccount");
+      ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "AccessControlUnauthorizedAccount");
     });
 
     it("should allow owner to update GCP JWT verifier", async () => {
@@ -296,10 +296,10 @@ describe("Selfrica Registration test", function () {
         ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "ONLY_TEE_CAN_ACCESS");
       });
 
-      it.skip("should not allow non-owner to update TEE", async () => {
+      it("should not allow non-owner to update TEE", async () => {
         await expect(
           deployedActors.registrySelfrica.connect(deployedActors.user1).updateTEE(ethers.Wallet.createRandom().address),
-        ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "OwnableUnauthorizedAccount");
+        ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "AccessControlUnauthorizedAccount");
       });
 
       it("should allow owner to update TEE", async () => {
