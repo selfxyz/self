@@ -56,7 +56,7 @@ const getDocumentDescription = (docType: string): string | null => {
     case 'a':
       return 'Verified mAadhaar QR code';
     case 'kyc':
-      return "National ID, Driver's License, etc.";
+      return "National ID, Driver's License etc.";
     default:
       return 'Unknown Document';
   }

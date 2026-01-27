@@ -21,6 +21,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
+import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import {
@@ -297,6 +298,15 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               if (countryCode) {
                 navigationRef.navigate('AadhaarUpload', { countryCode });
               }
+              break;
+            case 'kyc':
+              fetchAccessToken()
+                .then(accessToken => {
+                  launchSumsub({ accessToken: accessToken.token });
+                })
+                .catch(error => {
+                  console.error('Error launching Sumsub:', error);
+                });
               break;
             default:
               if (countryCode) {
