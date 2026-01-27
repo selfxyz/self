@@ -11,7 +11,6 @@ export type KycData = {
   dob: string;
   photoHash: string;
   phoneNumber: string;
-  document: string;
   gender: string;
   address: string;
   user_identifier: string;
@@ -32,7 +31,6 @@ export const serializeKycData = (kycData: KycData) => {
   serializedData += kycData.dob.padEnd(constants.KYC_DOB_LENGTH, '\0');
   serializedData += kycData.photoHash.padEnd(constants.KYC_PHOTO_HASH_LENGTH, '\0');
   serializedData += kycData.phoneNumber.padEnd(constants.KYC_PHONE_NUMBER_LENGTH, '\0');
-  serializedData += kycData.document.padEnd(constants.KYC_DOCUMENT_LENGTH, '\0');
   serializedData += kycData.gender.padEnd(constants.KYC_GENDER_LENGTH, '\0');
   serializedData += kycData.address.padEnd(constants.KYC_ADDRESS_LENGTH, '\0');
 

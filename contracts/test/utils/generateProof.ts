@@ -48,11 +48,11 @@ const registerCircuitsAadhaar: CircuitArtifacts = {
   },
 };
 
-const registerCircuitsSelfrica: CircuitArtifacts = {
-  register_selfrica: {
-    wasm: "../circuits/build/register/register_selfrica/register_selfrica_js/register_selfrica.wasm",
-    zkey: "../circuits/build/register/register_selfrica/register_selfrica_final.zkey",
-    vkey: "../circuits/build/register/register_selfrica/register_selfrica_vkey.json",
+const registerCircuitsKyc: CircuitArtifacts = {
+  register_kyc: {
+    wasm: "../circuits/build/register/register_kyc/register_kyc_js/register_kyc.wasm",
+    zkey: "../circuits/build/register/register_kyc/register_kyc_final.zkey",
+    vkey: "../circuits/build/register/register_kyc/register_kyc_vkey.json",
   },
 };
 
@@ -88,9 +88,9 @@ const vcAndDiscloseCircuitsAadhaar: CircuitArtifacts = {
 
 const vcAndDiscloseCircuitsSelfrica: CircuitArtifacts = {
   vc_and_disclose_selfrica: {
-    wasm: "../circuits/build/disclose/vc_and_disclose_selfrica/vc_and_disclose_selfrica_js/vc_and_disclose_selfrica.wasm",
-    zkey: "../circuits/build/disclose/vc_and_disclose_selfrica/vc_and_disclose_selfrica_final.zkey",
-    vkey: "../circuits/build/disclose/vc_and_disclose_selfrica/vc_and_disclose_selfrica_vkey.json",
+    wasm: "../circuits/build/disclose/vc_and_disclose_kyc/vc_and_disclose_kyc_js/vc_and_disclose_kyc.wasm",
+    zkey: "../circuits/build/disclose/vc_and_disclose_kyc/vc_and_disclose_kyc_final.zkey",
+    vkey: "../circuits/build/disclose/vc_and_disclose_kyc/vc_and_disclose_kyc_vkey.json",
   },
 };
 
@@ -211,9 +211,9 @@ export async function generateRegisterSelfricaProof(
   //return type of prepareAadhaarTestData
   inputs: Awaited<ReturnType<typeof generateMockKycRegisterInput>>,
 ): Promise<GenericProofStructStruct> {
-  const circuitName = "register_selfrica";
+  const circuitName = "register_kyc";
 
-  const circuitArtifacts = registerCircuitsSelfrica;
+  const circuitArtifacts = registerCircuitsKyc;
   const artifactKey = circuitName;
 
   const registerProof = await groth16.fullProve(
@@ -225,7 +225,7 @@ export async function generateRegisterSelfricaProof(
   const vKey = JSON.parse(fs.readFileSync(circuitArtifacts[artifactKey].vkey, "utf8"));
   const isValid = await groth16.verify(vKey, registerProof.publicSignals, registerProof.proof);
   if (!isValid) {
-    throw new Error("Generated register-selfrica proof verification failed");
+    throw new Error("Generated register-kyc proof verification failed");
   }
 
   const rawCallData = await groth16.exportSolidityCallData(registerProof.proof, registerProof.publicSignals);

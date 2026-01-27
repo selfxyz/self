@@ -21,6 +21,7 @@ import {RegisterProofVerifierLib} from "./libraries/RegisterProofVerifierLib.sol
 import {DscProofVerifierLib} from "./libraries/DscProofVerifierLib.sol";
 import {RootCheckLib} from "./libraries/RootCheckLib.sol";
 import {OfacCheckLib} from "./libraries/OfacCheckLib.sol";
+import {console} from "hardhat/console.sol";
 
 /**
  * @title IdentityVerificationHubImplV2

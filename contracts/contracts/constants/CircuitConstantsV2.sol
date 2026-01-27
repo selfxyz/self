@@ -138,23 +138,12 @@ library CircuitConstantsV2 {
                     passportNoSmtRootIndex: 99
                 });
         } else if (attestationId == AttestationId.KYC) {
-            // Selfrica circuit pubSignals layout (30 elements total):
-            // [0-8]   revealedData_packed (9 elements)
-            // [9-12]  forbidden_countries_list_packed (4 elements)
-            // [13-15] nullifier + padding (3 elements)
-            // [16]    scope (public input)
-            // [17]    merkle_root (public input)
-            // [18]    ofac_name_dob_smt_root (public input)
-            // [19]    ofac_name_yob_smt_root (public input)
-            // [20]    user_identifier (public input)
-            // [21-28] current_date (8 elements, public input)
-            // [29]    attestation_id (public input)
             return
                 DiscloseIndices({
                     revealedDataPackedIndex: 0,
-                    forbiddenCountriesListPackedIndex: 11,
-                    nullifierIndex: 15,
-                    attestationIdIndex: 29,
+                    forbiddenCountriesListPackedIndex: 10,
+                    nullifierIndex: 14,
+                    attestationIdIndex: 15,
                     merkleRootIndex: 17,
                     currentDateIndex: 21,
                     namedobSmtRootIndex: 18,

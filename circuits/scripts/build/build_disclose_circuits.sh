@@ -18,7 +18,7 @@ CIRCUITS=(
     # "vc_and_disclose:20:true"
     # "vc_and_disclose_id:20:true"
     # "vc_and_disclose_aadhaar:20:true"
-    "vc_and_disclose_selfrica:17:true"
+    "vc_and_disclose_kyc:17:true"
 )
 
 build_circuits "$CIRCUIT_TYPE" "$OUTPUT_DIR" "${CIRCUITS[@]}"
