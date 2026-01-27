@@ -177,7 +177,8 @@ const ProveScreen: React.FC = () => {
       // Use setTimeout(0) to ensure we read values AFTER React processes the reset,
       // without adding measurements to dependencies (which causes race conditions).
       setTimeout(() => {
-        const hasMeasurements = scrollViewContentHeight > 0 && scrollViewHeight > 0;
+        const hasMeasurements =
+          scrollViewContentHeight > 0 && scrollViewHeight > 0;
         const isShort = scrollViewContentHeight <= scrollViewHeight + 50;
 
         if (hasMeasurements && isShort) {
