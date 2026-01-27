@@ -345,10 +345,15 @@ describe("Selfrica Registration test", function () {
 
       it("should fail with INVALID_TIMESTAMP when timestamp is in the past or future", async () => {
         // Add the PCR0 image hash so the image validation passes and we can test timestamp validation
-        // const pcr0Bytes = ethers.getBytes(
-        //   "0x" + "d2221a0ee83901980c607ceff2edbedf3f6ce5f437eafa5d89be39e9e7487c04".padStart(32, "0"),
-        // );
-        // await deployedActors.pcr0Manager.addPCR0(pcr0Bytes);
+        // addPCR0 takes 32 bytes and pads to 48 bytes internally, isPCR0Set requires 48 bytes
+        const pcr0Hash = "d2221a0ee83901980c607ceff2edbedf3f6ce5f437eafa5d89be39e9e7487c04";
+        const pcr0Bytes32 = ethers.getBytes("0x" + pcr0Hash);
+        const pcr0Bytes48 = ethers.getBytes("0x" + "00".repeat(16) + pcr0Hash);
+        // Only add PCR0 if not already set (may have been added by earlier test)
+        const isAlreadySet = await deployedActors.pcr0Manager.isPCR0Set(pcr0Bytes48);
+        if (!isAlreadySet) {
+          await deployedActors.pcr0Manager.addPCR0(pcr0Bytes32);
+        }
 
         let mockPubkeyCommitment = 12345678901234567890123456789012n;
         const [p0, p1, p2] = packUint256ToHexFields(BigInt(mockPubkeyCommitment));
