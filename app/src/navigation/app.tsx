@@ -3,11 +3,11 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { SystemBars } from 'react-native-edge-to-edge';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
+import { SystemBars } from '@/components/SystemBars';
 import DeferredLinkingInfoScreen from '@/screens/app/DeferredLinkingInfoScreen';
 import GratificationScreen from '@/screens/app/GratificationScreen';
 import LoadingScreen from '@/screens/app/LoadingScreen';

@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/mobile-app",
-  "version": "2.9.11",
+  "version": "2.9.13",
   "private": true,
   "type": "module",
   "scripts": {
@@ -63,8 +63,8 @@
     "test:ci": "yarn jest:run --passWithNoTests && node --test scripts/tests/*.cjs",
     "test:coverage": "yarn jest:run --coverage --passWithNoTests",
     "test:coverage:ci": "yarn jest:run --coverage --passWithNoTests --ci --coverageReporters=lcov --coverageReporters=text --coverageReporters=json",
-    "test:e2e:android": "./scripts/mobile-ci-build-android.sh && maestro test tests/e2e/launch.android.flow.yaml",
-    "test:e2e:ios": "xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build && maestro test tests/e2e/launch.ios.flow.yaml",
+    "test:e2e:android": "./scripts/test-e2e-local.sh android --ci-match",
+    "test:e2e:ios": "./scripts/test-e2e-local.sh ios --ci-match",
     "test:fastlane": "bundle exec ruby -Itest fastlane/test/helpers_test.rb",
     "test:tree-shaking": "node ./scripts/test-tree-shaking.cjs",
     "test:web-build": "yarn jest:run tests/web-build-render.test.ts --testTimeout=180000",
@@ -110,6 +110,7 @@
     "@sentry/react": "^9.32.0",
     "@sentry/react-native": "7.0.0",
     "@stablelib/cbor": "^2.0.1",
+    "@sumsub/react-native-mobilesdk-module": "1.40.2",
     "@tamagui/animations-css": "1.126.14",
     "@tamagui/animations-react-native": "1.126.14",
     "@tamagui/config": "1.126.14",

@@ -26,7 +26,11 @@ import { notificationError } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';
 import { flush as flushAnalytics } from '@/services/analytics';
-import { sendCountrySupportNotification } from '@/services/email';
+import {
+  openSupportForm,
+  SUPPORT_FORM_COMING_SOON_BUTTON_TEXT,
+  SUPPORT_FORM_COMING_SOON_MESSAGE,
+} from '@/services/support';
 
 type ComingSoonScreenProps = NativeStackScreenProps<
   SharedRoutesParamList,
@@ -83,13 +87,9 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
 
   const onNotifyMe = async () => {
     try {
-      await sendCountrySupportNotification({
-        countryName,
-        countryCode: countryCode !== 'Unknown' ? countryCode : '',
-        documentCategory: route.params?.documentCategory,
-      });
+      await openSupportForm();
     } catch (error) {
-      console.error('Failed to open email client:', error);
+      console.error('Failed to open support form:', error);
     }
   };
 
@@ -101,13 +101,11 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
-      <ExpandableBottomLayout.TopSection backgroundColor={white}>
-        <YStack
-          flex={1}
-          justifyContent="center"
-          alignItems="center"
-          marginTop={100}
-        >
+      <ExpandableBottomLayout.TopSection
+        backgroundColor={white}
+        overflow="visible"
+      >
+        <YStack flex={1} justifyContent="center" alignItems="center">
           <XStack
             justifyContent="center"
             alignItems="center"
@@ -124,6 +122,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
               textAlign: 'center',
               color: black,
               marginBottom: 16,
+              paddingTop: 10,
             }}
           >
             Coming Soon
@@ -150,7 +149,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
               paddingHorizontal: 10,
             }}
           >
-            Sign up for live updates.
+            {SUPPORT_FORM_COMING_SOON_MESSAGE}
           </BodyText>
         </YStack>
       </ExpandableBottomLayout.TopSection>
@@ -158,13 +157,14 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
         gap={16}
         backgroundColor={white}
         paddingHorizontal={20}
-        paddingVertical={20}
+        paddingTop={20}
+        paddingBottom={20}
       >
         <PrimaryButton
           onPress={onNotifyMe}
           trackEvent={PassportEvents.NOTIFY_COMING_SOON}
         >
-          Sign up for updates
+          {SUPPORT_FORM_COMING_SOON_BUTTON_TEXT}
         </PrimaryButton>
         <SecondaryButton
           trackEvent={PassportEvents.DISMISS_COMING_SOON}

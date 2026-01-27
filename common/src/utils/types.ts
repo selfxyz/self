@@ -1,6 +1,7 @@
 import type { ExtractedQRData } from './aadhaar/utils.js';
 import type { CertificateData } from './certificate_parsing/dataStructure.js';
 import type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
+import { KycField } from './kyc/constants.js';
 
 // Base interface for common fields
 interface BaseIDData {
@@ -21,6 +22,12 @@ export interface AadhaarData extends BaseIDData {
   photoHash?: string;
 }
 
+// export interface KycData extends BaseIDData {
+//   documentCategory: 'kyc';
+//   serializedRealData: string;
+//   kycFields: KycField[];
+// }
+
 export type DeployedCircuits = {
   REGISTER: string[];
   REGISTER_ID: string[];
@@ -34,7 +41,7 @@ export interface DocumentCatalog {
   selectedDocumentId?: string; // This is now a contentHash
 }
 
-export type DocumentCategory = 'passport' | 'id_card' | 'aadhaar';
+export type DocumentCategory = 'passport' | 'id_card' | 'aadhaar' | 'kyc';
 
 export interface DocumentMetadata {
   id: string; // contentHash as ID for deduplication

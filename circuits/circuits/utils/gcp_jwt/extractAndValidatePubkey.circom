@@ -32,6 +32,7 @@ template ExtractAndValidatePubkey(
     signal input pubkey_offset;
     signal input pubkey_actual_size;
     signal input input_pubkey[kScaled];
+    signal input cert_padded_length;
 
     // Validate pubkey_actual_size is within bounds (prevent OOB attacks)
     component size_max_check = LessEqThan(log2Ceil(MAX_PUBKEY_LENGTH));
@@ -44,6 +45,11 @@ template ExtractAndValidatePubkey(
     offset_min_check.in[0] <== pubkey_offset;
     offset_min_check.in[1] <== MAX_PUBKEY_PREFIX;
     offset_min_check.out === 1;
+
+    component offset_max_check = LessEqThan(log2Ceil(MAX_CERT_LENGTH));
+    offset_max_check.in[0] <== pubkey_offset + pubkey_actual_size;
+    offset_max_check.in[1] <== cert_padded_length;
+    offset_max_check.out === 1;
 
     // Calculate prefix start index and net length
     signal pubkey_prefix_start_index <== pubkey_offset - MAX_PUBKEY_PREFIX;

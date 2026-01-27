@@ -11,7 +11,7 @@ import React, {
   useState,
 } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { Alert, ScrollView, TouchableOpacity } from 'react-native';
+import { Alert, Platform, ScrollView, TouchableOpacity } from 'react-native';
 import { Button, Sheet, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -399,6 +399,8 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const subscribedTopics = useSettingStore(state => state.subscribedTopics);
   const loggingSeverity = useSettingStore(state => state.loggingSeverity);
   const setLoggingSeverity = useSettingStore(state => state.setLoggingSeverity);
+  const useStrongBox = useSettingStore(state => state.useStrongBox);
+  const setUseStrongBox = useSettingStore(state => state.setUseStrongBox);
   const [hasNotificationPermission, setHasNotificationPermission] =
     useState(false);
   const paddingBottom = useSafeBottomPadding(20);
@@ -679,6 +681,29 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                 <ChevronRight color={slate500} strokeWidth={2.5} />
               </XStack>
             </Button>
+            <Button
+              style={{ backgroundColor: 'white' }}
+              borderColor={slate200}
+              borderRadius="$2"
+              height="$5"
+              padding={0}
+              onPress={() => {
+                navigation.navigate('SumsubTest');
+              }}
+            >
+              <XStack
+                width="100%"
+                justifyContent="space-between"
+                paddingVertical="$3"
+                paddingLeft="$4"
+                paddingRight="$1.5"
+              >
+                <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+                  Sumsub Test Flow
+                </Text>
+                <ChevronRight color={slate500} strokeWidth={2.5} />
+              </XStack>
+            </Button>
             {IS_DEV_MODE && (
               <Button
                 style={{ backgroundColor: 'white' }}
@@ -753,6 +778,34 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             onSelect={setLoggingSeverity}
           />
         </ParameterSection>
+
+        {Platform.OS === 'android' && (
+          <ParameterSection
+            icon={<BugIcon />}
+            title="Android Keystore"
+            description="Configure keystore security options"
+          >
+            <TopicToggleButton
+              label="Use StrongBox"
+              isSubscribed={useStrongBox}
+              onToggle={() => {
+                Alert.alert(
+                  useStrongBox ? 'Disable StrongBox' : 'Enable StrongBox',
+                  useStrongBox
+                    ? 'New keys will be generated without StrongBox hardware backing. Existing keys will continue to work.'
+                    : 'New keys will attempt to use StrongBox hardware backing for enhanced security.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: useStrongBox ? 'Disable' : 'Enable',
+                      onPress: () => setUseStrongBox(!useStrongBox),
+                    },
+                  ],
+                );
+              }}
+            />
+          </ParameterSection>
+        )}
 
         <ParameterSection
           icon={<WarningIcon color={yellow500} />}

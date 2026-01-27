@@ -1,4 +1,16 @@
 source "https://cdn.cocoapods.org/"
+
+# Skip Sumsub configuration for E2E testing
+unless ENV["E2E_TESTING"] == "1"
+  source "https://github.com/SumSubstance/Specs.git"
+
+  # Enable Fisherman (Device Intelligence) module
+  ENV["IDENSIC_WITH_FISHERMAN"] = "true"
+
+  # Enable VideoIdent module
+  ENV["IDENSIC_WITH_VIDEOIDENT"] = "true"
+end
+
 use_frameworks!
 require "tmpdir"
 
@@ -39,6 +51,7 @@ def using_https_git_auth?
 end
 
 target "Self" do
+  # Native module exclusion for E2E testing is handled in react-native.config.cjs
   config = use_native_modules!
 
   use_frameworks!

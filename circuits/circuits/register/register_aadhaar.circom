@@ -114,15 +114,16 @@ template REGISTER_AADHAAR(n, k, maxDataLength){
 
 
     component qrDataHasher = PackBytesAndPoseidon(maxDataLength);
-    for (var i = 0; i < 9; i++){
-        qrDataHasher.in[i] <== qrDataPadded[i];
-    }
-    for (var i = 9; i < 26; i++) {
-        qrDataHasher.in[i] <== 0;
-    }
-    for (var i = 26; i < maxDataLength; i++){
-        qrDataHasher.in[i] <== qrDataPadded[i];
-    }
+    qrDataHasher.in <== qrDataPadded;
+    // for (var i = 0; i < 9; i++){
+    //     qrDataHasher.in[i] <== qrDataPadded[i];
+    // }
+    // for (var i = 9; i < 26; i++) {
+    //     qrDataHasher.in[i] <== 0;
+    // }
+    // for (var i = 26; i < maxDataLength; i++){
+    //     qrDataHasher.in[i] <== qrDataPadded[i];
+    // }
 
     // Generate commitment
     component packedCommitment = PackBytesAndPoseidon(42 + 62);
