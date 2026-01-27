@@ -92,7 +92,13 @@ export const _startSocketIOStatusListener = (
         status: data.status,
       });
 
-      const result = handleStatusCode(data, getState().circuitType as string);
+      const circuitType = getState().circuitType;
+      if (!circuitType) {
+        console.error('Circuit type not set when handling status');
+        getActor()?.send({ type: 'PROVE_ERROR' });
+        return;
+      }
+      const result = handleStatusCode(data, circuitType);
 
       if (result.stateUpdate) {
         setState(result.stateUpdate);
@@ -113,8 +119,7 @@ export const _startSocketIOStatusListener = (
 
       if (result.actorEvent) {
         if (result.actorEvent.type === 'PROVE_FAILURE') {
-          console.error('Proof generation/verification failed (status 3 or 5).');
-          console.error(data);
+          console.error('Proof generation/verification failed (status 3 or 5). Error code:', result.stateUpdate?.error_code);
         }
         getActor()?.send(result.actorEvent);
       }

@@ -79,8 +79,11 @@ export const _generateCircuitInputs = async (
   let inputs, circuitName, endpointType, endpoint, circuitTypeWithDocumentExtension;
   switch (circuitType) {
     case 'register':
+      if (!secret || typeof secret !== 'string') {
+        throw new Error('Secret is required and must be a string');
+      }
       ({ inputs, circuitName, endpointType, endpoint } = await generateTEEInputsRegister(
-        secret as string,
+        secret,
         passportData,
         document === 'aadhaar' ? protocolStore[document].public_keys : protocolStore[document].dsc_tree,
         env,
@@ -102,8 +105,11 @@ export const _generateCircuitInputs = async (
       if (!selfApp) {
         throw new Error('SelfApp context not initialized');
       }
+      if (!secret || typeof secret !== 'string') {
+        throw new Error('Secret is required and must be a string');
+      }
       ({ inputs, circuitName, endpointType, endpoint } = generateTEEInputsDiscloseStateless(
-        secret as string,
+        secret,
         passportData,
         selfApp,
         (doc: DocumentCategory, tree) => {
@@ -213,7 +219,10 @@ export const _generatePayload = async (selfClient: SelfClient, deps: PayloadDeps
       duration_ms: Date.now() - startTime,
     });
 
-    return _buildSubmitRequest(uuid!, encryptedPayload);
+    if (!uuid) {
+      throw new Error('UUID is required for payload submission');
+    }
+    return _buildSubmitRequest(uuid, encryptedPayload);
   } catch (error) {
     selfClient.logProofEvent('error', 'Payload generation failed', context, {
       failure: 'PROOF_FAILED_PAYLOAD_GEN',
