@@ -63,3 +63,21 @@ interface IAadhaarRegisterCircuitVerifier {
         uint256[4] calldata pubSignals
     ) external view returns (bool isValid);
 }
+
+interface ISelfricaRegisterCircuitVerifier {
+    /**
+     * @notice Verifies a given register circuit proof.
+     * @dev This function checks the validity of the provided proof parameters.
+     * @param a The 'a' component of the proof.
+     * @param b The 'b' component of the proof.
+     * @param c The 'c' component of the proof.
+     * @param pubSignals The public signals associated with the proof.
+     * @return isValid A boolean value indicating whether the provided proof is valid (true) or not (false).
+     */
+    function verifyProof(
+        uint256[2] calldata a,
+        uint256[2][2] calldata b,
+        uint256[2] calldata c,
+        uint256[4] calldata pubSignals
+    ) external view returns (bool isValid);
+}

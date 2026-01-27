@@ -21,11 +21,6 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.cjs"
     },
-    "./components/LED": {
-      "types": "./dist/esm/components/LED.d.ts",
-      "import": "./dist/esm/components/LED.js",
-      "require": "./dist/cjs/components/LED.cjs"
-    },
     "./components/SelfQRcode": {
       "types": "./dist/esm/components/SelfQRcode.d.ts",
       "import": "./dist/esm/components/SelfQRcode.js",

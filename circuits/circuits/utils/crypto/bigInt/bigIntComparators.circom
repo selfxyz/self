@@ -17,13 +17,13 @@ include "../utils/switcher.circom";
 // Can check for 2 bigints equality if in is sub of each chunk of those numbers
 template BigIntIsZero(CHUNK_SIZE, MAX_CHUNK_SIZE, CHUNK_NUMBER) {
     assert(CHUNK_NUMBER >= 2);
-    
+
     var EPSILON = 3;
-    
+
     assert(MAX_CHUNK_SIZE + EPSILON <= 253);
-    
+
     signal input in[CHUNK_NUMBER];
-    
+
     signal carry[CHUNK_NUMBER - 1];
     component carryRangeChecks[CHUNK_NUMBER - 1];
     for (var i = 0; i < CHUNK_NUMBER - 1; i++){
@@ -45,9 +45,9 @@ template BigIntIsZero(CHUNK_SIZE, MAX_CHUNK_SIZE, CHUNK_NUMBER) {
 // Works with overflowed signed chunks
 // To handle megative values we use sign
 // Sign is var and can be changed, but it should be a problem
-// Sign change means that we can calculate for -in instead of in, 
+// Sign change means that we can calculate for -in instead of in,
 // But if in % p == 0 means that -in % p == 0 too, so no exploit here
-// Problem lies in other one: 
+// Problem lies in other one:
 // k - is result of div func, and can be anything (var)
 // we check k * p - in === 0
 // k * p is result of big multiplication
@@ -71,9 +71,9 @@ template BigIntIsZero(CHUNK_SIZE, MAX_CHUNK_SIZE, CHUNK_NUMBER) {
 template BigIntIsZeroModP(CHUNK_SIZE, MAX_CHUNK_SIZE, CHUNK_NUMBER, MAX_CHUNK_NUMBER, CHUNK_NUMBER_MODULUS){
     signal input in[CHUNK_NUMBER];
     signal input modulus[CHUNK_NUMBER_MODULUS];
-    
+
     var CHUNK_NUMBER_DIV = MAX_CHUNK_NUMBER - CHUNK_NUMBER_MODULUS + 1;
-    
+
     var reduced[200] = reduce_overflow_signed_dl(CHUNK_SIZE, CHUNK_NUMBER, MAX_CHUNK_NUMBER, MAX_CHUNK_SIZE, in);
     var div_result[2][200] = long_div_dl(CHUNK_SIZE, CHUNK_NUMBER_MODULUS, CHUNK_NUMBER_DIV - 1, reduced, modulus);
     signal sign <-- reduced[199];
@@ -88,7 +88,7 @@ template BigIntIsZeroModP(CHUNK_SIZE, MAX_CHUNK_SIZE, CHUNK_NUMBER, MAX_CHUNK_NU
     for (var i = 0; i < CHUNK_NUMBER_DIV; i++){
         k[i] <-- div_result[0][i];
         kRangeChecks[i] = Num2Bits(CHUNK_SIZE);
-        kRangeChecks[i].in <-- k[i];
+        kRangeChecks[i].in <== k[i];
     }
 
     component mult;
@@ -101,7 +101,7 @@ template BigIntIsZeroModP(CHUNK_SIZE, MAX_CHUNK_SIZE, CHUNK_NUMBER, MAX_CHUNK_NU
         mult.in1 <== modulus;
         mult.in2 <== k;
     }
-    
+
     component swicher[CHUNK_NUMBER];
 
     component isZero = BigIntIsZero(CHUNK_SIZE, MAX_CHUNK_SIZE, MAX_CHUNK_NUMBER);
@@ -116,5 +116,5 @@ template BigIntIsZeroModP(CHUNK_SIZE, MAX_CHUNK_SIZE, CHUNK_NUMBER, MAX_CHUNK_NU
     for (var i = CHUNK_NUMBER; i < MAX_CHUNK_NUMBER; i++){
         isZero.in[i] <== mult.out[i];
     }
-    
+
 }

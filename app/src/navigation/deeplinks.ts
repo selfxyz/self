@@ -9,6 +9,7 @@ import { countries } from '@selfxyz/common/constants/countries';
 import type { IdDocInput } from '@selfxyz/common/utils';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
+import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import useUserStore from '@/stores/userStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
@@ -108,6 +109,28 @@ export const getAndClearQueuedUrl = (): string | null => {
   return url;
 };
 
+const safeNavigate = (
+  navigationState: ReturnType<typeof createDeeplinkNavigationState>,
+): void => {
+  const targetScreen = navigationState.routes[1]?.name as
+    | keyof RootStackParamList
+    | undefined;
+
+  const currentRoute = navigationRef.getCurrentRoute();
+  const isColdLaunch = currentRoute?.name === 'Splash';
+
+  if (!isColdLaunch && targetScreen) {
+    // Use object syntax to satisfy TypeScript's strict typing for navigate
+    // The params will be undefined for screens that don't require them
+    navigationRef.navigate({
+      name: targetScreen,
+      params: undefined,
+    } as Parameters<typeof navigationRef.navigate>[0]);
+  } else {
+    navigationRef.reset(navigationState);
+  }
+};
+
 export const handleUrl = (selfClient: SelfClient, uri: string) => {
   const validatedParams = parseAndValidateUrlParams(uri);
   const {
@@ -125,7 +148,7 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
       selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 
-      navigationRef.reset(
+      safeNavigate(
         createDeeplinkNavigationState(
           'ProvingScreenRouter',
           correctParentScreen,
@@ -137,7 +160,7 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
       if (IS_DEV_MODE) {
         console.error('Error parsing selfApp:', error);
       }
-      navigationRef.reset(
+      safeNavigate(
         createDeeplinkNavigationState('QRCodeTrouble', correctParentScreen),
       );
     }
@@ -145,7 +168,7 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
     selfClient.getSelfAppState().cleanSelfApp();
     selfClient.getSelfAppState().startAppListener(sessionId);
 
-    navigationRef.reset(
+    safeNavigate(
       createDeeplinkNavigationState('ProvingScreenRouter', correctParentScreen),
     );
   } else if (mock_passport) {
@@ -175,25 +198,26 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
       });
 
       // Reset navigation stack with correct parent -> MockDataDeepLink
-      navigationRef.reset(
+      safeNavigate(
         createDeeplinkNavigationState('MockDataDeepLink', correctParentScreen),
       );
     } catch (error) {
       if (IS_DEV_MODE) {
         console.error('Error parsing mock_passport data or navigating:', error);
       }
-      navigationRef.reset(
+      safeNavigate(
         createDeeplinkNavigationState('QRCodeTrouble', correctParentScreen),
       );
     }
   } else if (referrer && typeof referrer === 'string') {
     useUserStore.getState().setDeepLinkReferrer(referrer);
 
-    // Navigate to HomeScreen - it will show confirmation modal and then navigate to GratificationScreen
-    navigationRef.reset({
-      index: 0,
-      routes: [{ name: 'Home' }],
-    });
+    const currentRoute = navigationRef.getCurrentRoute();
+    if (currentRoute?.name === 'Home') {
+      // Already on Home, no navigation needed - the modal will show automatically
+    } else {
+      safeNavigate(createDeeplinkNavigationState('Home', 'Home'));
+    }
   } else if (Platform.OS === 'web') {
     // TODO: web handle links if we need to idk if we do
     // For web, we can handle the URL some other way if we dont do this loading app in web always navigates to QRCodeTrouble
@@ -211,7 +235,7 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
         'No sessionId, selfApp or valid OAuth parameters found in the data',
       );
     }
-    navigationRef.reset(
+    safeNavigate(
       createDeeplinkNavigationState('QRCodeTrouble', correctParentScreen),
     );
   }

@@ -162,6 +162,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
@@ -177,6 +178,7 @@
     "eslint-plugin-sort-exports": "^0.9.1",
     "jsdom": "^25.0.1",
     "lottie-react-native": "7.2.2",
+    "poseidon-lite": "^0.3.0",
     "prettier": "^3.5.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

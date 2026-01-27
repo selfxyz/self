@@ -257,6 +257,10 @@ export const validatingDocument = async (selfClient: SelfClient, deps: DocumentP
       const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
         getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
         getAltCSCA: (docType: DocumentCategory) => {
+          if (docType === 'kyc') {
+            //TODO
+            throw new Error('KYC is not supported yet');
+          }
           if (docType === 'aadhaar') {
             const publicKeys = selfClient.getProtocolState().aadhaar.public_keys;
             return publicKeys ? Object.fromEntries(publicKeys.map(key => [key, key])) : {};

@@ -5,7 +5,6 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
-import { SystemBars } from 'react-native-edge-to-edge';
 import { useNavigation } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -58,7 +57,6 @@ const DocumentOnboardingScreen: React.FC = () => {
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
-      <SystemBars style="light" />
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
         <LottieView
           ref={animationRef}

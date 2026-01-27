@@ -25,7 +25,8 @@
       android:icon="@mipmap/ic_launcher"
       android:roundIcon="@mipmap/ic_launcher"
       android:extractNativeLibs="false"
-      tools:replace="android:icon, android:roundIcon, android:name, android:extractNativeLibs"
+      android:allowBackup="false"
+      tools:replace="android:icon, android:roundIcon, android:name, android:extractNativeLibs, android:allowBackup"
       android:theme="@style/AppTheme"
       android:supportsRtl="true"
       android:usesCleartextTraffic="false"
@@ -105,5 +106,11 @@
       </intent-filter>
         <meta-data android:name="photopicker_activity:0:required" android:value="" />
       </service>
+
+      <!-- Override conflicting ML Kit dependencies from passportreader (ocr) and Sumsub SDK (face) -->
+      <meta-data
+          android:name="com.google.mlkit.vision.DEPENDENCIES"
+          android:value="ocr,face"
+          tools:replace="android:value" />
     </application>
 </manifest>

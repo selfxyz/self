@@ -18,12 +18,7 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSettingStore } from '@/stores/settingStore';
 
 const ProofSettingsScreen: React.FC = () => {
-  const {
-    skipDocumentSelector,
-    setSkipDocumentSelector,
-    skipDocumentSelectorIfSingle,
-    setSkipDocumentSelectorIfSingle,
-  } = useSettingStore();
+  const { skipDocumentSelector, setSkipDocumentSelector } = useSettingStore();
 
   return (
     <YStack flex={1} backgroundColor={white}>
@@ -49,35 +44,6 @@ const ProofSettingsScreen: React.FC = () => {
               testID="skip-document-selector-toggle"
             />
           </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingTextContainer}>
-              <Text style={styles.settingLabel}>
-                Skip when only one document
-              </Text>
-              <Text style={styles.settingDescription}>
-                Automatically select your document when you only have one valid
-                ID available
-              </Text>
-            </View>
-            <Switch
-              value={skipDocumentSelectorIfSingle}
-              onValueChange={setSkipDocumentSelectorIfSingle}
-              trackColor={{ false: slate200, true: blue600 }}
-              thumbColor={white}
-              disabled={skipDocumentSelector}
-              testID="skip-document-selector-if-single-toggle"
-            />
-          </View>
-
-          {skipDocumentSelector && (
-            <Text style={styles.infoText}>
-              Document selection is always skipped. The &quot;Skip when only one
-              document&quot; setting has no effect.
-            </Text>
-          )}
         </YStack>
       </ScrollView>
     </YStack>
@@ -113,17 +79,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: dinot,
     color: slate500,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: slate200,
-  },
-  infoText: {
-    fontSize: 13,
-    fontFamily: dinot,
-    fontStyle: 'italic',
-    color: slate500,
-    paddingHorizontal: 4,
   },
 });
 

@@ -28,6 +28,9 @@ export const IS_TEST_BUILD = process.env.IS_TEST_BUILD === 'true';
 export const MIXPANEL_NFC_PROJECT_TOKEN = undefined;
 export const SEGMENT_KEY = process.env.SEGMENT_KEY;
 export const SENTRY_DSN = process.env.SENTRY_DSN;
+export const SUMSUB_TEE_URL =
+  process.env.SUMSUB_TEE_URL || 'http://localhost:8080';
+export const SUMSUB_TEST_TOKEN = process.env.SUMSUB_TEST_TOKEN;
 
 export const TURNKEY_AUTH_PROXY_CONFIG_ID =
   process.env.TURNKEY_AUTH_PROXY_CONFIG_ID;

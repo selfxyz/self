@@ -24,6 +24,24 @@ jest.mock('@/services/analytics', () => ({
   flush: jest.fn(),
 }));
 
+// Mock Sumsub SDK to prevent ES module parsing errors in isolateModules
+jest.mock('@sumsub/react-native-mobilesdk-module', () => {
+  const createBuilder = () => ({
+    withHandlers: jest.fn().mockReturnThis(),
+    withDebug: jest.fn().mockReturnThis(),
+    withLocale: jest.fn().mockReturnThis(),
+    withAnalyticsEnabled: jest.fn().mockReturnThis(),
+    build: jest.fn().mockReturnValue({
+      launch: jest.fn().mockResolvedValue({ success: true }),
+    }),
+  });
+
+  return {
+    __esModule: true,
+    default: { init: jest.fn(() => createBuilder()) },
+  };
+});
+
 describe('navigation', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -88,6 +106,7 @@ describe('navigation', () => {
         'ShowRecoveryPhrase',
         'Splash',
         'StarfallPushCode',
+        'SumsubTest',
         'WebView',
       ]);
     });

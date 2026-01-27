@@ -16,8 +16,15 @@ function getHubImplV2InitializeData() {
  * Hardhat Ignition deployment module for Identity Verification Hub V2
  *
  * This module deploys:
- * 1. CustomVerifier - The library required by the implementation contract
- * 2. IdentityVerificationHubImplV2 - The implementation contract
+ * 1. All required libraries (7 total):
+ *    - CustomVerifier
+ *    - OutputFormatterLib
+ *    - ProofVerifierLib
+ *    - RegisterProofVerifierLib
+ *    - DscProofVerifierLib
+ *    - RootCheckLib
+ *    - OfacCheckLib
+ * 2. IdentityVerificationHubImplV2 - The implementation contract with library linkage
  * 3. IdentityVerificationHub - The proxy contract pointing to the implementation
  *
  * Usage:
@@ -31,7 +38,7 @@ function getHubImplV2InitializeData() {
  *   - Verification configs via setVerificationConfigV2()
  *
  * Post-deployment configuration steps:
- * 1. Set registry addresses for each attestation type (E_PASSPORT, EU_ID_CARD)
+ * 1. Set registry addresses for each attestation type (E_PASSPORT, EU_ID_CARD, AADHAAR, SELFRICA_ID_CARD)
  * 2. Configure circuit verifiers for different signature types
  * 3. Set up verification configurations using setVerificationConfigV2()
  * 4. Transfer ownership to the appropriate address if needed
@@ -39,14 +46,20 @@ function getHubImplV2InitializeData() {
  * Troubleshooting Verification Issues:
  * If contracts are not verified during deployment (common with API issues):
  *
- * 1. Manual verification for CustomVerifier library:
- *    `npx hardhat verify --network <network-name> <CUSTOM_VERIFIER_ADDRESS>`
+ * 1. Manual verification for libraries (one command per library):
+ *    `npx hardhat verify --network <network-name> <LIBRARY_ADDRESS>`
  *
  * 2. Manual verification for IdentityVerificationHubImplV2 (requires library linkage):
  *    Create a libraries file (e.g., verify-libs.js):
  *    ```
  *    module.exports = {
- *      "contracts/libraries/CustomVerifier.sol:CustomVerifier": "<CUSTOM_VERIFIER_ADDRESS>"
+ *      "contracts/libraries/CustomVerifier.sol:CustomVerifier": "<CUSTOM_VERIFIER_ADDRESS>",
+ *      "contracts/libraries/OutputFormatterLib.sol:OutputFormatterLib": "<OUTPUT_FORMATTER_ADDRESS>",
+ *      "contracts/libraries/ProofVerifierLib.sol:ProofVerifierLib": "<PROOF_VERIFIER_ADDRESS>",
+ *      "contracts/libraries/RegisterProofVerifierLib.sol:RegisterProofVerifierLib": "<REGISTER_PROOF_VERIFIER_ADDRESS>",
+ *      "contracts/libraries/DscProofVerifierLib.sol:DscProofVerifierLib": "<DSC_PROOF_VERIFIER_ADDRESS>",
+ *      "contracts/libraries/RootCheckLib.sol:RootCheckLib": "<ROOT_CHECK_ADDRESS>",
+ *      "contracts/libraries/OfacCheckLib.sol:OfacCheckLib": "<OFAC_CHECK_ADDRESS>"
  *    };
  *    ```
  *    Then verify: `npx hardhat verify --network <network-name> --libraries verify-libs.js <IMPL_V2_ADDRESS>`
@@ -66,12 +79,26 @@ function getHubImplV2InitializeData() {
  * Verification only affects source code display on block explorers.
  */
 export default buildModule("DeployHubV2", (m) => {
-  // Deploy the CustomVerifier library
+  // Deploy all required libraries
   const customVerifier = m.library("CustomVerifier");
+  const outputFormatterLib = m.library("OutputFormatterLib");
+  const proofVerifierLib = m.library("ProofVerifierLib");
+  const registerProofVerifierLib = m.library("RegisterProofVerifierLib");
+  const dscProofVerifierLib = m.library("DscProofVerifierLib");
+  const rootCheckLib = m.library("RootCheckLib");
+  const ofacCheckLib = m.library("OfacCheckLib");
 
-  // Deploy the implementation contract with library linkage
+  // Deploy the implementation contract with all library linkages
   const identityVerificationHubImplV2 = m.contract("IdentityVerificationHubImplV2", [], {
-    libraries: { CustomVerifier: customVerifier },
+    libraries: {
+      CustomVerifier: customVerifier,
+      OutputFormatterLib: outputFormatterLib,
+      ProofVerifierLib: proofVerifierLib,
+      RegisterProofVerifierLib: registerProofVerifierLib,
+      DscProofVerifierLib: dscProofVerifierLib,
+      RootCheckLib: rootCheckLib,
+      OfacCheckLib: ofacCheckLib,
+    },
   });
 
   // Get the interface to encode the initialize function call
@@ -85,7 +112,15 @@ export default buildModule("DeployHubV2", (m) => {
   const hub = m.contract("IdentityVerificationHub", [identityVerificationHubImplV2, initializeData]);
 
   return {
+    // Libraries
     customVerifier,
+    outputFormatterLib,
+    proofVerifierLib,
+    registerProofVerifierLib,
+    dscProofVerifierLib,
+    rootCheckLib,
+    ofacCheckLib,
+    // Contracts
     hub,
     identityVerificationHubImplV2,
   };
