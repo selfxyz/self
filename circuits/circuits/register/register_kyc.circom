@@ -5,7 +5,7 @@ include "circomlib/circuits/babyjub.circom";
 include "../utils/kyc/constants.circom";
 include "../utils/passport/customHashers.circom";
 include "../utils/kyc/verifySignature.circom";
-include "circomlib/circuits/eddsaPoseidon.circom";
+include "circomlib/circuits/eddsaposeidon.circom";
 
 template REGISTER_KYC() {
     var max_length = KYC_MAX_LENGTH();
