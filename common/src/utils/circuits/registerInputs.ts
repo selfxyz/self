@@ -19,10 +19,10 @@ import {
   hashEndpointWithScope,
 } from '../../utils/index.js';
 import type { AadhaarData, Environment, IDDocument, OfacTree } from '../../utils/types.js';
+import { generateKycRegisterInput } from '../kyc/generateInputs.js';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
-import { KycField } from '../kyc/constants.js';
 
 export { generateCircuitInputsRegister } from './generateInputs.js';
 
@@ -239,7 +239,7 @@ export function generateTEEInputsDiscloseStateless(
     );
     return { inputs, circuitName, endpointType, endpoint };
   }
-  // if (passportData.documentCategory === 'kyc') {
+  if (passportData.documentCategory === 'kyc') {
   // const { inputs, circuitName, endpointType, endpoint } = generateTEEInputsKycDisclose(
   //   secret,
   //   passportData,
@@ -247,7 +247,8 @@ export function generateTEEInputsDiscloseStateless(
   //   getTree
   // );
   // return { inputs, circuitName, endpointType, endpoint };
-  // }
+  throw new Error('TODO: seshanth: add KYC disclose circuit');
+  }
   const { scope, disclosures, endpoint, userId, userDefinedData, chainID } = selfApp;
   const userIdentifierHash = calculateUserIdentifierHash(chainID, userId, userDefinedData);
   const scope_hash = hashEndpointWithScope(endpoint, scope);
@@ -326,11 +327,17 @@ export async function generateTEEInputsRegister(
     return { inputs, circuitName, endpointType, endpoint };
   }
 
-  // if (passportData.documentCategory === 'kyc') {
-  //   throw new Error('Kyc does not support registration');
-  // }
+  if (passportData.documentCategory === 'kyc') {
+    const inputs = await generateKycRegisterInput(
+      passportData.serializedApplicantInfo,
+      passportData.signature,
+      [passportData.pubkey[0].toString(), passportData.pubkey[1].toString()],
+      secret,
+    );
+    return { inputs, circuitName: getCircuitNameFromPassportData(passportData, 'register'), endpointType: 'celo', endpoint: 'https://self.xyz' };
+  }
 
-  const inputs = generateCircuitInputsRegister(secret, passportData, dscTree as string);
+  const inputs = generateCircuitInputsRegister(secret, passportData as PassportData, dscTree as string);
   const circuitName = getCircuitNameFromPassportData(passportData, 'register');
   const endpointType = env === 'stg' ? 'staging_celo' : 'celo';
   const endpoint = 'https://self.xyz';

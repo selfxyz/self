@@ -28,6 +28,8 @@ import {
   type DeployedCircuits,
   type DocumentCategory,
   IDDocument,
+  isKycDocument,
+  KycData,
   type PassportData,
 } from '../types.js';
 import { generateCommitment, generateNullifier } from './passport.js';
@@ -82,7 +84,7 @@ export async function checkDocumentSupported(
   details: string;
 }> {
   const deployedCircuits = opts.getDeployedCircuits(passportData.documentCategory);
-  if (passportData.documentCategory === 'aadhaar') {
+  if (passportData.documentCategory === 'aadhaar' || passportData.documentCategory === 'kyc') {
     const { isValid, circuitName } = validateRegistrationCircuit(passportData, deployedCircuits);
 
     if (!isValid) {
@@ -241,7 +243,9 @@ export async function isDocumentNullified(passportData: IDDocument) {
       ? AttestationIdHex.passport
       : passportData.documentCategory === 'aadhaar'
         ? AttestationIdHex.aadhaar
-        : AttestationIdHex.id_card;
+        : passportData.documentCategory === 'kyc'
+          ? AttestationIdHex.kyc
+          : AttestationIdHex.id_card;
   console.log('checking for nullifier', nullifierHex, attestationId);
   const baseUrl = passportData.mock === false ? API_URL : API_URL_STAGING;
   const controller = new AbortController();
@@ -270,7 +274,7 @@ export async function isDocumentNullified(passportData: IDDocument) {
 }
 
 export async function isUserRegistered(
-  documentData: PassportData | AadhaarData,
+  documentData: IDDocument,
   secret: string,
   getCommitmentTree: (docCategory: DocumentCategory) => string
 ) {
@@ -280,6 +284,10 @@ export async function isUserRegistered(
 
   const document: DocumentCategory = documentData.documentCategory;
   let commitment: string;
+
+  if (isKycDocument(documentData)) {
+    throw new Error('TODO: seshanth: add KYC isUserRegistered');
+  }
 
   if (document === 'aadhaar') {
     const aadhaarData = documentData as AadhaarData;
@@ -326,6 +334,10 @@ export async function isUserRegisteredWithAlternativeCSCA(
   const document: DocumentCategory = passportData.documentCategory;
   let commitment_list: string[];
   let csca_list: string[];
+
+  if (document === 'kyc') {
+    throw new Error('TODO: add KYC isUserRegistered');
+  }
 
   if (document === 'aadhaar') {
     // For Aadhaar, use public keys from protocol store instead of CSCA

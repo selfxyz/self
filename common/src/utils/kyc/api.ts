@@ -1,13 +1,9 @@
 //Helper function to destructure the kyc data from the api response
-import { Point } from "@zk-kit/baby-jubjub";
 import { KYC_ADDRESS_INDEX, KYC_ADDRESS_LENGTH, KYC_COUNTRY_INDEX, KYC_COUNTRY_LENGTH, KYC_DOB_INDEX, KYC_DOB_LENGTH, KYC_EXPIRY_DATE_INDEX, KYC_EXPIRY_DATE_LENGTH, KYC_FULL_NAME_INDEX, KYC_FULL_NAME_LENGTH, KYC_GENDER_INDEX, KYC_GENDER_LENGTH, KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_LENGTH, KYC_ID_TYPE_INDEX, KYC_ID_TYPE_LENGTH, KYC_ISSUANCE_DATE_INDEX, KYC_ISSUANCE_DATE_LENGTH, KYC_PHONE_NUMBER_INDEX, KYC_PHONE_NUMBER_LENGTH, KYC_PHOTO_HASH_INDEX, KYC_PHOTO_HASH_LENGTH } from "./constants.js";
 import { KycData } from "./types.js";
 
-//accepts a base64 signature and returns a signature object
-export function deserializeSignature(signature: string): { R: Point<bigint>; s: bigint} {
-  const [Rx, Ry, s] = Buffer.from(signature, 'base64').toString('utf-8').split(',').map(BigInt);
-  return { R: [Rx, Ry] as Point<bigint>, s };
-}
+import { Point } from "@zk-kit/baby-jubjub";
+
 
 //accepts a base64 applicant info and returns a kyc data object
 export function deserializeApplicantInfo(applicantInfoBase64: string): Omit<KycData, 'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'> {
@@ -37,4 +33,11 @@ export function deserializeApplicantInfo(applicantInfoBase64: string): Omit<KycD
     gender,
     address
   };
+}
+
+
+//accepts a base64 signature and returns a signature object
+export function deserializeSignature(signature: string): { R: Point<bigint>; s: bigint} {
+  const [Rx, Ry, s] = Buffer.from(signature, 'base64').toString('utf-8').split(',').map(BigInt);
+  return { R: [Rx, Ry] as Point<bigint>, s };
 }

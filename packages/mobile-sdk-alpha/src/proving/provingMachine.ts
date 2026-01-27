@@ -108,7 +108,9 @@ const _generateCircuitInputs = async (
       ({ inputs, circuitName, endpointType, endpoint } = await generateTEEInputsRegister(
         secret as string,
         passportData,
-        document === 'aadhaar' ? protocolStore[document].public_keys : protocolStore[document].dsc_tree,
+        document === 'aadhaar' || document === 'kyc'
+          ? protocolStore[document].public_keys
+          : protocolStore[document].dsc_tree,
         env,
       ));
       circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
@@ -116,6 +118,9 @@ const _generateCircuitInputs = async (
     case 'dsc':
       if (document === 'aadhaar') {
         throw new Error('DSC circuit type is not supported for Aadhaar documents');
+      }
+      if (document === 'kyc') {
+        throw new Error('DSC circuit type is not supported for KYC documents');
       }
       ({ inputs, circuitName, endpointType, endpoint } = generateTEEInputsDSC(
         passportData as PassportData,
@@ -1044,6 +1049,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             });
             await selfClient.getProtocolState().aadhaar.fetch_all(env!);
             break;
+          case 'kyc':
+            selfClient.logProofEvent('info', 'Protocol store fetch', context, {
+              step: 'protocol_store_fetch',
+              document,
+            });
+            await selfClient.getProtocolState().kyc.fetch_all(env!);
+            break;
         }
         selfClient.logProofEvent('info', 'Data fetch succeeded', context, {
           duration_ms: Date.now() - startTime,
@@ -1134,12 +1146,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
             getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
             getAltCSCA: (docType: DocumentCategory) => {
-              if (docType === 'kyc') {
-                //TODO
-                throw new Error('KYC is not supported yet');
-              }
-              if (docType === 'aadhaar') {
-                const publicKeys = selfClient.getProtocolState().aadhaar.public_keys;
+              if (docType === 'aadhaar' || docType === 'kyc') {
+                const publicKeys = selfClient.getProtocolState()[docType].public_keys;
                 // Convert string[] to Record<string, string> format expected by AlternativeCSCA
                 return publicKeys ? Object.fromEntries(publicKeys.map(key => [key, key])) : {};
               }

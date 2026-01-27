@@ -1,38 +1,22 @@
-import { SMT } from '@openpassport/zk-kit-smt';
+import { poseidon2 } from 'poseidon-lite';
+
+import { COMMITMENT_TREE_DEPTH } from '../../constants/constants.js';
+import { findIndexInTree, formatInput } from '../circuits/generateInputs.js';
+import { packBytesAndPoseidon } from '../hash.js';
 import {
   generateMerkleProof,
   generateSMTProof,
   getNameDobLeafKyc,
   getNameYobLeafKyc,
 } from '../trees.js';
-import { KycDiscloseInput, KycRegisterInput, serializeKycData, KycData } from './types.js';
-import { findIndexInTree, formatInput } from '../circuits/generateInputs.js';
-import { createKycSelector, KYC_MAX_LENGTH, KycField } from './constants.js';
-import { poseidon2 } from 'poseidon-lite';
-import { Base8, inCurve, mulPointEscalar, subOrder } from '@zk-kit/baby-jubjub';
-import { signEdDSA } from './ecdsa/ecdsa.js';
-import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { packBytesAndPoseidon } from '../hash.js';
-import { COMMITMENT_TREE_DEPTH } from '../../constants/constants.js';
 import { deserializeApplicantInfo, deserializeSignature } from './api.js';
+import { createKycSelector, KYC_MAX_LENGTH, KycField } from './constants.js';
+import { signEdDSA } from './ecdsa/ecdsa.js';
+import { KycData,KycDiscloseInput, KycRegisterInput, serializeKycData } from './types.js';
 
-export const OFAC_DUMMY_INPUT: KycData = {
-  country: 'KEN',
-  idType: 'NATIONAL ID',
-  idNumber: '12345678901234567890123456789012', //32 digits
-  issuanceDate: '20200101',
-  expiryDate: '20290101',
-  fullName: 'ABBAS ABU',
-  dob: '19481210',
-  photoHash: '1234567890',
-  phoneNumber: '1234567890',
-  gender: 'M',
-  address: '1234567890',
-  user_identifier: '1234567890',
-  current_date: '20250101',
-  majority_age_ASCII: '20',
-  selector_older_than: '1',
-};
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { SMT } from '@openpassport/zk-kit-smt';
+import { Base8, inCurve, mulPointEscalar, subOrder } from '@zk-kit/baby-jubjub';
 
 export const NON_OFAC_DUMMY_INPUT: KycData = {
   country: 'KEN',
@@ -52,60 +36,28 @@ export const NON_OFAC_DUMMY_INPUT: KycData = {
   selector_older_than: '1',
 };
 
+export const OFAC_DUMMY_INPUT: KycData = {
+  country: 'KEN',
+  idType: 'NATIONAL ID',
+  idNumber: '12345678901234567890123456789012', //32 digits
+  issuanceDate: '20200101',
+  expiryDate: '20290101',
+  fullName: 'ABBAS ABU',
+  dob: '19481210',
+  photoHash: '1234567890',
+  phoneNumber: '1234567890',
+  gender: 'M',
+  address: '1234567890',
+  user_identifier: '1234567890',
+  current_date: '20250101',
+  majority_age_ASCII: '20',
+  selector_older_than: '1',
+};
+
 export const createKycDiscloseSelFromFields = (fieldsToReveal: KycField[]): string[] => {
   const [lowResult, highResult] = createKycSelector(fieldsToReveal);
   return [lowResult.toString(), highResult.toString()];
 };
-
-export const generateMockKycRegisterInput = async (
-  secretKey?: bigint,
-  ofac?: boolean,
-  secret?: string
-) => {
-  const kycData = ofac ? OFAC_DUMMY_INPUT : NON_OFAC_DUMMY_INPUT;
-  const serializedData = serializeKycData(kycData).padEnd(KYC_MAX_LENGTH, '\0');
-
-  const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
-
-  const sk = secretKey ? secretKey : BigInt(Math.floor(Math.random() * Number(subOrder - 2n))) + 1n;
-
-  const pk = mulPointEscalar(Base8, sk);
-  console.assert(inCurve(pk), 'Point pk not on curve');
-  console.assert(pk[0] != 0n && pk[1] != 0n, 'pk is zero');
-
-  const [sig, pubKey] = signEdDSA(sk, msgPadded);
-  console.assert(BigInt(sig.S) < subOrder, ' s is greater than scalar field');
-
-  const kycRegisterInput: KycRegisterInput = {
-    data_padded: msgPadded.map((x) => Number(x)),
-    s: BigInt(sig.S),
-    R: sig.R8 as [bigint, bigint],
-    pubKey,
-    secret: secret || '1234',
-  };
-
-  return kycRegisterInput;
-};
-
-export const generateKycRegisterInput = async (applicantInfoBase64: string, signatureBase64: string, pubkeyStr: [string, string], secret: string) => {
-  const applicantInfo = deserializeApplicantInfo(applicantInfoBase64);
-  const signature = deserializeSignature(signatureBase64);
-  const pubkey = [BigInt(pubkeyStr[0]), BigInt(pubkeyStr[1])] as [bigint, bigint];
-
-  const serializedData = serializeKycData(applicantInfo);
-
-  const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
-
-  const kycRegisterInput: KycRegisterInput = {
-    data_padded: msgPadded.map((x) => Number(x)),
-    s: signature.s,
-    R: signature.R,
-    pubKey: pubkey,
-    secret,
-  };
-
-  return kycRegisterInput;
-}
 
 export const generateCircuitInputsOfac = (data: KycData, smt: SMT, proofLevel: number) => {
   const name = data.fullName;
@@ -205,4 +157,54 @@ export const generateKycDiscloseInput = (
   };
 
   return circuitInput;
+};
+
+export const generateKycRegisterInput = async (applicantInfoBase64: string, signatureBase64: string, pubkeyStr: [string, string], secret: string) => {
+  const applicantInfo = deserializeApplicantInfo(applicantInfoBase64);
+  const signature = deserializeSignature(signatureBase64);
+  const pubkey = [BigInt(pubkeyStr[0]), BigInt(pubkeyStr[1])] as [bigint, bigint];
+
+  const serializedData = serializeKycData(applicantInfo);
+
+  const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
+
+  const kycRegisterInput: KycRegisterInput = {
+    data_padded: msgPadded.map((x) => Number(x)),
+    s: signature.s,
+    R: signature.R,
+    pubKey: pubkey,
+    secret,
+  };
+
+  return kycRegisterInput;
+}
+
+export const generateMockKycRegisterInput = async (
+  secretKey?: bigint,
+  ofac?: boolean,
+  secret?: string
+) => {
+  const kycData = ofac ? OFAC_DUMMY_INPUT : NON_OFAC_DUMMY_INPUT;
+  const serializedData = serializeKycData(kycData).padEnd(KYC_MAX_LENGTH, '\0');
+
+  const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
+
+  const sk = secretKey ? secretKey : BigInt(Math.floor(Math.random() * Number(subOrder - 2n))) + 1n;
+
+  const pk = mulPointEscalar(Base8, sk);
+  console.assert(inCurve(pk), 'Point pk not on curve');
+  console.assert(pk[0] != 0n && pk[1] != 0n, 'pk is zero');
+
+  const [sig, pubKey] = signEdDSA(sk, msgPadded);
+  console.assert(BigInt(sig.S) < subOrder, ' s is greater than scalar field');
+
+  const kycRegisterInput: KycRegisterInput = {
+    data_padded: msgPadded.map((x) => Number(x)),
+    s: BigInt(sig.S),
+    R: sig.R8 as [bigint, bigint],
+    pubKey,
+    secret: secret || '1234',
+  };
+
+  return kycRegisterInput;
 };

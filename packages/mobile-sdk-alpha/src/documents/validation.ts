@@ -5,8 +5,8 @@
 import type { AadhaarData, DocumentMetadata, IDDocument } from '@selfxyz/common';
 import { attributeToPosition, attributeToPosition_ID } from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types/passport';
-import type { DocumentCatalog } from '@selfxyz/common/utils/types';
-import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog, KycData } from '@selfxyz/common/utils/types';
+import { isAadhaarDocument, isKycDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 
 export interface DocumentAttributes {
   nameSlice: string;
@@ -112,11 +112,14 @@ function getPassportAttributes(mrz: string, documentCategory: string): DocumentA
  * @param document - Document data (PassportData, AadhaarData, or IDDocument)
  * @returns Document attributes including name, DOB, expiry date, etc.
  */
-export function getDocumentAttributes(document: PassportData | AadhaarData): DocumentAttributes {
+export function getDocumentAttributes(document: PassportData | AadhaarData | KycData): DocumentAttributes {
   if (isAadhaarDocument(document)) {
     return getAadhaarAttributes(document);
   } else if (isMRZDocument(document)) {
     return getPassportAttributes(document.mrz, document.documentCategory);
+  } else if (isKycDocument(document)) {
+    throw new Error('TODO: seshanth: add KYC attributes');
+    // return getKycAttributes(document);
   } else {
     // Fallback for unknown document types
     return {

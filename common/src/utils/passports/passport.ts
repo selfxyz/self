@@ -203,6 +203,20 @@ export function generateNullifier(passportData: IDDocument) {
   if (isAadhaarDocument(passportData)) {
     return nullifierHash(passportData.extractedFields);
   }
+  if (isKycDocument(passportData)) {
+    //TODO seshanth: check
+    const applicantInfo = deserializeApplicantInfo(passportData.serializedApplicantInfo)
+    const serializedData = serializeKycData(applicantInfo);
+    const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
+    const dataPadded = msgPadded.map((x) => Number(x));
+    const idNumber = dataPadded.slice(
+      KYC_ID_NUMBER_INDEX,
+      KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH
+    );
+    const nullifierInputs = [...'sumsub'.split('').map((x) => x.charCodeAt(0)), ...idNumber, ...dataPadded.slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH)];
+    const nullifier = packBytesAndPoseidon(nullifierInputs);
+    return nullifier;
+  }
 
   const signedAttr_shaBytes = hash(
     passportData.passportMetadata.signedAttrHashFunction,
