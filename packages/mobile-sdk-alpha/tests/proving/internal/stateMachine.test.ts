@@ -144,13 +144,14 @@ describe('provingMachine', () => {
 
     it('completes full happy path flow', () => {
       const actor = createActor(provingMachine);
-      actor.start();
 
-      // Track state transitions
+      // Track state transitions - subscribe BEFORE start to capture initial state
       const states: string[] = [];
       actor.subscribe(state => {
         states.push(state.value as string);
       });
+
+      actor.start();
 
       // Execute full flow
       actor.send({ type: PROVING_EVENTS.PARSE_ID_DOCUMENT });

@@ -49,6 +49,14 @@ describe('initTeeConnection', () => {
     mockSelfClient = {
       logProofEvent: vi.fn(),
       trackEvent: vi.fn(),
+      getSelfAppState: vi.fn().mockReturnValue({
+        selfApp: { userId: 'test-user-id' },
+      }),
+      getProvingState: vi.fn().mockReturnValue({
+        uuid: 'test-session-id',
+        circuitType: 'register',
+        currentState: 'idle',
+      }),
     } as unknown as SelfClient;
 
     actorMock.send.mockClear();
@@ -229,7 +237,7 @@ describe('initTeeConnection', () => {
 
     await promise;
 
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(expect.stringContaining('TEE_CONN'));
+    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(expect.stringContaining('TEE Connection'));
   });
 
   it('logs proof events during connection', async () => {
@@ -295,7 +303,8 @@ describe('initTeeConnection', () => {
     expect(mockDeps.handleWebSocketMessage).toHaveBeenCalledWith(mockMessageEvent, mockSelfClient);
 
     // Test open handler delegation
-    wsEventListeners['open']();
+    const mockOpenEvent = new Event('open');
+    wsEventListeners['open'](mockOpenEvent);
     expect(mockDeps.handleWsOpen).toHaveBeenCalledWith(mockSelfClient);
 
     // Test error handler delegation
