@@ -740,9 +740,12 @@ export function buildKycSMT(field: any[], treetype: string): [number, number, SM
       continue;
     }
 
-    count += 1;
     tree.add(leafs[0], BigInt(1));
-    tree.add(leafs[1], BigInt(1));
+    count += 1;
+    if (leafs[0] != leafs[1]) {
+      tree.add(leafs[1], BigInt(1));
+      count += 1;
+    }
   }
 
   console.log(`Total ${providerName}`, treetype, 'parsed are : ', count, ' over ', field.length);

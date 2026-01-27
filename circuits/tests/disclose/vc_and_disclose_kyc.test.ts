@@ -154,6 +154,33 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
     deepEqual(ofac_results, ['\x00', '\x00']);
   });
 
+  it('should return 0 for an OFAC person with reverse', async function () {
+    this.timeout(0);
+    const input = generateKycDiscloseInput(
+      true,
+      namedob_smt,
+      nameyob_smt,
+      tree as any,
+      true,
+      '0',
+      '1234567890',
+      undefined,
+      undefined,
+      undefined,
+      true,
+      '1234',
+      true
+    );
+    const witness = await circuit.calculateWitness(input);
+    await circuit.checkConstraints(witness);
+
+    const revealedData_packed = await getRevealedDataPacked(witness);
+    const revealedDataUnpacked = unpackReveal(revealedData_packed, 'id');
+    const ofac_results = revealedDataUnpacked.slice(maxLength, maxLength + 2);
+
+    deepEqual(ofac_results, ['\x00', '\x00']);
+  });
+
   it('should return 1 for a non OFAC person', async function () {
     this.timeout(0);
     const input = generateKycDiscloseInput(

@@ -122,9 +122,16 @@ export const generateKycDiscloseInput = (
   forbiddenCountriesList?: string[],
   minimumAge?: number,
   updateTree?: boolean,
-  secret: string = '1234'
+  secret: string = '1234',
+  reverse?: boolean
 ) => {
-  const data = ofac_input ? OFAC_DUMMY_INPUT : NON_OFAC_DUMMY_INPUT;
+  let data = ofac_input ? OFAC_DUMMY_INPUT : NON_OFAC_DUMMY_INPUT;
+  if (reverse) {
+    data = {
+      ...data,
+      fullName: data.fullName.split(' ').reverse().join(' '),
+    };
+  }
   const serializedData = serializeKycData(data).padEnd(KYC_MAX_LENGTH, '\0');
   const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
   const commitment = poseidon2([secret, packBytesAndPoseidon(msgPadded)]);
