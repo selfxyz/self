@@ -29,7 +29,7 @@ import {
 import { formatInput } from '../circuits/generateInputs.js';
 import { findStartIndex, findStartIndexEC } from '../csca.js';
 import { hash, packBytesAndPoseidon } from '../hash.js';
-import { deserializeApplicantInfo, deserializeApplicantInfo } from '../kyc/api.js';
+import { deserializeApplicantInfo } from '../kyc/api.js';
 import { KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_LENGTH, KYC_ID_TYPE_INDEX, KYC_ID_TYPE_LENGTH } from '../kyc/constants.js';
 import { serializeKycData } from '../kyc/types.js';
 import { sha384_512Pad, shaPad } from '../shaPad.js';
