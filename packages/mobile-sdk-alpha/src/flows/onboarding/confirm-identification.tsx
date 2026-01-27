@@ -80,6 +80,10 @@ const getDocumentMetadata = async (selfClient: SelfClient) => {
         signatureAlgorithm: 'rsa',
         curveOrExponent: '65537',
       } as const;
+    } else if (selectedDocument?.data?.documentCategory === 'kyc') {
+      metadata = {
+        documentCategory: selectedDocument?.data?.documentCategory,
+      } as const;
     } else {
       const passportData = selectedDocument?.data;
       metadata = {

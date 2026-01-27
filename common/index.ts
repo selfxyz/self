@@ -26,6 +26,7 @@ export type { Environment } from './src/utils/types.js';
 
 // Utils exports
 export {
+  AADHAAR_ATTESTATION_ID,
   API_URL,
   API_URL_STAGING,
   CSCA_TREE_URL,
@@ -42,9 +43,8 @@ export {
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
   ID_CARD_ATTESTATION_ID,
-  PASSPORT_ATTESTATION_ID,
-  AADHAAR_ATTESTATION_ID,
   KYC_ATTESTATION_ID,
+  PASSPORT_ATTESTATION_ID,
   PCR0_MANAGER_ADDRESS,
   REDIRECT_URL,
   RPC_URL,
@@ -102,6 +102,27 @@ export {
   stringToBigInt,
 } from './src/utils/index.js';
 
+
+export {
+  KYC_ID_NUMBER_INDEX,
+  KYC_ID_NUMBER_LENGTH,
+  KYC_MAX_LENGTH,
+} from './src/utils/kyc/constants.js';
+
+
+export { KycData, serializeKycData } from './src/utils/kyc/types.js';
+
+
+
+export {
+  NON_OFAC_DUMMY_INPUT,
+  OFAC_DUMMY_INPUT,
+  generateKycDiscloseInput,
+  generateKycRegisterInput,
+  generateMockKycRegisterInput,
+} from './src/utils/kyc/generateInputs.js';
+
+
 // Crypto polyfill for cross-platform compatibility
 export {
   createHash,
@@ -110,6 +131,7 @@ export {
   pbkdf2Sync,
   randomBytes,
 } from './src/polyfills/crypto.js';
+
 
 export { createSelector } from './src/utils/aadhaar/constants.js';
 
@@ -121,6 +143,7 @@ export {
   hash,
   packBytesAndPoseidon,
 } from './src/utils/hash.js';
+export { deserializeApplicantInfo } from './src/utils/kyc/api.js';
 
 export { generateTestData, testCustomData } from './src/utils/aadhaar/utils.js';
 
@@ -132,19 +155,3 @@ export {
   prepareAadhaarRegisterData,
   prepareAadhaarRegisterTestData,
 } from './src/utils/aadhaar/mockData.js';
-
-export {
-  generateKycDiscloseInput,
-  generateMockKycRegisterInput,
-  NON_OFAC_DUMMY_INPUT,
-  OFAC_DUMMY_INPUT,
-  generateKycRegisterInput,
-} from './src/utils/kyc/generateInputs.js';
-
-export {
-  KYC_MAX_LENGTH,
-  KYC_ID_NUMBER_INDEX,
-  KYC_ID_NUMBER_LENGTH,
-} from './src/utils/kyc/constants.js';
-
-export { serializeKycData, KycData } from './src/utils/kyc/types.js';

@@ -29,14 +29,17 @@ import {
 import { formatInput } from '../circuits/generateInputs.js';
 import { findStartIndex, findStartIndexEC } from '../csca.js';
 import { hash, packBytesAndPoseidon } from '../hash.js';
+import { deserializeApplicantInfo, deserializeApplicantInfo } from '../kyc/api.js';
+import { KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_LENGTH, KYC_ID_TYPE_INDEX, KYC_ID_TYPE_LENGTH } from '../kyc/constants.js';
+import { serializeKycData } from '../kyc/types.js';
 import { sha384_512Pad, shaPad } from '../shaPad.js';
 import { getLeafDscTree } from '../trees.js';
 import type { DocumentCategory, IDDocument, PassportData, SignatureAlgorithm } from '../types.js';
-import { AadhaarData, isAadhaarDocument, isMRZDocument } from '../types.js';
+import { AadhaarData, isAadhaarDocument, isKycDocument, isMRZDocument } from '../types.js';
 import { formatMrz } from './format.js';
 import { parsePassportData } from './passport_parsing/parsePassportData.js';
 
-export function calculateContentHash(passportData: PassportData | AadhaarData): string {
+export function calculateContentHash(passportData: IDDocument): string {
   if (isMRZDocument(passportData) && passportData.eContent) {
     // eContent is likely a buffer or array, convert to string properly
     const eContentStr =
@@ -45,6 +48,13 @@ export function calculateContentHash(passportData: PassportData | AadhaarData): 
         : JSON.stringify(passportData.eContent);
 
     return sha256(eContentStr);
+  }
+
+  if (isKycDocument(passportData)) {
+    const serializedData = passportData.serializedApplicantInfo;
+    const parsedApplicantInfo = deserializeApplicantInfo(serializedData);
+    const stableFields = `${parsedApplicantInfo.fullName}${parsedApplicantInfo.dob}${parsedApplicantInfo.country}${parsedApplicantInfo.idType}`;
+    return sha256(stableFields);
   }
 
   // For MRZ documents without eContent, hash core stable fields
@@ -318,6 +328,8 @@ export function getSignatureAlgorithmFullName(
 export function inferDocumentCategory(documentType: string): DocumentCategory {
   if (documentType.includes('passport')) {
     return 'passport' as DocumentCategory;
+  } else if (documentType.includes('kyc')) {
+    return 'kyc' as DocumentCategory;
   } else if (documentType.includes('id')) {
     return 'id_card' as DocumentCategory;
   } else if (documentType.includes('aadhaar')) {

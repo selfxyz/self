@@ -10,6 +10,8 @@ import { SUMSUB_TEE_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronLeft } from '@tamagui/lucide-icons';
 
+import { deserializeApplicantInfo } from '@selfxyz/common';
+import type { DocumentType, KycData } from '@selfxyz/common/utils/types';
 import {
   green500,
   red500,
@@ -30,6 +32,11 @@ import {
   type SumsubApplicantInfo,
   type SumsubResult,
 } from '@/integrations/sumsub';
+import type { SumsubApplicantInfoSerialized } from '@/integrations/sumsub/types';
+import {
+  storeDocumentWithDeduplication,
+  updateDocumentRegistrationState,
+} from '@/providers/passportDataProvider';
 
 const SumsubTestScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -79,6 +86,7 @@ const SumsubTestScreen: React.FC = () => {
   }, [phoneNumber]);
 
   const subscribeToWebSocket = useCallback(() => {
+    console.log('subscribeToWebSocket', userId, hasSubscribedRef.current);
     if (!userId || hasSubscribedRef.current) {
       return;
     }
@@ -96,10 +104,35 @@ const SumsubTestScreen: React.FC = () => {
       socket.emit('subscribe', userId);
     });
 
-    socket.on('success', (data: SumsubApplicantInfo) => {
+    socket.on('success', async (data: SumsubApplicantInfoSerialized) => {
       console.log('Received applicant info');
       if (!isMountedRef.current) return;
-      setApplicantInfo(data);
+
+      try {
+        const applicantInfoDeserialized = deserializeApplicantInfo(
+          data.applicantInfo,
+        );
+        console.log('applicantInfoDeserialized', applicantInfoDeserialized);
+        const kycData: KycData = {
+          documentType: applicantInfoDeserialized.idType as DocumentType,
+          documentCategory: 'kyc',
+          mock: false,
+          signature: data.signature,
+          pubkey: data.pubkey,
+          serializedApplicantInfo: data.applicantInfo,
+        };
+
+        console.log('kycData', kycData);
+
+        const documentId = await storeDocumentWithDeduplication(kycData);
+
+        //TODO seshanth: init proving machine
+        // await updateDocumentRegistrationState(documentId, true);
+        console.log('KYC data stored in document catalog');
+      } catch (err) {
+        console.error('Failed to store KYC data:', err);
+      }
+
       Alert.alert(
         'Verification Complete',
         'Your verification was successful!',
@@ -142,12 +175,22 @@ const SumsubTestScreen: React.FC = () => {
     setError(null);
 
     try {
+      console.log('Launching Sumsub SDK with access token:', accessToken);
       const sdkResult = await launchSumsub({
         accessToken,
         debug: true,
         locale: 'en',
         onEvent: (eventType, _payload) => {
-          console.log('SDK Event:', eventType);
+          console.log('SDK Event:', eventType, _payload);
+
+          //TODO: check whether its okay to use this
+          if (
+            eventType === 'StepCompleted' &&
+            (_payload as { idDocSetType: string }).idDocSetType === 'SELFIE' &&
+            (_payload as { isCancelled: boolean }).isCancelled === false
+          ) {
+            subscribeToWebSocket();
+          }
           // Subscribe to WebSocket when verification is completed
           if (eventType === 'idCheck.onApplicantVerificationCompleted') {
             subscribeToWebSocket();
@@ -157,6 +200,8 @@ const SumsubTestScreen: React.FC = () => {
 
       if (!isMountedRef.current) return;
       setResult(sdkResult);
+      // (NOBRIDGE) LOG  sdkResult {"status": "Approved", "success": 1}
+      console.log('sdkResult', sdkResult);
 
       if (sdkResult.success) {
         Alert.alert(

@@ -1,7 +1,7 @@
 import type { ExtractedQRData } from './aadhaar/utils.js';
 import type { CertificateData } from './certificate_parsing/dataStructure.js';
+import type { KycField } from './kyc/constants.js';
 import type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
-import { KycField } from './kyc/constants.js';
 
 // Base interface for common fields
 interface BaseIDData {
@@ -21,12 +21,6 @@ export interface AadhaarData extends BaseIDData {
   publicKey: string;
   photoHash?: string;
 }
-
-// export interface KycData extends BaseIDData {
-//   documentCategory: 'kyc';
-//   serializedRealData: string;
-//   kycFields: KycField[];
-// }
 
 export type DeployedCircuits = {
   REGISTER: string[];
@@ -51,19 +45,28 @@ export interface DocumentMetadata {
   mock: boolean; // whether this is a mock document
   isRegistered?: boolean; // whether the document is registered onChain
   registeredAt?: number; // timestamp (epoch ms) when document was registered
+  idType?: string; // for KYC documents: the ID type used (e.g. "passport", "drivers_licence")
 }
 
 export type DocumentType =
   | 'passport'
   | 'id_card'
   | 'aadhaar'
+  | 'drivers_licence'
   | 'mock_passport'
   | 'mock_id_card'
   | 'mock_aadhaar';
 
 export type Environment = 'prod' | 'stg';
 
-export type IDDocument = AadhaarData | PassportData;
+export type IDDocument = AadhaarData | KycData | PassportData;
+
+export interface KycData extends BaseIDData {
+  documentCategory: 'kyc';
+  serializedApplicantInfo: string;
+  signature: string;
+  pubkey: string[];
+}
 
 export type OfacTree = {
   passportNoAndNationality: any;
@@ -156,6 +159,7 @@ export enum AttestationIdHex {
   passport = '0x0000000000000000000000000000000000000000000000000000000000000001',
   id_card = '0x0000000000000000000000000000000000000000000000000000000000000002',
   aadhaar = '0x0000000000000000000000000000000000000000000000000000000000000003',
+  kyc = '0x0000000000000000000000000000000000000000000000000000000000000004',
 }
 
 export function castCSCAProof(proof: any): Proof {
@@ -170,13 +174,19 @@ export function castCSCAProof(proof: any): Proof {
 }
 
 export function isAadhaarDocument(
-  passportData: PassportData | AadhaarData
+  passportData: IDDocument
 ): passportData is AadhaarData {
   return passportData.documentCategory === 'aadhaar';
 }
 
+export function isKycDocument(
+  passportData: IDDocument
+): passportData is KycData {
+  return passportData.documentCategory === 'kyc';
+}
+
 export function isMRZDocument(
-  passportData: PassportData | AadhaarData
+  passportData: IDDocument
 ): passportData is PassportData {
   return (
     passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card'
