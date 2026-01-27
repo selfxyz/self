@@ -19,11 +19,11 @@ export type KycData = {
   selector_older_than: string;
 };
 
-export const serializeKycData = (kycData: KycData) => {
+export const serializeKycData = (kycData: Omit<KycData, 'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'>) => {
   //ensure max length of each field
   let serializedData = '';
-  serializedData += kycData.country.toUpperCase().padEnd(constants.KYC_COUNTRY_LENGTH, '\0');
-  serializedData += kycData.idType.toUpperCase().padEnd(constants.KYC_ID_TYPE_LENGTH, '\0');
+  serializedData += kycData.country.padEnd(constants.KYC_COUNTRY_LENGTH, '\0');
+  serializedData += kycData.idType.padEnd(constants.KYC_ID_TYPE_LENGTH, '\0');
   serializedData += kycData.idNumber.padEnd(constants.KYC_ID_NUMBER_LENGTH, '\0');
   serializedData += kycData.issuanceDate.padEnd(constants.KYC_ISSUANCE_DATE_LENGTH, '\0');
   serializedData += kycData.expiryDate.padEnd(constants.KYC_EXPIRY_DATE_LENGTH, '\0');
