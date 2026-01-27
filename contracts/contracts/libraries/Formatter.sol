@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
+import {console} from "hardhat/console.sol";
+
 /**
  * @title Formatter Library
  * @notice A library providing utility functions to format names, dates, and encode data.

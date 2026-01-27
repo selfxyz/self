@@ -388,7 +388,7 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
     }
 
     // ====================================================
-    // External Functions - Only Owner
+    // External Functions - Role-Based Access Control
     // ====================================================
 
     /**

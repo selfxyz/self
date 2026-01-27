@@ -15,7 +15,7 @@ OUTPUT_DIR="build/${CIRCUIT_TYPE}"
 # Define circuits and their configurations
 # format: name:poweroftau:build_flag
 CIRCUITS=(
-    "register_selfrica:15:true"
+    "register_kyc:15:true"
 )
 
 build_circuits "$CIRCUIT_TYPE" "$OUTPUT_DIR" "${CIRCUITS[@]}"

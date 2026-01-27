@@ -14,6 +14,7 @@ import { signEdDSA } from './ecdsa/ecdsa.js';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { packBytesAndPoseidon } from '../hash.js';
 import { COMMITMENT_TREE_DEPTH } from '../../constants/constants.js';
+import { deserializeApplicantInfo, deserializeSignature } from './api.js';
 
 export const OFAC_DUMMY_INPUT: KycData = {
   country: 'KEN',
@@ -25,8 +26,7 @@ export const OFAC_DUMMY_INPUT: KycData = {
   dob: '19481210',
   photoHash: '1234567890',
   phoneNumber: '1234567890',
-  document: 'ID',
-  gender: 'Male',
+  gender: 'M',
   address: '1234567890',
   user_identifier: '1234567890',
   current_date: '20250101',
@@ -44,8 +44,7 @@ export const NON_OFAC_DUMMY_INPUT: KycData = {
   dob: '19900101',
   photoHash: '1234567890',
   phoneNumber: '1234567890',
-  document: 'ID',
-  gender: 'Male',
+  gender: 'M',
   address: '1234567890',
   user_identifier: '1234567890',
   current_date: '20250101',
@@ -88,6 +87,31 @@ export const generateMockKycRegisterInput = async (
   return kycRegisterInput;
 };
 
+export const generateKycRegisterInput = async (
+  applicantInfoBase64: string,
+  signatureBase64: string,
+  pubkeyStr: [string, string],
+  secret: string
+) => {
+  const applicantInfo = deserializeApplicantInfo(applicantInfoBase64);
+  const signature = deserializeSignature(signatureBase64);
+  const pubkey = [BigInt(pubkeyStr[0]), BigInt(pubkeyStr[1])] as [bigint, bigint];
+
+  const serializedData = serializeKycData(applicantInfo);
+
+  const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
+
+  const kycRegisterInput: KycRegisterInput = {
+    data_padded: msgPadded.map((x) => Number(x)),
+    s: signature.s,
+    R: signature.R,
+    pubKey: pubkey,
+    secret,
+  };
+
+  return kycRegisterInput;
+};
+
 export const generateCircuitInputsOfac = (data: KycData, smt: SMT, proofLevel: number) => {
   const name = data.fullName;
   const dob = data.dob;
@@ -124,9 +148,16 @@ export const generateKycDiscloseInput = (
   forbiddenCountriesList?: string[],
   minimumAge?: number,
   updateTree?: boolean,
-  secret: string = '1234'
+  secret: string = '1234',
+  reverse?: boolean
 ) => {
-  const data = ofac_input ? OFAC_DUMMY_INPUT : NON_OFAC_DUMMY_INPUT;
+  let data = ofac_input ? OFAC_DUMMY_INPUT : NON_OFAC_DUMMY_INPUT;
+  if (reverse) {
+    data = {
+      ...data,
+      fullName: data.fullName.split(' ').reverse().join(' '),
+    };
+  }
   const serializedData = serializeKycData(data).padEnd(KYC_MAX_LENGTH, '\0');
   const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
   const commitment = poseidon2([secret, packBytesAndPoseidon(msgPadded)]);
