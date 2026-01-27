@@ -782,7 +782,12 @@ export const getNameDobLeafKyc = (name: string, dob: string) => {
   return generateSmallKey(poseidon2([dobHash, nameHash]));
 };
 
-const processNameKyc = (firstName: string, lastName: string, i: number, reverse: boolean): bigint => {
+const processNameKyc = (
+  firstName: string,
+  lastName: string,
+  i: number,
+  reverse: boolean
+): bigint => {
   const namePaddingLength = 64;
 
   firstName = firstName.replace(/'/g, '');
@@ -792,7 +797,7 @@ const processNameKyc = (firstName: string, lastName: string, i: number, reverse:
   lastName = lastName.replace(/[- ]/g, '<');
   lastName = lastName.replace(/\./g, '');
 
-  let nameStr = reverse ? (lastName + ' ' + firstName) : (firstName + ' ' + lastName);
+  let nameStr = reverse ? lastName + ' ' + firstName : firstName + ' ' + lastName;
   const nameArr = nameStr
     .padEnd(namePaddingLength, '\0')
     .split('')
