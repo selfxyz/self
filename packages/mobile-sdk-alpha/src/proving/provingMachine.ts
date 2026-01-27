@@ -1417,7 +1417,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     startProving: async (selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       const startTime = Date.now();
-      const { wsConnection, sharedKey, passportData, secret, uuid } = get();
+      let { wsConnection } = get();
+      const { sharedKey, passportData, secret, uuid } = get();
       const context = createProofContext(selfClient, 'startProving', {
         sessionId: uuid || get().uuid || 'unknown-session',
       });
@@ -1429,13 +1430,42 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         console.error('Cannot start proving: Not in ready_to_prove state.');
         return;
       }
-      if (!wsConnection || !sharedKey || !passportData || !secret || !uuid) {
+
+      // Check non-connection prerequisites first
+      if (!sharedKey || !passportData || !secret || !uuid) {
         selfClient.logProofEvent('error', 'Missing proving prerequisites', context, {
           failure: 'PROOF_FAILED_CONNECTION',
         });
-        console.error('Cannot start proving: Missing wsConnection, sharedKey, passportData, secret, or uuid.');
+        console.error('Cannot start proving: Missing sharedKey, passportData, secret, or uuid.');
         actor!.send({ type: 'PROVE_ERROR' });
         return;
+      }
+
+      // Attempt reconnection if WebSocket is missing or not open
+      if (!wsConnection || wsConnection.readyState !== WebSocket.OPEN) {
+        selfClient.logProofEvent('warn', 'WebSocket not ready, attempting reconnection', context, {
+          wsConnectionExists: !!wsConnection,
+          readyState: wsConnection?.readyState,
+        });
+
+        const reconnected = await get()._reconnectTeeWebSocket(selfClient);
+        if (!reconnected) {
+          selfClient.logProofEvent('error', 'WebSocket reconnection failed', context, {
+            failure: 'PROOF_FAILED_CONNECTION',
+          });
+          actor!.send({ type: 'PROVE_ERROR' });
+          return;
+        }
+
+        // Get the new connection after reconnection
+        wsConnection = get().wsConnection;
+        if (!wsConnection || wsConnection.readyState !== WebSocket.OPEN) {
+          selfClient.logProofEvent('error', 'Reconnected WebSocket not ready', context, {
+            failure: 'PROOF_FAILED_CONNECTION',
+          });
+          actor!.send({ type: 'PROVE_ERROR' });
+          return;
+        }
       }
 
       try {
@@ -1444,31 +1474,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           isMock: passportData?.mock ?? false,
           context,
         });
-
-        // Verify WebSocket is ready; attempt reconnection if connection was lost during idle period
-        if (wsConnection.readyState !== WebSocket.OPEN) {
-          selfClient.logProofEvent('warn', 'WebSocket not ready, attempting reconnection', context, {
-            readyState: wsConnection.readyState,
-          });
-
-          const reconnected = await get()._reconnectTeeWebSocket(selfClient);
-          if (!reconnected) {
-            selfClient.logProofEvent('error', 'WebSocket reconnection failed', context, {
-              failure: 'PROOF_FAILED_CONNECTION',
-            });
-            actor!.send({ type: 'PROVE_ERROR' });
-            return;
-          }
-
-          const newConnection = get().wsConnection;
-          if (!newConnection || newConnection.readyState !== WebSocket.OPEN) {
-            selfClient.logProofEvent('error', 'Reconnected WebSocket not ready', context, {
-              failure: 'PROOF_FAILED_CONNECTION',
-            });
-            actor!.send({ type: 'PROVE_ERROR' });
-            return;
-          }
-        }
 
         selfClient.trackEvent(ProofEvents.PAYLOAD_GEN_STARTED);
         selfClient.logProofEvent('info', 'Payload generation started', context);
