@@ -370,7 +370,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     }
 
     // ====================================================
-    // External Functions - Only Owner
+    // External Functions - Role-Based Access Control
     // ====================================================
 
     /**
