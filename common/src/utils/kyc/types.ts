@@ -19,7 +19,12 @@ export type KycData = {
   selector_older_than: string;
 };
 
-export const serializeKycData = (kycData: Omit<KycData, 'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'>) => {
+export const serializeKycData = (
+  kycData: Omit<
+    KycData,
+    'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'
+  >
+) => {
   //ensure max length of each field
   let serializedData = '';
   serializedData += kycData.country.padEnd(constants.KYC_COUNTRY_LENGTH, '\0');

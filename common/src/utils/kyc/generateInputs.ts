@@ -87,7 +87,12 @@ export const generateMockKycRegisterInput = async (
   return kycRegisterInput;
 };
 
-export const generateKycRegisterInput = async (applicantInfoBase64: string, signatureBase64: string, pubkeyStr: [string, string], secret: string) => {
+export const generateKycRegisterInput = async (
+  applicantInfoBase64: string,
+  signatureBase64: string,
+  pubkeyStr: [string, string],
+  secret: string
+) => {
   const applicantInfo = deserializeApplicantInfo(applicantInfoBase64);
   const signature = deserializeSignature(signatureBase64);
   const pubkey = [BigInt(pubkeyStr[0]), BigInt(pubkeyStr[1])] as [bigint, bigint];
@@ -105,7 +110,7 @@ export const generateKycRegisterInput = async (applicantInfoBase64: string, sign
   };
 
   return kycRegisterInput;
-}
+};
 
 export const generateCircuitInputsOfac = (data: KycData, smt: SMT, proofLevel: number) => {
   const name = data.fullName;

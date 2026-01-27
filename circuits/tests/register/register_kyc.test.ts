@@ -3,7 +3,10 @@ import { wasm as wasmTester } from 'circom_tester';
 import path from 'path';
 import { packBytesAndPoseidon } from '@selfxyz/common/utils/hash';
 import { poseidon2 } from 'poseidon-lite';
-import { generateKycRegisterInput, generateMockKycRegisterInput } from '@selfxyz/common/utils/kyc/generateInputs.js';
+import {
+  generateKycRegisterInput,
+  generateMockKycRegisterInput,
+} from '@selfxyz/common/utils/kyc/generateInputs.js';
 import { KycRegisterInput } from '@selfxyz/common/utils/kyc/types';
 import {
   KYC_ID_NUMBER_INDEX,
