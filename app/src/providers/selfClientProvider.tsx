@@ -304,6 +304,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                 .then(accessToken => {
                   launchSumsub({ accessToken: accessToken.token });
                 })
+                // TODO: show sumsub error screen
                 .catch(error => {
                   console.error('Error launching Sumsub:', error);
                 });
