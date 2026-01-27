@@ -77,7 +77,7 @@ REGISTER_AADHAAR_CIRCUITS=(
 )
 
 REGISTER_KYC_CIRCUITS=(
-    "register_kyc:ture"
+    "register_kyc:true"
 )
 
 DISCLOSE_CIRCUITS=(
