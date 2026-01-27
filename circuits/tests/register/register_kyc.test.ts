@@ -5,7 +5,12 @@ import { packBytesAndPoseidon } from '@selfxyz/common/utils/hash';
 import { poseidon2 } from 'poseidon-lite';
 import { generateMockKycRegisterInput } from '@selfxyz/common/utils/kyc/generateInputs.js';
 import { KycRegisterInput } from '@selfxyz/common/utils/kyc/types';
-import { KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_LENGTH, KYC_ID_TYPE_INDEX, KYC_ID_TYPE_LENGTH } from '@selfxyz/common/utils/kyc/constants';
+import {
+  KYC_ID_NUMBER_INDEX,
+  KYC_ID_NUMBER_LENGTH,
+  KYC_ID_TYPE_INDEX,
+  KYC_ID_TYPE_LENGTH,
+} from '@selfxyz/common/utils/kyc/constants';
 
 describe('REGISTER KYC Circuit Tests', () => {
   let circuit: any;
@@ -42,7 +47,11 @@ describe('REGISTER KYC Circuit Tests', () => {
       KYC_ID_NUMBER_INDEX,
       KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH
     );
-    const nullifierInputs = [...'sumsub'.split('').map((x) => x.charCodeAt(0)), ...idnumber, ...input.data_padded.slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH)];
+    const nullifierInputs = [
+      ...'sumsub'.split('').map((x) => x.charCodeAt(0)),
+      ...idnumber,
+      ...input.data_padded.slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH),
+    ];
     const nullifier = packBytesAndPoseidon(nullifierInputs);
     const commitment = poseidon2([
       input.secret,
