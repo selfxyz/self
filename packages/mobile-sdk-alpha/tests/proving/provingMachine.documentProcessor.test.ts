@@ -946,7 +946,7 @@ describe('validatingDocument', () => {
       documentType: 'kyc',
     } as any;
     const secret = '123456789';
-    
+
     // Use the same circuits that would work for the passport fixture
     const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
     const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');

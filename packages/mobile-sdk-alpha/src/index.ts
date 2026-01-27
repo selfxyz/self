@@ -43,11 +43,11 @@ export type { MRZScanOptions } from './mrz';
 
 export type { PassportValidationCallbacks } from './validation/document';
 
+export type { ProvingMachineCircuitType } from './proving/provingMachine';
+
 export type { SDKEvent, SDKEventMap } from './types/events';
 
 export type { SdkErrorCategory } from './errors';
-
-export type { ProvingMachineCircuitType } from './proving/provingMachine';
 
 export {
   type BottomSectionProps,

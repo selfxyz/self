@@ -8,7 +8,7 @@ import { ProofEvents } from '../../constants/analytics';
 import { markCurrentDocumentAsRegistered } from '../../documents/utils';
 import { SdkEvents } from '../../types/events';
 import type { SelfClient } from '../../types/public';
-import type { ProvingMachineCircuitType, ProvingState, ProvingStateType } from '../types';
+import type { ProvingState, ProvingStateType } from '../types';
 import { PROVING_STATES } from './constants';
 import { createProofContext } from './helpers';
 import type { provingMachine } from './stateMachine';

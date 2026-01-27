@@ -9,9 +9,13 @@ import type { SelfClient } from '../../types/public';
 import type { ProofContext } from './logging';
 
 /**
- * Get current platform
+ * Check if actor is initialized, throw if not
  */
-export const getPlatform = (): 'ios' | 'android' => (Platform.OS === 'ios' ? 'ios' : 'android');
+export function checkActorInitialized(actor: AnyActorRef | null): asserts actor is AnyActorRef {
+  if (!actor) {
+    throw new Error('State machine not initialized. Call init() first.');
+  }
+}
 
 /**
  * Creates a ProofContext with sane defaults for logging proof events
@@ -36,10 +40,6 @@ export const createProofContext = (
 };
 
 /**
- * Check if actor is initialized, throw if not
+ * Get current platform
  */
-export function checkActorInitialized(actor: AnyActorRef | null): asserts actor is AnyActorRef {
-  if (!actor) {
-    throw new Error('State machine not initialized. Call init() first.');
-  }
-}
+export const getPlatform = (): 'ios' | 'android' => (Platform.OS === 'ios' ? 'ios' : 'android');

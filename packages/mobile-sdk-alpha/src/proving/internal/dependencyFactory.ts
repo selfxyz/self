@@ -29,6 +29,32 @@ const createContextFactory =
     createProofContext(selfClient, stage, overrides);
 
 /**
+ * Create document processor dependencies
+ */
+export const createDocumentDeps = (
+  selfClient: SelfClient,
+  get: GetStateFn,
+  set: SetStateFn,
+  getActor: GetActorFn,
+): DocumentProcessorDeps => ({
+  getState: get,
+  setState: set,
+  getActor,
+  createProofContext: (stage: string, overrides: Partial<ProofContext> = {}) =>
+    createContextFactory(selfClient)(stage, overrides),
+});
+
+/**
+ * Create payload generator dependencies
+ */
+export const createPayloadDeps = (selfClient: SelfClient, get: GetStateFn, set: SetStateFn): PayloadDeps => ({
+  getState: get,
+  setState: set,
+  createProofContext: (stage: string, overrides: Partial<ProofContext> = {}) =>
+    createContextFactory(selfClient)(stage, overrides),
+});
+
+/**
  * Create Socket.IO listener dependencies
  */
 export const createSocketDeps = (
@@ -61,33 +87,3 @@ export const createWebSocketDeps = (
       startSocketIOStatusListener(receivedUuid, endpointType, client, socketDeps),
   };
 };
-
-/**
- * Create payload generator dependencies
- */
-export const createPayloadDeps = (
-  selfClient: SelfClient,
-  get: GetStateFn,
-  set: SetStateFn,
-): PayloadDeps => ({
-  getState: get,
-  setState: set,
-  createProofContext: (stage: string, overrides: Partial<ProofContext> = {}) =>
-    createContextFactory(selfClient)(stage, overrides),
-});
-
-/**
- * Create document processor dependencies
- */
-export const createDocumentDeps = (
-  selfClient: SelfClient,
-  get: GetStateFn,
-  set: SetStateFn,
-  getActor: GetActorFn,
-): DocumentProcessorDeps => ({
-  getState: get,
-  setState: set,
-  getActor,
-  createProofContext: (stage: string, overrides: Partial<ProofContext> = {}) =>
-    createContextFactory(selfClient)(stage, overrides),
-});

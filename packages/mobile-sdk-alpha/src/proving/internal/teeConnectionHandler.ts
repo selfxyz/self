@@ -30,11 +30,17 @@ export type TeeConnectionDeps = {
 /**
  * Initialize TEE connection
  */
-export const initTeeConnection = async (
-  selfClient: SelfClient,
-  deps: TeeConnectionDeps,
-): Promise<boolean> => {
-  const { getState, setState, getActor, handleWebSocketMessage, handleWsOpen, handleWsError, handleWsClose, closeConnections } = deps;
+export const initTeeConnection = async (selfClient: SelfClient, deps: TeeConnectionDeps): Promise<boolean> => {
+  const {
+    getState,
+    setState,
+    getActor,
+    handleWebSocketMessage,
+    handleWsOpen,
+    handleWsError,
+    handleWsClose,
+    closeConnections,
+  } = deps;
   const actor = getActor();
   if (!actor) {
     throw new Error('State machine not initialized. Call init() first.');
