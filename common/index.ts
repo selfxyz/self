@@ -138,6 +138,7 @@ export {
   generateMockKycRegisterInput,
   NON_OFAC_DUMMY_INPUT,
   OFAC_DUMMY_INPUT,
+  generateKycRegisterInput,
 } from './src/utils/kyc/generateInputs.js';
 
 export {

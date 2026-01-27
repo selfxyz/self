@@ -14,6 +14,7 @@ import { signEdDSA } from './ecdsa/ecdsa.js';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { packBytesAndPoseidon } from '../hash.js';
 import { COMMITMENT_TREE_DEPTH } from '../../constants/constants.js';
+import { deserializeApplicantInfo, deserializeSignature } from './api.js';
 
 export const OFAC_DUMMY_INPUT: KycData = {
   country: 'KEN',
@@ -85,6 +86,26 @@ export const generateMockKycRegisterInput = async (
 
   return kycRegisterInput;
 };
+
+export const generateKycRegisterInput = async (applicantInfoBase64: string, signatureBase64: string, pubkeyStr: [string, string], secret: string) => {
+  const applicantInfo = deserializeApplicantInfo(applicantInfoBase64);
+  const signature = deserializeSignature(signatureBase64);
+  const pubkey = [BigInt(pubkeyStr[0]), BigInt(pubkeyStr[1])] as [bigint, bigint];
+
+  const serializedData = serializeKycData(applicantInfo);
+
+  const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
+
+  const kycRegisterInput: KycRegisterInput = {
+    data_padded: msgPadded.map((x) => Number(x)),
+    s: signature.s,
+    R: signature.R,
+    pubKey: pubkey,
+    secret,
+  };
+
+  return kycRegisterInput;
+}
 
 export const generateCircuitInputsOfac = (data: KycData, smt: SMT, proofLevel: number) => {
   const name = data.fullName;
