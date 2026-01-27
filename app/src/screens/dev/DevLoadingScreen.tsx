@@ -8,7 +8,7 @@ import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 import { Check, ChevronDown } from '@tamagui/lucide-icons';
 
 import type {
-  provingMachineCircuitType,
+  ProvingMachineCircuitType,
   ProvingStateType,
 } from '@selfxyz/mobile-sdk-alpha';
 import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
@@ -40,7 +40,7 @@ const allProvingStates = [
 const DevLoadingScreen: React.FC = () => {
   const [currentState, setCurrentState] = useState<ProvingStateType>('idle');
   const [documentType, setDocumentType] =
-    useState<provingMachineCircuitType>('dsc');
+    useState<ProvingMachineCircuitType>('dsc');
   const [animationSource, setAnimationSource] = useState<
     LottieView['props']['source']
   >(proveLoadingAnimation);
@@ -189,7 +189,7 @@ const DevLoadingScreen: React.FC = () => {
           onOpenChange={setDocumentTypeOpen}
           onValueChange={(val: string) => {
             if (val) {
-              setDocumentType(val as provingMachineCircuitType);
+              setDocumentType(val as ProvingMachineCircuitType);
             }
           }}
           value={documentType}

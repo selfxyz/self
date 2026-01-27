@@ -23,7 +23,7 @@ import {
 } from '../../documents/utils';
 import { fetchAllTreesAndCircuits, getCommitmentTree } from '../../stores';
 import type { SelfClient } from '../../types/public';
-import type { ProvingState } from '../provingMachine';
+import type { ProvingState } from '../types';
 import type { ProofContext } from './logging';
 
 type DocumentProcessorState = Pick<

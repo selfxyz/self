@@ -47,7 +47,7 @@ export type { SDKEvent, SDKEventMap } from './types/events';
 
 export type { SdkErrorCategory } from './errors';
 
-export type { provingMachineCircuitType } from './proving/provingMachine';
+export type { ProvingMachineCircuitType } from './proving/provingMachine';
 
 export {
   type BottomSectionProps,

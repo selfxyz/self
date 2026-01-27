@@ -17,7 +17,7 @@ import type { IDDocument } from '@selfxyz/common/utils/types';
 
 import { ProofEvents } from '../../constants/analytics';
 import type { SelfClient } from '../../types/public';
-import type { provingMachineCircuitType, ProvingState } from '../provingMachine';
+import type { ProvingMachineCircuitType, ProvingState } from '../types';
 import type { ProofContext } from './logging';
 
 const JSONRPC_VERSION = '2.0' as const;
@@ -67,7 +67,7 @@ export const _encryptPayload = (payload: unknown, sharedKey: Buffer): EncryptedP
 
 export const _generateCircuitInputs = async (
   selfClient: SelfClient,
-  circuitType: provingMachineCircuitType,
+  circuitType: ProvingMachineCircuitType,
   secret: string | undefined | null,
   passportData: IDDocument,
   env: 'prod' | 'stg',
@@ -166,7 +166,7 @@ export const _generatePayload = async (selfClient: SelfClient, deps: PayloadDeps
     const { inputs, circuitName, endpointType, endpoint, circuitTypeWithDocumentExtension } =
       await _generateCircuitInputs(
         selfClient,
-        circuitType as provingMachineCircuitType,
+        circuitType as ProvingMachineCircuitType,
         secret,
         passportData,
         env,

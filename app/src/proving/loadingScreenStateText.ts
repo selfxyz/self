@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type {
-  provingMachineCircuitType,
+  ProvingMachineCircuitType,
   ProvingStateType,
 } from '@selfxyz/mobile-sdk-alpha';
 
@@ -18,7 +18,7 @@ export function getLoadingScreenText(
   state: ProvingStateType,
   signatureAlgorithm: string,
   curveOrExponent: string,
-  type: provingMachineCircuitType,
+  type: ProvingMachineCircuitType,
 ): LoadingScreenText {
   // Helper function to calculate progress with type offset
   const getStatusBarProgress = (baseProgress: number): number => {
@@ -156,7 +156,7 @@ export function getLoadingScreenText(
 export function getProvingTimeEstimate(
   signatureAlgorithm: string,
   curveOrExponent: string,
-  type: provingMachineCircuitType,
+  type: ProvingMachineCircuitType,
 ): string {
   if (!signatureAlgorithm || !curveOrExponent) return '30 - 90 SECONDS';
 

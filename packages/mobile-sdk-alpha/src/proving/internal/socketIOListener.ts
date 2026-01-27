@@ -11,7 +11,7 @@ import { getWSDbRelayerUrl } from '@selfxyz/common/utils/proving';
 
 import { ProofEvents } from '../../constants/analytics';
 import type { SelfClient } from '../../types/public';
-import type { ProvingState } from '../provingMachine';
+import type { ProvingState } from '../types';
 import type { ProofContext } from './logging';
 import { handleStatusCode, parseStatusMessage } from './statusHandlers';
 
