@@ -491,7 +491,10 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @dev Callable only by the owner for testing or administration.
     /// @param nullifier The nullifier associated with the identity commitment.
     /// @param commitment The identity commitment to add.
-    function devAddIdentityCommitment(uint256 nullifier, uint256 commitment) external onlyProxy onlyRole(SECURITY_ROLE) {
+    function devAddIdentityCommitment(
+        uint256 nullifier,
+        uint256 commitment
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         _nullifiers[nullifier] = true;
         uint256 imt_root = _identityCommitmentIMT._insert(commitment);
         _rootTimestamps[imt_root] = block.timestamp;
@@ -504,7 +507,11 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @param oldLeaf The current identity commitment to update.
     /// @param newLeaf The new identity commitment.
     /// @param siblingNodes An array of sibling nodes for Merkle proof generation.
-    function devUpdateCommitment(uint256 oldLeaf, uint256 newLeaf, uint256[] calldata siblingNodes) external onlyProxy onlyRole(SECURITY_ROLE) {
+    function devUpdateCommitment(
+        uint256 oldLeaf,
+        uint256 newLeaf,
+        uint256[] calldata siblingNodes
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         uint256 imt_root = _identityCommitmentIMT._update(oldLeaf, newLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
@@ -514,7 +521,10 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @dev Caller must be the owner. Provides sibling nodes for proof of position.
     /// @param oldLeaf The identity commitment to remove.
     /// @param siblingNodes An array of sibling nodes for Merkle proof generation.
-    function devRemoveCommitment(uint256 oldLeaf, uint256[] calldata siblingNodes) external onlyProxy onlyRole(SECURITY_ROLE) {
+    function devRemoveCommitment(
+        uint256 oldLeaf,
+        uint256[] calldata siblingNodes
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         uint256 imt_root = _identityCommitmentIMT._remove(oldLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);
