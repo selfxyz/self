@@ -375,10 +375,7 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
 
   let registryKycContract, updateKycHubTx;
   {
-    registryKycContract = await ethers.getContractAt(
-      "IdentityRegistryKycImplV1",
-      identityRegistryKycProxy.target,
-    );
+    registryKycContract = await ethers.getContractAt("IdentityRegistryKycImplV1", identityRegistryKycProxy.target);
     updateKycHubTx = await registryKycContract.updateHub(identityVerificationHubV2.target);
     await updateKycHubTx.wait();
 
