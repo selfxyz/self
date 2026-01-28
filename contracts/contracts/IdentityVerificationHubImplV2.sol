@@ -313,8 +313,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             );
         } else if (attestationId == AttestationId.KYC) {
             IIdentityRegistryKycV1($._registries[attestationId]).registerCommitment(
-                registerCircuitProof.pubSignals[CircuitConstantsV2.SELFRICA_NULLIFIER_INDEX],
-                registerCircuitProof.pubSignals[CircuitConstantsV2.SELFRICA_COMMITMENT_INDEX]
+                registerCircuitProof.pubSignals[CircuitConstantsV2.KYC_NULLIFIER_INDEX],
+                registerCircuitProof.pubSignals[CircuitConstantsV2.KYC_COMMITMENT_INDEX]
             );
         } else {
             revert InvalidAttestationId();
@@ -876,7 +876,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @notice Performs current date validation with format-aware parsing
      * @dev Handles three date formats:
      * - E_PASSPORT/EU_ID_CARD: 6 ASCII chars (YYMMDD)
-     * - SELFRICA_ID_CARD: 8 ASCII digits (YYYYMMDD)
+     * - KYC: 8 ASCII digits (YYYYMMDD)
      * - AADHAAR: 3 numeric signals (year, month, day)
      * @param attestationId The attestation type to determine date format
      * @param vcAndDiscloseProof The proof containing date information
@@ -900,7 +900,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             }
             currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
         } else if (attestationId == AttestationId.KYC) {
-            // SELFRICA: 8 ASCII digits (YYYYMMDD)
+            // KYC: 8 ASCII digits (YYYYMMDD)
             uint256[3] memory dateNum; // [year, month, day]
             unchecked {
                 for (uint256 i; i < 4; ++i)
@@ -1016,7 +1016,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /**
      * @notice Creates verification output based on attestation type.
      * @dev Formats proof data into the appropriate output structure for the attestation type.
-     * @param attestationId The attestation identifier (passport, EU ID card, Aadhaar, or Selfrica).
+     * @param attestationId The attestation identifier (passport, EU ID card, Aadhaar, or KYC).
      * @param vcAndDiscloseProof The VC and Disclose proof data.
      * @param indices The circuit-specific indices for extracting proof values.
      * @param userIdentifier The user identifier to include in the output.

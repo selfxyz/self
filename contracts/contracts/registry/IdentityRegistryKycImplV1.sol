@@ -32,11 +32,11 @@ import {Formatter} from "../libraries/Formatter.sol";
  */
 
 /**
- * @title IdentityRegistrySelfricaStorageV1
- * @dev Abstract contract for storage layout of IdentityRegistrySelfricaImplV1.
+ * @title IdentityRegistryKycStorageV1
+ * @dev Abstract contract for storage layout of IdentityRegistryKycImplV1.
  * Inherits from ImplRoot to provide upgradeable functionality.
  */
-abstract contract IdentityRegistrySelfricaStorageV1 is ImplRoot {
+abstract contract IdentityRegistryKycStorageV1 is ImplRoot {
     // =============================================
     // Storage Variables
     // =============================================
@@ -56,7 +56,7 @@ abstract contract IdentityRegistrySelfricaStorageV1 is ImplRoot {
     /// @notice Mapping from nullifier to a boolean indicating registration.
     mapping(uint256 => bool) internal _nullifiers;
 
-    /// @notice Pubkey commitments registered for Selfrica.
+    /// @notice Pubkey commitments registered for KYC.
     mapping(uint256 => bool) internal _isRegisteredPubkeyCommitment;
 
     /// @notice Current name and date of birth OFAC root.
@@ -110,11 +110,11 @@ interface IPCR0Manager {
 }
 
 /**
- * @title IdentityRegistrySelfricaImplV1
+ * @title IdentityRegistryKycImplV1
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
- * @dev Inherits from IdentityRegistrySelfricaStorageV1 and implements IIdentityRegistrySelfricaV1.
+ * @dev Inherits from IdentityRegistryKycStorageV1 and implements IIdentityRegistryKycV1.
  */
-contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, IIdentityRegistryKycV1 {
+contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityRegistryKycV1 {
     using InternalLeanIMT for LeanIMTData;
 
     // ====================================================
