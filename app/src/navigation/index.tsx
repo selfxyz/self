@@ -104,6 +104,10 @@ export type RootStackParamList = Omit<
     countryCode: string;
     documentTypes: string[];
   };
+  LogoConfirmation: {
+    documentType: string;
+    countryCode: string;
+  };
   ConfirmBelonging:
     | {
         documentCategory?: DocumentCategory;

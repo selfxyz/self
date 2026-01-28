@@ -318,10 +318,12 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         if (navigationRef.isReady()) {
           switch (documentType) {
             case 'p':
-              navigationRef.navigate('DocumentOnboarding');
-              break;
             case 'i':
-              navigationRef.navigate('DocumentOnboarding');
+              // Navigate to logo confirmation screen for biometric IDs
+              navigationRef.navigate('LogoConfirmation', {
+                documentType,
+                countryCode,
+              });
               break;
             case 'a':
               if (countryCode) {

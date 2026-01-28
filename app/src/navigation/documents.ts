@@ -24,6 +24,7 @@ import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongi
 import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
 import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
 import IDPickerScreen from '@/screens/documents/selection/IDPickerScreen';
+import LogoConfirmationScreen from '@/screens/documents/selection/LogoConfirmationScreen';
 
 const documentsScreens = {
   DocumentCamera: {
@@ -92,6 +93,16 @@ const documentsScreens = {
     initialParams: {
       countryCode: '',
       documentTypes: [],
+    },
+  },
+  LogoConfirmation: {
+    screen: LogoConfirmationScreen,
+    options: {
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+    initialParams: {
+      documentType: '',
+      countryCode: '',
     },
   },
   ConfirmBelonging: {

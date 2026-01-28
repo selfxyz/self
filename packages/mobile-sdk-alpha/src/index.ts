@@ -70,6 +70,8 @@ export {
   sdkError,
 } from './errors';
 
+export { default as LogoConfirmationScreen } from './flows/onboarding/logo-confirmation-screen';
+
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 
 export { type ProvingStateType } from './proving/provingMachine';
