@@ -9078,7 +9078,7 @@ __metadata:
     react-native-device-info: "npm:^15.0.1"
     react-native-dotenv: "npm:^3.4.11"
     react-native-edge-to-edge: "npm:^1.7.0"
-    react-native-gesture-handler: "npm:2.30.0"
+    react-native-gesture-handler: "npm:2.19.0"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-haptic-feedback: "npm:^2.3.3"
     react-native-inappbrowser-reborn: "npm:^3.7.0"
@@ -9090,7 +9090,7 @@ __metadata:
     react-native-passkey: "npm:^3.3.2"
     react-native-passport-reader: "npm:1.0.3"
     react-native-safe-area-context: "npm:^5.6.2"
-    react-native-screens: "npm:4.19.0"
+    react-native-screens: "npm:4.15.3"
     react-native-sqlite-storage: "npm:^6.0.1"
     react-native-svg: "npm:15.15.1"
     react-native-svg-transformer: "npm:^1.5.2"
@@ -30118,17 +30118,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-gesture-handler@npm:2.30.0":
-  version: 2.30.0
-  resolution: "react-native-gesture-handler@npm:2.30.0"
+"react-native-gesture-handler@npm:2.19.0":
+  version: 2.19.0
+  resolution: "react-native-gesture-handler@npm:2.19.0"
   dependencies:
     "@egjs/hammerjs": "npm:^2.0.17"
     hoist-non-react-statics: "npm:^3.3.0"
     invariant: "npm:^2.2.4"
+    prop-types: "npm:^15.7.2"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/26b94b0f97433fc6fb5b1c196ef29fce4f5a66c77fabb1bc33db91099357fbd44a5220783fcbb91d42700bcd578f2fd114314029d9e0d4674878767d9b7f5df6
+  checksum: 10c0/e92552ff92211e9ce8ef2e706e599b1ba58778ae7f611fd011cc4076c6eba69d6e3940e8bd3a394956226f07f3bcde5aaf0a4b99345180044d226ad9edce8a4a
   languageName: node
   linkType: hard
 
@@ -30161,6 +30162,16 @@ __metadata:
   peerDependencies:
     react-native: ">=0.56"
   checksum: 10c0/b14d564925eec2c95fc6f8931b68f9ae7c418b5ccad2494748282ee9f7460f7094eec3c6e3a6304062124277624c0f6f647f41a7950ab263b7ebb7c6b0d50d4d
+  languageName: node
+  linkType: hard
+
+"react-native-is-edge-to-edge@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "react-native-is-edge-to-edge@npm:1.2.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/87d20b900aded7d44c90afb946a7aa03c23a94ca3dd547bdddc2303b85357e4aab22567a57b19f1558d6c8be7058e3dcf34faa1e15182d1604f90974266d9a1d
   languageName: node
   linkType: hard
 
@@ -30244,16 +30255,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-screens@npm:4.19.0":
-  version: 4.19.0
-  resolution: "react-native-screens@npm:4.19.0"
+"react-native-screens@npm:4.15.3":
+  version: 4.15.3
+  resolution: "react-native-screens@npm:4.15.3"
   dependencies:
     react-freeze: "npm:^1.0.0"
+    react-native-is-edge-to-edge: "npm:^1.2.1"
     warn-once: "npm:^0.1.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/e66328c8782ad4af352c418e5a4ae0cd5011d5010a9fad23e9740353d8076027c197d344b7465c5d529d862954dc80d9d0db444846e59cc1bee46a5459817562
+  checksum: 10c0/e5cdc82d58c4d25b7d439dfc78206bc8e0b0240ec73d18468fcf48631d5c92f500db722db8de8ae38ded3a6e9201fef77b0ede9f0bc2ba7754d5d76f61d69a61
   languageName: node
   linkType: hard
 
