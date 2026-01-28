@@ -4,9 +4,10 @@
 
 import type React from 'react';
 import type { ReactNode } from 'react';
-import { StyleSheet, View as RNView } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { BodyText, PrimaryButton, SecondaryButton, View, YStack } from '../../components';
+import ButtonsContainer from '../../components/ButtonsContainer';
 import { black, slate400, white } from '../../constants/colors';
 import { advercase, dinot } from '../../constants/fonts';
 import { useSelfClient } from '../../context';
@@ -63,10 +64,10 @@ const LogoConfirmationScreen: React.FC<LogoConfirmationScreenProps> = ({
           This symbol indicates your document has a biometric chip, which is required for registration.
         </BodyText>
 
-        <RNView style={styles.buttonsWrapper}>
+        <ButtonsContainer>
           <PrimaryButton onPress={onYesPress}>Yes</PrimaryButton>
           <SecondaryButton onPress={onNoPress}>No</SecondaryButton>
-        </RNView>
+        </ButtonsContainer>
       </YStack>
     </YStack>
   );
@@ -94,10 +95,6 @@ const styles = StyleSheet.create({
     fontFamily: dinot,
     textAlign: 'center',
     color: slate400,
-  },
-  buttonsWrapper: {
-    width: '100%',
-    gap: 12,
   },
 });
 

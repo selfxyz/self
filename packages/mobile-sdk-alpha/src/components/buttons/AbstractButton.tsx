@@ -131,6 +131,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   text: {
+    flex: 1,
     fontFamily: dinot,
     textAlign: 'center',
     fontSize: 18,
