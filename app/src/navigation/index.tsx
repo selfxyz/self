@@ -79,6 +79,7 @@ export type RootStackParamList = Omit<
   | 'Home'
   | 'IDPicker'
   | 'IdDetails'
+  | 'KycError'
   | 'Loading'
   | 'Modal'
   | 'MockDataDeepLink'
@@ -125,6 +126,12 @@ export type RootStackParamList = Omit<
   AadhaarUploadSuccess: undefined;
   AadhaarUploadError: {
     errorType: string;
+  };
+
+  // KYC screens
+  KycError: {
+    errorSource: 'initialization' | 'verification';
+    countryCode: string;
   };
 
   // Account/Recovery screens

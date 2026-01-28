@@ -300,14 +300,33 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               }
               break;
             case 'kyc':
-              fetchAccessToken()
-                .then(accessToken => {
-                  launchSumsub({ accessToken: accessToken.token });
-                })
-                // TODO: show sumsub error screen
-                .catch(error => {
-                  console.error('Error launching Sumsub:', error);
-                });
+              (async () => {
+                try {
+                  const accessToken = await fetchAccessToken();
+                  const result = await launchSumsub({ accessToken: accessToken.token });
+
+                  // User cancelled - return silently
+                  if (!result.success && result.status === 'Interrupted') {
+                    return;
+                  }
+
+                  // Actual error from provider
+                  if (!result.success) {
+                    console.error('KYC provider failed:', result.errorMsg || result.errorType);
+                    navigationRef.navigate('KycError', {
+                      errorSource: 'verification',
+                      countryCode,
+                    });
+                  }
+                  // success case: provider handles its own success UI
+                } catch (error) {
+                  console.error('Error in KYC flow:', error);
+                  navigationRef.navigate('KycError', {
+                    errorSource: 'initialization',
+                    countryCode,
+                  });
+                }
+              })();
               break;
             default:
               if (countryCode) {

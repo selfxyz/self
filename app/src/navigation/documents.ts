@@ -11,6 +11,7 @@ import { HeadlessNavForEuclid } from '@/components/navbar/HeadlessNavForEuclid';
 import AadhaarUploadedSuccessScreen from '@/screens/documents/aadhaar/AadhaarUploadedSuccessScreen';
 import AadhaarUploadErrorScreen from '@/screens/documents/aadhaar/AadhaarUploadErrorScreen';
 import AadhaarUploadScreen from '@/screens/documents/aadhaar/AadhaarUploadScreen';
+import KycErrorScreen from '@/screens/documents/kyc/KycErrorScreen';
 import DocumentDataInfoScreen from '@/screens/documents/management/DocumentDataInfoScreen';
 import IdDetailsScreen from '@/screens/documents/management/IdDetailsScreen';
 import ManageDocumentsScreen from '@/screens/documents/management/ManageDocumentsScreen';
@@ -153,6 +154,17 @@ const documentsScreens = {
     } as NativeStackNavigationOptions,
     initialParams: {
       errorType: 'general',
+    },
+  },
+  KycError: {
+    screen: KycErrorScreen,
+    options: {
+      title: 'OTHER IDS VERIFICATION',
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+    initialParams: {
+      errorSource: 'initialization',
+      countryCode: '',
     },
   },
 };
