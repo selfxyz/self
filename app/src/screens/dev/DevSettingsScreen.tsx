@@ -44,6 +44,12 @@ import {
   subscribeToTopics,
   unsubscribeFromTopics,
 } from '@/services/notifications/notificationService';
+import type { InjectedErrorType } from '@/stores/errorInjectionStore';
+import {
+  ERROR_GROUPS,
+  ERROR_LABELS,
+  useErrorInjectionStore,
+} from '@/stores/errorInjectionStore';
 import { usePointEventStore } from '@/stores/pointEventStore';
 import { useSettingStore } from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
@@ -387,6 +393,148 @@ const LogLevelSelector = ({
         </Sheet.Frame>
       </Sheet>
     </>
+  );
+};
+
+const ErrorInjectionSelector = ({}) => {
+  const injectedErrors = useErrorInjectionStore(state => state.injectedErrors);
+  const clearOnTrigger = useErrorInjectionStore(state => state.clearOnTrigger);
+  const toggleError = useErrorInjectionStore(state => state.toggleError);
+  const clearAllErrors = useErrorInjectionStore(state => state.clearAllErrors);
+  const setClearOnTrigger = useErrorInjectionStore(
+    state => state.setClearOnTrigger,
+  );
+  const [open, setOpen] = useState(false);
+
+  return (
+    <YStack gap="$2">
+      <Button
+        style={{ backgroundColor: 'white' }}
+        borderColor={slate200}
+        borderRadius="$2"
+        height="$5"
+        padding={0}
+        onPress={() => setOpen(true)}
+      >
+        <XStack
+          width="100%"
+          justifyContent="space-between"
+          paddingVertical="$3"
+          paddingLeft="$4"
+          paddingRight="$1.5"
+        >
+          <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+            {injectedErrors.length > 0
+              ? `${injectedErrors.length} error(s) selected`
+              : 'Select errors to inject'}
+          </Text>
+          <ChevronDown color={slate500} strokeWidth={2.5} />
+        </XStack>
+      </Button>
+
+      <XStack gap="$2" alignItems="center">
+        <TopicToggleButton
+          label="Clear after trigger"
+          isSubscribed={clearOnTrigger}
+          onToggle={() => setClearOnTrigger(!clearOnTrigger)}
+        />
+        {injectedErrors.length > 0 && (
+          <Button
+            backgroundColor={red500}
+            borderRadius="$2"
+            height="$5"
+            onPress={clearAllErrors}
+            pressStyle={{
+              opacity: 0.8,
+              scale: 0.98,
+            }}
+          >
+            <Text color={white} fontSize="$5" fontFamily={dinot}>
+              Clear All
+            </Text>
+          </Button>
+        )}
+      </XStack>
+
+      <Sheet
+        modal
+        open={open}
+        onOpenChange={setOpen}
+        snapPoints={[85]}
+        animation="medium"
+        dismissOnSnapToBottom
+      >
+        <Sheet.Overlay />
+        <Sheet.Frame
+          backgroundColor={white}
+          borderTopLeftRadius="$9"
+          borderTopRightRadius="$9"
+        >
+          <YStack padding="$4">
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              marginBottom="$4"
+            >
+              <Text fontSize="$8" fontFamily={dinot}>
+                Error Injection
+              </Text>
+              <Button
+                onPress={() => setOpen(false)}
+                padding="$2"
+                backgroundColor="transparent"
+              >
+                <ChevronDown
+                  color={slate500}
+                  strokeWidth={2.5}
+                  style={{ transform: [{ rotate: '180deg' }] }}
+                />
+              </Button>
+            </XStack>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 100 }}
+            >
+              {Object.entries(ERROR_GROUPS).map(([groupName, errors]) => (
+                <YStack key={groupName} marginBottom="$4">
+                  <Text
+                    fontSize="$6"
+                    fontFamily={dinot}
+                    fontWeight="600"
+                    color={slate800}
+                    marginBottom="$2"
+                  >
+                    {groupName}
+                  </Text>
+                  {errors.map((errorType: InjectedErrorType) => (
+                    <TouchableOpacity
+                      key={errorType}
+                      onPress={() => toggleError(errorType)}
+                    >
+                      <XStack
+                        paddingVertical="$3"
+                        paddingHorizontal="$2"
+                        borderBottomWidth={1}
+                        borderBottomColor={slate200}
+                        alignItems="center"
+                        justifyContent="space-between"
+                      >
+                        <Text fontSize="$5" color={slate600} fontFamily={dinot}>
+                          {ERROR_LABELS[errorType]}
+                        </Text>
+                        {injectedErrors.includes(errorType) && (
+                          <Check color={slate600} size={20} />
+                        )}
+                      </XStack>
+                    </TouchableOpacity>
+                  ))}
+                </YStack>
+              ))}
+            </ScrollView>
+          </YStack>
+        </Sheet.Frame>
+      </Sheet>
+    </YStack>
   );
 };
 
@@ -778,6 +926,16 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             onSelect={setLoggingSeverity}
           />
         </ParameterSection>
+
+        {IS_DEV_MODE && (
+          <ParameterSection
+            icon={<BugIcon />}
+            title="Error Injection"
+            description="Force errors during onboarding for testing"
+          >
+            <ErrorInjectionSelector />
+          </ParameterSection>
+        )}
 
         {Platform.OS === 'android' && (
           <ParameterSection

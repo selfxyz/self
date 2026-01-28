@@ -54,6 +54,7 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
 import NFC_IMAGE from '@/assets/images/nfc.png';
 import { logNFCEvent } from '@/config/sentry';
+import { useErrorInjection } from '@/hooks/useErrorInjection';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import {
@@ -108,6 +109,7 @@ const DocumentNFCScanScreen: React.FC = () => {
   const route = useRoute<DocumentNFCScanRoute>();
   const { showModal } = useFeedback();
   useFeedbackAutoHide();
+  const { shouldInjectError } = useErrorInjection();
   const {
     passportNumber,
     dateOfBirth,
@@ -324,6 +326,18 @@ const DocumentNFCScanScreen: React.FC = () => {
       }, 30000);
 
       try {
+        // Dev-only: Check for injected timeout error
+        if (shouldInjectError('nfc_timeout')) {
+          console.log('[DEV] Injecting NFC timeout error');
+          throw new Error('Injected timeout error for testing');
+        }
+
+        // Dev-only: Check for injected module unavailable error
+        if (shouldInjectError('nfc_module_unavailable')) {
+          console.log('[DEV] Injecting NFC module unavailable error');
+          throw new Error('NFC scanning is currently unavailable');
+        }
+
         const {
           canNumber,
           useCan,
@@ -376,6 +390,12 @@ const DocumentNFCScanScreen: React.FC = () => {
         );
         let passportData: PassportData | null = null;
         try {
+          // Dev-only: Check for injected parse failure error
+          if (shouldInjectError('nfc_parse_failure')) {
+            console.log('[DEV] Injecting NFC parse failure error');
+            throw new Error('Failed to parse NFC response');
+          }
+
           passportData = parseScanResponse(scanResponse);
         } catch (e: unknown) {
           console.error('Parsing NFC Response Unsuccessful');
@@ -452,6 +472,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     navigation,
     openErrorModal,
     trackEvent,
+    shouldInjectError,
   ]);
 
   const navigateToHome = useHapticNavigation('Home', {

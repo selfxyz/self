@@ -12,6 +12,19 @@ import { checkScannedInfo, formatDateToYYMMDD } from '../../processing/mrz';
 import { SdkEvents } from '../../types/events';
 import type { MRZInfo } from '../../types/public';
 
+// Dev-only error injection imports
+let useErrorInjectionStore: any = null;
+let IS_DEV_MODE = false;
+try {
+  // These imports will only work in the main app, not in the SDK package
+  const errorInjectionModule = require('../../../../app/src/stores/errorInjectionStore');
+  const devUtilsModule = require('../../../../app/src/utils/devUtils');
+  useErrorInjectionStore = errorInjectionModule.useErrorInjectionStore;
+  IS_DEV_MODE = devUtilsModule.IS_DEV_MODE;
+} catch {
+  // Silently ignore if imports fail (SDK running standalone)
+}
+
 export type { MRZScannerViewProps } from '../../components/MRZScannerView';
 export { MRZScannerView } from '../../components/MRZScannerView';
 
@@ -33,6 +46,20 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
     onPassportRead: useCallback(
       (error: Error | null, result?: MRZInfo) => {
         const scanDurationSeconds = calculateScanDurationSeconds(scanStartTimeRef);
+
+        // Dev-only: Check for injected unknown error
+        if (IS_DEV_MODE && useErrorInjectionStore) {
+          const shouldTrigger = useErrorInjectionStore.getState().shouldTrigger('mrz_unknown_error');
+          if (shouldTrigger) {
+            console.log('[DEV] Injecting MRZ unknown error');
+            selfClient.trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
+              reason: 'unknown_error',
+              error: 'Injected error for testing',
+              duration_seconds: parseFloat(scanDurationSeconds),
+            });
+            return;
+          }
+        }
 
         if (error) {
           console.error(error);
@@ -63,7 +90,19 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
         const formattedDateOfBirth = Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfBirth) : dateOfBirth;
         const formattedDateOfExpiry = Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfExpiry) : dateOfExpiry;
 
-        if (!checkScannedInfo(documentNumber, formattedDateOfBirth, formattedDateOfExpiry)) {
+        // Dev-only: Check for injected invalid format error
+        const shouldInjectInvalidFormat =
+          IS_DEV_MODE && useErrorInjectionStore
+            ? useErrorInjectionStore.getState().shouldTrigger('mrz_invalid_format')
+            : false;
+
+        if (
+          shouldInjectInvalidFormat ||
+          !checkScannedInfo(documentNumber, formattedDateOfBirth, formattedDateOfExpiry)
+        ) {
+          if (shouldInjectInvalidFormat) {
+            console.log('[DEV] Injecting MRZ invalid format error');
+          }
           selfClient.trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
             reason: 'invalid_format',
             passportNumberLength: documentNumber.length,

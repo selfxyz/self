@@ -589,12 +589,8 @@ export function getSMTs() {
   ) as typeof SMT;
   const nameAndDob_id_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndDobSMT_ID.json") as typeof SMT;
   const nameAndYob_id_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndYobSMT_ID.json") as typeof SMT;
-  const nameAndDob_kyc_smt = importSMTFromJsonFile(
-    "../circuits/tests/consts/ofac/nameAndDobKycSMT.json",
-  ) as typeof SMT;
-  const nameAndYob_kyc_smt = importSMTFromJsonFile(
-    "../circuits/tests/consts/ofac/nameAndYobKycSMT.json",
-  ) as typeof SMT;
+  const nameAndDob_kyc_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndDobKycSMT.json") as typeof SMT;
+  const nameAndYob_kyc_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndYobKycSMT.json") as typeof SMT;
 
   return {
     passportNo_smt,

@@ -33,6 +33,7 @@ import {
   setPassportKeychainErrorCallback,
 } from '@/providers/passportDataProvider';
 import { trackEvent, trackNfcEvent } from '@/services/analytics';
+import { useErrorInjectionStore } from '@/stores/errorInjectionStore';
 import { useSettingStore } from '@/stores/settingStore';
 import {
   registerModalCallbacks,
@@ -302,6 +303,18 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
             case 'kyc':
               (async () => {
                 try {
+                  // Dev-only: Check for injected initialization error
+                  if (
+                    useErrorInjectionStore
+                      .getState()
+                      .shouldTrigger('sumsub_initialization')
+                  ) {
+                    console.log('[DEV] Injecting Sumsub initialization error');
+                    throw new Error(
+                      'Injected Sumsub initialization error for testing',
+                    );
+                  }
+
                   const accessToken = await fetchAccessToken();
                   const result = await launchSumsub({
                     accessToken: accessToken.token,
@@ -312,12 +325,21 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     return;
                   }
 
+                  // Dev-only: Check for injected verification error
+                  const shouldInjectVerificationError = useErrorInjectionStore
+                    .getState()
+                    .shouldTrigger('sumsub_verification');
+
                   // Actual error from provider
-                  if (!result.success) {
-                    console.error(
-                      'KYC provider failed:',
-                      result.errorMsg || result.errorType,
-                    );
+                  if (!result.success || shouldInjectVerificationError) {
+                    if (shouldInjectVerificationError) {
+                      console.log('[DEV] Injecting Sumsub verification error');
+                    } else {
+                      console.error(
+                        'KYC provider failed:',
+                        result.errorMsg || result.errorType,
+                      );
+                    }
                     navigationRef.navigate('KycError', {
                       errorSource: 'verification',
                       countryCode,
