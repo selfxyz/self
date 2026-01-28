@@ -33,6 +33,7 @@ concurrency:
 jobs:
   build:
     runs-on: ["128ram"]
+    timeout-minutes: 720 # 12 hours
     permissions:
       contents: read
       actions: read
