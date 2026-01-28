@@ -110,7 +110,9 @@ try {
       timeout: 30000
     });
     const output = rootPatchRun.stdout?.toString() || '';
-    const hasRealError = output.includes('**ERROR**') && !output.includes('which is not present at');
+    const stderrOutput = rootPatchRun.stderr?.toString() || '';
+    const hasRealError = (output.includes('**ERROR**') && !output.includes('which is not present at')) ||
+                         (stderrOutput.length > 0 && rootPatchRun.status !== 0);
     
     if (rootPatchRun.status === 0) {
       if (!isCI) console.log('✓ Patches applied to root workspace');
@@ -118,6 +120,7 @@ try {
     } else if (hasRealError) {
       console.error(`patch-package failed for root workspace`);
       console.error(output);
+      if (stderrOutput) console.error(stderrOutput);
       anyPatchFailed = true;
     }
     // If packages are just missing (not hoisted to root), that's expected - continue to workspace patches
@@ -136,7 +139,9 @@ try {
     });
 
     const output = workspacePatchRun.stdout?.toString() || '';
-    const hasRealError = output.includes('**ERROR**') && !output.includes('which is not present at');
+    const stderrOutput = workspacePatchRun.stderr?.toString() || '';
+    const hasRealError = (output.includes('**ERROR**') && !output.includes('which is not present at')) ||
+                         (stderrOutput.length > 0 && workspacePatchRun.status !== 0);
 
     if (workspacePatchRun.status === 0) {
       if (!isCI) console.log(`✓ Patches applied to ${workspace.name} workspace`);
@@ -144,6 +149,7 @@ try {
     } else if (hasRealError) {
       console.error(`patch-package failed for ${workspace.name} workspace`);
       console.error(output);
+      if (stderrOutput) console.error(stderrOutput);
       anyPatchFailed = true;
     }
   }
