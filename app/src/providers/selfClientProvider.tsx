@@ -303,7 +303,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               (async () => {
                 try {
                   const accessToken = await fetchAccessToken();
-                  const result = await launchSumsub({ accessToken: accessToken.token });
+                  const result = await launchSumsub({
+                    accessToken: accessToken.token,
+                  });
 
                   // User cancelled - return silently
                   if (!result.success && result.status === 'Interrupted') {
@@ -312,7 +314,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
 
                   // Actual error from provider
                   if (!result.success) {
-                    console.error('KYC provider failed:', result.errorMsg || result.errorType);
+                    console.error(
+                      'KYC provider failed:',
+                      result.errorMsg || result.errorType,
+                    );
                     navigationRef.navigate('KycError', {
                       errorSource: 'verification',
                       countryCode,

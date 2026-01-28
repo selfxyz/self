@@ -18,8 +18,8 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
-import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
 import WarningIcon from '@/assets/images/warning.svg';
+import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
 import { extraYPadding } from '@/utils/styleUtils';
 
 type KycErrorRouteParams = {
@@ -79,7 +79,10 @@ const KycErrorScreen: React.FC = () => {
 
         // Still failed - stay on error screen
         if (!result.success) {
-          console.error('KYC retry failed:', result.errorMsg || result.errorType);
+          console.error(
+            'KYC retry failed:',
+            result.errorMsg || result.errorType,
+          );
           // Stay on this screen, user can try again
         } else {
           // Success - provider handles its own success UI
