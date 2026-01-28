@@ -323,9 +323,7 @@ library CustomVerifier {
 
         if (verificationConfig.forbiddenCountriesEnabled) {
             for (uint256 i = 0; i < 4; i++) {
-                if (
-                    kycOutput.forbiddenCountriesListPacked[i] != verificationConfig.forbiddenCountriesListPacked[i]
-                ) {
+                if (kycOutput.forbiddenCountriesListPacked[i] != verificationConfig.forbiddenCountriesListPacked[i]) {
                     revert InvalidForbiddenCountries();
                 }
             }

@@ -145,12 +145,7 @@ describe("KYC Registration test", function () {
     });
 
     it("should successfully register an identity commitment", async () => {
-      await deployedActors.registryKyc.registerPubkeyCommitment(
-        mockProof.a,
-        mockProof.b,
-        mockProof.c,
-        mockPubSignals,
-      );
+      await deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals);
 
       await expect(deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof)).to.emit(
         deployedActors.registryKyc,
@@ -168,12 +163,7 @@ describe("KYC Registration test", function () {
     });
 
     it("should not register an identity commitment if the proof is invalid", async () => {
-      await deployedActors.registryKyc.registerPubkeyCommitment(
-        mockProof.a,
-        mockProof.b,
-        mockProof.c,
-        mockPubSignals,
-      );
+      await deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals);
 
       const invalidRegisterProof = structuredClone(registerProof);
       invalidRegisterProof.pubSignals[1] = 0n;
@@ -434,12 +424,7 @@ describe("KYC Registration test", function () {
         ];
 
         await expect(
-          deployedActors.registryKyc.registerPubkeyCommitment(
-            mockProof.a,
-            mockProof.b,
-            mockProof.c,
-            mockPubSignals,
-          ),
+          deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals),
         ).to.be.revertedWithCustomError(deployedActors.registryKyc, "INVALID_PROOF");
       });
 
@@ -456,12 +441,7 @@ describe("KYC Registration test", function () {
         ];
 
         await expect(
-          deployedActors.registryKyc.registerPubkeyCommitment(
-            mockProof.a,
-            mockProof.b,
-            mockProof.c,
-            mockPubSignals,
-          ),
+          deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals),
         ).to.be.revertedWithCustomError(deployedActors.registryKyc, "INVALID_ROOT_CA");
       });
 
@@ -478,12 +458,7 @@ describe("KYC Registration test", function () {
         ];
 
         await expect(
-          deployedActors.registryKyc.registerPubkeyCommitment(
-            mockProof.a,
-            mockProof.b,
-            mockProof.c,
-            mockPubSignals,
-          ),
+          deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals),
         ).to.be.revertedWithCustomError(deployedActors.registryKyc, "INVALID_IMAGE");
       });
     });
