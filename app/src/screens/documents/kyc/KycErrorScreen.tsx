@@ -54,7 +54,7 @@ const KycErrorScreen: React.FC = () => {
   const [isRetrying, setIsRetrying] = useState(false);
 
   const errorSource = route.params?.errorSource || 'initialization';
-  const countryCode = route.params?.countryCode;
+  // const countryCode = route.params?.countryCode;
 
   const { title, description } = getErrorMessages(errorSource);
 

@@ -17,7 +17,9 @@ let useErrorInjectionStore: any = null;
 let IS_DEV_MODE = false;
 try {
   // These imports will only work in the main app, not in the SDK package
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const errorInjectionModule = require('../../../../app/src/stores/errorInjectionStore');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const devUtilsModule = require('../../../../app/src/utils/devUtils');
   useErrorInjectionStore = errorInjectionModule.useErrorInjectionStore;
   IS_DEV_MODE = devUtilsModule.IS_DEV_MODE;
