@@ -6,7 +6,7 @@ import {CircuitConstantsV2} from "../constants/CircuitConstantsV2.sol";
 import {GenericProofStruct} from "../interfaces/IRegisterCircuitVerifier.sol";
 import {IRegisterCircuitVerifier} from "../interfaces/IRegisterCircuitVerifier.sol";
 import {IAadhaarRegisterCircuitVerifier} from "../interfaces/IRegisterCircuitVerifier.sol";
-import {ISelfricaRegisterCircuitVerifier} from "../interfaces/IRegisterCircuitVerifier.sol";
+import {IKycRegisterCircuitVerifier} from "../interfaces/IRegisterCircuitVerifier.sol";
 import {IIdentityRegistryV1} from "../interfaces/IIdentityRegistryV1.sol";
 import {IIdentityRegistryIdCardV1} from "../interfaces/IIdentityRegistryIdCardV1.sol";
 import {IIdentityRegistryAadhaarV1} from "../interfaces/IIdentityRegistryAadhaarV1.sol";
@@ -100,7 +100,7 @@ library RegisterProofVerifierLib {
         } else if (attestationId == AttestationId.KYC) {
             if (
                 !IIdentityRegistryKycV1(registryAddress).checkPubkeyCommitment(
-                    registerCircuitProof.pubSignals[CircuitConstantsV2.SELFRICA_PUBKEY_COMMITMENT_INDEX]
+                    registerCircuitProof.pubSignals[CircuitConstantsV2.KYC_PUBKEY_COMMITMENT_INDEX]
                 )
             ) {
                 revert InvalidPubkeyCommitment();
@@ -158,7 +158,7 @@ library RegisterProofVerifierLib {
                 registerCircuitProof.pubSignals[3]
             ];
             if (
-                !ISelfricaRegisterCircuitVerifier(verifier).verifyProof(
+                !IKycRegisterCircuitVerifier(verifier).verifyProof(
                     registerCircuitProof.a,
                     registerCircuitProof.b,
                     registerCircuitProof.c,
