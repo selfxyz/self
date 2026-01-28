@@ -158,11 +158,16 @@ try {
     console.error('Some patches failed to apply. Check if patch versions match installed package versions.');
     process.exit(1);
   }
+  if (anyPatchFailed && isCI) {
+    console.warn('⚠️  CI Warning: Some patches failed to apply. Review patch compatibility.');
+  }
 
   if (anyPatchApplied) {
     if (!isCI) console.log('✓ patch-package completed');
+    else console.log('patch-package completed');
   } else {
     if (!isCI) console.log('patch-package: no patches applied (packages may be in different locations)');
+    else console.log('patch-package: no patches applied');
   }
 } catch (error) {
   if (isCI) {

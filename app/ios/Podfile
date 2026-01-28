@@ -77,10 +77,13 @@ target "Self" do
     pod "NFCPassportReader", git: nfc_repo_url, commit: "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
   end
 
+  # Explicitly declare Mixpanel to ensure it's available even in E2E builds
+  # (NFCPassportReader also includes Mixpanel, but is skipped during E2E testing)
+  pod "Mixpanel-swift", :modular_headers => true
+
   pod "QKMRZScanner"
   pod "lottie-ios"
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
-  # Mixpanel-swift is already included as a dependency of NFCPassportReader
   # RNReactNativeHapticFeedback is handled by autolinking
 
   use_react_native!(

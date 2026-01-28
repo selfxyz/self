@@ -21,15 +21,10 @@ jobs:
           yarn workspace @selfxyz/common build
           yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Cache build artifacts
-        uses: actions/cache/save@v4
+        uses: ./.github/actions/cache-mobile-sdk-build
         with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-            node_modules
-            packages/mobile-sdk-alpha/node_modules
-            common/node_modules
-          key: mobile-sdk-alpha-build-${{ github.sha }}
+          mode: save
+          cache-version: v1
 
   lint:
     runs-on: ubuntu-latest
@@ -40,15 +35,10 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
         id: restore-build
-        uses: actions/cache/restore@v4
+        uses: ./.github/actions/cache-mobile-sdk-build
         with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-            node_modules
-            packages/mobile-sdk-alpha/node_modules
-            common/node_modules
-          key: mobile-sdk-alpha-build-${{ github.sha }}
+          mode: restore
+          cache-version: v1
           fail-on-cache-miss: false
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
@@ -67,15 +57,10 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
         id: restore-build
-        uses: actions/cache/restore@v4
+        uses: ./.github/actions/cache-mobile-sdk-build
         with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-            node_modules
-            packages/mobile-sdk-alpha/node_modules
-            common/node_modules
-          key: mobile-sdk-alpha-build-${{ github.sha }}
+          mode: restore
+          cache-version: v1
           fail-on-cache-miss: false
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
@@ -94,15 +79,10 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
         id: restore-build
-        uses: actions/cache/restore@v4
+        uses: ./.github/actions/cache-mobile-sdk-build
         with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-            node_modules
-            packages/mobile-sdk-alpha/node_modules
-            common/node_modules
-          key: mobile-sdk-alpha-build-${{ github.sha }}
+          mode: restore
+          cache-version: v1
           fail-on-cache-miss: false
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
@@ -121,15 +101,10 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
         id: restore-build
-        uses: actions/cache/restore@v4
+        uses: ./.github/actions/cache-mobile-sdk-build
         with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-            node_modules
-            packages/mobile-sdk-alpha/node_modules
-            common/node_modules
-          key: mobile-sdk-alpha-build-${{ github.sha }}
+          mode: restore
+          cache-version: v1
           fail-on-cache-miss: false
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
