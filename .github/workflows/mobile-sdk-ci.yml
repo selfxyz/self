@@ -39,6 +39,7 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
+        id: restore-build
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -48,7 +49,12 @@ jobs:
             packages/mobile-sdk-alpha/node_modules
             common/node_modules
           key: mobile-sdk-alpha-build-${{ github.sha }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Run linter
         run: yarn workspace @selfxyz/mobile-sdk-alpha lint
 
@@ -60,6 +66,7 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
+        id: restore-build
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -69,7 +76,12 @@ jobs:
             packages/mobile-sdk-alpha/node_modules
             common/node_modules
           key: mobile-sdk-alpha-build-${{ github.sha }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Check Prettier formatting
         run: yarn workspace @selfxyz/mobile-sdk-alpha prettier --check .
 
@@ -81,6 +93,7 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
+        id: restore-build
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -90,7 +103,12 @@ jobs:
             packages/mobile-sdk-alpha/node_modules
             common/node_modules
           key: mobile-sdk-alpha-build-${{ github.sha }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Type checking
         run: yarn workspace @selfxyz/mobile-sdk-alpha types
 
@@ -102,6 +120,7 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
+        id: restore-build
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -111,6 +130,11 @@ jobs:
             packages/mobile-sdk-alpha/node_modules
             common/node_modules
           key: mobile-sdk-alpha-build-${{ github.sha }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Run tests
         run: yarn workspace @selfxyz/mobile-sdk-alpha test

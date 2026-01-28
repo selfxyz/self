@@ -54,10 +54,15 @@ jobs:
             sdk/core/node_modules
             common/node_modules
           key: core-sdk-build-${{ github.sha }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
       - name: Install Dependencies
         if: steps.build-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/yarn-install
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/core build
       - name: Run linter
         run: yarn workspace @selfxyz/core lint
 
@@ -83,10 +88,15 @@ jobs:
             sdk/core/node_modules
             common/node_modules
           key: core-sdk-build-${{ github.sha }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
       - name: Install Dependencies
         if: steps.build-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/yarn-install
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/core build
       - name: Type checking
         run: yarn workspace @selfxyz/core types
 
@@ -112,9 +122,14 @@ jobs:
             sdk/core/node_modules
             common/node_modules
           key: core-sdk-build-${{ github.sha }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
       - name: Install Dependencies
         if: steps.build-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/yarn-install
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/core build
       - name: Run tests
         run: yarn workspace @selfxyz/core test

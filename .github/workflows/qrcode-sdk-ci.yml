@@ -125,6 +125,7 @@ jobs:
         uses: ./.github/actions/yarn-install
 
       - name: Restore build artifacts
+        id: restore-build
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -132,7 +133,14 @@ jobs:
             sdk/sdk-common/dist
             sdk/qrcode/dist
           key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
+
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/sdk-common build
+          yarn workspace @selfxyz/qrcode build
 
       - name: Run linter
         run: yarn workspace @selfxyz/qrcode lint:imports:check
@@ -193,6 +201,7 @@ jobs:
         uses: ./.github/actions/yarn-install
 
       - name: Restore build artifacts
+        id: restore-build
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -200,7 +209,14 @@ jobs:
             sdk/sdk-common/dist
             sdk/qrcode/dist
           key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
+
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/sdk-common build
+          yarn workspace @selfxyz/qrcode build
 
       - name: Verify build artifacts
         run: |
@@ -255,6 +271,7 @@ jobs:
         uses: ./.github/actions/yarn-install
 
       - name: Restore build artifacts
+        id: restore-build
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -262,7 +279,14 @@ jobs:
             sdk/sdk-common/dist
             sdk/qrcode/dist
           key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
+
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/sdk-common build
+          yarn workspace @selfxyz/qrcode build
 
       - name: Run tests
         run: yarn workspace @selfxyz/qrcode test
