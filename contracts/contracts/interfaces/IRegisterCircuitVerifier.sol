@@ -64,7 +64,7 @@ interface IAadhaarRegisterCircuitVerifier {
     ) external view returns (bool isValid);
 }
 
-interface ISelfricaRegisterCircuitVerifier {
+interface IKycRegisterCircuitVerifier {
     /**
      * @notice Verifies a given register circuit proof.
      * @dev This function checks the validity of the provided proof parameters.
