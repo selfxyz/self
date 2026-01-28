@@ -399,12 +399,27 @@ const LogLevelSelector = ({
 const ErrorInjectionSelector = ({}) => {
   const injectedErrors = useErrorInjectionStore(state => state.injectedErrors);
   const clearOnTrigger = useErrorInjectionStore(state => state.clearOnTrigger);
-  const toggleError = useErrorInjectionStore(state => state.toggleError);
+  const setInjectedErrors = useErrorInjectionStore(
+    state => state.setInjectedErrors,
+  );
   const clearAllErrors = useErrorInjectionStore(state => state.clearAllErrors);
   const setClearOnTrigger = useErrorInjectionStore(
     state => state.setClearOnTrigger,
   );
   const [open, setOpen] = useState(false);
+
+  // Single error selection - replace instead of toggle
+  const selectError = (errorType: InjectedErrorType) => {
+    // If clicking the same error, clear it; otherwise set the new one
+    if (injectedErrors.length === 1 && injectedErrors[0] === errorType) {
+      clearAllErrors();
+    } else {
+      setInjectedErrors([errorType]);
+    }
+  };
+
+  const currentError = injectedErrors.length > 0 ? injectedErrors[0] : null;
+  const currentErrorLabel = currentError ? ERROR_LABELS[currentError] : null;
 
   return (
     <YStack gap="$2">
@@ -424,9 +439,7 @@ const ErrorInjectionSelector = ({}) => {
           paddingRight="$1.5"
         >
           <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-            {injectedErrors.length > 0
-              ? `${injectedErrors.length} error(s) selected`
-              : 'Select errors to inject'}
+            {currentErrorLabel || 'Select KYC fallback to test'}
           </Text>
           <ChevronDown color={slate500} strokeWidth={2.5} />
         </XStack>
@@ -438,7 +451,7 @@ const ErrorInjectionSelector = ({}) => {
           isSubscribed={clearOnTrigger}
           onToggle={() => setClearOnTrigger(!clearOnTrigger)}
         />
-        {injectedErrors.length > 0 && (
+        {currentError && (
           <Button
             backgroundColor={red500}
             borderRadius="$2"
@@ -450,7 +463,7 @@ const ErrorInjectionSelector = ({}) => {
             }}
           >
             <Text color={white} fontSize="$5" fontFamily={dinot}>
-              Clear All
+              Clear
             </Text>
           </Button>
         )}
@@ -477,7 +490,7 @@ const ErrorInjectionSelector = ({}) => {
               marginBottom="$4"
             >
               <Text fontSize="$8" fontFamily={dinot}>
-                Error Injection
+                KYC Fallback Testing
               </Text>
               <Button
                 onPress={() => setOpen(false)}
@@ -509,7 +522,7 @@ const ErrorInjectionSelector = ({}) => {
                   {errors.map((errorType: InjectedErrorType) => (
                     <TouchableOpacity
                       key={errorType}
-                      onPress={() => toggleError(errorType)}
+                      onPress={() => selectError(errorType)}
                     >
                       <XStack
                         paddingVertical="$3"
@@ -522,7 +535,7 @@ const ErrorInjectionSelector = ({}) => {
                         <Text fontSize="$5" color={slate600} fontFamily={dinot}>
                           {ERROR_LABELS[errorType]}
                         </Text>
-                        {injectedErrors.includes(errorType) && (
+                        {currentError === errorType && (
                           <Check color={slate600} size={20} />
                         )}
                       </XStack>
@@ -930,8 +943,8 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         {IS_DEV_MODE && (
           <ParameterSection
             icon={<BugIcon />}
-            title="Error Injection"
-            description="Force errors during onboarding for testing"
+            title="KYC Fallback Testing"
+            description="Test KYC fallback flow when passport fails"
           >
             <ErrorInjectionSelector />
           </ParameterSection>

@@ -107,7 +107,7 @@ const DocumentNFCScanScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<DocumentNFCScanRoute>();
-  const { showModal } = useFeedback();
+  useFeedback();
   useFeedbackAutoHide();
   const { shouldInjectError } = useErrorInjection();
   const {
@@ -191,18 +191,12 @@ const DocumentNFCScanScreen: React.FC = () => {
         },
         { message: sanitizeErrorMessage(message) },
       );
-      showModal({
-        titleText: 'NFC Scan Error',
-        bodyText: message,
-        buttonText: SUPPORT_FORM_BUTTON_TEXT,
-        secondaryButtonText: 'Help',
-        preventDismiss: false,
-        onButtonPress: openSupportForm,
-        onSecondaryButtonPress: goToNFCTrouble,
-        onModalDismiss: () => {},
+      navigation.navigate('VerificationFallback', {
+        errorSource: 'nfc_scan_failed',
+        countryCode,
       });
     },
-    [baseContext, showModal, goToNFCTrouble],
+    [baseContext, navigation, countryCode],
   );
 
   const checkNfcSupport = useCallback(async () => {

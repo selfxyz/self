@@ -11,7 +11,6 @@ import { HeadlessNavForEuclid } from '@/components/navbar/HeadlessNavForEuclid';
 import AadhaarUploadedSuccessScreen from '@/screens/documents/aadhaar/AadhaarUploadedSuccessScreen';
 import AadhaarUploadErrorScreen from '@/screens/documents/aadhaar/AadhaarUploadErrorScreen';
 import AadhaarUploadScreen from '@/screens/documents/aadhaar/AadhaarUploadScreen';
-import KycErrorScreen from '@/screens/documents/kyc/KycErrorScreen';
 import DocumentDataInfoScreen from '@/screens/documents/management/DocumentDataInfoScreen';
 import IdDetailsScreen from '@/screens/documents/management/IdDetailsScreen';
 import ManageDocumentsScreen from '@/screens/documents/management/ManageDocumentsScreen';
@@ -20,6 +19,7 @@ import DocumentCameraTroubleScreen from '@/screens/documents/scanning/DocumentCa
 import DocumentNFCMethodSelectionScreen from '@/screens/documents/scanning/DocumentNFCMethodSelectionScreen';
 import DocumentNFCScanScreen from '@/screens/documents/scanning/DocumentNFCScanScreen';
 import DocumentNFCTroubleScreen from '@/screens/documents/scanning/DocumentNFCTroubleScreen';
+import VerificationFallbackScreen from '@/screens/documents/scanning/VerificationFallbackScreen';
 import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongingScreen';
 import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
 import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
@@ -156,14 +156,14 @@ const documentsScreens = {
       errorType: 'general',
     },
   },
-  KycError: {
-    screen: KycErrorScreen,
+  VerificationFallback: {
+    screen: VerificationFallbackScreen,
     options: {
-      title: 'OTHER IDS VERIFICATION',
+      title: 'VERIFICATION',
       headerShown: false,
     } as NativeStackNavigationOptions,
     initialParams: {
-      errorSource: 'initialization',
+      errorSource: 'sumsub_initialization',
       countryCode: '',
     },
   },

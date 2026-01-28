@@ -59,6 +59,7 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
               error: 'Injected error for testing',
               duration_seconds: parseFloat(scanDurationSeconds),
             });
+            selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
             return;
           }
         }

@@ -79,7 +79,7 @@ export type RootStackParamList = Omit<
   | 'Home'
   | 'IDPicker'
   | 'IdDetails'
-  | 'KycError'
+  | 'VerificationFallback'
   | 'Loading'
   | 'Modal'
   | 'MockDataDeepLink'
@@ -128,9 +128,13 @@ export type RootStackParamList = Omit<
     errorType: string;
   };
 
-  // KYC screens
-  KycError: {
-    errorSource: 'initialization' | 'verification';
+  // Verification Fallback screens
+  VerificationFallback: {
+    errorSource:
+      | 'mrz_scan_failed'
+      | 'nfc_scan_failed'
+      | 'sumsub_initialization'
+      | 'sumsub_verification';
     countryCode: string;
   };
 

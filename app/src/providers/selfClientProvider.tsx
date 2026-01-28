@@ -168,6 +168,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const appListeners = useMemo(() => {
     const { map, addListener } = createListenersMap();
 
+    // Track current countryCode for error navigation
+    let currentCountryCode = '';
+
     addListener(SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND, () => {
       if (navigationRef.isReady()) {
         navigationRef.navigate('DocumentDataNotFound');
@@ -262,7 +265,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
-      navigateIfReady('DocumentCameraTrouble');
+      navigateIfReady('VerificationFallback', {
+        errorSource: 'mrz_scan_failed',
+        countryCode: currentCountryCode,
+      });
     });
 
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS, () => {
@@ -281,6 +287,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         countryCode: string;
         documentTypes: string[];
       }) => {
+        currentCountryCode = countryCode;
         navigateIfReady('IDPicker', { countryCode, documentTypes });
       },
     );
@@ -340,16 +347,16 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                         result.errorMsg || result.errorType,
                       );
                     }
-                    navigationRef.navigate('KycError', {
-                      errorSource: 'verification',
+                    navigationRef.navigate('VerificationFallback', {
+                      errorSource: 'sumsub_verification',
                       countryCode,
                     });
                   }
                   // success case: provider handles its own success UI
                 } catch (error) {
                   console.error('Error in KYC flow:', error);
-                  navigationRef.navigate('KycError', {
-                    errorSource: 'initialization',
+                  navigationRef.navigate('VerificationFallback', {
+                    errorSource: 'sumsub_initialization',
                     countryCode,
                   });
                 }
