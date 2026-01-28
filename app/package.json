@@ -229,6 +229,7 @@
     "jest": "^30.2.0",
     "path-browserify": "^1.0.1",
     "prettier": "^3.5.3",
+    "prop-types": "^15.8.1",
     "react-native-svg-transformer": "^1.5.2",
     "react-test-renderer": "^18.3.1",
     "rollup-plugin-visualizer": "^6.0.5",

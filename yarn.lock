@@ -8742,6 +8742,7 @@ __metadata:
   resolution: "@selfxyz/circuits@workspace:circuits"
   dependencies:
     "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1"
+    "@babel/core": "npm:^7.28.6"
     "@noble/curves": "npm:^1.4.2"
     "@openpassport/zk-email-circuits": "npm:^6.1.2"
     "@openpassport/zk-kit-imt": "npm:^0.0.4"
@@ -8776,6 +8777,8 @@ __metadata:
     crypto: "npm:^1.0.1"
     dotenv: "npm:^16.4.7"
     elliptic: "npm:^6.5.5"
+    eslint: "npm:^8.57.0"
+    eslint-plugin-import: "npm:^2.31.0"
     hash.js: "npm:^1.1.7"
     js-sha256: "npm:^0.10.1"
     jsrsasign: "npm:^11.1.0"
@@ -9063,6 +9066,7 @@ __metadata:
     pkijs: "npm:^3.3.3"
     poseidon-lite: "npm:^0.2.0"
     prettier: "npm:^3.5.3"
+    prop-types: "npm:^15.8.1"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.9"
@@ -9141,11 +9145,14 @@ __metadata:
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.9"
+    react-native-blur-effect: "npm:^1.1.3"
     react-native-haptic-feedback: "npm:^2.3.3"
     react-native-localize: "npm:^3.6.1"
     react-native-nfc-manager: "npm:^3.17.2"
+    react-native-svg: "npm:15.15.1"
     react-native-svg-circle-country-flags: "npm:^0.2.2"
     react-native-web: "npm:^0.21.2"
+    react-native-webview: "npm:13.16.0"
     socket.io-client: "npm:^4.8.3"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.3"
@@ -14345,16 +14352,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:>=18.0.0 <20.0.0":
-  version: 19.2.3
-  resolution: "@types/react-dom@npm:19.2.3"
-  peerDependencies:
-    "@types/react": ^19.2.0
-  checksum: 10c0/b486ebe0f4e2fb35e2e108df1d8fc0927ca5d6002d5771e8a739de11239fe62d0e207c50886185253c99eb9dedfeeb956ea7429e5ba17f6693c7acb4c02f8cd1
-  languageName: node
-  linkType: hard
-
-"@types/react-dom@npm:^18.0.0, @types/react-dom@npm:^18.3.0":
+"@types/react-dom@npm:^18.3.0":
   version: 18.3.7
   resolution: "@types/react-dom@npm:18.3.7"
   peerDependencies:
