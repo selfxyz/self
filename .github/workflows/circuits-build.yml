@@ -33,6 +33,7 @@ concurrency:
 jobs:
   build:
     runs-on: ["128ram"]
+    timeout-minutes: 720 # 12 hours
     permissions:
       contents: read
       actions: read
@@ -208,6 +209,7 @@ jobs:
             ./circuits/scripts/build/build_cpp.sh register
             ./circuits/scripts/build/build_cpp.sh register_id
             ./circuits/scripts/build/build_cpp.sh register_aadhaar
+            ./circuits/scripts/build/build_cpp.sh register_kyc
             ./circuits/scripts/build/build_cpp.sh disclose
             ./circuits/scripts/build/build_cpp.sh dsc
           fi

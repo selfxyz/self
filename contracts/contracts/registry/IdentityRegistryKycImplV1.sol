@@ -32,11 +32,11 @@ import {Formatter} from "../libraries/Formatter.sol";
  */
 
 /**
- * @title IdentityRegistrySelfricaStorageV1
- * @dev Abstract contract for storage layout of IdentityRegistrySelfricaImplV1.
+ * @title IdentityRegistryKycStorageV1
+ * @dev Abstract contract for storage layout of IdentityRegistryKycImplV1.
  * Inherits from ImplRoot to provide upgradeable functionality.
  */
-abstract contract IdentityRegistrySelfricaStorageV1 is ImplRoot {
+abstract contract IdentityRegistryKycStorageV1 is ImplRoot {
     // =============================================
     // Storage Variables
     // =============================================
@@ -56,7 +56,7 @@ abstract contract IdentityRegistrySelfricaStorageV1 is ImplRoot {
     /// @notice Mapping from nullifier to a boolean indicating registration.
     mapping(uint256 => bool) internal _nullifiers;
 
-    /// @notice Pubkey commitments registered for Selfrica.
+    /// @notice Pubkey commitments registered for KYC.
     mapping(uint256 => bool) internal _isRegisteredPubkeyCommitment;
 
     /// @notice Current name and date of birth OFAC root.
@@ -110,11 +110,11 @@ interface IPCR0Manager {
 }
 
 /**
- * @title IdentityRegistrySelfricaImplV1
+ * @title IdentityRegistryKycImplV1
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
- * @dev Inherits from IdentityRegistrySelfricaStorageV1 and implements IIdentityRegistrySelfricaV1.
+ * @dev Inherits from IdentityRegistryKycStorageV1 and implements IIdentityRegistryKycV1.
  */
-contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, IIdentityRegistryKycV1 {
+contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityRegistryKycV1 {
     using InternalLeanIMT for LeanIMTData;
 
     // ====================================================
@@ -370,7 +370,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     }
 
     // ====================================================
-    // External Functions - Only Owner TODO: add only role(SECURITY_ROLE) or something
+    // External Functions - Role-Based Access Control
     // ====================================================
 
     /**
@@ -378,7 +378,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newHubAddress The new address of the hub.
      */
-    function updateHub(address newHubAddress) external onlyProxy {
+    function updateHub(address newHubAddress) external onlyProxy onlyRole(SECURITY_ROLE) {
         if (newHubAddress == address(0)) revert HUB_ADDRESS_ZERO();
         _hub = newHubAddress;
         emit HubUpdated(newHubAddress);
@@ -389,7 +389,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newPCR0ManagerAddress The new address of the PCR0Manager.
      */
-    function updatePCR0Manager(address newPCR0ManagerAddress) external virtual onlyProxy {
+    function updatePCR0Manager(address newPCR0ManagerAddress) external virtual onlyProxy onlyRole(SECURITY_ROLE) {
         _PCR0Manager = newPCR0ManagerAddress;
         emit PCR0ManagerUpdated(newPCR0ManagerAddress);
     }
@@ -399,7 +399,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param nameAndDobOfacRoot The new name and date of birth OFAC root value.
      */
-    function updateNameAndDobOfacRoot(uint256 nameAndDobOfacRoot) external virtual onlyProxy {
+    function updateNameAndDobOfacRoot(uint256 nameAndDobOfacRoot) external virtual onlyProxy onlyRole(OPERATIONS_ROLE) {
         _nameAndDobOfacRoot = nameAndDobOfacRoot;
         emit NameAndDobOfacRootUpdated(nameAndDobOfacRoot);
     }
@@ -409,7 +409,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param nameAndYobOfacRoot The new name and year of birth OFAC root value.
      */
-    function updateNameAndYobOfacRoot(uint256 nameAndYobOfacRoot) external virtual onlyProxy {
+    function updateNameAndYobOfacRoot(uint256 nameAndYobOfacRoot) external virtual onlyProxy onlyRole(OPERATIONS_ROLE) {
         _nameAndYobOfacRoot = nameAndYobOfacRoot;
         emit NameAndYobOfacRootUpdated(nameAndYobOfacRoot);
     }
@@ -419,7 +419,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param gcpRootCAPubkeyHash The new GCP root CA pubkey hash value.
      */
-    function updateGCPRootCAPubkeyHash(uint256 gcpRootCAPubkeyHash) external virtual onlyProxy {
+    function updateGCPRootCAPubkeyHash(uint256 gcpRootCAPubkeyHash) external virtual onlyProxy onlyRole(SECURITY_ROLE) {
         _gcpRootCAPubkeyHash = gcpRootCAPubkeyHash;
         emit GCPRootCAPubkeyHashUpdated(gcpRootCAPubkeyHash);
     }
@@ -427,7 +427,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @notice Updates the GCP JWT verifier contract address.
     /// @dev Callable only by the contract owner.
     /// @param verifier The new GCP JWT verifier address.
-    function updateGCPJWTVerifier(address verifier) external onlyProxy {
+    function updateGCPJWTVerifier(address verifier) external onlyProxy onlyRole(SECURITY_ROLE) {
         _gcpJwtVerifier = verifier;
         emit GCPJWTVerifierUpdated(verifier);
     }
@@ -435,7 +435,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @notice Updates the TEE address.
     /// @dev Callable only by the contract owner.
     /// @param teeAddress The new TEE address.
-    function updateTEE(address teeAddress) external onlyProxy {
+    function updateTEE(address teeAddress) external onlyProxy onlyRole(SECURITY_ROLE) {
         _tee = teeAddress;
         emit TEEUpdated(teeAddress);
     }
@@ -491,7 +491,10 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @dev Callable only by the owner for testing or administration.
     /// @param nullifier The nullifier associated with the identity commitment.
     /// @param commitment The identity commitment to add.
-    function devAddIdentityCommitment(uint256 nullifier, uint256 commitment) external onlyProxy {
+    function devAddIdentityCommitment(
+        uint256 nullifier,
+        uint256 commitment
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         _nullifiers[nullifier] = true;
         uint256 imt_root = _identityCommitmentIMT._insert(commitment);
         _rootTimestamps[imt_root] = block.timestamp;
@@ -504,7 +507,11 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @param oldLeaf The current identity commitment to update.
     /// @param newLeaf The new identity commitment.
     /// @param siblingNodes An array of sibling nodes for Merkle proof generation.
-    function devUpdateCommitment(uint256 oldLeaf, uint256 newLeaf, uint256[] calldata siblingNodes) external onlyProxy {
+    function devUpdateCommitment(
+        uint256 oldLeaf,
+        uint256 newLeaf,
+        uint256[] calldata siblingNodes
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         uint256 imt_root = _identityCommitmentIMT._update(oldLeaf, newLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
@@ -514,7 +521,10 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @dev Caller must be the owner. Provides sibling nodes for proof of position.
     /// @param oldLeaf The identity commitment to remove.
     /// @param siblingNodes An array of sibling nodes for Merkle proof generation.
-    function devRemoveCommitment(uint256 oldLeaf, uint256[] calldata siblingNodes) external onlyProxy {
+    function devRemoveCommitment(
+        uint256 oldLeaf,
+        uint256[] calldata siblingNodes
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         uint256 imt_root = _identityCommitmentIMT._remove(oldLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);

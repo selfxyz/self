@@ -50,16 +50,14 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+          cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
@@ -72,13 +70,10 @@ jobs:
           yarn workspace @selfxyz/qrcode build
 
       - name: Cache build artifacts
-        uses: actions/cache/save@v4
+        uses: ./.github/actions/cache-sdk-build
         with:
-          path: |
-            common/dist
-            sdk/sdk-common/dist
-            sdk/qrcode/dist
-          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
+          mode: save
+          cache-version: ${{ env.GH_SDK_CACHE_VERSION }}
 
   # Quality checks job
   quality-checks:
@@ -110,29 +105,32 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+          cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
       - name: Restore build artifacts
-        uses: actions/cache/restore@v4
+        id: restore-build
+        uses: ./.github/actions/cache-sdk-build
         with:
-          path: |
-            common/dist
-            sdk/sdk-common/dist
-            sdk/qrcode/dist
-          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
-          fail-on-cache-miss: true
+          mode: restore
+          cache-version: ${{ env.GH_SDK_CACHE_VERSION }}
+          fail-on-cache-miss: false
+
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/sdk-common build
+          yarn workspace @selfxyz/qrcode build
 
       - name: Run linter
         run: yarn workspace @selfxyz/qrcode lint:imports:check
@@ -178,29 +176,32 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+          cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
       - name: Restore build artifacts
-        uses: actions/cache/restore@v4
+        id: restore-build
+        uses: ./.github/actions/cache-sdk-build
         with:
-          path: |
-            common/dist
-            sdk/sdk-common/dist
-            sdk/qrcode/dist
-          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
-          fail-on-cache-miss: true
+          mode: restore
+          cache-version: ${{ env.GH_SDK_CACHE_VERSION }}
+          fail-on-cache-miss: false
+
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/sdk-common build
+          yarn workspace @selfxyz/qrcode build
 
       - name: Verify build artifacts
         run: |
@@ -240,29 +241,41 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+          cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
       - name: Restore build artifacts
-        uses: actions/cache/restore@v4
+        id: restore-build
+        uses: ./.github/actions/cache-sdk-build
         with:
-          path: |
-            common/dist
-            sdk/sdk-common/dist
-            sdk/qrcode/dist
-          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
-          fail-on-cache-miss: true
+          mode: restore
+          cache-version: ${{ env.GH_SDK_CACHE_VERSION }}
+          fail-on-cache-miss: false
+
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.restore-build.outputs.cache-hit != 'true'
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/sdk-common build
+          yarn workspace @selfxyz/qrcode build
+
+      - name: Check for nested require() in tests
+        run: |
+          # Check SDK tests for nested require patterns that cause OOM
+          if grep -rE "require\(['\"]react(-native)?['\"])" sdk/qrcode/src/ sdk/qrcode/tests/ 2>/dev/null; then
+            echo "❌ Found nested require() patterns that cause OOM in CI"
+            exit 1
+          fi
+          echo "✅ No nested require() patterns found"
 
       - name: Run tests
         run: yarn workspace @selfxyz/qrcode test

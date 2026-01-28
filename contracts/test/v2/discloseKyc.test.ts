@@ -14,15 +14,15 @@ import { generateKycDiscloseInput } from "@selfxyz/common";
 import { getSMTs } from "../utils/generateProof";
 import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
 import { BigNumberish } from "ethers";
-import { generateVcAndDiscloseSelfricaProof } from "../utils/generateProof";
+import { generateVcAndDiscloseKycProof } from "../utils/generateProof";
 import { KYC_ATTESTATION_ID } from "@selfxyz/common/constants/constants";
 import { poseidon2 } from "poseidon-lite";
 
-// Selfrica circuit indices - matches CircuitConstantsV2.getDiscloseIndices(SELFRICA_ID_CARD)
+// KYC circuit indices - matches CircuitConstantsV2.getDiscloseIndices(KYC_ID_CARD)
 // See CircuitConstantsV2.sol for full layout documentation
-const SELFRICA_CURRENT_DATE_INDEX = 21;
+const KYC_CURRENT_DATE_INDEX = 21;
 
-describe("Self Verification Flow V2 - Selfrica", () => {
+describe("Self Verification Flow V2 - KYC", () => {
   let deployedActors: DeployedActorsV2;
   let snapshotId: string;
   let nullifier: any;
@@ -51,8 +51,8 @@ describe("Self Verification Flow V2 - Selfrica", () => {
     const userData = "test-user-data-for-verification";
 
     userIdentifierHash = BigInt(calculateUserIdentifierHash(destChainId, user1Address.slice(2), userData).toString());
-    nameAndDob_smt = getSMTs().nameAndDob_selfrica_smt;
-    nameAndYob_smt = getSMTs().nameAndYob_selfrica_smt;
+    nameAndDob_smt = getSMTs().nameAndDob_kyc_smt;
+    nameAndYob_smt = getSMTs().nameAndYob_kyc_smt;
 
     const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
     const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
@@ -78,7 +78,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
     nullifier = packBytesAndPoseidon(nullifier);
     const commitment = poseidon2([BigInt(testInputs.secret), packBytesAndPoseidon(dataPadded)]);
 
-    await deployedActors.registrySelfrica.devAddIdentityCommitment(nullifier, commitment);
+    await deployedActors.registryKyc.devAddIdentityCommitment(nullifier, commitment);
 
     forbiddenCountriesList = [] as Country3LetterCode[];
     forbiddenCountriesListPacked = getPackedForbiddenCountries(forbiddenCountriesList);
@@ -97,7 +97,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
     };
 
     await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
-    baseVcAndDiscloseProof = await generateVcAndDiscloseSelfricaProof(testInputs);
+    baseVcAndDiscloseProof = await generateVcAndDiscloseKycProof(testInputs);
     snapshotId = await ethers.provider.send("evm_snapshot", []);
   });
 
@@ -106,12 +106,12 @@ describe("Self Verification Flow V2 - Selfrica", () => {
     snapshotId = await ethers.provider.send("evm_snapshot", []);
   });
 
-  describe("Complete V2 Verification Flow - Selfrica", () => {
-    // TODO: Fix test setup - the proof's merkle root needs to be registered in the registry
+  describe("Complete V2 Verification Flow - KYC", () => {
     // The issue is that generateKycDiscloseInput creates a commitment in the local tree,
+    // TODO: Fix test setup - the proof's merkle root needs to be registered in the registry
     // but the registry has its own separate tree. The proof uses the local tree's root,
     // which is not registered in the registry.
-    it("should complete full Selfrica verification flow with proper proof encoding", async () => {
+    it("should complete full KYC verification flow with proper proof encoding", async () => {
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
@@ -302,7 +302,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(KYC_ATTESTATION_ID)), 32);
 
       const clonedPubSignal = structuredClone(baseVcAndDiscloseProof.pubSignals);
-      // scopeIndex for Selfrica is 16
+      // scopeIndex for KYC is 16
       clonedPubSignal[16] = 1n;
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -348,7 +348,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(KYC_ATTESTATION_ID)), 32);
 
       const clonedPubSignal = structuredClone(baseVcAndDiscloseProof.pubSignals);
-      // userIdentifierIndex for Selfrica is 20
+      // userIdentifierIndex for KYC is 20
       clonedPubSignal[20] = 1n;
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -395,8 +395,8 @@ describe("Self Verification Flow V2 - Selfrica", () => {
 
       const clonedPubSignal = structuredClone(baseVcAndDiscloseProof.pubSignals);
       // Modify current date at the correct index using BigInt for safe arithmetic
-      const currentDateValue = BigInt(clonedPubSignal[SELFRICA_CURRENT_DATE_INDEX]);
-      clonedPubSignal[SELFRICA_CURRENT_DATE_INDEX] = (currentDateValue + 2n).toString();
+      const currentDateValue = BigInt(clonedPubSignal[KYC_CURRENT_DATE_INDEX]);
+      clonedPubSignal[KYC_CURRENT_DATE_INDEX] = (currentDateValue + 2n).toString();
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
@@ -443,8 +443,8 @@ describe("Self Verification Flow V2 - Selfrica", () => {
 
       const clonedPubSignal = structuredClone(baseVcAndDiscloseProof.pubSignals);
       // Modify current date at the correct index using BigInt for safe arithmetic
-      const currentDateValue = BigInt(clonedPubSignal[SELFRICA_CURRENT_DATE_INDEX]);
-      clonedPubSignal[SELFRICA_CURRENT_DATE_INDEX] = (currentDateValue - 1n).toString();
+      const currentDateValue = BigInt(clonedPubSignal[KYC_CURRENT_DATE_INDEX]);
+      clonedPubSignal[KYC_CURRENT_DATE_INDEX] = (currentDateValue - 1n).toString();
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
@@ -733,7 +733,7 @@ describe("Self Verification Flow V2 - Selfrica", () => {
         KYC_ATTESTATION_ID,
       );
 
-      const newProof = await generateVcAndDiscloseSelfricaProof(inputs);
+      const newProof = await generateVcAndDiscloseKycProof(inputs);
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(KYC_ATTESTATION_ID)), 32);
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],

@@ -411,7 +411,7 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
     }
 
     // ====================================================
-    // External Functions - Only Owner
+    // External Functions - Role-Based Access Control
     // ====================================================
 
     /**

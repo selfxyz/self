@@ -5,7 +5,7 @@ import {AttestationId} from "../constants/AttestationId.sol";
 import {GenericProofStruct} from "../interfaces/IRegisterCircuitVerifier.sol";
 import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import {IVcAndDiscloseAadhaarCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
-import {IVcAndDiscloseSelfricaCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
+import {IVcAndDiscloseKycCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 
 /**
  * @title ProofVerifierLib
@@ -25,7 +25,7 @@ library ProofVerifierLib {
      * @dev Handles different attestation types with different public signal counts:
      * - E_PASSPORT and EU_ID_CARD: 21 public signals
      * - AADHAAR: 19 public signals
-     * - SELFRICA_ID_CARD: 28 public signals
+     * - KYC: 29 public signals
      * @param attestationId The type of attestation being verified
      * @param verifierAddress The address of the verifier contract
      * @param vcAndDiscloseProof The proof data including public signals
@@ -67,13 +67,13 @@ library ProofVerifierLib {
                 revert InvalidVcAndDiscloseProof();
             }
         } else if (attestationId == AttestationId.KYC) {
-            uint256[30] memory pubSignals;
-            for (uint256 i = 0; i < 30; i++) {
+            uint256[29] memory pubSignals;
+            for (uint256 i = 0; i < 29; i++) {
                 pubSignals[i] = vcAndDiscloseProof.pubSignals[i];
             }
 
             if (
-                !IVcAndDiscloseSelfricaCircuitVerifier(verifierAddress).verifyProof(
+                !IVcAndDiscloseKycCircuitVerifier(verifierAddress).verifyProof(
                     vcAndDiscloseProof.a,
                     vcAndDiscloseProof.b,
                     vcAndDiscloseProof.c,

@@ -11,7 +11,6 @@ export type KycData = {
   dob: string;
   photoHash: string;
   phoneNumber: string;
-  document: string;
   gender: string;
   address: string;
   user_identifier: string;
@@ -20,11 +19,16 @@ export type KycData = {
   selector_older_than: string;
 };
 
-export const serializeKycData = (kycData: KycData) => {
+export const serializeKycData = (
+  kycData: Omit<
+    KycData,
+    'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'
+  >
+) => {
   //ensure max length of each field
   let serializedData = '';
-  serializedData += kycData.country.toUpperCase().padEnd(constants.KYC_COUNTRY_LENGTH, '\0');
-  serializedData += kycData.idType.toUpperCase().padEnd(constants.KYC_ID_TYPE_LENGTH, '\0');
+  serializedData += kycData.country.padEnd(constants.KYC_COUNTRY_LENGTH, '\0');
+  serializedData += kycData.idType.padEnd(constants.KYC_ID_TYPE_LENGTH, '\0');
   serializedData += kycData.idNumber.padEnd(constants.KYC_ID_NUMBER_LENGTH, '\0');
   serializedData += kycData.issuanceDate.padEnd(constants.KYC_ISSUANCE_DATE_LENGTH, '\0');
   serializedData += kycData.expiryDate.padEnd(constants.KYC_EXPIRY_DATE_LENGTH, '\0');
@@ -32,7 +36,6 @@ export const serializeKycData = (kycData: KycData) => {
   serializedData += kycData.dob.padEnd(constants.KYC_DOB_LENGTH, '\0');
   serializedData += kycData.photoHash.padEnd(constants.KYC_PHOTO_HASH_LENGTH, '\0');
   serializedData += kycData.phoneNumber.padEnd(constants.KYC_PHONE_NUMBER_LENGTH, '\0');
-  serializedData += kycData.document.padEnd(constants.KYC_DOCUMENT_LENGTH, '\0');
   serializedData += kycData.gender.padEnd(constants.KYC_GENDER_LENGTH, '\0');
   serializedData += kycData.address.padEnd(constants.KYC_ADDRESS_LENGTH, '\0');
 

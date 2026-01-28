@@ -2,8 +2,8 @@
 pragma solidity 0.8.28;
 
 /**
- * @title IIdentityRegistrySelfricaV1
- * @notice Interface for the Identity Registry Selfrica v1.
+ * @title IIdentityRegistryKycV1
+ * @notice Interface for the Identity Registry KYC v1.
  * @dev This interface exposes only the external functions accessible by regular callers,
  *      i.e. functions that are not owner-restricted.
  */

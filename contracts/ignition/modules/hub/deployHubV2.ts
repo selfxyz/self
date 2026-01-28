@@ -38,7 +38,7 @@ function getHubImplV2InitializeData() {
  *   - Verification configs via setVerificationConfigV2()
  *
  * Post-deployment configuration steps:
- * 1. Set registry addresses for each attestation type (E_PASSPORT, EU_ID_CARD, AADHAAR, SELFRICA_ID_CARD)
+ * 1. Set registry addresses for each attestation type (E_PASSPORT, EU_ID_CARD, AADHAAR, KYC)
  * 2. Configure circuit verifiers for different signature types
  * 3. Set up verification configurations using setVerificationConfigV2()
  * 4. Transfer ownership to the appropriate address if needed
