@@ -101,6 +101,7 @@ describe('navigation', () => {
         'QRCodeViewFinder',
         'RecoverWithPhrase',
         'Referral',
+        'RegistrationFallback',
         'SaveRecoveryPhrase',
         'Settings',
         'ShowRecoveryPhrase',

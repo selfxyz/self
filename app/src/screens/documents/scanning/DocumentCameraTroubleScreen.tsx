@@ -3,9 +3,11 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect } from 'react';
+import { YStack } from 'tamagui';
 
-import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
-import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { slate500, slate700 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import Activity from '@/assets/icons/activity.svg';
 import PassportCameraBulb from '@/assets/icons/passport_camera_bulb.svg';
@@ -15,6 +17,7 @@ import Star from '@/assets/icons/star.svg';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flush as flushAnalytics } from '@/services/analytics';
 
@@ -48,6 +51,13 @@ const tips: TipProps[] = [
 
 const DocumentCameraTroubleScreen: React.FC = () => {
   const go = useHapticNavigation('DocumentCamera', { action: 'cancel' });
+  const selfClient = useSelfClient();
+  const { useMRZStore } = selfClient;
+  const { countryCode } = useMRZStore();
+  const { launchSumsubVerification, isLoading } = useSumsubLauncher({
+    countryCode,
+    errorSource: 'sumsub_initialization',
+  });
 
   // error screen, flush analytics
   useEffect(() => {
@@ -64,10 +74,28 @@ const DocumentCameraTroubleScreen: React.FC = () => {
         </Caption>
       }
       footer={
-        <Caption size="large" style={{ color: slate500 }}>
-          Following these steps should help your phone's camera capture the ID
-          page quickly and clearly!
-        </Caption>
+        <YStack gap="$3">
+          <Caption size="large" style={{ color: slate500 }}>
+            Following these steps should help your phone's camera capture the ID
+            page quickly and clearly!
+          </Caption>
+
+          <Caption
+            size="large"
+            style={{ color: slate500, marginTop: 12, marginBottom: 8 }}
+          >
+            Or try an alternative verification method:
+          </Caption>
+
+          <SecondaryButton
+            onPress={launchSumsubVerification}
+            disabled={isLoading}
+            textColor={slate700}
+            style={{ marginBottom: 0 }}
+          >
+            {isLoading ? 'Loading...' : 'Try Alternative Verification'}
+          </SecondaryButton>
+        </YStack>
       }
     >
       <Tips items={tips} />
