@@ -37,16 +37,17 @@
     "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts --exclude @selfxyz/common --exclude @selfxyz/mobile-app -i --all run types"
   },
   "resolutions": {
-    "@babel/core": "^7.28.4",
-    "@babel/runtime": "^7.28.4",
+    "@babel/core": "^7.28.6",
+    "@babel/runtime": "^7.28.6",
     "@noble/curves": "1.9.7",
     "@noble/hashes": "1.8.0",
-    "ethereum-cryptography": "3.2.0",
     "@swc/core": "1.7.36",
     "@tamagui/animations-react-native": "1.126.14",
     "@tamagui/toast": "1.126.14",
     "@types/node": "^22.18.3",
     "@types/react": "^18.3.4",
+    "@types/react-dom": "^18.3.0",
+    "ethereum-cryptography": "3.2.0",
     "punycode": "npm:punycode.js@^2.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -56,7 +57,7 @@
     "react-native-webview": "13.16.0"
   },
   "dependencies": {
-    "@babel/runtime": "^7.28.3",
+    "@babel/runtime": "^7.28.6",
     "js-sha1": "^0.7.0",
     "react": "^18.3.1",
     "react-native": "0.76.9",
@@ -71,7 +72,7 @@
     "patch-package": "^8.0.0",
     "prettier": "^3.6.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "packageManager": "yarn@4.12.0",
   "engines": {

@@ -224,5 +224,7 @@ export function createSelfClient({
     useSelfAppStore,
     useProtocolStore,
     useMRZStore,
+    // Expose config for internal SDK use
+    config: cfg,
   };
 }

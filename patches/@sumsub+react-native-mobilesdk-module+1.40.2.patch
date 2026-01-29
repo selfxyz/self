@@ -1,8 +1,8 @@
 diff --git a/node_modules/@sumsub/react-native-mobilesdk-module/android/build.gradle b/node_modules/@sumsub/react-native-mobilesdk-module/android/build.gradle
-index 1234567..abcdefg 100644
+index 0000000..0000001 100644
 --- a/node_modules/@sumsub/react-native-mobilesdk-module/android/build.gradle
 +++ b/node_modules/@sumsub/react-native-mobilesdk-module/android/build.gradle
-@@ -69,9 +69,9 @@ dependencies {
+@@ -77,11 +77,11 @@ dependencies {
      implementation "com.sumsub.sns:idensic-mobile-sdk:1.40.2"
  
      // remove comment to enable Device Intelligence
@@ -12,3 +12,7 @@ index 1234567..abcdefg 100644
 -    // implementation "com.sumsub.sns:idensic-mobile-sdk-videoident:1.40.2"
 +    implementation "com.sumsub.sns:idensic-mobile-sdk-videoident:1.40.2"
      // remove comment if you need EID support
+     // implementation "com.sumsub.sns:idensic-mobile-sdk-eid:1.40.2"
+     // remove comment if you need NFC support
+     // implementation "com.sumsub.sns:idensic-mobile-sdk-nfc:1.40.2"
+ }

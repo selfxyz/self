@@ -38,7 +38,7 @@ describe('OFAC - Name and DOB match', async function () {
     const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
     const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, namedob_smt, proofLevel);
     const inputs = {
-      kyc_data: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
+      data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
     };
 
@@ -51,7 +51,7 @@ describe('OFAC - Name and DOB match', async function () {
     const dummy_kyc_input = serializeKycData(NON_OFAC_DUMMY_INPUT);
     const ofacInputs = generateCircuitInputsOfac(NON_OFAC_DUMMY_INPUT, namedob_smt, proofLevel);
     const inputs = {
-      kyc_data: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
+      data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
     };
 
@@ -64,7 +64,7 @@ describe('OFAC - Name and DOB match', async function () {
     const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
     const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, namedob_smt, proofLevel);
     const inputs = {
-      kyc_data: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
+      data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
       smt_leaf_key: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
     };
@@ -79,7 +79,7 @@ describe('OFAC - Name and DOB match', async function () {
     const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, namedob_smt, proofLevel);
     ofacInputs.smt_siblings[0] = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     const inputs = {
-      kyc_data: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
+      data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
     };
 
@@ -92,7 +92,7 @@ describe('OFAC - Name and DOB match', async function () {
     const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
     const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, namedob_smt, proofLevel);
     const inputs = {
-      kyc_data: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
+      data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
       smt_root: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
     };
@@ -129,7 +129,7 @@ describe('OFAC - Name and YOB match', async function () {
     const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
     const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, nameyob_smt, proofLevel);
     const inputs = {
-      kyc_data: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
+      data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
     };
 
@@ -142,7 +142,7 @@ describe('OFAC - Name and YOB match', async function () {
     const dummy_kyc_input = serializeKycData(NON_OFAC_DUMMY_INPUT);
     const ofacInputs = generateCircuitInputsOfac(NON_OFAC_DUMMY_INPUT, nameyob_smt, proofLevel);
     const inputs = {
-      kyc_data: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
+      data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
     };
 
@@ -155,7 +155,7 @@ describe('OFAC - Name and YOB match', async function () {
     const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
     const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, nameyob_smt, proofLevel);
     const inputs = {
-      kyc_data: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
+      data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
       smt_leaf_key: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
     };
@@ -170,7 +170,7 @@ describe('OFAC - Name and YOB match', async function () {
     const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, nameyob_smt, proofLevel);
     ofacInputs.smt_siblings[0] = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     const inputs = {
-      kyc_data: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
+      data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
     };
 
@@ -183,7 +183,7 @@ describe('OFAC - Name and YOB match', async function () {
     const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
     const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, nameyob_smt, proofLevel);
     const inputs = {
-      kyc_data: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
+      data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
       smt_root: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
     };

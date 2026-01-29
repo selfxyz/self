@@ -3,7 +3,7 @@ import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
 import { KYC_ATTESTATION_ID } from "@selfxyz/common/constants/constants";
 import { generateMockKycRegisterInput } from "@selfxyz/common/utils/kyc/generateInputs";
-import { generateRegisterSelfricaProof } from "../utils/generateProof";
+import { generateRegisterKycProof } from "../utils/generateProof";
 import { expect } from "chai";
 
 function getCurrentDateDigitsYYMMDDHHMMSS(hoursOffset: number = 0): bigint[] {
@@ -46,7 +46,7 @@ function packUint256ToHexFields(value: bigint): [bigint, bigint, bigint] {
   return [p0, p1, p2];
 }
 
-describe("Selfrica Registration test", function () {
+describe("KYC Registration test", function () {
   this.timeout(0);
 
   let deployedActors: DeployedActorsV2;
@@ -60,10 +60,10 @@ describe("Selfrica Registration test", function () {
     attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(KYC_ATTESTATION_ID)), 32);
 
     // Set the owner as the TEE for all tests
-    await deployedActors.registrySelfrica.updateTEE(await deployedActors.owner.getAddress());
+    await deployedActors.registryKyc.updateTEE(await deployedActors.owner.getAddress());
 
     // Set the GCP root CA pubkey hash
-    await deployedActors.registrySelfrica.updateGCPRootCAPubkeyHash(GCP_ROOT_CA_PUBKEY_HASH);
+    await deployedActors.registryKyc.updateGCPRootCAPubkeyHash(GCP_ROOT_CA_PUBKEY_HASH);
 
     console.log("🎉 System deployment and initial setup completed!");
   });
@@ -77,7 +77,7 @@ describe("Selfrica Registration test", function () {
   });
 
   describe("Identity Commitment", () => {
-    let selfricaData: any;
+    let kycData: any;
     let registerProof: any;
     let registerSecret: string;
     let mockVerifier: any;
@@ -87,14 +87,14 @@ describe("Selfrica Registration test", function () {
 
     before(async () => {
       registerSecret = "12345";
-      selfricaData = await generateMockKycRegisterInput(undefined, true, registerSecret);
-      registerProof = await generateRegisterSelfricaProof(registerSecret, selfricaData);
+      kycData = await generateMockKycRegisterInput(undefined, true, registerSecret);
+      registerProof = await generateRegisterKycProof(registerSecret, kycData);
 
       // Deploy and set mock GCP JWT verifier
       const MockVerifierFactory = await ethers.getContractFactory("MockGCPJWTVerifier");
       mockVerifier = await MockVerifierFactory.deploy();
       await mockVerifier.waitForDeployment();
-      await deployedActors.registrySelfrica.updateGCPJWTVerifier(mockVerifier.target);
+      await deployedActors.registryKyc.updateGCPJWTVerifier(mockVerifier.target);
 
       // Get the pubkey commitment from the register proof and pack as hex
       const pubkeyCommitment = registerProof.pubSignals[registerProof.pubSignals.length - 2];
@@ -145,19 +145,14 @@ describe("Selfrica Registration test", function () {
     });
 
     it("should successfully register an identity commitment", async () => {
-      await deployedActors.registrySelfrica.registerPubkeyCommitment(
-        mockProof.a,
-        mockProof.b,
-        mockProof.c,
-        mockPubSignals,
-      );
+      await deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals);
 
       await expect(deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof)).to.emit(
-        deployedActors.registrySelfrica,
+        deployedActors.registryKyc,
         "CommitmentRegistered",
       );
 
-      const isRegistered = await deployedActors.registrySelfrica.nullifiers(registerProof.pubSignals[0]);
+      const isRegistered = await deployedActors.registryKyc.nullifiers(registerProof.pubSignals[0]);
       expect(isRegistered).to.be.true;
     });
 
@@ -168,12 +163,7 @@ describe("Selfrica Registration test", function () {
     });
 
     it("should not register an identity commitment if the proof is invalid", async () => {
-      await deployedActors.registrySelfrica.registerPubkeyCommitment(
-        mockProof.a,
-        mockProof.b,
-        mockProof.c,
-        mockPubSignals,
-      );
+      await deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals);
 
       const invalidRegisterProof = structuredClone(registerProof);
       invalidRegisterProof.pubSignals[1] = 0n;
@@ -229,21 +219,21 @@ describe("Selfrica Registration test", function () {
     };
 
     it("should have correct GCP root CA pubkey hash", async () => {
-      const contractHash = await deployedActors.registrySelfrica.gcpRootCAPubkeyHash();
+      const contractHash = await deployedActors.registryKyc.gcpRootCAPubkeyHash();
       expect(contractHash).to.equal(GCP_ROOT_CA_PUBKEY_HASH);
     });
 
     it("should allow owner to update GCP root CA pubkey hash", async () => {
       const newHash = 12345n;
-      await deployedActors.registrySelfrica.updateGCPRootCAPubkeyHash(newHash);
-      const contractHash = await deployedActors.registrySelfrica.gcpRootCAPubkeyHash();
+      await deployedActors.registryKyc.updateGCPRootCAPubkeyHash(newHash);
+      const contractHash = await deployedActors.registryKyc.gcpRootCAPubkeyHash();
       expect(contractHash).to.equal(newHash);
     });
 
     it("should not allow non-owner to update GCP root CA pubkey hash", async () => {
       await expect(
-        deployedActors.registrySelfrica.connect(deployedActors.user1).updateGCPRootCAPubkeyHash(12345n),
-      ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "AccessControlUnauthorizedAccount");
+        deployedActors.registryKyc.connect(deployedActors.user1).updateGCPRootCAPubkeyHash(12345n),
+      ).to.be.revertedWithCustomError(deployedActors.registryKyc, "AccessControlUnauthorizedAccount");
     });
 
     it("should fail with INVALID_IMAGE when image hash not in PCR0Manager", async () => {
@@ -259,21 +249,21 @@ describe("Selfrica Registration test", function () {
       ];
 
       await expect(
-        deployedActors.registrySelfrica.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals),
-      ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "INVALID_IMAGE");
+        deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals),
+      ).to.be.revertedWithCustomError(deployedActors.registryKyc, "INVALID_IMAGE");
     });
 
     it("should not allow non-owner to update GCP JWT verifier", async () => {
       await expect(
-        deployedActors.registrySelfrica
+        deployedActors.registryKyc
           .connect(deployedActors.user1)
           .updateGCPJWTVerifier(ethers.Wallet.createRandom().address),
-      ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "AccessControlUnauthorizedAccount");
+      ).to.be.revertedWithCustomError(deployedActors.registryKyc, "AccessControlUnauthorizedAccount");
     });
 
     it("should allow owner to update GCP JWT verifier", async () => {
       const newVerifier = ethers.Wallet.createRandom().address;
-      await deployedActors.registrySelfrica.updateGCPJWTVerifier(newVerifier);
+      await deployedActors.registryKyc.updateGCPJWTVerifier(newVerifier);
     });
 
     describe("TEE Access Control", () => {
@@ -290,28 +280,28 @@ describe("Selfrica Registration test", function () {
         ];
 
         await expect(
-          deployedActors.registrySelfrica
+          deployedActors.registryKyc
             .connect(deployedActors.user1)
             .registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals),
-        ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "ONLY_TEE_CAN_ACCESS");
+        ).to.be.revertedWithCustomError(deployedActors.registryKyc, "ONLY_TEE_CAN_ACCESS");
       });
 
       it("should not allow non-owner to update TEE", async () => {
         await expect(
-          deployedActors.registrySelfrica.connect(deployedActors.user1).updateTEE(ethers.Wallet.createRandom().address),
-        ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "AccessControlUnauthorizedAccount");
+          deployedActors.registryKyc.connect(deployedActors.user1).updateTEE(ethers.Wallet.createRandom().address),
+        ).to.be.revertedWithCustomError(deployedActors.registryKyc, "AccessControlUnauthorizedAccount");
       });
 
       it("should allow owner to update TEE", async () => {
         const newTee = ethers.Wallet.createRandom().address;
-        await deployedActors.registrySelfrica.updateTEE(newTee);
-        expect(await deployedActors.registrySelfrica.tee()).to.equal(newTee);
+        await deployedActors.registryKyc.updateTEE(newTee);
+        expect(await deployedActors.registryKyc.tee()).to.equal(newTee);
       });
 
       it("should fail with TEE_NOT_SET when TEE address is zero", async () => {
         // Deploy minimal fresh registry to test uninitialized TEE state
         const freshImpl = await (
-          await ethers.getContractFactory("IdentityRegistrySelfricaImplV1", {
+          await ethers.getContractFactory("IdentityRegistryKycImplV1", {
             libraries: { PoseidonT3: deployedActors.poseidonT3.target },
           })
         ).deploy();
@@ -324,7 +314,7 @@ describe("Selfrica Registration test", function () {
           await ethers.getContractFactory("IdentityRegistry")
         ).deploy(freshImpl.target, initData);
 
-        const freshRegistry = await ethers.getContractAt("IdentityRegistrySelfricaImplV1", freshProxy.target);
+        const freshRegistry = await ethers.getContractAt("IdentityRegistryKycImplV1", freshProxy.target);
         await freshRegistry.updateGCPJWTVerifier(deployedActors.gcpJwtVerifier.target);
 
         const mockPubSignals: bigint[] = [
@@ -373,13 +363,13 @@ describe("Selfrica Registration test", function () {
         ];
 
         await expect(
-          deployedActors.registrySelfrica.registerPubkeyCommitment(
+          deployedActors.registryKyc.registerPubkeyCommitment(
             mockProof.a,
             mockProof.b,
             mockProof.c,
             mockPubSignalsPast,
           ),
-        ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "INVALID_TIMESTAMP");
+        ).to.be.revertedWithCustomError(deployedActors.registryKyc, "INVALID_TIMESTAMP");
 
         // Create a timestamp 2 hours in the future (more than 1 hour threshold)
         const nextHourDate = getCurrentDateDigitsYYMMDDHHMMSS(2);
@@ -396,13 +386,13 @@ describe("Selfrica Registration test", function () {
         ];
 
         await expect(
-          deployedActors.registrySelfrica.registerPubkeyCommitment(
+          deployedActors.registryKyc.registerPubkeyCommitment(
             mockProof.a,
             mockProof.b,
             mockProof.c,
             mockPubSignalsFuture,
           ),
-        ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "INVALID_TIMESTAMP");
+        ).to.be.revertedWithCustomError(deployedActors.registryKyc, "INVALID_TIMESTAMP");
       });
     });
 
@@ -413,7 +403,7 @@ describe("Selfrica Registration test", function () {
         const MockVerifierFactory = await ethers.getContractFactory("MockGCPJWTVerifier");
         mockVerifier = await MockVerifierFactory.deploy();
         await mockVerifier.waitForDeployment();
-        await deployedActors.registrySelfrica.updateGCPJWTVerifier(mockVerifier.target);
+        await deployedActors.registryKyc.updateGCPJWTVerifier(mockVerifier.target);
       });
 
       afterEach(async () => {
@@ -434,13 +424,8 @@ describe("Selfrica Registration test", function () {
         ];
 
         await expect(
-          deployedActors.registrySelfrica.registerPubkeyCommitment(
-            mockProof.a,
-            mockProof.b,
-            mockProof.c,
-            mockPubSignals,
-          ),
-        ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "INVALID_PROOF");
+          deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals),
+        ).to.be.revertedWithCustomError(deployedActors.registryKyc, "INVALID_PROOF");
       });
 
       it("should fail with INVALID_ROOT_CA when root CA hash does not match", async () => {
@@ -456,13 +441,8 @@ describe("Selfrica Registration test", function () {
         ];
 
         await expect(
-          deployedActors.registrySelfrica.registerPubkeyCommitment(
-            mockProof.a,
-            mockProof.b,
-            mockProof.c,
-            mockPubSignals,
-          ),
-        ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "INVALID_ROOT_CA");
+          deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals),
+        ).to.be.revertedWithCustomError(deployedActors.registryKyc, "INVALID_ROOT_CA");
       });
 
       it("should fail with INVALID_IMAGE when image hash not in PCR0Manager", async () => {
@@ -478,13 +458,8 @@ describe("Selfrica Registration test", function () {
         ];
 
         await expect(
-          deployedActors.registrySelfrica.registerPubkeyCommitment(
-            mockProof.a,
-            mockProof.b,
-            mockProof.c,
-            mockPubSignals,
-          ),
-        ).to.be.revertedWithCustomError(deployedActors.registrySelfrica, "INVALID_IMAGE");
+          deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals),
+        ).to.be.revertedWithCustomError(deployedActors.registryKyc, "INVALID_IMAGE");
       });
     });
   });

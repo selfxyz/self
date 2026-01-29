@@ -1558,7 +1558,7 @@ PODS:
     - React-Core
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-nfc-manager (3.16.3):
+  - react-native-nfc-manager (3.17.2):
     - React-Core
   - react-native-passkey (3.3.1):
     - DoubleConversion
@@ -1984,7 +1984,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNDeviceInfo (14.1.1):
+  - RNDeviceInfo (15.0.1):
     - React-Core
   - RNFBApp (19.3.0):
     - Firebase/CoreOnly (= 10.24.0)
@@ -2042,7 +2042,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNLocalize (3.6.0):
+  - RNLocalize (3.6.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2129,7 +2129,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSentry (7.0.1):
+  - RNSentry (7.0.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2152,7 +2152,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - Sentry/HybridSDK (= 8.53.2)
     - Yoga
-  - RNSVG (15.15.0):
+  - RNSVG (15.12.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2172,9 +2172,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNSVG/common (= 15.15.0)
+    - RNSVG/common (= 15.12.1)
     - Yoga
-  - RNSVG/common (15.15.0):
+  - RNSVG/common (15.12.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2223,7 +2223,7 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - lottie-ios
   - lottie-react-native (from `../node_modules/lottie-react-native`)
-  - Mixpanel-swift (~> 5.0.0)
+  - Mixpanel-swift
   - "NFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b`)"
   - QKMRZScanner
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -2626,7 +2626,7 @@ SPEC CHECKSUMS:
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-mobilesdk-module: 4770cb45fdd19dc4eed04615f0fcdab013b3dfe2
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-nfc-manager: 66a00e5ddab9704efebe19d605b1b8afb0bb1bd7
+  react-native-nfc-manager: c8891e460b4943b695d63f7f4effc6345bbefc83
   react-native-passkey: 8853c3c635164864da68a6dbbcec7148506c3bcf
   react-native-safe-area-context: a7aad44fe544b55e2369a3086e16a01be60ce398
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
@@ -2660,18 +2660,18 @@ SPEC CHECKSUMS:
   ReactCommon: b2eb96a61b826ff327a773a74357b302cf6da678
   RNCAsyncStorage: 0003b916f1a69fe2d20b7910e0d08da3d32c7bd6
   RNCClipboard: a4827e134e4774e97fa86f7f986694dd89320f13
-  RNDeviceInfo: bcce8752b5043a623fe3c26789679b473f705d3c
+  RNDeviceInfo: 36d7f232bfe7c9b5c494cb7793230424ed32c388
   RNFBApp: 4097f75673f8b42a7cd1ba17e6ea85a94b45e4d1
   RNFBMessaging: 92325b0d5619ac90ef023a23cfd16fd3b91d0a88
   RNFBRemoteConfig: a569bacaa410acfcaba769370e53a787f80fd13b
   RNGestureHandler: a63b531307e5b2e6ea21d053a1a7ad4cf9695c57
   RNInAppBrowser: 6d3eb68d471b9834335c664704719b8be1bfdb20
   RNKeychain: 471ceef8c13f15a5534c3cd2674dbbd9d0680e52
-  RNLocalize: 4f5e4a46d2bccd04ccb96721e438dcb9de17c2e0
+  RNLocalize: 2760999d1e2fc95fb7b7e5247631feb3c08156dc
   RNReactNativeHapticFeedback: e526ac4a7ca9fb23c7843ea4fd7d823166054c73
   RNScreens: 806e1449a8ec63c2a4e4cf8a63cc80203ccda9b8
-  RNSentry: 6ad982be2c8e32dab912afb4132b6a0d88484ea0
-  RNSVG: 39476f26bbbe72ffe6194c6fc8f6acd588087957
+  RNSentry: f79dd124cc49088445c16d23955860dd0d1db6f3
+  RNSVG: 0c1fc3e7b147949dc15644845e9124947ac8c9bb
   segment-analytics-react-native: 0eae155b0e9fa560fa6b17d78941df64537c35b7
   Sentry: 59993bffde4a1ac297ba6d268dc4bbce068d7c1b
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
@@ -2681,6 +2681,6 @@ SPEC CHECKSUMS:
   TwilioVideo: 9f51085d4e4fb3aff8e168b8215b31cb0f486a2f
   Yoga: 1259c7a8cbaccf7b4c3ddf8ee36ca11be9dee407
 
-PODFILE CHECKSUM: f03c12b5d96fb6e22afe20fba517840fef44e76f
+PODFILE CHECKSUM: 8cfd84595c3e826f512f5c545d232a27f1850ff3
 
 COCOAPODS: 1.16.2

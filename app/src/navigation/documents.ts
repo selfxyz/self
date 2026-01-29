@@ -19,6 +19,7 @@ import DocumentCameraTroubleScreen from '@/screens/documents/scanning/DocumentCa
 import DocumentNFCMethodSelectionScreen from '@/screens/documents/scanning/DocumentNFCMethodSelectionScreen';
 import DocumentNFCScanScreen from '@/screens/documents/scanning/DocumentNFCScanScreen';
 import DocumentNFCTroubleScreen from '@/screens/documents/scanning/DocumentNFCTroubleScreen';
+import RegistrationFallbackScreen from '@/screens/documents/scanning/RegistrationFallbackScreen';
 import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongingScreen';
 import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
 import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
@@ -153,6 +154,17 @@ const documentsScreens = {
     } as NativeStackNavigationOptions,
     initialParams: {
       errorType: 'general',
+    },
+  },
+  RegistrationFallback: {
+    screen: RegistrationFallbackScreen,
+    options: {
+      title: 'REGISTRATION',
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+    initialParams: {
+      errorSource: 'sumsub_initialization',
+      countryCode: '',
     },
   },
 };
