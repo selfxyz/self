@@ -190,6 +190,7 @@ export type RootStackParamList = Omit<
 
   // Onboarding screens
   Disclaimer: undefined;
+  KycSuccess: undefined;
 
   // Dev screens
   CreateMock: undefined;

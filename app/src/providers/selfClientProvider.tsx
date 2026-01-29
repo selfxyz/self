@@ -43,7 +43,7 @@ type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
 /**
  * Provides a configured Self SDK client instance to all descendants.
  *
- * Adapters:
+ * ,dapters:
  * - `webNFCScannerShim` for basic NFC scanning stubs on web
  * - `fetch`/`WebSocket` for network communication
  * - Web Crypto hashing with a stub signer
@@ -302,7 +302,17 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
             case 'kyc':
               fetchAccessToken()
                 .then(accessToken => {
-                  launchSumsub({ accessToken: accessToken.token });
+                  return launchSumsub({
+                    accessToken: accessToken.token,
+                    onEvent: (eventType, _payload) => {
+                      if (
+                        eventType === 'idCheck.onApplicantVerificationCompleted'
+                      ) {
+                        // User submitted verification, navigate to success screen
+                        navigationRef.navigate('KycSuccess');
+                      }
+                    },
+                  });
                 })
                 // TODO: show sumsub error screen
                 .catch(error => {

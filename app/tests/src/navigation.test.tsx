@@ -85,6 +85,7 @@ describe('navigation', () => {
         'Home',
         'IDPicker',
         'IdDetails',
+        'KycSuccess',
         'Loading',
         'ManageDocuments',
         'MockDataDeepLink',
