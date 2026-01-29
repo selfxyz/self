@@ -398,14 +398,10 @@ const LogLevelSelector = ({
 
 const ErrorInjectionSelector = () => {
   const injectedErrors = useErrorInjectionStore(state => state.injectedErrors);
-  const clearOnTrigger = useErrorInjectionStore(state => state.clearOnTrigger);
   const setInjectedErrors = useErrorInjectionStore(
     state => state.setInjectedErrors,
   );
   const clearAllErrors = useErrorInjectionStore(state => state.clearAllErrors);
-  const setClearOnTrigger = useErrorInjectionStore(
-    state => state.setClearOnTrigger,
-  );
   const [open, setOpen] = useState(false);
 
   // Single error selection - replace instead of toggle
@@ -416,6 +412,8 @@ const ErrorInjectionSelector = () => {
     } else {
       setInjectedErrors([errorType]);
     }
+    // Close the sheet after selection
+    setOpen(false);
   };
 
   const currentError = injectedErrors.length > 0 ? injectedErrors[0] : null;
@@ -445,29 +443,22 @@ const ErrorInjectionSelector = () => {
         </XStack>
       </Button>
 
-      <XStack gap="$2" alignItems="center">
-        <TopicToggleButton
-          label="Clear after trigger"
-          isSubscribed={clearOnTrigger}
-          onToggle={() => setClearOnTrigger(!clearOnTrigger)}
-        />
-        {currentError && (
-          <Button
-            backgroundColor={red500}
-            borderRadius="$2"
-            height="$5"
-            onPress={clearAllErrors}
-            pressStyle={{
-              opacity: 0.8,
-              scale: 0.98,
-            }}
-          >
-            <Text color={white} fontSize="$5" fontFamily={dinot}>
-              Clear
-            </Text>
-          </Button>
-        )}
-      </XStack>
+      {currentError && (
+        <Button
+          backgroundColor={red500}
+          borderRadius="$2"
+          height="$5"
+          onPress={clearAllErrors}
+          pressStyle={{
+            opacity: 0.8,
+            scale: 0.98,
+          }}
+        >
+          <Text color={white} fontSize="$5" fontFamily={dinot}>
+            Clear
+          </Text>
+        </Button>
+      )}
 
       <Sheet
         modal

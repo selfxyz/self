@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -24,7 +24,7 @@ import {
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
-import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
+import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
 
@@ -85,45 +85,35 @@ const VerificationFallbackScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<VerificationFallbackRoute>();
   const { trackEvent } = useSelfClient();
-  const [isRetrying, setIsRetrying] = useState(false);
 
   const errorSource = route.params?.errorSource || 'sumsub_initialization';
+  const countryCode = route.params?.countryCode || '';
 
   const { title, description, canRetryOriginal } =
     getErrorMessages(errorSource);
 
-  const handleTryAlternative = useCallback(async () => {
-    trackEvent('VERIFICATION_FALLBACK_TRY_ALTERNATIVE', { errorSource });
-    setIsRetrying(true);
-
-    try {
-      const accessToken = await fetchAccessToken();
-      const result = await launchSumsub({ accessToken: accessToken.token });
-
-      // User cancelled - return silently
-      if (!result.success && result.status === 'Interrupted') {
+  const { launchSumsubVerification, isLoading: isRetrying } = useSumsubLauncher(
+    {
+      countryCode,
+      errorSource,
+      onCancel: () => {
         navigation.goBack();
-        return;
-      }
-
-      // Still failed - stay on error screen
-      if (!result.success) {
-        console.error(
-          'Alternative verification failed:',
-          result.errorMsg || result.errorType,
-        );
-        // Stay on this screen, user can try again
-      } else {
+      },
+      onError: (_error, _result) => {
+        // Stay on this screen - user can try again
+        // Error is already logged in the hook
+      },
+      onSuccess: () => {
         // Success - provider handles its own success UI
         // The screen will be navigated away by the provider's flow
-      }
-    } catch (error) {
-      console.error('Error launching alternative verification:', error);
-      // Stay on this screen, user can try again
-    } finally {
-      setIsRetrying(false);
-    }
-  }, [errorSource, navigation, trackEvent]);
+      },
+    },
+  );
+
+  const handleTryAlternative = useCallback(async () => {
+    trackEvent('VERIFICATION_FALLBACK_TRY_ALTERNATIVE', { errorSource });
+    await launchSumsubVerification();
+  }, [errorSource, launchSumsubVerification, trackEvent]);
 
   const handleRetryOriginal = useCallback(() => {
     trackEvent('VERIFICATION_FALLBACK_RETRY_ORIGINAL', { errorSource });

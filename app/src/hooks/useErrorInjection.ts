@@ -14,19 +14,13 @@ import { IS_DEV_MODE } from '@/utils/devUtils';
  */
 export function useErrorInjection() {
   const injectedErrors = useErrorInjectionStore(state => state.injectedErrors);
-  const clearError = useErrorInjectionStore(state => state.clearError);
-  const clearOnTrigger = useErrorInjectionStore(state => state.clearOnTrigger);
 
   const shouldInjectError = useCallback(
     (errorType: InjectedErrorType): boolean => {
       if (!IS_DEV_MODE) return false;
-      const shouldTrigger = injectedErrors.includes(errorType);
-      if (shouldTrigger && clearOnTrigger) {
-        clearError(errorType);
-      }
-      return shouldTrigger;
+      return injectedErrors.includes(errorType);
     },
-    [injectedErrors, clearError, clearOnTrigger],
+    [injectedErrors],
   );
 
   return { shouldInjectError };

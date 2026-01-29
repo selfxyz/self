@@ -365,10 +365,13 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                       );
                       console.error('KYC provider failed:', safeError);
                     }
-                    navigationRef.navigate('VerificationFallback', {
-                      errorSource: 'sumsub_verification',
-                      countryCode,
-                    });
+                    // Guard navigation call after async operations
+                    if (navigationRef.isReady()) {
+                      navigationRef.navigate('VerificationFallback', {
+                        errorSource: 'sumsub_verification',
+                        countryCode,
+                      });
+                    }
                   }
                   // success case: provider handles its own success UI
                 } catch (error) {
@@ -376,10 +379,13 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     error instanceof Error ? error.message : String(error),
                   );
                   console.error('Error in KYC flow:', safeInitError);
-                  navigationRef.navigate('VerificationFallback', {
-                    errorSource: 'sumsub_initialization',
-                    countryCode,
-                  });
+                  // Guard navigation call after async operations
+                  if (navigationRef.isReady()) {
+                    navigationRef.navigate('VerificationFallback', {
+                      errorSource: 'sumsub_initialization',
+                      countryCode,
+                    });
+                  }
                 }
               })();
               break;

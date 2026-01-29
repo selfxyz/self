@@ -55,13 +55,11 @@ export const ERROR_LABELS: Record<InjectedErrorType, string> = {
 
 interface ErrorInjectionState {
   injectedErrors: InjectedErrorType[];
-  clearOnTrigger: boolean;
   // Actions
   setInjectedErrors: (errors: InjectedErrorType[]) => void;
   toggleError: (error: InjectedErrorType) => void;
   clearError: (error: InjectedErrorType) => void;
   clearAllErrors: () => void;
-  setClearOnTrigger: (value: boolean) => void;
   shouldTrigger: (error: InjectedErrorType) => boolean;
 }
 
@@ -69,7 +67,6 @@ export const useErrorInjectionStore = create<ErrorInjectionState>()(
   persist(
     (set, get) => ({
       injectedErrors: [],
-      clearOnTrigger: true,
 
       setInjectedErrors: (errors: InjectedErrorType[]) => {
         if (!IS_DEV_MODE) return;
@@ -100,19 +97,10 @@ export const useErrorInjectionStore = create<ErrorInjectionState>()(
         set({ injectedErrors: [] });
       },
 
-      setClearOnTrigger: (value: boolean) => {
-        if (!IS_DEV_MODE) return;
-        set({ clearOnTrigger: value });
-      },
-
       shouldTrigger: (error: InjectedErrorType) => {
         if (!IS_DEV_MODE) return false;
         const state = get();
-        const shouldTrigger = state.injectedErrors.includes(error);
-        if (shouldTrigger && state.clearOnTrigger) {
-          state.clearError(error);
-        }
-        return shouldTrigger;
+        return state.injectedErrors.includes(error);
       },
     }),
     {

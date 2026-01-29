@@ -2,37 +2,21 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { XStack, YStack } from 'tamagui';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { YStack } from 'tamagui';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import {
-  BodyText,
-  Caption,
-  SecondaryButton,
-} from '@selfxyz/mobile-sdk-alpha/components';
-import {
-  black,
-  slate100,
-  slate300,
-  slate400,
-  slate500,
-  white,
-} from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { slate500, slate700 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import PassportCameraScan from '@/assets/icons/passport_camera_scan.svg';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
+import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
-import type { RootStackParamList } from '@/navigation';
 import { flushAllAnalytics } from '@/services/analytics';
 import { openSupportForm, SUPPORT_FORM_BUTTON_TEXT } from '@/services/support';
 
@@ -68,12 +52,13 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   const goToNFCMethodSelection = useHapticNavigation(
     'DocumentNFCMethodSelection',
   );
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { countryCode } = useMRZStore();
-  const [isLoading, setIsLoading] = useState(false);
+  const { launchSumsubVerification, isLoading } = useSumsubLauncher({
+    countryCode,
+    errorSource: 'sumsub_initialization',
+  });
   useFeedbackAutoHide();
 
   // error screen, flush analytics
@@ -88,22 +73,6 @@ const DocumentNFCTroubleScreen: React.FC = () => {
       goToNFCMethodSelection();
     });
 
-  const handleTryKyc = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const accessToken = await fetchAccessToken();
-      await launchSumsub({ accessToken: accessToken.token });
-    } catch (error) {
-      console.error('Error launching alternative verification:', error);
-      navigation.navigate('VerificationFallback', {
-        errorSource: 'sumsub_initialization',
-        countryCode,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [navigation, countryCode]);
-
   return (
     <SimpleScrolledTitleLayout
       title="Having trouble verifying your ID?"
@@ -114,57 +83,20 @@ const DocumentNFCTroubleScreen: React.FC = () => {
         <YStack gap="$3">
           <SecondaryButton
             onPress={openSupportForm}
+            textColor={slate700}
             style={{ marginBottom: 0 }}
           >
             {SUPPORT_FORM_BUTTON_TEXT}
           </SecondaryButton>
 
-          <Caption
-            size="large"
-            style={{ color: slate500, marginTop: 12, marginBottom: 8 }}
-          >
-            Or try an alternative verification method:
-          </Caption>
-
-          <XStack
-            backgroundColor={white}
-            borderWidth={1}
-            borderColor={slate300}
-            borderRadius={'$5'}
-            padding={'$3'}
-            pressStyle={{
-              transform: [{ scale: 0.97 }],
-              backgroundColor: slate100,
-            }}
-            onPress={handleTryKyc}
+          <SecondaryButton
+            onPress={launchSumsubVerification}
             disabled={isLoading}
-            opacity={isLoading ? 0.6 : 1}
+            textColor={slate700}
+            style={{ marginBottom: 0 }}
           >
-            <XStack alignItems="center" gap={'$3'} flex={1}>
-              <View
-                style={{
-                  width: 48,
-                  height: 48,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <PassportCameraScan color={'#075985'} />
-              </View>
-              <YStack gap={'$1'}>
-                <BodyText
-                  style={{ fontSize: 24, fontFamily: dinot, color: black }}
-                >
-                  {isLoading ? 'Loading...' : 'Other IDs'}
-                </BodyText>
-                <BodyText
-                  style={{ fontSize: 14, fontFamily: dinot, color: slate400 }}
-                >
-                  National ID, Driver's License etc.
-                </BodyText>
-              </YStack>
-            </XStack>
-          </XStack>
+            {isLoading ? 'Loading...' : 'Try Alternative Verification'}
+          </SecondaryButton>
         </YStack>
       }
     >
