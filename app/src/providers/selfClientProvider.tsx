@@ -375,8 +375,13 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                         countryCode,
                       });
                     }
+                    return;
                   }
-                  // success case: provider handles its own success UI
+
+                  // Success case: navigate to KYC success screen
+                  if (navigationRef.isReady()) {
+                    navigationRef.navigate('KycSuccess');
+                  }
                 } catch (error) {
                   const safeInitError = sanitizeErrorMessage(
                     error instanceof Error ? error.message : String(error),
