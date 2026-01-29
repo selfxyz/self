@@ -116,7 +116,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
     };
 
     initializeProving();
-  }, [isFocused, init, selfClient, route?.params?.documentCategory]);
+  }, [isFocused, init, selfClient]);
 
   // Initialize notifications and load passport data
   useEffect(() => {

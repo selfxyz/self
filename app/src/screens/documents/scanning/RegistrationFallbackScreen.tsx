@@ -176,6 +176,10 @@ const RegistrationFallbackScreen: React.FC = () => {
       // Go back to ID Picker
       navigation.goBack();
     }
+    // TODO: Handle 'sumsub_verification' case - currently falls through without action
+    // which could leave users stuck when tapping "Try again" after Sumsub verification failure.
+    // Consider: calling launchSumsubVerification() or navigating to appropriate retry screen.
+    // Need to determine the correct retry behavior for failed Sumsub verifications.
   }, [errorSource, navigation, trackEvent]);
 
   return (
