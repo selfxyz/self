@@ -396,7 +396,7 @@ const LogLevelSelector = ({
   );
 };
 
-const ErrorInjectionSelector = ({}) => {
+const ErrorInjectionSelector = () => {
   const injectedErrors = useErrorInjectionStore(state => state.injectedErrors);
   const clearOnTrigger = useErrorInjectionStore(state => state.clearOnTrigger);
   const setInjectedErrors = useErrorInjectionStore(

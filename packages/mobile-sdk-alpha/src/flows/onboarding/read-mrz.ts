@@ -12,20 +12,8 @@ import { checkScannedInfo, formatDateToYYMMDD } from '../../processing/mrz';
 import { SdkEvents } from '../../types/events';
 import type { MRZInfo } from '../../types/public';
 
-// Dev-only error injection imports
-let useErrorInjectionStore: any = null;
-let IS_DEV_MODE = false;
-try {
-  // These imports will only work in the main app, not in the SDK package
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const errorInjectionModule = require('../../../../app/src/stores/errorInjectionStore');
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const devUtilsModule = require('../../../../app/src/utils/devUtils');
-  useErrorInjectionStore = errorInjectionModule.useErrorInjectionStore;
-  IS_DEV_MODE = devUtilsModule.IS_DEV_MODE;
-} catch {
-  // Silently ignore if imports fail (SDK running standalone)
-}
+// Dev-only error injection - uses injected devConfig from SDK context
+// No cross-package requires needed
 
 export type { MRZScannerViewProps } from '../../components/MRZScannerView';
 export { MRZScannerView } from '../../components/MRZScannerView';
@@ -43,6 +31,7 @@ const calculateScanDurationSeconds = (scanStartTimeRef: RefObject<number>) => {
 
 export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
   const selfClient = useSelfClient();
+  const shouldTrigger = selfClient.config.devConfig?.shouldTrigger;
 
   return {
     onPassportRead: useCallback(
@@ -50,18 +39,15 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
         const scanDurationSeconds = calculateScanDurationSeconds(scanStartTimeRef);
 
         // Dev-only: Check for injected unknown error
-        if (IS_DEV_MODE && useErrorInjectionStore) {
-          const shouldTrigger = useErrorInjectionStore.getState().shouldTrigger('mrz_unknown_error');
-          if (shouldTrigger) {
-            console.log('[DEV] Injecting MRZ unknown error');
-            selfClient.trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
-              reason: 'unknown_error',
-              error: 'Injected error for testing',
-              duration_seconds: parseFloat(scanDurationSeconds),
-            });
-            selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
-            return;
-          }
+        if (shouldTrigger?.('mrz_unknown_error')) {
+          console.log('[DEV] Injecting MRZ unknown error');
+          selfClient.trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
+            reason: 'unknown_error',
+            error: 'Injected error for testing',
+            duration_seconds: parseFloat(scanDurationSeconds),
+          });
+          selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
+          return;
         }
 
         if (error) {
@@ -94,10 +80,7 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
         const formattedDateOfExpiry = Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfExpiry) : dateOfExpiry;
 
         // Dev-only: Check for injected invalid format error
-        const shouldInjectInvalidFormat =
-          IS_DEV_MODE && useErrorInjectionStore
-            ? useErrorInjectionStore.getState().shouldTrigger('mrz_invalid_format')
-            : false;
+        const shouldInjectInvalidFormat = shouldTrigger?.('mrz_invalid_format') || false;
 
         if (
           shouldInjectInvalidFormat ||
@@ -132,7 +115,7 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
 
         selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS);
       },
-      [selfClient],
+      [selfClient, shouldTrigger],
     ),
   };
 }

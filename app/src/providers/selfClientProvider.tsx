@@ -13,6 +13,7 @@ import {
   type LogLevel,
   type NFCScanContext,
   reactNativeScannerAdapter,
+  sanitizeErrorMessage,
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
   type TrackEventParams,
@@ -35,6 +36,7 @@ import {
 import { trackEvent, trackNfcEvent } from '@/services/analytics';
 import { useErrorInjectionStore } from '@/stores/errorInjectionStore';
 import { useSettingStore } from '@/stores/settingStore';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 import {
   registerModalCallbacks,
   unregisterModalCallbacks,
@@ -69,7 +71,20 @@ function navigateIfReady<RouteName extends keyof RootStackParamList>(
 }
 
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
-  const config = useMemo(() => ({}), []);
+  const config = useMemo(
+    () => ({
+      devConfig: IS_DEV_MODE
+        ? {
+            shouldTrigger: (errorType: string) => {
+              return useErrorInjectionStore
+                .getState()
+                .shouldTrigger(errorType as any);
+            },
+          }
+        : undefined,
+    }),
+    [],
+  );
   const adapters: Adapters = useMemo(
     () => ({
       scanner:
@@ -342,10 +357,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     if (shouldInjectVerificationError) {
                       console.log('[DEV] Injecting Sumsub verification error');
                     } else {
-                      console.error(
-                        'KYC provider failed:',
-                        result.errorMsg || result.errorType,
+                      const safeError = sanitizeErrorMessage(
+                        result.errorMsg || result.errorType || 'unknown_error',
                       );
+                      console.error('KYC provider failed:', safeError);
                     }
                     navigationRef.navigate('VerificationFallback', {
                       errorSource: 'sumsub_verification',
@@ -354,7 +369,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                   }
                   // success case: provider handles its own success UI
                 } catch (error) {
-                  console.error('Error in KYC flow:', error);
+                  const safeInitError = sanitizeErrorMessage(
+                    error instanceof Error ? error.message : String(error),
+                  );
+                  console.error('Error in KYC flow:', safeInitError);
                   navigationRef.navigate('VerificationFallback', {
                     errorSource: 'sumsub_initialization',
                     countryCode,
