@@ -10,6 +10,12 @@ import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
 import type { SumsubResult } from '@/integrations/sumsub/types';
 import type { RootStackParamList } from '@/navigation';
 
+export type FallbackErrorSource =
+  | 'mrz_scan_failed'
+  | 'nfc_scan_failed'
+  | 'sumsub_initialization'
+  | 'sumsub_verification';
+
 export interface UseSumsubLauncherOptions {
   /**
    * Country code for the user's document
@@ -18,7 +24,7 @@ export interface UseSumsubLauncherOptions {
   /**
    * Error source to track where the Sumsub launch was initiated from
    */
-  errorSource: 'sumsub_initialization' | string;
+  errorSource: FallbackErrorSource;
   /**
    * Optional callback to handle successful verification
    */
@@ -90,7 +96,7 @@ export const useSumsubLauncher = (options: UseSumsubLauncherOptions) => {
         await onError(error);
       } else {
         // Default behavior: navigate to fallback screen
-        navigation.navigate('VerificationFallback', {
+        navigation.navigate('RegistrationFallback', {
           errorSource,
           countryCode,
         });

@@ -19,7 +19,7 @@ import DocumentCameraTroubleScreen from '@/screens/documents/scanning/DocumentCa
 import DocumentNFCMethodSelectionScreen from '@/screens/documents/scanning/DocumentNFCMethodSelectionScreen';
 import DocumentNFCScanScreen from '@/screens/documents/scanning/DocumentNFCScanScreen';
 import DocumentNFCTroubleScreen from '@/screens/documents/scanning/DocumentNFCTroubleScreen';
-import VerificationFallbackScreen from '@/screens/documents/scanning/VerificationFallbackScreen';
+import RegistrationFallbackScreen from '@/screens/documents/scanning/RegistrationFallbackScreen';
 import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongingScreen';
 import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
 import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
@@ -156,10 +156,10 @@ const documentsScreens = {
       errorType: 'general',
     },
   },
-  VerificationFallback: {
-    screen: VerificationFallbackScreen,
+  RegistrationFallback: {
+    screen: RegistrationFallbackScreen,
     options: {
-      title: 'VERIFICATION',
+      title: 'REGISTRATION',
       headerShown: false,
     } as NativeStackNavigationOptions,
     initialParams: {

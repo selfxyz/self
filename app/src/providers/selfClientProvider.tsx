@@ -283,7 +283,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
-      navigateIfReady('VerificationFallback', {
+      navigateIfReady('RegistrationFallback', {
         errorSource: 'mrz_scan_failed',
         countryCode: currentCountryCode,
       });
@@ -367,7 +367,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     }
                     // Guard navigation call after async operations
                     if (navigationRef.isReady()) {
-                      navigationRef.navigate('VerificationFallback', {
+                      navigationRef.navigate('RegistrationFallback', {
                         errorSource: 'sumsub_verification',
                         countryCode,
                       });
@@ -381,7 +381,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                   console.error('Error in KYC flow:', safeInitError);
                   // Guard navigation call after async operations
                   if (navigationRef.isReady()) {
-                    navigationRef.navigate('VerificationFallback', {
+                    navigationRef.navigate('RegistrationFallback', {
                       errorSource: 'sumsub_initialization',
                       countryCode,
                     });

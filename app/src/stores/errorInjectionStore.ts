@@ -14,8 +14,6 @@ export type InjectedErrorType =
   | 'nfc_timeout'
   | 'nfc_module_unavailable'
   | 'nfc_parse_failure'
-  | 'proving_error'
-  | 'proving_passport_not_supported'
   | 'api_network_error'
   | 'api_timeout'
   | 'sumsub_initialization'
@@ -28,10 +26,6 @@ export const ERROR_GROUPS = {
     'nfc_module_unavailable',
     'nfc_parse_failure',
   ] as InjectedErrorType[],
-  Proving: [
-    'proving_error',
-    'proving_passport_not_supported',
-  ] as InjectedErrorType[],
   API: ['api_network_error', 'api_timeout'] as InjectedErrorType[],
   Sumsub: [
     'sumsub_initialization',
@@ -40,17 +34,15 @@ export const ERROR_GROUPS = {
 };
 
 export const ERROR_LABELS: Record<InjectedErrorType, string> = {
-  mrz_invalid_format: 'MRZ: Invalid format → Fallback screen',
-  mrz_unknown_error: 'MRZ: Unknown error → Fallback screen',
-  nfc_timeout: 'NFC: Timeout → Fallback screen',
-  nfc_module_unavailable: 'NFC: Module unavailable → Fallback screen',
-  nfc_parse_failure: 'NFC: Parse failure → Fallback screen',
-  proving_error: 'Proving: Generic error',
-  proving_passport_not_supported: 'Proving: Passport not supported',
+  mrz_invalid_format: 'MRZ: Invalid format',
+  mrz_unknown_error: 'MRZ: Unknown error',
+  nfc_timeout: 'NFC: Timeout',
+  nfc_module_unavailable: 'NFC: Module unavailable',
+  nfc_parse_failure: 'NFC: Parse failure',
   api_network_error: 'API: Network error',
   api_timeout: 'API: Timeout',
-  sumsub_initialization: 'Sumsub: Initialization → Fallback screen',
-  sumsub_verification: 'Sumsub: Verification → Fallback screen',
+  sumsub_initialization: 'Sumsub: Initialization',
+  sumsub_verification: 'Sumsub: Verification',
 };
 
 interface ErrorInjectionState {

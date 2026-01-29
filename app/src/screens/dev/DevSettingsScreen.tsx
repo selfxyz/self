@@ -437,7 +437,7 @@ const ErrorInjectionSelector = () => {
           paddingRight="$1.5"
         >
           <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-            {currentErrorLabel || 'Select KYC fallback to test'}
+            {currentErrorLabel || 'Select onboarding error to test'}
           </Text>
           <ChevronDown color={slate500} strokeWidth={2.5} />
         </XStack>
@@ -481,7 +481,7 @@ const ErrorInjectionSelector = () => {
               marginBottom="$4"
             >
               <Text fontSize="$8" fontFamily={dinot}>
-                KYC Fallback Testing
+                Onboarding Error Testing
               </Text>
               <Button
                 onPress={() => setOpen(false)}
@@ -934,8 +934,8 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         {IS_DEV_MODE && (
           <ParameterSection
             icon={<BugIcon />}
-            title="KYC Fallback Testing"
-            description="Test KYC fallback flow when passport fails"
+            title="Onboarding Error Testing"
+            description="Test onboarding error flows"
           >
             <ErrorInjectionSelector />
           </ParameterSection>

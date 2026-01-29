@@ -79,7 +79,7 @@ export type RootStackParamList = Omit<
   | 'Home'
   | 'IDPicker'
   | 'IdDetails'
-  | 'VerificationFallback'
+  | 'RegistrationFallback'
   | 'Loading'
   | 'Modal'
   | 'MockDataDeepLink'
@@ -128,8 +128,8 @@ export type RootStackParamList = Omit<
     errorType: string;
   };
 
-  // Verification Fallback screens
-  VerificationFallback: {
+  // Registration Fallback screens
+  RegistrationFallback: {
     errorSource:
       | 'mrz_scan_failed'
       | 'nfc_scan_failed'

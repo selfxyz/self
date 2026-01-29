@@ -107,7 +107,7 @@ describe('navigation', () => {
         'Splash',
         'StarfallPushCode',
         'SumsubTest',
-        'VerificationFallback',
+        'RegistrationFallback',
         'WebView',
       ]);
     });

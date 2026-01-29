@@ -18,8 +18,10 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
+  cyan300,
   slate100,
   slate200,
+  slate300,
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -38,13 +40,13 @@ type FallbackErrorSource =
   | 'sumsub_initialization'
   | 'sumsub_verification';
 
-type VerificationFallbackRouteParams = {
+type RegistrationFallbackRouteParams = {
   errorSource: FallbackErrorSource;
   countryCode: string;
 };
 
-type VerificationFallbackRoute = RouteProp<
-  Record<string, VerificationFallbackRouteParams>,
+type RegistrationFallbackRoute = RouteProp<
+  Record<string, RegistrationFallbackRouteParams>,
   string
 >;
 
@@ -55,7 +57,21 @@ const getHeaderTitle = (errorSource: FallbackErrorSource): string => {
     case 'nfc_scan_failed':
       return 'NFC SCAN';
     default:
-      return 'VERIFICATION';
+      return 'REGISTRATION';
+  }
+};
+
+const getCurrentStep = (errorSource: FallbackErrorSource): number => {
+  switch (errorSource) {
+    case 'mrz_scan_failed':
+      return 1; // Step 1: MRZ scanning
+    case 'nfc_scan_failed':
+      return 2; // Step 2: NFC reading
+    case 'sumsub_initialization':
+    case 'sumsub_verification':
+      return 3; // Step 3: Proving/verification
+    default:
+      return 1;
   }
 };
 
@@ -103,12 +119,12 @@ const getErrorMessages = (
   }
 };
 
-const VerificationFallbackScreen: React.FC = () => {
+const RegistrationFallbackScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const paddingBottom = useSafeBottomPadding(extraYPadding + 35);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute<VerificationFallbackRoute>();
+  const route = useRoute<RegistrationFallbackRoute>();
   const { trackEvent } = useSelfClient();
 
   const errorSource = route.params?.errorSource || 'sumsub_initialization';
@@ -116,6 +132,7 @@ const VerificationFallbackScreen: React.FC = () => {
 
   const headerTitle = getHeaderTitle(errorSource);
   const retryButtonText = getRetryButtonText(errorSource);
+  const currentStep = getCurrentStep(errorSource);
   const { title, description, canRetryOriginal } =
     getErrorMessages(errorSource);
 
@@ -143,12 +160,12 @@ const VerificationFallbackScreen: React.FC = () => {
   }, [navigation]);
 
   const handleTryAlternative = useCallback(async () => {
-    trackEvent('VERIFICATION_FALLBACK_TRY_ALTERNATIVE', { errorSource });
+    trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', { errorSource });
     await launchSumsubVerification();
   }, [errorSource, launchSumsubVerification, trackEvent]);
 
   const handleRetryOriginal = useCallback(() => {
-    trackEvent('VERIFICATION_FALLBACK_RETRY_ORIGINAL', { errorSource });
+    trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', { errorSource });
 
     // Navigate back to the appropriate screen based on error source
     if (errorSource === 'mrz_scan_failed') {
@@ -208,6 +225,20 @@ const VerificationFallbackScreen: React.FC = () => {
             <HelpCircle size={20} color={black} opacity={0} />
           </Button>
         </XStack>
+
+        {/* Progress Bar */}
+        <YStack paddingHorizontal={40} paddingBottom={10}>
+          <XStack gap={3} height={6}>
+            {[1, 2, 3, 4].map(step => (
+              <YStack
+                key={step}
+                flex={1}
+                backgroundColor={step === currentStep ? cyan300 : slate300}
+                borderRadius={10}
+              />
+            ))}
+          </XStack>
+        </YStack>
       </YStack>
 
       {/* Warning Icon */}
@@ -285,4 +316,4 @@ const VerificationFallbackScreen: React.FC = () => {
   );
 };
 
-export default VerificationFallbackScreen;
+export default RegistrationFallbackScreen;

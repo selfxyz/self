@@ -27,7 +27,6 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import LoadingUI from '@/components/LoadingUI';
-import { useErrorInjection } from '@/hooks/useErrorInjection';
 import { loadingScreenProgress } from '@/integrations/haptics';
 import { getLoadingScreenText } from '@/proving/loadingScreenStateText';
 import { setupNotifications } from '@/services/notifications/notificationService';
@@ -53,7 +52,6 @@ const terminalStates: ProvingStateType[] = [
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const { useProvingStore } = useSelfClient();
-  const { shouldInjectError } = useErrorInjection();
   // Track if we're initializing to show clean state
   const [isInitializing, setIsInitializing] = useState(false);
 
@@ -104,33 +102,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
     // This ensures proper reset between proving sessions
     const initializeProving = async () => {
       try {
-        // Dev-only: Check for injected proving error
-        if (shouldInjectError('proving_error')) {
-          console.log('[DEV] Injecting proving generic error');
-          throw new Error('Injected proving error for testing');
-        }
-
-        // Dev-only: Check for injected passport not supported error
-        if (shouldInjectError('proving_passport_not_supported')) {
-          console.log('[DEV] Injecting passport not supported error');
-          // This error is handled by the SDK event listener in selfClientProvider
-          // We need to let the proving process start but it will fail at validation
-          const selectedDocument = await loadSelectedDocument(selfClient);
-          if (selectedDocument?.data?.documentCategory === 'aadhaar') {
-            await init(selfClient, 'register', true);
-          } else {
-            await init(selfClient, 'dsc', true);
-          }
-          // Emit the not supported event after a short delay to simulate the flow
-          setTimeout(() => {
-            selfClient.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, {
-              countryCode: null,
-              documentCategory: route?.params?.documentCategory || null,
-            });
-          }, 1000);
-          return;
-        }
-
         const selectedDocument = await loadSelectedDocument(selfClient);
         if (selectedDocument?.data?.documentCategory === 'aadhaar') {
           await init(selfClient, 'register', true);
@@ -146,13 +117,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
     };
 
     initializeProving();
-  }, [
-    isFocused,
-    init,
-    selfClient,
-    shouldInjectError,
-    route?.params?.documentCategory,
-  ]);
+  }, [isFocused, init, selfClient, route?.params?.documentCategory]);
 
   // Initialize notifications and load passport data
   useEffect(() => {
