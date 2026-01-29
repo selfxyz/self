@@ -34,7 +34,10 @@ import {
   setPassportKeychainErrorCallback,
 } from '@/providers/passportDataProvider';
 import { trackEvent, trackNfcEvent } from '@/services/analytics';
-import { useErrorInjectionStore } from '@/stores/errorInjectionStore';
+import {
+  type InjectedErrorType,
+  useErrorInjectionStore,
+} from '@/stores/errorInjectionStore';
 import { useSettingStore } from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
 import {
@@ -78,7 +81,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
             shouldTrigger: (errorType: string) => {
               return useErrorInjectionStore
                 .getState()
-                .shouldTrigger(errorType as any);
+                .shouldTrigger(errorType as InjectedErrorType);
             },
           }
         : undefined,

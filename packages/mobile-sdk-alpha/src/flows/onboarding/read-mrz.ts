@@ -31,7 +31,7 @@ const calculateScanDurationSeconds = (scanStartTimeRef: RefObject<number>) => {
 
 export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
   const selfClient = useSelfClient();
-  const shouldTrigger = selfClient.config.devConfig?.shouldTrigger;
+  const shouldTrigger = selfClient.config?.devConfig?.shouldTrigger;
 
   return {
     onPassportRead: useCallback(

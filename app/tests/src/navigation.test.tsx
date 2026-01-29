@@ -85,7 +85,6 @@ describe('navigation', () => {
         'Home',
         'IDPicker',
         'IdDetails',
-        'KycError',
         'Loading',
         'ManageDocuments',
         'MockDataDeepLink',
@@ -108,6 +107,7 @@ describe('navigation', () => {
         'Splash',
         'StarfallPushCode',
         'SumsubTest',
+        'VerificationFallback',
         'WebView',
       ]);
     });
