@@ -3,7 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,21 +12,20 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import loadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
 import {
+  AbstractButton,
   Description,
-  PrimaryButton,
-  SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { buttonTap } from '@/integrations/haptics';
-import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { requestNotificationPermission } from '@/services/notifications/notificationService';
 
 const KycSuccessScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
 
   const handleReceiveUpdates = async () => {
     buttonTap();
@@ -40,58 +40,84 @@ const KycSuccessScreen: React.FC = () => {
   };
 
   return (
-    <ExpandableBottomLayout.Layout backgroundColor={white}>
-      <ExpandableBottomLayout.TopSection backgroundColor={black} roundTop>
-        <DelayedLottieView
-          autoPlay
-          loop={true}
-          source={loadingAnimation}
-          style={styles.animation}
-          cacheComposition={true}
-          renderMode="HARDWARE"
-        />
-      </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection backgroundColor={black}>
+    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+      <View style={styles.centerSection}>
+        <View style={styles.animationContainer}>
+          <DelayedLottieView
+            autoPlay
+            loop={true}
+            source={loadingAnimation}
+            style={styles.animation}
+            cacheComposition={true}
+            renderMode="HARDWARE"
+          />
+        </View>
         <YStack
-          paddingTop={40}
-          paddingHorizontal={10}
-          paddingBottom={20}
+          paddingHorizontal={24}
           justifyContent="center"
           alignItems="center"
-          marginBottom={20}
-          gap={10}
+          gap={12}
         >
-          <Title size="large" style={styles.title}>
-            Your ID is being verified
-          </Title>
+          <Title style={styles.title}>Your ID is being verified</Title>
           <Description style={styles.description}>
             Turn on push notifications to receive an update on your
             verification. It's also safe the close the app and come back later.
           </Description>
         </YStack>
-        <YStack gap={12} paddingBottom={20}>
-          <PrimaryButton onPress={handleReceiveUpdates}>
-            Receive live updates
-          </PrimaryButton>
-          <SecondaryButton textColor={white} onPress={handleCheckLater}>
-            I will check back later
-          </SecondaryButton>
-        </YStack>
-      </ExpandableBottomLayout.BottomSection>
-    </ExpandableBottomLayout.Layout>
+      </View>
+      <YStack gap={12} paddingHorizontal={20} paddingBottom={24}>
+        <AbstractButton
+          bgColor={white}
+          color={black}
+          onPress={handleReceiveUpdates}
+        >
+          Receive live updates
+        </AbstractButton>
+        <AbstractButton
+          bgColor="transparent"
+          color={white}
+          borderColor="rgba(255, 255, 255, 0.3)"
+          borderWidth={1}
+          onPress={handleCheckLater}
+        >
+          I will check back later
+        </AbstractButton>
+      </YStack>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: black,
+  },
+  centerSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  animationContainer: {
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 32,
+  },
   animation: {
-    width: '125%',
-    height: '125%',
+    width: 160,
+    height: 160,
   },
   title: {
     color: white,
+    textAlign: 'center',
+    fontSize: 28,
+    letterSpacing: 1,
   },
   description: {
     color: white,
+    textAlign: 'center',
+    fontSize: 18,
   },
 });
 
