@@ -50,7 +50,7 @@ type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
 /**
  * Provides a configured Self SDK client instance to all descendants.
  *
- * ,dapters:
+ * Adapters:
  * - `webNFCScannerShim` for basic NFC scanning stubs on web
  * - `fetch`/`WebSocket` for network communication
  * - Web Crypto hashing with a stub signer
