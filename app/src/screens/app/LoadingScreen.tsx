@@ -14,7 +14,6 @@ import {
   advercase,
   dinot,
   loadSelectedDocument,
-  SdkEvents,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
