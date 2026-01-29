@@ -3,10 +3,12 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback } from 'react';
-import { YStack } from 'tamagui';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Button, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { HelpCircle, X } from '@tamagui/lucide-icons';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -21,10 +23,12 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
 import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
+import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
 
@@ -44,22 +48,42 @@ type VerificationFallbackRoute = RouteProp<
   string
 >;
 
+const getHeaderTitle = (errorSource: FallbackErrorSource): string => {
+  switch (errorSource) {
+    case 'mrz_scan_failed':
+      return 'MRZ SCAN';
+    case 'nfc_scan_failed':
+      return 'NFC SCAN';
+    default:
+      return 'VERIFICATION';
+  }
+};
+
+const getRetryButtonText = (errorSource: FallbackErrorSource): string => {
+  switch (errorSource) {
+    case 'mrz_scan_failed':
+      return 'Try scanning again';
+    case 'nfc_scan_failed':
+      return 'Try reading again';
+    default:
+      return 'Try again';
+  }
+};
+
 const getErrorMessages = (
   errorSource: FallbackErrorSource,
 ): { title: string; description: string; canRetryOriginal: boolean } => {
   switch (errorSource) {
     case 'mrz_scan_failed':
       return {
-        title: 'Scanning Failed',
-        description:
-          'Unable to scan your document. You can try scanning again or use alternative verification.',
+        title: 'There was a problem scanning your document',
+        description: 'Make sure the document is clearly visible and try again',
         canRetryOriginal: true,
       };
     case 'nfc_scan_failed':
       return {
-        title: 'NFC Scan Failed',
-        description:
-          'Unable to read your document chip. You can try again or use alternative verification.',
+        title: 'There was a problem reading the chip',
+        description: 'Make sure NFC is enabled and try again',
         canRetryOriginal: true,
       };
     case 'sumsub_initialization':
@@ -80,6 +104,7 @@ const getErrorMessages = (
 };
 
 const VerificationFallbackScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const paddingBottom = useSafeBottomPadding(extraYPadding + 35);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -89,6 +114,8 @@ const VerificationFallbackScreen: React.FC = () => {
   const errorSource = route.params?.errorSource || 'sumsub_initialization';
   const countryCode = route.params?.countryCode || '';
 
+  const headerTitle = getHeaderTitle(errorSource);
+  const retryButtonText = getRetryButtonText(errorSource);
   const { title, description, canRetryOriginal } =
     getErrorMessages(errorSource);
 
@@ -109,6 +136,11 @@ const VerificationFallbackScreen: React.FC = () => {
       },
     },
   );
+
+  const handleClose = useCallback(() => {
+    buttonTap();
+    navigation.goBack();
+  }, [navigation]);
 
   const handleTryAlternative = useCallback(async () => {
     trackEvent('VERIFICATION_FALLBACK_TRY_ALTERNATIVE', { errorSource });
@@ -131,6 +163,54 @@ const VerificationFallbackScreen: React.FC = () => {
 
   return (
     <YStack flex={1} backgroundColor={slate100}>
+      {/* Header */}
+      <YStack backgroundColor={slate100}>
+        <XStack
+          backgroundColor={slate100}
+          padding={20}
+          justifyContent="space-between"
+          alignItems="center"
+          paddingTop={Math.max(insets.top, 15) + extraYPadding}
+          paddingBottom={10}
+        >
+          <Button
+            unstyled
+            onPress={handleClose}
+            padding={8}
+            borderRadius={20}
+            hitSlop={10}
+          >
+            <X size={24} color={black} />
+          </Button>
+
+          <BodyText
+            style={{
+              fontSize: 16,
+              color: black,
+              fontWeight: '600',
+              fontFamily: dinot,
+            }}
+          >
+            {headerTitle}
+          </BodyText>
+
+          <Button
+            unstyled
+            padding={8}
+            borderRadius={20}
+            hitSlop={10}
+            width={32}
+            height={32}
+            justifyContent="center"
+            alignItems="center"
+            disabled
+          >
+            <HelpCircle size={20} color={black} opacity={0} />
+          </Button>
+        </XStack>
+      </YStack>
+
+      {/* Warning Icon */}
       <YStack flex={1} paddingHorizontal={20} paddingTop={20}>
         <YStack
           flex={1}
@@ -142,13 +222,12 @@ const VerificationFallbackScreen: React.FC = () => {
         </YStack>
       </YStack>
 
+      {/* Error Message */}
       <YStack
         paddingHorizontal={20}
         paddingTop={20}
         alignItems="center"
         paddingVertical={25}
-        borderBlockWidth={1}
-        borderBlockColor={slate200}
       >
         <BodyText style={{ fontSize: 19, textAlign: 'center', color: black }}>
           {title}
@@ -165,22 +244,42 @@ const VerificationFallbackScreen: React.FC = () => {
         </BodyText>
       </YStack>
 
+      {/* Top Button - Retry */}
+      {canRetryOriginal && (
+        <YStack paddingHorizontal={25} paddingBottom={20}>
+          <PrimaryButton onPress={handleRetryOriginal} disabled={isRetrying}>
+            {retryButtonText}
+          </PrimaryButton>
+        </YStack>
+      )}
+
+      {/* Bottom Section with Grey Line Separator */}
       <YStack
         paddingHorizontal={25}
         backgroundColor={white}
         paddingBottom={paddingBottom}
         paddingTop={25}
         gap="$3"
+        borderTopWidth={1}
+        borderTopColor={slate200}
       >
-        <PrimaryButton onPress={handleTryAlternative} disabled={isRetrying}>
-          {isRetrying ? 'Loading...' : 'Try Alternative Verification'}
-        </PrimaryButton>
+        <SecondaryButton onPress={handleTryAlternative} disabled={isRetrying}>
+          {isRetrying ? 'Loading...' : 'Try a different method'}
+        </SecondaryButton>
 
-        {canRetryOriginal && (
-          <SecondaryButton onPress={handleRetryOriginal} disabled={isRetrying}>
-            Try Scanning Again
-          </SecondaryButton>
-        )}
+        {/* Footer Text */}
+        <BodyText
+          style={{
+            fontSize: 15,
+            textAlign: 'center',
+            color: slate500,
+            fontStyle: 'italic',
+            marginTop: 8,
+          }}
+        >
+          Registering with alternative methods may take longer to verify your
+          document.
+        </BodyText>
       </YStack>
     </YStack>
   );
