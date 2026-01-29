@@ -17,6 +17,7 @@ import {
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
   type TrackEventParams,
+  useMRZStore,
   webNFCScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -307,7 +308,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       }) => {
         currentCountryCode = countryCode;
         // Store country code early so it's available for Sumsub fallback flows
-        selfClient.getMRZState().update({ countryCode });
+        useMRZStore.getState().update({ countryCode });
         navigateIfReady('IDPicker', { countryCode, documentTypes });
       },
     );
