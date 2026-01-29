@@ -22,6 +22,7 @@ import {
   nullifierHash,
   processQRDataSimple,
 } from '../aadhaar/mockData.js';
+import { generateKycCommitment, generateKycNullifier } from '../kyc/utils.js';
 import {
   AadhaarData,
   AttestationIdHex,
@@ -286,7 +287,7 @@ export async function isUserRegistered(
   let commitment: string;
 
   if (isKycDocument(documentData)) {
-    throw new Error('TODO: seshanth: add KYC isUserRegistered');
+    commitment = generateKycCommitment(documentData, secret);
   }
 
   if (document === 'aadhaar') {
@@ -336,7 +337,8 @@ export async function isUserRegisteredWithAlternativeCSCA(
   let csca_list: string[];
 
   if (document === 'kyc') {
-    throw new Error('TODO: add KYC isUserRegistered');
+    const isRegistered = await isUserRegistered(passportData, secret, getCommitmentTree);
+    return { isRegistered, csca: null };
   }
 
   if (document === 'aadhaar') {

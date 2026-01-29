@@ -159,6 +159,87 @@ export const generateKycDiscloseInput = (
   return circuitInput;
 };
 
+export const generateKycDiscloseInputFromData = (
+  serializedApplicantInfo: string,
+  secret: string,
+  nameDobSmt: SMT,
+  nameYobSmt: SMT,
+  identityTree: LeanIMT,
+  ofac: boolean,
+  scope: string,
+  userIdentifier: string,
+  fieldsToReveal?: KycField[],
+  forbiddenCountriesList?: string[],
+  minimumAge?: number,
+): KycDiscloseInput => {
+  // Decode base64 applicant info to get raw padded bytes for the circuit
+  const rawData = Buffer.from(serializedApplicantInfo, 'base64').toString('utf-8');
+  const serializedData = rawData.padEnd(KYC_MAX_LENGTH, '\0');
+  const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
+
+  // Compute commitment
+  const commitment = poseidon2([secret, packBytesAndPoseidon(msgPadded)]);
+
+  // Find in tree and generate merkle proof
+  const index = findIndexInTree(identityTree, commitment);
+  const {
+    siblings,
+    path: merkle_path,
+    leaf_depth,
+  } = generateMerkleProof(identityTree, index, COMMITMENT_TREE_DEPTH);
+
+  // Deserialize to get individual fields for OFAC lookups
+  const applicantData = deserializeApplicantInfo(serializedApplicantInfo);
+  const ofacData = {
+    ...applicantData,
+    user_identifier: '',
+    current_date: '',
+    majority_age_ASCII: '',
+    selector_older_than: '',
+  } as KycData;
+  const nameDobInputs = generateCircuitInputsOfac(ofacData, nameDobSmt, 2);
+  const nameYobInputs = generateCircuitInputsOfac(ofacData, nameYobSmt, 1);
+
+  // Build disclosure selector
+  const fieldsToRevealFinal = fieldsToReveal || [];
+  const compressed_disclose_sel = createKycDiscloseSelFromFields(fieldsToRevealFinal);
+
+  // Age and date
+  const majorityAgeASCII = minimumAge
+    ? minimumAge
+        .toString()
+        .padStart(3, '0')
+        .split('')
+        .map((x) => x.charCodeAt(0))
+    : ['0', '0', '0'].map((x) => x.charCodeAt(0));
+
+  const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '').split('');
+
+  const circuitInput: KycDiscloseInput = {
+    data_padded: formatInput(msgPadded),
+    compressed_disclose_sel: compressed_disclose_sel,
+    scope: scope,
+    merkle_root: formatInput(BigInt(identityTree.root)),
+    leaf_depth: formatInput(leaf_depth),
+    path: formatInput(merkle_path),
+    siblings: formatInput(siblings),
+    forbidden_countries_list: forbiddenCountriesList || [...Array(120)].map(() => '0'),
+    ofac_name_dob_smt_leaf_key: nameDobInputs.smt_leaf_key,
+    ofac_name_dob_smt_root: nameDobInputs.smt_root,
+    ofac_name_dob_smt_siblings: nameDobInputs.smt_siblings,
+    ofac_name_yob_smt_leaf_key: nameYobInputs.smt_leaf_key,
+    ofac_name_yob_smt_root: nameYobInputs.smt_root,
+    ofac_name_yob_smt_siblings: nameYobInputs.smt_siblings,
+    selector_ofac: ofac ? ['1'] : ['0'],
+    user_identifier: userIdentifier,
+    current_date: currentDate,
+    majority_age_ASCII: majorityAgeASCII,
+    secret: secret,
+  };
+
+  return circuitInput;
+};
+
 export const generateKycRegisterInput = async (applicantInfoBase64: string, signatureBase64: string, pubkeyStr: [string, string], secret: string) => {
   const applicantInfo = deserializeApplicantInfo(applicantInfoBase64);
   const signature = deserializeSignature(signatureBase64);

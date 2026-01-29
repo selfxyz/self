@@ -18,76 +18,14 @@ import {
   getCircuitNameFromPassportData,
   hashEndpointWithScope,
 } from '../../utils/index.js';
-import type { AadhaarData, Environment, IDDocument, OfacTree } from '../../utils/types.js';
-import { generateKycRegisterInput } from '../kyc/generateInputs.js';
+import type { AadhaarData, Environment, IDDocument, KycData as KycIDData, OfacTree } from '../../utils/types.js';
+import { KycField } from '../kyc/constants.js';
+import { generateKycDiscloseInputFromData, generateKycRegisterInput } from '../kyc/generateInputs.js';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
 
 export { generateCircuitInputsRegister } from './generateInputs.js';
-
-// export function generateTEEInputsKycDisclose(  secret: string,
-//   kycData: KycData,
-//   selfApp: SelfApp,
-//   getTree: <T extends 'ofac' | 'commitment'>(
-//     doc: DocumentCategory,
-//     tree: T
-//   ) => T extends 'ofac' ? OfacTree : any
-
-// ) {
-
-//   const {generateKycInputWithOutSig} = require('../kyc/generateInputs.js');
-
-//   const { scope, disclosures, userId, userDefinedData, chainID } = selfApp;
-//   const userIdentifierHash = calculateUserIdentifierHash(chainID, userId, userDefinedData);
-
-//   // Map SelfAppDisclosureConfig to KycField array
-//   const mapDisclosuresToKycFields = (config: SelfAppDisclosureConfig): KycField[] => {
-//     const mapping: [keyof SelfAppDisclosureConfig, KycField][] = [
-//       ['issuing_state', 'ADDRESS'],
-//       ['nationality', 'COUNTRY'],
-//       ['name', 'FULL_NAME'],
-//       ['passport_number', 'ID_NUMBER'],
-//       ['date_of_birth', 'DOB'],
-//       ['gender', 'GENDER'],
-//       ['expiry_date', 'EXPIRY_DATE'],
-//     ];
-//     return mapping.filter(([key]) => config[key]).map(([_, field]) => field);
-//   };
-
-//   const ofac_trees = getTree('kyc', 'ofac');
-//   if (!ofac_trees) {
-//     throw new Error('OFAC trees not loaded');
-//   }
-
-//   if (!ofac_trees.nameAndDob || !ofac_trees.nameAndYob) {
-//     throw new Error('Invalid OFAC tree structure: missing required fields');
-//   }
-
-//   const nameAndDobSMT = new SMT(poseidon2, true);
-//   const nameAndYobSMT = new SMT(poseidon2, true);
-//   nameAndDobSMT.import(ofac_trees.nameAndDob);
-//   nameAndYobSMT.import(ofac_trees.nameAndYob);
-
-//   const inputs = generateKycInputWithOutSig(
-//     kycData.serializedRealData,
-//     nameAndDobSMT,
-//     nameAndYobSMT,
-//     disclosures.ofac,
-//     scope,
-//     userIdentifierHash.toString(),
-//     mapDisclosuresToKycFields(disclosures),
-//     disclosures.excludedCountries,
-//     disclosures.minimumAge
-//   );
-
-//   return {
-//     inputs,
-//     circuitName: 'vc_and_disclose_kyc',
-//     endpointType: selfApp.endpointType,
-//     endpoint: selfApp.endpoint,
-//   };
-// }
 
 export function generateTEEInputsAadhaarDisclose(
   secret: string,
@@ -182,45 +120,6 @@ export function generateTEEInputsDSC(
   return { inputs, circuitName, endpointType, endpoint };
 }
 
-/*** DISCLOSURE ***/
-
-function getSelectorDg1(document: DocumentCategory, disclosures: SelfAppDisclosureConfig) {
-  switch (document) {
-    case 'passport':
-      return getSelectorDg1Passport(disclosures);
-    case 'id_card':
-      return getSelectorDg1IdCard(disclosures);
-  }
-}
-
-function getSelectorDg1Passport(disclosures: SelfAppDisclosureConfig) {
-  const selector_dg1 = Array(88).fill('0');
-  Object.entries(disclosures).forEach(([attribute, reveal]) => {
-    if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
-      return;
-    }
-    if (reveal) {
-      const [start, end] = attributeToPosition[attribute as keyof typeof attributeToPosition];
-      selector_dg1.fill('1', start, end + 1);
-    }
-  });
-  return selector_dg1;
-}
-
-function getSelectorDg1IdCard(disclosures: SelfAppDisclosureConfig) {
-  const selector_dg1 = Array(90).fill('0');
-  Object.entries(disclosures).forEach(([attribute, reveal]) => {
-    if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
-      return;
-    }
-    if (reveal) {
-      const [start, end] = attributeToPosition_ID[attribute as keyof typeof attributeToPosition_ID];
-      selector_dg1.fill('1', start, end + 1);
-    }
-  });
-  return selector_dg1;
-}
-
 export function generateTEEInputsDiscloseStateless(
   secret: string,
   passportData: IDDocument,
@@ -240,14 +139,13 @@ export function generateTEEInputsDiscloseStateless(
     return { inputs, circuitName, endpointType, endpoint };
   }
   if (passportData.documentCategory === 'kyc') {
-  // const { inputs, circuitName, endpointType, endpoint } = generateTEEInputsKycDisclose(
-  //   secret,
-  //   passportData,
-  //   selfApp,
-  //   getTree
-  // );
-  // return { inputs, circuitName, endpointType, endpoint };
-  throw new Error('TODO: seshanth: add KYC disclose circuit');
+    const { inputs, circuitName, endpointType, endpoint } = generateTEEInputsKycDisclose(
+      secret,
+      passportData,
+      selfApp,
+      getTree
+    );
+    return { inputs, circuitName, endpointType, endpoint };
   }
   const { scope, disclosures, endpoint, userId, userDefinedData, chainID } = selfApp;
   const userIdentifierHash = calculateUserIdentifierHash(chainID, userId, userDefinedData);
@@ -306,6 +204,111 @@ export function generateTEEInputsDiscloseStateless(
     inputs,
     circuitName:
       passportData.documentCategory === 'passport' ? 'vc_and_disclose' : 'vc_and_disclose_id',
+    endpointType: selfApp.endpointType,
+    endpoint: selfApp.endpoint,
+  };
+}
+
+/*** DISCLOSURE ***/
+
+function getSelectorDg1(document: DocumentCategory, disclosures: SelfAppDisclosureConfig) {
+  switch (document) {
+    case 'passport':
+      return getSelectorDg1Passport(disclosures);
+    case 'id_card':
+      return getSelectorDg1IdCard(disclosures);
+  }
+}
+
+function getSelectorDg1Passport(disclosures: SelfAppDisclosureConfig) {
+  const selector_dg1 = Array(88).fill('0');
+  Object.entries(disclosures).forEach(([attribute, reveal]) => {
+    if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
+      return;
+    }
+    if (reveal) {
+      const [start, end] = attributeToPosition[attribute as keyof typeof attributeToPosition];
+      selector_dg1.fill('1', start, end + 1);
+    }
+  });
+  return selector_dg1;
+}
+
+function getSelectorDg1IdCard(disclosures: SelfAppDisclosureConfig) {
+  const selector_dg1 = Array(90).fill('0');
+  Object.entries(disclosures).forEach(([attribute, reveal]) => {
+    if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
+      return;
+    }
+    if (reveal) {
+      const [start, end] = attributeToPosition_ID[attribute as keyof typeof attributeToPosition_ID];
+      selector_dg1.fill('1', start, end + 1);
+    }
+  });
+  return selector_dg1;
+}
+
+export function generateTEEInputsKycDisclose(
+  secret: string,
+  kycData: KycIDData,
+  selfApp: SelfApp,
+  getTree: <T extends 'ofac' | 'commitment'>(
+    doc: DocumentCategory,
+    tree: T
+  ) => T extends 'ofac' ? OfacTree : any
+) {
+  const { scope, disclosures, endpoint, userId, userDefinedData, chainID } = selfApp;
+  const userIdentifierHash = calculateUserIdentifierHash(chainID, userId, userDefinedData);
+  const scope_hash = hashEndpointWithScope(endpoint, scope);
+
+  // Map SelfAppDisclosureConfig to KycField array
+  const mapDisclosuresToKycFields = (config: SelfAppDisclosureConfig): KycField[] => {
+    const mapping: [keyof SelfAppDisclosureConfig, KycField][] = [
+      ['issuing_state', 'ADDRESS'],
+      ['nationality', 'COUNTRY'],
+      ['name', 'FULL_NAME'],
+      ['passport_number', 'ID_NUMBER'],
+      ['date_of_birth', 'DOB'],
+      ['gender', 'GENDER'],
+      ['expiry_date', 'EXPIRY_DATE'],
+    ];
+    return mapping.filter(([key]) => config[key]).map(([_, field]) => field);
+  };
+
+  const ofac_trees = getTree('kyc', 'ofac');
+  if (!ofac_trees) {
+    throw new Error('OFAC trees not loaded');
+  }
+
+  if (!ofac_trees.nameAndDob || !ofac_trees.nameAndYob) {
+    throw new Error('Invalid OFAC tree structure: missing required fields');
+  }
+
+  const nameAndDobSMT = new SMT(poseidon2, true);
+  const nameAndYobSMT = new SMT(poseidon2, true);
+  nameAndDobSMT.import(ofac_trees.nameAndDob);
+  nameAndYobSMT.import(ofac_trees.nameAndYob);
+
+  const serialized_tree = getTree('kyc', 'commitment');
+  const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serialized_tree);
+
+  const inputs = generateKycDiscloseInputFromData(
+    kycData.serializedApplicantInfo,
+    secret,
+    nameAndDobSMT,
+    nameAndYobSMT,
+    tree,
+    disclosures.ofac ?? false,
+    scope_hash,
+    userIdentifierHash.toString(),
+    mapDisclosuresToKycFields(disclosures),
+    disclosures.excludedCountries,
+    disclosures.minimumAge
+  );
+
+  return {
+    inputs,
+    circuitName: 'vc_and_disclose_kyc',
     endpointType: selfApp.endpointType,
     endpoint: selfApp.endpoint,
   };

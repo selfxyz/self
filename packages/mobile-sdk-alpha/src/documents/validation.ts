@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { AadhaarData, DocumentMetadata, IDDocument } from '@selfxyz/common';
+import { type AadhaarData, deserializeApplicantInfo, type DocumentMetadata, type IDDocument } from '@selfxyz/common';
 import { attributeToPosition, attributeToPosition_ID } from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types/passport';
 import type { DocumentCatalog, KycData } from '@selfxyz/common/utils/types';
@@ -106,6 +106,65 @@ function getPassportAttributes(mrz: string, documentCategory: string): DocumentA
   };
 }
 
+function getKycAttributes(document: KycData): DocumentAttributes {
+  const data = deserializeApplicantInfo(document.serializedApplicantInfo);
+
+  // Format name like MRZ: surname<<given names
+  const nameParts = data.fullName.trim().split(/\s+/);
+  const surname = nameParts[nameParts.length - 1] || '';
+  const givenNames = nameParts.slice(0, -1).join(' ') || '';
+  const nameSliceFormatted = surname && givenNames ? `${surname}<<${givenNames}` : surname || givenNames || '';
+
+  // Format DOB to YYMMDD if provided (assuming ISO format YYYY-MM-DD or similar)
+  let dobFormatted = '';
+  let yobSlice = '';
+  if (data.dob) {
+    // Try to parse various date formats
+    const dateMatch = data.dob.match(/(\d{4})-(\d{2})-(\d{2})/); // YYYY-MM-DD
+    if (dateMatch) {
+      const [, year, month, day] = dateMatch;
+      yobSlice = year;
+      dobFormatted = `${year.slice(-2)}${month}${day}`;
+    } else if (data.dob.length === 8 && /^\d{8}$/.test(data.dob)) {
+      // Already in YYYYMMDD format
+      yobSlice = data.dob.slice(0, 4);
+      dobFormatted = `${data.dob.slice(2, 4)}${data.dob.slice(4, 6)}${data.dob.slice(6, 8)}`;
+    } else if (data.dob.length === 6 && /^\d{6}$/.test(data.dob)) {
+      // Already in YYMMDD format
+      yobSlice = `20${data.dob.slice(0, 2)}`;
+      dobFormatted = data.dob;
+    }
+  }
+
+  // Format expiry date to YYMMDD if provided
+  let expiryDateFormatted = '';
+  if (data.expiryDate) {
+    const expiryMatch = data.expiryDate.match(/(\d{4})-(\d{2})-(\d{2})/); // YYYY-MM-DD
+    if (expiryMatch) {
+      const [, year, month, day] = expiryMatch;
+      expiryDateFormatted = `${year.slice(-2)}${month}${day}`;
+    } else if (data.expiryDate.length === 8 && /^\d{8}$/.test(data.expiryDate)) {
+      // Already in YYYYMMDD format
+      expiryDateFormatted = `${data.expiryDate.slice(2, 4)}${data.expiryDate.slice(4, 6)}${data.expiryDate.slice(6, 8)}`;
+    } else if (data.expiryDate.length === 6 && /^\d{6}$/.test(data.expiryDate)) {
+      // Already in YYMMDD format
+      expiryDateFormatted = data.expiryDate;
+    }
+  }
+
+  return {
+    nameSlice: nameSliceFormatted,
+    dobSlice: dobFormatted,
+    yobSlice,
+    issuingStateSlice: data.country || '',
+    nationalitySlice: data.country || '',
+    passNoSlice: data.idNumber || '',
+    sexSlice: data.gender || '',
+    expiryDateSlice: expiryDateFormatted,
+    isPassportType: false,
+  };
+}
+
 /**
  * Extracts document attributes from passport, ID card, or Aadhaar data.
  *
@@ -118,8 +177,7 @@ export function getDocumentAttributes(document: PassportData | AadhaarData | Kyc
   } else if (isMRZDocument(document)) {
     return getPassportAttributes(document.mrz, document.documentCategory);
   } else if (isKycDocument(document)) {
-    throw new Error('TODO: seshanth: add KYC attributes');
-    // return getKycAttributes(document);
+    return getKycAttributes(document);
   } else {
     // Fallback for unknown document types
     return {
