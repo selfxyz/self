@@ -3,7 +3,7 @@ import { poseidon2 } from "poseidon-lite";
 import { packBytesAndPoseidon } from "../hash.js";
 import { IDDocument, isKycDocument } from "../types.js";
 import { deserializeApplicantInfo } from "./api.js";
-import { KYC_ID_NUMBER_INDEX , KYC_ID_NUMBER_LENGTH, KYC_ID_TYPE_INDEX } from "./constants.js";
+import { KYC_ID_NUMBER_INDEX , KYC_ID_NUMBER_LENGTH, KYC_ID_TYPE_INDEX, KYC_ID_TYPE_LENGTH } from "./constants.js";
 import { serializeKycData } from "./types.js";
 
 export const generateKycCommitment = (passportData: IDDocument, secret: string) => {

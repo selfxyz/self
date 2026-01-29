@@ -55,6 +55,7 @@ import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
 import { useTestReferralFlow } from '@/hooks/useTestReferralFlow';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
+import { usePendingKycStore } from '@/stores/pendingKycStore';
 import { useSettingStore } from '@/stores/settingStore';
 import useUserStore from '@/stores/userStore';
 
@@ -77,6 +78,17 @@ const HomeScreen: React.FC = () => {
   >({});
   const [loading, setLoading] = useState(true);
   const hasIncrementedOnFocus = useRef(false);
+
+  const { pendingVerifications, removeExpiredVerifications } =
+    usePendingKycStore();
+
+  useEffect(() => {
+    removeExpiredVerifications();
+  }, [removeExpiredVerifications]);
+
+  const activePendingVerifications = pendingVerifications.filter(
+    v => v.status === 'pending' || v.status === 'processing',
+  );
 
   const { amount: selfPoints } = usePoints();
 
@@ -226,33 +238,46 @@ const HomeScreen: React.FC = () => {
           paddingBottom: 35, // Add extra bottom padding for shadow
         }}
       >
-        {!hasValidRegisteredDocument ? (
-          <Pressable
-            onPress={() => {
-              navigation.navigate('CountryPicker');
-            }}
-          >
-            <View
-              width={cardWidth}
-              borderRadius={8}
-              overflow="hidden"
-              alignSelf="center"
-              style={{
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 8,
-                elevation: 4,
+        {/* TODO seshanth Uncomment and use a valid commitment */}
+        {/* {activePendingVerifications.map(verification => (
+          <PendingKycCard
+            key={verification.userId}
+            verification={verification}
+          />
+        ))} */}
+
+        {/* Show unverified image only if no registered docs AND no pending verifications */}
+        {!hasValidRegisteredDocument &&
+          activePendingVerifications.length === 0 && (
+            <Pressable
+              onPress={() => {
+                navigation.navigate('CountryPicker');
               }}
             >
-              <Image
-                source={UnverifiedHumanImage}
-                style={{ width: cardWidth, height: cardWidth * (418 / 640) }}
-                resizeMode="cover"
-              />
-            </View>
-          </Pressable>
-        ) : (
+              <View
+                width={cardWidth}
+                borderRadius={8}
+                overflow="hidden"
+                alignSelf="center"
+                style={{
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 8,
+                  elevation: 4,
+                }}
+              >
+                <Image
+                  source={UnverifiedHumanImage}
+                  style={{ width: cardWidth, height: cardWidth * (418 / 640) }}
+                  resizeMode="cover"
+                />
+              </View>
+            </Pressable>
+          )}
+
+        {/* Show registered documents */}
+        {hasValidRegisteredDocument &&
           documentCatalog.documents.map((metadata: DocumentMetadata) => {
             const documentData = allDocuments[metadata.id];
             const isSelected =
@@ -274,8 +299,7 @@ const HomeScreen: React.FC = () => {
                 />
               </Pressable>
             );
-          })
-        )}
+          })}
       </ScrollView>
       <YStack
         elevation={8}

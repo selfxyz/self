@@ -4,14 +4,12 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, ScrollView, TextInput } from 'react-native';
-import { io, type Socket } from 'socket.io-client';
 import { Button, Text, XStack, YStack } from 'tamagui';
 import { SUMSUB_TEE_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronLeft } from '@tamagui/lucide-icons';
 
-import { deserializeApplicantInfo } from '@selfxyz/common';
-import type { DocumentType, KycData } from '@selfxyz/common/utils/types';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   green500,
   red500,
@@ -26,17 +24,13 @@ import {
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
+import { useSumsubWebSocket } from '@/hooks/useSumsubWebSocket';
 import {
   fetchAccessToken,
   launchSumsub,
   type SumsubApplicantInfo,
   type SumsubResult,
 } from '@/integrations/sumsub';
-import type { SumsubApplicantInfoSerialized } from '@/integrations/sumsub/types';
-import {
-  storeDocumentWithDeduplication,
-  updateDocumentRegistrationState,
-} from '@/providers/passportDataProvider';
 
 const SumsubTestScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -50,11 +44,36 @@ const SumsubTestScreen: React.FC = () => {
   const [applicantInfo, setApplicantInfo] =
     useState<SumsubApplicantInfo | null>(null);
 
-  const socketRef = useRef<Socket | null>(null);
-  const hasSubscribedRef = useRef<boolean>(false);
   const isMountedRef = useRef<boolean>(true);
 
   const paddingBottom = useSafeBottomPadding(20);
+
+  const selfClient = useSelfClient();
+
+  // Use shared websocket hook
+  const { subscribe, unsubscribeAll, isSubscribed } = useSumsubWebSocket({
+    selfClient,
+    onSuccess: () => {
+      if (isMountedRef.current) {
+        Alert.alert(
+          'Verification Complete',
+          'Your verification was successful!',
+          [{ text: 'OK' }],
+        );
+      }
+    },
+    onError: errorMessage => {
+      if (isMountedRef.current) {
+        setError(errorMessage);
+      }
+    },
+    onVerificationFailed: reason => {
+      if (isMountedRef.current) {
+        setError(`Verification failed: ${reason}`);
+        Alert.alert('Verification Failed', reason, [{ text: 'OK' }]);
+      }
+    },
+  });
 
   const handleFetchToken = useCallback(async () => {
     setLoading(true);
@@ -64,7 +83,7 @@ const SumsubTestScreen: React.FC = () => {
     setResult(null);
 
     try {
-      const response = await fetchAccessToken(phoneNumber);
+      const response = await fetchAccessToken();
       if (!isMountedRef.current) return;
       setAccessToken(response.token);
       setUserId(response.userId);
@@ -86,79 +105,11 @@ const SumsubTestScreen: React.FC = () => {
   }, [phoneNumber]);
 
   const subscribeToWebSocket = useCallback(() => {
-    console.log('subscribeToWebSocket', userId, hasSubscribedRef.current);
-    if (!userId || hasSubscribedRef.current) {
+    if (!userId || isSubscribed(userId)) {
       return;
     }
-
-    console.log('Connecting to WebSocket:', SUMSUB_TEE_URL);
-    const socket = io(SUMSUB_TEE_URL, {
-      transports: ['websocket', 'polling'],
-    });
-
-    socketRef.current = socket;
-
-    socket.on('connect', () => {
-      console.log('Socket connected, subscribing to user');
-      hasSubscribedRef.current = true;
-      socket.emit('subscribe', userId);
-    });
-
-    socket.on('success', async (data: SumsubApplicantInfoSerialized) => {
-      console.log('Received applicant info');
-      if (!isMountedRef.current) return;
-
-      try {
-        const applicantInfoDeserialized = deserializeApplicantInfo(
-          data.applicantInfo,
-        );
-        console.log('applicantInfoDeserialized', applicantInfoDeserialized);
-        const kycData: KycData = {
-          documentType: applicantInfoDeserialized.idType as DocumentType,
-          documentCategory: 'kyc',
-          mock: false,
-          signature: data.signature,
-          pubkey: data.pubkey,
-          serializedApplicantInfo: data.applicantInfo,
-        };
-
-        console.log('kycData', kycData);
-
-        const documentId = await storeDocumentWithDeduplication(kycData);
-
-        //TODO seshanth: init proving machine
-        // await updateDocumentRegistrationState(documentId, true);
-        console.log('KYC data stored in document catalog');
-      } catch (err) {
-        console.error('Failed to store KYC data:', err);
-      }
-
-      Alert.alert(
-        'Verification Complete',
-        'Your verification was successful!',
-        [{ text: 'OK' }],
-      );
-    });
-
-    socket.on('verification_failed', (reason: string) => {
-      console.log('Verification failed:', reason);
-      if (!isMountedRef.current) return;
-      setError(`Verification failed: ${reason}`);
-      Alert.alert('Verification Failed', reason, [{ text: 'OK' }]);
-    });
-
-    socket.on('error', (errorMessage: string) => {
-      console.error('Socket error:', errorMessage);
-      if (!isMountedRef.current) return;
-      setError(errorMessage);
-      hasSubscribedRef.current = false;
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Socket disconnected');
-      hasSubscribedRef.current = false;
-    });
-  }, [userId]);
+    subscribe(userId);
+  }, [userId, subscribe, isSubscribed]);
 
   const handleLaunchSumsub = useCallback(async () => {
     if (!accessToken) {
@@ -237,23 +188,15 @@ const SumsubTestScreen: React.FC = () => {
     setUserId(null);
     setResult(null);
     setError(null);
-    hasSubscribedRef.current = false;
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-    }
-  }, []);
+    unsubscribeAll();
+  }, [unsubscribeAll]);
 
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-        hasSubscribedRef.current = false;
-      }
+      unsubscribeAll();
     };
-  }, []);
+  }, [unsubscribeAll]);
 
   // If we have applicant info, show that
   if (applicantInfo) {

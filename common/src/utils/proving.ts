@@ -1,5 +1,5 @@
-import forge from 'node-forge';
 import { Buffer } from 'buffer';
+import forge from 'node-forge';
 
 import { WS_DB_RELAYER, WS_DB_RELAYER_STAGING } from '../constants/index.js';
 import { initElliptic } from '../utils/certificate_parsing/elliptic.js';
@@ -91,7 +91,12 @@ export function getPayload(
     };
     return payload;
   } else {
-    const type = circuitName === 'register_aadhaar' ? 'register_aadhaar' : circuitType;
+    const type =
+      circuitName === 'register_aadhaar'
+        ? 'register_aadhaar'
+        : circuitName === 'register_kyc'
+          ? 'register_kyc'
+          : circuitType;
     const payload: TEEPayload = {
       type: type as RegisterProofType | DscProofType,
       onchain: true,

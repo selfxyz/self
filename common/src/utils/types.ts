@@ -88,6 +88,19 @@ export interface PassportData extends BaseIDData {
   passportMetadata?: PassportMetadata;
 }
 
+// pending - pending sumsub verification
+// processing - sumsub verification completed and pending onchain confirmation
+// failed - sumsub verification failed
+export type PendingKycStatus = 'pending' | 'processing' | 'failed';
+
+export interface PendingKycVerification {
+  userId: string; // Correlation key from fetchAccessToken()
+  createdAt: number; // Timestamp when verification started
+  status: PendingKycStatus; // Current status
+  errorMessage?: string; // Error message if failed
+  timeoutAt: number; // When to consider timed out
+}
+
 export type Proof = {
   proof: {
     a: [string, string];
