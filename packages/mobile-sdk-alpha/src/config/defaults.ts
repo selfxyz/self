@@ -4,7 +4,7 @@
 
 import type { Config } from '../types/public';
 
-export const defaultConfig: Required<Config> = {
+export const defaultConfig: Omit<Required<Config>, 'devConfig'> & Pick<Config, 'devConfig'> = {
   timeouts: { scanMs: 60000 },
   // in future this can be used to enable/disable experimental features
   features: {},

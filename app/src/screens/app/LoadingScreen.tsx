@@ -107,8 +107,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
         } else {
           await init(selfClient, 'dsc', true);
         }
-      } catch {
-        console.error('Error loading selected document:');
+      } catch (error) {
+        console.error('Error loading selected document:', error);
         await init(selfClient, 'dsc', true);
       } finally {
         setIsInitializing(false);
