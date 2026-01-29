@@ -5,6 +5,7 @@
 import { useCallback, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { sanitizeErrorMessage } from '@selfxyz/mobile-sdk-alpha';
 
 import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
@@ -84,7 +85,7 @@ export const useSumsubLauncher = (options: UseSumsubLauncherOptions) => {
         const error = result.errorMsg || result.errorType || 'Unknown error';
         const safeError = sanitizeErrorMessage(error);
         console.error('Sumsub verification failed:', safeError);
-        
+
         // Call custom error handler if provided, otherwise navigate to fallback screen
         if (onError) {
           await onError(safeError, result);
@@ -100,7 +101,8 @@ export const useSumsubLauncher = (options: UseSumsubLauncherOptions) => {
       // Handle success
       await onSuccess?.(result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       const safeError = sanitizeErrorMessage(errorMessage);
       console.error('Error launching alternative verification:', safeError);
 

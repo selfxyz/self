@@ -306,6 +306,8 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         documentTypes: string[];
       }) => {
         currentCountryCode = countryCode;
+        // Store country code early so it's available for Sumsub fallback flows
+        selfClient.getMRZState().update({ countryCode });
         navigateIfReady('IDPicker', { countryCode, documentTypes });
       },
     );

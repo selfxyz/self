@@ -125,10 +125,13 @@ const RegistrationFallbackScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RegistrationFallbackRoute>();
-  const { trackEvent } = useSelfClient();
+  const selfClient = useSelfClient();
+  const { trackEvent, useMRZStore } = selfClient;
+  const storeCountryCode = useMRZStore(state => state.countryCode);
 
   const errorSource = route.params?.errorSource || 'sumsub_initialization';
-  const countryCode = route.params?.countryCode || '';
+  // Use country code from route params, or fall back to MRZ store
+  const countryCode = route.params?.countryCode || storeCountryCode || '';
 
   const headerTitle = getHeaderTitle(errorSource);
   const retryButtonText = getRetryButtonText(errorSource);
