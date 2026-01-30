@@ -92,7 +92,7 @@ interface IGCPJWTVerifier {
         uint256[2] calldata pA,
         uint256[2][2] calldata pB,
         uint256[2] calldata pC,
-        uint256[19] calldata pubSignals
+        uint256[20] calldata pubSignals
     ) external view returns (bool);
 }
 
@@ -450,7 +450,7 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
         uint256[2] calldata pA,
         uint256[2][2] calldata pB,
         uint256[2] calldata pC,
-        uint256[19] calldata pubSignals
+        uint256[20] calldata pubSignals
     ) external onlyProxy onlyTEE {
         // Check if the proof is valid
         if (!IGCPJWTVerifier(_gcpJwtVerifier).verifyProof(pA, pB, pC, pubSignals)) revert INVALID_PROOF();
@@ -459,19 +459,19 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
         if (pubSignals[0] != _gcpRootCAPubkeyHash) revert INVALID_ROOT_CA();
 
         // Check if the TEE image hash is valid
-        bytes memory imageHash = GCPJWTHelper.unpackAndConvertImageHash(pubSignals[4], pubSignals[5], pubSignals[6]);
+        bytes memory imageHash = GCPJWTHelper.unpackAndConvertImageHash(pubSignals[5], pubSignals[6], pubSignals[7]);
         if (!IPCR0Manager(_PCR0Manager).isPCR0Set(imageHash)) revert INVALID_IMAGE();
 
         // Unpack the pubkey and register it
         uint256 pubkeyCommitment = GCPJWTHelper.unpackAndDecodeHexPubkey(pubSignals[1], pubSignals[2], pubSignals[3]);
         _isRegisteredPubkeyCommitment[pubkeyCommitment] = true;
 
-        uint256 currentYear = 2000 + pubSignals[7] * 10 + pubSignals[8];
-        uint256 currentMonth = pubSignals[9] * 10 + pubSignals[10];
-        uint256 currentDay = pubSignals[11] * 10 + pubSignals[12];
-        uint256 currentHour = pubSignals[13] * 10 + pubSignals[14];
-        uint256 currentMinute = pubSignals[15] * 10 + pubSignals[16];
-        uint256 currentSecond = pubSignals[17] * 10 + pubSignals[18];
+        uint256 currentYear = 2000 + pubSignals[8] * 10 + pubSignals[9];
+        uint256 currentMonth = pubSignals[10] * 10 + pubSignals[11];
+        uint256 currentDay = pubSignals[12] * 10 + pubSignals[13];
+        uint256 currentHour = pubSignals[14] * 10 + pubSignals[15];
+        uint256 currentMinute = pubSignals[16] * 10 + pubSignals[17];
+        uint256 currentSecond = pubSignals[18] * 10 + pubSignals[19];
         uint256 currentTimestamp = Formatter.toTimeStampWithSeconds(
             currentYear,
             currentMonth,
