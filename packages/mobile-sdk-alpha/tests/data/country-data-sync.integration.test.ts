@@ -41,7 +41,7 @@ function isNetworkError(error: unknown): boolean {
   const errorName = error.name;
 
   return networkErrorPatterns.some(
-    (pattern) =>
+    pattern =>
       errorMessage.includes(pattern.toLowerCase()) ||
       errorName === pattern ||
       ('cause' in error &&
