@@ -29,7 +29,7 @@ contract MockGCPJWTVerifier {
         uint256[2] calldata pA,
         uint256[2][2] calldata pB,
         uint256[2] calldata pC,
-        uint256[19] calldata pubSignals
+        uint256[20] calldata pubSignals
     ) external view returns (bool) {
         // Silence unused variable warnings
         pA;
