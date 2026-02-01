@@ -350,6 +350,18 @@ jobs:
           echo "📱 Verifying iOS Runtime availability..."
           echo "Available iOS runtimes:"
           xcrun simctl list runtimes | grep iOS
+      - name: List Available Simulators and Runtimes
+        run: |
+          echo "=== Detailed Simulator Environment ==="
+          echo ""
+          echo "=== Available iOS Runtimes ==="
+          xcrun simctl list runtimes
+          echo ""
+          echo "=== Available Simulator Device Types (iPhone models) ==="
+          xcrun simctl list devicetypes | grep iPhone | head -20
+          echo ""
+          echo "=== Available Simulator Devices ==="
+          xcrun simctl list devices available
       - name: Build dependencies
         run: |
           echo "Building dependencies..."
@@ -403,12 +415,26 @@ jobs:
 
           if [ -z "$AVAILABLE_SIMULATOR" ]; then
             echo "❌ No available iPhone simulator found"
-            echo "Creating a new iPhone SE (3rd generation) simulator..."
-            xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" || {
-              echo "❌ Failed to create simulator"
+            echo "Creating a new simulator with available runtime..."
+            
+            # Get the latest available iOS runtime
+            LATEST_RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -v "unavailable" | tail -1 | sed -E 's/.*\(([A-Z0-9.-]+)\).*/\1/')
+            echo "Latest available runtime: $LATEST_RUNTIME"
+            
+            if [ -z "$LATEST_RUNTIME" ]; then
+              echo "❌ No iOS runtime available"
               exit 1
-            }
-            AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "iPhone SE (3rd generation)" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+            fi
+            
+            # Create simulator with explicit runtime
+            xcrun simctl create "Test-iPhone" "iPhone SE (3rd generation)" "$LATEST_RUNTIME" || \
+              xcrun simctl create "Test-iPhone" "iPhone 15" "$LATEST_RUNTIME" || \
+              xcrun simctl create "Test-iPhone" "iPhone 14" "$LATEST_RUNTIME" || {
+                echo "❌ Failed to create simulator with runtime $LATEST_RUNTIME"
+                exit 1
+              }
+            
+            AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "Test-iPhone" | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/' | head -1)
           fi
 
           if [ -z "$AVAILABLE_SIMULATOR" ]; then
