@@ -418,7 +418,7 @@ jobs:
             echo "Creating a new simulator with available runtime..."
             
             # Get the latest available iOS runtime
-            LATEST_RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -v "unavailable" | tail -1 | sed -E 's/.*\(([A-Z0-9.-]+)\).*/\1/')
+            LATEST_RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -v "unavailable" | tail -1 | awk '{print $NF}')
             echo "Latest available runtime: $LATEST_RUNTIME"
             
             if [ -z "$LATEST_RUNTIME" ]; then
