@@ -51,9 +51,12 @@ export function usePendingKycRecovery() {
   }, []); // Only run once on mount
 
   useEffect(() => {
+    // Only recover 'pending' verifications, not 'processing'
+    // 'processing' means the document was already stored and registration was triggered
+    // Retrying 'processing' could cause race conditions with ongoing proving
     const activeVerifications = pendingVerifications.filter(
       v =>
-        (v.status === 'pending' || v.status === 'processing') &&
+        v.status === 'pending' &&
         v.timeoutAt > Date.now() &&
         !hasAttemptedRecoveryRef.current.has(v.userId),
     );

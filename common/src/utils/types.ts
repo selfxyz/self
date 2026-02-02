@@ -26,6 +26,7 @@ export type DeployedCircuits = {
   REGISTER: string[];
   REGISTER_ID: string[];
   REGISTER_AADHAAR: string[];
+  REGISTER_KYC: string[];
   DSC: string[];
   DSC_ID: string[];
 };

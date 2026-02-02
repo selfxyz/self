@@ -131,6 +131,16 @@ const SumsubTestScreen: React.FC = () => {
         accessToken,
         debug: true,
         locale: 'en',
+        onStatusChanged: (prevStatus, newStatus) => {
+          if (newStatus === 'Pending') {
+            setTimeout(() => {
+              subscribeToWebSocket();
+            }, 5000);
+          }
+          // if (newStatus === 'Approved' || newStatus === 'Failed' || newStatus === 'Pending') {
+          //   subscribeToWebSocket();
+          // }
+        },
         onEvent: (eventType, _payload) => {
           console.log('SDK Event:', eventType, _payload);
 
@@ -140,11 +150,11 @@ const SumsubTestScreen: React.FC = () => {
             (_payload as { idDocSetType: string }).idDocSetType === 'SELFIE' &&
             (_payload as { isCancelled: boolean }).isCancelled === false
           ) {
-            subscribeToWebSocket();
+            // subscribeToWebSocket();
           }
           // Subscribe to WebSocket when verification is completed
           if (eventType === 'idCheck.onApplicantVerificationCompleted') {
-            subscribeToWebSocket();
+            // subscribeToWebSocket();
           }
         },
       });

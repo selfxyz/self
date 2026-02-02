@@ -63,12 +63,14 @@ const getMappingKey = (circuitType: 'disclose' | 'register' | 'dsc', documentCat
     if (documentCategory === 'passport') return 'DISCLOSE';
     if (documentCategory === 'id_card') return 'DISCLOSE_ID';
     if (documentCategory === 'aadhaar') return 'DISCLOSE_AADHAAR';
+    if (documentCategory === 'kyc') return 'DISCLOSE_KYC';
     throw new Error(`Unsupported document category for disclose: ${documentCategory}`);
   }
   if (circuitType === 'register') {
     if (documentCategory === 'passport') return 'REGISTER';
     if (documentCategory === 'id_card') return 'REGISTER_ID';
     if (documentCategory === 'aadhaar') return 'REGISTER_AADHAAR';
+    if (documentCategory === 'kyc') return 'REGISTER_KYC';
     throw new Error(`Unsupported document category for register: ${documentCategory}`);
   }
   // circuitType === 'dsc'
@@ -143,7 +145,9 @@ const _generateCircuitInputs = async (
               ? protocolStore.passport
               : doc === 'aadhaar'
                 ? protocolStore.aadhaar
-                : protocolStore.id_card;
+                : doc === 'kyc'
+                  ? protocolStore.kyc
+                  : protocolStore.id_card;
           switch (tree) {
             case 'ofac':
               return docStore.ofac_trees;

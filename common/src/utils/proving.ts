@@ -34,9 +34,9 @@ export const ec = new EC('p256');
 // eslint-disable-next-line -- clientKey is created from ec so must be second
 export const clientKey = ec.genKeyPair();
 
-type RegisterSuffixes = '' | '_id' | '_aadhaar';
+type RegisterSuffixes = '' | '_id' | '_aadhaar' | '_kyc';
 type DscSuffixes = '' | '_id';
-type DiscloseSuffixes = '' | '_id' | '_aadhaar';
+type DiscloseSuffixes = '' | '_id' | '_aadhaar' | '_kyc';
 type ProofTypes = 'register' | 'dsc' | 'disclose';
 type RegisterProofType = `${Extract<ProofTypes, 'register'>}${RegisterSuffixes}`;
 type DscProofType = `${Extract<ProofTypes, 'dsc'>}${DscSuffixes}`;
@@ -57,6 +57,10 @@ export function encryptAES256GCM(plaintext: string, key: forge.util.ByteStringBu
     cipher_text: Array.from(Buffer.from(encrypted, 'binary')),
     auth_tag: Array.from(Buffer.from(authTag, 'binary')),
   };
+}
+
+function bigIntReplacer(_key: string, value: unknown): unknown {
+  return typeof value === 'bigint' ? value.toString() : value;
 }
 
 export function getPayload(
@@ -83,7 +87,7 @@ export function getPayload(
       onchain: endpointType === 'celo' ? true : false,
       circuit: {
         name: circuitName,
-        inputs: JSON.stringify(inputs),
+        inputs: JSON.stringify(inputs, bigIntReplacer),
       },
       version,
       userDefinedData,
@@ -103,7 +107,7 @@ export function getPayload(
       endpointType: endpointType,
       circuit: {
         name: circuitName,
-        inputs: JSON.stringify(inputs),
+        inputs: JSON.stringify(inputs, bigIntReplacer),
       },
     };
     return payload;

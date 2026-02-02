@@ -102,12 +102,14 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
       const existingVerification = getPendingVerification(userId);
       const isProcessing = existingVerification?.status === 'processing';
 
-      if (isProcessing && selfClient) {
+      // Don't retry 'processing' verifications as the proving machine was triggered already.
+      // Retrying could cause race conditions in rare cases.
+      // But leaving the processing status here, in case we need to hook into it later.
+      if (isProcessing) {
         console.log(
-          '[SumsubWebSocket] Document already stored (processing status), triggering registration flow for userId:',
+          '[SumsubWebSocket] Verification in processing state, skipping for userId:',
           userId,
         );
-        triggerRegistrationFlow();
         return;
       }
 
@@ -139,6 +141,7 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
         console.log(
           '[SumsubWebSocket] Received applicant info for userId:',
           userId,
+          data,
         );
 
         updateVerificationStatus(userId, 'processing');

@@ -52,7 +52,8 @@ function validateRegistrationCircuit(
     circuitNameRegister &&
     (deployedCircuits.REGISTER.includes(circuitNameRegister) ||
       deployedCircuits.REGISTER_ID.includes(circuitNameRegister) ||
-      deployedCircuits.REGISTER_AADHAAR.includes(circuitNameRegister));
+      deployedCircuits.REGISTER_AADHAAR.includes(circuitNameRegister) ||
+      deployedCircuits.REGISTER_KYC.includes(circuitNameRegister));
   return { isValid: !!isValid, circuitName: circuitNameRegister };
 }
 
@@ -288,9 +289,7 @@ export async function isUserRegistered(
 
   if (isKycDocument(documentData)) {
     commitment = generateKycCommitment(documentData, secret);
-  }
-
-  if (document === 'aadhaar') {
+  } else if (document === 'aadhaar') {
     const aadhaarData = documentData as AadhaarData;
     const nullifier = nullifierHash(aadhaarData.extractedFields);
     const packedCommitment = computePackedCommitment(aadhaarData.extractedFields);
