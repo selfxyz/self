@@ -8,13 +8,15 @@ const AttestationId = {
   E_PASSPORT: "0x0000000000000000000000000000000000000000000000000000000000000001",
   EU_ID_CARD: "0x0000000000000000000000000000000000000000000000000000000000000002",
   AADHAAR: "0x0000000000000000000000000000000000000000000000000000000000000003",
+  KYC: "0x0000000000000000000000000000000000000000000000000000000000000004",
 };
 
 // Map registry deployment modules to their attestation IDs
 const registryToAttestationId: Record<string, string> = {
   // "DeployRegistryModule#IdentityRegistry": AttestationId.E_PASSPORT,
   // "DeployIdCardRegistryModule#IdentityRegistry": AttestationId.EU_ID_CARD,
-  "DeployAadhaarRegistryModule#IdentityRegistry": AttestationId.AADHAAR,
+  // "DeployAadhaarRegistryModule#IdentityRegistry": AttestationId.AADHAAR,
+  "DeployKycRegistryModule#IdentityRegistry": AttestationId.KYC,
 };
 
 const ids = (() => {
@@ -60,6 +62,8 @@ export default buildModule("UpdateHubRegistries", (m) => {
   }
 
   const hubContract = updateHubRegistries(m, hubAddress, deployedAddresses);
+
+
 
   return {
     hubContract,
