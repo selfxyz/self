@@ -361,5 +361,151 @@ describe('NotificationTrackingProvider', () => {
       // Should not navigate for retry status
       expect(mockNavigationRef.navigate).not.toHaveBeenCalled();
     });
+
+    it('should queue navigation when navigationRef is not ready on cold start', async () => {
+      // Start with navigation not ready
+      mockNavigationRef.isReady.mockReturnValue(false);
+      mockOnNotificationOpenedApp.mockReturnValue(jest.fn());
+
+      const remoteMessage = {
+        messageId: 'test-message-id',
+        data: {
+          type: 'kyc_result',
+          status: 'approved',
+          user_id: mockUserId,
+        },
+      } as FirebaseMessagingTypes.RemoteMessage;
+
+      mockGetInitialNotification.mockResolvedValue(remoteMessage);
+
+      render(
+        <NotificationTrackingProvider>
+          <mock-text testID="child">Test</mock-text>
+        </NotificationTrackingProvider>,
+      );
+
+      // Wait for initial notification to be processed
+      await waitFor(() => {
+        expect(analytics.trackEvent).toHaveBeenCalledWith(
+          'COLD_START_NOTIFICATION_OPENED',
+          expect.anything(),
+        );
+      });
+
+      // Navigation should not have been called yet
+      expect(mockNavigationRef.navigate).not.toHaveBeenCalled();
+
+      // Simulate navigation becoming ready
+      mockNavigationRef.isReady.mockReturnValue(true);
+
+      // Wait for the polling interval to detect navigation is ready
+      await waitFor(
+        () => {
+          expect(mockNavigationRef.navigate).toHaveBeenCalledWith(
+            'KYCVerified',
+            {
+              status: 'approved',
+              userId: mockUserId,
+            },
+          );
+        },
+        { timeout: 2000 },
+      );
+    });
+
+    it('should process pending navigation immediately if navigation becomes ready', async () => {
+      // Start with navigation not ready
+      mockNavigationRef.isReady.mockReturnValue(false);
+      mockOnNotificationOpenedApp.mockReturnValue(jest.fn());
+
+      const remoteMessage = {
+        messageId: 'test-message-id',
+        data: {
+          type: 'kyc_result',
+          status: 'approved',
+          user_id: mockUserId,
+        },
+      } as FirebaseMessagingTypes.RemoteMessage;
+
+      mockGetInitialNotification.mockResolvedValue(remoteMessage);
+
+      const { rerender } = render(
+        <NotificationTrackingProvider>
+          <mock-text testID="child">Test</mock-text>
+        </NotificationTrackingProvider>,
+      );
+
+      // Wait for initial notification to be processed
+      await waitFor(() => {
+        expect(analytics.trackEvent).toHaveBeenCalledWith(
+          'COLD_START_NOTIFICATION_OPENED',
+          expect.anything(),
+        );
+      });
+
+      // Navigation should not have been called yet
+      expect(mockNavigationRef.navigate).not.toHaveBeenCalled();
+
+      // Make navigation ready
+      mockNavigationRef.isReady.mockReturnValue(true);
+
+      // Trigger a re-render to simulate React's update cycle
+      rerender(
+        <NotificationTrackingProvider>
+          <mock-text testID="child">Test</mock-text>
+        </NotificationTrackingProvider>,
+      );
+
+      // Navigation should be called after navigation becomes ready
+      await waitFor(
+        () => {
+          expect(mockNavigationRef.navigate).toHaveBeenCalledWith(
+            'KYCVerified',
+            {
+              status: 'approved',
+              userId: mockUserId,
+            },
+          );
+        },
+        { timeout: 2000 },
+      );
+    });
+
+    it('should not queue navigation for non-KYC notifications when navigation is not ready', async () => {
+      mockNavigationRef.isReady.mockReturnValue(false);
+      mockOnNotificationOpenedApp.mockReturnValue(jest.fn());
+
+      const remoteMessage = {
+        messageId: 'test-message-id',
+        data: {
+          type: 'other_notification',
+          status: 'some_status',
+        },
+      } as FirebaseMessagingTypes.RemoteMessage;
+
+      mockGetInitialNotification.mockResolvedValue(remoteMessage);
+
+      render(
+        <NotificationTrackingProvider>
+          <mock-text testID="child">Test</mock-text>
+        </NotificationTrackingProvider>,
+      );
+
+      await waitFor(() => {
+        expect(analytics.trackEvent).toHaveBeenCalledWith(
+          'COLD_START_NOTIFICATION_OPENED',
+          expect.anything(),
+        );
+      });
+
+      // Make navigation ready
+      mockNavigationRef.isReady.mockReturnValue(true);
+
+      // Wait a bit to ensure no navigation happens
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Should not navigate for non-KYC notifications
+      expect(mockNavigationRef.navigate).not.toHaveBeenCalled();
+    });
   });
 });
