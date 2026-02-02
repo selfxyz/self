@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
@@ -30,18 +30,24 @@ export function usePendingKycRecovery() {
 
   const hasAttemptedRecoveryRef = useRef<Set<string>>(new Set());
 
+  const handleSuccess = useCallback(() => {
+    console.log('[PendingKycRecovery] Successfully recovered verification');
+  }, []);
+
+  const handleError = useCallback((error: string) => {
+    console.error('[PendingKycRecovery] Error:', error);
+  }, []);
+
+  const handleVerificationFailed = useCallback((reason: string) => {
+    console.log('[PendingKycRecovery] Verification failed:', reason);
+  }, []);
+
   const { subscribe, unsubscribeAll } = useSumsubWebSocket({
     skipAddPending: true,
     selfClient,
-    onSuccess: () => {
-      console.log('[PendingKycRecovery] Successfully recovered verification');
-    },
-    onError: error => {
-      console.error('[PendingKycRecovery] Error:', error);
-    },
-    onVerificationFailed: reason => {
-      console.log('[PendingKycRecovery] Verification failed:', reason);
-    },
+    onSuccess: handleSuccess,
+    onError: handleError,
+    onVerificationFailed: handleVerificationFailed,
   });
 
   // Clean up expired verifications once on mount

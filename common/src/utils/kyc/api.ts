@@ -94,10 +94,3 @@ export function deserializeSignature(signature: string): { R: Point<bigint>; s: 
   const [Rx, Ry, s] = Buffer.from(signature, 'base64').toString('utf-8').split(',').map(BigInt);
   return { R: [Rx, Ry] as Point<bigint>, s };
 }
-
-
-//accepts a base64 signature and returns a signature object
-export function deserializeSignature(signature: string): { R: Point<bigint>; s: bigint} {
-  const [Rx, Ry, s] = Buffer.from(signature, 'base64').toString('utf-8').split(',').map(BigInt);
-  return { R: [Rx, Ry] as Point<bigint>, s };
-}

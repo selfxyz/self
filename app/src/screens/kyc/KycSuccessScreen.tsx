@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack } from 'tamagui';
@@ -21,6 +21,7 @@ import {
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import { useSumsubWebSocket } from '@/hooks/useSumsubWebSocket';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import {
@@ -48,6 +49,43 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
   const setFcmToken = useSettingStore(state => state.setFcmToken);
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
+
+  const isMountedRef = useRef<boolean>(true);
+  const hasSubscribedRef = useRef<boolean>(false);
+
+  const handleWebSocketSuccess = useCallback(() => {
+    console.log(
+      '[KycSuccessScreen] Verification complete, registration flow triggered',
+    );
+  }, []);
+
+  const handleWebSocketError = useCallback((error: string) => {
+    console.error('[KycSuccessScreen] WebSocket error:', error);
+  }, []);
+
+  const handleVerificationFailed = useCallback((reason: string) => {
+    console.log('[KycSuccessScreen] Verification failed:', reason);
+  }, []);
+
+  const { subscribe, unsubscribeAll } = useSumsubWebSocket({
+    selfClient,
+    onSuccess: handleWebSocketSuccess,
+    onError: handleWebSocketError,
+    onVerificationFailed: handleVerificationFailed,
+  });
+
+  useEffect(() => {
+    if (userId && !hasSubscribedRef.current) {
+      hasSubscribedRef.current = true;
+      console.log('[KycSuccessScreen] Subscribing to userId:', userId);
+      subscribe(userId);
+    }
+
+    return () => {
+      isMountedRef.current = false;
+      unsubscribeAll();
+    };
+  }, [userId, subscribe, unsubscribeAll]);
 
   const handleReceiveUpdates = useCallback(async () => {
     buttonTap();
