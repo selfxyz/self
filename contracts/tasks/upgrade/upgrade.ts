@@ -37,7 +37,7 @@ import {
   getLatestVersionInfo,
   getVersionInfo,
   getGovernanceConfig,
-  validateReinitializerVersion,
+  readReinitializerVersion,
 } from "./utils";
 import { execSync } from "child_process";
 import * as readline from "readline";
@@ -314,39 +314,52 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
     // ========================================================================
     log.step("Checking reinitializer version...");
 
-    // Check if target version already exists in registry
     const targetVersionInfo = getVersionInfo(contractId, newVersion);
     const latestVersionInfo = getLatestVersionInfo(contractId);
+    const latestInitVersion = latestVersionInfo?.info.initializerVersion || 0;
 
-    // If target version exists, use its initializerVersion; otherwise increment latest
-    const expectedInitializerVersion = targetVersionInfo
-      ? targetVersionInfo.initializerVersion
-      : (latestVersionInfo?.info.initializerVersion || 0) + 1;
+    let actualReinitVersion: number | null = null;
+    let noNewInitializer = false;
 
     if (contractFilePath) {
-      const reinitValidation = validateReinitializerVersion(contractFilePath, expectedInitializerVersion);
+      actualReinitVersion = readReinitializerVersion(contractFilePath);
 
-      if (!reinitValidation.valid) {
-        log.error(reinitValidation.error!);
+      if (actualReinitVersion === null) {
+        log.error("Could not find reinitializer in contract file");
+        return;
+      }
+
+      // If target version already exists in registry, validate against its expected version
+      if (targetVersionInfo) {
+        const expected = targetVersionInfo.initializerVersion;
+        if (actualReinitVersion !== expected) {
+          log.error(`Reinitializer mismatch: expected ${expected}, found ${actualReinitVersion}`);
+          return;
+        }
+      }
+
+      if (actualReinitVersion === latestInitVersion) {
+        // No new reinitializer — code-only upgrade
+        noNewInitializer = true;
+        log.success(`No new initialization needed (reinitializer stays at ${actualReinitVersion})`);
+      } else if (actualReinitVersion === latestInitVersion + 1) {
+        // Standard upgrade with new reinitializer
+        log.success(`Reinitializer version correct: reinitializer(${actualReinitVersion})`);
+      } else {
+        log.error(`Unexpected reinitializer(${actualReinitVersion}). Expected ${latestInitVersion} (no-init) or ${latestInitVersion + 1} (with init)`);
         log.box([
           "REINITIALIZER VERSION MISMATCH",
           "═".repeat(50),
           "",
-          `Expected: reinitializer(${expectedInitializerVersion})`,
-          reinitValidation.actual !== null ? `Found: reinitializer(${reinitValidation.actual})` : "Found: none",
+          `Latest registry version has reinitializer: ${latestInitVersion}`,
+          `Contract file has reinitializer: ${actualReinitVersion}`,
           "",
-          "The initialize function must use the correct reinitializer version.",
-          "Each upgrade should increment the version by 1.",
-          "",
-          "Example pattern:",
-          `  function initialize(...) external reinitializer(${expectedInitializerVersion}) {`,
-          "    // initialization logic",
-          "  }",
+          "Valid options:",
+          `  ${latestInitVersion} — code-only upgrade (no new initialization)`,
+          `  ${latestInitVersion + 1} — upgrade with new initializer`,
         ]);
         return;
       }
-
-      log.success(`Reinitializer version correct: reinitializer(${reinitValidation.actual})`);
     } else {
       log.warning("Could not locate contract file - skipping reinitializer check");
     }
@@ -593,7 +606,7 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
     log.step("Updating deployment registry...");
 
     const latestVersion = getLatestVersionInfo(contractId);
-    const newInitializerVersion = (latestVersion?.info.initializerVersion || 0) + 1;
+    const newInitializerVersion = actualReinitVersion ?? ((latestVersion?.info.initializerVersion || 0) + 1);
     const deployerAddress = (await hre.ethers.provider.getSigner()).address;
 
     addVersion(
@@ -602,7 +615,7 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
       newVersion,
       {
         initializerVersion: newInitializerVersion,
-        initializerFunction: "initialize", // Always "initialize" - version tracked via reinitializer(N) modifier
+        initializerFunction: noNewInitializer ? "" : "initialize",
         changelog: changelog || `Upgrade to v${newVersion}`,
         gitTag: `${contractId.toLowerCase()}-v${newVersion}`,
       },
@@ -680,18 +693,22 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
 
     // Encode initializer function call
     let initData = "0x";
-    const targetVersionInfoForInit = getVersionInfo(contractId, newVersion);
-    const initializerName = targetVersionInfoForInit?.initializerFunction || `initializeV${newInitializerVersion}`;
+    if (!noNewInitializer) {
+      const targetVersionInfoForInit = getVersionInfo(contractId, newVersion);
+      const initializerName = targetVersionInfoForInit?.initializerFunction || `initializeV${newInitializerVersion}`;
 
-    try {
-      const iface = proxyContract.interface;
-      const initFragment = iface.getFunction(initializerName);
-      if (initFragment && initFragment.inputs.length === 0) {
-        initData = iface.encodeFunctionData(initializerName, []);
-        log.detail("Initializer", initializerName);
+      try {
+        const iface = proxyContract.interface;
+        const initFragment = iface.getFunction(initializerName);
+        if (initFragment && initFragment.inputs.length === 0) {
+          initData = iface.encodeFunctionData(initializerName, []);
+          log.detail("Initializer", initializerName);
+        }
+      } catch {
+        log.detail("Initializer", "None");
       }
-    } catch {
-      log.detail("Initializer", "None");
+    } else {
+      log.detail("Initializer", "None (code-only upgrade)");
     }
 
     // Build upgrade transaction data
