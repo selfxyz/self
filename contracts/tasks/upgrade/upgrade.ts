@@ -402,14 +402,25 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
 
     try {
       if (contractName === "IdentityVerificationHubImplV2") {
-        const CustomVerifier = await hre.ethers.getContractFactory("CustomVerifier");
-        const customVerifier = await CustomVerifier.deploy();
-        await customVerifier.waitForDeployment();
+        const libraryNames = [
+          "CustomVerifier",
+          "OutputFormatterLib",
+          "ProofVerifierLib",
+          "RegisterProofVerifierLib",
+          "DscProofVerifierLib",
+          "RootCheckLib",
+          "OfacCheckLib",
+        ];
+        const libraries: Record<string, string> = {};
+        for (const libName of libraryNames) {
+          const LibFactory = await hre.ethers.getContractFactory(libName);
+          const lib = await LibFactory.deploy();
+          await lib.waitForDeployment();
+          libraries[libName] = await lib.getAddress();
+          log.info(`Deployed library: ${libName} → ${libraries[libName]}`);
+        }
 
-        ContractFactory = await hre.ethers.getContractFactory(contractName, {
-          libraries: { CustomVerifier: await customVerifier.getAddress() },
-        });
-        log.info("Deployed CustomVerifier library for linking");
+        ContractFactory = await hre.ethers.getContractFactory(contractName, { libraries });
       } else if (
         contractName === "IdentityRegistryImplV1" ||
         contractName === "IdentityRegistryIdCardImplV1" ||
