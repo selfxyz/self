@@ -32,7 +32,10 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ["128ram"]
+    runs-on:
+      - "64ram"
+      - "self-hosted"
+      - "selfxyz-org"
     # GitHub-hosted runners cap at 360 min (6h); 720 applies if using self-hosted
     timeout-minutes: 720
     permissions:
