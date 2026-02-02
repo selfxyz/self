@@ -50,7 +50,7 @@ interface IVcAndDiscloseAadhaarCircuitVerifier {
     ) external view returns (bool);
 }
 
-interface IVcAndDiscloseSelfricaCircuitVerifier {
+interface IVcAndDiscloseKycCircuitVerifier {
     /**
      * @notice Verifies a given VC and Disclose zero-knowledge proof.
      * @dev This function checks the validity of the provided proof parameters.

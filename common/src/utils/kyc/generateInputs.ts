@@ -240,6 +240,31 @@ export const generateKycDiscloseInputFromData = (
   return circuitInput;
 };
 
+export const generateKycRegisterInput = async (
+  applicantInfoBase64: string,
+  signatureBase64: string,
+  pubkeyStr: [string, string],
+  secret: string
+) => {
+  const applicantInfo = deserializeApplicantInfo(applicantInfoBase64);
+  const signature = deserializeSignature(signatureBase64);
+  const pubkey = [BigInt(pubkeyStr[0]), BigInt(pubkeyStr[1])] as [bigint, bigint];
+
+  const serializedData = serializeKycData(applicantInfo);
+
+  const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
+
+  const kycRegisterInput: KycRegisterInput = {
+    data_padded: msgPadded.map((x) => Number(x)),
+    s: signature.s,
+    R: signature.R,
+    pubKey: pubkey,
+    secret,
+  };
+
+  return kycRegisterInput;
+};
+
 export const generateKycRegisterInput = async (applicantInfoBase64: string, signatureBase64: string, pubkeyStr: [string, string], secret: string) => {
   const applicantInfo = deserializeApplicantInfo(applicantInfoBase64);
   const signature = deserializeSignature(signatureBase64);

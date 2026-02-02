@@ -88,30 +88,45 @@ if (!isExecutableAvailableOnPath('patch-package')) {
   process.exit(0);
 }
 
+// Workspaces with isolated node_modules due to nmHoistingLimits: workspaces
+// Most packages are in workspace node_modules, not root
+const workspaceRoots = [
+  { name: 'app', path: path.join(repositoryRootPath, 'app') },
+  { name: 'contracts', path: path.join(repositoryRootPath, 'contracts') }
+];
+
 // Run patch-package with better error handling
 try {
-  const rootPatchRun = spawnSync('patch-package', ['--patch-dir', 'patches'], {
-    cwd: repositoryRootPath,
-    shell: true,
-    stdio: isCI ? 'pipe' : 'inherit',
-    timeout: 30000
-  });
-  if (rootPatchRun.status === 0) {
-    if (!isCI) console.log('✓ Patches applied to root workspace');
-  } else {
-    const errorOutput = rootPatchRun.stderr?.toString() || rootPatchRun.stdout?.toString() || '';
-    console.error(`patch-package failed for root workspace (exit code ${rootPatchRun.status})`);
-    if (errorOutput) console.error(errorOutput);
-    if (!isCI) process.exit(1);
+  let anyPatchApplied = false;
+  let anyPatchFailed = false;
+
+  // Try root node_modules first (some packages may be hoisted here)
+  const rootNodeModules = path.join(repositoryRootPath, 'node_modules');
+  if (fs.existsSync(rootNodeModules)) {
+    const rootPatchRun = spawnSync('patch-package', ['--patch-dir', 'patches'], {
+      cwd: repositoryRootPath,
+      shell: true,
+      stdio: 'pipe', // Always capture output to check for real errors vs missing packages
+      timeout: 30000
+    });
+    const output = rootPatchRun.stdout?.toString() || '';
+    const stderrOutput = rootPatchRun.stderr?.toString() || '';
+    const hasRealError = (output.includes('**ERROR**') && !output.includes('which is not present at')) ||
+                         (stderrOutput.length > 0 && rootPatchRun.status !== 0);
+    
+    if (rootPatchRun.status === 0) {
+      if (!isCI) console.log('✓ Patches applied to root workspace');
+      anyPatchApplied = true;
+    } else if (hasRealError) {
+      console.error(`patch-package failed for root workspace`);
+      console.error(output);
+      if (stderrOutput) console.error(stderrOutput);
+      anyPatchFailed = true;
+    }
+    // If packages are just missing (not hoisted to root), that's expected - continue to workspace patches
   }
 
-  // Also patch app/node_modules if it exists
-  // Workspaces with isolated node_modules due to limited hoisting
-  const workspaceRoots = [
-    { name: 'app', path: path.join(repositoryRootPath, 'app') },
-    { name: 'contracts', path: path.join(repositoryRootPath, 'contracts') }
-  ];
-
+  // Apply patches to workspace node_modules (where most packages are with nmHoistingLimits)
   for (const workspace of workspaceRoots) {
     const workspaceNodeModules = path.join(workspace.path, 'node_modules');
     if (!fs.existsSync(workspaceNodeModules)) continue;
@@ -119,18 +134,40 @@ try {
     const workspacePatchRun = spawnSync('patch-package', ['--patch-dir', '../patches'], {
       cwd: workspace.path,
       shell: true,
-      stdio: isCI ? 'pipe' : 'inherit',
+      stdio: 'pipe',
       timeout: 30000
     });
 
+    const output = workspacePatchRun.stdout?.toString() || '';
+    const stderrOutput = workspacePatchRun.stderr?.toString() || '';
+    const hasRealError = (output.includes('**ERROR**') && !output.includes('which is not present at')) ||
+                         (stderrOutput.length > 0 && workspacePatchRun.status !== 0);
+
     if (workspacePatchRun.status === 0) {
       if (!isCI) console.log(`✓ Patches applied to ${workspace.name} workspace`);
-    } else {
-      const errorOutput = workspacePatchRun.stderr?.toString() || workspacePatchRun.stdout?.toString() || '';
-      console.error(`patch-package failed for ${workspace.name} workspace (exit code ${workspacePatchRun.status})`);
-      if (errorOutput) console.error(errorOutput);
-      if (!isCI) process.exit(1);
+      anyPatchApplied = true;
+    } else if (hasRealError) {
+      console.error(`patch-package failed for ${workspace.name} workspace`);
+      console.error(output);
+      if (stderrOutput) console.error(stderrOutput);
+      anyPatchFailed = true;
     }
+  }
+
+  if (anyPatchFailed && !isCI) {
+    console.error('Some patches failed to apply. Check if patch versions match installed package versions.');
+    process.exit(1);
+  }
+  if (anyPatchFailed && isCI) {
+    console.warn('⚠️  CI Warning: Some patches failed to apply. Review patch compatibility.');
+  }
+
+  if (anyPatchApplied) {
+    if (!isCI) console.log('✓ patch-package completed');
+    else console.log('patch-package completed');
+  } else {
+    if (!isCI) console.log('patch-package: no patches applied (packages may be in different locations)');
+    else console.log('patch-package: no patches applied');
   }
 } catch (error) {
   if (isCI) {

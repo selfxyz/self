@@ -459,6 +459,37 @@ jobs:
           FORCE_BUNDLING=1 RCT_NO_LAUNCH_PACKAGER=1 \
             xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Debug -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath packages/mobile-sdk-demo/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
+      - name: Build iOS Release Archive (unsigned)
+        run: |
+          echo "Building iOS Release archive (unsigned) to validate Release configuration..."
+          WORKSPACE_PATH="${{ env.IOS_WORKSPACE_PATH }}"
+
+          FORCE_BUNDLING=1 RCT_NO_LAUNCH_PACKAGER=1 \
+            xcodebuild archive \
+              -workspace "$WORKSPACE_PATH" \
+              -scheme ${{ env.IOS_PROJECT_SCHEME }} \
+              -configuration Release \
+              -archivePath packages/mobile-sdk-demo/ios/build/SelfDemoApp.xcarchive \
+              -destination "generic/platform=iOS" \
+              -jobs "$(sysctl -n hw.ncpu)" \
+              -parallelizeTargets \
+              -quiet \
+              COMPILER_INDEX_STORE_ENABLE=NO \
+              SWIFT_COMPILATION_MODE=wholemodule \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGNING_ALLOWED=NO \
+              AD_HOC_CODE_SIGNING_ALLOWED=NO \
+            || { echo "❌ iOS Release archive build failed"; exit 1; }
+          echo "✅ iOS Release archive build succeeded (unsigned)"
+
+          # Verify archive was created
+          if [ -d "packages/mobile-sdk-demo/ios/build/SelfDemoApp.xcarchive" ]; then
+            echo "📦 Archive created at packages/mobile-sdk-demo/ios/build/SelfDemoApp.xcarchive"
+          else
+            echo "❌ Archive not found"
+            exit 1
+          fi
       - name: Install and Test on iOS
         run: |
           echo "Installing app on simulator..."

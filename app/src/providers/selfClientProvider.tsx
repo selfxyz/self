@@ -13,14 +13,17 @@ import {
   type LogLevel,
   type NFCScanContext,
   reactNativeScannerAdapter,
+  sanitizeErrorMessage,
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
   type TrackEventParams,
+  useMRZStore,
   webNFCScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
+import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import {
@@ -32,7 +35,12 @@ import {
   setPassportKeychainErrorCallback,
 } from '@/providers/passportDataProvider';
 import { trackEvent, trackNfcEvent } from '@/services/analytics';
+import {
+  type InjectedErrorType,
+  useErrorInjectionStore,
+} from '@/stores/errorInjectionStore';
 import { useSettingStore } from '@/stores/settingStore';
+import { IS_DEV_MODE } from '@/utils/devUtils';
 import {
   registerModalCallbacks,
   unregisterModalCallbacks,
@@ -67,7 +75,20 @@ function navigateIfReady<RouteName extends keyof RootStackParamList>(
 }
 
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
-  const config = useMemo(() => ({}), []);
+  const config = useMemo(
+    () => ({
+      devConfig: IS_DEV_MODE
+        ? {
+            shouldTrigger: (errorType: string) => {
+              return useErrorInjectionStore
+                .getState()
+                .shouldTrigger(errorType as InjectedErrorType);
+            },
+          }
+        : undefined,
+    }),
+    [],
+  );
   const adapters: Adapters = useMemo(
     () => ({
       scanner:
@@ -166,6 +187,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const appListeners = useMemo(() => {
     const { map, addListener } = createListenersMap();
 
+    // Track current countryCode for error navigation
+    let currentCountryCode = '';
+
     addListener(SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND, () => {
       if (navigationRef.isReady()) {
         navigationRef.navigate('DocumentDataNotFound');
@@ -260,7 +284,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
-      navigateIfReady('DocumentCameraTrouble');
+      navigateIfReady('RegistrationFallback', {
+        errorSource: 'mrz_scan_failed',
+        countryCode: currentCountryCode,
+      });
     });
 
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS, () => {
@@ -279,6 +306,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         countryCode: string;
         documentTypes: string[];
       }) => {
+        currentCountryCode = countryCode;
+        // Store country code early so it's available for Sumsub fallback flows
+        useMRZStore.getState().update({ countryCode });
         navigateIfReady('IDPicker', { countryCode, documentTypes });
       },
     );
@@ -297,6 +327,77 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               if (countryCode) {
                 navigationRef.navigate('AadhaarUpload', { countryCode });
               }
+              break;
+            case 'kyc':
+              (async () => {
+                try {
+                  // Dev-only: Check for injected initialization error
+                  if (
+                    useErrorInjectionStore
+                      .getState()
+                      .shouldTrigger('sumsub_initialization')
+                  ) {
+                    console.log('[DEV] Injecting Sumsub initialization error');
+                    throw new Error(
+                      'Injected Sumsub initialization error for testing',
+                    );
+                  }
+
+                  const accessToken = await fetchAccessToken();
+                  const result = await launchSumsub({
+                    accessToken: accessToken.token,
+                  });
+
+                  // User cancelled - return silently
+                  if (!result.success && result.status === 'Interrupted') {
+                    return;
+                  }
+
+                  // Dev-only: Check for injected verification error
+                  const shouldInjectVerificationError = useErrorInjectionStore
+                    .getState()
+                    .shouldTrigger('sumsub_verification');
+
+                  // Actual error from provider
+                  if (!result.success || shouldInjectVerificationError) {
+                    if (shouldInjectVerificationError) {
+                      console.log('[DEV] Injecting Sumsub verification error');
+                    } else {
+                      const safeError = sanitizeErrorMessage(
+                        result.errorMsg || result.errorType || 'unknown_error',
+                      );
+                      console.error('KYC provider failed:', safeError);
+                    }
+                    // Guard navigation call after async operations
+                    if (navigationRef.isReady()) {
+                      navigationRef.navigate('RegistrationFallback', {
+                        errorSource: 'sumsub_verification',
+                        countryCode,
+                      });
+                    }
+                    return;
+                  }
+
+                  // Success case: navigate to KYC success screen
+                  if (navigationRef.isReady()) {
+                    navigationRef.navigate('KycSuccess', {
+                      userId: accessToken.userId,
+                    });
+                  }
+                } catch (error) {
+                  const safeInitError = sanitizeErrorMessage(
+                    error instanceof Error ? error.message : String(error),
+                  );
+                  console.error('Error in KYC flow:', safeInitError);
+                  // Guard navigation call after async operations
+                  if (navigationRef.isReady()) {
+                    navigationRef.navigate('RegistrationFallback', {
+                      errorSource: 'sumsub_initialization',
+                      countryCode,
+                    });
+                  }
+                }
+              })();
               break;
             default:
               if (countryCode) {

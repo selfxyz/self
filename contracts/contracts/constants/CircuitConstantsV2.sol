@@ -55,15 +55,15 @@ library CircuitConstantsV2 {
     uint256 constant AADHAAR_TIMESTAMP_INDEX = 3;
 
     // ---------------------------
-    // Selfrica Circuit Constants
+    // KYC Circuit Constants
     // ---------------------------
     /**
-     * @notice Index to access the pubkey commitment in the Selfrica circuit public signals.
+     * @notice Index to access the pubkey commitment in the KYC circuit public signals.
      */
-    uint256 constant SELFRICA_NULLIFIER_INDEX = 0;
-    uint256 constant SELFRICA_COMMITMENT_INDEX = 1;
-    uint256 constant SELFRICA_PUBKEY_COMMITMENT_INDEX = 2;
-    uint256 constant SELFRICA_ATTESTATION_ID_INDEX = 3;
+    uint256 constant KYC_NULLIFIER_INDEX = 0;
+    uint256 constant KYC_COMMITMENT_INDEX = 1;
+    uint256 constant KYC_PUBKEY_COMMITMENT_INDEX = 2;
+    uint256 constant KYC_ATTESTATION_ID_INDEX = 3;
 
     // -------------------------------------
     // VC and Disclose Circuit Constants

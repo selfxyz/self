@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { PermissionsAndroid, Platform } from 'react-native';
+import { SELF_UUID_NAMESPACE } from '@env';
 import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import messaging from '@react-native-firebase/messaging';
 
@@ -35,6 +36,10 @@ const log = (...args: unknown[]) => {
 const error = (...args: unknown[]) => {
   if (!isTestEnv) console.error(...args);
 };
+
+export function getSelfUuidNamespace(): string {
+  return SELF_UUID_NAMESPACE ?? '';
+}
 
 export { getStateMessage };
 

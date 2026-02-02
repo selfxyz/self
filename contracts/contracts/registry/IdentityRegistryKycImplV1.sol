@@ -32,11 +32,11 @@ import {Formatter} from "../libraries/Formatter.sol";
  */
 
 /**
- * @title IdentityRegistrySelfricaStorageV1
- * @dev Abstract contract for storage layout of IdentityRegistrySelfricaImplV1.
+ * @title IdentityRegistryKycStorageV1
+ * @dev Abstract contract for storage layout of IdentityRegistryKycImplV1.
  * Inherits from ImplRoot to provide upgradeable functionality.
  */
-abstract contract IdentityRegistrySelfricaStorageV1 is ImplRoot {
+abstract contract IdentityRegistryKycStorageV1 is ImplRoot {
     // =============================================
     // Storage Variables
     // =============================================
@@ -56,7 +56,7 @@ abstract contract IdentityRegistrySelfricaStorageV1 is ImplRoot {
     /// @notice Mapping from nullifier to a boolean indicating registration.
     mapping(uint256 => bool) internal _nullifiers;
 
-    /// @notice Pubkey commitments registered for Selfrica.
+    /// @notice Pubkey commitments registered for KYC.
     mapping(uint256 => bool) internal _isRegisteredPubkeyCommitment;
 
     /// @notice Current name and date of birth OFAC root.
@@ -92,7 +92,7 @@ interface IGCPJWTVerifier {
         uint256[2] calldata pA,
         uint256[2][2] calldata pB,
         uint256[2] calldata pC,
-        uint256[19] calldata pubSignals
+        uint256[20] calldata pubSignals
     ) external view returns (bool);
 }
 
@@ -110,11 +110,11 @@ interface IPCR0Manager {
 }
 
 /**
- * @title IdentityRegistrySelfricaImplV1
+ * @title IdentityRegistryKycImplV1
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
- * @dev Inherits from IdentityRegistrySelfricaStorageV1 and implements IIdentityRegistrySelfricaV1.
+ * @dev Inherits from IdentityRegistryKycStorageV1 and implements IIdentityRegistryKycV1.
  */
-contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, IIdentityRegistryKycV1 {
+contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityRegistryKycV1 {
     using InternalLeanIMT for LeanIMTData;
 
     // ====================================================
@@ -450,7 +450,7 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
         uint256[2] calldata pA,
         uint256[2][2] calldata pB,
         uint256[2] calldata pC,
-        uint256[19] calldata pubSignals
+        uint256[20] calldata pubSignals
     ) external onlyProxy onlyTEE {
         // Check if the proof is valid
         if (!IGCPJWTVerifier(_gcpJwtVerifier).verifyProof(pA, pB, pC, pubSignals)) revert INVALID_PROOF();
@@ -459,19 +459,19 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
         if (pubSignals[0] != _gcpRootCAPubkeyHash) revert INVALID_ROOT_CA();
 
         // Check if the TEE image hash is valid
-        bytes memory imageHash = GCPJWTHelper.unpackAndConvertImageHash(pubSignals[4], pubSignals[5], pubSignals[6]);
+        bytes memory imageHash = GCPJWTHelper.unpackAndConvertImageHash(pubSignals[5], pubSignals[6], pubSignals[7]);
         if (!IPCR0Manager(_PCR0Manager).isPCR0Set(imageHash)) revert INVALID_IMAGE();
 
         // Unpack the pubkey and register it
         uint256 pubkeyCommitment = GCPJWTHelper.unpackAndDecodeHexPubkey(pubSignals[1], pubSignals[2], pubSignals[3]);
         _isRegisteredPubkeyCommitment[pubkeyCommitment] = true;
 
-        uint256 currentYear = 2000 + pubSignals[7] * 10 + pubSignals[8];
-        uint256 currentMonth = pubSignals[9] * 10 + pubSignals[10];
-        uint256 currentDay = pubSignals[11] * 10 + pubSignals[12];
-        uint256 currentHour = pubSignals[13] * 10 + pubSignals[14];
-        uint256 currentMinute = pubSignals[15] * 10 + pubSignals[16];
-        uint256 currentSecond = pubSignals[17] * 10 + pubSignals[18];
+        uint256 currentYear = 2000 + pubSignals[8] * 10 + pubSignals[9];
+        uint256 currentMonth = pubSignals[10] * 10 + pubSignals[11];
+        uint256 currentDay = pubSignals[12] * 10 + pubSignals[13];
+        uint256 currentHour = pubSignals[14] * 10 + pubSignals[15];
+        uint256 currentMinute = pubSignals[16] * 10 + pubSignals[17];
+        uint256 currentSecond = pubSignals[18] * 10 + pubSignals[19];
         uint256 currentTimestamp = Formatter.toTimeStampWithSeconds(
             currentYear,
             currentMonth,
@@ -491,7 +491,10 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @dev Callable only by the owner for testing or administration.
     /// @param nullifier The nullifier associated with the identity commitment.
     /// @param commitment The identity commitment to add.
-    function devAddIdentityCommitment(uint256 nullifier, uint256 commitment) external onlyProxy onlyRole(SECURITY_ROLE) {
+    function devAddIdentityCommitment(
+        uint256 nullifier,
+        uint256 commitment
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         _nullifiers[nullifier] = true;
         uint256 imt_root = _identityCommitmentIMT._insert(commitment);
         _rootTimestamps[imt_root] = block.timestamp;
@@ -504,7 +507,11 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @param oldLeaf The current identity commitment to update.
     /// @param newLeaf The new identity commitment.
     /// @param siblingNodes An array of sibling nodes for Merkle proof generation.
-    function devUpdateCommitment(uint256 oldLeaf, uint256 newLeaf, uint256[] calldata siblingNodes) external onlyProxy onlyRole(SECURITY_ROLE) {
+    function devUpdateCommitment(
+        uint256 oldLeaf,
+        uint256 newLeaf,
+        uint256[] calldata siblingNodes
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         uint256 imt_root = _identityCommitmentIMT._update(oldLeaf, newLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
@@ -514,7 +521,10 @@ contract IdentityRegistrySelfricaImplV1 is IdentityRegistrySelfricaStorageV1, II
     /// @dev Caller must be the owner. Provides sibling nodes for proof of position.
     /// @param oldLeaf The identity commitment to remove.
     /// @param siblingNodes An array of sibling nodes for Merkle proof generation.
-    function devRemoveCommitment(uint256 oldLeaf, uint256[] calldata siblingNodes) external onlyProxy onlyRole(SECURITY_ROLE) {
+    function devRemoveCommitment(
+        uint256 oldLeaf,
+        uint256[] calldata siblingNodes
+    ) external onlyProxy onlyRole(SECURITY_ROLE) {
         uint256 imt_root = _identityCommitmentIMT._remove(oldLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);

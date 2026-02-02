@@ -53,8 +53,6 @@ end
 target "Self" do
   # Native module exclusion for E2E testing is handled in react-native.config.cjs
   config = use_native_modules!
-
-  use_frameworks!
   # Skip NFCPassportReader for e2e testing to avoid build issues
   unless ENV["E2E_TESTING"] == "1"
     # Check if we're running in a selfxyz repo or an external fork
@@ -79,10 +77,13 @@ target "Self" do
     pod "NFCPassportReader", git: nfc_repo_url, commit: "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
   end
 
+  # Explicitly declare Mixpanel to ensure it's available even in E2E builds
+  # (NFCPassportReader also includes Mixpanel, but is skipped during E2E testing)
+  pod "Mixpanel-swift", :modular_headers => true
+
   pod "QKMRZScanner"
   pod "lottie-ios"
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
-  pod "Mixpanel-swift", "~> 5.0.0"
   # RNReactNativeHapticFeedback is handled by autolinking
 
   use_react_native!(

@@ -72,6 +72,9 @@ const config = {
       new RegExp(
         'packages/mobile-sdk-alpha/node_modules/react-native-svg(/|$)',
       ),
+      new RegExp(
+        'packages/mobile-sdk-alpha/node_modules/react-native-webview(/|$)',
+      ),
       new RegExp('packages/mobile-sdk-demo/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-native(/|$)'),

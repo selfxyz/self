@@ -16,9 +16,8 @@ import RegisterVerifierArtifactLocal from "../../artifacts/contracts/verifiers/l
 import RegisterIdVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/register_id/Verifier_register_id_sha256_sha256_sha256_rsa_65537_4096_staging.sol/Verifier_register_id_sha256_sha256_sha256_rsa_65537_4096_staging.json";
 import RegisterAadhaarVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/register/Verifier_register_aadhaar_staging.sol/Verifier_register_aadhaar_staging.json";
 import DscVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/dsc/Verifier_dsc_sha256_rsa_65537_4096_staging.sol/Verifier_dsc_sha256_rsa_65537_4096_staging.json";
-import RegisterSelfricaVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/register/Verifier_register_kyc_staging.sol/Verifier_register_kyc_staging.json";
-// import GCPJWTVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/gcp_jwt_verifier/Verifier_gcp_jwt_verifier_staging.sol/Verifier_gcp_jwt_verifier_staging.json";
-import VcAndDiscloseSelfricaVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/disclose/Verifier_vc_and_disclose_kyc_staging.sol/Verifier_vc_and_disclose_kyc_staging.json";
+import RegisterKycVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/register/Verifier_register_kyc_staging.sol/Verifier_register_kyc_staging.json";
+import VcAndDiscloseKycVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/disclose/Verifier_vc_and_disclose_kyc_staging.sol/Verifier_vc_and_disclose_kyc_staging.json";
 
 export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   let identityVerificationHubV2: any;
@@ -29,16 +28,16 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   let identityRegistryIdImpl: any;
   let identityRegistryAadhaarImpl: any;
   let identityRegistryAadhaarProxy: any;
-  let identityRegistrySelfricaImpl: any;
-  let identityRegistrySelfricaProxy: any;
+  let identityRegistryKycImpl: any;
+  let identityRegistryKycProxy: any;
   let vcAndDiscloseVerifier: any;
   let vcAndDiscloseIdVerifier: any;
   let vcAndDiscloseAadhaarVerifier: any;
-  let vcAndDiscloseSelfricaVerifier: any;
+  let vcAndDiscloseKycVerifier: any;
   let registerVerifier: any;
   let registerIdVerifier: any;
   let registerAadhaarVerifier: any;
-  let registerSelfricaVerifier: any;
+  let registerKycVerifier: any;
   let dscVerifier: any;
   let testSelfVerificationRoot: any;
   let owner: HardhatEthersSigner;
@@ -92,16 +91,16 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     await vcAndDiscloseAadhaarVerifier.waitForDeployment();
   }
 
-  let vcAndDiscloseSelfricaVerifierArtifact;
-  // Deploy VC and Disclose Selfrica verifier
+  let vcAndDiscloseKycVerifierArtifact;
+  // Deploy VC and Disclose KYC verifier
   {
-    vcAndDiscloseSelfricaVerifierArtifact = VcAndDiscloseSelfricaVerifierArtifactLocal;
-    const vcAndDiscloseSelfricaVerifierFactory = await ethers.getContractFactory(
-      vcAndDiscloseSelfricaVerifierArtifact.abi,
-      vcAndDiscloseSelfricaVerifierArtifact.bytecode,
+    vcAndDiscloseKycVerifierArtifact = VcAndDiscloseKycVerifierArtifactLocal;
+    const vcAndDiscloseKycVerifierFactory = await ethers.getContractFactory(
+      vcAndDiscloseKycVerifierArtifact.abi,
+      vcAndDiscloseKycVerifierArtifact.bytecode,
     );
-    vcAndDiscloseSelfricaVerifier = await vcAndDiscloseSelfricaVerifierFactory.connect(owner).deploy();
-    await vcAndDiscloseSelfricaVerifier.waitForDeployment();
+    vcAndDiscloseKycVerifier = await vcAndDiscloseKycVerifierFactory.connect(owner).deploy();
+    await vcAndDiscloseKycVerifier.waitForDeployment();
   }
 
   // Deploy register verifier
@@ -140,16 +139,16 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     await registerAadhaarVerifier.waitForDeployment();
   }
 
-  // Deploy register selfrica verifier
-  let registerSelfricaVerifierArtifact, registerSelfricaVerifierFactory;
+  // Deploy register kyc verifier
+  let registerKycVerifierArtifact, registerKycVerifierFactory;
   {
-    registerSelfricaVerifierArtifact = RegisterSelfricaVerifierArtifactLocal;
-    registerSelfricaVerifierFactory = await ethers.getContractFactory(
-      registerSelfricaVerifierArtifact.abi,
-      registerSelfricaVerifierArtifact.bytecode,
+    registerKycVerifierArtifact = RegisterKycVerifierArtifactLocal;
+    registerKycVerifierFactory = await ethers.getContractFactory(
+      registerKycVerifierArtifact.abi,
+      registerKycVerifierArtifact.bytecode,
     );
-    registerSelfricaVerifier = await registerSelfricaVerifierFactory.connect(owner).deploy();
-    await registerSelfricaVerifier.waitForDeployment();
+    registerKycVerifier = await registerKycVerifierFactory.connect(owner).deploy();
+    await registerKycVerifier.waitForDeployment();
   }
 
   // Deploy dsc verifier
@@ -257,16 +256,16 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     await identityRegistryAadhaarImpl.waitForDeployment();
   }
 
-  // Deploy IdentityRegistrySelfricaImplV1 for Selfrica
-  let IdentityRegistrySelfricaImplFactory;
+  // Deploy IdentityRegistryKycImplV1 for KYC
+  let IdentityRegistryKycImplFactory;
   {
-    IdentityRegistrySelfricaImplFactory = await ethers.getContractFactory("IdentityRegistrySelfricaImplV1", {
+    IdentityRegistryKycImplFactory = await ethers.getContractFactory("IdentityRegistryKycImplV1", {
       libraries: {
         PoseidonT3: poseidonT3.target,
       },
     });
-    identityRegistrySelfricaImpl = await IdentityRegistrySelfricaImplFactory.connect(owner).deploy();
-    await identityRegistrySelfricaImpl.waitForDeployment();
+    identityRegistryKycImpl = await IdentityRegistryKycImplFactory.connect(owner).deploy();
+    await identityRegistryKycImpl.waitForDeployment();
   }
 
   // Deploy IdentityVerificationHubImplV2
@@ -324,18 +323,18 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     await identityRegistryAadhaarProxy.waitForDeployment();
   }
 
-  // Deploy Selfrica registry with temporary hub address and local PCR0Manager
-  let registrySelfricaInitData, registrySelfricaProxyFactory;
+  // Deploy Kyc registry with temporary hub address and local PCR0Manager
+  let registryKycInitData, registryKycProxyFactory;
   {
-    registrySelfricaInitData = identityRegistrySelfricaImpl.interface.encodeFunctionData("initialize", [
+    registryKycInitData = identityRegistryKycImpl.interface.encodeFunctionData("initialize", [
       temporaryHubAddress,
       pcr0Manager.target,
     ]);
-    registrySelfricaProxyFactory = await ethers.getContractFactory("IdentityRegistry");
-    identityRegistrySelfricaProxy = await registrySelfricaProxyFactory
+    registryKycProxyFactory = await ethers.getContractFactory("IdentityRegistry");
+    identityRegistryKycProxy = await registryKycProxyFactory
       .connect(owner)
-      .deploy(identityRegistrySelfricaImpl.target, registrySelfricaInitData);
-    await identityRegistrySelfricaProxy.waitForDeployment();
+      .deploy(identityRegistryKycImpl.target, registryKycInitData);
+    await identityRegistryKycProxy.waitForDeployment();
   }
 
   // Deploy hub V2 with simple initialization (V2 has different initialization)
@@ -374,17 +373,14 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     await updateAadhaarHubTx.wait();
   }
 
-  let registrySelfricaContract, updateSelfricaHubTx;
+  let registryKycContract, updateKycHubTx;
   {
-    registrySelfricaContract = await ethers.getContractAt(
-      "IdentityRegistrySelfricaImplV1",
-      identityRegistrySelfricaProxy.target,
-    );
-    updateSelfricaHubTx = await registrySelfricaContract.updateHub(identityVerificationHubV2.target);
-    await updateSelfricaHubTx.wait();
+    registryKycContract = await ethers.getContractAt("IdentityRegistryKycImplV1", identityRegistryKycProxy.target);
+    updateKycHubTx = await registryKycContract.updateHub(identityVerificationHubV2.target);
+    await updateKycHubTx.wait();
 
-    // Configure GCP JWT verifier for Selfrica
-    await registrySelfricaContract.updateGCPJWTVerifier(gcpJwtVerifier.target);
+    // Configure GCP JWT verifier for Kyc
+    await registryKycContract.updateGCPJWTVerifier(gcpJwtVerifier.target);
   }
 
   let hubContract;
@@ -412,8 +408,8 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     nameAndYob_smt,
     nameDobAadhar_smt,
     nameYobAadhar_smt,
-    nameAndDob_selfrica_smt,
-    nameAndYob_selfrica_smt,
+    nameAndDob_kyc_smt,
+    nameAndYob_kyc_smt,
   } = getSMTs();
 
   // Update passport roots
@@ -429,27 +425,27 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   await registryAadhaarContract.updateNameAndDobOfacRoot(nameDobAadhar_smt.root, { from: owner });
   await registryAadhaarContract.updateNameAndYobOfacRoot(nameYobAadhar_smt.root, { from: owner });
 
-  // Update Selfrica roots
-  await registrySelfricaContract.updateNameAndDobOfacRoot(nameAndDob_selfrica_smt.root, { from: owner });
-  await registrySelfricaContract.updateNameAndYobOfacRoot(nameAndYob_selfrica_smt.root, { from: owner });
+  // Update Kyc roots
+  await registryKycContract.updateNameAndDobOfacRoot(nameAndDob_kyc_smt.root, { from: owner });
+  await registryKycContract.updateNameAndYobOfacRoot(nameAndYob_kyc_smt.root, { from: owner });
 
   // Register verifiers with the hub
   const E_PASSPORT = ethers.hexlify(ethers.zeroPadValue(ethers.toBeHex(1), 32));
   const EU_ID_CARD = ethers.hexlify(ethers.zeroPadValue(ethers.toBeHex(2), 32));
   const AADHAAR = ethers.hexlify(ethers.zeroPadValue(ethers.toBeHex(3), 32));
-  const SELFRICA = ethers.hexlify(ethers.zeroPadValue(ethers.toBeHex(4), 32));
+  const Kyc = ethers.hexlify(ethers.zeroPadValue(ethers.toBeHex(4), 32));
 
   // Update registries in the hub
   await hubContract.updateRegistry(E_PASSPORT, identityRegistryProxy.target);
   await hubContract.updateRegistry(EU_ID_CARD, identityRegistryIdProxy.target);
   await hubContract.updateRegistry(AADHAAR, identityRegistryAadhaarProxy.target);
-  await hubContract.updateRegistry(SELFRICA, identityRegistrySelfricaProxy.target);
+  await hubContract.updateRegistry(Kyc, identityRegistryKycProxy.target);
 
   // Update VC and Disclose verifiers
   await hubContract.updateVcAndDiscloseCircuit(E_PASSPORT, vcAndDiscloseVerifier.target);
   await hubContract.updateVcAndDiscloseCircuit(EU_ID_CARD, vcAndDiscloseIdVerifier.target);
   await hubContract.updateVcAndDiscloseCircuit(AADHAAR, vcAndDiscloseAadhaarVerifier.target);
-  await hubContract.updateVcAndDiscloseCircuit(SELFRICA, vcAndDiscloseSelfricaVerifier.target);
+  await hubContract.updateVcAndDiscloseCircuit(Kyc, vcAndDiscloseKycVerifier.target);
 
   // Update register verifiers
   await hubContract.updateRegisterCircuitVerifier(
@@ -463,7 +459,7 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     registerIdVerifier.target,
   );
   await hubContract.updateRegisterCircuitVerifier(AADHAAR, 0, registerAadhaarVerifier.target);
-  await hubContract.updateRegisterCircuitVerifier(SELFRICA, 0, registerSelfricaVerifier.target);
+  await hubContract.updateRegisterCircuitVerifier(Kyc, 0, registerKycVerifier.target);
 
   // Update DSC verifiers
   await hubContract.updateDscVerifier(E_PASSPORT, DscVerifierId.dsc_sha256_rsa_65537_4096, dscVerifier.target);
@@ -487,12 +483,12 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     registryId: registryIdContract,
     registryAadhaarImpl: identityRegistryAadhaarImpl,
     registryAadhaar: registryAadhaarContract,
-    registrySelfrica: registrySelfricaContract,
-    registrySelfricaImpl: identityRegistrySelfricaImpl,
+    registryKyc: registryKycContract,
+    registryKycImpl: identityRegistryKycImpl,
     vcAndDisclose: vcAndDiscloseVerifier,
     vcAndDiscloseId: vcAndDiscloseIdVerifier,
     vcAndDiscloseAadhaar: vcAndDiscloseAadhaarVerifier,
-    vcAndDiscloseSelfrica: vcAndDiscloseSelfricaVerifier,
+    vcAndDiscloseKyc: vcAndDiscloseKycVerifier,
     aadhaarPubkey: aadhaarPubkeyCommitment,
     register: registerVerifier,
     registerId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,

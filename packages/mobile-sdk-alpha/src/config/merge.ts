@@ -4,11 +4,14 @@
 
 import type { Config } from '../types/public';
 
-export function mergeConfig(base: Required<Config>, override: Config): Required<Config> {
+type BaseConfig = Omit<Required<Config>, 'devConfig'> & Pick<Config, 'devConfig'>;
+
+export function mergeConfig(base: BaseConfig, override: Config): BaseConfig {
   return {
     ...base,
     ...override,
     timeouts: { ...base.timeouts, ...(override.timeouts ?? {}) },
     features: { ...base.features, ...(override.features ?? {}) },
+    devConfig: override.devConfig ?? base.devConfig,
   };
 }

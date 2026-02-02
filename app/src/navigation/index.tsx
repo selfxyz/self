@@ -80,6 +80,8 @@ export type RootStackParamList = Omit<
   | 'Home'
   | 'IDPicker'
   | 'IdDetails'
+  | 'KycSuccess'
+  | 'RegistrationFallback'
   | 'Loading'
   | 'Modal'
   | 'MockDataDeepLink'
@@ -126,6 +128,16 @@ export type RootStackParamList = Omit<
   AadhaarUploadSuccess: undefined;
   AadhaarUploadError: {
     errorType: string;
+  };
+
+  // Registration Fallback screens
+  RegistrationFallback: {
+    errorSource:
+      | 'mrz_scan_failed'
+      | 'nfc_scan_failed'
+      | 'sumsub_initialization'
+      | 'sumsub_verification';
+    countryCode: string;
   };
 
   // Account/Recovery screens
@@ -191,6 +203,11 @@ export type RootStackParamList = Omit<
 
   // Onboarding screens
   Disclaimer: undefined;
+  KycSuccess:
+    | {
+        userId?: string;
+      }
+    | undefined;
 
   // Dev screens
   CreateMock: undefined;

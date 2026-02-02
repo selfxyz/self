@@ -8,7 +8,7 @@ import { mergeConfig } from '../src/config/merge';
 import type { Config } from '../src/types/public';
 
 describe('mergeConfig', () => {
-  const baseConfig: Required<Config> = {
+  const baseConfig: Omit<Required<Config>, 'devConfig'> & Pick<Config, 'devConfig'> = {
     timeouts: {
       scanMs: 30000,
     },
