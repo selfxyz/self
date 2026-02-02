@@ -33,7 +33,8 @@ concurrency:
 jobs:
   build:
     runs-on: ["128ram"]
-    timeout-minutes: 720 # 12 hours
+    # GitHub-hosted runners cap at 360 min (6h); 720 applies if using self-hosted
+    timeout-minutes: 720
     permissions:
       contents: read
       actions: read
@@ -165,7 +166,7 @@ jobs:
           path: output/
           run_id: ${{ inputs.run-id }}
 
-      - name: Build cpp circuits
+      - name: Prepare build scripts
         run: |
           chmod +x circuits/scripts/build/build_cpp.sh
           chmod +x circuits/scripts/build/build_single_circuit.sh
@@ -173,46 +174,57 @@ jobs:
           # Validate inputs - only one should be provided
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             if [[ "${{ inputs.circuit-type }}" != "" && "${{ inputs.circuit-name }}" != "" ]]; then
-              echo " Error: Cannot provide both circuit-type and circuit-name. Use only one."
+              echo "Error: Cannot provide both circuit-type and circuit-name. Use only one."
               exit 1
             fi
           fi
 
-          # Check what type of build to perform
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.circuit-name }}" != "" ]]; then
-            # Build circuits by name
+      - name: Build cpp circuits (workflow_dispatch by name/type)
+        if: github.event_name == 'workflow_dispatch' && (inputs.circuit-name != '' || inputs.circuit-type != '')
+        run: |
+          if [[ "${{ inputs.circuit-name }}" != "" ]]; then
             INPUT_CIRCUITS="${{ inputs.circuit-name }}"
             INPUT_CIRCUITS=$(echo "$INPUT_CIRCUITS" | tr -d ' ')
             IFS=',' read -ra CIRCUITS_ARRAY <<< "$INPUT_CIRCUITS"
-
-            echo "Building selected circuits: ${{ inputs.circuit-name }}"
+            echo "Building selected circuits by name: ${{ inputs.circuit-name }}"
             for circuit_name in "${CIRCUITS_ARRAY[@]}"; do
               echo "Building circuit: $circuit_name"
               ./circuits/scripts/build/build_single_circuit.sh "$circuit_name"
             done
-
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.circuit-type }}" != "" ]]; then
-            # Build circuits by type
+          else
             INPUT_CIRCUITS="${{ inputs.circuit-type }}"
             INPUT_CIRCUITS=$(echo "$INPUT_CIRCUITS" | tr -d ' ')
             IFS=',' read -ra CIRCUITS_ARRAY <<< "$INPUT_CIRCUITS"
-
-            echo "Building selected circuits: ${{ inputs.circuit-type }}"
+            echo "Building selected circuits by type: ${{ inputs.circuit-type }}"
             for circuit in "${CIRCUITS_ARRAY[@]}"; do
               echo "Building circuit: $circuit"
               ./circuits/scripts/build/build_cpp.sh "$circuit"
             done
-
-          else
-            # Build all circuits (default behavior)
-            echo "Building all circuits (default behavior)"
-            ./circuits/scripts/build/build_cpp.sh register
-            ./circuits/scripts/build/build_cpp.sh register_id
-            ./circuits/scripts/build/build_cpp.sh register_aadhaar
-            ./circuits/scripts/build/build_cpp.sh register_kyc
-            ./circuits/scripts/build/build_cpp.sh disclose
-            ./circuits/scripts/build/build_cpp.sh dsc
           fi
+
+      - name: Build cpp circuits - register
+        if: github.event_name != 'workflow_dispatch' || (inputs.circuit-name == '' && inputs.circuit-type == '')
+        run: ./circuits/scripts/build/build_cpp.sh register
+
+      - name: Build cpp circuits - register_id
+        if: github.event_name != 'workflow_dispatch' || (inputs.circuit-name == '' && inputs.circuit-type == '')
+        run: ./circuits/scripts/build/build_cpp.sh register_id
+
+      - name: Build cpp circuits - register_aadhaar
+        if: github.event_name != 'workflow_dispatch' || (inputs.circuit-name == '' && inputs.circuit-type == '')
+        run: ./circuits/scripts/build/build_cpp.sh register_aadhaar
+
+      - name: Build cpp circuits - register_kyc
+        if: github.event_name != 'workflow_dispatch' || (inputs.circuit-name == '' && inputs.circuit-type == '')
+        run: ./circuits/scripts/build/build_cpp.sh register_kyc
+
+      - name: Build cpp circuits - disclose
+        if: github.event_name != 'workflow_dispatch' || (inputs.circuit-name == '' && inputs.circuit-type == '')
+        run: ./circuits/scripts/build/build_cpp.sh disclose
+
+      - name: Build cpp circuits - dsc
+        if: github.event_name != 'workflow_dispatch' || (inputs.circuit-name == '' && inputs.circuit-type == '')
+        run: ./circuits/scripts/build/build_cpp.sh dsc
 
       - name: Upload Artifact
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
