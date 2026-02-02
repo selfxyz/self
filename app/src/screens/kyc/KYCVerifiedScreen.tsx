@@ -9,8 +9,6 @@ import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
-import successAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/success.json';
 import {
   AbstractButton,
   Description,
@@ -33,30 +31,20 @@ const KYCVerifiedScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-      <View style={styles.centerSection}>
-        <View style={styles.animationContainer}>
-          <DelayedLottieView
-            autoPlay
-            loop={false}
-            source={successAnimation}
-            style={styles.animation}
-            cacheComposition={true}
-            renderMode="HARDWARE"
-          />
-        </View>
-        <YStack
-          paddingHorizontal={24}
-          justifyContent="center"
-          alignItems="center"
-          gap={12}
-        >
-          <Title style={styles.title}>Your ID has been verified</Title>
-          <Description style={styles.description}>
-            Next Self will generate a zk proof specifically for this device that
-            you can use to proof your identity.
-          </Description>
-        </YStack>
-      </View>
+      <View style={styles.spacer} />
+      <YStack
+        paddingHorizontal={24}
+        justifyContent="center"
+        alignItems="center"
+        gap={12}
+        marginBottom={64}
+      >
+        <Title style={styles.title}>Your ID has been verified</Title>
+        <Description style={styles.description}>
+          Next Self will generate a zk proof specifically for this device that
+          you can use to proof your identity.
+        </Description>
+      </YStack>
       <YStack gap={12} paddingHorizontal={20} paddingBottom={24}>
         <AbstractButton
           bgColor={white}
@@ -75,21 +63,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: black,
   },
-  centerSection: {
+  spacer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  animationContainer: {
-    width: 80,
-    height: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  animation: {
-    width: 160,
-    height: 160,
   },
   title: {
     color: white,
@@ -101,6 +76,7 @@ const styles = StyleSheet.create({
     color: white,
     textAlign: 'center',
     fontSize: 18,
+    lineHeight: 27,
   },
 });
 

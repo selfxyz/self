@@ -73,17 +73,8 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
   ),
 }));
 
-jest.mock(
-  '@selfxyz/mobile-sdk-alpha/animations/loading/success.json',
-  () => ({}),
-);
-
 jest.mock('@/integrations/haptics', () => ({
   buttonTap: jest.fn(),
-}));
-
-jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
-  DelayedLottieView: () => null,
 }));
 
 jest.mock('@/config/sentry', () => ({
