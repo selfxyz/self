@@ -26,9 +26,9 @@ import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import {
   getFCMToken,
-  getSelfUuidNamespace,
   registerDeviceToken,
   requestNotificationPermission,
+  SELF_UUID_NAMESPACE,
 } from '@/services/notifications/notificationService';
 import { useSettingStore } from '@/stores/settingStore';
 
@@ -96,7 +96,7 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
         setFcmToken(token);
         trackEvent(ProofEvents.FCM_TOKEN_STORED);
 
-        const sessionId = uuidv5(userId, getSelfUuidNamespace());
+        const sessionId = uuidv5(userId, SELF_UUID_NAMESPACE);
         await registerDeviceToken(sessionId, token);
       }
     }

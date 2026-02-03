@@ -220,6 +220,7 @@ export interface ProvingState {
   sharedKey: Buffer | null;
   wsConnection: WebSocket | null;
   wsHandlers: WsHandlers | null;
+  wsReconnectAttempts: number;
   socketConnection: Socket | null;
   uuid: string | null;
   userConfirmed: boolean;
@@ -260,6 +261,7 @@ export interface ProvingState {
   _handleWsOpen: (selfClient: SelfClient) => void;
   _handleWsError: (error: Event, selfClient: SelfClient) => void;
   _handleWsClose: (event: CloseEvent, selfClient: SelfClient) => void;
+  _reconnectTeeWebSocket: (selfClient: SelfClient) => Promise<boolean>;
 
   _handlePassportNotSupported: (selfClient: SelfClient) => void;
   _handleAccountRecoveryChoice: (selfClient: SelfClient) => void;
@@ -507,6 +509,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     sharedKey: null,
     wsConnection: null,
     wsHandlers: null,
+    wsReconnectAttempts: 0,
     socketConnection: null,
     uuid: null,
     userConfirmed: false,
@@ -832,6 +835,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         reason: event.reason,
       });
       const currentState = get().currentState;
+
+      // Handle unexpected close during active proving states
       if (
         currentState === 'init_tee_connexion' ||
         currentState === 'proving' ||
@@ -845,9 +850,103 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient,
         );
       }
+
+      // In ready_to_prove state, attempt automatic reconnection to handle network interruptions.
+      // Users may lose connectivity briefly; reconnecting transparently improves UX.
+      if (currentState === 'ready_to_prove') {
+        const MAX_RECONNECT_ATTEMPTS = 3;
+        const attempts = get().wsReconnectAttempts;
+
+        if (attempts < MAX_RECONNECT_ATTEMPTS) {
+          selfClient.logProofEvent('info', 'TEE WebSocket reconnection attempt', context, {
+            attempt: attempts + 1,
+            max_attempts: MAX_RECONNECT_ATTEMPTS,
+          });
+          set({ wsConnection: null, wsReconnectAttempts: attempts + 1 });
+
+          const backoffMs = Math.min(1000 * Math.pow(2, attempts), 10000);
+          setTimeout(() => {
+            if (get().currentState === 'ready_to_prove') {
+              get()._reconnectTeeWebSocket(selfClient);
+            }
+          }, backoffMs);
+          return;
+        }
+
+        selfClient.logProofEvent('error', 'TEE WebSocket reconnection exhausted', context, {
+          failure: 'PROOF_FAILED_CONNECTION',
+          attempts: MAX_RECONNECT_ATTEMPTS,
+        });
+        get()._handleWebSocketMessage(
+          new MessageEvent('error', {
+            data: JSON.stringify({ error: 'WebSocket reconnection failed' }),
+          }),
+          selfClient,
+        );
+      }
+
       if (get().wsConnection) {
         set({ wsConnection: null });
       }
+    },
+
+    /**
+     * Re-establishes the TEE WebSocket connection using stored circuit parameters.
+     * Called automatically when connection is lost in ready_to_prove state.
+     */
+    _reconnectTeeWebSocket: async (selfClient: SelfClient): Promise<boolean> => {
+      const context = createProofContext(selfClient, '_reconnectTeeWebSocket');
+      const { passportData, circuitType } = get();
+
+      if (!passportData || !circuitType) {
+        selfClient.logProofEvent('error', 'Reconnect failed: missing prerequisites', context);
+        return false;
+      }
+
+      const typedCircuitType = circuitType as 'disclose' | 'register' | 'dsc';
+      const circuitName =
+        typedCircuitType === 'disclose'
+          ? passportData.documentCategory === 'aadhaar'
+            ? 'disclose_aadhaar'
+            : 'disclose'
+          : getCircuitNameFromPassportData(passportData, typedCircuitType as 'register' | 'dsc');
+
+      const wsRpcUrl = resolveWebSocketUrl(selfClient, typedCircuitType, passportData as PassportData, circuitName);
+      if (!wsRpcUrl) {
+        selfClient.logProofEvent('error', 'Reconnect failed: no WebSocket URL', context);
+        return false;
+      }
+
+      selfClient.logProofEvent('info', 'TEE WebSocket reconnection started', context);
+
+      return new Promise(resolve => {
+        const ws = new WebSocket(wsRpcUrl);
+        const RECONNECT_TIMEOUT_MS = 15000;
+
+        const wsHandlers: WsHandlers = {
+          message: (event: MessageEvent) => get()._handleWebSocketMessage(event, selfClient),
+          open: () => {
+            selfClient.logProofEvent('info', 'TEE WebSocket reconnected', context);
+            set({ wsReconnectAttempts: 0 });
+            resolve(true);
+          },
+          error: (error: Event) => get()._handleWsError(error, selfClient),
+          close: (event: CloseEvent) => get()._handleWsClose(event, selfClient),
+        };
+
+        set({ wsConnection: ws, wsHandlers });
+        ws.addEventListener('message', wsHandlers.message);
+        ws.addEventListener('open', wsHandlers.open);
+        ws.addEventListener('error', wsHandlers.error);
+        ws.addEventListener('close', wsHandlers.close);
+
+        setTimeout(() => {
+          if (ws.readyState !== WebSocket.OPEN) {
+            selfClient.logProofEvent('warn', 'TEE WebSocket reconnection timeout', context);
+            resolve(false);
+          }
+        }, RECONNECT_TIMEOUT_MS);
+      });
     },
 
     init: async (
@@ -1305,7 +1404,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           close: (event: CloseEvent) => get()._handleWsClose(event, selfClient),
         };
 
-        set({ wsConnection: ws, wsHandlers });
+        set({ wsConnection: ws, wsHandlers, wsReconnectAttempts: 0 });
 
         ws.addEventListener('message', wsHandlers.message);
         ws.addEventListener('open', wsHandlers.open);
@@ -1330,7 +1429,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     startProving: async (selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       const startTime = Date.now();
-      const { wsConnection, sharedKey, passportData, secret, uuid } = get();
+      let { wsConnection } = get();
+      const { sharedKey, passportData, secret, uuid } = get();
       const context = createProofContext(selfClient, 'startProving', {
         sessionId: uuid || get().uuid || 'unknown-session',
       });
@@ -1342,17 +1442,45 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         console.error('Cannot start proving: Not in ready_to_prove state.');
         return;
       }
-      if (!wsConnection || !sharedKey || !passportData || !secret || !uuid) {
+
+      // Check non-connection prerequisites first
+      if (!sharedKey || !passportData || !secret || !uuid) {
         selfClient.logProofEvent('error', 'Missing proving prerequisites', context, {
           failure: 'PROOF_FAILED_CONNECTION',
         });
-        console.error('Cannot start proving: Missing wsConnection, sharedKey, passportData, secret, or uuid.');
+        console.error('Cannot start proving: Missing sharedKey, passportData, secret, or uuid.');
         actor!.send({ type: 'PROVE_ERROR' });
         return;
       }
 
+      // Attempt reconnection if WebSocket is missing or not open
+      if (!wsConnection || wsConnection.readyState !== WebSocket.OPEN) {
+        selfClient.logProofEvent('warn', 'WebSocket not ready, attempting reconnection', context, {
+          wsConnectionExists: !!wsConnection,
+          readyState: wsConnection?.readyState,
+        });
+
+        const reconnected = await get()._reconnectTeeWebSocket(selfClient);
+        if (!reconnected) {
+          selfClient.logProofEvent('error', 'WebSocket reconnection failed', context, {
+            failure: 'PROOF_FAILED_CONNECTION',
+          });
+          actor!.send({ type: 'PROVE_ERROR' });
+          return;
+        }
+
+        // Get the new connection after reconnection
+        wsConnection = get().wsConnection;
+        if (!wsConnection || wsConnection.readyState !== WebSocket.OPEN) {
+          selfClient.logProofEvent('error', 'Reconnected WebSocket not ready', context, {
+            failure: 'PROOF_FAILED_CONNECTION',
+          });
+          actor!.send({ type: 'PROVE_ERROR' });
+          return;
+        }
+      }
+
       try {
-        // Emit event for FCM token registration
         selfClient.emit(SdkEvents.PROVING_BEGIN_GENERATION, {
           uuid,
           isMock: passportData?.mock ?? false,
@@ -1362,7 +1490,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         selfClient.trackEvent(ProofEvents.PAYLOAD_GEN_STARTED);
         selfClient.logProofEvent('info', 'Payload generation started', context);
         const submitBody = await get()._generatePayload(selfClient);
-        wsConnection.send(JSON.stringify(submitBody));
+
+        const activeWsConnection = get().wsConnection;
+        if (!activeWsConnection) {
+          throw new Error('WebSocket connection lost during payload generation');
+        }
+        activeWsConnection.send(JSON.stringify(submitBody));
         selfClient.logProofEvent('info', 'Payload sent over WebSocket', context);
         selfClient.trackEvent(ProofEvents.PAYLOAD_SENT);
         selfClient.trackEvent(ProofEvents.PROVING_PROCESS_STARTED);

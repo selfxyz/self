@@ -81,6 +81,7 @@ export type RootStackParamList = Omit<
   | 'IDPicker'
   | 'IdDetails'
   | 'KycSuccess'
+  | 'KYCVerified'
   | 'RegistrationFallback'
   | 'Loading'
   | 'Modal'
@@ -205,6 +206,12 @@ export type RootStackParamList = Omit<
   Disclaimer: undefined;
   KycSuccess:
     | {
+        userId?: string;
+      }
+    | undefined;
+  KYCVerified:
+    | {
+        status?: string;
         userId?: string;
       }
     | undefined;
