@@ -63,8 +63,6 @@ export default buildModule("UpdateHubRegistries", (m) => {
 
   const hubContract = updateHubRegistries(m, hubAddress, deployedAddresses);
 
-
-
   return {
     hubContract,
   };
