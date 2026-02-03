@@ -268,6 +268,8 @@ export const countries = {
 export interface SelfAppDisclosureConfig {
   issuing_state?: boolean;
   name?: boolean;
+  first_name?: boolean;
+  last_name?: boolean;
   passport_number?: boolean;
   nationality?: boolean;
   date_of_birth?: boolean;

@@ -154,6 +154,8 @@ export class DemoComponent {
 | ----------------------- | ---------------------- | ------- | --------------------------------------------------------- |
 | `issuing_state`         | `boolean`              | `false` | Request the issuing state from the document.              |
 | `name`                  | `boolean`              | `false` | Request the full name from the document                   |
+| `first_name`            | `boolean`              | `false` | Request only the first name from the document             |
+| `last_name`             | `boolean`              | `false` | Request only the last name from the document              |
 | `passport_number`       | `boolean`              | `false` | Request the document number.                              |
 | `nationality`           | `boolean`              | `false` | Request the user’s nationality.                           |
 | `date_of_birth`         | `boolean`              | `false` | Request the date of birth.                                |

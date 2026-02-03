@@ -92,6 +92,8 @@ The `disclosures` object can include the following options:
 | ------------------- | -------- | -------------------------------------------- |
 | `issuing_state`     | boolean  | Request disclosure of passport issuing state |
 | `name`              | boolean  | Request disclosure of the user's name        |
+| `first_name`        | boolean  | Request disclosure of only the first name    |
+| `last_name`         | boolean  | Request disclosure of only the last name     |
 | `nationality`       | boolean  | Request disclosure of nationality            |
 | `date_of_birth`     | boolean  | Request disclosure of birth date             |
 | `passport_number`   | boolean  | Request disclosure of passport number        |
