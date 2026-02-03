@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { Button, Sheet, Text, XStack, YStack } from 'tamagui';
 import { Check, ChevronDown } from '@tamagui/lucide-icons';
@@ -15,6 +15,11 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
+import {
+  registerModalCallbacks,
+  unregisterModalCallbacks,
+} from '@/utils/modalCallbackRegistry';
+
 interface LogLevelSelectorProps {
   currentLevel: string;
   onSelect: (level: 'debug' | 'info' | 'warn' | 'error') => void;
@@ -25,8 +30,49 @@ export const LogLevelSelector: React.FC<LogLevelSelectorProps> = ({
   onSelect,
 }) => {
   const [open, setOpen] = useState(false);
+  const callbackIdRef = useRef<number>();
 
   const logLevels = ['debug', 'info', 'warn', 'error'] as const;
+
+  const handleModalDismiss = useCallback(() => {
+    setOpen(false);
+    if (callbackIdRef.current !== undefined) {
+      unregisterModalCallbacks(callbackIdRef.current);
+      callbackIdRef.current = undefined;
+    }
+  }, []);
+
+  const openSheet = useCallback(() => {
+    setOpen(true);
+    const id = registerModalCallbacks({
+      onButtonPress: () => {},
+      onModalDismiss: handleModalDismiss,
+    });
+    callbackIdRef.current = id;
+  }, [handleModalDismiss]);
+
+  const closeSheet = useCallback(() => {
+    handleModalDismiss();
+  }, [handleModalDismiss]);
+
+  const handleSheetOpenChange = useCallback(
+    (isOpen: boolean) => {
+      if (!isOpen) {
+        handleModalDismiss();
+      } else {
+        setOpen(isOpen);
+      }
+    },
+    [handleModalDismiss],
+  );
+
+  const handleLevelSelect = useCallback(
+    (level: 'debug' | 'info' | 'warn' | 'error') => {
+      closeSheet();
+      onSelect(level);
+    },
+    [closeSheet, onSelect],
+  );
 
   return (
     <>
@@ -36,7 +82,7 @@ export const LogLevelSelector: React.FC<LogLevelSelectorProps> = ({
         borderRadius="$2"
         height="$5"
         padding={0}
-        onPress={() => setOpen(true)}
+        onPress={openSheet}
       >
         <XStack
           width="100%"
@@ -55,7 +101,7 @@ export const LogLevelSelector: React.FC<LogLevelSelectorProps> = ({
       <Sheet
         modal
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={handleSheetOpenChange}
         snapPoints={[50]}
         animation="medium"
         dismissOnSnapToBottom
@@ -76,7 +122,7 @@ export const LogLevelSelector: React.FC<LogLevelSelectorProps> = ({
                 Select log level
               </Text>
               <Button
-                onPress={() => setOpen(false)}
+                onPress={closeSheet}
                 padding="$2"
                 backgroundColor="transparent"
               >
@@ -91,10 +137,7 @@ export const LogLevelSelector: React.FC<LogLevelSelectorProps> = ({
               {logLevels.map(level => (
                 <TouchableOpacity
                   key={level}
-                  onPress={() => {
-                    setOpen(false);
-                    onSelect(level);
-                  }}
+                  onPress={() => handleLevelSelect(level)}
                 >
                   <XStack
                     paddingVertical="$3"

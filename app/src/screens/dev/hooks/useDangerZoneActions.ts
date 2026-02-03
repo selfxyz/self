@@ -27,7 +27,22 @@ export const useDangerZoneActions = () => {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            await unsafe_clearSecrets();
+            try {
+              await unsafe_clearSecrets();
+              Alert.alert('Success', 'Keychain secrets cleared successfully.', [
+                { text: 'OK' },
+              ]);
+            } catch (error) {
+              console.error(
+                'Failed to clear keychain secrets:',
+                error instanceof Error ? error.message : String(error),
+              );
+              Alert.alert(
+                'Error',
+                'Failed to clear keychain secrets. Please try again.',
+                [{ text: 'OK' }],
+              );
+            }
           },
         },
       ],
@@ -47,7 +62,24 @@ export const useDangerZoneActions = () => {
           text: 'Clear',
           style: 'destructive',
           onPress: async () => {
-            await clearDocumentCatalogForMigrationTesting();
+            try {
+              await clearDocumentCatalogForMigrationTesting();
+              Alert.alert(
+                'Success',
+                'Document catalog cleared successfully. Please restart the app to test migration.',
+                [{ text: 'OK' }],
+              );
+            } catch (error) {
+              console.error(
+                'Failed to clear document catalog:',
+                error instanceof Error ? error.message : String(error),
+              );
+              Alert.alert(
+                'Error',
+                'Failed to clear document catalog. Please try again.',
+                [{ text: 'OK' }],
+              );
+            }
           },
         },
       ],
@@ -67,10 +99,22 @@ export const useDangerZoneActions = () => {
           text: 'Clear',
           style: 'destructive',
           onPress: async () => {
-            await clearPointEvents();
-            Alert.alert('Success', 'Point events cleared successfully.', [
-              { text: 'OK' },
-            ]);
+            try {
+              await clearPointEvents();
+              Alert.alert('Success', 'Point events cleared successfully.', [
+                { text: 'OK' },
+              ]);
+            } catch (error) {
+              console.error(
+                'Failed to clear point events:',
+                error instanceof Error ? error.message : String(error),
+              );
+              Alert.alert(
+                'Error',
+                'Failed to clear point events. Please try again.',
+                [{ text: 'OK' }],
+              );
+            }
           },
         },
       ],
@@ -113,16 +157,30 @@ export const useDangerZoneActions = () => {
           text: 'Clear',
           style: 'destructive',
           onPress: async () => {
-            const events = usePointEventStore.getState().events;
-            const backupEvents = events.filter(
-              event => event.type === 'backup',
-            );
-            for (const event of backupEvents) {
-              await usePointEventStore.getState().removeEvent(event.id);
+            try {
+              const events = usePointEventStore.getState().events;
+              const backupEvents = events.filter(
+                event => event.type === 'backup',
+              );
+              await Promise.all(
+                backupEvents.map(event =>
+                  usePointEventStore.getState().removeEvent(event.id),
+                ),
+              );
+              Alert.alert('Success', 'Backup events cleared successfully.', [
+                { text: 'OK' },
+              ]);
+            } catch (error) {
+              console.error(
+                'Failed to clear backup events:',
+                error instanceof Error ? error.message : String(error),
+              );
+              Alert.alert(
+                'Error',
+                'Failed to clear backup events. Please try again.',
+                [{ text: 'OK' }],
+              );
             }
-            Alert.alert('Success', 'Backup events cleared successfully.', [
-              { text: 'OK' },
-            ]);
           },
         },
       ],

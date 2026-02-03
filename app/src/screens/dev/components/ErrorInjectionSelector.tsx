@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { Button, Sheet, Text, XStack, YStack } from 'tamagui';
 import { Check, ChevronDown } from '@tamagui/lucide-icons';
@@ -23,6 +23,10 @@ import {
   ERROR_LABELS,
   useErrorInjectionStore,
 } from '@/stores/errorInjectionStore';
+import {
+  registerModalCallbacks,
+  unregisterModalCallbacks,
+} from '@/utils/modalCallbackRegistry';
 
 export const ErrorInjectionSelector = () => {
   const injectedErrors = useErrorInjectionStore(state => state.injectedErrors);
@@ -31,6 +35,39 @@ export const ErrorInjectionSelector = () => {
   );
   const clearAllErrors = useErrorInjectionStore(state => state.clearAllErrors);
   const [open, setOpen] = useState(false);
+  const callbackIdRef = useRef<number>();
+
+  const handleModalDismiss = useCallback(() => {
+    setOpen(false);
+    if (callbackIdRef.current !== undefined) {
+      unregisterModalCallbacks(callbackIdRef.current);
+      callbackIdRef.current = undefined;
+    }
+  }, []);
+
+  const openSheet = useCallback(() => {
+    setOpen(true);
+    const id = registerModalCallbacks({
+      onButtonPress: () => {},
+      onModalDismiss: handleModalDismiss,
+    });
+    callbackIdRef.current = id;
+  }, [handleModalDismiss]);
+
+  const closeSheet = useCallback(() => {
+    handleModalDismiss();
+  }, [handleModalDismiss]);
+
+  const handleSheetOpenChange = useCallback(
+    (isOpen: boolean) => {
+      if (!isOpen) {
+        handleModalDismiss();
+      } else {
+        setOpen(isOpen);
+      }
+    },
+    [handleModalDismiss],
+  );
 
   // Single error selection - replace instead of toggle
   const selectError = (errorType: InjectedErrorType) => {
@@ -41,7 +78,7 @@ export const ErrorInjectionSelector = () => {
       setInjectedErrors([errorType]);
     }
     // Close the sheet after selection
-    setOpen(false);
+    closeSheet();
   };
 
   const currentError = injectedErrors.length > 0 ? injectedErrors[0] : null;
@@ -55,7 +92,7 @@ export const ErrorInjectionSelector = () => {
         borderRadius="$2"
         height="$5"
         padding={0}
-        onPress={() => setOpen(true)}
+        onPress={openSheet}
       >
         <XStack
           width="100%"
@@ -91,7 +128,7 @@ export const ErrorInjectionSelector = () => {
       <Sheet
         modal
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={handleSheetOpenChange}
         snapPoints={[85]}
         animation="medium"
         dismissOnSnapToBottom
@@ -112,7 +149,7 @@ export const ErrorInjectionSelector = () => {
                 Onboarding Error Testing
               </Text>
               <Button
-                onPress={() => setOpen(false)}
+                onPress={closeSheet}
                 padding="$2"
                 backgroundColor="transparent"
               >

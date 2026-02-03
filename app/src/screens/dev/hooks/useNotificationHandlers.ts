@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { Alert, AppState } from 'react-native';
 
 import {
   isNotificationSystemReady,
@@ -18,14 +18,23 @@ export const useNotificationHandlers = () => {
   const [hasNotificationPermission, setHasNotificationPermission] =
     useState(false);
 
-  // Check notification permissions on mount
-  useEffect(() => {
-    const checkPermissions = async () => {
-      const readiness = await isNotificationSystemReady();
-      setHasNotificationPermission(readiness.ready);
-    };
-    checkPermissions();
+  const checkPermissions = useCallback(async () => {
+    const readiness = await isNotificationSystemReady();
+    setHasNotificationPermission(readiness.ready);
   }, []);
+
+  // Check notification permissions on mount and when app regains focus
+  useEffect(() => {
+    checkPermissions();
+
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (nextAppState === 'active') {
+        checkPermissions();
+      }
+    });
+
+    return () => subscription.remove();
+  }, [checkPermissions]);
 
   const handleTopicToggle = async (topics: string[], topicLabel: string) => {
     // Check permissions first

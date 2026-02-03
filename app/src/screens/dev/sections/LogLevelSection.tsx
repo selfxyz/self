@@ -9,7 +9,7 @@ import { LogLevelSelector } from '@/screens/dev/components/LogLevelSelector';
 import { ParameterSection } from '@/screens/dev/components/ParameterSection';
 
 interface LogLevelSectionProps {
-  loggingSeverity: string;
+  loggingSeverity: 'debug' | 'info' | 'warn' | 'error';
   setLoggingSeverity: (severity: 'debug' | 'info' | 'warn' | 'error') => void;
 }
 
