@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { PermissionsAndroid, Platform } from 'react-native';
-import { SELF_UUID_NAMESPACE } from '@env';
 import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import messaging from '@react-native-firebase/messaging';
 
@@ -14,6 +13,8 @@ import {
   getStateMessage,
 } from '@/services/notifications/notificationService.shared';
 import { useSettingStore } from '@/stores/settingStore';
+
+export const SELF_UUID_NAMESPACE = '00000000-0000-8000-8000-531f00000000';
 
 export async function getFCMToken(): Promise<string | null> {
   try {
@@ -36,10 +37,6 @@ const log = (...args: unknown[]) => {
 const error = (...args: unknown[]) => {
   if (!isTestEnv) console.error(...args);
 };
-
-export function getSelfUuidNamespace(): string {
-  return SELF_UUID_NAMESPACE ?? '';
-}
 
 export { getStateMessage };
 
