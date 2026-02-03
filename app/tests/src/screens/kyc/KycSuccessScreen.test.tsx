@@ -87,10 +87,10 @@ jest.mock('@/integrations/haptics', () => ({
 }));
 
 jest.mock('@/services/notifications/notificationService', () => ({
+  ...jest.requireActual('@/services/notifications/notificationService'),
   requestNotificationPermission: jest.fn(),
   getFCMToken: jest.fn(),
   registerDeviceToken: jest.fn(),
-  getSelfUuidNamespace: jest.fn(() => '1eebc0f5-eee9-45a4-9474-a0d103b9f20c'),
 }));
 
 jest.mock('@/config/sentry', () => ({
@@ -118,8 +118,6 @@ const mockUseNavigation = useNavigation as jest.MockedFunction<
 // Import mocked modules
 const { useSelfClient } = jest.requireMock('@selfxyz/mobile-sdk-alpha');
 const { useSettingStore } = jest.requireMock('@/stores/settingStore');
-
-const MOCK_SELF_UUID_NAMESPACE = '1eebc0f5-eee9-45a4-9474-a0d103b9f20c';
 
 describe('KycSuccessScreen', () => {
   const mockNavigate = jest.fn();
@@ -204,7 +202,7 @@ describe('KycSuccessScreen', () => {
     await waitFor(() => {
       // Verify device token was registered with deterministic session ID
       expect(notificationService.registerDeviceToken).toHaveBeenCalledWith(
-        uuidv5(mockUserId, MOCK_SELF_UUID_NAMESPACE),
+        uuidv5(mockUserId, notificationService.SELF_UUID_NAMESPACE),
         mockFcmToken,
       );
     });

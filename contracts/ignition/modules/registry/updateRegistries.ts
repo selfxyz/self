@@ -41,7 +41,7 @@ const registries = {
     gcpJWTVerifier: "0x13ee8CEa15a262D81a245b37889F7b4bEd015f4c",
     pcr0Manager: "0xf2810D5E9938816D42F0Ae69D33F013a23C0aED2",
     imageDigest: "0x67368d91dc708dee7be8fd9d85eff1fce3181e6e5b9fdfa37fc2d99034ea88e6",
-    gcpRootCAPubkeyHash: "14165687497759817957828709957846495993787741657460065475757428560999622217191"
+    gcpRootCAPubkeyHash: "14165687497759817957828709957846495993787741657460065475757428560999622217191",
   },
 };
 
@@ -99,35 +99,25 @@ export function handleRegistryDeployment(
 
   if (registryData.passportNoOfac) {
     const callOptions = { after: [currentOperation], id: ids() };
-    currentOperation = m.call(
-      registryContract,
-      "updatePassportNoOfacRoot",
-      [registryData.passportNoOfac],
-      callOptions,
-    );
+    currentOperation = m.call(registryContract, "updatePassportNoOfacRoot", [registryData.passportNoOfac], callOptions);
   }
   if (registryData.nameAndDobOfac) {
     const callOptions = { after: [currentOperation], id: ids() };
-    currentOperation = m.call(
-      registryContract,
-      "updateNameAndDobOfacRoot",
-      [registryData.nameAndDobOfac],
-      callOptions,
-    );
+    currentOperation = m.call(registryContract, "updateNameAndDobOfacRoot", [registryData.nameAndDobOfac], callOptions);
   }
   if (registryData.nameAndYobOfac) {
     const callOptions = { after: [currentOperation], id: ids() };
-    currentOperation = m.call(
-      registryContract,
-      "updateNameAndYobOfacRoot",
-      [registryData.nameAndYobOfac],
-      callOptions,
-    );
+    currentOperation = m.call(registryContract, "updateNameAndYobOfacRoot", [registryData.nameAndYobOfac], callOptions);
   }
 
   if (registryData.gcpRootCAPubkeyHash) {
     const callOptions = { after: [currentOperation], id: ids() };
-    currentOperation = m.call(registryContract, "updateGCPRootCAPubkeyHash", [registryData.gcpRootCAPubkeyHash], callOptions);
+    currentOperation = m.call(
+      registryContract,
+      "updateGCPRootCAPubkeyHash",
+      [registryData.gcpRootCAPubkeyHash],
+      callOptions,
+    );
   }
 
   if (registryData.pubkeyCommitments && registryData.pubkeyCommitments.length > 0) {
