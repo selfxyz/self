@@ -11,6 +11,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import BugIcon from '@/assets/icons/bug_icon.svg';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import type { RootStackParamList } from '@/navigation';
 import { ErrorInjectionSelector } from '@/screens/dev/components/ErrorInjectionSelector';
 import { LogLevelSelector } from '@/screens/dev/components/LogLevelSelector';
@@ -51,63 +52,65 @@ const DevSettingsScreen: React.FC = () => {
   } = useDangerZoneActions();
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <YStack
-        gap="$3"
-        alignItems="center"
-        backgroundColor="white"
-        flex={1}
-        paddingHorizontal="$4"
-        paddingTop="$4"
-        paddingBottom={paddingBottom}
-      >
-        <DebugShortcutsSection navigation={navigation} />
-
-        {IS_DEV_MODE && (
-          <DevTogglesSection
-            kycEnabled={kycEnabled}
-            setKycEnabled={setKycEnabled}
-            useStrongBox={useStrongBox}
-            setUseStrongBox={setUseStrongBox}
-          />
-        )}
-
-        <PushNotificationsSection
-          hasNotificationPermission={hasNotificationPermission}
-          subscribedTopics={subscribedTopics}
-          onTopicToggle={handleTopicToggle}
-        />
-
-        <ParameterSection
-          icon={<BugIcon />}
-          title="Log Level"
-          description="Configure logging verbosity"
+    <ErrorBoundary>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <YStack
+          gap="$3"
+          alignItems="center"
+          backgroundColor="white"
+          flex={1}
+          paddingHorizontal="$4"
+          paddingTop="$4"
+          paddingBottom={paddingBottom}
         >
-          <LogLevelSelector
-            currentLevel={loggingSeverity}
-            onSelect={setLoggingSeverity}
-          />
-        </ParameterSection>
+          <DebugShortcutsSection navigation={navigation} />
 
-        {IS_DEV_MODE && (
+          {IS_DEV_MODE && (
+            <DevTogglesSection
+              kycEnabled={kycEnabled}
+              setKycEnabled={setKycEnabled}
+              useStrongBox={useStrongBox}
+              setUseStrongBox={setUseStrongBox}
+            />
+          )}
+
+          <PushNotificationsSection
+            hasNotificationPermission={hasNotificationPermission}
+            subscribedTopics={subscribedTopics}
+            onTopicToggle={handleTopicToggle}
+          />
+
           <ParameterSection
             icon={<BugIcon />}
-            title="Onboarding Error Testing"
-            description="Test onboarding error flows"
+            title="Log Level"
+            description="Configure logging verbosity"
           >
-            <ErrorInjectionSelector />
+            <LogLevelSelector
+              currentLevel={loggingSeverity}
+              onSelect={setLoggingSeverity}
+            />
           </ParameterSection>
-        )}
 
-        <DangerZoneSection
-          onClearSecrets={handleClearSecretsPress}
-          onClearDocumentCatalog={handleClearDocumentCatalogPress}
-          onClearPointEvents={handleClearPointEventsPress}
-          onResetBackupState={handleResetBackupStatePress}
-          onClearBackupEvents={handleClearBackupEventsPress}
-        />
-      </YStack>
-    </ScrollView>
+          {IS_DEV_MODE && (
+            <ParameterSection
+              icon={<BugIcon />}
+              title="Onboarding Error Testing"
+              description="Test onboarding error flows"
+            >
+              <ErrorInjectionSelector />
+            </ParameterSection>
+          )}
+
+          <DangerZoneSection
+            onClearSecrets={handleClearSecretsPress}
+            onClearDocumentCatalog={handleClearDocumentCatalogPress}
+            onClearPointEvents={handleClearPointEventsPress}
+            onResetBackupState={handleResetBackupStatePress}
+            onClearBackupEvents={handleClearBackupEventsPress}
+          />
+        </YStack>
+      </ScrollView>
+    </ErrorBoundary>
   );
 };
 
