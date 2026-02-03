@@ -9,7 +9,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Dimensions, Image, Pressable } from 'react-native';
+import { Dimensions, Pressable } from 'react-native';
 import {
   Button,
   ScrollView,
@@ -45,7 +45,7 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import LogoInversed from '@/assets/images/logo_inversed.svg';
-import UnverifiedHumanImage from '@/assets/images/unverified_human.png';
+import EmptyIdCard from '@/components/homescreen/EmptyIdCard';
 import IdCardLayout from '@/components/homescreen/IdCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
@@ -227,31 +227,11 @@ const HomeScreen: React.FC = () => {
         }}
       >
         {!hasValidRegisteredDocument ? (
-          <Pressable
-            onPress={() => {
+          <EmptyIdCard
+            onRegisterPress={() => {
               navigation.navigate('CountryPicker');
             }}
-          >
-            <View
-              width={cardWidth}
-              borderRadius={8}
-              overflow="hidden"
-              alignSelf="center"
-              style={{
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 8,
-                elevation: 4,
-              }}
-            >
-              <Image
-                source={UnverifiedHumanImage}
-                style={{ width: cardWidth, height: cardWidth * (418 / 640) }}
-                resizeMode="cover"
-              />
-            </View>
-          </Pressable>
+          />
         ) : (
           documentCatalog.documents.map((metadata: DocumentMetadata) => {
             const documentData = allDocuments[metadata.id];
