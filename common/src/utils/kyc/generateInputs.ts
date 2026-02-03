@@ -12,7 +12,7 @@ import {
 import { deserializeApplicantInfo, deserializeSignature } from './api.js';
 import { createKycSelector, KYC_MAX_LENGTH, KycField } from './constants.js';
 import { signEdDSA } from './ecdsa/ecdsa.js';
-import { KycData,KycDiscloseInput, KycRegisterInput, serializeKycData } from './types.js';
+import { KycData, KycDiscloseInput, KycRegisterInput, serializeKycData } from './types.js';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
@@ -170,7 +170,7 @@ export const generateKycDiscloseInputFromData = (
   userIdentifier: string,
   fieldsToReveal?: KycField[],
   forbiddenCountriesList?: string[],
-  minimumAge?: number,
+  minimumAge?: number
 ): KycDiscloseInput => {
   // Decode base64 applicant info to get raw padded bytes for the circuit
   const rawData = Buffer.from(serializedApplicantInfo, 'base64').toString('utf-8');

@@ -30,7 +30,12 @@ import { formatInput } from '../circuits/generateInputs.js';
 import { findStartIndex, findStartIndexEC } from '../csca.js';
 import { hash, packBytesAndPoseidon } from '../hash.js';
 import { deserializeApplicantInfo } from '../kyc/api.js';
-import { KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_LENGTH, KYC_ID_TYPE_INDEX, KYC_ID_TYPE_LENGTH } from '../kyc/constants.js';
+import {
+  KYC_ID_NUMBER_INDEX,
+  KYC_ID_NUMBER_LENGTH,
+  KYC_ID_TYPE_INDEX,
+  KYC_ID_TYPE_LENGTH,
+} from '../kyc/constants.js';
 import { serializeKycData } from '../kyc/types.js';
 import { sha384_512Pad, shaPad } from '../shaPad.js';
 import { getLeafDscTree } from '../trees.js';
@@ -205,7 +210,7 @@ export function generateNullifier(passportData: IDDocument) {
   }
   if (isKycDocument(passportData)) {
     //TODO seshanth: check
-    const applicantInfo = deserializeApplicantInfo(passportData.serializedApplicantInfo)
+    const applicantInfo = deserializeApplicantInfo(passportData.serializedApplicantInfo);
     const serializedData = serializeKycData(applicantInfo);
     const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
     const dataPadded = msgPadded.map((x) => Number(x));
@@ -213,7 +218,11 @@ export function generateNullifier(passportData: IDDocument) {
       KYC_ID_NUMBER_INDEX,
       KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH
     );
-    const nullifierInputs = [...'sumsub'.split('').map((x) => x.charCodeAt(0)), ...idNumber, ...dataPadded.slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH)];
+    const nullifierInputs = [
+      ...'sumsub'.split('').map((x) => x.charCodeAt(0)),
+      ...idNumber,
+      ...dataPadded.slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH),
+    ];
     const nullifier = packBytesAndPoseidon(nullifierInputs);
     return nullifier;
   }

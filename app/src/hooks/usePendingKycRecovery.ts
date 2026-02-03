@@ -4,10 +4,9 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
+import { useSumsubWebSocket } from '@/hooks/useSumsubWebSocket';
 import { navigationRef } from '@/navigation';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
-
-import { useSumsubWebSocket } from './useSumsubWebSocket';
 
 /**
  * Hook to recover pending KYC verifications on app restart.
