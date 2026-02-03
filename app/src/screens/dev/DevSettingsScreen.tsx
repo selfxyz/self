@@ -10,15 +10,17 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
+import BugIcon from '@/assets/icons/bug_icon.svg';
 import type { RootStackParamList } from '@/navigation';
+import { ErrorInjectionSelector } from '@/screens/dev/components/ErrorInjectionSelector';
+import { LogLevelSelector } from '@/screens/dev/components/LogLevelSelector';
+import { ParameterSection } from '@/screens/dev/components/ParameterSection';
 import { useDangerZoneActions } from '@/screens/dev/hooks/useDangerZoneActions';
 import { useNotificationHandlers } from '@/screens/dev/hooks/useNotificationHandlers';
 import {
   DangerZoneSection,
   DebugShortcutsSection,
   DevTogglesSection,
-  ErrorTestingSection,
-  LogLevelSection,
   PushNotificationsSection,
 } from '@/screens/dev/sections';
 import { useSettingStore } from '@/stores/settingStore';
@@ -76,12 +78,26 @@ const DevSettingsScreen: React.FC = () => {
           onTopicToggle={handleTopicToggle}
         />
 
-        <LogLevelSection
-          loggingSeverity={loggingSeverity}
-          setLoggingSeverity={setLoggingSeverity}
-        />
+        <ParameterSection
+          icon={<BugIcon />}
+          title="Log Level"
+          description="Configure logging verbosity"
+        >
+          <LogLevelSelector
+            currentLevel={loggingSeverity}
+            onSelect={setLoggingSeverity}
+          />
+        </ParameterSection>
 
-        {IS_DEV_MODE && <ErrorTestingSection />}
+        {IS_DEV_MODE && (
+          <ParameterSection
+            icon={<BugIcon />}
+            title="Onboarding Error Testing"
+            description="Test onboarding error flows"
+          >
+            <ErrorInjectionSelector />
+          </ParameterSection>
+        )}
 
         <DangerZoneSection
           onClearSecrets={handleClearSecretsPress}
