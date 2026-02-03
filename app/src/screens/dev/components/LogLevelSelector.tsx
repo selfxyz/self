@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { Button, Sheet, Text, XStack, YStack } from 'tamagui';
 import { Check, ChevronDown } from '@tamagui/lucide-icons';
@@ -33,6 +33,16 @@ export const LogLevelSelector: React.FC<LogLevelSelectorProps> = ({
   const callbackIdRef = useRef<number>();
 
   const logLevels = ['debug', 'info', 'warn', 'error'] as const;
+
+  // Cleanup effect to unregister callbacks on unmount
+  useEffect(() => {
+    return () => {
+      if (callbackIdRef.current !== undefined) {
+        unregisterModalCallbacks(callbackIdRef.current);
+        callbackIdRef.current = undefined;
+      }
+    };
+  }, []);
 
   const handleModalDismiss = useCallback(() => {
     setOpen(false);
