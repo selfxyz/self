@@ -10,7 +10,11 @@ import { Separator, Text, XStack, YStack } from 'tamagui';
 import type { AadhaarData } from '@selfxyz/common';
 import type { PassportData } from '@selfxyz/common/types/passport';
 import type { KycData } from '@selfxyz/common/utils/types';
-import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
+import {
+  isAadhaarDocument,
+  isKycDocument,
+  isMRZDocument,
+} from '@selfxyz/common/utils/types';
 import {
   black,
   slate100,
@@ -24,6 +28,7 @@ import AadhaarIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
 import EPassport from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport.svg';
 
 import LogoGray from '@/assets/images/logo_gray.svg';
+import KycIdCard from '@/components/homescreen/KycIdCard';
 import { SvgXml } from '@/components/homescreen/SvgXmlWrapper';
 import {
   formatDateFromYYMMDD,
@@ -58,6 +63,13 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   // Early return if document is null
   if (!idDocument) {
     return null;
+  }
+
+  // KYC documents use a distinct dark card design
+  if (isKycDocument(idDocument)) {
+    return (
+      <KycIdCard idDocument={idDocument} selected={selected} hidden={hidden} />
+    );
   }
 
   // Function to mask MRZ characters except '<' and spaces
@@ -120,12 +132,6 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
           <XStack alignItems="center">
             {idDocument.documentCategory === 'aadhaar' ? (
               <AadhaarIcon
-                width={fontSize.large * 3}
-                height={fontSize.large * 3 * 0.617}
-              />
-            ) : idDocument.documentCategory === 'kyc' ? (
-              //TODO seshanth: use driver's licence or passport based on idType
-              <EPassport
                 width={fontSize.large * 3}
                 height={fontSize.large * 3 * 0.617}
               />
