@@ -8,9 +8,5 @@
  * Set to true when ready to launch the feature.
  */
 export const FeatureFlags = {
-  /**
-   * Enable Sumsub/KYC "Other IDs" option in the ID selection screen.
-   * When false, the KYC button will be hidden from users.
-   */
-  KYC_ENABLED: false,
+  // Add new flags here as needed
 } as const;
