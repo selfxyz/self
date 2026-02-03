@@ -85,6 +85,7 @@ describe('navigation', () => {
         'Home',
         'IDPicker',
         'IdDetails',
+        'KYCVerified',
         'KycSuccess',
         'Loading',
         'ManageDocuments',

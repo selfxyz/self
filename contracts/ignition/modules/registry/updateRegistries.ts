@@ -19,18 +19,29 @@ const registries = {
   //   hub: "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74",
   //   cscaRoot: "13859398115974385161464830211947258005860166431741677064758266112192747818198",
   // },
-  "DeployAadhaarRegistryModule#IdentityRegistry": {
+  // "DeployAadhaarRegistryModule#IdentityRegistry": {
+  //   shouldChange: true,
+  //   nameAndDobOfac: "4183822562579010781434914867177251983368244626022840551534475857364967864437",
+  //   nameAndYobOfac: "14316795765689804800341464910235935757494922653038299433675973925727164473934",
+  //   hub: "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF",
+  //   pubkeyCommitments: [
+  //     "5648956411273136337349787488442520720416229937879112788241850936049694492145",
+  //     "18304035373718681408213540837772113004961405604264885188535510276454415833542",
+  //     "3099763118716361008062312602688327679110629275746483297740895929951765195538",
+  //     "5960616419594750988984019912914733527854225713611991429799390436159340745422",
+  //     "1312086597361744268424404341813751658452218312204370523713186983060138886330",
+  //   ],
+  // },
+  "DeployKycRegistryModule#IdentityRegistry": {
     shouldChange: true,
-    nameAndDobOfac: "4183822562579010781434914867177251983368244626022840551534475857364967864437",
-    nameAndYobOfac: "14316795765689804800341464910235935757494922653038299433675973925727164473934",
-    hub: "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF",
-    pubkeyCommitments: [
-      "5648956411273136337349787488442520720416229937879112788241850936049694492145",
-      "18304035373718681408213540837772113004961405604264885188535510276454415833542",
-      "3099763118716361008062312602688327679110629275746483297740895929951765195538",
-      "5960616419594750988984019912914733527854225713611991429799390436159340745422",
-      "1312086597361744268424404341813751658452218312204370523713186983060138886330",
-    ],
+    hub: "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74",
+    nameAndDobOfac: "12056959379782485690824392224737824782985009863971097094085968061978428696483",
+    nameAndYobOfac: "14482015433179009576094845155298164108788397224633034095648782513909282765564",
+    onlyTEEAddress: "0xe6b2856a51a17bd4edeb88b3f74370d64475b0fc",
+    gcpJWTVerifier: "0x13ee8CEa15a262D81a245b37889F7b4bEd015f4c",
+    pcr0Manager: "0xf2810D5E9938816D42F0Ae69D33F013a23C0aED2",
+    imageDigest: "0x67368d91dc708dee7be8fd9d85eff1fce3181e6e5b9fdfa37fc2d99034ea88e6",
+    gcpRootCAPubkeyHash: "14165687497759817957828709957846495993787741657460065475757428560999622217191",
   },
 };
 
@@ -40,6 +51,7 @@ function getImplementationName(registryModule: string): string {
     "DeployRegistryModule#IdentityRegistry": "IdentityRegistryImplV1",
     "DeployIdCardRegistryModule#IdentityRegistry": "IdentityRegistryIdCardImplV1",
     "DeployAadhaarRegistryModule#IdentityRegistry": "IdentityRegistryAadhaarImplV1",
+    "DeployKycRegistryModule#IdentityRegistry": "IdentityRegistryKycImplV1",
   };
 
   return implMap[registryModule] || "IdentityRegistryImplV1";
@@ -70,51 +82,69 @@ export function handleRegistryDeployment(
 
   let currentOperation: any = registryContract;
 
-  if (registryData.shouldChange) {
-    // Update hub for all registries
-    if (registryData.hub) {
-      const callOptions = { after: [currentOperation], id: ids() };
-      currentOperation = m.call(registryContract, "updateHub", [registryData.hub], callOptions);
-    }
+  if (!registryData.shouldChange) {
+    return { registryContract, lastOperation: currentOperation };
+  }
 
-    if (registryData.cscaRoot) {
-      const callOptions = { after: [currentOperation], id: ids() };
-      currentOperation = m.call(registryContract, "updateCscaRoot", [registryData.cscaRoot], callOptions);
-    }
+  // Update hub for all registries
+  if (registryData.hub) {
+    const callOptions = { after: [currentOperation], id: ids() };
+    currentOperation = m.call(registryContract, "updateHub", [registryData.hub], callOptions);
+  }
 
-    if (registryData.passportNoOfac) {
-      const callOptions = { after: [currentOperation], id: ids() };
-      currentOperation = m.call(
-        registryContract,
-        "updatePassportNoOfacRoot",
-        [registryData.passportNoOfac],
-        callOptions,
-      );
-    }
-    if (registryData.nameAndDobOfac) {
-      const callOptions = { after: [currentOperation], id: ids() };
-      currentOperation = m.call(
-        registryContract,
-        "updateNameAndDobOfacRoot",
-        [registryData.nameAndDobOfac],
-        callOptions,
-      );
-    }
-    if (registryData.nameAndYobOfac) {
-      const callOptions = { after: [currentOperation], id: ids() };
-      currentOperation = m.call(
-        registryContract,
-        "updateNameAndYobOfacRoot",
-        [registryData.nameAndYobOfac],
-        callOptions,
-      );
-    }
+  if (registryData.cscaRoot) {
+    const callOptions = { after: [currentOperation], id: ids() };
+    currentOperation = m.call(registryContract, "updateCscaRoot", [registryData.cscaRoot], callOptions);
+  }
 
-    if (registryData.pubkeyCommitments && registryData.pubkeyCommitments.length > 0) {
-      for (const pubkeyCommitment of registryData.pubkeyCommitments) {
-        const callOptions = { after: [currentOperation], id: ids() };
-        currentOperation = m.call(registryContract, "registerUidaiPubkeyCommitment", [pubkeyCommitment], callOptions);
-      }
+  if (registryData.passportNoOfac) {
+    const callOptions = { after: [currentOperation], id: ids() };
+    currentOperation = m.call(registryContract, "updatePassportNoOfacRoot", [registryData.passportNoOfac], callOptions);
+  }
+  if (registryData.nameAndDobOfac) {
+    const callOptions = { after: [currentOperation], id: ids() };
+    currentOperation = m.call(registryContract, "updateNameAndDobOfacRoot", [registryData.nameAndDobOfac], callOptions);
+  }
+  if (registryData.nameAndYobOfac) {
+    const callOptions = { after: [currentOperation], id: ids() };
+    currentOperation = m.call(registryContract, "updateNameAndYobOfacRoot", [registryData.nameAndYobOfac], callOptions);
+  }
+
+  if (registryData.gcpRootCAPubkeyHash) {
+    const callOptions = { after: [currentOperation], id: ids() };
+    currentOperation = m.call(
+      registryContract,
+      "updateGCPRootCAPubkeyHash",
+      [registryData.gcpRootCAPubkeyHash],
+      callOptions,
+    );
+  }
+
+  if (registryData.pubkeyCommitments && registryData.pubkeyCommitments.length > 0) {
+    for (const pubkeyCommitment of registryData.pubkeyCommitments) {
+      const callOptions = { after: [currentOperation], id: ids() };
+      currentOperation = m.call(registryContract, "registerUidaiPubkeyCommitment", [pubkeyCommitment], callOptions);
+    }
+  }
+
+  if (registryData.onlyTEEAddress) {
+    const callOptions = { after: [currentOperation], id: ids() };
+    currentOperation = m.call(registryContract, "updateTEE", [registryData.onlyTEEAddress], callOptions);
+  }
+
+  if (registryData.gcpJWTVerifier) {
+    const callOptions = { after: [currentOperation], id: ids() };
+    currentOperation = m.call(registryContract, "updateGCPJWTVerifier", [registryData.gcpJWTVerifier], callOptions);
+  }
+
+  if (registryData.pcr0Manager) {
+    const callOptions = { after: [currentOperation], id: ids() };
+    currentOperation = m.call(registryContract, "updatePCR0Manager", [registryData.pcr0Manager], callOptions);
+
+    if (registryData.imageDigest) {
+      const callOptions = { after: [currentOperation], id: ids() };
+      const pcr0Manager = m.contractAt("PCR0Manager", registryData.pcr0Manager);
+      currentOperation = m.call(pcr0Manager, "addPCR0", [registryData.imageDigest], callOptions);
     }
   }
 
