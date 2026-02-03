@@ -33,7 +33,7 @@ concurrency:
 jobs:
   build:
     runs-on:
-      - "32ram"
+      - "64ram"
       - "self-hosted"
       - "selfxyz-org"
     # GitHub-hosted runners cap at 360 min (6h); 720 applies if using self-hosted
@@ -181,6 +181,11 @@ jobs:
               exit 1
             fi
           fi
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
 
       - name: Build cpp circuits (workflow_dispatch by name/type)
         if: github.event_name == 'workflow_dispatch' && (inputs.circuit-name != '' || inputs.circuit-type != '')
