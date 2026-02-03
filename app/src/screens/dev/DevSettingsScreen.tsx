@@ -50,6 +50,7 @@ import {
   ERROR_LABELS,
   useErrorInjectionStore,
 } from '@/stores/errorInjectionStore';
+import { usePendingKycStore } from '@/stores/pendingKycStore';
 import { usePointEventStore } from '@/stores/pointEventStore';
 import { useSettingStore } from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
@@ -545,6 +546,10 @@ const ErrorInjectionSelector = () => {
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const { clearDocumentCatalogForMigrationTesting } = usePassport();
   const clearPointEvents = usePointEventStore(state => state.clearEvents);
+  const { pendingVerifications } = usePendingKycStore();
+  const clearPendingVerifications = usePendingKycStore(
+    state => state.clearAllPendingVerifications,
+  );
   const { resetBackupForPoints } = useSettingStore();
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
@@ -793,6 +798,31 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     );
   };
 
+  const handleClearPendingVerificationsPress = () => {
+    Alert.alert(
+      'Clear Pending KYC Verifications',
+      `Are you sure you want to clear all pending KYC verifications?\n\nCurrently ${pendingVerifications.length} verification(s) pending.`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: () => {
+            clearPendingVerifications();
+            Alert.alert(
+              'Success',
+              'Pending KYC verifications cleared successfully.',
+              [{ text: 'OK' }],
+            );
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <YStack
@@ -999,6 +1029,11 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             {
               label: 'Clear backup events',
               onPress: handleClearBackupEventsPress,
+              dangerTheme: true,
+            },
+            {
+              label: 'Clear pending KYC verifications',
+              onPress: handleClearPendingVerificationsPress,
               dangerTheme: true,
             },
           ].map(({ label, onPress, dangerTheme }) => (

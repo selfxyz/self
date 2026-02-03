@@ -68,7 +68,6 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
   }, []);
 
   const { subscribe, unsubscribeAll } = useSumsubWebSocket({
-    selfClient,
     onSuccess: handleWebSocketSuccess,
     onError: handleWebSocketError,
     onVerificationFailed: handleVerificationFailed,

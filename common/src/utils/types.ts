@@ -100,6 +100,7 @@ export interface PendingKycVerification {
   status: PendingKycStatus; // Current status
   errorMessage?: string; // Error message if failed
   timeoutAt: number; // When to consider timed out
+  documentId?: string; // Content hash of stored KYC document
 }
 
 export type Proof = {

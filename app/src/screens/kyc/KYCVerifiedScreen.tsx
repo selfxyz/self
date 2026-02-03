@@ -6,9 +6,15 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack } from 'tamagui';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 
+import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import {
+  loadSelectedDocument,
+  SdkEvents,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   AbstractButton,
   Description,
@@ -18,15 +24,59 @@ import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
+import { setSelectedDocument } from '@/providers/passportDataProvider';
+import { usePendingKycStore } from '@/stores/pendingKycStore';
 
 const KYCVerifiedScreen: React.FC = () => {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'KYCVerified'>>();
   const insets = useSafeAreaInsets();
+  const selfClient = useSelfClient();
+  const { pendingVerifications, removePendingVerification } =
+    usePendingKycStore();
 
-  const handleGenerateProof = () => {
+  const documentId = route.params?.documentId;
+
+  const handleGenerateProof = async () => {
     buttonTap();
-    navigation.navigate('ProvingScreenRouter');
+
+    try {
+      console.log(
+        '[KYCVerifiedScreen] Triggering proving for documentId:',
+        documentId,
+      );
+
+      if (documentId) {
+        await setSelectedDocument(documentId);
+      }
+
+      const selectedDocument = await loadSelectedDocument(selfClient);
+      if (!selectedDocument) {
+        console.error(
+          '[KYCVerifiedScreen] No document found to trigger registration',
+        );
+        return;
+      }
+
+      const pendingVerification = pendingVerifications.find(
+        v => v.documentId === documentId,
+      );
+      if (pendingVerification) {
+        removePendingVerification(pendingVerification.userId);
+      }
+
+      const documentMetadata: {
+        documentCategory?: DocumentCategory;
+        signatureAlgorithm?: string;
+        curveOrExponent?: string;
+      } = {
+        documentCategory: 'kyc' as const,
+      };
+
+      console.log('[KYCVerifiedScreen] Emitting DOCUMENT_OWNERSHIP_CONFIRMED');
+      selfClient.emit(SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED, documentMetadata);
+    } catch (err) {
+      console.error('[KYCVerifiedScreen] Failed to trigger registration:', err);
+    }
   };
 
   return (
