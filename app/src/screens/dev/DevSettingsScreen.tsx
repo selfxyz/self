@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Platform, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,11 +14,10 @@ import type { RootStackParamList } from '@/navigation';
 import { useDangerZoneActions } from '@/screens/dev/hooks/useDangerZoneActions';
 import { useNotificationHandlers } from '@/screens/dev/hooks/useNotificationHandlers';
 import {
-  AndroidKeystoreSection,
   DangerZoneSection,
   DebugShortcutsSection,
+  DevTogglesSection,
   ErrorTestingSection,
-  KycFlowSection,
   LogLevelSection,
   PushNotificationsSection,
 } from '@/screens/dev/sections';
@@ -62,6 +61,15 @@ const DevSettingsScreen: React.FC = () => {
       >
         <DebugShortcutsSection navigation={navigation} />
 
+        {IS_DEV_MODE && (
+          <DevTogglesSection
+            kycEnabled={kycEnabled}
+            setKycEnabled={setKycEnabled}
+            useStrongBox={useStrongBox}
+            setUseStrongBox={setUseStrongBox}
+          />
+        )}
+
         <PushNotificationsSection
           hasNotificationPermission={hasNotificationPermission}
           subscribedTopics={subscribedTopics}
@@ -74,20 +82,6 @@ const DevSettingsScreen: React.FC = () => {
         />
 
         {IS_DEV_MODE && <ErrorTestingSection />}
-
-        {IS_DEV_MODE && (
-          <KycFlowSection
-            kycEnabled={kycEnabled}
-            setKycEnabled={setKycEnabled}
-          />
-        )}
-
-        {Platform.OS === 'android' && (
-          <AndroidKeystoreSection
-            useStrongBox={useStrongBox}
-            setUseStrongBox={setUseStrongBox}
-          />
-        )}
 
         <DangerZoneSection
           onClearSecrets={handleClearSecretsPress}

@@ -3,18 +3,22 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 import BugIcon from '@/assets/icons/bug_icon.svg';
 import { ParameterSection } from '@/screens/dev/components/ParameterSection';
 import { TopicToggleButton } from '@/screens/dev/components/TopicToggleButton';
 
-interface AndroidKeystoreSectionProps {
+interface DevTogglesSectionProps {
+  kycEnabled: boolean;
+  setKycEnabled: (enabled: boolean) => void;
   useStrongBox: boolean;
   setUseStrongBox: (useStrongBox: boolean) => void;
 }
 
-export const AndroidKeystoreSection: React.FC<AndroidKeystoreSectionProps> = ({
+export const DevTogglesSection: React.FC<DevTogglesSectionProps> = ({
+  kycEnabled,
+  setKycEnabled,
   useStrongBox,
   setUseStrongBox,
 }) => {
@@ -37,14 +41,21 @@ export const AndroidKeystoreSection: React.FC<AndroidKeystoreSectionProps> = ({
   return (
     <ParameterSection
       icon={<BugIcon />}
-      title="Android Keystore"
-      description="Configure keystore security options"
+      title="Options"
+      description="Development and security options"
     >
       <TopicToggleButton
-        label="Use StrongBox"
-        isSubscribed={useStrongBox}
-        onToggle={handleToggleStrongBox}
+        label="KYC Flow"
+        isSubscribed={kycEnabled}
+        onToggle={() => setKycEnabled(!kycEnabled)}
       />
+      {Platform.OS === 'android' && (
+        <TopicToggleButton
+          label="Use StrongBox"
+          isSubscribed={useStrongBox}
+          onToggle={handleToggleStrongBox}
+        />
+      )}
     </ParameterSection>
   );
 };
