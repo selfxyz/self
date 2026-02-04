@@ -45,16 +45,15 @@ const LogoConfirmationScreen: React.FC = () => {
   }, [showModal]);
 
   return (
-    <YStack
-      flex={1}
-      backgroundColor={slate100}
-      paddingBottom={bottom + extraYPadding + 24}
-    >
+    <YStack flex={1} backgroundColor={slate100}>
       <DocumentFlowNavBar title="GETTING STARTED" />
       <SDKLogoConfirmationScreen
         documentType={documentType}
         countryCode={countryCode}
-        logo={<EPassportLogo width={120} height={120} />}
+        logo={<EPassportLogo width={160} height={98} />}
+        safeAreaBottom={safeAreaBottom}
+        confirmButtonText="Yes"
+        notFoundButtonText="Proceed with external verifier"
         onConfirm={handleConfirm}
         onNotFound={handleNotFound}
       />
