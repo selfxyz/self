@@ -20,13 +20,13 @@ import DocumentNFCMethodSelectionScreen from '@/screens/documents/scanning/Docum
 import DocumentNFCScanScreen from '@/screens/documents/scanning/DocumentNFCScanScreen';
 import DocumentNFCTroubleScreen from '@/screens/documents/scanning/DocumentNFCTroubleScreen';
 import RegistrationFallbackScreen from '@/screens/documents/scanning/RegistrationFallbackScreen';
-import KycConnectionErrorScreen from '@/screens/kyc/KycConnectionErrorScreen';
-import KycFailureScreen from '@/screens/kyc/KycFailureScreen';
 import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongingScreen';
 import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
 import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
 import IDPickerScreen from '@/screens/documents/selection/IDPickerScreen';
 import LogoConfirmationScreen from '@/screens/documents/selection/LogoConfirmationScreen';
+import KycConnectionErrorScreen from '@/screens/kyc/KycConnectionErrorScreen';
+import KycFailureScreen from '@/screens/kyc/KycFailureScreen';
 
 const documentsScreens = {
   DocumentCamera: {
