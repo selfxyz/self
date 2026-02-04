@@ -218,6 +218,10 @@ export type RootStackParamList = Omit<
         userId?: string;
       }
     | undefined;
+  KycFailure: {
+    countryCode?: string;
+    canRetry?: boolean;
+  };
 
   // Dev screens
   CreateMock: undefined;

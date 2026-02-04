@@ -385,9 +385,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     }
                     // Guard navigation call after async operations
                     if (navigationRef.isReady()) {
-                      navigationRef.navigate('RegistrationFallback', {
-                        errorSource: 'sumsub_verification',
+                      navigationRef.navigate('KycFailure', {
                         countryCode,
+                        canRetry: true,
                       });
                     }
                     return;
