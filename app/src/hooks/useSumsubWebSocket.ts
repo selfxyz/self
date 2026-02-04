@@ -7,18 +7,10 @@ import { io, type Socket } from 'socket.io-client';
 import { SUMSUB_TEE_URL } from '@env';
 
 import { deserializeApplicantInfo } from '@selfxyz/common';
-import type {
-  DocumentCategory,
-  DocumentType,
-  KycData,
-} from '@selfxyz/common/utils/types';
-import {
-  loadSelectedDocument,
-  SdkEvents,
-  type SelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import type { DocumentType, KycData } from '@selfxyz/common/utils/types';
 
 import type { SumsubApplicantInfoSerialized } from '@/integrations/sumsub/types';
+import { navigationRef } from '@/navigation';
 import { storeDocumentWithDeduplication } from '@/providers/passportDataProvider';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
 
@@ -27,7 +19,6 @@ interface UseSumsubWebSocketOptions {
   onError?: (error: string) => void;
   onVerificationFailed?: (reason: string) => void;
   skipAddPending?: boolean;
-  selfClient?: SelfClient;
 }
 
 /**
@@ -41,56 +32,16 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
     onError,
     onVerificationFailed,
     skipAddPending = false,
-    selfClient,
   } = options;
 
   const {
     addPendingVerification,
     updateVerificationStatus,
-    removePendingVerification,
     getPendingVerification,
   } = usePendingKycStore();
 
   const socketsRef = useRef<Map<string, Socket>>(new Map());
   const subscribedUserIdsRef = useRef<Set<string>>(new Set());
-
-  const triggerRegistrationFlow = useCallback(async () => {
-    if (!selfClient) {
-      console.warn(
-        '[SumsubWebSocket] Cannot trigger registration flow: selfClient not provided',
-      );
-      return;
-    }
-
-    try {
-      const selectedDocument = await loadSelectedDocument(selfClient);
-      if (!selectedDocument) {
-        console.error(
-          '[SumsubWebSocket] No document found to trigger registration',
-        );
-        return;
-      }
-
-      const documentMetadata: {
-        documentCategory?: DocumentCategory;
-        signatureAlgorithm?: string;
-        curveOrExponent?: string;
-      } = {
-        documentCategory: 'kyc' as const,
-      };
-
-      console.log(
-        '[SumsubWebSocket] Emitting DOCUMENT_OWNERSHIP_CONFIRMED to trigger registration flow',
-      );
-      selfClient.emit(SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED, documentMetadata);
-      console.log('[SumsubWebSocket] Registration flow triggered successfully');
-    } catch (err) {
-      console.error(
-        '[SumsubWebSocket] Failed to trigger registration flow:',
-        err,
-      );
-    }
-  }, [selfClient]);
 
   const subscribe = useCallback(
     (userId: string) => {
@@ -102,9 +53,7 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
       const existingVerification = getPendingVerification(userId);
       const isProcessing = existingVerification?.status === 'processing';
 
-      // Don't retry 'processing' verifications as the proving machine was triggered already.
-      // Retrying could cause race conditions in rare cases.
-      // But leaving the processing status here, in case we need to hook into it later.
+      // Don't retry 'processing' verifications as the proving machine is reading to be triggered.
       if (isProcessing) {
         console.log(
           '[SumsubWebSocket] Verification in processing state, skipping for userId:',
@@ -144,8 +93,6 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
           data,
         );
 
-        updateVerificationStatus(userId, 'processing');
-
         try {
           const applicantInfoDeserialized = deserializeApplicantInfo(
             data.applicantInfo,
@@ -158,13 +105,18 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
             pubkey: data.pubkey,
             serializedApplicantInfo: data.applicantInfo,
           };
-          await storeDocumentWithDeduplication(kycData);
-          console.log('[SumsubWebSocket] KYC data stored successfully');
+          const documentId = await storeDocumentWithDeduplication(kycData);
+          console.log(
+            '[SumsubWebSocket] KYC data stored successfully, documentId:',
+            documentId,
+          );
 
-          // this initiates the proving machine
-          await triggerRegistrationFlow();
+          updateVerificationStatus(userId, 'processing', undefined, documentId);
 
-          removePendingVerification(userId);
+          if (navigationRef.isReady()) {
+            navigationRef.navigate('KYCVerified', { documentId });
+          }
+
           onSuccess?.();
         } catch (err) {
           console.error('[SumsubWebSocket] Failed to store KYC data:', err);
@@ -208,14 +160,11 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
     [
       addPendingVerification,
       updateVerificationStatus,
-      removePendingVerification,
       getPendingVerification,
       onSuccess,
       onError,
       onVerificationFailed,
       skipAddPending,
-      selfClient,
-      triggerRegistrationFlow,
     ],
   );
 

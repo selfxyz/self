@@ -213,6 +213,7 @@ export type RootStackParamList = Omit<
     | {
         status?: string;
         userId?: string;
+        documentId?: string;
       }
     | undefined;
 

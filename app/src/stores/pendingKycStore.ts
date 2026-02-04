@@ -11,7 +11,7 @@ import type {
   PendingKycVerification,
 } from '@selfxyz/common/utils/types';
 
-const VERIFICATION_TIMEOUT_MS = 48 * 60 * 60 * 1000; // 48 hours
+const VERIFICATION_TIMEOUT_MS = 48 * 60 * 60 * 1000; // 48 hours TODO seshanth
 
 interface PendingKycState {
   pendingVerifications: PendingKycVerification[];
@@ -21,9 +21,11 @@ interface PendingKycState {
     userId: string,
     status: PendingKycStatus,
     errorMessage?: string,
+    documentId?: string,
   ) => void;
   removePendingVerification: (userId: string) => void;
   removeExpiredVerifications: () => void;
+  clearAllPendingVerifications: () => void;
   hasPendingVerification: () => boolean;
   getPendingVerification: (
     userId: string,
@@ -55,10 +57,18 @@ export const usePendingKycStore = create<PendingKycState>()(
         userId: string,
         status: PendingKycStatus,
         errorMessage?: string,
+        documentId?: string,
       ) => {
         set(state => ({
           pendingVerifications: state.pendingVerifications.map(v =>
-            v.userId === userId ? { ...v, status, errorMessage } : v,
+            v.userId === userId
+              ? {
+                  ...v,
+                  status,
+                  errorMessage,
+                  ...(documentId && { documentId }),
+                }
+              : v,
           ),
         }));
       },
@@ -78,6 +88,10 @@ export const usePendingKycStore = create<PendingKycState>()(
             v => v.timeoutAt > now,
           ),
         }));
+      },
+
+      clearAllPendingVerifications: () => {
+        set({ pendingVerifications: [] });
       },
 
       hasPendingVerification: () =>

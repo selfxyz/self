@@ -4,11 +4,9 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-
+import { useSumsubWebSocket } from '@/hooks/useSumsubWebSocket';
+import { navigationRef } from '@/navigation';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
-
-import { useSumsubWebSocket } from './useSumsubWebSocket';
 
 /**
  * Hook to recover pending KYC verifications on app restart.
@@ -24,7 +22,6 @@ import { useSumsubWebSocket } from './useSumsubWebSocket';
  * so they can be retrieved when the app reopens.
  */
 export function usePendingKycRecovery() {
-  const selfClient = useSelfClient();
   const { pendingVerifications, removeExpiredVerifications } =
     usePendingKycStore();
 
@@ -44,7 +41,6 @@ export function usePendingKycRecovery() {
 
   const { subscribe, unsubscribeAll } = useSumsubWebSocket({
     skipAddPending: true,
-    selfClient,
     onSuccess: handleSuccess,
     onError: handleError,
     onVerificationFailed: handleVerificationFailed,
@@ -57,41 +53,48 @@ export function usePendingKycRecovery() {
   }, []); // Only run once on mount
 
   useEffect(() => {
-    // Only recover 'pending' verifications, not 'processing'
-    // 'processing' means the document was already stored and registration was triggered
-    // Retrying 'processing' could cause race conditions with ongoing proving
-    const activeVerifications = pendingVerifications.filter(
+    console.log(
+      '[PendingKycRecovery] Already attempted userIds:',
+      Array.from(hasAttemptedRecoveryRef.current),
+    );
+
+    const processingWithDocument = pendingVerifications.find(
+      v =>
+        v.status === 'processing' &&
+        v.documentId &&
+        v.timeoutAt > Date.now() &&
+        !hasAttemptedRecoveryRef.current.has(v.userId),
+    );
+
+    if (processingWithDocument) {
+      hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
+      console.log(
+        '[PendingKycRecovery] Resuming processing verification, navigating to KYCVerified:',
+        processingWithDocument.userId,
+      );
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('KYCVerified', {
+          documentId: processingWithDocument.documentId,
+        });
+      }
+      return;
+    }
+
+    const firstPending = pendingVerifications.find(
       v =>
         v.status === 'pending' &&
         v.timeoutAt > Date.now() &&
         !hasAttemptedRecoveryRef.current.has(v.userId),
     );
 
-    console.log(
-      '[PendingKycRecovery] All pending verifications:',
-      pendingVerifications,
-    );
-    console.log(
-      '[PendingKycRecovery] Active verifications to recover:',
-      activeVerifications,
-    );
-    console.log(
-      '[PendingKycRecovery] Already attempted userIds:',
-      Array.from(hasAttemptedRecoveryRef.current),
-    );
-
-    activeVerifications.forEach(verification => {
-      hasAttemptedRecoveryRef.current.add(verification.userId);
-
+    if (firstPending) {
+      hasAttemptedRecoveryRef.current.add(firstPending.userId);
       console.log(
-        '[PendingKycRecovery] Recovering verification for userId:',
-        verification.userId,
-        'status:',
-        verification.status,
+        '[PendingKycRecovery] Recovering pending verification:',
+        firstPending.userId,
       );
-
-      subscribe(verification.userId);
-    });
+      subscribe(firstPending.userId);
+    }
 
     // Cleanup on unmount
     return () => {

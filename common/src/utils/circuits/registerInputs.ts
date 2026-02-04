@@ -18,9 +18,18 @@ import {
   getCircuitNameFromPassportData,
   hashEndpointWithScope,
 } from '../../utils/index.js';
-import type { AadhaarData, Environment, IDDocument, KycData as KycIDData, OfacTree } from '../../utils/types.js';
+import type {
+  AadhaarData,
+  Environment,
+  IDDocument,
+  KycData as KycIDData,
+  OfacTree,
+} from '../../utils/types.js';
 import { KycField } from '../kyc/constants.js';
-import { generateKycDiscloseInputFromData, generateKycRegisterInput } from '../kyc/generateInputs.js';
+import {
+  generateKycDiscloseInputFromData,
+  generateKycRegisterInput,
+} from '../kyc/generateInputs.js';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
@@ -335,12 +344,21 @@ export async function generateTEEInputsRegister(
       passportData.serializedApplicantInfo,
       passportData.signature,
       [passportData.pubkey[0].toString(), passportData.pubkey[1].toString()],
-      secret,
+      secret
     );
-    return { inputs, circuitName: getCircuitNameFromPassportData(passportData, 'register'), endpointType: 'celo', endpoint: 'https://self.xyz' };
+    return {
+      inputs,
+      circuitName: getCircuitNameFromPassportData(passportData, 'register'),
+      endpointType: 'celo',
+      endpoint: 'https://self.xyz',
+    };
   }
 
-  const inputs = generateCircuitInputsRegister(secret, passportData as PassportData, dscTree as string);
+  const inputs = generateCircuitInputsRegister(
+    secret,
+    passportData as PassportData,
+    dscTree as string
+  );
   const circuitName = getCircuitNameFromPassportData(passportData, 'register');
   const endpointType = env === 'stg' ? 'staging_celo' : 'celo';
   const endpoint = 'https://self.xyz';

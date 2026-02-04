@@ -100,6 +100,7 @@ export interface PendingKycVerification {
   status: PendingKycStatus; // Current status
   errorMessage?: string; // Error message if failed
   timeoutAt: number; // When to consider timed out
+  documentId?: string; // Content hash of stored KYC document
 }
 
 export type Proof = {
@@ -187,21 +188,15 @@ export function castCSCAProof(proof: any): Proof {
   };
 }
 
-export function isAadhaarDocument(
-  passportData: IDDocument
-): passportData is AadhaarData {
+export function isAadhaarDocument(passportData: IDDocument): passportData is AadhaarData {
   return passportData.documentCategory === 'aadhaar';
 }
 
-export function isKycDocument(
-  passportData: IDDocument
-): passportData is KycData {
+export function isKycDocument(passportData: IDDocument): passportData is KycData {
   return passportData.documentCategory === 'kyc';
 }
 
-export function isMRZDocument(
-  passportData: IDDocument
-): passportData is PassportData {
+export function isMRZDocument(passportData: IDDocument): passportData is PassportData {
   return (
     passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card'
   );

@@ -30,7 +30,6 @@ import { KycData } from './types.js';
 
 import { Point } from '@zk-kit/baby-jubjub';
 
-
 //accepts a base64 applicant info and returns a kyc data object
 export function deserializeApplicantInfo(
   applicantInfoBase64: string
@@ -87,7 +86,6 @@ export function deserializeApplicantInfo(
     address,
   };
 }
-
 
 //accepts a base64 signature and returns a signature object
 export function deserializeSignature(signature: string): { R: Point<bigint>; s: bigint } {
