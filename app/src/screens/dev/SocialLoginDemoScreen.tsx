@@ -7,9 +7,9 @@ import { Alert, Platform } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { GOOGLE_SIGNIN_IOS_CLIENT_ID, GOOGLE_SIGNIN_WEB_CLIENT_ID } from '@env';
 import appleAuth, {
-  AppleAuthRequestOperation,
-  AppleAuthRequestScope,
   AppleButton,
+  AppleRequestOperation,
+  AppleRequestScope,
 } from '@invertase/react-native-apple-authentication';
 import {
   GoogleSignin,
@@ -110,15 +110,20 @@ const SocialLoginDemoScreen: React.FC = () => {
 
     try {
       await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
+      const response = await GoogleSignin.signIn();
+
+      if (response.type !== 'success') {
+        return;
+      }
+
       const tokens = await GoogleSignin.getTokens();
       console.log('Google sign-in tokens', tokens);
 
       setUser({
         provider: 'google',
-        id: userInfo.user.id,
-        name: userInfo.user.name ?? undefined,
-        email: userInfo.user.email ?? undefined,
+        id: response.data.user.id,
+        name: response.data.user.name ?? undefined,
+        email: response.data.user.email ?? undefined,
       });
     } catch (error: unknown) {
       const code = (error as { code?: string }).code;
@@ -157,11 +162,8 @@ const SocialLoginDemoScreen: React.FC = () => {
 
     try {
       const appleAuthRequestResponse = await appleAuth.performRequest({
-        requestedOperation: AppleAuthRequestOperation.LOGIN,
-        requestedScopes: [
-          AppleAuthRequestScope.EMAIL,
-          AppleAuthRequestScope.FULL_NAME,
-        ],
+        requestedOperation: AppleRequestOperation.LOGIN,
+        requestedScopes: [AppleRequestScope.EMAIL, AppleRequestScope.FULL_NAME],
       });
 
       const credentialState = await appleAuth.getCredentialStateForUser(
@@ -184,11 +186,11 @@ const SocialLoginDemoScreen: React.FC = () => {
       setUser({
         provider: 'apple',
         id: appleAuthRequestResponse.user,
-        name: formatFullName(appleAuthRequestResponse.fullName),
+        name: formatFullName(appleAuthRequestResponse.fullName ?? undefined),
         email: appleAuthRequestResponse.email ?? undefined,
       });
     } catch (error: unknown) {
-      const code = (error as { code?: number }).code;
+      const code = (error as { code?: string }).code;
       if (code === appleAuth.Error.CANCELED) {
         return;
       }
