@@ -87,6 +87,7 @@
   "dependencies": {
     "@babel/runtime": "^7.28.6",
     "@ethersproject/shims": "^5.8.0",
+    "@invertase/react-native-apple-authentication": "^2.5.1",
     "@noble/hashes": "^1.5.0",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
@@ -99,6 +100,7 @@
     "@react-native-firebase/app": "^19.0.1",
     "@react-native-firebase/messaging": "^19.0.1",
     "@react-native-firebase/remote-config": "^19.0.1",
+    "@react-native-google-signin/google-signin": "^16.1.1",
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/native-stack": "^7.2.0",
     "@robinbobin/react-native-google-drive-api-wrapper": "^2.2.3",

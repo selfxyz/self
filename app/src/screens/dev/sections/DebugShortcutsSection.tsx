@@ -76,6 +76,29 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
             <ChevronRight color={slate500} strokeWidth={2.5} />
           </XStack>
         </Button>
+        <Button
+          style={{ backgroundColor: 'white' }}
+          borderColor={slate200}
+          borderRadius="$2"
+          height="$5"
+          padding={0}
+          onPress={() => {
+            navigation.navigate('SocialLoginDemo');
+          }}
+        >
+          <XStack
+            width="100%"
+            justifyContent="space-between"
+            paddingVertical="$3"
+            paddingLeft="$4"
+            paddingRight="$1.5"
+          >
+            <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+              Social Login Demo
+            </Text>
+            <ChevronRight color={slate500} strokeWidth={2.5} />
+          </XStack>
+        </Button>
         {IS_DEV_MODE && (
           <Button
             style={{ backgroundColor: 'white' }}

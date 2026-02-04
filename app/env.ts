@@ -13,6 +13,9 @@ export const ENABLE_DEBUG_LOGS = process.env.ENABLE_DEBUG_LOGS === 'true';
 export const GOOGLE_SIGNIN_ANDROID_CLIENT_ID =
   process.env.GOOGLE_SIGNIN_ANDROID_CLIENT_ID;
 
+export const GOOGLE_SIGNIN_IOS_CLIENT_ID =
+  process.env.GOOGLE_SIGNIN_IOS_CLIENT_ID;
+
 export const GOOGLE_SIGNIN_WEB_CLIENT_ID =
   process.env.GOOGLE_SIGNIN_WEB_CLIENT_ID;
 
