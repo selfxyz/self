@@ -86,6 +86,7 @@ describe('navigation', () => {
         'IDPicker',
         'IdDetails',
         'KYCVerified',
+        'KycConnectionError',
         'KycFailure',
         'KycSuccess',
         'Loading',

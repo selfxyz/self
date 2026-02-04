@@ -411,8 +411,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                   console.error('Error in KYC flow:', safeInitError);
                   // Guard navigation call after async operations
                   if (navigationRef.isReady()) {
-                    navigationRef.navigate('RegistrationFallback', {
-                      errorSource: 'sumsub_initialization',
+                    navigationRef.navigate('KycConnectionError', {
                       countryCode,
                     });
                   }

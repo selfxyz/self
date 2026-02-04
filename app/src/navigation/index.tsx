@@ -222,6 +222,9 @@ export type RootStackParamList = Omit<
     countryCode?: string;
     canRetry?: boolean;
   };
+  KycConnectionError: {
+    countryCode?: string;
+  };
 
   // Dev screens
   CreateMock: undefined;

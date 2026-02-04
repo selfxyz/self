@@ -20,6 +20,7 @@ import DocumentNFCMethodSelectionScreen from '@/screens/documents/scanning/Docum
 import DocumentNFCScanScreen from '@/screens/documents/scanning/DocumentNFCScanScreen';
 import DocumentNFCTroubleScreen from '@/screens/documents/scanning/DocumentNFCTroubleScreen';
 import RegistrationFallbackScreen from '@/screens/documents/scanning/RegistrationFallbackScreen';
+import KycConnectionErrorScreen from '@/screens/kyc/KycConnectionErrorScreen';
 import KycFailureScreen from '@/screens/kyc/KycFailureScreen';
 import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongingScreen';
 import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
@@ -188,6 +189,15 @@ const documentsScreens = {
     initialParams: {
       countryCode: '',
       canRetry: true,
+    },
+  },
+  KycConnectionError: {
+    screen: KycConnectionErrorScreen,
+    options: {
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+    initialParams: {
+      countryCode: '',
     },
   },
 };
