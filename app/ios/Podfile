@@ -79,7 +79,7 @@ target "Self" do
 
   # Explicitly declare Mixpanel to ensure it's available even in E2E builds
   # (NFCPassportReader also includes Mixpanel, but is skipped during E2E testing)
-  pod "Mixpanel-swift", :modular_headers => true
+  pod "Mixpanel-swift", "~> 5.0.0", :modular_headers => true
 
   pod "QKMRZScanner"
   pod "lottie-ios"
@@ -94,11 +94,8 @@ target "Self" do
     # Flipper設定は削除
   )
 
-  pod "Firebase", :modular_headers => true
-  pod "FirebaseCore", :modular_headers => true
-  pod "FirebaseCoreInternal", :modular_headers => true
-  pod "GoogleUtilities", :modular_headers => true
-  pod "FirebaseMessaging"
+  # Firebase pods removed - handled automatically by RNFirebase autolinking
+  # This resolves GoogleUtilities 7.x vs 8.x version conflicts
 
   if flipper_enabled
     pod "RCT-Folly", :podspec => "#{config[:reactNativePath]}/third-party-podspecs/RCT-Folly.podspec"

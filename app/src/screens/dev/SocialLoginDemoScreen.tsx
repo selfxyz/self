@@ -5,16 +5,16 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
-
-import {
-  GoogleSignin,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
+import { GOOGLE_SIGNIN_IOS_CLIENT_ID, GOOGLE_SIGNIN_WEB_CLIENT_ID } from '@env';
 import appleAuth, {
   AppleAuthRequestOperation,
   AppleAuthRequestScope,
   AppleButton,
 } from '@invertase/react-native-apple-authentication';
+import {
+  GoogleSignin,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
 
 import {
   red500,
@@ -25,11 +25,6 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
-
-import {
-  GOOGLE_SIGNIN_IOS_CLIENT_ID,
-  GOOGLE_SIGNIN_WEB_CLIENT_ID,
-} from '@env';
 
 type SocialUser = {
   provider: 'google' | 'apple';
@@ -87,12 +82,12 @@ const SocialLoginDemoScreen: React.FC = () => {
       }
     };
 
-    void loadCurrentUser();
+    loadCurrentUser().catch(() => {});
 
     return () => {
       isMounted = false;
     };
-  }, [GOOGLE_SIGNIN_IOS_CLIENT_ID, GOOGLE_SIGNIN_WEB_CLIENT_ID]);
+  }, []);
 
   useEffect(() => {
     if (!appleAvailable) {
@@ -181,7 +176,10 @@ const SocialLoginDemoScreen: React.FC = () => {
         return;
       }
 
-      console.log('Apple sign-in token', appleAuthRequestResponse.identityToken);
+      console.log(
+        'Apple sign-in token',
+        appleAuthRequestResponse.identityToken,
+      );
 
       setUser({
         provider: 'apple',
@@ -213,7 +211,7 @@ const SocialLoginDemoScreen: React.FC = () => {
         await GoogleSignin.signOut();
       }
       setUser(null);
-    } catch (error) {
+    } catch {
       handleError('Sign Out', 'Unable to sign out. Please try again.');
     } finally {
       setLoading(false);
@@ -286,11 +284,7 @@ const SocialLoginDemoScreen: React.FC = () => {
             onPress={handleSignOut}
             disabled={loading}
           >
-            <XStack
-              width="100%"
-              justifyContent="center"
-              paddingVertical="$3"
-            >
+            <XStack width="100%" justifyContent="center" paddingVertical="$3">
               <Text fontSize="$5" color={white} fontFamily={dinot}>
                 Log Out
               </Text>
