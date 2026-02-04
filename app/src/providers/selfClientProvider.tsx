@@ -380,7 +380,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
 
                   // Success case: navigate to KYC success screen
                   if (navigationRef.isReady()) {
-                    navigationRef.navigate('KycSuccess');
+                    navigationRef.navigate('KycSuccess', {
+                      userId: accessToken.userId,
+                    });
                   }
                 } catch (error) {
                   const safeInitError = sanitizeErrorMessage(

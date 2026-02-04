@@ -14,6 +14,8 @@ import {
 } from '@/services/notifications/notificationService.shared';
 import { useSettingStore } from '@/stores/settingStore';
 
+export const SELF_UUID_NAMESPACE = '00000000-0000-8000-8000-531f00000000';
+
 export async function getFCMToken(): Promise<string | null> {
   try {
     const token = await messaging().getToken();

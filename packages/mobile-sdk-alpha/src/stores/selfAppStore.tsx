@@ -13,8 +13,6 @@ import { WS_DB_RELAYER } from '@selfxyz/common';
  * Zustand state backing the in-app handoff between the SDK and the hosted Self
  * application. The store tracks the active websocket session, latest
  * {@link SelfApp} payload, and helper callbacks used by the proving machine.
- * Consumers should treat the state as ephemeral and expect it to reset whenever
- * the socket disconnects.
  */
 export interface SelfAppState {
   selfApp: SelfApp | null;
@@ -80,24 +78,17 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
 
       socket.on('connect', () => {});
 
-      // Listen for the event only once per connection attempt
       socket.once('self_app', (data: unknown) => {
         try {
           const appData: SelfApp = typeof data === 'string' ? JSON.parse(data) : (data as SelfApp);
 
-          // Basic validation
           if (!appData || typeof appData !== 'object' || !appData.sessionId) {
-            console.error('[SelfAppStore] Invalid app data received:', appData);
-            // Optionally clear the app data or handle the error appropriately
+            console.error('[SelfAppStore] Invalid app data received');
             set({ selfApp: null });
             return;
           }
           if (appData.sessionId !== get().sessionId) {
-            console.warn(
-              `[SelfAppStore] Received SelfApp for session ${
-                appData.sessionId
-              }, but current session is ${get().sessionId}. Ignoring.`,
-            );
+            console.warn('[SelfAppStore] Session mismatch, ignoring payload');
             return;
           }
 
@@ -109,20 +100,22 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
       });
 
       socket.on('connect_error', error => {
-        console.error('[SelfAppStore] Mobile WS connection error:', error);
-        // Clean up on connection error
-        get().cleanSelfApp();
+        // Socket.io handles reconnection automatically with exponential backoff.
+        // State is preserved to allow seamless recovery when network returns.
+        console.error('[SelfAppStore] Connection error:', error.message);
       });
 
       socket.on('error', error => {
-        console.error('[SelfAppStore] Mobile WS error:', error);
-        // Consider if cleanup is needed here as well
+        console.error('[SelfAppStore] Socket error:', error);
       });
 
-      socket.on('disconnect', (_reason: string) => {
-        // Prevent cleaning up if disconnect was initiated by cleanSelfApp
-        if (get().socket === socket) {
-          set({ socket: null, sessionId: null, selfApp: null });
+      socket.on('disconnect', (reason: string) => {
+        if (get().socket !== socket) return;
+
+        // Only clear state on intentional disconnects. For transient network issues
+        // (transport close, ping timeout), socket.io reconnects automatically.
+        if (reason === 'io server disconnect' || reason === 'io client disconnect') {
+          set({ socket: null, sessionId: null });
         }
       });
     } catch (error) {

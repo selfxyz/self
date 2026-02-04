@@ -2,37 +2,70 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack } from 'tamagui';
+import { v5 as uuidv5 } from 'uuid';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import loadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
 import {
   AbstractButton,
   Description,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
-import { requestNotificationPermission } from '@/services/notifications/notificationService';
+import {
+  getFCMToken,
+  registerDeviceToken,
+  requestNotificationPermission,
+  SELF_UUID_NAMESPACE,
+} from '@/services/notifications/notificationService';
+import { useSettingStore } from '@/stores/settingStore';
 
-const KycSuccessScreen: React.FC = () => {
+type KycSuccessRouteParams = StaticScreenProps<
+  | {
+      userId?: string;
+    }
+  | undefined
+>;
+
+const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
+  route: { params },
+}) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const userId = params?.userId;
   const insets = useSafeAreaInsets();
+  const setFcmToken = useSettingStore(state => state.setFcmToken);
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
 
-  const handleReceiveUpdates = async () => {
+  const handleReceiveUpdates = useCallback(async () => {
     buttonTap();
-    await requestNotificationPermission();
+
+    if ((await requestNotificationPermission()) && userId) {
+      const token = await getFCMToken();
+      if (token) {
+        setFcmToken(token);
+        trackEvent(ProofEvents.FCM_TOKEN_STORED);
+
+        const sessionId = uuidv5(userId, SELF_UUID_NAMESPACE);
+        await registerDeviceToken(sessionId, token);
+      }
+    }
+
     // Navigate to Home regardless of permission result
     navigation.navigate('Home', {});
-  };
+  }, [navigation, setFcmToken, trackEvent, userId]);
 
   const handleCheckLater = () => {
     buttonTap();
