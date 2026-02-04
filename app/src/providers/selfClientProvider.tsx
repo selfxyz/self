@@ -350,8 +350,21 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     accessToken: accessToken.token,
                   });
 
-                  // User cancelled - return silently
-                  if (!result.success && result.status === 'Interrupted') {
+                  console.log('[Sumsub] Result:', JSON.stringify(result));
+
+                  // User cancelled/dismissed without completing verification
+                  // Status values: 'Initial' (never started), 'Incomplete' (started but not finished),
+                  // 'Interrupted' (explicitly cancelled)
+                  const cancelledStatuses = [
+                    'Initial',
+                    'Incomplete',
+                    'Interrupted',
+                  ];
+                  if (cancelledStatuses.includes(result.status)) {
+                    console.log(
+                      '[Sumsub] User cancelled or closed without completing, status:',
+                      result.status,
+                    );
                     return;
                   }
 
@@ -380,7 +393,12 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     return;
                   }
 
-                  // Success case: navigate to KYC success screen
+                  // User completed verification (status: 'Pending', 'Approved', etc.)
+                  // Navigate to KYC success screen
+                  console.log(
+                    '[Sumsub] Verification submitted, status:',
+                    result.status,
+                  );
                   if (navigationRef.isReady()) {
                     navigationRef.navigate('KycSuccess', {
                       userId: accessToken.userId,
