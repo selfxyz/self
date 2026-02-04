@@ -263,6 +263,8 @@ jobs:
     permissions:
       contents: read
       actions: write
+    outputs:
+      upload_succeeded: ${{ steps.mark-upload-success.outputs.succeeded }}
     if: |
       (github.event_name != 'pull_request' ||
         (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
@@ -784,6 +786,13 @@ jobs:
 
           echo "✅ iOS build output verification passed"
 
+      - name: Mark iOS upload as successful
+        id: mark-upload-success
+        if: inputs.platform != 'android'
+        run: |
+          echo "succeeded=true" >> $GITHUB_OUTPUT
+          echo "✅ iOS app successfully uploaded to App Store Connect/TestFlight"
+
       # Version updates moved to separate job to avoid race conditions
 
       - name: Remove project.pbxproj updates we don't want to commit
@@ -859,6 +868,8 @@ jobs:
       contents: read
       actions: write
       id-token: write
+    outputs:
+      upload_succeeded: ${{ steps.mark-upload-success.outputs.succeeded }}
     if: |
       (github.event_name != 'pull_request' ||
         (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
@@ -1244,6 +1255,13 @@ jobs:
             --package-name "${{ secrets.ANDROID_PACKAGE_NAME }}" \
             --track "$DEPLOYMENT_TRACK"
 
+      - name: Mark Android upload as successful
+        id: mark-upload-success
+        if: inputs.platform != 'ios'
+        run: |
+          echo "succeeded=true" >> $GITHUB_OUTPUT
+          echo "✅ Android app successfully uploaded to Google Play Store"
+
       - name: Monitor cache usage
         if: always()
         run: |
@@ -1287,7 +1305,7 @@ jobs:
       always() &&
       (github.event_name != 'pull_request' ||
         (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
-      (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
+      (needs.build-ios.outputs.upload_succeeded == 'true' || needs.build-android.outputs.upload_succeeded == 'true')
     env:
       APP_PATH: ${{ github.workspace }}/app
     steps:
@@ -1309,10 +1327,11 @@ jobs:
           VERSION="${{ needs.bump-version.outputs.version }}"
           IOS_BUILD="${{ needs.bump-version.outputs.ios_build }}"
           ANDROID_BUILD="${{ needs.bump-version.outputs.android_build }}"
-          IOS_SUCCESS="${{ needs.build-ios.result }}"
-          ANDROID_SUCCESS="${{ needs.build-android.result }}"
+          IOS_UPLOADED="${{ needs.build-ios.outputs.upload_succeeded }}"
+          ANDROID_UPLOADED="${{ needs.build-android.outputs.upload_succeeded }}"
 
           echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD, Android: $ANDROID_BUILD)"
+          echo "📤 Upload status - iOS: $IOS_UPLOADED, Android: $ANDROID_UPLOADED"
 
           # Update package.json version
           node -e "
@@ -1329,21 +1348,21 @@ jobs:
             const version = JSON.parse(fs.readFileSync('version.json', 'utf8'));
             const timestamp = new Date().toISOString();
 
-            // Only bump build numbers for successful builds
-            if ('$IOS_SUCCESS' === 'success') {
+            // Only bump build numbers for successfully uploaded apps
+            if ('$IOS_UPLOADED' === 'true') {
               version.ios.build = $IOS_BUILD;
               version.ios.lastDeployed = timestamp;
               console.log('✅ Updated iOS build number to $IOS_BUILD and lastDeployed timestamp');
             } else {
-              console.log('⏭️  Skipped iOS build number bump (build did not succeed)');
+              console.log('⏭️  Skipped iOS build number bump (app was not uploaded to App Store)');
             }
 
-            if ('$ANDROID_SUCCESS' === 'success') {
+            if ('$ANDROID_UPLOADED' === 'true') {
               version.android.build = $ANDROID_BUILD;
               version.android.lastDeployed = timestamp;
               console.log('✅ Updated Android build number to $ANDROID_BUILD and lastDeployed timestamp');
             } else {
-              console.log('⏭️  Skipped Android build number bump (build did not succeed)');
+              console.log('⏭️  Skipped Android build number bump (app was not uploaded to Play Store)');
             }
 
             fs.writeFileSync('version.json', JSON.stringify(version, null, 2) + '\n');
@@ -1371,34 +1390,51 @@ jobs:
         run: |
           VERSION="${{ needs.bump-version.outputs.version }}"
           PLATFORM="${{ needs.bump-version.outputs.platform }}"
+          IOS_UPLOADED="${{ needs.build-ios.outputs.upload_succeeded }}"
+          ANDROID_UPLOADED="${{ needs.build-android.outputs.upload_succeeded }}"
           IOS_RESULT="${{ needs.build-ios.result }}"
           ANDROID_RESULT="${{ needs.build-android.result }}"
 
-          # Determine what was actually built
-          PLATFORMS_BUILT=""
-          if [ "$IOS_RESULT" = "success" ]; then
-            PLATFORMS_BUILT="iOS"
+          # Determine what was actually uploaded to stores
+          PLATFORMS_UPLOADED=""
+          PLATFORMS_FAILED=""
+
+          if [ "$IOS_UPLOADED" = "true" ]; then
+            PLATFORMS_UPLOADED="iOS"
+          elif [ "$IOS_RESULT" = "failure" ] || [ "$IOS_RESULT" = "cancelled" ]; then
+            PLATFORMS_FAILED="iOS"
           fi
-          if [ "$ANDROID_RESULT" = "success" ]; then
-            if [ -n "$PLATFORMS_BUILT" ]; then
-              PLATFORMS_BUILT="${PLATFORMS_BUILT} & Android"
+
+          if [ "$ANDROID_UPLOADED" = "true" ]; then
+            if [ -n "$PLATFORMS_UPLOADED" ]; then
+              PLATFORMS_UPLOADED="${PLATFORMS_UPLOADED} & Android"
             else
-              PLATFORMS_BUILT="Android"
+              PLATFORMS_UPLOADED="Android"
+            fi
+          elif [ "$ANDROID_RESULT" = "failure" ] || [ "$ANDROID_RESULT" = "cancelled" ]; then
+            if [ -n "$PLATFORMS_FAILED" ]; then
+              PLATFORMS_FAILED="${PLATFORMS_FAILED} & Android"
+            else
+              PLATFORMS_FAILED="Android"
             fi
           fi
 
-          # Generate PR title based on what was bumped
-          if [ "$PLATFORM" = "ios" ]; then
+          # Generate PR title based on what was uploaded
+          if [ "$IOS_UPLOADED" = "true" ] && [ "$ANDROID_UPLOADED" = "true" ]; then
+            PR_TITLE="chore: bump mobile app version to $VERSION"
+          elif [ "$IOS_UPLOADED" = "true" ]; then
             PR_TITLE="chore: bump iOS version to $VERSION"
-          elif [ "$PLATFORM" = "android" ]; then
+          elif [ "$ANDROID_UPLOADED" = "true" ]; then
             PR_TITLE="chore: bump Android version to $VERSION"
           else
             PR_TITLE="chore: bump mobile app version to $VERSION"
           fi
 
-          echo "platforms=${PLATFORMS_BUILT}" >> $GITHUB_OUTPUT
+          echo "platforms_uploaded=${PLATFORMS_UPLOADED}" >> $GITHUB_OUTPUT
+          echo "platforms_failed=${PLATFORMS_FAILED}" >> $GITHUB_OUTPUT
           echo "pr_title=${PR_TITLE}" >> $GITHUB_OUTPUT
-          echo "📱 Successful builds: $PLATFORMS_BUILT"
+          echo "📱 Successfully uploaded: $PLATFORMS_UPLOADED"
+          echo "❌ Failed platforms: $PLATFORMS_FAILED"
           echo "📝 PR title: $PR_TITLE"
 
       - name: Create version bump PR
@@ -1443,29 +1479,129 @@ jobs:
           # Push the branch
           git push --set-upstream origin ${BRANCH_NAME}
 
+          # Determine deployment status for PR body
+          IOS_UPLOADED="${{ needs.build-ios.outputs.upload_succeeded }}"
+          ANDROID_UPLOADED="${{ needs.build-android.outputs.upload_succeeded }}"
+          IOS_RESULT="${{ needs.build-ios.result }}"
+          ANDROID_RESULT="${{ needs.build-android.result }}"
+
+          # Build deployment status section
+          IOS_STATUS="⏭️ Skipped"
+          ANDROID_STATUS="⏭️ Skipped"
+
+          if [ "$IOS_UPLOADED" = "true" ]; then
+            IOS_STATUS="✅ Uploaded to TestFlight (Build ${{ needs.bump-version.outputs.ios_build }})"
+          elif [ "$IOS_RESULT" = "failure" ]; then
+            IOS_STATUS="❌ Failed - [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          elif [ "$IOS_RESULT" = "cancelled" ]; then
+            IOS_STATUS="🚫 Cancelled"
+          fi
+
+          if [ "$ANDROID_UPLOADED" = "true" ]; then
+            ANDROID_STATUS="✅ Uploaded to Play Store (Build ${{ needs.bump-version.outputs.android_build }})"
+          elif [ "$ANDROID_RESULT" = "failure" ]; then
+            ANDROID_STATUS="❌ Failed - [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          elif [ "$ANDROID_RESULT" = "cancelled" ]; then
+            ANDROID_STATUS="🚫 Cancelled"
+          fi
+
           # Create PR to target branch (usually dev)
           echo "Creating PR to ${TARGET_BRANCH}..."
           gh pr create \
             --base ${TARGET_BRANCH} \
             --head ${BRANCH_NAME} \
             --title "${PR_TITLE}" \
-            --body "🤖 Automated version bump after successful deployment
+            --body "🤖 Automated version bump after deployment
 
-          **Version:** $VERSION
-          **iOS Build:** ${{ needs.bump-version.outputs.ios_build }}
-          **Android Build:** ${{ needs.bump-version.outputs.android_build }}
-          **Platforms Built:** ${{ steps.platforms.outputs.platforms }}
-          **Build Branch:** ${{ github.ref_name }}
-          **Target Branch:** ${TARGET_BRANCH}
+          ## Deployment Status
+
+          - **iOS:** ${IOS_STATUS}
+          - **Android:** ${ANDROID_STATUS}
+
+          ## Version Information
+
+          - **Version:** $VERSION
+          - **iOS Build:** ${{ needs.bump-version.outputs.ios_build }}
+          - **Android Build:** ${{ needs.bump-version.outputs.android_build }}
+          - **Build Branch:** ${{ github.ref_name }}
+          - **Target Branch:** ${TARGET_BRANCH}
+
+          ## Changes
 
           This PR updates:
-          - Build numbers for deployed platforms
-          - Deployment timestamps (\`lastDeployed\`) for successful builds
+          - Build numbers for successfully deployed platforms
+          - Deployment timestamps (\`lastDeployed\`) for uploaded apps
+          - Version in \`package.json\`
 
-          This PR was automatically created by the mobile deployment workflow." \
+          **Workflow Run:** https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --label "automated"
 
           echo "✅ Version bump PR created successfully to ${TARGET_BRANCH}"
+
+      - name: Generate deployment summary
+        if: always()
+        run: |
+          VERSION="${{ needs.bump-version.outputs.version }}"
+          IOS_UPLOADED="${{ needs.build-ios.outputs.upload_succeeded }}"
+          ANDROID_UPLOADED="${{ needs.build-android.outputs.upload_succeeded }}"
+          IOS_RESULT="${{ needs.build-ios.result }}"
+          ANDROID_RESULT="${{ needs.build-android.result }}"
+
+          # Build status indicators
+          IOS_ICON="⏭️"
+          ANDROID_ICON="⏭️"
+          IOS_TEXT="Skipped"
+          ANDROID_TEXT="Skipped"
+
+          if [ "$IOS_UPLOADED" = "true" ]; then
+            IOS_ICON="✅"
+            IOS_TEXT="Uploaded to TestFlight"
+          elif [ "$IOS_RESULT" = "failure" ]; then
+            IOS_ICON="❌"
+            IOS_TEXT="Failed"
+          elif [ "$IOS_RESULT" = "cancelled" ]; then
+            IOS_ICON="🚫"
+            IOS_TEXT="Cancelled"
+          fi
+
+          if [ "$ANDROID_UPLOADED" = "true" ]; then
+            ANDROID_ICON="✅"
+            ANDROID_TEXT="Uploaded to Play Store"
+          elif [ "$ANDROID_RESULT" = "failure" ]; then
+            ANDROID_ICON="❌"
+            ANDROID_TEXT="Failed"
+          elif [ "$ANDROID_RESULT" = "cancelled" ]; then
+            ANDROID_ICON="🚫"
+            ANDROID_TEXT="Cancelled"
+          fi
+
+          # Write summary to GitHub Actions
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # Mobile App Deployment Summary
+
+          ## Version: $VERSION
+
+          ### Deployment Status
+
+          | Platform | Status | Build Number |
+          |----------|--------|--------------|
+          | iOS | ${IOS_ICON} ${IOS_TEXT} | ${{ needs.bump-version.outputs.ios_build }} |
+          | Android | ${ANDROID_ICON} ${ANDROID_TEXT} | ${{ needs.bump-version.outputs.android_build }} |
+
+          ### Details
+
+          - **Build Branch:** \`${{ github.ref_name }}\`
+          - **Target Branch:** \`dev\`
+          - **Workflow Run:** [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          EOF
+
+          # Add success message if at least one platform uploaded
+          if [ "$IOS_UPLOADED" = "true" ] || [ "$ANDROID_UPLOADED" = "true" ]; then
+            echo "✅ Version bump PR created successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ No apps were uploaded to stores" >> $GITHUB_STEP_SUMMARY
+          fi
 
   # Create git tags after successful deployment
   create-release-tags:
@@ -1477,7 +1613,7 @@ jobs:
       always() &&
       (inputs.dry_run != true) &&
       needs.create-version-bump-pr.result == 'success' &&
-      (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
+      (needs.build-ios.outputs.upload_succeeded == 'true' || needs.build-android.outputs.upload_succeeded == 'true') &&
       (inputs.deployment_track == 'production')
     steps:
       - uses: actions/checkout@v6
@@ -1516,8 +1652,8 @@ jobs:
             fi
           fi
 
-          # Create platform-specific tags if deployments succeeded (idempotent)
-          if [ "${{ needs.build-ios.result }}" = "success" ]; then
+          # Create platform-specific tags if apps were uploaded to stores (idempotent)
+          if [ "${{ needs.build-ios.outputs.upload_succeeded }}" = "true" ]; then
             TAG_NAME="v${VERSION}-ios-${IOS_BUILD}"
             if git tag -a "${TAG_NAME}" -m "iOS Release ${VERSION} (Build ${IOS_BUILD})" 2>/dev/null; then
               echo "✅ Created tag: ${TAG_NAME}"
@@ -1532,7 +1668,7 @@ jobs:
             fi
           fi
 
-          if [ "${{ needs.build-android.result }}" = "success" ]; then
+          if [ "${{ needs.build-android.outputs.upload_succeeded }}" = "true" ]; then
             TAG_NAME="v${VERSION}-android-${ANDROID_BUILD}"
             if git tag -a "${TAG_NAME}" -m "Android Release ${VERSION} (Build ${ANDROID_BUILD})" 2>/dev/null; then
               echo "✅ Created tag: ${TAG_NAME}"
