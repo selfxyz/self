@@ -47,20 +47,28 @@ const LogoConfirmationScreen: React.FC = () => {
     navigateToOnboarding();
   }, [navigateToOnboarding]);
 
-  const handleNotFound = useCallback(async () => {
+  const handleNotFound = useCallback(() => {
     buttonTap();
-    try {
-      const accessToken = await fetchAccessToken();
-      await launchSumsub({ accessToken: accessToken.token });
-    } catch (error) {
-      console.error('Error launching Sumsub:', error);
-      showModal({
-        titleText: 'Error',
-        bodyText: 'Unable to start verification. Please try again.',
-        buttonText: 'OK',
-        onButtonPress: () => {},
-      });
-    }
+    showModal({
+      titleText: 'Document Not Supported',
+      bodyText:
+        "To complete registration of a document without a biometric chip, you'll be redirected to our third party verification partner.",
+      buttonText: 'Proceed with an external verifier',
+      onButtonPress: async () => {
+        try {
+          const accessToken = await fetchAccessToken();
+          await launchSumsub({ accessToken: accessToken.token });
+        } catch (error) {
+          console.error('Error launching Sumsub:', error);
+          showModal({
+            titleText: 'Error',
+            bodyText: 'Unable to start verification. Please try again.',
+            buttonText: 'OK',
+            onButtonPress: () => {},
+          });
+        }
+      },
+    });
   }, [showModal]);
 
   return (
