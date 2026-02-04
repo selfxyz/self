@@ -56,23 +56,17 @@ const LogoConfirmationScreen: React.FC<LogoConfirmationScreenProps> = ({
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.TopSection backgroundColor={white} safeAreaTop={0}>
         <YStack alignItems="center" gap="$6" maxWidth={340}>
-          <BodyText style={styles.titleText}>
-            Does your document have this symbol?
-          </BodyText>
+          <BodyText style={styles.titleText}>Does your document have this symbol?</BodyText>
 
           <View style={styles.logoContainer}>{logo}</View>
 
           <BodyText style={styles.descriptionText}>
-            This symbol indicates your document has a biometric chip, which is
-            required for registration.
+            This symbol indicates your document has a biometric chip, which is required for registration.
           </BodyText>
         </YStack>
       </ExpandableBottomLayout.TopSection>
 
-      <ExpandableBottomLayout.BottomSection
-        backgroundColor={white}
-        safeAreaBottom={safeAreaBottom}
-      >
+      <ExpandableBottomLayout.BottomSection backgroundColor={white} safeAreaBottom={safeAreaBottom}>
         <ButtonsContainer>
           <PrimaryButton onPress={onYesPress}>Yes</PrimaryButton>
           <SecondaryButton onPress={onNoPress}>No</SecondaryButton>

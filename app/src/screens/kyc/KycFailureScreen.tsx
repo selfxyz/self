@@ -30,10 +30,7 @@ type KycFailureRouteParams = {
   canRetry?: boolean;
 };
 
-type KycFailureRoute = RouteProp<
-  Record<string, KycFailureRouteParams>,
-  string
->;
+type KycFailureRoute = RouteProp<Record<string, KycFailureRouteParams>, string>;
 
 const KycFailureScreen: React.FC = () => {
   const navigation =
@@ -55,7 +52,12 @@ const KycFailureScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-      <YStack flex={1} justifyContent="flex-end" alignItems="center" paddingBottom={60}>
+      <YStack
+        flex={1}
+        justifyContent="flex-end"
+        alignItems="center"
+        paddingBottom={60}
+      >
         <ShieldErrorIcon width={150} height={150} />
       </YStack>
       <YStack
