@@ -161,9 +161,7 @@ const documentsScreens = {
   AadhaarUploadError: {
     screen: AadhaarUploadErrorScreen,
     options: {
-      title: 'AADHAAR REGISTRATION',
-      header: AadhaarNavBar,
-      headerBackVisible: false,
+      headerShown: false,
     } as NativeStackNavigationOptions,
     initialParams: {
       errorType: 'general',
@@ -176,7 +174,7 @@ const documentsScreens = {
       headerShown: false,
     } as NativeStackNavigationOptions,
     initialParams: {
-      errorSource: 'sumsub_initialization',
+      errorSource: 'mrz_scan_failed',
       countryCode: '',
     },
   },

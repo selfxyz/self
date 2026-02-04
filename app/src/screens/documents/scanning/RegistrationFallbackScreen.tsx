@@ -8,14 +8,9 @@ import { Button, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { HelpCircle, X } from '@tamagui/lucide-icons';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import {
-  BodyText,
-  PrimaryButton,
-  SecondaryButton,
-} from '@selfxyz/mobile-sdk-alpha/components';
+import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
   cyan300,
@@ -29,16 +24,13 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
+import { NavBar } from '@/components/navbar/BaseNavBar';
 import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
 
-type FallbackErrorSource =
-  | 'mrz_scan_failed'
-  | 'nfc_scan_failed'
-  | 'sumsub_initialization'
-  | 'sumsub_verification';
+type FallbackErrorSource = 'mrz_scan_failed' | 'nfc_scan_failed';
 
 type RegistrationFallbackRouteParams = {
   errorSource: FallbackErrorSource;
@@ -50,28 +42,23 @@ type RegistrationFallbackRoute = RouteProp<
   string
 >;
 
-const getHeaderTitle = (errorSource: FallbackErrorSource): string => {
-  switch (errorSource) {
-    case 'mrz_scan_failed':
-      return 'MRZ SCAN';
-    case 'nfc_scan_failed':
-      return 'NFC SCAN';
+const getHeaderTitle = (documentType: string): string => {
+  switch (documentType) {
+    case 'p':
+      return 'PASSPORT REGISTRATION';
+    case 'i':
+      return 'ID CARD REGISTRATION';
     default:
-      return 'REGISTRATION';
+      return 'DOCUMENT REGISTRATION';
   }
 };
 
 const getCurrentStep = (errorSource: FallbackErrorSource): number => {
   switch (errorSource) {
     case 'mrz_scan_failed':
-      return 1; // Step 1: MRZ scanning
+      return 2; // Step 2: MRZ scanning (after country/document selection)
     case 'nfc_scan_failed':
-      return 2; // Step 2: NFC reading
-    case 'sumsub_initialization':
-    case 'sumsub_verification':
-      return 3; // Step 3: Proving/verification
-    default:
-      return 1;
+      return 3; // Step 3: NFC reading (after MRZ scan)
   }
 };
 
@@ -93,7 +80,7 @@ const getErrorMessages = (
     case 'mrz_scan_failed':
       return {
         title: 'There was a problem scanning your document',
-        description: 'Make sure the document is clearly visible and try again',
+        description: 'Make sure the document is valid and try again',
         canRetryOriginal: true,
       };
     case 'nfc_scan_failed':
@@ -101,20 +88,6 @@ const getErrorMessages = (
         title: 'There was a problem reading the chip',
         description: 'Make sure NFC is enabled and try again',
         canRetryOriginal: true,
-      };
-    case 'sumsub_initialization':
-      return {
-        title: 'Connection Error',
-        description:
-          'Unable to connect to verification service. Please check your internet connection and try again.',
-        canRetryOriginal: false,
-      };
-    case 'sumsub_verification':
-      return {
-        title: 'Verification Error',
-        description:
-          'Something went wrong during the verification process. Please try again.',
-        canRetryOriginal: false,
       };
   }
 };
@@ -128,12 +101,13 @@ const RegistrationFallbackScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent, useMRZStore } = selfClient;
   const storeCountryCode = useMRZStore(state => state.countryCode);
+  const documentType = useMRZStore(state => state.documentType);
 
-  const errorSource = route.params?.errorSource || 'sumsub_initialization';
+  const errorSource = route.params?.errorSource || 'mrz_scan_failed';
   // Use country code from route params, or fall back to MRZ store
   const countryCode = route.params?.countryCode || storeCountryCode || '';
 
-  const headerTitle = getHeaderTitle(errorSource);
+  const headerTitle = getHeaderTitle(documentType);
   const retryButtonText = getRetryButtonText(errorSource);
   const currentStep = getCurrentStep(errorSource);
   const { title, description, canRetryOriginal } =
@@ -175,66 +149,36 @@ const RegistrationFallbackScreen: React.FC = () => {
       navigation.navigate('DocumentCamera');
     } else if (errorSource === 'nfc_scan_failed') {
       navigation.navigate('DocumentNFCScan', {});
-    } else if (errorSource === 'sumsub_initialization') {
-      // Go back to ID Picker
-      navigation.goBack();
     }
-    // TODO: Handle 'sumsub_verification' case - currently falls through without action
-    // which could leave users stuck when tapping "Try again" after Sumsub verification failure.
-    // Consider: calling launchSumsubVerification() or navigating to appropriate retry screen.
-    // Need to determine the correct retry behavior for failed Sumsub verifications.
   }, [errorSource, navigation, trackEvent]);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>
       {/* Header */}
       <YStack backgroundColor={slate100}>
-        <XStack
+        <NavBar.Container
           backgroundColor={slate100}
-          padding={20}
-          justifyContent="space-between"
-          alignItems="center"
-          paddingTop={Math.max(insets.top, 15) + extraYPadding}
+          barStyle="dark"
+          paddingHorizontal="$4"
+          paddingTop={insets.top + extraYPadding}
           paddingBottom={10}
+          alignItems="center"
+          justifyContent="space-between"
         >
-          <Button
-            unstyled
+          <NavBar.LeftAction
+            component="close"
+            color={black}
             onPress={handleClose}
-            padding={8}
-            borderRadius={20}
-            hitSlop={10}
-          >
-            <X size={24} color={black} />
-          </Button>
-
-          <BodyText
-            style={{
-              fontSize: 16,
-              color: black,
-              fontWeight: '600',
-              fontFamily: dinot,
-            }}
-          >
+          />
+          <NavBar.Title style={{ fontFamily: dinot, fontSize: 17 }}>
             {headerTitle}
-          </BodyText>
-
-          <Button
-            unstyled
-            padding={8}
-            borderRadius={20}
-            hitSlop={10}
-            width={32}
-            height={32}
-            justifyContent="center"
-            alignItems="center"
-            disabled
-          >
-            <HelpCircle size={20} color={black} opacity={0} />
-          </Button>
-        </XStack>
+          </NavBar.Title>
+          {/* Invisible spacer to balance header */}
+          <YStack width={30} height={30} />
+        </NavBar.Container>
 
         {/* Progress Bar */}
-        <YStack paddingHorizontal={40} paddingBottom={10}>
+        <YStack paddingHorizontal={40} paddingBottom={14} paddingTop={4}>
           <XStack gap={3} height={6}>
             {[1, 2, 3, 4].map(step => (
               <YStack
@@ -248,71 +192,107 @@ const RegistrationFallbackScreen: React.FC = () => {
         </YStack>
       </YStack>
 
-      {/* Warning Icon */}
-      <YStack flex={1} paddingHorizontal={20} paddingTop={20}>
+      {/* Main Content Area */}
+      <YStack
+        flex={1}
+        backgroundColor={slate100}
+        borderBottomWidth={1}
+        borderBottomColor={slate200}
+      >
+        {/* Warning Icon */}
+        <YStack flex={1} paddingHorizontal={20} paddingBottom={20}>
+          <YStack flex={1} justifyContent="center" alignItems="center">
+            <WarningIcon width={150} height={150} />
+          </YStack>
+        </YStack>
+
+        {/* Error Message and Retry Button */}
         <YStack
-          flex={1}
-          justifyContent="center"
-          alignItems="center"
-          paddingVertical={20}
+          paddingHorizontal={20}
+          paddingTop={20}
+          paddingBottom={20}
+          gap={20}
+          borderTopWidth={1}
+          borderTopColor={slate200}
         >
-          <WarningIcon width={120} height={120} />
+          <YStack alignItems="center" gap={4}>
+            <BodyText
+              style={{ fontSize: 18, textAlign: 'center', color: black }}
+            >
+              {title}
+            </BodyText>
+            <BodyText
+              style={{
+                fontSize: 16,
+                textAlign: 'center',
+                color: slate500,
+              }}
+            >
+              {description}
+            </BodyText>
+          </YStack>
+
+          {/* Retry Button - Primary style with very rounded corners */}
+          {canRetryOriginal && (
+            <Button
+              backgroundColor={black}
+              borderRadius={100}
+              height={52}
+              pressStyle={{ opacity: 0.8 }}
+              onPress={handleRetryOriginal}
+              disabled={isRetrying}
+            >
+              <BodyText
+                style={{
+                  fontSize: 17,
+                  fontWeight: '500',
+                  fontFamily: dinot,
+                  color: white,
+                }}
+              >
+                {retryButtonText}
+              </BodyText>
+            </Button>
+          )}
         </YStack>
       </YStack>
 
-      {/* Error Message */}
+      {/* Bottom Section */}
       <YStack
         paddingHorizontal={20}
         paddingTop={20}
-        alignItems="center"
-        paddingVertical={25}
-      >
-        <BodyText style={{ fontSize: 19, textAlign: 'center', color: black }}>
-          {title}
-        </BodyText>
-        <BodyText
-          style={{
-            marginTop: 6,
-            fontSize: 17,
-            textAlign: 'center',
-            color: slate500,
-          }}
-        >
-          {description}
-        </BodyText>
-      </YStack>
-
-      {/* Top Button - Retry */}
-      {canRetryOriginal && (
-        <YStack paddingHorizontal={25} paddingBottom={20}>
-          <PrimaryButton onPress={handleRetryOriginal} disabled={isRetrying}>
-            {retryButtonText}
-          </PrimaryButton>
-        </YStack>
-      )}
-
-      {/* Bottom Section with Grey Line Separator */}
-      <YStack
-        paddingHorizontal={25}
-        backgroundColor={white}
         paddingBottom={paddingBottom}
-        paddingTop={25}
-        gap="$3"
-        borderTopWidth={1}
-        borderTopColor={slate200}
+        gap={10}
       >
-        <SecondaryButton onPress={handleTryAlternative} disabled={isRetrying}>
-          {isRetrying ? 'Loading...' : 'Try a different method'}
-        </SecondaryButton>
+        {/* Secondary Button - White fill, black text, rounded */}
+        <Button
+          backgroundColor={white}
+          borderWidth={1}
+          borderColor={slate200}
+          borderRadius={100}
+          height={52}
+          pressStyle={{ opacity: 0.8 }}
+          onPress={handleTryAlternative}
+          disabled={isRetrying}
+        >
+          <BodyText
+            style={{
+              fontSize: 17,
+              fontWeight: '500',
+              fontFamily: dinot,
+              color: black,
+            }}
+          >
+            {isRetrying ? 'Loading...' : 'Try a different method'}
+          </BodyText>
+        </Button>
 
-        {/* Footer Text */}
+        {/* Footer Text - Not italic */}
         <BodyText
           style={{
-            fontSize: 15,
+            fontSize: 16,
             textAlign: 'center',
             color: slate500,
-            fontStyle: 'italic',
-            marginTop: 8,
           }}
         >
           Registering with alternative methods may take longer to verify your

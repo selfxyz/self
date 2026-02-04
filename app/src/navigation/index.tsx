@@ -136,11 +136,7 @@ export type RootStackParamList = Omit<
 
   // Registration Fallback screens
   RegistrationFallback: {
-    errorSource:
-      | 'mrz_scan_failed'
-      | 'nfc_scan_failed'
-      | 'sumsub_initialization'
-      | 'sumsub_verification';
+    errorSource: 'mrz_scan_failed' | 'nfc_scan_failed';
     countryCode: string;
   };
 
