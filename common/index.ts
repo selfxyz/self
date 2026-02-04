@@ -102,17 +102,13 @@ export {
   stringToBigInt,
 } from './src/utils/index.js';
 
-
 export {
   KYC_ID_NUMBER_INDEX,
   KYC_ID_NUMBER_LENGTH,
   KYC_MAX_LENGTH,
 } from './src/utils/kyc/constants.js';
 
-
 export { KycData, serializeKycData } from './src/utils/kyc/types.js';
-
-
 
 export {
   NON_OFAC_DUMMY_INPUT,
@@ -122,7 +118,6 @@ export {
   generateMockKycRegisterInput,
 } from './src/utils/kyc/generateInputs.js';
 
-
 // Crypto polyfill for cross-platform compatibility
 export {
   createHash,
@@ -131,7 +126,6 @@ export {
   pbkdf2Sync,
   randomBytes,
 } from './src/polyfills/crypto.js';
-
 
 export { createSelector } from './src/utils/aadhaar/constants.js';
 
