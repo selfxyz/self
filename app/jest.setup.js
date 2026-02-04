@@ -744,8 +744,8 @@ jest.mock('@invertase/react-native-apple-authentication', () => ({
     Error: { CANCELED: 1001 },
   },
   AppleButton: 'AppleButton',
-  AppleAuthRequestScope: { EMAIL: 0, FULL_NAME: 1 },
-  AppleAuthRequestOperation: { LOGIN: 1 },
+  AppleRequestScope: { EMAIL: 0, FULL_NAME: 1 },
+  AppleRequestOperation: { LOGIN: 1 },
 }));
 
 jest.mock('@env', () => ({

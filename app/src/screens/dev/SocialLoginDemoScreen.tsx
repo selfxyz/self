@@ -119,7 +119,7 @@ const SocialLoginDemoScreen: React.FC = () => {
       }
 
       const tokens = await GoogleSignin.getTokens();
-      console.log('Google sign-in tokens', tokens);
+      // Tokens retrieved successfully - available for backend integration
 
       setUser({
         provider: 'google',
@@ -180,10 +180,7 @@ const SocialLoginDemoScreen: React.FC = () => {
         return;
       }
 
-      console.log(
-        'Apple sign-in token',
-        appleAuthRequestResponse.identityToken,
-      );
+      // Apple identity token retrieved successfully - available for backend integration
 
       setUser({
         provider: 'apple',
@@ -233,8 +230,8 @@ const SocialLoginDemoScreen: React.FC = () => {
             Social Login Demo
           </Text>
           <Text fontSize="$4" color={slate500}>
-            Use these buttons to test Google and Apple sign-in flows. Tokens are
-            logged to the console for backend integration.
+            Use these buttons to test Google and Apple sign-in flows. Tokens can
+            be retrieved for backend integration.
           </Text>
         </YStack>
 
