@@ -39,7 +39,8 @@ type LogoConfirmationScreenRouteProp = RouteProp<
 >;
 
 const LogoConfirmationScreen: React.FC = () => {
-  useRoute<LogoConfirmationScreenRouteProp>();
+  const route = useRoute<LogoConfirmationScreenRouteProp>();
+  const { documentType, countryCode } = route.params;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showModal } = useFeedback();
@@ -60,7 +61,12 @@ const LogoConfirmationScreen: React.FC = () => {
       onButtonPress: async () => {
         try {
           const accessToken = await fetchAccessToken();
-          const result = await launchSumsub({ accessToken: accessToken.token });
+          const result = await launchSumsub({
+            accessToken: accessToken.token,
+            // Pre-select document type and country based on user's earlier selection
+            documentType: documentType as 'p' | 'i',
+            countryCode,
+          });
 
           // User cancelled/dismissed without completing verification
           const cancelledStatuses = ['Initial', 'Incomplete', 'Interrupted'];
@@ -81,7 +87,7 @@ const LogoConfirmationScreen: React.FC = () => {
         }
       },
     });
-  }, [navigation, showModal]);
+  }, [documentType, countryCode, navigation, showModal]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
