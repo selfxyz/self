@@ -107,6 +107,7 @@ describe('navigation', () => {
         'SaveRecoveryPhrase',
         'Settings',
         'ShowRecoveryPhrase',
+        'SocialLoginDemo',
         'Splash',
         'StarfallPushCode',
         'SumsubTest',
