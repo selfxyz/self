@@ -12,12 +12,14 @@ import { black, slate400, white } from '../../constants/colors';
 import { advercase, dinot } from '../../constants/fonts';
 import { useSelfClient } from '../../context';
 import { buttonTap } from '../../haptic';
+import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { SdkEvents } from '../../types/events';
 
 type LogoConfirmationScreenProps = {
   documentType: string;
   countryCode: string;
   logo: ReactNode;
+  safeAreaBottom?: number;
   onConfirm?: () => void;
   onNotFound?: () => void;
 };
@@ -26,6 +28,7 @@ const LogoConfirmationScreen: React.FC<LogoConfirmationScreenProps> = ({
   documentType,
   countryCode,
   logo,
+  safeAreaBottom,
   onConfirm,
   onNotFound,
 }) => {
@@ -50,26 +53,32 @@ const LogoConfirmationScreen: React.FC<LogoConfirmationScreenProps> = ({
   };
 
   return (
-    <YStack flex={1} paddingHorizontal="$4" justifyContent="center" alignItems="center">
-      <YStack alignItems="center" gap="$6" maxWidth={340}>
-        <BodyText style={styles.titleText}>
-          Does your document have this symbol?
-        </BodyText>
+    <ExpandableBottomLayout.Layout backgroundColor={white}>
+      <ExpandableBottomLayout.TopSection backgroundColor={white} safeAreaTop={0}>
+        <YStack alignItems="center" gap="$6" maxWidth={340}>
+          <BodyText style={styles.titleText}>
+            Does your document have this symbol?
+          </BodyText>
 
-        <View style={styles.logoContainer}>
-          {logo}
-        </View>
+          <View style={styles.logoContainer}>{logo}</View>
 
-        <BodyText style={styles.descriptionText}>
-          This symbol indicates your document has a biometric chip, which is required for registration.
-        </BodyText>
+          <BodyText style={styles.descriptionText}>
+            This symbol indicates your document has a biometric chip, which is
+            required for registration.
+          </BodyText>
+        </YStack>
+      </ExpandableBottomLayout.TopSection>
 
+      <ExpandableBottomLayout.BottomSection
+        backgroundColor={white}
+        safeAreaBottom={safeAreaBottom}
+      >
         <ButtonsContainer>
           <PrimaryButton onPress={onYesPress}>Yes</PrimaryButton>
           <SecondaryButton onPress={onNoPress}>No</SecondaryButton>
         </ButtonsContainer>
-      </YStack>
-    </YStack>
+      </ExpandableBottomLayout.BottomSection>
+    </ExpandableBottomLayout.Layout>
   );
 };
 

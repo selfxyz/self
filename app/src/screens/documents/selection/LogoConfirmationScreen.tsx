@@ -3,21 +3,34 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, View } from 'react-native';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 
-import { YStack } from '@selfxyz/mobile-sdk-alpha/components';
-import { slate100 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { LogoConfirmationScreen as SDKLogoConfirmationScreen } from '@selfxyz/mobile-sdk-alpha';
+import {
+  BodyText,
+  ButtonsContainer,
+  PrimaryButton,
+  SecondaryButton,
+} from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  black,
+  slate400,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import EPassportLogo from '@/assets/icons/epassport_logo.svg';
-
 import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { buttonTap } from '@/integrations/haptics';
+import {
+  fetchAccessToken,
+  launchSumsub,
+} from '@/integrations/sumsub/sumsubService';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
-import { extraYPadding } from '@/utils/styleUtils';
 
 type LogoConfirmationScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -25,40 +38,89 @@ type LogoConfirmationScreenRouteProp = RouteProp<
 >;
 
 const LogoConfirmationScreen: React.FC = () => {
-  const route = useRoute<LogoConfirmationScreenRouteProp>();
-  const { documentType = '', countryCode = '' } = route.params || {};
-  const bottom = useSafeAreaInsets().bottom;
+  useRoute<LogoConfirmationScreenRouteProp>();
   const { showModal } = useFeedback();
   const navigateToOnboarding = useHapticNavigation('DocumentOnboarding');
 
   const handleConfirm = useCallback(() => {
+    buttonTap();
     navigateToOnboarding();
   }, [navigateToOnboarding]);
 
-  const handleNotFound = useCallback(() => {
-    showModal({
-      titleText: 'Document Not Supported',
-      bodyText: 'Your document is not supported as it is not a biometric ID.',
-      buttonText: 'OK',
-      onButtonPress: () => {},
-    });
+  const handleNotFound = useCallback(async () => {
+    buttonTap();
+    try {
+      const accessToken = await fetchAccessToken();
+      await launchSumsub({ accessToken: accessToken.token });
+    } catch (error) {
+      console.error('Error launching Sumsub:', error);
+      showModal({
+        titleText: 'Error',
+        bodyText: 'Unable to start verification. Please try again.',
+        buttonText: 'OK',
+        onButtonPress: () => {},
+      });
+    }
   }, [showModal]);
 
   return (
-    <YStack flex={1} backgroundColor={slate100}>
+    <ExpandableBottomLayout.Layout backgroundColor={white}>
       <DocumentFlowNavBar title="GETTING STARTED" />
-      <SDKLogoConfirmationScreen
-        documentType={documentType}
-        countryCode={countryCode}
-        logo={<EPassportLogo width={160} height={98} />}
-        safeAreaBottom={safeAreaBottom}
-        confirmButtonText="Yes"
-        notFoundButtonText="Proceed with external verifier"
-        onConfirm={handleConfirm}
-        onNotFound={handleNotFound}
-      />
-    </YStack>
+      <ExpandableBottomLayout.TopSection backgroundColor={white}>
+        <View style={styles.contentContainer}>
+          <BodyText style={styles.titleText}>
+            Does your document have this symbol?
+          </BodyText>
+
+          <View style={styles.logoContainer}>
+            <EPassportLogo width={160} height={98} />
+          </View>
+
+          <BodyText style={styles.descriptionText}>
+            This symbol indicates your document has a biometric chip, which is
+            required for registration.
+          </BodyText>
+        </View>
+      </ExpandableBottomLayout.TopSection>
+
+      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
+        <ButtonsContainer>
+          <PrimaryButton onPress={handleConfirm}>Yes</PrimaryButton>
+          <SecondaryButton onPress={handleNotFound}>No</SecondaryButton>
+        </ButtonsContainer>
+      </ExpandableBottomLayout.BottomSection>
+    </ExpandableBottomLayout.Layout>
   );
 };
 
 export default LogoConfirmationScreen;
+
+const styles = StyleSheet.create({
+  contentContainer: {
+    alignItems: 'center',
+    gap: 24,
+    maxWidth: 340,
+  },
+  titleText: {
+    fontSize: 20,
+    fontFamily: advercase,
+    textAlign: 'center',
+    color: black,
+  },
+  logoContainer: {
+    backgroundColor: white,
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  descriptionText: {
+    fontSize: 16,
+    fontFamily: dinot,
+    textAlign: 'center',
+    color: slate400,
+  },
+});
