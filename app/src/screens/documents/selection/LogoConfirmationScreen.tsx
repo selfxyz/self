@@ -5,7 +5,8 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { RouteProp } from '@react-navigation/native';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
   BodyText,
@@ -39,6 +40,8 @@ type LogoConfirmationScreenRouteProp = RouteProp<
 
 const LogoConfirmationScreen: React.FC = () => {
   useRoute<LogoConfirmationScreenRouteProp>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showModal } = useFeedback();
   const navigateToOnboarding = useHapticNavigation('DocumentOnboarding');
 
@@ -57,7 +60,16 @@ const LogoConfirmationScreen: React.FC = () => {
       onButtonPress: async () => {
         try {
           const accessToken = await fetchAccessToken();
-          await launchSumsub({ accessToken: accessToken.token });
+          const result = await launchSumsub({ accessToken: accessToken.token });
+
+          // User cancelled/dismissed without completing verification
+          const cancelledStatuses = ['Initial', 'Incomplete', 'Interrupted'];
+          if (cancelledStatuses.includes(result.status)) {
+            return;
+          }
+
+          // User completed verification - navigate to KycSuccessScreen
+          navigation.navigate('KycSuccess', { userId: accessToken.userId });
         } catch (error) {
           console.error('Error launching Sumsub:', error);
           showModal({
@@ -69,7 +81,7 @@ const LogoConfirmationScreen: React.FC = () => {
         }
       },
     });
-  }, [showModal]);
+  }, [navigation, showModal]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
