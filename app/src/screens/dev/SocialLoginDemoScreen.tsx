@@ -277,21 +277,23 @@ const SocialLoginDemoScreen: React.FC = () => {
             </Text>
           )}
 
-          <Button
-            style={{ backgroundColor: red500 }}
-            borderColor={red500}
-            borderRadius="$2"
-            height="$5"
-            padding={0}
-            onPress={handleSignOut}
-            disabled={loading}
-          >
-            <XStack width="100%" justifyContent="center" paddingVertical="$3">
-              <Text fontSize="$5" color={white} fontFamily={dinot}>
-                Log Out
-              </Text>
-            </XStack>
-          </Button>
+          {user && (
+            <Button
+              style={{ backgroundColor: red500 }}
+              borderColor={red500}
+              borderRadius="$2"
+              height="$5"
+              padding={0}
+              onPress={handleSignOut}
+              disabled={loading}
+            >
+              <XStack width="100%" justifyContent="center" paddingVertical="$3">
+                <Text fontSize="$5" color={white} fontFamily={dinot}>
+                  Log Out
+                </Text>
+              </XStack>
+            </Button>
+          )}
         </YStack>
 
         <YStack gap="$3">
