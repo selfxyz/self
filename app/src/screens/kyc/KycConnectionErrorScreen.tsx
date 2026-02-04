@@ -5,8 +5,7 @@
 import React, { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, XStack, YStack } from 'tamagui';
-import type { RouteProp } from '@react-navigation/native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { X } from '@tamagui/lucide-icons';
 
@@ -30,23 +29,11 @@ import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
 
-type KycConnectionErrorRouteParams = {
-  countryCode?: string;
-};
-
-type KycConnectionErrorRoute = RouteProp<
-  Record<string, KycConnectionErrorRouteParams>,
-  string
->;
-
 const KycConnectionErrorScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const paddingBottom = useSafeBottomPadding(extraYPadding + 35);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute<KycConnectionErrorRoute>();
-
-  const countryCode = route.params?.countryCode || '';
 
   const handleClose = useCallback(() => {
     buttonTap();
