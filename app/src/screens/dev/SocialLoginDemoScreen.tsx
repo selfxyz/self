@@ -26,6 +26,8 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
+import GoogleIcon from '@/assets/icons/google.svg';
+
 type SocialUser = {
   provider: 'google' | 'apple';
   id?: string;
@@ -238,26 +240,31 @@ const SocialLoginDemoScreen: React.FC = () => {
 
         <YStack gap="$3">
           <Button
-            style={{ backgroundColor: white }}
+            style={{ backgroundColor: white, height: 44 }}
             borderColor={slate200}
+            borderWidth={1}
             borderRadius="$2"
-            height="$5"
             padding={0}
             onPress={handleGoogleSignIn}
             disabled={loading}
+            pressStyle={{ opacity: 0.8 }}
           >
             <XStack
               width="100%"
-              justifyContent="space-between"
-              paddingVertical="$3"
-              paddingLeft="$4"
-              paddingRight="$4"
+              justifyContent="center"
+              alignItems="center"
+              paddingHorizontal="$4"
+              height="100%"
+              gap="$3"
             >
-              <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-                Sign in with Google
-              </Text>
-              <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-                {loading ? '...' : ''}
+              {!loading && <GoogleIcon width={18} height={18} />}
+              <Text
+                fontSize="$5"
+                color={slate600}
+                fontFamily={dinot}
+                fontWeight="600"
+              >
+                {loading ? 'Signing in...' : 'Sign in with Google'}
               </Text>
             </XStack>
           </Button>
@@ -279,17 +286,27 @@ const SocialLoginDemoScreen: React.FC = () => {
 
           {user && (
             <Button
-              style={{ backgroundColor: red500 }}
+              style={{ backgroundColor: red500, height: 44 }}
               borderColor={red500}
               borderRadius="$2"
-              height="$5"
               padding={0}
               onPress={handleSignOut}
               disabled={loading}
+              pressStyle={{ opacity: 0.8 }}
             >
-              <XStack width="100%" justifyContent="center" paddingVertical="$3">
-                <Text fontSize="$5" color={white} fontFamily={dinot}>
-                  Log Out
+              <XStack
+                width="100%"
+                justifyContent="center"
+                alignItems="center"
+                height="100%"
+              >
+                <Text
+                  fontSize="$5"
+                  color={white}
+                  fontFamily={dinot}
+                  fontWeight="600"
+                >
+                  {loading && user ? 'Logging out...' : 'Log Out'}
                 </Text>
               </XStack>
             </Button>
