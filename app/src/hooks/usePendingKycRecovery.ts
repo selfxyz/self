@@ -54,10 +54,6 @@ export function usePendingKycRecovery() {
 
   useEffect(() => {
     console.log(
-      '[PendingKycRecovery] All verifications:',
-      pendingVerifications,
-    );
-    console.log(
       '[PendingKycRecovery] Already attempted userIds:',
       Array.from(hasAttemptedRecoveryRef.current),
     );
