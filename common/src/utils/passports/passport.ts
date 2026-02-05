@@ -209,7 +209,6 @@ export function generateNullifier(passportData: IDDocument) {
     return nullifierHash(passportData.extractedFields);
   }
   if (isKycDocument(passportData)) {
-    //TODO seshanth: check
     const applicantInfo = deserializeApplicantInfo(passportData.serializedApplicantInfo);
     const serializedData = serializeKycData(applicantInfo);
     const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));

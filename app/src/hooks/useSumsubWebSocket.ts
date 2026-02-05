@@ -90,7 +90,6 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
         console.log(
           '[SumsubWebSocket] Received applicant info for userId:',
           userId,
-          data,
         );
 
         try {

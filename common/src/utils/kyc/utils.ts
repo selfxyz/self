@@ -12,17 +12,12 @@ import {
 import { serializeKycData } from './types.js';
 
 export const generateKycCommitment = (passportData: IDDocument, secret: string) => {
-  console.log('generating kyc commitment');
   if (isKycDocument(passportData)) {
-    console.log('isKycDocument', isKycDocument(passportData));
     const applicantInfo = deserializeApplicantInfo(passportData.serializedApplicantInfo);
-    console.log('applicantInfo', applicantInfo);
     const serializedData = serializeKycData(applicantInfo);
     const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
     const dataPadded = msgPadded.map((x) => Number(x));
-    console.log('dataPadded', dataPadded);
     const commitment = poseidon2([secret, packBytesAndPoseidon(dataPadded)]);
-    console.log('commitment', commitment);
     return commitment.toString();
   }
 };

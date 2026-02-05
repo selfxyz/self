@@ -131,7 +131,7 @@ function getKycAttributes(document: KycData): DocumentAttributes {
       dobFormatted = `${data.dob.slice(2, 4)}${data.dob.slice(4, 6)}${data.dob.slice(6, 8)}`;
     } else if (data.dob.length === 6 && /^\d{6}$/.test(data.dob)) {
       // Already in YYMMDD format
-      yobSlice = `20${data.dob.slice(0, 2)}`;
+      yobSlice = data.dob.slice(0, 2);
       dobFormatted = data.dob;
     }
   }

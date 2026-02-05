@@ -144,7 +144,16 @@ const PassportDataSelector = () => {
   };
 
   const getKYCDisplayName = (metadata: DocumentMetadata): string => {
-    const applicantInfo = deserializeApplicantInfo(metadata.data);
+    let applicantInfo;
+    try {
+      applicantInfo = deserializeApplicantInfo(metadata.data);
+    } catch (error) {
+      console.error(
+        `[ManageDocumentsScreen] Failed to deserialize KYC data for document ${metadata.id}:`,
+        error,
+      );
+      return 'Verified ID';
+    }
 
     if (!applicantInfo.idType) {
       return 'Verified ID';
