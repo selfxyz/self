@@ -79,8 +79,11 @@ export type RootStackParamList = Omit<
   | 'Home'
   | 'IDPicker'
   | 'IdDetails'
+  | 'KycConnectionError'
+  | 'KycFailure'
   | 'KycSuccess'
   | 'KYCVerified'
+  | 'LogoConfirmation'
   | 'RegistrationFallback'
   | 'Loading'
   | 'Modal'
@@ -136,7 +139,11 @@ export type RootStackParamList = Omit<
 
   // Registration Fallback screens
   RegistrationFallback: {
-    errorSource: 'mrz_scan_failed' | 'nfc_scan_failed';
+    errorSource:
+      | 'mrz_scan_failed'
+      | 'nfc_scan_failed'
+      | 'sumsub_initialization'
+      | 'sumsub_verification';
     countryCode: string;
   };
 
