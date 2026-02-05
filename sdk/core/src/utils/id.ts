@@ -27,13 +27,13 @@ export const formatRevealedDataPacked = (
 
   if (attestationId === 4) {
     issuingState = 'UNAVAILABLE';
-  }else {
+  } else {
     issuingState = revealedDataPackedString
-    .subarray(
-      revealedDataIndices[attestationId].issuingStateStart,
-      revealedDataIndices[attestationId].issuingStateEnd + 1
-    )
-    .toString('utf-8');
+      .subarray(
+        revealedDataIndices[attestationId].issuingStateStart,
+        revealedDataIndices[attestationId].issuingStateEnd + 1
+      )
+      .toString('utf-8');
   }
 
   const name = revealedDataPackedString

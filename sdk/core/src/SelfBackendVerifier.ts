@@ -225,9 +225,24 @@ export class SelfBackendVerifier {
     let circuitTimestampMm: number[];
     let circuitTimestampDd: number[];
     if (attestationId === 4) {
-      circuitTimestampYy = publicSignals.slice(discloseIndices[attestationId].currentDateIndex, discloseIndices[attestationId].currentDateIndex + 4).map(Number);
-      circuitTimestampMm = publicSignals.slice(discloseIndices[attestationId].currentDateIndex + 4, discloseIndices[attestationId].currentDateIndex + 6).map(Number);
-      circuitTimestampDd = publicSignals.slice(discloseIndices[attestationId].currentDateIndex + 6, discloseIndices[attestationId].currentDateIndex + 8).map(Number);
+      circuitTimestampYy = publicSignals
+        .slice(
+          discloseIndices[attestationId].currentDateIndex,
+          discloseIndices[attestationId].currentDateIndex + 4
+        )
+        .map(Number);
+      circuitTimestampMm = publicSignals
+        .slice(
+          discloseIndices[attestationId].currentDateIndex + 4,
+          discloseIndices[attestationId].currentDateIndex + 6
+        )
+        .map(Number);
+      circuitTimestampDd = publicSignals
+        .slice(
+          discloseIndices[attestationId].currentDateIndex + 6,
+          discloseIndices[attestationId].currentDateIndex + 8
+        )
+        .map(Number);
     } else if (attestationId === 3) {
       circuitTimestampYy = String(publicSignals[discloseIndices[attestationId].currentDateIndex])
         .split('')
