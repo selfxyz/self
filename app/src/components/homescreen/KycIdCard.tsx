@@ -4,7 +4,7 @@
 
 import type { FC } from 'react';
 import React from 'react';
-import { Dimensions, Image, StyleSheet } from 'react-native';
+import { Dimensions, Image, StyleSheet, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text, XStack, YStack } from 'tamagui';
 
@@ -16,6 +16,7 @@ import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import CardBackgroundId1 from '@/assets/images/card_background_id1.png';
+import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
 import { SvgXml } from '@/components/homescreen/SvgXmlWrapper';
 
 // Self logo SVG (white version for header right)
@@ -176,30 +177,31 @@ const KycIdCard: FC<KycIdCardProps> = ({
         height={cardHeight}
         borderRadius={borderRadius}
         overflow="hidden"
+        backgroundColor="#000000"
         shadowColor="#000"
         shadowOffset={{ width: 0, height: 4 }}
         shadowOpacity={0.25}
         shadowRadius={14}
         elevation={8}
         marginBottom={8}
+        alignItems="stretch"
       >
         {/* Header Section - Dark gradient (same as IdCard) */}
-        <LinearGradient
-          colors={['#000000', '#343434']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[
-            styles.header,
-            {
-              height: headerHeight,
-              padding: figmaPadding,
-            },
-          ]}
-        >
-          {/* Content row */}
-          <XStack flex={1} alignItems="center">
+        <View style={{ width: cardWidth * 1.05, height: headerHeight }}>
+          <LinearGradient
+            colors={['#000000', '#343434']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              flex: 1,
+              paddingHorizontal: figmaPadding,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             {/* Logo + Text */}
-            <XStack alignItems="center" gap={headerGap} flex={1}>
+            <XStack alignItems="center" gap={headerGap}>
               {/* Country flag */}
               <RoundFlag countryCode={country} size={logoCircleSize} />
 
@@ -228,17 +230,16 @@ const KycIdCard: FC<KycIdCardProps> = ({
             </XStack>
 
             {/* Self logo on right */}
-            <SvgXml
-              xml={selfLogoSvg}
-              width={logoIconSize}
-              height={logoIconSize}
+            <SelfLogoPending
+              width={logoCircleSize * 0.56 * 5}
+              height={logoCircleSize}
             />
-          </XStack>
-        </LinearGradient>
+          </LinearGradient>
+        </View>
 
         {/* Body Section - Colorful wave pattern (same as IdCard real documents) */}
         {selected && (
-          <YStack style={styles.body}>
+          <YStack flex={1} position="relative" overflow="hidden">
             {/* Pre-composited background image (colorful gradient + chrome wave) */}
             <Image
               source={CardBackgroundId1}
@@ -305,14 +306,6 @@ const KycIdCard: FC<KycIdCardProps> = ({
 };
 
 const styles = StyleSheet.create({
-  header: {
-    justifyContent: 'center',
-  },
-  body: {
-    flex: 1,
-    position: 'relative',
-    overflow: 'hidden',
-  },
   backgroundImage: {
     position: 'absolute',
     top: 0,

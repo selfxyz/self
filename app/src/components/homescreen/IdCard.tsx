@@ -28,11 +28,14 @@ import CardBackgroundId5 from '@/assets/images/card_background_id5.png';
 import CardBackgroundId6 from '@/assets/images/card_background_id6.png';
 import DevCardLogo from '@/assets/images/dev_card_logo.svg';
 import DevCardWave from '@/assets/images/dev_card_wave.svg';
+import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
 import WaveOverlay from '@/assets/images/wave_overlay.png';
 import KycIdCard from '@/components/homescreen/KycIdCard';
 import { SvgXml } from '@/components/homescreen/SvgXmlWrapper';
 import { getBackgroundIndex } from '@/utils/cardBackgroundSelector';
 import { getDocumentAttributes } from '@/utils/documentAttributes';
+
+import { getSecurityLevel } from './cardSecurityBadge';
 
 const CARD_BACKGROUNDS = [
   CardBackgroundId1,
@@ -42,8 +45,6 @@ const CARD_BACKGROUNDS = [
   CardBackgroundId5,
   CardBackgroundId6,
 ];
-
-import { getSecurityLevel } from './cardSecurityBadge';
 
 // Self logo SVG (white version for header right on real documents)
 const selfLogoSvg = `<svg width="47" height="46" viewBox="0 0 47 46" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -325,7 +326,6 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   const backgroundIndex = getBackgroundIndex(idDocument);
   const cardBackground = CARD_BACKGROUNDS[backgroundIndex - 1];
 
-
   // Check if this is a mock/dev document
   const isMockDocument = Boolean(idDocument.mock);
 
@@ -412,12 +412,14 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
         height={cardHeight}
         borderRadius={borderRadius}
         overflow="hidden"
+        backgroundColor="#000000"
         shadowColor="#000"
         shadowOffset={{ width: 0, height: 4 }}
         shadowOpacity={0.25}
         shadowRadius={14}
         elevation={8}
         marginBottom={8}
+        alignItems="stretch"
       >
         {/* Header Section - Dark gradient */}
         <LinearGradient
@@ -428,7 +430,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
             styles.header,
             {
               height: headerHeight,
-              padding: figmaPadding,
+              paddingHorizontal: figmaPadding,
             },
           ]}
         >
@@ -485,11 +487,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
               // Empty spacer matching Figma (85x19)
               <YStack width={85 * scale} height={19 * scale} />
             ) : (
-              <SvgXml
-                xml={selfLogoSvg}
-                width={logoIconSize}
-                height={logoIconSize}
-              />
+              <SelfLogoPending width={logoCircleSize} height={logoCircleSize} />
             )}
           </XStack>
         </LinearGradient>
@@ -607,6 +605,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
 const styles = StyleSheet.create({
   header: {
     justifyContent: 'center',
+    width: '100%',
   },
   body: {
     flex: 1,
