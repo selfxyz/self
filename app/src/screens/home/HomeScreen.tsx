@@ -72,7 +72,8 @@ const HomeScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { setIdDetailsDocumentId } = useUserStore();
-  const { getAllDocuments, loadDocumentCatalog } = usePassport();
+  const { getAllDocuments, loadDocumentCatalog, setSelectedDocument } =
+    usePassport();
   const [isNewVersionAvailable, showAppUpdateModal, isModalDismissed] =
     useAppUpdates();
   const [documentCatalog, setDocumentCatalog] = useState<DocumentCatalog>({
@@ -269,8 +270,9 @@ const HomeScreen: React.FC = () => {
               return (
                 <UnregisteredIdCard
                   key={metadata.id}
-                  onRegisterPress={() => {
-                    navigation.navigate('CountryPicker');
+                  onRegisterPress={async () => {
+                    await setSelectedDocument(metadata.id);
+                    navigation.navigate('ConfirmBelonging', {});
                   }}
                 />
               );
