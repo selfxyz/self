@@ -35,6 +35,7 @@ function isNetworkError(error: unknown): boolean {
     'fetch failed', // Generic fetch failure
     'network', // Generic network error
     'AbortError', // Request aborted (timeout)
+    'AbortSignal', // AbortSignal compatibility issue in test environments
   ];
 
   const errorMessage = error.message.toLowerCase();

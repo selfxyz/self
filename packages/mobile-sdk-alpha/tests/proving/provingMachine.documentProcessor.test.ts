@@ -655,6 +655,7 @@ describe('validatingDocument', () => {
       REGISTER: [],
       REGISTER_ID: [],
       REGISTER_AADHAAR: [],
+      REGISTER_KYC: [],
       DSC: [],
       DSC_ID: [],
     };
