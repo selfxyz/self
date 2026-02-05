@@ -22,11 +22,12 @@ import CloudBackupIcon from '@/assets/icons/cloud_backup.svg';
 import PushNotificationsIcon from '@/assets/icons/push_notifications.svg';
 import StarIcon from '@/assets/icons/star.svg';
 import Referral from '@/assets/images/referral.png';
+import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 type PointsInfoScreenProps = StaticScreenProps<
   | {
       showNextButton?: boolean;
-      onNextButtonPress?: () => void;
+      callbackId?: number;
     }
   | undefined
 >;
@@ -90,8 +91,9 @@ const EARN_POINTS_ITEMS = [
 const PointsInfoScreen: React.FC<PointsInfoScreenProps> = ({
   route: { params },
 }) => {
-  const { showNextButton, onNextButtonPress } = params || {};
+  const { showNextButton, callbackId } = params || {};
   const { left, right, bottom } = useSafeAreaInsets();
+  const callbacks = callbackId ? getModalCallbacks(callbackId) : undefined;
 
   return (
     <YStack flex={1} gap={40} paddingBottom={bottom} backgroundColor={white}>
@@ -138,7 +140,7 @@ const PointsInfoScreen: React.FC<PointsInfoScreenProps> = ({
       </ScrollView>
       {showNextButton && (
         <View paddingTop={20} paddingLeft={20 + left} paddingRight={20 + right}>
-          <PrimaryButton onPress={onNextButtonPress}>Next</PrimaryButton>
+          <PrimaryButton onPress={callbacks?.onButtonPress}>Next</PrimaryButton>
         </View>
       )}
     </YStack>

@@ -92,13 +92,22 @@ export const useEarnPointsFlow = ({
   }, [hasReferrer, navigation, navigateToPointsProof]);
 
   const showPointsInfoScreen = useCallback(() => {
-    navigation.navigate('PointsInfo', {
-      showNextButton: true,
-      onNextButtonPress: () => {
+    const callbackId = registerModalCallbacks({
+      onButtonPress: () => {
         showPointsDisclosureModal();
       },
+      onModalDismiss: () => {
+        if (hasReferrer) {
+          useUserStore.getState().clearDeepLinkReferrer();
+        }
+      },
     });
-  }, [navigation, showPointsDisclosureModal]);
+
+    navigation.navigate('PointsInfo', {
+      showNextButton: true,
+      callbackId,
+    });
+  }, [hasReferrer, navigation, showPointsDisclosureModal]);
 
   const handleReferralFlow = useCallback(async () => {
     if (!referrer) {
