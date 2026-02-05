@@ -284,8 +284,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
-      navigateIfReady('RegistrationFallback', {
-        errorSource: 'mrz_scan_failed',
+      navigateIfReady('RegistrationFallbackMRZ', {
         countryCode: currentCountryCode,
       });
     });

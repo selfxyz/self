@@ -19,7 +19,8 @@ import DocumentCameraTroubleScreen from '@/screens/documents/scanning/DocumentCa
 import DocumentNFCMethodSelectionScreen from '@/screens/documents/scanning/DocumentNFCMethodSelectionScreen';
 import DocumentNFCScanScreen from '@/screens/documents/scanning/DocumentNFCScanScreen';
 import DocumentNFCTroubleScreen from '@/screens/documents/scanning/DocumentNFCTroubleScreen';
-import RegistrationFallbackScreen from '@/screens/documents/scanning/RegistrationFallbackScreen';
+import RegistrationFallbackMRZScreen from '@/screens/documents/scanning/RegistrationFallbackMRZScreen';
+import RegistrationFallbackNFCScreen from '@/screens/documents/scanning/RegistrationFallbackNFCScreen';
 import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongingScreen';
 import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
 import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
@@ -167,14 +168,23 @@ const documentsScreens = {
       errorType: 'general',
     },
   },
-  RegistrationFallback: {
-    screen: RegistrationFallbackScreen,
+  RegistrationFallbackMRZ: {
+    screen: RegistrationFallbackMRZScreen,
     options: {
       title: 'REGISTRATION',
       headerShown: false,
     } as NativeStackNavigationOptions,
     initialParams: {
-      errorSource: 'mrz_scan_failed',
+      countryCode: '',
+    },
+  },
+  RegistrationFallbackNFC: {
+    screen: RegistrationFallbackNFCScreen,
+    options: {
+      title: 'REGISTRATION',
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+    initialParams: {
       countryCode: '',
     },
   },

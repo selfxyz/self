@@ -30,15 +30,12 @@ import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
 
-type FallbackErrorSource = 'mrz_scan_failed' | 'nfc_scan_failed';
-
-type RegistrationFallbackRouteParams = {
-  errorSource: FallbackErrorSource;
+type RegistrationFallbackNFCRouteParams = {
   countryCode: string;
 };
 
-type RegistrationFallbackRoute = RouteProp<
-  Record<string, RegistrationFallbackRouteParams>,
+type RegistrationFallbackNFCRoute = RouteProp<
+  Record<string, RegistrationFallbackNFCRouteParams>,
   string
 >;
 
@@ -53,70 +50,26 @@ const getHeaderTitle = (documentType: string): string => {
   }
 };
 
-const getCurrentStep = (errorSource: FallbackErrorSource): number => {
-  switch (errorSource) {
-    case 'mrz_scan_failed':
-      return 2; // Step 2: MRZ scanning (after country/document selection)
-    case 'nfc_scan_failed':
-      return 3; // Step 3: NFC reading (after MRZ scan)
-  }
-};
-
-const getRetryButtonText = (errorSource: FallbackErrorSource): string => {
-  switch (errorSource) {
-    case 'mrz_scan_failed':
-      return 'Try scanning again';
-    case 'nfc_scan_failed':
-      return 'Try reading again';
-    default:
-      return 'Try again';
-  }
-};
-
-const getErrorMessages = (
-  errorSource: FallbackErrorSource,
-): { title: string; description: string; canRetryOriginal: boolean } => {
-  switch (errorSource) {
-    case 'mrz_scan_failed':
-      return {
-        title: 'There was a problem scanning your document',
-        description: 'Make sure the document is valid and try again',
-        canRetryOriginal: true,
-      };
-    case 'nfc_scan_failed':
-      return {
-        title: 'There was a problem reading the chip',
-        description: 'Make sure NFC is enabled and try again',
-        canRetryOriginal: true,
-      };
-  }
-};
-
-const RegistrationFallbackScreen: React.FC = () => {
+const RegistrationFallbackNFCScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const paddingBottom = useSafeBottomPadding(extraYPadding + 35);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute<RegistrationFallbackRoute>();
+  const route = useRoute<RegistrationFallbackNFCRoute>();
   const selfClient = useSelfClient();
   const { trackEvent, useMRZStore } = selfClient;
   const storeCountryCode = useMRZStore(state => state.countryCode);
   const documentType = useMRZStore(state => state.documentType);
 
-  const errorSource = route.params?.errorSource || 'mrz_scan_failed';
   // Use country code from route params, or fall back to MRZ store
   const countryCode = route.params?.countryCode || storeCountryCode || '';
 
   const headerTitle = getHeaderTitle(documentType);
-  const retryButtonText = getRetryButtonText(errorSource);
-  const currentStep = getCurrentStep(errorSource);
-  const { title, description, canRetryOriginal } =
-    getErrorMessages(errorSource);
 
   const { launchSumsubVerification, isLoading: isRetrying } = useSumsubLauncher(
     {
       countryCode,
-      errorSource,
+      errorSource: 'nfc_scan_failed',
       onCancel: () => {
         navigation.goBack();
       },
@@ -137,20 +90,18 @@ const RegistrationFallbackScreen: React.FC = () => {
   }, [navigation]);
 
   const handleTryAlternative = useCallback(async () => {
-    trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', { errorSource });
+    trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
+      errorSource: 'nfc_scan_failed',
+    });
     await launchSumsubVerification();
-  }, [errorSource, launchSumsubVerification, trackEvent]);
+  }, [launchSumsubVerification, trackEvent]);
 
   const handleRetryOriginal = useCallback(() => {
-    trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', { errorSource });
-
-    // Navigate back to the appropriate screen based on error source
-    if (errorSource === 'mrz_scan_failed') {
-      navigation.navigate('DocumentCamera');
-    } else if (errorSource === 'nfc_scan_failed') {
-      navigation.navigate('DocumentNFCScan', {});
-    }
-  }, [errorSource, navigation, trackEvent]);
+    trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {
+      errorSource: 'nfc_scan_failed',
+    });
+    navigation.navigate('DocumentNFCScan', {});
+  }, [navigation, trackEvent]);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>
@@ -177,14 +128,14 @@ const RegistrationFallbackScreen: React.FC = () => {
           <YStack width={30} height={30} />
         </NavBar.Container>
 
-        {/* Progress Bar */}
+        {/* Progress Bar - Step 3 for NFC */}
         <YStack paddingHorizontal={40} paddingBottom={14} paddingTop={4}>
           <XStack gap={3} height={6}>
             {[1, 2, 3, 4].map(step => (
               <YStack
                 key={step}
                 flex={1}
-                backgroundColor={step === currentStep ? cyan300 : slate300}
+                backgroundColor={step === 3 ? cyan300 : slate300}
                 borderRadius={10}
               />
             ))}
@@ -219,7 +170,7 @@ const RegistrationFallbackScreen: React.FC = () => {
             <BodyText
               style={{ fontSize: 18, textAlign: 'center', color: black }}
             >
-              {title}
+              There was a problem reading the chip
             </BodyText>
             <BodyText
               style={{
@@ -228,32 +179,30 @@ const RegistrationFallbackScreen: React.FC = () => {
                 color: slate500,
               }}
             >
-              {description}
+              Make sure NFC is enabled and try again
             </BodyText>
           </YStack>
 
           {/* Retry Button - Primary style with very rounded corners */}
-          {canRetryOriginal && (
-            <Button
-              backgroundColor={black}
-              borderRadius={100}
-              height={52}
-              pressStyle={{ opacity: 0.8 }}
-              onPress={handleRetryOriginal}
-              disabled={isRetrying}
+          <Button
+            backgroundColor={black}
+            borderRadius={100}
+            height={52}
+            pressStyle={{ opacity: 0.8 }}
+            onPress={handleRetryOriginal}
+            disabled={isRetrying}
+          >
+            <BodyText
+              style={{
+                fontSize: 17,
+                fontWeight: '500',
+                fontFamily: dinot,
+                color: white,
+              }}
             >
-              <BodyText
-                style={{
-                  fontSize: 17,
-                  fontWeight: '500',
-                  fontFamily: dinot,
-                  color: white,
-                }}
-              >
-                {retryButtonText}
-              </BodyText>
-            </Button>
-          )}
+              Try reading again
+            </BodyText>
+          </Button>
         </YStack>
       </YStack>
 
@@ -303,4 +252,4 @@ const RegistrationFallbackScreen: React.FC = () => {
   );
 };
 
-export default RegistrationFallbackScreen;
+export default RegistrationFallbackNFCScreen;

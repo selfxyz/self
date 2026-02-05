@@ -12,11 +12,7 @@ import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
 import type { SumsubResult } from '@/integrations/sumsub/types';
 import type { RootStackParamList } from '@/navigation';
 
-export type FallbackErrorSource =
-  | 'mrz_scan_failed'
-  | 'nfc_scan_failed'
-  | 'sumsub_initialization'
-  | 'sumsub_verification';
+export type FallbackErrorSource = 'mrz_scan_failed' | 'nfc_scan_failed';
 
 export interface UseSumsubLauncherOptions {
   /**
@@ -90,10 +86,12 @@ export const useSumsubLauncher = (options: UseSumsubLauncherOptions) => {
         if (onError) {
           await onError(safeError, result);
         } else {
-          navigation.navigate('RegistrationFallback', {
-            errorSource,
-            countryCode,
-          });
+          // Navigate to the appropriate fallback screen based on error source
+          if (errorSource === 'mrz_scan_failed') {
+            navigation.navigate('RegistrationFallbackMRZ', { countryCode });
+          } else {
+            navigation.navigate('RegistrationFallbackNFC', { countryCode });
+          }
         }
         return;
       }
@@ -110,10 +108,12 @@ export const useSumsubLauncher = (options: UseSumsubLauncherOptions) => {
       if (onError) {
         await onError(safeError);
       } else {
-        navigation.navigate('RegistrationFallback', {
-          errorSource,
-          countryCode,
-        });
+        // Navigate to the appropriate fallback screen based on error source
+        if (errorSource === 'mrz_scan_failed') {
+          navigation.navigate('RegistrationFallbackMRZ', { countryCode });
+        } else {
+          navigation.navigate('RegistrationFallbackNFC', { countryCode });
+        }
       }
     } finally {
       setIsLoading(false);
