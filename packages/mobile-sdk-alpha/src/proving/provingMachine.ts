@@ -908,7 +908,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         typedCircuitType === 'disclose'
           ? passportData.documentCategory === 'aadhaar'
             ? 'disclose_aadhaar'
-            : 'disclose'
+            : passportData.documentCategory === 'kyc'
+              ? 'disclose_kyc'
+              : 'disclose'
           : getCircuitNameFromPassportData(passportData, typedCircuitType as 'register' | 'dsc');
 
       const wsRpcUrl = resolveWebSocketUrl(selfClient, typedCircuitType, passportData as PassportData, circuitName);
@@ -1344,7 +1346,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       let circuitName;
       if (circuitType === 'disclose') {
-        circuitName = passportData.documentCategory === 'aadhaar' ? 'disclose_aadhaar' : 'disclose';
+        circuitName =
+          passportData.documentCategory === 'aadhaar'
+            ? 'disclose_aadhaar'
+            : passportData.documentCategory === 'kyc'
+              ? 'disclose_kyc'
+              : 'disclose';
       } else {
         circuitName = getCircuitNameFromPassportData(passportData, circuitType as 'register' | 'dsc');
       }

@@ -52,7 +52,6 @@ const SumsubTestScreen: React.FC = () => {
 
   // Use shared websocket hook
   const { subscribe, unsubscribeAll, isSubscribed } = useSumsubWebSocket({
-    selfClient,
     onSuccess: () => {
       if (isMountedRef.current) {
         Alert.alert(
