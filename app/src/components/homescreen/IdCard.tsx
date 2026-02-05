@@ -21,11 +21,27 @@ import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import CardBackgroundId1 from '@/assets/images/card_background_id1.png';
+import CardBackgroundId2 from '@/assets/images/card_background_id2.png';
+import CardBackgroundId3 from '@/assets/images/card_background_id3.png';
+import CardBackgroundId4 from '@/assets/images/card_background_id4.png';
+import CardBackgroundId5 from '@/assets/images/card_background_id5.png';
+import CardBackgroundId6 from '@/assets/images/card_background_id6.png';
 import DevCardLogo from '@/assets/images/dev_card_logo.svg';
 import DevCardWave from '@/assets/images/dev_card_wave.svg';
+import WaveOverlay from '@/assets/images/wave_overlay.png';
 import KycIdCard from '@/components/homescreen/KycIdCard';
 import { SvgXml } from '@/components/homescreen/SvgXmlWrapper';
+import { getBackgroundIndex } from '@/utils/cardBackgroundSelector';
 import { getDocumentAttributes } from '@/utils/documentAttributes';
+
+const CARD_BACKGROUNDS = [
+  CardBackgroundId1,
+  CardBackgroundId2,
+  CardBackgroundId3,
+  CardBackgroundId4,
+  CardBackgroundId5,
+  CardBackgroundId6,
+];
 
 import { getSecurityLevel } from './cardSecurityBadge';
 
@@ -39,6 +55,228 @@ const selfLogoSvg = `<svg width="47" height="46" viewBox="0 0 47 46" fill="none"
 // Design tokens from Figma
 const DEV_LOGO_BG = '#52525B'; // zinc/600 - grey circle background for dev logo
 const DEV_BODY_COLOR = '#1E1B4B'; // indigo/950 - dev card body background
+
+// Country code to demonym mapping - comprehensive list for all supported countries
+const COUNTRY_DEMONYMS: Record<string, string> = {
+  // Major countries
+  USA: 'AMERICAN',
+  GBR: 'BRITISH',
+  JPN: 'JAPANESE',
+  DEU: 'GERMAN',
+  'D<<': 'GERMAN', // German passports use D<<
+  FRA: 'FRENCH',
+  CAN: 'CANADIAN',
+  IND: 'INDIAN',
+  AUS: 'AUSTRALIAN',
+  NGA: 'NIGERIAN',
+  FIN: 'FINNISH',
+  ITA: 'ITALIAN',
+  ESP: 'SPANISH',
+  BRA: 'BRAZILIAN',
+  MEX: 'MEXICAN',
+  CHN: 'CHINESE',
+  KOR: 'SOUTH KOREAN',
+  PRK: 'NORTH KOREAN',
+  NLD: 'DUTCH',
+  SWE: 'SWEDISH',
+  NOR: 'NORWEGIAN',
+  DNK: 'DANISH',
+  CHE: 'SWISS',
+  AUT: 'AUSTRIAN',
+  BEL: 'BELGIAN',
+  PRT: 'PORTUGUESE',
+  GRC: 'GREEK',
+  POL: 'POLISH',
+  IRL: 'IRISH',
+  NZL: 'NEW ZEALANDER',
+  ZAF: 'SOUTH AFRICAN',
+  SGP: 'SINGAPOREAN',
+  MYS: 'MALAYSIAN',
+  THA: 'THAI',
+  PHL: 'FILIPINO',
+  IDN: 'INDONESIAN',
+  VNM: 'VIETNAMESE',
+  ARE: 'EMIRATI',
+  SAU: 'SAUDI',
+  ISR: 'ISRAELI',
+  EGY: 'EGYPTIAN',
+  TUR: 'TURKISH',
+  RUS: 'RUSSIAN',
+  UKR: 'UKRAINIAN',
+  ARG: 'ARGENTINIAN',
+  COL: 'COLOMBIAN',
+  CHL: 'CHILEAN',
+  PER: 'PERUVIAN',
+  // Europe
+  ALB: 'ALBANIAN',
+  AND: 'ANDORRAN',
+  ARM: 'ARMENIAN',
+  AZE: 'AZERBAIJANI',
+  BLR: 'BELARUSIAN',
+  BIH: 'BOSNIAN',
+  BGR: 'BULGARIAN',
+  HRV: 'CROATIAN',
+  CYP: 'CYPRIOT',
+  CZE: 'CZECH',
+  EST: 'ESTONIAN',
+  GEO: 'GEORGIAN',
+  HUN: 'HUNGARIAN',
+  ISL: 'ICELANDIC',
+  LVA: 'LATVIAN',
+  LIE: 'LIECHTENSTEINER',
+  LTU: 'LITHUANIAN',
+  LUX: 'LUXEMBOURGISH',
+  MLT: 'MALTESE',
+  MDA: 'MOLDOVAN',
+  MCO: 'MONACAN',
+  MNE: 'MONTENEGRIN',
+  MKD: 'MACEDONIAN',
+  ROU: 'ROMANIAN',
+  SMR: 'SAMMARINESE',
+  SRB: 'SERBIAN',
+  SVK: 'SLOVAK',
+  SVN: 'SLOVENIAN',
+  VAT: 'VATICAN',
+  // Americas
+  ATG: 'ANTIGUAN',
+  BHS: 'BAHAMIAN',
+  BRB: 'BARBADIAN',
+  BLZ: 'BELIZEAN',
+  BOL: 'BOLIVIAN',
+  CRI: 'COSTA RICAN',
+  CUB: 'CUBAN',
+  DMA: 'DOMINICAN',
+  DOM: 'DOMINICAN',
+  ECU: 'ECUADORIAN',
+  SLV: 'SALVADORAN',
+  GRD: 'GRENADIAN',
+  GTM: 'GUATEMALAN',
+  GUY: 'GUYANESE',
+  HTI: 'HAITIAN',
+  HND: 'HONDURAN',
+  JAM: 'JAMAICAN',
+  NIC: 'NICARAGUAN',
+  PAN: 'PANAMANIAN',
+  PRY: 'PARAGUAYAN',
+  KNA: 'KITTITIAN',
+  LCA: 'SAINT LUCIAN',
+  VCT: 'VINCENTIAN',
+  SUR: 'SURINAMESE',
+  TTO: 'TRINIDADIAN',
+  URY: 'URUGUAYAN',
+  VEN: 'VENEZUELAN',
+  // Africa
+  DZA: 'ALGERIAN',
+  AGO: 'ANGOLAN',
+  BEN: 'BENINESE',
+  BWA: 'BOTSWANAN',
+  BFA: 'BURKINABE',
+  BDI: 'BURUNDIAN',
+  CPV: 'CAPE VERDEAN',
+  CMR: 'CAMEROONIAN',
+  CAF: 'CENTRAL AFRICAN',
+  TCD: 'CHADIAN',
+  COM: 'COMORIAN',
+  COG: 'CONGOLESE',
+  COD: 'CONGOLESE',
+  CIV: 'IVORIAN',
+  DJI: 'DJIBOUTIAN',
+  GNQ: 'EQUATOGUINEAN',
+  ERI: 'ERITREAN',
+  SWZ: 'SWAZI',
+  ETH: 'ETHIOPIAN',
+  GAB: 'GABONESE',
+  GMB: 'GAMBIAN',
+  GHA: 'GHANAIAN',
+  GIN: 'GUINEAN',
+  GNB: 'BISSAU-GUINEAN',
+  KEN: 'KENYAN',
+  LSO: 'BASOTHO',
+  LBR: 'LIBERIAN',
+  LBY: 'LIBYAN',
+  MDG: 'MALAGASY',
+  MWI: 'MALAWIAN',
+  MLI: 'MALIAN',
+  MRT: 'MAURITANIAN',
+  MUS: 'MAURITIAN',
+  MAR: 'MOROCCAN',
+  MOZ: 'MOZAMBICAN',
+  NAM: 'NAMIBIAN',
+  NER: 'NIGERIEN',
+  RWA: 'RWANDAN',
+  STP: 'SAO TOMEAN',
+  SEN: 'SENEGALESE',
+  SYC: 'SEYCHELLOIS',
+  SLE: 'SIERRA LEONEAN',
+  SOM: 'SOMALI',
+  SSD: 'SOUTH SUDANESE',
+  SDN: 'SUDANESE',
+  TZA: 'TANZANIAN',
+  TGO: 'TOGOLESE',
+  TUN: 'TUNISIAN',
+  UGA: 'UGANDAN',
+  ZMB: 'ZAMBIAN',
+  ZWE: 'ZIMBABWEAN',
+  // Asia & Middle East
+  AFG: 'AFGHAN',
+  BHR: 'BAHRAINI',
+  BGD: 'BANGLADESHI',
+  BTN: 'BHUTANESE',
+  BRN: 'BRUNEIAN',
+  KHM: 'CAMBODIAN',
+  TWN: 'TAIWANESE',
+  HKG: 'HONG KONGER',
+  IRQ: 'IRAQI',
+  IRN: 'IRANIAN',
+  JOR: 'JORDANIAN',
+  KAZ: 'KAZAKHSTANI',
+  KWT: 'KUWAITI',
+  KGZ: 'KYRGYZSTANI',
+  LAO: 'LAOTIAN',
+  LBN: 'LEBANESE',
+  MAC: 'MACANESE',
+  MDV: 'MALDIVIAN',
+  MNG: 'MONGOLIAN',
+  MMR: 'MYANMAR',
+  NPL: 'NEPALI',
+  OMN: 'OMANI',
+  PAK: 'PAKISTANI',
+  PSE: 'PALESTINIAN',
+  QAT: 'QATARI',
+  LKA: 'SRI LANKAN',
+  SYR: 'SYRIAN',
+  TJK: 'TAJIKISTANI',
+  TKM: 'TURKMEN',
+  UZB: 'UZBEKISTANI',
+  YEM: 'YEMENI',
+  // Oceania
+  FJI: 'FIJIAN',
+  KIR: 'I-KIRIBATI',
+  MHL: 'MARSHALLESE',
+  FSM: 'MICRONESIAN',
+  NRU: 'NAURUAN',
+  PLW: 'PALAUAN',
+  PNG: 'PAPUA NEW GUINEAN',
+  WSM: 'SAMOAN',
+  SLB: 'SOLOMON ISLANDER',
+  TON: 'TONGAN',
+  TUV: 'TUVALUAN',
+  VUT: 'NI-VANUATU',
+  TLS: 'TIMORESE',
+};
+
+/**
+ * Get country demonym from 3-letter country code.
+ * Falls back to the code itself if no mapping exists.
+ */
+const getCountryDemonym = (code: string): string => {
+  const upperCode = code.toUpperCase().replace(/</g, '').trim();
+  // Check for D<< (German passport code) first
+  if (code.includes('<')) {
+    return COUNTRY_DEMONYMS['D<<'] || 'GERMAN';
+  }
+  return COUNTRY_DEMONYMS[upperCode] || upperCode;
+};
 
 interface IdCardLayoutAttributes {
   idDocument: PassportData | AadhaarData | KycData | null;
@@ -81,6 +319,12 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   // Get document attributes
   const attributes = getDocumentAttributes(idDocument);
   const nationalityCode = attributes.nationalitySlice.replace(/</g, '').trim();
+  const countryDemonym = getCountryDemonym(nationalityCode);
+
+  // Get deterministic background based on document data
+  const backgroundIndex = getBackgroundIndex(idDocument);
+  const cardBackground = CARD_BACKGROUNDS[backgroundIndex - 1];
+
 
   // Check if this is a mock/dev document
   const isMockDocument = Boolean(idDocument.mock);
@@ -106,13 +350,13 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
     ? `DEV ${getDocumentTypeLabel()}`
     : getDocumentTypeLabel();
 
-  // Subtitle text
+  // Subtitle text (uses demonym: "VERIFIED AMERICAN PASSPORT")
   const subtitleText = isMockDocument
     ? `SELF DEVELOPER ${getDocumentTypeLabel()}`
-    : `VERIFIED ${nationalityCode} ${getDocumentTypeLabel()}`;
+    : `VERIFIED ${countryDemonym} ${getDocumentTypeLabel()}`;
 
-  // Bottom label (e.g., "US PASSPORT") - only for real documents
-  const bottomLabel = `${nationalityCode} ${getDocumentTypeLabel()}`;
+  // Bottom label (uses demonym: "AMERICAN PASSPORT")
+  const bottomLabel = `${countryDemonym} ${getDocumentTypeLabel()}`;
 
   // Figma exact dimensions (scaled from 353px reference width)
   const scale = cardWidth / 353;
@@ -125,12 +369,23 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
 
   // Get truncated selfId for display (e.g., "0xd9..b94")
   const getTruncatedId = (): string => {
-    if (isMRZDocument(idDocument) && idDocument.selfId) {
-      const id = idDocument.selfId;
-      if (id.length > 10) {
+    if (isMRZDocument(idDocument)) {
+      // Use selfId if available, otherwise generate a deterministic mock ID from MRZ
+      const id = (idDocument as PassportData & { selfId?: string }).selfId;
+      if (id && id.length > 10) {
         return `${id.slice(0, 4)}..${id.slice(-3)}`;
       }
-      return id;
+      if (id) {
+        return id;
+      }
+      // Generate mock display ID from MRZ hash for visual testing
+      const mrz = idDocument.mrz;
+      let hash = 0;
+      for (let i = 0; i < mrz.length; i++) {
+        hash = (hash * 31 + mrz.charCodeAt(i)) >>> 0;
+      }
+      const mockId = `0x${hash.toString(16).padStart(8, '0')}`;
+      return `${mockId.slice(0, 4)}..${mockId.slice(-3)}`;
     }
     if (isAadhaarDocument(idDocument)) {
       const last4 = idDocument.extractedFields?.aadhaarLast4Digits;
@@ -276,13 +531,19 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
               </YStack>
             </YStack>
           ) : (
-            // Real document body - composited background with wave pattern
+            // Real document body - gradient background with wave overlay
             <YStack style={styles.body}>
-              {/* Pre-composited background image (colorful gradient + chrome wave) */}
+              {/* Gradient background */}
               <Image
-                source={CardBackgroundId1}
+                source={cardBackground}
                 style={styles.backgroundImage}
                 resizeMode="cover"
+              />
+              {/* Wave pattern overlay */}
+              <Image
+                source={WaveOverlay}
+                style={styles.waveOverlay}
+                resizeMode="contain"
               />
 
               {/* Bottom content: Left text + Right badge (real documents only) */}
@@ -360,6 +621,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '100%',
     height: '100%',
+  },
+  waveOverlay: {
+    position: 'absolute',
+    top: -10,
+    left: 0,
+    width: '100%',
+    height: '90%',
+    opacity: 0.6,
   },
 });
 
