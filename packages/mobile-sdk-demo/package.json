@@ -7,7 +7,6 @@
   "scripts": {
     "analyze:bundle:android": "yarn prebuild && node scripts/bundle-analyze-ci.cjs android",
     "analyze:bundle:ios": "yarn prebuild && node scripts/bundle-analyze-ci.cjs ios",
-    "postinstall": "npx patch-package --patch-dir ../../patches || true",
     "preandroid": "yarn prebuild",
     "android": "react-native run-android --verbose",
     "prebuild": "yarn workspace @selfxyz/mobile-sdk-alpha build",
@@ -15,6 +14,7 @@
     "clean": "rm -rf ios/build android/app/build android/build && cd android && ./gradlew clean && cd ..",
     "format": "yarn nice",
     "ia": "yarn install-app",
+    "postinstall": "npx patch-package --patch-dir ../../patches || true",
     "install-app": "yarn install && yarn prebuild && cd ios && pod install && cd ..",
     "preios": "yarn prebuild",
     "ios": "react-native run-ios",
