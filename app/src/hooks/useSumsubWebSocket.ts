@@ -100,7 +100,7 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
           const kycData: KycData = {
             documentType: applicantInfoDeserialized.idType as DocumentType,
             documentCategory: 'kyc',
-            mock: false,
+            mock: applicantInfoDeserialized.idNumber.startsWith('Mock'),
             signature: data.signature,
             pubkey: data.pubkey,
             serializedApplicantInfo: data.applicantInfo,

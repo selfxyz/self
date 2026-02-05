@@ -349,7 +349,7 @@ export async function generateTEEInputsRegister(
     return {
       inputs,
       circuitName: getCircuitNameFromPassportData(passportData, 'register'),
-      endpointType: 'celo',
+      endpointType: env === 'stg' ? 'staging_celo' : 'celo',
       endpoint: 'https://self.xyz',
     };
   }
