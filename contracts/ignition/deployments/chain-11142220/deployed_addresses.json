@@ -104,5 +104,6 @@
   "DeployKycRegistryModule#IdentityRegistryKycImplV1": "0x94f6DE38E10140B9E3963a770B5B769b38459a3B",
   "DeployKycRegistryModule#IdentityRegistry": "0x90e907E4AaB6e9bcFB94997Af4A097e8CAadBdf3",
   "UpdateAllRegistries#PCR0Manager": "0xf2810D5E9938816D42F0Ae69D33F013a23C0aED2",
-  "UpdateAllRegistries#a3": "0x90e907E4AaB6e9bcFB94997Af4A097e8CAadBdf3"
+  "UpdateAllRegistries#a3": "0x90e907E4AaB6e9bcFB94997Af4A097e8CAadBdf3",
+  "DeployAllVerifiers#Verifier_vc_and_disclose_kyc": "0xAAFA189a079D04462e8ab596d9c103e081A1c810"
 }

@@ -11,7 +11,6 @@ import PassportCameraScanIcon from '../../../svgs/icons/passport_camera_scan.svg
 import PlusIcon from '../../../svgs/icons/plus.svg';
 import SelfLogo from '../../../svgs/logo.svg';
 import { BodyText, RoundFlag, View, XStack, YStack } from '../../components';
-import { FeatureFlags } from '../../config/features';
 import { black, blue100, blue600, slate100, slate300, slate400, white } from '../../constants/colors';
 import { advercase, dinot } from '../../constants/fonts';
 import { useSelfClient } from '../../context';
@@ -129,10 +128,11 @@ const DocumentItem: React.FC<DocumentItemProps> = ({ docType, onPress }) => {
 type IDSelectionScreenProps = {
   countryCode: string;
   documentTypes: string[];
+  showKyc?: boolean;
 };
 
 const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
-  const { countryCode = '', documentTypes = [] } = props;
+  const { countryCode = '', documentTypes = [], showKyc = false } = props;
   const selfClient = useSelfClient();
 
   const onSelectDocumentType = (docType: string) => {
@@ -173,7 +173,7 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
           <DocumentItem key={docType} docType={docType} onPress={() => onSelectDocumentType(docType)} />
         ))}
         <BodyText style={styles.footerText}>Be sure your document is ready to scan</BodyText>
-        {FeatureFlags.KYC_ENABLED && (
+        {showKyc && (
           <View style={styles.kycContainer}>
             <DocumentItem docType="kyc" onPress={() => onSelectDocumentType('kyc')} />
           </View>
