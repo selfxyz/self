@@ -88,7 +88,7 @@ react {
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -147,9 +147,21 @@ android {
                 if (System.env.E2E_BUILD == "true") {
                     abiFilters "x86_64"
                 } else {
-                    abiFilters "arm64-v8a", "x86_64"
+                    // Only arm64-v8a for production to reduce APK size
+                    abiFilters "arm64-v8a"
                 }
             }
+        }
+    }
+
+    // ABI splits to create per-architecture APKs
+    // Play Store will serve the right APK per device, reducing download size
+    splits {
+        abi {
+            enable true
+            reset()
+            include "arm64-v8a"
+            universalApk false
         }
     }
     signingConfigs {
