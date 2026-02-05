@@ -5,7 +5,6 @@
 import React, {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -46,7 +45,9 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import LogoInversed from '@/assets/images/logo_inversed.svg';
 import EmptyIdCard from '@/components/homescreen/EmptyIdCard';
+import ExpiredIdCard from '@/components/homescreen/ExpiredIdCard';
 import IdCardLayout from '@/components/homescreen/IdCard';
+import UnregisteredIdCard from '@/components/homescreen/UnregisteredIdCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
@@ -57,6 +58,10 @@ import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 import useUserStore from '@/stores/userStore';
+import {
+  checkDocumentExpiration,
+  getDocumentAttributes,
+} from '@/utils/documentAttributes';
 
 const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -158,10 +163,6 @@ const HomeScreen: React.FC = () => {
   // Prevents back navigation
   usePreventRemove(true, () => {});
 
-  const hasValidRegisteredDocument = useMemo(() => {
-    return documentCatalog.documents.some(doc => doc.isRegistered === true);
-  }, [documentCatalog]);
-
   // Calculate bottom padding to prevent button bleeding into system navigation
   const bottomPadding = useSafeBottomPadding(20);
 
@@ -226,7 +227,7 @@ const HomeScreen: React.FC = () => {
           paddingBottom: 35, // Add extra bottom padding for shadow
         }}
       >
-        {!hasValidRegisteredDocument ? (
+        {documentCatalog.documents.length === 0 ? (
           <EmptyIdCard
             onRegisterPress={() => {
               navigation.navigate('CountryPicker');
@@ -238,10 +239,31 @@ const HomeScreen: React.FC = () => {
             const isSelected =
               documentCatalog.selectedDocumentId === metadata.id;
 
-            if (!documentData || !documentData.metadata.isRegistered) {
+            if (!documentData) {
               return null;
             }
 
+            // Show UnregisteredIdCard for documents not yet registered on-chain
+            if (!documentData.metadata.isRegistered) {
+              return (
+                <UnregisteredIdCard
+                  key={metadata.id}
+                  onRegisterPress={() => {
+                    navigation.navigate('CountryPicker');
+                  }}
+                />
+              );
+            }
+
+            // Check if document is expired
+            const attributes = getDocumentAttributes(documentData.data);
+            const isExpired = checkDocumentExpiration(attributes.expiryDateSlice);
+
+            if (isExpired) {
+              return <ExpiredIdCard key={metadata.id} />;
+            }
+
+            // Show normal IdCardLayout for valid registered documents
             return (
               <Pressable
                 key={metadata.id}
