@@ -30,7 +30,9 @@ interface UnregisteredIdCardProps {
  * - White body with gray wave pattern
  * - Full-width red pill button "Complete Registration"
  */
-const UnregisteredIdCard: FC<UnregisteredIdCardProps> = ({ onRegisterPress }) => {
+const UnregisteredIdCard: FC<UnregisteredIdCardProps> = ({
+  onRegisterPress,
+}) => {
   const { width: screenWidth } = Dimensions.get('window');
 
   // Card dimensions (matching IdCardLayout)
