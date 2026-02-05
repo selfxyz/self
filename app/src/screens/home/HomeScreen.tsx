@@ -2,12 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions, Pressable } from 'react-native';
 import {
   Button,
@@ -63,6 +58,8 @@ import {
   checkDocumentExpiration,
   getDocumentAttributes,
 } from '@/utils/documentAttributes';
+
+import PendingIdCard from '../../components/homescreen/PendingIdCard';
 
 const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -228,6 +225,8 @@ const HomeScreen: React.FC = () => {
     );
   }
 
+  console.log('activePendingVerifications', activePendingVerifications);
+
   return (
     <YStack backgroundColor={'#F8FAFC'} flex={1} alignItems="center">
       <ScrollView
@@ -240,67 +239,74 @@ const HomeScreen: React.FC = () => {
           paddingBottom: 35, // Add extra bottom padding for shadow
         }}
       >
-        {/* TODO seshanth Uncomment and use a valid commitment */}
-        {/* {activePendingVerifications.map(verification => (
-          <PendingKycCard
+        {/* Show pending KYC cards at the top */}
+        {activePendingVerifications.map(verification => (
+          <PendingIdCard
             key={verification.userId}
-            verification={verification}
-          />
-        ))} */}
-
-        {documentCatalog.documents.length === 0 &&
-        activePendingVerifications.length === 0 ? (
-          <EmptyIdCard
-            onRegisterPress={() => {
-              navigation.navigate('CountryPicker');
+            onClick={() => {
+              if (verification.status === 'processing') {
+                navigation.navigate('KYCVerified', {
+                  documentId: verification.documentId,
+                });
+              }
             }}
           />
-        ) : (
-          documentCatalog.documents.map((metadata: DocumentMetadata) => {
-            const documentData = allDocuments[metadata.id];
-            const isSelected =
-              documentCatalog.selectedDocumentId === metadata.id;
+        ))}
 
-            if (!documentData) {
-              return null;
-            }
+        {/* Show EmptyIdCard only when no documents AND no pending verifications */}
+        {documentCatalog.documents.length === 0 &&
+          activePendingVerifications.length === 0 && (
+            <EmptyIdCard
+              onRegisterPress={() => {
+                navigation.navigate('CountryPicker');
+              }}
+            />
+          )}
 
-            // Show UnregisteredIdCard for documents not yet registered on-chain
-            if (!documentData.metadata.isRegistered) {
-              return (
-                <UnregisteredIdCard
-                  key={metadata.id}
-                  onRegisterPress={async () => {
-                    await setSelectedDocument(metadata.id);
-                    navigation.navigate('ConfirmBelonging', {});
-                  }}
-                />
-              );
-            }
+        {/* Show document cards */}
+        {documentCatalog.documents.map((metadata: DocumentMetadata) => {
+          const documentData = allDocuments[metadata.id];
+          const isSelected = documentCatalog.selectedDocumentId === metadata.id;
 
-            // Check if document is expired
-            const attributes = getDocumentAttributes(documentData.data);
-            const isExpired = checkDocumentExpiration(attributes.expiryDateSlice);
+          if (!documentData) {
+            return null;
+          }
 
-            if (isExpired) {
-              return <ExpiredIdCard key={metadata.id} />;
-            }
-
-            // Show normal IdCardLayout for valid registered documents
+          // Show UnregisteredIdCard for documents not yet registered on-chain
+          if (!documentData.metadata.isRegistered) {
             return (
-              <Pressable
+              <UnregisteredIdCard
                 key={metadata.id}
-                onPress={() => handleDocumentPress(metadata, documentData.data)}
-              >
-                <IdCardLayout
-                  idDocument={documentData.data}
-                  selected={isSelected}
-                  hidden={true}
-                />
-              </Pressable>
+                onRegisterPress={async () => {
+                  await setSelectedDocument(metadata.id);
+                  navigation.navigate('ConfirmBelonging', {});
+                }}
+              />
             );
-          })
-        )}
+          }
+
+          // Check if document is expired
+          const attributes = getDocumentAttributes(documentData.data);
+          const isExpired = checkDocumentExpiration(attributes.expiryDateSlice);
+
+          if (isExpired) {
+            return <ExpiredIdCard key={metadata.id} />;
+          }
+
+          // Show normal IdCardLayout for valid registered documents
+          return (
+            <Pressable
+              key={metadata.id}
+              onPress={() => handleDocumentPress(metadata, documentData.data)}
+            >
+              <IdCardLayout
+                idDocument={documentData.data}
+                selected={isSelected}
+                hidden={true}
+              />
+            </Pressable>
+          );
+        })}
       </ScrollView>
       <YStack
         elevation={8}

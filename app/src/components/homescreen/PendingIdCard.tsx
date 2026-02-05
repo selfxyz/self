@@ -13,6 +13,10 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
 import WavePatternPending from '@/assets/images/wave_pattern_pending.png';
 
+interface PendingIdCardProps {
+  onClick?: () => void;
+}
+
 // Figma design tokens
 const SUBTITLE_COLOR = '#9CA3AF'; // gray-400
 
@@ -33,7 +37,7 @@ const PENDING_BADGE_TEXT = '#B45309'; // amber-700
  * - "IDENTITY UNDER REVIEW" title
  * - Yellow "Pending" badge in bottom right
  */
-const PendingIdCard: FC = () => {
+const PendingIdCard: FC<PendingIdCardProps> = ({ onClick }) => {
   const { width: screenWidth } = Dimensions.get('window');
 
   // Card dimensions (matching IdCardLayout)
@@ -70,6 +74,8 @@ const PendingIdCard: FC = () => {
         shadowOpacity={0.25}
         shadowRadius={28}
         elevation={12}
+        onPress={onClick}
+        pressStyle={onClick ? { opacity: 0.7 } : undefined}
       >
         {/* Header Section */}
         <YStack
