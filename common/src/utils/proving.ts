@@ -80,8 +80,8 @@ export function getPayload(
         : circuitName === 'vc_and_disclose_aadhaar'
           ? 'disclose_aadhaar'
           : circuitName === 'vc_and_disclose_kyc'
-          ? 'disclose_kyc'
-          : 'disclose_id';
+            ? 'disclose_kyc'
+            : 'disclose_id';
     const payload: TEEPayloadDisclose = {
       type,
       endpointType: endpointType,
