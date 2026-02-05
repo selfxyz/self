@@ -130,7 +130,7 @@ export type HomeRoutesParamList = {
   PointsInfo:
     | {
         showNextButton?: boolean;
-        onNextButtonPress?: () => void;
+        callbackId?: number;
       }
     | undefined;
 };
