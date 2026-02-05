@@ -214,9 +214,11 @@ jobs:
     timeout-minutes: 60
     # runs-on: macos-latest-large
     runs-on: namespace-profile-apple-silicon-6cpu
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'push'
+    # TEMPORARY: Enabled for PRs to test fixes
+    # Original condition:
+    # if: |
+    #   github.event_name == 'workflow_dispatch' ||
+    #   github.event_name == 'push'
     name: iOS E2E Tests Demo App
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
