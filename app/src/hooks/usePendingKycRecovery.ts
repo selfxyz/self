@@ -49,6 +49,8 @@ export function usePendingKycRecovery() {
   // Clean up expired verifications once on mount
   useEffect(() => {
     removeExpiredVerifications();
+
+    return () => unsubscribeAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
@@ -95,10 +97,5 @@ export function usePendingKycRecovery() {
       );
       subscribe(firstPending.userId);
     }
-
-    // Cleanup on unmount
-    return () => {
-      unsubscribeAll();
-    };
   }, [pendingVerifications, subscribe, unsubscribeAll]);
 }

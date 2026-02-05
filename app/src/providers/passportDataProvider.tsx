@@ -884,9 +884,7 @@ export async function storeDocumentWithDeduplication(
   const metadata: DocumentMetadata = {
     id: contentHash,
     documentType: passportData.documentType,
-    documentCategory:
-      passportData.documentCategory ||
-      inferDocumentCategory(passportData.documentType),
+    documentCategory: passportData.documentCategory,
     data: dataField,
     mock: passportData.mock || false,
     isRegistered: false,
