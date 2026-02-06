@@ -224,8 +224,9 @@ export const generateKycDiscloseInputFromData = (
     leaf_depth: formatInput(leaf_depth),
     path: formatInput(merkle_path),
     siblings: formatInput(siblings),
-    forbidden_countries_list:
-      formatInput(formatCountriesList(forbiddenCountriesList)) || [...Array(120)].map(() => '0'),
+    forbidden_countries_list: forbiddenCountriesList
+      ? formatInput(formatCountriesList(forbiddenCountriesList))
+      : [],
     ofac_name_dob_smt_leaf_key: nameDobInputs.smt_leaf_key,
     ofac_name_dob_smt_root: nameDobInputs.smt_root,
     ofac_name_dob_smt_siblings: nameDobInputs.smt_siblings,
@@ -252,12 +253,12 @@ export const generateKycRegisterInput = async (
   const signature = deserializeSignature(signatureBase64);
   const pubkey = [BigInt(pubkeyStr[0]), BigInt(pubkeyStr[1])] as [bigint, bigint];
 
-  const serializedData = serializeKycData(applicantInfo);
+  const serializedData = serializeKycData(applicantInfo).padEnd(KYC_MAX_LENGTH, '\0');
 
   const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
 
   const kycRegisterInput: KycRegisterInput = {
-    data_padded: msgPadded.map((x) => Number(x)),
+    data_padded: msgPadded,
     s: signature.s,
     R: signature.R,
     pubKey: pubkey,
