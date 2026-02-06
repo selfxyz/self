@@ -62,7 +62,9 @@ const DocumentCameraScreen: React.FC = () => {
       shouldInjectError('mrz_unknown_error')
     ) {
       const timer = setTimeout(() => {
-        console.log('[DEV] Injecting MRZ error - navigating to fallback screen');
+        console.log(
+          '[DEV] Injecting MRZ error - navigating to fallback screen',
+        );
         navigation.navigate('RegistrationFallbackMRZ', {
           countryCode: countryCode || '',
         });

@@ -130,12 +130,7 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
           <NavBar.Title style={{ fontFamily: dinot, fontSize: 17 }}>
             {headerTitle}
           </NavBar.Title>
-          <Button
-            unstyled
-            onPress={handleHelp}
-            aria-label="Help"
-            hitSlop={8}
-          >
+          <Button unstyled onPress={handleHelp} aria-label="Help" hitSlop={8}>
             <YStack
               width={26}
               height={26}
