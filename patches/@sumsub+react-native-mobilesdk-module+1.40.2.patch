@@ -5,12 +5,18 @@ index 0000000..0000001 100644
 @@ -77,11 +77,11 @@ dependencies {
      implementation "com.sumsub.sns:idensic-mobile-sdk:1.40.2"
  
+     // Enable Device Intelligence (Fisherman) for fraud detection
+     // Privacy: Declare device fingerprinting/identifiers in Google Play Data Safety form
      // remove comment to enable Device Intelligence
 -    // implementation "com.sumsub.sns:idensic-mobile-sdk-fisherman:1.40.2"
 +    implementation "com.sumsub.sns:idensic-mobile-sdk-fisherman:1.40.2"
+     // VideoIdent disabled on both iOS and Android for current release
+     // Reason: Avoids microphone permission requirements (FOREGROUND_SERVICE_MICROPHONE on Android)
+     // Feature: Provides liveness checks via live video calls with human agents
+     // TODO: Re-enable on both platforms for future release when liveness checks are needed
      // remove comment if you need VideoIdent support
 -    // implementation "com.sumsub.sns:idensic-mobile-sdk-videoident:1.40.2"
-+    implementation "com.sumsub.sns:idensic-mobile-sdk-videoident:1.40.2"
++    // implementation "com.sumsub.sns:idensic-mobile-sdk-videoident:1.40.2"
      // remove comment if you need EID support
      // implementation "com.sumsub.sns:idensic-mobile-sdk-eid:1.40.2"
      // remove comment if you need NFC support

@@ -116,7 +116,17 @@ export const launchSumsub = async (
     })
     .withDebug(config.debug ?? __DEV__)
     .withLocale(config.locale ?? 'en')
-    .withAnalyticsEnabled(true); // Device Intelligence requires this
+    // Platform configuration:
+    // - Device Intelligence (Fisherman): Enabled on both iOS and Android
+    //   * iOS: Configured via IDENSIC_WITH_FISHERMAN in Podfile
+    //   * Android: Configured via idensic-mobile-sdk-fisherman in patch file
+    //   * Privacy: iOS declares device ID collection in PrivacyInfo.xcprivacy
+    //   * Privacy: Android should declare device fingerprinting in Google Play Data Safety
+    // - VideoIdent (live video calls): Disabled on both platforms for current release
+    //   * iOS: Disabled in Podfile (avoids microphone permission requirements)
+    //   * Android: Disabled in patch file (avoids FOREGROUND_SERVICE_MICROPHONE permission)
+    //   * Note: VideoIdent will be re-enabled on both platforms in future release for liveness checks
+    .withAnalyticsEnabled(true); // Required for Device Intelligence to function
 
   // Pre-select document type and country if provided
   // This skips the document selection step in Sumsub
