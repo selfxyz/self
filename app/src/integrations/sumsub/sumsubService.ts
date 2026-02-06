@@ -5,15 +5,30 @@
 import { SUMSUB_TEE_URL } from '@env';
 import SNSMobileSDK from '@sumsub/react-native-mobilesdk-module';
 
+import { alpha2ToAlpha3 } from '@selfxyz/common';
+
 import type {
   AccessTokenResponse,
   SumsubResult,
 } from '@/integrations/sumsub/types';
 
+// Maps Self document type codes to Sumsub document types
+type SelfDocumentType = 'p' | 'i';
+type SumsubDocumentType = 'PASSPORT' | 'ID_CARD';
+
+const DOCUMENT_TYPE_MAP: Record<SelfDocumentType, SumsubDocumentType> = {
+  p: 'PASSPORT',
+  i: 'ID_CARD',
+};
+
 export interface SumsubConfig {
   accessToken: string;
   locale?: string;
   debug?: boolean;
+  /** Self document type code ('p' for passport, 'i' for ID card) */
+  documentType?: SelfDocumentType;
+  /** ISO 3166-1 alpha-2 country code (e.g., 'US', 'GB') */
+  countryCode?: string;
   onStatusChanged?: (prevStatus: string, newStatus: string) => void;
   onEvent?: (eventType: string, payload: unknown) => void;
 }
@@ -78,7 +93,7 @@ export const fetchAccessToken = async (
 export const launchSumsub = async (
   config: SumsubConfig,
 ): Promise<SumsubResult> => {
-  const sdk = SNSMobileSDK.init(config.accessToken, async () => {
+  let sdk = SNSMobileSDK.init(config.accessToken, async () => {
     // Token refresh not implemented for test flow
     throw new Error(
       'Sumsub token expired - refresh not implemented for test flow',
@@ -101,8 +116,39 @@ export const launchSumsub = async (
     })
     .withDebug(config.debug ?? __DEV__)
     .withLocale(config.locale ?? 'en')
-    .withAnalyticsEnabled(true) // Device Intelligence requires this
-    .build();
+    // Platform configuration:
+    // - Device Intelligence (Fisherman): Enabled on both iOS and Android
+    //   * iOS: Configured via IDENSIC_WITH_FISHERMAN in Podfile
+    //   * Android: Configured via idensic-mobile-sdk-fisherman in patch file
+    //   * Privacy: iOS declares device ID collection in PrivacyInfo.xcprivacy
+    //   * Privacy: Android should declare device fingerprinting in Google Play Data Safety
+    // - VideoIdent (live video calls): Disabled on both platforms for current release
+    //   * iOS: Disabled in Podfile (avoids microphone permission requirements)
+    //   * Android: Disabled in patch file (avoids FOREGROUND_SERVICE_MICROPHONE permission)
+    //   * Note: VideoIdent will be re-enabled on both platforms in future release for liveness checks
+    .withAnalyticsEnabled(true); // Required for Device Intelligence to function
 
-  return sdk.launch();
+  // Pre-select document type and country if provided
+  // This skips the document selection step in Sumsub
+  if (config.documentType && config.countryCode) {
+    const sumsubDocType = DOCUMENT_TYPE_MAP[config.documentType];
+    // Handle both 2-letter (US) and 3-letter (USA) country codes
+    // alpha2ToAlpha3 returns undefined for 3-letter codes, so use the original if conversion fails
+    const alpha3Country =
+      alpha2ToAlpha3(config.countryCode) ?? config.countryCode;
+
+    if (sumsubDocType && alpha3Country) {
+      console.log(
+        `[Sumsub] Pre-selecting document: ${sumsubDocType} from ${alpha3Country}`,
+      );
+      sdk = sdk.withPreferredDocumentDefinitions({
+        IDENTITY: {
+          idDocType: sumsubDocType,
+          country: alpha3Country,
+        },
+      });
+    }
+  }
+
+  return sdk.build().launch();
 };

@@ -191,8 +191,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         },
         { message: sanitizeErrorMessage(message) },
       );
-      navigation.navigate('RegistrationFallback', {
-        errorSource: 'nfc_scan_failed',
+      navigation.navigate('RegistrationFallbackNFC', {
         countryCode,
       });
     },
