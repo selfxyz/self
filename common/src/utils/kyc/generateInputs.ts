@@ -144,7 +144,8 @@ export const generateKycDiscloseInput = (
     path: formatInput(merkle_path),
     siblings: formatInput(siblings),
     forbidden_countries_list: forbiddenCountriesList
-    ? formatInput(formatCountriesList(forbiddenCountriesList)) : [...Array(120)].map((x) => '0'),
+      ? formatInput(formatCountriesList(forbiddenCountriesList))
+      : [...Array(120)].map((x) => '0'),
     ofac_name_dob_smt_leaf_key: nameDobInputs.smt_leaf_key,
     ofac_name_dob_smt_root: nameDobInputs.smt_root,
     ofac_name_dob_smt_siblings: nameDobInputs.smt_siblings,
