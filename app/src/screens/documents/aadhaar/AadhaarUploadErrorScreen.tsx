@@ -249,8 +249,8 @@ const AadhaarUploadErrorScreen: React.FC = () => {
                 color: slate500,
               }}
             >
-              Registering with alternative methods may take longer to verify your
-              document.
+              Registering with alternative methods may take longer to verify
+              your document.
             </BodyText>
           </>
         )}
