@@ -13,7 +13,6 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { DefaultNavBar } from '@/components/navbar';
@@ -28,11 +27,9 @@ import homeScreens from '@/navigation/home';
 import onboardingScreens from '@/navigation/onboarding';
 import sharedScreens from '@/navigation/shared';
 import starfallScreens from '@/navigation/starfall';
+import type { ExplicitRouteParams, OmittedRouteKeys } from '@/navigation/types';
 import verificationScreens from '@/navigation/verification';
-import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
-import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
 import { trackScreenView } from '@/services/analytics';
-import type { ProofHistory } from '@/stores/proofTypes';
 
 export const navigationScreens = {
   ...appScreens,
@@ -58,180 +55,13 @@ const AppNavigation = createNativeStackNavigator({
 
 type BaseRootStackParamList = StaticParamList<typeof AppNavigation>;
 
-// Explicitly declare route params that are not inferred from initialParams
+// Explicitly declare route params that are not inferred from initialParams.
+// Route param types are defined in @/navigation/types for better organization.
 export type RootStackParamList = Omit<
   BaseRootStackParamList,
-  | 'AadhaarUpload'
-  | 'AadhaarUploadError'
-  | 'AadhaarUploadSuccess'
-  | 'AccountRecovery'
-  | 'AccountVerifiedSuccess'
-  | 'CloudBackupSettings'
-  | 'ComingSoon'
-  | 'ConfirmBelonging'
-  | 'CreateMock'
-  | 'Disclaimer'
-  | 'DocumentNFCScan'
-  | 'DocumentOnboarding'
-  | 'DocumentSelectorForProving'
-  | 'ProvingScreenRouter'
-  | 'Gratification'
-  | 'Home'
-  | 'IDPicker'
-  | 'IdDetails'
-  | 'KycConnectionError'
-  | 'KycFailure'
-  | 'KycSuccess'
-  | 'KYCVerified'
-  | 'LogoConfirmation'
-  | 'RegistrationFallbackMRZ'
-  | 'RegistrationFallbackNFC'
-  | 'Loading'
-  | 'Modal'
-  | 'MockDataDeepLink'
-  | 'Points'
-  | 'PointsInfo'
-  | 'ProofHistoryDetail'
-  | 'Prove'
-  | 'SaveRecoveryPhrase'
-  | 'WebView'
-> & {
-  // Shared screens
-  ComingSoon: {
-    countryCode?: string;
-    documentCategory?: string;
-  };
-  WebView: WebViewScreenParams;
-
-  // Document screens
-  IDPicker: {
-    countryCode: string;
-    documentTypes: string[];
-  };
-  LogoConfirmation: {
-    documentType: string;
-    countryCode: string;
-  };
-  ConfirmBelonging:
-    | {
-        documentCategory?: DocumentCategory;
-        signatureAlgorithm?: string;
-        curveOrExponent?: string;
-      }
-    | undefined;
-  DocumentNFCScan:
-    | {
-        passportNumber?: string;
-        dateOfBirth?: string;
-        dateOfExpiry?: string;
-      }
-    | undefined;
-  DocumentCameraTrouble: undefined;
-  DocumentOnboarding: undefined;
-
-  // Aadhaar screens
-  AadhaarUpload: {
-    countryCode: string;
-  };
-  AadhaarUploadSuccess: undefined;
-  AadhaarUploadError: {
-    errorType: string;
-  };
-
-  // Registration Fallback screens
-  RegistrationFallbackMRZ: {
-    countryCode: string;
-  };
-  RegistrationFallbackNFC: {
-    countryCode: string;
-  };
-
-  // Account/Recovery screens
-  AccountRecovery:
-    | {
-        nextScreen?: string;
-      }
-    | undefined;
-  SaveRecoveryPhrase:
-    | {
-        nextScreen?: string;
-      }
-    | undefined;
-  CloudBackupSettings:
-    | {
-        nextScreen?: 'SaveRecoveryPhrase';
-        returnToScreen?: 'Points';
-      }
-    | undefined;
-  ProofSettings: undefined;
-  AccountVerifiedSuccess: undefined;
-
-  // Proof/Verification screens
-  ProofHistoryDetail: {
-    data: ProofHistory;
-  };
-  Prove:
-    | {
-        scrollOffset?: number;
-      }
-    | undefined;
-  ProvingScreenRouter: undefined;
-  DocumentSelectorForProving:
-    | {
-        documentType?: string;
-      }
-    | undefined;
-
-  // App screens
-  Loading: {
-    documentCategory?: DocumentCategory;
-    signatureAlgorithm?: string;
-    curveOrExponent?: string;
-  };
-  Modal: ModalNavigationParams;
-  Gratification: {
-    points?: number;
-  };
-  StarfallPushCode: undefined;
-
-  // Home screens
-  Home: {
-    testReferralFlow?: boolean;
-  };
-  Points: undefined;
-  PointsInfo:
-    | {
-        showNextButton?: boolean;
-        onNextButtonPress?: () => void;
-      }
-    | undefined;
-  IdDetails: undefined;
-
-  // Onboarding screens
-  Disclaimer: undefined;
-  KycSuccess:
-    | {
-        userId?: string;
-      }
-    | undefined;
-  KYCVerified:
-    | {
-        status?: string;
-        userId?: string;
-      }
-    | undefined;
-  KycFailure: {
-    countryCode?: string;
-    canRetry?: boolean;
-  };
-  KycConnectionError: {
-    countryCode?: string;
-  };
-
-  // Dev screens
-  CreateMock: undefined;
-  MockDataDeepLink: undefined;
-};
+  OmittedRouteKeys
+> &
+  ExplicitRouteParams;
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
