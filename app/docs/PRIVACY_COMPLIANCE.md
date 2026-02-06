@@ -92,10 +92,14 @@ Currently, no special AndroidManifest declarations are required for Device Intel
 
 Before submitting to Google Play:
 
-- [ ] Google Play Data Safety form declares "Device or other IDs" as collected
-- [ ] Purpose listed as "Fraud prevention, security, and compliance"
-- [ ] Third-party sharing with SumSub is disclosed
-- [ ] If VideoIdent is re-enabled, add microphone permission and declare usage
+- [ ] **Google Play Data Safety form** must declare:
+  - **Data Type**: "Device or other IDs" marked as **collected**
+  - **Purpose**: "Fraud prevention, security, and compliance"
+  - **Third-party sharing**: Disclose data sharing with SumSub
+  - **Data linked**: Yes (device signals are linked to applicant identity)
+- [ ] If VideoIdent is re-enabled:
+  - Add microphone permission to `AndroidManifest.xml`
+  - Declare microphone usage in Data Safety form
 
 ## SumSub Modules Summary
 
