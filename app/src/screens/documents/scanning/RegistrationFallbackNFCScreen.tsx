@@ -13,6 +13,7 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
+  blue600,
   cyan300,
   slate100,
   slate200,
@@ -89,6 +90,11 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
     navigation.goBack();
   }, [navigation]);
 
+  const handleHelp = useCallback(() => {
+    buttonTap();
+    navigation.navigate('DocumentNFCTrouble');
+  }, [navigation]);
+
   const handleTryAlternative = useCallback(async () => {
     trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
       errorSource: 'nfc_scan_failed',
@@ -124,8 +130,34 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
           <NavBar.Title style={{ fontFamily: dinot, fontSize: 17 }}>
             {headerTitle}
           </NavBar.Title>
-          {/* Invisible spacer to balance header */}
-          <YStack width={30} height={30} />
+          <Button
+            unstyled
+            onPress={handleHelp}
+            aria-label="Help"
+            hitSlop={8}
+          >
+            <YStack
+              width={26}
+              height={26}
+              borderRadius={13}
+              backgroundColor={blue600}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <BodyText
+                style={{
+                  color: white,
+                  fontSize: 16,
+                  fontWeight: '900',
+                  lineHeight: 18,
+                  textAlign: 'center',
+                  includeFontPadding: false,
+                }}
+              >
+                ?
+              </BodyText>
+            </YStack>
+          </Button>
         </NavBar.Container>
 
         {/* Progress Bar - Step 3 for NFC */}
