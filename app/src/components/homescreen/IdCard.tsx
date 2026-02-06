@@ -261,10 +261,13 @@ const COUNTRY_DEMONYMS: Record<string, string> = {
 /**
  * Get country demonym from 3-letter country code.
  * Falls back to the code itself if no mapping exists.
+ * Note: D<< (German passports) should be normalized to DEU before calling this.
  */
 const getCountryDemonym = (code: string): string => {
+  if (!code) return '';
   const upperCode = code.toUpperCase().replace(/</g, '').trim();
-  // Check for D<< (German passport code) first
+  if (!upperCode) return '';
+  // Fallback for any remaining special codes with <
   if (code.includes('<')) {
     return COUNTRY_DEMONYMS['D<<'] || 'GERMAN';
   }
@@ -311,7 +314,13 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
 
   // Get document attributes
   const attributes = getDocumentAttributes(idDocument);
-  const nationalityCode = attributes.nationalitySlice.replace(/</g, '').trim();
+  // Handle special case: German passports use "D<<" as nationality code
+  // Must normalize BEFORE stripping < characters
+  const rawNationality = attributes.nationalitySlice;
+  const nationalityCode =
+    rawNationality === 'D<<' || rawNationality.startsWith('D<')
+      ? 'DEU'
+      : rawNationality.replace(/</g, '').trim();
   const countryDemonym = getCountryDemonym(nationalityCode);
 
   // Get deterministic background based on document data
