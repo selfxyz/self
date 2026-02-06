@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
@@ -15,6 +16,7 @@ import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { selectionChange } from '@/integrations/haptics';
 import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
@@ -49,7 +51,11 @@ const tips: TipProps[] = [
 ];
 
 const DocumentNFCTroubleScreen: React.FC = () => {
-  const go = useHapticNavigation('DocumentNFCScan', { action: 'cancel' });
+  const navigation = useNavigation();
+  const handleDismiss = useCallback(() => {
+    selectionChange();
+    navigation.goBack();
+  }, [navigation]);
   const goToNFCMethodSelection = useHapticNavigation(
     'DocumentNFCMethodSelection',
   );
@@ -78,7 +84,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   return (
     <SimpleScrolledTitleLayout
       title="Having trouble verifying your ID?"
-      onDismiss={go}
+      onDismiss={handleDismiss}
       secondaryButtonText="Open NFC Options"
       onSecondaryButtonPress={goToNFCMethodSelection}
       footer={
