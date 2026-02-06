@@ -4,10 +4,13 @@ source "https://cdn.cocoapods.org/"
 unless ENV["E2E_TESTING"] == "1"
   source "https://github.com/SumSubstance/Specs.git"
 
-  # Enable Fisherman (Device Intelligence) module
+  # Enable Fisherman (Device Intelligence) module for fraud detection
+  # Privacy: Device ID collection declared in app/ios/PrivacyInfo.xcprivacy
   ENV["IDENSIC_WITH_FISHERMAN"] = "true"
 
-  # Enable VideoIdent module
+  # Enable VideoIdent module for live video call verification (liveness checks)
+  # Platform split: Enabled on iOS, disabled on Android (see Android patch file)
+  # Android disables this to avoid FOREGROUND_SERVICE_MICROPHONE permission
   ENV["IDENSIC_WITH_VIDEOIDENT"] = "true"
 end
 
