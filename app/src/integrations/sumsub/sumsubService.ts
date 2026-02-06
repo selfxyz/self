@@ -122,10 +122,10 @@ export const launchSumsub = async (
     //   * Android: Configured via idensic-mobile-sdk-fisherman in patch file
     //   * Privacy: iOS declares device ID collection in PrivacyInfo.xcprivacy
     //   * Privacy: Android should declare device fingerprinting in Google Play Data Safety
-    // - VideoIdent (live video calls): Platform split intentional
-    //   * iOS: Enabled via IDENSIC_WITH_VIDEOIDENT in Podfile (microphone usage allowed)
+    // - VideoIdent (live video calls): Disabled on both platforms for current release
+    //   * iOS: Disabled in Podfile (avoids microphone permission requirements)
     //   * Android: Disabled in patch file (avoids FOREGROUND_SERVICE_MICROPHONE permission)
-    //   * Note: VideoIdent will be re-enabled on Android in future release for liveness checks
+    //   * Note: VideoIdent will be re-enabled on both platforms in future release for liveness checks
     .withAnalyticsEnabled(true); // Required for Device Intelligence to function
 
   // Pre-select document type and country if provided

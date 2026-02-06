@@ -8,10 +8,11 @@ unless ENV["E2E_TESTING"] == "1"
   # Privacy: Device ID collection declared in app/ios/PrivacyInfo.xcprivacy
   ENV["IDENSIC_WITH_FISHERMAN"] = "true"
 
-  # Enable VideoIdent module for live video call verification (liveness checks)
-  # Platform split: Enabled on iOS, disabled on Android (see Android patch file)
-  # Android disables this to avoid FOREGROUND_SERVICE_MICROPHONE permission
-  ENV["IDENSIC_WITH_VIDEOIDENT"] = "true"
+  # VideoIdent module disabled for current release
+  # This feature provides liveness checks via live video calls with human agents
+  # Disabled to avoid microphone permission requirements on both platforms
+  # TODO: Re-enable for future release when liveness checks are needed
+  # ENV["IDENSIC_WITH_VIDEOIDENT"] = "true"
 end
 
 use_frameworks!
