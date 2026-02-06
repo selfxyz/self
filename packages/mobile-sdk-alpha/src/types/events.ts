@@ -165,6 +165,20 @@ export enum SdkEvents {
    *
    */
   DOCUMENT_OWNERSHIP_CONFIRMED = 'DOCUMENT_OWNERSHIP_CONFIRMED',
+
+  /**
+   * Emitted when the user confirms they see the e-passport chip logo on their document.
+   *
+   * **Required:** Navigate to the document scanning flow (DocumentOnboarding).
+   */
+  LOGO_CONFIRMED = 'LOGO_CONFIRMED',
+
+  /**
+   * Emitted when the user indicates they do not see the e-passport chip logo on their document.
+   *
+   * **Required:** Show an error message indicating the document is not supported as it is not a biometric ID.
+   */
+  LOGO_NOT_FOUND = 'LOGO_NOT_FOUND',
 }
 
 /**
@@ -222,6 +236,14 @@ export interface SDKEventMap {
     documentCategory?: DocumentCategory;
     signatureAlgorithm?: string;
     curveOrExponent?: string;
+  };
+  [SdkEvents.LOGO_CONFIRMED]: {
+    documentType: string;
+    countryCode: string;
+  };
+  [SdkEvents.LOGO_NOT_FOUND]: {
+    documentType: string;
+    countryCode: string;
   };
 }
 

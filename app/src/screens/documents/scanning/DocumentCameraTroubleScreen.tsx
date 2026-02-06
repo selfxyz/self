@@ -58,7 +58,7 @@ const DocumentCameraTroubleScreen: React.FC = () => {
   const kycEnabled = useSettingStore(state => state.kycEnabled);
   const { launchSumsubVerification, isLoading } = useSumsubLauncher({
     countryCode,
-    errorSource: 'sumsub_initialization',
+    errorSource: 'mrz_scan_failed',
   });
 
   // error screen, flush analytics
