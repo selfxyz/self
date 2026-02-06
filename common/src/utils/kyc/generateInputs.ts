@@ -143,7 +143,8 @@ export const generateKycDiscloseInput = (
     leaf_depth: formatInput(leaf_depth),
     path: formatInput(merkle_path),
     siblings: formatInput(siblings),
-    forbidden_countries_list: forbiddenCountriesList || [...Array(120)].map((x) => '0'),
+    forbidden_countries_list: forbiddenCountriesList
+    ? formatInput(formatCountriesList(forbiddenCountriesList)) : [...Array(120)].map((x) => '0'),
     ofac_name_dob_smt_leaf_key: nameDobInputs.smt_leaf_key,
     ofac_name_dob_smt_root: nameDobInputs.smt_root,
     ofac_name_dob_smt_siblings: nameDobInputs.smt_siblings,
@@ -226,7 +227,7 @@ export const generateKycDiscloseInputFromData = (
     siblings: formatInput(siblings),
     forbidden_countries_list: forbiddenCountriesList
       ? formatInput(formatCountriesList(forbiddenCountriesList))
-      : [],
+      : [...Array(120)].map(() => '0'),
     ofac_name_dob_smt_leaf_key: nameDobInputs.smt_leaf_key,
     ofac_name_dob_smt_root: nameDobInputs.smt_root,
     ofac_name_dob_smt_siblings: nameDobInputs.smt_siblings,
