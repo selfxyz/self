@@ -1,6 +1,6 @@
 {
   "$schema": "./registry.schema.json",
-  "lastUpdated": "2025-12-10T06:17:50.863Z",
+  "lastUpdated": "2026-02-09T11:26:31.105Z",
   "contracts": {
     "IdentityVerificationHub": {
       "source": "IdentityVerificationHubImplV2",
@@ -50,8 +50,8 @@
       "deployments": {
         "IdentityVerificationHub": {
           "proxy": "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF",
-          "currentVersion": "2.12.0",
-          "currentImpl": "0x05FB9D7830889cc389E88198f6A224eA87F01151"
+          "currentVersion": "2.13.0",
+          "currentImpl": "0x0D911083b2F2236D79EF20bb58AAf6009a1220B5"
         },
         "IdentityRegistry": {
           "proxy": "0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968",
@@ -121,6 +121,20 @@
             "deployedAt": "",
             "deployedBy": "",
             "gitCommit": ""
+          }
+        }
+      },
+      "2.13.0": {
+        "initializerVersion": 12,
+        "initializerFunction": "",
+        "changelog": "Upgrade to v2.13.0",
+        "gitTag": "identityverificationhub-v2.13.0",
+        "deployments": {
+          "celo": {
+            "impl": "0x0D911083b2F2236D79EF20bb58AAf6009a1220B5",
+            "deployedAt": "2026-02-09T11:26:30.941Z",
+            "deployedBy": "0xC1C860804EFdA544fe79194d1a37e60b846CEdeb",
+            "gitCommit": "88ae00b1"
           }
         }
       }
