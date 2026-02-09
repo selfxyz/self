@@ -86,10 +86,16 @@
   "DeployAadhaarRegistryModule#PoseidonT3": "0xC9B4a92d98dbFC76D440233b8598910cA2da353f",
   "DeployAadhaarRegistryModule#IdentityRegistryAadhaarImplV1": "0x70D543432782D460C96753b52c2aC2797f26924B",
   "DeployAadhaarRegistryModule#IdentityRegistry": "0xd603Fa8C8f4694E8DD1DcE1f27C0C3fc91e32Ac4",
-  "UpdateAllRegistries#a3": "0xd603Fa8C8f4694E8DD1DcE1f27C0C3fc91e32Ac4",
   "DeployHubV2#IdentityVerificationHub": "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF",
   "UpdateHubRegistries#IdentityVerificationHubImplV2": "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF",
   "DeployNewHubAndUpgradee#IdentityVerificationHubV2": "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF",
   "DeployNewHubAndUpgradee#CustomVerifier": "0x026696925F7DA40EE8B372442750A70BA9C006fA",
-  "DeployNewHubAndUpgradee#IdentityVerificationHubImplV2": "0xa267e58B2d6BA9fc07Af06471423AFb56e4e82B3"
+  "DeployNewHubAndUpgradee#IdentityVerificationHubImplV2": "0xa267e58B2d6BA9fc07Af06471423AFb56e4e82B3",
+  "DeployKycRegistryModule#PoseidonT3": "0x3a74EeCfF282539905F4a43c5EF4f5F155D1579F",
+  "DeployKycRegistryModule#Verifier_gcp_jwt": "0x24daB84839BE64Bac7521beb8cc55E669Ccc1c77",
+  "DeployKycRegistryModule#IdentityRegistryKycImplV1": "0x82FA9D41939229B6189cf326e855c6d6db2aAa57",
+  "DeployKycRegistryModule#IdentityRegistry": "0x9cABdeBC3aF136efD69EB881e02118AC612c63b9",
+  "UpdateAllRegistries#a3": "0x9cABdeBC3aF136efD69EB881e02118AC612c63b9",
+  "DeployAllVerifiers#Verifier_register_kyc": "0xbc15010D9748A5e7c0B947D0c0aCb31bD57a0626",
+  "DeployAllVerifiers#Verifier_vc_and_disclose_kyc": "0xdB0454156bBa5e5b9CA97be350eCc178ddE20b0f"
 }

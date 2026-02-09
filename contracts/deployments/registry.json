@@ -22,6 +22,11 @@
       "type": "uups-proxy",
       "description": "Aadhaar identity registry"
     },
+    "IdentityRegistryKyc": {
+      "source": "IdentityRegistryKycImplV1",
+      "type": "uups-proxy",
+      "description": "KYC identity registry"
+    },
     "PCR0Manager": {
       "source": "PCR0Manager",
       "type": "non-upgradeable",
@@ -62,6 +67,11 @@
           "proxy": "0xd603Fa8C8f4694E8DD1DcE1f27C0C3fc91e32Ac4",
           "currentVersion": "1.2.0",
           "currentImpl": "0xbD861A9cecf7B0A9631029d55A8CE1155e50697c"
+        },
+        "IdentityRegistryKyc": {
+          "proxy": "0x9cABdeBC3aF136efD69EB881e02118AC612c63b9",
+          "currentVersion": "1.0.0",
+          "currentImpl": "0x82FA9D41939229B6189cf326e855c6d6db2aAa57"
         },
         "PCR0Manager": {
           "address": "0x9743fe2C1c3D2b068c56dE314e9B10DA9c904717",
@@ -217,6 +227,22 @@
             "deployedAt": "2025-12-10T06:17:50.863Z",
             "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
             "gitCommit": "5787cff3bcbea870b50eccd7164fbd45b758568e"
+          }
+        }
+      }
+    },
+    "IdentityRegistryKyc": {
+      "1.0.0": {
+        "initializerVersion": 1,
+        "initializerFunction": "initialize",
+        "changelog": "Initial KYC registry deployment",
+        "gitTag": "",
+        "deployments": {
+          "celo": {
+            "impl": "0x82FA9D41939229B6189cf326e855c6d6db2aAa57",
+            "deployedAt": "2026-02-09T00:00:00.000Z",
+            "deployedBy": "",
+            "gitCommit": "03876a86284b0ed794fbff7aae142e62a3212624"
           }
         }
       }
