@@ -1,4 +1,15 @@
 {
   "name": "OpenPassport",
-  "displayName": "Self App"
+  "displayName": "Self App",
+  "expo": {
+    "name": "Self App",
+    "slug": "self-app",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "bundleIdentifier": "com.proofofpassportapp"
+    },
+    "android": {
+      "package": "com.proofofpassportapp"
+    }
+  }
 }
