@@ -256,11 +256,16 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
             if (!isAdded) {
                 return
             }
-            OcrUtils.processOcr(
-                results = results,
-                timeRequired = timeRequired,
-                callback = mrzListener
-            )
+            try {
+                OcrUtils.processOcr(
+                    results = results,
+                    timeRequired = timeRequired,
+                    callback = mrzListener
+                )
+            } catch (e: Exception) {
+                isDecoding = false
+                android.util.Log.e(TAG, "Error processing OCR results", e)
+            }
         }
 
         override fun onCanceled(timeRequired: Long) {
