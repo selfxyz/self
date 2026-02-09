@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -79,8 +79,8 @@ const LogoConfirmationScreen: React.FC = () => {
 
           // User completed verification - navigate to KycSuccessScreen
           navigation.navigate('KycSuccess', { userId: accessToken.userId });
-        } catch (error) {
-          console.error('Error launching Sumsub:', error);
+        } catch {
+          console.error('Error launching Sumsub verification');
           showModal({
             titleText: 'Error',
             bodyText: 'Unable to start verification. Please try again.',
@@ -96,20 +96,43 @@ const LogoConfirmationScreen: React.FC = () => {
     <ExpandableBottomLayout.Layout backgroundColor={slate100}>
       <DocumentFlowNavBar title="GETTING STARTED" />
       <ExpandableBottomLayout.TopSection backgroundColor={slate100}>
-        <View style={styles.contentContainer}>
-          <BodyText style={styles.titleText}>
+        <YStack alignItems="center" gap={24} maxWidth={340}>
+          <BodyText
+            style={{
+              fontSize: 20,
+              fontFamily: advercase,
+              textAlign: 'center',
+              color: black,
+            }}
+          >
             Does your document have this symbol?
           </BodyText>
 
-          <View style={styles.logoContainer}>
+          <YStack
+            backgroundColor={white}
+            borderRadius={16}
+            padding={24}
+            shadowColor={black}
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.1}
+            shadowRadius={8}
+            elevation={4}
+          >
             <EPassportLogo width={160} height={98} />
-          </View>
+          </YStack>
 
-          <BodyText style={styles.descriptionText}>
+          <BodyText
+            style={{
+              fontSize: 16,
+              fontFamily: dinot,
+              textAlign: 'center',
+              color: slate400,
+            }}
+          >
             This symbol indicates your document has a biometric chip, which is
             required for registration.
           </BodyText>
-        </View>
+        </YStack>
       </ExpandableBottomLayout.TopSection>
 
       <ExpandableBottomLayout.BottomSection backgroundColor={slate100}>
@@ -125,33 +148,3 @@ const LogoConfirmationScreen: React.FC = () => {
 };
 
 export default LogoConfirmationScreen;
-
-const styles = StyleSheet.create({
-  contentContainer: {
-    alignItems: 'center',
-    gap: 24,
-    maxWidth: 340,
-  },
-  titleText: {
-    fontSize: 20,
-    fontFamily: advercase,
-    textAlign: 'center',
-    color: black,
-  },
-  logoContainer: {
-    backgroundColor: white,
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  descriptionText: {
-    fontSize: 16,
-    fontFamily: dinot,
-    textAlign: 'center',
-    color: slate400,
-  },
-});
