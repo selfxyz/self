@@ -263,7 +263,6 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
                     callback = mrzListener
                 )
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error processing OCR results", e)
                 mrzListener.onFailure(e, timeRequired)
             }
         }
