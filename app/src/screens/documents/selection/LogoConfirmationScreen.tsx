@@ -16,6 +16,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
+  slate100,
   slate400,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -92,9 +93,9 @@ const LogoConfirmationScreen: React.FC = () => {
   }, [documentType, countryCode, navigation, showModal]);
 
   return (
-    <ExpandableBottomLayout.Layout backgroundColor={white}>
+    <ExpandableBottomLayout.Layout backgroundColor={slate100}>
       <DocumentFlowNavBar title="GETTING STARTED" />
-      <ExpandableBottomLayout.TopSection backgroundColor={white}>
+      <ExpandableBottomLayout.TopSection backgroundColor={slate100}>
         <View style={styles.contentContainer}>
           <BodyText style={styles.titleText}>
             Does your document have this symbol?
@@ -111,7 +112,7 @@ const LogoConfirmationScreen: React.FC = () => {
         </View>
       </ExpandableBottomLayout.TopSection>
 
-      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
+      <ExpandableBottomLayout.BottomSection backgroundColor={slate100}>
         <ButtonsContainer>
           <PrimaryButton onPress={handleConfirm}>Yes</PrimaryButton>
           {kycEnabled && (
