@@ -225,8 +225,6 @@ const HomeScreen: React.FC = () => {
     );
   }
 
-  console.log('activePendingVerifications', activePendingVerifications);
-
   return (
     <YStack backgroundColor={'#F8FAFC'} flex={1} alignItems="center">
       <ScrollView
