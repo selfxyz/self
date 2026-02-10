@@ -45,6 +45,9 @@ GEM
     base64 (0.2.0)
     benchmark (0.5.0)
     bigdecimal (4.0.1)
+    bundler-audit (0.9.3)
+      bundler (>= 1.2.0)
+      thor (~> 1.0)
     claide (1.1.0)
     cocoapods (1.16.2)
       addressable (~> 2.8)
@@ -287,6 +290,7 @@ GEM
     terminal-notifier (2.0.0)
     terminal-table (3.0.2)
       unicode-display_width (>= 1.1.1, < 3)
+    thor (1.5.0)
     trailblazer-option (0.1.2)
     tty-cursor (0.7.1)
     tty-screen (0.8.2)
@@ -316,6 +320,7 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport (>= 6.1.7.5, != 7.1.0)
+  bundler-audit (~> 0.9)
   cocoapods (>= 1.13, != 1.15.1, != 1.15.0)
   dotenv
   fastlane (~> 2.232.0)
