@@ -92,7 +92,7 @@
   "DeployNewHubAndUpgradee#CustomVerifier": "0x026696925F7DA40EE8B372442750A70BA9C006fA",
   "DeployNewHubAndUpgradee#IdentityVerificationHubImplV2": "0xa267e58B2d6BA9fc07Af06471423AFb56e4e82B3",
   "DeployKycRegistryModule#PoseidonT3": "0x3a74EeCfF282539905F4a43c5EF4f5F155D1579F",
-  "DeployKycRegistryModule#Verifier_gcp_jwt": "0x24daB84839BE64Bac7521beb8cc55E669Ccc1c77",
+  "DeployKycRegistryModule#Verifier_gcp_jwt": "0x87785cC7E9Bc70f87E6F454235214bDEc853C044",
   "DeployKycRegistryModule#IdentityRegistryKycImplV1": "0x82FA9D41939229B6189cf326e855c6d6db2aAa57",
   "DeployKycRegistryModule#IdentityRegistry": "0x9cABdeBC3aF136efD69EB881e02118AC612c63b9",
   "UpdateAllRegistries#a3": "0x9cABdeBC3aF136efD69EB881e02118AC612c63b9",
