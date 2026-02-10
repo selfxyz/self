@@ -271,6 +271,16 @@ const HomeScreen: React.FC = () => {
           if (!documentData) {
             return null;
           }
+          //return early if the document is a pending KYC document as we are already displaying
+          //another card.
+          if (
+            !documentData.metadata.isRegistered &&
+            activePendingVerifications.some(
+              doc => doc.documentId === documentData.metadata.id,
+            )
+          ) {
+            return;
+          }
 
           // Show UnregisteredIdCard for documents not yet registered on-chain
           if (!documentData.metadata.isRegistered) {
