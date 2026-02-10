@@ -65,7 +65,7 @@ async function promptYesNo(question: string): Promise<boolean> {
  */
 const CHAIN_CONFIG: Record<SupportedNetwork, { chainId: number; safePrefix: string }> = {
   celo: { chainId: 42220, safePrefix: "celo" },
-  "celo-sepolia": { chainId: 44787, safePrefix: "celo" },
+  "celo-sepolia": { chainId: 11142220, safePrefix: "celo" },
   sepolia: { chainId: 11155111, safePrefix: "sep" },
   localhost: { chainId: 31337, safePrefix: "eth" },
 };
