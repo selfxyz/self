@@ -20,9 +20,9 @@
 ## Core Components
 
 1. Identity Verification Hub
-- Manages multi-step verification process for passports and EU ID cards
+- Manages multi-step verification process for passports, EU ID cards, Aadhaar, and Selfrica ID cards
 - Handles document attestation through zero-knowledge proofs
-- Implements verification paths: E-PASSPORT and EU_ID_CARD
+- Implements verification paths: E-PASSPORT, EU_ID_CARD, AADHAAR, and SELFRICA_ID_CARD
 - File: contracts/contracts/IdentityVerificationHubImplV2.sol
 
 2. Document Verification Processing
@@ -40,10 +40,10 @@
 - Files: noir/crates/dg1/src/ofac/*.nr
 
 4. Identity Registry Management
-- Maintains separate registries for passports and ID cards
+- Maintains separate registries for passports, EU ID cards, Aadhaar, and Selfrica
 - Handles DSC key commitment registration
 - Implements nullifier tracking for duplicate prevention
-- File: contracts/contracts/registry/IdentityRegistryImplV1.sol
+- Files: contracts/contracts/registry/IdentityRegistryImplV1.sol, IdentityRegistryIdCardImplV1.sol, IdentityRegistryAadhaarImplV1.sol, IdentityRegistrySelfricaImplV1.sol
 
 ## Core Workflows
 

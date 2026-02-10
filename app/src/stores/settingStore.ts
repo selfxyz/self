@@ -21,6 +21,7 @@ interface PersistedSettingsState {
   homeScreenViewCount: number;
   incrementHomeScreenViewCount: () => void;
   isDevMode: boolean;
+  kycEnabled: boolean;
   loggingSeverity: LoggingSeverity;
   pointsAddress: string | null;
   removeSubscribedTopic: (topic: string) => void;
@@ -32,17 +33,18 @@ interface PersistedSettingsState {
   setFcmToken: (token: string | null) => void;
   setHasViewedRecoveryPhrase: (viewed: boolean) => void;
   setKeychainMigrationCompleted: () => void;
+  setKycEnabled: (enabled: boolean) => void;
   setLoggingSeverity: (severity: LoggingSeverity) => void;
   setPointsAddress: (address: string | null) => void;
   setSkipDocumentSelector: (value: boolean) => void;
-  setSkipDocumentSelectorIfSingle: (value: boolean) => void;
   setSubscribedTopics: (topics: string[]) => void;
   setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
+  setUseStrongBox: (useStrongBox: boolean) => void;
   skipDocumentSelector: boolean;
-  skipDocumentSelectorIfSingle: boolean;
   subscribedTopics: string[];
   toggleCloudBackupEnabled: () => void;
   turnkeyBackupEnabled: boolean;
+  useStrongBox: boolean;
 }
 
 interface NonPersistedSettingsState {
@@ -143,9 +145,14 @@ export const useSettingStore = create<SettingsState>()(
       skipDocumentSelector: false,
       setSkipDocumentSelector: (value: boolean) =>
         set({ skipDocumentSelector: value }),
-      skipDocumentSelectorIfSingle: true,
-      setSkipDocumentSelectorIfSingle: (value: boolean) =>
-        set({ skipDocumentSelectorIfSingle: value }),
+
+      // StrongBox setting for Android keystore (default: false)
+      useStrongBox: false,
+      setUseStrongBox: (useStrongBox: boolean) => set({ useStrongBox }),
+
+      // KYC flow toggle (default: false, dev-only feature)
+      kycEnabled: false,
+      setKycEnabled: (enabled: boolean) => set({ kycEnabled: enabled }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,

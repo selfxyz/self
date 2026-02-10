@@ -17,6 +17,8 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
       android:name=".MainApplication"
@@ -25,7 +27,8 @@
       android:icon="@mipmap/ic_launcher"
       android:roundIcon="@mipmap/ic_launcher"
       android:extractNativeLibs="false"
-      tools:replace="android:icon, android:roundIcon, android:name, android:extractNativeLibs"
+      android:allowBackup="false"
+      tools:replace="android:icon, android:roundIcon, android:name, android:extractNativeLibs, android:allowBackup"
       android:theme="@style/AppTheme"
       android:supportsRtl="true"
       android:usesCleartextTraffic="false"
@@ -71,6 +74,7 @@
 
       <service
         android:name="com.google.firebase.messaging.FirebaseMessagingService"
+        android:foregroundServiceType="dataSync"
         android:exported="false">
         <intent-filter>
           <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -105,5 +109,11 @@
       </intent-filter>
         <meta-data android:name="photopicker_activity:0:required" android:value="" />
       </service>
+
+      <!-- Override conflicting ML Kit dependencies from passportreader (ocr) and Sumsub SDK (face) -->
+      <meta-data
+          android:name="com.google.mlkit.vision.DEPENDENCIES"
+          android:value="ocr,face"
+          tools:replace="android:value" />
     </application>
 </manifest>

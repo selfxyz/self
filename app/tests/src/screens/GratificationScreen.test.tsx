@@ -23,6 +23,7 @@ jest.mock('react-native', () => {
   return {
     __esModule: true,
     Dimensions: mockDimensions,
+    Platform: { OS: 'ios', select: jest.fn() },
     Pressable: ({ onPress, children }: any) => (
       <button onClick={onPress} type="button">
         {children}

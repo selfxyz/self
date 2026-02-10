@@ -13,6 +13,8 @@ import {
   TestSelfVerificationRoot,
   Verifier_vc_and_disclose_staging as LocalVerifier,
   Verifier_vc_and_disclose_id_staging as LocalIdCardVerifier,
+  Verifier_vc_and_disclose_aadhaar_staging as LocalAadhaarVerifier,
+  Verifier_vc_and_disclose_kyc_staging as LocalKycVerifier,
   Verifier_vc_and_disclose as ProdVerifier,
   Verifier_vc_and_disclose_id as ProdIdCardVerifier,
   Verifier_register_sha256_sha256_sha256_rsa_65537_4096 as ProdRegisterVerifier,
@@ -22,6 +24,8 @@ import {
   Verifier_dsc_sha256_rsa_65537_4096 as ProdDscVerifier,
   Verifier_dsc_sha256_rsa_65537_4096_staging as LocalDscVerifier,
   IIdentityVerificationHubV1,
+  IVcAndDiscloseKycCircuitVerifier,
+  IVcAndDiscloseAadhaarCircuitVerifier,
   IIdentityVerificationHubV2,
   IIdentityRegistryIdCardV1,
   IIdentityRegistryV1,
@@ -29,6 +33,8 @@ import {
   IDscCircuitVerifier,
   IVcAndDiscloseCircuitVerifier,
   IdentityRegistryAadhaarImplV1,
+  PCR0Manager,
+  IdentityRegistryKycImplV1,
 } from "../../typechain-types";
 
 import { DscVerifierId, RegisterVerifierId } from "@selfxyz/common";
@@ -76,8 +82,11 @@ export interface DeployedActorsV2 {
   registryId: IdentityRegistryIdCardImplV1;
   registryAadhaarImpl: IdentityRegistryAadhaarImplV1;
   registryAadhaar: IdentityRegistryAadhaarImplV1;
+  registryKyc: IdentityRegistryKycImplV1;
+  registryKycImpl: IdentityRegistryKycImplV1;
   vcAndDisclose: VcAndDiscloseVerifier;
-  vcAndDiscloseAadhaar: VcAndDiscloseAadhaarVerifier;
+  vcAndDiscloseAadhaar: LocalAadhaarVerifier;
+  vcAndDiscloseKyc: LocalKycVerifier;
   aadhaarPubkey: bigint;
   vcAndDiscloseId: VcAndDiscloseIdVerifier;
   register: RegisterVerifier;
@@ -86,6 +95,9 @@ export interface DeployedActorsV2 {
   dscId: DscVerifierId;
   testSelfVerificationRoot: TestSelfVerificationRoot;
   customVerifier: any;
+  poseidonT3: any;
+  gcpJwtVerifier: any;
+  pcr0Manager: PCR0Manager;
   owner: Signer;
   user1: Signer;
   user2: Signer;

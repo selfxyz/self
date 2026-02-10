@@ -70,6 +70,8 @@ export {
   sdkError,
 } from './errors';
 
+export { default as LogoConfirmationScreen } from './flows/onboarding/logo-confirmation-screen';
+
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 
 export { type ProvingStateType } from './proving/provingMachine';
@@ -138,5 +140,6 @@ export { parseNFCResponse, scanNFC } from './nfc';
 export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
 export { sanitizeErrorMessage } from './utils/utils';
 export { useCountries } from './documents/useCountries';
+export { useMRZStore } from './stores/mrzStore';
 
 export { webNFCScannerShim } from './adapters/web/shims';

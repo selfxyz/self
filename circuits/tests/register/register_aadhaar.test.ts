@@ -51,7 +51,7 @@ describe('REGISTER AADHAAR Circuit Tests', function () {
     const w = await circuit.calculateWitness(inputs);
     await circuit.checkConstraints(w);
   });
-  it.skip('should pass constrain and output correct nullifier and commitment', async function () {
+  it('should pass constrain and output correct nullifier and commitment', async function () {
     this.timeout(0);
     const { inputs, nullifier, commitment } = prepareAadhaarRegisterTestData(
       privateKeyPem,

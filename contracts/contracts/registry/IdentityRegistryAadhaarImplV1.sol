@@ -194,7 +194,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
         return _hub;
     }
 
-    /// @notice Checks if a specific nullifier is registered for a given attestation.
+    /// @notice Checks if a specific nullifier is registered.
     /// @param nullifier The nullifier to be checked.
     /// @return True if the nullifier has been registered, false otherwise.
     function nullifiers(uint256 nullifier) external view virtual onlyProxy returns (bool) {
@@ -290,7 +290,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     }
 
     // ====================================================
-    // External Functions - Only Owner
+    // External Functions - Role-Based Access Control
     // ====================================================
 
     /// @notice Updates the hub address.

@@ -4,6 +4,7 @@ pragma solidity 0.8.28;
 import {Formatter} from "./Formatter.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
 import {SelfStructs} from "./SelfStructs.sol";
+
 /**
  * @title UnifiedAttributeHandler Library
  * @notice Provides functions for extracting and formatting attributes from both passport and ID card byte arrays.
@@ -42,7 +43,7 @@ library CircuitAttributeHandlerV2 {
     /**
      * @notice Returns the field positions for a given attestation type.
      * @param attestationId The attestation identifier.
-     * @return positions The FieldPositions struct containing all relevant positions.
+     * @return positions The FieldPositions struct containing all relevant positions (inclusive).
      */
     function getFieldPositions(bytes32 attestationId) internal pure returns (FieldPositions memory positions) {
         if (attestationId == AttestationId.E_PASSPORT) {
@@ -110,6 +111,28 @@ library CircuitAttributeHandlerV2 {
                     olderThanEnd: 118,
                     ofacStart: 116,
                     ofacEnd: 117
+                });
+        } else if (attestationId == AttestationId.KYC) {
+            return
+                FieldPositions({
+                    issuingStateStart: 999,
+                    issuingStateEnd: 999,
+                    nameStart: 78,
+                    nameEnd: 141,
+                    documentNumberStart: 30,
+                    documentNumberEnd: 61,
+                    nationalityStart: 0,
+                    nationalityEnd: 2,
+                    dateOfBirthStart: 142,
+                    dateOfBirthEnd: 149,
+                    genderStart: 194,
+                    genderEnd: 194,
+                    expiryDateStart: 70,
+                    expiryDateEnd: 77,
+                    olderThanStart: 297,
+                    olderThanEnd: 297,
+                    ofacStart: 295,
+                    ofacEnd: 296
                 });
         } else {
             revert("Invalid attestation ID");
@@ -215,6 +238,23 @@ library CircuitAttributeHandlerV2 {
     }
 
     /**
+     * @notice Retrieves and formats the expiry date from the encoded attribute byte array.
+     * @param attestationId The attestation identifier.
+     * @param charcodes The byte array containing attribute data.
+     * @return The formatted expiry date as a string.
+     */
+    function getExpiryDateFullYear(
+        bytes32 attestationId,
+        bytes memory charcodes
+    ) internal pure returns (string memory) {
+        FieldPositions memory positions = getFieldPositions(attestationId);
+        return
+            Formatter.formatDateFullYear(
+                extractStringAttribute(charcodes, positions.expiryDateStart, positions.expiryDateEnd)
+            );
+    }
+
+    /**
      * @notice Retrieves the 'older than' age attribute from the encoded attribute byte array.
      * @param attestationId The attestation identifier.
      * @param charcodes The byte array containing attribute data.
@@ -222,6 +262,12 @@ library CircuitAttributeHandlerV2 {
      */
     function getOlderThan(bytes32 attestationId, bytes memory charcodes) internal pure returns (uint256) {
         FieldPositions memory positions = getFieldPositions(attestationId);
+        if (attestationId == AttestationId.KYC) {
+            return
+                Formatter.numAsciiToUint(uint8(charcodes[positions.olderThanStart])) * 100 +
+                Formatter.numAsciiToUint(uint8(charcodes[positions.olderThanStart + 1])) * 10 +
+                Formatter.numAsciiToUint(uint8(charcodes[positions.olderThanStart + 2]));
+        }
         return
             Formatter.numAsciiToUint(uint8(charcodes[positions.olderThanStart])) * 10 +
             Formatter.numAsciiToUint(uint8(charcodes[positions.olderThanStart + 1]));

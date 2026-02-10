@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import Foundation
-import NFCPassportReader
+
+#if !E2E_TESTING
 import Mixpanel
+import NFCPassportReader
 
 public class SelfAnalytics: Analytics {
     private let enableDebugLogs: Bool
@@ -67,3 +69,13 @@ public class SelfAnalytics: Analytics {
         Mixpanel.mainInstance().flush()
     }
 }
+#else
+// E2E Testing stub - SelfAnalytics is not used when NFCPassportReader is excluded
+public class SelfAnalytics {
+    public init(token: String, enableDebugLogs: Bool = false, trackAutomaticEvents: Bool = false) {}
+    public func trackEvent(_ name: String, properties: [String: Any]? = nil) {}
+    public func trackDebugEvent(_ name: String, properties: [String: Any]? = nil) {}
+    public func trackError(_ error: Error, context: String) {}
+    public func flush() {}
+}
+#endif

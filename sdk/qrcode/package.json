@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/qrcode",
-  "version": "1.0.17-beta.2",
+  "version": "1.0.18",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -20,11 +20,6 @@
       "types": "./dist/esm/index.d.ts",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.cjs"
-    },
-    "./components/LED": {
-      "types": "./dist/esm/components/LED.d.ts",
-      "import": "./dist/esm/components/LED.js",
-      "require": "./dist/cjs/components/LED.cjs"
     },
     "./components/SelfQRcode": {
       "types": "./dist/esm/components/SelfQRcode.d.ts",
@@ -77,11 +72,11 @@
     "js-sha256": "^0.11.0",
     "js-sha512": "^0.9.0",
     "lottie-react": "^2.4.0",
-    "node-forge": "^1.3.1",
+    "node-forge": "^1.3.3",
     "poseidon-lite": "^0.3.0",
     "qrcode.react": "^4.1.0",
     "react-spinners": "^0.14.1",
-    "socket.io-client": "^4.8.1",
+    "socket.io-client": "^4.8.3",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -109,7 +104,7 @@
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.2",
+    "typescript": "^5.9.3",
     "webpack": "^5.95.0"
   },
   "peerDependencies": {
