@@ -346,7 +346,9 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
         // Standard upgrade with new reinitializer
         log.success(`Reinitializer version correct: reinitializer(${actualReinitVersion})`);
       } else {
-        log.error(`Unexpected reinitializer(${actualReinitVersion}). Expected ${latestInitVersion} (no-init) or ${latestInitVersion + 1} (with init)`);
+        log.error(
+          `Unexpected reinitializer(${actualReinitVersion}). Expected ${latestInitVersion} (no-init) or ${latestInitVersion + 1} (with init)`,
+        );
         log.box([
           "REINITIALIZER VERSION MISMATCH",
           "═".repeat(50),
@@ -617,7 +619,7 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
     log.step("Updating deployment registry...");
 
     const latestVersion = getLatestVersionInfo(contractId);
-    const newInitializerVersion = actualReinitVersion ?? ((latestVersion?.info.initializerVersion || 0) + 1);
+    const newInitializerVersion = actualReinitVersion ?? (latestVersion?.info.initializerVersion || 0) + 1;
     const deployerAddress = (await hre.ethers.provider.getSigner()).address;
 
     addVersion(
