@@ -1,6 +1,6 @@
 {
   "$schema": "./registry.schema.json",
-  "lastUpdated": "2025-12-10T06:17:50.863Z",
+  "lastUpdated": "2026-02-02T14:47:21.978Z",
   "contracts": {
     "IdentityVerificationHub": {
       "source": "IdentityVerificationHubImplV2",
@@ -73,6 +73,22 @@
         }
       }
     },
+    "celo-sepolia": {
+      "chainId": 11142220,
+      "governance": {
+        "securityMultisig": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
+        "operationsMultisig": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
+        "securityThreshold": "1/1",
+        "operationsThreshold": "1/1"
+      },
+      "deployments": {
+        "IdentityVerificationHub": {
+          "proxy": "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74",
+          "currentVersion": "2.13.0",
+          "currentImpl": "0x244c93516Abd58E1952452d3D8C4Ce7D454776B8"
+        }
+      }
+    },
     "localhost": {
       "chainId": 31337,
       "governance": {
@@ -97,6 +113,12 @@
             "deployedAt": "2025-12-10T05:43:58.258Z",
             "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
             "gitCommit": ""
+          },
+          "celo-sepolia": {
+            "impl": "0x92d637c5e6EFa17320B663f97cc4d44176984dAd",
+            "deployedAt": "2026-02-02T13:39:44.500Z",
+            "deployedBy": "0x846F1cF04ec494303e4B90440b130bb01913E703",
+            "gitCommit": "61a41950"
           }
         }
       },
@@ -111,6 +133,26 @@
             "deployedAt": "",
             "deployedBy": "",
             "gitCommit": ""
+          },
+          "celo-sepolia": {
+            "impl": "0x48985ec4f71cBC8f387c5C77143110018560c7eD",
+            "deployedAt": "",
+            "deployedBy": "0x846f1cf04ec494303e4b90440b130bb01913e703",
+            "gitCommit": ""
+          }
+        }
+      },
+      "2.13.0": {
+        "initializerVersion": 12,
+        "initializerFunction": "",
+        "changelog": "Upgrade to v2.13.0",
+        "gitTag": "identityverificationhub-v2.13.0",
+        "deployments": {
+          "celo-sepolia": {
+            "impl": "0x244c93516Abd58E1952452d3D8C4Ce7D454776B8",
+            "deployedAt": "2026-02-02T14:47:21.882Z",
+            "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
+            "gitCommit": "33bca485"
           }
         }
       }

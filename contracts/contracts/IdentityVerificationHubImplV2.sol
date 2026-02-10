@@ -29,7 +29,7 @@ import {console} from "hardhat/console.sol";
  * @dev This contract orchestrates multi-step verification processes including document attestation,
  * zero-knowledge proofs, OFAC compliance, and attribute disclosure control.
  *
- * @custom:version 2.12.0
+ * @custom:version 2.13.0
  */
 contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @custom:storage-location erc7201:self.storage.IdentityVerificationHub
