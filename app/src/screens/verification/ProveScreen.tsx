@@ -172,20 +172,6 @@ const ProveScreen: React.FC = () => {
     if (selectedAppRef.current?.sessionId !== selectedApp.sessionId) {
       hasInitializedScrollStateRef.current = false;
       setHasScrolledToBottom(false);
-
-      // After state reset, check if content is short using current measurements.
-      // Use setTimeout(0) to ensure we read values AFTER React processes the reset,
-      // without adding measurements to dependencies (which causes race conditions).
-      setTimeout(() => {
-        const hasMeasurements =
-          scrollViewContentHeight > 0 && scrollViewHeight > 0;
-        const isShort = scrollViewContentHeight <= scrollViewHeight + 50;
-
-        if (hasMeasurements && isShort) {
-          setHasScrolledToBottom(true);
-          hasInitializedScrollStateRef.current = true;
-        }
-      }, 0);
     }
 
     setDefaultDocumentTypeIfNeeded();
