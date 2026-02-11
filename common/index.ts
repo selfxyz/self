@@ -108,7 +108,8 @@ export {
   KYC_MAX_LENGTH,
 } from './src/utils/kyc/constants.js';
 
-export { KycData, serializeKycData } from './src/utils/kyc/types.js';
+export type { KycData } from './src/utils/kyc/types.js';
+export { serializeKycData } from './src/utils/kyc/types.js';
 
 export {
   NON_OFAC_DUMMY_INPUT,
