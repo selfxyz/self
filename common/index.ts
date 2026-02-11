@@ -141,7 +141,7 @@ export { deserializeApplicantInfo } from './src/utils/kyc/api.js';
 
 export { generateTestData, testCustomData } from './src/utils/aadhaar/utils.js';
 
-export { isAadhaarDocument, isMRZDocument } from './src/utils/index.js';
+export { isAadhaarDocument, isKycDocument, isMRZDocument } from './src/utils/index.js';
 
 export {
   prepareAadhaarDiscloseData,

@@ -7,7 +7,13 @@ import React from 'react';
 import { Dimensions, Image, StyleSheet } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
 
-import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  black,
+  gray400,
+  slate200,
+  slate300,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import SelfLogoUnverified from '@/assets/images/self_logo_unverified.svg';
@@ -16,11 +22,6 @@ import WavePatternBody from '@/assets/images/wave_pattern_body.png';
 interface EmptyIdCardProps {
   onRegisterPress: () => void;
 }
-
-// Figma design tokens
-const DIVIDER_COLOR = '#CBD5E1'; // slate-300
-const BUTTON_BORDER_COLOR = '#E2E8F0'; // slate-200
-const SUBTITLE_COLOR = '#9CA3AF'; // gray-400
 
 /**
  * Empty state card shown when user has no registered documents.
@@ -71,7 +72,7 @@ const EmptyIdCard: FC<EmptyIdCardProps> = ({ onRegisterPress }) => {
           backgroundColor={white}
           justifyContent="center"
           borderBottomWidth={2}
-          borderBottomColor={DIVIDER_COLOR}
+          borderBottomColor={slate300}
         >
           {/* Content row */}
           <XStack flex={1} alignItems="center">
@@ -101,7 +102,7 @@ const EmptyIdCard: FC<EmptyIdCardProps> = ({ onRegisterPress }) => {
                 <Text
                   fontFamily={dinot}
                   fontSize={fontSize.subtitle}
-                  color={SUBTITLE_COLOR}
+                  color={gray400}
                   letterSpacing={0.7}
                   textTransform="uppercase"
                 >
@@ -131,7 +132,7 @@ const EmptyIdCard: FC<EmptyIdCardProps> = ({ onRegisterPress }) => {
             <YStack
               backgroundColor={white}
               borderWidth={1}
-              borderColor={BUTTON_BORDER_COLOR}
+              borderColor={slate200}
               borderRadius={9999}
               paddingVertical={8 * scale}
               paddingHorizontal={20 * scale}

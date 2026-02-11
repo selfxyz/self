@@ -52,7 +52,6 @@ import type {
 import {
   brutforceSignatureAlgorithmDsc,
   calculateContentHash,
-  inferDocumentCategory,
 } from '@selfxyz/common/utils';
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
 import type {
@@ -60,7 +59,6 @@ import type {
   DocumentCatalog,
   DocumentMetadata,
   IDDocument,
-  KycData,
   PassportData,
 } from '@selfxyz/common/utils/types';
 import { isKycDocument, isMRZDocument } from '@selfxyz/common/utils/types';

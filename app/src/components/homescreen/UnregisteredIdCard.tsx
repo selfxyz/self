@@ -7,15 +7,15 @@ import React from 'react';
 import { Dimensions, Image, StyleSheet } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
 
-import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  gray400,
+  red600,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import SelfLogoInactive from '@/assets/images/self_logo_inactive.svg';
 import WavePatternBody from '@/assets/images/wave_pattern_body.png';
-
-// Figma design tokens - Tailwind Colors/red/600
-const RED_600 = '#DC2626';
-const SUBTITLE_COLOR = '#9CA3AF'; // gray-400
 
 interface UnregisteredIdCardProps {
   onRegisterPress: () => void;
@@ -78,7 +78,7 @@ const UnregisteredIdCard: FC<UnregisteredIdCardProps> = ({
           backgroundColor={white}
           justifyContent="center"
           borderBottomWidth={2}
-          borderBottomColor={RED_600}
+          borderBottomColor={red600}
         >
           {/* Content row */}
           <XStack flex={1} alignItems="center">
@@ -99,7 +99,7 @@ const UnregisteredIdCard: FC<UnregisteredIdCardProps> = ({
                   fontFamily={dinot}
                   fontSize={fontSize.header}
                   fontWeight="500"
-                  color={RED_600}
+                  color={red600}
                   textTransform="uppercase"
                   lineHeight={fontSize.header * 1.1}
                 >
@@ -108,7 +108,7 @@ const UnregisteredIdCard: FC<UnregisteredIdCardProps> = ({
                 <Text
                   fontFamily={dinot}
                   fontSize={fontSize.subtitle}
-                  color={SUBTITLE_COLOR}
+                  color={gray400}
                   letterSpacing={0.7}
                   textTransform="uppercase"
                 >
@@ -136,7 +136,7 @@ const UnregisteredIdCard: FC<UnregisteredIdCardProps> = ({
             right={figmaPadding}
           >
             <YStack
-              backgroundColor={RED_600}
+              backgroundColor={red600}
               borderRadius={9999}
               paddingVertical={8 * scale}
               paddingHorizontal={20 * scale}

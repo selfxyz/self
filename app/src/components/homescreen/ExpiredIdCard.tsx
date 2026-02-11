@@ -7,16 +7,16 @@ import React from 'react';
 import { Dimensions, Image, StyleSheet } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
 
-import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  black,
+  gray400,
+  red600,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import SelfLogoInactive from '@/assets/images/self_logo_inactive.svg';
 import WavePatternBody from '@/assets/images/wave_pattern_body.png';
-
-// Figma design tokens
-const EXPIRED_TITLE_COLOR = '#DC2626'; // red-600
-const EXPIRED_DIVIDER_COLOR = '#DC2626'; // red-600
-const SUBTITLE_COLOR = '#9CA3AF'; // gray-400
 
 /**
  * Expired state card shown when user's identity document has expired.
@@ -71,7 +71,7 @@ const ExpiredIdCard: FC = () => {
           backgroundColor={white}
           justifyContent="center"
           borderBottomWidth={2}
-          borderBottomColor={EXPIRED_DIVIDER_COLOR}
+          borderBottomColor={red600}
         >
           {/* Content row */}
           <XStack flex={1} alignItems="center">
@@ -92,7 +92,7 @@ const ExpiredIdCard: FC = () => {
                   fontFamily={dinot}
                   fontSize={fontSize.header}
                   fontWeight="500"
-                  color={EXPIRED_TITLE_COLOR}
+                  color={red600}
                   textTransform="uppercase"
                   lineHeight={fontSize.header * 1.1}
                 >
@@ -101,7 +101,7 @@ const ExpiredIdCard: FC = () => {
                 <Text
                   fontFamily={dinot}
                   fontSize={fontSize.subtitle}
-                  color={SUBTITLE_COLOR}
+                  color={gray400}
                   letterSpacing={0.7}
                   textTransform="uppercase"
                 >

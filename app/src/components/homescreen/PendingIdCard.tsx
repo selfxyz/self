@@ -7,7 +7,15 @@ import React from 'react';
 import { Dimensions, Image, StyleSheet } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
 
-import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  amber50,
+  amber200,
+  amber500,
+  amber700,
+  black,
+  gray400,
+  yellow50,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
@@ -16,17 +24,6 @@ import WavePatternPending from '@/assets/images/wave_pattern_pending.png';
 interface PendingIdCardProps {
   onClick?: () => void;
 }
-
-// Figma design tokens
-const SUBTITLE_COLOR = '#9CA3AF'; // gray-400
-
-// Pending card design tokens (from Figma)
-const PENDING_HEADER_BG = '#FFFBEB'; // amber-50 (header background)
-const PENDING_BODY_BG = '#FEFCE8'; // yellow-50 (body background)
-const PENDING_DIVIDER_COLOR = '#F59E0B'; // amber-500
-const PENDING_LOGO_BG = '#F59E0B'; // amber-500
-const PENDING_BADGE_BG = '#FDE68A'; // amber-200
-const PENDING_BADGE_TEXT = '#B45309'; // amber-700
 
 /**
  * Pending state card shown when user has submitted identity for KYC verification.
@@ -67,9 +64,9 @@ const PendingIdCard: FC<PendingIdCardProps> = ({ onClick }) => {
         overflow="hidden"
         borderWidth={1}
         borderColor="#E5E7EB"
-        backgroundColor={PENDING_BODY_BG}
+        backgroundColor={yellow50}
         marginBottom={8}
-        shadowColor="#F59E0B"
+        shadowColor={amber500}
         shadowOffset={{ width: 0, height: 14 }}
         shadowOpacity={0.25}
         shadowRadius={28}
@@ -81,10 +78,10 @@ const PendingIdCard: FC<PendingIdCardProps> = ({ onClick }) => {
         <YStack
           height={headerHeight}
           padding={figmaPadding}
-          backgroundColor={PENDING_HEADER_BG}
+          backgroundColor={amber50}
           justifyContent="center"
           borderBottomWidth={2}
-          borderBottomColor={PENDING_DIVIDER_COLOR}
+          borderBottomColor={amber500}
         >
           {/* Content row */}
           <XStack flex={1} alignItems="center">
@@ -95,7 +92,7 @@ const PendingIdCard: FC<PendingIdCardProps> = ({ onClick }) => {
                 width={logoSize}
                 height={logoSize}
                 borderRadius={logoSize / 2}
-                backgroundColor={PENDING_LOGO_BG}
+                backgroundColor={amber500}
                 alignItems="center"
                 justifyContent="center"
                 overflow="hidden"
@@ -120,7 +117,7 @@ const PendingIdCard: FC<PendingIdCardProps> = ({ onClick }) => {
                 <Text
                   fontFamily={dinot}
                   fontSize={fontSize.subtitle}
-                  color={SUBTITLE_COLOR}
+                  color={gray400}
                   letterSpacing={0.7}
                   textTransform="uppercase"
                 >
@@ -145,7 +142,7 @@ const PendingIdCard: FC<PendingIdCardProps> = ({ onClick }) => {
             position="absolute"
             bottom={figmaPadding}
             right={figmaPadding}
-            backgroundColor={PENDING_BADGE_BG}
+            backgroundColor={amber200}
             borderRadius={30}
             paddingHorizontal={8 * scale}
             paddingVertical={4 * scale}
@@ -154,7 +151,7 @@ const PendingIdCard: FC<PendingIdCardProps> = ({ onClick }) => {
               fontFamily={dinot}
               fontSize={10 * scale}
               fontWeight="500"
-              color={PENDING_BADGE_TEXT}
+              color={amber700}
               letterSpacing={0.6}
               textTransform="uppercase"
             >

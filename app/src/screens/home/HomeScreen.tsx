@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Dimensions, Pressable } from 'react-native';
+import { Pressable } from 'react-native';
 import {
   Button,
   ScrollView,
@@ -93,10 +93,6 @@ const HomeScreen: React.FC = () => {
   );
 
   const { amount: selfPoints } = usePoints();
-
-  // Calculate card dimensions exactly like IdCardLayout does
-  const { width: screenWidth } = Dimensions.get('window');
-  const cardWidth = screenWidth * 0.95 - 16; // 95% of screen width minus horizontal padding
 
   // DEV MODE: Test referral flow hook (only show alert when screen is focused)
   const isFocused = useIsFocused();

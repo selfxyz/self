@@ -382,6 +382,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
       const mrz = idDocument.mrz;
       let hash = 0;
       for (let i = 0; i < mrz.length; i++) {
+        // eslint-disable-next-line no-bitwise
         hash = (hash * 31 + mrz.charCodeAt(i)) >>> 0;
       }
       const mockId = `0x${hash.toString(16).padStart(8, '0')}`;

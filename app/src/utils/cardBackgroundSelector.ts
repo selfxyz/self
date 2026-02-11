@@ -20,24 +20,28 @@ const BACKGROUND_COUNT = 6;
 export function getBackgroundIndex(document: IDDocument): number {
   let hashInput: string;
 
-  if (isMRZDocument(document as PassportData | AadhaarData)) {
+  if (isMRZDocument(document)) {
     // For passport/ID card: use MRZ string
-    hashInput = (document as PassportData).mrz;
-  } else if (isAadhaarDocument(document as PassportData | AadhaarData)) {
+    hashInput = document.mrz;
+  } else if (isAadhaarDocument(document)) {
     // For Aadhaar: use last 4 digits + name + dob
-    const aadhaar = document as AadhaarData;
-    const fields = aadhaar.extractedFields;
+    const fields = document.extractedFields;
     hashInput = `${fields?.aadhaarLast4Digits}|${fields?.name}|${fields?.dob}`;
-  } else {
+  } else if (isKycDocument(document)) {
     // For KYC: deserialize applicant info and use idNumber + fullName + dob
-    const kyc = document as KycData;
-    const applicantInfo = deserializeApplicantInfo(kyc.serializedApplicantInfo);
+    const applicantInfo = deserializeApplicantInfo(
+      document.serializedApplicantInfo,
+    );
     hashInput = `${applicantInfo.idNumber}|${applicantInfo.fullName}|${applicantInfo.dob}`;
+  } else {
+    // Fallback for unknown document types
+    hashInput = '';
   }
 
   // Polynomial rolling hash (multiplier 31) for even distribution
   let hash = 0;
   for (let i = 0; i < hashInput.length; i++) {
+    // eslint-disable-next-line no-bitwise
     hash = (hash * 31 + hashInput.charCodeAt(i)) >>> 0;
   }
 
