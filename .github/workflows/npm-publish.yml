@@ -101,35 +101,19 @@ jobs:
         run: |
           yarn workspace @selfxyz/core build:deps
 
-      - name: Check NPM Token
-        id: check-token
-        run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
         working-directory: sdk/core
         continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess public
           yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          if [ "${{ steps.publish.outcome }}" != "success" ]; then
+            echo "::warning::NPM publish failed. For @selfxyz/core we use Trusted Publishers (OIDC); check workflow and npm package settings."
           else
             echo "✅ Package published successfully"
           fi
@@ -153,35 +137,20 @@ jobs:
         run: |
           yarn workspace @selfxyz/qrcode build:deps
 
-      - name: Check NPM Token
-        id: check-token
-        run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
-          fi
 
       - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
         working-directory: sdk/qrcode
         continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess public
           yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          if [ "${{ steps.publish.outcome }}" != "success" ]; then
+            echo "::warning::NPM publish failed. For @selfxyz/qrcode we use Trusted Publishers (OIDC); check workflow and npm package settings."
           else
             echo "✅ Package published successfully"
           fi
@@ -204,35 +173,19 @@ jobs:
         run: |
           yarn workspace @selfxyz/common build
 
-      - name: Check NPM Token
-        id: check-token
-        run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
         working-directory: common
         continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess public
           yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          if [ "${{ steps.publish.outcome }}" != "success" ]; then
+            echo "::warning::NPM publish failed. For @selfxyz/common we use Trusted Publishers (OIDC); check workflow and npm package settings."
           else
             echo "✅ Package published successfully"
           fi
@@ -252,35 +205,19 @@ jobs:
       - name: Build package
         run: |
           yarn workspace @selfxyz/contracts build
-      - name: Check NPM Token
-        id: check-token
-        run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
         working-directory: contracts
         continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess public
           yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          if [ "${{ steps.publish.outcome }}" != "success" ]; then
+            echo "::warning::NPM publish failed. For @selfxyz/contracts we use Trusted Publishers (OIDC); check workflow and npm package settings."
           else
             echo "✅ Package published successfully"
           fi
@@ -303,35 +240,19 @@ jobs:
         run: |
           yarn workspace @selfxyz/qrcode-angular build:deps
 
-      - name: Check NPM Token
-        id: check-token
-        run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
         working-directory: sdk/qrcode-angular
         continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess public
           yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          if [ "${{ steps.publish.outcome }}" != "success" ]; then
+            echo "::warning::NPM publish failed. For @selfxyz/qrcode-angular we use Trusted Publishers (OIDC); check workflow and npm package settings."
           else
             echo "✅ Package published successfully"
           fi
@@ -356,35 +277,19 @@ jobs:
           yarn workspace @selfxyz/common build
           yarn workspace @selfxyz/mobile-sdk-alpha build
 
-      - name: Check NPM Token
-        id: check-token
-        run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
         working-directory: packages/mobile-sdk-alpha
         continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess restricted
           yarn npm publish --access restricted --tag alpha
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          if [ "${{ steps.publish.outcome }}" != "success" ]; then
+            echo "::warning::NPM publish failed. For @selfxyz/mobile-sdk-alpha we use Trusted Publishers (OIDC); check workflow and npm package settings."
           else
             echo "✅ Package published successfully"
           fi
