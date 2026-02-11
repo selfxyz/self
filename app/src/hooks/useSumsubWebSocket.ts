@@ -34,11 +34,15 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
     skipAddPending = false,
   } = options;
 
-  const {
-    addPendingVerification,
-    updateVerificationStatus,
-    getPendingVerification,
-  } = usePendingKycStore();
+  const addPendingVerification = usePendingKycStore(
+    state => state.addPendingVerification,
+  );
+  const updateVerificationStatus = usePendingKycStore(
+    state => state.updateVerificationStatus,
+  );
+  const getPendingVerification = usePendingKycStore(
+    state => state.getPendingVerification,
+  );
 
   const socketsRef = useRef<Map<string, Socket>>(new Map());
   const subscribedUserIdsRef = useRef<Set<string>>(new Set());

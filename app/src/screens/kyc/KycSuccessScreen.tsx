@@ -50,7 +50,6 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
 
-  const isMountedRef = useRef<boolean>(true);
   const hasSubscribedRef = useRef<boolean>(false);
 
   const handleWebSocketSuccess = useCallback(() => {
@@ -81,7 +80,6 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
     }
 
     return () => {
-      isMountedRef.current = false;
       unsubscribeAll();
     };
   }, [userId, subscribe, unsubscribeAll]);
