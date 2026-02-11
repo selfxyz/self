@@ -1,6 +1,6 @@
 {
   "$schema": "./registry.schema.json",
-  "lastUpdated": "2026-02-02T14:47:21.978Z",
+  "lastUpdated": "2026-02-09T11:26:31.105Z",
   "contracts": {
     "IdentityVerificationHub": {
       "source": "IdentityVerificationHubImplV2",
@@ -21,6 +21,11 @@
       "source": "IdentityRegistryAadhaarImplV1",
       "type": "uups-proxy",
       "description": "Aadhaar identity registry"
+    },
+    "IdentityRegistryKyc": {
+      "source": "IdentityRegistryKycImplV1",
+      "type": "uups-proxy",
+      "description": "KYC identity registry"
     },
     "PCR0Manager": {
       "source": "PCR0Manager",
@@ -45,8 +50,8 @@
       "deployments": {
         "IdentityVerificationHub": {
           "proxy": "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF",
-          "currentVersion": "2.12.0",
-          "currentImpl": "0x05FB9D7830889cc389E88198f6A224eA87F01151"
+          "currentVersion": "2.13.0",
+          "currentImpl": "0x0D911083b2F2236D79EF20bb58AAf6009a1220B5"
         },
         "IdentityRegistry": {
           "proxy": "0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968",
@@ -62,6 +67,11 @@
           "proxy": "0xd603Fa8C8f4694E8DD1DcE1f27C0C3fc91e32Ac4",
           "currentVersion": "1.2.0",
           "currentImpl": "0xbD861A9cecf7B0A9631029d55A8CE1155e50697c"
+        },
+        "IdentityRegistryKyc": {
+          "proxy": "0x9cABdeBC3aF136efD69EB881e02118AC612c63b9",
+          "currentVersion": "1.0.0",
+          "currentImpl": "0x82FA9D41939229B6189cf326e855c6d6db2aAa57"
         },
         "PCR0Manager": {
           "address": "0x9743fe2C1c3D2b068c56dE314e9B10DA9c904717",
@@ -153,6 +163,20 @@
             "deployedAt": "2026-02-02T14:47:21.882Z",
             "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
             "gitCommit": "33bca485"
+          }
+        }
+      },
+      "2.13.0": {
+        "initializerVersion": 12,
+        "initializerFunction": "",
+        "changelog": "Upgrade to v2.13.0",
+        "gitTag": "identityverificationhub-v2.13.0",
+        "deployments": {
+          "celo": {
+            "impl": "0x0D911083b2F2236D79EF20bb58AAf6009a1220B5",
+            "deployedAt": "2026-02-09T11:26:30.941Z",
+            "deployedBy": "0xC1C860804EFdA544fe79194d1a37e60b846CEdeb",
+            "gitCommit": "88ae00b1"
           }
         }
       }
@@ -259,6 +283,22 @@
             "deployedAt": "2025-12-10T06:17:50.863Z",
             "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
             "gitCommit": "5787cff3bcbea870b50eccd7164fbd45b758568e"
+          }
+        }
+      }
+    },
+    "IdentityRegistryKyc": {
+      "1.0.0": {
+        "initializerVersion": 1,
+        "initializerFunction": "initialize",
+        "changelog": "Initial KYC registry deployment",
+        "gitTag": "",
+        "deployments": {
+          "celo": {
+            "impl": "0x82FA9D41939229B6189cf326e855c6d6db2aAa57",
+            "deployedAt": "2026-02-09T00:00:00.000Z",
+            "deployedBy": "",
+            "gitCommit": "03876a86284b0ed794fbff7aae142e62a3212624"
           }
         }
       }
