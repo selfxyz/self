@@ -103,8 +103,6 @@ const PointsInfoScreen: React.FC<PointsInfoScreenProps> = ({
   const handleNextPress = useCallback(() => {
     if (callbackId !== undefined) {
       buttonPressedRef.current = true;
-      // Unregister callbacks to prevent memory leak
-      unregisterModalCallbacks(callbackId);
     }
     callbacks?.onButtonPress();
   }, [callbackId, callbacks]);
@@ -113,9 +111,12 @@ const PointsInfoScreen: React.FC<PointsInfoScreenProps> = ({
   // Only call onModalDismiss if user navigated back (didn't press the button)
   useEffect(() => {
     return () => {
-      if (callbackId !== undefined && !buttonPressedRef.current) {
-        // User navigated back without pressing "Next" - call onModalDismiss to clear referrer
-        callbacks?.onModalDismiss();
+      if (callbackId !== undefined) {
+        // Always unregister on unmount to prevent memory leaks
+        if (!buttonPressedRef.current) {
+          // User navigated back without pressing "Next" - call onModalDismiss to clear referrer
+          callbacks?.onModalDismiss();
+        }
         unregisterModalCallbacks(callbackId);
       }
     };

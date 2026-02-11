@@ -75,8 +75,10 @@ jest.mock('tamagui', () => {
 
 // Mock mobile SDK components
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
-  PrimaryButton: ({ children, onPress }: any) => (
-    <button onClick={onPress}>{children}</button>
+  PrimaryButton: ({ children, onPress, ...props }: any) => (
+    <mock-view {...props} onPress={onPress} testID="primary-button">
+      {children}
+    </mock-view>
   ),
   Title: ({ children }: any) => <div>{children}</div>,
 }));
@@ -133,29 +135,27 @@ describe('PointsInfoScreen', () => {
   });
 
   it('should not show Next button when showNextButton is false', () => {
-    const { toJSON } = render(
+    const { queryByTestId } = render(
       <PointsInfoScreen
         route={{ params: { showNextButton: false, callbackId: 1 } }}
       />,
     );
 
-    // Verify screen renders without button
-    const tree = toJSON();
-    expect(tree).toBeTruthy();
-    // In the actual implementation, button is conditionally rendered
-    // We can't easily check for button absence in snapshot, but we verify it renders
+    // Verify button is not rendered
+    const nextButton = queryByTestId('primary-button');
+    expect(nextButton).toBeNull();
   });
 
   it('should show Next button when showNextButton is true', () => {
-    const { toJSON } = render(
+    const { getByTestId } = render(
       <PointsInfoScreen
         route={{ params: { showNextButton: true, callbackId: 1 } }}
       />,
     );
 
-    // Verify screen renders with button
-    const tree = toJSON();
-    expect(tree).toBeTruthy();
+    // Verify button is rendered
+    const nextButton = getByTestId('primary-button');
+    expect(nextButton).toBeTruthy();
   });
 
   describe('Callback handling', () => {
@@ -234,6 +234,71 @@ describe('PointsInfoScreen', () => {
       }).not.toThrow();
 
       // Should not attempt to unregister if no callbackId
+      expect(mockUnregisterModalCallbacks).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Button press handling', () => {
+    it('should call onButtonPress and unregister callbacks when Next button is pressed, then not call onModalDismiss on unmount', () => {
+      const { getByTestId, unmount } = render(
+        <PointsInfoScreen
+          route={{ params: { showNextButton: true, callbackId: 1 } }}
+        />,
+      );
+
+      const primaryButton = getByTestId('primary-button');
+
+      // Press the button
+      act(() => {
+        primaryButton.props.onPress();
+      });
+
+      // onButtonPress should be called
+      expect(mockOnButtonPress).toHaveBeenCalledTimes(1);
+      // Callbacks should NOT be unregistered yet (component still mounted)
+      expect(mockUnregisterModalCallbacks).not.toHaveBeenCalled();
+      // onModalDismiss should NOT be called (button was pressed)
+      expect(mockOnModalDismiss).not.toHaveBeenCalled();
+
+      // Clear mock calls from button press
+      jest.clearAllMocks();
+
+      // Unmount the component
+      act(() => {
+        unmount();
+      });
+
+      // onModalDismiss should NOT be called (button was pressed, not navigated back)
+      expect(mockOnModalDismiss).not.toHaveBeenCalled();
+      // Callbacks should be unregistered to prevent memory leak
+      expect(mockUnregisterModalCallbacks).toHaveBeenCalledWith(1);
+    });
+
+    it('should allow multiple button presses without unregistering callbacks (regression test)', () => {
+      const { getByTestId } = render(
+        <PointsInfoScreen
+          route={{ params: { showNextButton: true, callbackId: 1 } }}
+        />,
+      );
+
+      const primaryButton = getByTestId('primary-button');
+
+      // Press the button first time
+      act(() => {
+        primaryButton.props.onPress();
+      });
+
+      expect(mockOnButtonPress).toHaveBeenCalledTimes(1);
+      expect(mockUnregisterModalCallbacks).not.toHaveBeenCalled();
+
+      // Press the button again (simulating returning to this screen after modal dismissal)
+      act(() => {
+        primaryButton.props.onPress();
+      });
+
+      // onButtonPress should be called again
+      expect(mockOnButtonPress).toHaveBeenCalledTimes(2);
+      // Callbacks should still NOT be unregistered (component still mounted)
       expect(mockUnregisterModalCallbacks).not.toHaveBeenCalled();
     });
   });
