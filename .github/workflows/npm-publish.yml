@@ -98,7 +98,9 @@ jobs:
         id: publish
         run: |
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          npx npm@latest publish --access public $DRY_RUN
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -136,7 +138,9 @@ jobs:
         id: publish
         run: |
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          npx npm@latest publish --access public $DRY_RUN
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -172,7 +176,9 @@ jobs:
         id: publish
         run: |
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          npx npm@latest publish --access public $DRY_RUN
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -205,7 +211,9 @@ jobs:
         id: publish
         run: |
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          npx npm@latest publish --access public $DRY_RUN
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -241,7 +249,9 @@ jobs:
         id: publish
         run: |
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          npx npm@latest publish --access public $DRY_RUN
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
