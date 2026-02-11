@@ -9,7 +9,6 @@ import { SUMSUB_TEE_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronLeft } from '@tamagui/lucide-icons';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   green500,
   red500,
@@ -47,8 +46,6 @@ const SumsubTestScreen: React.FC = () => {
   const isMountedRef = useRef<boolean>(true);
 
   const paddingBottom = useSafeBottomPadding(20);
-
-  const selfClient = useSelfClient();
 
   // Use shared websocket hook
   const { subscribe, unsubscribeAll, isSubscribed } = useSumsubWebSocket({
