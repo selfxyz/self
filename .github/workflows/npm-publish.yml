@@ -13,11 +13,6 @@ on:
       - "contracts/package.json"
   workflow_dispatch:
     inputs:
-      strict_mode:
-        description: "Fail workflow on publish errors (false = continue on error)"
-        required: false
-        type: boolean
-        default: false
       dry_run:
         description: "Run publish with --dry-run (validates auth/Trusted Publishers without uploading)"
         required: false
@@ -27,15 +22,6 @@ on:
 permissions:
   id-token: write # Required for OIDC
   contents: read
-
-# Error Handling Strategy:
-# - STRICT_PUBLISH_MODE controls whether publish failures stop the workflow
-# - Current (false): continue-on-error=true, workflow always succeeds
-# - Target (true): continue-on-error=false, fail on real errors (expired tokens, network issues)
-# - Manual override: Use workflow_dispatch with strict_mode input to test
-# TODO: Set STRICT_PUBLISH_MODE=true once NPM token is rotated and verified
-env:
-  STRICT_PUBLISH_MODE: false
 
 jobs:
   detect-changes:
@@ -108,7 +94,6 @@ jobs:
 
       - name: Publish to npm
         working-directory: sdk/core
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess public
@@ -148,7 +133,6 @@ jobs:
 
       - name: Publish to npm
         working-directory: sdk/qrcode
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess public
@@ -186,7 +170,6 @@ jobs:
 
       - name: Publish to npm
         working-directory: common
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess public
@@ -221,7 +204,6 @@ jobs:
           yarn workspace @selfxyz/contracts build
       - name: Publish to npm
         working-directory: contracts
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess public
@@ -259,7 +241,6 @@ jobs:
 
       - name: Publish to npm
         working-directory: sdk/qrcode-angular
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess public
@@ -299,7 +280,6 @@ jobs:
 
       - name: Publish to npm
         working-directory: packages/mobile-sdk-alpha
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
           yarn config set npmPublishAccess restricted
