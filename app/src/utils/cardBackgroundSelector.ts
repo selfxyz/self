@@ -29,10 +29,14 @@ export function getBackgroundIndex(document: IDDocument): number {
     hashInput = `${fields?.aadhaarLast4Digits}|${fields?.name}|${fields?.dob}`;
   } else if (isKycDocument(document)) {
     // For KYC: deserialize applicant info and use idNumber + fullName + dob
-    const applicantInfo = deserializeApplicantInfo(
-      document.serializedApplicantInfo,
-    );
-    hashInput = `${applicantInfo.idNumber}|${applicantInfo.fullName}|${applicantInfo.dob}`;
+    try {
+      const applicantInfo = deserializeApplicantInfo(
+        document.serializedApplicantInfo,
+      );
+      hashInput = `${applicantInfo.idNumber}|${applicantInfo.fullName}|${applicantInfo.dob}`;
+    } catch {
+      hashInput = document.serializedApplicantInfo ?? '';
+    }
   } else {
     // Fallback for unknown document types
     hashInput = '';
