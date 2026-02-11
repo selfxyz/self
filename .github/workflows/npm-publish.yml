@@ -92,13 +92,13 @@ jobs:
         run: |
           yarn workspace @selfxyz/core build:deps
 
+      # OIDC trusted publishing requires the npm CLI (not yarn npm publish)
       - name: Publish to npm
         working-directory: sdk/core
         id: publish
         run: |
-          yarn config set npmPublishAccess public
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          yarn npm publish --access public $DRY_RUN
+          npx npm@latest publish --access public $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -135,9 +135,8 @@ jobs:
         working-directory: sdk/qrcode
         id: publish
         run: |
-          yarn config set npmPublishAccess public
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          yarn npm publish --access public $DRY_RUN
+          npx npm@latest publish --access public $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -172,9 +171,8 @@ jobs:
         working-directory: common
         id: publish
         run: |
-          yarn config set npmPublishAccess public
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          yarn npm publish --access public $DRY_RUN
+          npx npm@latest publish --access public $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -206,9 +204,8 @@ jobs:
         working-directory: contracts
         id: publish
         run: |
-          yarn config set npmPublishAccess public
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          yarn npm publish --access public $DRY_RUN
+          npx npm@latest publish --access public $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -243,9 +240,8 @@ jobs:
         working-directory: sdk/qrcode-angular
         id: publish
         run: |
-          yarn config set npmPublishAccess public
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          yarn npm publish --access public $DRY_RUN
+          npx npm@latest publish --access public $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -282,9 +278,8 @@ jobs:
         working-directory: packages/mobile-sdk-alpha
         id: publish
         run: |
-          yarn config set npmPublishAccess restricted
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          yarn npm publish --access restricted --tag alpha $DRY_RUN
+          npx npm@latest publish --access restricted --tag alpha $DRY_RUN
 
       - name: Publish result
         if: always()
