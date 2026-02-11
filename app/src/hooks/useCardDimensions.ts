@@ -22,15 +22,6 @@ const FIGMA_BOTTOM_ID_FONT_SIZE = 10;
 const FIGMA_BUTTON_FONT_SIZE = 16;
 const FIGMA_BORDER_RADIUS = 12;
 
-export interface CardFontSizes {
-  header: number;
-  subtitle: number;
-  badge: number;
-  bottomLabel: number;
-  bottomId: number;
-  button: number;
-}
-
 export interface CardDimensions {
   cardWidth: number;
   cardHeight: number;
@@ -43,6 +34,15 @@ export interface CardDimensions {
   expandedAspectRatio: number;
   collapsedAspectRatio: number;
   fontSize: CardFontSizes;
+}
+
+export interface CardFontSizes {
+  header: number;
+  subtitle: number;
+  badge: number;
+  bottomLabel: number;
+  bottomId: number;
+  button: number;
 }
 
 export function useCardDimensions(selected = true): CardDimensions {

@@ -445,10 +445,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
                 </YStack>
               ) : (
                 // Real document: Country flag
-                <RoundFlag
-                  countryCode={nationalityCode}
-                  size={logoSize}
-                />
+                <RoundFlag countryCode={nationalityCode} size={logoSize} />
               )}
               {/* Text container */}
               <YStack gap={2}>
@@ -499,7 +496,10 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
           (isMockDocument ? (
             // Dev card body - solid indigo background with wave pattern (exact Figma)
             <YStack
-              style={[cardStyles.body, { backgroundColor: DEV_BODY_COLOR, height: bodyHeight }]}
+              style={[
+                cardStyles.body,
+                { backgroundColor: DEV_BODY_COLOR, height: bodyHeight },
+              ]}
             >
               {/* Wave pattern - exact Figma asset with exact positioning */}
               {/* Figma insets: top -10.53%, right 5.62%, bottom -57.11%, left -44.43% */}

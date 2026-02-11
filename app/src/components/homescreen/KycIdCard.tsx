@@ -120,8 +120,16 @@ const KycIdCard: FC<KycIdCardProps> = ({
   const docTitle = getKycDocTitle(idType);
   const countryAdj = getCountryAdjective(country);
 
-  const { cardWidth, cardHeight, borderRadius, headerHeight, figmaPadding, logoSize, headerGap, fontSize } =
-    useCardDimensions(selected);
+  const {
+    cardWidth,
+    cardHeight,
+    borderRadius,
+    headerHeight,
+    figmaPadding,
+    logoSize,
+    headerGap,
+    fontSize,
+  } = useCardDimensions(selected);
   const padding = cardWidth * 0.04;
 
   // Get truncated ID for display (e.g., "0xD123..345")
@@ -203,10 +211,7 @@ const KycIdCard: FC<KycIdCardProps> = ({
             </XStack>
 
             {/* Self logo on right */}
-            <SelfLogoPending
-              width={logoSize * 0.56 * 5}
-              height={logoSize}
-            />
+            <SelfLogoPending width={logoSize * 0.56 * 5} height={logoSize} />
           </LinearGradient>
         </View>
 
