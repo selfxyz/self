@@ -98,7 +98,7 @@ const SumsubTestScreen: React.FC = () => {
         setLoading(false);
       }
     }
-  }, [phoneNumber]);
+  }, []);
 
   const subscribeToWebSocket = useCallback(() => {
     if (!userId || isSubscribed(userId)) {
@@ -122,7 +122,7 @@ const SumsubTestScreen: React.FC = () => {
     setError(null);
 
     try {
-      console.log('Launching Sumsub SDK with access token:', accessToken);
+      console.log('Launching Sumsub SDK');
       const sdkResult = await launchSumsub({
         accessToken,
         debug: true,
@@ -138,20 +138,10 @@ const SumsubTestScreen: React.FC = () => {
           // }
         },
         onEvent: (eventType, _payload) => {
-          console.log('SDK Event:', eventType, _payload);
+          console.log('SDK Event:', eventType);
 
-          //TODO: check whether its okay to use this
-          if (
-            eventType === 'StepCompleted' &&
-            (_payload as { idDocSetType: string }).idDocSetType === 'SELFIE' &&
-            (_payload as { isCancelled: boolean }).isCancelled === false
-          ) {
-            // subscribeToWebSocket();
-          }
-          // Subscribe to WebSocket when verification is completed
-          if (eventType === 'idCheck.onApplicantVerificationCompleted') {
-            // subscribeToWebSocket();
-          }
+          // TODO: Implement additional event handling if needed
+          // When implementing, ensure no PII from _payload is logged
         },
       });
 

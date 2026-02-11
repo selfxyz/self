@@ -891,11 +891,8 @@ export async function storeDocumentWithDeduplication(
     ...(isKycDocument(passportData)
       ? (() => {
           try {
-            const serializedData = JSON.parse(
-              passportData.serializedApplicantInfo,
-            );
             const parsedApplicantInfo = deserializeApplicantInfo(
-              serializedData.applicantInfo,
+              passportData.serializedApplicantInfo,
             );
             return parsedApplicantInfo.idType
               ? { idType: parsedApplicantInfo.idType }

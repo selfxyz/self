@@ -30,11 +30,10 @@ import DevCardLogo from '@/assets/images/dev_card_logo.svg';
 import DevCardWave from '@/assets/images/dev_card_wave.svg';
 import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
 import WaveOverlay from '@/assets/images/wave_overlay.png';
+import { getSecurityLevel } from '@/components/homescreen/cardSecurityBadge';
 import KycIdCard from '@/components/homescreen/KycIdCard';
 import { getBackgroundIndex } from '@/utils/cardBackgroundSelector';
 import { getDocumentAttributes } from '@/utils/documentAttributes';
-
-import { getSecurityLevel } from './cardSecurityBadge';
 
 const CARD_BACKGROUNDS = [
   CardBackgroundId1,

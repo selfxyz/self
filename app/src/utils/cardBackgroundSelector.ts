@@ -2,8 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { AadhaarData, KycData, PassportData } from '@selfxyz/common';
-import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common';
+import type { IDDocument } from '@selfxyz/common';
+import {
+  deserializeApplicantInfo,
+  isAadhaarDocument,
+  isKycDocument,
+  isMRZDocument,
+} from '@selfxyz/common';
 
 const BACKGROUND_COUNT = 6;
 
@@ -12,9 +17,7 @@ const BACKGROUND_COUNT = 6;
  * Uses a simple polynomial rolling hash of unique document identifiers.
  * The same document will always return the same background index.
  */
-export function getBackgroundIndex(
-  document: PassportData | AadhaarData | KycData,
-): number {
+export function getBackgroundIndex(document: IDDocument): number {
   let hashInput: string;
 
   if (isMRZDocument(document as PassportData | AadhaarData)) {
@@ -26,9 +29,10 @@ export function getBackgroundIndex(
     const fields = aadhaar.extractedFields;
     hashInput = `${fields?.aadhaarLast4Digits}|${fields?.name}|${fields?.dob}`;
   } else {
-    // For KYC: use idNumber + fullName + dob
+    // For KYC: deserialize applicant info and use idNumber + fullName + dob
     const kyc = document as KycData;
-    hashInput = `${kyc.idNumber}|${kyc.fullName}|${kyc.dob}`;
+    const applicantInfo = deserializeApplicantInfo(kyc.serializedApplicantInfo);
+    hashInput = `${applicantInfo.idNumber}|${applicantInfo.fullName}|${applicantInfo.dob}`;
   }
 
   // Polynomial rolling hash (multiplier 31) for even distribution

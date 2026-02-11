@@ -40,14 +40,19 @@ const KYCVerifiedScreen: React.FC = () => {
     buttonTap();
 
     try {
+      if (!documentId) {
+        console.error(
+          '[KYCVerifiedScreen] No documentId provided in route params',
+        );
+        return;
+      }
+
       console.log(
         '[KYCVerifiedScreen] Triggering proving for documentId:',
         documentId,
       );
 
-      if (documentId) {
-        await setSelectedDocument(documentId);
-      }
+      await setSelectedDocument(documentId);
 
       const selectedDocument = await loadSelectedDocument(selfClient);
       if (!selectedDocument) {

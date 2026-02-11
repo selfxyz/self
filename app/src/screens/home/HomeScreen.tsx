@@ -42,6 +42,7 @@ import LogoInversed from '@/assets/images/logo_inversed.svg';
 import EmptyIdCard from '@/components/homescreen/EmptyIdCard';
 import ExpiredIdCard from '@/components/homescreen/ExpiredIdCard';
 import IdCardLayout from '@/components/homescreen/IdCard';
+import PendingIdCard from '@/components/homescreen/PendingIdCard';
 import UnregisteredIdCard from '@/components/homescreen/UnregisteredIdCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
@@ -58,8 +59,6 @@ import {
   checkDocumentExpiration,
   getDocumentAttributes,
 } from '@/utils/documentAttributes';
-
-import PendingIdCard from '../../components/homescreen/PendingIdCard';
 
 const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -242,7 +241,10 @@ const HomeScreen: React.FC = () => {
           <PendingIdCard
             key={verification.userId}
             onClick={() => {
-              if (verification.status === 'processing') {
+              if (
+                verification.status === 'processing' &&
+                verification.documentId
+              ) {
                 navigation.navigate('KYCVerified', {
                   documentId: verification.documentId,
                 });

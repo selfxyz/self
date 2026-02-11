@@ -587,7 +587,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     fetch_identity_tree: async (environment: 'prod' | 'stg') => {
       const url = `${environment === 'prod' ? TREE_URL : TREE_URL_STAGING}/identity-kyc`;
       try {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) {
           throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
         }
@@ -596,6 +596,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
         set({ kyc: { ...get().kyc, commitment_tree: data.data } });
       } catch (error) {
         console.error(`Failed fetching kyc identity tree from ${url}:`, error);
+        set({ kyc: { ...get().kyc, commitment_tree: null } });
       }
     },
     fetch_ofac_trees: async (environment: 'prod' | 'stg') => {
