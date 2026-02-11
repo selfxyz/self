@@ -294,17 +294,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   selected,
   hidden,
 }) => {
-  if (!idDocument) {
-    return null;
-  }
-
-  // KYC documents use a distinct dark card design
-  if (isKycDocument(idDocument)) {
-    return (
-      <KycIdCard idDocument={idDocument} selected={selected} hidden={hidden} />
-    );
-  }
-
+  // Call hooks at the top, before any conditional returns
   const {
     cardWidth,
     cardHeight,
@@ -316,6 +306,17 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
     headerGap,
     fontSize,
   } = useCardDimensions(selected);
+
+  if (!idDocument) {
+    return null;
+  }
+
+  // KYC documents use a distinct dark card design
+  if (isKycDocument(idDocument)) {
+    return (
+      <KycIdCard idDocument={idDocument} selected={selected} hidden={hidden} />
+    );
+  }
   const padding = cardWidth * 0.04;
 
   // Get document attributes
