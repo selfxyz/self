@@ -32,6 +32,12 @@ export interface SumsubApplicantInfo {
   type: string;
 }
 
+export interface SumsubApplicantInfoSerialized {
+  signature: string;
+  applicantInfo: string;
+  pubkey: Array<string>;
+}
+
 export interface SumsubResult {
   success: boolean;
   status: string;

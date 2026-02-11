@@ -10,6 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Check, Eraser, HousePlus } from '@tamagui/lucide-icons';
 
+import { deserializeApplicantInfo } from '@selfxyz/common';
 import type {
   DocumentCatalog,
   DocumentMetadata,
@@ -142,8 +143,42 @@ const PassportDataSelector = () => {
     ]);
   };
 
-  const getDisplayName = (documentType: string): string => {
-    switch (documentType) {
+  const getKYCDisplayName = (metadata: DocumentMetadata): string => {
+    let applicantInfo;
+    try {
+      applicantInfo = deserializeApplicantInfo(metadata.data);
+    } catch (error) {
+      console.error(
+        `[ManageDocumentsScreen] Failed to deserialize KYC data for document ${metadata.id}:`,
+        error,
+      );
+      return 'Verified ID';
+    }
+
+    if (!applicantInfo.idType) {
+      return 'Verified ID';
+    }
+
+    switch (applicantInfo.idType) {
+      case 'ID_CARD':
+        return 'ID Card';
+      case 'DRIVERS_LICENCE':
+        return "Driver's Licence";
+      case 'PASSPORT':
+        return 'Passport';
+      case 'AADHAAR':
+        return 'Aadhaar';
+      default:
+        return 'Verified ID';
+    }
+  };
+
+  const getDisplayName = (metadata: DocumentMetadata): string => {
+    if (metadata.documentCategory === 'kyc') {
+      return getKYCDisplayName(metadata);
+    }
+
+    switch (metadata.documentType) {
       case 'passport':
         return 'Passport';
       case 'mock_passport':
@@ -157,7 +192,7 @@ const PassportDataSelector = () => {
       case 'mock_aadhaar':
         return 'Mock Aadhaar';
       default:
-        return documentType;
+        return metadata.documentType;
     }
   };
 
@@ -181,6 +216,9 @@ const PassportDataSelector = () => {
         }
       } else if (documentCategory === 'aadhaar') {
         return 'IND';
+      } else if (documentCategory === 'kyc') {
+        const applicantInfo = deserializeApplicantInfo(data);
+        return applicantInfo.country || null;
       }
       return null;
     } catch {
@@ -313,7 +351,7 @@ const PassportDataSelector = () => {
               </Button>
               <YStack flex={1}>
                 <Text color={textBlack} fontWeight="bold" fontSize="$4">
-                  {getDisplayName(metadata.documentType)}
+                  {getDisplayName(metadata)}
                 </Text>
                 <Text color={textBlack} fontSize="$3" opacity={0.7}>
                   {getDocumentInfo(metadata)}

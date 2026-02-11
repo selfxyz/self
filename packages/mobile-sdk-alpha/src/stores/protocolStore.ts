@@ -147,11 +147,7 @@ export async function fetchAllTreesAndCircuits(
  * public key list instead.
  */
 export function getAltCSCAPublicKeys(selfClient: SelfClient, docCategory: DocumentCategory) {
-  if (docCategory === 'kyc') {
-    //TODO
-    throw new Error('KYC is not supported yet');
-  }
-  if (docCategory === 'aadhaar') {
+  if (docCategory === 'aadhaar' || docCategory === 'kyc') {
     return selfClient.getProtocolState()[docCategory].public_keys;
   }
 
@@ -549,11 +545,99 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     deployed_circuits: null,
     circuits_dns_mapping: null,
     ofac_trees: null,
-    fetch_all: async (_environment: 'prod' | 'stg') => {},
-    fetch_deployed_circuits: async (_environment: 'prod' | 'stg') => {},
-    fetch_circuits_dns_mapping: async (_environment: 'prod' | 'stg') => {},
-    fetch_public_keys: async (_environment: 'prod' | 'stg') => {},
-    fetch_identity_tree: async (_environment: 'prod' | 'stg') => {},
-    fetch_ofac_trees: async (_environment: 'prod' | 'stg') => {},
+    fetch_all: async (environment: 'prod' | 'stg') => {
+      try {
+        await Promise.all([
+          get().kyc.fetch_deployed_circuits(environment),
+          get().kyc.fetch_circuits_dns_mapping(environment),
+          get().kyc.fetch_public_keys(environment),
+          get().kyc.fetch_identity_tree(environment),
+          get().kyc.fetch_ofac_trees(environment),
+        ]);
+      } catch (error) {
+        console.error(`Failed fetching kyc data for ${environment}:`, error);
+        throw error; // Re-throw to let proving machine handle it
+      }
+    },
+    fetch_deployed_circuits: async (environment: 'prod' | 'stg') => {
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/deployed-circuits`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
+      }
+      const responseText = await response.text();
+      const data = JSON.parse(responseText);
+      set({ kyc: { ...get().kyc, deployed_circuits: data.data } });
+    },
+    fetch_circuits_dns_mapping: async (environment: 'prod' | 'stg') => {
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping-gcp`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
+      }
+      const responseText = await response.text();
+      const data = JSON.parse(responseText);
+      set({
+        kyc: { ...get().kyc, circuits_dns_mapping: data.data },
+      });
+    },
+    fetch_public_keys: async (_environment: 'prod' | 'stg') => {
+      set({ kyc: { ...get().kyc, public_keys: null } });
+    },
+    fetch_identity_tree: async (environment: 'prod' | 'stg') => {
+      const url = `${environment === 'prod' ? TREE_URL : TREE_URL_STAGING}/identity-kyc`;
+      try {
+        const response = await fetchWithTimeout(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
+        }
+        const responseText = await response.text();
+        const data = JSON.parse(responseText);
+        set({ kyc: { ...get().kyc, commitment_tree: data.data } });
+      } catch (error) {
+        console.error(`Failed fetching kyc identity tree from ${url}:`, error);
+        set({ kyc: { ...get().kyc, commitment_tree: null } });
+      }
+    },
+    fetch_ofac_trees: async (environment: 'prod' | 'stg') => {
+      const baseUrl = environment === 'prod' ? TREE_URL : TREE_URL_STAGING;
+      const nameDobUrl = `${baseUrl}/ofac/name-dob-kyc`;
+      const nameYobUrl = `${baseUrl}/ofac/name-yob-kyc`;
+
+      try {
+        const fetchTree = async (url: string): Promise<any> => {
+          const res = await fetch(url);
+          if (!res.ok) {
+            throw new Error(`HTTP error fetching ${url}! status: ${res.status}`);
+          }
+          const responseData = await res.json();
+
+          if (responseData && typeof responseData === 'object' && 'status' in responseData) {
+            if (responseData.status !== 'success' || !responseData.data) {
+              throw new Error(`Failed to fetch tree from ${url}: ${responseData.message || 'Invalid response format'}`);
+            }
+            return responseData.data;
+          }
+
+          return responseData;
+        };
+
+        const [nameDobData, nameYobData] = await Promise.all([fetchTree(nameDobUrl), fetchTree(nameYobUrl)]);
+
+        set({
+          kyc: {
+            ...get().kyc,
+            ofac_trees: {
+              passportNoAndNationality: null,
+              nameAndDob: nameDobData,
+              nameAndYob: nameYobData,
+            },
+          },
+        });
+      } catch (error) {
+        console.error('Failed fetching kyc OFAC trees:', error);
+        set({ kyc: { ...get().kyc, ofac_trees: null } });
+      }
+    },
   },
 }));

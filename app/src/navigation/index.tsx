@@ -16,6 +16,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { DefaultNavBar } from '@/components/navbar';
+import { usePendingKycRecovery } from '@/hooks/usePendingKycRecovery';
 import useRecoveryPrompts from '@/hooks/useRecoveryPrompts';
 import AppLayout from '@/layouts/AppLayout';
 import accountScreens from '@/navigation/account';
@@ -82,6 +83,7 @@ const Navigation = createStaticNavigation(AppNavigation);
 
 const NavigationWithTracking = () => {
   useRecoveryPrompts();
+  usePendingKycRecovery();
   const selfClient = useSelfClient();
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();

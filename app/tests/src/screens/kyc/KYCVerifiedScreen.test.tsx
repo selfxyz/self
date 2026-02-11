@@ -3,8 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import * as haptics from '@/integrations/haptics';
 import KYCVerifiedScreen from '@/screens/kyc/KYCVerifiedScreen';
@@ -35,6 +34,9 @@ jest.mock('react-native-safe-area-context', () => ({
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
+  useRoute: jest.fn(() => ({
+    params: { documentId: 'test-document-id' },
+  })),
 }));
 
 // Mock Tamagui components
@@ -81,19 +83,33 @@ jest.mock('@/config/sentry', () => ({
   captureException: jest.fn(),
 }));
 
-const mockUseNavigation = useNavigation as jest.MockedFunction<
-  typeof useNavigation
->;
+const mockEmit = jest.fn();
+const mockSelfClient = { emit: mockEmit };
+
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  useSelfClient: jest.fn(() => mockSelfClient),
+  loadSelectedDocument: jest.fn(() =>
+    Promise.resolve({ documentCategory: 'kyc' }),
+  ),
+  SdkEvents: {
+    DOCUMENT_OWNERSHIP_CONFIRMED: 'DOCUMENT_OWNERSHIP_CONFIRMED',
+  },
+}));
+
+jest.mock('@/stores/pendingKycStore', () => ({
+  usePendingKycStore: jest.fn(() => ({
+    pendingVerifications: [],
+    removePendingVerification: jest.fn(),
+  })),
+}));
+
+jest.mock('@/providers/passportDataProvider', () => ({
+  setSelectedDocument: jest.fn(() => Promise.resolve()),
+}));
 
 describe('KYCVerifiedScreen', () => {
-  const mockNavigate = jest.fn();
-
   beforeEach(() => {
     jest.clearAllMocks();
-
-    mockUseNavigation.mockReturnValue({
-      navigate: mockNavigate,
-    } as any);
   });
 
   it('should render the screen without errors', () => {
@@ -140,17 +156,23 @@ describe('KYCVerifiedScreen', () => {
     expect(haptics.buttonTap).toHaveBeenCalledTimes(1);
   });
 
-  it('should navigate to ProvingScreenRouter when "Generate proof" is pressed', () => {
+  it('should emit DOCUMENT_OWNERSHIP_CONFIRMED when "Generate proof" is pressed', async () => {
     const { root } = render(<KYCVerifiedScreen />);
     const button = root.findAllByType('button')[0];
 
     fireEvent.press(button);
 
-    expect(mockNavigate).toHaveBeenCalledWith('ProvingScreenRouter');
+    await waitFor(() => {
+      expect(mockEmit).toHaveBeenCalledWith(
+        'DOCUMENT_OWNERSHIP_CONFIRMED',
+        expect.objectContaining({ documentCategory: 'kyc' }),
+      );
+    });
   });
 
-  it('should have navigation available', () => {
-    render(<KYCVerifiedScreen />);
-    expect(mockUseNavigation).toHaveBeenCalled();
+  it('should use the documentId from route params', () => {
+    const { root } = render(<KYCVerifiedScreen />);
+    // Component should render without errors when documentId is provided
+    expect(root).toBeTruthy();
   });
 });

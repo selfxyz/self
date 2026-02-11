@@ -1,24 +1,13 @@
 diff --git a/node_modules/@sumsub/react-native-mobilesdk-module/android/build.gradle b/node_modules/@sumsub/react-native-mobilesdk-module/android/build.gradle
-index 0000000..0000001 100644
+index 8796953..b00f0d4 100644
 --- a/node_modules/@sumsub/react-native-mobilesdk-module/android/build.gradle
 +++ b/node_modules/@sumsub/react-native-mobilesdk-module/android/build.gradle
-@@ -77,11 +77,11 @@ dependencies {
+@@ -77,7 +77,7 @@ dependencies {
      implementation "com.sumsub.sns:idensic-mobile-sdk:1.40.2"
  
-     // Enable Device Intelligence (Fisherman) for fraud detection
-     // Privacy: Declare device fingerprinting/identifiers in Google Play Data Safety form
      // remove comment to enable Device Intelligence
 -    // implementation "com.sumsub.sns:idensic-mobile-sdk-fisherman:1.40.2"
 +    implementation "com.sumsub.sns:idensic-mobile-sdk-fisherman:1.40.2"
-     // VideoIdent disabled on both iOS and Android for current release
-     // Reason: Avoids microphone permission requirements (FOREGROUND_SERVICE_MICROPHONE on Android)
-     // Feature: Provides liveness checks via live video calls with human agents
-     // TODO: Re-enable on both platforms for future release when liveness checks are needed
      // remove comment if you need VideoIdent support
--    // implementation "com.sumsub.sns:idensic-mobile-sdk-videoident:1.40.2"
-+    // implementation "com.sumsub.sns:idensic-mobile-sdk-videoident:1.40.2"
+     // implementation "com.sumsub.sns:idensic-mobile-sdk-videoident:1.40.2"
      // remove comment if you need EID support
-     // implementation "com.sumsub.sns:idensic-mobile-sdk-eid:1.40.2"
-     // remove comment if you need NFC support
-     // implementation "com.sumsub.sns:idensic-mobile-sdk-nfc:1.40.2"
- }

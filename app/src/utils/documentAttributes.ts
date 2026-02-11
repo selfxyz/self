@@ -3,12 +3,18 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { AadhaarData } from '@selfxyz/common';
+import { deserializeApplicantInfo } from '@selfxyz/common';
 import {
   attributeToPosition,
   attributeToPosition_ID,
 } from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types/passport';
-import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
+import type { KycData } from '@selfxyz/common/utils/types';
+import {
+  isAadhaarDocument,
+  isKycDocument,
+  isMRZDocument,
+} from '@selfxyz/common/utils/types';
 
 /**
  * Gets the scan prompt for a document type.
@@ -90,6 +96,101 @@ export function formatDateFromYYMMDD(
   }
 
   return `${dd}/${mm}/${year}`;
+}
+
+/**
+ * Extracts attributes from KYC document data
+ */
+function getKycAttributes(document: KycData): DocumentAttributes {
+  try {
+    // Extract fields from serializedApplicantInfo
+    const data = deserializeApplicantInfo(document.serializedApplicantInfo);
+
+    // Format name like MRZ: surname<<given names
+    const nameParts = data.fullName.trim().split(/\s+/);
+    const surname = nameParts[nameParts.length - 1] || '';
+    const givenNames = nameParts.slice(0, -1).join(' ') || '';
+    const nameSliceFormatted =
+      surname && givenNames
+        ? `${surname}<<${givenNames}`
+        : surname || givenNames || '';
+
+    // Format DOB to YYMMDD if provided (assuming ISO format YYYY-MM-DD or similar)
+    let dobFormatted = '';
+    let yobSlice = '';
+    if (data.dob) {
+      // Try to parse various date formats
+      const dateMatch = data.dob.match(/(\d{4})-(\d{2})-(\d{2})/); // YYYY-MM-DD
+      if (dateMatch) {
+        const [, year, month, day] = dateMatch;
+        yobSlice = year;
+        dobFormatted = `${year.slice(-2)}${month}${day}`;
+      } else if (data.dob.length === 8 && /^\d{8}$/.test(data.dob)) {
+        // Already in YYYYMMDD format
+        yobSlice = data.dob.slice(0, 4);
+        dobFormatted = `${data.dob.slice(2, 4)}${data.dob.slice(4, 6)}${data.dob.slice(6, 8)}`;
+      } else if (data.dob.length === 6 && /^\d{6}$/.test(data.dob)) {
+        // Already in YYMMDD format - determine century
+        const yy = parseInt(data.dob.slice(0, 2), 10);
+        const currentYear = new Date().getFullYear();
+        const century = Math.floor(currentYear / 100) * 100;
+        let fullYear = century + yy;
+        // For birth: if year is in the future, assume previous century
+        if (fullYear > currentYear) {
+          fullYear -= 100;
+        }
+        yobSlice = fullYear.toString();
+        dobFormatted = data.dob;
+      }
+    }
+
+    // Format expiry date to YYMMDD if provided
+    let expiryDateFormatted = '';
+    if (data.expiryDate) {
+      const expiryMatch = data.expiryDate.match(/(\d{4})-(\d{2})-(\d{2})/); // YYYY-MM-DD
+      if (expiryMatch) {
+        const [, year, month, day] = expiryMatch;
+        expiryDateFormatted = `${year.slice(-2)}${month}${day}`;
+      } else if (
+        data.expiryDate.length === 8 &&
+        /^\d{8}$/.test(data.expiryDate)
+      ) {
+        // Already in YYYYMMDD format
+        expiryDateFormatted = `${data.expiryDate.slice(2, 4)}${data.expiryDate.slice(4, 6)}${data.expiryDate.slice(6, 8)}`;
+      } else if (
+        data.expiryDate.length === 6 &&
+        /^\d{6}$/.test(data.expiryDate)
+      ) {
+        // Already in YYMMDD format
+        expiryDateFormatted = data.expiryDate;
+      }
+    }
+
+    return {
+      nameSlice: nameSliceFormatted,
+      dobSlice: dobFormatted,
+      yobSlice,
+      issuingStateSlice: data.country || '',
+      nationalitySlice: data.country || '',
+      passNoSlice: data.idNumber || '',
+      sexSlice: data.gender || '',
+      expiryDateSlice: expiryDateFormatted,
+      isPassportType: false,
+    };
+  } catch {
+    // Return safe defaults if deserialization or processing fails
+    return {
+      nameSlice: '',
+      dobSlice: '',
+      yobSlice: '',
+      issuingStateSlice: '',
+      nationalitySlice: '',
+      passNoSlice: '',
+      sexSlice: '',
+      expiryDateSlice: '',
+      isPassportType: false,
+    };
+  }
 }
 
 /**
@@ -191,10 +292,12 @@ function getPassportAttributes(
 
 // Helper functions to safely extract document data
 export function getDocumentAttributes(
-  document: PassportData | AadhaarData,
+  document: PassportData | AadhaarData | KycData,
 ): DocumentAttributes {
   if (isAadhaarDocument(document)) {
     return getAadhaarAttributes(document);
+  } else if (isKycDocument(document)) {
+    return getKycAttributes(document);
   } else if (isMRZDocument(document)) {
     return getPassportAttributes(document.mrz, document.documentCategory);
   } else {

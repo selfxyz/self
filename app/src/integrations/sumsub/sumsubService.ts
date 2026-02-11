@@ -35,26 +35,17 @@ export interface SumsubConfig {
 
 const FETCH_TIMEOUT_MS = 30000; // 30 seconds
 
-export const fetchAccessToken = async (
-  phoneNumber?: string,
-): Promise<AccessTokenResponse> => {
+export const fetchAccessToken = async (): Promise<AccessTokenResponse> => {
   const apiUrl = SUMSUB_TEE_URL;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const requestBody: Record<string, string> = {};
-
-    if (phoneNumber) {
-      requestBody.phone = phoneNumber;
-    }
-
     const response = await fetch(`${apiUrl}/access-token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody),
       signal: controller.signal,
     });
 

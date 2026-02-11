@@ -49,6 +49,7 @@ const DevSettingsScreen: React.FC = () => {
     handleClearPointEventsPress,
     handleResetBackupStatePress,
     handleClearBackupEventsPress,
+    handleClearPendingVerificationsPress,
   } = useDangerZoneActions();
 
   return (
@@ -107,6 +108,7 @@ const DevSettingsScreen: React.FC = () => {
             onClearPointEvents={handleClearPointEventsPress}
             onResetBackupState={handleResetBackupStatePress}
             onClearBackupEvents={handleClearBackupEventsPress}
+            onClearPendingKyc={handleClearPendingVerificationsPress}
           />
         </YStack>
       </ScrollView>
