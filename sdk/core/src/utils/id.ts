@@ -25,16 +25,12 @@ export const formatRevealedDataPacked = (
   );
   let issuingState = '';
 
-  if (attestationId === 4) {
-    issuingState = 'UNAVAILABLE';
-  } else {
-    issuingState = revealedDataPackedString
-      .subarray(
-        revealedDataIndices[attestationId].issuingStateStart,
-        revealedDataIndices[attestationId].issuingStateEnd + 1
-      )
-      .toString('utf-8');
-  }
+  issuingState = revealedDataPackedString
+    .subarray(
+      revealedDataIndices[attestationId].issuingStateStart,
+      revealedDataIndices[attestationId].issuingStateEnd + 1
+    )
+    .toString('utf-8');
 
   const name = revealedDataPackedString
     .subarray(

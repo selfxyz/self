@@ -82,6 +82,10 @@ export type DocumentRoutesParamList = {
     countryCode: string;
     documentTypes: string[];
   };
+  LogoConfirmation: {
+    documentType: string;
+    countryCode: string;
+  };
   ConfirmBelonging:
     | {
         documentCategory?: DocumentCategory;
@@ -158,18 +162,23 @@ export type OnboardingRoutesParamList = {
         documentId?: string;
       }
     | undefined;
+  KycFailure: {
+    countryCode?: string;
+    canRetry?: boolean;
+  };
+  KycConnectionError: {
+    countryCode?: string;
+  };
 };
 
 // =============================================================================
 // Registration Fallback Screens
 // =============================================================================
 export type RegistrationRoutesParamList = {
-  RegistrationFallback: {
-    errorSource:
-      | 'mrz_scan_failed'
-      | 'nfc_scan_failed'
-      | 'sumsub_initialization'
-      | 'sumsub_verification';
+  RegistrationFallbackMRZ: {
+    countryCode: string;
+  };
+  RegistrationFallbackNFC: {
     countryCode: string;
   };
 };

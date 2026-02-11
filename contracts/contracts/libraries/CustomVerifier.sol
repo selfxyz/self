@@ -346,7 +346,7 @@ library CustomVerifier {
             userIdentifier: kycOutput.userIdentifier,
             nullifier: kycOutput.nullifier,
             forbiddenCountriesListPacked: kycOutput.forbiddenCountriesListPacked,
-            issuingState: "UNAVAILABLE",
+            issuingState: CircuitAttributeHandlerV2.getIssuingState(AttestationId.KYC, kycOutput.revealedDataPacked),
             name: CircuitAttributeHandlerV2.getName(AttestationId.KYC, kycOutput.revealedDataPacked),
             idNumber: CircuitAttributeHandlerV2.getDocumentNumber(AttestationId.KYC, kycOutput.revealedDataPacked),
             nationality: CircuitAttributeHandlerV2.getNationality(AttestationId.KYC, kycOutput.revealedDataPacked),

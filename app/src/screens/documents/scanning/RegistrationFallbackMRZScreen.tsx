@@ -8,11 +8,9 @@ import { Button, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Image } from '@tamagui/lucide-icons';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
-import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   cyan300,
@@ -33,57 +31,57 @@ import type { RootStackParamList } from '@/navigation';
 import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';
 
-type AadhaarUploadErrorRouteParams = {
-  errorType?: 'general' | 'expired';
+type RegistrationFallbackMRZRouteParams = {
+  countryCode: string;
 };
 
-type AadhaarUploadErrorRoute = RouteProp<
-  Record<string, AadhaarUploadErrorRouteParams>,
+type RegistrationFallbackMRZRoute = RouteProp<
+  Record<string, RegistrationFallbackMRZRouteParams>,
   string
 >;
 
-const getErrorMessages = (
-  errorType: 'general' | 'expired',
-): { title: string; description: string } => {
-  switch (errorType) {
-    case 'expired':
-      return {
-        title: 'Your Aadhaar document has expired',
-        description: 'Please upload a valid Aadhaar document',
-      };
-    case 'general':
+const getHeaderTitle = (documentType: string): string => {
+  switch (documentType) {
+    case 'p':
+      return 'PASSPORT REGISTRATION';
+    case 'i':
+      return 'ID CARD REGISTRATION';
     default:
-      return {
-        title: 'There was a problem reading the code',
-        description: 'Make sure the QR code is valid and try again',
-      };
+      return 'DOCUMENT REGISTRATION';
   }
 };
 
-const AadhaarUploadErrorScreen: React.FC = () => {
+const RegistrationFallbackMRZScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const paddingBottom = useSafeBottomPadding(extraYPadding + 35);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute<AadhaarUploadErrorRoute>();
-  const { trackEvent } = useSelfClient();
+  const route = useRoute<RegistrationFallbackMRZRoute>();
+  const selfClient = useSelfClient();
+  const { trackEvent, useMRZStore } = selfClient;
+  const storeCountryCode = useMRZStore(state => state.countryCode);
+  const documentType = useMRZStore(state => state.documentType);
   const kycEnabled = useSettingStore(state => state.kycEnabled);
 
-  const errorType = route.params?.errorType || 'general';
-  const { title, description } = getErrorMessages(errorType);
+  // Use country code from route params, or fall back to MRZ store
+  const countryCode = route.params?.countryCode || storeCountryCode || '';
+
+  const headerTitle = getHeaderTitle(documentType);
 
   const { launchSumsubVerification, isLoading: isRetrying } = useSumsubLauncher(
     {
-      countryCode: 'IND',
-      errorSource: 'mrz_scan_failed', // Use a compatible error source
+      countryCode,
+      errorSource: 'mrz_scan_failed',
       onCancel: () => {
         navigation.goBack();
       },
-      onError: () => {
+      onError: (_error, _result) => {
         // Stay on this screen - user can try again
+        // Error is already logged in the hook
       },
       onSuccess: () => {
         // Success - provider handles its own success UI
+        // The screen will be navigated away by the provider's flow
       },
     },
   );
@@ -93,15 +91,19 @@ const AadhaarUploadErrorScreen: React.FC = () => {
     navigation.goBack();
   }, [navigation]);
 
-  const handleTryAgain = useCallback(() => {
-    trackEvent(AadhaarEvents.RETRY_BUTTON_PRESSED, { errorType });
-    navigation.goBack();
-  }, [errorType, navigation, trackEvent]);
-
   const handleTryAlternative = useCallback(async () => {
-    trackEvent(AadhaarEvents.HELP_BUTTON_PRESSED, { errorType });
+    trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
+      errorSource: 'mrz_scan_failed',
+    });
     await launchSumsubVerification();
-  }, [errorType, launchSumsubVerification, trackEvent]);
+  }, [launchSumsubVerification, trackEvent]);
+
+  const handleRetryOriginal = useCallback(() => {
+    trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {
+      errorSource: 'mrz_scan_failed',
+    });
+    navigation.navigate('DocumentCamera');
+  }, [navigation, trackEvent]);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>
@@ -122,13 +124,13 @@ const AadhaarUploadErrorScreen: React.FC = () => {
             onPress={handleClose}
           />
           <NavBar.Title style={{ fontFamily: dinot, fontSize: 17 }}>
-            AADHAAR REGISTRATION
+            {headerTitle}
           </NavBar.Title>
           {/* Invisible spacer to balance header */}
           <YStack width={30} height={30} />
         </NavBar.Container>
 
-        {/* Progress Bar - Step 2 for Aadhaar upload */}
+        {/* Progress Bar - Step 2 for MRZ */}
         <YStack paddingHorizontal={40} paddingBottom={14} paddingTop={4}>
           <XStack gap={3} height={6}>
             {[1, 2, 3, 4].map(step => (
@@ -170,7 +172,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
             <BodyText
               style={{ fontSize: 18, textAlign: 'center', color: black }}
             >
-              {title}
+              We couldn't read your document's MRZ
             </BodyText>
             <BodyText
               style={{
@@ -179,32 +181,30 @@ const AadhaarUploadErrorScreen: React.FC = () => {
                 color: slate500,
               }}
             >
-              {description}
+              Make sure the machine-readable zone at the bottom is clearly
+              visible and try again
             </BodyText>
           </YStack>
 
-          {/* Retry Button - Primary style with icon */}
+          {/* Retry Button - Primary style with very rounded corners */}
           <Button
             backgroundColor={black}
             borderRadius={100}
             height={52}
             pressStyle={{ opacity: 0.8 }}
-            onPress={handleTryAgain}
+            onPress={handleRetryOriginal}
             disabled={isRetrying}
           >
-            <XStack alignItems="center" gap={8}>
-              <Image size={20} color={white} />
-              <BodyText
-                style={{
-                  fontSize: 17,
-                  fontWeight: '500',
-                  fontFamily: dinot,
-                  color: white,
-                }}
-              >
-                Try upload again
-              </BodyText>
-            </XStack>
+            <BodyText
+              style={{
+                fontSize: 17,
+                fontWeight: '500',
+                fontFamily: dinot,
+                color: white,
+              }}
+            >
+              Try scanning again
+            </BodyText>
           </Button>
         </YStack>
       </YStack>
@@ -259,4 +259,4 @@ const AadhaarUploadErrorScreen: React.FC = () => {
   );
 };
 
-export default AadhaarUploadErrorScreen;
+export default RegistrationFallbackMRZScreen;
