@@ -4,7 +4,7 @@
 
 import type { FC } from 'react';
 import React from 'react';
-import { Dimensions, Image, StyleSheet, View } from 'react-native';
+import { Image, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text, XStack, YStack } from 'tamagui';
 
@@ -17,6 +17,8 @@ import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import CardBackgroundId1 from '@/assets/images/card_background_id1.png';
 import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
+import { cardStyles } from '@/components/homescreen/cardStyles';
+import { useCardDimensions } from '@/hooks/useCardDimensions';
 
 interface KycIdCardProps {
   idDocument: KycData;
@@ -118,20 +120,17 @@ const KycIdCard: FC<KycIdCardProps> = ({
   const docTitle = getKycDocTitle(idType);
   const countryAdj = getCountryAdjective(country);
 
-  const { width: screenWidth } = Dimensions.get('window');
-
-  // Card dimensions (matching IdCard: 353x224 for expanded, 353x67 for header only)
-  const cardWidth = screenWidth * 0.95 - 16;
-  const cardHeight = selected ? cardWidth * 0.635 : cardWidth * 0.19;
-  const borderRadius = 12;
+  const {
+    cardWidth,
+    cardHeight,
+    borderRadius,
+    headerHeight,
+    figmaPadding,
+    logoSize,
+    headerGap,
+    fontSize,
+  } = useCardDimensions(selected);
   const padding = cardWidth * 0.04;
-
-  // Figma exact dimensions (scaled from 353px reference width)
-  const scale = cardWidth / 353;
-  const headerHeight = 67 * scale;
-  const figmaPadding = 14 * scale;
-  const logoCircleSize = 32 * scale;
-  const headerGap = 12 * scale;
 
   // Get truncated ID for display (e.g., "0xD123..345")
   const getTruncatedId = (): string => {
@@ -151,15 +150,6 @@ const KycIdCard: FC<KycIdCardProps> = ({
 
   // Bottom label (e.g., "US DRIVERS LICENSE")
   const bottomLabel = `${countryAdj} ${docTitle}`;
-
-  // Font sizes (matching IdCard exactly)
-  const fontSize = {
-    header: cardWidth * 0.057, // 20px at 353px width
-    subtitle: cardWidth * 0.02, // 7px at 353px width
-    badge: cardWidth * 0.028, // 10px at 353px width
-    bottomLabel: cardWidth * 0.043, // 15px at 353px width
-    bottomId: cardWidth * 0.028, // 10px at 353px width
-  };
 
   return (
     <YStack width="100%" alignItems="center" justifyContent="center">
@@ -194,7 +184,7 @@ const KycIdCard: FC<KycIdCardProps> = ({
             {/* Logo + Text */}
             <XStack alignItems="center" gap={headerGap}>
               {/* Country flag */}
-              <RoundFlag countryCode={country} size={logoCircleSize} />
+              <RoundFlag countryCode={country} size={logoSize} />
 
               {/* Text container */}
               <YStack gap={2}>
@@ -221,20 +211,17 @@ const KycIdCard: FC<KycIdCardProps> = ({
             </XStack>
 
             {/* Self logo on right */}
-            <SelfLogoPending
-              width={logoCircleSize * 0.56 * 5}
-              height={logoCircleSize}
-            />
+            <SelfLogoPending width={logoSize * 0.56 * 5} height={logoSize} />
           </LinearGradient>
         </View>
 
         {/* Body Section - Colorful wave pattern (same as IdCard real documents) */}
         {selected && (
-          <YStack flex={1} position="relative" overflow="hidden">
+          <YStack style={cardStyles.body}>
             {/* Pre-composited background image (colorful gradient + chrome wave) */}
             <Image
               source={CardBackgroundId1}
-              style={styles.backgroundImage}
+              style={cardStyles.backgroundImage}
               resizeMode="cover"
             />
 
@@ -295,17 +282,5 @@ const KycIdCard: FC<KycIdCardProps> = ({
     </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  backgroundImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-  },
-});
 
 export default KycIdCard;

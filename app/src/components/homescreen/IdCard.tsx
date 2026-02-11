@@ -4,7 +4,7 @@
 
 import type { FC } from 'react';
 import React from 'react';
-import { Dimensions, Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text, XStack, YStack } from 'tamagui';
 
@@ -31,7 +31,9 @@ import DevCardWave from '@/assets/images/dev_card_wave.svg';
 import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
 import WaveOverlay from '@/assets/images/wave_overlay.png';
 import { getSecurityLevel } from '@/components/homescreen/cardSecurityBadge';
+import { cardStyles } from '@/components/homescreen/cardStyles';
 import KycIdCard from '@/components/homescreen/KycIdCard';
+import { useCardDimensions } from '@/hooks/useCardDimensions';
 import { getBackgroundIndex } from '@/utils/cardBackgroundSelector';
 import { getDocumentAttributes } from '@/utils/documentAttributes';
 
@@ -292,6 +294,19 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   selected,
   hidden,
 }) => {
+  // Call hooks at the top, before any conditional returns
+  const {
+    cardWidth,
+    cardHeight,
+    borderRadius,
+    scale,
+    headerHeight,
+    figmaPadding,
+    logoSize,
+    headerGap,
+    fontSize,
+  } = useCardDimensions(selected);
+
   if (!idDocument) {
     return null;
   }
@@ -302,13 +317,6 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
       <KycIdCard idDocument={idDocument} selected={selected} hidden={hidden} />
     );
   }
-
-  const { width: screenWidth } = Dimensions.get('window');
-
-  // Card dimensions (matching Figma: 353x224 for expanded, 353x67 for header only)
-  const cardWidth = screenWidth * 0.95 - 16;
-  const cardHeight = selected ? cardWidth * 0.635 : cardWidth * 0.19;
-  const borderRadius = 12;
   const padding = cardWidth * 0.04;
 
   // Get document attributes
@@ -358,14 +366,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   // Bottom label (uses demonym: "AMERICAN PASSPORT")
   const bottomLabel = `${countryDemonym} ${getDocumentTypeLabel()}`;
 
-  // Figma exact dimensions (scaled from 353px reference width)
-  const scale = cardWidth / 353;
-  const headerHeight = 67 * scale;
-  const bodyHeight = 157 * scale;
-  const figmaPadding = 14 * scale;
-  const logoCircleSize = 32 * scale;
-  const logoIconSize = 32 * scale;
-  const headerGap = 12 * scale;
+  const bodyHeight = cardHeight - headerHeight;
 
   // Get truncated selfId for display (e.g., "0xd9..b94")
   const getTruncatedId = (): string => {
@@ -396,15 +397,6 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   };
 
   const truncatedId = getTruncatedId();
-
-  // Font sizes
-  const fontSize = {
-    header: cardWidth * 0.057, // 20px at 353px width
-    subtitle: cardWidth * 0.02, // 7px at 353px width
-    badge: cardWidth * 0.028, // 10px at 353px width
-    bottomLabel: cardWidth * 0.043, // 15px at 353px width
-    bottomId: cardWidth * 0.028, // 10px at 353px width
-  };
 
   return (
     <YStack width="100%" alignItems="center" justifyContent="center">
@@ -442,22 +434,19 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
               {isMockDocument ? (
                 // Dev card: Self logo (white) in grey circle - exact Figma asset
                 <YStack
-                  width={logoCircleSize}
-                  height={logoCircleSize}
-                  borderRadius={logoCircleSize / 2}
+                  width={logoSize}
+                  height={logoSize}
+                  borderRadius={logoSize / 2}
                   backgroundColor={DEV_LOGO_BG}
                   alignItems="center"
                   justifyContent="center"
                   overflow="hidden"
                 >
-                  <DevCardLogo width={logoIconSize} height={logoIconSize} />
+                  <DevCardLogo width={logoSize} height={logoSize} />
                 </YStack>
               ) : (
                 // Real document: Country flag
-                <RoundFlag
-                  countryCode={nationalityCode}
-                  size={logoCircleSize}
-                />
+                <RoundFlag countryCode={nationalityCode} size={logoSize} />
               )}
               {/* Text container */}
               <YStack gap={2}>
@@ -488,7 +477,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
               // Empty spacer matching Figma (85x19)
               <YStack width={85 * scale} height={19 * scale} />
             ) : (
-              <SelfLogoPending width={logoCircleSize} height={logoCircleSize} />
+              <SelfLogoPending width={logoSize} height={logoSize} />
             )}
           </XStack>
         </LinearGradient>
@@ -509,7 +498,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
             // Dev card body - solid indigo background with wave pattern (exact Figma)
             <YStack
               style={[
-                styles.body,
+                cardStyles.body,
                 { backgroundColor: DEV_BODY_COLOR, height: bodyHeight },
               ]}
             >
@@ -531,11 +520,11 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
             </YStack>
           ) : (
             // Real document body - gradient background with wave overlay
-            <YStack style={styles.body}>
+            <YStack style={cardStyles.body}>
               {/* Gradient background */}
               <Image
                 source={cardBackground}
-                style={styles.backgroundImage}
+                style={cardStyles.backgroundImage}
                 resizeMode="cover"
               />
               {/* Wave pattern overlay */}
@@ -607,20 +596,6 @@ const styles = StyleSheet.create({
   header: {
     justifyContent: 'center',
     width: '100%',
-  },
-  body: {
-    flex: 1,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  backgroundImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
   },
   waveOverlay: {
     position: 'absolute',

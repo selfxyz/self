@@ -4,7 +4,7 @@
 
 import type { FC } from 'react';
 import React from 'react';
-import { Dimensions, Image, StyleSheet } from 'react-native';
+import { Image } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
 
 import {
@@ -18,6 +18,8 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import SelfLogoUnverified from '@/assets/images/self_logo_unverified.svg';
 import WavePatternBody from '@/assets/images/wave_pattern_body.png';
+import { cardStyles } from '@/components/homescreen/cardStyles';
+import { useCardDimensions } from '@/hooks/useCardDimensions';
 
 interface EmptyIdCardProps {
   onRegisterPress: () => void;
@@ -32,32 +34,23 @@ interface EmptyIdCardProps {
  * - Pill-shaped white button with gray border
  */
 const EmptyIdCard: FC<EmptyIdCardProps> = ({ onRegisterPress }) => {
-  const { width: screenWidth } = Dimensions.get('window');
-
-  // Card dimensions (matching IdCardLayout)
-  const cardWidth = screenWidth * 0.95 - 16;
-  const cardHeight = cardWidth * 0.635;
-  const borderRadius = 12;
-
-  // Figma exact dimensions (scaled from 353px reference width)
-  const scale = cardWidth / 353;
-  const headerHeight = 67 * scale;
-  const figmaPadding = 14 * scale;
-  const logoSize = 32 * scale;
-  const headerGap = 12 * scale;
-
-  // Font sizes from Figma
-  const fontSize = {
-    header: 20 * scale, // 20px in Figma
-    subtitle: 7 * scale, // 7px in Figma
-    button: 16 * scale, // 16px in Figma
-  };
+  const {
+    cardWidth,
+    borderRadius,
+    scale,
+    headerHeight,
+    figmaPadding,
+    logoSize,
+    headerGap,
+    expandedAspectRatio,
+    fontSize,
+  } = useCardDimensions();
 
   return (
     <YStack width="100%" alignItems="center" justifyContent="center">
       <YStack
         width={cardWidth}
-        height={cardHeight}
+        aspectRatio={expandedAspectRatio}
         borderRadius={borderRadius}
         overflow="hidden"
         borderWidth={1}
@@ -114,11 +107,11 @@ const EmptyIdCard: FC<EmptyIdCardProps> = ({ onRegisterPress }) => {
         </YStack>
 
         {/* Body Section - White background with wave pattern */}
-        <YStack style={styles.body}>
+        <YStack style={[cardStyles.body, { backgroundColor: white }]}>
           {/* Wave pattern background - exact same as unverified_human.png */}
           <Image
             source={WavePatternBody}
-            style={styles.wavePattern}
+            style={cardStyles.wavePattern}
             resizeMode="cover"
           />
 
@@ -157,23 +150,5 @@ const EmptyIdCard: FC<EmptyIdCardProps> = ({ onRegisterPress }) => {
     </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  body: {
-    flex: 1,
-    position: 'relative',
-    overflow: 'hidden',
-    backgroundColor: 'white',
-  },
-  wavePattern: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-  },
-});
 
 export default EmptyIdCard;
