@@ -80,6 +80,7 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
     }
 
     return () => {
+      hasSubscribedRef.current = false;
       unsubscribeAll();
     };
   }, [userId, subscribe, unsubscribeAll]);
