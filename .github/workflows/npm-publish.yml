@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Run publish with --dry-run (validates auth/Trusted Publishers without uploading)"
+        description: "Run publish with --dry-run"
         required: false
         type: boolean
         default: false
@@ -92,7 +92,16 @@ jobs:
         run: |
           yarn workspace @selfxyz/core build:deps
 
-      # OIDC trusted publishing requires the npm CLI (not yarn npm publish)
+      - name: Check version not already published
+        working-directory: sdk/core
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
+          fi
+
       - name: Publish to npm
         working-directory: sdk/core
         id: publish
@@ -132,6 +141,15 @@ jobs:
         run: |
           yarn workspace @selfxyz/qrcode build:deps
 
+      - name: Check version not already published
+        working-directory: sdk/qrcode
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
+          fi
 
       - name: Publish to npm
         working-directory: sdk/qrcode
@@ -171,6 +189,16 @@ jobs:
         run: |
           yarn workspace @selfxyz/common build
 
+      - name: Check version not already published
+        working-directory: common
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
+          fi
+
       - name: Publish to npm
         working-directory: common
         id: publish
@@ -206,6 +234,17 @@ jobs:
       - name: Build package
         run: |
           yarn workspace @selfxyz/contracts build
+
+      - name: Check version not already published
+        working-directory: contracts
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
+          fi
+
       - name: Publish to npm
         working-directory: contracts
         id: publish
@@ -243,6 +282,16 @@ jobs:
       - name: Build package
         run: |
           yarn workspace @selfxyz/qrcode-angular build:deps
+
+      - name: Check version not already published
+        working-directory: sdk/qrcode-angular
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
+          fi
 
       - name: Publish to npm
         working-directory: sdk/qrcode-angular
@@ -283,6 +332,16 @@ jobs:
         run: |
           yarn workspace @selfxyz/common build
           yarn workspace @selfxyz/mobile-sdk-alpha build
+
+      - name: Check version not already published
+        working-directory: packages/mobile-sdk-alpha
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
+          fi
 
       - name: Publish to npm
         working-directory: packages/mobile-sdk-alpha
