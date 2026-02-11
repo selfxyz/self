@@ -18,6 +18,11 @@ on:
         required: false
         type: boolean
         default: false
+      dry_run:
+        description: "Run publish with --dry-run (validates auth/Trusted Publishers without uploading)"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   id-token: write # Required for OIDC
@@ -107,13 +112,16 @@ jobs:
         id: publish
         run: |
           yarn config set npmPublishAccess public
-          yarn npm publish --access public
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          yarn npm publish --access public $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
           if [ "${{ steps.publish.outcome }}" != "success" ]; then
             echo "::warning::NPM publish failed. For @selfxyz/core we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "✅ Dry run completed (no package uploaded)"
           else
             echo "✅ Package published successfully"
           fi
@@ -144,13 +152,16 @@ jobs:
         id: publish
         run: |
           yarn config set npmPublishAccess public
-          yarn npm publish --access public
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          yarn npm publish --access public $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
           if [ "${{ steps.publish.outcome }}" != "success" ]; then
             echo "::warning::NPM publish failed. For @selfxyz/qrcode we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "✅ Dry run completed (no package uploaded)"
           else
             echo "✅ Package published successfully"
           fi
@@ -179,13 +190,16 @@ jobs:
         id: publish
         run: |
           yarn config set npmPublishAccess public
-          yarn npm publish --access public
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          yarn npm publish --access public $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
           if [ "${{ steps.publish.outcome }}" != "success" ]; then
             echo "::warning::NPM publish failed. For @selfxyz/common we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "✅ Dry run completed (no package uploaded)"
           else
             echo "✅ Package published successfully"
           fi
@@ -211,13 +225,16 @@ jobs:
         id: publish
         run: |
           yarn config set npmPublishAccess public
-          yarn npm publish --access public
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          yarn npm publish --access public $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
           if [ "${{ steps.publish.outcome }}" != "success" ]; then
             echo "::warning::NPM publish failed. For @selfxyz/contracts we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "✅ Dry run completed (no package uploaded)"
           else
             echo "✅ Package published successfully"
           fi
@@ -246,13 +263,16 @@ jobs:
         id: publish
         run: |
           yarn config set npmPublishAccess public
-          yarn npm publish --access public
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          yarn npm publish --access public $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
           if [ "${{ steps.publish.outcome }}" != "success" ]; then
             echo "::warning::NPM publish failed. For @selfxyz/qrcode-angular we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "✅ Dry run completed (no package uploaded)"
           else
             echo "✅ Package published successfully"
           fi
@@ -283,13 +303,16 @@ jobs:
         id: publish
         run: |
           yarn config set npmPublishAccess restricted
-          yarn npm publish --access restricted --tag alpha
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          yarn npm publish --access restricted --tag alpha $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
           if [ "${{ steps.publish.outcome }}" != "success" ]; then
             echo "::warning::NPM publish failed. For @selfxyz/mobile-sdk-alpha we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "✅ Dry run completed (no package uploaded)"
           else
             echo "✅ Package published successfully"
           fi
