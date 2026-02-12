@@ -202,8 +202,8 @@ export function getAlternativeCSCA(
   useProtocolStore: SelfClient['useProtocolStore'],
   docCategory: DocumentCategory,
 ): AlternativeCSCA {
-  if (docCategory === 'aadhaar') {
-    const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
+  if (docCategory === 'aadhaar' || docCategory === 'kyc') {
+    const publicKeys = useProtocolStore.getState()[docCategory].public_keys;
     // Convert string[] to Record<string, string> format expected by AlternativeCSCA
     return publicKeys
       ? Object.fromEntries(

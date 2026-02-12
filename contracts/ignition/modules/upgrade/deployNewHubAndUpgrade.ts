@@ -20,9 +20,26 @@ export default buildModule("DeployNewHubAndUpgradee", (m) => {
     throw new Error("Hub proxy address not found in deployed_addresses.json");
   }
 
+  // Deploy all required libraries
   const customVerifier = m.library("CustomVerifier");
+  const outputFormatterLib = m.library("OutputFormatterLib");
+  const proofVerifierLib = m.library("ProofVerifierLib");
+  const registerProofVerifierLib = m.library("RegisterProofVerifierLib");
+  const dscProofVerifierLib = m.library("DscProofVerifierLib");
+  const rootCheckLib = m.library("RootCheckLib");
+  const ofacCheckLib = m.library("OfacCheckLib");
+
+  // Deploy new implementation with all library linkages
   const identityVerificationHubImplV2 = m.contract("IdentityVerificationHubImplV2", [], {
-    libraries: { CustomVerifier: customVerifier },
+    libraries: {
+      CustomVerifier: customVerifier,
+      OutputFormatterLib: outputFormatterLib,
+      ProofVerifierLib: proofVerifierLib,
+      RegisterProofVerifierLib: registerProofVerifierLib,
+      DscProofVerifierLib: dscProofVerifierLib,
+      RootCheckLib: rootCheckLib,
+      OfacCheckLib: ofacCheckLib,
+    },
   });
 
   // Get the interface to encode the initialize function call

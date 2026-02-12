@@ -4,7 +4,18 @@
 
 import { ethers } from 'ethers';
 
+import { STORAGE_NAME } from '@/services/cloud-backup';
 import type { Mnemonic } from '@/types/mnemonic';
+
+/**
+ * Gets the recovery phrase warning message based on the current platform.
+ * The message mentions cloud backup options available for the OS.
+ * @returns The recovery phrase warning message
+ */
+export function getRecoveryPhraseWarningMessage(): string {
+  const cloudBackupName = STORAGE_NAME;
+  return `Using this phrase or ${cloudBackupName} backup are the only ways to recover your account. Keep it secret, keep it safe.`;
+}
 
 /**
  * Type guard to check if an object is a valid Mnemonic

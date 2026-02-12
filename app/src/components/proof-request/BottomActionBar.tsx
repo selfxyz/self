@@ -104,7 +104,7 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
           </XStack>
         </Pressable>
 
-        {/* Approve Button */}
+        {/* Select Button */}
         <Pressable
           onPress={onApprovePress}
           disabled={approveDisabled || approving}
@@ -136,7 +136,7 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
                 color={proofRequestColors.white}
                 textAlign="center"
               >
-                Approve
+                Select
               </Text>
             )}
           </View>

@@ -81,6 +81,9 @@ function getDocumentDisplayName(
       : `${mockPrefix}${base}`;
   } else if (category === 'aadhaar') {
     return isMock ? 'Dev Aadhaar ID' : 'Aadhaar ID';
+  } else if (category === 'kyc') {
+    const idLabel = metadata.idType || 'Verified ID';
+    return isMock ? `Dev ${idLabel}` : idLabel;
   }
 
   return isMock ? `Dev ${metadata.documentType}` : metadata.documentType;
@@ -219,6 +222,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
 
   const documents = useMemo(() => {
     return documentCatalog.documents
+      .filter(metadata => metadata.isRegistered)
       .map(metadata => {
         const docData = allDocuments[metadata.id];
         const baseState = determineDocumentState(metadata, docData?.data);
@@ -265,7 +269,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     const metadata = documentCatalog.documents.find(
       d => d.id === selectedDocumentId,
     );
-    return getDocumentTypeName(metadata?.documentCategory);
+    return getDocumentTypeName(metadata?.documentCategory, metadata?.idType);
   }, [
     selectedDocumentId,
     documentCatalog.documents,

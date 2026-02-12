@@ -35,6 +35,18 @@ export interface Config {
    * treated as `false` and the SDK will continue using legacy flows.
    */
   features?: Record<string, boolean>;
+  /**
+   * Optional dev-mode configuration for error injection and testing. Should
+   * only be provided in development builds. Production builds should omit this.
+   */
+  devConfig?: {
+    /**
+     * Callback to check if a specific error type should be injected for testing.
+     * @param errorType - The type of error to check (e.g., 'mrz_unknown_error')
+     * @returns true if the error should be injected, false otherwise
+     */
+    shouldTrigger?: (errorType: string) => boolean;
+  };
 }
 
 /**
@@ -375,6 +387,9 @@ export interface SelfClient {
   useProtocolStore: ReturnType<typeof create<ProtocolState, []>>;
   /** Zustand store hook mirroring {@link MRZState}. */
   useMRZStore: ReturnType<typeof create<MRZState, []>>;
+
+  /** The merged configuration object passed to createSelfClient. */
+  config: Config;
 }
 
 /** Function returned by {@link SelfClient.on} to detach a listener. */

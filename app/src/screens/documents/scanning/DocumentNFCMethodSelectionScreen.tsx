@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import { Platform, ScrollView } from 'react-native';
-import { Input, YStack } from 'tamagui';
+import { Input, Switch, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -21,6 +21,7 @@ import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
+import { useSettingStore } from '@/stores/settingStore';
 
 type NFCParams = {
   skipPACE?: boolean;
@@ -111,6 +112,10 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
   const { useMRZStore } = selfClient;
   const { update, passportNumber, dateOfBirth, dateOfExpiry } = useMRZStore();
 
+  const loggingSeverity = useSettingStore(state => state.loggingSeverity);
+  const setLoggingSeverity = useSettingStore(state => state.setLoggingSeverity);
+  const isDebugMode = loggingSeverity === 'debug';
+
   const handleSelect = (key: string) => {
     setSelectedMethod(key);
     setError('');
@@ -152,6 +157,30 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack paddingTop={20} gap={20}>
             <Title>Choose NFC Scan Method</Title>
+
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              paddingVertical="$3"
+              paddingHorizontal="$2"
+              borderWidth={1}
+              borderColor="#ccc"
+              borderRadius={10}
+              backgroundColor="#fff"
+            >
+              <Description>Debug Logging</Description>
+              <Switch
+                size="$4"
+                checked={isDebugMode}
+                onCheckedChange={checked => {
+                  setLoggingSeverity(checked ? 'debug' : 'warn');
+                }}
+                backgroundColor={isDebugMode ? '$green7Light' : '$gray4'}
+                style={{ minWidth: 48, minHeight: 36 }}
+              >
+                <Switch.Thumb animation="quick" backgroundColor="$white" />
+              </Switch>
+            </XStack>
 
             {NFC_METHODS.filter(method =>
               method.platform.includes(Platform.OS),

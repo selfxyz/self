@@ -19,8 +19,10 @@ export { NFC_IMAGE } from './images';
 
 export { advercase, dinot, dinotBold, plexMono } from './fonts';
 export {
+  amber200,
   amber50,
   amber500,
+  amber700,
   black,
   blue100,
   blue600,
@@ -29,12 +31,14 @@ export {
   charcoal,
   cyan300,
   emerald500,
+  gray400,
   green500,
   green600,
   iosSeparator,
   neutral400,
   neutral700,
   red500,
+  red600,
   separatorColor,
   sky500,
   slate100,
@@ -51,6 +55,7 @@ export {
   teal500,
   textBlack,
   white,
+  yellow50,
   yellow500,
   zinc400,
   zinc500,

@@ -178,7 +178,7 @@ export async function markCurrentDocumentAsRegistered(selfClient: SelfClient): P
 }
 
 export async function reStorePassportDataWithRightCSCA(selfClient: SelfClient, passportData: IDDocument, csca: string) {
-  if (passportData.documentCategory === 'aadhaar') {
+  if (passportData.documentCategory === 'aadhaar' || passportData.documentCategory === 'kyc') {
     return;
   }
   const cscaInCurrentPassporData = passportData.passportMetadata?.csca;

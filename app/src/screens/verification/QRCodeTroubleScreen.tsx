@@ -3,8 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect } from 'react';
+import { View } from 'tamagui';
 
-import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import type { TipProps } from '@/components/Tips';
@@ -12,6 +13,11 @@ import Tips from '@/components/Tips';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
+import {
+  openSupportForm,
+  SUPPORT_FORM_BUTTON_TEXT,
+  SUPPORT_FORM_TIP_MESSAGE,
+} from '@/services/support';
 
 const tips: TipProps[] = [
   {
@@ -39,7 +45,7 @@ const tips: TipProps[] = [
 const tipsDeeplink: TipProps[] = [
   {
     title: 'Coming from another app/website?',
-    body: 'Please contact the support, a telegram group is available in the options menu.',
+    body: SUPPORT_FORM_TIP_MESSAGE,
   },
 ];
 
@@ -55,12 +61,19 @@ const QRCodeTrouble: React.FC = () => {
     <SimpleScrolledTitleLayout
       title="Having trouble scanning the QR code?"
       onDismiss={go}
+      footer={
+        <SecondaryButton onPress={openSupportForm}>
+          {SUPPORT_FORM_BUTTON_TEXT}
+        </SecondaryButton>
+      }
     >
-      <Caption size="large" style={{ color: slate500 }}>
+      <Caption size="large" style={{ color: slate500, marginBottom: 16 }}>
         Here are some tips to help you successfully scan the QR code:
       </Caption>
-      <Tips items={tips} />
-      <Tips items={tipsDeeplink} />
+      <View marginBottom={24}>
+        <Tips items={tips} />
+        <Tips items={tipsDeeplink} />
+      </View>
     </SimpleScrolledTitleLayout>
   );
 };

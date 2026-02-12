@@ -88,6 +88,7 @@
     "@safe-global/protocol-kit": "^6.1.2",
     "@safe-global/safe-core-sdk-types": "^5.1.0",
     "@selfxyz/common": "workspace:^",
+    "@zk-kit/baby-jubjub": "^1.0.3",
     "@zk-kit/imt": "^2.0.0-beta.4",
     "@zk-kit/imt.sol": "^2.0.0-beta.12",
     "@zk-kit/lean-imt": "^2.0.1",
