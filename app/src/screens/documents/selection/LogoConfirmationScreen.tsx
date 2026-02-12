@@ -33,7 +33,6 @@ import {
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
-import { useSettingStore } from '@/stores/settingStore';
 
 type LogoConfirmationScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -47,7 +46,6 @@ const LogoConfirmationScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showModal } = useFeedback();
   const navigateToOnboarding = useHapticNavigation('DocumentOnboarding');
-  const kycEnabled = useSettingStore(state => state.kycEnabled);
 
   const handleConfirm = useCallback(() => {
     buttonTap();
@@ -138,9 +136,7 @@ const LogoConfirmationScreen: React.FC = () => {
       <ExpandableBottomLayout.BottomSection backgroundColor={slate100}>
         <ButtonsContainer>
           <PrimaryButton onPress={handleConfirm}>Yes</PrimaryButton>
-          {kycEnabled && (
-            <SecondaryButton onPress={handleNotFound}>No</SecondaryButton>
-          )}
+          <SecondaryButton onPress={handleNotFound}>No</SecondaryButton>
         </ButtonsContainer>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
