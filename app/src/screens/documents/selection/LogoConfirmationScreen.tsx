@@ -70,12 +70,27 @@ const LogoConfirmationScreen: React.FC = () => {
           });
 
           // User cancelled/dismissed without completing verification
-          const cancelledStatuses = ['Initial', 'Incomplete', 'Interrupted'];
-          if (cancelledStatuses.includes(result.status)) {
+          if (
+            !result.success &&
+            ['Initial', 'Incomplete', 'Interrupted'].includes(result.status)
+          ) {
             return;
           }
 
-          // User completed verification - navigate to KycSuccessScreen
+          // Verification failed (provider error/rejection)
+          if (!result.success) {
+            console.error(
+              'Sumsub verification failed:',
+              result.errorType ?? result.status,
+            );
+            navigation.navigate('KycFailure', {
+              countryCode,
+              canRetry: true,
+            });
+            return;
+          }
+
+          // Verification succeeded - navigate to KycSuccessScreen
           navigation.navigate('KycSuccess', { userId: accessToken.userId });
         } catch {
           console.error('Error launching Sumsub verification');

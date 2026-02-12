@@ -80,9 +80,6 @@ const AadhaarUploadErrorScreen: React.FC = () => {
       onError: () => {
         // Stay on this screen - user can try again
       },
-      onSuccess: () => {
-        // Success - provider handles its own success UI
-      },
     },
   );
 

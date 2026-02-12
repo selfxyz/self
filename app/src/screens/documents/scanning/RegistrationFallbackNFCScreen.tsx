@@ -78,10 +78,6 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
         // Stay on this screen - user can try again
         // Error is already logged in the hook
       },
-      onSuccess: () => {
-        // Success - provider handles its own success UI
-        // The screen will be navigated away by the provider's flow
-      },
     },
   );
 
