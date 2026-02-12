@@ -4,9 +4,9 @@
 
 import type { FC } from 'react';
 import React, { useCallback } from 'react';
-import { Dimensions, Image, Pressable, StyleSheet } from 'react-native';
+import { Image, Pressable, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { Separator, Text, XStack, YStack } from 'tamagui';
+import { Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import type { AadhaarData } from '@selfxyz/common';
@@ -20,12 +20,7 @@ import {
 import { WarningTriangleIcon } from '@selfxyz/euclid/dist/components/icons/WarningTriangleIcon';
 import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
 import {
-  black,
   red600,
-  slate100,
-  slate300,
-  slate400,
-  slate500,
   white,
   yellow500,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -39,20 +34,14 @@ import CardBackgroundId5 from '@/assets/images/card_background_id5.png';
 import CardBackgroundId6 from '@/assets/images/card_background_id6.png';
 import DevCardLogo from '@/assets/images/dev_card_logo.svg';
 import DevCardWave from '@/assets/images/dev_card_wave.svg';
-import LogoGray from '@/assets/images/logo_gray.svg';
 import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
 import WaveOverlay from '@/assets/images/wave_overlay.png';
 import { getSecurityLevel } from '@/components/homescreen/cardSecurityBadge';
 import { cardStyles } from '@/components/homescreen/cardStyles';
 import KycIdCard from '@/components/homescreen/KycIdCard';
-import { SvgXml } from '@/components/homescreen/SvgXmlWrapper';
 import { useCardDimensions } from '@/hooks/useCardDimensions';
 import { getBackgroundIndex } from '@/utils/cardBackgroundSelector';
-import {
-  formatDateFromYYMMDD,
-  getDocumentAttributes,
-  getNameAndSurname,
-} from '@/utils/documentAttributes';
+import { getDocumentAttributes } from '@/utils/documentAttributes';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 const CARD_BACKGROUNDS = [
