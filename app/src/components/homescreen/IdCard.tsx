@@ -3,10 +3,11 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { FC } from 'react';
-import React from 'react';
-import { Image, StyleSheet } from 'react-native';
+import React, { useCallback } from 'react';
+import { Dimensions, Image, Pressable, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { Text, XStack, YStack } from 'tamagui';
+import { Separator, Text, XStack, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
 
 import type { AadhaarData } from '@selfxyz/common';
 import type { PassportData } from '@selfxyz/common/types/passport';
@@ -16,8 +17,18 @@ import {
   isKycDocument,
   isMRZDocument,
 } from '@selfxyz/common/utils/types';
+import { WarningTriangleIcon } from '@selfxyz/euclid/dist/components/icons/WarningTriangleIcon';
 import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
-import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  black,
+  red600,
+  slate100,
+  slate300,
+  slate400,
+  slate500,
+  white,
+  yellow500,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import CardBackgroundId1 from '@/assets/images/card_background_id1.png';
@@ -28,14 +39,21 @@ import CardBackgroundId5 from '@/assets/images/card_background_id5.png';
 import CardBackgroundId6 from '@/assets/images/card_background_id6.png';
 import DevCardLogo from '@/assets/images/dev_card_logo.svg';
 import DevCardWave from '@/assets/images/dev_card_wave.svg';
+import LogoGray from '@/assets/images/logo_gray.svg';
 import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
 import WaveOverlay from '@/assets/images/wave_overlay.png';
 import { getSecurityLevel } from '@/components/homescreen/cardSecurityBadge';
 import { cardStyles } from '@/components/homescreen/cardStyles';
 import KycIdCard from '@/components/homescreen/KycIdCard';
+import { SvgXml } from '@/components/homescreen/SvgXmlWrapper';
 import { useCardDimensions } from '@/hooks/useCardDimensions';
 import { getBackgroundIndex } from '@/utils/cardBackgroundSelector';
-import { getDocumentAttributes } from '@/utils/documentAttributes';
+import {
+  formatDateFromYYMMDD,
+  getDocumentAttributes,
+  getNameAndSurname,
+} from '@/utils/documentAttributes';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 const CARD_BACKGROUNDS = [
   CardBackgroundId1,
@@ -279,6 +297,7 @@ interface IdCardLayoutAttributes {
   idDocument: PassportData | AadhaarData | KycData | null;
   selected: boolean;
   hidden: boolean;
+  isInactive?: boolean;
 }
 
 /**
@@ -293,7 +312,38 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   idDocument,
   selected,
   hidden,
+  isInactive = false,
 }) => {
+  const navigation = useNavigation();
+  const navigateToDocumentOnboarding = useCallback(() => {
+    switch (idDocument?.documentCategory) {
+      case 'passport':
+      case 'id_card':
+        navigation.navigate('DocumentOnboarding');
+        break;
+      case 'aadhaar':
+        navigation.navigate('AadhaarUpload', { countryCode: 'IND' });
+        break;
+    }
+  }, [idDocument?.documentCategory, navigation]);
+
+  const handleInactivePress = useCallback(() => {
+    const callbackId = registerModalCallbacks({
+      onButtonPress: navigateToDocumentOnboarding,
+      onModalDismiss: () => {},
+    });
+
+    navigation.navigate('Modal', {
+      titleText: 'Your ID needs to be reactivated to continue',
+      bodyText:
+        'Make sure that you have your document and recovery method ready.',
+      buttonText: 'Continue',
+      secondaryButtonText: 'Not now',
+      callbackId,
+    });
+  }, [navigateToDocumentOnboarding, navigation]);
+
+  // Early return if document is null
   // Call hooks at the top, before any conditional returns
   const {
     cardWidth,
@@ -399,7 +449,47 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   const truncatedId = getTruncatedId();
 
   return (
-    <YStack width="100%" alignItems="center" justifyContent="center">
+    // Container wrapper to handle shadow space properly
+    <YStack
+      width="100%" // Add space for horizontal margins
+      alignItems="center"
+      justifyContent="center"
+    >
+      {isInactive && (
+        <Pressable
+          style={styles.inactiveWarningContainer}
+          onPress={handleInactivePress}
+        >
+          <XStack
+            backgroundColor={red600}
+            borderRadius={8}
+            padding={16}
+            gap={16}
+          >
+            <YStack padding={8} backgroundColor={white} borderRadius={8}>
+              <WarningTriangleIcon color={yellow500} />
+            </YStack>
+            <YStack gap={4}>
+              <Text
+                color={white}
+                fontFamily={dinot}
+                fontSize={16}
+                fontWeight="500"
+              >
+                Your document is inactive
+              </Text>
+              <Text
+                color={white}
+                fontFamily={dinot}
+                fontSize={14}
+                fontWeight="400"
+              >
+                Tap here to recover your ID
+              </Text>
+            </YStack>
+          </XStack>
+        </Pressable>
+      )}
       <YStack
         width={cardWidth}
         height={cardHeight}
@@ -566,23 +656,45 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
                   </Text>
                 </YStack>
 
-                {/* Security Badge */}
-                <YStack
-                  backgroundColor="rgba(0, 0, 0, 0.5)"
-                  borderRadius={30}
-                  paddingHorizontal={padding * 0.6}
-                  paddingVertical={padding * 0.3}
-                >
-                  <Text
-                    fontFamily={dinot}
-                    fontSize={fontSize.badge}
-                    fontWeight="500"
-                    color={white}
-                    textTransform="uppercase"
-                    letterSpacing={0.6}
+                {/* Bottom Right: Badges */}
+                <YStack alignItems="flex-end" gap={4}>
+                  {isInactive && (
+                    <YStack
+                      backgroundColor={red600}
+                      borderRadius={30}
+                      paddingHorizontal={padding * 0.6}
+                      paddingVertical={padding * 0.3}
+                    >
+                      <Text
+                        fontFamily={dinot}
+                        fontSize={fontSize.badge}
+                        fontWeight="500"
+                        color={white}
+                        textTransform="uppercase"
+                        letterSpacing={0.6}
+                      >
+                        INACTIVE
+                      </Text>
+                    </YStack>
+                  )}
+                  {/* Security Badge */}
+                  <YStack
+                    backgroundColor="rgba(0, 0, 0, 0.5)"
+                    borderRadius={30}
+                    paddingHorizontal={padding * 0.6}
+                    paddingVertical={padding * 0.3}
                   >
-                    {securityLevel}
-                  </Text>
+                    <Text
+                      fontFamily={dinot}
+                      fontSize={fontSize.badge}
+                      fontWeight="500"
+                      color={white}
+                      textTransform="uppercase"
+                      letterSpacing={0.6}
+                    >
+                      {securityLevel}
+                    </Text>
+                  </YStack>
                 </YStack>
               </XStack>
             </YStack>
@@ -604,6 +716,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '90%',
     opacity: 0.6,
+  },
+  inactiveWarningContainer: {
+    width: '100%',
+    marginBottom: 16,
   },
 });
 

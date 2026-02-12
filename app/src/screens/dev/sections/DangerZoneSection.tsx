@@ -23,6 +23,7 @@ interface DangerZoneSectionProps {
   onResetBackupState: () => void;
   onClearBackupEvents: () => void;
   onClearPendingKyc: () => void;
+  onRemoveExpirationDateFlag: () => void;
 }
 
 export const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({
@@ -32,6 +33,7 @@ export const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({
   onResetBackupState,
   onClearBackupEvents,
   onClearPendingKyc,
+  onRemoveExpirationDateFlag,
 }) => {
   const dangerActions = [
     {
@@ -62,6 +64,11 @@ export const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({
     {
       label: 'Clear Pending KYC verifications',
       onPress: onClearPendingKyc,
+      dangerTheme: true,
+    },
+    {
+      label: 'Remove expiration date flag',
+      onPress: onRemoveExpirationDateFlag,
       dangerTheme: true,
     },
   ];

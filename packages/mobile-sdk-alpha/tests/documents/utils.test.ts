@@ -4,11 +4,12 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { DocumentCatalog } from '@selfxyz/common/types';
+import type { AadhaarData, DocumentCatalog } from '@selfxyz/common';
 import type { PassportData } from '@selfxyz/common/types/passport';
 
 import type { DocumentsAdapter, SelfClient } from '../../src';
 import { createSelfClient, defaultConfig, loadSelectedDocument } from '../../src';
+import { storeDocumentWithDeduplication } from '../../src/documents/utils';
 
 const createMockSelfClientWithDocumentsAdapter = (documentsAdapter: DocumentsAdapter): SelfClient => {
   return createSelfClient({
@@ -158,5 +159,173 @@ describe('loadSelectedDocument', () => {
     expect(loadDocumentCatalogSpy).toHaveBeenCalled();
     expect(loadDocumentByIdSpy).toHaveBeenCalledWith('45');
     expect(saveDocumentCatalogSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('storeDocumentWithDeduplication', () => {
+  const passportDocument = {
+    mrz: 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<',
+    eContent: [1, 2, 3],
+    documentType: 'passport',
+    documentCategory: 'passport',
+  } as PassportData;
+
+  const idCardDocument = {
+    mrz: 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<',
+    eContent: [1, 2, 3],
+    documentType: 'id_card',
+    documentCategory: 'id_card',
+  } as PassportData;
+
+  const aadhaarDocument = {
+    qrData: 'test-qr-data',
+    documentType: 'aadhaar',
+    documentCategory: 'aadhaar',
+  } as AadhaarData;
+
+  it('sets hasExpirationDate to true for passport documents', async () => {
+    const emptyCatalog: DocumentCatalog = { documents: [] };
+    const loadDocumentCatalogSpy = vi.fn().mockResolvedValue(emptyCatalog);
+    const saveDocumentCatalogSpy = vi.fn();
+    const saveDocumentSpy = vi.fn();
+
+    const client = createMockSelfClientWithDocumentsAdapter({
+      loadDocumentCatalog: loadDocumentCatalogSpy,
+      loadDocumentById: vi.fn(),
+      saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: saveDocumentSpy,
+      deleteDocument: vi.fn(),
+    });
+
+    await storeDocumentWithDeduplication(client, passportDocument);
+
+    expect(saveDocumentCatalogSpy).toHaveBeenCalledTimes(1);
+    const savedCatalog = saveDocumentCatalogSpy.mock.calls[0][0] as DocumentCatalog;
+
+    expect(savedCatalog.documents).toHaveLength(1);
+    expect(savedCatalog.documents[0].documentCategory).toBe('passport');
+    expect(savedCatalog.documents[0].hasExpirationDate).toBe(true);
+  });
+
+  it('sets hasExpirationDate to true for ID card documents', async () => {
+    const emptyCatalog: DocumentCatalog = { documents: [] };
+    const loadDocumentCatalogSpy = vi.fn().mockResolvedValue(emptyCatalog);
+    const saveDocumentCatalogSpy = vi.fn();
+    const saveDocumentSpy = vi.fn();
+
+    const client = createMockSelfClientWithDocumentsAdapter({
+      loadDocumentCatalog: loadDocumentCatalogSpy,
+      loadDocumentById: vi.fn(),
+      saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: saveDocumentSpy,
+      deleteDocument: vi.fn(),
+    });
+
+    await storeDocumentWithDeduplication(client, idCardDocument);
+
+    expect(saveDocumentCatalogSpy).toHaveBeenCalledTimes(1);
+    const savedCatalog = saveDocumentCatalogSpy.mock.calls[0][0] as DocumentCatalog;
+
+    expect(savedCatalog.documents).toHaveLength(1);
+    expect(savedCatalog.documents[0].documentCategory).toBe('id_card');
+    expect(savedCatalog.documents[0].hasExpirationDate).toBe(true);
+  });
+
+  it('sets hasExpirationDate to false for Aadhaar documents', async () => {
+    const emptyCatalog: DocumentCatalog = { documents: [] };
+    const loadDocumentCatalogSpy = vi.fn().mockResolvedValue(emptyCatalog);
+    const saveDocumentCatalogSpy = vi.fn();
+    const saveDocumentSpy = vi.fn();
+
+    const client = createMockSelfClientWithDocumentsAdapter({
+      loadDocumentCatalog: loadDocumentCatalogSpy,
+      loadDocumentById: vi.fn(),
+      saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: saveDocumentSpy,
+      deleteDocument: vi.fn(),
+    });
+
+    await storeDocumentWithDeduplication(client, aadhaarDocument);
+
+    expect(saveDocumentCatalogSpy).toHaveBeenCalledTimes(1);
+    const savedCatalog = saveDocumentCatalogSpy.mock.calls[0][0] as DocumentCatalog;
+
+    expect(savedCatalog.documents).toHaveLength(1);
+    expect(savedCatalog.documents[0].documentCategory).toBe('aadhaar');
+    expect(savedCatalog.documents[0].hasExpirationDate).toBe(false);
+  });
+
+  it('infers passport category and sets hasExpirationDate when documentCategory is missing', async () => {
+    const docWithoutCategory = {
+      mrz: 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<',
+      eContent: [1, 2, 3],
+      documentType: 'passport',
+    } as PassportData;
+
+    const emptyCatalog: DocumentCatalog = { documents: [] };
+    const saveDocumentCatalogSpy = vi.fn();
+
+    const client = createMockSelfClientWithDocumentsAdapter({
+      loadDocumentCatalog: vi.fn().mockResolvedValue(emptyCatalog),
+      loadDocumentById: vi.fn(),
+      saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: vi.fn(),
+      deleteDocument: vi.fn(),
+    });
+
+    await storeDocumentWithDeduplication(client, docWithoutCategory);
+
+    const savedCatalog = saveDocumentCatalogSpy.mock.calls[0][0] as DocumentCatalog;
+    expect(savedCatalog.documents[0].documentCategory).toBe('passport');
+    expect(savedCatalog.documents[0].hasExpirationDate).toBe(true);
+  });
+
+  it('infers id_card category and sets hasExpirationDate when documentCategory is missing', async () => {
+    const docWithoutCategory = {
+      mrz: 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<',
+      eContent: [1, 2, 3],
+      documentType: 'id_card',
+    } as PassportData;
+
+    const emptyCatalog: DocumentCatalog = { documents: [] };
+    const saveDocumentCatalogSpy = vi.fn();
+
+    const client = createMockSelfClientWithDocumentsAdapter({
+      loadDocumentCatalog: vi.fn().mockResolvedValue(emptyCatalog),
+      loadDocumentById: vi.fn(),
+      saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: vi.fn(),
+      deleteDocument: vi.fn(),
+    });
+
+    await storeDocumentWithDeduplication(client, docWithoutCategory);
+
+    const savedCatalog = saveDocumentCatalogSpy.mock.calls[0][0] as DocumentCatalog;
+    expect(savedCatalog.documents[0].documentCategory).toBe('id_card');
+    expect(savedCatalog.documents[0].hasExpirationDate).toBe(true);
+  });
+
+  it('infers aadhaar category and sets hasExpirationDate to false when documentCategory is missing', async () => {
+    const docWithoutCategory = {
+      qrData: 'test-qr-data',
+      documentType: 'aadhaar',
+    } as AadhaarData;
+
+    const emptyCatalog: DocumentCatalog = { documents: [] };
+    const saveDocumentCatalogSpy = vi.fn();
+
+    const client = createMockSelfClientWithDocumentsAdapter({
+      loadDocumentCatalog: vi.fn().mockResolvedValue(emptyCatalog),
+      loadDocumentById: vi.fn(),
+      saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: vi.fn(),
+      deleteDocument: vi.fn(),
+    });
+
+    await storeDocumentWithDeduplication(client, docWithoutCategory);
+
+    const savedCatalog = saveDocumentCatalogSpy.mock.calls[0][0] as DocumentCatalog;
+    expect(savedCatalog.documents[0].documentCategory).toBe('aadhaar');
+    expect(savedCatalog.documents[0].hasExpirationDate).toBe(false);
   });
 });
