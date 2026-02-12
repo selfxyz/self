@@ -1,0 +1,35 @@
+[versions]
+kotlin = "2.1.0"
+kotlinx-coroutines = "1.9.0"
+kotlinx-serialization = "1.7.3"
+agp = "8.7.3"
+android-compileSdk = "35"
+android-minSdk = "24"
+android-targetSdk = "35"
+jmrtd = "0.8.1"
+scuba = "0.0.18"
+biometric = "1.2.0-alpha05"
+security-crypto = "1.1.0-alpha06"
+
+[libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+jmrtd = { module = "org.jmrtd:jmrtd", version.ref = "jmrtd" }
+scuba-sc-android = { module = "net.sf.scuba:scuba-sc-android", version.ref = "scuba" }
+scuba-smartcards = { module = "net.sf.scuba:scuba-smartcards", version.ref = "scuba" }
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
+androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "security-crypto" }
+androidx-webkit = { module = "androidx.webkit:webkit", version = "1.12.1" }
+androidx-activity = { module = "androidx.activity:activity-ktx", version = "1.9.3" }
+androidx-fragment = { module = "androidx.fragment:fragment-ktx", version = "1.8.5" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
+mlkit-text-recognition = { module = "com.google.mlkit:text-recognition", version = "16.0.1" }
+
+[plugins]
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }

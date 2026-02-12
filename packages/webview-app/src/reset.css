@@ -1,0 +1,36 @@
+/* Resets for web so it looks like the native app */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'DINOT-Medium', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F8FAFC;
+}
+
+button {
+  background-color: transparent;
+  border: none;
+}
+
+/* Prevent text selection and pull-to-refresh in WebView */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
+}
+
+/* Allow text selection in input fields */
+input, textarea {
+  -webkit-user-select: auto;
+  user-select: auto;
+}

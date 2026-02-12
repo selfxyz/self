@@ -25,6 +25,22 @@ packages/mobile-sdk-alpha/docs/docstrings-report.json
 # Private Android modules (cloned at build time)
 app/android/android-passport-nfc-reader/
 
+# KMP / Gradle
+.gradle/
+**/build/
+!**/src/**/build/
+local.properties
+*.hprof
+
+# Vite / WebView app
+packages/webview-app/dist/
+
+# Tamagui cache
+.tamagui/
+
+# Claude local settings
+.claude/settings.local.json
+
 # Foundry
 contracts/out/
 contracts/cache_forge/

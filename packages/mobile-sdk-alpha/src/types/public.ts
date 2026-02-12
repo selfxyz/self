@@ -36,6 +36,12 @@ export interface Config {
    */
   features?: Record<string, boolean>;
   /**
+   * Runtime platform identifier. In React Native hosts this is derived from
+   * `Platform.OS`; in WebView hosts the native shell injects the value.
+   * Falls back to `'web'` when omitted.
+   */
+  platform?: 'ios' | 'android' | 'web';
+  /**
    * Optional dev-mode configuration for error injection and testing. Should
    * only be provided in development builds. Production builds should omit this.
    */

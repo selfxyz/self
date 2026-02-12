@@ -8,4 +8,5 @@ export const defaultConfig: Omit<Required<Config>, 'devConfig'> & Pick<Config, '
   timeouts: { scanMs: 60000 },
   // in future this can be used to enable/disable experimental features
   features: {},
+  platform: 'web',
 };

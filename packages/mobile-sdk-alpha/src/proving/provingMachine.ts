@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import forge from 'node-forge';
-import { Platform } from 'react-native';
 import type { Socket } from 'socket.io-client';
 import socketIo from 'socket.io-client';
 import { v4 } from 'uuid';
@@ -211,7 +210,7 @@ const _buildSubmitRequest = (uuid: string | null, encryptedPayload: EncryptedPay
   };
 };
 
-const getPlatform = (): 'ios' | 'android' => (Platform.OS === 'ios' ? 'ios' : 'android');
+type SdkPlatform = 'ios' | 'android' | 'web';
 
 export interface ProvingState {
   currentState: ProvingStateType;
@@ -1710,7 +1709,7 @@ const createProofContext = (
     circuitType: provingState.circuitType || null,
     currentState: provingState.currentState || 'unknown-state',
     stage,
-    platform: getPlatform(),
+    platform: selfClient.config.platform ?? 'web',
     ...overrides,
   };
 };

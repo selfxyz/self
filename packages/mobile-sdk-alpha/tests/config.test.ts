@@ -16,6 +16,7 @@ describe('mergeConfig', () => {
       nfc: true,
       mrz: true,
     },
+    platform: 'android',
   };
 
   // Freeze base config to catch accidental mutations inside mergeConfig
