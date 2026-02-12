@@ -327,7 +327,11 @@ const HomeScreen: React.FC = () => {
             >
               <IdCardLayout
                 idDocument={documentData.data}
-                isInactive={isSelected && isSelectedDocumentInactive === true}
+                isInactive={
+                  isSelected &&
+                  isSelectedDocumentInactive === true &&
+                  !metadata.mock
+                }
                 selected={isSelected}
                 hidden={true}
               />

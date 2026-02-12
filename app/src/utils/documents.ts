@@ -7,11 +7,13 @@ import type { DocumentMetadata } from '@selfxyz/common';
 export const isDocumentInactive = (metadata: DocumentMetadata): boolean => {
   if (
     metadata.documentCategory === 'id_card' ||
-    metadata.documentCategory === 'passport'
+    metadata.documentCategory === 'passport' ||
+    metadata.documentCategory === 'kyc'
   ) {
     return false;
   }
 
+  //for aadhaar migration
   if (metadata.hasExpirationDate === undefined) {
     return true;
   }
