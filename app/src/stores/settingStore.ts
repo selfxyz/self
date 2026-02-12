@@ -21,7 +21,6 @@ interface PersistedSettingsState {
   homeScreenViewCount: number;
   incrementHomeScreenViewCount: () => void;
   isDevMode: boolean;
-  kycEnabled: boolean;
   loggingSeverity: LoggingSeverity;
   pointsAddress: string | null;
   removeSubscribedTopic: (topic: string) => void;
@@ -33,7 +32,6 @@ interface PersistedSettingsState {
   setFcmToken: (token: string | null) => void;
   setHasViewedRecoveryPhrase: (viewed: boolean) => void;
   setKeychainMigrationCompleted: () => void;
-  setKycEnabled: (enabled: boolean) => void;
   setLoggingSeverity: (severity: LoggingSeverity) => void;
   setPointsAddress: (address: string | null) => void;
   setSkipDocumentSelector: (value: boolean) => void;
@@ -149,10 +147,6 @@ export const useSettingStore = create<SettingsState>()(
       // StrongBox setting for Android keystore (default: false)
       useStrongBox: false,
       setUseStrongBox: (useStrongBox: boolean) => set({ useStrongBox }),
-
-      // KYC flow toggle (default: false, dev-only feature)
-      kycEnabled: false,
-      setKycEnabled: (enabled: boolean) => set({ kycEnabled: enabled }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,

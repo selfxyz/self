@@ -21,7 +21,6 @@ import { selectionChange } from '@/integrations/haptics';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
 import { openSupportForm, SUPPORT_FORM_BUTTON_TEXT } from '@/services/support';
-import { useSettingStore } from '@/stores/settingStore';
 
 const tips: TipProps[] = [
   {
@@ -62,7 +61,6 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { countryCode } = useMRZStore();
-  const kycEnabled = useSettingStore(state => state.kycEnabled);
   const { launchSumsubVerification, isLoading } = useSumsubLauncher({
     countryCode,
     errorSource: 'nfc_scan_failed',
@@ -97,16 +95,14 @@ const DocumentNFCTroubleScreen: React.FC = () => {
             {SUPPORT_FORM_BUTTON_TEXT}
           </SecondaryButton>
 
-          {kycEnabled && (
-            <SecondaryButton
-              onPress={launchSumsubVerification}
-              disabled={isLoading}
-              textColor={slate700}
-              style={{ marginBottom: 0 }}
-            >
-              {isLoading ? 'Loading...' : 'Try Alternative Verification'}
-            </SecondaryButton>
-          )}
+          <SecondaryButton
+            onPress={launchSumsubVerification}
+            disabled={isLoading}
+            textColor={slate700}
+            style={{ marginBottom: 0 }}
+          >
+            {isLoading ? 'Loading...' : 'Try Alternative Verification'}
+          </SecondaryButton>
         </YStack>
       }
     >

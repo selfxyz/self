@@ -10,15 +10,11 @@ import { ParameterSection } from '@/screens/dev/components/ParameterSection';
 import { TopicToggleButton } from '@/screens/dev/components/TopicToggleButton';
 
 interface DevTogglesSectionProps {
-  kycEnabled: boolean;
-  setKycEnabled: (enabled: boolean) => void;
   useStrongBox: boolean;
   setUseStrongBox: (useStrongBox: boolean) => void;
 }
 
 export const DevTogglesSection: React.FC<DevTogglesSectionProps> = ({
-  kycEnabled,
-  setKycEnabled,
   useStrongBox,
   setUseStrongBox,
 }) => {
@@ -44,11 +40,6 @@ export const DevTogglesSection: React.FC<DevTogglesSectionProps> = ({
       title="Options"
       description="Development and security options"
     >
-      <TopicToggleButton
-        label="KYC Flow"
-        isSubscribed={kycEnabled}
-        onToggle={() => setKycEnabled(!kycEnabled)}
-      />
       {Platform.OS === 'android' && (
         <TopicToggleButton
           label="Use StrongBox"

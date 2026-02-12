@@ -41,8 +41,6 @@ const DevSettingsScreen: React.FC = () => {
   const setLoggingSeverity = useSettingStore(state => state.setLoggingSeverity);
   const useStrongBox = useSettingStore(state => state.useStrongBox);
   const setUseStrongBox = useSettingStore(state => state.setUseStrongBox);
-  const kycEnabled = useSettingStore(state => state.kycEnabled);
-  const setKycEnabled = useSettingStore(state => state.setKycEnabled);
 
   // Custom hooks
   const { hasNotificationPermission, subscribedTopics, handleTopicToggle } =
@@ -98,8 +96,6 @@ const DevSettingsScreen: React.FC = () => {
 
           {IS_DEV_MODE && (
             <DevTogglesSection
-              kycEnabled={kycEnabled}
-              setKycEnabled={setKycEnabled}
               useStrongBox={useStrongBox}
               setUseStrongBox={setUseStrongBox}
             />
