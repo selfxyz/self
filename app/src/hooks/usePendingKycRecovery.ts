@@ -69,7 +69,6 @@ export function usePendingKycRecovery() {
     );
 
     if (processingWithDocument) {
-      hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
       console.log(
         '[PendingKycRecovery] Resuming processing verification, navigating to KYCVerified:',
         processingWithDocument.userId,
@@ -78,8 +77,15 @@ export function usePendingKycRecovery() {
         navigationRef.navigate('KYCVerified', {
           documentId: processingWithDocument.documentId,
         });
+        // Only mark as attempted after successful navigation
+        hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
+        return;
       }
-      return;
+      // Navigation not ready yet - don't mark as attempted, allow retry
+      console.log(
+        '[PendingKycRecovery] Navigation not ready, will retry recovery for:',
+        processingWithDocument.userId,
+      );
     }
 
     const firstPending = pendingVerifications.find(
