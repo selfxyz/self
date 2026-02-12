@@ -103,6 +103,10 @@ jobs:
             exit 1
           fi
 
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: sdk/core
+        run: yarn pack --out package.tgz
+
       - name: Publish to npm
         working-directory: sdk/core
         id: publish
@@ -110,7 +114,7 @@ jobs:
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
           VERSION=$(node -p "require('./package.json').version")
           TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
-          npx npm@latest publish --access public $TAG $DRY_RUN
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -164,6 +168,10 @@ jobs:
             exit 1
           fi
 
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: sdk/qrcode
+        run: yarn pack --out package.tgz
+
       - name: Publish to npm
         working-directory: sdk/qrcode
         id: publish
@@ -171,7 +179,7 @@ jobs:
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
           VERSION=$(node -p "require('./package.json').version")
           TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
-          npx npm@latest publish --access public $TAG $DRY_RUN
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -224,6 +232,10 @@ jobs:
             exit 1
           fi
 
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: common
+        run: yarn pack --out package.tgz
+
       - name: Publish to npm
         working-directory: common
         id: publish
@@ -231,7 +243,7 @@ jobs:
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
           VERSION=$(node -p "require('./package.json').version")
           TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
-          npx npm@latest publish --access public $TAG $DRY_RUN
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -282,6 +294,10 @@ jobs:
             exit 1
           fi
 
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: contracts
+        run: yarn pack --out package.tgz
+
       - name: Publish to npm
         working-directory: contracts
         id: publish
@@ -289,7 +305,7 @@ jobs:
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
           VERSION=$(node -p "require('./package.json').version")
           TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
-          npx npm@latest publish --access public $TAG $DRY_RUN
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -342,6 +358,10 @@ jobs:
             exit 1
           fi
 
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: sdk/qrcode-angular
+        run: yarn pack --out package.tgz
+
       - name: Publish to npm
         working-directory: sdk/qrcode-angular
         id: publish
@@ -349,7 +369,7 @@ jobs:
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
           VERSION=$(node -p "require('./package.json').version")
           TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
-          npx npm@latest publish --access public $TAG $DRY_RUN
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -404,12 +424,16 @@ jobs:
             exit 1
           fi
 
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: packages/mobile-sdk-alpha
+        run: yarn pack --out package.tgz
+
       - name: Publish to npm
         working-directory: packages/mobile-sdk-alpha
         id: publish
         run: |
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          npx npm@latest publish --access restricted --tag alpha $DRY_RUN
+          npx npm@latest publish package.tgz --access restricted --tag alpha $DRY_RUN
 
       - name: Publish result
         if: always()
