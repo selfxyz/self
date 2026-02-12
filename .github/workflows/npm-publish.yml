@@ -93,6 +93,7 @@ jobs:
           yarn workspace @selfxyz/core build:deps
 
       - name: Check version not already published
+        id: check_version
         working-directory: sdk/core
         run: |
           NAME=$(node -p "require('./package.json').name")
@@ -114,12 +115,23 @@ jobs:
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed. For @selfxyz/core we use Trusted Publishers (OIDC); check workflow and npm package settings."
-          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            echo "✅ Dry run completed (no package uploaded)"
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/core we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi
 
   publish-qrcode:
@@ -142,6 +154,7 @@ jobs:
           yarn workspace @selfxyz/qrcode build:deps
 
       - name: Check version not already published
+        id: check_version
         working-directory: sdk/qrcode
         run: |
           NAME=$(node -p "require('./package.json').name")
@@ -163,12 +176,23 @@ jobs:
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed. For @selfxyz/qrcode we use Trusted Publishers (OIDC); check workflow and npm package settings."
-          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            echo "✅ Dry run completed (no package uploaded)"
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/qrcode we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi
 
   publish-common:
@@ -190,6 +214,7 @@ jobs:
           yarn workspace @selfxyz/common build
 
       - name: Check version not already published
+        id: check_version
         working-directory: common
         run: |
           NAME=$(node -p "require('./package.json').name")
@@ -211,12 +236,23 @@ jobs:
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed. For @selfxyz/common we use Trusted Publishers (OIDC); check workflow and npm package settings."
-          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            echo "✅ Dry run completed (no package uploaded)"
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/common we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi
   publish-contracts:
     needs: detect-changes
@@ -236,6 +272,7 @@ jobs:
           yarn workspace @selfxyz/contracts build
 
       - name: Check version not already published
+        id: check_version
         working-directory: contracts
         run: |
           NAME=$(node -p "require('./package.json').name")
@@ -257,12 +294,23 @@ jobs:
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed. For @selfxyz/contracts we use Trusted Publishers (OIDC); check workflow and npm package settings."
-          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            echo "✅ Dry run completed (no package uploaded)"
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/contracts we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi
   publish-qrcode-angular:
     needs: detect-changes
@@ -284,6 +332,7 @@ jobs:
           yarn workspace @selfxyz/qrcode-angular build:deps
 
       - name: Check version not already published
+        id: check_version
         working-directory: sdk/qrcode-angular
         run: |
           NAME=$(node -p "require('./package.json').name")
@@ -305,12 +354,23 @@ jobs:
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed. For @selfxyz/qrcode-angular we use Trusted Publishers (OIDC); check workflow and npm package settings."
-          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            echo "✅ Dry run completed (no package uploaded)"
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/qrcode-angular we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi
 
   publish-msdk:
@@ -334,6 +394,7 @@ jobs:
           yarn workspace @selfxyz/mobile-sdk-alpha build
 
       - name: Check version not already published
+        id: check_version
         working-directory: packages/mobile-sdk-alpha
         run: |
           NAME=$(node -p "require('./package.json').name")
@@ -353,10 +414,21 @@ jobs:
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed. For @selfxyz/mobile-sdk-alpha we use Trusted Publishers (OIDC); check workflow and npm package settings."
-          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            echo "✅ Dry run completed (no package uploaded)"
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/mobile-sdk-alpha we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi
