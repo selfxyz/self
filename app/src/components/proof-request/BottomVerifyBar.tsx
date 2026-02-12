@@ -18,6 +18,7 @@ export interface BottomVerifyBarProps {
   isReadyToProve: boolean;
   isDocumentExpired: boolean;
   testID?: string;
+  hasCheckedForInactiveDocument: boolean;
 }
 
 export const BottomVerifyBar: React.FC<BottomVerifyBarProps> = ({
@@ -28,6 +29,7 @@ export const BottomVerifyBar: React.FC<BottomVerifyBarProps> = ({
   isReadyToProve,
   isDocumentExpired,
   testID = 'bottom-verify-bar',
+  hasCheckedForInactiveDocument,
 }) => {
   const insets = useSafeAreaInsets();
 
@@ -46,6 +48,7 @@ export const BottomVerifyBar: React.FC<BottomVerifyBarProps> = ({
         isScrollable={isScrollable}
         isReadyToProve={isReadyToProve}
         isDocumentExpired={isDocumentExpired}
+        hasCheckedForInactiveDocument={hasCheckedForInactiveDocument}
       />
     </View>
   );

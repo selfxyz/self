@@ -20,6 +20,7 @@ export interface DocumentMetadata {
   mock: boolean;
   isRegistered?: boolean;
   registeredAt?: number; // timestamp (epoch ms) when document was registered
+  hasExpirationDate?: boolean; // whether the document has an expiration date
 }
 
 /**

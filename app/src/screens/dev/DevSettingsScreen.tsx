@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { ScrollView } from 'react-native';
+import { Alert, ScrollView } from 'react-native';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -13,6 +13,10 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import BugIcon from '@/assets/icons/bug_icon.svg';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import type { RootStackParamList } from '@/navigation';
+import {
+  loadDocumentCatalogDirectlyFromKeychain,
+  saveDocumentCatalogDirectlyToKeychain,
+} from '@/providers/passportDataProvider';
 import { ErrorInjectionSelector } from '@/screens/dev/components/ErrorInjectionSelector';
 import { LogLevelSelector } from '@/screens/dev/components/LogLevelSelector';
 import { ParameterSection } from '@/screens/dev/components/ParameterSection';
@@ -50,6 +54,32 @@ const DevSettingsScreen: React.FC = () => {
     handleClearPendingVerificationsPress,
   } = useDangerZoneActions();
 
+  const handleRemoveExpirationDateFlagPress = () => {
+    Alert.alert(
+      'Remove Expiration Date Flag',
+      'Are you sure you want to remove the expiration date flag for the current (selected) document?.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            const catalog = await loadDocumentCatalogDirectlyFromKeychain();
+            const selectedDocumentId = catalog.selectedDocumentId;
+            const selectedDocument = catalog.documents.find(
+              document => document.id === selectedDocumentId,
+            );
+
+            if (selectedDocument) {
+              delete selectedDocument.hasExpirationDate;
+
+              await saveDocumentCatalogDirectlyToKeychain(catalog);
+            }
+          },
+        },
+      ],
+    );
+  };
   return (
     <ErrorBoundary>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -105,6 +135,7 @@ const DevSettingsScreen: React.FC = () => {
             onResetBackupState={handleResetBackupStatePress}
             onClearBackupEvents={handleClearBackupEventsPress}
             onClearPendingKyc={handleClearPendingVerificationsPress}
+            onRemoveExpirationDateFlag={handleRemoveExpirationDateFlagPress}
           />
         </YStack>
       </ScrollView>

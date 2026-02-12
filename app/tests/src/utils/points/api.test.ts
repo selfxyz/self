@@ -77,6 +77,7 @@ describe('Points API - Signature Logic', () => {
 
   let mockWallet: any;
   let consoleErrorSpy: jest.SpyInstance;
+  let originalBufferFrom: typeof Buffer.from;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -101,6 +102,11 @@ describe('Points API - Signature Logic', () => {
     // Mock ethers.getBytes
     (ethers.getBytes as jest.Mock).mockReturnValue(mockSignatureBytes);
 
+    // Save original Buffer.from before mocking (global.Buffer is shared across
+    // all test files in the same worker, so we must restore it to avoid
+    // poisoning other test files like nfcScanner.test.ts)
+    originalBufferFrom = global.Buffer.from;
+
     // Mock Buffer.from for base64 conversion
     global.Buffer.from = jest.fn().mockReturnValue({
       toString: jest.fn().mockReturnValue(mockSignatureBase64),
@@ -113,6 +119,7 @@ describe('Points API - Signature Logic', () => {
   });
 
   afterEach(() => {
+    global.Buffer.from = originalBufferFrom;
     consoleErrorSpy.mockRestore();
   });
 
