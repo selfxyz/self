@@ -1,4 +1,4 @@
-# Cruft Baseline Snapshot
+# Tech Debt Baseline Snapshot
 
 Generated from `package.json` workspaces. This file is intended as an immutable baseline for cleanup PRs.
 

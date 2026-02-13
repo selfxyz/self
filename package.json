@@ -13,6 +13,7 @@
     ]
   },
   "scripts": {
+    "audit:tech-debt": "node scripts/audit/tech-debt-baseline.mjs",
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts --exclude @selfxyz/circuits --exclude mobile-sdk-demo -i --all run build",
     "build:demo": "yarn workspace mobile-sdk-demo build",
     "build:mobile-sdk": "yarn workspace @selfxyz/mobile-sdk-alpha build",

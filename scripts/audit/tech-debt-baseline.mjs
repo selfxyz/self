@@ -8,13 +8,13 @@ const OUTPUT_JSON_PATH = path.join(
   ROOT_DIR,
   'docs',
   'maintenance',
-  'cruft-baseline.json',
+  'tech-debt-baseline.json',
 );
 const OUTPUT_MARKDOWN_PATH = path.join(
   ROOT_DIR,
   'docs',
   'maintenance',
-  'cruft-baseline.md',
+  'tech-debt-baseline.md',
 );
 
 const IGNORED_DIRECTORIES = new Set([
@@ -200,7 +200,7 @@ function buildMarkdownReport(report) {
     workspace => workspace.dependencyCount.total >= unusualThreshold,
   );
 
-  lines.push('# Cruft Baseline Snapshot');
+  lines.push('# Tech Debt Baseline Snapshot');
   lines.push('');
   lines.push(
     'Generated from `package.json` workspaces. This file is intended as an immutable baseline for cleanup PRs.',
