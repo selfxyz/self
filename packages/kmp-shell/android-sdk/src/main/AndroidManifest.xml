@@ -7,4 +7,13 @@
 
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <application>
+        <activity
+            android:name="xyz.self.sdk.android.SelfVerificationActivity"
+            android:exported="false" />
+        <activity
+            android:name="xyz.self.sdk.android.SelfWebViewActivity"
+            android:exported="false" />
+    </application>
 </manifest>

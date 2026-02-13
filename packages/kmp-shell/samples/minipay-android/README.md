@@ -1,80 +1,78 @@
-# MiniPay Integration Sample
+# Self SDK Android Demo (MiniPay Sample)
 
-This sample demonstrates how to integrate the Self SDK into MiniPay (or any Android host app).
+This sample is a minimal Android demo app for validating:
 
-## Setup
+- SDK launch from host app
+- WebView loading desktop-hosted content
+- bridge readiness (`lifecycle.ready`)
+- native response delivery via `_handleResponse`
+- dismiss and result callback flow
 
-1. Add the Self SDK dependency to your `build.gradle.kts`:
+## Default local dev URL
 
-```kotlin
-dependencies {
-    implementation("xyz.self:android-sdk:0.0.1-alpha.1")
-}
+- Android emulator default: `http://10.0.2.2:5173`
+- Physical device: `http://<YOUR-LAN-IP>:5173`
+  - Example: `http://192.168.1.50:5173`
+  - Ensure phone and laptop are on the same network.
+
+## Build and run
+
+From `packages/kmp-shell`:
+
+```bash
+./gradlew :android-sdk:assemble
+./gradlew :samples:minipay-android:assembleDebug
 ```
 
-2. Add NFC and camera permissions to your `AndroidManifest.xml`:
+Then install/run the sample app from Android Studio (open `packages/kmp-shell`) or with adb:
 
-```xml
-<uses-permission android:name="android.permission.NFC" />
-<uses-permission android:name="android.permission.CAMERA" />
-<uses-feature android:name="android.hardware.nfc" android:required="false" />
+```bash
+./gradlew :samples:minipay-android:installDebug
+adb shell am start -n com.example.minipay/com.example.minipay.MiniPayActivity
 ```
 
-## Usage
+## Start a local web app for WebView testing
 
-See `MiniPayActivity.kt` for the full integration example.
+Use your desktop web app at port 5173, or serve the included fixture page:
 
-```kotlin
-class MiniPayActivity : AppCompatActivity() {
-
-    private val selfSdk = SelfSdk.configure {
-        appId = "minipay-app-id"
-        environment = SelfSdkEnvironment.PRODUCTION
-    }
-
-    fun startVerification() {
-        selfSdk.launch(
-            activity = this,
-            request = VerificationRequest(
-                scope = "identity",
-                userId = celoAddress,
-                callbackUrl = "https://api.minipay.com/self/callback",
-            ),
-            callback = object : SelfSdkCallback {
-                override fun onVerificationComplete(result: VerificationResult) {
-                    // User is verified — unlock features
-                    showSuccess(result.verificationId)
-                }
-
-                override fun onVerificationFailed(error: SelfSdkError) {
-                    showError(error.message)
-                }
-
-                override fun onDismissed() {
-                    // User cancelled — do nothing
-                }
-            }
-        )
-    }
-}
+```bash
+cd packages/kmp-shell/samples/minipay-android/docs
+python3 -m http.server 5173
 ```
 
-## iOS (Swift)
+Fixture file: `bridge-fixture.html`
 
-```swift
-let selfSdk = SelfSdk.configure {
-    $0.appId = "minipay-app-id"
-    $0.environment = .production
-}
+## Demo flow
 
-selfSdk.launch(from: self, request: .init(scope: "identity", userId: celoAddress)) { result in
-    switch result {
-    case .verified(let v):
-        print("Verified: \(v.verificationId)")
-    case .failed(let e):
-        print("Failed: \(e.message)")
-    case .dismissed:
-        break
-    }
-}
-```
+1. Open the sample app.
+2. Keep the dev server URL as `http://10.0.2.2:5173` (or replace with LAN IP URL).
+3. Tap **Launch Self Verification**.
+4. Verify the WebView loads your page.
+5. Trigger bridge actions from the page.
+
+## What "bridge ready" looks like
+
+- In Android Logcat (tag `SelfVerification`):
+  - `Bridge lifecycle.ready received`
+- In fixture page log area:
+  - request for `lifecycle.ready`
+  - response passed through `_handleResponse`
+
+## Expected callback logs in app
+
+The sample app log area shows:
+
+- `onVerificationComplete: verificationId=..., success=true`
+- `onVerificationFailed: code=..., message=...`
+- `onDismissed`
+
+## Bridge fixture buttons
+
+`bridge-fixture.html` provides buttons to send:
+
+- `lifecycle.ready`
+- `lifecycle.setResult` (success)
+- `lifecycle.setResult` (failure)
+- `lifecycle.dismiss`
+
+This is intentionally minimal for SDK bridge sanity checks.

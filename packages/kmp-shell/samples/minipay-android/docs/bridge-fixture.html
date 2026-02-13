@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Self Bridge Fixture</title>
+    <style>
+      body { font-family: sans-serif; padding: 16px; }
+      button { margin: 4px 0; width: 100%; padding: 8px; }
+      pre { background: #f4f4f4; padding: 8px; min-height: 120px; }
+    </style>
+  </head>
+  <body>
+    <h2>Self Bridge Fixture</h2>
+    <button onclick="sendReady()">Send lifecycle.ready</button>
+    <button onclick="sendSuccess()">Send lifecycle.setResult success</button>
+    <button onclick="sendFailure()">Send lifecycle.setResult failure</button>
+    <button onclick="sendDismiss()">Send lifecycle.dismiss</button>
+    <pre id="log"></pre>
+
+    <script>
+      const logEl = document.getElementById('log');
+      const pending = new Map();
+
+      function log(line) {
+        logEl.textContent += line + '\n';
+      }
+
+      window.SelfNativeBridge = window.SelfNativeBridge || {};
+      window.SelfNativeBridge._handleResponse = function (jsonString) {
+        const response = JSON.parse(jsonString);
+        log('response: ' + jsonString);
+        const resolve = pending.get(response.requestId);
+        if (resolve) {
+          resolve(response);
+          pending.delete(response.requestId);
+        }
+      };
+
+      function postMessage(domain, method, params = {}) {
+        const id = crypto.randomUUID();
+        const req = { id, type: 'request', version: 1, domain, method, params, timestamp: Date.now() };
+        const body = JSON.stringify(req);
+        log('request: ' + body);
+        window.SelfNativeBridge.postMessage(body);
+        return new Promise((resolve) => pending.set(id, resolve));
+      }
+
+      async function sendReady() {
+        await postMessage('lifecycle', 'ready', {});
+      }
+
+      async function sendSuccess() {
+        await postMessage('lifecycle', 'setResult', {
+          success: true,
+          userId: 'demo-user-123',
+          verificationId: 'verification-demo-001',
+          proof: { hello: 'world' },
+        });
+      }
+
+      async function sendFailure() {
+        await postMessage('lifecycle', 'setResult', {
+          success: false,
+          error: { code: 'DEMO_FAILED', message: 'Fixture-triggered failure' },
+        });
+      }
+
+      async function sendDismiss() {
+        await postMessage('lifecycle', 'dismiss', {});
+      }
+    </script>
+  </body>
+</html>

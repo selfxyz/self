@@ -1,82 +1,121 @@
 package com.example.minipay
 
 import android.os.Bundle
-import android.widget.Toast
+import android.text.method.ScrollingMovementMethod
+import android.view.Gravity
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import xyz.self.sdk.android.*
+import xyz.self.sdk.android.SelfSdk
+import xyz.self.sdk.android.SelfSdkCallback
+import xyz.self.sdk.android.SelfSdkEnvironment
+import xyz.self.sdk.android.SelfSdkError
+import xyz.self.sdk.android.VerificationRequest
+import xyz.self.sdk.android.VerificationResult
 
 /**
- * Example MiniPay integration showing how to launch Self SDK verification.
+ * Minimal Android demo app for validating SDK launch and WebView bridge behavior.
  */
 class MiniPayActivity : AppCompatActivity() {
 
-    // Configure the Self SDK once
-    private val selfSdk = SelfSdk.configure {
-        appId = "minipay-celo"
-        environment = SelfSdkEnvironment.PRODUCTION
-    }
+    private lateinit var logView: TextView
+    private lateinit var devServerUrlInput: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // ... set up your MiniPay UI ...
 
-        // When user taps "Verify Identity":
-        // startVerification()
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(32, 32, 32, 32)
+            gravity = Gravity.TOP
+        }
+
+        val title = TextView(this).apply {
+            text = "Self SDK Android Demo"
+            textSize = 20f
+        }
+
+        devServerUrlInput = EditText(this).apply {
+            hint = "Dev server URL"
+            setText("http://10.0.2.2:5173")
+        }
+
+        val launchButton = Button(this).apply {
+            text = "Launch Self Verification"
+            setOnClickListener { startVerification() }
+        }
+
+        logView = TextView(this).apply {
+            text = "Event log:\n"
+            movementMethod = ScrollingMovementMethod()
+            isVerticalScrollBarEnabled = true
+        }
+
+        val logContainer = ScrollView(this).apply {
+            addView(logView)
+        }
+
+        root.addView(title)
+        root.addView(devServerUrlInput)
+        root.addView(launchButton)
+        root.addView(logContainer, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            0,
+            1f,
+        ))
+
+        setContentView(root)
+
+        appendLog("Demo ready. Configure URL and tap launch.")
     }
 
-    /**
-     * Launch the Self verification flow.
-     * The SDK handles the full UI — scanning, NFC, proof generation.
-     */
-    fun startVerification() {
-        val celoAddress = "0x..." // User's Celo address
+    private fun startVerification() {
+        val devUrl = devServerUrlInput.text.toString().trim().ifBlank { "http://10.0.2.2:5173" }
+        appendLog("Launching SDK (devMode=true, url=$devUrl)")
+
+        val selfSdk = SelfSdk.configure {
+            appId = "minipay-demo"
+            environment = SelfSdkEnvironment.DEVELOPMENT
+            devMode = true
+            devServerUrl = devUrl
+        }
 
         selfSdk.launch(
             activity = this,
             request = VerificationRequest(
                 scope = "identity",
-                userId = celoAddress,
-                callbackUrl = "https://api.minipay.com/self/callback",
-                metadata = mapOf(
-                    "app" to "minipay",
-                    "chain" to "celo",
-                ),
+                userId = "demo-user-123",
+                callbackUrl = "https://example.invalid/callback",
+                metadata = mapOf("source" to "minipay-android-demo"),
             ),
             callback = object : SelfSdkCallback {
                 override fun onVerificationComplete(result: VerificationResult) {
-                    // Verification succeeded!
-                    // result.userId — the verified user ID
-                    // result.verificationId — unique verification ID
-                    // result.proof — the ZK proof
-                    // result.claims — verified claims (age, nationality, etc.)
-
                     runOnUiThread {
-                        Toast.makeText(
-                            this@MiniPayActivity,
-                            "Verified! ID: ${result.verificationId}",
-                            Toast.LENGTH_SHORT,
-                        ).show()
+                        appendLog(
+                            "onVerificationComplete: verificationId=${result.verificationId}, success=true"
+                        )
                     }
-
-                    // Send proof to your backend for on-chain verification
-                    // sendProofToBackend(result.proof, result.verificationId)
                 }
 
                 override fun onVerificationFailed(error: SelfSdkError) {
                     runOnUiThread {
-                        Toast.makeText(
-                            this@MiniPayActivity,
-                            "Verification failed: ${error.message}",
-                            Toast.LENGTH_SHORT,
-                        ).show()
+                        appendLog("onVerificationFailed: code=${error.code}, message=${error.message}")
                     }
                 }
 
                 override fun onDismissed() {
-                    // User dismissed the SDK without completing
-                    // No action needed — they can try again later
+                    runOnUiThread {
+                        appendLog("onDismissed")
+                    }
                 }
             },
         )
+    }
+
+    private fun appendLog(line: String) {
+        logView.append("$line\n")
     }
 }

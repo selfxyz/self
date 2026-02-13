@@ -17,3 +17,5 @@ dependencyResolutionManagement {
 rootProject.name = "self-sdk"
 include(":shared")
 include(":android-sdk")
+
+include(":samples:minipay-android")

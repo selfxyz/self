@@ -7,6 +7,7 @@ package xyz.self.sdk.android
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.serialization.json.*
 import xyz.self.sdk.bridge.*
@@ -23,6 +24,7 @@ class SelfVerificationActivity : AppCompatActivity() {
     private var fragment: SelfWebViewFragment? = null
 
     companion object {
+        private const val TAG = "SelfVerification"
         private const val EXTRA_APP_ID = "app_id"
         private const val EXTRA_ENVIRONMENT = "environment"
         private const val EXTRA_DEV_MODE = "dev_mode"
@@ -49,74 +51,89 @@ class SelfVerificationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (savedInstanceState == null) {
-            fragment = SelfWebViewFragment.newInstance(
+        fragment = if (savedInstanceState == null) {
+            SelfWebViewFragment.newInstance(
                 devMode = intent.getBooleanExtra(EXTRA_DEV_MODE, false),
                 devServerUrl = intent.getStringExtra(EXTRA_DEV_URL),
-            )
-            supportFragmentManager.beginTransaction()
-                .replace(android.R.id.content, fragment!!)
-                .commit()
+            ).also { newFragment ->
+                supportFragmentManager.beginTransaction()
+                    .replace(android.R.id.content, newFragment)
+                    .commit()
+            }
+        } else {
+            supportFragmentManager.findFragmentById(android.R.id.content) as? SelfWebViewFragment
+                ?: SelfWebViewFragment.newInstance(
+                    devMode = intent.getBooleanExtra(EXTRA_DEV_MODE, false),
+                    devServerUrl = intent.getStringExtra(EXTRA_DEV_URL),
+                ).also { restoredFallback ->
+                    supportFragmentManager.beginTransaction()
+                        .replace(android.R.id.content, restoredFallback)
+                        .commit()
+                }
         }
 
-        // Register bridge handlers after fragment is created
-        fragment?.let { frag ->
-            val router = frag.getRouter()
+        fragment?.let(::registerBridgeHandlers)
+    }
 
-            // Register all native bridge handlers
-            frag.registerHandler(NfcBridgeHandler(this, router))
-            frag.registerHandler(BiometricBridgeHandler(this))
-            frag.registerHandler(SecureStorageBridgeHandler(this))
-            frag.registerHandler(CryptoBridgeHandler())
-            frag.registerHandler(CameraMrzBridgeHandler(this))
+    private fun registerBridgeHandlers(frag: SelfWebViewFragment) {
+        val router = frag.getRouter()
 
-            // Register lifecycle handler that delivers results
-            router.register(object : BridgeHandler {
-                override val domain = BridgeDomain.LIFECYCLE
+        // Idempotent registration: MessageRouter stores one handler per domain and replaces existing.
+        frag.registerHandler(NfcBridgeHandler(this, router))
+        frag.registerHandler(BiometricBridgeHandler(this))
+        frag.registerHandler(SecureStorageBridgeHandler(this))
+        frag.registerHandler(CryptoBridgeHandler())
+        frag.registerHandler(CameraMrzBridgeHandler(this))
 
-                override suspend fun handle(
-                    method: String,
-                    params: Map<String, JsonElement>,
-                ): JsonElement? {
-                    when (method) {
-                        "ready" -> {
-                            // WebView is ready — nothing to do
-                        }
-                        "dismiss" -> {
-                            runOnUiThread {
-                                SelfSdkCallbackHolder.callback?.onDismissed()
-                                SelfSdkCallbackHolder.clear()
-                                finish()
-                            }
-                        }
-                        "setResult" -> {
-                            val success = params["success"]?.jsonPrimitive?.booleanOrNull ?: false
-                            if (success) {
-                                SelfSdkCallbackHolder.callback?.onVerificationComplete(
-                                    VerificationResult(
-                                        userId = params["userId"]?.jsonPrimitive?.contentOrNull,
-                                        verificationId = params["verificationId"]?.jsonPrimitive?.contentOrNull,
-                                        proof = params["proof"]?.toString(),
-                                        claims = emptyMap(),
-                                    )
-                                )
-                            } else {
-                                val errorCode = params["error"]?.jsonObject?.get("code")?.jsonPrimitive?.contentOrNull ?: "UNKNOWN"
-                                val errorMsg = params["error"]?.jsonObject?.get("message")?.jsonPrimitive?.contentOrNull ?: "Verification failed"
-                                SelfSdkCallbackHolder.callback?.onVerificationFailed(
-                                    SelfSdkError(code = errorCode, message = errorMsg)
-                                )
-                            }
-                            runOnUiThread {
-                                SelfSdkCallbackHolder.clear()
-                                finish()
-                            }
+        router.register(object : BridgeHandler {
+            override val domain = BridgeDomain.LIFECYCLE
+
+            override suspend fun handle(
+                method: String,
+                params: Map<String, JsonElement>,
+            ): JsonElement? {
+                when (method) {
+                    "ready" -> {
+                        Log.d(TAG, "Bridge lifecycle.ready received")
+                    }
+
+                    "dismiss" -> {
+                        Log.d(TAG, "Bridge lifecycle.dismiss received")
+                        runOnUiThread {
+                            SelfSdkCallbackHolder.callback?.onDismissed()
+                            SelfSdkCallbackHolder.clear()
+                            finish()
                         }
                     }
-                    return buildJsonObject { put("acknowledged", true) }
+
+                    "setResult" -> {
+                        val success = params["success"]?.jsonPrimitive?.booleanOrNull ?: false
+                        Log.d(TAG, "Bridge lifecycle.setResult received (success=$success)")
+                        if (success) {
+                            SelfSdkCallbackHolder.callback?.onVerificationComplete(
+                                VerificationResult(
+                                    userId = params["userId"]?.jsonPrimitive?.contentOrNull,
+                                    verificationId = params["verificationId"]?.jsonPrimitive?.contentOrNull,
+                                    proof = params["proof"]?.toString(),
+                                    claims = emptyMap(),
+                                )
+                            )
+                        } else {
+                            val errorCode = params["error"]?.jsonObject?.get("code")?.jsonPrimitive?.contentOrNull ?: "UNKNOWN"
+                            val errorMsg = params["error"]?.jsonObject?.get("message")?.jsonPrimitive?.contentOrNull ?: "Verification failed"
+                            SelfSdkCallbackHolder.callback?.onVerificationFailed(
+                                SelfSdkError(code = errorCode, message = errorMsg)
+                            )
+                        }
+                        runOnUiThread {
+                            SelfSdkCallbackHolder.clear()
+                            finish()
+                        }
+                    }
                 }
-            })
-        }
+                return buildJsonObject { put("acknowledged", true) }
+            }
+        })
     }
 
     override fun onDestroy() {
