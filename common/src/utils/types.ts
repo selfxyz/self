@@ -46,6 +46,7 @@ export interface DocumentMetadata {
   mock: boolean; // whether this is a mock document
   isRegistered?: boolean; // whether the document is registered onChain
   registeredAt?: number; // timestamp (epoch ms) when document was registered
+  hasExpirationDate?: boolean; // whether the document has an expiration date
   idType?: string; // for KYC documents: the ID type used (e.g. "passport", "drivers_licence")
 }
 

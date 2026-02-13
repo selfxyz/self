@@ -128,11 +128,10 @@ const DocumentItem: React.FC<DocumentItemProps> = ({ docType, onPress }) => {
 type IDSelectionScreenProps = {
   countryCode: string;
   documentTypes: string[];
-  showKyc?: boolean;
 };
 
 const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
-  const { countryCode = '', documentTypes = [], showKyc = false } = props;
+  const { countryCode = '', documentTypes = [] } = props;
   const selfClient = useSelfClient();
 
   const onSelectDocumentType = (docType: string) => {
@@ -173,11 +172,9 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
           <DocumentItem key={docType} docType={docType} onPress={() => onSelectDocumentType(docType)} />
         ))}
         <BodyText style={styles.footerText}>Be sure your document is ready to scan</BodyText>
-        {showKyc && (
-          <View style={styles.kycContainer}>
-            <DocumentItem docType="kyc" onPress={() => onSelectDocumentType('kyc')} />
-          </View>
-        )}
+        <View style={styles.kycContainer}>
+          <DocumentItem docType="kyc" onPress={() => onSelectDocumentType('kyc')} />
+        </View>
       </YStack>
     </YStack>
   );

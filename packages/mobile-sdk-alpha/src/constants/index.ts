@@ -54,6 +54,7 @@ export {
   teal300,
   teal500,
   textBlack,
+  warmCream,
   white,
   yellow50,
   yellow500,

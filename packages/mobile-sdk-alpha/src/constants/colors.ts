@@ -66,6 +66,8 @@ export const teal500 = '#5EEAD4';
 
 export const textBlack = '#333333';
 
+export const warmCream = '#F2E3C8';
+
 export const white = '#ffffff';
 
 export const yellow50 = '#FEFCE8';

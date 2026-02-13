@@ -69,7 +69,6 @@ export function usePendingKycRecovery() {
     );
 
     if (processingWithDocument) {
-      hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
       console.log(
         '[PendingKycRecovery] Resuming processing verification, navigating to KYCVerified:',
         processingWithDocument.userId,
@@ -78,8 +77,35 @@ export function usePendingKycRecovery() {
         navigationRef.navigate('KYCVerified', {
           documentId: processingWithDocument.documentId,
         });
+        // Only mark as attempted after successful navigation
+        hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
+        return;
       }
-      return;
+
+      // Navigation not ready yet - poll until ready
+      console.log(
+        '[PendingKycRecovery] Navigation not ready, polling for readiness:',
+        processingWithDocument.userId,
+      );
+
+      const pollInterval = setInterval(() => {
+        if (navigationRef.isReady()) {
+          console.log(
+            '[PendingKycRecovery] Navigation ready, navigating for:',
+            processingWithDocument.userId,
+          );
+          navigationRef.navigate('KYCVerified', {
+            documentId: processingWithDocument.documentId,
+          });
+          hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
+          clearInterval(pollInterval);
+        }
+      }, 100); // Poll every 100ms
+
+      // Cleanup polling on unmount or dependency change
+      return () => {
+        clearInterval(pollInterval);
+      };
     }
 
     const firstPending = pendingVerifications.find(

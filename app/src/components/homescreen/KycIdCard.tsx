@@ -109,13 +109,25 @@ const KycIdCard: FC<KycIdCardProps> = ({
   selected,
   hidden: _hidden,
 }) => {
-  // Extract KYC fields from serialized applicant info
-  const applicantInfo = deserializeApplicantInfo(
-    idDocument.serializedApplicantInfo,
-  );
-  const country = applicantInfo.country || '';
-  const idType = applicantInfo.idType || '';
-  const idNumber = applicantInfo.idNumber || '';
+  // Extract KYC fields from serialized applicant info with error handling
+  let country = '';
+  let idType = '';
+  let idNumber = '';
+
+  try {
+    const applicantInfo = deserializeApplicantInfo(
+      idDocument.serializedApplicantInfo,
+    );
+    country = applicantInfo.country || '';
+    idType = applicantInfo.idType || '';
+    idNumber = applicantInfo.idNumber || '';
+  } catch (error) {
+    console.error(
+      '[KycIdCard] Failed to deserialize applicant info, using fallback values:',
+      error,
+    );
+    // Fallback to safe defaults - component will render generic "ID CARD" display
+  }
 
   const docTitle = getKycDocTitle(idType);
   const countryAdj = getCountryAdjective(country);
