@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { FC } from 'react';
-import React, { useCallback } from 'react';
+import React, { type FC, useCallback } from 'react';
 import { Dimensions, Image, Pressable, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Separator, Text, XStack, YStack } from 'tamagui';
@@ -40,16 +39,16 @@ import CardBackgroundId4 from '@/assets/images/card_background_id4.png';
 import CardBackgroundId5 from '@/assets/images/card_background_id5.png';
 import CardBackgroundId6 from '@/assets/images/card_background_id6.png';
 import DevCardLogo from '@/assets/images/dev_card_logo.svg';
-import LogoGray from '@/assets/images/logo_gray.svg';
 import DevCardWave from '@/assets/images/dev_card_wave.svg';
+import LogoGray from '@/assets/images/logo_gray.svg';
 import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
 import WaveOverlay from '@/assets/images/wave_overlay.png';
 import { getSecurityLevel } from '@/components/homescreen/cardSecurityBadge';
 import { cardStyles } from '@/components/homescreen/cardStyles';
 import KycIdCard from '@/components/homescreen/KycIdCard';
+import { SvgXml } from '@/components/homescreen/SvgXmlWrapper';
 import { useCardDimensions } from '@/hooks/useCardDimensions';
 import { getBackgroundIndex } from '@/utils/cardBackgroundSelector';
-import { SvgXml } from '@/components/homescreen/SvgXmlWrapper';
 import {
   formatDateFromYYMMDD,
   getDocumentAttributes,
@@ -536,7 +535,10 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
                   />
                 </YStack>
                 <YStack flex={1}>
-                  <IdAttribute name="DOC NO." value={docAttributes.passNoSlice} />
+                  <IdAttribute
+                    name="DOC NO."
+                    value={docAttributes.passNoSlice}
+                  />
                 </YStack>
               </XStack>
               <XStack flex={1} gap={revealedPadding * 0.3}>
