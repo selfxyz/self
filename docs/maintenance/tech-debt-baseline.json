@@ -591,9 +591,9 @@
         "byExtension": {
           ".sh": 5,
           ".sol": 160,
-          ".ts": 583
+          ".ts": 77
         },
-        "total": 748
+        "total": 242
       }
     },
     {
@@ -877,9 +877,9 @@
       "sourceFiles": {
         "byExtension": {
           ".sh": 1,
-          ".ts": 51
+          ".ts": 18
         },
-        "total": 52
+        "total": 19
       }
     },
     {

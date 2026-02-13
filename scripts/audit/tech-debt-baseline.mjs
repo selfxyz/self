@@ -18,9 +18,12 @@ const OUTPUT_MARKDOWN_PATH = path.join(
 );
 
 const IGNORED_DIRECTORIES = new Set([
+  '__generated__',
+  '.cache',
   '.git',
   '.gradle',
   '.next',
+  '.turbo',
   '.yarn',
   'android',
   'artifacts',
@@ -30,10 +33,12 @@ const IGNORED_DIRECTORIES = new Set([
   'coverage',
   'DerivedData',
   'dist',
+  'generated',
   'ios',
   'node_modules',
   'out',
   'Pods',
+  'typechain-types',
   'vendor',
 ]);
 
