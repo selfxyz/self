@@ -137,6 +137,8 @@ const UnregisteredIdCard: FC<UnregisteredIdCardProps> = ({
               justifyContent="center"
               onPress={onRegisterPress}
               pressStyle={{ opacity: 0.7 }}
+              accessibilityRole="button"
+              accessibilityLabel="Complete Registration"
             >
               <Text
                 fontFamily={dinot}

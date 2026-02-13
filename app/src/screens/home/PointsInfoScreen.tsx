@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Image, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Text, View, XStack, YStack } from 'tamagui';
@@ -96,7 +96,10 @@ const PointsInfoScreen: React.FC<PointsInfoScreenProps> = ({
 }) => {
   const { showNextButton, callbackId } = params || {};
   const { left, right, bottom } = useSafeAreaInsets();
-  const callbacks = callbackId ? getModalCallbacks(callbackId) : undefined;
+  const callbacks = useMemo(
+    () => (callbackId ? getModalCallbacks(callbackId) : undefined),
+    [callbackId],
+  );
   const buttonPressedRef = useRef(false);
 
   // Handle button press: mark as pressed and call the callback

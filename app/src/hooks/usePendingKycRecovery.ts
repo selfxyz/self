@@ -81,11 +81,31 @@ export function usePendingKycRecovery() {
         hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
         return;
       }
-      // Navigation not ready yet - don't mark as attempted, allow retry
+
+      // Navigation not ready yet - poll until ready
       console.log(
-        '[PendingKycRecovery] Navigation not ready, will retry recovery for:',
+        '[PendingKycRecovery] Navigation not ready, polling for readiness:',
         processingWithDocument.userId,
       );
+
+      const pollInterval = setInterval(() => {
+        if (navigationRef.isReady()) {
+          console.log(
+            '[PendingKycRecovery] Navigation ready, navigating for:',
+            processingWithDocument.userId,
+          );
+          navigationRef.navigate('KYCVerified', {
+            documentId: processingWithDocument.documentId,
+          });
+          hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
+          clearInterval(pollInterval);
+        }
+      }, 100); // Poll every 100ms
+
+      // Cleanup polling on unmount or dependency change
+      return () => {
+        clearInterval(pollInterval);
+      };
     }
 
     const firstPending = pendingVerifications.find(
