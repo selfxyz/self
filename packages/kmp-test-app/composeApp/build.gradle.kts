@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
@@ -34,6 +35,8 @@ kotlin {
             implementation(compose.components.resources)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.kotlinx.serialization.json)
+            implementation("xyz.self.sdk:shared")
         }
 
         androidMain.dependencies {
@@ -57,5 +60,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    packaging {
+        resources {
+            excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+        }
     }
 }

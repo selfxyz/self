@@ -25,7 +25,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "kmp-test-app"
-include(":composeApp")
-
-includeBuild("../kmp-sdk")
+rootProject.name = "kmp-sdk"
+include(":shared")

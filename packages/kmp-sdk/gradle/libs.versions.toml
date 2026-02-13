@@ -1,0 +1,19 @@
+[versions]
+kotlin = "2.1.0"
+agp = "8.7.3"
+android-compileSdk = "35"
+android-targetSdk = "35"
+android-minSdk = "24"
+kotlinx-coroutines = "1.9.0"
+kotlinx-serialization = "1.7.3"
+
+[libraries]
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+
+[plugins]
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
