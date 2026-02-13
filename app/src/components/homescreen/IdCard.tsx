@@ -3,10 +3,11 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { FC } from 'react';
-import React from 'react';
-import { Dimensions, Image, StyleSheet } from 'react-native';
+import React, { useCallback } from 'react';
+import { Dimensions, Image, Pressable, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Separator, Text, XStack, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
 
 import type { AadhaarData } from '@selfxyz/common';
 import type { PassportData } from '@selfxyz/common/types/passport';
@@ -20,11 +21,13 @@ import { WarningTriangleIcon } from '@selfxyz/euclid/dist/components/icons/Warni
 import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
+  red600,
   slate100,
   slate300,
   slate400,
   slate500,
   white,
+  yellow500,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import AadhaarIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
@@ -52,6 +55,7 @@ import {
   getDocumentAttributes,
   getNameAndSurname,
 } from '@/utils/documentAttributes';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 const CARD_BACKGROUNDS = [
   CardBackgroundId1,
