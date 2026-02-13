@@ -13,7 +13,6 @@ import IDSelection from '@selfxyz/mobile-sdk-alpha/onboarding/id-selection-scree
 
 import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 import type { RootStackParamList } from '@/navigation';
-import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';
 
 type IDPickerScreenRouteProp = RouteProp<RootStackParamList, 'IDPicker'>;
@@ -22,7 +21,6 @@ const IDPickerScreen: React.FC = () => {
   const route = useRoute<IDPickerScreenRouteProp>();
   const { countryCode = '', documentTypes = [] } = route.params || {};
   const bottom = useSafeAreaInsets().bottom;
-  const kycEnabled = useSettingStore(state => state.kycEnabled);
 
   return (
     <YStack
@@ -31,11 +29,7 @@ const IDPickerScreen: React.FC = () => {
       paddingBottom={bottom + extraYPadding + 24}
     >
       <DocumentFlowNavBar title="GETTING STARTED" />
-      <IDSelection
-        countryCode={countryCode}
-        documentTypes={documentTypes}
-        showKyc={kycEnabled}
-      />
+      <IDSelection countryCode={countryCode} documentTypes={documentTypes} />
     </YStack>
   );
 };

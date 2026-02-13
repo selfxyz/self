@@ -178,7 +178,7 @@ export async function markCurrentDocumentAsRegistered(selfClient: SelfClient): P
 }
 
 export async function reStorePassportDataWithRightCSCA(selfClient: SelfClient, passportData: IDDocument, csca: string) {
-  if (passportData.documentCategory === 'aadhaar') {
+  if (passportData.documentCategory === 'aadhaar' || passportData.documentCategory === 'kyc') {
     return;
   }
   const cscaInCurrentPassporData = passportData.passportMetadata?.csca;
@@ -236,13 +236,15 @@ export async function storeDocumentWithDeduplication(
 
   // Add to catalog
   const docType = passportData.documentType;
+  const documentCategory = passportData.documentCategory || inferDocumentCategory(docType);
   const metadata: DocumentMetadata = {
     id: contentHash,
     documentType: docType,
-    documentCategory: passportData.documentCategory || inferDocumentCategory(docType),
+    documentCategory,
     data: isMRZDocument(passportData) ? passportData.mrz : (passportData as AadhaarData).qrData || '',
     mock: passportData.mock || false,
     isRegistered: false,
+    hasExpirationDate: documentCategory === 'id_card' || documentCategory === 'passport',
   };
 
   catalog.documents.push(metadata);

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Image, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Text, View, XStack, YStack } from 'tamagui';
@@ -22,7 +22,10 @@ import CloudBackupIcon from '@/assets/icons/cloud_backup.svg';
 import PushNotificationsIcon from '@/assets/icons/push_notifications.svg';
 import StarIcon from '@/assets/icons/star.svg';
 import Referral from '@/assets/images/referral.png';
-import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
+import {
+  getModalCallbacks,
+  unregisterModalCallbacks,
+} from '@/utils/modalCallbackRegistry';
 
 type PointsInfoScreenProps = StaticScreenProps<
   | {
@@ -93,7 +96,34 @@ const PointsInfoScreen: React.FC<PointsInfoScreenProps> = ({
 }) => {
   const { showNextButton, callbackId } = params || {};
   const { left, right, bottom } = useSafeAreaInsets();
-  const callbacks = callbackId ? getModalCallbacks(callbackId) : undefined;
+  const callbacks = useMemo(
+    () => (callbackId ? getModalCallbacks(callbackId) : undefined),
+    [callbackId],
+  );
+  const buttonPressedRef = useRef(false);
+
+  // Handle button press: mark as pressed and call the callback
+  const handleNextPress = useCallback(() => {
+    if (callbackId !== undefined) {
+      buttonPressedRef.current = true;
+    }
+    callbacks?.onButtonPress();
+  }, [callbackId, callbacks]);
+
+  // Cleanup: Call onModalDismiss and unregister callbacks when component unmounts
+  // Only call onModalDismiss if user navigated back (didn't press the button)
+  useEffect(() => {
+    return () => {
+      if (callbackId !== undefined) {
+        // Always unregister on unmount to prevent memory leaks
+        if (!buttonPressedRef.current) {
+          // User navigated back without pressing "Next" - call onModalDismiss to clear referrer
+          callbacks?.onModalDismiss();
+        }
+        unregisterModalCallbacks(callbackId);
+      }
+    };
+  }, [callbackId, callbacks]);
 
   return (
     <YStack flex={1} gap={40} paddingBottom={bottom} backgroundColor={white}>
@@ -140,7 +170,7 @@ const PointsInfoScreen: React.FC<PointsInfoScreenProps> = ({
       </ScrollView>
       {showNextButton && (
         <View paddingTop={20} paddingLeft={20 + left} paddingRight={20 + right}>
-          <PrimaryButton onPress={callbacks?.onButtonPress}>Next</PrimaryButton>
+          <PrimaryButton onPress={handleNextPress}>Next</PrimaryButton>
         </View>
       )}
     </YStack>

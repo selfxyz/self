@@ -1,5 +1,7 @@
-//Helper function to destructure the kyc data from the api response
-import { Point } from '@zk-kit/baby-jubjub';
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 import {
   KYC_ADDRESS_INDEX,
   KYC_ADDRESS_LENGTH,
@@ -26,11 +28,7 @@ import {
 } from './constants.js';
 import { KycData } from './types.js';
 
-//accepts a base64 signature and returns a signature object
-export function deserializeSignature(signature: string): { R: Point<bigint>; s: bigint } {
-  const [Rx, Ry, s] = Buffer.from(signature, 'base64').toString('utf-8').split(',').map(BigInt);
-  return { R: [Rx, Ry] as Point<bigint>, s };
-}
+import { Point } from '@zk-kit/baby-jubjub';
 
 //accepts a base64 applicant info and returns a kyc data object
 export function deserializeApplicantInfo(
@@ -87,4 +85,10 @@ export function deserializeApplicantInfo(
     gender,
     address,
   };
+}
+
+//accepts a base64 signature and returns a signature object
+export function deserializeSignature(signature: string): { R: Point<bigint>; s: bigint } {
+  const [Rx, Ry, s] = Buffer.from(signature, 'base64').toString('utf-8').split(',').map(BigInt);
+  return { R: [Rx, Ry] as Point<bigint>, s };
 }

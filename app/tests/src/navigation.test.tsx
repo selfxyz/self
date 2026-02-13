@@ -113,7 +113,6 @@ describe('navigation', () => {
         'ShowRecoveryPhrase',
         'Splash',
         'StarfallPushCode',
-        'SumsubTest',
         'WebView',
       ]);
     });

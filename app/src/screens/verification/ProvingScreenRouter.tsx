@@ -83,7 +83,10 @@ const ProvingScreenRouter: React.FC = () => {
 
       // Determine document type from first valid document for display
       const firstValidDoc = validDocuments[0];
-      const documentType = getDocumentTypeName(firstValidDoc?.documentCategory);
+      const documentType = getDocumentTypeName(
+        firstValidDoc?.documentCategory,
+        firstValidDoc?.idType,
+      );
 
       // Determine if we should skip the selector
       const shouldSkip = skipDocumentSelector || validCount === 1;

@@ -2,13 +2,19 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack } from 'tamagui';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 
+import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import {
+  loadSelectedDocument,
+  SdkEvents,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   AbstractButton,
   Description,
@@ -18,15 +24,75 @@ import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
+import { setSelectedDocument } from '@/providers/passportDataProvider';
+import { usePendingKycStore } from '@/stores/pendingKycStore';
 
 const KYCVerifiedScreen: React.FC = () => {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'KYCVerified'>>();
   const insets = useSafeAreaInsets();
+  const selfClient = useSelfClient();
+  const { pendingVerifications, removePendingVerification } =
+    usePendingKycStore();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleGenerateProof = () => {
+  const documentId = route.params?.documentId;
+
+  const handleGenerateProof = async () => {
+    // Prevent multiple concurrent proof generations
+    if (isLoading) {
+      return;
+    }
+
     buttonTap();
-    navigation.navigate('ProvingScreenRouter');
+    setIsLoading(true);
+
+    try {
+      if (!documentId) {
+        console.error(
+          '[KYCVerifiedScreen] No documentId provided in route params',
+        );
+        return;
+      }
+
+      console.log(
+        '[KYCVerifiedScreen] Triggering proving for documentId:',
+        documentId,
+      );
+
+      await setSelectedDocument(documentId);
+
+      const selectedDocument = await loadSelectedDocument(selfClient);
+      if (!selectedDocument) {
+        console.error(
+          '[KYCVerifiedScreen] No document found to trigger registration',
+        );
+        return;
+      }
+
+      const pendingVerification = pendingVerifications.find(
+        v => v.documentId === documentId,
+      );
+      //TODO improvement: instead of removing it here, we could do it in provingMachine's final state(error/completed)
+      //if we do that, the card will still be displayed in Homescreen as 'Pending' if user click back midway during provingMachine
+      if (pendingVerification) {
+        removePendingVerification(pendingVerification.userId);
+      }
+
+      const documentMetadata: {
+        documentCategory?: DocumentCategory;
+        signatureAlgorithm?: string;
+        curveOrExponent?: string;
+      } = {
+        documentCategory: 'kyc' as const,
+      };
+
+      console.log('[KYCVerifiedScreen] Emitting DOCUMENT_OWNERSHIP_CONFIRMED');
+      selfClient.emit(SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED, documentMetadata);
+    } catch (err) {
+      console.error('[KYCVerifiedScreen] Failed to trigger registration:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -50,8 +116,9 @@ const KYCVerifiedScreen: React.FC = () => {
           bgColor={white}
           color={black}
           onPress={handleGenerateProof}
+          disabled={isLoading}
         >
-          Generate proof
+          {isLoading ? 'Generating...' : 'Generate proof'}
         </AbstractButton>
       </YStack>
     </View>

@@ -6,6 +6,7 @@ import { Alert } from 'react-native';
 
 import { unsafe_clearSecrets } from '@/providers/authProvider';
 import { usePassport } from '@/providers/passportDataProvider';
+import { usePendingKycStore } from '@/stores/pendingKycStore';
 import { usePointEventStore } from '@/stores/pointEventStore';
 import { useSettingStore } from '@/stores/settingStore';
 
@@ -13,6 +14,10 @@ export const useDangerZoneActions = () => {
   const { clearDocumentCatalogForMigrationTesting } = usePassport();
   const clearPointEvents = usePointEventStore(state => state.clearEvents);
   const { resetBackupForPoints } = useSettingStore();
+  const { pendingVerifications } = usePendingKycStore();
+  const clearPendingVerifications = usePendingKycStore(
+    state => state.clearAllPendingVerifications,
+  );
 
   const handleClearSecretsPress = () => {
     Alert.alert(
@@ -187,11 +192,37 @@ export const useDangerZoneActions = () => {
     );
   };
 
+  const handleClearPendingVerificationsPress = () => {
+    Alert.alert(
+      'Clear Pending KYC Verifications',
+      `Are you sure you want to clear all pending KYC verifications?\n\nCurrently ${pendingVerifications.length} verification(s) pending.`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: () => {
+            clearPendingVerifications();
+            Alert.alert(
+              'Success',
+              'Pending KYC verifications cleared successfully.',
+              [{ text: 'OK' }],
+            );
+          },
+        },
+      ],
+    );
+  };
+
   return {
     handleClearSecretsPress,
     handleClearDocumentCatalogPress,
     handleClearPointEventsPress,
     handleResetBackupStatePress,
     handleClearBackupEventsPress,
+    handleClearPendingVerificationsPress,
   };
 };

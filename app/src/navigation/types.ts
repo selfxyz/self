@@ -159,6 +159,7 @@ export type OnboardingRoutesParamList = {
     | {
         status?: string;
         userId?: string;
+        documentId?: string;
       }
     | undefined;
   KycFailure: {
