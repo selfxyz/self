@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 
 const black = '#000000';
 const white = '#ffffff';
-const amber50 = '#FFFBEB';
 const slate500 = '#64748B';
 const blue600 = '#2563EB';
 const dinot = 'DINOT-Medium';

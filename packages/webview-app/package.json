@@ -25,11 +25,15 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@tamagui/vite-plugin": "1.126.14",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.39.1",
     "typescript": "^5.9.3",
     "vite": "^6.1.0",
     "vitest": "^2.1.8"

@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-
 import { useBridge } from './BridgeProvider';
 import {
   bridgeNFCScannerAdapter,

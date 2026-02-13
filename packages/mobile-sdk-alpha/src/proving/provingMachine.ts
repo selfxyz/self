@@ -210,8 +210,6 @@ const _buildSubmitRequest = (uuid: string | null, encryptedPayload: EncryptedPay
   };
 };
 
-type SdkPlatform = 'ios' | 'android' | 'web';
-
 export interface ProvingState {
   currentState: ProvingStateType;
   attestation: number[] | null;
@@ -1709,7 +1707,7 @@ const createProofContext = (
     circuitType: provingState.circuitType || null,
     currentState: provingState.currentState || 'unknown-state',
     stage,
-    platform: selfClient.config.platform ?? 'web',
+    platform: selfClient.config?.platform ?? 'web',
     ...overrides,
   };
 };
