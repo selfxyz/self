@@ -64,16 +64,41 @@ const DevSettingsScreen: React.FC = () => {
           text: 'Remove',
           style: 'destructive',
           onPress: async () => {
-            const catalog = await loadDocumentCatalogDirectlyFromKeychain();
-            const selectedDocumentId = catalog.selectedDocumentId;
-            const selectedDocument = catalog.documents.find(
-              document => document.id === selectedDocumentId,
-            );
+            try {
+              const catalog = await loadDocumentCatalogDirectlyFromKeychain();
+              const selectedDocumentId = catalog.selectedDocumentId;
+              const selectedDocument = catalog.documents.find(
+                document => document.id === selectedDocumentId,
+              );
 
-            if (selectedDocument) {
+              if (!selectedDocument) {
+                Alert.alert(
+                  'No Document Selected',
+                  'Please select a document before removing the expiration date flag.',
+                  [{ text: 'OK' }],
+                );
+                return;
+              }
+
               delete selectedDocument.hasExpirationDate;
 
               await saveDocumentCatalogDirectlyToKeychain(catalog);
+
+              Alert.alert(
+                'Success',
+                'Expiration date flag removed successfully.',
+                [{ text: 'OK' }],
+              );
+            } catch (error) {
+              console.error(
+                'Failed to remove expiration date flag:',
+                error instanceof Error ? error.message : String(error),
+              );
+              Alert.alert(
+                'Error',
+                'Failed to remove expiration date flag. Please try again.',
+                [{ text: 'OK' }],
+              );
             }
           },
         },
