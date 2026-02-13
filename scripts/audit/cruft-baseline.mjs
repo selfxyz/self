@@ -19,16 +19,21 @@ const OUTPUT_MARKDOWN_PATH = path.join(
 
 const IGNORED_DIRECTORIES = new Set([
   '.git',
-  '.yarn',
+  '.gradle',
   '.next',
+  '.yarn',
   'android',
   'artifacts',
   'build',
   'cache',
+  'Carthage',
   'coverage',
+  'DerivedData',
   'dist',
+  'ios',
   'node_modules',
   'out',
+  'Pods',
   'vendor',
 ]);
 
@@ -294,7 +299,6 @@ async function main() {
   }
 
   const report = {
-    generatedAt: new Date().toISOString(),
     workspacePatterns,
     workspaceCount: workspaces.length,
     workspaces,

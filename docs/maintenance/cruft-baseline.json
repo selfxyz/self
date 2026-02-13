@@ -1,5 +1,4 @@
 {
-  "generatedAt": "2026-02-12T23:31:17.755Z",
   "workspacePatterns": [
     "app",
     "circuits",
@@ -251,19 +250,17 @@
       ],
       "sourceFiles": {
         "byExtension": {
-          ".cjs": 25,
+          ".cjs": 27,
           ".css": 2,
-          ".h": 2,
           ".js": 10,
           ".mjs": 1,
           ".py": 1,
           ".rb": 8,
-          ".sh": 7,
-          ".swift": 15,
+          ".sh": 6,
           ".ts": 189,
           ".tsx": 157
         },
-        "total": 417
+        "total": 401
       }
     },
     {
@@ -594,9 +591,9 @@
         "byExtension": {
           ".sh": 5,
           ".sol": 160,
-          ".ts": 77
+          ".ts": 583
         },
-        "total": 242
+        "total": 748
       }
     },
     {
@@ -688,15 +685,13 @@
       "sourceFiles": {
         "byExtension": {
           ".cjs": 3,
-          ".h": 840,
           ".js": 1,
           ".mjs": 5,
           ".sh": 2,
-          ".swift": 7,
           ".ts": 91,
           ".tsx": 43
         },
-        "total": 992
+        "total": 145
       }
     },
     {
@@ -795,14 +790,13 @@
       ],
       "sourceFiles": {
         "byExtension": {
-          ".cjs": 4,
+          ".cjs": 5,
           ".js": 2,
-          ".sh": 2,
-          ".swift": 1,
+          ".sh": 1,
           ".ts": 24,
           ".tsx": 34
         },
-        "total": 67
+        "total": 66
       }
     },
     {
@@ -883,9 +877,9 @@
       "sourceFiles": {
         "byExtension": {
           ".sh": 1,
-          ".ts": 31
+          ".ts": 51
         },
-        "total": 32
+        "total": 52
       }
     },
     {
