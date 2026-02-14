@@ -110,7 +110,8 @@ class NfcBridgeHandler(
             adapter.enableReaderMode(
                 activity,
                 { tag ->
-                    adapter.disableReaderMode(activity)
+                    // Don't disable reader mode here - let the finally block handle cleanup
+                    // after the passport has been fully read
                     cont.resume(tag)
                 },
                 NfcAdapter.FLAG_READER_NFC_A or

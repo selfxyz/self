@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.androidLibrary)
+    `maven-publish`
 }
 
 group = "xyz.self.sdk"
@@ -21,10 +22,43 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    listOf(iosArm64(), iosSimulatorArm64()).forEach {
-        it.binaries.framework {
-            baseName = "SelfSdk"
-            isStatic = true
+    // Configure iOS framework for SPM distribution
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
+        target.apply {
+            binaries.framework {
+                baseName = "SelfSdk"
+                isStatic = true
+            }
+
+            // NOTE: cinterop configuration is disabled due to Xcode SDK compatibility issues
+            // iOS handlers currently have stub implementations that throw NotImplementedError
+            // To enable full iOS functionality:
+            // 1. Fix cinterop compilation issues (may require Xcode/Kotlin version updates)
+            // 2. Implement native iOS handlers using platform APIs
+            // 3. Consider creating Objective-C/Swift wrappers for complex operations (NFC, Crypto)
+            //
+            // Uncomment below to enable cinterop (once SDK issues are resolved):
+            /*
+            compilations.getByName("main") {
+                cinterops {
+                    create("CoreNFC") {
+                        defFile(project.file("src/nativeInterop/cinterop/CoreNFC.def"))
+                    }
+                    create("LocalAuthentication") {
+                        defFile(project.file("src/nativeInterop/cinterop/LocalAuthentication.def"))
+                    }
+                    create("Security") {
+                        defFile(project.file("src/nativeInterop/cinterop/Security.def"))
+                    }
+                    create("Vision") {
+                        defFile(project.file("src/nativeInterop/cinterop/Vision.def"))
+                    }
+                    create("UIKit") {
+                        defFile(project.file("src/nativeInterop/cinterop/UIKit.def"))
+                    }
+                }
+            }
+            */
         }
     }
 
@@ -38,17 +72,27 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
         }
         androidMain.dependencies {
+            // WebView
+            implementation("androidx.webkit:webkit:1.12.1")
             // NFC / Passport reading
             implementation("org.jmrtd:jmrtd:0.8.1")
             implementation("net.sf.scuba:scuba-sc-android:0.0.18")
             implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
             implementation("commons-io:commons-io:2.14.0")
+            // Biometrics
+            implementation("androidx.biometric:biometric:1.2.0-alpha05")
+            // Encrypted storage
+            implementation("androidx.security:security-crypto:1.1.0-alpha06")
             // Camera / MRZ scanning
             implementation("com.google.mlkit:text-recognition:16.0.1")
             implementation("androidx.camera:camera-core:1.4.1")
             implementation("androidx.camera:camera-camera2:1.4.1")
             implementation("androidx.camera:camera-lifecycle:1.4.1")
             implementation("androidx.camera:camera-view:1.4.1")
+            // Activity / Lifecycle
+            implementation("androidx.appcompat:appcompat:1.7.0")
+            implementation("androidx.activity:activity-ktx:1.9.3")
+            implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
         }
     }
 }
@@ -62,5 +106,85 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    // Configure assets directory
+    sourceSets["main"].assets.srcDirs("src/main/assets")
+}
+
+// Task to copy WebView app bundle into SDK assets
+tasks.register<Copy>("copyWebViewAssets") {
+    description = "Copies WebView app bundle from packages/webview-app/dist to SDK assets"
+    group = "build"
+
+    // Source: Person 1's Vite build output
+    from("../../webview-app/dist") {
+        include("**/*")
+    }
+
+    // Destination: Android assets directory
+    into("src/main/assets/self-wallet")
+
+    // Only copy if source exists (development mode might not have built assets yet)
+    onlyIf {
+        file("../../webview-app/dist").exists()
+    }
+}
+
+// Make preBuild depend on copying assets (so assets are always up-to-date)
+tasks.named("preBuild") {
+    dependsOn("copyWebViewAssets")
+}
+
+// Publishing configuration
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                groupId = "xyz.self"
+                artifactId = "sdk"
+                version = project.version.toString()
+
+                // Publish Android AAR if available
+                if (components.findByName("release") != null) {
+                    from(components["release"])
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = "LocalMaven"
+                url = uri("${project.rootDir}/build/maven")
+            }
+        }
+    }
+}
+
+// iOS XCFramework task
+tasks.register("createXCFramework") {
+    group = "build"
+    description = "Creates XCFramework for iOS distribution"
+
+    dependsOn(
+        ":shared:linkDebugFrameworkIosArm64",
+        ":shared:linkDebugFrameworkIosSimulatorArm64"
+    )
+
+    doLast {
+        val buildDir = layout.buildDirectory.get().asFile
+        val frameworkPath = "${buildDir}/bin/iosArm64/debugFramework/SelfSdk.framework"
+        val simulatorFrameworkPath = "${buildDir}/bin/iosSimulatorArm64/debugFramework/SelfSdk.framework"
+        val xcframeworkPath = "${buildDir}/xcframework/SelfSdk.xcframework"
+
+        project.exec {
+            commandLine(
+                "xcodebuild", "-create-xcframework",
+                "-framework", frameworkPath,
+                "-framework", simulatorFrameworkPath,
+                "-output", xcframeworkPath
+            )
+        }
+
+        println("✅ XCFramework created at: $xcframeworkPath")
     }
 }

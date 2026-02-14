@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew :shared:compileKotlinJvm:*)",
+      "Bash(./gradlew :shared:compileDebugKotlinAndroid:*)",
+      "Bash(./gradlew :shared:compileKotlinIosArm64:*)",
+      "Bash(find:*)",
+      "Bash(adb logcat:*)",
+      "Bash(adb shell dumpsys:*)",
+      "Bash(./gradlew :shared:assembleDebug:*)",
+      "Bash(./gradlew :androidApp:assembleDebug:*)"
+    ]
+  }
+}

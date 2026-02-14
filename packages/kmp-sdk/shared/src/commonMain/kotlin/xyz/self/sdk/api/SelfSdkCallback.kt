@@ -1,5 +1,8 @@
 package xyz.self.sdk.api
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class VerificationResult(
     val success: Boolean,
     val userId: String? = null,
@@ -8,6 +11,7 @@ data class VerificationResult(
     val claims: Map<String, String>? = null,
 )
 
+@Serializable
 data class SelfSdkError(
     val code: String,
     val message: String,
