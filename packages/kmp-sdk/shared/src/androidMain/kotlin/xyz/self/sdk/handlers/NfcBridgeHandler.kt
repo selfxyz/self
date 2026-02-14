@@ -39,6 +39,38 @@ import java.io.ByteArrayInputStream
 import java.security.interfaces.RSAPublicKey
 import kotlin.coroutines.resume
 
+/**
+ * Represents the current state/stage of NFC passport scanning
+ */
+enum class NfcScanState(
+    val percent: Int,
+    val message: String,
+) {
+    /** Waiting for user to hold phone near passport */
+    WAITING_FOR_TAG(0, "Hold your phone near the passport"),
+
+    /** Tag detected, establishing connection */
+    CONNECTING(5, "Tag detected, connecting..."),
+
+    /** Performing PACE or BAC authentication */
+    AUTHENTICATING(15, "Authenticating with passport..."),
+
+    /** Reading passport data (DG1) */
+    READING_DATA(40, "Reading passport data..."),
+
+    /** Reading security object data (SOD) */
+    READING_SECURITY(55, "Reading security data..."),
+
+    /** Performing chip authentication */
+    AUTHENTICATING_CHIP(70, "Verifying chip authenticity..."),
+
+    /** Building and processing the final result */
+    FINALIZING(90, "Processing passport data..."),
+
+    /** Scan completed successfully */
+    COMPLETE(100, "Scan complete!"),
+}
+
 class NfcBridgeHandler(
     private val activity: Activity,
     private val router: MessageRouter,
@@ -47,6 +79,7 @@ class NfcBridgeHandler(
 
     private val json = Json { ignoreUnknownKeys = true }
     private var pendingTagContinuation: (suspend (Tag) -> Unit)? = null
+    private var progressCallback: ((NfcScanState) -> Unit)? = null
 
     override suspend fun handle(
         method: String,
@@ -95,6 +128,26 @@ class NfcBridgeHandler(
             } catch (_: Exception) {
             }
             disableReaderMode()
+        }
+    }
+
+    /**
+     * Scans the NFC passport with progress callbacks.
+     * This method invokes the onProgress callback at each stage of the scan process.
+     *
+     * @param params Map containing passport parameters (passportNumber, dateOfBirth, dateOfExpiry, etc.)
+     * @param onProgress Callback invoked at each scan stage with the current NfcScanState
+     * @return JsonElement containing the scanned passport data
+     */
+    suspend fun scanWithProgress(
+        params: Map<String, JsonElement>,
+        onProgress: (NfcScanState) -> Unit,
+    ): JsonElement {
+        progressCallback = onProgress
+        try {
+            return scan(params)
+        } finally {
+            progressCallback = null
         }
     }
 
@@ -437,6 +490,23 @@ class NfcBridgeHandler(
         val progressJson = json.encodeToString(NfcScanProgress.serializer(), progress)
         val progressElement = json.parseToJsonElement(progressJson)
         router.pushEvent(BridgeDomain.NFC, "scanProgress", progressElement)
+
+        // Invoke progress callback if set
+        progressCallback?.let { callback ->
+            val state =
+                when (step) {
+                    "waiting_for_tag" -> NfcScanState.WAITING_FOR_TAG
+                    "connecting" -> NfcScanState.CONNECTING
+                    "pace", "bac", "pace_succeeded", "bac_succeeded", "bac_not_required" -> NfcScanState.AUTHENTICATING
+                    "reading_dg1" -> NfcScanState.READING_DATA
+                    "reading_sod" -> NfcScanState.READING_SECURITY
+                    "chip_auth" -> NfcScanState.AUTHENTICATING_CHIP
+                    "building_result" -> NfcScanState.FINALIZING
+                    "complete" -> NfcScanState.COMPLETE
+                    else -> null
+                }
+            state?.let(callback)
+        }
     }
 
     companion object {

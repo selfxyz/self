@@ -1,15 +1,11 @@
 package xyz.self.testapp.screens
 
 import android.app.Activity
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -22,6 +18,8 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.NfcBridgeHandler
+import xyz.self.sdk.handlers.NfcScanState
+import xyz.self.testapp.components.NfcProgressIndicator
 import xyz.self.testapp.models.VerificationFlowState
 import xyz.self.testapp.viewmodels.VerificationViewModel
 
@@ -37,21 +35,15 @@ fun NfcScanScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     val currentState = state as? VerificationFlowState.NfcScan
-    val passportData = currentState?.passportData
+    val errorState = state as? VerificationFlowState.Error
+    val passportData =
+        currentState?.passportData
+            ?: (errorState?.previousState as? VerificationFlowState.NfcScan)?.passportData
 
     var isScanning by remember { mutableStateOf(false) }
+    var hasError by remember { mutableStateOf(false) }
+    var scanState by remember { mutableStateOf<NfcScanState?>(null) }
     var progress by remember { mutableStateOf("Ready to scan") }
-
-    val infiniteTransition = rememberInfiniteTransition()
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec =
-            infiniteRepeatable(
-                animation = tween(2000, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart,
-            ),
-    )
 
     Scaffold(
         topBar = {
@@ -71,40 +63,27 @@ fun NfcScanScreen(
         ) {
             Spacer(modifier = Modifier.weight(0.3f))
 
-            // NFC Icon with animation
-            Icon(
-                imageVector = Icons.Default.Nfc,
-                contentDescription = "NFC",
-                modifier =
-                    Modifier
-                        .size(120.dp)
-                        .rotate(if (isScanning) rotation else 0f),
-                tint =
-                    if (isScanning) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    },
+            // NFC Progress Indicator with state-based animations
+            NfcProgressIndicator(
+                scanState = if (isScanning) scanState else null,
             )
 
-            // Status text
-            Text(
-                text = if (isScanning) "Scanning..." else "Ready to Scan",
-                style = MaterialTheme.typography.headlineSmall,
-            )
-
-            // Progress text
-            Card(
-                colors =
-                    CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    ),
-            ) {
-                Text(
-                    text = progress,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(16.dp),
-                )
+            // Additional progress details
+            if (isScanning) {
+                scanState?.let { state ->
+                    Card(
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            ),
+                    ) {
+                        Text(
+                            text = "Step ${state.ordinal + 1} of ${NfcScanState.entries.size}",
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(16.dp),
+                        )
+                    }
+                }
             }
 
             // Instructions
@@ -145,7 +124,14 @@ fun NfcScanScreen(
                     }
 
                     isScanning = true
+                    hasError = false
+                    scanState = null
                     progress = "Initializing..."
+
+                    // Ensure ViewModel state is NfcScan (not Error) so progress updates work
+                    if (state !is VerificationFlowState.NfcScan) {
+                        viewModel.skipMrzScan(passportData)
+                    }
                     viewModel.updateNfcProgress("Starting NFC scan...")
 
                     val router =
@@ -163,7 +149,6 @@ fun NfcScanScreen(
                                 try {
                                     val element = Json.parseToJsonElement(cleaned)
                                     viewModel.addLog("Event: $cleaned")
-                                    progress = "Processing..."
                                 } catch (_: Exception) {
                                 }
                             },
@@ -174,14 +159,6 @@ fun NfcScanScreen(
 
                     scope.launch {
                         try {
-                            progress = "Waiting for NFC tag..."
-                            viewModel.updateNfcProgress("Waiting for NFC tag... Hold phone to passport")
-
-                            val tag = nfcHandler.awaitNfcTag()
-
-                            progress = "Tag detected! Reading passport..."
-                            viewModel.updateNfcProgress("Tag detected! Reading passport...")
-
                             val params =
                                 mapOf<String, JsonElement>(
                                     "passportNumber" to JsonPrimitive(passportData.passportNumber),
@@ -190,7 +167,11 @@ fun NfcScanScreen(
                                     "sessionId" to JsonPrimitive("test-session"),
                                 )
 
-                            val result = nfcHandler.handle("scan", params)
+                            val result =
+                                nfcHandler.scanWithProgress(params) { state ->
+                                    scanState = state
+                                    progress = state.message
+                                }
 
                             withContext(Dispatchers.Main) {
                                 isScanning = false
@@ -203,6 +184,8 @@ fun NfcScanScreen(
                         } catch (e: Exception) {
                             withContext(Dispatchers.Main) {
                                 isScanning = false
+                                hasError = true
+                                scanState = null
                                 progress = "Error: ${e.message}"
                                 viewModel.setError("NFC scan failed: ${e.message}")
                             }
@@ -212,7 +195,13 @@ fun NfcScanScreen(
                 enabled = !isScanning && passportData != null,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(if (isScanning) "Scanning..." else "Start NFC Scan")
+                Text(
+                    when {
+                        isScanning -> "Scanning..."
+                        hasError -> "Retry NFC Scan"
+                        else -> "Start NFC Scan"
+                    },
+                )
             }
 
             // Skip button
