@@ -205,6 +205,9 @@ private fun DataField(
 
 /**
  * Formats YYMMDD date string to a more readable format
+ * Uses a cutoff of 50 to determine century:
+ * - 00-50 → 2000-2050 (for expiry dates and recent births)
+ * - 51-99 → 1951-1999 (for older birth dates)
  */
 private fun formatDate(dateString: String?): String {
     if (dateString == null || dateString.length != 6) return dateString ?: "N/A"
@@ -213,8 +216,8 @@ private fun formatDate(dateString: String?): String {
     val month = dateString.substring(2, 4)
     val day = dateString.substring(4, 6)
 
-    // Assume 20xx for years 00-29, 19xx for years 30-99
-    val fullYear = if (year.toInt() <= 29) "20$year" else "19$year"
+    // Assume 20xx for years 00-50, 19xx for years 51-99
+    val fullYear = if (year.toInt() <= 50) "20$year" else "19$year"
 
     return "$day/$month/$fullYear"
 }
