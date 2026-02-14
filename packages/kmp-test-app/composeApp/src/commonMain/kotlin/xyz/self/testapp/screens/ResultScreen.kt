@@ -65,7 +65,7 @@ fun ResultScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Icon(
-                        imageVector = if (resultState.success) Icons.Default.CheckCircle else Icons.Default.Error,
+                        imageVector = if (resultState.success) Icons.Default.CheckCircle else Icons.Default.Close,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
                         tint =

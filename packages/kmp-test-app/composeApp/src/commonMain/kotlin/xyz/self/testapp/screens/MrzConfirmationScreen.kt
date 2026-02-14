@@ -14,13 +14,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import xyz.self.testapp.models.VerificationFlowState
 import xyz.self.testapp.viewmodels.VerificationViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MrzConfirmationScreen(
-    navController: androidx.navigation.NavController,
+    navController: NavController,
     viewModel: VerificationViewModel,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -95,7 +96,7 @@ fun MrzConfirmationScreen(
                         fontWeight = FontWeight.Bold,
                     )
 
-                    Divider()
+                    HorizontalDivider()
 
                     DataField(
                         label = "Passport Number",

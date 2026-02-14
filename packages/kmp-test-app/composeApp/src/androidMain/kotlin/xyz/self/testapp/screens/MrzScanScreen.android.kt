@@ -19,7 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import xyz.self.sdk.handlers.MrzDetectionState
+import xyz.self.sdk.models.MrzDetectionState
 import xyz.self.testapp.components.CameraPreviewComposable
 import xyz.self.testapp.models.PassportData
 import xyz.self.testapp.models.VerificationFlowState

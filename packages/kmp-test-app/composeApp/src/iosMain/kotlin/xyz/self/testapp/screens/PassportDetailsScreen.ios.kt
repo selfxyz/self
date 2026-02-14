@@ -1,22 +1,51 @@
 package xyz.self.testapp.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import platform.Foundation.NSUserDefaults
 import xyz.self.testapp.models.PassportData
 import xyz.self.testapp.viewmodels.VerificationViewModel
 
+private const val PASSPORT_DATA_KEY = "xyz.self.testapp.passportData"
+
 /**
- * iOS implementation: Load saved passport data effect (not implemented)
+ * iOS implementation: Load saved passport data from NSUserDefaults
  */
+@OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun LoadSavedDataEffect(viewModel: VerificationViewModel) {
-    // iOS not implemented
+    LaunchedEffect(Unit) {
+        try {
+            val defaults = NSUserDefaults.standardUserDefaults
+            val savedJson = defaults.stringForKey(PASSPORT_DATA_KEY)
+
+            if (savedJson != null) {
+                val passportData = Json.decodeFromString<PassportData>(savedJson)
+                viewModel.loadSavedData(passportData)
+            }
+        } catch (e: Exception) {
+            // Failed to load, continue with empty data
+            println("Failed to load saved passport data: ${e.message}")
+        }
+    }
 }
 
 /**
- * iOS implementation: Get save passport data function (not implemented)
+ * iOS implementation: Save passport data to NSUserDefaults
  */
+@OptIn(ExperimentalForeignApi::class)
 @Composable
-actual fun getSavePassportDataFunction(): ((PassportData) -> Unit)? {
-    // iOS not implemented
-    return null
-}
+actual fun getSavePassportDataFunction(): ((PassportData) -> Unit)? =
+    { passportData ->
+        try {
+            val defaults = NSUserDefaults.standardUserDefaults
+            val jsonString = Json.encodeToString(passportData)
+            defaults.setObject(jsonString, PASSPORT_DATA_KEY)
+            defaults.synchronize()
+        } catch (e: Exception) {
+            println("Failed to save passport data: ${e.message}")
+        }
+    }

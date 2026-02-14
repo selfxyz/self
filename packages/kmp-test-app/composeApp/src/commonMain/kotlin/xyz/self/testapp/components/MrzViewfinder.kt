@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
-import xyz.self.sdk.handlers.MrzDetectionState
+import xyz.self.sdk.models.MrzDetectionState
 
 /**
  * Composable that displays an MRZ scanning viewfinder overlay with dynamic color feedback

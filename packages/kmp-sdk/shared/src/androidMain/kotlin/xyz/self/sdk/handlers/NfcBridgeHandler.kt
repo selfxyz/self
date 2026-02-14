@@ -35,41 +35,10 @@ import xyz.self.sdk.bridge.BridgeHandlerException
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.models.NfcScanParams
 import xyz.self.sdk.models.NfcScanProgress
+import xyz.self.sdk.models.NfcScanState
 import java.io.ByteArrayInputStream
 import java.security.interfaces.RSAPublicKey
 import kotlin.coroutines.resume
-
-/**
- * Represents the current state/stage of NFC passport scanning
- */
-enum class NfcScanState(
-    val percent: Int,
-    val message: String,
-) {
-    /** Waiting for user to hold phone near passport */
-    WAITING_FOR_TAG(0, "Hold your phone near the passport"),
-
-    /** Tag detected, establishing connection */
-    CONNECTING(5, "Tag detected, connecting..."),
-
-    /** Performing PACE or BAC authentication */
-    AUTHENTICATING(15, "Authenticating with passport..."),
-
-    /** Reading passport data (DG1) */
-    READING_DATA(40, "Reading passport data..."),
-
-    /** Reading security object data (SOD) */
-    READING_SECURITY(55, "Reading security data..."),
-
-    /** Performing chip authentication */
-    AUTHENTICATING_CHIP(70, "Verifying chip authenticity..."),
-
-    /** Building and processing the final result */
-    FINALIZING(90, "Processing passport data..."),
-
-    /** Scan completed successfully */
-    COMPLETE(100, "Scan complete!"),
-}
 
 class NfcBridgeHandler(
     private val activity: Activity,

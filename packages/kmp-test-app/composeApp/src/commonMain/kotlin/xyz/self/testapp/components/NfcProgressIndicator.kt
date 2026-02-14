@@ -1,10 +1,9 @@
 package xyz.self.testapp.components
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Nfc
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -13,13 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import xyz.self.sdk.handlers.NfcScanState
+import xyz.self.sdk.models.NfcScanState
 
 /**
  * Composable that displays NFC scanning progress with visual feedback
  *
  * This component shows:
- * - Animated NFC icon with rotation and color changes based on state
+ * - Animated phone icon with rotation and color changes based on state
  * - Color-coded state feedback:
  *   - Gray (pulsing): Waiting for tag
  *   - Blue: Connecting
@@ -99,16 +98,21 @@ fun NfcProgressIndicator(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        // NFC Icon with animation
-        Icon(
-            imageVector = Icons.Default.Nfc,
-            contentDescription = "NFC",
+        // Circular indicator with animation (representing NFC scanning)
+        Box(
             modifier =
                 Modifier
                     .size(120.dp)
-                    .rotate(if (shouldRotate) rotation else 0f),
-            tint = iconColor,
-        )
+                    .rotate(if (shouldRotate) rotation else 0f)
+                    .background(iconColor, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "NFC",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.surface,
+            )
+        }
 
         // Progress percentage
         if (scanState != null) {

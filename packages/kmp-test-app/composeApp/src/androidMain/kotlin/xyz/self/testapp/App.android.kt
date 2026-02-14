@@ -17,7 +17,7 @@ actual fun MrzScanScreen(
 }
 
 /**
- * Android implementation: Forward to the actual screen implementation
+ * Android implementation: Use the shared commonMain implementation
  */
 @Composable
 actual fun MrzConfirmationScreen(

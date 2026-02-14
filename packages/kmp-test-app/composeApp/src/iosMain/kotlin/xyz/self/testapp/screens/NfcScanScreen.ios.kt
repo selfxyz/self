@@ -1,36 +1,34 @@
 package xyz.self.testapp.screens
 
-import android.app.Activity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import kotlinx.cinterop.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
-import xyz.self.sdk.bridge.MessageRouter
-import xyz.self.sdk.handlers.NfcBridgeHandler
+import platform.Foundation.NSLog
 import xyz.self.sdk.models.NfcScanState
 import xyz.self.testapp.components.NfcProgressIndicator
 import xyz.self.testapp.models.VerificationFlowState
 import xyz.self.testapp.viewmodels.VerificationViewModel
+import kotlin.coroutines.resumeWithException
 
-@OptIn(ExperimentalMaterial3Api::class)
+// Import the Swift NfcPassportHelper via Objective-C interop
+// The Swift class is exposed with @objc and can be called from Kotlin
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 @Composable
 fun NfcScanScreen(
     navController: NavController,
     viewModel: VerificationViewModel,
 ) {
-    val context = LocalContext.current
-    val activity = context as? Activity
     val scope = rememberCoroutineScope()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -43,7 +41,7 @@ fun NfcScanScreen(
     var isScanning by remember { mutableStateOf(false) }
     var hasError by remember { mutableStateOf(false) }
     var scanState by remember { mutableStateOf<NfcScanState?>(null) }
-    var progress by remember { mutableStateOf("Ready to scan") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -86,8 +84,25 @@ fun NfcScanScreen(
                 }
             }
 
+            // Error message
+            if (hasError && errorMessage != null) {
+                Card(
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                        ),
+                ) {
+                    Text(
+                        text = errorMessage ?: "Unknown error",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(16.dp),
+                    )
+                }
+            }
+
             // Instructions
-            if (!isScanning) {
+            if (!isScanning && !hasError) {
                 Card {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -118,64 +133,45 @@ fun NfcScanScreen(
             // Start Scan Button
             Button(
                 onClick = {
-                    if (activity == null || passportData == null) {
-                        viewModel.setError("Activity or passport data not available")
+                    if (passportData == null) {
+                        viewModel.setError("Passport data not available")
+                        return@Button
+                    }
+
+                    // Check if NFC is available
+                    if (!isNfcAvailable()) {
+                        hasError = true
+                        errorMessage = "NFC is not available on this device. Please use a physical iPhone with NFC support."
+                        viewModel.setError("NFC not available")
                         return@Button
                     }
 
                     isScanning = true
                     hasError = false
+                    errorMessage = null
                     scanState = null
-                    progress = "Initializing..."
 
-                    // Ensure ViewModel state is NfcScan (not Error) so progress updates work
+                    // Ensure ViewModel state is NfcScan
                     if (state !is VerificationFlowState.NfcScan) {
                         viewModel.skipMrzScan(passportData)
                     }
                     viewModel.updateNfcProgress("Starting NFC scan...")
 
-                    val router =
-                        MessageRouter(
-                            sendToWebView = { js ->
-                                // Log bridge events
-                                val cleaned =
-                                    js
-                                        .removePrefix("window.SelfNativeBridge._handleEvent(")
-                                        .removePrefix("window.SelfNativeBridge._handleResponse(")
-                                        .removeSuffix(")")
-                                        .removeSurrounding("'")
-                                        .replace("\\'", "'")
-                                        .replace("\\\\", "\\")
-                                try {
-                                    val element = Json.parseToJsonElement(cleaned)
-                                    viewModel.addLog("Event: $cleaned")
-                                } catch (_: Exception) {
-                                }
-                            },
-                        )
-
-                    val nfcHandler = NfcBridgeHandler(activity, router)
-                    router.register(nfcHandler)
-
                     scope.launch {
                         try {
-                            val params =
-                                mapOf<String, JsonElement>(
-                                    "passportNumber" to JsonPrimitive(passportData.passportNumber),
-                                    "dateOfBirth" to JsonPrimitive(passportData.dateOfBirth),
-                                    "dateOfExpiry" to JsonPrimitive(passportData.dateOfExpiry),
-                                    "sessionId" to JsonPrimitive("test-session"),
-                                )
-
                             val result =
-                                nfcHandler.scanWithProgress(params) { state ->
-                                    scanState = state
-                                    progress = state.message
-                                }
+                                scanPassportWithNfc(
+                                    passportNumber = passportData.passportNumber,
+                                    dateOfBirth = passportData.dateOfBirth,
+                                    dateOfExpiry = passportData.dateOfExpiry,
+                                    onProgress = { state ->
+                                        scanState = state
+                                        viewModel.updateNfcProgress(state.message)
+                                    },
+                                )
 
                             withContext(Dispatchers.Main) {
                                 isScanning = false
-                                progress = "Scan completed successfully"
                                 viewModel.setNfcResult(result)
                                 navController.navigate("result") {
                                     popUpTo("nfc_scan") { inclusive = true }
@@ -186,7 +182,7 @@ fun NfcScanScreen(
                                 isScanning = false
                                 hasError = true
                                 scanState = null
-                                progress = "Error: ${e.message}"
+                                errorMessage = e.message ?: "Unknown error"
                                 viewModel.setError("NFC scan failed: ${e.message}")
                             }
                         }
@@ -218,3 +214,74 @@ fun NfcScanScreen(
         }
     }
 }
+
+/**
+ * Checks if NFC is available on this device
+ */
+@OptIn(ExperimentalForeignApi::class)
+private fun isNfcAvailable(): Boolean {
+    // On simulator, NFC is not available
+    // On physical devices with iOS 13+, we can use NFCReaderSession
+    // For now, we'll use a simple check via the Swift helper
+    return try {
+        // This would call the Swift helper's isNfcAvailable method
+        // For now, return false on simulator
+        platform.Foundation.NSProcessInfo.processInfo.environment["SIMULATOR_DEVICE_NAME"] == null
+    } catch (e: Exception) {
+        false
+    }
+}
+
+/**
+ * Scans passport using NFC via Swift helper
+ */
+@OptIn(ExperimentalForeignApi::class)
+private suspend fun scanPassportWithNfc(
+    passportNumber: String,
+    dateOfBirth: String,
+    dateOfExpiry: String,
+    onProgress: (NfcScanState) -> Unit,
+): JsonElement =
+    suspendCancellableCoroutine { cont ->
+
+        NSLog("iOS NFC scan starting...")
+        NSLog("Passport: $passportNumber, DOB: $dateOfBirth, Expiry: $dateOfExpiry")
+
+        // TODO: Call Swift NfcPassportHelper here
+        // For now, throw an error indicating it needs to be implemented
+        // The Swift helper needs to be exposed via @objc and imported through cinterop
+
+        // Example of how it would work:
+        // val helper = NfcPassportHelper()
+        // helper.scanPassport(
+        //     passportNumber = passportNumber,
+        //     dateOfBirth = dateOfBirth,
+        //     dateOfExpiry = dateOfExpiry,
+        //     progress = { stateIndex, percent, message ->
+        //         val state = NfcScanState.entries.getOrNull(stateIndex)
+        //         if (state != null) {
+        //             onProgress(state)
+        //         }
+        //     },
+        //     completion = { success, result ->
+        //         if (success) {
+        //             val jsonElement = Json.parseToJsonElement(result)
+        //             cont.resume(jsonElement)
+        //         } else {
+        //             cont.resumeWithException(Exception(result))
+        //         }
+        //     }
+        // )
+
+        cont.resumeWithException(
+            Exception(
+                "NFC scanning not yet fully integrated with Swift helper. " +
+                    "The Swift NfcPassportHelper.swift is created but needs to be " +
+                    "exposed via Xcode project and imported through Kotlin/Native cinterop. " +
+                    "This requires: 1) Adding NfcPassportHelper.swift to Xcode project, " +
+                    "2) Running 'pod install' to install NFCPassportReader, " +
+                    "3) Building the iOS app to generate framework headers, " +
+                    "4) Setting up cinterop definition if needed.",
+            ),
+        )
+    }

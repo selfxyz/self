@@ -21,25 +21,9 @@ import kotlinx.serialization.json.put
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
+import xyz.self.sdk.models.MrzDetectionState
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-
-/**
- * Represents the current state of MRZ detection
- */
-enum class MrzDetectionState {
-    /** No text detected in frame */
-    NO_TEXT,
-
-    /** Text detected but no MRZ pattern found */
-    TEXT_DETECTED,
-
-    /** One MRZ line found (need 2 for passport) */
-    ONE_MRZ_LINE,
-
-    /** Two MRZ lines found - about to complete */
-    TWO_MRZ_LINES,
-}
 
 class CameraMrzBridgeHandler(
     private val activity: Activity,
