@@ -1,5 +1,7 @@
 ![Self Developers horizontal](https://github.com/user-attachments/assets/14c33806-9549-4eee-a2b2-bcfcf873ae80)
 
+# TODO: bump for integration branch
+
 Monorepo for Self.
 
 Self is an identity wallet that lets users generate privacy-preserving proofs from government-issued IDs such as passports, ID cards, and Aadhaar cards.
