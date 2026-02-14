@@ -17,12 +17,14 @@ import xyz.self.sdk.handlers.CameraMrzBridgeHandler
  *
  * @param onMrzDetected Callback invoked when MRZ is successfully detected
  * @param onError Callback invoked when an error occurs
+ * @param showViewfinder Whether to show the MRZ viewfinder overlay (default: true)
  */
 @Composable
 fun CameraPreviewComposable(
     onMrzDetected: (JsonElement) -> Unit,
     onError: (String) -> Unit,
     modifier: Modifier = Modifier,
+    showViewfinder: Boolean = true,
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
@@ -54,5 +56,10 @@ fun CameraPreviewComposable(
             },
             modifier = Modifier.fillMaxSize(),
         )
+
+        // Overlay MRZ viewfinder to guide users
+        if (showViewfinder) {
+            MrzViewfinder()
+        }
     }
 }
