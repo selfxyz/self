@@ -109,6 +109,8 @@ class MessageRouter(
                 .replace("'", "\\'")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
+                .replace("\u2028", "\\u2028") // Line separator
+                .replace("\u2029", "\\u2029") // Paragraph separator
             return "'$escaped'"
         }
     }

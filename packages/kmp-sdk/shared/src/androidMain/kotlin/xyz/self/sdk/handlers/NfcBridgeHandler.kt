@@ -6,6 +6,7 @@ import android.nfc.Tag
 import android.nfc.tech.IsoDep
 import android.util.Base64
 import android.util.Log
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -110,9 +111,11 @@ class NfcBridgeHandler(
             adapter.enableReaderMode(
                 activity,
                 { tag ->
-                    // Don't disable reader mode here - let the finally block handle cleanup
-                    // after the passport has been fully read
-                    cont.resume(tag)
+                    // Only resume if the continuation is still active
+                    // This prevents crashes from multiple tag detections
+                    if (cont.isActive) {
+                        cont.resume(tag)
+                    }
                 },
                 NfcAdapter.FLAG_READER_NFC_A or
                     NfcAdapter.FLAG_READER_NFC_B or
@@ -140,7 +143,7 @@ class NfcBridgeHandler(
         } catch (e: Exception) {
             // Retry once after reconnect
             isoDep.close()
-            Thread.sleep(500)
+            delay(500)
             isoDep.connect()
             CardService.getInstance(isoDep)
         }
@@ -149,7 +152,7 @@ class NfcBridgeHandler(
             cardService.open()
         } catch (e: Exception) {
             isoDep.close()
-            Thread.sleep(500)
+            delay(500)
             isoDep.connect()
             cardService.open()
         }
@@ -256,7 +259,7 @@ class NfcBridgeHandler(
         return false
     }
 
-    private fun tryBac(service: PassportService, bacKey: BACKeySpec): Boolean {
+    private suspend fun tryBac(service: PassportService, bacKey: BACKeySpec): Boolean {
         pushProgress("bac", 15, "Attempting BAC authentication...")
 
         try {
@@ -269,17 +272,25 @@ class NfcBridgeHandler(
         while (attempts < maxAttempts) {
             try {
                 attempts++
-                if (attempts > 1) Thread.sleep(500)
+                if (attempts > 1) delay(500)
 
-                // Try reading EF_COM first; if it fails, do BAC
-                try {
+                // Check if passport requires BAC by trying to read EF_COM
+                val bacRequired = try {
                     service.getInputStream(PassportService.EF_COM).read()
+                    false // EF_COM readable without BAC
                 } catch (_: Exception) {
-                    service.doBAC(bacKey)
+                    true // EF_COM not readable, BAC required
                 }
 
-                Log.d(TAG, "BAC succeeded on attempt $attempts")
-                pushProgress("bac_succeeded", 25, "BAC authentication succeeded")
+                if (bacRequired) {
+                    service.doBAC(bacKey)
+                    Log.d(TAG, "BAC succeeded on attempt $attempts")
+                    pushProgress("bac_succeeded", 25, "BAC authentication succeeded")
+                } else {
+                    Log.d(TAG, "BAC not required, passport already accessible")
+                    pushProgress("bac_not_required", 25, "Authentication succeeded (BAC not required)")
+                }
+
                 return true
             } catch (e: Exception) {
                 Log.w(TAG, "BAC attempt $attempts failed", e)
@@ -336,12 +347,17 @@ class NfcBridgeHandler(
         }
 
         // Extract LDS security object for encapContent
-        val signedDataField = SODFile::class.java.getDeclaredField("signedData")
-        signedDataField.isAccessible = true
-        val signedData = signedDataField.get(sodFile) as SignedData
-        val getLDS = SODFile::class.java.getDeclaredMethod("getLDSSecurityObject", SignedData::class.java)
-        getLDS.isAccessible = true
-        val ldsso = getLDS.invoke(sodFile, signedData) as LDSSecurityObject
+        val ldsso = try {
+            val signedDataField = SODFile::class.java.getDeclaredField("signedData")
+            signedDataField.isAccessible = true
+            val signedData = signedDataField.get(sodFile) as SignedData
+            val getLDS = SODFile::class.java.getDeclaredMethod("getLDSSecurityObject", SignedData::class.java)
+            getLDS.isAccessible = true
+            getLDS.invoke(sodFile, signedData) as LDSSecurityObject
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to extract LDS security object via reflection", e)
+            null
+        }
 
         return buildJsonObject {
             put("mrz", mrzInfo.toString())
@@ -364,7 +380,9 @@ class NfcBridgeHandler(
             put("unicodeVersion", sodFile.unicodeVersion)
             put("eContent", Base64.encodeToString(sodFile.eContent, Base64.NO_WRAP))
             put("encryptedDigest", Base64.encodeToString(sodFile.encryptedDigest, Base64.NO_WRAP))
-            put("encapContent", Base64.encodeToString(ldsso.encoded, Base64.NO_WRAP))
+            ldsso?.let {
+                put("encapContent", Base64.encodeToString(it.encoded, Base64.NO_WRAP))
+            }
 
             // Data group hashes as hex strings
             val hashesObj = buildJsonObject {

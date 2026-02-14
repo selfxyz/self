@@ -13,8 +13,12 @@ object MrzKeyUtils {
 
     fun calcCheckSum(input: String): Int {
         var sum = 0
-        for ((i, ch) in input.withIndex()) {
-            val value = CHAR_VALUES[ch] ?: 0
+        for ((i, ch) in input.uppercase().withIndex()) {
+            val value = CHAR_VALUES[ch]
+                ?: throw IllegalArgumentException(
+                    "Invalid MRZ character '$ch' at position $i in '$input'. " +
+                        "Only digits (0-9), letters (A-Z), '<', and space are allowed."
+                )
             sum += value * MULTIPLIERS[i % 3]
         }
         return sum % 10
