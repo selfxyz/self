@@ -22,39 +22,40 @@ class AndroidWebViewHost(
      */
     @SuppressLint("SetJavaScriptEnabled")
     fun createWebView(): WebView {
-        webView = WebView(context).apply {
-            settings.apply {
-                // Enable JavaScript for bridge communication
-                javaScriptEnabled = true
-                domStorageEnabled = true
+        webView =
+            WebView(context).apply {
+                settings.apply {
+                    // Enable JavaScript for bridge communication
+                    javaScriptEnabled = true
+                    domStorageEnabled = true
 
-                // Security: disable file access
-                allowFileAccess = false
-                allowContentAccess = false
+                    // Security: disable file access
+                    allowFileAccess = false
+                    allowContentAccess = false
 
-                // Media playback
-                mediaPlaybackRequiresUserGesture = false
+                    // Media playback
+                    mediaPlaybackRequiresUserGesture = false
 
-                // Enable debugging in debug mode
+                    // Enable debugging in debug mode
+                    if (isDebugMode) {
+                        WebView.setWebContentsDebuggingEnabled(true)
+                    }
+                }
+
+                // Register JS interface: WebView → Native communication
+                // JavaScript can call: window.SelfNativeAndroid.postMessage(json)
+                addJavascriptInterface(BridgeJsInterface(), "SelfNativeAndroid")
+
+                // Load appropriate URL based on mode
                 if (isDebugMode) {
-                    WebView.setWebContentsDebuggingEnabled(true)
+                    // Development mode: connect to Vite dev server
+                    // Android emulator uses 10.0.2.2 to access host machine's localhost
+                    loadUrl("http://10.0.2.2:5173")
+                } else {
+                    // Production mode: load bundled assets
+                    loadUrl("file:///android_asset/self-wallet/index.html")
                 }
             }
-
-            // Register JS interface: WebView → Native communication
-            // JavaScript can call: window.SelfNativeAndroid.postMessage(json)
-            addJavascriptInterface(BridgeJsInterface(), "SelfNativeAndroid")
-
-            // Load appropriate URL based on mode
-            if (isDebugMode) {
-                // Development mode: connect to Vite dev server
-                // Android emulator uses 10.0.2.2 to access host machine's localhost
-                loadUrl("http://10.0.2.2:5173")
-            } else {
-                // Production mode: load bundled assets
-                loadUrl("file:///android_asset/self-wallet/index.html")
-            }
-        }
         return webView
     }
 

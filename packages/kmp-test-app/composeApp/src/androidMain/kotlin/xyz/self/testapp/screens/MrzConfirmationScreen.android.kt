@@ -14,7 +14,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.serialization.json.JsonElement
 import xyz.self.testapp.models.VerificationFlowState
 import xyz.self.testapp.viewmodels.VerificationViewModel
 

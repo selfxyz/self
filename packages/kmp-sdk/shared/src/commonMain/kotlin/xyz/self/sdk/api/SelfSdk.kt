@@ -1,7 +1,5 @@
 package xyz.self.sdk.api
 
-import kotlinx.serialization.Serializable
-
 /**
  * Main entry point for the Self SDK.
  * This is the public API that host applications use to launch verification flows.
@@ -48,5 +46,8 @@ expect class SelfSdk {
      * @param request Verification request parameters (userId, scope, disclosures)
      * @param callback Callback to receive verification results
      */
-    fun launch(request: VerificationRequest, callback: SelfSdkCallback)
+    fun launch(
+        request: VerificationRequest,
+        callback: SelfSdkCallback,
+    )
 }

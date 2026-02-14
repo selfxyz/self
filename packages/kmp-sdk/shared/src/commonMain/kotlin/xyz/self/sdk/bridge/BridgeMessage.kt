@@ -1,6 +1,7 @@
 package xyz.self.sdk.bridge
 
-import kotlinx.serialization.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 const val BRIDGE_PROTOCOL_VERSION = 1
@@ -8,16 +9,35 @@ const val DEFAULT_TIMEOUT_MS = 30_000L
 
 @Serializable
 enum class BridgeDomain {
-    @SerialName("nfc") NFC,
-    @SerialName("biometrics") BIOMETRICS,
-    @SerialName("secureStorage") SECURE_STORAGE,
-    @SerialName("camera") CAMERA,
-    @SerialName("crypto") CRYPTO,
-    @SerialName("haptic") HAPTIC,
-    @SerialName("analytics") ANALYTICS,
-    @SerialName("lifecycle") LIFECYCLE,
-    @SerialName("documents") DOCUMENTS,
-    @SerialName("navigation") NAVIGATION,
+    @SerialName("nfc")
+    NFC,
+
+    @SerialName("biometrics")
+    BIOMETRICS,
+
+    @SerialName("secureStorage")
+    SECURE_STORAGE,
+
+    @SerialName("camera")
+    CAMERA,
+
+    @SerialName("crypto")
+    CRYPTO,
+
+    @SerialName("haptic")
+    HAPTIC,
+
+    @SerialName("analytics")
+    ANALYTICS,
+
+    @SerialName("lifecycle")
+    LIFECYCLE,
+
+    @SerialName("documents")
+    DOCUMENTS,
+
+    @SerialName("navigation")
+    NAVIGATION,
 }
 
 @Serializable
@@ -63,4 +83,5 @@ data class BridgeEvent(
 )
 
 internal expect fun currentTimeMillis(): Long
+
 internal expect fun generateUuid(): String

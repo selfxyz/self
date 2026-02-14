@@ -20,11 +20,12 @@ class MessageRouter(
     }
 
     fun onMessageReceived(rawJson: String) {
-        val request = try {
-            json.decodeFromString<BridgeRequest>(rawJson)
-        } catch (e: Exception) {
-            return // Malformed message — drop silently
-        }
+        val request =
+            try {
+                json.decodeFromString<BridgeRequest>(rawJson)
+            } catch (e: Exception) {
+                return // Malformed message — drop silently
+            }
 
         val handler = handlers[request.domain]
         if (handler == null) {
@@ -34,11 +35,12 @@ class MessageRouter(
                     domain = request.domain,
                     requestId = request.id,
                     success = false,
-                    error = BridgeError(
-                        code = "DOMAIN_NOT_FOUND",
-                        message = "No handler registered for domain: ${request.domain}",
-                    ),
-                )
+                    error =
+                        BridgeError(
+                            code = "DOMAIN_NOT_FOUND",
+                            message = "No handler registered for domain: ${request.domain}",
+                        ),
+                ),
             )
             return
         }
@@ -53,7 +55,7 @@ class MessageRouter(
                         requestId = request.id,
                         success = true,
                         data = result,
-                    )
+                    ),
                 )
             } catch (e: BridgeHandlerException) {
                 sendResponse(
@@ -62,12 +64,13 @@ class MessageRouter(
                         domain = request.domain,
                         requestId = request.id,
                         success = false,
-                        error = BridgeError(
-                            code = e.code,
-                            message = e.message,
-                            details = e.details,
-                        ),
-                    )
+                        error =
+                            BridgeError(
+                                code = e.code,
+                                message = e.message,
+                                details = e.details,
+                            ),
+                    ),
                 )
             } catch (e: Exception) {
                 sendResponse(
@@ -76,23 +79,29 @@ class MessageRouter(
                         domain = request.domain,
                         requestId = request.id,
                         success = false,
-                        error = BridgeError(
-                            code = "INTERNAL_ERROR",
-                            message = e.message ?: "Unknown error",
-                        ),
-                    )
+                        error =
+                            BridgeError(
+                                code = "INTERNAL_ERROR",
+                                message = e.message ?: "Unknown error",
+                            ),
+                    ),
                 )
             }
         }
     }
 
-    fun pushEvent(domain: BridgeDomain, event: String, data: JsonElement) {
-        val bridgeEvent = BridgeEvent(
-            id = generateUuid(),
-            domain = domain,
-            event = event,
-            data = data,
-        )
+    fun pushEvent(
+        domain: BridgeDomain,
+        event: String,
+        data: JsonElement,
+    ) {
+        val bridgeEvent =
+            BridgeEvent(
+                id = generateUuid(),
+                domain = domain,
+                event = event,
+                data = data,
+            )
         val eventJson = json.encodeToString(bridgeEvent)
         sendToWebView("window.SelfNativeBridge._handleEvent(${escapeForJs(eventJson)})")
     }
@@ -104,13 +113,14 @@ class MessageRouter(
 
     companion object {
         fun escapeForJs(jsonStr: String): String {
-            val escaped = jsonStr
-                .replace("\\", "\\\\")
-                .replace("'", "\\'")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\u2028", "\\u2028") // Line separator
-                .replace("\u2029", "\\u2029") // Paragraph separator
+            val escaped =
+                jsonStr
+                    .replace("\\", "\\\\")
+                    .replace("'", "\\'")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r")
+                    .replace("\u2028", "\\u2028") // Line separator
+                    .replace("\u2029", "\\u2029") // Paragraph separator
             return "'$escaped'"
         }
     }

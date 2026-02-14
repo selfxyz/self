@@ -14,14 +14,15 @@ import xyz.self.sdk.bridge.BridgeHandlerException
  * Enable cinterop in build.gradle.kts and implement using platform.UIKit APIs.
  */
 class HapticBridgeHandler : BridgeHandler {
-
     override val domain = BridgeDomain.HAPTIC
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
             "iOS haptic feedback not yet implemented. " +
-            "Requires UIKit framework cinterop."
+                "Requires UIKit framework cinterop.",
         )
-    }
 }

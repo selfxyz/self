@@ -19,6 +19,8 @@ data class SelfSdkError(
 
 interface SelfSdkCallback {
     fun onSuccess(result: VerificationResult)
+
     fun onFailure(error: SelfSdkError)
+
     fun onCancelled()
 }

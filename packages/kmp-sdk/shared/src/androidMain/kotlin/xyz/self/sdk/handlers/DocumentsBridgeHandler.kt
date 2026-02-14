@@ -18,30 +18,37 @@ import xyz.self.sdk.bridge.BridgeHandlerException
  * Android implementation of documents storage bridge handler.
  * Uses EncryptedSharedPreferences to securely store passport and verification documents.
  */
-class DocumentsBridgeHandler(context: Context) : BridgeHandler {
-
+class DocumentsBridgeHandler(
+    context: Context,
+) : BridgeHandler {
     override val domain = BridgeDomain.DOCUMENTS
 
     private val prefs: SharedPreferences
 
     init {
         // Create master key for encryption
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
+        val masterKey =
+            MasterKey
+                .Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
 
         // Create encrypted shared preferences for documents
-        prefs = EncryptedSharedPreferences.create(
-            context,
-            "self_sdk_documents",
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
+        prefs =
+            EncryptedSharedPreferences.create(
+                context,
+                "self_sdk_documents",
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+            )
     }
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        return when (method) {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
+        when (method) {
             "loadCatalog" -> loadCatalog()
             "saveCatalog" -> saveCatalog(params)
             "loadById" -> loadById(params)
@@ -49,10 +56,9 @@ class DocumentsBridgeHandler(context: Context) : BridgeHandler {
             "delete" -> delete(params)
             else -> throw BridgeHandlerException(
                 "METHOD_NOT_FOUND",
-                "Unknown documents method: $method"
+                "Unknown documents method: $method",
             )
         }
-    }
 
     /**
      * Loads the document catalog (list of document IDs and metadata).
@@ -73,8 +79,9 @@ class DocumentsBridgeHandler(context: Context) : BridgeHandler {
      * The catalog contains metadata about stored documents.
      */
     private fun saveCatalog(params: Map<String, JsonElement>): JsonElement? {
-        val catalogData = params["data"]?.toString()
-            ?: throw BridgeHandlerException("MISSING_DATA", "Catalog data parameter required")
+        val catalogData =
+            params["data"]?.toString()
+                ?: throw BridgeHandlerException("MISSING_DATA", "Catalog data parameter required")
 
         prefs.edit().putString("__catalog__", catalogData).apply()
 
@@ -86,8 +93,9 @@ class DocumentsBridgeHandler(context: Context) : BridgeHandler {
      * Returns null if the document doesn't exist.
      */
     private fun loadById(params: Map<String, JsonElement>): JsonElement {
-        val id = params["id"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
+        val id =
+            params["id"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
 
         val documentJson = prefs.getString("doc_$id", null)
 
@@ -103,11 +111,13 @@ class DocumentsBridgeHandler(context: Context) : BridgeHandler {
      * The document data should be a JSON-serializable object.
      */
     private fun save(params: Map<String, JsonElement>): JsonElement? {
-        val id = params["id"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
+        val id =
+            params["id"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
 
-        val document = params["document"]?.toString()
-            ?: throw BridgeHandlerException("MISSING_DOCUMENT", "Document parameter required")
+        val document =
+            params["document"]?.toString()
+                ?: throw BridgeHandlerException("MISSING_DOCUMENT", "Document parameter required")
 
         prefs.edit().putString("doc_$id", document).apply()
 
@@ -121,8 +131,9 @@ class DocumentsBridgeHandler(context: Context) : BridgeHandler {
      * Deletes a document by ID.
      */
     private fun delete(params: Map<String, JsonElement>): JsonElement? {
-        val id = params["id"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
+        val id =
+            params["id"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
 
         prefs.edit().remove("doc_$id").apply()
 

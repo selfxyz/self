@@ -18,20 +18,21 @@ import xyz.self.sdk.bridge.BridgeHandlerException
  */
 @OptIn(ExperimentalForeignApi::class)
 class LifecycleBridgeHandler : BridgeHandler {
-
     override val domain = BridgeDomain.LIFECYCLE
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        return when (method) {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
+        when (method) {
             "ready" -> ready()
             "dismiss" -> dismiss()
             "setResult" -> setResult(params)
             else -> throw BridgeHandlerException(
                 "METHOD_NOT_FOUND",
-                "Unknown lifecycle method: $method"
+                "Unknown lifecycle method: $method",
             )
         }
-    }
 
     /**
      * Called when the WebView has finished loading and is ready.
@@ -53,7 +54,7 @@ class LifecycleBridgeHandler : BridgeHandler {
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
             "iOS lifecycle dismiss not yet fully implemented. " +
-            "Requires UIViewController reference."
+                "Requires UIViewController reference.",
         )
     }
 
@@ -75,7 +76,7 @@ class LifecycleBridgeHandler : BridgeHandler {
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
             "iOS lifecycle setResult not yet fully implemented. " +
-            "Requires callback mechanism to host app."
+                "Requires callback mechanism to host app.",
         )
     }
 }

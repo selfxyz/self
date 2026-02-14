@@ -12,21 +12,24 @@ import xyz.self.sdk.bridge.BridgeHandlerException
  * Android implementation of lifecycle bridge handler.
  * Manages WebView lifecycle and communication with the host Activity.
  */
-class LifecycleBridgeHandler(private val activity: Activity) : BridgeHandler {
-
+class LifecycleBridgeHandler(
+    private val activity: Activity,
+) : BridgeHandler {
     override val domain = BridgeDomain.LIFECYCLE
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        return when (method) {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
+        when (method) {
             "ready" -> ready()
             "dismiss" -> dismiss()
             "setResult" -> setResult(params)
             else -> throw BridgeHandlerException(
                 "METHOD_NOT_FOUND",
-                "Unknown lifecycle method: $method"
+                "Unknown lifecycle method: $method",
             )
         }
-    }
 
     /**
      * Called when the WebView has finished loading and is ready.

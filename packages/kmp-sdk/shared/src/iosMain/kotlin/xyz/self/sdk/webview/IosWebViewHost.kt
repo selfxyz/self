@@ -17,14 +17,12 @@ class IosWebViewHost(
     private val router: MessageRouter,
     private val isDebugMode: Boolean = false,
 ) {
-
-    fun createWebView(): Any {
+    fun createWebView(): Any =
         throw NotImplementedError(
             "iOS WebView hosting not yet fully implemented. " +
-            "Requires WKWebView cinterop and UIViewController integration. " +
-            "cinterop configuration is disabled due to Xcode SDK compatibility issues."
+                "Requires WKWebView cinterop and UIViewController integration. " +
+                "cinterop configuration is disabled due to Xcode SDK compatibility issues.",
         )
-    }
 
     fun evaluateJs(js: String) {
         // Stub - would call webView.evaluateJavaScript()

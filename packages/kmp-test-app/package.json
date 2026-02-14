@@ -6,7 +6,9 @@
     "android": "./scripts/run-android.sh",
     "android:build": "./gradlew :composeApp:assembleDebug",
     "clean": "./gradlew clean",
+    "format": "./gradlew ktlintFormat",
     "ios:build": "./gradlew :composeApp:compileKotlinIosSimulatorArm64",
-    "ios:open": "open iosApp/iosApp.xcodeproj"
+    "ios:open": "open iosApp/iosApp.xcodeproj",
+    "lint": "./gradlew ktlintCheck"
   }
 }

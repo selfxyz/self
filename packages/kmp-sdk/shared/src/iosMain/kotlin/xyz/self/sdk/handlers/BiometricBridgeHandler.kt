@@ -1,8 +1,6 @@
 package xyz.self.sdk.handlers
 
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonPrimitive
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
@@ -17,14 +15,15 @@ import xyz.self.sdk.bridge.BridgeHandlerException
  * Enable cinterop in build.gradle.kts and implement using platform.LocalAuthentication APIs.
  */
 class BiometricBridgeHandler : BridgeHandler {
-
     override val domain = BridgeDomain.BIOMETRICS
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
             "iOS biometric authentication not yet implemented. " +
-            "Requires LocalAuthentication framework cinterop."
+                "Requires LocalAuthentication framework cinterop.",
         )
-    }
 }

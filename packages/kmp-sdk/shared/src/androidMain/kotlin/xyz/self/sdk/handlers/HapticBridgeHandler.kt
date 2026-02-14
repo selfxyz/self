@@ -15,8 +15,9 @@ import xyz.self.sdk.bridge.BridgeHandlerException
  * Android implementation of haptic feedback bridge handler.
  * Uses Vibrator service to provide tactile feedback.
  */
-class HapticBridgeHandler(private val context: Context) : BridgeHandler {
-
+class HapticBridgeHandler(
+    private val context: Context,
+) : BridgeHandler {
     override val domain = BridgeDomain.HAPTIC
 
     private val vibrator: Vibrator by lazy {
@@ -29,16 +30,18 @@ class HapticBridgeHandler(private val context: Context) : BridgeHandler {
         }
     }
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        return when (method) {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
+        when (method) {
             "trigger" -> trigger(params)
             "isAvailable" -> isAvailable()
             else -> throw BridgeHandlerException(
                 "METHOD_NOT_FOUND",
-                "Unknown haptic method: $method"
+                "Unknown haptic method: $method",
             )
         }
-    }
 
     /**
      * Triggers haptic feedback with specified intensity.
@@ -54,15 +57,16 @@ class HapticBridgeHandler(private val context: Context) : BridgeHandler {
         }
 
         // Determine vibration parameters based on type
-        val (duration, amplitude) = when (type) {
-            "light" -> Pair(20L, 50)
-            "medium" -> Pair(40L, 128)
-            "heavy" -> Pair(60L, 255)
-            "success" -> Pair(30L, 128)
-            "warning" -> Pair(50L, 200)
-            "error" -> Pair(80L, 255)
-            else -> Pair(40L, 128) // Default to medium
-        }
+        val (duration, amplitude) =
+            when (type) {
+                "light" -> Pair(20L, 50)
+                "medium" -> Pair(40L, 128)
+                "heavy" -> Pair(60L, 255)
+                "success" -> Pair(30L, 128)
+                "warning" -> Pair(50L, 200)
+                "error" -> Pair(80L, 255)
+                else -> Pair(40L, 128) // Default to medium
+            }
 
         // Trigger vibration
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

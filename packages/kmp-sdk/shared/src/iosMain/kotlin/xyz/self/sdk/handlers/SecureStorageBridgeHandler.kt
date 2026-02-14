@@ -15,14 +15,15 @@ import xyz.self.sdk.bridge.BridgeHandlerException
  * Enable cinterop in build.gradle.kts and implement using platform.Security APIs.
  */
 class SecureStorageBridgeHandler : BridgeHandler {
-
     override val domain = BridgeDomain.SECURE_STORAGE
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
             "iOS secure storage not yet implemented. " +
-            "Requires Security framework cinterop for Keychain access."
+                "Requires Security framework cinterop for Keychain access.",
         )
-    }
 }

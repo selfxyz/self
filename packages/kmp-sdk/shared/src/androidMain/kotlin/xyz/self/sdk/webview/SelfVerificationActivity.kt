@@ -3,7 +3,15 @@ package xyz.self.sdk.webview
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import xyz.self.sdk.bridge.MessageRouter
-import xyz.self.sdk.handlers.*
+import xyz.self.sdk.handlers.AnalyticsBridgeHandler
+import xyz.self.sdk.handlers.BiometricBridgeHandler
+import xyz.self.sdk.handlers.CameraMrzBridgeHandler
+import xyz.self.sdk.handlers.CryptoBridgeHandler
+import xyz.self.sdk.handlers.DocumentsBridgeHandler
+import xyz.self.sdk.handlers.HapticBridgeHandler
+import xyz.self.sdk.handlers.LifecycleBridgeHandler
+import xyz.self.sdk.handlers.NfcBridgeHandler
+import xyz.self.sdk.handlers.SecureStorageBridgeHandler
 
 /**
  * Activity that hosts the Self verification WebView.
@@ -21,14 +29,15 @@ class SelfVerificationActivity : AppCompatActivity() {
         val isDebugMode = intent.getBooleanExtra(EXTRA_DEBUG_MODE, false)
 
         // Create router with callback to send JavaScript to WebView
-        router = MessageRouter(
-            sendToWebView = { js ->
-                // Ensure we're on the UI thread
-                runOnUiThread {
-                    webViewHost.evaluateJs(js)
-                }
-            }
-        )
+        router =
+            MessageRouter(
+                sendToWebView = { js ->
+                    // Ensure we're on the UI thread
+                    runOnUiThread {
+                        webViewHost.evaluateJs(js)
+                    }
+                },
+            )
 
         // Register all native bridge handlers
         // These handlers implement the bridge protocol domains

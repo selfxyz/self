@@ -13,24 +13,25 @@ import xyz.self.sdk.bridge.BridgeHandlerException
  * Fire-and-forget operation - no PII should be logged.
  */
 class AnalyticsBridgeHandler : BridgeHandler {
-
     override val domain = BridgeDomain.ANALYTICS
 
     companion object {
         private const val TAG = "SelfSDK-Analytics"
     }
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        return when (method) {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
+        when (method) {
             "trackEvent" -> trackEvent(params)
             "trackNfcEvent" -> trackNfcEvent(params)
             "logNfcEvent" -> logNfcEvent(params)
             else -> throw BridgeHandlerException(
                 "METHOD_NOT_FOUND",
-                "Unknown analytics method: $method"
+                "Unknown analytics method: $method",
             )
         }
-    }
 
     /**
      * Tracks a general analytics event.
@@ -55,12 +56,13 @@ class AnalyticsBridgeHandler : BridgeHandler {
         val success = params["success"]?.jsonPrimitive?.content?.toBoolean()
         val errorCode = params["errorCode"]?.jsonPrimitive?.content
 
-        val logMessage = buildString {
-            append("NFC Event: $eventName")
-            append(", Step: $step")
-            if (success != null) append(", Success: $success")
-            if (errorCode != null) append(", Error: $errorCode")
-        }
+        val logMessage =
+            buildString {
+                append("NFC Event: $eventName")
+                append(", Step: $step")
+                if (success != null) append(", Success: $success")
+                if (errorCode != null) append(", Error: $errorCode")
+            }
 
         Log.i(TAG, logMessage)
 

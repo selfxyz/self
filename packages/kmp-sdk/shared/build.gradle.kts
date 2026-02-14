@@ -38,6 +38,7 @@ kotlin {
             // 3. Consider creating Objective-C/Swift wrappers for complex operations (NFC, Crypto)
             //
             // Uncomment below to enable cinterop (once SDK issues are resolved):
+
             /*
             compilations.getByName("main") {
                 cinterops {
@@ -58,7 +59,7 @@ kotlin {
                     }
                 }
             }
-            */
+             */
         }
     }
 
@@ -99,9 +100,15 @@ kotlin {
 
 android {
     namespace = "xyz.self.sdk"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
     defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -167,21 +174,25 @@ tasks.register("createXCFramework") {
 
     dependsOn(
         ":shared:linkDebugFrameworkIosArm64",
-        ":shared:linkDebugFrameworkIosSimulatorArm64"
+        ":shared:linkDebugFrameworkIosSimulatorArm64",
     )
 
     doLast {
         val buildDir = layout.buildDirectory.get().asFile
-        val frameworkPath = "${buildDir}/bin/iosArm64/debugFramework/SelfSdk.framework"
-        val simulatorFrameworkPath = "${buildDir}/bin/iosSimulatorArm64/debugFramework/SelfSdk.framework"
-        val xcframeworkPath = "${buildDir}/xcframework/SelfSdk.xcframework"
+        val frameworkPath = "$buildDir/bin/iosArm64/debugFramework/SelfSdk.framework"
+        val simulatorFrameworkPath = "$buildDir/bin/iosSimulatorArm64/debugFramework/SelfSdk.framework"
+        val xcframeworkPath = "$buildDir/xcframework/SelfSdk.xcframework"
 
         project.exec {
             commandLine(
-                "xcodebuild", "-create-xcframework",
-                "-framework", frameworkPath,
-                "-framework", simulatorFrameworkPath,
-                "-output", xcframeworkPath
+                "xcodebuild",
+                "-create-xcframework",
+                "-framework",
+                frameworkPath,
+                "-framework",
+                simulatorFrameworkPath,
+                "-output",
+                xcframeworkPath,
             )
         }
 

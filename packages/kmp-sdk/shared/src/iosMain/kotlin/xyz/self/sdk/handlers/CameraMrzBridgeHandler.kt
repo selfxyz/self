@@ -19,19 +19,20 @@ import xyz.self.sdk.bridge.BridgeHandlerException
  */
 @OptIn(ExperimentalForeignApi::class)
 class CameraMrzBridgeHandler : BridgeHandler {
-
     override val domain = BridgeDomain.CAMERA
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        return when (method) {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
+        when (method) {
             "scanMRZ" -> scanMRZ()
             "isAvailable" -> isAvailable()
             else -> throw BridgeHandlerException(
                 "METHOD_NOT_FOUND",
-                "Unknown camera method: $method"
+                "Unknown camera method: $method",
             )
         }
-    }
 
     /**
      * Launches camera to scan MRZ from passport or ID card.
@@ -49,7 +50,7 @@ class CameraMrzBridgeHandler : BridgeHandler {
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
             "iOS camera MRZ scanning not yet fully implemented. " +
-            "Requires AVFoundation + Vision framework integration."
+                "Requires AVFoundation + Vision framework integration.",
         )
     }
 

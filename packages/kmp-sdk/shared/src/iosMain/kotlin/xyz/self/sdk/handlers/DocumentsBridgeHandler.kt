@@ -15,14 +15,15 @@ import xyz.self.sdk.bridge.BridgeHandlerException
  * Enable cinterop in build.gradle.kts and implement using platform.Foundation APIs.
  */
 class DocumentsBridgeHandler : BridgeHandler {
-
     override val domain = BridgeDomain.DOCUMENTS
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
             "iOS document storage not yet implemented. " +
-            "Requires Foundation framework cinterop."
+                "Requires Foundation framework cinterop.",
         )
-    }
 }

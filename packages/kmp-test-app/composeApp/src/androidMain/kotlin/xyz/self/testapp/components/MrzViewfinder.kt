@@ -9,10 +9,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
@@ -55,12 +53,13 @@ fun MrzViewfinder(
         val frameLeft = (canvasWidth - frameWidth) / 2f
         val frameTop = (canvasHeight - frameHeight) / 2f
 
-        val scanningRect = Rect(
-            left = frameLeft,
-            top = frameTop,
-            right = frameLeft + frameWidth,
-            bottom = frameTop + frameHeight,
-        )
+        val scanningRect =
+            Rect(
+                left = frameLeft,
+                top = frameTop,
+                right = frameLeft + frameWidth,
+                bottom = frameTop + frameHeight,
+            )
 
         // Draw semi-transparent overlay with cutout for scanning area
         drawOverlayWithCutout(
@@ -96,18 +95,19 @@ private fun DrawScope.drawOverlayWithCutout(
     overlayColor: Color,
     cornerRadius: Float,
 ) {
-    val overlayPath = Path().apply {
-        // Add the entire canvas as a rectangle
-        addRect(Rect(0f, 0f, size.width, size.height))
+    val overlayPath =
+        Path().apply {
+            // Add the entire canvas as a rectangle
+            addRect(Rect(0f, 0f, size.width, size.height))
 
-        // Subtract the scanning area (cutout)
-        addRoundRect(
-            RoundRect(
-                rect = scanningRect,
-                cornerRadius = CornerRadius(cornerRadius, cornerRadius),
-            ),
-        )
-    }
+            // Subtract the scanning area (cutout)
+            addRoundRect(
+                RoundRect(
+                    rect = scanningRect,
+                    cornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                ),
+            )
+        }
 
     // Use even-odd fill rule to create the cutout effect
     drawPath(
@@ -143,10 +143,11 @@ private fun DrawScope.drawCornerBrackets(
     bracketLength: Float,
     bracketThickness: Float,
 ) {
-    val bracketStroke = Stroke(
-        width = bracketThickness,
-        cap = androidx.compose.ui.graphics.StrokeCap.Round,
-    )
+    val bracketStroke =
+        Stroke(
+            width = bracketThickness,
+            cap = androidx.compose.ui.graphics.StrokeCap.Round,
+        )
 
     // Top-left corner
     drawLine(

@@ -8,6 +8,8 @@
     "build:ios": "./gradlew :shared:compileKotlinIosArm64",
     "build:ios:simulator": "./gradlew :shared:compileKotlinIosSimulatorArm64",
     "clean": "./gradlew clean",
+    "format": "./gradlew ktlintFormat",
+    "lint": "./gradlew ktlintCheck",
     "test": "./gradlew :shared:jvmTest"
   }
 }

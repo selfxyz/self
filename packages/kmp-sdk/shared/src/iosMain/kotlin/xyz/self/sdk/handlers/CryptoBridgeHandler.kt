@@ -2,9 +2,7 @@ package xyz.self.sdk.handlers
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
@@ -20,32 +18,35 @@ import xyz.self.sdk.bridge.BridgeHandlerException
  */
 @OptIn(ExperimentalForeignApi::class)
 class CryptoBridgeHandler : BridgeHandler {
-
     override val domain = BridgeDomain.CRYPTO
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        return when (method) {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
+        when (method) {
             "sign" -> sign(params)
             "generateKey" -> generateKey(params)
             "getPublicKey" -> getPublicKey(params)
             "deleteKey" -> deleteKey(params)
             else -> throw BridgeHandlerException(
                 "METHOD_NOT_FOUND",
-                "Unknown crypto method: $method"
+                "Unknown crypto method: $method",
             )
         }
-    }
 
     /**
      * Signs data using a private key from Keychain.
      * TODO: Implement using SecKeyCreateSignature with kSecKeyAlgorithmECDSASignatureMessageX962SHA256
      */
     private fun sign(params: Map<String, JsonElement>): JsonElement {
-        val dataBase64 = params["data"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_DATA", "Data parameter required")
+        val dataBase64 =
+            params["data"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_DATA", "Data parameter required")
 
-        val keyRef = params["keyRef"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_KEY_REF", "keyRef parameter required")
+        val keyRef =
+            params["keyRef"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_KEY_REF", "keyRef parameter required")
 
         // TODO: Implement actual signing logic
         // 1. Decode base64 data
@@ -56,7 +57,7 @@ class CryptoBridgeHandler : BridgeHandler {
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
             "iOS crypto signing not yet fully implemented. " +
-            "Requires SecKeyCreateSignature integration."
+                "Requires SecKeyCreateSignature integration.",
         )
     }
 
@@ -65,8 +66,9 @@ class CryptoBridgeHandler : BridgeHandler {
      * TODO: Implement using SecKeyCreateRandomKey with kSecAttrKeyTypeECSECPrimeRandom
      */
     private fun generateKey(params: Map<String, JsonElement>): JsonElement {
-        val keyRef = params["keyRef"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_KEY_REF", "keyRef parameter required")
+        val keyRef =
+            params["keyRef"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_KEY_REF", "keyRef parameter required")
 
         // TODO: Implement actual key generation
         // 1. Check if key already exists
@@ -77,7 +79,7 @@ class CryptoBridgeHandler : BridgeHandler {
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
             "iOS key generation not yet fully implemented. " +
-            "Requires SecKeyCreateRandomKey integration."
+                "Requires SecKeyCreateRandomKey integration.",
         )
     }
 
@@ -86,8 +88,9 @@ class CryptoBridgeHandler : BridgeHandler {
      * TODO: Implement using SecKeyCopyPublicKey
      */
     private fun getPublicKey(params: Map<String, JsonElement>): JsonElement {
-        val keyRef = params["keyRef"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_KEY_REF", "keyRef parameter required")
+        val keyRef =
+            params["keyRef"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_KEY_REF", "keyRef parameter required")
 
         // TODO: Implement public key retrieval
         // 1. Load private key from Keychain
@@ -97,7 +100,7 @@ class CryptoBridgeHandler : BridgeHandler {
 
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
-            "iOS public key retrieval not yet fully implemented."
+            "iOS public key retrieval not yet fully implemented.",
         )
     }
 
@@ -105,15 +108,16 @@ class CryptoBridgeHandler : BridgeHandler {
      * Deletes a key from Keychain.
      */
     private fun deleteKey(params: Map<String, JsonElement>): JsonElement? {
-        val keyRef = params["keyRef"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_KEY_REF", "keyRef parameter required")
+        val keyRef =
+            params["keyRef"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_KEY_REF", "keyRef parameter required")
 
         // TODO: Implement key deletion
         // Use SecItemDelete with appropriate query
 
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
-            "iOS key deletion not yet fully implemented."
+            "iOS key deletion not yet fully implemented.",
         )
     }
 }

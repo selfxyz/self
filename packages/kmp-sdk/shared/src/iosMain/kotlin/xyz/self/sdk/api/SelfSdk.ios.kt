@@ -1,9 +1,16 @@
 package xyz.self.sdk.api
 
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.serialization.json.Json
 import xyz.self.sdk.bridge.MessageRouter
-import xyz.self.sdk.handlers.*
+import xyz.self.sdk.handlers.AnalyticsBridgeHandler
+import xyz.self.sdk.handlers.BiometricBridgeHandler
+import xyz.self.sdk.handlers.CameraMrzBridgeHandler
+import xyz.self.sdk.handlers.CryptoBridgeHandler
+import xyz.self.sdk.handlers.DocumentsBridgeHandler
+import xyz.self.sdk.handlers.HapticBridgeHandler
+import xyz.self.sdk.handlers.LifecycleBridgeHandler
+import xyz.self.sdk.handlers.NfcBridgeHandler
+import xyz.self.sdk.handlers.SecureStorageBridgeHandler
 import xyz.self.sdk.webview.IosWebViewHost
 
 /**
@@ -15,8 +22,9 @@ import xyz.self.sdk.webview.IosWebViewHost
  * Camera, Lifecycle) have stub implementations that need to be completed.
  */
 @OptIn(ExperimentalForeignApi::class)
-actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
-
+actual class SelfSdk private constructor(
+    private val config: SelfSdkConfig,
+) {
     private var webViewHost: IosWebViewHost? = null
     private var router: MessageRouter? = null
     private var pendingCallback: SelfSdkCallback? = null
@@ -32,16 +40,20 @@ actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
         }
     }
 
-    actual fun launch(request: VerificationRequest, callback: SelfSdkCallback) {
+    actual fun launch(
+        request: VerificationRequest,
+        callback: SelfSdkCallback,
+    ) {
         // Store callback for later
         pendingCallback = callback
 
         // Create router with callback to send JS to WebView
-        router = MessageRouter(
-            sendToWebView = { js ->
-                webViewHost?.evaluateJs(js)
-            }
-        )
+        router =
+            MessageRouter(
+                sendToWebView = { js ->
+                    webViewHost?.evaluateJs(js)
+                },
+            )
 
         // Register all iOS bridge handlers
         registerHandlers(router!!)
@@ -66,9 +78,9 @@ actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
 
         throw NotImplementedError(
             "iOS UI presentation not yet fully implemented. " +
-            "The WebView and handlers are configured, but UIViewController " +
-            "presentation requires integration with the host app's view hierarchy. " +
-            "See SelfSdk.android.kt for reference on the complete flow."
+                "The WebView and handlers are configured, but UIViewController " +
+                "presentation requires integration with the host app's view hierarchy. " +
+                "See SelfSdk.android.kt for reference on the complete flow.",
         )
     }
 
@@ -104,4 +116,3 @@ actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
         router.register(NfcBridgeHandler(router))
     }
 }
-

@@ -1,7 +1,6 @@
 package xyz.self.sdk.api
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,8 +12,9 @@ import xyz.self.sdk.webview.SelfVerificationActivity
  * Android implementation of the Self SDK.
  * Uses Activity result API to launch SelfVerificationActivity and receive results.
  */
-actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
-
+actual class SelfSdk private constructor(
+    private val config: SelfSdkConfig,
+) {
     private var activityLauncher: ActivityResultLauncher<Intent>? = null
     private var pendingCallback: SelfSdkCallback? = null
 
@@ -40,7 +40,10 @@ actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
      * in onCreate() and pass it to this method, rather than registering it here.
      * This implementation is simplified for the initial version.
      */
-    actual fun launch(request: VerificationRequest, callback: SelfSdkCallback) {
+    actual fun launch(
+        request: VerificationRequest,
+        callback: SelfSdkCallback,
+    ) {
         // Store callback for later
         pendingCallback = callback
 
@@ -49,7 +52,7 @@ actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
         // For now, we'll require the activity to be passed via a helper method
         throw NotImplementedError(
             "Please use launch(activity, request, callback) instead. " +
-            "The Activity parameter is required on Android."
+                "The Activity parameter is required on Android.",
         )
     }
 
@@ -61,21 +64,27 @@ actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
      * @param request Verification request parameters
      * @param callback Callback to receive results
      */
-    fun launch(activity: FragmentActivity, request: VerificationRequest, callback: SelfSdkCallback) {
+    fun launch(
+        activity: FragmentActivity,
+        request: VerificationRequest,
+        callback: SelfSdkCallback,
+    ) {
         // Create intent for SelfVerificationActivity
-        val intent = Intent(activity, SelfVerificationActivity::class.java).apply {
-            putExtra(SelfVerificationActivity.EXTRA_DEBUG_MODE, config.debug)
-            putExtra(SelfVerificationActivity.EXTRA_VERIFICATION_REQUEST, serializeRequest(request))
-            putExtra(SelfVerificationActivity.EXTRA_CONFIG, serializeConfig(config))
-        }
+        val intent =
+            Intent(activity, SelfVerificationActivity::class.java).apply {
+                putExtra(SelfVerificationActivity.EXTRA_DEBUG_MODE, config.debug)
+                putExtra(SelfVerificationActivity.EXTRA_VERIFICATION_REQUEST, serializeRequest(request))
+                putExtra(SelfVerificationActivity.EXTRA_CONFIG, serializeConfig(config))
+            }
 
         // Register for activity result if not already registered
         if (activityLauncher == null) {
-            activityLauncher = activity.registerForActivityResult(
-                ActivityResultContracts.StartActivityForResult()
-            ) { result ->
-                handleActivityResult(result.resultCode, result.data, callback)
-            }
+            activityLauncher =
+                activity.registerForActivityResult(
+                    ActivityResultContracts.StartActivityForResult(),
+                ) { result ->
+                    handleActivityResult(result.resultCode, result.data, callback)
+                }
         }
 
         // Launch the verification activity
@@ -85,7 +94,11 @@ actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
     /**
      * Handles the result from SelfVerificationActivity.
      */
-    private fun handleActivityResult(resultCode: Int, data: Intent?, callback: SelfSdkCallback) {
+    private fun handleActivityResult(
+        resultCode: Int,
+        data: Intent?,
+        callback: SelfSdkCallback,
+    ) {
         when (resultCode) {
             Activity.RESULT_OK -> {
                 // Success
@@ -98,16 +111,16 @@ actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
                         callback.onFailure(
                             SelfSdkError(
                                 code = "PARSE_ERROR",
-                                message = "Failed to parse verification result: ${e.message}"
-                            )
+                                message = "Failed to parse verification result: ${e.message}",
+                            ),
                         )
                     }
                 } else {
                     callback.onFailure(
                         SelfSdkError(
                             code = "MISSING_RESULT",
-                            message = "Verification completed but no result data was provided"
-                        )
+                            message = "Verification completed but no result data was provided",
+                        ),
                     )
                 }
             }
@@ -120,7 +133,7 @@ actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
                 val errorCode = data?.getStringExtra(SelfVerificationActivity.EXTRA_ERROR_CODE) ?: "UNKNOWN_ERROR"
                 val errorMessage = data?.getStringExtra(SelfVerificationActivity.EXTRA_ERROR_MESSAGE) ?: "An unknown error occurred"
                 callback.onFailure(
-                    SelfSdkError(code = errorCode, message = errorMessage)
+                    SelfSdkError(code = errorCode, message = errorMessage),
                 )
             }
             else -> {
@@ -128,8 +141,8 @@ actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
                 callback.onFailure(
                     SelfSdkError(
                         code = "UNEXPECTED_RESULT",
-                        message = "Unexpected result code: $resultCode"
-                    )
+                        message = "Unexpected result code: $resultCode",
+                    ),
                 )
             }
         }
@@ -138,23 +151,17 @@ actual class SelfSdk private constructor(private val config: SelfSdkConfig) {
     /**
      * Serializes VerificationRequest to JSON string for passing via Intent.
      */
-    private fun serializeRequest(request: VerificationRequest): String {
-        return Json.encodeToString(VerificationRequest.serializer(), request)
-    }
+    private fun serializeRequest(request: VerificationRequest): String = Json.encodeToString(VerificationRequest.serializer(), request)
 
     /**
      * Serializes SelfSdkConfig to JSON string for passing via Intent.
      */
-    private fun serializeConfig(config: SelfSdkConfig): String {
-        return Json.encodeToString(SelfSdkConfig.serializer(), config)
-    }
+    private fun serializeConfig(config: SelfSdkConfig): String = Json.encodeToString(SelfSdkConfig.serializer(), config)
 
     /**
      * Deserializes VerificationResult from JSON string.
      */
-    private fun deserializeResult(json: String): VerificationResult {
-        return Json.decodeFromString(VerificationResult.serializer(), json)
-    }
+    private fun deserializeResult(json: String): VerificationResult = Json.decodeFromString(VerificationResult.serializer(), json)
 }
 
 /**
@@ -165,7 +172,7 @@ fun SelfSdk.Companion.launch(
     activity: FragmentActivity,
     config: SelfSdkConfig,
     request: VerificationRequest,
-    callback: SelfSdkCallback
+    callback: SelfSdkCallback,
 ) {
     val sdk = configure(config)
     sdk.launch(activity, request, callback)

@@ -4,7 +4,11 @@ import kotlinx.serialization.json.JsonElement
 
 interface BridgeHandler {
     val domain: BridgeDomain
-    suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement?
+
+    suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement?
 }
 
 class BridgeHandlerException(

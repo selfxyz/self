@@ -16,7 +16,6 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import net.sf.scuba.smartcards.CardService
 import org.apache.commons.io.IOUtils
-import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.cms.SignedData
 import org.bouncycastle.asn1.icao.LDSSecurityObject
 import org.jmrtd.BACKey
@@ -34,32 +33,31 @@ import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
 import xyz.self.sdk.bridge.MessageRouter
-import xyz.self.sdk.bridge.generateUuid
 import xyz.self.sdk.models.NfcScanParams
 import xyz.self.sdk.models.NfcScanProgress
 import java.io.ByteArrayInputStream
 import java.security.interfaces.RSAPublicKey
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 class NfcBridgeHandler(
     private val activity: Activity,
     private val router: MessageRouter,
 ) : BridgeHandler {
-
     override val domain = BridgeDomain.NFC
 
     private val json = Json { ignoreUnknownKeys = true }
     private var pendingTagContinuation: (suspend (Tag) -> Unit)? = null
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        return when (method) {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
+        when (method) {
             "scan" -> scan(params)
             "cancelScan" -> cancelScan()
             "isSupported" -> isSupported()
             else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown NFC method: $method")
         }
-    }
 
     private fun isSupported(): JsonElement {
         val adapter = NfcAdapter.getDefaultAdapter(activity)
@@ -84,14 +82,18 @@ class NfcBridgeHandler(
 
         val tag = awaitNfcTag()
 
-        val isoDep = IsoDep.get(tag)
-            ?: throw BridgeHandlerException("NFC_NOT_ISO_DEP", "Tag is not an IsoDep tag")
+        val isoDep =
+            IsoDep.get(tag)
+                ?: throw BridgeHandlerException("NFC_NOT_ISO_DEP", "Tag is not an IsoDep tag")
         isoDep.timeout = 20_000
 
         try {
             return readPassport(isoDep, scanParams)
         } finally {
-            try { isoDep.close() } catch (_: Exception) {}
+            try {
+                isoDep.close()
+            } catch (_: Exception) {
+            }
             disableReaderMode()
         }
     }
@@ -100,8 +102,9 @@ class NfcBridgeHandler(
      * Suspend until an NFC tag is discovered via enableReaderMode.
      */
     suspend fun awaitNfcTag(): Tag {
-        val adapter = NfcAdapter.getDefaultAdapter(activity)
-            ?: throw BridgeHandlerException("NFC_NOT_SUPPORTED", "NFC is not available")
+        val adapter =
+            NfcAdapter.getDefaultAdapter(activity)
+                ?: throw BridgeHandlerException("NFC_NOT_SUPPORTED", "NFC is not available")
 
         if (!adapter.isEnabled) {
             throw BridgeHandlerException("NFC_NOT_ENABLED", "NFC is disabled")
@@ -124,7 +127,10 @@ class NfcBridgeHandler(
             )
 
             cont.invokeOnCancellation {
-                try { adapter.disableReaderMode(activity) } catch (_: Exception) {}
+                try {
+                    adapter.disableReaderMode(activity)
+                } catch (_: Exception) {
+                }
             }
         }
     }
@@ -132,21 +138,26 @@ class NfcBridgeHandler(
     private fun disableReaderMode() {
         try {
             NfcAdapter.getDefaultAdapter(activity)?.disableReaderMode(activity)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
-    private suspend fun readPassport(isoDep: IsoDep, scanParams: NfcScanParams): JsonElement {
+    private suspend fun readPassport(
+        isoDep: IsoDep,
+        scanParams: NfcScanParams,
+    ): JsonElement {
         pushProgress("connecting", 5, "Connecting to passport...")
 
-        val cardService = try {
-            CardService.getInstance(isoDep)
-        } catch (e: Exception) {
-            // Retry once after reconnect
-            isoDep.close()
-            delay(500)
-            isoDep.connect()
-            CardService.getInstance(isoDep)
-        }
+        val cardService =
+            try {
+                CardService.getInstance(isoDep)
+            } catch (e: Exception) {
+                // Retry once after reconnect
+                isoDep.close()
+                delay(500)
+                isoDep.connect()
+                CardService.getInstance(isoDep)
+            }
 
         try {
             cardService.open()
@@ -157,22 +168,24 @@ class NfcBridgeHandler(
             cardService.open()
         }
 
-        val service = PassportService(
-            cardService,
-            PassportService.NORMAL_MAX_TRANCEIVE_LENGTH * 2,
-            PassportService.DEFAULT_MAX_BLOCKSIZE * 2,
-            false,
-            false,
-        )
+        val service =
+            PassportService(
+                cardService,
+                PassportService.NORMAL_MAX_TRANCEIVE_LENGTH * 2,
+                PassportService.DEFAULT_MAX_BLOCKSIZE * 2,
+                false,
+                false,
+            )
         service.open()
 
         var paceSucceeded = false
         var bacSucceeded = false
-        val bacKey: BACKeySpec = BACKey(
-            scanParams.passportNumber,
-            scanParams.dateOfBirth,
-            scanParams.dateOfExpiry,
-        )
+        val bacKey: BACKeySpec =
+            BACKey(
+                scanParams.passportNumber,
+                scanParams.dateOfBirth,
+                scanParams.dateOfExpiry,
+            )
 
         // --- PACE authentication ---
         if (scanParams.skipPACE != true) {
@@ -224,17 +237,22 @@ class NfcBridgeHandler(
         return result
     }
 
-    private fun tryPace(service: PassportService, scanParams: NfcScanParams, bacKey: BACKeySpec): Boolean {
+    private fun tryPace(
+        service: PassportService,
+        scanParams: NfcScanParams,
+        bacKey: BACKeySpec,
+    ): Boolean {
         try {
             pushProgress("pace", 10, "Attempting PACE authentication...")
             val cardAccessFile = CardAccessFile(service.getInputStream(PassportService.EF_CARD_ACCESS))
             val securityInfos = cardAccessFile.securityInfos
 
-            val paceKey: PACEKeySpec = if (scanParams.useCan == true && !scanParams.canNumber.isNullOrEmpty()) {
-                PACEKeySpec.createCANKey(scanParams.canNumber)
-            } else {
-                PACEKeySpec.createMRZKey(bacKey)
-            }
+            val paceKey: PACEKeySpec =
+                if (scanParams.useCan == true && !scanParams.canNumber.isNullOrEmpty()) {
+                    PACEKeySpec.createCANKey(scanParams.canNumber)
+                } else {
+                    PACEKeySpec.createMRZKey(bacKey)
+                }
 
             for (securityInfo: SecurityInfo in securityInfos) {
                 if (securityInfo is PACEInfo) {
@@ -259,12 +277,16 @@ class NfcBridgeHandler(
         return false
     }
 
-    private suspend fun tryBac(service: PassportService, bacKey: BACKeySpec): Boolean {
+    private suspend fun tryBac(
+        service: PassportService,
+        bacKey: BACKeySpec,
+    ): Boolean {
         pushProgress("bac", 15, "Attempting BAC authentication...")
 
         try {
             service.sendSelectApplet(false)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
 
         var attempts = 0
         val maxAttempts = 3
@@ -275,12 +297,13 @@ class NfcBridgeHandler(
                 if (attempts > 1) delay(500)
 
                 // Check if passport requires BAC by trying to read EF_COM
-                val bacRequired = try {
-                    service.getInputStream(PassportService.EF_COM).read()
-                    false // EF_COM readable without BAC
-                } catch (_: Exception) {
-                    true // EF_COM not readable, BAC required
-                }
+                val bacRequired =
+                    try {
+                        service.getInputStream(PassportService.EF_COM).read()
+                        false // EF_COM readable without BAC
+                    } catch (_: Exception) {
+                        true // EF_COM not readable, BAC required
+                    }
 
                 if (bacRequired) {
                     service.doBAC(bacKey)
@@ -338,26 +361,28 @@ class NfcBridgeHandler(
         val pemCert = "-----BEGIN CERTIFICATE-----\n${Base64.encodeToString(certificate.encoded, Base64.DEFAULT)}-----END CERTIFICATE-----"
 
         val publicKey = certificate.publicKey
-        val publicKeyInfo = if (publicKey is RSAPublicKey) {
-            buildJsonObject { put("modulus", publicKey.modulus.toString()) }
-        } else if (publicKey is org.bouncycastle.jce.interfaces.ECPublicKey) {
-            buildJsonObject { put("publicKeyQ", publicKey.q.toString()) }
-        } else {
-            buildJsonObject {}
-        }
+        val publicKeyInfo =
+            if (publicKey is RSAPublicKey) {
+                buildJsonObject { put("modulus", publicKey.modulus.toString()) }
+            } else if (publicKey is org.bouncycastle.jce.interfaces.ECPublicKey) {
+                buildJsonObject { put("publicKeyQ", publicKey.q.toString()) }
+            } else {
+                buildJsonObject {}
+            }
 
         // Extract LDS security object for encapContent
-        val ldsso = try {
-            val signedDataField = SODFile::class.java.getDeclaredField("signedData")
-            signedDataField.isAccessible = true
-            val signedData = signedDataField.get(sodFile) as SignedData
-            val getLDS = SODFile::class.java.getDeclaredMethod("getLDSSecurityObject", SignedData::class.java)
-            getLDS.isAccessible = true
-            getLDS.invoke(sodFile, signedData) as LDSSecurityObject
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to extract LDS security object via reflection", e)
-            null
-        }
+        val ldsso =
+            try {
+                val signedDataField = SODFile::class.java.getDeclaredField("signedData")
+                signedDataField.isAccessible = true
+                val signedData = signedDataField.get(sodFile) as SignedData
+                val getLDS = SODFile::class.java.getDeclaredMethod("getLDSSecurityObject", SignedData::class.java)
+                getLDS.isAccessible = true
+                getLDS.invoke(sodFile, signedData) as LDSSecurityObject
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to extract LDS security object via reflection", e)
+                null
+            }
 
         return buildJsonObject {
             put("mrz", mrzInfo.toString())
@@ -385,11 +410,12 @@ class NfcBridgeHandler(
             }
 
             // Data group hashes as hex strings
-            val hashesObj = buildJsonObject {
-                for ((dgNum, hash) in sodFile.dataGroupHashes) {
-                    put(dgNum.toString(), hash.joinToString("") { "%02x".format(it) })
+            val hashesObj =
+                buildJsonObject {
+                    for ((dgNum, hash) in sodFile.dataGroupHashes) {
+                        put(dgNum.toString(), hash.joinToString("") { "%02x".format(it) })
+                    }
                 }
-            }
             put("dataGroupHashes", hashesObj)
 
             // Public key info
@@ -402,7 +428,11 @@ class NfcBridgeHandler(
         }
     }
 
-    private fun pushProgress(step: String, percent: Int, message: String) {
+    private fun pushProgress(
+        step: String,
+        percent: Int,
+        message: String,
+    ) {
         val progress = NfcScanProgress(step, percent, message)
         val progressJson = json.encodeToString(NfcScanProgress.serializer(), progress)
         val progressElement = json.parseToJsonElement(progressJson)

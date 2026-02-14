@@ -24,36 +24,40 @@ import xyz.self.sdk.bridge.MessageRouter
  */
 @OptIn(ExperimentalForeignApi::class)
 class NfcBridgeHandler(
-    private val router: MessageRouter
+    private val router: MessageRouter,
 ) : BridgeHandler {
-
     override val domain = BridgeDomain.NFC
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        return when (method) {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? =
+        when (method) {
             "scan" -> scan(params)
             "cancelScan" -> cancelScan()
             "isSupported" -> isSupported()
             else -> throw BridgeHandlerException(
                 "METHOD_NOT_FOUND",
-                "Unknown NFC method: $method"
+                "Unknown NFC method: $method",
             )
         }
-    }
 
     /**
      * Scans an NFC-enabled passport.
      * TODO: Implement using CoreNFC + ICAO 9303 protocol or NFCPassportReader library.
      */
     private suspend fun scan(params: Map<String, JsonElement>): JsonElement {
-        val passportNumber = params["passportNumber"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_PASSPORT_NUMBER", "Passport number required")
+        val passportNumber =
+            params["passportNumber"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_PASSPORT_NUMBER", "Passport number required")
 
-        val dateOfBirth = params["dateOfBirth"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_DOB", "Date of birth required")
+        val dateOfBirth =
+            params["dateOfBirth"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_DOB", "Date of birth required")
 
-        val dateOfExpiry = params["dateOfExpiry"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_EXPIRY", "Date of expiry required")
+        val dateOfExpiry =
+            params["dateOfExpiry"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_EXPIRY", "Date of expiry required")
 
         // TODO: Full implementation requires:
         // 1. Check NFC availability (NFCReaderSession.readingAvailable)
@@ -71,8 +75,8 @@ class NfcBridgeHandler(
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
             "iOS NFC passport scanning not yet fully implemented. " +
-            "Requires CoreNFC + NFCPassportReader library integration or " +
-            "full ICAO 9303 protocol implementation. See app/ios/PassportReader.swift for reference."
+                "Requires CoreNFC + NFCPassportReader library integration or " +
+                "full ICAO 9303 protocol implementation. See app/ios/PassportReader.swift for reference.",
         )
     }
 

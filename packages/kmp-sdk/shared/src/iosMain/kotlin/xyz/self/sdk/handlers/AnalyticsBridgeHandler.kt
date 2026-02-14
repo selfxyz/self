@@ -11,10 +11,12 @@ import xyz.self.sdk.bridge.BridgeHandler
  * Full implementation would use NSLog or os_log via cinterop.
  */
 class AnalyticsBridgeHandler : BridgeHandler {
-
     override val domain = BridgeDomain.ANALYTICS
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
+    override suspend fun handle(
+        method: String,
+        params: Map<String, JsonElement>,
+    ): JsonElement? {
         // Fire-and-forget - silently accept analytics events
         return null
     }

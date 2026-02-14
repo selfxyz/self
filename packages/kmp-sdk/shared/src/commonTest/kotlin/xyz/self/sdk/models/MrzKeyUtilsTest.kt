@@ -4,7 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MrzKeyUtilsTest {
-
     @Test
     fun calcCheckSum_digits_only() {
         // "520727" → 5*7 + 2*3 + 0*1 + 7*7 + 2*3 + 7*1 = 35+6+0+49+6+7 = 103 → 3
