@@ -1,0 +1,14 @@
+[*.{kt,kts}]
+# Kotlin style
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+max_line_length = 140
+
+# Ktlint rules
+ktlint_standard_no-wildcard-imports = disabled
+ktlint_function-naming = disabled
+ktlint_standard_function-naming = disabled
+
+# Allow Composable function names to start with uppercase
+ktlint_compose = true

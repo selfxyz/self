@@ -92,6 +92,71 @@ class CameraMrzBridgeHandler(
         }
     }
 
+    /**
+     * Opens the camera with a preview, runs ML Kit text recognition on each frame,
+     * and returns as soon as an MRZ block is detected.
+     *
+     * This variant displays the camera feed in the provided PreviewView.
+     *
+     * @param previewView The PreviewView to display the camera feed
+     * @return JsonElement containing the parsed MRZ data
+     */
+    suspend fun scanMrzWithPreview(previewView: PreviewView): JsonElement {
+        return suspendCancellableCoroutine { cont ->
+            val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
+            cameraProviderFuture.addListener({
+                try {
+                    val cameraProvider = cameraProviderFuture.get()
+                    val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+                    // Create the preview use case and connect it to the PreviewView
+                    val preview = Preview.Builder().build().also {
+                        it.setSurfaceProvider(previewView.surfaceProvider)
+                    }
+
+                    // Create the image analysis use case for MRZ detection
+                    val imageAnalysis = ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build()
+
+                    imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(activity)) { imageProxy ->
+                        processFrame(imageProxy, recognizer) { mrzResult ->
+                            if (mrzResult != null && cont.isActive) {
+                                cameraProvider.unbindAll()
+                                recognizer.close()
+                                cont.resume(mrzResult)
+                            }
+                        }
+                    }
+
+                    val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+                    // Unbind all use cases before rebinding
+                    cameraProvider.unbindAll()
+
+                    // Bind both preview and analysis to the lifecycle
+                    cameraProvider.bindToLifecycle(
+                        activity as LifecycleOwner,
+                        cameraSelector,
+                        preview,        // Add preview to show camera feed
+                        imageAnalysis,
+                    )
+
+                    cont.invokeOnCancellation {
+                        cameraProvider.unbindAll()
+                        recognizer.close()
+                    }
+                } catch (e: Exception) {
+                    if (cont.isActive) {
+                        cont.resumeWithException(
+                            BridgeHandlerException("CAMERA_INIT_FAILED", "Failed to start camera: ${e.message}")
+                        )
+                    }
+                }
+            }, ContextCompat.getMainExecutor(activity))
+        }
+    }
+
     @androidx.camera.core.ExperimentalGetImage
     private fun processFrame(
         imageProxy: ImageProxy,

@@ -18,7 +18,7 @@ kotlin {
     listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
@@ -36,23 +36,36 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.kotlinx.serialization.json)
+            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
             implementation("xyz.self.sdk:shared")
         }
 
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
+            implementation("androidx.security:security-crypto:1.1.0-alpha06")
+            implementation("androidx.camera:camera-view:1.4.1")
+            implementation("androidx.compose.material:material-icons-extended:1.7.6")
         }
     }
 }
 
 android {
     namespace = "xyz.self.testapp"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
         applicationId = "xyz.self.testapp"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.android.targetSdk
+                .get()
+                .toInt()
         versionCode = 1
         versionName = "1.0.0"
     }
