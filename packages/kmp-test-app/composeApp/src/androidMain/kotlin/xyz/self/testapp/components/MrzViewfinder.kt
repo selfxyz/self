@@ -61,12 +61,8 @@ fun MrzViewfinder(
                 bottom = frameTop + frameHeight,
             )
 
-        // Draw semi-transparent overlay with cutout for scanning area
-        drawOverlayWithCutout(
-            scanningRect = scanningRect,
-            overlayColor = overlayColor,
-            cornerRadius = cornerRadius,
-        )
+        // Note: Dark overlay removed for better visibility
+        // Users can see the camera feed clearly with just the frame guide
 
         // Draw frame border
         drawFrameBorder(
