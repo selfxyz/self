@@ -23,6 +23,14 @@ sealed class VerificationFlowState {
     ) : VerificationFlowState()
 
     /**
+     * MRZ confirmation state - showing scanned data before proceeding
+     */
+    data class MrzConfirmation(
+        val passportData: PassportData,
+        val rawMrzData: JsonElement? = null,
+    ) : VerificationFlowState()
+
+    /**
      * NFC scanning state
      */
     data class NfcScan(

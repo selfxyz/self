@@ -2,6 +2,7 @@ package xyz.self.testapp.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -23,12 +24,15 @@ import xyz.self.testapp.models.PassportData
 import xyz.self.testapp.models.VerificationFlowState
 import xyz.self.testapp.viewmodels.VerificationViewModel
 
+private const val TAG = "MrzScanScreen"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MrzScanScreen(
     navController: NavController,
     viewModel: VerificationViewModel,
 ) {
+    Log.d(TAG, "MrzScanScreen composing...")
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -109,12 +113,16 @@ fun MrzScanScreen(
                     // Camera preview with MRZ scanning
                     CameraPreviewComposable(
                         onMrzDetected = { mrzResult ->
-                            // Parse MRZ result and update passport data
+                            Log.d(TAG, "onMrzDetected callback triggered!")
+                            Log.d(TAG, "MRZ Result: $mrzResult")
+                            // Parse MRZ result and show confirmation screen
                             try {
                                 val mrzObj = mrzResult.jsonObject
                                 val passportNumber = mrzObj["documentNumber"]?.jsonPrimitive?.content ?: ""
                                 val dateOfBirth = mrzObj["dateOfBirth"]?.jsonPrimitive?.content ?: ""
                                 val dateOfExpiry = mrzObj["dateOfExpiry"]?.jsonPrimitive?.content ?: ""
+
+                                Log.d(TAG, "Parsed - Passport: $passportNumber, DOB: $dateOfBirth, Expiry: $dateOfExpiry")
 
                                 val updatedPassportData =
                                     PassportData(
@@ -123,15 +131,22 @@ fun MrzScanScreen(
                                         dateOfExpiry = dateOfExpiry,
                                     )
 
-                                viewModel.updateFromMrz(updatedPassportData)
-                                navController.navigate("nfc_scan") {
+                                // Show confirmation screen with scanned data
+                                viewModel.showMrzConfirmation(
+                                    passportData = updatedPassportData,
+                                    rawMrzData = mrzResult,
+                                )
+                                Log.d(TAG, "Navigating to mrz_confirmation...")
+                                navController.navigate("mrz_confirmation") {
                                     popUpTo("mrz_scan") { inclusive = true }
                                 }
                             } catch (e: Exception) {
+                                Log.e(TAG, "Failed to parse MRZ", e)
                                 viewModel.setError("Failed to parse MRZ: ${e.message}")
                             }
                         },
                         onError = { error ->
+                            Log.e(TAG, "onError callback triggered: $error")
                             viewModel.setError(error)
                         },
                         modifier = Modifier.fillMaxSize(),

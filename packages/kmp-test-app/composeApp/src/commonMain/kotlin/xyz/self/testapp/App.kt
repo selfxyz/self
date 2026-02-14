@@ -28,6 +28,10 @@ fun App() {
                 MrzScanScreen(navController, viewModel)
             }
 
+            composable("mrz_confirmation") {
+                MrzConfirmationScreen(navController, viewModel)
+            }
+
             composable("nfc_scan") {
                 NfcScanScreen(navController, viewModel)
             }
@@ -44,6 +48,15 @@ fun App() {
  */
 @Composable
 expect fun MrzScanScreen(
+    navController: androidx.navigation.NavController,
+    viewModel: VerificationViewModel,
+)
+
+/**
+ * Platform-specific MRZ confirmation screen
+ */
+@Composable
+expect fun MrzConfirmationScreen(
     navController: androidx.navigation.NavController,
     viewModel: VerificationViewModel,
 )

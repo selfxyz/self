@@ -20,6 +20,18 @@ actual fun MrzScanScreen(
  * Android implementation: Forward to the actual screen implementation
  */
 @Composable
+actual fun MrzConfirmationScreen(
+    navController: NavController,
+    viewModel: VerificationViewModel,
+) {
+    xyz.self.testapp.screens
+        .MrzConfirmationScreen(navController, viewModel)
+}
+
+/**
+ * Android implementation: Forward to the actual screen implementation
+ */
+@Composable
 actual fun NfcScanScreen(
     navController: NavController,
     viewModel: VerificationViewModel,

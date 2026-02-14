@@ -57,8 +57,39 @@ class VerificationViewModel : ViewModel() {
     }
 
     /**
-     * Updates passport data from MRZ scan and transitions to NFC scan
+     * Shows MRZ confirmation screen with scanned data
      */
+    fun showMrzConfirmation(
+        passportData: PassportData,
+        rawMrzData: JsonElement? = null,
+    ) {
+        addLog("MRZ scan completed - awaiting confirmation")
+        addLog("Passport Number: ${passportData.passportNumber}")
+        addLog("Date of Birth: ${passportData.dateOfBirth}")
+        addLog("Date of Expiry: ${passportData.dateOfExpiry}")
+        _state.value =
+            VerificationFlowState.MrzConfirmation(
+                passportData = passportData,
+                rawMrzData = rawMrzData,
+            )
+    }
+
+    /**
+     * Confirms MRZ data and transitions to NFC scan
+     */
+    fun confirmMrzData() {
+        val currentState = _state.value
+        if (currentState is VerificationFlowState.MrzConfirmation) {
+            addLog("MRZ data confirmed by user")
+            _state.value = VerificationFlowState.NfcScan(currentState.passportData)
+        }
+    }
+
+    /**
+     * Updates passport data from MRZ scan and transitions to NFC scan
+     * (kept for backward compatibility, now deprecated in favor of showMrzConfirmation)
+     */
+    @Deprecated("Use showMrzConfirmation instead to show confirmation screen")
     fun updateFromMrz(passportData: PassportData) {
         addLog("MRZ scan completed successfully")
         addLog("Passport Number: ${passportData.passportNumber}")
