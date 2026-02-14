@@ -19,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import xyz.self.sdk.handlers.MrzDetectionState
 import xyz.self.testapp.components.CameraPreviewComposable
 import xyz.self.testapp.models.PassportData
 import xyz.self.testapp.models.VerificationFlowState
@@ -33,6 +34,7 @@ fun MrzScanScreen(
     viewModel: VerificationViewModel,
 ) {
     Log.d(TAG, "MrzScanScreen composing...")
+    var detectionState by remember { mutableStateOf<MrzDetectionState?>(null) }
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -149,6 +151,10 @@ fun MrzScanScreen(
                             Log.e(TAG, "onError callback triggered: $error")
                             viewModel.setError(error)
                         },
+                        onProgress = { state ->
+                            detectionState = state
+                        },
+                        detectionState = detectionState,
                         modifier = Modifier.fillMaxSize(),
                     )
 
@@ -160,7 +166,7 @@ fun MrzScanScreen(
                                 .padding(16.dp),
                         verticalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        // Top instruction
+                        // Top instruction - updates based on detection state
                         Card(
                             colors =
                                 CardDefaults.cardColors(
@@ -168,9 +174,7 @@ fun MrzScanScreen(
                                 ),
                         ) {
                             Text(
-                                text =
-                                    "Position the MRZ (Machine Readable Zone) within the frame.\n" +
-                                        "The MRZ is the two-line code at the bottom of your passport.",
+                                text = getInstructionText(detectionState),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(16.dp),
                             )
@@ -198,3 +202,25 @@ fun MrzScanScreen(
         }
     }
 }
+
+/**
+ * Returns instruction text based on the current detection state
+ */
+private fun getInstructionText(state: MrzDetectionState?): String =
+    when (state) {
+        null, MrzDetectionState.NO_TEXT ->
+            "Position the MRZ (Machine Readable Zone) within the frame.\n" +
+                "The MRZ is the two-line code at the bottom of your passport."
+
+        MrzDetectionState.TEXT_DETECTED ->
+            "Text detected! Move closer to the MRZ code.\n" +
+                "Make sure the two-line code is clearly visible."
+
+        MrzDetectionState.ONE_MRZ_LINE ->
+            "One line detected! Almost there...\n" +
+                "Hold steady and ensure both MRZ lines are in frame."
+
+        MrzDetectionState.TWO_MRZ_LINES ->
+            "Both lines detected! Reading passport data...\n" +
+                "Keep the passport steady."
+    }

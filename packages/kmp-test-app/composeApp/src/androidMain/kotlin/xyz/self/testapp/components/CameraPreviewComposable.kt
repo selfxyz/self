@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.serialization.json.JsonElement
 import xyz.self.sdk.handlers.CameraMrzBridgeHandler
+import xyz.self.sdk.handlers.MrzDetectionState
 
 private const val TAG = "CameraPreview"
 
@@ -19,6 +20,8 @@ private const val TAG = "CameraPreview"
  *
  * @param onMrzDetected Callback invoked when MRZ is successfully detected
  * @param onError Callback invoked when an error occurs
+ * @param onProgress Callback invoked with detection progress updates
+ * @param detectionState Current detection state to display in viewfinder
  * @param showViewfinder Whether to show the MRZ viewfinder overlay (default: true)
  */
 @Composable
@@ -26,6 +29,8 @@ fun CameraPreviewComposable(
     onMrzDetected: (JsonElement) -> Unit,
     onError: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onProgress: ((MrzDetectionState) -> Unit)? = null,
+    detectionState: MrzDetectionState? = null,
     showViewfinder: Boolean = true,
 ) {
     val context = LocalContext.current
@@ -40,7 +45,14 @@ fun CameraPreviewComposable(
                 Log.d(TAG, "Creating CameraMrzBridgeHandler...")
                 val handler = CameraMrzBridgeHandler(activity)
                 Log.d(TAG, "Starting MRZ scan with preview...")
-                val result = handler.scanMrzWithPreview(previewView!!)
+                val result =
+                    handler.scanMrzWithPreview(
+                        previewView = previewView!!,
+                        onProgress = { state ->
+                            Log.d(TAG, "Detection state: $state")
+                            onProgress?.invoke(state)
+                        },
+                    )
                 Log.d(TAG, "MRZ detected! Result: $result")
                 onMrzDetected(result)
             } catch (e: Exception) {
@@ -65,7 +77,7 @@ fun CameraPreviewComposable(
 
         // Overlay MRZ viewfinder to guide users
         if (showViewfinder) {
-            MrzViewfinder()
+            MrzViewfinder(detectionState = detectionState)
         }
     }
 }

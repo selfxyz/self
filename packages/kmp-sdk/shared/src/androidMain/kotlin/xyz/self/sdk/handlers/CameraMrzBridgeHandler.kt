@@ -24,6 +24,23 @@ import xyz.self.sdk.bridge.BridgeHandlerException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+/**
+ * Represents the current state of MRZ detection
+ */
+enum class MrzDetectionState {
+    /** No text detected in frame */
+    NO_TEXT,
+
+    /** Text detected but no MRZ pattern found */
+    TEXT_DETECTED,
+
+    /** One MRZ line found (need 2 for passport) */
+    ONE_MRZ_LINE,
+
+    /** Two MRZ lines found - about to complete */
+    TWO_MRZ_LINES,
+}
+
 class CameraMrzBridgeHandler(
     private val activity: Activity,
 ) : BridgeHandler {
@@ -60,7 +77,7 @@ class CameraMrzBridgeHandler(
                             .build()
 
                     imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(activity)) { imageProxy ->
-                        processFrame(imageProxy, recognizer) { mrzResult ->
+                        processFrame(imageProxy, recognizer, null) { mrzResult ->
                             if (mrzResult != null && cont.isActive) {
                                 cameraProvider.unbindAll()
                                 recognizer.close()
@@ -99,9 +116,13 @@ class CameraMrzBridgeHandler(
      * This variant displays the camera feed in the provided PreviewView.
      *
      * @param previewView The PreviewView to display the camera feed
+     * @param onProgress Optional callback that receives detection progress updates
      * @return JsonElement containing the parsed MRZ data
      */
-    suspend fun scanMrzWithPreview(previewView: PreviewView): JsonElement =
+    suspend fun scanMrzWithPreview(
+        previewView: PreviewView,
+        onProgress: ((MrzDetectionState) -> Unit)? = null,
+    ): JsonElement =
         suspendCancellableCoroutine { cont ->
             val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
             cameraProviderFuture.addListener({
@@ -123,7 +144,7 @@ class CameraMrzBridgeHandler(
                             .build()
 
                     imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(activity)) { imageProxy ->
-                        processFrame(imageProxy, recognizer) { mrzResult ->
+                        processFrame(imageProxy, recognizer, onProgress) { mrzResult ->
                             if (mrzResult != null && cont.isActive) {
                                 cameraProvider.unbindAll()
                                 recognizer.close()
@@ -163,11 +184,13 @@ class CameraMrzBridgeHandler(
     private fun processFrame(
         imageProxy: ImageProxy,
         recognizer: com.google.mlkit.vision.text.TextRecognizer,
+        onProgress: ((MrzDetectionState) -> Unit)?,
         onMrzFound: (JsonElement?) -> Unit,
     ) {
         val mediaImage = imageProxy.image
         if (mediaImage == null) {
             imageProxy.close()
+            onProgress?.invoke(MrzDetectionState.NO_TEXT)
             onMrzFound(null)
             return
         }
@@ -178,6 +201,35 @@ class CameraMrzBridgeHandler(
             .process(inputImage)
             .addOnSuccessListener { visionText ->
                 val fullText = visionText.text
+
+                // Report progress based on what we detect
+                if (fullText.isBlank()) {
+                    onProgress?.invoke(MrzDetectionState.NO_TEXT)
+                } else {
+                    // Check for MRZ patterns
+                    val cleanedLines =
+                        fullText
+                            .lines()
+                            .map { it.trim().replace(" ", "").uppercase() }
+                            .filter { it.isNotEmpty() }
+
+                    val td3Lines = cleanedLines.filter { MRZ_TD3_LINE.matches(it) }
+                    val td1Lines = cleanedLines.filter { MRZ_TD1_LINE.matches(it) }
+
+                    when {
+                        td3Lines.size >= 2 || td1Lines.size >= 3 -> {
+                            onProgress?.invoke(MrzDetectionState.TWO_MRZ_LINES)
+                        }
+                        td3Lines.size == 1 || td1Lines.size in 1..2 -> {
+                            onProgress?.invoke(MrzDetectionState.ONE_MRZ_LINE)
+                        }
+                        else -> {
+                            onProgress?.invoke(MrzDetectionState.TEXT_DETECTED)
+                        }
+                    }
+                }
+
+                // Try to extract and parse MRZ
                 val mrzLines = extractMrzLines(fullText)
                 if (mrzLines != null) {
                     val parsed = parseMrz(mrzLines)
@@ -187,6 +239,7 @@ class CameraMrzBridgeHandler(
                 }
             }.addOnFailureListener {
                 Log.w(TAG, "Text recognition failed", it)
+                onProgress?.invoke(MrzDetectionState.NO_TEXT)
                 onMrzFound(null)
             }.addOnCompleteListener {
                 imageProxy.close()

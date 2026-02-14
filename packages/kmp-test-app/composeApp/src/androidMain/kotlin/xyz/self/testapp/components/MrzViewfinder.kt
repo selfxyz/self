@@ -1,8 +1,9 @@
 package xyz.self.testapp.components
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -14,22 +15,19 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import xyz.self.sdk.handlers.MrzDetectionState
 
 /**
- * Composable that displays an MRZ scanning viewfinder overlay
+ * Composable that displays an MRZ scanning viewfinder overlay with dynamic color feedback
  *
- * This component draws a semi-transparent overlay with a clear rectangular
- * scanning area to guide users when positioning their passport for MRZ scanning.
- *
- * Design specifications:
- * - Frame width: 85% of screen width
- * - Frame height: 25% of screen height
- * - Vertically centered
- * - Corner brackets for enhanced visual guidance
+ * This component draws a rectangular scanning frame that changes color based on detection state:
+ * - Red: No text detected - position passport in frame
+ * - Yellow: Text detected but no MRZ - move closer
+ * - Orange: One MRZ line detected - almost there
+ * - Green (pulsing): Both MRZ lines detected - reading
  *
  * @param modifier Modifier for this composable
- * @param frameColor Color of the frame border and corner brackets (default: Green)
- * @param overlayColor Color of the semi-transparent overlay outside the scanning area (default: Black with 60% opacity)
+ * @param detectionState Current MRZ detection state (affects frame color)
  * @param frameWidthRatio Width of the scanning frame as a ratio of screen width (default: 0.85)
  * @param frameHeightRatio Height of the scanning frame as a ratio of screen height (default: 0.25)
  * @param cornerRadius Corner radius for rounded frame edges (default: 12dp)
@@ -37,12 +35,39 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun MrzViewfinder(
     modifier: Modifier = Modifier,
-    frameColor: Color = Color(0xFF4CAF50), // Material Green 500
-    overlayColor: Color = Color.Black.copy(alpha = 0.6f),
+    detectionState: MrzDetectionState? = null,
     frameWidthRatio: Float = 0.85f,
     frameHeightRatio: Float = 0.25f,
     cornerRadius: Float = 12f,
 ) {
+    // Determine frame color based on detection state
+    val targetColor =
+        when (detectionState) {
+            null, MrzDetectionState.NO_TEXT -> Color(0xFFEF5350) // Red 400
+            MrzDetectionState.TEXT_DETECTED -> Color(0xFFFFA726) // Orange 400
+            MrzDetectionState.ONE_MRZ_LINE -> Color(0xFFFFEE58) // Yellow 400
+            MrzDetectionState.TWO_MRZ_LINES -> Color(0xFF66BB6A) // Green 400
+        }
+
+    // Add pulsing animation when TWO_MRZ_LINES detected
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.3f,
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(800, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse,
+            ),
+        label = "pulseAlpha",
+    )
+
+    val frameColor =
+        if (detectionState == MrzDetectionState.TWO_MRZ_LINES) {
+            targetColor.copy(alpha = pulseAlpha)
+        } else {
+            targetColor
+        }
     Canvas(modifier = modifier.fillMaxSize()) {
         val canvasWidth = size.width
         val canvasHeight = size.height
