@@ -1,7 +1,7 @@
 package xyz.self.testapp
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -14,7 +14,7 @@ import xyz.self.testapp.viewmodels.VerificationViewModel
 fun App() {
     SelfTestTheme {
         val navController = rememberNavController()
-        val viewModel: VerificationViewModel = viewModel()
+        val viewModel = remember { VerificationViewModel() }
 
         NavHost(
             navController = navController,

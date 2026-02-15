@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.JsonElement
 import xyz.self.testapp.models.PassportData
 import xyz.self.testapp.models.VerificationFlowState
+import xyz.self.testapp.utils.Logger
 
 /**
  * ViewModel managing the verification flow state
@@ -126,6 +127,7 @@ class VerificationViewModel : ViewModel() {
      */
     fun setNfcResult(jsonResult: JsonElement?) {
         if (jsonResult != null) {
+            Logger.i("ViewModel", "NFC scan completed successfully")
             addLog("NFC scan completed successfully")
             _state.value =
                 VerificationFlowState.Result(
@@ -134,6 +136,7 @@ class VerificationViewModel : ViewModel() {
                     logs = _logs.value,
                 )
         } else {
+            Logger.w("ViewModel", "NFC scan failed: No result")
             addLog("NFC scan failed: No result")
             _state.value =
                 VerificationFlowState.Result(
@@ -148,6 +151,7 @@ class VerificationViewModel : ViewModel() {
      * Sets an error state
      */
     fun setError(message: String) {
+        Logger.e("ViewModel", "Error occurred: $message")
         addLog("Error: $message")
         _state.value =
             VerificationFlowState.Error(

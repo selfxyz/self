@@ -14,8 +14,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonElement
-import platform.Foundation.NSLog
 import xyz.self.sdk.models.NfcScanState
+import xyz.self.testapp.utils.Logger
 import xyz.self.testapp.components.NfcProgressIndicator
 import xyz.self.testapp.models.VerificationFlowState
 import xyz.self.testapp.viewmodels.VerificationViewModel
@@ -23,7 +23,7 @@ import kotlin.coroutines.resumeWithException
 
 // Import the Swift NfcPassportHelper via Objective-C interop
 // The Swift class is exposed with @objc and can be called from Kotlin
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun NfcScanScreen(
     navController: NavController,
@@ -244,8 +244,8 @@ private suspend fun scanPassportWithNfc(
 ): JsonElement =
     suspendCancellableCoroutine { cont ->
 
-        NSLog("iOS NFC scan starting...")
-        NSLog("Passport: $passportNumber, DOB: $dateOfBirth, Expiry: $dateOfExpiry")
+        Logger.i("NfcScan", "iOS NFC scan starting...")
+        Logger.d("NfcScan", "Passport: $passportNumber, DOB: $dateOfBirth, Expiry: $dateOfExpiry")
 
         // TODO: Call Swift NfcPassportHelper here
         // For now, throw an error indicating it needs to be implemented
