@@ -217,8 +217,8 @@ private fun formatDate(dateString: String?): String {
     val month = dateString.substring(2, 4)
     val day = dateString.substring(4, 6)
 
-    // Assume 20xx for years 00-50, 19xx for years 51-99
-    val fullYear = if (year.toInt() <= 50) "20$year" else "19$year"
+    val yearInt = year.toIntOrNull() ?: return dateString
+    val fullYear = if (yearInt <= 50) "20$year" else "19$year"
 
     return "$day/$month/$fullYear"
 }

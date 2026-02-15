@@ -136,6 +136,13 @@ fun MrzScanScreen(
                                         dateOfExpiry = dateOfExpiry,
                                     )
 
+                                if (!updatedPassportData.isValid()) {
+                                    viewModel.setError(
+                                        "Could not read MRZ clearly. Please try again with better lighting.",
+                                    )
+                                    return@CameraPreviewComposable
+                                }
+
                                 hasNavigated = true
                                 viewModel.showMrzConfirmation(
                                     passportData = updatedPassportData,

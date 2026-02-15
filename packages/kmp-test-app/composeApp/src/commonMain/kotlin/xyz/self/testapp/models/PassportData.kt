@@ -19,7 +19,9 @@ data class PassportData(
             dateOfBirth.isNotBlank() &&
             dateOfExpiry.isNotBlank() &&
             dateOfBirth.length == 6 &&
-            dateOfExpiry.length == 6
+            dateOfExpiry.length == 6 &&
+            dateOfBirth.all { it.isDigit() } &&
+            dateOfExpiry.all { it.isDigit() }
 
     /**
      * Checks if any data has been entered
