@@ -356,7 +356,7 @@ class NfcBridgeHandler(
                 if (securityInfo is ChipAuthenticationPublicKeyInfo) {
                     service.doEACCA(
                         securityInfo.keyId,
-                        ChipAuthenticationPublicKeyInfo.ID_CA_ECDH_AES_CBC_CMAC_256,
+                        securityInfo.objectIdentifier,
                         securityInfo.objectIdentifier,
                         securityInfo.subjectPublicKey,
                     )

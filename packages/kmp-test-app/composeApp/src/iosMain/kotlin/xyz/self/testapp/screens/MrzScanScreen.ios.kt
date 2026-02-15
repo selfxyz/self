@@ -54,6 +54,7 @@ fun MrzScanScreen(
     var hasCameraPermission by remember { mutableStateOf(checkCameraPermission()) }
     var isRequestingPermission by remember { mutableStateOf(false) }
     var showCameraError by remember { mutableStateOf(false) }
+    var hasNavigated by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (!hasCameraPermission && !isRequestingPermission) {
@@ -221,6 +222,7 @@ fun MrzScanScreen(
                                     onMrzDetected = { mrzResult ->
                                         scope.launch {
                                             try {
+                                                if (hasNavigated) return@launch
                                                 val mrzObj = mrzResult.jsonObject
                                                 val passportNumber = mrzObj["documentNumber"]?.jsonPrimitive?.content ?: ""
                                                 val dateOfBirth = mrzObj["dateOfBirth"]?.jsonPrimitive?.content ?: ""
@@ -234,6 +236,8 @@ fun MrzScanScreen(
                                                     )
 
                                                 withContext(Dispatchers.Main) {
+                                                    if (hasNavigated) return@withContext
+                                                    hasNavigated = true
                                                     viewModel.showMrzConfirmation(
                                                         passportData = updatedPassportData,
                                                         rawMrzData = mrzResult,
@@ -398,14 +402,7 @@ private fun createCameraPreview(
                             else -> 0
                         }
 
-                    val state =
-                        when (stateIndex) {
-                            0 -> MrzDetectionState.NO_TEXT
-                            1 -> MrzDetectionState.TEXT_DETECTED
-                            2 -> MrzDetectionState.ONE_MRZ_LINE
-                            3 -> MrzDetectionState.TWO_MRZ_LINES
-                            else -> MrzDetectionState.NO_TEXT
-                        }
+                    val state = MrzDetectionState.entries.getOrNull(stateIndex) ?: MrzDetectionState.NO_TEXT
 
                     onProgress(state)
                 } catch (e: Exception) {

@@ -80,7 +80,7 @@ class DocumentsBridgeHandler(
      */
     private fun saveCatalog(params: Map<String, JsonElement>): JsonElement? {
         val catalogData =
-            params["data"]?.toString()
+            params["data"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_DATA", "Catalog data parameter required")
 
         prefs.edit().putString("__catalog__", catalogData).apply()
@@ -116,7 +116,7 @@ class DocumentsBridgeHandler(
                 ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
 
         val document =
-            params["document"]?.toString()
+            params["document"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_DOCUMENT", "Document parameter required")
 
         prefs.edit().putString("doc_$id", document).apply()

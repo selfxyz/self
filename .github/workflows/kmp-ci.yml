@@ -19,6 +19,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+      - uses: ./.github/actions/cache-gradle
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew :shared:jvmTest
       - uses: actions/upload-artifact@v4
@@ -38,6 +39,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+      - uses: ./.github/actions/cache-gradle
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew :composeApp:testDebugUnitTest
       - uses: actions/upload-artifact@v4

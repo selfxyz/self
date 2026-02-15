@@ -66,16 +66,24 @@ if [ -z "$DEVICE" ]; then
     fi
 
     # Wait for emulator to be fully booted
+    BOOT_COMPLETED=false
     echo -n "⏳ Waiting for boot to complete"
     for i in $(seq 1 30); do
         if "$ADB_CMD" -s "$DEVICE" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
             echo ""
             echo "✅ Emulator fully booted and ready"
+            BOOT_COMPLETED=true
             break
         fi
         echo -n "."
         sleep 2
     done
+
+    if [ "$BOOT_COMPLETED" = false ]; then
+        echo ""
+        echo "❌ Emulator failed to fully boot within 60 seconds."
+        exit 1
+    fi
 else
     echo "✅ Device found: $DEVICE"
 fi

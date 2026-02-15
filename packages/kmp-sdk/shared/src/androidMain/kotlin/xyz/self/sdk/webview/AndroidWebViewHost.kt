@@ -64,7 +64,13 @@ class AndroidWebViewHost(
      * Used for Native → WebView communication (responses and events).
      */
     fun evaluateJs(js: String) {
+        if (!::webView.isInitialized) return
         webView.evaluateJavascript(js, null)
+    }
+
+    fun destroy() {
+        if (!::webView.isInitialized) return
+        webView.destroy()
     }
 
     /**

@@ -83,8 +83,8 @@ class SelfVerificationActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        webViewHost.destroy()
         super.onDestroy()
-        // Clean up resources if needed
     }
 
     companion object {

@@ -1,6 +1,7 @@
 package xyz.self.sdk.handlers
 
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
@@ -21,9 +22,13 @@ class BiometricBridgeHandler : BridgeHandler {
         method: String,
         params: Map<String, JsonElement>,
     ): JsonElement? =
-        throw BridgeHandlerException(
-            "NOT_IMPLEMENTED",
-            "iOS biometric authentication not yet implemented. " +
-                "Requires LocalAuthentication framework cinterop.",
-        )
+        when (method) {
+            "isAvailable" -> JsonPrimitive(false)
+            else ->
+                throw BridgeHandlerException(
+                    "NOT_IMPLEMENTED",
+                    "iOS biometric authentication not yet implemented. " +
+                        "Requires LocalAuthentication framework cinterop.",
+                )
+        }
 }

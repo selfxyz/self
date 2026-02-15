@@ -258,9 +258,9 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
 
         // Extract name from line 1 (positions 5-44)
         let nameField = String(line1.suffix(from: line1.index(line1.startIndex, offsetBy: 5)))
-        let nameParts = nameField.split(separator: "<").map { String($0) }.filter { !$0.isEmpty }
-        let lastName = nameParts.first ?? ""
-        let firstName = nameParts.dropFirst().joined(separator: " ")
+        let nameComponents = nameField.components(separatedBy: "<<")
+        let lastName = nameComponents.first?.split(separator: "<").map { String($0) }.joined(separator: " ") ?? ""
+        let firstName = nameComponents.dropFirst().joined(separator: "").split(separator: "<").map { String($0) }.joined(separator: " ")
 
         // Build JSON result
         let result: [String: Any] = [

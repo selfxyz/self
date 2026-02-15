@@ -30,9 +30,9 @@ object MrzKeyUtils {
         dateOfBirth: String,
         dateOfExpiry: String,
     ): String {
-        val pn = passportNumber.padEnd(9, '<')
-        val dob = dateOfBirth.padEnd(6, '<')
-        val doe = dateOfExpiry.padEnd(6, '<')
+        val pn = passportNumber.take(9).padEnd(9, '<')
+        val dob = dateOfBirth.take(6).padEnd(6, '<')
+        val doe = dateOfExpiry.take(6).padEnd(6, '<')
 
         val pnCheck = calcCheckSum(pn)
         val dobCheck = calcCheckSum(dob)

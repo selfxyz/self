@@ -10,24 +10,24 @@ import kotlin.experimental.ExperimentalNativeApi
 @OptIn(ExperimentalNativeApi::class, ExperimentalForeignApi::class)
 fun setupGlobalExceptionHandler() {
     setUnhandledExceptionHook { throwable: Throwable ->
-        NSLog("════════════════════════════════════════════════════════════════")
-        NSLog("🔥 UNCAUGHT KOTLIN EXCEPTION 🔥")
-        NSLog("════════════════════════════════════════════════════════════════")
-        NSLog("Exception: ${throwable::class.simpleName}")
-        NSLog("Message: ${throwable.message ?: "No message"}")
-        NSLog("────────────────────────────────────────────────────────────────")
-        NSLog("Stack Trace:")
+        NSLog("%@", "════════════════════════════════════════════════════════════════")
+        NSLog("%@", "🔥 UNCAUGHT KOTLIN EXCEPTION 🔥")
+        NSLog("%@", "════════════════════════════════════════════════════════════════")
+        NSLog("%@", "Exception: ${throwable::class.simpleName}")
+        NSLog("%@", "Message: ${throwable.message ?: "No message"}")
+        NSLog("%@", "────────────────────────────────────────────────────────────────")
+        NSLog("%@", "Stack Trace:")
 
         val stackTrace = throwable.getStackTrace()
         stackTrace.forEachIndexed { index, element ->
-            NSLog("  $index: $element")
+            NSLog("%@", "  $index: $element")
         }
 
-        NSLog("════════════════════════════════════════════════════════════════")
+        NSLog("%@", "════════════════════════════════════════════════════════════════")
 
         // Print the full throwable for additional context
         throwable.printStackTrace()
     }
 
-    NSLog("✅ Global exception handler installed")
+    NSLog("%@", "✅ Global exception handler installed")
 }

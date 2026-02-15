@@ -24,7 +24,9 @@ class IosWebViewHost(
                 "cinterop configuration is disabled due to Xcode SDK compatibility issues.",
         )
 
-    fun evaluateJs(js: String) {
-        // Stub - would call webView.evaluateJavaScript()
-    }
+    fun evaluateJs(js: String): Unit =
+        throw NotImplementedError(
+            "iOS WebView hosting not yet fully implemented. " +
+                "Requires WKWebView cinterop.",
+        )
 }

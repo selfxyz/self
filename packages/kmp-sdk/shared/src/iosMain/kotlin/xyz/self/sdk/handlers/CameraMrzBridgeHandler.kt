@@ -38,7 +38,7 @@ class CameraMrzBridgeHandler : BridgeHandler {
         )
 
     private fun isAvailable(): JsonElement {
-        // TODO: Check AVCaptureDevice availability via cinterop
-        return JsonPrimitive(true)
+        // Stub: not implemented via cinterop yet, so report unavailable
+        return JsonPrimitive(false)
     }
 }

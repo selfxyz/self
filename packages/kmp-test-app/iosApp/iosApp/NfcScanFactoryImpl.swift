@@ -33,6 +33,11 @@ extension NfcScanFactoryImpl: NfcScanViewFactory {
         onComplete: @escaping (Any) -> Void,
         onError: @escaping (String) -> Void
     ) {
+        guard self.nfcHelper == nil else {
+            onError("A scan is already in progress")
+            return
+        }
+
         let helper = NfcPassportHelper()
         self.nfcHelper = helper
 

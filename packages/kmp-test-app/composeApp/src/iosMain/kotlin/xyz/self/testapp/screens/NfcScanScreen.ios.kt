@@ -267,13 +267,13 @@ private suspend fun scanPassportWithNfc(
                 try {
                     val jsonString = resultAny as? String ?: resultAny.toString()
                     val jsonElement = Json.parseToJsonElement(jsonString)
-                    cont.resume(jsonElement)
+                    if (cont.isActive) cont.resume(jsonElement)
                 } catch (e: Exception) {
-                    cont.resumeWithException(Exception("Failed to parse NFC result: ${e.message}"))
+                    if (cont.isActive) cont.resumeWithException(Exception("Failed to parse NFC result: ${e.message}"))
                 }
             },
             onError = { error ->
-                cont.resumeWithException(Exception(error))
+                if (cont.isActive) cont.resumeWithException(Exception(error))
             },
         )
     }
