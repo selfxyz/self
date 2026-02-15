@@ -209,20 +209,12 @@ fun MrzScanScreen(
                             factory = {
                                 createCameraPreview(
                                     onMrzDetected = { mrzResult ->
-                                        Logger.d("MrzScan", "onMrzDetected callback triggered!")
-                                        Logger.d("MrzScan", "MRZ Result: $mrzResult")
-
                                         scope.launch {
                                             try {
                                                 val mrzObj = mrzResult.jsonObject
                                                 val passportNumber = mrzObj["documentNumber"]?.jsonPrimitive?.content ?: ""
                                                 val dateOfBirth = mrzObj["dateOfBirth"]?.jsonPrimitive?.content ?: ""
                                                 val dateOfExpiry = mrzObj["dateOfExpiry"]?.jsonPrimitive?.content ?: ""
-
-                                                Logger.d(
-                                                    "MrzScan",
-                                                    "Parsed - Passport: $passportNumber, DOB: $dateOfBirth, Expiry: $dateOfExpiry",
-                                                )
 
                                                 val updatedPassportData =
                                                     PassportData(
@@ -236,13 +228,12 @@ fun MrzScanScreen(
                                                         passportData = updatedPassportData,
                                                         rawMrzData = mrzResult,
                                                     )
-                                                    Logger.d("MrzScan", "Navigating to mrz_confirmation...")
                                                     navController.navigate("mrz_confirmation") {
                                                         popUpTo("mrz_scan") { inclusive = true }
                                                     }
                                                 }
                                             } catch (e: Exception) {
-                                                Logger.d("MrzScan", "Failed to parse MRZ: ${e.message}")
+                                                Logger.e("MrzScan", "Failed to parse MRZ or navigate", e)
                                                 viewModel.setError("Failed to parse MRZ: ${e.message}")
                                             }
                                         }
@@ -373,28 +364,22 @@ private fun createCameraPreview(
     onProgress: (MrzDetectionState) -> Unit,
     onError: (String) -> Unit,
 ): UIView {
-    // Check if we have a factory registered
     val factory = MrzCameraFactory.instance
 
     if (factory != null) {
-        Logger.d("MrzScan", "Using registered MRZ camera factory")
-
-        // Wrap callbacks to handle conversion from raw values
         return factory.createCameraView(
             onMrzDetected = { result ->
                 try {
-                    // Swift passes JSON string - parse it
                     val jsonString = result as? String ?: result.toString()
                     val jsonElement = Json.parseToJsonElement(jsonString)
                     onMrzDetected(jsonElement)
                 } catch (e: Exception) {
-                    Logger.e("MrzScan", "Failed to parse JSON: $result", e)
+                    Logger.e("MrzScan", "Failed to parse JSON from Swift", e)
                     onError("Failed to parse scan result")
                 }
             },
             onProgress = { stateAny ->
                 try {
-                    // Swift passes Int index (0-3) - convert to enum
                     val stateIndex =
                         when (stateAny) {
                             is Long -> stateAny.toInt()
@@ -414,15 +399,15 @@ private fun createCameraPreview(
 
                     onProgress(state)
                 } catch (e: Exception) {
-                    Logger.e("MrzScan", "Failed to convert progress state: $stateAny", e)
+                    Logger.e("MrzScan", "Failed to convert progress state", e)
                 }
             },
-            onError = onError,
+            onError = { error ->
+                onError(error)
+            },
         )
     }
 
-    // Fallback: show error
-    Logger.e("MrzScan", "No MRZ camera factory registered")
     onError("MRZ camera not configured. Factory not registered from iOS app.")
     return UIView().apply { backgroundColor = UIColor.blackColor }
 }

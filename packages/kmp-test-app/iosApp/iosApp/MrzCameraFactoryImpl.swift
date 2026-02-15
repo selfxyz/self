@@ -12,11 +12,13 @@ import ComposeApp
 /// Swift implementation of the MRZ camera factory
 class MrzCameraFactoryImpl: NSObject {
 
+    /// Retain the camera helper so ARC doesn't deallocate it (and its capture session/delegate)
+    private var cameraHelper: MrzCameraHelper?
+
     /// Call this from app init to register the factory
     static func register() {
         let factory = MrzCameraFactoryImpl()
         MrzCameraFactory.shared.instance = factory
-        print("✅ MRZ Camera Factory registered")
     }
 }
 
@@ -29,8 +31,9 @@ extension MrzCameraFactoryImpl: MrzCameraViewFactory {
         onError: @escaping (String) -> Void
     ) -> UIView {
 
-        // Create the Swift MRZ camera helper
+        // Create the Swift MRZ camera helper and retain it
         let helper = MrzCameraHelper()
+        self.cameraHelper = helper
 
         // Create camera preview view
         let cameraView = helper.createCameraPreviewView(frame: .zero)
@@ -38,7 +41,6 @@ extension MrzCameraFactoryImpl: MrzCameraViewFactory {
         // Set up callbacks
         helper.scanMrzWithCallbacks(
             progress: { stateIndex in
-                // Pass raw index to Kotlin - let Kotlin convert to enum
                 DispatchQueue.main.async {
                     onProgress(stateIndex as Any)
                 }
@@ -46,7 +48,6 @@ extension MrzCameraFactoryImpl: MrzCameraViewFactory {
             completion: { success, result in
                 DispatchQueue.main.async {
                     if success {
-                        // Pass JSON string to Kotlin - let Kotlin parse it
                         onMrzDetected(result as Any)
                     } else {
                         onError(result)
@@ -57,8 +58,6 @@ extension MrzCameraFactoryImpl: MrzCameraViewFactory {
 
         // Start camera
         helper.startCamera()
-
-        print("ℹ️ INFO [MrzScan] Camera started via Swift factory")
 
         return cameraView
     }

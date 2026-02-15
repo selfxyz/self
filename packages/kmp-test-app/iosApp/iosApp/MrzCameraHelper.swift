@@ -28,6 +28,7 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
     // Camera session
     private var captureSession: AVCaptureSession?
     private var previewLayer: AVCaptureVideoPreviewLayer?
+    private var videoOutput: AVCaptureVideoDataOutput?
 
     // Vision requests
     private var textRecognitionRequest: VNRecognizeTextRequest?
@@ -41,6 +42,10 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
     private var mrzLine2: String?
     private var currentDetectionState: MrzDetectionStateIndex = 0
     private var isScanning = false
+    private var hasCompleted = false
+    private var lastProgressUpdate: Date = Date()
+    private let minProgressUpdateInterval: TimeInterval = 0.5 // 500ms
+    private var frameCount = 0
 
     @objc public override init() {
         super.init()
@@ -53,7 +58,7 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
             guard let self = self else { return }
 
             if let error = error {
-                print("Text recognition error: \(error.localizedDescription)")
+                print("[MRZ] Text recognition error: \(error.localizedDescription)")
                 return
             }
 
@@ -78,16 +83,18 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
 
     /// Starts the camera session
     @objc public func startCamera() {
+        isScanning = true
+
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             self?.captureSession?.startRunning()
         }
-        isScanning = true
     }
 
     /// Stops the camera session
     @objc public func stopCamera() {
         captureSession?.stopRunning()
         isScanning = false
+        hasCompleted = false
         mrzLine1 = nil
         mrzLine2 = nil
         currentDetectionState = 0
@@ -116,28 +123,36 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
 
         // Add video input
         guard let videoCaptureDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
-            print("Failed to get camera device")
+            print("[MRZ] Failed to get camera device")
             return
         }
 
         guard let videoInput = try? AVCaptureDeviceInput(device: videoCaptureDevice) else {
-            print("Failed to create video input")
+            print("[MRZ] Failed to create video input")
             return
         }
 
         if captureSession.canAddInput(videoInput) {
             captureSession.addInput(videoInput)
+        } else {
+            print("[MRZ] Cannot add video input to session")
         }
 
         // Add video output
-        let videoOutput = AVCaptureVideoDataOutput()
-        videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
+        videoOutput = AVCaptureVideoDataOutput()
+        guard let videoOutput = videoOutput else { return }
+
+        let delegateQueue = DispatchQueue(label: "videoQueue")
+        videoOutput.setSampleBufferDelegate(self, queue: delegateQueue)
+
         videoOutput.videoSettings = [
             kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
         ]
 
         if captureSession.canAddOutput(videoOutput) {
             captureSession.addOutput(videoOutput)
+        } else {
+            print("[MRZ] Cannot add video output to session")
         }
 
         captureSession.commitConfiguration()
@@ -155,7 +170,7 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
     // MARK: - Vision Processing
 
     private func processTextRecognitionResults(_ observations: [VNRecognizedTextObservation]) {
-        guard isScanning else { return }
+        guard isScanning && !hasCompleted else { return }
 
         var detectedTexts: [String] = []
 
@@ -191,8 +206,11 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
 
                 // Parse and complete
                 if let mrzData = parseMrzData(line1: line1, line2: line2) {
+                    hasCompleted = true  // Set flag before callback to prevent race condition
                     isScanning = false
                     completionCallback?(true, mrzData)
+                } else {
+                    print("[MRZ] MRZ parsing failed, JSON serialization error")
                 }
             } else {
                 updateDetectionState(2) // ONE_MRZ_LINE
@@ -254,17 +272,23 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
             "mrzLine2": line2
         ]
 
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: result, options: [.prettyPrinted]),
-              let jsonString = String(data: jsonData, encoding: .utf8) else {
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: result, options: [.prettyPrinted])
+            return String(data: jsonData, encoding: .utf8)
+        } catch {
+            print("[MRZ] JSON serialization error: \(error.localizedDescription)")
             return nil
         }
-
-        return jsonString
     }
 
     private func updateDetectionState(_ newState: MrzDetectionStateIndex) {
-        if newState != currentDetectionState {
+        let now = Date()
+        let shouldUpdate = (newState != currentDetectionState) ||
+            (now.timeIntervalSince(lastProgressUpdate) >= minProgressUpdateInterval)
+
+        if shouldUpdate {
             currentDetectionState = newState
+            lastProgressUpdate = now
             DispatchQueue.main.async { [weak self] in
                 self?.progressCallback?(newState)
             }
@@ -286,7 +310,7 @@ extension MrzCameraHelper: AVCaptureVideoDataOutputSampleBufferDelegate {
         do {
             try requestHandler.perform([textRequest])
         } catch {
-            print("Failed to perform text recognition: \(error)")
+            print("[MRZ] Failed to perform text recognition: \(error)")
         }
     }
 }
