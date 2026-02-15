@@ -50,6 +50,10 @@ function findFiles(
             '.next',
             '.turbo',
             '.tamagui',
+            'DerivedData',
+            'Pods',
+            '.gradle',
+            'iosApp',
           ].includes(item)
         ) {
           traverse(fullPath);
