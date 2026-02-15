@@ -18,6 +18,14 @@ iosApp/iosApp.xcodeproj/project.xcworkspace/
 iosApp/iosApp.xcodeproj/xcuserdata/
 iosApp/build/
 iosApp/Pods/
+iosApp/DerivedData/
+iosApp/*.xcworkspace/xcuserdata/
+iosApp/*.xcworkspace/xcshareddata/
+iosApp/.swiftpm/
+iosApp/*.hmap
+iosApp/*.ipa
+iosApp/*.dSYM.zip
+iosApp/*.dSYM
 
 ## Android
 local.properties
