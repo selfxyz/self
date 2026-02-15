@@ -10,6 +10,7 @@ import Foundation
 import UIKit
 import AVFoundation
 import Vision
+import os.log
 
 /// MRZ detection state matching Kotlin enum (0-3)
 /// 0 = NO_TEXT, 1 = TEXT_DETECTED, 2 = ONE_MRZ_LINE, 3 = TWO_MRZ_LINES
@@ -24,6 +25,8 @@ public typealias MrzProgressCallback = (MrzDetectionStateIndex) -> Void
 public typealias MrzCompletionCallback = (Bool, String) -> Void
 
 @objc public class MrzCameraHelper: NSObject {
+
+    private static let log = os.Logger(subsystem: "xyz.self.testapp", category: "MrzCamera")
 
     // Camera session
     private var captureSession: AVCaptureSession?
@@ -45,7 +48,6 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
     private var hasCompleted = false
     private var lastProgressUpdate: Date = Date()
     private let minProgressUpdateInterval: TimeInterval = 0.5 // 500ms
-    private var frameCount = 0
 
     @objc public override init() {
         super.init()
@@ -58,7 +60,7 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
             guard let self = self else { return }
 
             if let error = error {
-                print("[MRZ] Text recognition error: \(error.localizedDescription)")
+                MrzCameraHelper.log.error("Text recognition error: \(error.localizedDescription)")
                 return
             }
 
@@ -123,19 +125,19 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
 
         // Add video input
         guard let videoCaptureDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
-            print("[MRZ] Failed to get camera device")
+            MrzCameraHelper.log.error("Failed to get camera device")
             return
         }
 
         guard let videoInput = try? AVCaptureDeviceInput(device: videoCaptureDevice) else {
-            print("[MRZ] Failed to create video input")
+            MrzCameraHelper.log.error("Failed to create video input")
             return
         }
 
         if captureSession.canAddInput(videoInput) {
             captureSession.addInput(videoInput)
         } else {
-            print("[MRZ] Cannot add video input to session")
+            MrzCameraHelper.log.error("Cannot add video input to session")
         }
 
         // Add video output
@@ -152,7 +154,7 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
         if captureSession.canAddOutput(videoOutput) {
             captureSession.addOutput(videoOutput)
         } else {
-            print("[MRZ] Cannot add video output to session")
+            MrzCameraHelper.log.error("Cannot add video output to session")
         }
 
         captureSession.commitConfiguration()
@@ -210,7 +212,7 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
                     isScanning = false
                     completionCallback?(true, mrzData)
                 } else {
-                    print("[MRZ] MRZ parsing failed, JSON serialization error")
+                    MrzCameraHelper.log.error("MRZ parsing failed, JSON serialization error")
                 }
             } else {
                 updateDetectionState(2) // ONE_MRZ_LINE
@@ -276,7 +278,7 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
             let jsonData = try JSONSerialization.data(withJSONObject: result, options: [.prettyPrinted])
             return String(data: jsonData, encoding: .utf8)
         } catch {
-            print("[MRZ] JSON serialization error: \(error.localizedDescription)")
+            MrzCameraHelper.log.error("JSON serialization error: \(error.localizedDescription)")
             return nil
         }
     }
@@ -310,7 +312,7 @@ extension MrzCameraHelper: AVCaptureVideoDataOutputSampleBufferDelegate {
         do {
             try requestHandler.perform([textRequest])
         } catch {
-            print("[MRZ] Failed to perform text recognition: \(error)")
+            MrzCameraHelper.log.error("Failed to perform text recognition: \(error)")
         }
     }
 }

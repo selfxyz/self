@@ -164,7 +164,7 @@ fun NfcScanScreen(
                                     "passportNumber" to JsonPrimitive(passportData.passportNumber),
                                     "dateOfBirth" to JsonPrimitive(passportData.dateOfBirth),
                                     "dateOfExpiry" to JsonPrimitive(passportData.dateOfExpiry),
-                                    "sessionId" to JsonPrimitive("test-session"),
+                                    "sessionId" to JsonPrimitive(java.util.UUID.randomUUID().toString()),
                                 )
 
                             val result =

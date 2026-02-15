@@ -8,14 +8,9 @@ import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
 
 /**
- * iOS implementation of camera MRZ scanning bridge handler.
- * Uses Vision framework for text recognition from camera feed.
- *
- * Note: This is a stub implementation. Full implementation requires:
- * - AVFoundation for camera capture
- * - Vision framework (VNRecognizeTextRequest) for text recognition
- * - MRZ parsing logic to extract passport data from recognized text
- * - UIViewController integration for camera preview
+ * iOS stub for camera MRZ scanning bridge handler.
+ * The test app uses MrzCameraHelper.swift directly instead of this handler.
+ * TODO: Wire up to Swift MrzCameraHelper via cinterop for full SDK integration.
  */
 @OptIn(ExperimentalForeignApi::class)
 class CameraMrzBridgeHandler : BridgeHandler {
@@ -34,32 +29,17 @@ class CameraMrzBridgeHandler : BridgeHandler {
             )
         }
 
-    /**
-     * Launches camera to scan MRZ from passport or ID card.
-     * TODO: Implement camera capture and Vision-based MRZ recognition.
-     */
+    /** Stub — wire up to MrzCameraHelper.swift via cinterop. */
     private suspend fun scanMRZ(): JsonElement {
-        // TODO: Full implementation requires:
-        // 1. Request camera permissions (AVCaptureDevice.authorizationStatus)
-        // 2. Set up AVCaptureSession with camera input
-        // 3. Set up AVCaptureVideoDataOutput for frame capture
-        // 4. Process frames with VNRecognizeTextRequest
-        // 5. Parse MRZ format from recognized text
-        // 6. Return extracted MRZ data (passport number, dates, etc.)
-
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
-            "iOS camera MRZ scanning not yet fully implemented. " +
-                "Requires AVFoundation + Vision framework integration.",
+            "MRZ scanning is handled by MrzCameraHelper.swift in the test app. " +
+                "Wire up via cinterop for full SDK integration.",
         )
     }
 
-    /**
-     * Checks if camera is available on this device.
-     */
     private fun isAvailable(): JsonElement {
-        // Most iOS devices have cameras, but simulators may not
-        // For now, return true - actual implementation should check AVCaptureDevice
+        // TODO: Check AVCaptureDevice availability via cinterop
         return JsonPrimitive(true)
     }
 }

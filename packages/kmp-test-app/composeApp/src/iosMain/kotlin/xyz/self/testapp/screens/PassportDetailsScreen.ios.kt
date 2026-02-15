@@ -7,6 +7,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import platform.Foundation.NSUserDefaults
 import xyz.self.testapp.models.PassportData
+import xyz.self.testapp.utils.Logger
 import xyz.self.testapp.viewmodels.VerificationViewModel
 
 private const val PASSPORT_DATA_KEY = "xyz.self.testapp.passportData"
@@ -27,8 +28,7 @@ actual fun LoadSavedDataEffect(viewModel: VerificationViewModel) {
                 viewModel.loadSavedData(passportData)
             }
         } catch (e: Exception) {
-            // Failed to load, continue with empty data
-            println("Failed to load saved passport data: ${e.message}")
+            Logger.e("PassportDetails", "Failed to load saved passport data: ${e.message}")
         }
     }
 }
@@ -46,6 +46,6 @@ actual fun getSavePassportDataFunction(): ((PassportData) -> Unit)? =
             defaults.setObject(jsonString, PASSPORT_DATA_KEY)
             defaults.synchronize()
         } catch (e: Exception) {
-            println("Failed to save passport data: ${e.message}")
+            Logger.e("PassportDetails", "Failed to save passport data: ${e.message}")
         }
     }

@@ -39,28 +39,21 @@ fun CameraPreviewComposable(
     var previewView: PreviewView? by remember { mutableStateOf(null) }
 
     LaunchedEffect(previewView, activity) {
-        Log.d(TAG, "LaunchedEffect triggered - previewView: ${previewView != null}, activity: ${activity != null}")
         if (previewView != null && activity != null) {
             try {
-                Log.d(TAG, "Creating CameraMrzBridgeHandler...")
                 val handler = CameraMrzBridgeHandler(activity)
-                Log.d(TAG, "Starting MRZ scan with preview...")
                 val result =
                     handler.scanMrzWithPreview(
                         previewView = previewView!!,
                         onProgress = { state ->
-                            Log.d(TAG, "Detection state: $state")
                             onProgress?.invoke(state)
                         },
                     )
-                Log.d(TAG, "MRZ detected! Result: $result")
                 onMrzDetected(result)
             } catch (e: Exception) {
                 Log.e(TAG, "Camera error occurred", e)
                 onError("Camera error: ${e.message}")
             }
-        } else {
-            Log.w(TAG, "Waiting for preview or activity to be ready...")
         }
     }
 

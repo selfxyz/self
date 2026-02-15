@@ -28,6 +28,9 @@ import platform.AVFoundation.AVCaptureDevice
 import platform.AVFoundation.AVMediaTypeVideo
 import platform.AVFoundation.authorizationStatusForMediaType
 import platform.AVFoundation.requestAccessForMediaType
+import platform.Foundation.NSURL
+import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.UIKit.UIColor
 import platform.UIKit.UIView
 import xyz.self.sdk.models.MrzDetectionState
@@ -125,13 +128,20 @@ fun MrzScanScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = {
-                            // TODO: Open app settings
-                            // For now, just check again
+                            val settingsUrl = NSURL.URLWithString(UIApplicationOpenSettingsURLString)
+                            if (settingsUrl != null) {
+                                UIApplication.sharedApplication.openURL(settingsUrl)
+                            }
+                        }) {
+                            Text("Open Settings")
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedButton(onClick = {
                             scope.launch {
                                 hasCameraPermission = requestCameraPermission()
                             }
                         }) {
-                            Text("Try Again")
+                            Text("Check Again")
                         }
                     }
                 }

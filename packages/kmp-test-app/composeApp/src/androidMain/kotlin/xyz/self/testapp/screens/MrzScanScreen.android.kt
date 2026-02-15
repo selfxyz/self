@@ -33,7 +33,6 @@ fun MrzScanScreen(
     navController: NavController,
     viewModel: VerificationViewModel,
 ) {
-    Log.d(TAG, "MrzScanScreen composing...")
     var detectionState by remember { mutableStateOf<MrzDetectionState?>(null) }
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -115,16 +114,11 @@ fun MrzScanScreen(
                     // Camera preview with MRZ scanning
                     CameraPreviewComposable(
                         onMrzDetected = { mrzResult ->
-                            Log.d(TAG, "onMrzDetected callback triggered!")
-                            Log.d(TAG, "MRZ Result: $mrzResult")
-                            // Parse MRZ result and show confirmation screen
                             try {
                                 val mrzObj = mrzResult.jsonObject
                                 val passportNumber = mrzObj["documentNumber"]?.jsonPrimitive?.content ?: ""
                                 val dateOfBirth = mrzObj["dateOfBirth"]?.jsonPrimitive?.content ?: ""
                                 val dateOfExpiry = mrzObj["dateOfExpiry"]?.jsonPrimitive?.content ?: ""
-
-                                Log.d(TAG, "Parsed - Passport: $passportNumber, DOB: $dateOfBirth, Expiry: $dateOfExpiry")
 
                                 val updatedPassportData =
                                     PassportData(
@@ -133,12 +127,10 @@ fun MrzScanScreen(
                                         dateOfExpiry = dateOfExpiry,
                                     )
 
-                                // Show confirmation screen with scanned data
                                 viewModel.showMrzConfirmation(
                                     passportData = updatedPassportData,
                                     rawMrzData = mrzResult,
                                 )
-                                Log.d(TAG, "Navigating to mrz_confirmation...")
                                 navController.navigate("mrz_confirmation") {
                                     popUpTo("mrz_scan") { inclusive = true }
                                 }
@@ -148,7 +140,7 @@ fun MrzScanScreen(
                             }
                         },
                         onError = { error ->
-                            Log.e(TAG, "onError callback triggered: $error")
+                            Log.e(TAG, "MRZ scan error: $error")
                             viewModel.setError(error)
                         },
                         onProgress = { state ->

@@ -10,17 +10,9 @@ import xyz.self.sdk.bridge.BridgeHandlerException
 import xyz.self.sdk.bridge.MessageRouter
 
 /**
- * iOS implementation of NFC passport scanning bridge handler.
- * Uses CoreNFC framework for NFC tag communication.
- *
- * Note: This is a stub implementation. Full iOS NFC passport reading is very complex:
- * - CoreNFC provides low-level tag communication
- * - ICAO 9303 protocol implementation required (BAC, PACE, secure messaging)
- * - ASN.1 parsing for data groups
- * - The existing app/ios/PassportReader.swift uses the NFCPassportReader library
- *
- * Recommended approach: Create an Objective-C/Swift wrapper that uses NFCPassportReader,
- * then call it from Kotlin via cinterop. Pure Kotlin implementation would be months of work.
+ * iOS stub for NFC passport scanning bridge handler.
+ * The test app uses NfcPassportHelper.swift directly instead of this handler.
+ * TODO: Wire up to Swift NfcPassportHelper via cinterop for full SDK integration.
  */
 @OptIn(ExperimentalForeignApi::class)
 class NfcBridgeHandler(
@@ -42,60 +34,26 @@ class NfcBridgeHandler(
             )
         }
 
-    /**
-     * Scans an NFC-enabled passport.
-     * TODO: Implement using CoreNFC + ICAO 9303 protocol or NFCPassportReader library.
-     */
+    /** Stub — wire up to NfcPassportHelper.swift via cinterop. */
     private suspend fun scan(params: Map<String, JsonElement>): JsonElement {
-        val passportNumber =
-            params["passportNumber"]?.jsonPrimitive?.content
-                ?: throw BridgeHandlerException("MISSING_PASSPORT_NUMBER", "Passport number required")
-
-        val dateOfBirth =
-            params["dateOfBirth"]?.jsonPrimitive?.content
-                ?: throw BridgeHandlerException("MISSING_DOB", "Date of birth required")
-
-        val dateOfExpiry =
-            params["dateOfExpiry"]?.jsonPrimitive?.content
-                ?: throw BridgeHandlerException("MISSING_EXPIRY", "Date of expiry required")
-
-        // TODO: Full implementation requires:
-        // 1. Check NFC availability (NFCReaderSession.readingAvailable)
-        // 2. Compute MRZ key from passport number, DOB, and expiry
-        // 3. Start NFCPassportReader session with MRZ key
-        // 4. Implement BAC/PACE authentication
-        // 5. Read data groups (DG1, DG2, SOD, etc.)
-        // 6. Parse and verify passport data
-        // 7. Send progress events via router.pushEvent()
-        // 8. Return PassportScanResult
-        //
-        // Reference: app/ios/PassportReader.swift shows the Swift implementation
-        // using the NFCPassportReader CocoaPod library
+        params["passportNumber"]?.jsonPrimitive?.content
+            ?: throw BridgeHandlerException("MISSING_PASSPORT_NUMBER", "Passport number required")
+        params["dateOfBirth"]?.jsonPrimitive?.content
+            ?: throw BridgeHandlerException("MISSING_DOB", "Date of birth required")
+        params["dateOfExpiry"]?.jsonPrimitive?.content
+            ?: throw BridgeHandlerException("MISSING_EXPIRY", "Date of expiry required")
 
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
-            "iOS NFC passport scanning not yet fully implemented. " +
-                "Requires CoreNFC + NFCPassportReader library integration or " +
-                "full ICAO 9303 protocol implementation. See app/ios/PassportReader.swift for reference.",
+            "NFC scanning is handled by NfcPassportHelper.swift in the test app. " +
+                "Wire up via cinterop for full SDK integration.",
         )
     }
 
-    /**
-     * Cancels an ongoing NFC scan.
-     */
-    private fun cancelScan(): JsonElement? {
-        // TODO: Implement scan cancellation
-        // NFCPassportReader handles its own UI/cancel
-        return null
-    }
+    private fun cancelScan(): JsonElement? = null
 
-    /**
-     * Checks if NFC is supported on this device.
-     */
     private fun isSupported(): JsonElement {
-        // Check if NFC reading is available
-        // TODO: Use NFCReaderSession.readingAvailable from CoreNFC
-        // For now, return false as it's not implemented
+        // TODO: Use NFCReaderSession.readingAvailable via cinterop
         return JsonPrimitive(false)
     }
 }

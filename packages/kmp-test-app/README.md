@@ -141,13 +141,13 @@ class TestCallback: SelfSdkCallback {
 - WebView hosting configured
 - Bridge communication working
 
-### iOS ⚠️
+### iOS ✅
 - SDK infrastructure: **COMPLETE** (compiles successfully)
-- Native handlers: **STUB IMPLEMENTATIONS**
-- Requires cinterop configuration and native iOS API integration
-- WebView hosting needs UIViewController integration
+- NFC passport scanning: **WORKING** (via Swift helper + NFCPassportReader)
+- MRZ camera scanning: **WORKING** (via Swift helper + AVFoundation + Vision)
+- WebView hosting: needs UIViewController integration
 
-See `../kmp-sdk/shared/build.gradle.kts` for notes on completing iOS implementation.
+See `iOS_INTEGRATION_GUIDE.md` for setup and testing instructions.
 
 ## Testing
 
