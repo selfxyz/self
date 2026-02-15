@@ -174,14 +174,7 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
     private func processTextRecognitionResults(_ observations: [VNRecognizedTextObservation]) {
         guard isScanning && !hasCompleted else { return }
 
-        var detectedTexts: [String] = []
-
-        for observation in observations {
-            guard let topCandidate = observation.topCandidates(1).first else { continue }
-            detectedTexts.append(topCandidate.string)
-        }
-
-        if detectedTexts.isEmpty {
+        if observations.isEmpty {
             updateDetectionState(0) // NO_TEXT
             return
         }
@@ -189,16 +182,20 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
         updateDetectionState(1) // TEXT_DETECTED
 
         // Look for MRZ patterns (TD3 passport: 2 lines of 44 characters each)
-        let mrzCandidates = detectedTexts.filter { text in
-            let cleaned = text.replacingOccurrences(of: " ", with: "")
-            return cleaned.count >= 40 && cleaned.count <= 45 &&
-                cleaned.allSatisfy { $0.isLetter || $0.isNumber || $0 == "<" }
+        // Keep observations paired with text for vertical sorting
+        let mrzCandidates: [(text: String, y: CGFloat)] = observations.compactMap { observation in
+            guard let topCandidate = observation.topCandidates(1).first else { return nil }
+            let cleaned = topCandidate.string.replacingOccurrences(of: " ", with: "")
+            guard cleaned.count >= 40 && cleaned.count <= 45 &&
+                    cleaned.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "<" }) else { return nil }
+            return (text: cleaned, y: observation.boundingBox.origin.y)
         }
 
         if mrzCandidates.count >= 2 {
-            // Found two potential MRZ lines
-            let line1 = mrzCandidates[0].replacingOccurrences(of: " ", with: "").padding(toLength: 44, withPad: "<", startingAt: 0)
-            let line2 = mrzCandidates[1].replacingOccurrences(of: " ", with: "").padding(toLength: 44, withPad: "<", startingAt: 0)
+            // Sort by Y descending (Vision origin is bottom-left, so top line has larger Y)
+            let sorted = mrzCandidates.sorted { $0.y > $1.y }
+            let line1 = sorted[0].text.padding(toLength: 44, withPad: "<", startingAt: 0)
+            let line2 = sorted[1].text.padding(toLength: 44, withPad: "<", startingAt: 0)
 
             // Validate MRZ format
             if validateMrzFormat(line1: line1, line2: line2) {
@@ -210,7 +207,9 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
                 if let mrzData = parseMrzData(line1: line1, line2: line2) {
                     hasCompleted = true  // Set flag before callback to prevent race condition
                     isScanning = false
-                    completionCallback?(true, mrzData)
+                    DispatchQueue.main.async { [weak self] in
+                        self?.completionCallback?(true, mrzData)
+                    }
                 } else {
                     MrzCameraHelper.log.error("MRZ parsing failed, JSON serialization error")
                 }

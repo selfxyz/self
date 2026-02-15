@@ -34,6 +34,7 @@ fun MrzScanScreen(
     viewModel: VerificationViewModel,
 ) {
     var detectionState by remember { mutableStateOf<MrzDetectionState?>(null) }
+    var hasNavigated by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -114,6 +115,7 @@ fun MrzScanScreen(
                     // Camera preview with MRZ scanning
                     CameraPreviewComposable(
                         onMrzDetected = { mrzResult ->
+                            if (hasNavigated) return@CameraPreviewComposable
                             try {
                                 val mrzObj = mrzResult.jsonObject
                                 val passportNumber = mrzObj["documentNumber"]?.jsonPrimitive?.content ?: ""
@@ -134,6 +136,7 @@ fun MrzScanScreen(
                                         dateOfExpiry = dateOfExpiry,
                                     )
 
+                                hasNavigated = true
                                 viewModel.showMrzConfirmation(
                                     passportData = updatedPassportData,
                                     rawMrzData = mrzResult,

@@ -366,7 +366,7 @@ private suspend fun requestCameraPermission(): Boolean =
             AVAuthorizationStatusAuthorized -> cont.resume(true)
             AVAuthorizationStatusNotDetermined -> {
                 AVCaptureDevice.requestAccessForMediaType(AVMediaTypeVideo) { granted ->
-                    cont.resume(granted)
+                    if (cont.isActive) cont.resume(granted)
                 }
             }
             AVAuthorizationStatusDenied, AVAuthorizationStatusRestricted -> cont.resume(false)

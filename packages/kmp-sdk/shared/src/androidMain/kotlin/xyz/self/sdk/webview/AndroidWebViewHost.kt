@@ -2,8 +2,12 @@ package xyz.self.sdk.webview
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.http.SslError
 import android.webkit.JavascriptInterface
+import android.webkit.SslErrorHandler
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import xyz.self.sdk.bridge.MessageRouter
 
 /**
@@ -41,6 +45,28 @@ class AndroidWebViewHost(
                         WebView.setWebContentsDebuggingEnabled(true)
                     }
                 }
+
+                // Set WebViewClient for URL filtering and SSL security
+                webViewClient =
+                    object : WebViewClient() {
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView?,
+                            request: WebResourceRequest?,
+                        ): Boolean {
+                            val url = request?.url?.toString() ?: return true
+                            if (url.startsWith("file:///android_asset/")) return false
+                            if (isDebugMode && url.startsWith("http://10.0.2.2:5173")) return false
+                            return true // block everything else
+                        }
+
+                        override fun onReceivedSslError(
+                            view: WebView?,
+                            handler: SslErrorHandler?,
+                            error: SslError?,
+                        ) {
+                            handler?.cancel()
+                        }
+                    }
 
                 // Register JS interface: WebView → Native communication
                 // JavaScript can call: window.SelfNativeAndroid.postMessage(json)
