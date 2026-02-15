@@ -6,14 +6,10 @@
     "android": "./scripts/run-android.sh",
     "android:build": "./gradlew :composeApp:assembleDebug",
     "clean": "./gradlew clean",
-    "format": "./gradlew ktlintFormat && yarn swift:format",
+    "format": "./gradlew ktlintFormat && cd iosApp && swiftlint --fix --format",
     "ios:build": "./gradlew :composeApp:compileKotlinIosSimulatorArm64",
     "ios:open": "open iosApp/iosApp.xcworkspace",
-    "lint": "./gradlew ktlintCheck",
-    "lint:all": "./gradlew ktlintCheck && yarn swift:lint",
-    "swift:format": "cd iosApp && swiftlint --fix --format",
-    "swift:lint": "cd iosApp && swiftlint",
-    "swift:lint:fix": "cd iosApp && swiftlint --fix",
+    "lint": "./gradlew ktlintCheck && cd iosApp && swiftlint",
     "test": "./gradlew :composeApp:testDebugUnitTest"
   }
 }
