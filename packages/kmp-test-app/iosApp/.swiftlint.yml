@@ -2,3 +2,6 @@ excluded:
   - Pods
   - build
   - DerivedData
+
+disabled_rules:
+  - type_name # Allow iOSApp naming
