@@ -40,6 +40,11 @@ kotlin {
             implementation("xyz.self.sdk:shared")
         }
 
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+        }
+
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
             implementation("androidx.security:security-crypto:1.1.0-alpha06")
@@ -73,6 +78,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 
     packaging {

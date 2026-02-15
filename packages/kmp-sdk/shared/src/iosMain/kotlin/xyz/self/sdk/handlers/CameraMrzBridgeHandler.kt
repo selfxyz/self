@@ -30,13 +30,12 @@ class CameraMrzBridgeHandler : BridgeHandler {
         }
 
     /** Stub — wire up to MrzCameraHelper.swift via cinterop. */
-    private suspend fun scanMRZ(): JsonElement {
+    private suspend fun scanMRZ(): JsonElement =
         throw BridgeHandlerException(
             "NOT_IMPLEMENTED",
             "MRZ scanning is handled by MrzCameraHelper.swift in the test app. " +
                 "Wire up via cinterop for full SDK integration.",
         )
-    }
 
     private fun isAvailable(): JsonElement {
         // TODO: Check AVCaptureDevice availability via cinterop

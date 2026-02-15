@@ -1,0 +1,47 @@
+name: KMP CI
+
+on:
+  pull_request:
+    paths: ["packages/kmp-sdk/**", "packages/kmp-test-app/**"]
+  push:
+    branches: [dev, staging, main]
+    paths: ["packages/kmp-sdk/**", "packages/kmp-test-app/**"]
+
+jobs:
+  kmp-sdk-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/kmp-sdk
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :shared:jvmTest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kmp-sdk-test-results
+          path: packages/kmp-sdk/shared/build/reports/tests/
+
+  kmp-test-app-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/kmp-test-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :composeApp:testDebugUnitTest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kmp-test-app-test-results
+          path: packages/kmp-test-app/composeApp/build/reports/tests/

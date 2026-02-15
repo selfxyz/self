@@ -11,7 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.serialization.json.JsonElement
 import xyz.self.sdk.handlers.CameraMrzBridgeHandler
-import xyz.self.sdk.handlers.MrzDetectionState
+import xyz.self.sdk.models.MrzDetectionState
 
 private const val TAG = "CameraPreview"
 

@@ -2,6 +2,8 @@ package xyz.self.sdk.models
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class MrzKeyUtilsTest {
     @Test
@@ -44,6 +46,46 @@ class MrzKeyUtilsTest {
         val key = MrzKeyUtils.computeMrzKey("AB1234", "900101", "300101")
         // "AB1234" padded to 9 → "AB1234<<<"
         assert(key.startsWith("AB1234<<<"))
+        assertEquals(24, key.length)
+    }
+
+    @Test
+    fun calcCheckSum_empty_string() {
+        assertEquals(0, MrzKeyUtils.calcCheckSum(""))
+    }
+
+    @Test
+    fun calcCheckSum_all_fillers() {
+        // '<' has value 0, so "<<<" → 0*7 + 0*3 + 0*1 = 0
+        assertEquals(0, MrzKeyUtils.calcCheckSum("<<<"))
+    }
+
+    @Test
+    fun calcCheckSum_single_digit() {
+        // "5" → 5*7 = 35, 35 % 10 = 5
+        assertEquals(5, MrzKeyUtils.calcCheckSum("5"))
+    }
+
+    @Test
+    fun calcCheckSum_invalid_character_throws() {
+        assertFailsWith<IllegalArgumentException> {
+            MrzKeyUtils.calcCheckSum("AB@CD")
+        }
+    }
+
+    @Test
+    fun computeMrzKey_exact_9_char_number() {
+        val key = MrzKeyUtils.computeMrzKey("L898902C3", "690806", "060815")
+        // No padding needed for 9-char passport number
+        assertTrue(key.startsWith("L898902C3"))
+        assertEquals(24, key.length)
+    }
+
+    @Test
+    fun computeMrzKey_empty_fields() {
+        val key = MrzKeyUtils.computeMrzKey("", "", "")
+        // Empty strings padded with '<': "<<<<<<<<<" (9), "<<<<<<" (6), "<<<<<<" (6)
+        assertTrue(key.startsWith("<<<<<<<<<")); // 9 fillers
         assertEquals(24, key.length)
     }
 }

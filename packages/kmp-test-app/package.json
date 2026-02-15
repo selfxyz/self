@@ -10,8 +10,9 @@
     "ios:build": "./gradlew :composeApp:compileKotlinIosSimulatorArm64",
     "ios:open": "open iosApp/iosApp.xcworkspace",
     "lint": "./gradlew ktlintCheck && yarn swift:lint",
-    "swift:lint": "cd iosApp && swiftlint",
     "swift:format": "cd iosApp && swiftlint --fix --format",
-    "swift:lint:fix": "cd iosApp && swiftlint --fix"
+    "swift:lint": "cd iosApp && swiftlint",
+    "swift:lint:fix": "cd iosApp && swiftlint --fix",
+    "test": "./gradlew :composeApp:testDebugUnitTest"
   }
 }
