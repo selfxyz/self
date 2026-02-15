@@ -11,14 +11,14 @@ actual object Logger {
         tag: String,
         message: String,
     ) {
-        NSLog("%@", "🔵 DEBUG [$tag] $message")
+        NSLog("DEBUG [$tag] $message")
     }
 
     actual fun i(
         tag: String,
         message: String,
     ) {
-        NSLog("%@", "ℹ️ INFO [$tag] $message")
+        NSLog("INFO [$tag] $message")
     }
 
     actual fun e(
@@ -27,11 +27,11 @@ actual object Logger {
         throwable: Throwable?,
     ) {
         if (throwable != null) {
-            NSLog("%@", "🔴 ERROR [$tag] $message")
-            NSLog("%@", "   ↳ Exception: ${throwable::class.simpleName}: ${throwable.message}")
+            NSLog("ERROR [$tag] $message")
+            NSLog("   Exception: ${throwable::class.simpleName}: ${throwable.message}")
             throwable.printStackTrace()
         } else {
-            NSLog("%@", "🔴 ERROR [$tag] $message")
+            NSLog("ERROR [$tag] $message")
         }
     }
 
@@ -39,6 +39,6 @@ actual object Logger {
         tag: String,
         message: String,
     ) {
-        NSLog("%@", "⚠️ WARN [$tag] $message")
+        NSLog("WARN [$tag] $message")
     }
 }
