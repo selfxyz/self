@@ -23,21 +23,21 @@ public typealias NfcProgressCallback = (Int, Int, String) -> Void
 public typealias NfcCompletionCallback = (Bool, String) -> Void
 
 @objc public class NfcPassportHelper: NSObject {
-    
+
     #if !targetEnvironment(simulator)
     private var passportReader: NFCPassportReader.PassportReader?
     #endif
-    
+
     private var progressCallback: NfcProgressCallback?
     private var completionCallback: NfcCompletionCallback?
-    
+
     @objc public override init() {
         super.init()
         #if !targetEnvironment(simulator)
         self.passportReader = NFCPassportReader.PassportReader()
         #endif
     }
-    
+
     /// Checks if NFC is available on this device
     @objc public static func isNfcAvailable() -> Bool {
         #if targetEnvironment(simulator)
@@ -46,7 +46,7 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
         return NFCReaderSession.readingAvailable
         #endif
     }
-    
+
     /// Scans an NFC-enabled passport
     /// - Parameters:
     ///   - passportNumber: Passport number (for MRZ key)
@@ -65,25 +65,25 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
         completion(false, "NFC is not available on simulator")
         return
         #else
-        
+
         self.progressCallback = progress
         self.completionCallback = completion
-        
+
         // Compute MRZ key
         let mrzKey = computeMrzKey(
             passportNumber: passportNumber,
             dateOfBirth: dateOfBirth,
             dateOfExpiry: dateOfExpiry
         )
-        
+
         guard let passportReader = self.passportReader else {
             completion(false, "PassportReader not initialized")
             return
         }
-        
+
         // Report initial state
         progress(0, 0, "Hold your phone near the passport")
-        
+
         // Start NFC session
         passportReader.readPassport(
             mrzKey: mrzKey,
@@ -97,12 +97,12 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
                     completion(false, "NFC scan failed: \(error.localizedDescription)")
                     return
                 }
-                
+
                 guard let passport = passport else {
                     completion(false, "NFC scan failed: No passport data")
                     return
                 }
-                
+
                 // Convert passport data to JSON
                 do {
                     let jsonResult = try self.passportToJson(passport: passport)
@@ -115,13 +115,13 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
         )
         #endif
     }
-    
+
     #if !targetEnvironment(simulator)
-    
+
     /// Maps NFCPassportReader display messages to progress states
     private func mapDisplayMessageToProgress(_ message: NFCViewDisplayMessage) {
         guard let callback = progressCallback else { return }
-        
+
         switch message {
         case .requestPresentPassport:
             callback(0, 0, "Hold your phone near the passport")
@@ -144,18 +144,18 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
             break
         }
     }
-    
+
     /// Converts passport data to JSON string
     private func passportToJson(passport: NFCPassportModel) throws -> String {
         var result: [String: Any] = [:]
-        
+
         // Document type
         result["documentType"] = passport.documentType
-        
+
         // Personal details from DG1
         if let dg1 = passport.dataGroupsRead[.DG1] as? DataGroup1 {
             let mrz = dg1.mrz
-            
+
             result["documentNumber"] = mrz.documentNumber
             result["dateOfBirth"] = mrz.dateOfBirth
             result["dateOfExpiry"] = mrz.dateOfExpiry
@@ -165,18 +165,18 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
             result["firstName"] = mrz.firstName
             result["gender"] = mrz.gender
             result["personalNumber"] = mrz.personalNumber ?? ""
-            
+
             // Full MRZ
             result["mrzString"] = "\(mrz.mrzLine1)\n\(mrz.mrzLine2)"
         }
-        
+
         // SOD data (Security Object Document)
         if let sodBytes = passport.dataGroupsRead[.SOD] as? DataGroup,
            let sodData = sodBytes.data {
-            
+
             // Convert to base64
             result["sod"] = sodData.base64EncodedString()
-            
+
             // Parse SOD structure
             if let sod = try? SOD(data: sodData) {
                 // Document signing certificate
@@ -184,69 +184,69 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
                     let certData = SecCertificateCopyData(docSigningCert) as Data
                     result["documentSigningCertificate"] = certData.base64EncodedString()
                 }
-                
+
                 // LDS security object (hashes)
                 if let ldsSecurityObject = sod.ldsSecurityObject {
                     result["hashAlgorithm"] = ldsSecurityObject.hashAlgorithm
-                    
+
                     var dataGroupHashes: [String: String] = [:]
                     for (tag, hash) in ldsSecurityObject.dataGroupHashes {
                         dataGroupHashes["\(tag)"] = hash.base64EncodedString()
                     }
                     result["dataGroupHashes"] = dataGroupHashes
                 }
-                
+
                 // Signature
                 if let signature = sod.signature {
                     result["signature"] = signature.base64EncodedString()
                 }
-                
+
                 // Signed attributes
                 if let signedAttributes = sod.signedAttributes {
                     result["signedAttributes"] = signedAttributes.base64EncodedString()
                 }
             }
         }
-        
+
         // Passive authentication status
         result["passiveAuthenticationPassed"] = passport.passiveAuthenticationPassed
-        
+
         // Verification status
         result["isPACESupported"] = passport.isPACESupported
         result["isChipAuthenticationSupported"] = passport.isChipAuthenticationSupported
-        
+
         // Convert to JSON string
         let jsonData = try JSONSerialization.data(withJSONObject: result, options: [.prettyPrinted, .sortedKeys])
         guard let jsonString = String(data: jsonData, encoding: .utf8) else {
             throw NSError(domain: "NfcPassportHelper", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to convert to JSON string"])
         }
-        
+
         return jsonString
     }
-    
+
     #endif
-    
+
     /// Computes MRZ key from passport details
     private func computeMrzKey(passportNumber: String, dateOfBirth: String, dateOfExpiry: String) -> String {
         // Pad passport number to 9 characters
         let paddedPassportNumber = passportNumber.padding(toLength: 9, withPad: "<", startingAt: 0)
-        
+
         // Compute check digits
         let passportCheckDigit = computeCheckDigit(paddedPassportNumber)
         let dobCheckDigit = computeCheckDigit(dateOfBirth)
         let expiryCheckDigit = computeCheckDigit(dateOfExpiry)
-        
+
         // Combine: PassportNumber + CheckDigit + DOB + CheckDigit + Expiry + CheckDigit
         let mrzKey = "\(paddedPassportNumber)\(passportCheckDigit)\(dateOfBirth)\(dobCheckDigit)\(dateOfExpiry)\(expiryCheckDigit)"
-        
+
         return mrzKey
     }
-    
+
     /// Computes MRZ check digit using ICAO 9303 algorithm
     private func computeCheckDigit(_ input: String) -> Int {
         let weights = [7, 3, 1]
         var sum = 0
-        
+
         for (index, char) in input.enumerated() {
             let value: Int
             if char.isNumber {
@@ -256,10 +256,10 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
             } else {
                 value = 0 // '<' or other characters
             }
-            
+
             sum += value * weights[index % 3]
         }
-        
+
         return sum % 10
     }
 }
