@@ -5,7 +5,7 @@ platform :ios, '16.0'
 target 'iosApp' do
   use_frameworks!
 
-  # NFCPassportReader for passport NFC scanning
-  pod 'NFCPassportReader', '~> 3.2'
+  # NFCPassportReader for passport NFC scanning (selfxyz fork matching main app)
+  pod 'NFCPassportReader', git: 'git@github.com:selfxyz/NFCPassportReader.git', commit: '9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b'
   
 end

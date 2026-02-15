@@ -8,7 +8,7 @@
     "clean": "./gradlew clean",
     "format": "./gradlew ktlintFormat && yarn swift:format",
     "ios:build": "./gradlew :composeApp:compileKotlinIosSimulatorArm64",
-    "ios:open": "open iosApp/iosApp.xcodeproj",
+    "ios:open": "open iosApp/iosApp.xcworkspace",
     "lint": "./gradlew ktlintCheck && yarn swift:lint",
     "swift:lint": "cd iosApp && swiftlint",
     "swift:format": "cd iosApp && swiftlint --fix --format",

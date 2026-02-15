@@ -4,6 +4,7 @@ import SwiftUI
 struct iOSApp: App {
     init() {
         MrzCameraFactoryImpl.register()
+        NfcScanFactoryImpl.register()
     }
 
     var body: some Scene {

@@ -25,7 +25,7 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
 @objc public class NfcPassportHelper: NSObject {
 
     #if !targetEnvironment(simulator)
-    private var passportReader: NFCPassportReader.PassportReader?
+    private var passportReader: PassportReader?
     #endif
 
     private var progressCallback: NfcProgressCallback?
@@ -34,7 +34,7 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
     @objc public override init() {
         super.init()
         #if !targetEnvironment(simulator)
-        self.passportReader = NFCPassportReader.PassportReader()
+        self.passportReader = PassportReader()
         #endif
     }
 
@@ -84,24 +84,17 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
         // Report initial state
         progress(0, 0, "Hold your phone near the passport")
 
-        // Start NFC session
-        passportReader.readPassport(
-            mrzKey: mrzKey,
-            tags: [.COM, .DG1, .SOD],
-            customDisplayMessage: { (displayMessage) in
-                // Map display messages to progress states
-                self.mapDisplayMessageToProgress(displayMessage)
-            },
-            completed: { (passport, error) in
-                if let error = error {
-                    completion(false, "NFC scan failed: \(error.localizedDescription)")
-                    return
-                }
-
-                guard let passport = passport else {
-                    completion(false, "NFC scan failed: No passport data")
-                    return
-                }
+        // Start NFC session using async API
+        Task {
+            do {
+                let passport = try await passportReader.readPassport(
+                    password: mrzKey,
+                    tags: [.COM, .DG1, .SOD],
+                    customDisplayMessage: { [weak self] (displayMessage) in
+                        self?.mapDisplayMessageToProgress(displayMessage)
+                        return nil
+                    }
+                )
 
                 // Convert passport data to JSON
                 do {
@@ -111,8 +104,10 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
                 } catch {
                     completion(false, "Failed to parse passport data: \(error.localizedDescription)")
                 }
+            } catch {
+                completion(false, "NFC scan failed: \(error.localizedDescription)")
             }
-        )
+        }
         #endif
     }
 
@@ -125,21 +120,34 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
         switch message {
         case .requestPresentPassport:
             callback(0, 0, "Hold your phone near the passport")
-        case .authenticatingWithPassport:
-            callback(2, 15, "Authenticating with passport...")
-        case .readingDataGroupProgress(let tag, let progress):
-            if tag == "DG1" {
-                let percent = 40 + Int(progress * 15) // 40-55%
+        case .authenticatingWithPassport(let progress):
+            callback(2, 15 + progress / 10, "Authenticating with passport...")
+        case .readingDataGroupProgress(let dgId, let progress):
+            switch dgId {
+            case .DG1:
+                let percent = 40 + progress / 4 // 40-65%
                 callback(3, percent, "Reading passport data...")
-            } else if tag == "SOD" {
-                let percent = 55 + Int(progress * 15) // 55-70%
+            case .SOD:
+                let percent = 65 + progress / 4 // 65-90%
                 callback(4, percent, "Reading security data...")
+            default:
+                let percent = 40 + progress / 2
+                callback(3, percent, "Reading data...")
             }
         case .successfulRead:
             callback(6, 90, "Processing passport data...")
-        case .error(let error):
-            // Errors handled in completion callback
+        case .error:
             break
+        case .tagDetected:
+            callback(1, 5, "Passport detected...")
+        case .paceSuccess, .bacSuccess:
+            callback(2, 30, "Authentication succeeded")
+        case .bacStarted:
+            callback(2, 10, "Starting authentication...")
+        case .paceFailed:
+            callback(2, 10, "Trying alternative authentication...")
+        case .activeAuthentication:
+            callback(5, 85, "Verifying passport...")
         @unknown default:
             break
         }
@@ -152,66 +160,62 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
         // Document type
         result["documentType"] = passport.documentType
 
-        // Personal details from DG1
-        if let dg1 = passport.dataGroupsRead[.DG1] as? DataGroup1 {
-            let mrz = dg1.mrz
+        // Personal details from NFCPassportModel computed properties
+        result["documentNumber"] = passport.documentNumber
+        result["dateOfBirth"] = passport.dateOfBirth
+        result["dateOfExpiry"] = passport.documentExpiryDate
+        result["issuer"] = passport.issuingAuthority
+        result["nationality"] = passport.nationality
+        result["lastName"] = passport.lastName
+        result["firstName"] = passport.firstName
+        result["gender"] = passport.gender
+        result["personalNumber"] = passport.personalNumber ?? ""
 
-            result["documentNumber"] = mrz.documentNumber
-            result["dateOfBirth"] = mrz.dateOfBirth
-            result["dateOfExpiry"] = mrz.dateOfExpiry
-            result["issuer"] = mrz.countryCode
-            result["nationality"] = mrz.nationality
-            result["lastName"] = mrz.lastName
-            result["firstName"] = mrz.firstName
-            result["gender"] = mrz.gender
-            result["personalNumber"] = mrz.personalNumber ?? ""
-
-            // Full MRZ
-            result["mrzString"] = "\(mrz.mrzLine1)\n\(mrz.mrzLine2)"
-        }
+        // Full MRZ
+        result["mrzString"] = passport.passportMRZ
 
         // SOD data (Security Object Document)
-        if let sodBytes = passport.dataGroupsRead[.SOD] as? DataGroup,
-           let sodData = sodBytes.data {
+        if let sod = passport.getDataGroup(.SOD) {
+            // Convert raw data to base64
+            result["sod"] = Data(sod.data).base64EncodedString()
 
-            // Convert to base64
-            result["sod"] = sodData.base64EncodedString()
+            // Document signing certificate (PEM encoded)
+            if let docSigningCert = passport.documentSigningCertificate {
+                result["documentSigningCertificate"] = docSigningCert.certToPEM()
+            }
 
-            // Parse SOD structure
-            if let sod = try? SOD(data: sodData) {
-                // Document signing certificate
-                if let docSigningCert = sod.documentSigningCertificate {
-                    let certData = SecCertificateCopyData(docSigningCert) as Data
-                    result["documentSigningCertificate"] = certData.base64EncodedString()
-                }
-
-                // LDS security object (hashes)
-                if let ldsSecurityObject = sod.ldsSecurityObject {
-                    result["hashAlgorithm"] = ldsSecurityObject.hashAlgorithm
-
-                    var dataGroupHashes: [String: String] = [:]
-                    for (tag, hash) in ldsSecurityObject.dataGroupHashes {
-                        dataGroupHashes["\(tag)"] = hash.base64EncodedString()
-                    }
-                    result["dataGroupHashes"] = dataGroupHashes
+            // Parse SOD structure if it's a SOD type
+            if let sodGroup = sod as? SOD {
+                // Hash algorithm
+                if let hashAlgo = try? sodGroup.getEncapsulatedContentDigestAlgorithm() {
+                    result["hashAlgorithm"] = hashAlgo
                 }
 
                 // Signature
-                if let signature = sod.signature {
+                if let signature = try? sodGroup.getSignature() {
                     result["signature"] = signature.base64EncodedString()
                 }
 
                 // Signed attributes
-                if let signedAttributes = sod.signedAttributes {
+                if let signedAttributes = try? sodGroup.getSignedAttributes() {
                     result["signedAttributes"] = signedAttributes.base64EncodedString()
                 }
             }
+
+            // Data group hashes from the model
+            if !passport.dataGroupHashes.isEmpty {
+                var hashesDict: [String: String] = [:]
+                for (dgId, dgHash) in passport.dataGroupHashes {
+                    hashesDict[dgId.getName()] = dgHash.sodHash
+                }
+                result["dataGroupHashes"] = hashesDict
+            }
         }
 
-        // Passive authentication status
-        result["passiveAuthenticationPassed"] = passport.passiveAuthenticationPassed
-
         // Verification status
+        result["passportCorrectlySigned"] = passport.passportCorrectlySigned
+        result["documentSigningCertificateVerified"] = passport.documentSigningCertificateVerified
+        result["passportDataNotTampered"] = passport.passportDataNotTampered
         result["isPACESupported"] = passport.isPACESupported
         result["isChipAuthenticationSupported"] = passport.isChipAuthenticationSupported
 

@@ -8,22 +8,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import kotlinx.cinterop.*
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import xyz.self.sdk.models.NfcScanState
 import xyz.self.testapp.components.NfcProgressIndicator
 import xyz.self.testapp.models.VerificationFlowState
 import xyz.self.testapp.utils.Logger
 import xyz.self.testapp.viewmodels.VerificationViewModel
+import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-// Import the Swift NfcPassportHelper via Objective-C interop
-// The Swift class is exposed with @objc and can be called from Kotlin
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun NfcScanScreen(
     navController: NavController,
@@ -220,22 +220,13 @@ fun NfcScanScreen(
  */
 @OptIn(ExperimentalForeignApi::class)
 private fun isNfcAvailable(): Boolean {
-    // On simulator, NFC is not available
-    // On physical devices with iOS 13+, we can use NFCReaderSession
-    // For now, we'll use a simple check via the Swift helper
-    return try {
-        // This would call the Swift helper's isNfcAvailable method
-        // For now, return false on simulator
-        platform.Foundation.NSProcessInfo.processInfo.environment["SIMULATOR_DEVICE_NAME"] == null
-    } catch (e: Exception) {
-        false
-    }
+    if (NfcScanFactory.instance == null) return false
+    return platform.Foundation.NSProcessInfo.processInfo.environment["SIMULATOR_DEVICE_NAME"] == null
 }
 
 /**
- * Scans passport using NFC via Swift helper
+ * Scans passport using NFC via Swift helper (through factory bridge)
  */
-@OptIn(ExperimentalForeignApi::class)
 private suspend fun scanPassportWithNfc(
     passportNumber: String,
     dateOfBirth: String,
@@ -243,45 +234,68 @@ private suspend fun scanPassportWithNfc(
     onProgress: (NfcScanState) -> Unit,
 ): JsonElement =
     suspendCancellableCoroutine { cont ->
+        val factory = NfcScanFactory.instance
+        if (factory == null) {
+            cont.resumeWithException(
+                Exception("NFC scanner not configured. Factory not registered from iOS app."),
+            )
+            return@suspendCancellableCoroutine
+        }
 
-        Logger.i("NfcScan", "iOS NFC scan starting...")
-        Logger.d("NfcScan", "Passport: $passportNumber, DOB: $dateOfBirth, Expiry: $dateOfExpiry")
-
-        // TODO: Call Swift NfcPassportHelper here
-        // For now, throw an error indicating it needs to be implemented
-        // The Swift helper needs to be exposed via @objc and imported through cinterop
-
-        // Example of how it would work:
-        // val helper = NfcPassportHelper()
-        // helper.scanPassport(
-        //     passportNumber = passportNumber,
-        //     dateOfBirth = dateOfBirth,
-        //     dateOfExpiry = dateOfExpiry,
-        //     progress = { stateIndex, percent, message ->
-        //         val state = NfcScanState.entries.getOrNull(stateIndex)
-        //         if (state != null) {
-        //             onProgress(state)
-        //         }
-        //     },
-        //     completion = { success, result ->
-        //         if (success) {
-        //             val jsonElement = Json.parseToJsonElement(result)
-        //             cont.resume(jsonElement)
-        //         } else {
-        //             cont.resumeWithException(Exception(result))
-        //         }
-        //     }
-        // )
-
-        cont.resumeWithException(
-            Exception(
-                "NFC scanning not yet fully integrated with Swift helper. " +
-                    "The Swift NfcPassportHelper.swift is created but needs to be " +
-                    "exposed via Xcode project and imported through Kotlin/Native cinterop. " +
-                    "This requires: 1) Adding NfcPassportHelper.swift to Xcode project, " +
-                    "2) Running 'pod install' to install NFCPassportReader, " +
-                    "3) Building the iOS app to generate framework headers, " +
-                    "4) Setting up cinterop definition if needed.",
-            ),
+        factory.scanPassport(
+            passportNumber = passportNumber,
+            dateOfBirth = dateOfBirth,
+            dateOfExpiry = dateOfExpiry,
+            onProgress = { stateAny ->
+                try {
+                    val stateIndex =
+                        when (stateAny) {
+                            is Long -> stateAny.toInt()
+                            is Int -> stateAny
+                            is Number -> stateAny.toInt()
+                            else -> 0
+                        }
+                    val state = NfcScanState.entries.getOrNull(stateIndex)
+                    if (state != null) {
+                        onProgress(state)
+                    }
+                } catch (e: Exception) {
+                    Logger.e("NfcScan", "Failed to convert progress state", e)
+                }
+            },
+            onComplete = { resultAny ->
+                try {
+                    val jsonString = resultAny as? String ?: resultAny.toString()
+                    val jsonElement = Json.parseToJsonElement(jsonString)
+                    cont.resume(jsonElement)
+                } catch (e: Exception) {
+                    cont.resumeWithException(Exception("Failed to parse NFC result: ${e.message}"))
+                }
+            },
+            onError = { error ->
+                cont.resumeWithException(Exception(error))
+            },
         )
     }
+
+/**
+ * Factory interface for creating NFC scan sessions.
+ * Implemented and registered by the iOS app (NfcScanFactoryImpl.swift).
+ */
+interface NfcScanViewFactory {
+    fun scanPassport(
+        passportNumber: String,
+        dateOfBirth: String,
+        dateOfExpiry: String,
+        onProgress: (Any) -> Unit,
+        onComplete: (Any) -> Unit,
+        onError: (String) -> Unit,
+    )
+}
+
+/**
+ * Singleton to hold the factory instance (set from iOS app)
+ */
+object NfcScanFactory {
+    var instance: NfcScanViewFactory? = null
+}
