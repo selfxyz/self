@@ -355,11 +355,14 @@ class NfcBridgeHandler(
 
             for (securityInfo: SecurityInfo in securityInfos) {
                 if (securityInfo is ChipAuthenticationPublicKeyInfo) {
-                    val caInfo = securityInfos.filterIsInstance<ChipAuthenticationInfo>()
-                        .firstOrNull { it.keyId == securityInfo.keyId }
-                        ?: securityInfos.filterIsInstance<ChipAuthenticationInfo>().firstOrNull()
-                    val caOid = caInfo?.objectIdentifier
-                        ?: ChipAuthenticationPublicKeyInfo.ID_CA_ECDH_AES_CBC_CMAC_256
+                    val caInfo =
+                        securityInfos
+                            .filterIsInstance<ChipAuthenticationInfo>()
+                            .firstOrNull { it.keyId == securityInfo.keyId }
+                            ?: securityInfos.filterIsInstance<ChipAuthenticationInfo>().firstOrNull()
+                    val caOid =
+                        caInfo?.objectIdentifier
+                            ?: ChipAuthenticationPublicKeyInfo.ID_CA_ECDH_AES_CBC_CMAC_256
                     service.doEACCA(
                         securityInfo.keyId,
                         caOid,
