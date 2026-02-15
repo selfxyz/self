@@ -15,9 +15,9 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonElement
 import xyz.self.sdk.models.NfcScanState
-import xyz.self.testapp.utils.Logger
 import xyz.self.testapp.components.NfcProgressIndicator
 import xyz.self.testapp.models.VerificationFlowState
+import xyz.self.testapp.utils.Logger
 import xyz.self.testapp.viewmodels.VerificationViewModel
 import kotlin.coroutines.resumeWithException
 

@@ -28,11 +28,11 @@ import platform.AVFoundation.AVMediaTypeVideo
 import platform.AVFoundation.authorizationStatusForMediaType
 import platform.AVFoundation.requestAccessForMediaType
 import platform.UIKit.UIView
-import xyz.self.testapp.utils.Logger
 import xyz.self.sdk.models.MrzDetectionState
 import xyz.self.testapp.components.MrzViewfinder
 import xyz.self.testapp.models.PassportData
 import xyz.self.testapp.models.VerificationFlowState
+import xyz.self.testapp.utils.Logger
 import xyz.self.testapp.viewmodels.VerificationViewModel
 import kotlin.coroutines.resume
 
@@ -141,8 +141,8 @@ fun MrzScanScreen(
                             factory = {
                                 createCameraPreview(
                                     onMrzDetected = { mrzResult ->
-                                        Logger.d("MrzScan","onMrzDetected callback triggered!")
-                                        Logger.d("MrzScan","MRZ Result: $mrzResult")
+                                        Logger.d("MrzScan", "onMrzDetected callback triggered!")
+                                        Logger.d("MrzScan", "MRZ Result: $mrzResult")
 
                                         scope.launch {
                                             try {
@@ -151,7 +151,10 @@ fun MrzScanScreen(
                                                 val dateOfBirth = mrzObj["dateOfBirth"]?.jsonPrimitive?.content ?: ""
                                                 val dateOfExpiry = mrzObj["dateOfExpiry"]?.jsonPrimitive?.content ?: ""
 
-                                                Logger.d("MrzScan","Parsed - Passport: $passportNumber, DOB: $dateOfBirth, Expiry: $dateOfExpiry")
+                                                Logger.d(
+                                                    "MrzScan",
+                                                    "Parsed - Passport: $passportNumber, DOB: $dateOfBirth, Expiry: $dateOfExpiry",
+                                                )
 
                                                 val updatedPassportData =
                                                     PassportData(
@@ -165,13 +168,13 @@ fun MrzScanScreen(
                                                         passportData = updatedPassportData,
                                                         rawMrzData = mrzResult,
                                                     )
-                                                    Logger.d("MrzScan","Navigating to mrz_confirmation...")
+                                                    Logger.d("MrzScan", "Navigating to mrz_confirmation...")
                                                     navController.navigate("mrz_confirmation") {
                                                         popUpTo("mrz_scan") { inclusive = true }
                                                     }
                                                 }
                                             } catch (e: Exception) {
-                                                Logger.d("MrzScan","Failed to parse MRZ: ${e.message}")
+                                                Logger.d("MrzScan", "Failed to parse MRZ: ${e.message}")
                                                 viewModel.setError("Failed to parse MRZ: ${e.message}")
                                             }
                                         }
@@ -180,7 +183,7 @@ fun MrzScanScreen(
                                         detectionState = state
                                     },
                                     onError = { error ->
-                                        Logger.d("MrzScan","onError callback triggered: $error")
+                                        Logger.d("MrzScan", "onError callback triggered: $error")
                                         viewModel.setError(error)
                                     },
                                 )
@@ -307,11 +310,11 @@ private fun createCameraPreview(
     val placeholderView = UIView()
     placeholderView.backgroundColor = platform.UIKit.UIColor.blackColor
 
-    Logger.d("MrzScan","Camera preview creation - Swift helper integration pending")
-    Logger.d("MrzScan","The MrzCameraHelper.swift is created but needs to be:")
-    Logger.d("MrzScan","1. Added to Xcode project")
-    Logger.d("MrzScan","2. Properly exposed via @objc for Kotlin interop")
-    Logger.d("MrzScan","3. Integrated with the Compose UIKitView")
+    Logger.d("MrzScan", "Camera preview creation - Swift helper integration pending")
+    Logger.d("MrzScan", "The MrzCameraHelper.swift is created but needs to be:")
+    Logger.d("MrzScan", "1. Added to Xcode project")
+    Logger.d("MrzScan", "2. Properly exposed via @objc for Kotlin interop")
+    Logger.d("MrzScan", "3. Integrated with the Compose UIKitView")
 
     // Report error about pending integration
     onError(

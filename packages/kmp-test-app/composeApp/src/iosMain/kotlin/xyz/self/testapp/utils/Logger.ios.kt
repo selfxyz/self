@@ -7,11 +7,17 @@ import platform.Foundation.NSLog
  * Logs are visible in Xcode console and can be filtered by emoji prefix
  */
 actual object Logger {
-    actual fun d(tag: String, message: String) {
+    actual fun d(
+        tag: String,
+        message: String,
+    ) {
         NSLog("🔵 DEBUG [$tag] $message")
     }
 
-    actual fun i(tag: String, message: String) {
+    actual fun i(
+        tag: String,
+        message: String,
+    ) {
         NSLog("ℹ️ INFO [$tag] $message")
     }
 
@@ -29,7 +35,10 @@ actual object Logger {
         }
     }
 
-    actual fun w(tag: String, message: String) {
+    actual fun w(
+        tag: String,
+        message: String,
+    ) {
         NSLog("⚠️ WARN [$tag] $message")
     }
 }
