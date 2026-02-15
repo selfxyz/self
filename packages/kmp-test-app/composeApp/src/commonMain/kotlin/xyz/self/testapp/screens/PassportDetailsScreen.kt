@@ -1,11 +1,16 @@
 package xyz.self.testapp.screens
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +42,7 @@ fun PassportDetailsScreen(
     LoadSavedDataEffect(viewModel)
 
     val savePassportData = getSavePassportDataFunction()
+    val focusManager = LocalFocusManager.current
 
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -66,7 +72,13 @@ fun PassportDetailsScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                    ) {
+                        focusManager.clearFocus()
+                    },
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             if (hasSavedData) {
@@ -91,6 +103,11 @@ fun PassportDetailsScreen(
                 placeholder = { Text("e.g., AB1234567") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions =
+                    KeyboardActions(
+                        onNext = { /* Focus moves automatically */ },
+                    ),
             )
 
             OutlinedTextField(
@@ -103,7 +120,15 @@ fun PassportDetailsScreen(
                 label = { Text("Date of Birth") },
                 placeholder = { Text("YYMMDD (e.g., 900115)") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onNext = { /* Focus moves automatically */ },
+                    ),
                 singleLine = true,
                 supportingText = { Text("Format: YYMMDD") },
             )
@@ -118,7 +143,15 @@ fun PassportDetailsScreen(
                 label = { Text("Date of Expiry") },
                 placeholder = { Text("YYMMDD (e.g., 300115)") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onDone = { focusManager.clearFocus() },
+                    ),
                 singleLine = true,
                 supportingText = { Text("Format: YYMMDD") },
             )

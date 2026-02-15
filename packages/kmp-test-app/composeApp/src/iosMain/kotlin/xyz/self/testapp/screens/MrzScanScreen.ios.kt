@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -27,6 +28,7 @@ import platform.AVFoundation.AVCaptureDevice
 import platform.AVFoundation.AVMediaTypeVideo
 import platform.AVFoundation.authorizationStatusForMediaType
 import platform.AVFoundation.requestAccessForMediaType
+import platform.UIKit.UIColor
 import platform.UIKit.UIView
 import xyz.self.sdk.models.MrzDetectionState
 import xyz.self.testapp.components.MrzViewfinder
@@ -48,6 +50,7 @@ fun MrzScanScreen(
 
     var hasCameraPermission by remember { mutableStateOf(checkCameraPermission()) }
     var isRequestingPermission by remember { mutableStateOf(false) }
+    var showCameraError by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (!hasCameraPermission && !isRequestingPermission) {
@@ -133,6 +136,71 @@ fun MrzScanScreen(
                     }
                 }
 
+                showCameraError -> {
+                    // Camera integration not ready
+                    Column(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Text(
+                            text = "📷 Camera Not Available",
+                            style = MaterialTheme.typography.headlineMedium,
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Card(
+                            colors =
+                                CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                ),
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Text(
+                                    text = "The MRZ camera scanner is still in development.",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text =
+                                        "You can skip this step and manually enter your passport details, " +
+                                            "or proceed to test the NFC scanning feature.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color =
+                                        MaterialTheme.colorScheme.onSecondaryContainer
+                                            .copy(alpha = 0.7f),
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Button(
+                            onClick = {
+                                viewModel.skipMrzScan(currentPassportData)
+                                navController.navigate("nfc_scan") {
+                                    popUpTo("mrz_scan") { inclusive = true }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("Skip to NFC Scan")
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = {
+                                navController.popBackStack()
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("Back to Passport Details")
+                        }
+                    }
+                }
+
                 else -> {
                     // Camera preview with MRZ scanning
                     Box(modifier = Modifier.fillMaxSize()) {
@@ -183,8 +251,8 @@ fun MrzScanScreen(
                                         detectionState = state
                                     },
                                     onError = { error ->
-                                        Logger.d("MrzScan", "onError callback triggered: $error")
-                                        viewModel.setError(error)
+                                        Logger.e("MrzScan", "Camera error: $error")
+                                        showCameraError = true
                                     },
                                 )
                             },
@@ -296,6 +364,8 @@ private suspend fun requestCameraPermission(): Boolean =
 
 /**
  * Creates a native camera preview view with MRZ detection
+ *
+ * Note: This uses a factory pattern - the iOS app registers the factory implementation
  */
 @OptIn(ExperimentalForeignApi::class)
 private fun createCameraPreview(
@@ -303,25 +373,75 @@ private fun createCameraPreview(
     onProgress: (MrzDetectionState) -> Unit,
     onError: (String) -> Unit,
 ): UIView {
-    // TODO: Create and configure MrzCameraHelper
-    // This requires the Swift helper to be properly exposed via Xcode and cinterop
+    // Check if we have a factory registered
+    val factory = MrzCameraFactory.instance
 
-    // For now, create a placeholder view with instructions
-    val placeholderView = UIView()
-    placeholderView.backgroundColor = platform.UIKit.UIColor.blackColor
+    if (factory != null) {
+        Logger.d("MrzScan", "Using registered MRZ camera factory")
 
-    Logger.d("MrzScan", "Camera preview creation - Swift helper integration pending")
-    Logger.d("MrzScan", "The MrzCameraHelper.swift is created but needs to be:")
-    Logger.d("MrzScan", "1. Added to Xcode project")
-    Logger.d("MrzScan", "2. Properly exposed via @objc for Kotlin interop")
-    Logger.d("MrzScan", "3. Integrated with the Compose UIKitView")
+        // Wrap callbacks to handle conversion from raw values
+        return factory.createCameraView(
+            onMrzDetected = { result ->
+                try {
+                    // Swift passes JSON string - parse it
+                    val jsonString = result as? String ?: result.toString()
+                    val jsonElement = Json.parseToJsonElement(jsonString)
+                    onMrzDetected(jsonElement)
+                } catch (e: Exception) {
+                    Logger.e("MrzScan", "Failed to parse JSON: $result", e)
+                    onError("Failed to parse scan result")
+                }
+            },
+            onProgress = { stateAny ->
+                try {
+                    // Swift passes Int index (0-3) - convert to enum
+                    val stateIndex =
+                        when (stateAny) {
+                            is Long -> stateAny.toInt()
+                            is Int -> stateAny
+                            is Number -> stateAny.toInt()
+                            else -> 0
+                        }
 
-    // Report error about pending integration
-    onError(
-        "MRZ camera scanning not yet fully integrated. " +
-            "The Swift MrzCameraHelper.swift is created but needs to be " +
-            "added to the Xcode project and exposed for Kotlin/Native interop.",
-    )
+                    val state =
+                        when (stateIndex) {
+                            0 -> MrzDetectionState.NO_TEXT
+                            1 -> MrzDetectionState.TEXT_DETECTED
+                            2 -> MrzDetectionState.ONE_MRZ_LINE
+                            3 -> MrzDetectionState.TWO_MRZ_LINES
+                            else -> MrzDetectionState.NO_TEXT
+                        }
 
-    return placeholderView
+                    onProgress(state)
+                } catch (e: Exception) {
+                    Logger.e("MrzScan", "Failed to convert progress state: $stateAny", e)
+                }
+            },
+            onError = onError,
+        )
+    }
+
+    // Fallback: show error
+    Logger.e("MrzScan", "No MRZ camera factory registered")
+    onError("MRZ camera not configured. Factory not registered from iOS app.")
+    return UIView().apply { backgroundColor = UIColor.blackColor }
+}
+
+/**
+ * Factory interface for creating MRZ camera views
+ * Will be implemented and registered by the iOS app
+ */
+interface MrzCameraViewFactory {
+    fun createCameraView(
+        onMrzDetected: (Any) -> Unit,
+        onProgress: (Any) -> Unit,
+        onError: (String) -> Unit,
+    ): UIView
+}
+
+/**
+ * Singleton to hold the factory instance (set from iOS app)
+ */
+object MrzCameraFactory {
+    var instance: MrzCameraViewFactory? = null
 }
