@@ -228,6 +228,13 @@ fun MrzScanScreen(
                                                 val dateOfBirth = mrzObj["dateOfBirth"]?.jsonPrimitive?.content ?: ""
                                                 val dateOfExpiry = mrzObj["dateOfExpiry"]?.jsonPrimitive?.content ?: ""
 
+                                                if (passportNumber.isBlank() || dateOfBirth.isBlank() || dateOfExpiry.isBlank()) {
+                                                    viewModel.setError(
+                                                        "Incomplete MRZ data: passport number, date of birth, and date of expiry are required",
+                                                    )
+                                                    return@launch
+                                                }
+
                                                 val updatedPassportData =
                                                     PassportData(
                                                         passportNumber = passportNumber,

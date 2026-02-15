@@ -23,6 +23,7 @@ import org.jmrtd.BACKeySpec
 import org.jmrtd.PACEKeySpec
 import org.jmrtd.PassportService
 import org.jmrtd.lds.CardAccessFile
+import org.jmrtd.lds.ChipAuthenticationInfo
 import org.jmrtd.lds.ChipAuthenticationPublicKeyInfo
 import org.jmrtd.lds.PACEInfo
 import org.jmrtd.lds.SODFile
@@ -354,9 +355,14 @@ class NfcBridgeHandler(
 
             for (securityInfo: SecurityInfo in securityInfos) {
                 if (securityInfo is ChipAuthenticationPublicKeyInfo) {
+                    val caInfo = securityInfos.filterIsInstance<ChipAuthenticationInfo>()
+                        .firstOrNull { it.keyId == securityInfo.keyId }
+                        ?: securityInfos.filterIsInstance<ChipAuthenticationInfo>().firstOrNull()
+                    val caOid = caInfo?.objectIdentifier
+                        ?: ChipAuthenticationPublicKeyInfo.ID_CA_ECDH_AES_CBC_CMAC_256
                     service.doEACCA(
                         securityInfo.keyId,
-                        securityInfo.objectIdentifier,
+                        caOid,
                         securityInfo.objectIdentifier,
                         securityInfo.subjectPublicKey,
                     )

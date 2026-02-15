@@ -88,4 +88,19 @@ class MrzKeyUtilsTest {
         assertTrue(key.startsWith("<<<<<<<<<")); // 9 fillers
         assertEquals(24, key.length)
     }
+
+    @Test
+    fun computeMrzKey_truncates_overlong_inputs() {
+        // Passport number > 9 chars should be truncated to 9
+        val key = MrzKeyUtils.computeMrzKey("AB12345678901", "9001011", "3001011")
+        // "AB12345678901" → take(9) → "AB1234567"
+        // "9001011" → take(6) → "900101"
+        // "3001011" → take(6) → "300101"
+        assertTrue(key.startsWith("AB1234567"))
+        assertEquals(24, key.length)
+
+        // Same result as passing pre-truncated values
+        val keyTruncated = MrzKeyUtils.computeMrzKey("AB1234567", "900101", "300101")
+        assertEquals(keyTruncated, key)
+    }
 }
