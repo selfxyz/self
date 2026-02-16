@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -18,14 +18,14 @@ const LEGACY_HEADER =
 
 // Canonical multi-line format (preferred)
 const CANONICAL_HEADER_LINES = [
-  '// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.',
+  '// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.',
   '// SPDX-License-Identifier: BUSL-1.1',
   '// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.',
 ];
 
 function findFiles(
   dir,
-  extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'],
+  extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.kt', '.swift'],
 ) {
   const files = [];
 
@@ -53,7 +53,7 @@ function findFiles(
             'DerivedData',
             'Pods',
             '.gradle',
-            'iosApp',
+            'vendor',
           ].includes(item)
         ) {
           traverse(fullPath);
@@ -82,8 +82,11 @@ function findLicenseHeaderIndex(lines) {
     return { index: i, type: 'legacy', valid: true, endIndex: i };
   }
 
-  // Check for canonical multi-line format
-  if (currentLine === CANONICAL_HEADER_LINES[0]) {
+  // Check for canonical multi-line format (current or previous year)
+  const isCurrentHeader = currentLine === CANONICAL_HEADER_LINES[0];
+  const isPreviousYearHeader =
+    currentLine === '// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.';
+  if (isCurrentHeader || isPreviousYearHeader) {
     const hasAllLines =
       lines[i + 1] === CANONICAL_HEADER_LINES[1] &&
       lines[i + 2] === CANONICAL_HEADER_LINES[2];
@@ -91,6 +94,7 @@ function findLicenseHeaderIndex(lines) {
       index: i,
       type: 'canonical',
       valid: hasAllLines,
+      needsYearUpdate: isPreviousYearHeader && hasAllLines,
       endIndex: hasAllLines ? i + 2 : i,
     };
   }
@@ -100,10 +104,11 @@ function findLicenseHeaderIndex(lines) {
 
 function shouldRequireHeader(filePath, projectRoot) {
   const relativePath = path.relative(projectRoot, filePath);
-  // Only require headers in app/ and packages/mobile-sdk-alpha/ directories
   return (
     relativePath.startsWith('app/') ||
-    relativePath.startsWith('packages/mobile-sdk-alpha/')
+    relativePath.startsWith('packages/mobile-sdk-alpha/') ||
+    relativePath.startsWith('packages/kmp-test-app/') ||
+    relativePath.startsWith('packages/kmp-sdk/')
   );
 }
 
@@ -133,6 +138,14 @@ function checkLicenseHeader(
     return {
       file: filePath,
       issue: 'Incomplete or malformed license header',
+      fixed: false,
+    };
+  }
+
+  if (headerInfo.needsYearUpdate) {
+    return {
+      file: filePath,
+      issue: 'Copyright year needs updating to 2025-2026',
       fixed: false,
     };
   }
@@ -168,6 +181,14 @@ function fixLicenseHeader(filePath) {
   }
 
   if (headerInfo.valid) {
+    // Update copyright year if needed
+    if (headerInfo.needsYearUpdate) {
+      lines[headerInfo.index] = CANONICAL_HEADER_LINES[0];
+      const fixedContent = lines.join('\n');
+      writeFileSync(filePath, fixedContent, 'utf8');
+      return true;
+    }
+
     const headerEndIndex = headerInfo.endIndex;
     if (lines[headerEndIndex + 1] !== '') {
       // Insert empty line after license header
@@ -222,7 +243,12 @@ function main() {
 
   if (isCheck) {
     // Show which directories require headers
-    const requiredDirs = ['app/', 'packages/mobile-sdk-alpha/'];
+    const requiredDirs = [
+      'app/',
+      'packages/mobile-sdk-alpha/',
+      'packages/kmp-test-app/',
+      'packages/kmp-sdk/',
+    ];
     console.log(`📋 License headers required in: ${requiredDirs.join(', ')}`);
 
     if (issues.length === 0) {
