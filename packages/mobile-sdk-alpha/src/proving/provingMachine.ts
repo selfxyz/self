@@ -1016,23 +1016,22 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       set({ passportData, secret, env });
       set({ circuitType });
-      // Only skip parsing when the document has already been parsed for non-DSC circuits
+      // Only skip parsing when the document has already been parsed for non-DSC circuits.
       // Re-parsing would overwrite the alternative CSCA used during registration and is unnecessary
-      // for already parsed passports or ID cards
-      const shouldParseDocument =
-        circuitType === 'dsc' ||
-        ((passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card') &&
-          !passportData.dsc_parsed);
+      // for already parsed passports or ID cards.
+      // Aadhaar and KYC documents do not require DSC parsing at all.
+      const needsDscParsing =
+        passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card';
+      const hasParsedDsc =
+        needsDscParsing && Boolean(passportData.dsc_parsed?.authorityKeyIdentifier);
 
-      console.log('circuitType', circuitType);
+      const shouldParseDocument = circuitType === 'dsc' || (needsDscParsing && !hasParsedDsc);
+
       if (shouldParseDocument) {
-        console.log('parsing id document');
         actor.send({ type: 'PARSE_ID_DOCUMENT' });
         selfClient.trackEvent(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
       } else {
-        console.log('skipping id document parsing');
         actor.send({ type: 'FETCH_DATA' });
-        selfClient.trackEvent(ProofEvents.FETCH_DATA_STARTED);
       }
     },
 
@@ -1135,7 +1134,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         switch (passportData.documentCategory) {
           case 'passport':
           case 'id_card':
-            if (!passportData?.dsc_parsed) {
+            if (!passportData?.dsc_parsed?.authorityKeyIdentifier) {
               selfClient.logProofEvent('error', 'Missing parsed DSC', context, {
                 failure: 'PROOF_FAILED_DATA_FETCH',
                 duration_ms: Date.now() - startTime,
