@@ -1,0 +1,38 @@
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { SelfClientProvider } from './providers/SelfClientProvider';
+import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
+import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
+import { DocumentCameraScreen } from './screens/onboarding/DocumentCameraScreen';
+import { DocumentNFCScreen } from './screens/onboarding/DocumentNFCScreen';
+import { ConfirmIdentificationScreen } from './screens/onboarding/ConfirmIdentificationScreen';
+import { HomeScreen } from './screens/home/HomeScreen';
+import { ProvingScreen } from './screens/proving/ProvingScreen';
+import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
+import { SettingsScreen } from './screens/account/SettingsScreen';
+import { ComingSoonScreen } from './screens/ComingSoonScreen';
+
+export const App: React.FC = () => (
+  <BrowserRouter>
+    <SelfClientProvider>
+      <Routes>
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="/onboarding/country" element={<CountryPickerScreen />} />
+        <Route path="/onboarding/id-type" element={<IDSelectionScreen />} />
+        <Route path="/onboarding/camera" element={<DocumentCameraScreen />} />
+        <Route path="/onboarding/nfc" element={<DocumentNFCScreen />} />
+        <Route path="/onboarding/confirm" element={<ConfirmIdentificationScreen />} />
+        <Route path="/proving" element={<ProvingScreen />} />
+        <Route path="/proving/result" element={<VerificationResultScreen />} />
+        <Route path="/settings" element={<SettingsScreen />} />
+        <Route path="/account/verified" element={<VerificationResultScreen />} />
+        <Route path="/coming-soon" element={<ComingSoonScreen />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </SelfClientProvider>
+  </BrowserRouter>
+);
