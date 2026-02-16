@@ -1,8 +1,8 @@
+#!/usr/bin/env node
 // SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-#!/usr/bin/env node
 // Convert large Lottie JSON animations to compressed dotLottie format.
 // Usage: node scripts/convert-to-dotlottie.mjs
 
@@ -13,7 +13,9 @@ import { DotLottie } from '@dotlottie/dotlottie-js';
 const files = process.argv.slice(2);
 
 if (files.length === 0) {
-  console.error('Usage: node convert-to-dotlottie.mjs <file1.json> [file2.json ...]');
+  console.error(
+    'Usage: node convert-to-dotlottie.mjs <file1.json> [file2.json ...]',
+  );
   process.exit(1);
 }
 
