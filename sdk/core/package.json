@@ -41,7 +41,6 @@
     "install-sdk": "yarn workspaces focus @selfxyz/core",
     "lint": "prettier --check .",
     "prepublishOnly": "npm run build",
-    "publish": "yarn npm publish --access public",
     "test": "node --loader ts-node/esm --test tests/*.test.ts",
     "types": "yarn build"
   },

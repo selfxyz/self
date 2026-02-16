@@ -13,8 +13,8 @@ on:
       - "contracts/package.json"
   workflow_dispatch:
     inputs:
-      strict_mode:
-        description: "Fail workflow on publish errors (false = continue on error)"
+      dry_run:
+        description: "Run publish with --dry-run"
         required: false
         type: boolean
         default: false
@@ -23,18 +23,9 @@ permissions:
   id-token: write # Required for OIDC
   contents: read
 
-# Error Handling Strategy:
-# - STRICT_PUBLISH_MODE controls whether publish failures stop the workflow
-# - Current (false): continue-on-error=true, workflow always succeeds
-# - Target (true): continue-on-error=false, fail on real errors (expired tokens, network issues)
-# - Manual override: Use workflow_dispatch with strict_mode input to test
-# TODO: Set STRICT_PUBLISH_MODE=true once NPM token is rotated and verified
-env:
-  STRICT_PUBLISH_MODE: false
-
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       core_changed: ${{ steps.check-version.outputs.core_changed }}
       qrcode_changed: ${{ steps.check-version.outputs.qrcode_changed }}
@@ -101,37 +92,50 @@ jobs:
         run: |
           yarn workspace @selfxyz/core build:deps
 
-      - name: Check NPM Token
-        id: check-token
+      - name: Check version not already published
+        id: check_version
+        working-directory: sdk/core
         run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
           fi
 
-      - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
+      - name: "Pack with yarn (resolves workspace: protocol)"
         working-directory: sdk/core
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
+        run: yarn pack --out package.tgz
+
+      - name: Publish to npm
+        working-directory: sdk/core
         id: publish
         run: |
-          yarn config set npmPublishAccess public
-          yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/core we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi
 
   publish-qrcode:
@@ -153,37 +157,50 @@ jobs:
         run: |
           yarn workspace @selfxyz/qrcode build:deps
 
-      - name: Check NPM Token
-        id: check-token
+      - name: Check version not already published
+        id: check_version
+        working-directory: sdk/qrcode
         run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
           fi
 
-      - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
+      - name: "Pack with yarn (resolves workspace: protocol)"
         working-directory: sdk/qrcode
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
+        run: yarn pack --out package.tgz
+
+      - name: Publish to npm
+        working-directory: sdk/qrcode
         id: publish
         run: |
-          yarn config set npmPublishAccess public
-          yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/qrcode we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi
 
   publish-common:
@@ -204,37 +221,50 @@ jobs:
         run: |
           yarn workspace @selfxyz/common build
 
-      - name: Check NPM Token
-        id: check-token
+      - name: Check version not already published
+        id: check_version
+        working-directory: common
         run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
           fi
 
-      - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
+      - name: "Pack with yarn (resolves workspace: protocol)"
         working-directory: common
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
+        run: yarn pack --out package.tgz
+
+      - name: Publish to npm
+        working-directory: common
         id: publish
         run: |
-          yarn config set npmPublishAccess public
-          yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/common we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi
   publish-contracts:
     needs: detect-changes
@@ -252,37 +282,51 @@ jobs:
       - name: Build package
         run: |
           yarn workspace @selfxyz/contracts build
-      - name: Check NPM Token
-        id: check-token
+
+      - name: Check version not already published
+        id: check_version
+        working-directory: contracts
         run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
           fi
 
-      - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
+      - name: "Pack with yarn (resolves workspace: protocol)"
         working-directory: contracts
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
+        run: yarn pack --out package.tgz
+
+      - name: Publish to npm
+        working-directory: contracts
         id: publish
         run: |
-          yarn config set npmPublishAccess public
-          yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/contracts we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi
   publish-qrcode-angular:
     needs: detect-changes
@@ -303,37 +347,50 @@ jobs:
         run: |
           yarn workspace @selfxyz/qrcode-angular build:deps
 
-      - name: Check NPM Token
-        id: check-token
+      - name: Check version not already published
+        id: check_version
+        working-directory: sdk/qrcode-angular
         run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
           fi
 
-      - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
+      - name: "Pack with yarn (resolves workspace: protocol)"
         working-directory: sdk/qrcode-angular
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
+        run: yarn pack --out package.tgz
+
+      - name: Publish to npm
+        working-directory: sdk/qrcode-angular
         id: publish
         run: |
-          yarn config set npmPublishAccess public
-          yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/qrcode-angular we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi
 
   publish-msdk:
@@ -356,35 +413,30 @@ jobs:
           yarn workspace @selfxyz/common build
           yarn workspace @selfxyz/mobile-sdk-alpha build
 
-      - name: Check NPM Token
-        id: check-token
-        run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "⚠️ Warning: NPM_TOKEN is not set. Skipping publish."
-            echo "token_available=false" >> $GITHUB_OUTPUT
-          else
-            echo "token_available=true" >> $GITHUB_OUTPUT
-          fi
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: packages/mobile-sdk-alpha
+        run: yarn pack --out package.tgz
 
       - name: Publish to npm
-        if: steps.check-token.outputs.token_available == 'true'
         working-directory: packages/mobile-sdk-alpha
-        continue-on-error: ${{ github.event.inputs.strict_mode != 'true' && env.STRICT_PUBLISH_MODE != 'true' }}
         id: publish
         run: |
-          yarn config set npmPublishAccess restricted
-          yarn npm publish --access restricted --tag alpha
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          npx npm@latest publish package.tgz --access restricted --tag alpha $DRY_RUN
 
       - name: Publish result
         if: always()
         run: |
-          if [ "${{ steps.check-token.outputs.token_available }}" != "true" ]; then
-            echo "::warning::NPM publish skipped - NPM_TOKEN not configured. Please rotate the token in repository secrets."
-          elif [ "${{ steps.publish.outcome }}" != "success" ]; then
-            echo "::warning::NPM publish failed - This may be due to an expired or invalid NPM_TOKEN. Please check and rotate the token."
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
           else
-            echo "✅ Package published successfully"
+            echo "::warning::NPM publish failed. For @selfxyz/mobile-sdk-alpha we use Trusted Publishers (OIDC); check workflow and npm package settings."
           fi

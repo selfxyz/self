@@ -547,7 +547,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 2.9.15;
+				MARKETING_VERSION = 2.9.16;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -688,7 +688,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 2.9.15;
+				MARKETING_VERSION = 2.9.16;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -20,7 +20,6 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flush as flushAnalytics } from '@/services/analytics';
-import { useSettingStore } from '@/stores/settingStore';
 
 const tips: TipProps[] = [
   {
@@ -55,7 +54,6 @@ const DocumentCameraTroubleScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { countryCode } = useMRZStore();
-  const kycEnabled = useSettingStore(state => state.kycEnabled);
   const { launchSumsubVerification, isLoading } = useSumsubLauncher({
     countryCode,
     errorSource: 'mrz_scan_failed',
@@ -82,25 +80,21 @@ const DocumentCameraTroubleScreen: React.FC = () => {
             page quickly and clearly!
           </Caption>
 
-          {kycEnabled && (
-            <>
-              <Caption
-                size="large"
-                style={{ color: slate500, marginTop: 12, marginBottom: 8 }}
-              >
-                Or try an alternative verification method:
-              </Caption>
+          <Caption
+            size="large"
+            style={{ color: slate500, marginTop: 12, marginBottom: 8 }}
+          >
+            Or try an alternative verification method:
+          </Caption>
 
-              <SecondaryButton
-                onPress={launchSumsubVerification}
-                disabled={isLoading}
-                textColor={slate700}
-                style={{ marginBottom: 0 }}
-              >
-                {isLoading ? 'Loading...' : 'Try Alternative Verification'}
-              </SecondaryButton>
-            </>
-          )}
+          <SecondaryButton
+            onPress={launchSumsubVerification}
+            disabled={isLoading}
+            textColor={slate700}
+            style={{ marginBottom: 0 }}
+          >
+            {isLoading ? 'Loading...' : 'Try Alternative Verification'}
+          </SecondaryButton>
         </YStack>
       }
     >

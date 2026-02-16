@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -24,9 +24,11 @@ export interface UseSumsubLauncherOptions {
    */
   errorSource: FallbackErrorSource;
   /**
-   * Optional callback to handle successful verification
+   * Optional callback to handle successful verification.
+   * Receives the Sumsub result and the userId from the access token.
+   * If not provided, defaults to navigating to KycSuccess with the userId.
    */
-  onSuccess?: (result: SumsubResult) => void | Promise<void>;
+  onSuccess?: (result: SumsubResult, userId: string) => void | Promise<void>;
   /**
    * Optional callback to handle user cancellation
    */
@@ -96,8 +98,12 @@ export const useSumsubLauncher = (options: UseSumsubLauncherOptions) => {
         return;
       }
 
-      // Handle success
-      await onSuccess?.(result);
+      // Handle success - navigate to KycSuccess by default
+      if (onSuccess) {
+        await onSuccess(result, accessToken.userId);
+      } else {
+        navigation.navigate('KycSuccess', { userId: accessToken.userId });
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
