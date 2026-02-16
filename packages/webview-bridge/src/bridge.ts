@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { v4 as uuidv4 } from 'uuid';
 import type {
@@ -51,7 +52,10 @@ export class WebViewBridge {
       return globalThis.SelfNativeAndroid;
     }
     // iOS
-    if (typeof window !== 'undefined' && window.webkit?.messageHandlers?.SelfNativeIOS?.postMessage) {
+    if (
+      typeof window !== 'undefined' &&
+      window.webkit?.messageHandlers?.SelfNativeIOS?.postMessage
+    ) {
       return window.webkit.messageHandlers.SelfNativeIOS;
     }
     return null;
@@ -106,7 +110,11 @@ export class WebViewBridge {
     return new Promise<T>((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.pending.delete(id);
-        reject(new Error(`Bridge request timed out: ${domain}.${method} (${timeoutMs}ms)`));
+        reject(
+          new Error(
+            `Bridge request timed out: ${domain}.${method} (${timeoutMs}ms)`,
+          ),
+        );
       }, timeoutMs);
 
       this.pending.set(id, {
@@ -211,11 +219,17 @@ export class WebViewBridge {
     if (response.success) {
       pending.resolve(response.data);
     } else {
-      const error = response.error ?? { code: 'UNKNOWN', message: 'Unknown error' };
+      const error = response.error ?? {
+        code: 'UNKNOWN',
+        message: 'Unknown error',
+      };
       const err = new Error(error.message);
-      (err as Error & { code: string; details?: Record<string, unknown> }).code = error.code;
+      (
+        err as Error & { code: string; details?: Record<string, unknown> }
+      ).code = error.code;
       if (error.details) {
-        (err as Error & { details: Record<string, unknown> }).details = error.details;
+        (err as Error & { details: Record<string, unknown> }).details =
+          error.details;
       }
       pending.reject(err);
     }

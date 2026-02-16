@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { WebViewBridge } from '../bridge';
 
@@ -9,7 +10,9 @@ export interface BridgeLifecycleAdapter {
   setResult(result: Record<string, unknown>): Promise<void>;
 }
 
-export function bridgeLifecycleAdapter(bridge: WebViewBridge): BridgeLifecycleAdapter {
+export function bridgeLifecycleAdapter(
+  bridge: WebViewBridge,
+): BridgeLifecycleAdapter {
   return {
     ready(): void {
       bridge.fire('lifecycle', 'ready', {});

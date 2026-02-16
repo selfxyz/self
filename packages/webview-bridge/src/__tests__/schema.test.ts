@@ -1,8 +1,15 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { describe, it, expect } from 'vitest';
-import { parseMessage, ValidationError, isRequest, isResponse, isEvent } from '../schema';
+import {
+  parseMessage,
+  ValidationError,
+  isRequest,
+  isResponse,
+  isEvent,
+} from '../schema';
 import { BRIDGE_PROTOCOL_VERSION } from '../types';
 
 const validRequest = {
@@ -64,29 +71,41 @@ describe('parseMessage', () => {
   });
 
   it('should reject invalid type', () => {
-    expect(() => parseMessage(JSON.stringify({ ...validRequest, type: 'invalid' }))).toThrow(ValidationError);
+    expect(() =>
+      parseMessage(JSON.stringify({ ...validRequest, type: 'invalid' })),
+    ).toThrow(ValidationError);
   });
 
   it('should reject wrong protocol version', () => {
-    expect(() => parseMessage(JSON.stringify({ ...validRequest, version: 99 }))).toThrow(ValidationError);
+    expect(() =>
+      parseMessage(JSON.stringify({ ...validRequest, version: 99 })),
+    ).toThrow(ValidationError);
   });
 
   it('should reject invalid domain', () => {
-    expect(() => parseMessage(JSON.stringify({ ...validRequest, domain: 'fake' }))).toThrow(ValidationError);
+    expect(() =>
+      parseMessage(JSON.stringify({ ...validRequest, domain: 'fake' })),
+    ).toThrow(ValidationError);
   });
 
   it('should reject request with non-object params', () => {
-    expect(() => parseMessage(JSON.stringify({ ...validRequest, params: 'string' }))).toThrow(ValidationError);
+    expect(() =>
+      parseMessage(JSON.stringify({ ...validRequest, params: 'string' })),
+    ).toThrow(ValidationError);
   });
 
   it('should reject response without requestId', () => {
     const { requestId: _r, ...noReqId } = validResponse;
-    expect(() => parseMessage(JSON.stringify(noReqId))).toThrow(ValidationError);
+    expect(() => parseMessage(JSON.stringify(noReqId))).toThrow(
+      ValidationError,
+    );
   });
 
   it('should reject response without success boolean', () => {
     const { success: _s, ...noSuccess } = validResponse;
-    expect(() => parseMessage(JSON.stringify(noSuccess))).toThrow(ValidationError);
+    expect(() => parseMessage(JSON.stringify(noSuccess))).toThrow(
+      ValidationError,
+    );
   });
 
   it('should validate error format on failed response', () => {
@@ -95,7 +114,9 @@ describe('parseMessage', () => {
       success: false,
       error: { code: 123, message: 'bad' }, // code should be string
     };
-    expect(() => parseMessage(JSON.stringify(failedResponse))).toThrow(ValidationError);
+    expect(() => parseMessage(JSON.stringify(failedResponse))).toThrow(
+      ValidationError,
+    );
   });
 
   it('should accept failed response with valid error', () => {

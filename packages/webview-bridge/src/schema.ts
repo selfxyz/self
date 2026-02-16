@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type {
   BridgeMessage,
@@ -11,9 +12,16 @@ import type {
 import { BRIDGE_PROTOCOL_VERSION } from './types';
 
 const VALID_DOMAINS: BridgeDomain[] = [
-  'nfc', 'biometrics', 'secureStorage', 'camera',
-  'crypto', 'haptic', 'analytics', 'lifecycle',
-  'documents', 'navigation',
+  'nfc',
+  'biometrics',
+  'secureStorage',
+  'camera',
+  'crypto',
+  'haptic',
+  'analytics',
+  'lifecycle',
+  'documents',
+  'navigation',
 ];
 
 const VALID_TYPES = ['request', 'response', 'event'] as const;
@@ -31,13 +39,17 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function assertString(obj: Record<string, unknown>, field: string): void {
   if (typeof obj[field] !== 'string') {
-    throw new ValidationError(`Missing or invalid field: ${field} (expected string)`);
+    throw new ValidationError(
+      `Missing or invalid field: ${field} (expected string)`,
+    );
   }
 }
 
 function assertNumber(obj: Record<string, unknown>, field: string): void {
   if (typeof obj[field] !== 'number') {
-    throw new ValidationError(`Missing or invalid field: ${field} (expected number)`);
+    throw new ValidationError(
+      `Missing or invalid field: ${field} (expected number)`,
+    );
   }
 }
 
@@ -54,13 +66,15 @@ export function parseMessage(json: string): BridgeMessage {
   }
 
   const type = parsed.type;
-  if (!VALID_TYPES.includes(type as typeof VALID_TYPES[number])) {
+  if (!VALID_TYPES.includes(type as (typeof VALID_TYPES)[number])) {
     throw new ValidationError(`Invalid message type: ${String(type)}`);
   }
 
   assertNumber(parsed, 'version');
   if (parsed.version !== BRIDGE_PROTOCOL_VERSION) {
-    throw new ValidationError(`Unsupported protocol version: ${parsed.version}`);
+    throw new ValidationError(
+      `Unsupported protocol version: ${parsed.version}`,
+    );
   }
 
   assertString(parsed, 'id');
@@ -100,8 +114,13 @@ function validateResponse(obj: Record<string, unknown>): BridgeResponse {
     if (!isObject(obj.error)) {
       throw new ValidationError('Response error must be an object');
     }
-    if (typeof obj.error.code !== 'string' || typeof obj.error.message !== 'string') {
-      throw new ValidationError('Response error must have code and message strings');
+    if (
+      typeof obj.error.code !== 'string' ||
+      typeof obj.error.message !== 'string'
+    ) {
+      throw new ValidationError(
+        'Response error must have code and message strings',
+      );
     }
   }
   return obj as unknown as BridgeResponse;

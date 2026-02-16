@@ -15,8 +15,15 @@ export function useBridge(): WebViewBridge {
   return bridge;
 }
 
-export const BridgeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const bridge = useMemo(() => new WebViewBridge({ debug: import.meta.env.DEV }), []);
+export const BridgeProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const bridge = useMemo(
+    () => new WebViewBridge({ debug: import.meta.env.DEV }),
+    [],
+  );
 
-  return <BridgeContext.Provider value={bridge}>{children}</BridgeContext.Provider>;
+  return (
+    <BridgeContext.Provider value={bridge}>{children}</BridgeContext.Provider>
+  );
 };

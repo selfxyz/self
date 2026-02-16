@@ -97,7 +97,13 @@ const DocumentItem: React.FC<{
         justifyContent="center"
       >
         <Text fontSize={24}>
-          {docType === 'p' ? '🛂' : docType === 'i' ? '🪪' : docType === 'a' ? '🆔' : '📄'}
+          {docType === 'p'
+            ? '🛂'
+            : docType === 'i'
+              ? '🪪'
+              : docType === 'a'
+                ? '🆔'
+                : '📄'}
         </Text>
       </View>
       <YStack gap={2}>
@@ -119,10 +125,11 @@ export const IDSelectionScreen: React.FC = () => {
   const location = useLocation();
   const { analytics, haptic } = useSelfClient();
 
-  const { countryCode = '', documentTypes = [] } = (location.state as {
-    countryCode?: string;
-    documentTypes?: string[];
-  }) || {};
+  const { countryCode = '', documentTypes = [] } =
+    (location.state as {
+      countryCode?: string;
+      documentTypes?: string[];
+    }) || {};
 
   const onSelect = useCallback(
     (docType: string) => {
@@ -133,7 +140,9 @@ export const IDSelectionScreen: React.FC = () => {
       });
 
       if (docType === 'kyc') {
-        navigate('/coming-soon', { state: { countryCode, documentCategory: 'kyc' } });
+        navigate('/coming-soon', {
+          state: { countryCode, documentCategory: 'kyc' },
+        });
         return;
       }
 
@@ -173,7 +182,9 @@ export const IDSelectionScreen: React.FC = () => {
           >
             <Text fontSize={20}>{countryCode.slice(0, 2)}</Text>
           </View>
-          <Text fontSize={18} color="#94A3B8">+</Text>
+          <Text fontSize={18} color="#94A3B8">
+            +
+          </Text>
           <View
             width={48}
             height={48}
@@ -182,11 +193,18 @@ export const IDSelectionScreen: React.FC = () => {
             alignItems="center"
             justifyContent="center"
           >
-            <Text fontSize={20} color="#ffffff">S</Text>
+            <Text fontSize={20} color="#ffffff">
+              S
+            </Text>
           </View>
         </XStack>
 
-        <Text fontFamily="Advercase-Regular" fontSize={29} color="#000000" textAlign="center">
+        <Text
+          fontFamily="Advercase-Regular"
+          fontSize={29}
+          color="#000000"
+          textAlign="center"
+        >
           Select an ID type
         </Text>
       </YStack>
@@ -196,7 +214,11 @@ export const IDSelectionScreen: React.FC = () => {
         {documentTypes
           .filter((dt: string) => dt !== 'kyc')
           .map((docType: string) => (
-            <DocumentItem key={docType} docType={docType} onPress={() => onSelect(docType)} />
+            <DocumentItem
+              key={docType}
+              docType={docType}
+              onPress={() => onSelect(docType)}
+            />
           ))}
 
         <Text

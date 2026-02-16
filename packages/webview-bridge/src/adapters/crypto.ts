@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { WebViewBridge } from '../bridge';
 
@@ -8,9 +9,14 @@ export interface BridgeCryptoAdapter {
   sign(data: Uint8Array, keyRef: string): Promise<Uint8Array>;
 }
 
-export function bridgeCryptoAdapter(bridge: WebViewBridge): BridgeCryptoAdapter {
+export function bridgeCryptoAdapter(
+  bridge: WebViewBridge,
+): BridgeCryptoAdapter {
   return {
-    async hash(input: Uint8Array, algo: 'sha256' = 'sha256'): Promise<Uint8Array> {
+    async hash(
+      input: Uint8Array,
+      algo: 'sha256' = 'sha256',
+    ): Promise<Uint8Array> {
       const algoMap: Record<string, string> = { sha256: 'SHA-256' };
       const webCryptoAlgo = algoMap[algo];
       if (!webCryptoAlgo) {
@@ -23,10 +29,14 @@ export function bridgeCryptoAdapter(bridge: WebViewBridge): BridgeCryptoAdapter 
 
     async sign(data: Uint8Array, keyRef: string): Promise<Uint8Array> {
       const base64Data = uint8ArrayToBase64(data);
-      const result = await bridge.request<{ signature: string }>('crypto', 'sign', {
-        data: base64Data,
-        keyRef,
-      });
+      const result = await bridge.request<{ signature: string }>(
+        'crypto',
+        'sign',
+        {
+          data: base64Data,
+          keyRef,
+        },
+      );
       return base64ToUint8Array(result.signature);
     },
   };

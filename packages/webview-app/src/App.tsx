@@ -25,11 +25,17 @@ export const App: React.FC = () => (
         <Route path="/onboarding/id-type" element={<IDSelectionScreen />} />
         <Route path="/onboarding/camera" element={<DocumentCameraScreen />} />
         <Route path="/onboarding/nfc" element={<DocumentNFCScreen />} />
-        <Route path="/onboarding/confirm" element={<ConfirmIdentificationScreen />} />
+        <Route
+          path="/onboarding/confirm"
+          element={<ConfirmIdentificationScreen />}
+        />
         <Route path="/proving" element={<ProvingScreen />} />
         <Route path="/proving/result" element={<VerificationResultScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
-        <Route path="/account/verified" element={<VerificationResultScreen />} />
+        <Route
+          path="/account/verified"
+          element={<VerificationResultScreen />}
+        />
         <Route path="/coming-soon" element={<ComingSoonScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

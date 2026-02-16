@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { WebViewBridge } from '../bridge';
 import type { NfcScanParams, NfcScanProgress, EventHandler } from '../types';
@@ -10,12 +11,19 @@ export interface BridgeNFCScannerAdapter {
   scan(opts: NfcScanParams & { signal?: AbortSignal }): Promise<unknown>;
 }
 
-export function bridgeNFCScannerAdapter(bridge: WebViewBridge): BridgeNFCScannerAdapter {
+export function bridgeNFCScannerAdapter(
+  bridge: WebViewBridge,
+): BridgeNFCScannerAdapter {
   return {
     scan(opts: NfcScanParams & { signal?: AbortSignal }): Promise<unknown> {
       const { signal, ...params } = opts;
 
-      const promise = bridge.request('nfc', 'scan', params as unknown as Record<string, unknown>, NFC_TIMEOUT_MS);
+      const promise = bridge.request(
+        'nfc',
+        'scan',
+        params as unknown as Record<string, unknown>,
+        NFC_TIMEOUT_MS,
+      );
 
       if (signal) {
         const onAbort = () => {

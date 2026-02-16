@@ -13,16 +13,18 @@ export const ComingSoonScreen: React.FC = () => {
   const location = useLocation();
   const { analytics, haptic } = useSelfClient();
 
-  const { countryCode, documentCategory } = (location.state as {
-    countryCode?: string;
-    documentCategory?: string;
-  }) || {};
+  const { countryCode, documentCategory } =
+    (location.state as {
+      countryCode?: string;
+      documentCategory?: string;
+    }) || {};
 
-  const documentTypeText = documentCategory === 'id_card'
-    ? 'ID Cards'
-    : documentCategory === 'passport'
-      ? 'Passports'
-      : '';
+  const documentTypeText =
+    documentCategory === 'id_card'
+      ? 'ID Cards'
+      : documentCategory === 'passport'
+        ? 'Passports'
+        : '';
 
   const onDismiss = useCallback(() => {
     haptic.trigger('selection');
@@ -41,7 +43,12 @@ export const ComingSoonScreen: React.FC = () => {
   return (
     <YStack flex={1} backgroundColor="#ffffff">
       {/* Content */}
-      <YStack flex={1} justifyContent="center" alignItems="center" paddingHorizontal={24}>
+      <YStack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        paddingHorizontal={24}
+      >
         {countryCode && (
           <View
             width={60}
@@ -85,7 +92,8 @@ export const ComingSoonScreen: React.FC = () => {
           textAlign="center"
           marginBottom={40}
         >
-          If you&apos;d like to be notified when this becomes available, let us know.
+          If you&apos;d like to be notified when this becomes available, let us
+          know.
         </Text>
       </YStack>
 

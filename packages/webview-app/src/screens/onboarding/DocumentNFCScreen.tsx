@@ -20,14 +20,19 @@ export const DocumentNFCScreen: React.FC = () => {
   const bridge = useBridge();
   const { scanner, analytics, haptic, documents } = useSelfClient();
 
-  const { countryCode = '', documentType = 'p', passportNumber = '', dateOfBirth = '', dateOfExpiry = '' } =
-    (location.state as {
-      countryCode?: string;
-      documentType?: string;
-      passportNumber?: string;
-      dateOfBirth?: string;
-      dateOfExpiry?: string;
-    }) || {};
+  const {
+    countryCode = '',
+    documentType = 'p',
+    passportNumber = '',
+    dateOfBirth = '',
+    dateOfExpiry = '',
+  } = (location.state as {
+    countryCode?: string;
+    documentType?: string;
+    passportNumber?: string;
+    dateOfBirth?: string;
+    dateOfExpiry?: string;
+  }) || {};
 
   const [scanState, setScanState] = useState<ScanState>('idle');
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
@@ -38,7 +43,7 @@ export const DocumentNFCScreen: React.FC = () => {
 
   // Subscribe to NFC progress events
   useEffect(() => {
-    const unsub = onNfcProgress(bridge, (progress) => {
+    const unsub = onNfcProgress(bridge, progress => {
       setProgressMessage(progress.message ?? progress.step);
       setProgressPercent(progress.percent);
     });
@@ -79,10 +84,16 @@ export const DocumentNFCScreen: React.FC = () => {
 
       // Store the scanned passport data
       if (result && typeof result === 'object') {
-        const passportData = (result as { passportData?: unknown }).passportData;
+        const passportData = (result as { passportData?: unknown })
+          .passportData;
         if (passportData && typeof passportData === 'object') {
-          const docId = (passportData as { contentHash?: string }).contentHash ?? sessionIdRef.current;
-          await documents.saveDocument(docId, passportData as Record<string, unknown>);
+          const docId =
+            (passportData as { contentHash?: string }).contentHash ??
+            sessionIdRef.current;
+          await documents.saveDocument(
+            docId,
+            passportData as Record<string, unknown>,
+          );
         }
       }
 
@@ -104,7 +115,18 @@ export const DocumentNFCScreen: React.FC = () => {
       setErrorMessage(message);
       setScanState('error');
     }
-  }, [scanner, analytics, haptic, documents, navigate, passportNumber, dateOfBirth, dateOfExpiry, documentType, countryCode]);
+  }, [
+    scanner,
+    analytics,
+    haptic,
+    documents,
+    navigate,
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry,
+    documentType,
+    countryCode,
+  ]);
 
   const cancelScan = useCallback(() => {
     abortRef.current?.abort();
@@ -156,7 +178,12 @@ export const DocumentNFCScreen: React.FC = () => {
         ) : scanState === 'error' ? (
           <YStack alignItems="center" gap={12} paddingHorizontal={24}>
             <Text fontSize={48}>⚠️</Text>
-            <Text fontFamily="DINOT-Medium" fontSize={16} color="#EF4444" textAlign="center">
+            <Text
+              fontFamily="DINOT-Medium"
+              fontSize={16}
+              color="#EF4444"
+              textAlign="center"
+            >
               {errorMessage}
             </Text>
           </YStack>
@@ -179,20 +206,42 @@ export const DocumentNFCScreen: React.FC = () => {
       >
         {scanState === 'scanning' ? (
           <>
-            <Text fontFamily="Advercase-Regular" fontSize={24} color="#000000" textAlign="center">
+            <Text
+              fontFamily="Advercase-Regular"
+              fontSize={24}
+              color="#000000"
+              textAlign="center"
+            >
               Ready to scan
             </Text>
-            <Text fontFamily="DINOT-Medium" fontSize={14} color="#64748B" textAlign="center">
-              Hold your device near the NFC tag and stop moving when it vibrates.
+            <Text
+              fontFamily="DINOT-Medium"
+              fontSize={14}
+              color="#64748B"
+              textAlign="center"
+            >
+              Hold your device near the NFC tag and stop moving when it
+              vibrates.
             </Text>
           </>
         ) : scanState === 'error' ? (
           <>
-            <Text fontFamily="Advercase-Regular" fontSize={24} color="#000000" textAlign="center">
+            <Text
+              fontFamily="Advercase-Regular"
+              fontSize={24}
+              color="#000000"
+              textAlign="center"
+            >
               Scan failed
             </Text>
-            <Text fontFamily="DINOT-Medium" fontSize={14} color="#64748B" textAlign="center">
-              Please try again. Make sure your document&apos;s chip is near your phone.
+            <Text
+              fontFamily="DINOT-Medium"
+              fontSize={14}
+              color="#64748B"
+              textAlign="center"
+            >
+              Please try again. Make sure your document&apos;s chip is near your
+              phone.
             </Text>
             <Button
               backgroundColor="#000000"
@@ -208,14 +257,30 @@ export const DocumentNFCScreen: React.FC = () => {
           </>
         ) : (
           <>
-            <Text fontFamily="Advercase-Regular" fontSize={24} color="#000000" textAlign="center">
+            <Text
+              fontFamily="Advercase-Regular"
+              fontSize={24}
+              color="#000000"
+              textAlign="center"
+            >
               Verify your ID
             </Text>
-            <Text fontFamily="DINOT-Medium" fontSize={16} color="#1E293B" textAlign="center">
+            <Text
+              fontFamily="DINOT-Medium"
+              fontSize={16}
+              color="#1E293B"
+              textAlign="center"
+            >
               Find the RFID chip in your ID
             </Text>
-            <Text fontFamily="DINOT-Medium" fontSize={14} color="#64748B" textAlign="center">
-              Place your phone against the chip and keep it still until the sensor reads it.
+            <Text
+              fontFamily="DINOT-Medium"
+              fontSize={14}
+              color="#64748B"
+              textAlign="center"
+            >
+              Place your phone against the chip and keep it still until the
+              sensor reads it.
             </Text>
             <Text
               fontFamily="DINOT-Medium"

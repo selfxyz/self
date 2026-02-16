@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { WebViewBridge } from '../bridge';
@@ -50,7 +51,14 @@ describe('Adapter integration tests', () => {
     it('should cancel on abort signal', async () => {
       // Handler that resolves when cancelScan fires
       let resolveScan: (v: unknown) => void;
-      mock.handle('nfc', 'scan', () => new Promise((resolve) => { resolveScan = resolve; }));
+      mock.handle(
+        'nfc',
+        'scan',
+        () =>
+          new Promise(resolve => {
+            resolveScan = resolve;
+          }),
+      );
       mock.handle('nfc', 'cancelScan', () => {
         // When cancel fires, resolve the scan with an error-like response
         // so the pending promise settles
@@ -72,7 +80,9 @@ describe('Adapter integration tests', () => {
       controller.abort();
 
       // The cancel message should be fired
-      const cancelMessages = mock.messagesFor('nfc').filter(m => m.method === 'cancelScan');
+      const cancelMessages = mock
+        .messagesFor('nfc')
+        .filter(m => m.method === 'cancelScan');
       expect(cancelMessages).toHaveLength(1);
 
       // The scan request was resolved, so promise should settle
@@ -84,8 +94,14 @@ describe('Adapter integration tests', () => {
       const handler = vi.fn();
       const unsub = onNfcProgress(bridge, handler);
 
-      mock.pushEvent('nfc', 'scanProgress', { step: 'reading_dg2', percent: 60 });
-      expect(handler).toHaveBeenCalledWith({ step: 'reading_dg2', percent: 60 });
+      mock.pushEvent('nfc', 'scanProgress', {
+        step: 'reading_dg2',
+        percent: 60,
+      });
+      expect(handler).toHaveBeenCalledWith({
+        step: 'reading_dg2',
+        percent: 60,
+      });
 
       unsub();
     });
@@ -104,7 +120,9 @@ describe('Adapter integration tests', () => {
     });
 
     it('should sign via bridge', async () => {
-      const mockSignature = btoa(String.fromCharCode(...new Uint8Array([1, 2, 3, 4])));
+      const mockSignature = btoa(
+        String.fromCharCode(...new Uint8Array([1, 2, 3, 4])),
+      );
       mock.handleWith('crypto', 'sign', { signature: mockSignature });
 
       const adapter = bridgeCryptoAdapter(bridge);
@@ -154,7 +172,10 @@ describe('Adapter integration tests', () => {
 
       const messages = mock.messagesFor('documents');
       expect(messages).toHaveLength(1);
-      expect(messages[0].params).toEqual({ id: 'doc-1', data: { mrz: 'test' } });
+      expect(messages[0].params).toEqual({
+        id: 'doc-1',
+        data: { mrz: 'test' },
+      });
     });
 
     it('should delete document', async () => {

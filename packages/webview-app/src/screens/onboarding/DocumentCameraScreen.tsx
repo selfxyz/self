@@ -15,10 +15,11 @@ export const DocumentCameraScreen: React.FC = () => {
   const bridge = useBridge();
   const { analytics, haptic } = useSelfClient();
 
-  const { countryCode = '', documentType = 'p' } = (location.state as {
-    countryCode?: string;
-    documentType?: string;
-  }) || {};
+  const { countryCode = '', documentType = 'p' } =
+    (location.state as {
+      countryCode?: string;
+      documentType?: string;
+    }) || {};
 
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +30,10 @@ export const DocumentCameraScreen: React.FC = () => {
   const startMRZScan = useCallback(async () => {
     setScanning(true);
     setError(null);
-    analytics.trackEvent('camera_mrz_scan_started', { documentType, countryCode });
+    analytics.trackEvent('camera_mrz_scan_started', {
+      documentType,
+      countryCode,
+    });
 
     try {
       const result = await bridge.request<{
@@ -73,7 +77,12 @@ export const DocumentCameraScreen: React.FC = () => {
   return (
     <YStack flex={1} backgroundColor="#ffffff">
       {/* Camera / scan area (top section) */}
-      <View flex={1} backgroundColor="#000000" alignItems="center" justifyContent="center">
+      <View
+        flex={1}
+        backgroundColor="#000000"
+        alignItems="center"
+        justifyContent="center"
+      >
         {scanning ? (
           <YStack alignItems="center" gap={16}>
             <Spinner size="large" color="#ffffff" />
@@ -83,10 +92,20 @@ export const DocumentCameraScreen: React.FC = () => {
           </YStack>
         ) : error ? (
           <YStack alignItems="center" gap={16} paddingHorizontal={24}>
-            <Text fontFamily="DINOT-Medium" fontSize={18} color="#EF4444" textAlign="center">
+            <Text
+              fontFamily="DINOT-Medium"
+              fontSize={18}
+              color="#EF4444"
+              textAlign="center"
+            >
               Scan failed
             </Text>
-            <Text fontFamily="DINOT-Medium" fontSize={14} color="#94A3B8" textAlign="center">
+            <Text
+              fontFamily="DINOT-Medium"
+              fontSize={14}
+              color="#94A3B8"
+              textAlign="center"
+            >
               {error}
             </Text>
             <Button
@@ -111,7 +130,12 @@ export const DocumentCameraScreen: React.FC = () => {
         alignItems="center"
         backgroundColor="#ffffff"
       >
-        <Text fontFamily="Advercase-Regular" fontSize={24} color="#000000" textAlign="center">
+        <Text
+          fontFamily="Advercase-Regular"
+          fontSize={24}
+          color="#000000"
+          textAlign="center"
+        >
           {scanPrompt}
         </Text>
 
@@ -123,8 +147,14 @@ export const DocumentCameraScreen: React.FC = () => {
             <Text fontFamily="DINOT-Medium" fontSize={16} color="#1E293B">
               Open to the photograph page
             </Text>
-            <Text fontFamily="DINOT-Medium" fontSize={14} color="#64748B" marginTop={4}>
-              Hold the camera steady over the text at the bottom of the page (MRZ lines).
+            <Text
+              fontFamily="DINOT-Medium"
+              fontSize={14}
+              color="#64748B"
+              marginTop={4}
+            >
+              Hold the camera steady over the text at the bottom of the page
+              (MRZ lines).
             </Text>
           </YStack>
         </XStack>

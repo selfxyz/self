@@ -4,7 +4,15 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, ScrollView, Spinner, Text, View, XStack, YStack } from 'tamagui';
+import {
+  Button,
+  ScrollView,
+  Spinner,
+  Text,
+  View,
+  XStack,
+  YStack,
+} from 'tamagui';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 
@@ -75,7 +83,9 @@ export const HomeScreen: React.FC = () => {
             alignItems="center"
             justifyContent="center"
           >
-            <Text fontSize={16} color="#ffffff" fontFamily="DINOT-Medium">S</Text>
+            <Text fontSize={16} color="#ffffff" fontFamily="DINOT-Medium">
+              S
+            </Text>
           </View>
           <Text fontFamily="Advercase-Regular" fontSize={20} color="#000000">
             Self
@@ -93,13 +103,18 @@ export const HomeScreen: React.FC = () => {
 
       <ScrollView flex={1} paddingHorizontal={20}>
         {loading ? (
-          <YStack flex={1} alignItems="center" justifyContent="center" paddingTop={100}>
+          <YStack
+            flex={1}
+            alignItems="center"
+            justifyContent="center"
+            paddingTop={100}
+          >
             <Spinner size="large" color="#000000" />
           </YStack>
         ) : hasDocuments ? (
           <YStack gap={16} paddingTop={8}>
             {/* Document cards */}
-            {catalog.documents.map((doc) => (
+            {catalog.documents.map(doc => (
               <YStack
                 key={doc.id}
                 backgroundColor="#ffffff"
@@ -110,14 +125,22 @@ export const HomeScreen: React.FC = () => {
               >
                 <XStack justifyContent="space-between" alignItems="center">
                   <YStack gap={4}>
-                    <Text fontFamily="DINOT-Medium" fontSize={18} color="#000000">
+                    <Text
+                      fontFamily="DINOT-Medium"
+                      fontSize={18}
+                      color="#000000"
+                    >
                       {doc.documentCategory === 'passport'
                         ? 'Passport'
                         : doc.documentCategory === 'id_card'
                           ? 'ID Card'
                           : doc.documentCategory}
                     </Text>
-                    <Text fontFamily="DINOT-Medium" fontSize={13} color="#94A3B8">
+                    <Text
+                      fontFamily="DINOT-Medium"
+                      fontSize={13}
+                      color="#94A3B8"
+                    >
                       {doc.isRegistered ? 'Registered' : 'Pending registration'}
                     </Text>
                   </YStack>
@@ -164,10 +187,21 @@ export const HomeScreen: React.FC = () => {
             >
               <Text fontSize={36}>🪪</Text>
             </View>
-            <Text fontFamily="Advercase-Regular" fontSize={24} color="#000000" textAlign="center">
+            <Text
+              fontFamily="Advercase-Regular"
+              fontSize={24}
+              color="#000000"
+              textAlign="center"
+            >
               No documents yet
             </Text>
-            <Text fontFamily="DINOT-Medium" fontSize={14} color="#64748B" textAlign="center" paddingHorizontal={24}>
+            <Text
+              fontFamily="DINOT-Medium"
+              fontSize={14}
+              color="#64748B"
+              textAlign="center"
+              paddingHorizontal={24}
+            >
               Add your first identity document to get started with Self.
             </Text>
             <Button

@@ -50,7 +50,9 @@ export function useSelfClient(): SelfClientAdapters {
   return adapters;
 }
 
-export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const bridge = useBridge();
   const navigate = useNavigate();
 
@@ -76,5 +78,9 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     adapters.lifecycle.ready();
   }, [adapters.lifecycle]);
 
-  return <SelfClientContext.Provider value={adapters}>{children}</SelfClientContext.Provider>;
+  return (
+    <SelfClientContext.Provider value={adapters}>
+      {children}
+    </SelfClientContext.Provider>
+  );
 };

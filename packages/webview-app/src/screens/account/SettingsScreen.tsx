@@ -29,7 +29,9 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, label, onPress }) => (
     <Text fontFamily="DINOT-Medium" fontSize={16} color="#000000" flex={1}>
       {label}
     </Text>
-    <Text fontSize={16} color="#94A3B8">›</Text>
+    <Text fontSize={16} color="#94A3B8">
+      ›
+    </Text>
   </XStack>
 );
 
@@ -64,7 +66,9 @@ export const SettingsScreen: React.FC = () => {
           pressStyle={{ opacity: 0.7 }}
           cursor="pointer"
         >
-          <Text fontSize={24} color="#000000">←</Text>
+          <Text fontSize={24} color="#000000">
+            ←
+          </Text>
         </Button>
         <Text fontFamily="Advercase-Regular" fontSize={20} color="#000000">
           Settings
@@ -84,9 +88,21 @@ export const SettingsScreen: React.FC = () => {
             Account
           </Text>
 
-          <MenuItem icon="📄" label="View document info" onPress={() => navigate('/coming-soon')} />
-          <MenuItem icon="🔒" label="Recovery phrase" onPress={() => navigate('/coming-soon')} />
-          <MenuItem icon="☁️" label="Cloud backup" onPress={() => navigate('/coming-soon')} />
+          <MenuItem
+            icon="📄"
+            label="View document info"
+            onPress={() => navigate('/coming-soon')}
+          />
+          <MenuItem
+            icon="🔒"
+            label="Recovery phrase"
+            onPress={() => navigate('/coming-soon')}
+          />
+          <MenuItem
+            icon="☁️"
+            label="Cloud backup"
+            onPress={() => navigate('/coming-soon')}
+          />
 
           <View height={24} />
 
@@ -101,8 +117,16 @@ export const SettingsScreen: React.FC = () => {
             Support
           </Text>
 
-          <MenuItem icon="💬" label="Get support" onPress={() => navigate('/coming-soon')} />
-          <MenuItem icon="📤" label="Share Self" onPress={() => navigate('/coming-soon')} />
+          <MenuItem
+            icon="💬"
+            label="Get support"
+            onPress={() => navigate('/coming-soon')}
+          />
+          <MenuItem
+            icon="📤"
+            label="Share Self"
+            onPress={() => navigate('/coming-soon')}
+          />
 
           <View height={24} />
 

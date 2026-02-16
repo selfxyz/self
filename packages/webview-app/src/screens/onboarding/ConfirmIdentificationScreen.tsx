@@ -35,7 +35,12 @@ export const ConfirmIdentificationScreen: React.FC = () => {
   return (
     <YStack flex={1} backgroundColor="#000000">
       {/* Top: success animation area */}
-      <View flex={1} alignItems="center" justifyContent="center" backgroundColor="#000000">
+      <View
+        flex={1}
+        alignItems="center"
+        justifyContent="center"
+        backgroundColor="#000000"
+      >
         <Text fontSize={96}>✅</Text>
       </View>
 

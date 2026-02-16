@@ -13,10 +13,11 @@ export const VerificationResultScreen: React.FC = () => {
   const location = useLocation();
   const { haptic } = useSelfClient();
 
-  const { success = true, error } = (location.state as {
-    success?: boolean;
-    error?: string;
-  }) || {};
+  const { success = true, error } =
+    (location.state as {
+      success?: boolean;
+      error?: string;
+    }) || {};
 
   const onContinue = useCallback(() => {
     haptic.trigger('selection');
@@ -46,7 +47,12 @@ export const VerificationResultScreen: React.FC = () => {
         alignItems="center"
         backgroundColor="#ffffff"
       >
-        <Text fontFamily="Advercase-Regular" fontSize={29} color="#000000" textAlign="center">
+        <Text
+          fontFamily="Advercase-Regular"
+          fontSize={29}
+          color="#000000"
+          textAlign="center"
+        >
           {success ? 'ID Verified' : 'Verification Failed'}
         </Text>
 
@@ -60,7 +66,8 @@ export const VerificationResultScreen: React.FC = () => {
         >
           {success
             ? "Your document's information is now protected by Self ID. Just scan a participating partner's QR code to prove your identity."
-            : error ?? 'Something went wrong during verification. Please try again.'}
+            : (error ??
+              'Something went wrong during verification. Please try again.')}
         </Text>
 
         <Button

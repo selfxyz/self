@@ -126,7 +126,12 @@ export const CountryPickerScreen: React.FC = () => {
               <Text fontSize={16} fontFamily="DINOT-Medium" color="#000000">
                 {country.name}
               </Text>
-              <Text fontSize={13} fontFamily="DINOT-Medium" color="#94A3B8" marginLeft="auto">
+              <Text
+                fontSize={13}
+                fontFamily="DINOT-Medium"
+                color="#94A3B8"
+                marginLeft="auto"
+              >
                 {country.code}
               </Text>
             </XStack>

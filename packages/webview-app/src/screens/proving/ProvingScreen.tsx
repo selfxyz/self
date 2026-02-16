@@ -4,7 +4,15 @@
 
 import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, ScrollView, Spinner, Text, View, XStack, YStack } from 'tamagui';
+import {
+  Button,
+  ScrollView,
+  Spinner,
+  Text,
+  View,
+  XStack,
+  YStack,
+} from 'tamagui';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 
@@ -27,7 +35,9 @@ export const ProvingScreen: React.FC = () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Proving failed';
       analytics.trackEvent('prove_verify_failed', { error: message });
-      navigate('/proving/result', { state: { success: false, error: message } });
+      navigate('/proving/result', {
+        state: { success: false, error: message },
+      });
     } finally {
       setProving(false);
     }
@@ -54,7 +64,9 @@ export const ProvingScreen: React.FC = () => {
             pressStyle={{ opacity: 0.7 }}
             cursor="pointer"
           >
-            <Text fontSize={24} color="#000000">←</Text>
+            <Text fontSize={24} color="#000000">
+              ←
+            </Text>
           </Button>
         </XStack>
 
@@ -72,39 +84,47 @@ export const ProvingScreen: React.FC = () => {
               Proof Request
             </Text>
             <Text fontFamily="DINOT-Medium" fontSize={14} color="#64748B">
-              A verification request has been received. Review the disclosure items below
-              and confirm to generate a proof.
+              A verification request has been received. Review the disclosure
+              items below and confirm to generate a proof.
             </Text>
           </YStack>
 
           {/* Disclosure items placeholder */}
           <YStack gap={12}>
-            <Text fontFamily="DINOT-Medium" fontSize={12} color="#94A3B8" textTransform="uppercase" letterSpacing={1}>
+            <Text
+              fontFamily="DINOT-Medium"
+              fontSize={12}
+              color="#94A3B8"
+              textTransform="uppercase"
+              letterSpacing={1}
+            >
               Disclosure Items
             </Text>
 
-            {['Age verification', 'Nationality', 'Document validity'].map((item) => (
-              <XStack
-                key={item}
-                backgroundColor="#ffffff"
-                borderRadius={12}
-                padding={16}
-                borderWidth={1}
-                borderColor="#E2E8F0"
-                alignItems="center"
-                gap={12}
-              >
-                <View
-                  width={8}
-                  height={8}
-                  borderRadius={4}
-                  backgroundColor="#22C55E"
-                />
-                <Text fontFamily="DINOT-Medium" fontSize={16} color="#000000">
-                  {item}
-                </Text>
-              </XStack>
-            ))}
+            {['Age verification', 'Nationality', 'Document validity'].map(
+              item => (
+                <XStack
+                  key={item}
+                  backgroundColor="#ffffff"
+                  borderRadius={12}
+                  padding={16}
+                  borderWidth={1}
+                  borderColor="#E2E8F0"
+                  alignItems="center"
+                  gap={12}
+                >
+                  <View
+                    width={8}
+                    height={8}
+                    borderRadius={4}
+                    backgroundColor="#22C55E"
+                  />
+                  <Text fontFamily="DINOT-Medium" fontSize={16} color="#000000">
+                    {item}
+                  </Text>
+                </XStack>
+              ),
+            )}
           </YStack>
 
           <Text

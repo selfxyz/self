@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 export const BRIDGE_PROTOCOL_VERSION = 1;
 export const DEFAULT_TIMEOUT_MS = 30_000;
@@ -61,14 +62,22 @@ export type BridgeMessage = BridgeRequest | BridgeResponse | BridgeEvent;
 // Domain-specific method types
 export type NfcMethod = 'scan' | 'cancelScan' | 'isSupported';
 export type NfcEvent = 'scanProgress' | 'tagDiscovered' | 'scanError';
-export type BiometricsMethod = 'authenticate' | 'isAvailable' | 'getBiometryType';
+export type BiometricsMethod =
+  | 'authenticate'
+  | 'isAvailable'
+  | 'getBiometryType';
 export type SecureStorageMethod = 'get' | 'set' | 'remove';
 export type CameraMethod = 'scanMRZ' | 'isAvailable';
 export type CryptoMethod = 'sign' | 'generateKey' | 'getPublicKey';
 export type HapticMethod = 'trigger';
 export type AnalyticsMethod = 'trackEvent' | 'trackNfcEvent' | 'logNfcEvent';
 export type LifecycleMethod = 'ready' | 'dismiss' | 'setResult';
-export type DocumentsMethod = 'loadCatalog' | 'saveCatalog' | 'loadById' | 'save' | 'delete';
+export type DocumentsMethod =
+  | 'loadCatalog'
+  | 'saveCatalog'
+  | 'loadById'
+  | 'save'
+  | 'delete';
 export type NavigationMethod = 'goBack' | 'goTo';
 
 // NFC-specific param/result types

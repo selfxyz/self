@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { v4 as uuidv4 } from 'uuid';
 import type {
@@ -25,13 +26,19 @@ export type MockHandler = (
 export class MockNativeBridge implements NativeTransport {
   private readonly handlers = new Map<string, MockHandler>();
   private readonly _messages: BridgeRequest[] = [];
-  private bridge: { _handleResponse(json: string): void; _handleEvent(json: string): void } | null = null;
+  private bridge: {
+    _handleResponse(json: string): void;
+    _handleEvent(json: string): void;
+  } | null = null;
 
   /**
    * Connect this mock to a bridge instance. Call this after creating the bridge
    * with this mock as the transport.
    */
-  connect(bridge: { _handleResponse(json: string): void; _handleEvent(json: string): void }): void {
+  connect(bridge: {
+    _handleResponse(json: string): void;
+    _handleEvent(json: string): void;
+  }): void {
     this.bridge = bridge;
   }
 
@@ -52,7 +59,11 @@ export class MockNativeBridge implements NativeTransport {
   /**
    * Register a handler that returns an error.
    */
-  handleWithError(domain: BridgeDomain, method: string, error: BridgeError): void {
+  handleWithError(
+    domain: BridgeDomain,
+    method: string,
+    error: BridgeError,
+  ): void {
     this.handle(domain, method, () => {
       throw error;
     });
@@ -85,7 +96,7 @@ export class MockNativeBridge implements NativeTransport {
    * Filter messages by domain.
    */
   messagesFor(domain: BridgeDomain): BridgeRequest[] {
-    return this._messages.filter((m) => m.domain === domain);
+    return this._messages.filter(m => m.domain === domain);
   }
 
   /**
@@ -120,7 +131,7 @@ export class MockNativeBridge implements NativeTransport {
     // Execute handler asynchronously
     Promise.resolve()
       .then(() => handler(msg.params))
-      .then((data) => {
+      .then(data => {
         this.sendResponse(msg, true, data);
       })
       .catch((err: unknown) => {
