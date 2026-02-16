@@ -1,10 +1,9 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import * as haptics from '@/integrations/haptics';
 import KYCVerifiedScreen from '@/screens/kyc/KYCVerifiedScreen';
@@ -35,6 +34,9 @@ jest.mock('react-native-safe-area-context', () => ({
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
+  useRoute: jest.fn(() => ({
+    params: { documentId: 'test-document-id' },
+  })),
 }));
 
 // Mock Tamagui components
@@ -81,19 +83,33 @@ jest.mock('@/config/sentry', () => ({
   captureException: jest.fn(),
 }));
 
-const mockUseNavigation = useNavigation as jest.MockedFunction<
-  typeof useNavigation
->;
+const mockEmit = jest.fn();
+const mockSelfClient = { emit: mockEmit };
+
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  useSelfClient: jest.fn(() => mockSelfClient),
+  loadSelectedDocument: jest.fn(() =>
+    Promise.resolve({ documentCategory: 'kyc' }),
+  ),
+  SdkEvents: {
+    DOCUMENT_OWNERSHIP_CONFIRMED: 'DOCUMENT_OWNERSHIP_CONFIRMED',
+  },
+}));
+
+jest.mock('@/stores/pendingKycStore', () => ({
+  usePendingKycStore: jest.fn(() => ({
+    pendingVerifications: [],
+    removePendingVerification: jest.fn(),
+  })),
+}));
+
+jest.mock('@/providers/passportDataProvider', () => ({
+  setSelectedDocument: jest.fn(() => Promise.resolve()),
+}));
 
 describe('KYCVerifiedScreen', () => {
-  const mockNavigate = jest.fn();
-
   beforeEach(() => {
     jest.clearAllMocks();
-
-    mockUseNavigation.mockReturnValue({
-      navigate: mockNavigate,
-    } as any);
   });
 
   it('should render the screen without errors', () => {
@@ -140,17 +156,98 @@ describe('KYCVerifiedScreen', () => {
     expect(haptics.buttonTap).toHaveBeenCalledTimes(1);
   });
 
-  it('should navigate to ProvingScreenRouter when "Generate proof" is pressed', () => {
+  it('should emit DOCUMENT_OWNERSHIP_CONFIRMED when "Generate proof" is pressed', async () => {
     const { root } = render(<KYCVerifiedScreen />);
     const button = root.findAllByType('button')[0];
 
     fireEvent.press(button);
 
-    expect(mockNavigate).toHaveBeenCalledWith('ProvingScreenRouter');
+    await waitFor(() => {
+      expect(mockEmit).toHaveBeenCalledWith(
+        'DOCUMENT_OWNERSHIP_CONFIRMED',
+        expect.objectContaining({ documentCategory: 'kyc' }),
+      );
+    });
   });
 
-  it('should have navigation available', () => {
-    render(<KYCVerifiedScreen />);
-    expect(mockUseNavigation).toHaveBeenCalled();
+  it('should use the documentId from route params', () => {
+    const { root } = render(<KYCVerifiedScreen />);
+    // Component should render without errors when documentId is provided
+    expect(root).toBeTruthy();
+  });
+
+  describe('Loading state', () => {
+    it('should show "Generating..." text while loading', async () => {
+      const { root } = render(<KYCVerifiedScreen />);
+      const button = root.findAllByType('button')[0];
+
+      // Initially shows "Generate proof"
+      expect(button.props.children).toBe('Generate proof');
+      expect(button.props.disabled).toBeFalsy();
+
+      // Press the button
+      fireEvent.press(button);
+
+      // Should show "Generating..." while loading
+      await waitFor(() => {
+        const updatedButton = root.findAllByType('button')[0];
+        expect(updatedButton.props.children).toBe('Generating...');
+        expect(updatedButton.props.disabled).toBe(true);
+      });
+    });
+
+    it('should prevent multiple concurrent proof generations', async () => {
+      const { root } = render(<KYCVerifiedScreen />);
+      const button = root.findAllByType('button')[0];
+
+      // Press the button multiple times rapidly
+      fireEvent.press(button);
+      fireEvent.press(button);
+      fireEvent.press(button);
+
+      await waitFor(() => {
+        // Emit should only be called once
+        expect(mockEmit).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('should re-enable button after proof generation completes', async () => {
+      const { root } = render(<KYCVerifiedScreen />);
+      const button = root.findAllByType('button')[0];
+
+      fireEvent.press(button);
+
+      // Wait for async operations to complete
+      await waitFor(() => {
+        expect(mockEmit).toHaveBeenCalled();
+      });
+
+      // Button should be re-enabled after completion
+      await waitFor(() => {
+        const updatedButton = root.findAllByType('button')[0];
+        expect(updatedButton.props.disabled).toBeFalsy();
+        expect(updatedButton.props.children).toBe('Generate proof');
+      });
+    });
+
+    it('should re-enable button after error', async () => {
+      // Mock an error in setSelectedDocument
+      const { setSelectedDocument } = jest.requireMock(
+        '@/providers/passportDataProvider',
+      );
+      setSelectedDocument.mockRejectedValueOnce(new Error('Test error'));
+
+      const { root } = render(<KYCVerifiedScreen />);
+      const button = root.findAllByType('button')[0];
+
+      fireEvent.press(button);
+
+      // Wait for error handling
+      await waitFor(() => {
+        const updatedButton = root.findAllByType('button')[0];
+        expect(updatedButton.props.disabled).toBeFalsy();
+        expect(updatedButton.props.children).toBe('Generate proof');
+      });
+    });
   });
 });

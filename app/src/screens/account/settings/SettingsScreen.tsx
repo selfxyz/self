@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -17,10 +17,10 @@ import { Settings2 } from '@tamagui/lucide-icons/icons/Settings2';
 
 import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
 import {
-  amber500,
   black,
   neutral700,
   slate800,
+  warmCream,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
@@ -152,7 +152,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
       unstyled
       hitSlop={8}
       onPress={onPress}
-      icon={<Icon height={32} width={32} color={amber500} />}
+      icon={<Icon height={32} width={32} color={warmCream} />}
     />
   );
 };
@@ -311,7 +311,7 @@ const SettingsScreen: React.FC = () => {
                   <SocialButton key={i} Icon={Icon} href={href} />
                 ))}
               </XStack>
-              <BodyText style={{ color: amber500, fontSize: 15 }}>
+              <BodyText style={{ color: warmCream, fontSize: 15 }}>
                 SELF
               </BodyText>
               {/* Dont remove if not viewing on ios */}

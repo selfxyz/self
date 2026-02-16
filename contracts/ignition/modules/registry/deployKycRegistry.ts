@@ -26,7 +26,8 @@ export default buildModule("DeployKycRegistryModule", (m) => {
 
   const gcpKycVerifier = m.contract("Verifier_gcp_jwt", []);
 
-  const pcr0Manager = m.contract("PCR0Manager", []);
+  // PCR0Manager not deployed - using existing mainnet PCR0Manager at 0x9743fe2C1c3D2b068c56dE314e9B10DA9c904717
+  // const pcr0Manager = m.contract("PCR0Manager", []);
 
   console.log("✅ Registry deployment module setup complete!");
   console.log("   📋 Summary:");
@@ -34,14 +35,12 @@ export default buildModule("DeployKycRegistryModule", (m) => {
   console.log("   - IdentityRegistryKycImplV1: Implementation contract");
   console.log("   - IdentityRegistry: Proxy contract");
   console.log("   - Verifier_gcp_jwt: GCP JWT verifier contract");
-  console.log("   - PCR0Manager: PCR0Manager contract");
 
   return {
     poseidonT3,
     identityRegistryKycImpl,
     registry,
     gcpKycVerifier,
-    pcr0Manager,
   };
 });
 

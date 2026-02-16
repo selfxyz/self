@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -92,13 +92,22 @@ export const useEarnPointsFlow = ({
   }, [hasReferrer, navigation, navigateToPointsProof]);
 
   const showPointsInfoScreen = useCallback(() => {
-    navigation.navigate('PointsInfo', {
-      showNextButton: true,
-      onNextButtonPress: () => {
+    const callbackId = registerModalCallbacks({
+      onButtonPress: () => {
         showPointsDisclosureModal();
       },
+      onModalDismiss: () => {
+        if (hasReferrer) {
+          useUserStore.getState().clearDeepLinkReferrer();
+        }
+      },
     });
-  }, [navigation, showPointsDisclosureModal]);
+
+    navigation.navigate('PointsInfo', {
+      showNextButton: true,
+      callbackId,
+    });
+  }, [hasReferrer, navigation, showPointsDisclosureModal]);
 
   const handleReferralFlow = useCallback(async () => {
     if (!referrer) {

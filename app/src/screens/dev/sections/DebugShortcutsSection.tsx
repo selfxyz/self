@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -49,29 +49,6 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
           >
             <Text fontSize="$5" color={slate500} fontFamily={dinot}>
               View Private Key
-            </Text>
-            <ChevronRight color={slate500} strokeWidth={2.5} />
-          </XStack>
-        </Button>
-        <Button
-          style={{ backgroundColor: 'white' }}
-          borderColor={slate200}
-          borderRadius="$2"
-          height="$5"
-          padding={0}
-          onPress={() => {
-            navigation.navigate('SumsubTest');
-          }}
-        >
-          <XStack
-            width="100%"
-            justifyContent="space-between"
-            paddingVertical="$3"
-            paddingLeft="$4"
-            paddingRight="$1.5"
-          >
-            <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-              Sumsub Test Flow
             </Text>
             <ChevronRight color={slate500} strokeWidth={2.5} />
           </XStack>

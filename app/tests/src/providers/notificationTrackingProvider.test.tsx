@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -116,7 +116,7 @@ describe('NotificationTrackingProvider', () => {
       });
     });
 
-    it('should not navigate when status is retry', async () => {
+    it('should navigate to CountryPicker when status is retry', async () => {
       let notificationHandler:
         | ((message: FirebaseMessagingTypes.RemoteMessage) => void)
         | null = null;
@@ -151,11 +151,10 @@ describe('NotificationTrackingProvider', () => {
         expect(analytics.trackEvent).toHaveBeenCalled();
       });
 
-      // Should not navigate for retry status
-      expect(mockNavigationRef.navigate).not.toHaveBeenCalled();
+      expect(mockNavigationRef.navigate).toHaveBeenCalledWith('CountryPicker');
     });
 
-    it('should not navigate when status is rejected', async () => {
+    it('should navigate to KycFailure when status is rejected', async () => {
       let notificationHandler:
         | ((message: FirebaseMessagingTypes.RemoteMessage) => void)
         | null = null;
@@ -190,8 +189,9 @@ describe('NotificationTrackingProvider', () => {
         expect(analytics.trackEvent).toHaveBeenCalled();
       });
 
-      // Should not navigate for rejected status
-      expect(mockNavigationRef.navigate).not.toHaveBeenCalled();
+      expect(mockNavigationRef.navigate).toHaveBeenCalledWith('KycFailure', {
+        canRetry: false,
+      });
     });
 
     it('should handle missing notification data gracefully', async () => {
@@ -331,7 +331,7 @@ describe('NotificationTrackingProvider', () => {
       expect(mockNavigationRef.navigate).not.toHaveBeenCalled();
     });
 
-    it('should not navigate when status is retry on cold start', async () => {
+    it('should navigate to CountryPicker when status is retry on cold start', async () => {
       mockOnNotificationOpenedApp.mockReturnValue(jest.fn());
 
       const remoteMessage = {
@@ -358,8 +358,7 @@ describe('NotificationTrackingProvider', () => {
         );
       });
 
-      // Should not navigate for retry status
-      expect(mockNavigationRef.navigate).not.toHaveBeenCalled();
+      expect(mockNavigationRef.navigate).toHaveBeenCalledWith('CountryPicker');
     });
 
     it('should queue navigation when navigationRef is not ready on cold start', async () => {

@@ -12,6 +12,12 @@ on:
       - "sdk/qrcode-angular/package.json"
       - "contracts/package.json"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run publish with --dry-run"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   id-token: write # Required for OIDC
@@ -19,7 +25,7 @@ permissions:
 
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       core_changed: ${{ steps.check-version.outputs.core_changed }}
       qrcode_changed: ${{ steps.check-version.outputs.qrcode_changed }}
@@ -86,14 +92,51 @@ jobs:
         run: |
           yarn workspace @selfxyz/core build:deps
 
-      - name: Publish to npm
+      - name: Check version not already published
+        id: check_version
         working-directory: sdk/core
         run: |
-          yarn config set npmPublishAccess public
-          yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
+          fi
+
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: sdk/core
+        run: yarn pack --out package.tgz
+
+      - name: Publish to npm
+        working-directory: sdk/core
+        id: publish
+        run: |
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
+
+      - name: Publish result
+        if: always()
+        run: |
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
+          else
+            echo "::warning::NPM publish failed. For @selfxyz/core we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          fi
 
   publish-qrcode:
     needs: detect-changes
@@ -114,14 +157,51 @@ jobs:
         run: |
           yarn workspace @selfxyz/qrcode build:deps
 
-      - name: Publish to npm
+      - name: Check version not already published
+        id: check_version
         working-directory: sdk/qrcode
         run: |
-          yarn config set npmPublishAccess public
-          yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
+          fi
+
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: sdk/qrcode
+        run: yarn pack --out package.tgz
+
+      - name: Publish to npm
+        working-directory: sdk/qrcode
+        id: publish
+        run: |
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
+
+      - name: Publish result
+        if: always()
+        run: |
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
+          else
+            echo "::warning::NPM publish failed. For @selfxyz/qrcode we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          fi
 
   publish-common:
     needs: detect-changes
@@ -141,14 +221,51 @@ jobs:
         run: |
           yarn workspace @selfxyz/common build
 
-      - name: Publish to npm
+      - name: Check version not already published
+        id: check_version
         working-directory: common
         run: |
-          yarn config set npmPublishAccess public
-          yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
+          fi
+
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: common
+        run: yarn pack --out package.tgz
+
+      - name: Publish to npm
+        working-directory: common
+        id: publish
+        run: |
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
+
+      - name: Publish result
+        if: always()
+        run: |
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
+          else
+            echo "::warning::NPM publish failed. For @selfxyz/common we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          fi
   publish-contracts:
     needs: detect-changes
     if: needs.detect-changes.outputs.contracts_changed == 'true'
@@ -165,14 +282,52 @@ jobs:
       - name: Build package
         run: |
           yarn workspace @selfxyz/contracts build
-      - name: Publish to npm
+
+      - name: Check version not already published
+        id: check_version
         working-directory: contracts
         run: |
-          yarn config set npmPublishAccess public
-          yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
+          fi
+
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: contracts
+        run: yarn pack --out package.tgz
+
+      - name: Publish to npm
+        working-directory: contracts
+        id: publish
+        run: |
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
+
+      - name: Publish result
+        if: always()
+        run: |
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
+          else
+            echo "::warning::NPM publish failed. For @selfxyz/contracts we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          fi
   publish-qrcode-angular:
     needs: detect-changes
     if: needs.detect-changes.outputs.qrcode_angular_changed == 'true'
@@ -192,14 +347,51 @@ jobs:
         run: |
           yarn workspace @selfxyz/qrcode-angular build:deps
 
-      - name: Publish to npm
+      - name: Check version not already published
+        id: check_version
         working-directory: sdk/qrcode-angular
         run: |
-          yarn config set npmPublishAccess public
-          yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version 2>/dev/null; then
+            echo "::error::Version $VERSION of $NAME is already published on npm. Bump the version in package.json to publish."
+            exit 1
+          fi
+
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: sdk/qrcode-angular
+        run: yarn pack --out package.tgz
+
+      - name: Publish to npm
+        working-directory: sdk/qrcode-angular
+        id: publish
+        run: |
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
+          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
+
+      - name: Publish result
+        if: always()
+        run: |
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          CHECK_OUTCOME="${{ steps.check_version.outcome }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            if [ "$CHECK_OUTCOME" = "failure" ]; then
+              echo "::warning::Publish skipped: this version is already published on npm. Bump the version in package.json to publish."
+            else
+              echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+            fi
+          else
+            echo "::warning::NPM publish failed. For @selfxyz/qrcode-angular we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          fi
 
   publish-msdk:
     needs: detect-changes
@@ -221,11 +413,30 @@ jobs:
           yarn workspace @selfxyz/common build
           yarn workspace @selfxyz/mobile-sdk-alpha build
 
+      - name: "Pack with yarn (resolves workspace: protocol)"
+        working-directory: packages/mobile-sdk-alpha
+        run: yarn pack --out package.tgz
+
       - name: Publish to npm
         working-directory: packages/mobile-sdk-alpha
+        id: publish
         run: |
-          yarn config set npmPublishAccess restricted
-          yarn npm publish --access restricted --tag alpha
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          npx npm@latest publish package.tgz --access restricted --tag alpha $DRY_RUN
+
+      - name: Publish result
+        if: always()
+        run: |
+          OUTCOME="${{ steps.publish.outcome }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "✅ Dry run completed (no package uploaded)"
+            else
+              echo "✅ Package published successfully"
+            fi
+          elif [ "$OUTCOME" = "skipped" ]; then
+            echo "::warning::Publish step was skipped (e.g. an earlier step failed)."
+          else
+            echo "::warning::NPM publish failed. For @selfxyz/mobile-sdk-alpha we use Trusted Publishers (OIDC); check workflow and npm package settings."
+          fi

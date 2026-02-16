@@ -5,6 +5,7 @@ unless ENV["E2E_TESTING"] == "1"
   source "https://github.com/SumSubstance/Specs.git"
 
   # Fisherman (Device Intelligence) — disabled to reduce binary size (~22MB pods)
+  # Privacy: Device ID collection declared in app/ios/PrivacyInfo.xcprivacy
   # Re-enable when device fingerprinting is needed for Sumsub flows
   # ENV["IDENSIC_WITH_FISHERMAN"] = "true"
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -30,17 +30,26 @@ const executeNotificationNavigation = (
   const status = remoteMessage.data?.status;
 
   // Handle KYC result notifications
-  if (notificationType === 'kyc_result' && status === 'approved') {
-    navigationRef.navigate('KYCVerified', {
-      status: String(status),
-      userId: remoteMessage.data?.user_id
-        ? String(remoteMessage.data.user_id)
-        : undefined,
-    });
-    return true;
+  if (notificationType === 'kyc_result') {
+    if (status === 'approved') {
+      navigationRef.navigate('KYCVerified', {
+        status: String(status),
+        userId: remoteMessage.data?.user_id
+          ? String(remoteMessage.data.user_id)
+          : undefined,
+      });
+      return true;
+    } else if (status === 'rejected') {
+      navigationRef.navigate('KycFailure', {
+        canRetry: false,
+      });
+      return true;
+    } else if (status === 'retry') {
+      // Take user directly to verification flow to retry
+      navigationRef.navigate('CountryPicker');
+      return true;
+    }
   }
-  // Add handling for other notification types here as needed
-  // For retry/rejected statuses, could navigate to appropriate screens in future
 
   return true; // Navigation handled (or not applicable)
 };

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -69,11 +69,11 @@ const getOrCreateSecretWeb = async (): Promise<string> => {
       localStorage.setItem(SECRET_VERSION_KEY, JSON.stringify(metadata));
 
       console.log('[SecureStorage] Loaded existing secret from localStorage');
-      return existingSecret;
+      return existingSecret; // lgtm[js/clear-text-storage-of-sensitive-data]
     }
 
-    // Generate new secret
-    const newSecret = generateSecret();
+    // Generate new secret (intentionally stored in localStorage for demo purposes only)
+    const newSecret = generateSecret(); // lgtm[js/clear-text-storage-of-sensitive-data]
     const metadata: SecretMetadata = {
       version: CURRENT_VERSION,
       createdAt: new Date().toISOString(),
