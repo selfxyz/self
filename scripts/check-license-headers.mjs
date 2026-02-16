@@ -243,7 +243,12 @@ function main() {
 
   if (isCheck) {
     // Show which directories require headers
-    const requiredDirs = ['app/', 'packages/mobile-sdk-alpha/', 'packages/kmp-test-app/', 'packages/kmp-sdk/'];
+    const requiredDirs = [
+      'app/',
+      'packages/mobile-sdk-alpha/',
+      'packages/kmp-test-app/',
+      'packages/kmp-sdk/',
+    ];
     console.log(`📋 License headers required in: ${requiredDirs.join(', ')}`);
 
     if (issues.length === 0) {
