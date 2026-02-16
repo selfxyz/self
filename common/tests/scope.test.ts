@@ -66,8 +66,14 @@ describe('Scope Utilities', () => {
     });
 
     it('should produce the same hash for checksummed and lowercase addresses', () => {
-      const checksummed = hashEndpointWithScope('0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968', 'scope1');
-      const lowercase = hashEndpointWithScope('0x37f5cb8cb1f6b00aa768d8aa99f1a9289802a968', 'scope1');
+      const checksummed = hashEndpointWithScope(
+        '0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968',
+        'scope1'
+      );
+      const lowercase = hashEndpointWithScope(
+        '0x37f5cb8cb1f6b00aa768d8aa99f1a9289802a968',
+        'scope1'
+      );
       expect(checksummed).toBe(lowercase);
     });
   });
