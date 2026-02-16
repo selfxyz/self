@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
@@ -64,6 +70,17 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   const { upload, disableBackup } = useBackupMnemonic();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  useEffect(() => {
+    return () => {
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const [_selectedMethod, setSelectedMethod] = useState<BackupMethod>(null);
   const [iCloudPending, setICloudPending] = useState(false);
@@ -111,7 +128,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         secondaryButtonText: 'Cancel',
         onButtonPress: () => {
           // setTimeout to ensure modal closes before navigation to prevent navigation conflicts when the modal tries to goBack()
-          setTimeout(() => {
+          navigationTimeoutRef.current = setTimeout(() => {
             navigation.navigate('CountryPicker');
           }, 100);
         },

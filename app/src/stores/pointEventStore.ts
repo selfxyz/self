@@ -21,6 +21,9 @@ import { pollEventProcessingStatus } from '@/services/points/eventPolling';
 interface PointEventState {
   events: PointEvent[];
   isLoading: boolean;
+  hasCompletedBackupForPoints: boolean;
+  setBackupForPointsCompleted: (value?: boolean) => void;
+  resetBackupForPoints: () => void;
   loadEvents: () => Promise<void>;
   loadDisclosureEvents: () => Promise<void>;
   addEvent: (
@@ -47,6 +50,7 @@ interface PointEventState {
 }
 
 const STORAGE_KEY = '@point_events';
+const BACKUP_COMPLETED_KEY = '@backup_completed_for_points';
 
 const DESIRED_EVENT_TYPES = ['refer', 'notification', 'backup', 'disclosure'];
 
@@ -60,6 +64,19 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
   points: 0,
   events: [],
   isLoading: false,
+  hasCompletedBackupForPoints: false,
+  setBackupForPointsCompleted: (value: boolean = true) => {
+    set({ hasCompletedBackupForPoints: value });
+    AsyncStorage.setItem(BACKUP_COMPLETED_KEY, JSON.stringify(value)).catch(
+      error => console.error('Error persisting backup completed flag:', error),
+    );
+  },
+  resetBackupForPoints: () => {
+    set({ hasCompletedBackupForPoints: false });
+    AsyncStorage.removeItem(BACKUP_COMPLETED_KEY).catch(error =>
+      console.error('Error removing backup completed flag:', error),
+    );
+  },
   refreshPoints: async () => {
     try {
       const address = await getPointsAddress();
@@ -120,6 +137,30 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
       } else {
         set({ isLoading: false });
       }
+      // Load backup completed flag from AsyncStorage
+      const backupCompleted = await AsyncStorage.getItem(BACKUP_COMPLETED_KEY);
+      if (backupCompleted) {
+        set({ hasCompletedBackupForPoints: JSON.parse(backupCompleted) });
+      } else {
+        // Migration: derive from events if a completed backup event exists
+        const events = get().events;
+        const hasCompleted = events.some(
+          e => e.type === 'backup' && e.status === 'completed',
+        );
+        if (hasCompleted) {
+          set({ hasCompletedBackupForPoints: true });
+          AsyncStorage.setItem(
+            BACKUP_COMPLETED_KEY,
+            JSON.stringify(true),
+          ).catch(error =>
+            console.error(
+              'Error persisting migrated backup completed flag:',
+              error,
+            ),
+          );
+        }
+      }
+
       await get().loadDisclosureEvents();
     } catch (error) {
       console.error('Error loading point events:', error);
@@ -335,8 +376,8 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
 
   clearEvents: async () => {
     try {
-      await AsyncStorage.removeItem(STORAGE_KEY);
-      set({ events: [] });
+      await AsyncStorage.multiRemove([STORAGE_KEY, BACKUP_COMPLETED_KEY]);
+      set({ events: [], hasCompletedBackupForPoints: false });
     } catch (error) {
       console.error('Error clearing point events:', error);
     }

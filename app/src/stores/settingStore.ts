@@ -14,7 +14,6 @@ interface PersistedSettingsState {
   cloudBackupEnabled: boolean;
   dismissPrivacyNote: () => void;
   fcmToken: string | null;
-  hasCompletedBackupForPoints: boolean;
   hasCompletedKeychainMigration: boolean;
   hasPrivacyNoteBeenDismissed: boolean;
   hasViewedRecoveryPhrase: boolean;
@@ -24,8 +23,6 @@ interface PersistedSettingsState {
   loggingSeverity: LoggingSeverity;
   pointsAddress: string | null;
   removeSubscribedTopic: (topic: string) => void;
-  resetBackupForPoints: () => void;
-  setBackupForPointsCompleted: (value?: boolean) => void;
   setBiometricsAvailable: (biometricsAvailable: boolean) => void;
   setDevModeOff: () => void;
   setDevModeOn: () => void;
@@ -131,10 +128,6 @@ export const useSettingStore = create<SettingsState>()(
       turnkeyBackupEnabled: false,
       setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) =>
         set({ turnkeyBackupEnabled }),
-      hasCompletedBackupForPoints: false,
-      setBackupForPointsCompleted: (value: boolean = true) =>
-        set({ hasCompletedBackupForPoints: value }),
-      resetBackupForPoints: () => set({ hasCompletedBackupForPoints: false }),
       pointsAddress: null,
       setPointsAddress: (address: string | null) =>
         set({ pointsAddress: address }),

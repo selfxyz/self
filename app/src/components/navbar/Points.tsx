@@ -61,7 +61,7 @@ const Points: React.FC = () => {
   const { amount: points } = usePoints();
   const loadEvents = usePointEventStore(state => state.loadEvents);
   const { hasCompletedBackupForPoints, setBackupForPointsCompleted } =
-    useSettingStore();
+    usePointEventStore();
   const [isBackingUp, setIsBackingUp] = useState(false);
 
   // Guard: Validate that user has registered a document and completed points disclosure
@@ -84,6 +84,7 @@ const Points: React.FC = () => {
       pending: isPending,
       completed: isCompleted,
       started: isPending || isCompleted,
+      isLoading: state.isLoading,
     };
   });
   const onHelpButtonPress = () => {
@@ -94,6 +95,10 @@ const Points: React.FC = () => {
   //and to show the backup button again.
   //Another way is to show success modal here, but this ccan be delayed (as polling can be upto 32 seconds)
   useEffect(() => {
+    // Wait until events have been loaded before evaluating backup state
+    if (getBackupState.isLoading) {
+      return;
+    }
     if (
       !getBackupState.pending &&
       !getBackupState.completed &&
@@ -102,6 +107,7 @@ const Points: React.FC = () => {
       setBackupForPointsCompleted(false);
     }
   }, [
+    getBackupState.isLoading,
     getBackupState.completed,
     getBackupState.pending,
     hasCompletedBackupForPoints,
@@ -117,7 +123,7 @@ const Points: React.FC = () => {
       const { cloudBackupEnabled, turnkeyBackupEnabled } =
         useSettingStore.getState();
       const currentHasCompletedBackup =
-        useSettingStore.getState().hasCompletedBackupForPoints;
+        usePointEventStore.getState().hasCompletedBackupForPoints;
 
       // Only check if we explicitly set the flag (when navigating to backup settings)
       // This prevents false triggers when returning from other flows (like notification permissions)
@@ -131,7 +137,7 @@ const Points: React.FC = () => {
             const response = await recordBackupPointEvent();
 
             if (response.success) {
-              useSettingStore.getState().setBackupForPointsCompleted();
+              usePointEventStore.getState().setBackupForPointsCompleted();
               selfClient.trackEvent(PointEvents.EARN_BACKUP_SUCCESS);
 
               const callbackId = registerModalCallbacks({

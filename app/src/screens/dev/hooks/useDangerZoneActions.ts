@@ -8,12 +8,11 @@ import { unsafe_clearSecrets } from '@/providers/authProvider';
 import { usePassport } from '@/providers/passportDataProvider';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
 import { usePointEventStore } from '@/stores/pointEventStore';
-import { useSettingStore } from '@/stores/settingStore';
 
 export const useDangerZoneActions = () => {
   const { clearDocumentCatalogForMigrationTesting } = usePassport();
   const clearPointEvents = usePointEventStore(state => state.clearEvents);
-  const { resetBackupForPoints } = useSettingStore();
+  const { resetBackupForPoints } = usePointEventStore();
   const { pendingVerifications } = usePendingKycStore();
   const clearPendingVerifications = usePendingKycStore(
     state => state.clearAllPendingVerifications,
