@@ -1022,8 +1022,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       // Aadhaar and KYC documents do not require DSC parsing at all.
       const needsDscParsing =
         passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card';
-      const hasParsedDsc =
-        needsDscParsing && Boolean(passportData.dsc_parsed?.authorityKeyIdentifier);
+      const hasParsedDsc = needsDscParsing && Boolean(passportData.dsc_parsed?.authorityKeyIdentifier);
 
       const shouldParseDocument = circuitType === 'dsc' || (needsDscParsing && !hasParsedDsc);
 

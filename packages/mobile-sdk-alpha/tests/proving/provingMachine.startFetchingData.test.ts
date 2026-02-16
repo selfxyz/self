@@ -281,12 +281,7 @@ describe('startFetchingData', () => {
 
     await useProvingStore.getState().startFetchingData(mockSelfClient);
 
-    expect(fetchAllTreesAndCircuits).toHaveBeenCalledWith(
-      mockSelfClient,
-      'passport',
-      'prod',
-      'test-aki-123',
-    );
+    expect(fetchAllTreesAndCircuits).toHaveBeenCalledWith(mockSelfClient, 'passport', 'prod', 'test-aki-123');
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_SUCCESS' });
     expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_SUCCESS);
   });
@@ -300,12 +295,7 @@ describe('startFetchingData', () => {
 
     await useProvingStore.getState().startFetchingData(mockSelfClient);
 
-    expect(fetchAllTreesAndCircuits).toHaveBeenCalledWith(
-      mockSelfClient,
-      'id_card',
-      'prod',
-      'card-aki-456',
-    );
+    expect(fetchAllTreesAndCircuits).toHaveBeenCalledWith(mockSelfClient, 'id_card', 'prod', 'card-aki-456');
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_SUCCESS' });
   });
 
