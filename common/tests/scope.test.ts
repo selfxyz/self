@@ -21,7 +21,7 @@ describe('Scope Utilities', () => {
       },
       {
         input: '0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968',
-        expected: '0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968',
+        expected: '0x37f5cb8cb1f6b00aa768d8aa99f1a9289802a968',
       },
     ];
 
@@ -61,8 +61,14 @@ describe('Scope Utilities', () => {
     it('should hash 0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968 correctly', () => {
       const hash = hashEndpointWithScope('0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968', 'scope1');
       expect(hash).toBe(
-        '21792212437898267310059828522707476766793174271399605592779109529816681750611'
+        '17320225058247886741210754832666102619008901426838628632042987297713059140253'
       );
+    });
+
+    it('should produce the same hash for checksummed and lowercase addresses', () => {
+      const checksummed = hashEndpointWithScope('0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968', 'scope1');
+      const lowercase = hashEndpointWithScope('0x37f5cb8cb1f6b00aa768d8aa99f1a9289802a968', 'scope1');
+      expect(checksummed).toBe(lowercase);
     });
   });
 
