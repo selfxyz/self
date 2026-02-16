@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -13,10 +13,11 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { DefaultNavBar } from '@/components/navbar';
+import { usePendingKycRecovery } from '@/hooks/usePendingKycRecovery';
+import useRecoveryPrompts from '@/hooks/useRecoveryPrompts';
 import AppLayout from '@/layouts/AppLayout';
 import accountScreens from '@/navigation/account';
 import appScreens from '@/navigation/app';
@@ -26,11 +27,10 @@ import documentsScreens from '@/navigation/documents';
 import homeScreens from '@/navigation/home';
 import onboardingScreens from '@/navigation/onboarding';
 import sharedScreens from '@/navigation/shared';
+import starfallScreens from '@/navigation/starfall';
+import type { ExplicitRouteParams, OmittedRouteKeys } from '@/navigation/types';
 import verificationScreens from '@/navigation/verification';
-import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
-import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
-import analytics from '@/services/analytics';
-import type { ProofHistory } from '@/stores/proofTypes';
+import { trackScreenView } from '@/services/analytics';
 
 export const navigationScreens = {
   ...appScreens,
@@ -40,6 +40,7 @@ export const navigationScreens = {
   ...verificationScreens,
   ...accountScreens,
   ...sharedScreens,
+  ...starfallScreens,
   ...devScreens, // allow in production for testing
 };
 
@@ -55,129 +56,13 @@ const AppNavigation = createNativeStackNavigator({
 
 type BaseRootStackParamList = StaticParamList<typeof AppNavigation>;
 
-// Explicitly declare route params that are not inferred from initialParams
+// Explicitly declare route params that are not inferred from initialParams.
+// Route param types are defined in @/navigation/types for better organization.
 export type RootStackParamList = Omit<
   BaseRootStackParamList,
-  | 'AadhaarUpload'
-  | 'AadhaarUploadError'
-  | 'AadhaarUploadSuccess'
-  | 'AccountRecovery'
-  | 'AccountVerifiedSuccess'
-  | 'CloudBackupSettings'
-  | 'ComingSoon'
-  | 'ConfirmBelonging'
-  | 'CreateMock'
-  | 'Disclaimer'
-  | 'DocumentNFCScan'
-  | 'DocumentOnboarding'
-  | 'Gratification'
-  | 'Home'
-  | 'IDPicker'
-  | 'IdDetails'
-  | 'Loading'
-  | 'Modal'
-  | 'MockDataDeepLink'
-  | 'Points'
-  | 'PointsInfo'
-  | 'ProofHistoryDetail'
-  | 'Prove'
-  | 'SaveRecoveryPhrase'
-  | 'WebView'
-> & {
-  // Shared screens
-  ComingSoon: {
-    countryCode?: string;
-    documentCategory?: string;
-  };
-  WebView: WebViewScreenParams;
-
-  // Document screens
-  IDPicker: {
-    countryCode: string;
-    documentTypes: string[];
-  };
-  ConfirmBelonging:
-    | {
-        documentCategory?: DocumentCategory;
-        signatureAlgorithm?: string;
-        curveOrExponent?: string;
-      }
-    | undefined;
-  DocumentNFCScan:
-    | {
-        passportNumber?: string;
-        dateOfBirth?: string;
-        dateOfExpiry?: string;
-      }
-    | undefined;
-  DocumentCameraTrouble: undefined;
-  DocumentOnboarding: undefined;
-
-  // Aadhaar screens
-  AadhaarUpload: {
-    countryCode: string;
-  };
-  AadhaarUploadSuccess: undefined;
-  AadhaarUploadError: {
-    errorType: string;
-  };
-
-  // Account/Recovery screens
-  AccountRecovery:
-    | {
-        nextScreen?: string;
-      }
-    | undefined;
-  SaveRecoveryPhrase:
-    | {
-        nextScreen?: string;
-      }
-    | undefined;
-  CloudBackupSettings:
-    | {
-        nextScreen?: 'SaveRecoveryPhrase';
-        returnToScreen?: 'Points';
-      }
-    | undefined;
-  AccountVerifiedSuccess: undefined;
-
-  // Proof/Verification screens
-  ProofHistoryDetail: {
-    data: ProofHistory;
-  };
-  Prove: undefined;
-
-  // App screens
-  Loading: {
-    documentCategory?: DocumentCategory;
-    signatureAlgorithm?: string;
-    curveOrExponent?: string;
-  };
-  Modal: ModalNavigationParams;
-  Gratification: {
-    points?: number;
-  };
-
-  // Home screens
-  Home: {
-    testReferralFlow?: boolean;
-  };
-  Points: undefined;
-  PointsInfo:
-    | {
-        showNextButton?: boolean;
-        onNextButtonPress?: () => void;
-      }
-    | undefined;
-  IdDetails: undefined;
-
-  // Onboarding screens
-  Disclaimer: undefined;
-
-  // Dev screens
-  CreateMock: undefined;
-  MockDataDeepLink: undefined;
-};
+  OmittedRouteKeys
+> &
+  ExplicitRouteParams;
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
@@ -194,10 +79,11 @@ declare global {
   }
 }
 
-const { trackScreenView } = analytics();
 const Navigation = createStaticNavigation(AppNavigation);
 
 const NavigationWithTracking = () => {
+  useRecoveryPrompts();
+  usePendingKycRecovery();
   const selfClient = useSelfClient();
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();

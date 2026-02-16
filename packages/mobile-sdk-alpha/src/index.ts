@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -32,6 +32,8 @@ export type {
 export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
 
 export type { DG1, DG2, ParsedNFCResponse } from './nfc';
+
+export type { DocumentAttributes } from './documents/validation';
 
 export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
 
@@ -68,6 +70,8 @@ export {
   sdkError,
 } from './errors';
 
+export { default as LogoConfirmationScreen } from './flows/onboarding/logo-confirmation-screen';
+
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 
 export { type ProvingStateType } from './proving/provingMachine';
@@ -97,7 +101,13 @@ export {
   triggerFeedback,
 } from './haptic';
 
-/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
+export {
+  checkDocumentExpiration,
+  getDocumentAttributes,
+  isDocumentValidForProving,
+  pickBestDocumentToSelect,
+} from './documents/validation';
+
 export {
   clearPassportData,
   getAllDocuments,
@@ -114,9 +124,10 @@ export { defaultConfig } from './config/defaults';
 
 export { defaultOptions } from './haptic/shared';
 
-export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
-
+/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
+export { extractMRZInfo } from './mrz';
 export { extractNameFromDocument } from './documents/utils';
+export { extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
@@ -129,5 +140,6 @@ export { parseNFCResponse, scanNFC } from './nfc';
 export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
 export { sanitizeErrorMessage } from './utils/utils';
 export { useCountries } from './documents/useCountries';
+export { useMRZStore } from './stores/mrzStore';
 
 export { webNFCScannerShim } from './adapters/web/shims';

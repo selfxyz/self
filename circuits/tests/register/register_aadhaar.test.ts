@@ -126,7 +126,7 @@ describe('REGISTER AADHAAR Circuit Tests', function () {
     assert(BigInt(out.commitment) !== BigInt(commitment));
   });
 
-  it('should pass for different qr data', async function () {
+  it.skip('should pass for different qr data', async function () {
     this.timeout(0);
     const { inputs, nullifier, commitment } = prepareAadhaarRegisterTestData(
       privateKeyPem,

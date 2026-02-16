@@ -5,21 +5,50 @@ on:
       - dev
       - staging
       - main
-    paths:
-      - "contracts/**"
-      - "common/**"
 
 concurrency:
   group: contracts-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  check_changes:
+    runs-on: ubuntu-slim
+    outputs:
+      should_run: ${{ steps.filter.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check if should run
+        id: filter
+        run: |
+          set -e
+          if [[ "${{ github.base_ref }}" == "main" ]] || [[ "${{ github.base_ref }}" == "staging" ]]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "Running for ${{ github.base_ref }} - no path filter"
+          else
+            # For dev branch, check if contracts or common files changed
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD) || {
+              echo "Error: Failed to diff against base branch"
+              exit 1
+            }
+            if echo "$CHANGED_FILES" | grep -qE "^(contracts|common)/"; then
+              echo "should_run=true" >> $GITHUB_OUTPUT
+              echo "Running for dev - contracts or common files changed"
+            else
+              echo "should_run=false" >> $GITHUB_OUTPUT
+              echo "Skipping for dev - no contracts or common files changed"
+            fi
+          fi
+
   test_contracts:
-    if: github.event.pull_request.draft == false
+    needs: check_changes
+    if: github.event.pull_request.draft == false && needs.check_changes.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     environment: development
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
         shell: bash
         run: |

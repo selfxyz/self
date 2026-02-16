@@ -47,7 +47,7 @@ contract testUpgradedIdentityVerificationHubImplV1 is
      * @param isTestInput Boolean value which shows it is test or not
      */
     function initialize(bool isTestInput) external reinitializer(3) {
-        __ImplRoot_init();
+        __Ownable_init(msg.sender);
         _isTest = isTestInput;
         emit TestHubInitialized();
     }

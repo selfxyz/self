@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -33,7 +33,7 @@ import { appsUrl } from '@/consts/links';
 import { useIncomingPoints, usePoints } from '@/hooks/usePoints';
 import { usePointsGuardrail } from '@/hooks/usePointsGuardrail';
 import type { RootStackParamList } from '@/navigation';
-import analytics from '@/services/analytics';
+import { trackScreenView } from '@/services/analytics';
 import {
   isTopicSubscribed,
   requestNotificationPermission,
@@ -70,7 +70,6 @@ const Points: React.FC = () => {
   // Track NavBar view analytics
   useFocusEffect(
     React.useCallback(() => {
-      const { trackScreenView } = analytics();
       trackScreenView('Points NavBar', {
         screenName: 'Points NavBar',
       });

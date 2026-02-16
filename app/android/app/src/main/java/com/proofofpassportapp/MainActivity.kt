@@ -5,9 +5,8 @@ package com.proofofpassportapp
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.graphics.Color
-import androidx.activity.SystemBarStyle
-import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -44,12 +43,11 @@ class MainActivity : ReactActivity() {
     // Prevent fragment state restoration to avoid react-native-screens crash
     // See: https://github.com/software-mansion/react-native-screens/issues/17#issuecomment-424704978
     super.onCreate(null)
-    // Ensure edge-to-edge is enabled consistently across Android versions using
-    // the AndroidX helper so deprecated window color APIs are avoided.
-    enableEdgeToEdge(
-      statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
-      navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
-    )
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+    WindowInsetsControllerCompat(window, window.decorView).apply {
+      systemBarsBehavior =
+        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    }
     // Allow system to manage orientation for large screens
   }
 }

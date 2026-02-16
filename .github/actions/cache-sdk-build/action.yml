@@ -1,0 +1,43 @@
+name: Cache SDK Build
+description: Cache SDK build artifacts (common, sdk-common, qrcode)
+
+inputs:
+  mode:
+    description: "save or restore"
+    required: true
+  cache-version:
+    description: Cache version string
+    required: false
+    default: v1
+  fail-on-cache-miss:
+    description: Fail if cache not found (restore mode only)
+    required: false
+    default: "false"
+
+outputs:
+  cache-hit:
+    description: Whether cache was hit
+    value: ${{ steps.restore.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - id: restore
+      if: inputs.mode == 'restore'
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          common/dist
+          sdk/sdk-common/dist
+          sdk/qrcode/dist
+        key: qrcode-sdk-build-${{ inputs.cache-version }}-${{ github.sha }}
+        fail-on-cache-miss: ${{ inputs.fail-on-cache-miss }}
+    - id: save
+      if: inputs.mode == 'save'
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          common/dist
+          sdk/sdk-common/dist
+          sdk/qrcode/dist
+        key: qrcode-sdk-build-${{ inputs.cache-version }}-${{ github.sha }}

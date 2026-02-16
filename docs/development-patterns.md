@@ -1,5 +1,14 @@
 # Self App Development Patterns
 
+## Docstring coverage workflow
+
+- Run `yarn docstrings` to check documentation coverage for both the mobile app and SDK. This generates `docs/coverage/app.json` and `docs/coverage/sdk.json` so you can diff coverage changes in version control.
+- Run `yarn docstrings:app` to check only the mobile app exports.
+- Run `yarn docstrings:sdk` to focus on `@selfxyz/mobile-sdk-alpha` only.
+- Add `--details` to any command when you want a full per-file JSON breakdown for ad-hoc analysis—the default snapshots include only top-level totals and a small sample of undocumented exports to keep the tracked files compact.
+
+Run the docstring reports locally before committing to track coverage changes. The reports are advisory—use them to identify documentation gaps but they won't block builds.
+
 ## React Native Architecture
 
 ### Navigation System

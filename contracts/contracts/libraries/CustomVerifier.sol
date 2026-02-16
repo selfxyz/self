@@ -37,6 +37,9 @@ library CustomVerifier {
         } else if (attestationId == AttestationId.AADHAAR) {
             SelfStructs.AadhaarOutput memory aadhaarOutput = abi.decode(proofOutput, (SelfStructs.AadhaarOutput));
             return CustomVerifier.verifyAadhaar(verificationConfig, aadhaarOutput);
+        } else if (attestationId == AttestationId.KYC) {
+            SelfStructs.KycOutput memory kycOutput = abi.decode(proofOutput, (SelfStructs.KycOutput));
+            return CustomVerifier.verifyKyc(verificationConfig, kycOutput);
         } else {
             revert InvalidAttestationId();
         }
@@ -288,6 +291,79 @@ library CustomVerifier {
                 false,
                 CircuitAttributeHandlerV2.getNameAndDobOfac(AttestationId.AADHAAR, aadhaarOutput.revealedDataPacked),
                 CircuitAttributeHandlerV2.getNameAndYobOfac(AttestationId.AADHAAR, aadhaarOutput.revealedDataPacked)
+            ]
+        });
+
+        return genericDiscloseOutput;
+    }
+
+    /**
+     * @notice Verifies a KYC output.
+     * @param verificationConfig The verification configuration.
+     * @param kycOutput The KYC output from the circuit.
+     * @return genericDiscloseOutput The generic disclose output.
+     */
+    function verifyKyc(
+        SelfStructs.VerificationConfigV2 memory verificationConfig,
+        SelfStructs.KycOutput memory kycOutput
+    ) internal pure returns (SelfStructs.GenericDiscloseOutputV2 memory) {
+        if (verificationConfig.ofacEnabled[1] || verificationConfig.ofacEnabled[2]) {
+            if (
+                !CircuitAttributeHandlerV2.compareOfac(
+                    AttestationId.KYC,
+                    kycOutput.revealedDataPacked,
+                    false,
+                    verificationConfig.ofacEnabled[1],
+                    verificationConfig.ofacEnabled[2]
+                )
+            ) {
+                revert InvalidOfacCheck();
+            }
+        }
+
+        if (verificationConfig.forbiddenCountriesEnabled) {
+            for (uint256 i = 0; i < 4; i++) {
+                if (kycOutput.forbiddenCountriesListPacked[i] != verificationConfig.forbiddenCountriesListPacked[i]) {
+                    revert InvalidForbiddenCountries();
+                }
+            }
+        }
+
+        if (verificationConfig.olderThanEnabled) {
+            if (
+                !CircuitAttributeHandlerV2.compareOlderThanNumeric(
+                    AttestationId.KYC,
+                    kycOutput.revealedDataPacked,
+                    verificationConfig.olderThan
+                )
+            ) {
+                revert InvalidOlderThan();
+            }
+        }
+
+        SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = SelfStructs.GenericDiscloseOutputV2({
+            attestationId: AttestationId.KYC,
+            userIdentifier: kycOutput.userIdentifier,
+            nullifier: kycOutput.nullifier,
+            forbiddenCountriesListPacked: kycOutput.forbiddenCountriesListPacked,
+            issuingState: CircuitAttributeHandlerV2.getIssuingState(AttestationId.KYC, kycOutput.revealedDataPacked),
+            name: CircuitAttributeHandlerV2.getName(AttestationId.KYC, kycOutput.revealedDataPacked),
+            idNumber: CircuitAttributeHandlerV2.getDocumentNumber(AttestationId.KYC, kycOutput.revealedDataPacked),
+            nationality: CircuitAttributeHandlerV2.getNationality(AttestationId.KYC, kycOutput.revealedDataPacked),
+            dateOfBirth: CircuitAttributeHandlerV2.getDateOfBirthFullYear(
+                AttestationId.KYC,
+                kycOutput.revealedDataPacked
+            ),
+            gender: CircuitAttributeHandlerV2.getGender(AttestationId.KYC, kycOutput.revealedDataPacked),
+            expiryDate: CircuitAttributeHandlerV2.getExpiryDateFullYear(
+                AttestationId.KYC,
+                kycOutput.revealedDataPacked
+            ),
+            olderThan: verificationConfig.olderThan,
+            ofac: [
+                false,
+                CircuitAttributeHandlerV2.getNameAndDobOfac(AttestationId.KYC, kycOutput.revealedDataPacked),
+                CircuitAttributeHandlerV2.getNameAndYobOfac(AttestationId.KYC, kycOutput.revealedDataPacked)
             ]
         });
 

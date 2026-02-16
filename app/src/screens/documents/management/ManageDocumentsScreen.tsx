@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -8,8 +8,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Check, Eraser } from '@tamagui/lucide-icons';
+import { Check, Eraser, HousePlus } from '@tamagui/lucide-icons';
 
+import { deserializeApplicantInfo } from '@selfxyz/common';
 import type {
   DocumentCatalog,
   DocumentMetadata,
@@ -33,6 +34,8 @@ import { usePassport } from '@/providers/passportDataProvider';
 import { extraYPadding } from '@/utils/styleUtils';
 
 const PassportDataSelector = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
   const {
     loadDocumentCatalog,
@@ -73,7 +76,20 @@ const PassportDataSelector = () => {
     loadPassportDataInfo();
   }, [loadPassportDataInfo]);
 
-  const handleDocumentSelection = async (documentId: string) => {
+  const handleDocumentSelection = async (
+    documentId: string,
+    isRegistered: boolean | undefined,
+  ) => {
+    if (!isRegistered) {
+      Alert.alert(
+        'Document not registered',
+        'This document cannot be selected as active, because it is not registered. Click the add button next to it to register it first.',
+        [{ text: 'OK', style: 'cancel' }],
+      );
+
+      return;
+    }
+
     await setSelectedDocument(documentId);
     // Reload to update UI without loading state for quick operations
     const catalog = await loadDocumentCatalog();
@@ -90,28 +106,79 @@ const PassportDataSelector = () => {
     await loadPassportDataInfo();
   };
 
-  const handleDeleteButtonPress = (documentId: string) => {
-    Alert.alert(
-      '⚠️ Delete Document ⚠️',
-      'Are you sure you want to delete this document?\n\nThis document is already linked to your identity in Self Protocol and cannot be linked by another person.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            await handleDeleteSpecific(documentId);
-          },
-        },
-      ],
-    );
+  const handleRegisterDocument = async (documentId: string) => {
+    try {
+      await setSelectedDocument(documentId);
+      navigation.navigate('ConfirmBelonging', {});
+    } catch (error) {
+      console.error('Failed to navigate to registration:', error);
+      Alert.alert(
+        'Registration Error',
+        'Failed to prepare document for registration. Please try again.',
+        [{ text: 'OK', style: 'cancel' }],
+      );
+    }
   };
 
-  const getDisplayName = (documentType: string): string => {
-    switch (documentType) {
+  const handleDeleteButtonPress = (
+    documentId: string,
+    isRegistered: boolean | undefined,
+  ) => {
+    const message = isRegistered
+      ? 'Are you sure you want to delete this document?\n\nThis document is already linked to your identity in Self Protocol and cannot be linked by another person.'
+      : 'Are you sure you want to delete this document?';
+
+    Alert.alert('⚠️ Delete Document ⚠️', message, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await handleDeleteSpecific(documentId);
+        },
+      },
+    ]);
+  };
+
+  const getKYCDisplayName = (metadata: DocumentMetadata): string => {
+    let applicantInfo;
+    try {
+      applicantInfo = deserializeApplicantInfo(metadata.data);
+    } catch (error) {
+      console.error(
+        `[ManageDocumentsScreen] Failed to deserialize KYC data for document ${metadata.id}:`,
+        error,
+      );
+      return 'Verified ID';
+    }
+
+    if (!applicantInfo.idType) {
+      return 'Verified ID';
+    }
+
+    // Normalize idType for fuzzy matching (handles "drivers_licence", "NATIONAL ID", etc.)
+    const normalized = applicantInfo.idType
+      .toLowerCase()
+      .replace(/[_\s]+/g, ' ')
+      .trim();
+
+    if (normalized.includes('driver')) return "Driver's Licence";
+    if (normalized.includes('passport')) return 'Passport';
+    if (normalized.includes('aadhaar')) return 'Aadhaar';
+    if (normalized.includes('national')) return 'National ID';
+    if (normalized.includes('residence')) return 'Residence Permit';
+    return 'ID Card';
+  };
+
+  const getDisplayName = (metadata: DocumentMetadata): string => {
+    if (metadata.documentCategory === 'kyc') {
+      return getKYCDisplayName(metadata);
+    }
+
+    switch (metadata.documentType) {
       case 'passport':
         return 'Passport';
       case 'mock_passport':
@@ -125,7 +192,7 @@ const PassportDataSelector = () => {
       case 'mock_aadhaar':
         return 'Mock Aadhaar';
       default:
-        return documentType;
+        return metadata.documentType;
     }
   };
 
@@ -149,11 +216,24 @@ const PassportDataSelector = () => {
         }
       } else if (documentCategory === 'aadhaar') {
         return 'IND';
+      } else if (documentCategory === 'kyc') {
+        const applicantInfo = deserializeApplicantInfo(data);
+        return applicantInfo.country || null;
       }
       return null;
     } catch {
       return null;
     }
+  };
+
+  const getDocumentBackgroundColor = (
+    isSelected: boolean,
+    isRegistered: boolean | undefined,
+  ): string => {
+    if (!isRegistered) {
+      return '#ffebee'; // Light red for unregistered documents
+    }
+    return isSelected ? '$gray2' : 'white';
   };
 
   if (loading) {
@@ -196,6 +276,10 @@ const PassportDataSelector = () => {
     );
   }
 
+  const hasUnregisteredDocuments = documentCatalog.documents.some(
+    doc => !doc.isRegistered,
+  );
+
   return (
     <YStack gap="$3" width="100%">
       <Text
@@ -206,6 +290,21 @@ const PassportDataSelector = () => {
       >
         Available Documents
       </Text>
+      {hasUnregisteredDocuments && (
+        <YStack
+          padding="$3"
+          backgroundColor="#fff3cd"
+          borderRadius="$3"
+          borderWidth={1}
+          borderColor="#ffc107"
+        >
+          <Text color="#856404" fontSize="$3" textAlign="center">
+            ⚠️ We've detected some documents that are not registered. In order
+            to use them, you'll have to register them first by clicking the plus
+            icon next to them.
+          </Text>
+        </YStack>
+      )}
       {documentCatalog.documents.map((metadata: DocumentMetadata) => (
         <YStack
           key={metadata.id}
@@ -217,12 +316,13 @@ const PassportDataSelector = () => {
               : borderColor
           }
           borderRadius="$3"
-          backgroundColor={
-            documentCatalog.selectedDocumentId === metadata.id
-              ? '$gray2'
-              : 'white'
+          backgroundColor={getDocumentBackgroundColor(
+            documentCatalog.selectedDocumentId === metadata.id,
+            metadata.isRegistered,
+          )}
+          onPress={() =>
+            handleDocumentSelection(metadata.id, metadata.isRegistered)
           }
-          onPress={() => handleDocumentSelection(metadata.id)}
           pressStyle={{ opacity: 0.8 }}
         >
           <XStack
@@ -241,7 +341,9 @@ const PassportDataSelector = () => {
                 }
                 borderColor={textBlack}
                 borderWidth={1}
-                onPress={() => handleDocumentSelection(metadata.id)}
+                onPress={() =>
+                  handleDocumentSelection(metadata.id, metadata.isRegistered)
+                }
               >
                 {documentCatalog.selectedDocumentId === metadata.id && (
                   <Check size={12} color="white" />
@@ -249,26 +351,43 @@ const PassportDataSelector = () => {
               </Button>
               <YStack flex={1}>
                 <Text color={textBlack} fontWeight="bold" fontSize="$4">
-                  {getDisplayName(metadata.documentType)}
+                  {getDisplayName(metadata)}
                 </Text>
                 <Text color={textBlack} fontSize="$3" opacity={0.7}>
                   {getDocumentInfo(metadata)}
                 </Text>
               </YStack>
             </XStack>
-            <Button
-              backgroundColor="white"
-              justifyContent="center"
-              borderColor={borderColor}
-              borderWidth={1}
-              size="$3"
-              onPress={e => {
-                e.stopPropagation();
-                handleDeleteButtonPress(metadata.id);
-              }}
-            >
-              <Eraser color={textBlack} size={16} />
-            </Button>
+            <XStack gap="$3">
+              {metadata.isRegistered !== true && (
+                <Button
+                  backgroundColor="white"
+                  justifyContent="center"
+                  borderColor={borderColor}
+                  borderWidth={1}
+                  size="$3"
+                  onPress={e => {
+                    e.stopPropagation();
+                    handleRegisterDocument(metadata.id);
+                  }}
+                >
+                  <HousePlus color={textBlack} size={16} />
+                </Button>
+              )}
+              <Button
+                backgroundColor="white"
+                justifyContent="center"
+                borderColor={borderColor}
+                borderWidth={1}
+                size="$3"
+                onPress={e => {
+                  e.stopPropagation();
+                  handleDeleteButtonPress(metadata.id, metadata.isRegistered);
+                }}
+              >
+                <Eraser color={textBlack} size={16} />
+              </Button>
+            </XStack>
           </XStack>
         </YStack>
       ))}

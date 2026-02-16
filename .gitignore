@@ -12,8 +12,8 @@ showcase
 output/*
 *.tsbuildinfo
 .yarnrc.yml
-.giga/tasks/*
 package-lock.json
+.claude
 
 # CI-generated tarballs (don't commit these!)
 mobile-sdk-alpha-ci.tgz
@@ -24,3 +24,8 @@ packages/mobile-sdk-alpha/docs/docstrings-report.json
 
 # Private Android modules (cloned at build time)
 app/android/android-passport-nfc-reader/
+
+# Foundry
+contracts/out/
+contracts/cache_forge/
+contracts/broadcast/

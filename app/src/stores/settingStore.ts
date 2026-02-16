@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -6,35 +6,43 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+type LoggingSeverity = 'debug' | 'info' | 'warn' | 'error';
+
 interface PersistedSettingsState {
-  hasPrivacyNoteBeenDismissed: boolean;
-  dismissPrivacyNote: () => void;
-  biometricsAvailable: boolean;
-  setBiometricsAvailable: (biometricsAvailable: boolean) => void;
-  cloudBackupEnabled: boolean;
-  toggleCloudBackupEnabled: () => void;
-  loginCount: number;
-  incrementLoginCount: () => void;
-  hasViewedRecoveryPhrase: boolean;
-  setHasViewedRecoveryPhrase: (viewed: boolean) => void;
-  isDevMode: boolean;
-  setDevModeOn: () => void;
-  setDevModeOff: () => void;
-  hasCompletedKeychainMigration: boolean;
-  setKeychainMigrationCompleted: () => void;
-  fcmToken: string | null;
-  setFcmToken: (token: string | null) => void;
-  turnkeyBackupEnabled: boolean;
-  setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
-  subscribedTopics: string[];
-  setSubscribedTopics: (topics: string[]) => void;
   addSubscribedTopic: (topic: string) => void;
-  removeSubscribedTopic: (topic: string) => void;
+  biometricsAvailable: boolean;
+  cloudBackupEnabled: boolean;
+  dismissPrivacyNote: () => void;
+  fcmToken: string | null;
   hasCompletedBackupForPoints: boolean;
-  setBackupForPointsCompleted: (value?: boolean) => void;
-  resetBackupForPoints: () => void;
+  hasCompletedKeychainMigration: boolean;
+  hasPrivacyNoteBeenDismissed: boolean;
+  hasViewedRecoveryPhrase: boolean;
+  homeScreenViewCount: number;
+  incrementHomeScreenViewCount: () => void;
+  isDevMode: boolean;
+  loggingSeverity: LoggingSeverity;
   pointsAddress: string | null;
+  removeSubscribedTopic: (topic: string) => void;
+  resetBackupForPoints: () => void;
+  setBackupForPointsCompleted: (value?: boolean) => void;
+  setBiometricsAvailable: (biometricsAvailable: boolean) => void;
+  setDevModeOff: () => void;
+  setDevModeOn: () => void;
+  setFcmToken: (token: string | null) => void;
+  setHasViewedRecoveryPhrase: (viewed: boolean) => void;
+  setKeychainMigrationCompleted: () => void;
+  setLoggingSeverity: (severity: LoggingSeverity) => void;
   setPointsAddress: (address: string | null) => void;
+  setSkipDocumentSelector: (value: boolean) => void;
+  setSubscribedTopics: (topics: string[]) => void;
+  setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
+  setUseStrongBox: (useStrongBox: boolean) => void;
+  skipDocumentSelector: boolean;
+  subscribedTopics: string[];
+  toggleCloudBackupEnabled: () => void;
+  turnkeyBackupEnabled: boolean;
+  useStrongBox: boolean;
 }
 
 interface NonPersistedSettingsState {
@@ -64,25 +72,42 @@ export const useSettingStore = create<SettingsState>()(
       toggleCloudBackupEnabled: () =>
         set(oldState => ({
           cloudBackupEnabled: !oldState.cloudBackupEnabled,
-          loginCount: oldState.cloudBackupEnabled ? oldState.loginCount : 0,
+          homeScreenViewCount: oldState.cloudBackupEnabled
+            ? oldState.homeScreenViewCount
+            : 0,
         })),
 
-      loginCount: 0,
-      incrementLoginCount: () =>
-        set(oldState => ({ loginCount: oldState.loginCount + 1 })),
+      homeScreenViewCount: 0,
+      incrementHomeScreenViewCount: () =>
+        set(oldState => {
+          if (
+            oldState.cloudBackupEnabled ||
+            oldState.hasViewedRecoveryPhrase === true
+          ) {
+            return oldState;
+          }
+          const nextCount = oldState.homeScreenViewCount + 1;
+          return {
+            homeScreenViewCount: nextCount >= 100 ? 0 : nextCount,
+          };
+        }),
       hasViewedRecoveryPhrase: false,
       setHasViewedRecoveryPhrase: viewed =>
         set(oldState => ({
           hasViewedRecoveryPhrase: viewed,
-          loginCount:
+          homeScreenViewCount:
             viewed && !oldState.hasViewedRecoveryPhrase
               ? 0
-              : oldState.loginCount,
+              : oldState.homeScreenViewCount,
         })),
 
       isDevMode: false,
       setDevModeOn: () => set({ isDevMode: true }),
       setDevModeOff: () => set({ isDevMode: false }),
+
+      loggingSeverity: __DEV__ ? 'debug' : 'warn',
+      setLoggingSeverity: (severity: LoggingSeverity) =>
+        set({ loggingSeverity: severity }),
 
       hasCompletedKeychainMigration: false,
       setKeychainMigrationCompleted: () =>
@@ -113,6 +138,15 @@ export const useSettingStore = create<SettingsState>()(
       pointsAddress: null,
       setPointsAddress: (address: string | null) =>
         set({ pointsAddress: address }),
+
+      // Document selector skip settings
+      skipDocumentSelector: false,
+      setSkipDocumentSelector: (value: boolean) =>
+        set({ skipDocumentSelector: value }),
+
+      // StrongBox setting for Android keystore (default: false)
+      useStrongBox: false,
+      setUseStrongBox: (useStrongBox: boolean) => set({ useStrongBox }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,

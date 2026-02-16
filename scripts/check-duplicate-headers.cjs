@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -8,7 +8,7 @@ const path = require('path');
 const { glob } = require('glob');
 
 const LICENSE_HEADER_PATTERN = /^\/\/\s*SPDX-FileCopyrightText:/;
-const EXTENSIONS = ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'];
+const EXTENSIONS = ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.kt', '**/*.swift'];
 
 function checkFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
@@ -41,14 +41,17 @@ function main() {
   const patterns = EXTENSIONS.map(ext => path.join('src', ext));
   patterns.push(...EXTENSIONS.map(ext => path.join('tests', ext)));
   patterns.push(...EXTENSIONS.map(ext => path.join('scripts', ext)));
-  patterns.push('*.ts', '*.tsx', '*.js', '*.jsx');
+  patterns.push(...EXTENSIONS.map(ext => path.join('composeApp', ext)));
+  patterns.push(...EXTENSIONS.map(ext => path.join('shared', ext)));
+  patterns.push(...EXTENSIONS.map(ext => path.join('iosApp', ext)));
+  patterns.push('*.ts', '*.tsx', '*.js', '*.jsx', '*.kt', '*.swift');
 
   for (const targetDir of directories) {
     for (const pattern of patterns) {
       const files = glob
         .sync(pattern, {
           cwd: targetDir,
-          ignore: ['node_modules/**', 'dist/**', 'build/**', '**/*.d.ts'],
+          ignore: ['node_modules/**', 'dist/**', 'build/**', '**/*.d.ts', '.gradle/**', 'DerivedData/**', 'Pods/**', 'vendor/**'],
         })
         .map(file => path.join(targetDir, file));
 

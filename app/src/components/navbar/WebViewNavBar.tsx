@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -30,9 +30,9 @@ export const WebViewNavBar: React.FC<WebViewNavBarProps> = ({
 
   return (
     <XStack
-      paddingHorizontal={20}
       paddingVertical={10}
       paddingTop={insets.top + 10}
+      paddingHorizontal={16}
       gap={14}
       alignItems="center"
       backgroundColor="white"
@@ -50,7 +50,12 @@ export const WebViewNavBar: React.FC<WebViewNavBarProps> = ({
       />
 
       {/* Center: Title */}
-      <XStack flex={1} alignItems="center" justifyContent="center">
+      <XStack
+        flex={1}
+        alignItems="center"
+        justifyContent="center"
+        paddingHorizontal={8}
+      >
         <Text style={styles.title} numberOfLines={1}>
           {title?.toUpperCase() || 'PAGE TITLE'}
         </Text>

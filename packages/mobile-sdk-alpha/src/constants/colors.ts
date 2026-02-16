@@ -1,14 +1,18 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+export const amber200 = '#FDE68A';
+
 /// NEW
 export const amber50 = '#FFFBEB';
-export const amber500 = '#F2E3C8';
+export const amber500 = '#F59E0B';
+export const amber700 = '#B45309';
 export const black = '#000000';
 export const blue100 = '#DBEAFE';
 export const blue600 = '#2563EB';
 export const blue700 = '#1D4ED8';
+
 // OLD
 export const borderColor = '#343434';
 
@@ -18,13 +22,19 @@ export const cyan300 = '#67E8F9';
 
 export const emerald500 = '#10B981';
 
+export const gray400 = '#9CA3AF';
+
 export const green500 = '#22C55E';
+export const green600 = '#16A34A';
+
+export const iosSeparator = 'rgba(60,60,67,0.36)';
 
 export const neutral400 = '#A3A3A3';
 
 export const neutral700 = '#404040';
 
 export const red500 = '#EF4444';
+export const red600 = '#DC2626';
 
 export const separatorColor = '#E0E0E0';
 
@@ -56,8 +66,11 @@ export const teal500 = '#5EEAD4';
 
 export const textBlack = '#333333';
 
+export const warmCream = '#F2E3C8';
+
 export const white = '#ffffff';
 
+export const yellow50 = '#FEFCE8';
 export const yellow500 = '#FDE047';
 
 export const zinc400 = '#A1A1AA';

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -11,6 +11,9 @@ import { useSelfClient } from '../../context';
 import { checkScannedInfo, formatDateToYYMMDD } from '../../processing/mrz';
 import { SdkEvents } from '../../types/events';
 import type { MRZInfo } from '../../types/public';
+
+// Dev-only error injection - uses injected devConfig from SDK context
+// No cross-package requires needed
 
 export type { MRZScannerViewProps } from '../../components/MRZScannerView';
 export { MRZScannerView } from '../../components/MRZScannerView';
@@ -28,11 +31,24 @@ const calculateScanDurationSeconds = (scanStartTimeRef: RefObject<number>) => {
 
 export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
   const selfClient = useSelfClient();
+  const shouldTrigger = selfClient.config?.devConfig?.shouldTrigger;
 
   return {
     onPassportRead: useCallback(
       (error: Error | null, result?: MRZInfo) => {
         const scanDurationSeconds = calculateScanDurationSeconds(scanStartTimeRef);
+
+        // Dev-only: Check for injected unknown error
+        if (shouldTrigger?.('mrz_unknown_error')) {
+          console.log('[DEV] Injecting MRZ unknown error');
+          selfClient.trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
+            reason: 'unknown_error',
+            error: 'Injected error for testing',
+            duration_seconds: parseFloat(scanDurationSeconds),
+          });
+          selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
+          return;
+        }
 
         if (error) {
           console.error(error);
@@ -63,7 +79,16 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
         const formattedDateOfBirth = Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfBirth) : dateOfBirth;
         const formattedDateOfExpiry = Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfExpiry) : dateOfExpiry;
 
-        if (!checkScannedInfo(documentNumber, formattedDateOfBirth, formattedDateOfExpiry)) {
+        // Dev-only: Check for injected invalid format error
+        const shouldInjectInvalidFormat = shouldTrigger?.('mrz_invalid_format') || false;
+
+        if (
+          shouldInjectInvalidFormat ||
+          !checkScannedInfo(documentNumber, formattedDateOfBirth, formattedDateOfExpiry)
+        ) {
+          if (shouldInjectInvalidFormat) {
+            console.log('[DEV] Injecting MRZ invalid format error');
+          }
           selfClient.trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
             reason: 'invalid_format',
             passportNumberLength: documentNumber.length,
@@ -90,7 +115,7 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
 
         selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS);
       },
-      [selfClient],
+      [selfClient, shouldTrigger],
     ),
   };
 }

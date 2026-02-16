@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -13,6 +13,9 @@ const TABLE_NAME = 'proof_history';
 const STALE_PROOF_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 SQLite.enablePromise(true);
+
+const toInsertId = (result: SQLite.ResultSet) =>
+  result.insertId ? result.insertId.toString() : '0';
 
 async function openDatabase() {
   return SQLite.openDatabase({
@@ -127,8 +130,9 @@ export const database: ProofDB = {
           proof.documentId,
         ],
       );
+      // Handle case where INSERT OR IGNORE skips insertion due to duplicate sessionId
       return {
-        id: insertResult.insertId.toString(),
+        id: toInsertId(insertResult),
         timestamp,
         rowsAffected: insertResult.rowsAffected,
       };
@@ -154,8 +158,9 @@ export const database: ProofDB = {
             proof.documentId,
           ],
         );
+        // Handle case where INSERT OR IGNORE skips insertion due to duplicate sessionId
         return {
-          id: insertResult.insertId.toString(),
+          id: toInsertId(insertResult),
           timestamp,
           rowsAffected: insertResult.rowsAffected,
         };
@@ -182,8 +187,9 @@ export const database: ProofDB = {
             proof.documentId,
           ],
         );
+        // Handle case where INSERT OR IGNORE skips insertion due to duplicate sessionId
         return {
-          id: insertResult.insertId.toString(),
+          id: toInsertId(insertResult),
           timestamp,
           rowsAffected: insertResult.rowsAffected,
         };

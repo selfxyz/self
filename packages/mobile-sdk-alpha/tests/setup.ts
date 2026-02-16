@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -6,6 +6,8 @@
  * Vitest setup file for mobile-sdk-alpha tests
  * Reduces console noise during testing and mocks React Native modules
  */
+
+import { createElement } from 'react';
 
 const originalConsole = {
   warn: console.warn,
@@ -48,10 +50,22 @@ vi.mock('react-native', () => ({
   requireNativeComponent: vi.fn(() => 'div'),
   StyleSheet: {
     create: vi.fn(styles => styles),
+    flatten: vi.fn(style => {
+      if (!style) return {};
+      if (Array.isArray(style)) {
+        return style.reduce((acc, s) => ({ ...acc, ...s }), {});
+      }
+      return style;
+    }),
   },
   Image: 'div',
   Text: 'span',
   View: 'div',
+  Pressable: vi.fn(({ children, style, ...props }) => {
+    // Handle style as function (for pressed state)
+    const computedStyle = typeof style === 'function' ? style({ pressed: false }) : style;
+    return createElement('button', { ...props, style: computedStyle }, children);
+  }),
   TouchableOpacity: 'button',
   ScrollView: 'div',
   FlatList: 'div',

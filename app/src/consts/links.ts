@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -15,6 +15,7 @@ export const apiPingUrl = 'https://api.self.xyz/ping';
 export const appStoreUrl = 'https://apps.apple.com/app/self-zk/id6478563710';
 export const appleICloudDocsUrl = 'https://support.apple.com/en-us/102651';
 export const appsUrl = 'https://apps.self.xyz';
+export const discordUrl = 'https://discord.gg/selfxyz';
 export const gitHubUrl = 'https://github.com/selfxyz/self';
 export const googleDriveAppDataScope =
   'https://www.googleapis.com/auth/drive.appdata';
@@ -32,9 +33,11 @@ export const referralBaseUrl = 'https://referral.self.xyz';
 export const selfLogoReverseUrl =
   'https://storage.googleapis.com/self-logo-reverse/Self%20Logomark%20Reverse.png';
 export const selfUrl = 'https://self.xyz';
+export const supportFormUrl =
+  'https://hail-jonquil-ef8.notion.site/2b057801cd128041985dfd6e1722eca1';
 export const supportedBiometricIdsUrl =
   'https://docs.self.xyz/use-self/self-map-countries-list';
-export const telegramUrl = 'https://t.me/selfprotocolbuilder';
+export const telegramUrl = 'https://t.me/selfxyz';
 export const termsUrl = 'https://self.xyz/terms';
 export const turnkeyOAuthRedirectAndroidUri = 'https://redirect.self.xyz';
 export const turnkeyOAuthRedirectIosUri = 'https://oauth-redirect.turnkey.com';

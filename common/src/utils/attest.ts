@@ -87,21 +87,19 @@ function compareCertificates(cert1: forge.pki.Certificate, cert2: forge.pki.Cert
 }
 
 function verifyCertificateChain({ leaf, intermediate, root }: PKICertificates) {
-  const caStore = forge.pki.createCaStore([intermediate, root]);
+  const caStore = forge.pki.createCaStore([root]);
 
-  forge.pki.verifyCertificateChain(caStore, [leaf], (vfd, depth, chain) => {
-    if (!vfd) {
+  forge.pki.verifyCertificateChain(caStore, [leaf, intermediate, root], (vfd, depth) => {
+    if (vfd !== true) {
       throw new Error(`Certificate verification failed at depth ${depth}`);
     }
     return true;
   });
 
-  [leaf, intermediate, root].forEach((cert) => {
-    const now = new Date();
-    if (now < cert.validity.notBefore || now > cert.validity.notAfter) {
-      throw new Error('Certificate is not within validity period');
-    }
-  });
+  const now = new Date();
+  if (now < root.validity.notBefore || now > root.validity.notAfter) {
+    throw new Error('Certificate is not within validity period');
+  }
 }
 
 /**

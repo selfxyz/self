@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -7,6 +7,7 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { AadhaarNavBar, IdDetailsNavBar } from '@/components/navbar';
+import { HeadlessNavForEuclid } from '@/components/navbar/HeadlessNavForEuclid';
 import AadhaarUploadedSuccessScreen from '@/screens/documents/aadhaar/AadhaarUploadedSuccessScreen';
 import AadhaarUploadErrorScreen from '@/screens/documents/aadhaar/AadhaarUploadErrorScreen';
 import AadhaarUploadScreen from '@/screens/documents/aadhaar/AadhaarUploadScreen';
@@ -18,10 +19,15 @@ import DocumentCameraTroubleScreen from '@/screens/documents/scanning/DocumentCa
 import DocumentNFCMethodSelectionScreen from '@/screens/documents/scanning/DocumentNFCMethodSelectionScreen';
 import DocumentNFCScanScreen from '@/screens/documents/scanning/DocumentNFCScanScreen';
 import DocumentNFCTroubleScreen from '@/screens/documents/scanning/DocumentNFCTroubleScreen';
+import RegistrationFallbackMRZScreen from '@/screens/documents/scanning/RegistrationFallbackMRZScreen';
+import RegistrationFallbackNFCScreen from '@/screens/documents/scanning/RegistrationFallbackNFCScreen';
 import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongingScreen';
 import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
 import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
 import IDPickerScreen from '@/screens/documents/selection/IDPickerScreen';
+import LogoConfirmationScreen from '@/screens/documents/selection/LogoConfirmationScreen';
+import KycConnectionErrorScreen from '@/screens/kyc/KycConnectionErrorScreen';
+import KycFailureScreen from '@/screens/kyc/KycFailureScreen';
 
 const documentsScreens = {
   DocumentCamera: {
@@ -76,7 +82,10 @@ const documentsScreens = {
   CountryPicker: {
     screen: CountryPickerScreen,
     options: {
-      headerShown: false,
+      header: HeadlessNavForEuclid,
+      statusBarHidden: CountryPickerScreen.statusBar?.hidden,
+      statusBarStyle: CountryPickerScreen.statusBar?.style,
+      headerShown: true,
     } as NativeStackNavigationOptions,
   },
   IDPicker: {
@@ -87,6 +96,16 @@ const documentsScreens = {
     initialParams: {
       countryCode: '',
       documentTypes: [],
+    },
+  },
+  LogoConfirmation: {
+    screen: LogoConfirmationScreen,
+    options: {
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+    initialParams: {
+      documentType: '',
+      countryCode: '',
     },
   },
   ConfirmBelonging: {
@@ -143,12 +162,50 @@ const documentsScreens = {
   AadhaarUploadError: {
     screen: AadhaarUploadErrorScreen,
     options: {
-      title: 'AADHAAR REGISTRATION',
-      header: AadhaarNavBar,
-      headerBackVisible: false,
+      headerShown: false,
     } as NativeStackNavigationOptions,
     initialParams: {
       errorType: 'general',
+    },
+  },
+  RegistrationFallbackMRZ: {
+    screen: RegistrationFallbackMRZScreen,
+    options: {
+      title: 'REGISTRATION',
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+    initialParams: {
+      countryCode: '',
+    },
+  },
+  RegistrationFallbackNFC: {
+    screen: RegistrationFallbackNFCScreen,
+    options: {
+      title: 'REGISTRATION',
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+    initialParams: {
+      countryCode: '',
+    },
+  },
+  KycFailure: {
+    screen: KycFailureScreen,
+    options: {
+      headerShown: false,
+      animation: 'fade',
+    } as NativeStackNavigationOptions,
+    initialParams: {
+      countryCode: '',
+      canRetry: true,
+    },
+  },
+  KycConnectionError: {
+    screen: KycConnectionErrorScreen,
+    options: {
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+    initialParams: {
+      countryCode: '',
     },
   },
 };

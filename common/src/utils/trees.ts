@@ -9,6 +9,8 @@ import {
   poseidon10,
   poseidon12,
   poseidon13,
+  poseidon4,
+  poseidon8,
 } from 'poseidon-lite';
 
 import {
@@ -704,3 +706,154 @@ export function getPassportNumberAndNationalityLeaf(
     console.log('err : passport', err, i, passport);
   }
 }
+
+export function buildKycSMT(field: any[], treetype: string): [number, number, SMT] {
+  let count = 0;
+  let startTime = performance.now();
+  const providerName = 'KYC';
+
+  const hash2 = (childNodes: ChildNodes) =>
+    childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes);
+  const tree = new SMT(hash2, true);
+
+  for (let i = 0; i < field.length; i++) {
+    const entry = field[i];
+
+    if (i !== 0) {
+      console.log(`Processing ${providerName}`, treetype, 'number', i, 'out of', field.length);
+    }
+
+    let leafs = [BigInt(0), BigInt(0)];
+    if (treetype == 'name_and_dob') {
+      leafs[0] = processNameAndDobKyc(entry, i, false);
+      leafs[1] = processNameAndDobKyc(entry, i, true);
+    } else if (treetype == 'name_and_yob') {
+      leafs[0] = processNameAndYobKyc(entry, i, false);
+      leafs[1] = processNameAndYobKyc(entry, i, true);
+    }
+
+    if (leafs[0] == BigInt(0) || tree.createProof(leafs[0]).membership) {
+      console.log('This entry already exists in the tree, skipping...');
+      continue;
+    } else if (leafs[1] == BigInt(0) || tree.createProof(leafs[1]).membership) {
+      console.log('This entry already exists in the tree, skipping...');
+      continue;
+    }
+
+    tree.add(leafs[0], BigInt(1));
+    count += 1;
+    if (leafs[0] != leafs[1]) {
+      tree.add(leafs[1], BigInt(1));
+      count += 1;
+    }
+  }
+
+  console.log(`Total ${providerName}`, treetype, 'parsed are : ', count, ' over ', field.length);
+  console.log(`${providerName}`, treetype, 'tree built in', performance.now() - startTime, 'ms');
+  return [count, performance.now() - startTime, tree];
+}
+
+const processNameAndDobKyc = (entry: any, i: number, reverse: boolean): bigint => {
+  const firstName = entry.First_Name;
+  const lastName = entry.Last_Name;
+  const day = entry.day;
+  const month = entry.month;
+  const year = entry.year;
+
+  if (day == null || month == null || year == null) {
+    console.log('dob is null', i, entry);
+    return BigInt(0);
+  }
+
+  const nameHash = processNameKyc(firstName, lastName, i, reverse);
+  const dobHash = processDobKyc(day, month, year, i);
+
+  return generateSmallKey(poseidon2([dobHash, nameHash]));
+};
+
+export const getNameDobLeafKyc = (name: string, dob: string) => {
+  const namePaddingLength = 64;
+  const paddedName = name
+    .padEnd(namePaddingLength, '\0')
+    .split('')
+    .map((char) => char.charCodeAt(0));
+  const nameHash = BigInt(packBytesAndPoseidon(paddedName));
+  const dobHash = BigInt(poseidon8(stringToAsciiBigIntArray(dob)));
+  return generateSmallKey(poseidon2([dobHash, nameHash]));
+};
+
+const processNameKyc = (
+  firstName: string,
+  lastName: string,
+  i: number,
+  reverse: boolean
+): bigint => {
+  const namePaddingLength = 64;
+
+  firstName = firstName.replace(/'/g, '');
+  firstName = firstName.replace(/\./g, '');
+  firstName = firstName.replace(/[- ]/g, '<');
+  lastName = lastName.replace(/'/g, '');
+  lastName = lastName.replace(/[- ]/g, '<');
+  lastName = lastName.replace(/\./g, '');
+
+  let nameStr = reverse ? lastName + ' ' + firstName : firstName + ' ' + lastName;
+  const nameArr = nameStr
+    .padEnd(namePaddingLength, '\0')
+    .split('')
+    .map((char) => char.charCodeAt(0));
+  return BigInt(packBytesAndPoseidon(nameArr));
+};
+
+const processDobKyc = (day: string, month: string, year: string, i: number): bigint => {
+  const monthMap: { [key: string]: string } = {
+    jan: '01',
+    feb: '02',
+    mar: '03',
+    apr: '04',
+    may: '05',
+    jun: '06',
+    jul: '07',
+    aug: '08',
+    sep: '09',
+    oct: '10',
+    nov: '11',
+    dec: '12',
+  };
+
+  month = monthMap[month.toLowerCase()];
+  const dob = year + month + day;
+  let arr = stringToAsciiBigIntArray(dob);
+  return BigInt(poseidon8(arr));
+};
+
+export const getNameYobLeafKyc = (name: string, yob: string) => {
+  const namePaddingLength = 64;
+  const paddedName = name
+    .padEnd(namePaddingLength, '\0')
+    .split('')
+    .map((char) => char.charCodeAt(0));
+  const nameHash = BigInt(packBytesAndPoseidon(paddedName));
+
+  const yearHash = processYearKyc(yob, 0);
+  return generateSmallKey(poseidon2([yearHash, nameHash]));
+};
+
+const processNameAndYobKyc = (entry: any, i: number, reverse: boolean): bigint => {
+  const firstName = entry.First_Name;
+  const lastName = entry.Last_Name;
+  const year = entry.year;
+  if (year == null) {
+    console.log('year is null', i, entry);
+    return BigInt(0);
+  }
+
+  const nameHash = processNameKyc(firstName, lastName, i, reverse);
+  const yearHash = processYearKyc(year, i);
+  return generateSmallKey(poseidon2([yearHash, nameHash]));
+};
+
+const processYearKyc = (year: string, i: number): bigint => {
+  const yearArr = stringToAsciiBigIntArray(year);
+  return BigInt(poseidon4(yearArr));
+};

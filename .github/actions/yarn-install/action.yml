@@ -15,16 +15,18 @@ runs:
       shell: bash
       run: |
         corepack enable
-        corepack prepare yarn@4.6.0 --activate
+        corepack prepare yarn@4.12.0 --activate
         # Ensure we're using the correct version
         yarn --version
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version-file: .nvmrc
         cache: "yarn"
-        cache-dependency-path: yarn.lock
+        cache-dependency-path: |
+          yarn.lock
+          .yarnrc.yml
 
     - name: Install dependencies
       uses: nick-fields/retry@v3

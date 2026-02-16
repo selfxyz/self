@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -102,13 +102,16 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
     const initializeProving = async () => {
       try {
         const selectedDocument = await loadSelectedDocument(selfClient);
-        if (selectedDocument?.data?.documentCategory === 'aadhaar') {
+        if (
+          selectedDocument?.data?.documentCategory === 'aadhaar' ||
+          selectedDocument?.data?.documentCategory === 'kyc'
+        ) {
           await init(selfClient, 'register', true);
         } else {
           await init(selfClient, 'dsc', true);
         }
-      } catch {
-        console.error('Error loading selected document:');
+      } catch (error) {
+        console.error('Error loading selected document:', error);
         await init(selfClient, 'dsc', true);
       } finally {
         setIsInitializing(false);

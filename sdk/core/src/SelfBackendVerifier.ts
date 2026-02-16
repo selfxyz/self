@@ -5,6 +5,8 @@ import {
   AadhaarVerifier__factory,
   IdentityVerificationHubImpl,
   IdentityVerificationHubImpl__factory,
+  KycVerifier,
+  KycVerifier__factory,
   Registry__factory,
   Verifier,
   Verifier__factory,
@@ -222,7 +224,26 @@ export class SelfBackendVerifier {
     let circuitTimestampYy: number[];
     let circuitTimestampMm: number[];
     let circuitTimestampDd: number[];
-    if (attestationId === 3) {
+    if (attestationId === 4) {
+      circuitTimestampYy = publicSignals
+        .slice(
+          discloseIndices[attestationId].currentDateIndex,
+          discloseIndices[attestationId].currentDateIndex + 4
+        )
+        .map(Number);
+      circuitTimestampMm = publicSignals
+        .slice(
+          discloseIndices[attestationId].currentDateIndex + 4,
+          discloseIndices[attestationId].currentDateIndex + 6
+        )
+        .map(Number);
+      circuitTimestampDd = publicSignals
+        .slice(
+          discloseIndices[attestationId].currentDateIndex + 6,
+          discloseIndices[attestationId].currentDateIndex + 8
+        )
+        .map(Number);
+    } else if (attestationId === 3) {
       circuitTimestampYy = String(publicSignals[discloseIndices[attestationId].currentDateIndex])
         .split('')
         .map(Number);
@@ -285,7 +306,7 @@ export class SelfBackendVerifier {
       throw new ConfigMismatchError(issues);
     }
 
-    let verifierContract: Verifier | AadhaarVerifier;
+    let verifierContract: Verifier | AadhaarVerifier | KycVerifier;
     try {
       const verifierAddress = await this.identityVerificationHubContract.discloseVerifier(
         '0x' + attestationId.toString(16).padStart(64, '0')
@@ -293,7 +314,9 @@ export class SelfBackendVerifier {
       if (verifierAddress === '0x0000000000000000000000000000000000000000') {
         throw new VerifierContractError('Verifier contract not found');
       }
-      if (attestationId === 3) {
+      if (attestationId === 4) {
+        verifierContract = KycVerifier__factory.connect(verifierAddress, this.provider);
+      } else if (attestationId === 3) {
         verifierContract = AadhaarVerifier__factory.connect(verifierAddress, this.provider);
       } else {
         verifierContract = Verifier__factory.connect(verifierAddress, this.provider);

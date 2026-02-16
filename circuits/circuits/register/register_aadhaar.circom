@@ -113,7 +113,16 @@ template REGISTER_AADHAAR(n, k, maxDataLength){
     signal output nullifier <== nullifierHasher.out;
 
 
-    signal qrDataHash <== PackBytesAndPoseidon(maxDataLength)(qrDataPadded);
+    component qrDataHasher = PackBytesAndPoseidon(maxDataLength);
+    for (var i = 0; i < 9; i++){
+        qrDataHasher.in[i] <== qrDataPadded[i];
+    }
+    for (var i = 9; i < 26; i++) {
+        qrDataHasher.in[i] <== 0;
+    }
+    for (var i = 26; i < maxDataLength; i++){
+        qrDataHasher.in[i] <== qrDataPadded[i];
+    }
 
     // Generate commitment
     component packedCommitment = PackBytesAndPoseidon(42 + 62);
@@ -138,7 +147,7 @@ template REGISTER_AADHAAR(n, k, maxDataLength){
     component commitmentHasher = Poseidon(5);
 
     commitmentHasher.inputs[0] <== secret;
-    commitmentHasher.inputs[1] <== qrDataHash;
+    commitmentHasher.inputs[1] <== qrDataHasher.out;
     commitmentHasher.inputs[2] <== nullifierHasher.out;
     commitmentHasher.inputs[3] <== packedCommitment.out;
     commitmentHasher.inputs[4] <== qrDataExtractor.photoHash;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -35,20 +35,26 @@ export default function SimpleScrolledTitleLayout({
   footer,
 }: DetailListProps) {
   const insets = useSafeAreaInsets();
+  const dismissBottomPadding = Math.min(16, insets.bottom);
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.FullSection paddingTop={0} flex={1}>
-        <YStack paddingTop={insets.top + 12}>
+        <YStack paddingTop={insets.top + 24}>
           <Title>{title}</Title>
           {header}
         </YStack>
-        <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          flex={1}
+          showsVerticalScrollIndicator={true}
+          indicatorStyle="black"
+          scrollIndicatorInsets={{ right: 1 }}
+        >
           <YStack paddingTop={0} paddingBottom={12} flex={1}>
             {children}
           </YStack>
         </ScrollView>
         {footer && (
-          <YStack marginTop={8} marginBottom={12}>
+          <YStack marginTop={16} marginBottom={12}>
             {footer}
           </YStack>
         )}
@@ -60,8 +66,8 @@ export default function SimpleScrolledTitleLayout({
             {secondaryButtonText}
           </SecondaryButton>
         )}
-        {/* Anchor the Dismiss button to bottom with only safe area padding */}
-        <YStack paddingBottom={insets.bottom + 8}>
+        {/* Anchor the Dismiss button to bottom with sane spacing */}
+        <YStack marginTop="auto" paddingBottom={dismissBottomPadding}>
           <PrimaryButton onPress={onDismiss}>Dismiss</PrimaryButton>
         </YStack>
       </ExpandableBottomLayout.FullSection>

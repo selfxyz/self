@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -54,6 +54,7 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
 import NFC_IMAGE from '@/assets/images/nfc.png';
 import { logNFCEvent } from '@/config/sentry';
+import { useErrorInjection } from '@/hooks/useErrorInjection';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import {
@@ -73,7 +74,11 @@ import {
   setNfcScanningActive,
   trackNfcEvent,
 } from '@/services/analytics';
-import { sendFeedbackEmail } from '@/services/email';
+import {
+  openSupportForm,
+  SUPPORT_FORM_BUTTON_TEXT,
+  SUPPORT_FORM_MESSAGE,
+} from '@/services/support';
 
 const emitter =
   Platform.OS === 'android'
@@ -81,6 +86,7 @@ const emitter =
     : null;
 
 type DocumentNFCScanRouteParams = {
+  skipReselect?: boolean;
   usePacePolling?: boolean;
   canNumber?: string;
   useCan?: boolean;
@@ -101,8 +107,9 @@ const DocumentNFCScanScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<DocumentNFCScanRoute>();
-  const { showModal } = useFeedback();
+  useFeedback();
   useFeedbackAutoHide();
+  const { shouldInjectError } = useErrorInjection();
   const {
     passportNumber,
     dateOfBirth,
@@ -169,10 +176,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     });
 
   const onReportIssue = useCallback(() => {
-    sendFeedbackEmail({
-      message: 'User reported an issue from NFC scan screen',
-      origin: 'passport/nfc',
-    });
+    openSupportForm();
   }, []);
 
   const openErrorModal = useCallback(
@@ -187,22 +191,11 @@ const DocumentNFCScanScreen: React.FC = () => {
         },
         { message: sanitizeErrorMessage(message) },
       );
-      showModal({
-        titleText: 'NFC Scan Error',
-        bodyText: message,
-        buttonText: 'Report Issue',
-        secondaryButtonText: 'Help',
-        preventDismiss: false,
-        onButtonPress: () =>
-          sendFeedbackEmail({
-            message: sanitizeErrorMessage(message),
-            origin: 'passport/nfc',
-          }),
-        onSecondaryButtonPress: goToNFCTrouble,
-        onModalDismiss: () => {},
+      navigation.navigate('RegistrationFallbackNFC', {
+        countryCode,
       });
     },
-    [baseContext, showModal, goToNFCTrouble],
+    [baseContext, navigation, countryCode],
   );
 
   const checkNfcSupport = useCallback(async () => {
@@ -326,8 +319,26 @@ const DocumentNFCScanScreen: React.FC = () => {
       }, 30000);
 
       try {
-        const { canNumber, useCan, skipPACE, skipCA, extendedMode } =
-          route.params ?? {};
+        // Dev-only: Check for injected timeout error
+        if (shouldInjectError('nfc_timeout')) {
+          console.log('[DEV] Injecting NFC timeout error');
+          throw new Error('Injected timeout error for testing');
+        }
+
+        // Dev-only: Check for injected module unavailable error
+        if (shouldInjectError('nfc_module_unavailable')) {
+          console.log('[DEV] Injecting NFC module unavailable error');
+          throw new Error('NFC scanning is currently unavailable');
+        }
+
+        const {
+          canNumber,
+          useCan,
+          skipPACE,
+          skipCA,
+          extendedMode,
+          skipReselect,
+        } = route.params ?? {};
 
         await configureNfcAnalytics();
         const scanResponse = await scan({
@@ -341,6 +352,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           extendedMode,
           usePacePolling: isPacePolling,
           sessionId: sessionIdRef.current,
+          skipReselect,
         });
 
         // Check if scan was cancelled by timeout
@@ -371,6 +383,12 @@ const DocumentNFCScanScreen: React.FC = () => {
         );
         let passportData: PassportData | null = null;
         try {
+          // Dev-only: Check for injected parse failure error
+          if (shouldInjectError('nfc_parse_failure')) {
+            console.log('[DEV] Injecting NFC parse failure error');
+            throw new Error('Failed to parse NFC response');
+          }
+
           passportData = parseScanResponse(scanResponse);
         } catch (e: unknown) {
           console.error('Parsing NFC Response Unsuccessful');
@@ -418,7 +436,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         });
         openErrorModal(message);
         // We deliberately avoid opening any external feedback widgets here;
-        // users can send feedback via the email action in the modal.
+        // users can request support via the support form action in the modal.
       } finally {
         if (scanTimeoutRef.current) {
           clearTimeout(scanTimeoutRef.current);
@@ -447,6 +465,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     navigation,
     openErrorModal,
     trackEvent,
+    shouldInjectError,
   ]);
 
   const navigateToHome = useHapticNavigation('Home', {
@@ -604,6 +623,9 @@ const DocumentNFCScanScreen: React.FC = () => {
                   </BodyText>
                 </>
               )}
+              <BodyText style={[styles.disclaimer, { marginTop: 12 }]}>
+                {SUPPORT_FORM_MESSAGE}
+              </BodyText>
             </TextsContainer>
             <ButtonsContainer>
               <PrimaryButton
@@ -626,7 +648,7 @@ const DocumentNFCScanScreen: React.FC = () => {
                 Cancel
               </SecondaryButton>
               <SecondaryButton onPress={onReportIssue}>
-                Report Issue
+                {SUPPORT_FORM_BUTTON_TEXT}
               </SecondaryButton>
             </ButtonsContainer>
           </>

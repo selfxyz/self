@@ -54,6 +54,17 @@ library CircuitConstantsV2 {
     uint256 constant AADHAAR_COMMITMENT_INDEX = 2;
     uint256 constant AADHAAR_TIMESTAMP_INDEX = 3;
 
+    // ---------------------------
+    // KYC Circuit Constants
+    // ---------------------------
+    /**
+     * @notice Index to access the pubkey commitment in the KYC circuit public signals.
+     */
+    uint256 constant KYC_NULLIFIER_INDEX = 0;
+    uint256 constant KYC_COMMITMENT_INDEX = 1;
+    uint256 constant KYC_PUBKEY_COMMITMENT_INDEX = 2;
+    uint256 constant KYC_ATTESTATION_ID_INDEX = 3;
+
     // -------------------------------------
     // VC and Disclose Circuit Constants
     // -------------------------------------
@@ -124,6 +135,21 @@ library CircuitConstantsV2 {
                     nameyobSmtRootIndex: 15,
                     scopeIndex: 17,
                     userIdentifierIndex: 18,
+                    passportNoSmtRootIndex: 99
+                });
+        } else if (attestationId == AttestationId.KYC) {
+            return
+                DiscloseIndices({
+                    revealedDataPackedIndex: 0,
+                    forbiddenCountriesListPackedIndex: 10,
+                    nullifierIndex: 14,
+                    attestationIdIndex: 15,
+                    merkleRootIndex: 17,
+                    currentDateIndex: 21,
+                    namedobSmtRootIndex: 18,
+                    nameyobSmtRootIndex: 19,
+                    scopeIndex: 16,
+                    userIdentifierIndex: 20,
                     passportNoSmtRootIndex: 99
                 });
         } else {

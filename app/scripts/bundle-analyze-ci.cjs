@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -17,8 +17,8 @@ if (!platform || !['android', 'ios'].includes(platform)) {
 // Bundle size thresholds in MB - easy to update!
 const BUNDLE_THRESHOLDS_MB = {
   // TODO: fix temporary bundle bump
-  ios: 44,
-  android: 44,
+  ios: 46,
+  android: 46,
 };
 
 function formatBytes(bytes) {

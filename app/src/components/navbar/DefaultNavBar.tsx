@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -18,6 +18,8 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { options } = props;
   const headerStyle = (options.headerStyle || {}) as ViewStyle;
   const insets = useSafeAreaInsets();
+  const headerTitleStyle = (options.headerTitleStyle || {}) as TextStyle;
+
   return (
     <NavBar.Container
       gap={14}
@@ -26,8 +28,7 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
       paddingBottom={20}
       backgroundColor={headerStyle.backgroundColor as string}
       barStyle={
-        options.headerTintColor === white ||
-        (options.headerTitleStyle as TextStyle)?.color === white
+        options.headerTintColor === white || headerTitleStyle?.color === white
           ? 'light'
           : 'dark'
       }
@@ -40,9 +41,12 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
           buttonTap();
           goBack();
         }}
-        {...(options.headerTitleStyle as ViewStyle)}
+        color={options.headerTintColor as string}
       />
-      <NavBar.Title {...(options.headerTitleStyle as ViewStyle)}>
+      <NavBar.Title
+        color={headerTitleStyle.color as string}
+        style={headerTitleStyle}
+      >
         {props.options.title}
       </NavBar.Title>
     </NavBar.Container>

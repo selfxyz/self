@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -8,10 +8,7 @@ import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
 
 import { selfLogoReverseUrl } from '@/consts/links';
 import { getOrGeneratePointsAddress } from '@/providers/authProvider';
-import {
-  POINTS_API_BASE_URL,
-  POINTS_TOKEN_CONTRACT_ADDRESS,
-} from '@/services/points/constants';
+import { POINTS_API_BASE_URL } from '@/services/points/constants';
 import type { IncomingPoints } from '@/services/points/types';
 
 export type WhitelistedContract = {
@@ -135,9 +132,8 @@ export const getWhiteListedDisclosureAddresses = async (): Promise<
 export const hasUserAnIdentityDocumentRegistered =
   async (): Promise<boolean> => {
     try {
-      const { loadDocumentCatalogDirectlyFromKeychain } = await import(
-        '@/providers/passportDataProvider'
-      );
+      const { loadDocumentCatalogDirectlyFromKeychain } =
+        await import('@/providers/passportDataProvider');
       const catalog = await loadDocumentCatalogDirectlyFromKeychain();
 
       return catalog.documents.some(doc => doc.isRegistered === true);

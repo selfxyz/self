@@ -1,4 +1,20 @@
 source "https://cdn.cocoapods.org/"
+
+# Skip Sumsub configuration for E2E testing
+unless ENV["E2E_TESTING"] == "1"
+  source "https://github.com/SumSubstance/Specs.git"
+
+  # Enable Fisherman (Device Intelligence) module for fraud detection
+  # Privacy: Device ID collection declared in app/ios/PrivacyInfo.xcprivacy
+  ENV["IDENSIC_WITH_FISHERMAN"] = "true"
+
+  # VideoIdent module disabled for current release
+  # This feature provides liveness checks via live video calls with human agents
+  # Disabled to avoid microphone permission requirements on both platforms
+  # TODO: Re-enable for future release when liveness checks are needed
+  # ENV["IDENSIC_WITH_VIDEOIDENT"] = "true"
+end
+
 use_frameworks!
 require "tmpdir"
 
@@ -33,15 +49,14 @@ def using_https_git_auth?
     auth_data.include?("Logged in to github.com account") &&
       auth_data.include?("Git operations protocol: https")
   rescue => e
-    puts "gh auth status failed, assuming no HTTPS auth -- will try SSH"
+    # Avoid printing auth-related details in CI logs.
     false
   end
 end
 
 target "Self" do
+  # Native module exclusion for E2E testing is handled in react-native.config.cjs
   config = use_native_modules!
-
-  use_frameworks!
   # Skip NFCPassportReader for e2e testing to avoid build issues
   unless ENV["E2E_TESTING"] == "1"
     # Check if we're running in a selfxyz repo or an external fork
@@ -51,27 +66,28 @@ target "Self" do
       # External fork - use public NFCPassportReader repository (placeholder)
       # TODO: Replace with actual public NFCPassportReader repository URL
       nfc_repo_url = "https://github.com/PLACEHOLDER/NFCPassportReader.git"
-      puts "📦 Using public NFCPassportReader for external fork (#{ENV["GITHUB_REPOSITORY"]})"
-    elsif ENV["GITHUB_ACTIONS"] == "true" && ENV["SELFXYZ_INTERNAL_REPO_PAT"]
-      # Running in selfxyz GitHub Actions with PAT available - use private repo with token
-      nfc_repo_url = "https://#{ENV["SELFXYZ_INTERNAL_REPO_PAT"]}@github.com/selfxyz/NFCPassportReader.git"
-      puts "📦 Using private NFCPassportReader with PAT (selfxyz GitHub Actions)"
+    elsif ENV["GITHUB_ACTIONS"] == "true"
+      # CI: NEVER embed credentials in URLs. Rely on workflow-provided auth via:
+      # - ~/.netrc or a Git credential helper, and token masking in logs.
+      nfc_repo_url = "https://github.com/selfxyz/NFCPassportReader.git"
     elsif using_https_git_auth?
       # Local development with HTTPS GitHub auth via gh - use HTTPS to private repo
       nfc_repo_url = "https://github.com/selfxyz/NFCPassportReader.git"
     else
       # Local development in selfxyz repo - use SSH to private repo
       nfc_repo_url = "git@github.com:selfxyz/NFCPassportReader.git"
-      puts "📦 Using SSH for private NFCPassportReader (local selfxyz development)"
     end
 
     pod "NFCPassportReader", git: nfc_repo_url, commit: "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
   end
 
+  # Explicitly declare Mixpanel to ensure it's available even in E2E builds
+  # (NFCPassportReader also includes Mixpanel, but is skipped during E2E testing)
+  pod "Mixpanel-swift", :modular_headers => true
+
   pod "QKMRZScanner"
   pod "lottie-ios"
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
-  pod "Mixpanel-swift", "~> 5.0.0"
   # RNReactNativeHapticFeedback is handled by autolinking
 
   use_react_native!(

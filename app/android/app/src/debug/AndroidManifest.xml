@@ -12,6 +12,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="28"
         tools:ignore="GoogleAppIndexingWarning"
-        tools:replace="android:usesCleartextTraffic"
-    />
+        tools:replace="android:usesCleartextTraffic">
+        
+        <!-- Override conflicting ML Kit dependencies from passportreader (ocr) and Sumsub SDK (face) -->
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="ocr,face"
+            tools:replace="android:value" />
+    </application>
 </manifest>
