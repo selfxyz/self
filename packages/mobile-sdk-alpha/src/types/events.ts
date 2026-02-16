@@ -179,6 +179,14 @@ export enum SdkEvents {
    * **Required:** Show an error message indicating the document is not supported as it is not a biometric ID.
    */
   LOGO_NOT_FOUND = 'LOGO_NOT_FOUND',
+
+  /**
+   * Emitted when a verification flow reaches a terminal state.
+   *
+   * **Recommended:** WebView hosts should forward this payload to their
+   * native lifecycle bridge (for example `lifecycle.setResult`).
+   */
+  VERIFICATION_COMPLETE = 'verification_complete',
 }
 
 /**
@@ -244,6 +252,14 @@ export interface SDKEventMap {
   [SdkEvents.LOGO_NOT_FOUND]: {
     documentType: string;
     countryCode: string;
+  };
+
+  [SdkEvents.VERIFICATION_COMPLETE]: {
+    success: boolean;
+    userId?: string;
+    verificationId?: string;
+    proof?: unknown;
+    error?: { code: string; message: string };
   };
 }
 

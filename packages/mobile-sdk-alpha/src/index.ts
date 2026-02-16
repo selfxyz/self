@@ -21,10 +21,12 @@ export type {
   NetworkAdapter,
   Progress,
   RouteName,
+  SdkInitialConfig,
   SelfClient,
   StorageAdapter,
   TrackEventParams,
   Unsubscribe,
+  VerificationRequest,
   WsAdapter,
   WsConn,
 } from './types/public';
