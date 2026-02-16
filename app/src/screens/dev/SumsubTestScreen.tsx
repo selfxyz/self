@@ -57,7 +57,7 @@ const SumsubTestScreen: React.FC = () => {
     setResult(null);
 
     try {
-      const response = await fetchAccessToken(phoneNumber);
+      const response = await fetchAccessToken();
       if (!isMountedRef.current) return;
       setAccessToken(response.token);
       setUserId(response.userId);
@@ -390,7 +390,7 @@ const SumsubTestScreen: React.FC = () => {
                   fontFamily={dinot}
                   fontWeight="600"
                 >
-                  {applicantInfo.review.reviewAnswer}
+                  {applicantInfo.review?.reviewAnswer ?? 'N/A'}
                 </Text>
               </XStack>
             </YStack>

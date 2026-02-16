@@ -190,11 +190,6 @@ export default defineConfig({
             './src/proving/loadingScreenStateText.ts',
           ],
 
-          // Large animations - split out heavy Lottie files
-          'animations-passport-onboarding': [
-            './src/assets/animations/passport_onboarding.lottie',
-          ],
-
           // Other screens
           'screens-settings': ['./src/navigation/account.ts'],
           'screens-dev': ['./src/navigation/devTools.ts'],
