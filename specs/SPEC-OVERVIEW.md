@@ -48,6 +48,7 @@ MiniPay expects a single Kotlin Multiplatform interface that works on both iOS a
 |--------|-------|----------|
 | **Person 1** | UI + WebView + Bridge JS | `@selfxyz/webview-bridge` (npm), `@selfxyz/webview-app` (Vite bundle) |
 | **Person 2** | KMP SDK + Native Handlers + Test App | `packages/kmp-sdk/` → AAR + XCFramework, test app |
+| **Person 3** | SDK Core Adaptation | `@selfxyz/mobile-sdk-alpha` — platform-agnostic for browser/WebView |
 
 Detailed specs:
 - [SPEC-WEBVIEW-UI.md](./SPEC-WEBVIEW-UI.md) — UI / WebView / Bridge JS
@@ -56,6 +57,7 @@ Detailed specs:
 - [SPEC-COMMON-LIB.md](./SPEC-COMMON-LIB.md) — Pure Kotlin common library (Poseidon, trees, parsing)
 - [SPEC-PROVING-CLIENT.md](./SPEC-PROVING-CLIENT.md) — Native proving client (headless, no WebView)
 - [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md) — MiniPay sample app (headless demo)
+- [SPEC-PERSON3-SDK-CORE.md](./SPEC-PERSON3-SDK-CORE.md) — SDK Core Adaptation (making `mobile-sdk-alpha` work in WebView)
 
 ---
 
