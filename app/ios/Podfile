@@ -21,7 +21,7 @@ require Pod::Executable.execute_command("node", ["-p",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-require File.join(File.dirname(`node --print "require.resolve('expo/package.json', {paths: ['#{__dir__}/../..']})"`.strip), "scripts/autolinking")
+require File.join(File.dirname(`node --print "require.resolve('expo/package.json', {paths: ['#{__dir__}/..']})"`.strip), "scripts/autolinking")
 
 project "Self.xcodeproj"
 
