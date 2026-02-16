@@ -11,7 +11,7 @@
 | 2E | iOS Native Handlers | ❌ Not Done (all 9 handlers are stubs throwing `NotImplementedError`) |
 | 2F | SDK Public API + Test App | ⚠️ Partial (Android works end-to-end, iOS uses Swift workarounds via factory pattern in test app) |
 
-> **Note:** Remaining iOS handler work has moved to [SPEC-PERSON2-IOS.md](./SPEC-PERSON2-IOS.md) — uses a Swift wrapper pattern instead of cinterop. The native proving client (for headless SDK use without WebView) is specified in [SPEC-PROVING-CLIENT.md](./SPEC-PROVING-CLIENT.md). A MiniPay sample app demonstrating the headless flow is in [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md).
+> **Note:** Remaining iOS handler work has moved to [SPEC-IOS-HANDLERS.md](./SPEC-IOS-HANDLERS.md) — uses a Swift wrapper pattern instead of cinterop. The native proving client (for headless SDK use without WebView) is specified in [SPEC-PROVING-CLIENT.md](./SPEC-PROVING-CLIENT.md). A MiniPay sample app demonstrating the headless flow is in [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md).
 
 ---
 

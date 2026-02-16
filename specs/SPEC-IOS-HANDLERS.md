@@ -6,7 +6,7 @@ This spec covers completing iOS handler support for the KMP SDK. The original ap
 
 **Approach**: Define Kotlin provider/factory interfaces in `iosMain`. Provide a Swift companion package (`SelfSdkSwift/`) with default implementations that host apps include alongside the XCFramework. Host apps register Swift implementations at startup, and the SDK calls them through the factory interfaces.
 
-**Prerequisite**: [SPEC-PERSON2-KMP.md](./SPEC-PERSON2-KMP.md) chunks 2A–2C (complete).
+**Prerequisite**: [SPEC-KMP-SDK.md](./SPEC-KMP-SDK.md) chunks 2A–2C (complete).
 
 ---
 
@@ -1070,8 +1070,60 @@ The test app's `NfcScanFactoryImpl.swift` and `MrzCameraFactoryImpl.swift` becom
 
 ---
 
+## Testing
+
+### Per-Chunk Test Requirements
+
+**Chunk 3A (Factory Infrastructure)**:
+- `./gradlew :shared:compileKotlinIosArm64` passes with all provider interfaces
+- Swift companion package builds: `cd packages/self-sdk-swift && swift build`
+- Provider interfaces are visible from Swift via XCFramework exports (manual check)
+
+**Chunk 3B (Biometric, SecureStorage, Haptic)**:
+- Biometric: Physical device test — Face ID / Touch ID prompt appears, success callback fires
+- Biometric: Simulator test — `isAvailable()` returns false gracefully
+- SecureStorage: Roundtrip test — `set("key", "value")` → `get("key")` returns `"value"` → `remove("key")` → `get("key")` returns null
+- SecureStorage: Persistence test — write, kill app, relaunch, read back
+- SecureStorage: Overwrite test — `set("key", "a")` → `set("key", "b")` → `get("key")` returns `"b"`
+- Haptic: Manual test — each feedback type triggers device vibration
+
+**Chunk 3C (Crypto, Documents, Analytics, Lifecycle)**:
+- Crypto: `generateKey("testRef")` → `getPublicKey("testRef")` returns non-null base64 → `sign("testRef", data)` returns non-null signature → `deleteKey("testRef")` → `getPublicKey("testRef")` returns null
+- Crypto: Generated key persists in Keychain across app restarts
+- Documents: Same CRUD roundtrip as SecureStorage
+- Documents: `list()` returns all stored document keys
+- Lifecycle: `setResult` with success=true invokes `SelfSdkCallback.onSuccess`
+- Lifecycle: `dismiss` invokes `SelfSdkCallback.onCancelled` and dismisses view controller
+
+**Chunk 3D (WebView Host + Launch)**:
+- `SelfSdk.launch()` without `SelfSdkSwift.configure()` throws clear error message
+- `SelfSdk.launch()` after `configure()` presents WebView modally
+- WebView loads index.html (debug mode: localhost, release: bundled)
+- Bridge messages flow: WebView sends request → handler processes → response returned to WebView
+- `SelfSdkCallback.onSuccess` fires when verification completes
+
+**Chunk 3E (NFC + Camera)**:
+- NFC: Physical device — full passport scan matches test app behavior (same JSON output)
+- NFC: Progress callbacks fire in correct order (states 0–7)
+- NFC: Cancel during scan doesn't crash
+- Camera MRZ: Detects MRZ lines from passport page (states progress from 0 → 3)
+- Camera MRZ: Parsed MRZ data contains valid documentNumber, dateOfBirth, dateOfExpiry
+- Integration: `SelfSdkSwift.configure()` in test app replaces manual factory registrations with identical behavior
+
+### Bridge Handler Parity Tests
+
+For each of the 9 handlers, verify method parity with Android:
+- Same methods supported (same `method` strings accepted)
+- Same parameter names and types expected
+- Same response JSON structure returned
+- Same error codes for same failure conditions
+
+Write a shared test matrix in `commonTest` that defines the expected contract per domain, then verify both platforms conform.
+
+---
+
 ## Dependencies
 
-- **SPEC-PERSON2-KMP.md** chunks 2A–2C: Required (Android complete, bridge protocol defined)
+- **SPEC-KMP-SDK.md** chunks 2A–2C: Required (Android complete, bridge protocol defined)
 - **SPEC-PROVING-CLIENT.md**: Independent (proving client lives in `commonMain`, not iOS-specific)
 - **SPEC-MINIPAY-SAMPLE.md**: Depends on this spec for iOS SDK functionality

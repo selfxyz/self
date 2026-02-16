@@ -9,7 +9,7 @@ Port the TypeScript proving machine (`packages/mobile-sdk-alpha/src/proving/prov
 
 The proving client lives entirely in `commonMain` so it works on Android, iOS, and future JS/WASM targets.
 
-**Prerequisites**: [SPEC-PERSON2-KMP.md](./SPEC-PERSON2-KMP.md) (bridge protocol, common models).
+**Prerequisites**: [SPEC-KMP-SDK.md](./SPEC-KMP-SDK.md) (bridge protocol, common models).
 
 ---
 
@@ -1545,7 +1545,7 @@ object PayloadBuilder {
 4. Test: ECDH key exchange, AES-GCM encrypt/decrypt roundtrip, SHA-256, RSA verify
 5. Validate: Same inputs produce same outputs on both platforms
 
-**Note**: For iOS, crypto can use the same Swift provider pattern from [SPEC-PERSON2-IOS.md](./SPEC-PERSON2-IOS.md) — add a `PlatformCryptoProvider` interface and Swift implementation. Or if CommonCrypto cinterop works (it's simpler than UIKit cinterop), use it directly.
+**Note**: For iOS, crypto can use the same Swift provider pattern from [SPEC-IOS-HANDLERS.md](./SPEC-IOS-HANDLERS.md) — add a `PlatformCryptoProvider` interface and Swift implementation. Or if CommonCrypto cinterop works (it's simpler than UIKit cinterop), use it directly.
 
 ### Chunk 4C: TEE Connection + Attestation
 
@@ -1641,28 +1641,84 @@ fun bigIntReplacer(value: Any): Any = when (value) {
 
 ## Testing Strategy
 
-1. **Unit tests** (`commonTest/`):
-   - Model serialization/deserialization
-   - Circuit name resolution for known document types
-   - Selector bit generation
-   - Commitment generation with known test vectors
-   - Payload encryption roundtrip
+### Unit Tests (`commonTest/`)
 
-2. **Integration tests** (manual or CI):
-   - Protocol data fetching against staging API
-   - TEE connection + attestation against staging TEE
-   - Full proof generation for a test passport
+**Models & Serialization** (~10 tests):
+- All `@Serializable` models roundtrip through JSON
+- `DeployedCircuits` deserializes from real API response snapshot
+- `CircuitsDnsMapping` deserializes correctly
+- `ProvingRequest` defaults are correct
+- `Disclosures.revealedAttributes` computes correctly
 
-3. **Cross-platform verification**:
-   - Same inputs → same circuit inputs on Android and iOS
+**Circuit Name Resolution** (~15 tests):
+- `CircuitNameResolver.resolve()` for each (documentCategory × circuitType) combination
+- Known passport metadata → expected circuit name string (e.g., `register_sha256_sha256_sha256_ecdsa_secp256r1`)
+- Known DSC metadata → expected DSC circuit name
+- Aadhaar/KYC → correct fixed names
+- Error: DSC for Aadhaar throws
+- `MappingKeyResolver.resolve()` for all 10 mapping key combinations
+
+**Payload Builder** (~8 tests):
+- Register payload has `onchain: true`, correct `type` field
+- Disclose payload includes `endpoint`, `version`, `userDefinedData`, `selfDefinedData`
+- Payload type strings correct for each (circuitType × documentCategory)
+- BigInt values serialized as strings (not numbers)
+
+**Document Validation** (~12 tests):
+- `checkDocumentSupported` returns correct status for: supported passport, missing metadata, missing CSCA, undeployed register circuit, undeployed DSC circuit
+- `isUserRegistered` returns true when commitment is in tree, false when not
+- `isDscInTree` returns true when DSC leaf is in tree, false when not
+- Aadhaar/KYC validation paths
+
+**TEE Attestation** (~8 tests):
+- `validate()` with known good attestation token → extracts correct pubkeys and image hash
+- `validate()` with tampered signature → throws
+- `validate()` with wrong root cert → throws
+- `validate()` with debug mode enabled + isDev=false → throws
+- `validate()` with debug mode enabled + isDev=true → succeeds
+
+**Payload Encryption** (~5 tests):
+- Encrypt with known key → decrypt with same key → matches plaintext
+- Nonce is 12 bytes, auth tag is 16 bytes
+- Different encryptions of same plaintext produce different ciphertexts (random IV)
+
+### Integration Tests (staging environment)
+
+**Protocol Data Fetching**:
+- `fetchAll()` against staging API returns non-empty data for passport category
+- Deployed circuits list is non-empty
+- Circuits DNS mapping contains expected keys
+- Commitment tree deserializes and has positive size
+- Caching works: second `fetchAll()` returns same instance
+
+**TEE Connection**:
+- Connect to staging TEE WebSocket → receive attestation → validate → derive shared key
+- Submit encrypted payload → receive UUID ACK
+- Reconnection: close socket, verify reconnect succeeds within 3 attempts
+
+**Socket.IO Status Listener**:
+- Connect to staging relayer → subscribe to UUID → receive status messages
+- Timeout fires if no status received within limit
+
+**End-to-End** (requires mock passport):
+- `ProvingClient.prove()` with mock passport data → register circuit → success
+- `ProvingClient.prove()` with mock passport data → disclose circuit → success
+- State change callbacks fire in correct order
+- Error propagation: invalid document → `ProvingException` with correct code
+
+### Cross-Platform Verification
+
+- Run `commonTest` on JVM and iOS: `./gradlew :shared:jvmTest :shared:iosSimulatorArm64Test`
+- Platform crypto (`PlatformCrypto`): Same ECDH shared secret from same key pairs on Android and iOS
+- Same AES-GCM encryption with fixed IV produces identical ciphertext on both platforms
    - Same inputs → same commitment hash on Android and iOS
 
 ---
 
 ## Dependencies
 
-- **SPEC-PERSON2-KMP.md**: Bridge protocol, common models (complete)
-- **SPEC-PERSON2-IOS.md**: iOS crypto provider (Chunk 4B may need this for iOS actual)
+- **SPEC-KMP-SDK.md**: Bridge protocol, common models (complete)
+- **SPEC-IOS-HANDLERS.md**: iOS crypto provider (Chunk 4B may need this for iOS actual)
 - **SPEC-MINIPAY-SAMPLE.md**: Depends on this spec's `ProvingClient` public API
 
 ## Key TypeScript Reference Files

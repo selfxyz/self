@@ -7,8 +7,8 @@ A native Compose Multiplatform app demonstrating the **headless SDK flow** — n
 The app scans a passport, generates a zero-knowledge proof using the native `ProvingClient`, and displays the result — all without launching a WebView.
 
 **Prerequisites**:
-- [SPEC-PERSON2-KMP.md](./SPEC-PERSON2-KMP.md) — Bridge protocol, common models
-- [SPEC-PERSON2-IOS.md](./SPEC-PERSON2-IOS.md) — iOS native handlers (NFC, Camera via Swift providers)
+- [SPEC-KMP-SDK.md](./SPEC-KMP-SDK.md) — Bridge protocol, common models
+- [SPEC-IOS-HANDLERS.md](./SPEC-IOS-HANDLERS.md) — iOS native handlers (NFC, Camera via Swift providers)
 - [SPEC-PROVING-CLIENT.md](./SPEC-PROVING-CLIENT.md) — Native proving client (`ProvingClient`)
 
 ---
@@ -545,8 +545,79 @@ class SelfSdk {
 
 ---
 
+## Testing
+
+### Unit Tests (`commonTest/`)
+
+**QR URL Parsing** (~8 tests):
+- `parseVerificationUrl()` extracts all parameters correctly
+- Missing optional parameters use defaults
+- Malformed URL throws with clear error
+- URL with encoded characters decodes correctly
+- `disclosures` JSON parameter parses into `Disclosures` object
+
+**ViewModel Navigation** (~6 tests):
+- Initial screen is `Home`
+- `onQrScanned()` parses URL and navigates to `DocumentScan`
+- `onPassportScanned()` navigates to `Proving`
+- `navigateToResult()` stores result and navigates to `Result`
+- `returnToHome()` clears transient state
+
+### Device Tests (manual, per-chunk)
+
+**Chunk 5A — Navigation Shell**:
+- App launches on Android emulator and iOS simulator
+- All 5 screens reachable via navigation
+- Back navigation works correctly
+
+**Chunk 5B — QR Scanner**:
+- Camera permission prompt appears on first launch
+- Camera preview renders full-screen
+- Scanning a test QR code extracts correct URL
+- Scanning a non-URL QR code shows error gracefully
+- Cancel returns to home
+
+**Chunk 5C — Document Scanner**:
+- MRZ camera phase: Progress states advance as passport is positioned (0 → 1 → 2 → 3)
+- MRZ camera phase: Auto-transitions to NFC phase when MRZ detected
+- NFC phase: Progress states advance during passport scan (0 → 7)
+- NFC phase: Cancel during scan returns to previous screen without crash
+- NFC phase: Bad MRZ data (wrong dates) produces clear error
+- Full scan produces valid `PassportScanResult` JSON
+
+**Chunk 5D — Proving**:
+- State callbacks fire in order: FetchingData → ValidatingDocument → ConnectingTee → Proving → PostProving → Completed
+- UI updates for each state transition (progress indicator advances)
+- Cancel during proving cancels the coroutine cleanly
+- NOT_REGISTERED error triggers auto-register flow
+- Other errors navigate to result screen with error details
+- Full end-to-end against staging TEE succeeds with mock passport
+
+**Chunk 5E — Result + Polish**:
+- Success screen shows disclosed claims matching the request's disclosures
+- Failure screen shows error code and human-readable message
+- "Try Again" navigates back to appropriate screen
+- "Done" returns to home, home shows verified status
+- Both platforms: identical behavior for same QR code + passport combo
+
+### End-to-End Acceptance Test
+
+1. Launch app → Home screen shows "Unverified"
+2. Tap "Verify Identity" → QR scanner opens
+3. Scan test QR code → navigates to document scanner
+4. Position passport → MRZ detected → "Hold phone near passport"
+5. Tap passport → NFC scan completes
+6. Proving screen shows progress through all states
+7. Result screen shows "Identity Verified" with correct claims
+8. Return to Home → shows "Verified" with proof date
+
+Run on: Android physical device + iOS physical device.
+
+---
+
 ## Dependencies
 
-- **SPEC-PERSON2-KMP.md**: NFC handler (Android), Camera handler (Android), SecureStorage handler
-- **SPEC-PERSON2-IOS.md**: NFC provider (iOS), Camera provider (iOS), SecureStorage provider (iOS)
+- **SPEC-KMP-SDK.md**: NFC handler (Android), Camera handler (Android), SecureStorage handler
+- **SPEC-IOS-HANDLERS.md**: NFC provider (iOS), Camera provider (iOS), SecureStorage provider (iOS)
 - **SPEC-PROVING-CLIENT.md**: `ProvingClient` API — the core of this app
+- **SPEC-COMMON-LIB.md**: Passport data parsing, commitment generation (used by ProvingClient)
