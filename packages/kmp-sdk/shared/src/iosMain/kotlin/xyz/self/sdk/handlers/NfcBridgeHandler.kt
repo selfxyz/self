@@ -4,7 +4,8 @@
 
 package xyz.self.sdk.handlers
 
-import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
@@ -12,17 +13,17 @@ import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
 import xyz.self.sdk.bridge.MessageRouter
+import xyz.self.sdk.models.NfcScanProgress
+import xyz.self.sdk.providers.SdkProviderRegistry
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
-/**
- * iOS stub for NFC passport scanning bridge handler.
- * The test app uses NfcPassportHelper.swift directly instead of this handler.
- * TODO: Wire up to Swift NfcPassportHelper via cinterop for full SDK integration.
- */
-@OptIn(ExperimentalForeignApi::class)
 class NfcBridgeHandler(
     private val router: MessageRouter,
 ) : BridgeHandler {
     override val domain = BridgeDomain.NFC
+
+    private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun handle(
         method: String,
@@ -38,26 +39,84 @@ class NfcBridgeHandler(
             )
         }
 
-    /** Stub — wire up to NfcPassportHelper.swift via cinterop. */
     private suspend fun scan(params: Map<String, JsonElement>): JsonElement {
-        params["passportNumber"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_PASSPORT_NUMBER", "Passport number required")
-        params["dateOfBirth"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_DOB", "Date of birth required")
-        params["dateOfExpiry"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_EXPIRY", "Date of expiry required")
+        val provider =
+            SdkProviderRegistry.nfc
+                ?: throw BridgeHandlerException("NOT_CONFIGURED", "NFC provider not configured")
 
-        throw BridgeHandlerException(
-            "NOT_IMPLEMENTED",
-            "NFC scanning is handled by NfcPassportHelper.swift in the test app. " +
-                "Wire up via cinterop for full SDK integration.",
-        )
+        val passportNumber =
+            params["passportNumber"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_PASSPORT_NUMBER", "Passport number required")
+        val dateOfBirth =
+            params["dateOfBirth"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_DOB", "Date of birth required")
+        val dateOfExpiry =
+            params["dateOfExpiry"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_EXPIRY", "Date of expiry required")
+
+        return suspendCancellableCoroutine { continuation ->
+            provider.scanPassport(
+                passportNumber = passportNumber,
+                dateOfBirth = dateOfBirth,
+                dateOfExpiry = dateOfExpiry,
+                onProgress = { progressAny ->
+                    // progressAny is a state index (Int) from Swift
+                    val stateIndex =
+                        when (progressAny) {
+                            is Number -> progressAny.toInt()
+                            else -> 0
+                        }
+                    val stepName =
+                        when (stateIndex) {
+                            0 -> "waiting_for_tag"
+                            1 -> "connecting"
+                            2 -> "authenticating"
+                            3 -> "reading_dg1"
+                            4 -> "reading_sod"
+                            5 -> "chip_auth"
+                            6 -> "building_result"
+                            7 -> "complete"
+                            else -> "unknown"
+                        }
+                    val progress = NfcScanProgress(stepName, stateIndex * 14, stepName)
+                    val progressJson = json.encodeToString(NfcScanProgress.serializer(), progress)
+                    val progressElement = json.parseToJsonElement(progressJson)
+                    router.pushEvent(BridgeDomain.NFC, "scanProgress", progressElement)
+                },
+                onComplete = { resultJson ->
+                    if (continuation.isActive) {
+                        try {
+                            val jsonElement = json.parseToJsonElement(resultJson)
+                            continuation.resume(jsonElement)
+                        } catch (e: Exception) {
+                            continuation.resumeWithException(
+                                BridgeHandlerException("PARSE_ERROR", "Failed to parse NFC result: ${e.message}"),
+                            )
+                        }
+                    }
+                },
+                onError = { error ->
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(
+                            BridgeHandlerException("NFC_SCAN_FAILED", error),
+                        )
+                    }
+                },
+            )
+
+            continuation.invokeOnCancellation {
+                provider.cancelScan()
+            }
+        }
     }
 
-    private fun cancelScan(): JsonElement? = null
+    private fun cancelScan(): JsonElement? {
+        SdkProviderRegistry.nfc?.cancelScan()
+        return null
+    }
 
     private fun isSupported(): JsonElement {
-        // TODO: Use NFCReaderSession.readingAvailable via cinterop
-        return JsonPrimitive(false)
+        val provider = SdkProviderRegistry.nfc ?: return JsonPrimitive(false)
+        return JsonPrimitive(provider.isAvailable())
     }
 }

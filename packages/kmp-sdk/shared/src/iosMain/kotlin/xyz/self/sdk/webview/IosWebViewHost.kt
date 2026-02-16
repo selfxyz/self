@@ -4,33 +4,41 @@
 
 package xyz.self.sdk.webview
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.UIKit.UIView
+import platform.UIKit.UIViewController
 import xyz.self.sdk.bridge.MessageRouter
+import xyz.self.sdk.providers.SdkProviderRegistry
 
-/**
- * iOS implementation of WebView host using WKWebView.
- *
- * NOTE: This is a stub implementation. Full implementation requires:
- * - cinterop with WebKit framework (WKWebView, WKWebViewConfiguration, etc.)
- * - cinterop with Foundation framework (NSBundle, NSURL, etc.)
- * - Swift/Objective-C bridge for complex iOS APIs
- *
- * The iOS implementation needs to be completed with proper cinterop configuration
- * once SDK compatibility issues are resolved. See the Android implementation for reference.
- */
+@OptIn(ExperimentalForeignApi::class)
 class IosWebViewHost(
     private val router: MessageRouter,
     private val isDebugMode: Boolean = false,
 ) {
-    fun createWebView(): Any =
-        throw NotImplementedError(
-            "iOS WebView hosting not yet fully implemented. " +
-                "Requires WKWebView cinterop and UIViewController integration. " +
-                "cinterop configuration is disabled due to Xcode SDK compatibility issues.",
-        )
+    fun createWebView(): UIView {
+        val provider =
+            SdkProviderRegistry.webView
+                ?: throw IllegalStateException("WebView provider not configured")
 
-    fun evaluateJs(js: String): Unit =
-        throw NotImplementedError(
-            "iOS WebView hosting not yet fully implemented. " +
-                "Requires WKWebView cinterop.",
+        return provider.createWebView(
+            onMessageReceived = { rawJson ->
+                router.onMessageReceived(rawJson)
+            },
+            isDebugMode = isDebugMode,
         )
+    }
+
+    fun evaluateJs(js: String) {
+        val provider =
+            SdkProviderRegistry.webView
+                ?: return
+        provider.evaluateJs(js)
+    }
+
+    fun getViewController(): UIViewController {
+        val provider =
+            SdkProviderRegistry.webView
+                ?: throw IllegalStateException("WebView provider not configured")
+        return provider.getViewController()
+    }
 }

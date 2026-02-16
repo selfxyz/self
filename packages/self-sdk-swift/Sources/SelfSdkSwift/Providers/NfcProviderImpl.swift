@@ -2,39 +2,32 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-//
-//  NfcScanFactoryImpl.swift
-//  iosApp
-//
-//  Swift implementation of NfcScanViewFactory that bridges to NfcPassportHelper
-//
-
 import Foundation
-import UIKit
-import ComposeApp
 
-/// Swift implementation of the NFC scan factory
-class NfcScanFactoryImpl: NSObject {
+#if !targetEnvironment(simulator)
+import CoreNFC
+#endif
 
-    /// Retain the NFC helper so ARC doesn't deallocate it during scanning
+/// Swift implementation of NfcProvider wrapping NfcPassportHelper.
+public class NfcProviderImpl: NSObject {
+
+    /// Retained during scan to prevent ARC deallocation
     private var nfcHelper: NfcPassportHelper?
 
-    /// Call this from app init to register the factory
-    static func register() {
-        let factory = NfcScanFactoryImpl()
-        NfcScanFactory.shared.instance = factory
+    public override init() {
+        super.init()
     }
-}
 
-/// Extension implementing the Kotlin interface
-extension NfcScanFactoryImpl: NfcScanViewFactory {
+    public func isAvailable() -> Bool {
+        return NfcPassportHelper.isNfcAvailable()
+    }
 
-    func scanPassport(
+    public func scanPassport(
         passportNumber: String,
         dateOfBirth: String,
         dateOfExpiry: String,
         onProgress: @escaping (Any) -> Void,
-        onComplete: @escaping (Any) -> Void,
+        onComplete: @escaping (String) -> Void,
         onError: @escaping (String) -> Void
     ) {
         guard self.nfcHelper == nil else {
@@ -54,16 +47,20 @@ extension NfcScanFactoryImpl: NfcScanViewFactory {
                     onProgress(stateIndex as Any)
                 }
             },
-            completion: { success, result in
-                DispatchQueue.main.async { [weak self] in
+            completion: { [weak self] success, result in
+                DispatchQueue.main.async {
                     self?.nfcHelper = nil
                     if success {
-                        onComplete(result as Any)
+                        onComplete(result)
                     } else {
                         onError(result)
                     }
                 }
             }
         )
+    }
+
+    public func cancelScan() {
+        nfcHelper = nil
     }
 }
