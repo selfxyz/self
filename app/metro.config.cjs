@@ -148,14 +148,16 @@ const config = {
           return { type: 'sourceFile', filePath: appAnimPath };
         }
         // Fall back to SDK's own copy (for SDK-only animations like loading/*)
-        return {
-          type: 'sourceFile',
-          filePath: path.resolve(
-            workspaceRoot,
-            'packages/mobile-sdk-alpha',
-            moduleName,
-          ),
-        };
+        const sdkAnimPath = path.resolve(
+          workspaceRoot,
+          'packages/mobile-sdk-alpha',
+          moduleName,
+        );
+        if (fs.existsSync(sdkAnimPath)) {
+          return { type: 'sourceFile', filePath: sdkAnimPath };
+        }
+        // Let default resolver handle it (will produce a clear "module not found" error)
+        return context.resolveRequest(context, moduleName, platform);
       }
 
       // Custom resolver to handle Node.js modules and dynamic flow imports

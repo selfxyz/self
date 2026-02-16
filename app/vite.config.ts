@@ -192,7 +192,7 @@ export default defineConfig({
 
           // Large animations - split out heavy Lottie files
           'animations-passport-onboarding': [
-            './src/assets/animations/passport_onboarding.json',
+            './src/assets/animations/passport_onboarding.lottie',
           ],
 
           // Other screens

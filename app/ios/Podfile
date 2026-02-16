@@ -34,7 +34,6 @@ prepare_react_native_project!
 
 # Flipper disabled — RN 0.76+ uses the new debugging architecture
 flipper_enabled = false
-flipper_config = { "Flipper" => nil }
 
 linkage = ENV["USE_FRAMEWORKS"]
 if linkage != nil

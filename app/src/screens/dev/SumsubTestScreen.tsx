@@ -83,7 +83,16 @@ const SumsubTestScreen: React.FC = () => {
       return;
     }
 
-    console.log('Connecting to WebSocket:', SUMSUB_TEE_URL);
+    // Close any existing socket before creating a new one
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+
+    hasSubscribedRef.current = true;
+    if (__DEV__) {
+      console.log('Connecting to WebSocket:', SUMSUB_TEE_URL);
+    }
     const socket = io(SUMSUB_TEE_URL, {
       transports: ['websocket', 'polling'],
     });
@@ -91,13 +100,25 @@ const SumsubTestScreen: React.FC = () => {
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      console.log('Socket connected, subscribing to user');
-      hasSubscribedRef.current = true;
+      if (__DEV__) {
+        console.log('Socket connected, subscribing to user');
+      }
       socket.emit('subscribe', userId);
     });
 
+    socket.on('connect_error', (err: Error) => {
+      if (__DEV__) {
+        console.error('Socket connect_error:', err.message);
+      }
+      if (!isMountedRef.current) return;
+      setError(`Connection failed: ${err.message}`);
+      hasSubscribedRef.current = false;
+    });
+
     socket.on('success', (data: SumsubApplicantInfo) => {
-      console.log('Received applicant info');
+      if (__DEV__) {
+        console.log('Received applicant info');
+      }
       if (!isMountedRef.current) return;
       setApplicantInfo(data);
       Alert.alert(
@@ -108,21 +129,27 @@ const SumsubTestScreen: React.FC = () => {
     });
 
     socket.on('verification_failed', (reason: string) => {
-      console.log('Verification failed:', reason);
+      if (__DEV__) {
+        console.log('Verification failed:', reason);
+      }
       if (!isMountedRef.current) return;
       setError(`Verification failed: ${reason}`);
       Alert.alert('Verification Failed', reason, [{ text: 'OK' }]);
     });
 
     socket.on('error', (errorMessage: string) => {
-      console.error('Socket error:', errorMessage);
+      if (__DEV__) {
+        console.error('Socket error:', errorMessage);
+      }
       if (!isMountedRef.current) return;
       setError(errorMessage);
       hasSubscribedRef.current = false;
     });
 
     socket.on('disconnect', () => {
-      console.log('Socket disconnected');
+      if (__DEV__) {
+        console.log('Socket disconnected');
+      }
       hasSubscribedRef.current = false;
     });
   }, [userId]);
@@ -368,26 +395,28 @@ const SumsubTestScreen: React.FC = () => {
               </XStack>
             </YStack>
 
-            {/* Raw JSON */}
-            <YStack
-              marginTop="$2"
-              backgroundColor={white}
-              borderRadius="$2"
-              padding="$3"
-            >
-              <Text
-                fontSize="$3"
-                color={slate400}
-                fontFamily={dinot}
-                fontWeight="600"
-                marginBottom="$2"
+            {/* Raw JSON - only shown in development */}
+            {__DEV__ && (
+              <YStack
+                marginTop="$2"
+                backgroundColor={white}
+                borderRadius="$2"
+                padding="$3"
               >
-                Raw Data:
-              </Text>
-              <Text fontSize="$2" color={slate500} fontFamily={dinot}>
-                {JSON.stringify(applicantInfo, null, 2)}
-              </Text>
-            </YStack>
+                <Text
+                  fontSize="$3"
+                  color={slate400}
+                  fontFamily={dinot}
+                  fontWeight="600"
+                  marginBottom="$2"
+                >
+                  Raw Data:
+                </Text>
+                <Text fontSize="$2" color={slate500} fontFamily={dinot}>
+                  {JSON.stringify(applicantInfo, null, 2)}
+                </Text>
+              </YStack>
+            )}
           </YStack>
 
           <Button
@@ -457,14 +486,16 @@ const SumsubTestScreen: React.FC = () => {
           >
             TEE Service
           </Text>
-          <Text
-            fontSize="$3"
-            color={slate500}
-            fontFamily={dinot}
-            marginTop="$2"
-          >
-            {SUMSUB_TEE_URL}
-          </Text>
+          {__DEV__ && (
+            <Text
+              fontSize="$3"
+              color={slate500}
+              fontFamily={dinot}
+              marginTop="$2"
+            >
+              {SUMSUB_TEE_URL}
+            </Text>
+          )}
         </YStack>
 
         {/* Phone Number Input */}
@@ -526,18 +557,27 @@ const SumsubTestScreen: React.FC = () => {
             >
               ✓ Access Token Generated
             </Text>
-            <Text fontSize="$3" color={white} fontFamily={dinot} marginTop="$2">
-              User ID: {userId}
-            </Text>
-            <Text
-              fontSize="$2"
-              color={white}
-              fontFamily={dinot}
-              marginTop="$2"
-              opacity={0.8}
-            >
-              Token: {accessToken.substring(0, 30)}...
-            </Text>
+            {__DEV__ && (
+              <>
+                <Text
+                  fontSize="$3"
+                  color={white}
+                  fontFamily={dinot}
+                  marginTop="$2"
+                >
+                  User ID: {userId}
+                </Text>
+                <Text
+                  fontSize="$2"
+                  color={white}
+                  fontFamily={dinot}
+                  marginTop="$2"
+                  opacity={0.8}
+                >
+                  Token: {accessToken.substring(0, 30)}...
+                </Text>
+              </>
+            )}
           </YStack>
         )}
 

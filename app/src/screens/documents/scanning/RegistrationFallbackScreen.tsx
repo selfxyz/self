@@ -164,11 +164,13 @@ const RegistrationFallbackScreen: React.FC = () => {
   }, [navigation]);
 
   const handleTryAlternative = useCallback(async () => {
+    buttonTap();
     trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', { errorSource });
     await launchSumsubVerification();
   }, [errorSource, launchSumsubVerification, trackEvent]);
 
   const handleRetryOriginal = useCallback(() => {
+    buttonTap();
     trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', { errorSource });
 
     // Navigate back to the appropriate screen based on error source
