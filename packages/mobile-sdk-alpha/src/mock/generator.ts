@@ -54,10 +54,11 @@ export async function generateMockDocument({
   lastName,
 }: GenerateMockDocumentOptions): Promise<PassportData | AadhaarData> {
   console.log('generateMockDocument received names:', { firstName, lastName, isInOfacList });
-  const randomPassportNumber = Math.random()
-    .toString(36)
-    .substring(2, 11)
-    .replace(/[^a-z0-9]/gi, '')
+  const randomBytes = new Uint8Array(9);
+  crypto.getRandomValues(randomBytes);
+  const randomPassportNumber = Array.from(randomBytes)
+    .map(b => b.toString(36).charAt(0))
+    .join('')
     .toUpperCase();
   const [dgHashAlgo, eContentHashAlgo, signatureTypeForGeneration] =
     signatureAlgorithmToStrictSignatureAlgorithm[

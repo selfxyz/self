@@ -308,11 +308,11 @@ export function extractNameFromMRZ(mrzString: string): { firstName: string; last
       const parts = namePart.split('<<').filter(Boolean);
 
       if (parts.length >= 2) {
-        const lastName = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
-        const firstName = parts[1].replace(/<+$/, '').replace(/</g, ' ').trim();
+        const lastName = parts[0].replace(/</g, ' ').trim();
+        const firstName = parts[1].replace(/</g, ' ').trim();
         return { firstName, lastName };
       } else if (parts.length === 1) {
-        const name = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
+        const name = parts[0].replace(/</g, ' ').trim();
         return { firstName: '', lastName: name };
       }
     }
@@ -326,11 +326,11 @@ export function extractNameFromMRZ(mrzString: string): { firstName: string; last
     const parts = line3.split('<<').filter(Boolean);
 
     if (parts.length >= 2) {
-      const lastName = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
-      const firstName = parts[1].replace(/<+$/, '').replace(/</g, ' ').trim();
+      const lastName = parts[0].replace(/</g, ' ').trim();
+      const firstName = parts[1].replace(/</g, ' ').trim();
       return { firstName, lastName };
     } else if (parts.length === 1) {
-      const name = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
+      const name = parts[0].replace(/</g, ' ').trim();
       return { firstName: '', lastName: name };
     }
   }

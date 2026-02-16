@@ -1,5 +1,8 @@
 name: KMP CI
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     paths: ["packages/kmp-sdk/**", "packages/kmp-test-app/**"]
