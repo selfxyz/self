@@ -1,5 +1,20 @@
 # Person 2: KMP SDK / Native Handlers — Implementation Spec
 
+## Current Status
+
+| Chunk | Description | Status |
+|-------|-------------|--------|
+| 2A | KMP Setup + Bridge Protocol | ✅ Complete |
+| 2B | Android WebView Host | ✅ Complete |
+| 2C | Android Native Handlers | ✅ Complete (all 9) |
+| 2D | iOS WebView Host + cinterop | ⚠️ Partial (cinterop blocked by Xcode SDK compatibility issues, stubs in place) |
+| 2E | iOS Native Handlers | ❌ Not Done (all 9 handlers are stubs throwing `NotImplementedError`) |
+| 2F | SDK Public API + Test App | ⚠️ Partial (Android works end-to-end, iOS uses Swift workarounds via factory pattern in test app) |
+
+> **Note:** Remaining iOS handler work has moved to [SPEC-PERSON2-IOS.md](./SPEC-PERSON2-IOS.md) — uses a Swift wrapper pattern instead of cinterop. The native proving client (for headless SDK use without WebView) is specified in [SPEC-PROVING-CLIENT.md](./SPEC-PROVING-CLIENT.md). A MiniPay sample app demonstrating the headless flow is in [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md).
+
+---
+
 ## Overview
 
 You are building the **native side** of the Self Mobile SDK. This means:
