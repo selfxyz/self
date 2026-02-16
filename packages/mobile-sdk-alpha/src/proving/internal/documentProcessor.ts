@@ -230,9 +230,12 @@ export const validatingDocument = async (selfClient: SelfClient, deps: DocumentP
     }
 
     if (circuitType === 'disclose') {
+      if (!secret || typeof secret !== 'string') {
+        throw new Error('Secret is required and must be a string');
+      }
       const isRegisteredWithLocalCSCA = await isUserRegistered(
         passportData,
-        secret as string,
+        secret,
         (documentCategory: DocumentCategory) => getCommitmentTree(selfClient, documentCategory),
       );
       selfClient.logProofEvent('info', 'Local CSCA registration check', context, {
@@ -254,7 +257,10 @@ export const validatingDocument = async (selfClient: SelfClient, deps: DocumentP
         return;
       }
     } else {
-      const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
+      if (!secret || typeof secret !== 'string') {
+        throw new Error('Secret is required and must be a string');
+      }
+      const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(passportData, secret, {
         getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
         getAltCSCA: (docType: DocumentCategory) => {
           if (docType === 'kyc') {

@@ -19,7 +19,12 @@ export const getMappingKey = (circuitType: 'disclose' | 'register' | 'dsc', docu
     if (documentCategory === 'aadhaar') return 'REGISTER_AADHAAR';
     throw new Error(`Unsupported document category for register: ${documentCategory}`);
   }
-  return documentCategory === 'passport' ? 'DSC' : 'DSC_ID';
+  if (documentCategory === 'passport') return 'DSC';
+  if (documentCategory === 'id_card') return 'DSC_ID';
+  if (documentCategory === 'aadhaar') {
+    throw new Error('DSC circuit type is not supported for Aadhaar documents');
+  }
+  throw new Error(`Unsupported document category for dsc: ${documentCategory}`);
 };
 
 export const resolveWebSocketUrl = (
