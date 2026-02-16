@@ -9286,6 +9286,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@selfxyz/webview-bridge@workspace:packages/webview-bridge":
+  version: 0.0.0-use.local
+  resolution: "@selfxyz/webview-bridge@workspace:packages/webview-bridge"
+  dependencies:
+    "@types/node": "npm:^22.18.3"
+    tsup: "npm:^8.0.1"
+    typescript: "npm:^5.9.3"
+    uuid: "npm:^11.1.0"
+    vitest: "npm:^2.1.8"
+  languageName: unknown
+  linkType: soft
+
 "@sentry-internal/browser-utils@npm:10.8.0":
   version: 10.8.0
   resolution: "@sentry-internal/browser-utils@npm:10.8.0"
