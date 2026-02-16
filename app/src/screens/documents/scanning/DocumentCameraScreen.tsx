@@ -1,13 +1,18 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DelayedLottieView, dinot } from '@selfxyz/mobile-sdk-alpha';
+import {
+  DelayedLottieView,
+  dinot,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   Description,
@@ -29,15 +34,46 @@ import {
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import Scan from '@/assets/icons/passport_camera_scan.svg';
 import { PassportCamera } from '@/components/native/PassportCamera';
+import { useErrorInjection } from '@/hooks/useErrorInjection';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
+import { getDocumentScanPrompt } from '@/utils/documentAttributes';
 
 const DocumentCameraScreen: React.FC = () => {
   const isFocused = useIsFocused();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const selfClient = useSelfClient();
+  const selectedDocumentType = selfClient.useMRZStore(
+    state => state.documentType,
+  );
+  const countryCode = selfClient.useMRZStore(state => state.countryCode);
+  const { shouldInjectError } = useErrorInjection();
 
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
   const { onPassportRead } = useReadMRZ(scanStartTimeRef);
+
+  // Dev-only: Auto-trigger MRZ error after short delay if error injection is enabled
+  useEffect(() => {
+    if (
+      shouldInjectError('mrz_invalid_format') ||
+      shouldInjectError('mrz_unknown_error')
+    ) {
+      const timer = setTimeout(() => {
+        console.log(
+          '[DEV] Injecting MRZ error - navigating to fallback screen',
+        );
+        navigation.navigate('RegistrationFallbackMRZ', {
+          countryCode: countryCode || '',
+        });
+      }, 1500); // 1.5 second delay to show camera briefly
+      return () => clearTimeout(timer);
+    }
+  }, [shouldInjectError, navigation, countryCode]);
+
+  const scanPrompt = getDocumentScanPrompt(selectedDocumentType);
 
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
@@ -63,7 +99,7 @@ const DocumentCameraScreen: React.FC = () => {
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <YStack alignItems="center" gap="$2.5">
           <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
-            <Title>Scan your ID</Title>
+            <Title>{scanPrompt}</Title>
             <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
               <View paddingTop="$2">
                 <Scan height={40} width={40} color={slate800} />

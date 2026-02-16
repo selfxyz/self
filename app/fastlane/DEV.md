@@ -396,7 +396,7 @@ The workflow consists of parallel jobs for each platform:
 
 #### `build-ios` Job
 
-Runs on `macos-latest-large` and performs the following steps:
+Runs on `namespace-profile-apple-silicon-6cpu` and performs the following steps:
 1. Sets up the environment (Node.js, Ruby, CocoaPods)
 2. Processes iOS secrets and certificates
 3. Runs appropriate Fastlane lane based on branch

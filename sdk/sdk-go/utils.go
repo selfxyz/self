@@ -14,9 +14,10 @@ import (
 
 // Constants for attestation types
 const (
-	Passport AttestationId = 1
-	EUCard   AttestationId = 2
-	Aadhaar  AttestationId = 3
+	Passport       AttestationId = 1
+	EUCard         AttestationId = 2
+	Aadhaar        AttestationId = 3
+	SelfricaIdCard AttestationId = 4
 )
 
 // DiscloseIndicesEntry defines the indices for different data fields in the public signals
@@ -73,6 +74,20 @@ var DiscloseIndices = map[AttestationId]DiscloseIndicesEntry{
 		NameyobSmtRootIndex:               15,
 		ScopeIndex:                        17,
 		UserIdentifierIndex:               18,
+		PassportNoSmtRootIndex:            99,
+	},
+	// Selfrica ID Card - see CircuitConstantsV2.sol for layout documentation
+	SelfricaIdCard: {
+		RevealedDataPackedIndex:           0,
+		ForbiddenCountriesListPackedIndex: 9,
+		NullifierIndex:                    13,
+		AttestationIdIndex:                29,
+		MerkleRootIndex:                   17,
+		CurrentDateIndex:                  21,
+		NamedobSmtRootIndex:               18,
+		NameyobSmtRootIndex:               19,
+		ScopeIndex:                        16,
+		UserIdentifierIndex:               20,
 		PassportNoSmtRootIndex:            99,
 	},
 }
@@ -178,16 +193,18 @@ var RevealedDataIndices = map[AttestationId]RevealedDataIndicesEntry{
 
 // AllIds contains all valid attestation IDs
 var AllIds = map[AttestationId]bool{
-	Passport: true,
-	EUCard:   true,
-	Aadhaar:  true,
+	Passport:       true,
+	EUCard:         true,
+	Aadhaar:        true,
+	SelfricaIdCard: true,
 }
 
 // BytesCount maps attestation IDs to their respective byte counts
 var BytesCount = map[AttestationId][]int{
-	Passport: {31, 31, 31},
-	EUCard:   {31, 31, 31, 1},
-	Aadhaar:  {31, 31, 31, 26},
+	Passport:       {31, 31, 31},
+	EUCard:         {31, 31, 31, 1},
+	Aadhaar:        {31, 31, 31, 26},
+	SelfricaIdCard: {31, 31, 31, 31, 31, 31, 31, 31, 31},
 }
 
 // trimU0000 filters out null characters (\u0000) from a slice of strings
@@ -318,6 +335,8 @@ func GetRevealedDataPublicSignalsLength(attestationId AttestationId) (int, error
 		return int(math.Ceil(94.0 / 31.0)), nil
 	case Aadhaar:
 		return int(math.Ceil(119.0 / 31.0)), nil
+	case SelfricaIdCard:
+		return 9, nil
 	default:
 		return 0, fmt.Errorf("invalid attestation ID: %d", attestationId)
 	}

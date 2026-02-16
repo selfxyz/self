@@ -1,10 +1,12 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+type LoggingSeverity = 'debug' | 'info' | 'warn' | 'error';
 
 interface PersistedSettingsState {
   addSubscribedTopic: (topic: string) => void;
@@ -19,6 +21,7 @@ interface PersistedSettingsState {
   homeScreenViewCount: number;
   incrementHomeScreenViewCount: () => void;
   isDevMode: boolean;
+  loggingSeverity: LoggingSeverity;
   pointsAddress: string | null;
   removeSubscribedTopic: (topic: string) => void;
   resetBackupForPoints: () => void;
@@ -29,12 +32,17 @@ interface PersistedSettingsState {
   setFcmToken: (token: string | null) => void;
   setHasViewedRecoveryPhrase: (viewed: boolean) => void;
   setKeychainMigrationCompleted: () => void;
+  setLoggingSeverity: (severity: LoggingSeverity) => void;
   setPointsAddress: (address: string | null) => void;
+  setSkipDocumentSelector: (value: boolean) => void;
   setSubscribedTopics: (topics: string[]) => void;
   setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
+  setUseStrongBox: (useStrongBox: boolean) => void;
+  skipDocumentSelector: boolean;
   subscribedTopics: string[];
   toggleCloudBackupEnabled: () => void;
   turnkeyBackupEnabled: boolean;
+  useStrongBox: boolean;
 }
 
 interface NonPersistedSettingsState {
@@ -97,6 +105,10 @@ export const useSettingStore = create<SettingsState>()(
       setDevModeOn: () => set({ isDevMode: true }),
       setDevModeOff: () => set({ isDevMode: false }),
 
+      loggingSeverity: __DEV__ ? 'debug' : 'warn',
+      setLoggingSeverity: (severity: LoggingSeverity) =>
+        set({ loggingSeverity: severity }),
+
       hasCompletedKeychainMigration: false,
       setKeychainMigrationCompleted: () =>
         set({ hasCompletedKeychainMigration: true }),
@@ -126,6 +138,15 @@ export const useSettingStore = create<SettingsState>()(
       pointsAddress: null,
       setPointsAddress: (address: string | null) =>
         set({ pointsAddress: address }),
+
+      // Document selector skip settings
+      skipDocumentSelector: false,
+      setSkipDocumentSelector: (value: boolean) =>
+        set({ skipDocumentSelector: value }),
+
+      // StrongBox setting for Android keystore (default: false)
+      useStrongBox: false,
+      setUseStrongBox: (useStrongBox: boolean) => set({ useStrongBox }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,

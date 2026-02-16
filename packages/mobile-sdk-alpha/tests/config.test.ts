@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -8,7 +8,7 @@ import { mergeConfig } from '../src/config/merge';
 import type { Config } from '../src/types/public';
 
 describe('mergeConfig', () => {
-  const baseConfig: Required<Config> = {
+  const baseConfig: Omit<Required<Config>, 'devConfig'> & Pick<Config, 'devConfig'> = {
     timeouts: {
       scanMs: 30000,
     },

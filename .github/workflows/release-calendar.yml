@@ -77,7 +77,7 @@ jobs:
 
       - name: Check out repository
         if: ${{ steps.guard_schedule.outputs.continue == 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -153,12 +153,28 @@ jobs:
             echo "✓ Successfully pushed branch ${BRANCH_NAME}"
           fi
 
+      - name: Read app version
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr == '' }}
+        id: app_version
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<PY >> "$GITHUB_OUTPUT"
+          import json
+          import pathlib
+
+          package_json = pathlib.Path("app/package.json")
+          version = json.loads(package_json.read_text())["version"]
+          print(f"app_version={version}")
+          PY
+
       - name: Create dev to staging release PR
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr == '' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_DATE: ${{ steps.check_dev_staging.outputs.date }}
           BRANCH_NAME: ${{ steps.check_dev_staging.outputs.branch_name }}
+          APP_VERSION: ${{ steps.app_version.outputs.app_version }}
         shell: bash
         run: |
           set -euo pipefail
@@ -200,7 +216,7 @@ jobs:
           """))
           PY
 
-          TITLE="Release to Staging - ${PR_DATE}"
+          TITLE="Release to Staging v${APP_VERSION} - ${PR_DATE}"
           echo "Creating PR with title: ${TITLE} from branch ${BRANCH_NAME}"
 
           if ! gh pr create \
@@ -256,7 +272,7 @@ jobs:
 
       - name: Check out repository
         if: ${{ steps.guard_schedule.outputs.continue == 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -319,12 +335,28 @@ jobs:
             gh label create "${LABEL}" --color BFD4F2 --force || true
           done
 
+      - name: Read app version
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead != 'true' && steps.production_status.outputs.existing_pr == '' }}
+        id: app_version
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<PY >> "$GITHUB_OUTPUT"
+          import json
+          import pathlib
+
+          package_json = pathlib.Path("app/package.json")
+          version = json.loads(package_json.read_text())["version"]
+          print(f"app_version={version}")
+          PY
+
       - name: Create staging to main release PR
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead != 'true' && steps.production_status.outputs.existing_pr == '' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_DATE: ${{ steps.production_status.outputs.date }}
           COMMITS_AHEAD: ${{ steps.production_status.outputs.commits }}
+          APP_VERSION: ${{ steps.app_version.outputs.app_version }}
         shell: bash
         run: |
           set -euo pipefail
@@ -367,7 +399,7 @@ jobs:
           """))
           PY
 
-          TITLE="Release to Production - ${PR_DATE}"
+          TITLE="Release to Production v${APP_VERSION} - ${PR_DATE}"
           echo "Creating PR with title: ${TITLE} from staging with ${COMMITS_AHEAD} commits ahead."
 
           gh pr create \

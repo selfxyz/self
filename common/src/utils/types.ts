@@ -1,5 +1,6 @@
 import type { ExtractedQRData } from './aadhaar/utils.js';
 import type { CertificateData } from './certificate_parsing/dataStructure.js';
+import type { KycField } from './kyc/constants.js';
 import type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
 
 // Base interface for common fields
@@ -25,6 +26,7 @@ export type DeployedCircuits = {
   REGISTER: string[];
   REGISTER_ID: string[];
   REGISTER_AADHAAR: string[];
+  REGISTER_KYC: string[];
   DSC: string[];
   DSC_ID: string[];
 };
@@ -34,7 +36,7 @@ export interface DocumentCatalog {
   selectedDocumentId?: string; // This is now a contentHash
 }
 
-export type DocumentCategory = 'passport' | 'id_card' | 'aadhaar';
+export type DocumentCategory = 'passport' | 'id_card' | 'aadhaar' | 'kyc';
 
 export interface DocumentMetadata {
   id: string; // contentHash as ID for deduplication
@@ -44,19 +46,29 @@ export interface DocumentMetadata {
   mock: boolean; // whether this is a mock document
   isRegistered?: boolean; // whether the document is registered onChain
   registeredAt?: number; // timestamp (epoch ms) when document was registered
+  hasExpirationDate?: boolean; // whether the document has an expiration date
+  idType?: string; // for KYC documents: the ID type used (e.g. "passport", "drivers_licence")
 }
 
 export type DocumentType =
   | 'passport'
   | 'id_card'
   | 'aadhaar'
+  | 'drivers_licence'
   | 'mock_passport'
   | 'mock_id_card'
   | 'mock_aadhaar';
 
 export type Environment = 'prod' | 'stg';
 
-export type IDDocument = AadhaarData | PassportData;
+export type IDDocument = AadhaarData | KycData | PassportData;
+
+export interface KycData extends BaseIDData {
+  documentCategory: 'kyc';
+  serializedApplicantInfo: string;
+  signature: string;
+  pubkey: string[];
+}
 
 export type OfacTree = {
   passportNoAndNationality: any;
@@ -76,6 +88,20 @@ export interface PassportData extends BaseIDData {
   signedAttr: number[];
   encryptedDigest: number[];
   passportMetadata?: PassportMetadata;
+}
+
+// pending - pending sumsub verification
+// processing - sumsub verification completed and pending onchain confirmation
+// failed - sumsub verification failed
+export type PendingKycStatus = 'pending' | 'processing' | 'failed';
+
+export interface PendingKycVerification {
+  userId: string; // Correlation key from fetchAccessToken()
+  createdAt: number; // Timestamp when verification started
+  status: PendingKycStatus; // Current status
+  errorMessage?: string; // Error message if failed
+  timeoutAt: number; // When to consider timed out
+  documentId?: string; // Content hash of stored KYC document
 }
 
 export type Proof = {
@@ -149,6 +175,7 @@ export enum AttestationIdHex {
   passport = '0x0000000000000000000000000000000000000000000000000000000000000001',
   id_card = '0x0000000000000000000000000000000000000000000000000000000000000002',
   aadhaar = '0x0000000000000000000000000000000000000000000000000000000000000003',
+  kyc = '0x0000000000000000000000000000000000000000000000000000000000000004',
 }
 
 export function castCSCAProof(proof: any): Proof {
@@ -162,15 +189,15 @@ export function castCSCAProof(proof: any): Proof {
   };
 }
 
-export function isAadhaarDocument(
-  passportData: PassportData | AadhaarData
-): passportData is AadhaarData {
+export function isAadhaarDocument(passportData: IDDocument): passportData is AadhaarData {
   return passportData.documentCategory === 'aadhaar';
 }
 
-export function isMRZDocument(
-  passportData: PassportData | AadhaarData
-): passportData is PassportData {
+export function isKycDocument(passportData: IDDocument): passportData is KycData {
+  return passportData.documentCategory === 'kyc';
+}
+
+export function isMRZDocument(passportData: IDDocument): passportData is PassportData {
   return (
     passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card'
   );

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -34,9 +34,8 @@ const config = {
   ],
 
   transformer: {
-    babelTransformerPath: require.resolve(
-      'react-native-svg-transformer/react-native',
-    ),
+    babelTransformerPath:
+      require.resolve('react-native-svg-transformer/react-native'),
     disableImportExportTransform: true,
     inlineRequires: true,
   },
@@ -72,6 +71,9 @@ const config = {
       new RegExp('packages/mobile-sdk-alpha/node_modules/scheduler(/|$)'),
       new RegExp(
         'packages/mobile-sdk-alpha/node_modules/react-native-svg(/|$)',
+      ),
+      new RegExp(
+        'packages/mobile-sdk-alpha/node_modules/react-native-webview(/|$)',
       ),
       new RegExp('packages/mobile-sdk-demo/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/|$)'),
@@ -410,6 +412,7 @@ const config = {
         'react-native-reanimated',
         '@react-native-masked-view/masked-view',
         '@react-native-firebase/analytics',
+        'react-native-b4a',
       ];
 
       if (optionalPeerDependencies.includes(moduleName)) {

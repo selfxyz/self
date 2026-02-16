@@ -12,8 +12,8 @@ showcase
 output/*
 *.tsbuildinfo
 .yarnrc.yml
-.giga/tasks/*
 package-lock.json
+.claude
 
 # CI-generated tarballs (don't commit these!)
 mobile-sdk-alpha-ci.tgz

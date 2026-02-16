@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -44,6 +44,7 @@ import type { PropsWithChildren } from 'react';
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import Keychain from 'react-native-keychain';
 
+import { deserializeApplicantInfo } from '@selfxyz/common';
 import type {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
@@ -61,12 +62,65 @@ import type {
   IDDocument,
   PassportData,
 } from '@selfxyz/common/utils/types';
-import { isMRZDocument } from '@selfxyz/common/utils/types';
+import { isKycDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { createKeychainOptions } from '@/integrations/keychain';
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
+import type { KeychainErrorType } from '@/utils/keychainErrors';
+import {
+  getKeychainErrorIdentity,
+  isKeychainCryptoError,
+  isUserCancellation,
+} from '@/utils/keychainErrors';
+
+let keychainCryptoFailureCallback:
+  | ((errorType: 'user_cancelled' | 'crypto_failed') => void)
+  | null = null;
+
+export function setPassportKeychainErrorCallback(
+  callback: ((errorType: 'user_cancelled' | 'crypto_failed') => void) | null,
+) {
+  keychainCryptoFailureCallback = callback;
+}
+
+function notifyKeychainFailure(type: KeychainErrorType) {
+  if (keychainCryptoFailureCallback) {
+    keychainCryptoFailureCallback(type);
+  }
+}
+
+function handleKeychainReadError({
+  contextLabel,
+  error,
+  throwOnUserCancel = false,
+}: {
+  contextLabel: string;
+  error: unknown;
+  throwOnUserCancel?: boolean;
+}) {
+  if (isUserCancellation(error)) {
+    console.log(`User cancelled authentication for ${contextLabel}`);
+    notifyKeychainFailure('user_cancelled');
+
+    if (throwOnUserCancel) {
+      throw error;
+    }
+  }
+
+  if (isKeychainCryptoError(error)) {
+    const err = getKeychainErrorIdentity(error);
+    console.error(`Keychain crypto error loading ${contextLabel}:`, {
+      code: err?.code,
+      name: err?.name,
+    });
+
+    notifyKeychainFailure('crypto_failed');
+  }
+
+  console.log(`Error loading ${contextLabel}:`, error);
+}
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
@@ -447,7 +501,10 @@ export async function loadDocumentByIdDirectlyFromKeychain(
       return JSON.parse(documentCreds.password);
     }
   } catch (error) {
-    console.log(`Error loading document ${documentId}:`, error);
+    handleKeychainReadError({
+      contextLabel: `document ${documentId}`,
+      error,
+    });
   }
   return null;
 }
@@ -491,7 +548,11 @@ export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<Documen
       return parsed;
     }
   } catch (error) {
-    console.log('Error loading document catalog:', error);
+    handleKeychainReadError({
+      contextLabel: 'document catalog',
+      error,
+      throwOnUserCancel: true,
+    });
   }
 
   // Return empty catalog if none exists
@@ -775,7 +836,7 @@ export async function setSelectedDocument(documentId: string): Promise<void> {
 
 async function storeDocumentDirectlyToKeychain(
   contentHash: string,
-  passportData: PassportData | AadhaarData,
+  passportData: IDDocument,
 ): Promise<void> {
   const { setOptions } = await createKeychainOptions({ requireAuth: false });
   await Keychain.setGenericPassword(contentHash, JSON.stringify(passportData), {
@@ -787,11 +848,10 @@ async function storeDocumentDirectlyToKeychain(
 
 // Duplicate funciton. prefer one on mobile sdk
 export async function storeDocumentWithDeduplication(
-  passportData: PassportData | AadhaarData,
+  passportData: IDDocument,
 ): Promise<string> {
   const contentHash = calculateContentHash(passportData);
   const catalog = await loadDocumentCatalogDirectlyFromKeychain();
-
   // Check for existing document with same content
   const existing = catalog.documents.find(d => d.id === contentHash);
   if (existing) {
@@ -801,7 +861,6 @@ export async function storeDocumentWithDeduplication(
 
     // Update the stored document with potentially new metadata
     await storeDocumentDirectlyToKeychain(contentHash, passportData);
-
     // Update selected document to this one
     catalog.selectedDocumentId = contentHash;
     await saveDocumentCatalogDirectlyToKeychain(catalog);
@@ -811,20 +870,45 @@ export async function storeDocumentWithDeduplication(
   // Store new document using contentHash as service name
   await storeDocumentDirectlyToKeychain(contentHash, passportData);
 
+  const documentCategory =
+    passportData.documentCategory ||
+    inferDocumentCategory(
+      (passportData as PassportData | AadhaarData).documentType,
+    );
+
   // Add to catalog
+  let dataField: string;
+  if (isMRZDocument(passportData)) {
+    dataField = passportData.mrz;
+  } else if (isKycDocument(passportData)) {
+    dataField = passportData.serializedApplicantInfo;
+  } else {
+    dataField = (passportData as AadhaarData).qrData || '';
+  }
+
   const metadata: DocumentMetadata = {
     id: contentHash,
     documentType: passportData.documentType,
-    documentCategory:
-      passportData.documentCategory ||
-      inferDocumentCategory(
-        (passportData as PassportData | AadhaarData).documentType,
-      ),
-    data: isMRZDocument(passportData)
-      ? (passportData as PassportData).mrz
-      : (passportData as AadhaarData).qrData || '', // Store MRZ for passports/IDs, relevant data for aadhaar
+    documentCategory: passportData.documentCategory,
+    data: dataField,
     mock: passportData.mock || false,
     isRegistered: false,
+    hasExpirationDate:
+      documentCategory === 'id_card' || documentCategory === 'passport',
+    ...(isKycDocument(passportData)
+      ? (() => {
+          try {
+            const parsedApplicantInfo = deserializeApplicantInfo(
+              passportData.serializedApplicantInfo,
+            );
+            return parsedApplicantInfo.idType
+              ? { idType: parsedApplicantInfo.idType }
+              : {};
+          } catch {
+            return {};
+          }
+        })()
+      : {}),
   };
 
   catalog.documents.push(metadata);
@@ -834,9 +918,7 @@ export async function storeDocumentWithDeduplication(
   return contentHash;
 }
 // Duplicate function. prefer one in mobile sdk
-export async function storePassportData(
-  passportData: PassportData | AadhaarData,
-) {
+export async function storePassportData(passportData: IDDocument) {
   await storeDocumentWithDeduplication(passportData);
 }
 

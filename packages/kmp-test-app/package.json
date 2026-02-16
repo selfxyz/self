@@ -1,0 +1,15 @@
+{
+  "name": "@selfxyz/kmp-test-app",
+  "version": "0.0.1-alpha",
+  "private": true,
+  "scripts": {
+    "android": "./scripts/run-android.sh",
+    "android:build": "./gradlew :composeApp:assembleDebug",
+    "clean": "./gradlew clean",
+    "format": "./gradlew ktlintFormat && cd iosApp && swiftlint --fix --format",
+    "ios:build": "./gradlew :composeApp:compileKotlinIosSimulatorArm64",
+    "ios:open": "open iosApp/iosApp.xcworkspace",
+    "lint": "./gradlew ktlintCheck && cd iosApp && swiftlint",
+    "test": "./gradlew :composeApp:testDebugUnitTest"
+  }
+}

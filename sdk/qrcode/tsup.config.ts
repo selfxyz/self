@@ -8,7 +8,6 @@ const __dirname = path.dirname(__filename);
 
 const entries = {
   index: 'index.ts',
-  'components/LED': 'components/LED.tsx',
   'components/SelfQRcode': 'components/SelfQRcode.tsx',
   'utils/utils': 'utils/utils.ts',
   'utils/styles': 'utils/styles.ts',
@@ -28,6 +27,10 @@ export default defineConfig([
     sourcemap: true,
     target: 'es2020',
     platform: 'neutral',
+    loader: {
+      '.svg': 'dataurl',
+    },
+    publicDir: path.resolve(__dirname, 'assets'),
     external: [
       /^react/,
       /^react-dom/,
@@ -50,6 +53,10 @@ export default defineConfig([
     sourcemap: true,
     target: 'es2020',
     platform: 'neutral',
+    loader: {
+      '.svg': 'dataurl',
+    },
+    publicDir: path.resolve(__dirname, 'assets'),
     external: [
       /^react/,
       /^react-dom/,

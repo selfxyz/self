@@ -1,13 +1,13 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { ReactNode } from 'react';
 import React, { createContext, useContext } from 'react';
 
+import type { AlertModalParams } from '@/components/AlertModal';
+import AlertModal from '@/components/AlertModal';
 import FeedbackModal from '@/components/FeedbackModal';
-import type { FeedbackModalScreenParams } from '@/components/FeedbackModalScreen';
-import FeedbackModalScreen from '@/components/FeedbackModalScreen';
 import type { FeedbackType } from '@/hooks/useFeedbackModal';
 import { useFeedbackModal } from '@/hooks/useFeedbackModal';
 
@@ -19,7 +19,7 @@ interface FeedbackContextType {
     name?: string,
     email?: string,
   ) => Promise<void>;
-  showModal: (params: FeedbackModalScreenParams) => void;
+  showModal: (params: AlertModalParams) => void;
 }
 
 const FeedbackContext = createContext<FeedbackContextType | undefined>(
@@ -50,13 +50,9 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({
     >
       {children}
 
-      <FeedbackModal
-        visible={isVisible}
-        onClose={hideFeedbackModal}
-        onSubmit={submitFeedback}
-      />
+      <FeedbackModal visible={isVisible} onClose={hideFeedbackModal} />
 
-      <FeedbackModalScreen
+      <AlertModal
         visible={isModalVisible}
         modalParams={modalParams}
         onHideModal={hideModal}

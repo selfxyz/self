@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -44,7 +44,7 @@ describe('parseScanResponse', () => {
     global.mockPlatformOS = 'ios';
   });
 
-  it.skip('parses iOS response', () => {
+  it('parses iOS response', () => {
     // Platform.OS is already mocked as 'ios' by default
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
@@ -65,7 +65,6 @@ describe('parseScanResponse', () => {
       `"{"dataGroupHashes":"{\\"DG1\\":{\\"sodHash\\":\\"abcd\\"},\\"DG2\\":{\\"sodHash\\":\\"1234\\"}}","eContentBase64":"ZWM=","signedAttributes":"c2E=","passportMRZ":"P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14","signatureBase64":"AQI=","dataGroupsPresent":[1,2],"passportPhoto":"photo","documentSigningCertificate":"{\\"PEM\\":\\"CERT\\"}"}"`,
     );
     const result = parseScanResponse(response);
-    console.log('Parsed Result:', result);
     expect(result).toMatchInlineSnapshot(`
       {
         "dg1Hash": [
@@ -108,7 +107,7 @@ describe('parseScanResponse', () => {
     expect(result.dg2Hash).toEqual([18, 52]);
   });
 
-  it.skip('parses Android response', () => {
+  it('parses Android response', () => {
     // Set Platform.OS to android for this test
     global.mockPlatformOS = 'android';
 

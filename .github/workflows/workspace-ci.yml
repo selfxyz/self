@@ -18,7 +18,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn
@@ -47,7 +47,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn
@@ -76,7 +76,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn
@@ -90,6 +90,12 @@ jobs:
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+
+      - name: Install SwiftLint
+        run: |
+          curl -sL "https://github.com/realm/SwiftLint/releases/download/0.57.1/swiftlint_linux.zip" -o /tmp/swiftlint.zip
+          unzip -o /tmp/swiftlint.zip -d /tmp/swiftlint
+          sudo install /tmp/swiftlint/swiftlint /usr/local/bin/swiftlint
 
       - name: Build workspace dependencies
         run: yarn build
@@ -106,7 +112,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn
@@ -147,7 +153,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Cache Yarn dependencies
         uses: ./.github/actions/cache-yarn
@@ -176,7 +182,7 @@ jobs:
   #   permissions:
   #     contents: read
   #   steps:
-  #     - uses: actions/checkout@v4
+  #     - uses: actions/checkout@v6
 
   #     - name: Cache Yarn dependencies
   #       uses: ./.github/actions/cache-yarn

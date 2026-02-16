@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -18,10 +18,8 @@ import React, {
 
 import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import analytics from '@/services/analytics';
+import { trackEvent } from '@/services/analytics';
 import type { Mnemonic } from '@/types/mnemonic';
-
-const { trackEvent } = analytics();
 
 type SignedPayload<T> = { signature: string; data: T };
 

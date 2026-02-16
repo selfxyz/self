@@ -11,9 +11,6 @@ async function build_aadhaar_ofac_smt() {
 
   // -----PASSPORT DATA-----
   console.log(`Reading data from ${baseInputPath}`);
-  const passports = JSON.parse(
-    fs.readFileSync(`${baseInputPath}passports.json`) as unknown as string
-  );
 
   // -----Aadhaar DATA-----
   console.log('\nBuilding Aadhaar Card SMTs...');

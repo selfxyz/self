@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
+import {console} from "hardhat/console.sol";
+
 /**
  * @title Formatter Library
  * @notice A library providing utility functions to format names, dates, and encode data.
@@ -187,6 +189,28 @@ library Formatter {
 
         uint256 index = 0;
         for (uint256 i = 0; i < 4; i++) {
+            uint256 element = publicSignals[i];
+            for (uint8 j = 0; j < bytesCount[i]; j++) {
+                bytesArray[index++] = bytes1(uint8(element & 0xff));
+                element = element >> 8;
+            }
+        }
+
+        return bytesArray;
+    }
+
+    function fieldElementsToBytesKyc(uint256[11] memory publicSignals) internal pure returns (bytes memory) {
+        for (uint256 i = 0; i < 11; i++) {
+            if (publicSignals[i] >= SNARK_SCALAR_FIELD) {
+                revert InvalidFieldElement();
+            }
+        }
+
+        uint8[11] memory bytesCount = [31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 25];
+        bytes memory bytesArray = new bytes(335);
+
+        uint256 index = 0;
+        for (uint256 i = 0; i < 11; i++) {
             uint256 element = publicSignals[i];
             for (uint8 j = 0; j < bytesCount[i]; j++) {
                 bytesArray[index++] = bytes1(uint8(element & 0xff));
@@ -425,6 +449,17 @@ library Formatter {
         timestamp += (day - 1) * 1 days;
 
         return timestamp;
+    }
+
+    function toTimeStampWithSeconds(
+        uint256 year,
+        uint256 month,
+        uint256 day,
+        uint256 hour,
+        uint256 minute,
+        uint256 second
+    ) internal pure returns (uint256) {
+        return toTimestamp(year, month, day) + hour * 1 hours + minute * 1 minutes + second * 1 seconds;
     }
 
     /**

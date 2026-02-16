@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -9,7 +9,6 @@ import {
   StyleSheet,
   Text as RNText,
 } from 'react-native';
-import { SystemBars } from 'react-native-edge-to-edge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, YStack } from 'tamagui';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -26,8 +25,9 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot, dinotBold } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import LogoWhite from '@/assets/icons/logo_white.svg';
 import GratificationBg from '@/assets/images/gratification_bg.svg';
+import SelfLogo from '@/assets/logos/self.svg';
+import { SystemBars } from '@/components/SystemBars';
 import type { RootStackParamList } from '@/navigation';
 
 const GratificationScreen: React.FC = () => {
@@ -160,7 +160,7 @@ const GratificationScreen: React.FC = () => {
         >
           {/* Logo icon */}
           <View marginBottom={12} style={styles.logoContainer}>
-            <LogoWhite width={37} height={37} />
+            <SelfLogo width={37} height={37} />
           </View>
 
           {/* Points display */}

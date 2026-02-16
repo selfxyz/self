@@ -1,9 +1,11 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import KycSuccessScreen from '@/screens/kyc/KycSuccessScreen';
+import KYCVerifiedScreen from '@/screens/kyc/KYCVerifiedScreen';
 import AccountVerifiedSuccessScreen from '@/screens/onboarding/AccountVerifiedSuccessScreen';
 import DisclaimerScreen from '@/screens/onboarding/DisclaimerScreen';
 import SaveRecoveryPhraseScreen from '@/screens/onboarding/SaveRecoveryPhraseScreen';
@@ -25,6 +27,20 @@ const onboardingScreens = {
   },
   AccountVerifiedSuccess: {
     screen: AccountVerifiedSuccessScreen,
+    options: {
+      headerShown: false,
+      animation: 'slide_from_bottom',
+    } as NativeStackNavigationOptions,
+  },
+  KycSuccess: {
+    screen: KycSuccessScreen,
+    options: {
+      headerShown: false,
+      animation: 'slide_from_bottom',
+    } as NativeStackNavigationOptions,
+  },
+  KYCVerified: {
+    screen: KYCVerifiedScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',

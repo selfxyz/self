@@ -630,6 +630,26 @@
       "types": "./dist/esm/src/utils/ofac.d.ts",
       "import": "./dist/esm/src/utils/ofac.js",
       "require": "./dist/cjs/src/utils/ofac.cjs"
+    },
+    "./utils/kyc/generateInputs": {
+      "import": {
+        "types": "./dist/esm/src/utils/kyc/generateInputs.d.ts",
+        "default": "./dist/esm/src/utils/kyc/generateInputs.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/utils/kyc/generateInputs.d.ts",
+        "default": "./dist/cjs/src/utils/kyc/generateInputs.cjs"
+      }
+    },
+    "./utils/kyc/constants": {
+      "import": {
+        "types": "./dist/esm/src/utils/kyc/constants.d.ts",
+        "default": "./dist/esm/src/utils/kyc/constants.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/utils/kyc/constants.d.ts",
+        "default": "./dist/cjs/src/utils/kyc/constants.cjs"
+      }
     }
   },
   "main": "./dist/cjs/index.cjs",
@@ -665,10 +685,12 @@
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@openpassport/zk-kit-smt": "^0.0.1",
-    "@peculiar/x509": "^1.12.3",
+    "@peculiar/x509": "^1.14.3",
     "@stablelib/cbor": "^2.0.1",
+    "@zk-kit/baby-jubjub": "^1.0.3",
+    "@zk-kit/eddsa-poseidon": "^1.1.0",
     "asn1.js": "^5.4.1",
-    "asn1js": "^3.0.5",
+    "asn1js": "^3.0.7",
     "axios": "^1.7.2",
     "buffer": "^6.0.3",
     "country-emoji": "^1.5.6",
@@ -684,7 +706,7 @@
     "jsrsasign": "^11.1.0",
     "node-forge": "github:remicolin/forge#17a11a632dd0e50343b3b8393245a2696f78afbb",
     "path": "^0.12.7",
-    "pkijs": "^3.2.4",
+    "pkijs": "^3.3.3",
     "poseidon-lite": "^0.2.0",
     "snarkjs": "^0.7.5",
     "typescript-parser": "^2.6.1",
@@ -705,10 +727,10 @@
     "eslint-plugin-sort-exports": "^0.9.1",
     "prettier": "^3.5.3",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.2",
+    "typescript": "^5.9.3",
     "vitest": "^2.1.8"
   },
-  "packageManager": "yarn@4.6.0",
+  "packageManager": "yarn@4.12.0",
   "engines": {
     "node": ">=22 <23"
   }

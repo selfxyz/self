@@ -16,7 +16,7 @@ name: Mobile Deploy
 #   - This allows testing from feature branches before merging to dev/staging
 #
 # Version Bump PR: After successful build, creates PR to bump version
-#   - Default target: 'dev' branch (can be overridden with bump_target_branch input)
+#   - Target: 'dev' branch
 #   - Workflow checks out the target branch, applies version changes, and creates PR
 #   - This separates the build source from the version bump destination
 #
@@ -25,8 +25,6 @@ name: Mobile Deploy
 #      - Merge PR to staging → builds from staging → creates version bump PR to dev
 #   2. Testing from feature branch:
 #      - Manually trigger from feature branch → builds from feature branch → creates version bump PR to dev
-#   3. Custom version bump target:
-#      - Set bump_target_branch input → creates version bump PR to specified branch instead of dev
 
 env:
   # Build environment versions
@@ -35,7 +33,7 @@ env:
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 35
   ANDROID_NDK_VERSION: 27.0.12077973
-  XCODE_VERSION: 16.4
+  XCODE_VERSION: 26
 
   # Cache versioning - increment these to bust caches when needed
   GH_CACHE_VERSION: v1 # Global cache version
@@ -99,11 +97,6 @@ on:
         required: false
         type: boolean
         default: false
-      bump_target_branch:
-        description: "Target branch for version bump PR (default: dev). NOTE: This is where the version bump PR will be created, NOT the branch to build from. The workflow always builds from the triggering branch."
-        required: false
-        type: string
-        default: "dev"
 
   pull_request:
     types: [closed]
@@ -168,7 +161,7 @@ jobs:
       version_bump_type: ${{ steps.determine-bump.outputs.version_bump }}
       platform: ${{ steps.determine-platform.outputs.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           # Build from the branch that triggered the workflow (staging, feature branch, etc.)
@@ -265,7 +258,8 @@ jobs:
 
   build-ios:
     needs: [bump-version]
-    runs-on: macos-latest-large
+    # runs-on: macos-latest-large
+    runs-on: namespace-profile-apple-silicon-6cpu
     permissions:
       contents: read
       actions: write
@@ -291,7 +285,7 @@ jobs:
             fi
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           # Checkout the branch that triggered the workflow
@@ -430,6 +424,21 @@ jobs:
           fi
 
           echo "✅ Lock files exist"
+      - name: Check Java installation
+        run: |
+          echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"
+          if command -v java &> /dev/null && java -version &> /dev/null; then
+            echo "Java already installed: $(java -version 2>&1 | head -n 1)"
+          else
+            echo "Java not found or not working, will install..."
+            echo "INSTALL_JAVA=true" >> "$GITHUB_ENV"
+          fi
+      - name: Setup Java environment
+        if: env.INSTALL_JAVA == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
       - name: Generate token for self repositories
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: ./.github/actions/generate-github-token
@@ -872,7 +881,7 @@ jobs:
             fi
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: inputs.platform != 'ios'
         with:
           fetch-depth: 0
@@ -1282,11 +1291,11 @@ jobs:
     env:
       APP_PATH: ${{ github.workspace }}/app
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          # Checkout target branch for version bump PR (default: dev, override with bump_target_branch input)
-          ref: ${{ inputs.bump_target_branch || 'dev' }}
+          # Checkout target branch for version bump PR (always dev)
+          ref: "dev"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -1398,7 +1407,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ needs.bump-version.outputs.version }}"
-          TARGET_BRANCH="${{ inputs.bump_target_branch || 'dev' }}"
+          TARGET_BRANCH="dev"
           # Add timestamp to branch name to avoid collisions
           TIMESTAMP=$(date +%s%N | cut -b1-13)  # Milliseconds since epoch (13 digits)
           BRANCH_NAME="ci/bump-mobile-version-${VERSION}-${TIMESTAMP}"
@@ -1471,11 +1480,11 @@ jobs:
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
       (inputs.deployment_track == 'production')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          # Checkout target branch for tagging (usually dev)
-          ref: ${{ inputs.bump_target_branch || 'dev' }}
+          # Checkout target branch for tagging (always dev)
+          ref: "dev"
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git

@@ -172,6 +172,10 @@ platform :ios do
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
 
+    if local_development && version_bump != "skip"
+      Fastlane::Helpers.bump_local_build_number("ios")
+    end
+
     # Read build number from version.json (already set by CI or local version-manager.cjs)
     build_number = Fastlane::Helpers.get_ios_build_number
     UI.message("📦 Using iOS build number: #{build_number}")
@@ -310,17 +314,13 @@ platform :android do
     # Uploads must be done by CI/CD machines with proper authentication
     if local_development && !skip_upload
       skip_upload = true
-      UI.important("🏠 LOCAL DEVELOPMENT: Automatically skipping Play Store upload")
-      UI.important("   Uploads require CI/CD machine permissions and will be handled automatically")
+      UI.important("🏠 LOCAL DEVELOPMENT: Play Store uploads are disabled")
+      UI.important("   Upload the AAB manually in the Play Console after the build finishes")
     end
 
     if local_development
       if ENV["ANDROID_KEYSTORE_PATH"].nil?
         ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.android_create_keystore(android_keystore_path)
-      end
-
-      if ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"].nil?
-        ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"] = Fastlane::Helpers.android_create_play_store_key(android_play_store_json_key_path)
       end
     end
 
@@ -332,10 +332,12 @@ platform :android do
       "ANDROID_KEY_PASSWORD",
       "ANDROID_PACKAGE_NAME",
     ]
-    # Only require JSON key path when not running in CI (local development)
-    required_env_vars << "ANDROID_PLAY_STORE_JSON_KEY_PATH" if local_development
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
+
+    if local_development && version_bump != "skip"
+      Fastlane::Helpers.bump_local_build_number("android")
+    end
 
     # Read version code from version.json (already set by CI or local version-manager.cjs)
     version_code = Fastlane::Helpers.get_android_build_number
@@ -353,13 +355,6 @@ platform :android do
     target_platform = options[:track] == "production" ? "Google Play" : "Internal Testing"
     should_upload = Fastlane::Helpers.should_upload_app(target_platform)
 
-    # Validate JSON key only in local development; CI uses Workload Identity Federation (ADC)
-    if local_development
-      validate_play_store_json_key(
-        json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
-      )
-    end
-
     Fastlane::Helpers.with_retry(max_retries: 3, delay: 10) do
       gradle(
         task: "clean bundleRelease --stacktrace --info",
@@ -376,6 +371,9 @@ platform :android do
     if test_mode || skip_upload
       if skip_upload
         UI.important("🔨 BUILD ONLY: Skipping Play Store upload")
+        if local_development
+          UI.important("📦 Manual upload required: #{android_aab_path}")
+        end
       else
         UI.important("🧪 TEST MODE: Skipping Play Store upload")
       end

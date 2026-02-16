@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -441,6 +441,14 @@ function displayWarningsAndGitStatus() {
 function displayFullConfirmation(platform, versions, deploymentMethod) {
   displayDeploymentHeader(platform);
   displayDeploymentMethod(deploymentMethod);
+  if (
+    deploymentMethod === DEPLOYMENT_METHODS.LOCAL_FASTLANE &&
+    (platform === PLATFORMS.ANDROID || platform === PLATFORMS.BOTH)
+  ) {
+    console.log(
+      `${CONSOLE_SYMBOLS.WARNING} Local Android uploads are disabled. You'll need to manually upload the AAB in Play Console.`,
+    );
+  }
   displayPlatformVersions(platform, versions);
   displayWarningsAndGitStatus();
 }
