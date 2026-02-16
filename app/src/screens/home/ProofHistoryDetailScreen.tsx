@@ -5,7 +5,9 @@
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
-import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
+import { CheckSquare2 } from '@tamagui/lucide-icons/icons/CheckSquare2';
+import { Info } from '@tamagui/lucide-icons/icons/Info';
+import { Wallet } from '@tamagui/lucide-icons/icons/Wallet';
 
 import {
   black,

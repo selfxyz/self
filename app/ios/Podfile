@@ -4,11 +4,13 @@ source "https://cdn.cocoapods.org/"
 unless ENV["E2E_TESTING"] == "1"
   source "https://github.com/SumSubstance/Specs.git"
 
-  # Enable Fisherman (Device Intelligence) module
-  ENV["IDENSIC_WITH_FISHERMAN"] = "true"
+  # Fisherman (Device Intelligence) — disabled to reduce binary size (~22MB pods)
+  # Re-enable when device fingerprinting is needed for Sumsub flows
+  # ENV["IDENSIC_WITH_FISHERMAN"] = "true"
 
-  # Enable VideoIdent module
-  ENV["IDENSIC_WITH_VIDEOIDENT"] = "true"
+  # VideoIdent — disabled to reduce binary size (~3-5MB in final binary)
+  # Re-enable when VideoIdent verification is needed
+  # ENV["IDENSIC_WITH_VIDEOIDENT"] = "true"
 end
 
 use_frameworks!
@@ -29,8 +31,9 @@ IOS_DEPLOYMENT_TARGET = "15.1"
 platform :ios, IOS_DEPLOYMENT_TARGET if !ENV["ACT"]
 prepare_react_native_project!
 
-flipper_enabled = ENV["NO_FLIPPER"] != "1"
-flipper_config = { "Flipper" => flipper_enabled ? "~> 0.125.0" : nil }
+# Flipper disabled — RN 0.76+ uses the new debugging architecture
+flipper_enabled = false
+flipper_config = { "Flipper" => nil }
 
 linkage = ENV["USE_FRAMEWORKS"]
 if linkage != nil

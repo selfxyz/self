@@ -97,15 +97,15 @@
       "import": "./dist/svgs/icons/*.svg",
       "require": "./dist/svgs/icons/*.svg"
     },
-    "./animations/*.json": {
-      "react-native": "./dist/animations/*.json",
-      "import": "./dist/animations/*.json",
-      "require": "./dist/animations/*.json"
+    "./animations/*.lottie": {
+      "react-native": "./dist/animations/*.lottie",
+      "import": "./dist/animations/*.lottie",
+      "require": "./dist/animations/*.lottie"
     },
-    "./animations/loading/*.json": {
-      "react-native": "./dist/animations/loading/*.json",
-      "import": "./dist/animations/loading/*.json",
-      "require": "./dist/animations/loading/*.json"
+    "./animations/loading/*.lottie": {
+      "react-native": "./dist/animations/loading/*.lottie",
+      "import": "./dist/animations/loading/*.lottie",
+      "require": "./dist/animations/loading/*.lottie"
     }
   },
   "main": "./dist/cjs/index.cjs",

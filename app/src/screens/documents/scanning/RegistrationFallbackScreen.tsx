@@ -8,7 +8,8 @@ import { Button, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { HelpCircle, X } from '@tamagui/lucide-icons';
+import { HelpCircle } from '@tamagui/lucide-icons/icons/HelpCircle';
+import { X } from '@tamagui/lucide-icons/icons/X';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {

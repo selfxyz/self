@@ -5,7 +5,8 @@
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ExternalLink, X } from '@tamagui/lucide-icons';
+import { ExternalLink } from '@tamagui/lucide-icons/icons/ExternalLink';
+import { X } from '@tamagui/lucide-icons/icons/X';
 
 import { Button, XStack } from '@selfxyz/mobile-sdk-alpha/components';
 import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';

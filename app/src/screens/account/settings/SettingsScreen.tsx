@@ -11,7 +11,9 @@ import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Bug, FileText, Settings2 } from '@tamagui/lucide-icons';
+import { Bug } from '@tamagui/lucide-icons/icons/Bug';
+import { FileText } from '@tamagui/lucide-icons/icons/FileText';
+import { Settings2 } from '@tamagui/lucide-icons/icons/Settings2';
 
 import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
 import {

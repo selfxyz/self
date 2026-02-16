@@ -11,7 +11,6 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import loadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
 import {
   BodyText,
   Description,
@@ -22,8 +21,6 @@ import {
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import failAnimation from '@/assets/animations/proof_failed.json';
-import succesAnimation from '@/assets/animations/proof_success.json';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import {
   buttonTap,
@@ -35,6 +32,13 @@ import type { RootStackParamList } from '@/navigation';
 import { getWhiteListedDisclosureAddresses } from '@/services/points/utils';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
+
+/* eslint-disable @typescript-eslint/no-require-imports -- binary assets loaded by Metro */
+const loadingAnimation = require('@selfxyz/mobile-sdk-alpha/animations/loading/misc.lottie');
+
+const failAnimation = require('@/assets/animations/proof_failed.lottie');
+const succesAnimation = require('@/assets/animations/proof_success.lottie');
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 const SuccessScreen: React.FC = () => {
   const selfClient = useSelfClient();

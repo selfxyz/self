@@ -4,7 +4,8 @@
 
 import React, { useMemo } from 'react';
 import type { TextProps } from 'react-native';
-import { ChevronLeft, X } from '@tamagui/lucide-icons';
+import { ChevronLeft } from '@tamagui/lucide-icons/icons/ChevronLeft';
+import { X } from '@tamagui/lucide-icons/icons/X';
 
 import type { ViewProps } from '@selfxyz/mobile-sdk-alpha/components';
 import {

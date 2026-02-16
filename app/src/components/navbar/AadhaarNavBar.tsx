@@ -5,7 +5,8 @@
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
-import { ChevronLeft, HelpCircle } from '@tamagui/lucide-icons';
+import { ChevronLeft } from '@tamagui/lucide-icons/icons/ChevronLeft';
+import { HelpCircle } from '@tamagui/lucide-icons/icons/HelpCircle';
 
 import { Button, XStack, YStack } from '@selfxyz/mobile-sdk-alpha/components';
 import {

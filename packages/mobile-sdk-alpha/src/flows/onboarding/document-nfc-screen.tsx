@@ -6,7 +6,6 @@ import type LottieView from 'lottie-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Linking, NativeEventEmitter, NativeModules, Platform, StyleSheet } from 'react-native';
 import NfcManager from 'react-native-nfc-manager';
-import passportVerifyAnimation from 'src/animations/passport_verify.json';
 import { BodyText, PrimaryButton, SecondaryButton, Title, View, XStack } from 'src/components';
 import ButtonsContainer from 'src/components/ButtonsContainer';
 import { DelayedLottieView } from 'src/components/DelayedLottieView';
@@ -26,6 +25,9 @@ import { sanitizeErrorMessage } from 'src/utils/utils';
 import { v4 as uuidv4 } from 'uuid';
 
 import type { PassportData } from '@selfxyz/common';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const passportVerifyAnimation = require('src/animations/passport_verify.lottie');
 
 const emitter = Platform.OS === 'android' ? new NativeEventEmitter(NativeModules.nativeModule) : null;
 

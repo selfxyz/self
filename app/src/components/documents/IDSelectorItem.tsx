@@ -4,7 +4,7 @@
 
 import { Pressable } from 'react-native';
 import { Separator, Text, View, XStack, YStack } from 'tamagui';
-import { Check } from '@tamagui/lucide-icons';
+import { Check } from '@tamagui/lucide-icons/icons/Check';
 
 import {
   black,

@@ -5,19 +5,23 @@
 import type LottieView from 'lottie-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
-import { Check, ChevronDown } from '@tamagui/lucide-icons';
+import { Check } from '@tamagui/lucide-icons/icons/Check';
+import { ChevronDown } from '@tamagui/lucide-icons/icons/ChevronDown';
 
 import type {
   provingMachineCircuitType,
   ProvingStateType,
 } from '@selfxyz/mobile-sdk-alpha';
-import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
-import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
 import { slate200, slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import LoadingUI from '@/components/LoadingUI';
 import { getLoadingScreenText } from '@/proving/loadingScreenStateText';
+
+/* eslint-disable @typescript-eslint/no-require-imports -- binary assets loaded by Metro */
+const failAnimation = require('@selfxyz/mobile-sdk-alpha/animations/loading/fail.lottie');
+const proveLoadingAnimation = require('@selfxyz/mobile-sdk-alpha/animations/loading/prove.lottie');
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 const allProvingStates = [
   'idle',

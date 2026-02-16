@@ -5,7 +5,7 @@
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { HelpCircle } from '@tamagui/lucide-icons';
+import { HelpCircle } from '@tamagui/lucide-icons/icons/HelpCircle';
 
 import { slate100 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';

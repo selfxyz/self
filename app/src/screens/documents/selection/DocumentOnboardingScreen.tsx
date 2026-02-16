@@ -24,11 +24,13 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { getDocumentScanPrompt } from '@/utils/documentAttributes';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const passportOnboardingAnimation = require('@/assets/animations/passport_onboarding.lottie');
 
 const DocumentOnboardingScreen: React.FC = () => {
   const navigation = useNavigation();

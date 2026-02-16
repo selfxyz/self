@@ -29,7 +29,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { CircleHelp } from '@tamagui/lucide-icons';
+import { CircleHelp } from '@tamagui/lucide-icons/icons/CircleHelp';
 
 import type { PassportData } from '@selfxyz/common/types';
 import { sanitizeErrorMessage, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -51,7 +51,6 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
 import NFC_IMAGE from '@/assets/images/nfc.png';
 import { logNFCEvent } from '@/config/sentry';
 import { useErrorInjection } from '@/hooks/useErrorInjection';
@@ -79,6 +78,9 @@ import {
   SUPPORT_FORM_BUTTON_TEXT,
   SUPPORT_FORM_MESSAGE,
 } from '@/services/support';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const passportVerifyAnimation = require('@/assets/animations/passport_verify.lottie');
 
 const emitter =
   Platform.OS === 'android'

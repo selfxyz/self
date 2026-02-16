@@ -16,8 +16,6 @@ import {
   loadSelectedDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
-import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
 import {
   black,
   slate400,
@@ -30,6 +28,11 @@ import { loadingScreenProgress } from '@/integrations/haptics';
 import { getLoadingScreenText } from '@/proving/loadingScreenStateText';
 import { setupNotifications } from '@/services/notifications/notificationService';
 import { useSettingStore } from '@/stores/settingStore';
+
+/* eslint-disable @typescript-eslint/no-require-imports -- binary assets loaded by Metro */
+const failAnimation = require('@selfxyz/mobile-sdk-alpha/animations/loading/fail.lottie');
+const proveLoadingAnimation = require('@selfxyz/mobile-sdk-alpha/animations/loading/prove.lottie');
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 type LoadingScreenParams = {
   documentCategory?: DocumentCategory;

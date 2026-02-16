@@ -3,6 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 export const loadMiscAnimation = () =>
-  import('@selfxyz/mobile-sdk-alpha/animations/loading/misc.json');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+  Promise.resolve(require('@selfxyz/mobile-sdk-alpha/animations/loading/misc.lottie'));
 export const loadPassportAnimation = () =>
-  import('@/assets/animations/passport_verify.json');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+  Promise.resolve(require('@/assets/animations/passport_verify.lottie'));

@@ -6,6 +6,7 @@
   "scripts": {
     "analyze:bundle:android": "yarn build:deps && node ./scripts/bundle-analyze-ci.cjs android",
     "analyze:bundle:ios": "yarn build:deps && node ./scripts/bundle-analyze-ci.cjs ios",
+    "animations:convert": "node ./scripts/convert-to-dotlottie.mjs",
     "analyze:tree-shaking": "node ./scripts/analyze-tree-shaking.cjs imports",
     "analyze:tree-shaking:web": "yarn web:build && node ./scripts/analyze-tree-shaking.cjs web",
     "android": "yarn build:deps && yarn setup:android-deps && react-native run-android",
@@ -185,6 +186,7 @@
     "@babel/plugin-transform-private-methods": "^7.28.6",
     "@babel/preset-env": "^7.28.6",
     "@babel/preset-react": "^7.28.5",
+    "@dotlottie/dotlottie-js": "^1.6.2",
     "@react-native-community/cli": "^16.0.3",
     "@react-native/babel-preset": "0.76.9",
     "@react-native/eslint-config": "0.76.9",

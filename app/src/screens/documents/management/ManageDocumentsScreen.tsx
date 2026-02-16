@@ -8,7 +8,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Check, Eraser, HousePlus } from '@tamagui/lucide-icons';
+import { Check } from '@tamagui/lucide-icons/icons/Check';
+import { Eraser } from '@tamagui/lucide-icons/icons/Eraser';
+import { HousePlus } from '@tamagui/lucide-icons/icons/HousePlus';
 
 import type {
   DocumentCatalog,

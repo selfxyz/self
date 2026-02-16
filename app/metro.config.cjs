@@ -115,8 +115,8 @@ const config = {
     // Support package exports with conditions
     unstable_conditionNames: ['react-native', 'import', 'require'],
 
-    // SVG support
-    assetExts: assetExts.filter(ext => ext !== 'svg'),
+    // SVG support + dotLottie binary assets
+    assetExts: [...assetExts.filter(ext => ext !== 'svg'), 'lottie'],
     sourceExts: [...sourceExts, 'svg'],
 
     // Custom resolver to handle both .js imports in TypeScript and Node.js modules
@@ -130,6 +130,33 @@ const config = {
         workspaceRoot,
         'packages/mobile-sdk-alpha',
       );
+
+      // Deduplicate SDK animation imports — resolve to app's single copy when possible
+      if (
+        moduleName.startsWith('src/animations/') &&
+        /\.(json|lottie)$/.test(moduleName) &&
+        context.originModulePath?.includes('mobile-sdk-alpha')
+      ) {
+        // Try app's animations first (deduplication)
+        const relPath = moduleName.replace('src/animations/', '');
+        const appAnimPath = path.resolve(
+          projectRoot,
+          'src/assets/animations',
+          relPath,
+        );
+        if (fs.existsSync(appAnimPath)) {
+          return { type: 'sourceFile', filePath: appAnimPath };
+        }
+        // Fall back to SDK's own copy (for SDK-only animations like loading/*)
+        return {
+          type: 'sourceFile',
+          filePath: path.resolve(
+            workspaceRoot,
+            'packages/mobile-sdk-alpha',
+            moduleName,
+          ),
+        };
+      }
 
       // Custom resolver to handle Node.js modules and dynamic flow imports
       if (moduleName.startsWith('@selfxyz/mobile-sdk-alpha/')) {

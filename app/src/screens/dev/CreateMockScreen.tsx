@@ -20,7 +20,10 @@ import {
 } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
+import { ChevronDown } from '@tamagui/lucide-icons/icons/ChevronDown';
+import { Minus } from '@tamagui/lucide-icons/icons/Minus';
+import { Plus } from '@tamagui/lucide-icons/icons/Plus';
+import { X } from '@tamagui/lucide-icons/icons/X';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import { getCountryISO2 } from '@selfxyz/common/constants/countries';

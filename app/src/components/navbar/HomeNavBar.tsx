@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, XStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
-import { Clipboard as ClipboardIcon } from '@tamagui/lucide-icons';
+import { Clipboard as ClipboardIcon } from '@tamagui/lucide-icons/icons/Clipboard';
 
 import type { SelfApp } from '@selfxyz/common/utils/appType';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';

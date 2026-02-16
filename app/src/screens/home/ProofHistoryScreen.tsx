@@ -13,7 +13,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
+import { CheckSquare2 } from '@tamagui/lucide-icons/icons/CheckSquare2';
+import { Wallet } from '@tamagui/lucide-icons/icons/Wallet';
+import { XCircle } from '@tamagui/lucide-icons/icons/XCircle';
 
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 import {

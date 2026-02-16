@@ -6,7 +6,7 @@ import React, { useMemo, useState } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { Button, Sheet, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
-import { ChevronDown } from '@tamagui/lucide-icons';
+import { ChevronDown } from '@tamagui/lucide-icons/icons/ChevronDown';
 
 import {
   slate200,

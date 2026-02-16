@@ -3,7 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { ArrowLeft, ArrowRight, RotateCcw } from '@tamagui/lucide-icons';
+import { ArrowLeft } from '@tamagui/lucide-icons/icons/ArrowLeft';
+import { ArrowRight } from '@tamagui/lucide-icons/icons/ArrowRight';
+import { RotateCcw } from '@tamagui/lucide-icons/icons/RotateCcw';
 
 import { Button, XStack, YStack } from '@selfxyz/mobile-sdk-alpha/components';
 import { black, slate400 } from '@selfxyz/mobile-sdk-alpha/constants/colors';

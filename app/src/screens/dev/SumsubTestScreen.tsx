@@ -8,7 +8,7 @@ import { io, type Socket } from 'socket.io-client';
 import { Button, Text, XStack, YStack } from 'tamagui';
 import { SUMSUB_TEE_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
-import { ChevronLeft } from '@tamagui/lucide-icons';
+import { ChevronLeft } from '@tamagui/lucide-icons/icons/ChevronLeft';
 
 import {
   green500,

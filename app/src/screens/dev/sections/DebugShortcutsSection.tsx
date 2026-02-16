@@ -5,7 +5,7 @@
 import React from 'react';
 import { Button, Text, XStack, YStack } from 'tamagui';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ChevronRight } from '@tamagui/lucide-icons';
+import { ChevronRight } from '@tamagui/lucide-icons/icons/ChevronRight';
 
 import { slate200, slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';

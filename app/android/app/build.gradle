@@ -154,16 +154,6 @@ android {
         }
     }
 
-    // ABI splits to create per-architecture APKs
-    // Play Store will serve the right APK per device, reducing download size
-    splits {
-        abi {
-            enable true
-            reset()
-            include "arm64-v8a"
-            universalApk false
-        }
-    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -193,6 +183,7 @@ android {
         release {
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }

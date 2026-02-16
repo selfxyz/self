@@ -5,7 +5,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { Button, Sheet, Text, XStack, YStack } from 'tamagui';
-import { Check, ChevronDown } from '@tamagui/lucide-icons';
+import { Check } from '@tamagui/lucide-icons/icons/Check';
+import { ChevronDown } from '@tamagui/lucide-icons/icons/ChevronDown';
 
 import {
   slate200,
