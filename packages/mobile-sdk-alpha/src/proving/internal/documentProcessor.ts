@@ -257,7 +257,10 @@ export const validatingDocument = async (selfClient: SelfClient, deps: DocumentP
         return;
       }
     } else {
-      const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
+      if (!secret || typeof secret !== 'string') {
+        throw new Error('Secret is required and must be a string');
+      }
+      const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(passportData, secret, {
         getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
         getAltCSCA: (docType: DocumentCategory) => {
           if (docType === 'aadhaar') {

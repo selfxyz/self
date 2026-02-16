@@ -119,7 +119,10 @@ export const _startSocketIOStatusListener = (
 
       if (result.actorEvent) {
         if (result.actorEvent.type === 'PROVE_FAILURE') {
-          console.error('Proof generation/verification failed (status 3 or 5). Error code:', result.stateUpdate?.error_code);
+          console.error(
+            'Proof generation/verification failed (status 3 or 5). Error code:',
+            result.stateUpdate?.error_code,
+          );
         }
         getActor()?.send(result.actorEvent);
       }
