@@ -12,7 +12,7 @@ import { strict as assert } from 'assert';
 import { existsSync, rmSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -100,11 +100,15 @@ class TestRunner {
 // Helper to run the script and capture output
 function runScript(args, cwd = null) {
   try {
-    const result = execSync(`node ${SCRIPT_PATH} ${args}`, {
-      cwd: cwd || process.cwd(),
-      encoding: 'utf8',
-      stdio: 'pipe',
-    });
+    const result = execFileSync(
+      'node',
+      [SCRIPT_PATH, ...args.split(/\s+/).filter(Boolean)],
+      {
+        cwd: cwd || process.cwd(),
+        encoding: 'utf8',
+        stdio: 'pipe',
+      },
+    );
     return { stdout: result, stderr: '', exitCode: 0 };
   } catch (error) {
     return {
