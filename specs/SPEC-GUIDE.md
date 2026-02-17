@@ -2,6 +2,63 @@
 
 > How to write specs for the Self SDK project. Generic principles — portable to any project.
 
+## Quick Start
+
+Copy-paste one of these prompts to start a new spec session:
+
+**New overview spec (tier 1 — architecture):**
+
+```
+Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, and specs/TEMPLATE-OVERVIEW.md.
+Then analyze the codebase to create an overview spec for [PROJECT NAME].
+
+Before writing, research:
+- What modules/packages exist and their current state
+- Open PRs and in-progress work
+- Dependencies between components
+- What's done vs what's remaining
+
+Write the spec to specs/OVERVIEW.md using the template.
+Do not skip: north star, architecture diagram, module table, status checklist, system-level I/O.
+Run the review checklist from SPEC-GUIDE.md before finishing.
+```
+
+**New implementation spec (tier 2 — for a specific workstream):**
+
+```
+Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, specs/TEMPLATE-IMPLEMENTATION.md,
+and specs/OVERVIEW.md.
+Then analyze the codebase to create an implementation spec for [PERSON/SCOPE].
+
+Before writing, research:
+- The specific files this workstream will touch (read them, check line numbers)
+- Current test coverage and validation commands that actually run
+- Dependencies on other workstreams
+- What's already been implemented vs what remains
+
+Write the spec to specs/[person-scope]/SPEC.md using the template.
+Do not skip: problem table with file:line refs, I/O examples per task and chunk,
+files in/out of scope, token-budgeted chunks, definition of done.
+Run the review checklist from SPEC-GUIDE.md before finishing.
+```
+
+**Refactor an existing spec to match the new format:**
+
+```
+Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, and specs/TEMPLATE-IMPLEMENTATION.md.
+Then read the existing spec at specs/[OLD-SPEC].md.
+
+Refactor it to match the template format. Analyze the codebase to verify:
+- File references are accurate (correct paths and line numbers)
+- Status/completion percentages reflect current state
+- No stale or outdated information
+
+Add any missing sections: north star, I/O examples, files out of scope,
+token budgets per chunk, definition of done, review checklist pass.
+```
+
+---
+
 ## Why We Spec This Way
 
 Specs serve two audiences simultaneously:
