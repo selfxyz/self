@@ -55,7 +55,11 @@ public class DocumentsProviderImpl: NSObject {
     public func delete(id: String) {
         let sanitized = Self.sanitizeId(id)
         let fileURL = documentsDir.appendingPathComponent("doc_\(sanitized)")
-        try? fileManager.removeItem(at: fileURL)
+        do {
+            try fileManager.removeItem(at: fileURL)
+        } catch {
+            NSLog("SelfSDK-Documents: Failed to delete file 'doc_%@': %@", sanitized, error.localizedDescription)
+        }
     }
 
     /// Sanitize document ID to prevent path traversal attacks.

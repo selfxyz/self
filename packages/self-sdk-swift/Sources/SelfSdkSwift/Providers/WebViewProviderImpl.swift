@@ -81,7 +81,13 @@ public class WebViewProviderImpl: NSObject {
     @objc(evaluateJsJs:)
     public func evaluateJs(js: String) {
         DispatchQueue.main.async { [weak self] in
-            self?.webView?.evaluateJavaScript(js, completionHandler: nil)
+            self?.webView?.evaluateJavaScript(js) { _, error in
+                #if DEBUG
+                if let error = error {
+                    NSLog("SelfSDK-WebView: JS evaluation error: %@", error.localizedDescription)
+                }
+                #endif
+            }
         }
     }
 

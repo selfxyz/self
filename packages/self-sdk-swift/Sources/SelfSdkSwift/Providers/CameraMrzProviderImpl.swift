@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import AVFoundation
 import Foundation
 import UIKit
 
@@ -16,7 +17,7 @@ public class CameraMrzProviderImpl: NSObject {
     }
 
     @objc public func isAvailable() -> Bool {
-        return true // Camera is available on all iPhones
+        return AVCaptureDevice.default(for: .video) != nil
     }
 
     @objc(createCameraViewOnMrzDetected:onProgress:onError:)
