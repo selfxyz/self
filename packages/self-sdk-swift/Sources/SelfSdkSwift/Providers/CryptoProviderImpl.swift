@@ -7,13 +7,13 @@ import Security
 
 /// Swift implementation of CryptoProvider using Security framework (Secure Enclave/Keychain).
 /// Generates EC P-256 keys, signs with ECDSA-SHA256, and stores in Keychain.
-@objcMembers
 public class CryptoProviderImpl: NSObject {
 
     public override init() {
         super.init()
     }
 
+    @objc(generateKeyKeyRef:)
     public func generateKey(keyRef: String) {
         // Delete any existing key with this ref
         deleteKey(keyRef: keyRef)
@@ -38,6 +38,7 @@ public class CryptoProviderImpl: NSObject {
         }
     }
 
+    @objc(getPublicKeyKeyRef:)
     public func getPublicKey(keyRef: String) -> String? {
         guard let privateKey = loadPrivateKey(keyRef: keyRef) else { return nil }
         guard let publicKey = SecKeyCopyPublicKey(privateKey) else { return nil }
@@ -50,6 +51,7 @@ public class CryptoProviderImpl: NSObject {
         return publicKeyData.base64EncodedString()
     }
 
+    @objc(signKeyRef:data:)
     public func sign(keyRef: String, data: String) -> String? {
         guard let privateKey = loadPrivateKey(keyRef: keyRef) else { return nil }
         guard let dataBytes = Data(base64Encoded: data) else { return nil }
@@ -69,6 +71,7 @@ public class CryptoProviderImpl: NSObject {
         return signature.base64EncodedString()
     }
 
+    @objc(deleteKeyKeyRef:)
     public func deleteKey(keyRef: String) {
         let tag = keyRef.data(using: .utf8)!
 

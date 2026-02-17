@@ -6,17 +6,17 @@ import Foundation
 import UIKit
 
 /// Swift implementation of HapticProvider using UIKit feedback generators.
-@objcMembers
 public class HapticProviderImpl: NSObject {
 
     public override init() {
         super.init()
     }
 
-    public func isAvailable() -> Bool {
+    @objc public func isAvailable() -> Bool {
         return true // All modern iPhones support haptics
     }
 
+    @objc(triggerType:)
     public func trigger(type: String) {
         DispatchQueue.main.async {
             switch type {

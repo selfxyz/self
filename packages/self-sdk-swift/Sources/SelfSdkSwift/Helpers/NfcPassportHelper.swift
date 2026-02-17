@@ -142,14 +142,6 @@ public typealias NfcCompletionCallback = (Bool, String) -> Void
             callback(6, 90, "Processing passport data...")
         case .error:
             break
-        case .tagDetected:
-            callback(1, 5, "Passport detected...")
-        case .paceSuccess, .bacSuccess:
-            callback(2, 30, "Authentication succeeded")
-        case .bacStarted:
-            callback(2, 10, "Starting authentication...")
-        case .paceFailed:
-            callback(2, 10, "Trying alternative authentication...")
         case .activeAuthentication:
             callback(5, 85, "Verifying passport...")
         @unknown default:

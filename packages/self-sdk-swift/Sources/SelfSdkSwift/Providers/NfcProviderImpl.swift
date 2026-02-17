@@ -9,7 +9,6 @@ import CoreNFC
 #endif
 
 /// Swift implementation of NfcProvider wrapping NfcPassportHelper.
-@objcMembers
 public class NfcProviderImpl: NSObject {
 
     /// Retained during scan to prevent ARC deallocation
@@ -19,10 +18,11 @@ public class NfcProviderImpl: NSObject {
         super.init()
     }
 
-    public func isAvailable() -> Bool {
+    @objc public func isAvailable() -> Bool {
         return NfcPassportHelper.isNfcAvailable()
     }
 
+    @objc(scanPassportPassportNumber:dateOfBirth:dateOfExpiry:onProgress:onComplete:onError:)
     public func scanPassport(
         passportNumber: String,
         dateOfBirth: String,
@@ -61,7 +61,7 @@ public class NfcProviderImpl: NSObject {
         )
     }
 
-    public func cancelScan() {
+    @objc public func cancelScan() {
         nfcHelper = nil
     }
 }

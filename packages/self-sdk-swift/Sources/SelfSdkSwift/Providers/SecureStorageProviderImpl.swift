@@ -6,7 +6,6 @@ import Foundation
 import Security
 
 /// Swift implementation of SecureStorageProvider using iOS Keychain Services.
-@objcMembers
 public class SecureStorageProviderImpl: NSObject {
 
     private let service = "xyz.self.sdk"
@@ -15,6 +14,7 @@ public class SecureStorageProviderImpl: NSObject {
         super.init()
     }
 
+    @objc(getKey:)
     public func get(key: String) -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -34,6 +34,7 @@ public class SecureStorageProviderImpl: NSObject {
         return String(data: data, encoding: .utf8)
     }
 
+    @objc(setKey:value:)
     public func set(key: String, value: String) {
         guard let data = value.data(using: .utf8) else { return }
 
@@ -66,6 +67,7 @@ public class SecureStorageProviderImpl: NSObject {
         }
     }
 
+    @objc(removeKey:)
     public func remove(key: String) {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -76,7 +78,7 @@ public class SecureStorageProviderImpl: NSObject {
         SecItemDelete(query as CFDictionary)
     }
 
-    public func clear() {
+    @objc public func clear() {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,

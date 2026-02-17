@@ -6,7 +6,6 @@ import Foundation
 import UIKit
 
 /// Swift implementation of CameraMrzProvider wrapping MrzCameraHelper.
-@objcMembers
 public class CameraMrzProviderImpl: NSObject {
 
     /// Retained during scan to prevent ARC deallocation
@@ -16,10 +15,11 @@ public class CameraMrzProviderImpl: NSObject {
         super.init()
     }
 
-    public func isAvailable() -> Bool {
+    @objc public func isAvailable() -> Bool {
         return true // Camera is available on all iPhones
     }
 
+    @objc(createCameraViewOnMrzDetected:onProgress:onError:)
     public func createCameraView(
         onMrzDetected: @escaping (String) -> Void,
         onProgress: @escaping (Any) -> Void,
@@ -55,7 +55,7 @@ public class CameraMrzProviderImpl: NSObject {
         return cameraView
     }
 
-    public func stopCamera() {
+    @objc public func stopCamera() {
         cameraHelper?.stopCamera()
         cameraHelper = nil
     }

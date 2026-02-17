@@ -8,7 +8,6 @@ import WebKit
 
 /// Swift implementation of WebViewProvider using WKWebView.
 /// Handles message passing between the WebView and the KMP bridge.
-@objcMembers
 public class WebViewProviderImpl: NSObject {
 
     private var webView: WKWebView?
@@ -22,6 +21,7 @@ public class WebViewProviderImpl: NSObject {
         super.init()
     }
 
+    @objc(createWebViewOnMessageReceived:isDebugMode:)
     public func createWebView(onMessageReceived: @escaping (String) -> Void, isDebugMode: Bool) -> UIView {
         // Clean up existing webView and script handlers before creating new one
         if let existingWebView = webView {
@@ -78,13 +78,14 @@ public class WebViewProviderImpl: NSObject {
         return wv
     }
 
+    @objc(evaluateJsJs:)
     public func evaluateJs(js: String) {
         DispatchQueue.main.async { [weak self] in
             self?.webView?.evaluateJavaScript(js, completionHandler: nil)
         }
     }
 
-    public func getViewController() -> UIViewController {
+    @objc public func getViewController() -> UIViewController {
         if let existingVC = viewController {
             return existingVC
         }

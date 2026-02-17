@@ -7,20 +7,19 @@ import LocalAuthentication
 
 /// Swift implementation of BiometricProvider using LocalAuthentication framework.
 /// Provides Face ID / Touch ID authentication.
-@objcMembers
 public class BiometricProviderImpl: NSObject {
 
     public override init() {
         super.init()
     }
 
-    public func isAvailable() -> Bool {
+    @objc public func isAvailable() -> Bool {
         let context = LAContext()
         var error: NSError?
         return context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
     }
 
-    public func getBiometryType() -> String {
+    @objc public func getBiometryType() -> String {
         let context = LAContext()
         var error: NSError?
         guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
@@ -46,6 +45,7 @@ public class BiometricProviderImpl: NSObject {
     ///   - reason: The reason string displayed to the user
     ///   - onSuccess: Called when authentication succeeds
     ///   - onError: Called with error message when authentication fails
+    @objc(authenticateReason:onSuccess:onError:)
     public func authenticate(reason: String, onSuccess: @escaping () -> Void, onError: @escaping (String) -> Void) {
         let context = LAContext()
         context.evaluatePolicy(

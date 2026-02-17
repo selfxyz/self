@@ -6,7 +6,6 @@ import Foundation
 
 /// Swift implementation of DocumentsProvider using FileManager with encrypted storage.
 /// Stores documents in Application Support/xyz.self.sdk/documents/.
-@objcMembers
 public class DocumentsProviderImpl: NSObject {
 
     private let fileManager = FileManager.default
@@ -31,24 +30,28 @@ public class DocumentsProviderImpl: NSObject {
         super.init()
     }
 
-    public func loadCatalog() -> String? {
+    @objc public func loadCatalog() -> String? {
         return readFile(name: "__catalog__")
     }
 
+    @objc(saveCatalogData:)
     public func saveCatalog(data: String) {
         writeFile(name: "__catalog__", content: data)
     }
 
+    @objc(loadByIdId:)
     public func loadById(id: String) -> String? {
         let sanitized = Self.sanitizeId(id)
         return readFile(name: "doc_\(sanitized)")
     }
 
+    @objc(saveId:document:)
     public func save(id: String, document: String) {
         let sanitized = Self.sanitizeId(id)
         writeFile(name: "doc_\(sanitized)", content: document)
     }
 
+    @objc(deleteId:)
     public func delete(id: String) {
         let sanitized = Self.sanitizeId(id)
         let fileURL = documentsDir.appendingPathComponent("doc_\(sanitized)")
