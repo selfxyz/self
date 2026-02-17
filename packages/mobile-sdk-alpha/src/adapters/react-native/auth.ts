@@ -35,6 +35,7 @@ export function createAuthAdapter(opts?: { keychainService?: string }): AuthAdap
 
   // Web/testing fallback — secrets live only in memory.
   const memoryStore = new Map<string, string>();
+  let warnedFallback = false;
 
   return {
     async getPrivateKey(): Promise<string | null> {
@@ -61,10 +62,13 @@ export function createAuthAdapter(opts?: { keychainService?: string }): AuthAdap
         }
 
         // In-memory fallback for web/testing
-        console.warn(
-          '[AuthAdapter] react-native-keychain unavailable — using volatile in-memory store. ' +
-            'This is expected on web but indicates a missing native dependency on iOS/Android.',
-        );
+        if (!warnedFallback) {
+          console.warn(
+            '[AuthAdapter] react-native-keychain unavailable — using volatile in-memory store. ' +
+              'This is expected on web but indicates a missing native dependency on iOS/Android.',
+          );
+          warnedFallback = true;
+        }
         let secret = memoryStore.get(service);
         if (!secret) {
           secret = generateSecret();

@@ -28,7 +28,10 @@ export function createNetworkAdapter(): NetworkAdapter {
           throw new Error('WebSocket is not available in this environment. Provide a WebSocket implementation.');
         }
 
-        const socket = new WebSocketImpl(url);
+        // React Native WebSocket accepts (url, protocols, options, headers)
+        const socket = opts?.headers
+          ? new (WebSocketImpl as any)(url, undefined, undefined, opts.headers)
+          : new WebSocketImpl(url);
 
         let abortHandler: (() => void) | null = null;
 
@@ -37,7 +40,9 @@ export function createNetworkAdapter(): NetworkAdapter {
             socket.close();
           };
 
-          if (typeof opts.signal.addEventListener === 'function') {
+          if (opts.signal.aborted) {
+            socket.close();
+          } else if (typeof opts.signal.addEventListener === 'function') {
             opts.signal.addEventListener('abort', abortHandler, { once: true });
           }
         }

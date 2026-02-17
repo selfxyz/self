@@ -1340,6 +1340,30 @@ cd app && npx react-native run-android
 
 4 of 6 chunks complete. Chunk 3D is explicitly optional per spec design — the proving machine's raw `WebSocket` usage works natively in browser/WebView contexts. Refactoring to `WsAdapter` remains a cleanliness improvement that can be picked up later for testability and host-level interception. **Chunk 3F is pending work** — it implements the web-native fallback adapters that allow the WebView to handle documents, crypto hashing, and analytics without bridging to native.
 
+### What's Left
+
+**Chunk 3F — Web Fallback Adapter Implementations (blocking for WebView integration)**
+
+The WebView engine needs browser-native adapters so it can handle documents, crypto hashing, and analytics without bridging to native for every operation. None of these exist yet:
+
+| Adapter | File to Create | Implementation |
+|---------|---------------|----------------|
+| `createIndexedDBDocumentsAdapter()` | `src/adapters/browser/documents.ts` | IndexedDB-backed `DocumentsAdapter` with two object stores (`documents`, `catalog`) |
+| `createWebCryptoAdapter()` | `src/adapters/browser/crypto.ts` | `crypto.subtle.digest` for `hash()`, `sign()` left to bridge adapter |
+| `createWebAnalyticsAdapter()` | `src/adapters/browser/analytics.ts` | `console.log` (dev) + `fetch` (prod) fire-and-forget |
+| `createNoOpHapticAdapter()` | `src/adapters/browser/haptic.ts` | Silent no-op |
+| Barrel export | `src/adapters/browser/index.ts` | Re-exports all browser adapter factories |
+
+Once created, `src/browser.ts` must re-export these factories so `webview-app` can import them.
+
+**Minor items from PR #1765 review:**
+
+| Item | Description | Location |
+|------|-------------|----------|
+| `proof` field never populated | `VERIFICATION_COMPLETE` event type includes `proof?: unknown` but all three emission sites (`completed`, `failure`, `error` states in `provingMachine.ts`) never pass proof data. Consumers will get `undefined`. | `src/proving/provingMachine.ts` — `emitVerificationComplete()` helper |
+| Remaining `__DEV__` references | PR replaced `__DEV__` with `config.debug` in attestation validation but there may be other `__DEV__` references in the proving machine or elsewhere. Audit needed. | `src/proving/provingMachine.ts` |
+| `plexMono` font hardcoded | Changed from `Platform.OS === 'ios' ? 'IBM Plex Mono' : 'IBMPlexMono-Regular'` to just `'IBMPlexMono-Regular'`. Architecturally correct (logical tokens) but may break iOS font rendering if the PostScript name differs. Needs verification on iOS device or a platform-aware `getFontFamily()` factory. | `src/constants/fonts.ts` |
+
 ### SDK vs App Gap Summary
 
 During audit, the following gaps were identified where the RN app (`app/`) reimplements functionality that the SDK (`mobile-sdk-alpha`) should ideally provide. These gaps define the backlog for future convergence specs.

@@ -785,3 +785,37 @@ function VerificationFlow({ selfApp, onComplete }) {
 | `packages/kmp-sdk/shared/src/androidMain/.../handlers/` | Android handler implementations (contract reference) |
 | `app/src/integrations/nfc/` | Existing RN NFC integration (port to NfcHandler) |
 | `packages/webview-app/dist/` | Vite output to bundle as assets |
+
+---
+
+## What's Left
+
+*Updated: 2026-02-17 after PR #1765 review*
+
+**Status: 0% implemented.** This spec was created in PR #1765 but no code was written for `packages/rn-sdk/`. The spec is complete and ready for implementation.
+
+### Implementation Backlog
+
+| Chunk | Description | Status | Dependencies |
+|-------|-------------|--------|--------------|
+| **4A** | Package setup + `<SelfVerification />` shell + `MessageRouter` + `LifecycleHandler` | **Not started** | SPEC-PERSON3-SDK-CORE Chunk 3F (web fallback adapters must exist for the WebView to work standalone) |
+| **4B** | `BiometricHandler` + `KeychainHandler` | **Not started** | Chunk 4A |
+| **4C** | `NfcHandler` + `CameraHandler` (hardware-dependent, requires physical device testing) | **Not started** | Chunk 4A |
+| **4D** | Asset bundling (copy Vite output into `assets/`) + npm publishing config | **Not started** | Chunks 4A-4C + `webview-app` Vite build working |
+
+### Pre-requisites from Other Specs
+
+Before starting RN SDK implementation:
+
+1. **`@selfxyz/webview-bridge`** must exist and export bridge protocol types (`BridgeRequest`, `BridgeResponse`, `BridgeEvent`, `BridgeDomain`). The RN SDK's `MessageRouter` imports from this package.
+2. **`@selfxyz/webview-app`** must produce a working Vite build (`dist/index.html` + bundle). This is bundled as the WebView content.
+3. **SPEC-PERSON3-SDK-CORE Chunk 3F** (web fallback adapters) should be complete so the WebView can handle documents/crypto/analytics without bridging to native for those capabilities.
+
+### What Already Exists (from PR #1765)
+
+The following pieces were implemented in `@selfxyz/mobile-sdk-alpha` (not in `rn-sdk`) and can be used by both the RN SDK's WebView engine and direct RN consumers:
+
+- `createReactNativeAdapters()` factory — composes auth, crypto, documents, network, scanner adapters for RN hosts
+- `VERIFICATION_COMPLETE` event — the RN SDK's `LifecycleHandler` will forward this to `onSuccess`/`onFailure` callbacks
+- `SdkInitialConfig` + `VerificationRequest` types — used by `LifecycleHandler.getConfig()`
+- Optional relay listener — the WebView inside `<SelfVerification />` won't use the relay socket; the host provides config directly via `lifecycle.getConfig()`
