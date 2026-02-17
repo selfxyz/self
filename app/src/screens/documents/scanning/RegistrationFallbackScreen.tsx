@@ -30,16 +30,13 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
-import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
+import {
+  type FallbackErrorSource,
+  useSumsubLauncher,
+} from '@/hooks/useSumsubLauncher';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
-
-type FallbackErrorSource =
-  | 'mrz_scan_failed'
-  | 'nfc_scan_failed'
-  | 'sumsub_initialization'
-  | 'sumsub_verification';
 
 type RegistrationFallbackRouteParams = {
   errorSource: FallbackErrorSource;

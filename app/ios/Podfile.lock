@@ -11,7 +11,6 @@ PODS:
   - DoubleConversion (1.1.6)
   - fast_float (6.1.4)
   - FBLazyVector (0.76.9)
-  - FingerprintPro (2.12.0)
   - Firebase (10.24.0):
     - Firebase/Core (= 10.24.0)
   - Firebase/Core (10.24.0):
@@ -154,9 +153,6 @@ PODS:
     - IdensicMobileSDK/Default (= 1.40.2)
   - IdensicMobileSDK/Core (1.40.2)
   - IdensicMobileSDK/Default (1.40.2):
-    - IdensicMobileSDK/Core
-  - IdensicMobileSDK/Fisherman (1.40.2):
-    - FingerprintPro (~> 2.11)
     - IdensicMobileSDK/Core
   - lottie-ios (4.5.0)
   - lottie-react-native (7.2.2):
@@ -1548,7 +1544,6 @@ PODS:
     - React-Core
   - react-native-mobilesdk-module (1.40.2):
     - IdensicMobileSDK (= 1.40.2)
-    - IdensicMobileSDK/Fisherman (= 1.40.2)
     - React-Core
   - react-native-netinfo (11.4.1):
     - React-Core
@@ -2314,7 +2309,6 @@ SPEC REPOS:
     - IdensicMobileSDK
   trunk:
     - AppAuth
-    - FingerprintPro
     - Firebase
     - FirebaseABTesting
     - FirebaseAnalytics
@@ -2553,7 +2547,6 @@ SPEC CHECKSUMS:
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 7605ea4810e0e10ae4815292433c09bf4324ba45
-  FingerprintPro: 035517a1b4e3e4fc073486b53b9956509010f8db
   Firebase: 91fefd38712feb9186ea8996af6cbdef41473442
   FirebaseABTesting: d87f56707159bae64e269757a6e963d490f2eebe
   FirebaseAnalytics: b5efc493eb0f40ec560b04a472e3e1a15d39ca13
@@ -2616,7 +2609,7 @@ SPEC CHECKSUMS:
   react-native-cloud-storage: 8d89f2bc574cf11068dfd90933905974087fb9e9
   react-native-compat: b80530ebcd3d574be5dd99cb27b984a17c119abc
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
-  react-native-mobilesdk-module: 08c16fea2be97669f8e4c38153106e5fe698126a
+  react-native-mobilesdk-module: 3f7f82852850be13fec4f2ff7307305c9bbdd1bc
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-nfc-manager: c8891e460b4943b695d63f7f4effc6345bbefc83
   react-native-passkey: 8853c3c635164864da68a6dbbcec7148506c3bcf
@@ -2672,6 +2665,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: 1259c7a8cbaccf7b4c3ddf8ee36ca11be9dee407
 
-PODFILE CHECKSUM: ced4db0072978f965783277bc810af9a7bebe695
+PODFILE CHECKSUM: cedf5ca27d7f48c93d789465b6271231fe99ac23
 
 COCOAPODS: 1.16.2
