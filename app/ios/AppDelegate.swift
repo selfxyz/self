@@ -51,11 +51,13 @@ class AppDelegate: EXAppDelegateWrapper, UNUserNotificationCenterDelegate {
     continue userActivity: NSUserActivity,
     restorationHandler: @escaping ([any UIUserActivityRestoring]?) -> Void
   ) -> Bool {
-    return RCTLinkingManager.application(
+    let expoHandled = super.application(application, continue: userActivity, restorationHandler: restorationHandler)
+    let rnHandled = RCTLinkingManager.application(
       application,
       continue: userActivity,
       restorationHandler: restorationHandler
     )
+    return expoHandled || rnHandled
   }
 
   override func application(
@@ -64,7 +66,9 @@ class AppDelegate: EXAppDelegateWrapper, UNUserNotificationCenterDelegate {
     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
     AnalyticsReactNative.trackDeepLink(url: url as NSURL, options: options)
-    return true
+    let expoHandled = super.application(app, open: url, options: options)
+    let rnHandled = RCTLinkingManager.application(app, open: url, options: options)
+    return expoHandled || rnHandled
   }
 
   // MARK: - Push Notifications
@@ -74,7 +78,6 @@ class AppDelegate: EXAppDelegateWrapper, UNUserNotificationCenterDelegate {
     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
   ) {
     let token = deviceToken.map { String(format: "%02X", $0) }.joined()
-    NSLog("APNs device token: %@", token)
 
     #if DEBUG
     Messaging.messaging().setAPNSToken(deviceToken, type: .sandbox)

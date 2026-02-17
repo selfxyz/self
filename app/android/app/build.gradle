@@ -189,7 +189,8 @@ android {
 
     packagingOptions {
         jniLibs {
-            // Use modern packaging so AGP can 16 KB-align uncompressed .so files
+            // Use legacy packaging (compressed, extracted at install) to ensure
+            // 16 KB page alignment — the OS aligns .so files during extraction.
             useLegacyPackaging true
             pickFirsts += ['**/libc++_shared.so']
         }
