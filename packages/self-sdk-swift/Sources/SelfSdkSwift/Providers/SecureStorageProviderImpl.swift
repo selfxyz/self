@@ -36,18 +36,33 @@ public class SecureStorageProviderImpl: NSObject {
     public func set(key: String, value: String) {
         guard let data = value.data(using: .utf8) else { return }
 
-        // Delete existing item first (upsert pattern)
-        remove(key: key)
-
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key,
+        ]
+
+        let attributes: [String: Any] = [
             kSecValueData as String: data,
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
         ]
 
-        SecItemAdd(query as CFDictionary, nil)
+        // Try to update existing item first
+        let updateStatus = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+
+        if updateStatus == errSecItemNotFound {
+            // Item doesn't exist, add it
+            var addQuery = query
+            addQuery[kSecValueData as String] = data
+            addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+
+            let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
+            if addStatus != errSecSuccess {
+                NSLog("SelfSDK-SecureStorage: SecItemAdd failed with status: %d", addStatus)
+            }
+        } else if updateStatus != errSecSuccess {
+            NSLog("SelfSDK-SecureStorage: SecItemUpdate failed with status: %d", updateStatus)
+        }
     }
 
     public func remove(key: String) {

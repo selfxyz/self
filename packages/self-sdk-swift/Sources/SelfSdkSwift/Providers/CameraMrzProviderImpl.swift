@@ -24,6 +24,9 @@ public class CameraMrzProviderImpl: NSObject {
         onProgress: @escaping (Any) -> Void,
         onError: @escaping (String) -> Void
     ) -> UIView {
+        // Stop any existing camera session before creating a new one
+        cameraHelper?.stopCamera()
+
         let helper = MrzCameraHelper()
         self.cameraHelper = helper
 

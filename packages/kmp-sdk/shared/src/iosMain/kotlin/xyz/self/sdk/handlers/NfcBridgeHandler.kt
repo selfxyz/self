@@ -14,6 +14,7 @@ import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.models.NfcScanProgress
+import xyz.self.sdk.models.NfcScanState
 import xyz.self.sdk.providers.SdkProviderRegistry
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -66,21 +67,11 @@ class NfcBridgeHandler(
                             is Number -> progressAny.toInt()
                             else -> 0
                         }
-                    val stepName =
-                        when (stateIndex) {
-                            0 -> "waiting_for_tag"
-                            1 -> "connecting"
-                            2 -> "authenticating"
-                            3 -> "reading_dg1"
-                            4 -> "reading_sod"
-                            5 -> "chip_auth"
-                            6 -> "building_result"
-                            7 -> "complete"
-                            else -> "unknown"
-                        }
-                    val progress = NfcScanProgress(stepName, stateIndex * 14, stepName)
-                    val progressJson = json.encodeToString(NfcScanProgress.serializer(), progress)
-                    val progressElement = json.parseToJsonElement(progressJson)
+                    val state = NfcScanState.entries.getOrNull(stateIndex)
+                    val stepName = state?.name?.lowercase() ?: "unknown"
+                    val percent = state?.percent ?: 0
+                    val progress = NfcScanProgress(stepName, percent, state?.message)
+                    val progressElement = json.encodeToJsonElement(NfcScanProgress.serializer(), progress)
                     router.pushEvent(BridgeDomain.NFC, "scanProgress", progressElement)
                 },
                 onComplete = { resultJson ->

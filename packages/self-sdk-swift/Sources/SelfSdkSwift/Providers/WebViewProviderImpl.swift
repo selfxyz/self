@@ -22,6 +22,15 @@ public class WebViewProviderImpl: NSObject {
     }
 
     public func createWebView(onMessageReceived: @escaping (String) -> Void, isDebugMode: Bool) -> UIView {
+        // Clean up existing webView and script handlers before creating new one
+        if let existingWebView = webView {
+            existingWebView.configuration.userContentController.removeScriptMessageHandler(forName: "SelfNativeIOS")
+            existingWebView.stopLoading()
+            existingWebView.removeFromSuperview()
+            self.webView = nil
+            self.viewController = nil
+        }
+
         self.onMessageReceived = onMessageReceived
 
         // Create message proxy to avoid retain cycle
@@ -59,6 +68,9 @@ public class WebViewProviderImpl: NSObject {
             // Load from app bundle
             if let htmlURL = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "self-sdk-web") {
                 wv.loadFileURL(htmlURL, allowingReadAccessTo: htmlURL.deletingLastPathComponent())
+            } else {
+                NSLog("SelfSDK-WebView: ERROR - index.html not found in self-sdk-web bundle directory")
+                assertionFailure("SelfSDK: index.html not found in self-sdk-web bundle directory. Ensure the web assets are included in the app bundle.")
             }
         }
 

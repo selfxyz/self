@@ -31,7 +31,7 @@ class IosWebViewHost(
     fun evaluateJs(js: String) {
         val provider =
             SdkProviderRegistry.webView
-                ?: return
+                ?: throw IllegalStateException("WebView provider not configured")
         provider.evaluateJs(js)
     }
 

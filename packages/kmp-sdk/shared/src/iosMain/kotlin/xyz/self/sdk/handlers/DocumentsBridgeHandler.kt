@@ -39,7 +39,12 @@ class DocumentsBridgeHandler : BridgeHandler {
             SdkProviderRegistry.documents
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "Documents provider not configured")
 
-        val catalogJson = provider.loadCatalog()
+        val catalogJson =
+            try {
+                provider.loadCatalog()
+            } catch (e: Exception) {
+                throw BridgeHandlerException("PROVIDER_ERROR", "Failed to load catalog: ${e.message}")
+            }
         return if (catalogJson != null) JsonPrimitive(catalogJson) else JsonNull
     }
 
@@ -52,7 +57,11 @@ class DocumentsBridgeHandler : BridgeHandler {
             params["data"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_DATA", "Catalog data parameter required")
 
-        provider.saveCatalog(catalogData)
+        try {
+            provider.saveCatalog(catalogData)
+        } catch (e: Exception) {
+            throw BridgeHandlerException("PROVIDER_ERROR", "Failed to save catalog: ${e.message}")
+        }
         return null
     }
 
@@ -65,7 +74,12 @@ class DocumentsBridgeHandler : BridgeHandler {
             params["id"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
 
-        val documentJson = provider.loadById(id)
+        val documentJson =
+            try {
+                provider.loadById(id)
+            } catch (e: Exception) {
+                throw BridgeHandlerException("PROVIDER_ERROR", "Failed to load document: ${e.message}")
+            }
         return if (documentJson != null) JsonPrimitive(documentJson) else JsonNull
     }
 
@@ -81,7 +95,11 @@ class DocumentsBridgeHandler : BridgeHandler {
             params["document"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_DOCUMENT", "Document parameter required")
 
-        provider.save(id, document)
+        try {
+            provider.save(id, document)
+        } catch (e: Exception) {
+            throw BridgeHandlerException("PROVIDER_ERROR", "Failed to save document: ${e.message}")
+        }
 
         return buildJsonObject {
             put("id", id)
@@ -98,7 +116,11 @@ class DocumentsBridgeHandler : BridgeHandler {
             params["id"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
 
-        provider.delete(id)
+        try {
+            provider.delete(id)
+        } catch (e: Exception) {
+            throw BridgeHandlerException("PROVIDER_ERROR", "Failed to delete document: ${e.message}")
+        }
         return null
     }
 }

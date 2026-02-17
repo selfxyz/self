@@ -13,7 +13,7 @@ public class CryptoProviderImpl: NSObject {
         super.init()
     }
 
-    public func generateKey(keyRef: String) {
+    public func generateKey(keyRef: String) throws {
         // Delete any existing key with this ref
         deleteKey(keyRef: keyRef)
 
@@ -33,7 +33,7 @@ public class CryptoProviderImpl: NSObject {
         guard SecKeyCreateRandomKey(attributes as CFDictionary, &error) != nil else {
             let errorDesc = error?.takeRetainedValue().localizedDescription ?? "Unknown error"
             NSLog("SelfSDK-Crypto: Key generation failed: %@", errorDesc)
-            return
+            throw NSError(domain: "SelfSDK-Crypto", code: -1, userInfo: [NSLocalizedDescriptionKey: "Key generation failed: \(errorDesc)"])
         }
     }
 
@@ -96,6 +96,6 @@ public class CryptoProviderImpl: NSObject {
         let status = SecItemCopyMatching(query as CFDictionary, &item)
 
         guard status == errSecSuccess else { return nil }
-        return (item as! SecKey)
+        return item as? SecKey
     }
 }

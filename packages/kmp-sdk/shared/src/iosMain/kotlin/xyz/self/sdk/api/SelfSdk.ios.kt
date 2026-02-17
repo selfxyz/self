@@ -85,7 +85,11 @@ actual class SelfSdk private constructor(
         webViewHost!!.createWebView()
 
         // Get the ViewController from the WebView provider and present it
-        val sdkVC = SdkProviderRegistry.webView!!.getViewController()
+        val sdkVC =
+            (
+                SdkProviderRegistry.webView
+                    ?: throw IllegalStateException("WebView provider not configured. Call SelfSdkSwift.configure() first.")
+            ).getViewController()
         sdkVC.setModalPresentationStyle(UIModalPresentationFullScreen)
 
         // Wire up dismiss action to dismiss the VC
@@ -96,7 +100,16 @@ actual class SelfSdk private constructor(
         }
 
         val topVC = findTopViewController()
-        topVC?.presentViewController(sdkVC, animated = true, completion = null)
+        if (topVC == null) {
+            callback.onFailure(
+                SelfSdkError(
+                    code = "NO_VIEW_CONTROLLER",
+                    message = "Could not find a top view controller to present the SDK UI.",
+                ),
+            )
+            return
+        }
+        topVC.presentViewController(sdkVC, animated = true, completion = null)
     }
 
     private fun findTopViewController(): UIViewController? {

@@ -30,8 +30,7 @@ class AnalyticsBridgeHandler : BridgeHandler {
 
     private fun trackEvent(params: Map<String, JsonElement>): JsonElement? {
         val eventName = params["event"]?.jsonPrimitive?.content ?: "unknown_event"
-        val properties = params["properties"]?.toString() ?: "{}"
-        NSLog("SelfSDK-Analytics: Event: %@, Properties: %@", eventName, properties)
+        NSLog("SelfSDK-Analytics: Event: %@", eventName)
         return null
     }
 

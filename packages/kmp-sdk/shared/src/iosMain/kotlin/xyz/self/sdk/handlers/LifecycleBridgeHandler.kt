@@ -17,8 +17,8 @@ import xyz.self.sdk.bridge.BridgeHandlerException
 class LifecycleBridgeHandler : BridgeHandler {
     override val domain = BridgeDomain.LIFECYCLE
 
-    var pendingCallback: SelfSdkCallback? = null
-    var dismissAction: (() -> Unit)? = null
+    internal var pendingCallback: SelfSdkCallback? = null
+    internal var dismissAction: (() -> Unit)? = null
 
     override suspend fun handle(
         method: String,

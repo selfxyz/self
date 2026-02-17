@@ -15,7 +15,14 @@ import Foundation
 /// import SelfSdkSwift  // This package
 ///
 /// // In your App init or AppDelegate:
-/// SelfSdkSwift.configure(registry: SdkProviderRegistry.shared)
+/// SdkProviderRegistry.shared.biometric = SelfSdkSwift.biometric
+/// SdkProviderRegistry.shared.secureStorage = SelfSdkSwift.secureStorage
+/// SdkProviderRegistry.shared.haptic = SelfSdkSwift.haptic
+/// SdkProviderRegistry.shared.crypto = SelfSdkSwift.crypto
+/// SdkProviderRegistry.shared.documents = SelfSdkSwift.documents
+/// SdkProviderRegistry.shared.webView = SelfSdkSwift.webView
+/// SdkProviderRegistry.shared.nfc = SelfSdkSwift.nfc
+/// SdkProviderRegistry.shared.cameraMrz = SelfSdkSwift.cameraMrz
 /// ```
 public final class SelfSdkSwift {
 

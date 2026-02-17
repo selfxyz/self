@@ -19,5 +19,7 @@ object SdkProviderRegistry {
             secureStorage != null &&
             crypto != null &&
             documents != null &&
+            nfc != null &&
+            cameraMrz != null &&
             webView != null
 }

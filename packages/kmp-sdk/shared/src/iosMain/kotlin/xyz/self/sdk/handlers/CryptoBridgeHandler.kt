@@ -61,7 +61,11 @@ class CryptoBridgeHandler : BridgeHandler {
             params["keyRef"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_KEY_REF", "keyRef parameter required")
 
-        provider.generateKey(keyRef)
+        try {
+            provider.generateKey(keyRef)
+        } catch (e: Exception) {
+            throw BridgeHandlerException("KEY_GENERATION_FAILED", "Key generation failed: ${e.message}")
+        }
 
         return buildJsonObject {
             put("keyRef", keyRef)

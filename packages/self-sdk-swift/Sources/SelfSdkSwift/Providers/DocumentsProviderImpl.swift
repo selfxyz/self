@@ -14,9 +14,13 @@ public class DocumentsProviderImpl: NSObject {
         let dir = appSupport.appendingPathComponent("xyz.self.sdk/documents", isDirectory: true)
 
         if !fileManager.fileExists(atPath: dir.path) {
-            try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true, attributes: [
-                .protectionKey: FileProtectionType.completeUntilFirstUserAuthentication
-            ])
+            do {
+                try fileManager.createDirectory(at: dir, withIntermediateDirectories: true, attributes: [
+                    .protectionKey: FileProtectionType.completeUntilFirstUserAuthentication
+                ])
+            } catch {
+                NSLog("SelfSDK-Documents: Failed to create documents directory: %@", error.localizedDescription)
+            }
         }
 
         return dir
@@ -35,16 +39,29 @@ public class DocumentsProviderImpl: NSObject {
     }
 
     public func loadById(id: String) -> String? {
-        return readFile(name: "doc_\(id)")
+        let sanitized = Self.sanitizeId(id)
+        return readFile(name: "doc_\(sanitized)")
     }
 
     public func save(id: String, document: String) {
-        writeFile(name: "doc_\(id)", content: document)
+        let sanitized = Self.sanitizeId(id)
+        writeFile(name: "doc_\(sanitized)", content: document)
     }
 
     public func delete(id: String) {
-        let fileURL = documentsDir.appendingPathComponent("doc_\(id)")
+        let sanitized = Self.sanitizeId(id)
+        let fileURL = documentsDir.appendingPathComponent("doc_\(sanitized)")
         try? fileManager.removeItem(at: fileURL)
+    }
+
+    /// Sanitize document ID to prevent path traversal attacks.
+    /// Strips path separators, parent directory references, and null bytes.
+    private static func sanitizeId(_ id: String) -> String {
+        return id
+            .replacingOccurrences(of: "..", with: "")
+            .replacingOccurrences(of: "/", with: "")
+            .replacingOccurrences(of: "\\", with: "")
+            .replacingOccurrences(of: "\0", with: "")
     }
 
     // MARK: - Private helpers
