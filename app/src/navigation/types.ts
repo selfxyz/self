@@ -96,6 +96,7 @@ export type DocumentRoutesParamList = {
         curveOrExponent?: string;
       }
     | undefined;
+  DataConfirmation: undefined;
   DocumentNFCScan:
     | {
         passportNumber?: string;

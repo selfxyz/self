@@ -16,6 +16,7 @@ import IdDetailsScreen from '@/screens/documents/management/IdDetailsScreen';
 import ManageDocumentsScreen from '@/screens/documents/management/ManageDocumentsScreen';
 import DocumentCameraScreen from '@/screens/documents/scanning/DocumentCameraScreen';
 import DocumentCameraTroubleScreen from '@/screens/documents/scanning/DocumentCameraTroubleScreen';
+import DataConfirmationScreen from '@/screens/documents/scanning/DataConfirmationScreen';
 import DocumentNFCMethodSelectionScreen from '@/screens/documents/scanning/DocumentNFCMethodSelectionScreen';
 import DocumentNFCScanScreen from '@/screens/documents/scanning/DocumentNFCScanScreen';
 import DocumentNFCTroubleScreen from '@/screens/documents/scanning/DocumentNFCTroubleScreen';
@@ -112,6 +113,15 @@ const documentsScreens = {
     screen: ConfirmBelongingScreen,
     options: {
       headerShown: false,
+    } as NativeStackNavigationOptions,
+  },
+  DataConfirmation: {
+    screen: DataConfirmationScreen,
+    options: {
+      header: HeadlessNavForEuclid,
+      statusBarHidden: DataConfirmationScreen.statusBar?.hidden,
+      statusBarStyle: DataConfirmationScreen.statusBar?.style,
+      headerShown: true,
     } as NativeStackNavigationOptions,
   },
   IdDetails: {

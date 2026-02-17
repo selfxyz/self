@@ -290,7 +290,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS, () => {
-      navigateIfReady('DocumentNFCScan');
+      navigateIfReady('DataConfirmation');
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
