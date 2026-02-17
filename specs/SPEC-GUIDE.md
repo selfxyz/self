@@ -123,9 +123,9 @@ Specs serve as prompts. Write them so an AI agent can produce a correct PR from 
 
 These are patterns that consistently produce high-quality specs. They are strong suggestions, not hard rules. If you skip one, document why in the **Spec Deviations** section of your spec.
 
-### 1. North Star at the Top
+### 1. North Star as Bullet Points
 
-Every spec opens with 2-3 sentences on why this project exists from a business/product perspective and one measurable success metric. This anchors every decision in the spec.
+Every spec opens with a bullet-point list (2-4 bullets) covering: business/product goal, measurable success metric, and key constraint. Use bullets, not a paragraph — they're faster to scan and harder to misread. This anchors every decision in the spec.
 
 ### 2. Architecture Diagram
 
@@ -195,6 +195,10 @@ Implementation specs list what the reader needs to know before starting: pattern
 ### 12. Cross-Links
 
 The overview links to all implementation specs. Each implementation spec links back to the overview and to sibling specs it depends on or coordinates with. No spec exists in isolation.
+
+### 13. Second-Person Viewpoint
+
+Implementation specs are written in second person, addressing the implementer directly. "You are building the native side of the SDK" not "The native side of the SDK will be built." This makes specs actionable — the reader knows they are the one doing the work. It also makes specs work as AI agent prompts without modification.
 
 ## Test Plan Guidance
 

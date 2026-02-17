@@ -7,8 +7,13 @@
 
 ## North Star
 
-<!-- Same project-level north star from the overview spec. Repeated here
-so the implementer never loses sight of why this work matters. -->
+<!-- Bullet-point list of what success looks like. Same project-level north
+star from the overview spec. Repeated here so the implementer never loses
+sight of why this work matters. Use 2-4 bullets, not a paragraph. -->
+
+- [Business/product goal — why this exists]
+- [Success metric — measurable outcome]
+- [Key constraint — the non-negotiable]
 
 ## Overview
 

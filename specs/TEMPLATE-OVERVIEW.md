@@ -6,10 +6,12 @@
 
 ## North Star
 
-<!-- 2-3 sentences. Why does this project exist from a business/product
-perspective? What does success look like? This anchors every decision. -->
+<!-- Bullet-point list. Why does this project exist? What does success look
+like? Use 2-4 bullets for easy scanning, not a paragraph. -->
 
-> **Success metric:** [One measurable outcome]
+- [Business/product goal — why this exists]
+- [Success metric — measurable outcome]
+- [Key constraint — the non-negotiable]
 
 ## Status Checklist
 
