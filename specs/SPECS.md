@@ -95,20 +95,6 @@
 | **Shared Utilities** | `common/` | TypeScript | Poseidon, Merkle trees, passport parsing, certificates | Production, used by all packages | **95%** | No changes needed |
 | **Self Wallet App** | `app/` | React Native | Full Self wallet (current production app) | Production | **N/A** | Eventually migrates to use the SDK WebView. For now, serves as **test environment** to validate moving code to the webview engine |
 
-## Specs: Keep / Modify / Delete
-
-| Spec | Current Status | Decision | Reason |
-|------|---------------|----------|--------|
-| `SPEC-OVERVIEW.md` | Exists | **MODIFY** | Update architecture to reflect optimized 5-handler model + RN WebView wrapper + Self Wallet migration path |
-| `SPEC-PERSON3-SDK-CORE.md` | 4/5 chunks done | **MODIFY** | Add: web fallback adapters (IndexedDB, Web Crypto), keychain bridge-only requirement |
-| `SPEC-KMP-SDK.md` | Exists | **MODIFY** | Reduce Android to 5 handlers (drop docs, crypto, analytics, haptic). Update iOS scope to 3 handlers |
-| `SPEC-WEBVIEW-UI.md` | Exists | **MODIFY** | Add: biometrics/camera adapter wiring, web fallback integration, dynamic proof items |
-| `SPEC-IOS-HANDLERS.md` | Exists | **MODIFY** | Reduce from 9 handlers to 3 (NFC, Biometrics, Lifecycle). Camera optional phase 2 |
-| `SPEC-PROVING-CLIENT.md` | Exists | **DELETE** | No native Kotlin proving — WebView handles all proving |
-| `SPEC-COMMON-LIB.md` | Exists | **DELETE** | No Kotlin Poseidon/tree port needed — stays in TypeScript inside WebView |
-| `SPEC-MINIPAY-SAMPLE.md` | Exists | **MODIFY** | Update to reflect simpler integration (5 handlers, not 9) |
-| **NEW: `SPEC-RN-SDK.md`** | — | **CREATE** | Spec for the `<SelfVerification />` RN WebView wrapper component |
-
 ## Native Handler Matrix
 
 What each native shell must implement, and what the WebView handles instead.
