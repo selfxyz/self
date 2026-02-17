@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -184,15 +184,23 @@ describe('ProvingScreenRouter', () => {
   });
 
   it('routes to the document selector when skipping is disabled', async () => {
-    const passport = createMetadata({
+    const passport1 = createMetadata({
       id: 'doc-1',
       documentType: 'us',
       isRegistered: true,
     });
+    const passport2 = createMetadata({
+      id: 'doc-2',
+      documentType: 'gb',
+      isRegistered: true,
+    });
     const catalog: DocumentCatalog = {
-      documents: [passport],
+      documents: [passport1, passport2],
     };
-    const allDocs = createAllDocuments([createDocumentEntry(passport)]);
+    const allDocs = createAllDocuments([
+      createDocumentEntry(passport1),
+      createDocumentEntry(passport2),
+    ]);
 
     mockLoadDocumentCatalog.mockResolvedValue(catalog);
     mockGetAllDocuments.mockResolvedValue(allDocs);

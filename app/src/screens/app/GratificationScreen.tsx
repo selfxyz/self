@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -9,7 +9,6 @@ import {
   StyleSheet,
   Text as RNText,
 } from 'react-native';
-import { SystemBars } from 'react-native-edge-to-edge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, YStack } from 'tamagui';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -28,6 +27,7 @@ import { dinot, dinotBold } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import GratificationBg from '@/assets/images/gratification_bg.svg';
 import SelfLogo from '@/assets/logos/self.svg';
+import { SystemBars } from '@/components/SystemBars';
 import type { RootStackParamList } from '@/navigation';
 
 const GratificationScreen: React.FC = () => {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -26,7 +26,7 @@ import { getDocumentTypeName } from '@/utils/documentUtils';
  *
  * This screen:
  * 1. Loads document catalog and counts valid documents
- * 2. Checks skip settings (skipDocumentSelector, skipDocumentSelectorIfSingle)
+ * 2. Checks skip settings (skipDocumentSelector, auto-skip on single document)
  * 3. Routes to appropriate screen:
  *    - No valid documents -> DocumentDataNotFound
  *    - Skip enabled -> auto-select and go to Prove
@@ -37,8 +37,7 @@ const ProvingScreenRouter: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { loadDocumentCatalog, getAllDocuments, setSelectedDocument } =
     usePassport();
-  const { skipDocumentSelector, skipDocumentSelectorIfSingle } =
-    useSettingStore();
+  const { skipDocumentSelector } = useSettingStore();
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const hasRoutedRef = useRef(false);
@@ -84,12 +83,13 @@ const ProvingScreenRouter: React.FC = () => {
 
       // Determine document type from first valid document for display
       const firstValidDoc = validDocuments[0];
-      const documentType = getDocumentTypeName(firstValidDoc?.documentCategory);
+      const documentType = getDocumentTypeName(
+        firstValidDoc?.documentCategory,
+        firstValidDoc?.idType,
+      );
 
       // Determine if we should skip the selector
-      const shouldSkip =
-        skipDocumentSelector ||
-        (skipDocumentSelectorIfSingle && validCount === 1);
+      const shouldSkip = skipDocumentSelector || validCount === 1;
 
       if (shouldSkip) {
         // Auto-select and navigate to Prove
@@ -134,7 +134,6 @@ const ProvingScreenRouter: React.FC = () => {
     navigation,
     setSelectedDocument,
     skipDocumentSelector,
-    skipDocumentSelectorIfSingle,
   ]);
 
   useFocusEffect(

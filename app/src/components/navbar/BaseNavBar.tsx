@@ -1,11 +1,9 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useMemo } from 'react';
 import type { TextProps } from 'react-native';
-import type { SystemBarStyle } from 'react-native-edge-to-edge';
-import { SystemBars } from 'react-native-edge-to-edge';
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 
 import type { ViewProps } from '@selfxyz/mobile-sdk-alpha/components';
@@ -15,6 +13,9 @@ import {
   View,
   XStack,
 } from '@selfxyz/mobile-sdk-alpha/components';
+
+import type { SystemBarStyle } from '@/components/SystemBars';
+import { SystemBars } from '@/components/SystemBars';
 
 interface NavBarProps extends ViewProps {
   children: React.ReactNode;

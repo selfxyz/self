@@ -23,12 +23,15 @@ export const formatRevealedDataPacked = (
     discloseIndices[attestationId].forbiddenCountriesListPackedIndex,
     discloseIndices[attestationId].forbiddenCountriesListPackedIndex + 4
   );
-  const issuingState = revealedDataPackedString
+  let issuingState = '';
+
+  issuingState = revealedDataPackedString
     .subarray(
       revealedDataIndices[attestationId].issuingStateStart,
       revealedDataIndices[attestationId].issuingStateEnd + 1
     )
     .toString('utf-8');
+
   const name = revealedDataPackedString
     .subarray(
       revealedDataIndices[attestationId].nameStart,
@@ -93,7 +96,7 @@ export const formatRevealedDataPacked = (
       .toString('utf-8');
   }
   let olderThan: string;
-  if (attestationId === 3) {
+  if (attestationId === 3 || attestationId === 4) {
     olderThan = revealedDataPackedString
       .subarray(
         revealedDataIndices[attestationId].olderThanStart,

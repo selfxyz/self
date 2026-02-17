@@ -256,11 +256,15 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
             if (!isAdded) {
                 return
             }
-            OcrUtils.processOcr(
-                results = results,
-                timeRequired = timeRequired,
-                callback = mrzListener
-            )
+            try {
+                OcrUtils.processOcr(
+                    results = results,
+                    timeRequired = timeRequired,
+                    callback = mrzListener
+                )
+            } catch (e: Exception) {
+                mrzListener.onFailure(e, timeRequired)
+            }
         }
 
         override fun onCanceled(timeRequired: Long) {

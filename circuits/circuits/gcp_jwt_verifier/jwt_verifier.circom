@@ -99,17 +99,20 @@ template FindRealMessageLength(maxLength) {
 template CountCharOccurrences(maxLength) {
     signal input in[maxLength];
     signal input char;
+    signal input endIndex; // Don't count beyond this index
     signal output count;
 
     signal match[maxLength];
     signal counter[maxLength];
+    signal shouldCount[maxLength];
 
     match[0] <== IsEqual()([in[0], char]);
     counter[0] <== match[0];
 
     for (var i = 1; i < maxLength; i++) {
+        shouldCount[i] <== LessThan(log2Ceil(maxLength))([i, endIndex]);
         match[i] <== IsEqual()([in[i], char]);
-        counter[i] <== counter[i-1] + match[i];
+        counter[i] <== counter[i-1] + match[i] * shouldCount[i];
     }
 
     count <== counter[maxLength-1];
@@ -182,12 +185,12 @@ template JWTVerifier(
     signal period <== ItemAtIndex(maxMessageLength)(message, periodIndex);
     period === 46;
 
-    // Assert that period is unique
-    signal periodCount <== CountCharOccurrences(maxMessageLength)(message, 46);
-    periodCount === 1;
-
     // Find the real message length
     signal realMessageLength <== FindRealMessageLength(maxMessageLength)(message);
+
+    // Assert that period is unique
+    signal periodCount <== CountCharOccurrences(maxMessageLength)(message, 46, realMessageLength);
+    periodCount === 1;
 
     // Calculate the length of the Base64 encoded header and payload
     signal b64HeaderLength <== periodIndex;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -35,14 +35,14 @@ interface PersistedSettingsState {
   setLoggingSeverity: (severity: LoggingSeverity) => void;
   setPointsAddress: (address: string | null) => void;
   setSkipDocumentSelector: (value: boolean) => void;
-  setSkipDocumentSelectorIfSingle: (value: boolean) => void;
   setSubscribedTopics: (topics: string[]) => void;
   setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
+  setUseStrongBox: (useStrongBox: boolean) => void;
   skipDocumentSelector: boolean;
-  skipDocumentSelectorIfSingle: boolean;
   subscribedTopics: string[];
   toggleCloudBackupEnabled: () => void;
   turnkeyBackupEnabled: boolean;
+  useStrongBox: boolean;
 }
 
 interface NonPersistedSettingsState {
@@ -143,9 +143,10 @@ export const useSettingStore = create<SettingsState>()(
       skipDocumentSelector: false,
       setSkipDocumentSelector: (value: boolean) =>
         set({ skipDocumentSelector: value }),
-      skipDocumentSelectorIfSingle: true,
-      setSkipDocumentSelectorIfSingle: (value: boolean) =>
-        set({ skipDocumentSelectorIfSingle: value }),
+
+      // StrongBox setting for Android keystore (default: false)
+      useStrongBox: false,
+      setUseStrongBox: (useStrongBox: boolean) => set({ useStrongBox }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,
