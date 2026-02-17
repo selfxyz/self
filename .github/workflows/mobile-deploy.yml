@@ -1314,39 +1314,11 @@ jobs:
           IOS_SUCCESS="${{ needs.build-ios.result }}"
           ANDROID_SUCCESS="${{ needs.build-android.result }}"
 
-          echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD, Android: $ANDROID_BUILD)"
+          echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD [$IOS_SUCCESS], Android: $ANDROID_BUILD [$ANDROID_SUCCESS])"
 
           # Update package.json, version.json, and platform build files
-          node scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
-
-          # Update version.json build numbers and deployment timestamps
-          node -e "
-            const fs = require('fs');
-            const version = JSON.parse(fs.readFileSync('version.json', 'utf8'));
-            const timestamp = new Date().toISOString();
-
-            // Only bump build numbers for successful builds
-            if ('$IOS_SUCCESS' === 'success') {
-              version.ios.build = $IOS_BUILD;
-              version.ios.lastDeployed = timestamp;
-              console.log('✅ Updated iOS build number to $IOS_BUILD and lastDeployed timestamp');
-            } else {
-              console.log('⏭️  Skipped iOS build number bump (build did not succeed)');
-            }
-
-            if ('$ANDROID_SUCCESS' === 'success') {
-              version.android.build = $ANDROID_BUILD;
-              version.android.lastDeployed = timestamp;
-              console.log('✅ Updated Android build number to $ANDROID_BUILD and lastDeployed timestamp');
-            } else {
-              console.log('⏭️  Skipped Android build number bump (build did not succeed)');
-            }
-
-            fs.writeFileSync('version.json', JSON.stringify(version, null, 2) + '\n');
-            console.log('✅ Updated version.json');
-          "
-
-          echo "✅ Versions applied successfully"
+          # Pass build results so the script only updates platforms that succeeded
+          node scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD" "$IOS_SUCCESS" "$ANDROID_SUCCESS"
 
       - name: Verify version changes
         run: |
