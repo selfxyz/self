@@ -34,6 +34,11 @@ packages/mobile-sdk-alpha/platforms/
 # Private Android modules (cloned at build time)
 app/android/android-passport-nfc-reader/
 
+# Swift Package Manager
+**/.build/
+**/.swiftpm/
+**/Package.resolved
+
 # Foundry
 contracts/out/
 contracts/cache_forge/
