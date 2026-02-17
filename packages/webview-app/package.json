@@ -19,6 +19,7 @@
     "react-native-web": "^0.19.13",
     "react-router-dom": "^6.28.0",
     "tamagui": "1.126.14",
+    "uuid": "^11.1.0",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

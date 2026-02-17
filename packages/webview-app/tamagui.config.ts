@@ -56,7 +56,12 @@ function makeFont(family: string, weight: Record<number, string>) {
 }
 
 const advercaseFont = makeFont('Advercase-Regular', { 4: '400' });
-const dinotFont = makeFont('DINOT-Medium', { 4: '400', 5: '500' });
+const dinotFont = makeFont('DINOT-Medium', {
+  4: '400',
+  5: '500',
+  7: '700',
+});
+const dinotBoldFont = makeFont('DINOT-Bold', { 4: '700', 7: '700' });
 const plexMonoFont = makeFont('IBMPlexMono-Regular', { 4: '400' });
 
 const appConfig = createTamagui({
@@ -65,6 +70,7 @@ const appConfig = createTamagui({
     ...config.fonts,
     advercase: advercaseFont,
     dinot: dinotFont,
+    dinotBold: dinotBoldFont,
     plexMono: plexMonoFont,
   },
 });
