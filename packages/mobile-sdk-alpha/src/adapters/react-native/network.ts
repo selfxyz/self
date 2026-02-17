@@ -89,9 +89,7 @@ export function createNetworkAdapter(): NetworkAdapter {
         return {
           send: (data: string | ArrayBufferView | ArrayBuffer) => {
             if (socket.readyState !== WebSocketImpl.OPEN) {
-              throw new Error(
-                `Cannot send data — WebSocket is not open (readyState=${socket.readyState}).`,
-              );
+              throw new Error(`Cannot send data — WebSocket is not open (readyState=${socket.readyState}).`);
             }
             socket.send(data);
           },
