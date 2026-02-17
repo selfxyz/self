@@ -204,7 +204,10 @@ describe('Real SDK Integration', () => {
     const syntheticPassportData = {
       // ... realistic but non-PII test data
     };
-    const result = isPassportDataValid(syntheticPassportData, validationCallbacks);
+    const result = isPassportDataValid(
+      syntheticPassportData,
+      validationCallbacks,
+    );
     expect(result).toBe(true); // Real validation, not mock
   });
 });

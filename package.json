@@ -24,7 +24,7 @@
     "docstrings:sdk": "yarn tsx scripts/docstring-report.ts \"packages/mobile-sdk-alpha/src/**/*.{ts,tsx}\" --label \"Mobile SDK Alpha\" --write-report docs/coverage/sdk.json",
     "format": "SKIP_BUILD_DEPS=1 yarn format:root && yarn format:github && SKIP_BUILD_DEPS=1 yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
     "format:github": "yarn prettier --parser yaml --write .github/**/*.yml --single-quote false",
-    "format:root": "echo 'format markdown' && yarn prettier --parser markdown --write '**/*.md'  && echo 'format yaml' && yarn prettier --parser yaml --write .*.{yml,yaml} --single-quote false && yarn prettier --write scripts/**/*.{js,mjs,ts} && yarn prettier --parser json --write scripts/**/*.json",
+    "format:root": "echo 'format markdown' && yarn prettier --config .prettierrc --parser markdown --write '**/*.md'  && echo 'format yaml' && yarn prettier --parser yaml --write .*.{yml,yaml} --single-quote false && yarn prettier --write scripts/**/*.{js,mjs,ts} && yarn prettier --parser json --write scripts/**/*.json",
     "gitleaks": "gitleaks protect --staged --redact --config=gitleaks-override.toml",
     "postinstall": "node scripts/run-patch-package.cjs",
     "kmp:android": "yarn workspace @selfxyz/kmp-test-app android",
