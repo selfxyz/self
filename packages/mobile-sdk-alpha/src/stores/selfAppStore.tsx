@@ -41,7 +41,7 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
   socket: null,
 
   _initSocket: (sessionId: string, relayUrl: string): Socket => {
-    const connectionUrl = relayUrl.startsWith('https') ? relayUrl.replace(/^https/, 'wss') : relayUrl;
+    const connectionUrl = relayUrl.replace(/^https/, 'wss').replace(/^http/, 'ws');
     const socketUrl = `${connectionUrl}/websocket`;
 
     // Create a new socket connection using the updated URL.

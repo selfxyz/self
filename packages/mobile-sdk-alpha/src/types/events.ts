@@ -186,7 +186,7 @@ export enum SdkEvents {
    * **Recommended:** WebView hosts should forward this payload to their
    * native lifecycle bridge (for example `lifecycle.setResult`).
    */
-  VERIFICATION_COMPLETE = 'verification_complete',
+  VERIFICATION_COMPLETE = 'VERIFICATION_COMPLETE',
 }
 
 /**

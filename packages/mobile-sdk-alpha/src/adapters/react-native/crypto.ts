@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { sha256 } from '@noble/hashes/sha256';
-
 import type { CryptoAdapter } from '../../types/public';
+
+import { sha256 } from '@noble/hashes/sha256';
 
 /**
  * Creates a {@link CryptoAdapter} using `@noble/hashes` for hashing.

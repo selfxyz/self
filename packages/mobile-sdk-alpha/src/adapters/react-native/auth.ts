@@ -61,6 +61,10 @@ export function createAuthAdapter(opts?: { keychainService?: string }): AuthAdap
         }
 
         // In-memory fallback for web/testing
+        console.warn(
+          '[AuthAdapter] react-native-keychain unavailable — using volatile in-memory store. ' +
+            'This is expected on web but indicates a missing native dependency on iOS/Android.',
+        );
         let secret = memoryStore.get(service);
         if (!secret) {
           secret = generateSecret();

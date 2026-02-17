@@ -11,12 +11,11 @@ import type {
   DocumentsAdapter,
   LoggerAdapter,
   NavigationAdapter,
-  NFCScannerAdapter,
   NetworkAdapter,
+  NFCScannerAdapter,
   StorageAdapter,
   TrackEventParams,
 } from '../../types/public';
-
 import { createAuthAdapter } from './auth';
 import { createCryptoAdapter } from './crypto';
 import { createDocumentsAdapter } from './documents';
