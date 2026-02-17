@@ -17,7 +17,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/nicklmg/NFCPassportReader.git", from: "3.0.0"),
+        .package(url: "git@github.com:selfxyz/NFCPassportReader.git", branch: "main"),
     ],
     targets: [
         .target(

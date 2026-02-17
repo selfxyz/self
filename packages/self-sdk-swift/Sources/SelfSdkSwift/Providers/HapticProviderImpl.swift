@@ -6,6 +6,7 @@ import Foundation
 import UIKit
 
 /// Swift implementation of HapticProvider using UIKit feedback generators.
+@objcMembers
 public class HapticProviderImpl: NSObject {
 
     public override init() {

@@ -7,13 +7,14 @@ import Security
 
 /// Swift implementation of CryptoProvider using Security framework (Secure Enclave/Keychain).
 /// Generates EC P-256 keys, signs with ECDSA-SHA256, and stores in Keychain.
+@objcMembers
 public class CryptoProviderImpl: NSObject {
 
     public override init() {
         super.init()
     }
 
-    public func generateKey(keyRef: String) throws {
+    public func generateKey(keyRef: String) {
         // Delete any existing key with this ref
         deleteKey(keyRef: keyRef)
 
@@ -33,7 +34,7 @@ public class CryptoProviderImpl: NSObject {
         guard SecKeyCreateRandomKey(attributes as CFDictionary, &error) != nil else {
             let errorDesc = error?.takeRetainedValue().localizedDescription ?? "Unknown error"
             NSLog("SelfSDK-Crypto: Key generation failed: %@", errorDesc)
-            throw NSError(domain: "SelfSDK-Crypto", code: -1, userInfo: [NSLocalizedDescriptionKey: "Key generation failed: \(errorDesc)"])
+            return
         }
     }
 
@@ -96,6 +97,6 @@ public class CryptoProviderImpl: NSObject {
         let status = SecItemCopyMatching(query as CFDictionary, &item)
 
         guard status == errSecSuccess else { return nil }
-        return item as? SecKey
+        return (item as! SecKey)
     }
 }

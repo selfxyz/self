@@ -7,6 +7,7 @@ import LocalAuthentication
 
 /// Swift implementation of BiometricProvider using LocalAuthentication framework.
 /// Provides Face ID / Touch ID authentication.
+@objcMembers
 public class BiometricProviderImpl: NSObject {
 
     public override init() {

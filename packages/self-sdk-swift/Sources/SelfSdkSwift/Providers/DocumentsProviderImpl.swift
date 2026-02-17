@@ -6,6 +6,7 @@ import Foundation
 
 /// Swift implementation of DocumentsProvider using FileManager with encrypted storage.
 /// Stores documents in Application Support/xyz.self.sdk/documents/.
+@objcMembers
 public class DocumentsProviderImpl: NSObject {
 
     private let fileManager = FileManager.default

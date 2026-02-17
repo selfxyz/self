@@ -9,6 +9,7 @@ import CoreNFC
 #endif
 
 /// Swift implementation of NfcProvider wrapping NfcPassportHelper.
+@objcMembers
 public class NfcProviderImpl: NSObject {
 
     /// Retained during scan to prevent ARC deallocation

@@ -6,6 +6,7 @@ import Foundation
 import UIKit
 
 /// Swift implementation of CameraMrzProvider wrapping MrzCameraHelper.
+@objcMembers
 public class CameraMrzProviderImpl: NSObject {
 
     /// Retained during scan to prevent ARC deallocation

@@ -6,6 +6,7 @@ import Foundation
 import Security
 
 /// Swift implementation of SecureStorageProvider using iOS Keychain Services.
+@objcMembers
 public class SecureStorageProviderImpl: NSObject {
 
     private let service = "xyz.self.sdk"

@@ -8,6 +8,7 @@ import WebKit
 
 /// Swift implementation of WebViewProvider using WKWebView.
 /// Handles message passing between the WebView and the KMP bridge.
+@objcMembers
 public class WebViewProviderImpl: NSObject {
 
     private var webView: WKWebView?
