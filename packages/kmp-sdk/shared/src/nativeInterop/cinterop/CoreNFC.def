@@ -1,0 +1,3 @@
+language = Objective-C
+modules = CoreNFC
+linkerOpts = -framework CoreNFC

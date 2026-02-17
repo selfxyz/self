@@ -9,6 +9,7 @@ const AttestationId = {
   E_PASSPORT: "0x0000000000000000000000000000000000000000000000000000000000000001",
   EU_ID_CARD: "0x0000000000000000000000000000000000000000000000000000000000000002",
   AADHAAR: "0x0000000000000000000000000000000000000000000000000000000000000003",
+  KYC: "0x0000000000000000000000000000000000000000000000000000000000000004",
 };
 
 // Circuit type mappings based on circuit names
@@ -21,6 +22,8 @@ const getCircuitType = (
       return { attestationId: AttestationId.EU_ID_CARD, typeId, circuitType: "register" };
     } else if (circuitName === "register_aadhaar") {
       return { attestationId: AttestationId.AADHAAR, typeId, circuitType: "register" };
+    } else if (circuitName === "register_kyc") {
+      return { attestationId: AttestationId.KYC, typeId, circuitType: "register" };
     } else {
       return { attestationId: AttestationId.E_PASSPORT, typeId, circuitType: "register" };
     }
@@ -33,6 +36,8 @@ const getCircuitType = (
       return { attestationId: AttestationId.EU_ID_CARD, typeId: 0, circuitType: "vc_and_disclose" };
     } else if (circuitName === "vc_and_disclose_aadhaar") {
       return { attestationId: AttestationId.AADHAAR, typeId: 0, circuitType: "vc_and_disclose" };
+    } else if (circuitName === "vc_and_disclose_kyc") {
+      return { attestationId: AttestationId.KYC, typeId: 0, circuitType: "vc_and_disclose" };
     } else {
       return { attestationId: AttestationId.E_PASSPORT, typeId: 0, circuitType: "vc_and_disclose" };
     }

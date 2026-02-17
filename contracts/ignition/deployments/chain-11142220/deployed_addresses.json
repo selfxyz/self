@@ -97,5 +97,13 @@
   "DeployHubV2#IdentityVerificationHub": "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74",
   "DeployNewHubAndUpgradee#IdentityVerificationHubV2": "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74",
   "DeployNewHubAndUpgradee#CustomVerifier": "0x2711E535D68D8B8729a7d126fEb13aEc0fe29A27",
-  "DeployNewHubAndUpgradee#IdentityVerificationHubImplV2": "0x48985ec4f71cBC8f387c5C77143110018560c7eD"
+  "DeployNewHubAndUpgradee#IdentityVerificationHubImplV2": "0x48985ec4f71cBC8f387c5C77143110018560c7eD",
+  "DeployKycRegistryModule#PCR0Manager": "0xf2810D5E9938816D42F0Ae69D33F013a23C0aED2",
+  "DeployKycRegistryModule#PoseidonT3": "0x163983BAe19dE94A007C6C502b7389F6C359C818",
+  "DeployKycRegistryModule#Verifier_gcp_jwt": "0x13ee8CEa15a262D81a245b37889F7b4bEd015f4c",
+  "DeployKycRegistryModule#IdentityRegistryKycImplV1": "0x94f6DE38E10140B9E3963a770B5B769b38459a3B",
+  "DeployKycRegistryModule#IdentityRegistry": "0x90e907E4AaB6e9bcFB94997Af4A097e8CAadBdf3",
+  "UpdateAllRegistries#PCR0Manager": "0xf2810D5E9938816D42F0Ae69D33F013a23C0aED2",
+  "UpdateAllRegistries#a3": "0x90e907E4AaB6e9bcFB94997Af4A097e8CAadBdf3",
+  "DeployAllVerifiers#Verifier_vc_and_disclose_kyc": "0xAAFA189a079D04462e8ab596d9c103e081A1c810"
 }

@@ -55,6 +55,7 @@ export type CircuitName =
   | "register_id_sha512_sha512_sha512_rsa_65537_4096"
   | "register_id_sha512_sha512_sha512_rsapss_65537_64_2048"
   | "register_aadhaar"
+  | "register_kyc"
   | "register_sha1_sha1_sha1_rsa_64321_4096"
   | "register_sha256_sha1_sha1_rsa_65537_4096"
   | "register_sha256_sha256_sha256_rsapss_65537_32_4096"
@@ -86,7 +87,8 @@ export type CircuitName =
   | "dsc_sha256_rsa_56611_4096"
   | "vc_and_disclose"
   | "vc_and_disclose_id"
-  | "vc_and_disclose_aadhaar";
+  | "vc_and_disclose_aadhaar"
+  | "vc_and_disclose_kyc";
 
 // Record mapping circuit names to numbers
 export const circuitIds: Record<CircuitName, [boolean, number]> = {
@@ -148,6 +150,7 @@ export const circuitIds: Record<CircuitName, [boolean, number]> = {
   register_sha256_sha256_sha256_rsapss_65537_32_4096: [true, 55],
   register_id_sha512_sha512_sha256_rsapss_65537_32_2048: [true, 56],
   register_sha512_sha512_sha256_rsapss_65537_32_2048: [true, 57],
+  register_kyc: [true, 58],
 
   dsc_sha1_ecdsa_brainpoolP256r1: [true, 0],
   dsc_sha1_rsa_65537_4096: [true, 1],
@@ -177,6 +180,7 @@ export const circuitIds: Record<CircuitName, [boolean, number]> = {
   vc_and_disclose: [true, 24],
   vc_and_disclose_id: [true, 25],
   vc_and_disclose_aadhaar: [true, 26],
+  vc_and_disclose_kyc: [true, 27],
 };
 
 export default buildModule("DeployAllVerifiers", (m) => {
