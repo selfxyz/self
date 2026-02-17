@@ -76,7 +76,7 @@ const SumsubTestScreen: React.FC = () => {
         setLoading(false);
       }
     }
-  }, [phoneNumber]);
+  }, []);
 
   const subscribeToWebSocket = useCallback(() => {
     if (!userId || hasSubscribedRef.current) {
