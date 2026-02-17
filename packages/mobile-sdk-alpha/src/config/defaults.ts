@@ -5,7 +5,7 @@
 import type { Config } from '../types/public';
 
 const detectDefaultPlatform = (): string => {
-  if (typeof navigator === 'undefined') {
+  if (typeof navigator === 'undefined' || !navigator.userAgent) {
     return 'unknown';
   }
 
