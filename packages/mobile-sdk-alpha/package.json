@@ -16,8 +16,9 @@
       "types": "./dist/esm/index.d.ts",
       "react-native": "./dist/esm/index.js",
       "browser": "./dist/esm/browser.js",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.cjs"
+      "import": "./dist/esm/browser.js",
+      "require": "./dist/cjs/index.cjs",
+      "default": "./dist/esm/browser.js"
     },
     "./browser": {
       "types": "./dist/esm/browser.d.ts",
@@ -106,6 +107,12 @@
       "react-native": "./dist/animations/loading/*.json",
       "import": "./dist/animations/loading/*.json",
       "require": "./dist/animations/loading/*.json"
+    },
+    "./adapters/react-native": {
+      "types": "./dist/esm/adapters/react-native/index.d.ts",
+      "react-native": "./dist/esm/adapters/react-native/index.js",
+      "import": "./dist/esm/adapters/react-native/index.js",
+      "require": "./dist/cjs/adapters/react-native/index.cjs"
     }
   },
   "main": "./dist/cjs/index.cjs",
@@ -150,6 +157,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",
+    "@noble/hashes": "^1.5.0",
     "@selfxyz/common": "workspace:^",
     "@selfxyz/euclid": "^0.6.1",
     "@xstate/react": "^5.0.5",
@@ -163,6 +171,7 @@
   },
   "devDependencies": {
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
+    "@react-native-async-storage/async-storage": "^2.1.2",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
@@ -184,7 +193,9 @@
     "react-dom": "^18.3.1",
     "react-native": "0.76.9",
     "react-native-blur-effect": "^1.1.3",
+    "react-native-get-random-values": "^1.11.0",
     "react-native-haptic-feedback": "^2.3.3",
+    "react-native-keychain": "^9.2.3",
     "react-native-localize": "^3.6.1",
     "react-native-svg": "15.12.1",
     "react-native-web": "^0.21.2",
@@ -194,14 +205,28 @@
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
+    "@react-native-async-storage/async-storage": ">=1.0.0",
     "lottie-react-native": "7.2.2",
     "react": "^18.3.1",
     "react-native": "0.76.9",
     "react-native-blur-effect": "^1.1.3",
+    "react-native-get-random-values": ">=1.0.0",
     "react-native-haptic-feedback": "*",
+    "react-native-keychain": ">=8.0.0",
     "react-native-localize": "*",
     "react-native-svg": "*",
     "react-native-webview": "^13.16.0"
+  },
+  "peerDependenciesMeta": {
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    },
+    "react-native-get-random-values": {
+      "optional": true
+    },
+    "react-native-keychain": {
+      "optional": true
+    }
   },
   "packageManager": "yarn@4.12.0",
   "publishConfig": {

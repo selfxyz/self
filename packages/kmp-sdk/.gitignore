@@ -8,3 +8,4 @@ build/
 *.log
 *.tmp
 local.properties
+shared/src/main/

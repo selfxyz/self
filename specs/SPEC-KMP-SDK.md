@@ -6,12 +6,29 @@
 |-------|-------------|--------|
 | 2A | KMP Setup + Bridge Protocol | ✅ Complete |
 | 2B | Android WebView Host | ✅ Complete |
-| 2C | Android Native Handlers | ✅ Complete (all 9) |
+| 2C | Android Native Handlers | ✅ Complete (5 of 9 needed — Documents, Crypto, Analytics, Haptic to be DELETED) |
 | 2D | iOS WebView Host + cinterop | ⚠️ Partial (cinterop blocked by Xcode SDK compatibility issues, stubs in place) |
-| 2E | iOS Native Handlers | ❌ Not Done (all 9 handlers are stubs throwing `NotImplementedError`) |
+| 2E | iOS Native Handlers | ❌ Not Done (only 3 needed: NFC, Biometrics, Lifecycle) |
 | 2F | SDK Public API + Test App | ⚠️ Partial (Android works end-to-end, iOS uses Swift workarounds via factory pattern in test app) |
 
-> **Note:** Remaining iOS handler work has moved to [SPEC-IOS-HANDLERS.md](./SPEC-IOS-HANDLERS.md) — uses a Swift wrapper pattern instead of cinterop. The native proving client (for headless SDK use without WebView) is specified in [SPEC-PROVING-CLIENT.md](./SPEC-PROVING-CLIENT.md). A MiniPay sample app demonstrating the headless flow is in [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md).
+> **Note:** Remaining iOS handler work has moved to [SPEC-IOS-HANDLERS.md](./SPEC-IOS-HANDLERS.md) — uses a Swift wrapper pattern instead of cinterop. A MiniPay sample app demonstrating the integration flow is in [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md).
+
+---
+
+## Web Fallback Migration
+
+Four Android handlers are being **deleted** because the WebView can handle their functionality using standard web APIs. This reduces native code, eliminates iOS porting work, and keeps behavior consistent across platforms.
+
+| Deleted Handler | LOC Removed | Web Fallback | Notes |
+|----------------|------------|--------------|-------|
+| **DocumentsBridgeHandler** | 146 LOC | IndexedDB | WebView stores documents in IndexedDB; no native file I/O needed |
+| **CryptoBridgeHandler** | 177 LOC | Web Crypto API | Hashing and key derivation run in Web Crypto; signing keys live in SecureStorage (native keychain), accessed via biometrics bridge |
+| **AnalyticsBridgeHandler** | 94 LOC | `console` / `fetch` | Analytics events logged via console or sent via fetch from the WebView; fire-and-forget |
+| **HapticBridgeHandler** | 94 LOC | Skipped | Haptic feedback is not critical to verification flow; WebView skips it |
+
+**Total savings:** 511 LOC deleted from Android, 6 fewer iOS handlers to build. See the Native Handler Matrix in [SPECS.md](./SPECS.md) for the full architecture rationale.
+
+> **Keychain note:** SecureStorage stays native because host apps (like MiniPay) control keychain access policy. The WebView must not have direct keychain access.
 
 ---
 
@@ -33,6 +50,12 @@ The KMP SDK:
 ## What to Delete First
 
 Delete `packages/kmp-shell/` entirely before starting. It was an experiment — the bridge protocol and handler pattern are sound, but the module structure needs to be rebuilt as a proper KMP SDK with Android target (not just JVM + iOS).
+
+Also delete these Android handlers (web fallbacks replace them):
+- `androidMain/handlers/DocumentsBridgeHandler.kt`
+- `androidMain/handlers/CryptoBridgeHandler.kt`
+- `androidMain/handlers/HapticBridgeHandler.kt`
+- `androidMain/handlers/AnalyticsBridgeHandler.kt`
 
 ---
 
@@ -75,13 +98,9 @@ packages/kmp-sdk/
         handlers/
           NfcBridgeHandler.kt          # JMRTD passport reader
           BiometricBridgeHandler.kt    # BiometricPrompt
-          SecureStorageBridgeHandler.kt # EncryptedSharedPreferences
-          CryptoBridgeHandler.kt       # Java Security Provider
+          SecureStorageBridgeHandler.kt # EncryptedSharedPreferences (keychain — native managed)
           CameraMrzBridgeHandler.kt    # ML Kit Text Recognition
-          HapticBridgeHandler.kt       # Vibration feedback
-          AnalyticsBridgeHandler.kt    # Fire-and-forget logging
-          LifecycleBridgeHandler.kt    # WebView → host communication
-          DocumentsBridgeHandler.kt    # Encrypted document storage
+          LifecycleBridgeHandler.kt    # WebView ↔ host communication + relay listener
 
       iosMain/kotlin/xyz/self/sdk/
         api/
@@ -89,22 +108,14 @@ packages/kmp-sdk/
         webview/
           IosWebViewHost.kt        # WKWebView + JS injection
         handlers/
-          NfcBridgeHandler.kt          # CoreNFC via cinterop
+          NfcBridgeHandler.kt          # CoreNFC via cinterop / Swift wrapper
           BiometricBridgeHandler.kt    # LAContext via cinterop
-          SecureStorageBridgeHandler.kt # Keychain via cinterop
-          CryptoBridgeHandler.kt       # CommonCrypto via cinterop
-          CameraMrzBridgeHandler.kt    # Vision framework via cinterop
-          HapticBridgeHandler.kt       # UIImpactFeedbackGenerator
-          AnalyticsBridgeHandler.kt    # Fire-and-forget logging
-          LifecycleBridgeHandler.kt    # WebView → host communication
-          DocumentsBridgeHandler.kt    # Encrypted document storage
+          LifecycleBridgeHandler.kt    # WebView ↔ host communication + relay listener
 
     nativeInterop/
       cinterop/
         CoreNFC.def
         LocalAuthentication.def
-        Security.def
-        Vision.def
 
   build.gradle.kts              # KMP plugin, Android + iOS targets
 
@@ -172,7 +183,7 @@ kotlin {
                 implementation("commons-io:commons-io:2.14.0")
                 // Biometrics
                 implementation("androidx.biometric:biometric:1.2.0-alpha05")
-                // Encrypted storage
+                // Encrypted storage (keychain)
                 implementation("androidx.security:security-crypto:1.1.0-alpha06")
                 // Camera / MRZ
                 implementation("com.google.mlkit:text-recognition:16.0.0")
@@ -388,16 +399,16 @@ class SelfVerificationActivity : AppCompatActivity() {
             sendToWebView = { js -> runOnUiThread { webViewHost.evaluateJs(js) } }
         )
 
-        // Register all native handlers
+        // Register native handlers (5 total — web fallbacks handle the rest)
         router.register(NfcBridgeHandler(this, router))
         router.register(BiometricBridgeHandler(this))
-        router.register(SecureStorageBridgeHandler(this))
-        router.register(CryptoBridgeHandler())
+        router.register(SecureStorageBridgeHandler(this))  // Keychain — native managed
         router.register(CameraMrzBridgeHandler(this))
-        router.register(HapticBridgeHandler(this))
-        router.register(AnalyticsBridgeHandler())
         router.register(LifecycleBridgeHandler(this))
-        router.register(DocumentsBridgeHandler(this))
+        // REMOVED: CryptoBridgeHandler — Web Crypto handles hashing; signing keys accessed via SecureStorage
+        // REMOVED: HapticBridgeHandler — WebView skips haptic feedback (not critical)
+        // REMOVED: AnalyticsBridgeHandler — WebView uses console/fetch for analytics
+        // REMOVED: DocumentsBridgeHandler — WebView uses IndexedDB for document storage
 
         // Create and show WebView
         webViewHost = AndroidWebViewHost(this, router)
@@ -504,12 +515,12 @@ class NfcBridgeHandler(
 3. Get `IsoDep` from tag, set timeout to 20s
 4. Create `CardService`, open it
 5. Create `PassportService`, open it
-6. **PACE attempt**: Read `EF_CARD_ACCESS` → extract `PACEInfo` → `service.doPACE()`
-7. **BAC fallback** (if PACE fails): `service.sendSelectApplet(false)` → `service.doBAC(bacKey)` with up to 3 retries
+6. **PACE attempt**: Read `EF_CARD_ACCESS` -> extract `PACEInfo` -> `service.doPACE()`
+7. **BAC fallback** (if PACE fails): `service.sendSelectApplet(false)` -> `service.doBAC(bacKey)` with up to 3 retries
 8. **Select applet** after auth: `service.sendSelectApplet(true)`
 9. **Read DG1**: `DG1File(service.getInputStream(PassportService.EF_DG1))`
 10. **Read SOD**: `SODFile(service.getInputStream(PassportService.EF_SOD))`
-11. **Chip Authentication**: Read DG14 → extract `ChipAuthenticationPublicKeyInfo` → `service.doEACCA()`
+11. **Chip Authentication**: Read DG14 -> extract `ChipAuthenticationPublicKeyInfo` -> `service.doEACCA()`
 12. **Build result**: Extract MRZ, certificates, hashes, signatures from parsed files
 
 **Dependencies:**
@@ -561,7 +572,7 @@ class BiometricBridgeHandler(private val activity: FragmentActivity) : BridgeHan
 
 ### SecureStorageBridgeHandler.kt (Android)
 
-Uses `EncryptedSharedPreferences` backed by Android Keystore:
+Uses `EncryptedSharedPreferences` backed by Android Keystore. This handler stays native because host apps (like MiniPay) control keychain access policy — the WebView must not have direct keychain access.
 
 ```kotlin
 class SecureStorageBridgeHandler(context: Context) : BridgeHandler {
@@ -600,58 +611,60 @@ class SecureStorageBridgeHandler(context: Context) : BridgeHandler {
 }
 ```
 
-### CryptoBridgeHandler.kt (Android)
+### CameraMrzBridgeHandler.kt (Android)
+
+Uses ML Kit `TextRecognition` to detect MRZ text from camera preview. This handler stays native because camera access requires hardware APIs unavailable to the WebView.
 
 ```kotlin
-class CryptoBridgeHandler : BridgeHandler {
-    override val domain = BridgeDomain.CRYPTO
+class CameraMrzBridgeHandler(private val activity: Activity) : BridgeHandler {
+    override val domain = BridgeDomain.CAMERA
 
     override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
         return when (method) {
-            "sign" -> sign(params)
-            "generateKey" -> generateKey(params)
-            "getPublicKey" -> getPublicKey(params)
-            else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown crypto method: $method")
+            "scanMrz" -> scanMrz(params)
+            "isAvailable" -> JsonPrimitive(true)
+            else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown camera method: $method")
         }
     }
 
-    private fun sign(params: Map<String, JsonElement>): JsonElement {
-        val dataBase64 = params["data"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_DATA", "Data parameter required")
-        val keyRef = params["keyRef"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_KEY_REF", "keyRef parameter required")
+    // Opens camera, uses ML Kit Text Recognition to find MRZ lines,
+    // returns parsed MRZ data (document number, date of birth, date of expiry)
+}
+```
 
-        val data = Base64.decode(dataBase64, Base64.NO_WRAP)
+### LifecycleBridgeHandler.kt (Android)
 
-        // Load key from Android Keystore
-        val keyStore = KeyStore.getInstance("AndroidKeyStore")
-        keyStore.load(null)
-        val entry = keyStore.getEntry(keyRef, null) as? KeyStore.PrivateKeyEntry
-            ?: throw BridgeHandlerException("KEY_NOT_FOUND", "Key not found: $keyRef")
+Handles WebView-to-host communication: ready signals, dismissal, result delivery, and optional relay listener registration.
 
-        val signature = Signature.getInstance("SHA256withECDSA")
-        signature.initSign(entry.privateKey)
-        signature.update(data)
-        val signed = signature.sign()
+```kotlin
+class LifecycleBridgeHandler(private val activity: Activity) : BridgeHandler {
+    override val domain = BridgeDomain.LIFECYCLE
 
-        return buildJsonObject {
-            put("signature", Base64.encodeToString(signed, Base64.NO_WRAP))
+    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
+        return when (method) {
+            "ready" -> null  // No-op, WebView is ready
+            "dismiss" -> {
+                activity.finish()
+                null
+            }
+            "setResult" -> {
+                // Set Activity result and finish — delivers proof/error back to host app
+                val resultJson = Json.encodeToString(params)
+                val intent = Intent().putExtra("self_sdk_result", resultJson)
+                activity.setResult(Activity.RESULT_OK, intent)
+                activity.finish()
+                null
+            }
+            "startRelayListener" -> {
+                // Optional: start listening on a relay for incoming verification requests
+                // Used when the host app wants to receive push-based verification triggers
+                null
+            }
+            else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown lifecycle method: $method")
         }
     }
 }
 ```
-
-### Other Android Handlers (simpler)
-
-**HapticBridgeHandler**: `Vibrator.vibrate(VibrationEffect.createOneShot(...))`
-
-**AnalyticsBridgeHandler**: Log to Logcat or forward to host app's analytics. Fire-and-forget (always return null).
-
-**LifecycleBridgeHandler**: `ready` = no-op, `dismiss` = `activity.finish()`, `setResult` = set Activity result and finish.
-
-**DocumentsBridgeHandler**: Uses `EncryptedSharedPreferences` to store JSON-serialized documents.
-
-**CameraMrzBridgeHandler**: Uses ML Kit `TextRecognition` to detect MRZ text from camera preview.
 
 ---
 
@@ -659,7 +672,7 @@ class CryptoBridgeHandler : BridgeHandler {
 
 ### Kotlin/Native cinterop
 
-iOS handlers are written in Kotlin using `cinterop` to call Apple frameworks.
+iOS handlers are written in Kotlin using `cinterop` to call Apple frameworks. Only 2 `.def` files are needed for the 3 iOS handlers (Lifecycle needs no cinterop).
 
 #### CoreNFC.def
 
@@ -678,38 +691,18 @@ modules = LocalAuthentication
 linkerOpts = -framework LocalAuthentication
 ```
 
-#### Security.def
-
-```
-language = Objective-C
-modules = Security
-linkerOpts = -framework Security
-```
-
-#### Vision.def (for MRZ scanning)
-
-```
-language = Objective-C
-modules = Vision
-linkerOpts = -framework Vision
-```
-
 Add to `build.gradle.kts`:
 ```kotlin
 iosArm64 {
     compilations["main"].cinterops {
         create("CoreNFC")
         create("LocalAuthentication")
-        create("Security")
-        create("Vision")
     }
 }
 iosSimulatorArm64 {
     compilations["main"].cinterops {
         create("CoreNFC") // Note: NFC won't work on simulator, but it needs to compile
         create("LocalAuthentication")
-        create("Security")
-        create("Vision")
     }
 }
 ```
@@ -765,8 +758,6 @@ class BridgeMessageHandler(private val router: MessageRouter) : NSObject(), WKSc
 3. Pure Kotlin/Native CoreNFC interop for passport reading (PACE, BAC, data group parsing) is very hard
 
 **Recommended approach:** Create a thin Objective-C/Swift wrapper exposed via `@objc` that Kotlin can call through cinterop. The wrapper does the heavy lifting (calling `NFCPassportReader` library), and the Kotlin handler just bridges the JSON params.
-
-Alternatively, if you want pure Kotlin, you'd need to implement the entire ICAO 9303 protocol (BAC, PACE, secure messaging, ASN.1 parsing) which is months of work. The pragmatic approach is:
 
 ```kotlin
 // iOS NFC handler — calls into Swift helper via cinterop
@@ -852,36 +843,34 @@ class BiometricBridgeHandler : BridgeHandler {
 }
 ```
 
-### SecureStorageBridgeHandler.kt (iOS)
-
-Uses Keychain Services via Security framework cinterop:
+### LifecycleBridgeHandler.kt (iOS)
 
 ```kotlin
-import platform.Security.*
-import platform.Foundation.*
+class LifecycleBridgeHandler : BridgeHandler {
+    override val domain = BridgeDomain.LIFECYCLE
 
-class SecureStorageBridgeHandler : BridgeHandler {
-    override val domain = BridgeDomain.SECURE_STORAGE
-
-    // Keychain operations using SecItemAdd, SecItemCopyMatching, SecItemUpdate, SecItemDelete
-    // with kSecClassGenericPassword, kSecAttrService = "xyz.self.sdk", kSecAttrAccount = key
+    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
+        return when (method) {
+            "ready" -> null
+            "dismiss" -> {
+                // Dismiss the presented UIViewController
+                null
+            }
+            "setResult" -> {
+                // Deliver verification result back to host app via callback
+                null
+            }
+            "startRelayListener" -> {
+                // Optional: start listening on a relay for incoming verification requests
+                null
+            }
+            else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown lifecycle method: $method")
+        }
+    }
 }
 ```
 
-### CryptoBridgeHandler.kt (iOS)
-
-Uses CommonCrypto or Security framework for signing:
-
-```kotlin
-import platform.Security.*
-
-class CryptoBridgeHandler : BridgeHandler {
-    override val domain = BridgeDomain.CRYPTO
-
-    // Use SecKeyCreateSignature for signing
-    // Keys stored in Keychain with kSecAttrKeyTypeECSECPrimeRandom
-}
-```
+> **Note:** iOS does not need SecureStorageBridgeHandler as a separate handler — keychain access is managed by the Kotlin SecureStorageBridgeHandler in `commonMain` or handled through the same Android handler pattern compiled for iOS. The keychain stays native-managed. CameraMrzBridgeHandler is optional for iOS Phase 2 — if needed, it would use the Vision framework.
 
 ---
 
@@ -1038,47 +1027,40 @@ tasks.named("preBuild") { dependsOn("copyWebViewAssets") }
 5. Create Gradle task for copying Vite `dist/` into assets
 6. Validate: `./gradlew :shared:compileDebugKotlinAndroid`
 
-### Chunk 2C: Android Native Handlers
+### Chunk 2C: Android Native Handlers (5 handlers)
 
-**Goal:** All Android bridge handlers.
+**Goal:** The 5 native Android bridge handlers. Web fallbacks handle the rest.
 
 **Steps (in priority order):**
 1. `NfcBridgeHandler` — port from `RNPassportReaderModule.kt` (biggest effort)
 2. `BiometricBridgeHandler` — BiometricPrompt wrapper
-3. `SecureStorageBridgeHandler` — EncryptedSharedPreferences
-4. `CryptoBridgeHandler` — Android Keystore signing
-5. `DocumentsBridgeHandler` — JSON CRUD on encrypted storage
-6. `LifecycleBridgeHandler` — Activity result delivery
-7. `HapticBridgeHandler` — Vibration
-8. `AnalyticsBridgeHandler` — Logging
-9. `CameraMrzBridgeHandler` — ML Kit text recognition
-10. Validate: compile + unit tests
+3. `SecureStorageBridgeHandler` — EncryptedSharedPreferences (keychain — native managed)
+4. `CameraMrzBridgeHandler` — ML Kit text recognition
+5. `LifecycleBridgeHandler` — Activity result delivery + relay listener
+6. **DELETE** `CryptoBridgeHandler`, `DocumentsBridgeHandler`, `HapticBridgeHandler`, `AnalyticsBridgeHandler` (WebView handles via web fallbacks)
+7. Validate: compile + unit tests
 
 ### Chunk 2D: iOS WebView Host + cinterop
 
 **Goal:** iOS WebView hosting, cinterop definitions.
 
 **Steps:**
-1. Create `.def` files for CoreNFC, LocalAuthentication, Security, Vision
+1. Create `.def` files for CoreNFC and LocalAuthentication (only 2 needed)
 2. Implement `iosMain/webview/IosWebViewHost.kt`
 3. Configure WKWebView with WKScriptMessageHandler
 4. Validate: `./gradlew :shared:compileKotlinIosArm64`
 
-### Chunk 2E: iOS Native Handlers
+### Chunk 2E: iOS Native Handlers (3 handlers)
 
-**Goal:** All iOS bridge handlers.
+**Goal:** Only 3 iOS bridge handlers. Camera is optional Phase 2.
 
 **Steps:**
 1. `BiometricBridgeHandler` — LAContext (simplest, good to start)
-2. `SecureStorageBridgeHandler` — Keychain Services
-3. `CryptoBridgeHandler` — SecKey signing
-4. `HapticBridgeHandler` — UIImpactFeedbackGenerator
-5. `AnalyticsBridgeHandler` — os_log or similar
-6. `LifecycleBridgeHandler` — ViewController dismissal
-7. `DocumentsBridgeHandler` — Encrypted file storage
-8. `NfcBridgeHandler` — CoreNFC (most complex, may need Swift wrapper)
-9. `CameraMrzBridgeHandler` — Vision framework
-10. Validate: compile for iOS targets
+2. `LifecycleBridgeHandler` — ViewController dismissal + relay listener
+3. `NfcBridgeHandler` — CoreNFC via Swift wrapper (most complex)
+4. Validate: compile for iOS targets
+
+> **Phase 2 (optional):** `CameraMrzBridgeHandler` — Vision framework for MRZ scanning on iOS. Only needed if the WebView camera adapter proves insufficient.
 
 ### Chunk 2F: SDK Public API + Test App
 
@@ -1087,7 +1069,7 @@ tasks.named("preBuild") { dependsOn("copyWebViewAssets") }
 **Steps:**
 1. Implement `commonMain/api/SelfSdk.kt` (expect) + actuals
 2. Create `packages/kmp-test-app/` with Compose Multiplatform
-3. Android test app: "Launch Verification" button → `SelfSdk.launch()`
+3. Android test app: "Launch Verification" button -> `SelfSdk.launch()`
 4. iOS test app: same button via SwiftUI wrapping KMP framework
 5. Test on emulator/simulator
 6. Configure `maven-publish` for AAR output
@@ -1106,3 +1088,4 @@ tasks.named("preBuild") { dependsOn("copyWebViewAssets") }
 | `packages/kmp-shell/shared/` | Previous KMP prototype (bridge protocol, handler pattern, MRZ utils — all reusable) |
 | `packages/webview-bridge/src/types.ts` | Bridge protocol TypeScript types (must match Kotlin exactly) |
 | `packages/mobile-sdk-alpha/src/types/public.ts` | Adapter interfaces (what the WebView expects the bridge to implement) |
+| `specs/SPECS.md` | Architecture overview with native handler matrix and web fallback rationale |

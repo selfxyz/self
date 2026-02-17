@@ -5,7 +5,7 @@
 export interface BaseContext {
   sessionId: string;
   userId?: string;
-  platform: 'ios' | 'android';
+  platform: 'ios' | 'android' | 'web' | string;
   stage: string;
 }
 

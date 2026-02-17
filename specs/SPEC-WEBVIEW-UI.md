@@ -7,7 +7,14 @@ You are building the **web side** of the Self Mobile SDK. This means:
 1. **`packages/webview-bridge/`** — JS bridge protocol library (npm package `@selfxyz/webview-bridge`)
 2. **`packages/webview-app/`** — Vite-bundled React app that runs inside a native WebView
 
-The output of `vite build` (a single `index.html` + JS bundle) gets bundled into the KMP SDK artifact by Person 2. You don't need to worry about native code — just make sure the bridge protocol is correct and the screens work.
+The WebView is not just screens + bridge. It also provides **web-native fallback implementations** for capabilities that do not require native hardware or OS APIs. Specifically:
+- **Documents**: CRUD via IndexedDB (no native bridge needed)
+- **Crypto hashing**: `crypto.subtle.digest` via the Web Crypto API (signing still bridges to native for key access)
+- **Analytics**: `console.log` / `fetch` directly (no native bridge needed)
+
+Only capabilities that the browser literally cannot provide (NFC, camera, biometrics, lifecycle signals) plus keychain (host app policy) bridge to native. Everything else runs entirely in the WebView using standard web APIs.
+
+The output of `vite build` (a single `index.html` + JS bundle) gets bundled into the native SDK artifact (KMP or RN). You don't need to worry about native code — just make sure the bridge protocol is correct, the screens work, and the web fallback adapters are wired correctly.
 
 ---
 
@@ -41,15 +48,18 @@ packages/webview-bridge/
     schema.ts               # Message validation
     mock.ts                 # MockNativeBridge for testing
     adapters/
-      nfc-scanner.ts        # NFCScannerAdapter → nfc.scan bridge
-      crypto.ts             # CryptoAdapter (hash=WebCrypto, sign=bridge)
-      auth.ts               # AuthAdapter → secureStorage.get with biometric
-      documents.ts          # DocumentsAdapter → documents.* bridge
-      storage.ts            # StorageAdapter → secureStorage.* bridge
-      analytics.ts          # AnalyticsAdapter → analytics.* bridge (fire-and-forget)
-      haptic.ts             # HapticAdapter → haptic.trigger bridge
-      navigation.ts         # NavigationAdapter → React Router (no bridge)
-      lifecycle.ts          # LifecycleAdapter → lifecycle.* bridge
+      # --- Bridge adapters (require native handler) ---
+      nfc-scanner.ts        # NFCScannerAdapter → nfc.scan bridge (NFC hardware)
+      auth.ts               # AuthAdapter → secureStorage.get with biometric (OS biometrics)
+      storage.ts            # StorageAdapter → secureStorage.* bridge (native keychain)
+      lifecycle.ts          # LifecycleAdapter → lifecycle.* bridge (host app communication)
+      # --- Web fallback adapters (no native bridge calls) ---
+      documents-web.ts      # IndexedDBDocumentsAdapter → IndexedDB for encrypted document CRUD
+      crypto.ts             # WebCryptoAdapter: hash = Web Crypto API, sign = bridge (key access)
+      analytics-web.ts      # ConsoleAnalyticsAdapter → console.log (dev) / fetch (prod)
+      # --- Other adapters ---
+      navigation.ts         # NavigationAdapter → React Router (no bridge, stays same)
+      haptic.ts             # HapticAdapter → no-op (not critical, removed from bridge)
       index.ts              # Re-exports all adapters
     __tests__/
       bridge.test.ts        # WebViewBridge unit tests
@@ -193,7 +203,17 @@ The existing prototype is solid. Key behaviors:
 if (globalThis.SelfNativeAndroid?.postMessage) { ... }
 // iOS
 if (globalThis.webkit?.messageHandlers?.SelfNativeIOS?.postMessage) { ... }
+// React Native
+if (globalThis.ReactNativeWebView?.postMessage) { ... }
 ```
+
+**Transport reference (from bridge protocol):**
+
+| Platform | WebView -> Native | Native -> WebView |
+|----------|-----------------|-----------------|
+| Android | `window.SelfNativeAndroid.postMessage(json)` | `evaluateJavascript("window.SelfNativeBridge._handleResponse(json)")` |
+| iOS | `window.webkit.messageHandlers.SelfNativeIOS.postMessage(json)` | `evaluateJavaScript("window.SelfNativeBridge._handleResponse(json)")` |
+| React Native | `window.ReactNativeWebView.postMessage(json)` | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleResponse(json)")` |
 
 **Important:** The iOS handler name changed from the prototype. Person 2's spec says `SelfNativeIOS` as the WKScriptMessageHandler name. Make sure this matches.
 
@@ -213,25 +233,89 @@ Each adapter factory takes a `WebViewBridge` instance and returns an object conf
 **Auth** (`auth.ts`):
 - `getPrivateKey()`: Calls `bridge.request('secureStorage', 'get', { key: 'self_private_key', requireBiometric: true })`, returns `null` on error
 
-**Documents** (`documents.ts`):
-- `loadDocumentCatalog()`: `bridge.request('documents', 'loadCatalog')`
-- `saveDocumentCatalog(catalog)`: `bridge.request('documents', 'saveCatalog', { catalog })`
-- `loadDocumentById(id)`: `bridge.request('documents', 'loadById', { id })`
-- `saveDocument(id, data)`: `bridge.request('documents', 'save', { id, data })`
-- `deleteDocument(id)`: `bridge.request('documents', 'delete', { id })`
-
-**Storage** (`storage.ts`):
+**Storage** (`storage.ts`) — bridge to native (keychain access is native-managed):
 - `get(key)`: `bridge.request('secureStorage', 'get', { key })`
 - `set(key, value)`: `bridge.request('secureStorage', 'set', { key, value })`
 - `remove(key)`: `bridge.request('secureStorage', 'remove', { key })`
 
-**Analytics** (`analytics.ts`) — all fire-and-forget:
-- `trackEvent(event, payload)`: `bridge.fire('analytics', 'trackEvent', { event, payload })`
-- `trackNfcEvent(name, properties)`: `bridge.fire('analytics', 'trackNfcEvent', { name, properties })`
-- `logNFCEvent(level, message, context, details)`: `bridge.fire('analytics', 'logNfcEvent', { level, message, context, details })`
+The `storage` adapter bridges to native because keychain access is managed by the host app. Some host apps (like MiniPay) have policies about WebView keychain access.
 
-**Haptic** (`haptic.ts`):
-- `trigger(type)`: `bridge.fire('haptic', 'trigger', { type })`
+**Haptic** (`haptic.ts`) — no-op:
+- `trigger(type)`: No-op (not critical for WebView). May optionally bridge to native if haptic feedback is desired.
+
+#### Web Fallback Adapters
+
+These adapters run **entirely in the WebView** with no native bridge calls. They use standard web APIs to provide the same interfaces that `mobile-sdk-alpha` expects.
+
+**IndexedDBDocumentsAdapter** (`documents-web.ts`):
+Uses IndexedDB for encrypted document CRUD. No bridge round-trip to native.
+- `loadDocumentCatalog()`: Reads catalog from IndexedDB
+- `saveDocumentCatalog(catalog)`: Writes catalog to IndexedDB
+- `loadDocumentById(id)`: Reads document by key from IndexedDB
+- `saveDocument(id, data)`: Writes document to IndexedDB
+- `deleteDocument(id)`: Deletes document from IndexedDB
+
+```typescript
+// Implementation sketch
+const DB_NAME = 'self-documents';
+const STORE_NAME = 'documents';
+
+export function indexedDBDocumentsAdapter(): DocumentsAdapter {
+  const openDB = () => new Promise<IDBDatabase>((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+
+  return {
+    async loadDocumentCatalog() {
+      const db = await openDB();
+      // ... read from 'catalog' key
+    },
+    async saveDocumentCatalog(catalog) { /* ... */ },
+    async loadDocumentById(id) { /* ... */ },
+    async saveDocument(id, data) { /* ... */ },
+    async deleteDocument(id) { /* ... */ },
+  };
+}
+```
+
+**WebCryptoAdapter** (`crypto.ts`):
+Uses `crypto.subtle.digest` for hashing (no bridge round-trip). Signing still bridges to native because the private key lives in the native keychain.
+- `hash(input, algo)`: `crypto.subtle.digest(algo, input)` — pure Web Crypto, no bridge
+- `sign(data, keyRef)`: `bridge.request('crypto', 'sign', { data, keyRef })` — bridge to native (key access)
+
+**ConsoleAnalyticsAdapter** (`analytics-web.ts`):
+Logs to console in dev, fetches to analytics endpoint in prod. No bridge round-trip.
+- `trackEvent(event, payload)`: `console.log(...)` in dev, `fetch(endpoint, ...)` in prod
+- `trackNfcEvent(name, properties)`: Same pattern
+- `logNFCEvent(level, message, context, details)`: Same pattern
+
+```typescript
+export function consoleAnalyticsAdapter(options?: { endpoint?: string }): AnalyticsAdapter {
+  const isDev = import.meta.env?.DEV ?? true;
+  const endpoint = options?.endpoint;
+
+  const send = (event: string, data: unknown) => {
+    if (isDev) {
+      console.log(`[analytics] ${event}`, data);
+    } else if (endpoint) {
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event, data, timestamp: Date.now() }),
+      }).catch(() => {}); // fire-and-forget
+    }
+  };
+
+  return {
+    trackEvent: (event, payload) => send(event, payload),
+    trackNfcEvent: (name, properties) => send(`nfc.${name}`, properties),
+    logNFCEvent: (level, message, context, details) => send(`nfc.log.${level}`, { message, context, details }),
+  };
+}
+```
 
 **Navigation** (`navigation.ts`) — NO bridge round-trip, uses React Router:
 - `goBack()`: Calls provided `goBack` callback
@@ -481,15 +565,15 @@ const bridge = useMemo(() => new WebViewBridge({ debug: import.meta.env.DEV }), 
 Creates all bridge adapters, wires navigation to React Router, and signals `lifecycle.ready()` on mount.
 
 ```tsx
-// Creates adapters:
+// Creates adapters — mix of bridge (native) and web fallbacks:
 const adapters = {
-  scanner: bridgeNFCScannerAdapter(bridge),
-  crypto: bridgeCryptoAdapter(bridge),
-  auth: bridgeAuthAdapter(bridge),
-  documents: bridgeDocumentsAdapter(bridge),
-  storage: bridgeStorageAdapter(bridge),
-  analytics: bridgeAnalyticsAdapter(bridge),
-  navigation: webNavigationAdapter(navigate, goBack),
+  scanner: bridgeNFCScannerAdapter(bridge),          // Bridge → native NFC hardware
+  crypto: webCryptoAdapter(bridge),                   // Hash: Web Crypto API, Sign: bridge → native keychain
+  auth: bridgeAuthAdapter(bridge),                    // Bridge → native biometrics
+  documents: indexedDBDocumentsAdapter(),              // Web fallback: IndexedDB (no bridge)
+  storage: bridgeStorageAdapter(bridge),              // Bridge → native keychain
+  analytics: consoleAnalyticsAdapter(),               // Web fallback: console.log / fetch (no bridge)
+  navigation: webNavigationAdapter(navigate, goBack), // React Router (no bridge)
 };
 const lifecycle = bridgeLifecycleAdapter(bridge);
 
@@ -618,3 +702,6 @@ Each screen should:
 3. **Fonts are inlined by Vite** when < 100KB (`assetsInlineLimit: 102400`). This means the built HTML+JS is self-contained.
 4. **`mobile-sdk-alpha` is a workspace dependency.** Its `constants/colors.ts` and `constants/fonts.ts` are used directly (but `fonts.ts` imports `Platform` from react-native, so webview-app needs the `react-native-web` alias).
 5. **The `SelfClientProvider` should eventually call `createSelfClient(adapters)`** from `mobile-sdk-alpha` once that function is available. For now, expose individual adapters directly (matching the prototype pattern).
+6. **Web fallback adapters do NOT bridge to native.** Documents, crypto hashing, and analytics run entirely in the WebView using standard web APIs (IndexedDB, Web Crypto, fetch). They never send messages over the bridge protocol. Only NFC, camera, biometrics, keychain, and lifecycle require native handlers.
+7. **Keychain stays native.** The `storage` adapter bridges to native because keychain access is managed by the host app. Some host apps (like MiniPay) have policies about WebView keychain access — the native shell decides how and whether to expose keychain.
+8. **React Native transport.** In addition to Android (`SelfNativeAndroid`) and iOS (`SelfNativeIOS`) transports, the bridge supports React Native via `window.ReactNativeWebView.postMessage(json)` (WebView to native) and `webViewRef.injectJavaScript(...)` (native to WebView). The bridge auto-detects which transport is available.
