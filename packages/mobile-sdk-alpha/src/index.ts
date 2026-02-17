@@ -140,6 +140,14 @@ export { mergeConfig } from './config/merge';
 export { parseNFCResponse, scanNFC } from './nfc';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
+
+export { createDocumentsAdapter, createInMemoryDocumentsAdapter } from './adapters/react-native/documents';
+export { createAuthAdapter } from './adapters/react-native/auth';
+export { createNetworkAdapter } from './adapters/react-native/network';
+export { createCryptoAdapter } from './adapters/react-native/crypto';
+export { createReactNativeAdapters } from './adapters/react-native/factory';
+export type { CreateReactNativeAdaptersOptions } from './adapters/react-native/factory';
+
 export { sanitizeErrorMessage } from './utils/utils';
 export { useCountries } from './documents/useCountries';
 export { useMRZStore } from './stores/mrzStore';
