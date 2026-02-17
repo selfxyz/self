@@ -16,9 +16,7 @@ export function createNetworkAdapter(): NetworkAdapter {
       fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
         const fetchImpl = globalThis.fetch;
         if (!fetchImpl) {
-          return Promise.reject(
-            new Error('Fetch is not available in this environment. Provide a fetch polyfill.'),
-          );
+          return Promise.reject(new Error('Fetch is not available in this environment. Provide a fetch polyfill.'));
         }
         return fetchImpl(input, init);
       },

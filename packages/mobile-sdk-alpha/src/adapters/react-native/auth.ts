@@ -30,9 +30,7 @@ function generateSecret(): string {
  *
  * @param opts.keychainService - Keychain service identifier (default `com.self.sdk.secret`).
  */
-export function createAuthAdapter(
-  opts?: { keychainService?: string },
-): AuthAdapter {
+export function createAuthAdapter(opts?: { keychainService?: string }): AuthAdapter {
   const service = opts?.keychainService ?? DEFAULT_KEYCHAIN_SERVICE;
 
   // Web/testing fallback — secrets live only in memory.

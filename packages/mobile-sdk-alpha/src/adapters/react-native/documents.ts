@@ -38,9 +38,7 @@ async function reparseIfNeeded(doc: IDDocument): Promise<IDDocument> {
  *
  * @param opts.keyPrefix - Storage key prefix (default `@self:`).
  */
-export function createDocumentsAdapter(
-  opts?: { keyPrefix?: string },
-): DocumentsAdapter {
+export function createDocumentsAdapter(opts?: { keyPrefix?: string }): DocumentsAdapter {
   // Dynamic import so the module is only resolved when the adapter is actually
   // instantiated. This keeps the bundle free of AsyncStorage when consumers
   // provide their own DocumentsAdapter.
@@ -55,15 +53,13 @@ export function createDocumentsAdapter(
     } catch {
       throw new Error(
         'createDocumentsAdapter requires @react-native-async-storage/async-storage. ' +
-        'Install it as a dependency of your app.',
+          'Install it as a dependency of your app.',
       );
     }
   }
 
   const prefix = opts?.keyPrefix ?? DEFAULT_DOCUMENT_KEY_PREFIX;
-  const catalogKey = opts?.keyPrefix
-    ? `${opts.keyPrefix}document_catalog`
-    : DEFAULT_CATALOG_KEY;
+  const catalogKey = opts?.keyPrefix ? `${opts.keyPrefix}document_catalog` : DEFAULT_CATALOG_KEY;
 
   const getDocumentKey = (id: string): string => `${prefix}${id}`;
 

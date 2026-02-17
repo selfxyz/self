@@ -20,7 +20,7 @@ export function createCryptoAdapter(): CryptoAdapter {
     async sign(_data: Uint8Array, _keyRef: string): Promise<Uint8Array> {
       throw new Error(
         'Signing is not implemented in the default crypto adapter. ' +
-        'Provide a custom CryptoAdapter with a sign implementation for your platform.',
+          'Provide a custom CryptoAdapter with a sign implementation for your platform.',
       );
     },
   };
