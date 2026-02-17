@@ -1,5 +1,5 @@
-import forge from 'node-forge';
 import { Buffer } from 'buffer';
+import forge from 'node-forge';
 
 import { WS_DB_RELAYER, WS_DB_RELAYER_STAGING } from '../constants/index.js';
 import { initElliptic } from '../utils/certificate_parsing/elliptic.js';
@@ -34,9 +34,9 @@ export const ec = new EC('p256');
 // eslint-disable-next-line -- clientKey is created from ec so must be second
 export const clientKey = ec.genKeyPair();
 
-type RegisterSuffixes = '' | '_id' | '_aadhaar';
+type RegisterSuffixes = '' | '_id' | '_aadhaar' | '_kyc';
 type DscSuffixes = '' | '_id';
-type DiscloseSuffixes = '' | '_id' | '_aadhaar';
+type DiscloseSuffixes = '' | '_id' | '_aadhaar' | '_kyc';
 type ProofTypes = 'register' | 'dsc' | 'disclose';
 type RegisterProofType = `${Extract<ProofTypes, 'register'>}${RegisterSuffixes}`;
 type DscProofType = `${Extract<ProofTypes, 'dsc'>}${DscSuffixes}`;
@@ -59,6 +59,10 @@ export function encryptAES256GCM(plaintext: string, key: forge.util.ByteStringBu
   };
 }
 
+function bigIntReplacer(_key: string, value: unknown): unknown {
+  return typeof value === 'bigint' ? value.toString() : value;
+}
+
 export function getPayload(
   inputs: any,
   circuitType: RegisterProofType | DscProofType | DiscloseProofType,
@@ -75,7 +79,9 @@ export function getPayload(
         ? 'disclose'
         : circuitName === 'vc_and_disclose_aadhaar'
           ? 'disclose_aadhaar'
-          : 'disclose_id';
+          : circuitName === 'vc_and_disclose_kyc'
+            ? 'disclose_kyc'
+            : 'disclose_id';
     const payload: TEEPayloadDisclose = {
       type,
       endpointType: endpointType,
@@ -83,7 +89,7 @@ export function getPayload(
       onchain: endpointType === 'celo' ? true : false,
       circuit: {
         name: circuitName,
-        inputs: JSON.stringify(inputs),
+        inputs: JSON.stringify(inputs, bigIntReplacer),
       },
       version,
       userDefinedData,
@@ -91,14 +97,19 @@ export function getPayload(
     };
     return payload;
   } else {
-    const type = circuitName === 'register_aadhaar' ? 'register_aadhaar' : circuitType;
+    const type =
+      circuitName === 'register_aadhaar'
+        ? 'register_aadhaar'
+        : circuitName === 'register_kyc'
+          ? 'register_kyc'
+          : circuitType;
     const payload: TEEPayload = {
       type: type as RegisterProofType | DscProofType,
       onchain: true,
       endpointType: endpointType,
       circuit: {
         name: circuitName,
-        inputs: JSON.stringify(inputs),
+        inputs: JSON.stringify(inputs, bigIntReplacer),
       },
     };
     return payload;

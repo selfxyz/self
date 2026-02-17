@@ -1,0 +1,15 @@
+{
+  "name": "@selfxyz/kmp-sdk",
+  "version": "0.0.1-alpha",
+  "private": true,
+  "scripts": {
+    "build": "./gradlew :shared:assemble",
+    "build:android": "./gradlew :shared:compileDebugKotlinAndroid",
+    "build:ios": "./gradlew :shared:compileKotlinIosArm64",
+    "build:ios:simulator": "./gradlew :shared:compileKotlinIosSimulatorArm64",
+    "clean": "./gradlew clean",
+    "format": "./gradlew ktlintFormat",
+    "lint": "./gradlew ktlintCheck",
+    "test": "./gradlew :shared:jvmTest"
+  }
+}

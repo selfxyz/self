@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -34,6 +34,5 @@ export const SUMSUB_TEST_TOKEN = process.env.SUMSUB_TEST_TOKEN;
 
 export const TURNKEY_AUTH_PROXY_CONFIG_ID =
   process.env.TURNKEY_AUTH_PROXY_CONFIG_ID;
-
 export const TURNKEY_GOOGLE_CLIENT_ID = process.env.TURNKEY_GOOGLE_CLIENT_ID;
 export const TURNKEY_ORGANIZATION_ID = process.env.TURNKEY_ORGANIZATION_ID;

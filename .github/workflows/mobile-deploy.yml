@@ -33,7 +33,7 @@ env:
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 35
   ANDROID_NDK_VERSION: 27.0.12077973
-  XCODE_VERSION: 16.4
+  XCODE_VERSION: 26
 
   # Cache versioning - increment these to bust caches when needed
   GH_CACHE_VERSION: v1 # Global cache version
@@ -712,6 +712,7 @@ jobs:
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SUMSUB_TEE_URL: ${{ secrets.SUMSUB_TEE_URL }}
           TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
           TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
           TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}
@@ -1170,6 +1171,7 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=6144"
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SUMSUB_TEE_URL: ${{ secrets.SUMSUB_TEE_URL }}
           TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
           TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
           TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}

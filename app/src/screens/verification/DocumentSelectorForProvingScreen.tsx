@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -81,6 +81,9 @@ function getDocumentDisplayName(
       : `${mockPrefix}${base}`;
   } else if (category === 'aadhaar') {
     return isMock ? 'Dev Aadhaar ID' : 'Aadhaar ID';
+  } else if (category === 'kyc') {
+    const idLabel = metadata.idType || 'Verified ID';
+    return isMock ? `Dev ${idLabel}` : idLabel;
   }
 
   return isMock ? `Dev ${metadata.documentType}` : metadata.documentType;
@@ -266,7 +269,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     const metadata = documentCatalog.documents.find(
       d => d.id === selectedDocumentId,
     );
-    return getDocumentTypeName(metadata?.documentCategory);
+    return getDocumentTypeName(metadata?.documentCategory, metadata?.idType);
   }, [
     selectedDocumentId,
     documentCatalog.documents,

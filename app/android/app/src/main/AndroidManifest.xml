@@ -17,6 +17,10 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- Remove FOREGROUND_SERVICE_MICROPHONE merged in by Sumsub SDK (VideoIdent is disabled) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" tools:node="remove" />
 
     <application
       android:name=".MainApplication"
@@ -72,6 +76,7 @@
 
       <service
         android:name="com.google.firebase.messaging.FirebaseMessagingService"
+        android:foregroundServiceType="dataSync"
         android:exported="false">
         <intent-filter>
           <action android:name="com.google.firebase.MESSAGING_EVENT" />

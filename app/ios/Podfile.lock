@@ -196,11 +196,6 @@ PODS:
   - IdensicMobileSDK/Fisherman (1.40.2):
     - FingerprintPro (~> 2.11)
     - IdensicMobileSDK/Core
-  - IdensicMobileSDK/VideoIdent (1.40.2):
-    - IdensicMobileSDK/VideoIdent-latest
-  - IdensicMobileSDK/VideoIdent-latest (1.40.2):
-    - IdensicMobileSDK/Core
-    - TwilioVideo (>= 5.8.2)
   - lottie-ios (4.5.0)
   - lottie-react-native (7.2.2):
     - DoubleConversion
@@ -1516,7 +1511,6 @@ PODS:
   - react-native-mobilesdk-module (1.40.2):
     - IdensicMobileSDK (= 1.40.2)
     - IdensicMobileSDK/Fisherman (= 1.40.2)
-    - IdensicMobileSDK/VideoIdent (= 1.40.2)
     - React-Core
   - react-native-netinfo (11.4.1):
     - React-Core
@@ -2183,7 +2177,6 @@ PODS:
     - React-Core
   - SwiftQRScanner (1.1.6)
   - SwiftyTesseract (3.1.3)
-  - TwilioVideo (5.11.1)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -2335,7 +2328,6 @@ SPEC REPOS:
     - Sentry
     - SocketRocket
     - SwiftyTesseract
-    - TwilioVideo
 
 EXTERNAL SOURCES:
   boost:
@@ -2641,7 +2633,7 @@ SPEC CHECKSUMS:
   react-native-cloud-storage: 796c793dc354bb49f9df27ca25eed0f79a15549e
   react-native-compat: 10b5f906b469268eaceca83ea2393c177f1ce18a
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
-  react-native-mobilesdk-module: 4770cb45fdd19dc4eed04615f0fcdab013b3dfe2
+  react-native-mobilesdk-module: 08c16fea2be97669f8e4c38153106e5fe698126a
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-nfc-manager: c8891e460b4943b695d63f7f4effc6345bbefc83
   react-native-passkey: 84eaf6d62d3f9cbb8bc3c837dcb9ca794eec5140
@@ -2697,9 +2689,8 @@ SPEC CHECKSUMS:
   sovran-react-native: a3ad3f8ff90c2002b2aa9790001a78b0b0a38594
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
-  TwilioVideo: 9f51085d4e4fb3aff8e168b8215b31cb0f486a2f
-  Yoga: c34725819ab0a5962e85455b9e56679b306910ee
+  Yoga: 1259c7a8cbaccf7b4c3ddf8ee36ca11be9dee407
 
-PODFILE CHECKSUM: 3893ff5cd5cddfe0988bcd3a722a30c9f168730a
+PODFILE CHECKSUM: ced4db0072978f965783277bc810af9a7bebe695
 
 COCOAPODS: 1.16.2

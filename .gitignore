@@ -12,8 +12,8 @@ showcase
 output/*
 *.tsbuildinfo
 .yarnrc.yml
-.giga/tasks/*
 package-lock.json
+.claude
 
 # CI-generated tarballs (don't commit these!)
 mobile-sdk-alpha-ci.tgz
@@ -21,6 +21,15 @@ mobile-sdk-alpha-ci.tgz
 /tmp/mobile-sdk-alpha*.tgz
 dataInput.d.ts
 packages/mobile-sdk-alpha/docs/docstrings-report.json
+
+# Android SDK directories (local installs)
+app/build-tools/
+app/licenses/
+app/ndk/
+app/platform-tools/
+app/platforms/
+packages/mobile-sdk-alpha/licenses/
+packages/mobile-sdk-alpha/platforms/
 
 # Private Android modules (cloned at build time)
 app/android/android-passport-nfc-reader/

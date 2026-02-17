@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -284,8 +284,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
-      navigateIfReady('RegistrationFallback', {
-        errorSource: 'mrz_scan_failed',
+      navigateIfReady('RegistrationFallbackMRZ', {
         countryCode: currentCountryCode,
       });
     });
@@ -318,10 +317,12 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         if (navigationRef.isReady()) {
           switch (documentType) {
             case 'p':
-              navigationRef.navigate('DocumentOnboarding');
-              break;
             case 'i':
-              navigationRef.navigate('DocumentOnboarding');
+              // Navigate to logo confirmation screen for biometric IDs
+              navigationRef.navigate('LogoConfirmation', {
+                documentType,
+                countryCode,
+              });
               break;
             case 'a':
               if (countryCode) {
@@ -348,8 +349,21 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     accessToken: accessToken.token,
                   });
 
-                  // User cancelled - return silently
-                  if (!result.success && result.status === 'Interrupted') {
+                  console.log('[Sumsub] Result:', JSON.stringify(result));
+
+                  // User cancelled/dismissed without completing verification
+                  // Status values: 'Initial' (never started), 'Incomplete' (started but not finished),
+                  // 'Interrupted' (explicitly cancelled)
+                  const cancelledStatuses = [
+                    'Initial',
+                    'Incomplete',
+                    'Interrupted',
+                  ];
+                  if (cancelledStatuses.includes(result.status)) {
+                    console.log(
+                      '[Sumsub] User cancelled or closed without completing, status:',
+                      result.status,
+                    );
                     return;
                   }
 
@@ -370,17 +384,24 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     }
                     // Guard navigation call after async operations
                     if (navigationRef.isReady()) {
-                      navigationRef.navigate('RegistrationFallback', {
-                        errorSource: 'sumsub_verification',
+                      navigationRef.navigate('KycFailure', {
                         countryCode,
+                        canRetry: true,
                       });
                     }
                     return;
                   }
 
-                  // Success case: navigate to KYC success screen
+                  // User completed verification (status: 'Pending', 'Approved', etc.)
+                  // Navigate to KYC success screen
+                  console.log(
+                    '[Sumsub] Verification submitted, status:',
+                    result.status,
+                  );
                   if (navigationRef.isReady()) {
-                    navigationRef.navigate('KycSuccess');
+                    navigationRef.navigate('KycSuccess', {
+                      userId: accessToken.userId,
+                    });
                   }
                 } catch (error) {
                   const safeInitError = sanitizeErrorMessage(
@@ -389,8 +410,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                   console.error('Error in KYC flow:', safeInitError);
                   // Guard navigation call after async operations
                   if (navigationRef.isReady()) {
-                    navigationRef.navigate('RegistrationFallback', {
-                      errorSource: 'sumsub_initialization',
+                    navigationRef.navigate('KycConnectionError', {
                       countryCode,
                     });
                   }

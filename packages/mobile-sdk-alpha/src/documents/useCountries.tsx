@@ -1,12 +1,14 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { getCountry } from 'react-native-localize';
 
 import { commonNames } from '@selfxyz/common';
 import { alpha2ToAlpha3 } from '@selfxyz/common/constants/countries';
+
+import countryDocumentTypesData from '../data/country-document-types.json';
 
 export interface CountryData {
   [countryCode: string]: string[];
@@ -29,37 +31,10 @@ function getUserCountryCode(): string | null {
   }
   return null;
 }
+
 export function useCountries() {
-  const [countryData, setCountryData] = useState<CountryData>({});
-  const [loading, setLoading] = useState(true);
+  const countryData = countryDocumentTypesData as CountryData;
   const userCountryCode = useMemo(getUserCountryCode, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchCountryData = async () => {
-      try {
-        const response = await fetch('https://api.staging.self.xyz/id-picker', {
-          signal: controller.signal,
-        });
-        const result = await response.json();
-
-        if (result.status === 'success') {
-          setCountryData(result.data);
-          // if (__DEV__) {
-          //   console.log('Set country data:', result.data);
-          // }
-        } else {
-          console.error('API returned non-success status:', result.status);
-        }
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCountryData();
-    return () => controller.abort();
-  }, []);
 
   const countryList = useMemo(() => {
     const allCountries = Object.keys(countryData).map(countryCode => ({
@@ -77,5 +52,5 @@ export function useCountries() {
 
   const showSuggestion = userCountryCode && countryData[userCountryCode];
 
-  return { countryData, countryList, loading, userCountryCode, showSuggestion };
+  return { countryData, countryList, loading: false, userCountryCode, showSuggestion };
 }

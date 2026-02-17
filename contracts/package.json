@@ -38,7 +38,6 @@
     "format": "yarn prettier:write",
     "prettier:check": "prettier --plugin-search-dir . --list-different '**/*.{json,md,yml,sol,ts}'",
     "prettier:write": "prettier --plugin-search-dir . --write '**/*.{json,md,yml,sol,ts}'",
-    "publish": "npm publish --access public",
     "set:hub:v2": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK} npx tsx scripts/setHubV2.ts'",
     "set:registry": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK} npx tsx scripts/setRegistry.ts'",
     "set:registry:hub:v2": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/scripts/updateRegistryHubV2.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
