@@ -13,16 +13,16 @@ export const ComingSoonScreen: React.FC = () => {
   const location = useLocation();
   const { analytics, haptic } = useSelfClient();
 
-  const { countryCode, documentCategory } =
+  const { countryCode, documentType } =
     (location.state as {
       countryCode?: string;
-      documentCategory?: string;
+      documentType?: string;
     }) || {};
 
   const documentTypeText =
-    documentCategory === 'id_card'
+    documentType === 'i'
       ? 'ID Cards'
-      : documentCategory === 'passport'
+      : documentType === 'p'
         ? 'Passports'
         : '';
 

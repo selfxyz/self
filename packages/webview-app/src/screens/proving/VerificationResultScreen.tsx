@@ -25,7 +25,7 @@ export const VerificationResultScreen: React.FC = () => {
   }, [navigate, haptic]);
 
   return (
-    <YStack flex={1} backgroundColor={success ? '#ffffff' : '#ffffff'}>
+    <YStack flex={1} backgroundColor="#ffffff">
       {/* Top: result animation area */}
       <View
         flex={1}
