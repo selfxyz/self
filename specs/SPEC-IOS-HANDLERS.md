@@ -4,6 +4,28 @@
 
 This spec covers completing iOS handler support for the KMP SDK. The original approach (Kotlin/Native cinterop with Apple frameworks) is **abandoned** due to Xcode SDK compatibility issues that blocked compilation. Instead, we use the **Swift wrapper pattern** already proven in the test app.
 
+**Only 3 native handlers are needed for iOS** (down from 9 in the original spec):
+
+| Handler | Why Native? |
+|---------|-------------|
+| **NFC** | Hardware — browser cannot access NFC chip |
+| **Biometrics** | OS prompt — Face ID / Touch ID requires native LAContext |
+| **Lifecycle** | ViewController management — dismiss/result delivery needs native VC reference |
+
+**Camera/MRZ**: Phase 2 optional — not needed for initial launch.
+
+The other 5 handlers from the original spec are **no longer built for iOS**:
+
+| Dropped Handler | Reason |
+|----------------|--------|
+| SecureStorage | Keychain is native-managed by the host app (e.g. MiniPay manages its own keychain) |
+| Crypto | Web Crypto API inside the WebView handles hashing/signing |
+| Documents | IndexedDB inside the WebView handles document storage |
+| Haptic | Not critical — skipped entirely |
+| Analytics | Fire-and-forget — console/fetch inside the WebView suffices |
+
+> **Reference**: See the Native Handler Matrix in [SPECS.md](./SPECS.md) for the full rationale. The key insight is: only bridge to native what the browser literally cannot do. Everything else runs inside the WebView using standard web APIs.
+
 **Approach**: Define Kotlin provider/factory interfaces in `iosMain`. Provide a Swift companion package (`SelfSdkSwift/`) with default implementations that host apps include alongside the XCFramework. Host apps register Swift implementations at startup, and the SDK calls them through the factory interfaces.
 
 **Prerequisite**: [SPEC-KMP-SDK.md](./SPEC-KMP-SDK.md) chunks 2A–2C (complete).
@@ -49,7 +71,7 @@ The test app already demonstrates this pattern for NFC and Camera:
 
 ### What Changes
 
-Move factory interfaces **into the SDK** (`kmp-sdk/shared/src/iosMain/`), not the test app. The SDK's iOS handlers call the registered factories instead of throwing `NotImplementedError`. A new Swift companion package (`SelfSdkSwift/`) provides default implementations.
+Move factory interfaces **into the SDK** (`kmp-sdk/shared/src/iosMain/`), not the test app. Only 3 handler providers are needed (NFC, Biometric, WebView), plus the Lifecycle handler which is self-contained in Kotlin. The SDK's iOS handlers call the registered factories instead of throwing `NotImplementedError`. A new Swift companion package (`SelfSdkSwift/`) provides default implementations for the 3 providers.
 
 ### Key Design Principles
 
@@ -58,6 +80,7 @@ Move factory interfaces **into the SDK** (`kmp-sdk/shared/src/iosMain/`), not th
 - **Callback-based APIs** — Swift closures bridge to Kotlin `suspend` functions via `suspendCancellableCoroutine`
 - **Main thread safety** — Swift callbacks dispatch to main queue before calling Kotlin
 - **ARC lifecycle management** — Swift factory impls retain helpers during async operations (prevents premature deallocation)
+- **WebView handles the rest** — Documents (IndexedDB), Crypto (Web Crypto API), Analytics (fetch), Haptic (skipped) all run inside the WebView with no native handler
 
 ---
 
@@ -66,26 +89,15 @@ Move factory interfaces **into the SDK** (`kmp-sdk/shared/src/iosMain/`), not th
 ```
 packages/kmp-sdk/
   shared/src/iosMain/kotlin/xyz/self/sdk/
-    providers/                              # NEW — Factory interfaces for all handlers
+    providers/                              # NEW — Factory interfaces (only 3 + WebView)
       NfcProvider.kt                        # NFC passport scanning
       BiometricProvider.kt                  # Face ID / Touch ID
-      SecureStorageProvider.kt              # Keychain access
-      CryptoProvider.kt                     # Key generation, signing
-      CameraMrzProvider.kt                  # MRZ camera scanning
-      HapticProvider.kt                     # Vibration feedback
-      DocumentsProvider.kt                  # Encrypted document storage
       WebViewProvider.kt                    # WKWebView hosting
-      SdkProviderRegistry.kt               # Central registry for all providers
-    handlers/                               # REWRITE — Use providers instead of stubs
-      NfcBridgeHandler.kt
-      BiometricBridgeHandler.kt
-      SecureStorageBridgeHandler.kt
-      CryptoBridgeHandler.kt
-      CameraMrzBridgeHandler.kt
-      HapticBridgeHandler.kt
-      AnalyticsBridgeHandler.kt             # Stays as fire-and-forget (no provider needed)
-      LifecycleBridgeHandler.kt
-      DocumentsBridgeHandler.kt
+      SdkProviderRegistry.kt               # Central registry (3 providers)
+    handlers/                               # REWRITE — Only 3 handlers
+      NfcBridgeHandler.kt                   # NFC scan via provider
+      BiometricBridgeHandler.kt             # Biometrics via provider
+      LifecycleBridgeHandler.kt             # Lifecycle (self-contained, no provider)
     webview/
       IosWebViewHost.kt                     # REWRITE — Uses WebViewProvider
     api/
@@ -98,28 +110,22 @@ packages/self-sdk-swift/                    # NEW — Swift companion package
     Providers/
       NfcProviderImpl.swift                 # Wraps NfcPassportHelper
       BiometricProviderImpl.swift           # LAContext wrapper
-      SecureStorageProviderImpl.swift        # Keychain wrapper
-      CryptoProviderImpl.swift              # SecKey wrapper
-      CameraMrzProviderImpl.swift           # Wraps MrzCameraHelper
-      HapticProviderImpl.swift              # UIImpactFeedbackGenerator
-      DocumentsProviderImpl.swift           # Encrypted file storage
       WebViewProviderImpl.swift             # WKWebView wrapper
     Helpers/
       NfcPassportHelper.swift               # MOVE from test app (274 lines)
-      MrzCameraHelper.swift                 # MOVE from test app (322 lines)
 ```
 
 ---
 
 ## Chunk 3A: Factory Infrastructure
 
-**Goal**: Define all provider interfaces in the SDK and create the Swift companion package skeleton.
+**Goal**: Define the 3 provider interfaces in the SDK and create the Swift companion package skeleton.
 
 ### Step 1: Provider Interfaces (Kotlin `iosMain`)
 
 #### `SdkProviderRegistry.kt`
 
-Central registry that all providers register into. The SDK checks this before attempting operations.
+Central registry that all providers register into. Only 3 providers are required — the WebView engine handles everything else via web-native fallbacks.
 
 ```kotlin
 package xyz.self.sdk.providers
@@ -127,24 +133,26 @@ package xyz.self.sdk.providers
 /**
  * Central registry for iOS native provider implementations.
  * Swift companion package calls SdkProviderRegistry.configure() at app startup.
+ *
+ * Only 3 providers are needed:
+ * - NFC: hardware access (NFCPassportReader)
+ * - Biometric: OS-level prompt (LAContext)
+ * - WebView: WKWebView hosting and JS bridge
+ *
+ * Documents, Crypto, Analytics, Haptic are handled by web fallbacks
+ * inside the WebView (IndexedDB, Web Crypto API, fetch).
+ * Keychain access is native-managed by the host app directly.
  */
 object SdkProviderRegistry {
     var nfc: NfcProvider? = null
     var biometric: BiometricProvider? = null
-    var secureStorage: SecureStorageProvider? = null
-    var crypto: CryptoProvider? = null
-    var cameraMrz: CameraMrzProvider? = null
-    var haptic: HapticProvider? = null
-    var documents: DocumentsProvider? = null
     var webView: WebViewProvider? = null
 
     /**
      * Returns true if all required providers are registered.
-     * Analytics and Lifecycle don't need external providers.
+     * Lifecycle handler is self-contained (no external provider needed).
      */
-    fun isConfigured(): Boolean = nfc != null && biometric != null &&
-        secureStorage != null && crypto != null && cameraMrz != null &&
-        documents != null && webView != null
+    fun isConfigured(): Boolean = nfc != null && biometric != null && webView != null
 }
 ```
 
@@ -199,74 +207,6 @@ interface BiometricProvider {
         reason: String,
         onResult: (success: Boolean, error: String?) -> Unit,
     )
-}
-```
-
-#### `SecureStorageProvider.kt`
-
-```kotlin
-package xyz.self.sdk.providers
-
-interface SecureStorageProvider {
-    fun get(key: String): String?
-    fun set(key: String, value: String)
-    fun remove(key: String)
-}
-```
-
-#### `CryptoProvider.kt`
-
-```kotlin
-package xyz.self.sdk.providers
-
-interface CryptoProvider {
-    fun generateKey(keyRef: String)
-    fun getPublicKey(keyRef: String): String?  // Base64-encoded public key
-    fun sign(keyRef: String, data: String): String?  // Base64-encoded signature
-    fun deleteKey(keyRef: String)
-}
-```
-
-#### `CameraMrzProvider.kt`
-
-```kotlin
-package xyz.self.sdk.providers
-
-import platform.UIKit.UIView
-
-interface CameraMrzProvider {
-    fun isAvailable(): Boolean
-    fun createCameraView(
-        onMrzDetected: (jsonResult: String) -> Unit,
-        onProgress: (stateIndex: Int) -> Unit,
-        onError: (error: String) -> Unit,
-    ): UIView
-    fun stopCamera()
-}
-```
-
-#### `HapticProvider.kt`
-
-```kotlin
-package xyz.self.sdk.providers
-
-interface HapticProvider {
-    fun impact(style: String)  // "light", "medium", "heavy"
-    fun notification(type: String)  // "success", "warning", "error"
-    fun selection()
-}
-```
-
-#### `DocumentsProvider.kt`
-
-```kotlin
-package xyz.self.sdk.providers
-
-interface DocumentsProvider {
-    fun get(key: String): String?
-    fun set(key: String, value: String)
-    fun remove(key: String)
-    fun list(): List<String>
 }
 ```
 
@@ -338,15 +278,18 @@ import SelfSdk  // KMP XCFramework
 public class SelfSdkSwift {
     /// Call this at app startup to register all default Swift provider implementations.
     /// After calling this, SelfSdk.launch() will work on iOS.
+    ///
+    /// Only 3 providers are registered:
+    /// - NFC (hardware access)
+    /// - Biometric (OS prompt)
+    /// - WebView (WKWebView hosting)
+    ///
+    /// Documents, Crypto, Analytics, and Haptic are handled by web
+    /// fallbacks inside the WebView — no native providers needed.
     public static func configure() {
         let registry = SdkProviderRegistry.shared
         registry.nfc = NfcProviderImpl()
         registry.biometric = BiometricProviderImpl()
-        registry.secureStorage = SecureStorageProviderImpl()
-        registry.crypto = CryptoProviderImpl()
-        registry.cameraMrz = CameraMrzProviderImpl()
-        registry.haptic = HapticProviderImpl()
-        registry.documents = DocumentsProviderImpl()
         registry.webView = WebViewProviderImpl()
     }
 }
@@ -374,9 +317,9 @@ actual fun launch(request: VerificationRequest, callback: SelfSdkCallback) {
 
 ---
 
-## Chunk 3B: Biometric, SecureStorage, Haptic Handlers
+## Chunk 3B: Biometric Handler
 
-**Goal**: Implement the 3 simplest handlers end-to-end (Kotlin handler + Swift provider).
+**Goal**: Implement the simplest handler end-to-end (Kotlin handler + Swift provider). Good starting point to validate the full pattern.
 
 ### Biometric Handler (Kotlin side)
 
@@ -449,195 +392,19 @@ class BiometricProviderImpl: NSObject, BiometricProvider {
 }
 ```
 
-### SecureStorage Handler (Kotlin side)
-
-```kotlin
-class SecureStorageBridgeHandler : BridgeHandler {
-    override val domain = BridgeDomain.SECURE_STORAGE
-
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        val provider = SdkProviderRegistry.secureStorage
-            ?: throw BridgeHandlerException("NOT_CONFIGURED", "SecureStorage provider not registered")
-
-        val key = params["key"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_KEY", "Key parameter required")
-
-        return when (method) {
-            "get" -> {
-                val value = provider.get(key)
-                if (value != null) JsonPrimitive(value) else JsonNull
-            }
-            "set" -> {
-                val value = params["value"]?.jsonPrimitive?.content
-                    ?: throw BridgeHandlerException("MISSING_VALUE", "Value parameter required")
-                provider.set(key, value)
-                null
-            }
-            "remove" -> {
-                provider.remove(key)
-                null
-            }
-            else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown secureStorage method: $method")
-        }
-    }
-}
-```
-
-### SecureStorage Provider (Swift side)
-
-```swift
-// Sources/SelfSdkSwift/Providers/SecureStorageProviderImpl.swift
-import Security
-import SelfSdk
-
-class SecureStorageProviderImpl: NSObject, SecureStorageProvider {
-    private let service = "xyz.self.sdk"
-
-    func get(key: String) -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess, let data = result as? Data else { return nil }
-        return String(data: data, encoding: .utf8)
-    }
-
-    func set(key: String, value: String) {
-        // Delete existing first (upsert pattern)
-        remove(key: key)
-        guard let data = value.data(using: .utf8) else { return }
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
-            kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-        ]
-        SecItemAdd(query as CFDictionary, nil)
-    }
-
-    func remove(key: String) {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
-        ]
-        SecItemDelete(query as CFDictionary)
-    }
-}
-```
-
-### Haptic Handler (Kotlin side)
-
-```kotlin
-class HapticBridgeHandler : BridgeHandler {
-    override val domain = BridgeDomain.HAPTIC
-
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        val provider = SdkProviderRegistry.haptic
-        // Haptic is optional — silently no-op if not registered
-        provider ?: return null
-
-        when (method) {
-            "impact" -> {
-                val style = params["style"]?.jsonPrimitive?.content ?: "medium"
-                provider.impact(style)
-            }
-            "notification" -> {
-                val type = params["type"]?.jsonPrimitive?.content ?: "success"
-                provider.notification(type)
-            }
-            "selection" -> provider.selection()
-        }
-        return null
-    }
-}
-```
-
-### Haptic Provider (Swift side)
-
-```swift
-// Sources/SelfSdkSwift/Providers/HapticProviderImpl.swift
-import UIKit
-import SelfSdk
-
-class HapticProviderImpl: NSObject, HapticProvider {
-    func impact(style: String) {
-        let uiStyle: UIImpactFeedbackGenerator.FeedbackStyle = switch style {
-        case "light": .light
-        case "heavy": .heavy
-        default: .medium
-        }
-        UIImpactFeedbackGenerator(style: uiStyle).impactOccurred()
-    }
-
-    func notification(type: String) {
-        let uiType: UINotificationFeedbackGenerator.FeedbackType = switch type {
-        case "warning": .warning
-        case "error": .error
-        default: .success
-        }
-        UINotificationFeedbackGenerator().notificationOccurred(uiType)
-    }
-
-    func selection() {
-        UISelectionFeedbackGenerator().selectionChanged()
-    }
-}
-```
-
 ### Validation
 
-- Biometric: Test on physical device — authenticate with Face ID/Touch ID
-- SecureStorage: Write → read → delete roundtrip
-- Haptic: Trigger each feedback type, confirm device vibrates
-- All 3 handlers compile with `./gradlew :shared:compileKotlinIosArm64`
+- Biometric: Physical device test — Face ID / Touch ID prompt appears, success callback fires
+- Biometric: Simulator test — `isAvailable()` returns false gracefully
+- `./gradlew :shared:compileKotlinIosArm64` passes
 
 ---
 
-## Chunk 3C: Crypto, Documents, Analytics, Lifecycle Handlers
+## Chunk 3C: Lifecycle Handler
 
-**Goal**: Implement remaining non-hardware handlers.
+**Goal**: Implement the Lifecycle handler with callback/dismiss wiring. This handler is self-contained in Kotlin (no Swift provider needed) — it uses the `SelfSdkCallback` reference and dismiss action set by `SelfSdk.ios.kt`.
 
-### Crypto Handler
-
-The Kotlin handler delegates signing, key generation, and public key retrieval to `CryptoProvider`. The Swift implementation uses Security framework's `SecKey` APIs.
-
-**Kotlin handler** (`CryptoBridgeHandler.kt`): Routes `sign`, `generateKey`, `getPublicKey`, `deleteKey` to provider.
-
-**Swift provider** (`CryptoProviderImpl.swift`):
-- `generateKey`: `SecKeyCreateRandomKey` with `kSecAttrKeyTypeECSECPrimeRandom`, 256-bit, stored in Keychain with `keyRef` as label
-- `getPublicKey`: `SecKeyCopyPublicKey` → `SecKeyCopyExternalRepresentation` → Base64
-- `sign`: `SecKeyCreateSignature` with `kSecKeyAlgorithmECDSASignatureMessageX962SHA256` → Base64
-- `deleteKey`: `SecItemDelete` with key reference query
-
-### Documents Handler
-
-**Kotlin handler** (`DocumentsBridgeHandler.kt`): Routes `get`, `set`, `remove`, `list` to provider.
-
-**Swift provider** (`DocumentsProviderImpl.swift`):
-- Uses `FileManager` with encrypted container directory at `Application Support/xyz.self.sdk/documents/`
-- Each document stored as a file with the key as filename
-- File protection: `.completeUntilFirstUserAuthentication`
-- `list()`: Returns directory listing of document keys
-
-### Analytics Handler
-
-**No changes needed.** Stays as fire-and-forget — accepts all events, returns `null`. Optionally logs via `NSLog` for debug builds.
-
-### Lifecycle Handler
-
-**Kotlin handler** (`LifecycleBridgeHandler.kt`):
-- `ready`: No-op, returns `null`
-- `dismiss`: Calls `SdkProviderRegistry.webView?.getViewController()?.dismiss(animated: true, completion: nil)` — requires reference to the presenting view controller
-- `setResult`: Parses success/failure, invokes the pending `SelfSdkCallback`, then dismisses
-
-**Design**: The lifecycle handler needs a reference to the `SelfSdkCallback` that was passed to `SelfSdk.launch()`. Add a `pendingCallback` property to the handler that `SelfSdk.ios.kt` sets before launching the WebView.
+### Lifecycle Handler (Kotlin side)
 
 ```kotlin
 class LifecycleBridgeHandler : BridgeHandler {
@@ -672,11 +439,13 @@ class LifecycleBridgeHandler : BridgeHandler {
 }
 ```
 
+**Design**: The lifecycle handler needs a reference to the `SelfSdkCallback` that was passed to `SelfSdk.launch()`. The `SelfSdk.ios.kt` sets `pendingCallback` and `dismissAction` before launching the WebView.
+
 ### Validation
 
-- Crypto: Generate key → get public key → sign data → verify signature roundtrip
-- Documents: Store → retrieve → list → remove roundtrip
-- Lifecycle: `setResult` delivers to callback, `dismiss` triggers `onCancelled`
+- Lifecycle: `setResult` with success=true invokes `SelfSdkCallback.onSuccess`
+- Lifecycle: `setResult` with success=false invokes `SelfSdkCallback.onFailure`
+- Lifecycle: `dismiss` invokes `SelfSdkCallback.onCancelled` and dismisses view controller
 - `./gradlew :shared:compileKotlinIosArm64` passes
 
 ---
@@ -777,6 +546,8 @@ class WebViewProviderImpl: NSObject, WebViewProvider, WKScriptMessageHandler {
 
 ### `SelfSdk.ios.kt` — Launch Flow
 
+Only 3 handlers are registered. Documents, Crypto, Analytics, and Haptic are all handled by web fallbacks inside the WebView — no native handler registration needed.
+
 ```kotlin
 actual fun launch(request: VerificationRequest, callback: SelfSdkCallback) {
     check(SdkProviderRegistry.isConfigured()) {
@@ -787,7 +558,7 @@ actual fun launch(request: VerificationRequest, callback: SelfSdkCallback) {
         sendToWebView = { js -> webViewHost?.evaluateJs(js) }
     )
 
-    // Register all handlers
+    // Register only 3 handlers — everything else handled by WebView web fallbacks
     val lifecycleHandler = LifecycleBridgeHandler().apply {
         pendingCallback = callback
         dismissAction = {
@@ -798,14 +569,13 @@ actual fun launch(request: VerificationRequest, callback: SelfSdkCallback) {
     }
 
     router.register(BiometricBridgeHandler())
-    router.register(SecureStorageBridgeHandler())
-    router.register(CryptoBridgeHandler())
-    router.register(HapticBridgeHandler())
-    router.register(AnalyticsBridgeHandler())
     router.register(lifecycleHandler)
-    router.register(DocumentsBridgeHandler())
-    router.register(CameraMrzBridgeHandler())
     router.register(NfcBridgeHandler(router))
+    // Documents  → IndexedDB in WebView
+    // Crypto     → Web Crypto API in WebView
+    // Analytics  → console/fetch in WebView
+    // Haptic     → skipped (not critical)
+    // Keychain   → native-managed by host app (e.g. MiniPay)
 
     // Create WebView
     webViewHost = IosWebViewHost(router, config.debug)
@@ -832,12 +602,14 @@ private fun findTopViewController(): UIViewController? {
 - Full verification flow: `SelfSdk.launch()` → WebView loads → bridge messages flow → result delivered via callback
 - Test in test app: Replace Swift workarounds with `SelfSdkSwift.configure()` call
 - WebView loads both in debug mode (localhost) and release mode (bundled assets)
+- `SelfSdk.launch()` without `SelfSdkSwift.configure()` throws clear error message
+- `SelfSdkCallback.onSuccess` fires when verification completes
 
 ---
 
-## Chunk 3E: Wire Up NFC + Camera
+## Chunk 3E: NFC Handler
 
-**Goal**: Connect existing `NfcPassportHelper.swift` and `MrzCameraHelper.swift` to the SDK's factory pattern.
+**Goal**: Connect existing `NfcPassportHelper.swift` to the SDK's factory pattern. This is the most complex handler due to async progress callbacks and the NFCPassportReader dependency.
 
 ### NFC Provider (Swift side)
 
@@ -941,91 +713,6 @@ class NfcBridgeHandler(private val router: MessageRouter) : BridgeHandler {
 }
 ```
 
-### Camera MRZ Provider (Swift side)
-
-Move `MrzCameraHelper.swift` into `packages/self-sdk-swift/Sources/SelfSdkSwift/Helpers/`. Wrap it:
-
-```swift
-// Sources/SelfSdkSwift/Providers/CameraMrzProviderImpl.swift
-import UIKit
-import SelfSdk
-
-class CameraMrzProviderImpl: NSObject, CameraMrzProvider {
-    private var cameraHelper: MrzCameraHelper?
-
-    func isAvailable() -> Bool {
-        return true  // Camera availability checked at runtime by AVCaptureDevice
-    }
-
-    func createCameraView(onMrzDetected: @escaping (String) -> Void,
-                           onProgress: @escaping (Int32) -> Void,
-                           onError: @escaping (String) -> Void) -> UIView {
-        let helper = MrzCameraHelper()
-        self.cameraHelper = helper
-
-        let view = helper.createCameraPreviewView(frame: .zero)
-
-        helper.scanMrzWithCallbacks(
-            progress: { stateIndex in
-                DispatchQueue.main.async { onProgress(Int32(stateIndex)) }
-            },
-            completion: { success, jsonResult in
-                DispatchQueue.main.async {
-                    if success {
-                        onMrzDetected(jsonResult)
-                    } else {
-                        onError(jsonResult)
-                    }
-                }
-            }
-        )
-        helper.startCamera()
-        return view
-    }
-
-    func stopCamera() {
-        cameraHelper?.stopCamera()
-        cameraHelper = nil
-    }
-}
-```
-
-### Camera Handler (Kotlin side)
-
-```kotlin
-class CameraMrzBridgeHandler : BridgeHandler {
-    override val domain = BridgeDomain.CAMERA
-
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        val provider = SdkProviderRegistry.cameraMrz
-            ?: throw BridgeHandlerException("NOT_CONFIGURED", "Camera MRZ provider not registered")
-
-        return when (method) {
-            "isAvailable" -> JsonPrimitive(provider.isAvailable())
-            "scanMRZ" -> scanMrz(provider)
-            "stopCamera" -> { provider.stopCamera(); null }
-            else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown camera method: $method")
-        }
-    }
-
-    private suspend fun scanMrz(provider: CameraMrzProvider): JsonElement {
-        return suspendCancellableCoroutine { cont ->
-            provider.createCameraView(
-                onMrzDetected = { jsonResult ->
-                    cont.resume(Json.parseToJsonElement(jsonResult))
-                },
-                onProgress = { _ -> /* Progress updates for UI */ },
-                onError = { error ->
-                    cont.resumeWithException(
-                        BridgeHandlerException("MRZ_SCAN_FAILED", error)
-                    )
-                }
-            )
-        }
-    }
-}
-```
-
 ### Migration from Test App
 
 After this chunk, update the test app to use `SelfSdkSwift.configure()` instead of the manual factory registrations:
@@ -1043,14 +730,27 @@ init() {
 }
 ```
 
-The test app's `NfcScanFactoryImpl.swift` and `MrzCameraFactoryImpl.swift` become unnecessary — delete them. The test app's `NfcPassportHelper.swift` and `MrzCameraHelper.swift` are now in the Swift companion package.
+The test app's `NfcScanFactoryImpl.swift` becomes unnecessary — delete it. The test app's `NfcPassportHelper.swift` is now in the Swift companion package.
 
 ### Validation
 
 - NFC: Full passport scan on physical device (uses same NfcPassportHelper code, just moved)
-- Camera: MRZ detection works through SDK handler → provider → MrzCameraHelper
+- NFC: Progress callbacks fire in correct order (states 0–7)
+- NFC: Cancel during scan doesn't crash
 - Test app: Replace factory registrations with `SelfSdkSwift.configure()`, verify same behavior
 - Full end-to-end: `SelfSdk.launch()` → WebView → NFC scan → result callback
+
+---
+
+## Chunk 3F (Optional, Phase 2): Camera MRZ Handler
+
+**Not needed for initial launch.** Camera/MRZ scanning can be added later if needed. The WebView UI currently supports manual MRZ entry as a fallback.
+
+If added in Phase 2, the pattern follows the same Swift wrapper approach:
+- Move `MrzCameraHelper.swift` from test app into `SelfSdkSwift/Helpers/`
+- Create `CameraMrzProvider.kt` interface and `CameraMrzBridgeHandler.kt`
+- Create `CameraMrzProviderImpl.swift` wrapping the helper
+- Register in `SdkProviderRegistry` (add optional `cameraMrz` field)
 
 ---
 
@@ -1058,14 +758,12 @@ The test app's `NfcScanFactoryImpl.swift` and `MrzCameraFactoryImpl.swift` becom
 
 | File | Role |
 |------|------|
-| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/` | All 9 stub handlers (rewrite) |
+| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/` | 3 handlers to implement (NFC, Biometric, Lifecycle) |
 | `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/webview/IosWebViewHost.kt` | WebView stub (rewrite) |
 | `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/api/SelfSdk.ios.kt` | Launch flow (update) |
 | `packages/kmp-sdk/shared/build.gradle.kts` | cinterop disabled (keep disabled) |
 | `packages/kmp-test-app/iosApp/iosApp/NfcPassportHelper.swift` | Move to Swift companion package |
-| `packages/kmp-test-app/iosApp/iosApp/MrzCameraHelper.swift` | Move to Swift companion package |
 | `packages/kmp-test-app/iosApp/iosApp/NfcScanFactoryImpl.swift` | Reference pattern, then delete |
-| `packages/kmp-test-app/iosApp/iosApp/MrzCameraFactoryImpl.swift` | Reference pattern, then delete |
 | `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/` | Android handlers (reference for method contracts) |
 
 ---
@@ -1075,24 +773,17 @@ The test app's `NfcScanFactoryImpl.swift` and `MrzCameraFactoryImpl.swift` becom
 ### Per-Chunk Test Requirements
 
 **Chunk 3A (Factory Infrastructure)**:
-- `./gradlew :shared:compileKotlinIosArm64` passes with all provider interfaces
+- `./gradlew :shared:compileKotlinIosArm64` passes with all 3 provider interfaces
 - Swift companion package builds: `cd packages/self-sdk-swift && swift build`
 - Provider interfaces are visible from Swift via XCFramework exports (manual check)
 
-**Chunk 3B (Biometric, SecureStorage, Haptic)**:
+**Chunk 3B (Biometric Handler)**:
 - Biometric: Physical device test — Face ID / Touch ID prompt appears, success callback fires
 - Biometric: Simulator test — `isAvailable()` returns false gracefully
-- SecureStorage: Roundtrip test — `set("key", "value")` → `get("key")` returns `"value"` → `remove("key")` → `get("key")` returns null
-- SecureStorage: Persistence test — write, kill app, relaunch, read back
-- SecureStorage: Overwrite test — `set("key", "a")` → `set("key", "b")` → `get("key")` returns `"b"`
-- Haptic: Manual test — each feedback type triggers device vibration
 
-**Chunk 3C (Crypto, Documents, Analytics, Lifecycle)**:
-- Crypto: `generateKey("testRef")` → `getPublicKey("testRef")` returns non-null base64 → `sign("testRef", data)` returns non-null signature → `deleteKey("testRef")` → `getPublicKey("testRef")` returns null
-- Crypto: Generated key persists in Keychain across app restarts
-- Documents: Same CRUD roundtrip as SecureStorage
-- Documents: `list()` returns all stored document keys
+**Chunk 3C (Lifecycle Handler)**:
 - Lifecycle: `setResult` with success=true invokes `SelfSdkCallback.onSuccess`
+- Lifecycle: `setResult` with success=false invokes `SelfSdkCallback.onFailure`
 - Lifecycle: `dismiss` invokes `SelfSdkCallback.onCancelled` and dismisses view controller
 
 **Chunk 3D (WebView Host + Launch)**:
@@ -1102,28 +793,30 @@ The test app's `NfcScanFactoryImpl.swift` and `MrzCameraFactoryImpl.swift` becom
 - Bridge messages flow: WebView sends request → handler processes → response returned to WebView
 - `SelfSdkCallback.onSuccess` fires when verification completes
 
-**Chunk 3E (NFC + Camera)**:
+**Chunk 3E (NFC Handler)**:
 - NFC: Physical device — full passport scan matches test app behavior (same JSON output)
 - NFC: Progress callbacks fire in correct order (states 0–7)
 - NFC: Cancel during scan doesn't crash
-- Camera MRZ: Detects MRZ lines from passport page (states progress from 0 → 3)
-- Camera MRZ: Parsed MRZ data contains valid documentNumber, dateOfBirth, dateOfExpiry
 - Integration: `SelfSdkSwift.configure()` in test app replaces manual factory registrations with identical behavior
+
+**Chunk 3F (Camera MRZ — Phase 2)**:
+- Deferred. Not required for initial launch.
 
 ### Bridge Handler Parity Tests
 
-For each of the 9 handlers, verify method parity with Android:
+For each of the 3 handlers, verify method parity with Android:
 - Same methods supported (same `method` strings accepted)
 - Same parameter names and types expected
 - Same response JSON structure returned
 - Same error codes for same failure conditions
 
-Write a shared test matrix in `commonTest` that defines the expected contract per domain, then verify both platforms conform.
+Write a shared test matrix in `commonTest` that defines the expected contract per domain (NFC, Biometrics, Lifecycle), then verify both platforms conform.
+
+> **Note on Analytics**: Analytics events are fire-and-forget. In the WebView, they go through `console.log` or `fetch` — no native handler needed. If the host app wants analytics, it can intercept `console` output from the WKWebView.
 
 ---
 
 ## Dependencies
 
 - **SPEC-KMP-SDK.md** chunks 2A–2C: Required (Android complete, bridge protocol defined)
-- **SPEC-PROVING-CLIENT.md**: Independent (proving client lives in `commonMain`, not iOS-specific)
 - **SPEC-MINIPAY-SAMPLE.md**: Depends on this spec for iOS SDK functionality

@@ -7568,7 +7568,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-async-storage/async-storage@npm:^2.2.0":
+"@react-native-async-storage/async-storage@npm:^2.1.2, @react-native-async-storage/async-storage@npm:^2.2.0":
   version: 2.2.0
   resolution: "@react-native-async-storage/async-storage@npm:2.2.0"
   dependencies:
@@ -9321,7 +9321,9 @@ __metadata:
   resolution: "@selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha"
   dependencies:
     "@babel/runtime": "npm:^7.28.6"
+    "@noble/hashes": "npm:^1.5.0"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
+    "@react-native-async-storage/async-storage": "npm:^2.1.2"
     "@selfxyz/common": "workspace:^"
     "@selfxyz/euclid": "npm:^0.6.1"
     "@testing-library/react": "npm:^14.1.2"
@@ -9347,7 +9349,9 @@ __metadata:
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.9"
     react-native-blur-effect: "npm:^1.1.3"
+    react-native-get-random-values: "npm:^1.11.0"
     react-native-haptic-feedback: "npm:^2.3.3"
+    react-native-keychain: "npm:^9.2.3"
     react-native-localize: "npm:^3.6.1"
     react-native-nfc-manager: "npm:^3.17.2"
     react-native-svg: "npm:15.12.1"
@@ -9362,14 +9366,24 @@ __metadata:
     xstate: "npm:^5.20.2"
     zustand: "npm:^4.5.2"
   peerDependencies:
+    "@react-native-async-storage/async-storage": ">=1.0.0"
     lottie-react-native: 7.2.2
     react: ^18.3.1
     react-native: 0.76.9
     react-native-blur-effect: ^1.1.3
+    react-native-get-random-values: ">=1.0.0"
     react-native-haptic-feedback: "*"
+    react-native-keychain: ">=8.0.0"
     react-native-localize: "*"
     react-native-svg: "*"
     react-native-webview: ^13.16.0
+  peerDependenciesMeta:
+    "@react-native-async-storage/async-storage":
+      optional: true
+    react-native-get-random-values:
+      optional: true
+    react-native-keychain:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -30451,6 +30465,13 @@ __metadata:
   version: 10.0.0
   resolution: "react-native-keychain@npm:10.0.0"
   checksum: 10c0/a632ad27e58264506d2b373d329a867f042fb014e8a78db3a63031e953d61b5c98066eed1be238ee6c186d3f213d0efaa2a26526fb3a1d36a624c4460e982230
+  languageName: node
+  linkType: hard
+
+"react-native-keychain@npm:^9.2.3":
+  version: 9.2.3
+  resolution: "react-native-keychain@npm:9.2.3"
+  checksum: 10c0/aba1cb083e3703f9ca5ad755eee6303eed19dc8f56ff144bd828d5770086ff9c4fe2f30ce42d94b88d9ffdbbb14e4363907d3d740e8abee2dfe3c2b5baa603bf
   languageName: node
   linkType: hard
 
