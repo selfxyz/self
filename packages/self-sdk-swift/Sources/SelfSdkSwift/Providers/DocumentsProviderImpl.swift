@@ -78,6 +78,10 @@ public class DocumentsProviderImpl: NSObject {
 
     private func writeFile(name: String, content: String) {
         let fileURL = documentsDir.appendingPathComponent(name)
-        try? content.write(to: fileURL, atomically: true, encoding: .utf8)
+        do {
+            try content.write(to: fileURL, atomically: true, encoding: .utf8)
+        } catch {
+            NSLog("SelfSDK-Documents: Failed to write file '%@': %@", name, error.localizedDescription)
+        }
     }
 }

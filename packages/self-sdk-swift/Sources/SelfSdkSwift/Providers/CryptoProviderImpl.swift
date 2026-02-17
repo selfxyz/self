@@ -32,7 +32,8 @@ public class CryptoProviderImpl: NSObject {
 
         var error: Unmanaged<CFError>?
         guard SecKeyCreateRandomKey(attributes as CFDictionary, &error) != nil else {
-            let errorDesc = error?.takeRetainedValue().localizedDescription ?? "Unknown error"
+            let cfError = error?.takeRetainedValue()
+            let errorDesc = cfError?.localizedDescription ?? "Unknown error"
             NSLog("SelfSDK-Crypto: Key generation failed: %@", errorDesc)
             return
         }
@@ -100,6 +101,7 @@ public class CryptoProviderImpl: NSObject {
         let status = SecItemCopyMatching(query as CFDictionary, &item)
 
         guard status == errSecSuccess else { return nil }
+        // kSecReturnRef with kSecClassKey always returns a SecKey
         return (item as! SecKey)
     }
 }

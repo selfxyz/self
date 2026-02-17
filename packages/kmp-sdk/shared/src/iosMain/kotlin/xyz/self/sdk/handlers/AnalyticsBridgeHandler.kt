@@ -5,7 +5,7 @@
 package xyz.self.sdk.handlers
 
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.JsonPrimitive
 import platform.Foundation.NSLog
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
@@ -29,16 +29,16 @@ class AnalyticsBridgeHandler : BridgeHandler {
         }
 
     private fun trackEvent(params: Map<String, JsonElement>): JsonElement? {
-        val eventName = params["event"]?.jsonPrimitive?.content ?: "unknown_event"
+        val eventName = params.stringParam("event") ?: "unknown_event"
         NSLog("SelfSDK-Analytics: Event: %@", eventName)
         return null
     }
 
     private fun trackNfcEvent(params: Map<String, JsonElement>): JsonElement? {
-        val eventName = params["event"]?.jsonPrimitive?.content ?: "nfc_event"
-        val step = params["step"]?.jsonPrimitive?.content ?: "unknown"
-        val success = params["success"]?.jsonPrimitive?.content?.toBoolean()
-        val errorCode = params["errorCode"]?.jsonPrimitive?.content
+        val eventName = params.stringParam("event") ?: "nfc_event"
+        val step = params.stringParam("step") ?: "unknown"
+        val success = params.stringParam("success")?.toBoolean()
+        val errorCode = params.stringParam("errorCode")
 
         val logMessage =
             buildString {
@@ -53,9 +53,12 @@ class AnalyticsBridgeHandler : BridgeHandler {
     }
 
     private fun logNfcEvent(params: Map<String, JsonElement>): JsonElement? {
-        val message = params["message"]?.jsonPrimitive?.content ?: "NFC log event"
-        val level = params["level"]?.jsonPrimitive?.content ?: "info"
+        val message = params.stringParam("message") ?: "NFC log event"
+        val level = params.stringParam("level") ?: "info"
         NSLog("SelfSDK-Analytics [%@]: NFC: %@", level, message)
         return null
     }
 }
+
+/** Safely extract a string param, returning null if key is missing or value is not a primitive. */
+private fun Map<String, JsonElement>.stringParam(key: String): String? = (this[key] as? JsonPrimitive)?.content

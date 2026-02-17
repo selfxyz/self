@@ -58,6 +58,10 @@ class BiometricBridgeHandler : BridgeHandler {
                     }
                 },
             )
+
+            // LAContext dismisses its own prompt when deallocated;
+            // no explicit cancellation API is available.
+            continuation.invokeOnCancellation { }
         }
     }
 
