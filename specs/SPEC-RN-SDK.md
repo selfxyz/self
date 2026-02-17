@@ -50,17 +50,17 @@ A thin React Native component that wraps `react-native-webview` to embed the Sel
 
 ## What's Native vs WebView
 
-| Capability | Native (RN bridge) | WebView (web fallback) |
-|-----------|-------------------|----------------------|
-| NFC passport scan | YES — hardware | — |
-| Camera/MRZ | YES — hardware | — |
-| Biometrics | YES — OS prompt | — |
-| Keychain | YES — host app policy | — |
-| Lifecycle | YES — component props | — |
-| Documents | — | IndexedDB |
-| Crypto hashing | — | Web Crypto API |
-| Analytics | — | console/fetch |
-| Haptic | — | Skipped (not critical) |
+| Capability        | Native (RN bridge)    | WebView (web fallback) |
+| ----------------- | --------------------- | ---------------------- |
+| NFC passport scan | YES — hardware        | —                      |
+| Camera/MRZ        | YES — hardware        | —                      |
+| Biometrics        | YES — OS prompt       | —                      |
+| Keychain          | YES — host app policy | —                      |
+| Lifecycle         | YES — component props | —                      |
+| Documents         | —                     | IndexedDB              |
+| Crypto hashing    | —                     | Web Crypto API         |
+| Analytics         | —                     | console/fetch          |
+| Haptic            | —                     | Skipped (not critical) |
 
 ---
 
@@ -147,22 +147,20 @@ function VerifyScreen() {
         scope: 'age-verification',
         disclosures: ['nationality', 'age_over_18'],
       }}
-
       // Callbacks
-      onSuccess={(result) => {
+      onSuccess={result => {
         console.log('Verified:', result.verificationId);
         navigation.goBack();
       }}
-      onFailure={(error) => {
+      onFailure={error => {
         console.error('Failed:', error.code, error.message);
       }}
       onCancelled={() => {
         navigation.goBack();
       }}
-
       // Optional
       debug={__DEV__}
-      devServerUrl="http://localhost:5173"  // Dev mode: load from Vite dev server
+      devServerUrl="http://localhost:5173" // Dev mode: load from Vite dev server
       style={{ flex: 1 }}
     />
   );
@@ -240,11 +238,15 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   const webViewRef = useRef<WebView>(null);
 
   // Create message router that sends responses to WebView
-  const router = useMemo(() => new MessageRouter({
-    sendToWebView: (js: string) => {
-      webViewRef.current?.injectJavaScript(js);
-    },
-  }), []);
+  const router = useMemo(
+    () =>
+      new MessageRouter({
+        sendToWebView: (js: string) => {
+          webViewRef.current?.injectJavaScript(js);
+        },
+      }),
+    [],
+  );
 
   // Register native handlers
   useMemo(() => {
@@ -259,15 +261,18 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   }, [request, onSuccess, onFailure, onCancelled, debug]);
 
   // Handle messages from WebView
-  const onMessage = useCallback((event: WebViewMessageEvent) => {
-    router.onMessageReceived(event.nativeEvent.data);
-  }, [router]);
+  const onMessage = useCallback(
+    (event: WebViewMessageEvent) => {
+      router.onMessageReceived(event.nativeEvent.data);
+    },
+    [router],
+  );
 
   // Determine source
   const source = devServerUrl
     ? { uri: devServerUrl }
     : { uri: 'file:///android_asset/self-wallet/index.html' };
-    // iOS: use require('./assets/self-wallet/index.html') or Bundle.main path
+  // iOS: use require('./assets/self-wallet/index.html') or Bundle.main path
 
   return (
     <View style={[{ flex: 1 }, style]}>
@@ -293,7 +298,12 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
 The RN message router mirrors the Kotlin `MessageRouter` behavior:
 
 ```typescript
-import type { BridgeRequest, BridgeResponse, BridgeEvent, BridgeDomain } from '@selfxyz/webview-bridge';
+import type {
+  BridgeRequest,
+  BridgeResponse,
+  BridgeEvent,
+  BridgeDomain,
+} from '@selfxyz/webview-bridge';
 
 interface BridgeHandler {
   domain: BridgeDomain;
@@ -323,7 +333,11 @@ export class MessageRouter {
 
       const handler = this.handlers.get(request.domain);
       if (!handler) {
-        this.sendError(request, 'HANDLER_NOT_FOUND', `No handler for domain: ${request.domain}`);
+        this.sendError(
+          request,
+          'HANDLER_NOT_FOUND',
+          `No handler for domain: ${request.domain}`,
+        );
         return;
       }
 
@@ -331,7 +345,11 @@ export class MessageRouter {
         const result = await handler.handle(request.method, request.params);
         this.sendResponse(request, true, result);
       } catch (err: any) {
-        this.sendError(request, err.code ?? 'HANDLER_ERROR', err.message ?? 'Unknown error');
+        this.sendError(
+          request,
+          err.code ?? 'HANDLER_ERROR',
+          err.message ?? 'Unknown error',
+        );
       }
     } catch (parseErr) {
       console.error('[SelfSDK] Failed to parse bridge message:', parseErr);
@@ -348,11 +366,19 @@ export class MessageRouter {
       data,
       timestamp: Date.now(),
     };
-    const escaped = JSON.stringify(evt).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    this.config.sendToWebView(`window.SelfNativeBridge._handleEvent('${escaped}');true;`);
+    const escaped = JSON.stringify(evt)
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'");
+    this.config.sendToWebView(
+      `window.SelfNativeBridge._handleEvent('${escaped}');true;`,
+    );
   }
 
-  private sendResponse(request: BridgeRequest, success: boolean, data?: unknown) {
+  private sendResponse(
+    request: BridgeRequest,
+    success: boolean,
+    data?: unknown,
+  ) {
     const response: BridgeResponse = {
       type: 'response',
       version: 1,
@@ -363,8 +389,12 @@ export class MessageRouter {
       data: data ?? null,
       timestamp: Date.now(),
     };
-    const escaped = JSON.stringify(response).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    this.config.sendToWebView(`window.SelfNativeBridge._handleResponse('${escaped}');true;`);
+    const escaped = JSON.stringify(response)
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'");
+    this.config.sendToWebView(
+      `window.SelfNativeBridge._handleResponse('${escaped}');true;`,
+    );
   }
 
   private sendError(request: BridgeRequest, code: string, message: string) {
@@ -378,8 +408,12 @@ export class MessageRouter {
       error: { code, message },
       timestamp: Date.now(),
     };
-    const escaped = JSON.stringify(response).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    this.config.sendToWebView(`window.SelfNativeBridge._handleResponse('${escaped}');true;`);
+    const escaped = JSON.stringify(response)
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'");
+    this.config.sendToWebView(
+      `window.SelfNativeBridge._handleResponse('${escaped}');true;`,
+    );
   }
 }
 ```
@@ -404,7 +438,10 @@ export class NfcHandler {
     this.router = router;
   }
 
-  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
+  async handle(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<unknown> {
     switch (method) {
       case 'scan':
         return this.scan(params);
@@ -414,7 +451,10 @@ export class NfcHandler {
       case 'isSupported':
         return NfcManager.isSupported();
       default:
-        throw { code: 'METHOD_NOT_FOUND', message: `Unknown NFC method: ${method}` };
+        throw {
+          code: 'METHOD_NOT_FOUND',
+          message: `Unknown NFC method: ${method}`,
+        };
     }
   }
 
@@ -441,11 +481,16 @@ export class BiometricHandler {
   domain: BridgeDomain = 'biometrics';
   private rnBiometrics = new ReactNativeBiometrics();
 
-  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
+  async handle(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<unknown> {
     switch (method) {
       case 'authenticate': {
         const reason = (params.reason as string) ?? 'Authenticate';
-        const result = await this.rnBiometrics.simplePrompt({ promptMessage: reason });
+        const result = await this.rnBiometrics.simplePrompt({
+          promptMessage: reason,
+        });
         if (!result.success) {
           throw { code: 'BIOMETRIC_FAILED', message: 'Authentication failed' };
         }
@@ -460,7 +505,10 @@ export class BiometricHandler {
         return biometryType ?? 'none';
       }
       default:
-        throw { code: 'METHOD_NOT_FOUND', message: `Unknown biometrics method: ${method}` };
+        throw {
+          code: 'METHOD_NOT_FOUND',
+          message: `Unknown biometrics method: ${method}`,
+        };
     }
   }
 }
@@ -474,19 +522,27 @@ import * as Keychain from 'react-native-keychain';
 export class KeychainHandler {
   domain: BridgeDomain = 'secureStorage';
 
-  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
+  async handle(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<unknown> {
     const key = params.key as string;
     if (!key) throw { code: 'MISSING_KEY', message: 'Key parameter required' };
 
     switch (method) {
       case 'get': {
-        const credentials = await Keychain.getGenericPassword({ service: `self_sdk_${key}` });
+        const credentials = await Keychain.getGenericPassword({
+          service: `self_sdk_${key}`,
+        });
         return credentials ? credentials.password : null;
       }
       case 'set': {
         const value = params.value as string;
-        if (!value) throw { code: 'MISSING_VALUE', message: 'Value parameter required' };
-        await Keychain.setGenericPassword(key, value, { service: `self_sdk_${key}` });
+        if (!value)
+          throw { code: 'MISSING_VALUE', message: 'Value parameter required' };
+        await Keychain.setGenericPassword(key, value, {
+          service: `self_sdk_${key}`,
+        });
         return null;
       }
       case 'remove': {
@@ -494,7 +550,10 @@ export class KeychainHandler {
         return null;
       }
       default:
-        throw { code: 'METHOD_NOT_FOUND', message: `Unknown secureStorage method: ${method}` };
+        throw {
+          code: 'METHOD_NOT_FOUND',
+          message: `Unknown secureStorage method: ${method}`,
+        };
     }
   }
 }
@@ -506,16 +565,25 @@ export class KeychainHandler {
 export class CameraHandler {
   domain: BridgeDomain = 'camera';
 
-  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
+  async handle(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<unknown> {
     switch (method) {
       case 'isAvailable':
         return true; // Camera availability checked at runtime
       case 'scanMRZ':
         // Implementation wraps a native camera module for MRZ detection.
         // The exact library depends on the host app's camera setup.
-        throw { code: 'NOT_IMPLEMENTED', message: 'MRZ scan not yet implemented' };
+        throw {
+          code: 'NOT_IMPLEMENTED',
+          message: 'MRZ scan not yet implemented',
+        };
       default:
-        throw { code: 'METHOD_NOT_FOUND', message: `Unknown camera method: ${method}` };
+        throw {
+          code: 'METHOD_NOT_FOUND',
+          message: `Unknown camera method: ${method}`,
+        };
     }
   }
 }
@@ -524,7 +592,11 @@ export class CameraHandler {
 ### LifecycleHandler.ts
 
 ```typescript
-import type { VerificationResult, SelfSdkError, VerificationRequest } from '../types';
+import type {
+  VerificationResult,
+  SelfSdkError,
+  VerificationRequest,
+} from '../types';
 
 interface LifecycleConfig {
   request: VerificationRequest;
@@ -542,7 +614,10 @@ export class LifecycleHandler {
     this.config = config;
   }
 
-  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
+  async handle(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<unknown> {
     switch (method) {
       case 'ready':
         return null;
@@ -578,7 +653,10 @@ export class LifecycleHandler {
       }
 
       default:
-        throw { code: 'METHOD_NOT_FOUND', message: `Unknown lifecycle method: ${method}` };
+        throw {
+          code: 'METHOD_NOT_FOUND',
+          message: `Unknown lifecycle method: ${method}`,
+        };
     }
   }
 }
@@ -618,13 +696,14 @@ export function createHandlers(config: {
 
 The RN SDK uses `react-native-webview`'s built-in message passing:
 
-| Direction | Mechanism |
-|-----------|-----------|
-| WebView -> Native | `window.ReactNativeWebView.postMessage(json)` -> `onMessage` prop |
-| Native -> WebView | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleResponse('...')")` |
-| Native -> WebView (events) | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleEvent('...')")` |
+| Direction                  | Mechanism                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| WebView -> Native          | `window.ReactNativeWebView.postMessage(json)` -> `onMessage` prop               |
+| Native -> WebView          | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleResponse('...')")` |
+| Native -> WebView (events) | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleEvent('...')")`    |
 
 The `@selfxyz/webview-bridge` already detects `ReactNativeWebView` as a transport:
+
 ```typescript
 // In webview-bridge's bridge.ts — transport detection
 if (globalThis.ReactNativeWebView?.postMessage) {
@@ -648,6 +727,7 @@ cp -r ../webview-app/dist/ ./assets/self-wallet/
 On **Android**, the assets are loaded from `file:///android_asset/self-wallet/index.html` (React Native bundles files from `assets/` into the APK).
 
 On **iOS**, use the asset catalog or `NSBundle.main`:
+
 ```typescript
 const source = Platform.select({
   android: { uri: 'file:///android_asset/self-wallet/index.html' },
@@ -658,6 +738,7 @@ const source = Platform.select({
 ### Dev Mode
 
 When `devServerUrl` is provided, the WebView loads from the Vite dev server:
+
 ```typescript
 const source = devServerUrl
   ? { uri: devServerUrl }
@@ -682,8 +763,8 @@ function VerificationFlow({ selfApp, onComplete }) {
         scope: selfApp.scope,
         disclosures: selfApp.disclosures,
       }}
-      onSuccess={(result) => onComplete({ success: true, ...result })}
-      onFailure={(error) => onComplete({ success: false, error })}
+      onSuccess={result => onComplete({ success: true, ...result })}
+      onFailure={error => onComplete({ success: false, error })}
       onCancelled={() => navigation.goBack()}
       debug={__DEV__}
       devServerUrl={__DEV__ ? 'http://localhost:5173' : undefined}
@@ -701,6 +782,7 @@ function VerificationFlow({ selfApp, onComplete }) {
 **Goal**: Create `packages/rn-sdk/` with a working `<SelfVerification />` that loads the WebView.
 
 **Steps**:
+
 1. Create directory structure, `package.json`, `tsconfig.json`, `tsup.config.ts`
 2. Implement `SelfVerification.tsx` — WebView wrapper with `onMessage` handling
 3. Implement `MessageRouter.ts` — message routing (port from Kotlin pattern)
@@ -712,6 +794,7 @@ function VerificationFlow({ selfApp, onComplete }) {
 **Goal**: Implement the two simplest handlers.
 
 **Steps**:
+
 1. Implement `BiometricHandler.ts` — wraps `react-native-biometrics`
 2. Implement `KeychainHandler.ts` — wraps `react-native-keychain`
 3. Test: Biometric prompt appears, keychain roundtrip works
@@ -722,6 +805,7 @@ function VerificationFlow({ selfApp, onComplete }) {
 **Goal**: Implement hardware-dependent handlers.
 
 **Steps**:
+
 1. Implement `NfcHandler.ts` — wraps `react-native-nfc-manager` or custom native module
 2. Implement `CameraHandler.ts` — wraps camera module for MRZ detection
 3. Port NFC passport reading logic from `app/src/integrations/nfc/`
@@ -733,6 +817,7 @@ function VerificationFlow({ selfApp, onComplete }) {
 **Goal**: Bundle WebView assets and prepare for npm publishing.
 
 **Steps**:
+
 1. Set up build script to copy Vite output into `assets/`
 2. Configure platform-specific asset loading (Android assets dir, iOS bundle)
 3. Test: Production build loads bundled HTML correctly
@@ -778,30 +863,30 @@ function VerificationFlow({ selfApp, onComplete }) {
 
 ## Key Reference Files
 
-| File | Role |
-|------|------|
-| `packages/webview-bridge/src/types.ts` | Bridge protocol types (must match exactly) |
-| `packages/kmp-sdk/shared/src/commonMain/.../MessageRouter.kt` | Kotlin MessageRouter (reference for JS port) |
-| `packages/kmp-sdk/shared/src/androidMain/.../handlers/` | Android handler implementations (contract reference) |
-| `app/src/integrations/nfc/` | Existing RN NFC integration (port to NfcHandler) |
-| `packages/webview-app/dist/` | Vite output to bundle as assets |
+| File                                                          | Role                                                 |
+| ------------------------------------------------------------- | ---------------------------------------------------- |
+| `packages/webview-bridge/src/types.ts`                        | Bridge protocol types (must match exactly)           |
+| `packages/kmp-sdk/shared/src/commonMain/.../MessageRouter.kt` | Kotlin MessageRouter (reference for JS port)         |
+| `packages/kmp-sdk/shared/src/androidMain/.../handlers/`       | Android handler implementations (contract reference) |
+| `app/src/integrations/nfc/`                                   | Existing RN NFC integration (port to NfcHandler)     |
+| `packages/webview-app/dist/`                                  | Vite output to bundle as assets                      |
 
 ---
 
 ## What's Left
 
-*Updated: 2026-02-17 after PR #1765 review*
+_Updated: 2026-02-17 after PR #1765 review_
 
 **Status: 0% implemented.** This spec was created in PR #1765 but no code was written for `packages/rn-sdk/`. The spec is complete and ready for implementation.
 
 ### Implementation Backlog
 
-| Chunk | Description | Status | Dependencies |
-|-------|-------------|--------|--------------|
-| **4A** | Package setup + `<SelfVerification />` shell + `MessageRouter` + `LifecycleHandler` | **Not started** | SPEC-PERSON3-SDK-CORE Chunk 3F (web fallback adapters must exist for the WebView to work standalone) |
-| **4B** | `BiometricHandler` + `KeychainHandler` | **Not started** | Chunk 4A |
-| **4C** | `NfcHandler` + `CameraHandler` (hardware-dependent, requires physical device testing) | **Not started** | Chunk 4A |
-| **4D** | Asset bundling (copy Vite output into `assets/`) + npm publishing config | **Not started** | Chunks 4A-4C + `webview-app` Vite build working |
+| Chunk  | Description                                                                           | Status          | Dependencies                                                                                         |
+| ------ | ------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------- |
+| **4A** | Package setup + `<SelfVerification />` shell + `MessageRouter` + `LifecycleHandler`   | **Not started** | SPEC-PERSON3-SDK-CORE Chunk 3F (web fallback adapters must exist for the WebView to work standalone) |
+| **4B** | `BiometricHandler` + `KeychainHandler`                                                | **Not started** | Chunk 4A                                                                                             |
+| **4C** | `NfcHandler` + `CameraHandler` (hardware-dependent, requires physical device testing) | **Not started** | Chunk 4A                                                                                             |
+| **4D** | Asset bundling (copy Vite output into `assets/`) + npm publishing config              | **Not started** | Chunks 4A-4C + `webview-app` Vite build working                                                      |
 
 ### Pre-requisites from Other Specs
 

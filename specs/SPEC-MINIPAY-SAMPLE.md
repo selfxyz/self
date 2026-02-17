@@ -7,6 +7,7 @@ A Kotlin sample app demonstrating how a host app (like MiniPay) integrates Self 
 The app has a minimal native UI — a home screen with a "Verify Identity" button and a result screen. All verification logic (country selection, document scanning, NFC, proving, result) runs inside the SDK's WebView, launched via a single `SelfSdk.launch()` call.
 
 **Prerequisites**:
+
 - [SPEC-KMP-SDK.md](./SPEC-KMP-SDK.md) — KMP SDK with 5 native handlers and WebView host
 - [SPEC-WEBVIEW-UI.md](./SPEC-WEBVIEW-UI.md) — WebView app (bundled Vite bundle)
 
@@ -38,13 +39,13 @@ The app has a minimal native UI — a home screen with a "Verify Identity" butto
 
 ### Key Difference from Test App
 
-| | Test App (`kmp-test-app`) | MiniPay Sample |
-|---|---|---|
-| Purpose | Validates all 5 native handlers individually | Demonstrates real wallet integration |
-| Proof generation | WebView (shared engine) | WebView (shared engine) |
-| UI | Developer test harness + WebView overlay | Compose home + WebView verification flow |
-| SDK entry point | `SelfSdk.launch()` (same API) | `SelfSdk.launch()` (same API) |
-| Use case | Internal SDK development | Reference for third-party integrators |
+|                  | Test App (`kmp-test-app`)                    | MiniPay Sample                           |
+| ---------------- | -------------------------------------------- | ---------------------------------------- |
+| Purpose          | Validates all 5 native handlers individually | Demonstrates real wallet integration     |
+| Proof generation | WebView (shared engine)                      | WebView (shared engine)                  |
+| UI               | Developer test harness + WebView overlay     | Compose home + WebView verification flow |
+| SDK entry point  | `SelfSdk.launch()` (same API)                | `SelfSdk.launch()` (same API)            |
+| Use case         | Internal SDK development                     | Reference for third-party integrators    |
 
 ---
 
@@ -95,12 +96,14 @@ The sample app has only two native screens. Everything else happens inside the W
 **Purpose**: Landing page with verification status and a "Verify Identity" button that launches the SDK.
 
 **UI**:
+
 - App title: "MiniPay" with Self branding
 - Status card: Shows current verification state (unverified / verified / expired)
 - "Verify Identity" button -- calls `SelfSdk.launch()`
 - Previously verified proof summary (if any)
 
 **State**:
+
 ```kotlin
 data class HomeState(
     val isVerified: Boolean = false,
@@ -128,17 +131,20 @@ The native app does not manage any of these screens -- the WebView handles all n
 **Purpose**: Display the verification result after the WebView flow completes.
 
 **Success UI**:
+
 - Checkmark animation
 - "Identity Verified" title
 - Disclosed claims list (nationality, age, etc. based on disclosure flags)
 - "Done" button -- return to HomeScreen
 
 **Failure UI**:
+
 - Error icon
 - Error message from `SelfSdkError`
 - "Try Again" button -- re-launches `SelfSdk.launch()`
 
 **Cancelled**:
+
 - User dismissed the WebView -- return to HomeScreen silently
 
 ---
@@ -321,6 +327,7 @@ Note: No QR scanning libraries, no ML Kit, no CameraX in the sample app's own de
 **Goal**: Create the project, build the home screen, and wire the "Verify Identity" button.
 
 **Steps**:
+
 1. Create `packages/kmp-minipay-sample/` directory structure
 2. Configure `build.gradle.kts` with Compose Multiplatform + `project(":kmp-sdk:shared")` dependency
 3. Implement `App.kt` with simple two-screen navigation (Home, Result)
@@ -335,6 +342,7 @@ Note: No QR scanning libraries, no ML Kit, no CameraX in the sample app's own de
 **Goal**: Connect the button to `SelfSdk.launch()` and handle the three callback paths.
 
 **Steps**:
+
 1. Initialize `SelfSdk.configure()` in the ViewModel or Application class
 2. Wire "Verify Identity" button to call `sdk.launch()` with a test `VerificationRequest`
 3. Implement `SelfSdkCallback` -- route `onSuccess`, `onFailure`, `onCancelled` to ViewModel
@@ -346,6 +354,7 @@ Note: No QR scanning libraries, no ML Kit, no CameraX in the sample app's own de
 **Goal**: Polish the result screen and handle edge cases.
 
 **Steps**:
+
 1. Success: Display all disclosed claims from `VerificationResult`
 2. Failure: Map `SelfSdkError` codes to user-friendly messages
 3. Persist verification status so HomeScreen reflects verified state across app restarts
@@ -360,6 +369,7 @@ Note: No QR scanning libraries, no ML Kit, no CameraX in the sample app's own de
 ### Unit Tests (`commonTest/`)
 
 **ViewModel State** (~5 tests):
+
 - Initial screen is `Home`
 - `onVerificationSuccess()` stores result and navigates to `Result`
 - `onVerificationFailure()` stores error and navigates to `Result`
@@ -369,11 +379,13 @@ Note: No QR scanning libraries, no ML Kit, no CameraX in the sample app's own de
 ### Device Tests (manual, per-chunk)
 
 **Chunk 5A -- Home Screen**:
+
 - App launches on Android emulator and iOS simulator
 - HomeScreen displays "Unverified" status
 - "Verify Identity" button is visible and tappable
 
 **Chunk 5B -- SDK Launch + Callback**:
+
 - Tapping "Verify Identity" opens the WebView verification flow
 - Completing the flow in the WebView fires `onSuccess` callback
 - Dismissing the WebView fires `onCancelled` callback
@@ -381,6 +393,7 @@ Note: No QR scanning libraries, no ML Kit, no CameraX in the sample app's own de
 - Result screen displays after callback
 
 **Chunk 5C -- Polish**:
+
 - Success screen shows disclosed claims matching the request
 - Failure screen shows error message
 - "Try Again" re-launches the verification flow

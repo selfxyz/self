@@ -2,14 +2,14 @@
 
 ## Current Status
 
-| Chunk | Description | Status |
-|-------|-------------|--------|
-| 2A | KMP Setup + Bridge Protocol | ✅ Complete |
-| 2B | Android WebView Host | ✅ Complete |
-| 2C | Android Native Handlers | ✅ Complete (5 of 9 needed — Documents, Crypto, Analytics, Haptic to be DELETED) |
-| 2D | iOS WebView Host + cinterop | ⚠️ Partial (cinterop blocked by Xcode SDK compatibility issues, stubs in place) |
-| 2E | iOS Native Handlers | ❌ Not Done (only 3 needed: NFC, Biometrics, Lifecycle) |
-| 2F | SDK Public API + Test App | ⚠️ Partial (Android works end-to-end, iOS uses Swift workarounds via factory pattern in test app) |
+| Chunk | Description                 | Status                                                                                            |
+| ----- | --------------------------- | ------------------------------------------------------------------------------------------------- |
+| 2A    | KMP Setup + Bridge Protocol | ✅ Complete                                                                                       |
+| 2B    | Android WebView Host        | ✅ Complete                                                                                       |
+| 2C    | Android Native Handlers     | ✅ Complete (5 of 9 needed — Documents, Crypto, Analytics, Haptic to be DELETED)                  |
+| 2D    | iOS WebView Host + cinterop | ⚠️ Partial (cinterop blocked by Xcode SDK compatibility issues, stubs in place)                   |
+| 2E    | iOS Native Handlers         | ❌ Not Done (only 3 needed: NFC, Biometrics, Lifecycle)                                           |
+| 2F    | SDK Public API + Test App   | ⚠️ Partial (Android works end-to-end, iOS uses Swift workarounds via factory pattern in test app) |
 
 > **Note:** Remaining iOS handler work has moved to [SPEC-IOS-HANDLERS.md](./SPEC-IOS-HANDLERS.md) — uses a Swift wrapper pattern instead of cinterop. A MiniPay sample app demonstrating the integration flow is in [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md).
 
@@ -19,12 +19,12 @@
 
 Four Android handlers are being **deleted** because the WebView can handle their functionality using standard web APIs. This reduces native code, eliminates iOS porting work, and keeps behavior consistent across platforms.
 
-| Deleted Handler | LOC Removed | Web Fallback | Notes |
-|----------------|------------|--------------|-------|
-| **DocumentsBridgeHandler** | 146 LOC | IndexedDB | WebView stores documents in IndexedDB; no native file I/O needed |
-| **CryptoBridgeHandler** | 177 LOC | Web Crypto API | Hashing and key derivation run in Web Crypto; signing keys live in SecureStorage (native keychain), accessed via biometrics bridge |
-| **AnalyticsBridgeHandler** | 94 LOC | `console` / `fetch` | Analytics events logged via console or sent via fetch from the WebView; fire-and-forget |
-| **HapticBridgeHandler** | 94 LOC | Skipped | Haptic feedback is not critical to verification flow; WebView skips it |
+| Deleted Handler            | LOC Removed | Web Fallback        | Notes                                                                                                                              |
+| -------------------------- | ----------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **DocumentsBridgeHandler** | 146 LOC     | IndexedDB           | WebView stores documents in IndexedDB; no native file I/O needed                                                                   |
+| **CryptoBridgeHandler**    | 177 LOC     | Web Crypto API      | Hashing and key derivation run in Web Crypto; signing keys live in SecureStorage (native keychain), accessed via biometrics bridge |
+| **AnalyticsBridgeHandler** | 94 LOC      | `console` / `fetch` | Analytics events logged via console or sent via fetch from the WebView; fire-and-forget                                            |
+| **HapticBridgeHandler**    | 94 LOC      | Skipped             | Haptic feedback is not critical to verification flow; WebView skips it                                                             |
 
 **Total savings:** 511 LOC deleted from Android, 6 fewer iOS handlers to build. See the Native Handler Matrix in [SPECS.md](./SPECS.md) for the full architecture rationale.
 
@@ -40,6 +40,7 @@ You are building the **native side** of the Self Mobile SDK. This means:
 2. **`packages/kmp-test-app/`** — Test app for both Android and iOS
 
 The KMP SDK:
+
 - Hosts a WebView containing Person 1's Vite bundle
 - Routes bridge messages from the WebView to native handlers
 - Provides `SelfSdk.launch()` as the public API for host apps (MiniPay, etc.)
@@ -52,6 +53,7 @@ The KMP SDK:
 Delete `packages/kmp-shell/` entirely before starting. It was an experiment — the bridge protocol and handler pattern are sound, but the module structure needs to be rebuilt as a proper KMP SDK with Android target (not just JVM + iOS).
 
 Also delete these Android handlers (web fallbacks replace them):
+
 - `androidMain/handlers/DocumentsBridgeHandler.kt`
 - `androidMain/handlers/CryptoBridgeHandler.kt`
 - `androidMain/handlers/HapticBridgeHandler.kt`
@@ -289,6 +291,7 @@ internal expect fun generateUuid(): String
 ```
 
 **Platform actuals:**
+
 - **JVM/Android:** `System.currentTimeMillis()`, `java.util.UUID.randomUUID().toString()`
 - **iOS:** `NSDate().timeIntervalSince1970 * 1000`, `NSUUID().UUIDString`
 
@@ -312,6 +315,7 @@ class BridgeHandlerException(
 Routes incoming messages from WebView to handlers, runs them on a coroutine scope, sends responses back via a `sendToWebView` callback.
 
 Key behavior:
+
 - `register(handler)`: Register a `BridgeHandler` for a domain
 - `onMessageReceived(rawJson)`: Parse request, find handler, dispatch on coroutine scope
 - `pushEvent(domain, event, data)`: Send unsolicited events to WebView
@@ -319,6 +323,7 @@ Key behavior:
 - Event delivery: `window.SelfNativeBridge._handleEvent('...')`
 
 **JS escaping** for safe embedding:
+
 ```kotlin
 fun escapeForJs(json: String): String {
     val escaped = json
@@ -422,6 +427,7 @@ class SelfVerificationActivity : AppCompatActivity() {
 **This is the most complex handler.** Port from `app/android/react-native-passport-reader/android/src/main/java/io/tradle/nfc/RNPassportReaderModule.kt`.
 
 Key changes from the RN module:
+
 1. Remove all React Native dependencies (`ReactApplicationContext`, `Promise`, `WritableMap`, `ReadableMap`, `DeviceEventManagerModule`)
 2. Replace `AsyncTask` with Kotlin coroutines (`suspend fun`)
 3. Use `NfcAdapter.enableReaderMode()` instead of `enableForegroundDispatch()` (better for SDK embedding — doesn't require the host's Activity to handle intents)
@@ -524,6 +530,7 @@ class NfcBridgeHandler(
 12. **Build result**: Extract MRZ, certificates, hashes, signatures from parsed files
 
 **Dependencies:**
+
 - `org.jmrtd:jmrtd:0.8.1`
 - `net.sf.scuba:scuba-sc-android:0.0.18`
 - `org.bouncycastle:bcprov-jdk18on:1.78.1`
@@ -692,6 +699,7 @@ linkerOpts = -framework LocalAuthentication
 ```
 
 Add to `build.gradle.kts`:
+
 ```kotlin
 iosArm64 {
     compilations["main"].cinterops {
@@ -753,6 +761,7 @@ class BridgeMessageHandler(private val router: MessageRouter) : NSObject(), WKSc
 ### NfcBridgeHandler.kt (iOS)
 
 **Important:** iOS NFC passport reading is significantly more complex than Android because:
+
 1. CoreNFC is Objective-C/Swift and the Kotlin/Native interop can be tricky
 2. The existing `app/ios/PassportReader.swift` uses the third-party `NFCPassportReader` Swift library (CocoaPod)
 3. Pure Kotlin/Native CoreNFC interop for passport reading (PACE, BAC, data group parsing) is very hard
@@ -782,6 +791,7 @@ class NfcBridgeHandler(private val router: MessageRouter) : BridgeHandler {
 ```
 
 **Reference:** The iOS flow from `app/ios/PassportReader.swift`:
+
 1. Compute MRZ key (pad, checksum — same as Kotlin `MrzKeyUtils`)
 2. Call `passportReader.readPassport(password: mrzKey, type: .mrz, tags: [.COM, .DG1, .SOD])`
 3. Extract fields from passport object (documentType, MRZ, certificates, etc.)
@@ -1005,6 +1015,7 @@ tasks.named("preBuild") { dependsOn("copyWebViewAssets") }
 **Goal:** Create `packages/kmp-sdk/` with Gradle KMP config, bridge protocol, common models.
 
 **Steps:**
+
 1. Delete `packages/kmp-shell/`
 2. Create `packages/kmp-sdk/` directory structure
 3. Create `build.gradle.kts` with KMP plugin, Android + iOS targets
@@ -1020,6 +1031,7 @@ tasks.named("preBuild") { dependsOn("copyWebViewAssets") }
 **Goal:** Android WebView hosting, JS injection, dev mode, asset bundling.
 
 **Steps:**
+
 1. Implement `androidMain/webview/AndroidWebViewHost.kt`
 2. Implement `androidMain/webview/SelfVerificationActivity.kt`
 3. Configure WebView security settings
@@ -1032,6 +1044,7 @@ tasks.named("preBuild") { dependsOn("copyWebViewAssets") }
 **Goal:** The 5 native Android bridge handlers. Web fallbacks handle the rest.
 
 **Steps (in priority order):**
+
 1. `NfcBridgeHandler` — port from `RNPassportReaderModule.kt` (biggest effort)
 2. `BiometricBridgeHandler` — BiometricPrompt wrapper
 3. `SecureStorageBridgeHandler` — EncryptedSharedPreferences (keychain — native managed)
@@ -1045,6 +1058,7 @@ tasks.named("preBuild") { dependsOn("copyWebViewAssets") }
 **Goal:** iOS WebView hosting, cinterop definitions.
 
 **Steps:**
+
 1. Create `.def` files for CoreNFC and LocalAuthentication (only 2 needed)
 2. Implement `iosMain/webview/IosWebViewHost.kt`
 3. Configure WKWebView with WKScriptMessageHandler
@@ -1055,6 +1069,7 @@ tasks.named("preBuild") { dependsOn("copyWebViewAssets") }
 **Goal:** Only 3 iOS bridge handlers. Camera is optional Phase 2.
 
 **Steps:**
+
 1. `BiometricBridgeHandler` — LAContext (simplest, good to start)
 2. `LifecycleBridgeHandler` — ViewController dismissal + relay listener
 3. `NfcBridgeHandler` — CoreNFC via Swift wrapper (most complex)
@@ -1067,6 +1082,7 @@ tasks.named("preBuild") { dependsOn("copyWebViewAssets") }
 **Goal:** Public API + test app on both platforms.
 
 **Steps:**
+
 1. Implement `commonMain/api/SelfSdk.kt` (expect) + actuals
 2. Create `packages/kmp-test-app/` with Compose Multiplatform
 3. Android test app: "Launch Verification" button -> `SelfSdk.launch()`
@@ -1080,12 +1096,12 @@ tasks.named("preBuild") { dependsOn("copyWebViewAssets") }
 
 ## Key Reference Files
 
-| File | What to Look At |
-|------|----------------|
-| `app/android/.../RNPassportReaderModule.kt` | Android NFC implementation to port (PACE, BAC, DG reading, chip auth, passive auth) |
-| `app/android/.../PassportNFC.kt` | Additional NFC utilities (if exists) |
-| `app/ios/PassportReader.swift` | iOS NFC flow reference (MRZ key, readPassport call, SOD extraction) |
-| `packages/kmp-shell/shared/` | Previous KMP prototype (bridge protocol, handler pattern, MRZ utils — all reusable) |
-| `packages/webview-bridge/src/types.ts` | Bridge protocol TypeScript types (must match Kotlin exactly) |
-| `packages/mobile-sdk-alpha/src/types/public.ts` | Adapter interfaces (what the WebView expects the bridge to implement) |
-| `specs/SPECS.md` | Architecture overview with native handler matrix and web fallback rationale |
+| File                                            | What to Look At                                                                     |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `app/android/.../RNPassportReaderModule.kt`     | Android NFC implementation to port (PACE, BAC, DG reading, chip auth, passive auth) |
+| `app/android/.../PassportNFC.kt`                | Additional NFC utilities (if exists)                                                |
+| `app/ios/PassportReader.swift`                  | iOS NFC flow reference (MRZ key, readPassport call, SOD extraction)                 |
+| `packages/kmp-shell/shared/`                    | Previous KMP prototype (bridge protocol, handler pattern, MRZ utils — all reusable) |
+| `packages/webview-bridge/src/types.ts`          | Bridge protocol TypeScript types (must match Kotlin exactly)                        |
+| `packages/mobile-sdk-alpha/src/types/public.ts` | Adapter interfaces (what the WebView expects the bridge to implement)               |
+| `specs/SPECS.md`                                | Architecture overview with native handler matrix and web fallback rationale         |
