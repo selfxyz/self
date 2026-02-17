@@ -1,4 +1,4 @@
-# Person 3: SDK Core Adaptation — Implementation Spec
+# WebView Engine — Implementation Spec
 
 ## Overview
 
@@ -34,28 +34,64 @@ Some of these are in "leaf" files (components, adapters) that the WebView will n
 
 ---
 
-## Design Principle: Adapter Interfaces Are Already Right
+## Design Principles
+
+### Adapter Interfaces Are Already Right
 
 The good news: `mobile-sdk-alpha` already has a clean adapter architecture. The `Adapters` interface in `src/types/public.ts` defines the contract:
 
 ```typescript
 interface Adapters {
-  scanner: NFCScannerAdapter;    // NFC → bridge in WebView, NativeModules in RN
-  crypto: CryptoAdapter;         // WebCrypto + bridge in WebView, native in RN
+  scanner: NFCScannerAdapter;    // NFC → bridge to native (hardware required)
+  crypto: CryptoAdapter;         // hash() → Web Crypto API (web fallback), sign() → bridge to native (biometric-gated key ops)
   network: NetworkAdapter;       // fetch() everywhere, WsAdapter for WebSocket
-  auth: AuthAdapter;             // bridge in WebView, keychain in RN
-  documents: DocumentsAdapter;   // bridge in WebView, encrypted storage in RN
+  auth: AuthAdapter;             // bridge to native (keychain, native-managed)
+  documents: DocumentsAdapter;   // IndexedDB (web fallback, NOT bridge)
   navigation: NavigationAdapter; // React Router in WebView, React Navigation in RN
-  storage?: StorageAdapter;      // bridge in WebView, AsyncStorage in RN
-  analytics?: AnalyticsAdapter;  // bridge (fire-and-forget) in WebView, native in RN
+  storage?: StorageAdapter;      // bridge to native (keychain, native-managed)
+  analytics?: AnalyticsAdapter;  // console/fetch (web fallback, NOT bridge)
+  haptic?: HapticAdapter;        // no-op in WebView (not critical)
   clock?: ClockAdapter;          // Date.now() + setTimeout everywhere
   logger?: LoggerAdapter;        // console everywhere
 }
 ```
 
+**Adapter mapping — web fallback vs bridge:**
+
+| Adapter | WebView Strategy | Why |
+|---------|-----------------|-----|
+| `NFCScannerAdapter` | Bridge to native | Hardware access (NFC radio) |
+| `CryptoAdapter.hash()` | **Web Crypto API (web fallback)** | Standard web API, no native needed |
+| `CryptoAdapter.sign()` | Bridge to native | Biometric-gated key operations |
+| `AuthAdapter` | Bridge to native | Keychain access, host app policy |
+| `DocumentsAdapter` | **IndexedDB (web fallback)** | Standard web storage, no native needed |
+| `StorageAdapter` | Bridge to native | Keychain/SecureStorage, native-managed |
+| `AnalyticsAdapter` | **console/fetch (web fallback)** | No native dependency |
+| `HapticAdapter` | No-op | Not critical for verification flow |
+| `NavigationAdapter` | React Router (web) | Standard web routing |
+| `NetworkAdapter` | `fetch()` / `WebSocket` (web) | Standard web APIs |
+
 `createSelfClient({ config, adapters, listeners })` already wires these in. Person 1's `SelfClientProvider` calls this with bridge-backed adapter implementations. The core logic (`provingMachine`, `protocolStore`, `documents/utils`) talks only through `SelfClient` — it never reaches for native APIs directly.
 
 **Except where it does.** That's what you're fixing.
+
+### Keychain/SecureStorage Must Remain Native-Managed
+
+Keychain/SecureStorage MUST remain native-managed. The WebView does NOT get direct keychain access. Host apps (like MiniPay) have their own keychain policies. The `StorageAdapter` always bridges to native for keychain operations. The `AuthAdapter` (which wraps keychain-backed private key access) always bridges to native as well. This is a security boundary, not a convenience choice.
+
+---
+
+## Self Wallet as Test Environment
+
+The Self Wallet app (`app/`) currently reimplements much of what `mobile-sdk-alpha` provides: NFC scanning, document storage, auth/keychain access, analytics, and navigation. During SDK development, the Self Wallet serves as a **test environment** to validate moving code from `app/` into the WebView engine (`mobile-sdk-alpha`).
+
+The migration path:
+
+1. **Now**: Self Wallet is the reference implementation. As Person 3 makes `mobile-sdk-alpha` portable, the Self Wallet app validates that existing RN flows do not regress.
+2. **Phase 2**: Once the SDK ships to production (MiniPay integration works), Self Wallet integrates the `<SelfVerification />` RN component for its verification flow, replacing its bespoke NFC/proving/disclosure screens.
+3. **Phase 3**: Remaining Self Wallet features (document management, settings, rewards) can optionally migrate to the WebView or stay native — this is a product decision, not an SDK concern.
+
+This avoids a risky big-bang migration while ensuring the SDK is battle-tested before Self Wallet depends on it. The **SDK vs App Gap Summary** table at the bottom of this spec documents the migration backlog between `app/` and `mobile-sdk-alpha`.
 
 ---
 
@@ -334,6 +370,39 @@ Person 3 should verify that `@selfxyz/common` functions work in a browser with t
 
 This way, when `webview-app` does `import { useSelfClient } from '@selfxyz/mobile-sdk-alpha'`, it gets `browser.ts` which excludes RN-specific code. When the RN app imports the same path, it gets `index.ts`.
 
+**The browser entry point should export both bridge adapters AND web fallback adapters.** This allows `SelfClientProvider` to choose the right implementation for each adapter:
+
+```typescript
+// src/browser.ts — export web fallback adapter factories
+export { createIndexedDBDocumentsAdapter } from './adapters/browser/documents';
+export { createWebCryptoAdapter } from './adapters/browser/crypto';
+export { createWebAnalyticsAdapter } from './adapters/browser/analytics';
+export { createNoOpHapticAdapter } from './adapters/browser/haptic';
+
+// Also re-export bridge adapter factories (for adapters that MUST bridge to native)
+export { createBridgeNFCAdapter } from './adapters/bridge/nfc';
+export { createBridgeCryptoAdapter } from './adapters/bridge/crypto'; // provides sign()
+export { createBridgeAuthAdapter } from './adapters/bridge/auth';
+export { createBridgeStorageAdapter } from './adapters/bridge/storage';
+```
+
+This way, `SelfClientProvider` in the `webview-app` can compose adapters:
+
+```typescript
+const adapters: Adapters = {
+  scanner: createBridgeNFCAdapter(bridge),           // bridge — hardware
+  crypto: {
+    ...createBridgeCryptoAdapter(bridge),             // bridge — sign()
+    ...createWebCryptoAdapter(),                      // web fallback — hash()
+  },
+  auth: createBridgeAuthAdapter(bridge),              // bridge — keychain
+  documents: createIndexedDBDocumentsAdapter(),        // web fallback
+  analytics: createWebAnalyticsAdapter({ debug }),     // web fallback
+  storage: createBridgeStorageAdapter(bridge),         // bridge — keychain
+  // ...
+};
+```
+
 ---
 
 ### 7. Decouple `selfAppStore` from Direct Socket.IO
@@ -425,6 +494,118 @@ Person 1's `SelfClientProvider` subscribes:
 selfClient.on(SdkEvents.VERIFICATION_COMPLETE, (result) => {
   lifecycle.setResult(result);
 });
+```
+
+---
+
+## Web Fallback Adapter Implementations
+
+The optimized architecture moves several adapters from "bridge to native" to "web-native fallback" — these run entirely inside the WebView using standard web APIs, eliminating unnecessary native round-trips. This section describes what Person 3 needs to implement.
+
+### a. IndexedDB Documents Adapter
+
+A web-native implementation of `DocumentsAdapter` using IndexedDB. This replaces the bridge-to-native approach for document storage in the WebView context. Documents are stored as encrypted JSON blobs.
+
+```typescript
+// src/adapters/browser/documents.ts
+export function createIndexedDBDocumentsAdapter(): DocumentsAdapter {
+  // Uses IndexedDB 'self-sdk-documents' database
+  // Object store: 'documents' (key: document ID, value: encrypted JSON blob)
+  // Object store: 'catalog' (key: 'catalog', value: DocumentCatalog JSON)
+  //
+  // Implements:
+  //   loadDocumentCatalog() → reads from 'catalog' store
+  //   saveDocumentCatalog(catalog) → writes to 'catalog' store
+  //   loadDocumentById(id) → reads from 'documents' store by key
+  //   saveDocument(id, data) → writes encrypted blob to 'documents' store
+  //   deleteDocument(id) → removes entry from 'documents' store
+  //
+  // IndexedDB is available in all modern WebViews (Android WebView, WKWebView).
+  // Data persists across WebView sessions within the same origin.
+}
+```
+
+**Implementation notes:**
+- Use the `idb` npm package (or raw IndexedDB API) for async key-value access
+- Database name: `'self-sdk-documents'`, version `1`
+- Two object stores: `'documents'` and `'catalog'`
+- Document encryption is handled by the caller (SDK core) before passing to `saveDocument` — the adapter stores opaque blobs
+
+### b. Web Crypto Adapter Enhancement
+
+The existing `CryptoAdapter` has two methods with different bridging requirements:
+
+- **`hash()`**: Should use the Web Crypto API (`crypto.subtle.digest`). This is a pure computation with no key material involved — no reason to bridge to native.
+- **`sign()`**: Must still bridge to native. Signing requires private key access, which is gated behind biometric authentication on the native side. The WebView does not have direct access to keychain-stored keys.
+
+```typescript
+// src/adapters/browser/crypto.ts
+export function createWebCryptoAdapter(): Partial<CryptoAdapter> {
+  return {
+    hash: async (algorithm: string, data: Uint8Array): Promise<Uint8Array> => {
+      // Map algorithm string to Web Crypto algorithm identifier
+      // 'sha-256' → 'SHA-256', 'sha-1' → 'SHA-1', etc.
+      const buf = await crypto.subtle.digest(algorithm.toUpperCase(), data);
+      return new Uint8Array(buf);
+    },
+    // sign() is NOT provided here — it must come from the bridge adapter
+    // because it requires biometric-gated native key access.
+  };
+}
+
+// Usage in SelfClientProvider: merge web crypto hash with bridge-backed sign
+// const crypto = {
+//   ...createBridgeCryptoAdapter(bridge),  // provides sign()
+//   ...createWebCryptoAdapter(),            // overrides hash() with Web Crypto
+// };
+```
+
+### c. Console/Fetch Analytics Adapter
+
+A web-native implementation of `AnalyticsAdapter`. In development, events log to console. In production, events can be sent via `fetch` to an analytics endpoint.
+
+```typescript
+// src/adapters/browser/analytics.ts
+export function createWebAnalyticsAdapter(options?: {
+  endpoint?: string;
+  debug?: boolean;
+}): AnalyticsAdapter {
+  const { endpoint, debug = false } = options ?? {};
+
+  const send = (event: string, payload: Record<string, unknown>) => {
+    if (debug) {
+      console.log(`[analytics] ${event}`, payload);
+    }
+    if (endpoint) {
+      // Fire-and-forget — no await, no error handling needed
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event, payload, timestamp: Date.now() }),
+      }).catch(() => {}); // Silently ignore failures
+    }
+  };
+
+  return {
+    trackEvent: (event, payload) => send(event, payload ?? {}),
+    trackNfcEvent: (name, props) => send(`nfc:${name}`, props ?? {}),
+    logNFCEvent: (level, msg, ctx, details) =>
+      send(`nfc:log:${level}`, { msg, ctx, details }),
+  };
+}
+```
+
+### d. No-Op Haptic Adapter
+
+Haptic feedback is not critical in the WebView context. Provide a no-op implementation.
+
+```typescript
+// src/adapters/browser/haptic.ts
+export function createNoOpHapticAdapter(): HapticAdapter {
+  return {
+    trigger: () => {}, // Silent no-op
+  };
+}
 ```
 
 ---
@@ -531,6 +712,24 @@ selfClient.on(SdkEvents.VERIFICATION_COMPLETE, (result) => {
 
 **Estimated effort:** Small. The store already has `setSelfApp()`.
 
+### Chunk 3F: Web Fallback Adapter Implementations (after 3B)
+
+**Goal:** Create web-native adapter implementations for use inside the WebView, eliminating unnecessary bridge round-trips for documents, crypto hashing, and analytics.
+
+**Steps:**
+1. Create `src/adapters/browser/documents.ts` — `createIndexedDBDocumentsAdapter()` using IndexedDB for document storage
+2. Create `src/adapters/browser/crypto.ts` — `createWebCryptoAdapter()` providing `hash()` via `crypto.subtle.digest`
+3. Create `src/adapters/browser/analytics.ts` — `createWebAnalyticsAdapter()` using `console.log` (dev) and `fetch` (prod)
+4. Create `src/adapters/browser/haptic.ts` — `createNoOpHapticAdapter()` as a silent no-op
+5. Create `src/adapters/browser/index.ts` — barrel export for all web fallback adapters
+6. Update `src/browser.ts` to re-export all web fallback adapter factories
+7. Add unit tests for each adapter: `tests/adapters/browser/documents.test.ts`, etc.
+8. Validate: test harness works with web fallback adapters instead of mock adapters
+
+**Estimated effort:** Medium. IndexedDB adapter requires async database initialization and error handling. Web Crypto and analytics adapters are straightforward.
+
+**Dependencies:** Chunk 3B must be complete (browser entry point exists to export from).
+
 ---
 
 ## Dependency Graph
@@ -538,6 +737,7 @@ selfClient.on(SdkEvents.VERIFICATION_COMPLETE, (result) => {
 ```
 Chunk 3A (config + platform)
   ├──→ Chunk 3B (browser entry point)
+  │     └──→ Chunk 3F (web fallback adapters)
   ├──→ Chunk 3C (lifecycle events)
   ├──→ Chunk 3D (WsAdapter refactor) [optional]
   └──→ Chunk 3E (conditional selfAppStore)
@@ -601,29 +801,42 @@ grep -r "react-native" packages/webview-app/dist/ && echo "FAIL: RN leaked" || e
 ## Relationship to Person 1 and Person 2
 
 ```
-Person 1 (webview-app)                Person 3 (mobile-sdk-alpha)             Person 2 (kmp-sdk)
-─────────────────────                  ──────────────────────────              ─────────────────
-Screens (React + Tamagui)              Core logic (proving, stores)           Native handlers
-  │                                      │                                      │
-  │ useSelfClient()                      │ createSelfClient(adapters)           │ BridgeHandler
-  │ useProvingStore()                    │ useProvingStore                      │ MessageRouter
-  │                                      │ useProtocolStore                     │
-  ├── imports ──────────────────────────→│                                      │
-  │                                      │                                      │
-  │ bridge adapters                      │ Adapters interface                   │
-  ├── NFCScannerAdapter ─── bridge ─────────────────────────────────────────→ NfcBridgeHandler
-  ├── CryptoAdapter ──────── bridge ─────────────────────────────────────────→ CryptoBridgeHandler
-  ├── AuthAdapter ────────── bridge ─────────────────────────────────────────→ SecureStorageBridgeHandler
-  ├── DocumentsAdapter ──── bridge ─────────────────────────────────────────→ DocumentsBridgeHandler
-  ├── AnalyticsAdapter ──── bridge ─────────────────────────────────────────→ AnalyticsBridgeHandler
-  │                                      │                                      │
-  │ lifecycle                            │ SdkEvents.VERIFICATION_COMPLETE      │
-  ├── lifecycle.setResult() ←── event ──←│                                      │
-  │                                      │                                      │
-  └── lifecycle.getConfig() ── bridge ──────────────────────────────────────→ LifecycleBridgeHandler
+  CODE IMPORTS                    RUNTIME BRIDGE (postMessage)
+  ────────────                    ────────────────────────────
+
+  Person 1 (webview-app)          Person 3 (webview engine)           Person 2 (kmp-sdk)
+  ───────────────────────         ─────────────────────────           ─────────────────
+  Screens (React + Tamagui)       Core logic (proving, stores)        Native handlers
+        │                               │                                   │
+        │ useSelfClient()               │ Adapters interface                │ BridgeHandlers
+        │ useProvingStore()             │ createSelfClient(adapters)        │ MessageRouter
+        │                               │ SdkEvents                        │
+        ├── imports ──────────────────→ │                                   │
+        │                               │                                   │
+        │ implements adapter            │                                   │
+        │ interfaces from P3:           │                                   │
+        │  NFCScannerAdapter            │                                   │
+        │  CryptoAdapter                │                                   │
+        │  AuthAdapter             ─ ─ ─ ─ ─ WebView bridge ─ ─ ─ ─ ─     │
+        │  DocumentsAdapter        :    │    (postMessage /              :  │
+        │  AnalyticsAdapter        :    │     evaluateJavascript)        :  │
+        │                          :    │                                :  │
+        │ adapters call bridge ──→ : ───────────────────────────────────→ : │
+        │                          :    │                                :  │
+        │                          : ←─────────────────────────────────── : │
+        │                          ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+        │                               │                                   │
+        │ lifecycle events              │                                   │
+        │←── VERIFICATION_COMPLETE ────←│                                   │
+        │── lifecycle.setResult() ──→ bridge ─────────────────────────────→ │
+        │←── lifecycle.getConfig() ←─ bridge ←────────────────────────────← │
 ```
 
-**Person 3 delivers the center column.** The adapter interfaces are the contract. Person 1 implements the left side (bridge adapters + screens). Person 2 implements the right side (native handlers). Person 3 makes the center work in both RN and browser contexts.
+**Key principle: Person 1 only imports from Person 3.** Person 1 never imports from Person 2.
+
+- **Code imports** (left side): Person 1 imports adapter interfaces, hooks, and `createSelfClient` from Person 3. Person 1 *implements* adapter interfaces that internally use the bridge protocol.
+- **Runtime bridge** (right side): The bridge is a message-passing boundary (`postMessage` / `evaluateJavascript`), not a code dependency. Person 1's adapter implementations send bridge messages; Person 2's handlers receive them. Neither side imports code from the other.
+- **Person 3 delivers the engine.** It defines all contracts (adapter interfaces, event types, lifecycle types) and contains the core logic. Person 1 and Person 2 only couple to Person 3's interfaces — never to each other.
 
 ---
 
@@ -1107,3 +1320,42 @@ cd app && npx react-native run-android
 5. **Coordinate with Person 1 on types.** When you add `SdkInitialConfig` or `VERIFICATION_COMPLETE`, tell Person 1 so they can wire it into `SelfClientProvider` and the lifecycle adapter.
 6. **Coordinate with Person 2 on lifecycle.** When you define `VerificationRequest`, tell Person 2 so `LifecycleBridgeHandler.getConfig()` returns the right shape.
 7. **The test harness is your primary development tool.** Keep it running while you work. Every change should be visible in the harness immediately via Vite HMR.
+
+---
+
+## Completion Status
+
+*Audit date: 2026-02-17*
+
+### Chunk Status
+
+| Chunk | Description | Status |
+|-------|-------------|--------|
+| 3A | Config & Platform Abstraction | **Done** |
+| 3B | Browser Entry Point & Package Exports | **Done** |
+| 3C | WebView Lifecycle Events | **Done** |
+| 3D | WsAdapter Integration | **Skipped** (optional, non-blocking — raw `WebSocket` works in browser) |
+| 3E | Conditional SelfApp Store | **Done** |
+| 3F | Web Fallback Adapter Implementations | **Pending** — IndexedDB documents, Web Crypto hash, console/fetch analytics, no-op haptic |
+
+4 of 6 chunks complete. Chunk 3D is explicitly optional per spec design — the proving machine's raw `WebSocket` usage works natively in browser/WebView contexts. Refactoring to `WsAdapter` remains a cleanliness improvement that can be picked up later for testability and host-level interception. **Chunk 3F is pending work** — it implements the web-native fallback adapters that allow the WebView to handle documents, crypto hashing, and analytics without bridging to native.
+
+### SDK vs App Gap Summary
+
+During audit, the following gaps were identified where the RN app (`app/`) reimplements functionality that the SDK (`mobile-sdk-alpha`) should ideally provide. These gaps define the backlog for future convergence specs.
+
+**Gaps where the app reimplements what the SDK should provide:**
+
+| Gap | App Code | SDK Has | Migration Priority |
+|-----|----------|---------|-------------------|
+| NFC scanner | `app/src/integrations/nfc/` (2 files, custom NativeModules) | `reactNativeScannerAdapter` (incomplete) | **P1** — both WebView and RN need this |
+| Document storage | `app/src/providers/passportDataProvider.tsx` (972 lines, Keychain) | `DocumentsAdapter` interface only | **P1** — both need this |
+| Auth adapter | `app/src/providers/authProvider.tsx` (Keychain + biometric) | `AuthAdapter` interface only | **P2** — WebView uses bridge, RN needs Keychain impl |
+| SelfClient wiring | `app/src/providers/selfClientProvider.tsx` (509 lines) | No default adapter set | **P2** — `createReactNativeAdapters()` helper |
+| Analytics adapter | `app/src/services/analytics.ts` (349 lines, Segment+Mixpanel) | `AnalyticsAdapter` interface only | **P3** — app-specific backends |
+| Screen flows | `app/src/screens/` (70 screens) vs SDK (9 screens) | Onboarding partial, disclosing stubs | **P3** — large effort, defer |
+| Navigation | `app/src/navigation/` (14 modules) | `NavigationAdapter` interface only | **P3** — inherently app-specific |
+
+**Legitimately app-only (no migration needed):**
+
+Points/rewards, referrals, cloud backup, push notifications, KYC (Sumsub), Starfall, app updates, deep links, settings, proof history DB, Turnkey wallet — these are Self Wallet app features with no SDK equivalent needed.
