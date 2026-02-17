@@ -5,6 +5,7 @@
 ## Why
 
 MiniPay (Celo) needs to embed Self's identity verification in their KMP app. Other integrators use React Native. Today the wallet is a monolithic React Native app. We're rebuilding it as:
+
 - A **WebView engine** (core logic + state machines) backed by **web-native fallbacks** — published as npm packages
 - A **WebView UI** (React + Vite) — the verification flow screens
 - **Two thin native shells** — one Kotlin (for KMP hosts like MiniPay) and one React Native (for RN hosts like Self Wallet) — each hosting a WebView and bridging only what the browser cannot do
@@ -91,12 +92,12 @@ MiniPay (Celo) needs to embed Self's identity verification in their KMP app. Oth
 
 ## Workstreams
 
-| Person | Scope | Delivers |
-|--------|-------|----------|
+| Person       | Scope                  | Delivers                                                                                     |
+| ------------ | ---------------------- | -------------------------------------------------------------------------------------------- |
 | **Person 1** | WebView UI + Bridge JS | `@selfxyz/webview-bridge` (npm), `@selfxyz/webview-app` (Vite bundle), web fallback adapters |
-| **Person 2** | Kotlin Native Shell | `packages/kmp-sdk/` → AAR + XCFramework (5 handlers Android, 3 handlers iOS) |
-| **Person 3** | SDK Core Adaptation | `@selfxyz/mobile-sdk-alpha` — platform-agnostic for browser/WebView |
-| **New** | RN Native Shell | `packages/rn-sdk/` — `<SelfVerification />` thin WebView wrapper component |
+| **Person 2** | Kotlin Native Shell    | `packages/kmp-sdk/` → AAR + XCFramework (5 handlers Android, 3 handlers iOS)                 |
+| **Person 3** | SDK Core Adaptation    | `@selfxyz/mobile-sdk-alpha` — platform-agnostic for browser/WebView                          |
+| **New**      | RN Native Shell        | `packages/rn-sdk/` — `<SelfVerification />` thin WebView wrapper component                   |
 
 ```
 Person 1 — WebView UI + Bridge
@@ -125,6 +126,7 @@ New — RN Native Shell
 ```
 
 Detailed specs:
+
 - [SPEC-WEBVIEW-UI.md](./SPEC-WEBVIEW-UI.md) — UI / WebView / Bridge JS
 - [SPEC-KMP-SDK.md](./SPEC-KMP-SDK.md) — Kotlin Native Shell (5 Android handlers, 3 iOS handlers)
 - [SPEC-IOS-HANDLERS.md](./SPEC-IOS-HANDLERS.md) — iOS handlers (NFC, Biometrics, Lifecycle only)
@@ -136,15 +138,15 @@ Detailed specs:
 
 ## Module Table
 
-| Module | Codebase Location | Language | What It Does | Status | % Done |
-|--------|------------------|----------|-------------|--------|--------|
-| **WebView Engine** | `packages/mobile-sdk-alpha/` | TypeScript | Core proving logic, state machines, adapter interfaces | Working, 275 tests pass | **80%** |
-| **WebView UI** | `packages/webview-app/` | TypeScript (React) | 9 screens: country, ID, camera, NFC, confirm, prove, result | All screens built, Vite bundle | **75%** |
-| **Bridge Protocol** | `packages/webview-bridge/` | TypeScript | JSON messaging, 10 domains, 9 adapters, timeout/error handling | 44 tests pass | **78%** |
-| **Kotlin Native Shell** | `packages/kmp-sdk/` | Kotlin | Android: 5 handlers + WebView host. iOS: 3 handlers | Android implemented (1608 LOC, trimming 4 handlers) | **75%** |
-| **RN Native Shell** | `packages/rn-sdk/` — **NEW** | React Native | `<SelfVerification />` WebView wrapper, 5 native handlers | Does not exist yet | **0%** |
-| **Shared Utilities** | `common/` | TypeScript | Poseidon, Merkle trees, passport parsing, certificates | Production | **95%** |
-| **Self Wallet App** | `app/` | React Native | Full Self wallet (current production app) | Production | **N/A** |
+| Module                  | Codebase Location            | Language           | What It Does                                                   | Status                                              | % Done  |
+| ----------------------- | ---------------------------- | ------------------ | -------------------------------------------------------------- | --------------------------------------------------- | ------- |
+| **WebView Engine**      | `packages/mobile-sdk-alpha/` | TypeScript         | Core proving logic, state machines, adapter interfaces         | Working, 275 tests pass                             | **80%** |
+| **WebView UI**          | `packages/webview-app/`      | TypeScript (React) | 9 screens: country, ID, camera, NFC, confirm, prove, result    | All screens built, Vite bundle                      | **75%** |
+| **Bridge Protocol**     | `packages/webview-bridge/`   | TypeScript         | JSON messaging, 10 domains, 9 adapters, timeout/error handling | 44 tests pass                                       | **78%** |
+| **Kotlin Native Shell** | `packages/kmp-sdk/`          | Kotlin             | Android: 5 handlers + WebView host. iOS: 3 handlers            | Android implemented (1608 LOC, trimming 4 handlers) | **75%** |
+| **RN Native Shell**     | `packages/rn-sdk/` — **NEW** | React Native       | `<SelfVerification />` WebView wrapper, 5 native handlers      | Does not exist yet                                  | **0%**  |
+| **Shared Utilities**    | `common/`                    | TypeScript         | Poseidon, Merkle trees, passport parsing, certificates         | Production                                          | **95%** |
+| **Self Wallet App**     | `app/`                       | React Native       | Full Self wallet (current production app)                      | Production                                          | **N/A** |
 
 ---
 
@@ -199,18 +201,18 @@ This is the interface all native shells implement. It is the only coupling betwe
 
 ### Domain Catalog
 
-| Domain | Methods | Events | Handling | Notes |
-|--------|---------|--------|----------|-------|
-| `nfc` | `scan`, `cancelScan`, `isSupported` | `scanProgress`, `tagDiscovered`, `scanError` | **Native** | 120s timeout, progress streaming |
-| `biometrics` | `authenticate`, `isAvailable`, `getBiometryType` | — | **Native** | Required for key access |
-| `secureStorage` | `get`, `set`, `remove` | — | **Native** | Keychain — host app controls access |
-| `camera` | `scanMRZ`, `isAvailable` | — | **Native** | MRZ OCR from camera |
-| `lifecycle` | `ready`, `dismiss`, `setResult` | — | **Native** | WebView to host app communication |
-| `crypto` | `sign`, `generateKey`, `getPublicKey` | — | **Native** (sign only) | `hash()` uses Web Crypto inside WebView |
-| `documents` | `loadCatalog`, `saveCatalog`, `loadById`, `save`, `delete` | — | **Web** (IndexedDB) | No bridge round-trip needed |
-| `analytics` | `trackEvent`, `trackNfcEvent`, `logNfcEvent` | — | **Web** (console/fetch) | Fire-and-forget, no PII |
-| `haptic` | `trigger` | — | **Web** (skipped) | Not critical, omitted |
-| `navigation` | `goBack`, `goTo` | — | **Web** (React Router) | WebView-internal only |
+| Domain          | Methods                                                    | Events                                       | Handling                | Notes                                   |
+| --------------- | ---------------------------------------------------------- | -------------------------------------------- | ----------------------- | --------------------------------------- |
+| `nfc`           | `scan`, `cancelScan`, `isSupported`                        | `scanProgress`, `tagDiscovered`, `scanError` | **Native**              | 120s timeout, progress streaming        |
+| `biometrics`    | `authenticate`, `isAvailable`, `getBiometryType`           | —                                            | **Native**              | Required for key access                 |
+| `secureStorage` | `get`, `set`, `remove`                                     | —                                            | **Native**              | Keychain — host app controls access     |
+| `camera`        | `scanMRZ`, `isAvailable`                                   | —                                            | **Native**              | MRZ OCR from camera                     |
+| `lifecycle`     | `ready`, `dismiss`, `setResult`                            | —                                            | **Native**              | WebView to host app communication       |
+| `crypto`        | `sign`, `generateKey`, `getPublicKey`                      | —                                            | **Native** (sign only)  | `hash()` uses Web Crypto inside WebView |
+| `documents`     | `loadCatalog`, `saveCatalog`, `loadById`, `save`, `delete` | —                                            | **Web** (IndexedDB)     | No bridge round-trip needed             |
+| `analytics`     | `trackEvent`, `trackNfcEvent`, `logNfcEvent`               | —                                            | **Web** (console/fetch) | Fire-and-forget, no PII                 |
+| `haptic`        | `trigger`                                                  | —                                            | **Web** (skipped)       | Not critical, omitted                   |
+| `navigation`    | `goBack`, `goTo`                                           | —                                            | **Web** (React Router)  | WebView-internal only                   |
 
 **Summary:** 5 domains bridge to native (nfc, biometrics, secureStorage, camera, lifecycle). `crypto.sign` also bridges to native, but `crypto.hash` uses Web Crypto. 4 domains are handled entirely in the WebView (documents, analytics, haptic, navigation).
 
@@ -255,13 +257,14 @@ This is the interface all native shells implement. It is the only coupling betwe
 
 ### Transport Mechanism
 
-| Platform | WebView to Native | Native to WebView |
-|----------|------------------|------------------|
-| **Android** | `window.SelfNativeAndroid.postMessage(json)` via `addJavascriptInterface` | `evaluateJavascript("window.SelfNativeBridge._handleResponse(json)")` |
-| **iOS** | `window.webkit.messageHandlers.SelfNativeIOS.postMessage(json)` via `WKScriptMessageHandler` | `evaluateJavaScript("window.SelfNativeBridge._handleResponse(json)")` |
-| **React Native** | `window.ReactNativeWebView.postMessage(json)` | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleResponse(json)")` |
+| Platform         | WebView to Native                                                                            | Native to WebView                                                              |
+| ---------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **Android**      | `window.SelfNativeAndroid.postMessage(json)` via `addJavascriptInterface`                    | `evaluateJavascript("window.SelfNativeBridge._handleResponse(json)")`          |
+| **iOS**          | `window.webkit.messageHandlers.SelfNativeIOS.postMessage(json)` via `WKScriptMessageHandler` | `evaluateJavaScript("window.SelfNativeBridge._handleResponse(json)")`          |
+| **React Native** | `window.ReactNativeWebView.postMessage(json)`                                                | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleResponse(json)")` |
 
 **JS side** (injected at document start by native, or self-initializing in WebViewBridge class):
+
 ```javascript
 window.SelfNativeBridge = {
   _pending: {},  // id → { resolve, reject, timeout }
@@ -287,11 +290,11 @@ window.SelfNativeBridge = {
 
 ### Timeouts
 
-| Domain | Default Timeout |
-|--------|----------------|
-| NFC | 120 seconds |
-| All others | 30 seconds |
-| Fire-and-forget (analytics, haptic) | No timeout |
+| Domain                              | Default Timeout |
+| ----------------------------------- | --------------- |
+| NFC                                 | 120 seconds     |
+| All others                          | 30 seconds      |
+| Fire-and-forget (analytics, haptic) | No timeout      |
 
 ---
 
@@ -299,17 +302,17 @@ window.SelfNativeBridge = {
 
 What each native shell must implement, and what the WebView handles instead.
 
-| Handler | Must be native? | Kotlin SDK (Android) | Kotlin SDK (iOS) | RN SDK | WebView Fallback |
-|---------|-----------------|---------------------|-------------------|--------|-----------------|
-| **NFC** | YES | KEEP (497 LOC) | BUILD | BUILD | None (hardware) |
-| **Camera/MRZ** | YES | KEEP (247 LOC) | Phase 2 | BUILD | None (hardware) |
-| **Biometrics** | YES | KEEP (142 LOC) | BUILD | BUILD | None (OS prompt) |
-| **Keychain** | YES (host decides) | KEEP (120 LOC) | BUILD | BUILD | None (native-managed) |
-| **Lifecycle** | YES | KEEP (91 LOC) | BUILD | BUILD | None (Activity/VC) |
-| **Documents** | NO | **DELETE** (146 LOC) | Skip | Skip | IndexedDB |
-| **Crypto** | NO | **DELETE** (177 LOC) | Skip | Skip | Web Crypto API |
-| **Analytics** | NO | **DELETE** (94 LOC) | Skip | Skip | console/fetch |
-| **Haptic** | NO | **DELETE** (94 LOC) | Skip | Skip | Skip (not critical) |
+| Handler        | Must be native?    | Kotlin SDK (Android) | Kotlin SDK (iOS) | RN SDK | WebView Fallback      |
+| -------------- | ------------------ | -------------------- | ---------------- | ------ | --------------------- |
+| **NFC**        | YES                | KEEP (497 LOC)       | BUILD            | BUILD  | None (hardware)       |
+| **Camera/MRZ** | YES                | KEEP (247 LOC)       | Phase 2          | BUILD  | None (hardware)       |
+| **Biometrics** | YES                | KEEP (142 LOC)       | BUILD            | BUILD  | None (OS prompt)      |
+| **Keychain**   | YES (host decides) | KEEP (120 LOC)       | BUILD            | BUILD  | None (native-managed) |
+| **Lifecycle**  | YES                | KEEP (91 LOC)        | BUILD            | BUILD  | None (Activity/VC)    |
+| **Documents**  | NO                 | **DELETE** (146 LOC) | Skip             | Skip   | IndexedDB             |
+| **Crypto**     | NO                 | **DELETE** (177 LOC) | Skip             | Skip   | Web Crypto API        |
+| **Analytics**  | NO                 | **DELETE** (94 LOC)  | Skip             | Skip   | console/fetch         |
+| **Haptic**     | NO                 | **DELETE** (94 LOC)  | Skip             | Skip   | Skip (not critical)   |
 
 Keychain stays native because some host apps (like MiniPay) will not want the WebView touching their keychain directly.
 
@@ -319,19 +322,19 @@ Keychain stays native because some host apps (like MiniPay) will not want the We
 
 How `mobile-sdk-alpha` adapter interfaces map to bridge domains or web-native fallbacks:
 
-| SDK Adapter Interface | Bridge to Native? | Implementation | Notes |
-|----------------------|-------------------|----------------|-------|
-| `NFCScannerAdapter` | Yes | `nfc.scan` bridge | Core flow: scan passport NFC chip |
-| `CryptoAdapter.sign()` | Yes | `crypto.sign` bridge | Native secure enclave |
-| `CryptoAdapter.hash()` | No | Web Crypto API | Runs entirely in WebView |
-| `AuthAdapter` | Yes | `secureStorage.get` bridge (with `requireBiometric: true`) | Private key gated by biometrics |
-| `StorageAdapter` | Yes | `secureStorage.*` bridge | Only for keychain access (native-managed) |
-| `DocumentsAdapter` | No | IndexedDB | Runs entirely in WebView |
-| `AnalyticsAdapter` | No | console/fetch | Runs entirely in WebView |
-| `NavigationAdapter` | No | React Router | WebView-internal |
-| `NetworkAdapter` | No | `fetch()` | Works in WebView |
-| `ClockAdapter` | No | `Date.now()` + `setTimeout` | Works in WebView |
-| `LoggerAdapter` | No | `console.*` | Works in WebView |
+| SDK Adapter Interface  | Bridge to Native? | Implementation                                             | Notes                                     |
+| ---------------------- | ----------------- | ---------------------------------------------------------- | ----------------------------------------- |
+| `NFCScannerAdapter`    | Yes               | `nfc.scan` bridge                                          | Core flow: scan passport NFC chip         |
+| `CryptoAdapter.sign()` | Yes               | `crypto.sign` bridge                                       | Native secure enclave                     |
+| `CryptoAdapter.hash()` | No                | Web Crypto API                                             | Runs entirely in WebView                  |
+| `AuthAdapter`          | Yes               | `secureStorage.get` bridge (with `requireBiometric: true`) | Private key gated by biometrics           |
+| `StorageAdapter`       | Yes               | `secureStorage.*` bridge                                   | Only for keychain access (native-managed) |
+| `DocumentsAdapter`     | No                | IndexedDB                                                  | Runs entirely in WebView                  |
+| `AnalyticsAdapter`     | No                | console/fetch                                              | Runs entirely in WebView                  |
+| `NavigationAdapter`    | No                | React Router                                               | WebView-internal                          |
+| `NetworkAdapter`       | No                | `fetch()`                                                  | Works in WebView                          |
+| `ClockAdapter`         | No                | `Date.now()` + `setTimeout`                                | Works in WebView                          |
+| `LoggerAdapter`        | No                | `console.*`                                                | Works in WebView                          |
 
 ---
 
@@ -379,13 +382,13 @@ This avoids a risky big-bang migration while ensuring the SDK is battle-tested b
 
 ## Savings Summary
 
-| Metric | Current | Optimized | Saved |
-|--------|---------|-----------|-------|
-| Kotlin Android handlers | 9 (1608 LOC) | 5 (~1097 LOC) | -511 LOC |
-| Kotlin iOS handlers to build | 9 | 3 (NFC, Biometrics, Lifecycle) | -6 handlers |
-| Specs to maintain | 8 | 7 (-2 deleted, +1 new) | -1 spec |
-| Entire Kotlin packages to build | 3 (kmp-sdk, common-lib, proving-client) | 1 (kmp-sdk) | -2 packages |
-| RN SDK new code | -- | ~200-300 LOC (thin WebView wrapper) | Shares 95% with Kotlin path |
+| Metric                          | Current                                 | Optimized                           | Saved                       |
+| ------------------------------- | --------------------------------------- | ----------------------------------- | --------------------------- |
+| Kotlin Android handlers         | 9 (1608 LOC)                            | 5 (~1097 LOC)                       | -511 LOC                    |
+| Kotlin iOS handlers to build    | 9                                       | 3 (NFC, Biometrics, Lifecycle)      | -6 handlers                 |
+| Specs to maintain               | 8                                       | 7 (-2 deleted, +1 new)              | -1 spec                     |
+| Entire Kotlin packages to build | 3 (kmp-sdk, common-lib, proving-client) | 1 (kmp-sdk)                         | -2 packages                 |
+| RN SDK new code                 | --                                      | ~200-300 LOC (thin WebView wrapper) | Shares 95% with Kotlin path |
 
 ---
 
@@ -415,27 +418,27 @@ Phase 3 (integration):
 
 ### Colors (from `packages/mobile-sdk-alpha/src/constants/colors.ts`)
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `black` | `#000000` | Primary text, buttons |
-| `white` | `#ffffff` | Backgrounds |
-| `amber50` | `#FFFBEB` | Button text on dark bg |
-| `slate50` | `#F8FAFC` | Page backgrounds |
-| `slate300` | `#CBD5E1` | Borders |
-| `slate400` | `#94A3B8` | Placeholder text |
-| `slate500` | `#64748B` | Secondary text |
-| `blue600` | `#2563EB` | Links, accents |
-| `green500` / `green600` | `#22C55E` / `#16A34A` | Success states |
-| `red500` / `red600` | `#EF4444` / `#DC2626` | Error states |
+| Token                   | Value                 | Usage                  |
+| ----------------------- | --------------------- | ---------------------- |
+| `black`                 | `#000000`             | Primary text, buttons  |
+| `white`                 | `#ffffff`             | Backgrounds            |
+| `amber50`               | `#FFFBEB`             | Button text on dark bg |
+| `slate50`               | `#F8FAFC`             | Page backgrounds       |
+| `slate300`              | `#CBD5E1`             | Borders                |
+| `slate400`              | `#94A3B8`             | Placeholder text       |
+| `slate500`              | `#64748B`             | Secondary text         |
+| `blue600`               | `#2563EB`             | Links, accents         |
+| `green500` / `green600` | `#22C55E` / `#16A34A` | Success states         |
+| `red500` / `red600`     | `#EF4444` / `#DC2626` | Error states           |
 
 ### Fonts
 
-| Token | Family | File |
-|-------|--------|------|
-| `advercase` | `Advercase-Regular` | `Advercase-Regular.otf` |
-| `dinot` | `DINOT-Medium` | `DINOT-Medium.otf` |
-| `dinotBold` | `DINOT-Bold` | `DINOT-Bold.otf` |
-| `plexMono` | `IBMPlexMono-Regular` | `IBMPlexMono-Regular.otf` |
+| Token       | Family                | File                      |
+| ----------- | --------------------- | ------------------------- |
+| `advercase` | `Advercase-Regular`   | `Advercase-Regular.otf`   |
+| `dinot`     | `DINOT-Medium`        | `DINOT-Medium.otf`        |
+| `dinotBold` | `DINOT-Bold`          | `DINOT-Bold.otf`          |
+| `plexMono`  | `IBMPlexMono-Regular` | `IBMPlexMono-Regular.otf` |
 
 Font files are at `app/web/fonts/`.
 
@@ -448,6 +451,7 @@ Both `app/tamagui.config.ts` and `packages/webview-app/tamagui.config.ts` share 
 ## Verification Plan
 
 ### Person 1 validates:
+
 ```bash
 # Build bridge package
 cd packages/webview-bridge && npm run build && npx vitest run
@@ -460,6 +464,7 @@ cd packages/webview-app && npx vite dev  # → http://localhost:5173
 ```
 
 ### Person 2 validates:
+
 ```bash
 # Compile shared module
 cd packages/kmp-sdk && ./gradlew :shared:compileKotlinJvm
@@ -476,6 +481,7 @@ cd packages/kmp-test-app && ./gradlew :androidApp:installDebug
 ```
 
 ### Person 3 validates:
+
 ```bash
 # Run SDK core tests
 cd packages/mobile-sdk-alpha && npx vitest run
@@ -485,6 +491,7 @@ cd packages/mobile-sdk-alpha && npx vitest run --filter="IndexedDB|WebCrypto|fal
 ```
 
 ### RN SDK validates:
+
 ```bash
 # Build RN package
 cd packages/rn-sdk && npm run build
@@ -494,6 +501,7 @@ cd app && npx react-native run-ios  # or run-android
 ```
 
 ### Integration test:
+
 1. Person 1 runs `vite build` to produce `dist/`
 2. **Kotlin path:** Person 2 copies `dist/` into KMP test app assets. KMP test app launches WebView, loads `dist/index.html`
 3. **RN path:** `<SelfVerification />` loads the same Vite bundle via `react-native-webview`
@@ -505,14 +513,14 @@ cd app && npx react-native run-ios  # or run-android
 
 ## Key Reference Files
 
-| File | What it Contains |
-|------|-----------------|
-| `packages/mobile-sdk-alpha/src/types/public.ts` | All adapter interfaces (NFCScannerAdapter, CryptoAdapter, etc.) |
-| `packages/mobile-sdk-alpha/src/constants/colors.ts` | Color tokens |
-| `packages/mobile-sdk-alpha/src/constants/fonts.ts` | Font family names |
-| `packages/webview-bridge/src/` | Bridge protocol types, adapters, message handling |
-| `app/tamagui.config.ts` | Tamagui configuration (fonts, scales) |
-| `app/web/fonts/` | Font files (otf) |
-| `app/android/.../RNPassportReaderModule.kt` | Android NFC implementation to port |
-| `app/ios/PassportReader.swift` | iOS NFC implementation to reference |
-| `app/src/screens/` | Existing RN app screens (UI reference) |
+| File                                                | What it Contains                                                |
+| --------------------------------------------------- | --------------------------------------------------------------- |
+| `packages/mobile-sdk-alpha/src/types/public.ts`     | All adapter interfaces (NFCScannerAdapter, CryptoAdapter, etc.) |
+| `packages/mobile-sdk-alpha/src/constants/colors.ts` | Color tokens                                                    |
+| `packages/mobile-sdk-alpha/src/constants/fonts.ts`  | Font family names                                               |
+| `packages/webview-bridge/src/`                      | Bridge protocol types, adapters, message handling               |
+| `app/tamagui.config.ts`                             | Tamagui configuration (fonts, scales)                           |
+| `app/web/fonts/`                                    | Font files (otf)                                                |
+| `app/android/.../RNPassportReaderModule.kt`         | Android NFC implementation to port                              |
+| `app/ios/PassportReader.swift`                      | iOS NFC implementation to reference                             |
+| `app/src/screens/`                                  | Existing RN app screens (UI reference)                          |

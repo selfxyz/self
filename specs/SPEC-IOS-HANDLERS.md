@@ -6,23 +6,23 @@ This spec covers completing iOS handler support for the KMP SDK. The original ap
 
 **Only 3 native handlers are needed for iOS** (down from 9 in the original spec):
 
-| Handler | Why Native? |
-|---------|-------------|
-| **NFC** | Hardware — browser cannot access NFC chip |
-| **Biometrics** | OS prompt — Face ID / Touch ID requires native LAContext |
-| **Lifecycle** | ViewController management — dismiss/result delivery needs native VC reference |
+| Handler        | Why Native?                                                                   |
+| -------------- | ----------------------------------------------------------------------------- |
+| **NFC**        | Hardware — browser cannot access NFC chip                                     |
+| **Biometrics** | OS prompt — Face ID / Touch ID requires native LAContext                      |
+| **Lifecycle**  | ViewController management — dismiss/result delivery needs native VC reference |
 
 **Camera/MRZ**: Phase 2 optional — not needed for initial launch.
 
 The other 5 handlers from the original spec are **no longer built for iOS**:
 
-| Dropped Handler | Reason |
-|----------------|--------|
-| SecureStorage | Keychain is native-managed by the host app (e.g. MiniPay manages its own keychain) |
-| Crypto | Web Crypto API inside the WebView handles hashing/signing |
-| Documents | IndexedDB inside the WebView handles document storage |
-| Haptic | Not critical — skipped entirely |
-| Analytics | Fire-and-forget — console/fetch inside the WebView suffices |
+| Dropped Handler | Reason                                                                             |
+| --------------- | ---------------------------------------------------------------------------------- |
+| SecureStorage   | Keychain is native-managed by the host app (e.g. MiniPay manages its own keychain) |
+| Crypto          | Web Crypto API inside the WebView handles hashing/signing                          |
+| Documents       | IndexedDB inside the WebView handles document storage                              |
+| Haptic          | Not critical — skipped entirely                                                    |
+| Analytics       | Fire-and-forget — console/fetch inside the WebView suffices                        |
 
 > **Reference**: See the Native Handler Matrix in [SPECS.md](./SPECS.md) for the full rationale. The key insight is: only bridge to native what the browser literally cannot do. Everything else runs inside the WebView using standard web APIs.
 
@@ -39,6 +39,7 @@ The other 5 handlers from the original spec are **no longer built for iOS**:
 The test app already demonstrates this pattern for NFC and Camera:
 
 1. **Kotlin side** (`iosMain`): Factory singleton with a nullable provider interface
+
    ```kotlin
    // In kmp-test-app/composeApp/src/iosMain/
    interface NfcScanViewFactory {
@@ -51,6 +52,7 @@ The test app already demonstrates this pattern for NFC and Camera:
    ```
 
 2. **Swift side** (`iosApp/`): Implementation registered at app startup
+
    ```swift
    // NfcScanFactoryImpl.swift
    class NfcScanFactoryImpl: NSObject, NfcScanViewFactory {
@@ -747,6 +749,7 @@ The test app's `NfcScanFactoryImpl.swift` becomes unnecessary — delete it. The
 **Not needed for initial launch.** Camera/MRZ scanning can be added later if needed. The WebView UI currently supports manual MRZ entry as a fallback.
 
 If added in Phase 2, the pattern follows the same Swift wrapper approach:
+
 - Move `MrzCameraHelper.swift` from test app into `SelfSdkSwift/Helpers/`
 - Create `CameraMrzProvider.kt` interface and `CameraMrzBridgeHandler.kt`
 - Create `CameraMrzProviderImpl.swift` wrapping the helper
@@ -756,15 +759,15 @@ If added in Phase 2, the pattern follows the same Swift wrapper approach:
 
 ## Key Reference Files
 
-| File | Role |
-|------|------|
-| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/` | 3 handlers to implement (NFC, Biometric, Lifecycle) |
-| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/webview/IosWebViewHost.kt` | WebView stub (rewrite) |
-| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/api/SelfSdk.ios.kt` | Launch flow (update) |
-| `packages/kmp-sdk/shared/build.gradle.kts` | cinterop disabled (keep disabled) |
-| `packages/kmp-test-app/iosApp/iosApp/NfcPassportHelper.swift` | Move to Swift companion package |
-| `packages/kmp-test-app/iosApp/iosApp/NfcScanFactoryImpl.swift` | Reference pattern, then delete |
-| `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/` | Android handlers (reference for method contracts) |
+| File                                                                                | Role                                                |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/`                 | 3 handlers to implement (NFC, Biometric, Lifecycle) |
+| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/webview/IosWebViewHost.kt` | WebView stub (rewrite)                              |
+| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/api/SelfSdk.ios.kt`        | Launch flow (update)                                |
+| `packages/kmp-sdk/shared/build.gradle.kts`                                          | cinterop disabled (keep disabled)                   |
+| `packages/kmp-test-app/iosApp/iosApp/NfcPassportHelper.swift`                       | Move to Swift companion package                     |
+| `packages/kmp-test-app/iosApp/iosApp/NfcScanFactoryImpl.swift`                      | Reference pattern, then delete                      |
+| `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/`             | Android handlers (reference for method contracts)   |
 
 ---
 
@@ -773,20 +776,24 @@ If added in Phase 2, the pattern follows the same Swift wrapper approach:
 ### Per-Chunk Test Requirements
 
 **Chunk 3A (Factory Infrastructure)**:
+
 - `./gradlew :shared:compileKotlinIosArm64` passes with all 3 provider interfaces
 - Swift companion package builds: `cd packages/self-sdk-swift && swift build`
 - Provider interfaces are visible from Swift via XCFramework exports (manual check)
 
 **Chunk 3B (Biometric Handler)**:
+
 - Biometric: Physical device test — Face ID / Touch ID prompt appears, success callback fires
 - Biometric: Simulator test — `isAvailable()` returns false gracefully
 
 **Chunk 3C (Lifecycle Handler)**:
+
 - Lifecycle: `setResult` with success=true invokes `SelfSdkCallback.onSuccess`
 - Lifecycle: `setResult` with success=false invokes `SelfSdkCallback.onFailure`
 - Lifecycle: `dismiss` invokes `SelfSdkCallback.onCancelled` and dismisses view controller
 
 **Chunk 3D (WebView Host + Launch)**:
+
 - `SelfSdk.launch()` without `SelfSdkSwift.configure()` throws clear error message
 - `SelfSdk.launch()` after `configure()` presents WebView modally
 - WebView loads index.html (debug mode: localhost, release: bundled)
@@ -794,17 +801,20 @@ If added in Phase 2, the pattern follows the same Swift wrapper approach:
 - `SelfSdkCallback.onSuccess` fires when verification completes
 
 **Chunk 3E (NFC Handler)**:
+
 - NFC: Physical device — full passport scan matches test app behavior (same JSON output)
 - NFC: Progress callbacks fire in correct order (states 0–7)
 - NFC: Cancel during scan doesn't crash
 - Integration: `SelfSdkSwift.configure()` in test app replaces manual factory registrations with identical behavior
 
 **Chunk 3F (Camera MRZ — Phase 2)**:
+
 - Deferred. Not required for initial launch.
 
 ### Bridge Handler Parity Tests
 
 For each of the 3 handlers, verify method parity with Android:
+
 - Same methods supported (same `method` strings accepted)
 - Same parameter names and types expected
 - Same response JSON structure returned

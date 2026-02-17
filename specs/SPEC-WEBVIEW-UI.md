@@ -8,6 +8,7 @@ You are building the **web side** of the Self Mobile SDK. This means:
 2. **`packages/webview-app/`** — Vite-bundled React app that runs inside a native WebView
 
 The WebView is not just screens + bridge. It also provides **web-native fallback implementations** for capabilities that do not require native hardware or OS APIs. Specifically:
+
 - **Documents**: CRUD via IndexedDB (no native bridge needed)
 - **Crypto hashing**: `crypto.subtle.digest` via the Web Crypto API (signing still bridges to native for key access)
 - **Analytics**: `console.log` / `fetch` directly (no native bridge needed)
@@ -21,6 +22,7 @@ The output of `vite build` (a single `index.html` + JS bundle) gets bundled into
 ## What to Delete First
 
 Delete these directories entirely before starting (they're from the previous prototype):
+
 - `packages/webview-bridge/`
 - `packages/webview-app/`
 
@@ -33,6 +35,7 @@ The prototype was useful for learning. The architecture and bridge protocol are 
 ### Purpose
 
 TypeScript library that handles all communication between the WebView and native shell. Provides:
+
 - `WebViewBridge` class — manages request/response lifecycle, event subscriptions, timeouts
 - Bridge adapter factories — one per `mobile-sdk-alpha` adapter interface
 - `MockNativeBridge` — test utility for unit/integration tests without native
@@ -79,10 +82,26 @@ packages/webview-bridge/
   "version": "0.0.1-alpha.1",
   "type": "module",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "require": "./dist/index.cjs" },
-    "./mock": { "types": "./dist/mock.d.ts", "import": "./dist/mock.js", "require": "./dist/mock.cjs" },
-    "./schema": { "types": "./dist/schema.d.ts", "import": "./dist/schema.js", "require": "./dist/schema.cjs" },
-    "./adapters": { "types": "./dist/adapters.d.ts", "import": "./dist/adapters.js", "require": "./dist/adapters.cjs" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./mock": {
+      "types": "./dist/mock.d.ts",
+      "import": "./dist/mock.js",
+      "require": "./dist/mock.cjs"
+    },
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "import": "./dist/schema.js",
+      "require": "./dist/schema.cjs"
+    },
+    "./adapters": {
+      "types": "./dist/adapters.d.ts",
+      "import": "./dist/adapters.js",
+      "require": "./dist/adapters.cjs"
+    }
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -137,9 +156,16 @@ export const BRIDGE_PROTOCOL_VERSION = 1;
 export const DEFAULT_TIMEOUT_MS = 30_000;
 
 export type BridgeDomain =
-  | 'nfc' | 'biometrics' | 'secureStorage' | 'camera'
-  | 'crypto' | 'haptic' | 'analytics' | 'lifecycle'
-  | 'documents' | 'navigation';
+  | 'nfc'
+  | 'biometrics'
+  | 'secureStorage'
+  | 'camera'
+  | 'crypto'
+  | 'haptic'
+  | 'analytics'
+  | 'lifecycle'
+  | 'documents'
+  | 'navigation';
 
 export type BridgeMessageType = 'request' | 'response' | 'event';
 
@@ -149,21 +175,55 @@ export interface BridgeError {
   details?: Record<string, unknown>;
 }
 
-export interface BridgeRequest { type: 'request'; version: number; id: string; domain: BridgeDomain; method: string; params: Record<string, unknown>; timestamp: number; }
-export interface BridgeResponse { type: 'response'; version: number; id: string; domain: BridgeDomain; requestId: string; success: boolean; data?: unknown; error?: BridgeError; timestamp: number; }
-export interface BridgeEvent { type: 'event'; version: number; id: string; domain: BridgeDomain; event: string; data: unknown; timestamp: number; }
+export interface BridgeRequest {
+  type: 'request';
+  version: number;
+  id: string;
+  domain: BridgeDomain;
+  method: string;
+  params: Record<string, unknown>;
+  timestamp: number;
+}
+export interface BridgeResponse {
+  type: 'response';
+  version: number;
+  id: string;
+  domain: BridgeDomain;
+  requestId: string;
+  success: boolean;
+  data?: unknown;
+  error?: BridgeError;
+  timestamp: number;
+}
+export interface BridgeEvent {
+  type: 'event';
+  version: number;
+  id: string;
+  domain: BridgeDomain;
+  event: string;
+  data: unknown;
+  timestamp: number;
+}
 
 // Domain-specific method types
 export type NfcMethod = 'scan' | 'cancelScan' | 'isSupported';
 export type NfcEvent = 'scanProgress' | 'tagDiscovered' | 'scanError';
-export type BiometricsMethod = 'authenticate' | 'isAvailable' | 'getBiometryType';
+export type BiometricsMethod =
+  | 'authenticate'
+  | 'isAvailable'
+  | 'getBiometryType';
 export type SecureStorageMethod = 'get' | 'set' | 'remove';
 export type CameraMethod = 'scanMRZ' | 'isAvailable';
 export type CryptoMethod = 'sign' | 'generateKey' | 'getPublicKey';
 export type HapticMethod = 'trigger';
 export type AnalyticsMethod = 'trackEvent' | 'trackNfcEvent' | 'logNfcEvent';
 export type LifecycleMethod = 'ready' | 'dismiss' | 'setResult';
-export type DocumentsMethod = 'loadCatalog' | 'saveCatalog' | 'loadById' | 'save' | 'delete';
+export type DocumentsMethod =
+  | 'loadCatalog'
+  | 'saveCatalog'
+  | 'loadById'
+  | 'save'
+  | 'delete';
 export type NavigationMethod = 'goBack' | 'goTo';
 
 // NFC-specific param/result types
@@ -181,9 +241,23 @@ export interface NfcScanParams {
   userId?: string;
 }
 
-export interface NfcScanProgress { step: string; percent: number; message?: string; }
-export interface BiometricAuthParams { reason: string; fallbackLabel?: string; }
-export interface VerificationResult { success: boolean; userId?: string; verificationId?: string; proof?: unknown; claims?: Record<string, unknown>; error?: BridgeError; }
+export interface NfcScanProgress {
+  step: string;
+  percent: number;
+  message?: string;
+}
+export interface BiometricAuthParams {
+  reason: string;
+  fallbackLabel?: string;
+}
+export interface VerificationResult {
+  success: boolean;
+  userId?: string;
+  verificationId?: string;
+  proof?: unknown;
+  claims?: Record<string, unknown>;
+  error?: BridgeError;
+}
 ```
 
 #### bridge.ts — WebViewBridge Class
@@ -198,6 +272,7 @@ The existing prototype is solid. Key behaviors:
 6. **`destroy()`**: Rejects all pending, clears listeners, removes global
 
 **Transport detection:**
+
 ```typescript
 // Android
 if (globalThis.SelfNativeAndroid?.postMessage) { ... }
@@ -209,11 +284,11 @@ if (globalThis.ReactNativeWebView?.postMessage) { ... }
 
 **Transport reference (from bridge protocol):**
 
-| Platform | WebView -> Native | Native -> WebView |
-|----------|-----------------|-----------------|
-| Android | `window.SelfNativeAndroid.postMessage(json)` | `evaluateJavascript("window.SelfNativeBridge._handleResponse(json)")` |
-| iOS | `window.webkit.messageHandlers.SelfNativeIOS.postMessage(json)` | `evaluateJavaScript("window.SelfNativeBridge._handleResponse(json)")` |
-| React Native | `window.ReactNativeWebView.postMessage(json)` | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleResponse(json)")` |
+| Platform     | WebView -> Native                                               | Native -> WebView                                                              |
+| ------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Android      | `window.SelfNativeAndroid.postMessage(json)`                    | `evaluateJavascript("window.SelfNativeBridge._handleResponse(json)")`          |
+| iOS          | `window.webkit.messageHandlers.SelfNativeIOS.postMessage(json)` | `evaluateJavaScript("window.SelfNativeBridge._handleResponse(json)")`          |
+| React Native | `window.ReactNativeWebView.postMessage(json)`                   | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleResponse(json)")` |
 
 **Important:** The iOS handler name changed from the prototype. Person 2's spec says `SelfNativeIOS` as the WKScriptMessageHandler name. Make sure this matches.
 
@@ -222,18 +297,22 @@ if (globalThis.ReactNativeWebView?.postMessage) { ... }
 Each adapter factory takes a `WebViewBridge` instance and returns an object conforming to the corresponding `mobile-sdk-alpha` adapter interface.
 
 **NFC Scanner** (`nfc-scanner.ts`):
+
 - `scan(opts)`: Calls `bridge.request('nfc', 'scan', params, 120_000)` with 120s timeout
 - Handles `AbortSignal` — if aborted, fires `nfc.cancelScan` and rejects
 - Helper `onNfcProgress(bridge, handler)` subscribes to `nfc:scanProgress` events
 
 **Crypto** (`crypto.ts`):
+
 - `hash(input, algo)`: Uses Web Crypto API (`crypto.subtle.digest`), no bridge round-trip
 - `sign(data, keyRef)`: Encodes data as base64, calls `bridge.request('crypto', 'sign', { data, keyRef })`, decodes base64 result
 
 **Auth** (`auth.ts`):
+
 - `getPrivateKey()`: Calls `bridge.request('secureStorage', 'get', { key: 'self_private_key', requireBiometric: true })`, returns `null` on error
 
 **Storage** (`storage.ts`) — bridge to native (keychain access is native-managed):
+
 - `get(key)`: `bridge.request('secureStorage', 'get', { key })`
 - `set(key, value)`: `bridge.request('secureStorage', 'set', { key, value })`
 - `remove(key)`: `bridge.request('secureStorage', 'remove', { key })`
@@ -241,6 +320,7 @@ Each adapter factory takes a `WebViewBridge` instance and returns an object conf
 The `storage` adapter bridges to native because keychain access is managed by the host app. Some host apps (like MiniPay) have policies about WebView keychain access.
 
 **Haptic** (`haptic.ts`) — no-op:
+
 - `trigger(type)`: No-op (not critical for WebView). May optionally bridge to native if haptic feedback is desired.
 
 #### Web Fallback Adapters
@@ -249,6 +329,7 @@ These adapters run **entirely in the WebView** with no native bridge calls. They
 
 **IndexedDBDocumentsAdapter** (`documents-web.ts`):
 Uses IndexedDB for encrypted document CRUD. No bridge round-trip to native.
+
 - `loadDocumentCatalog()`: Reads catalog from IndexedDB
 - `saveDocumentCatalog(catalog)`: Writes catalog to IndexedDB
 - `loadDocumentById(id)`: Reads document by key from IndexedDB
@@ -261,39 +342,52 @@ const DB_NAME = 'self-documents';
 const STORE_NAME = 'documents';
 
 export function indexedDBDocumentsAdapter(): DocumentsAdapter {
-  const openDB = () => new Promise<IDBDatabase>((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
+  const openDB = () =>
+    new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
 
   return {
     async loadDocumentCatalog() {
       const db = await openDB();
       // ... read from 'catalog' key
     },
-    async saveDocumentCatalog(catalog) { /* ... */ },
-    async loadDocumentById(id) { /* ... */ },
-    async saveDocument(id, data) { /* ... */ },
-    async deleteDocument(id) { /* ... */ },
+    async saveDocumentCatalog(catalog) {
+      /* ... */
+    },
+    async loadDocumentById(id) {
+      /* ... */
+    },
+    async saveDocument(id, data) {
+      /* ... */
+    },
+    async deleteDocument(id) {
+      /* ... */
+    },
   };
 }
 ```
 
 **WebCryptoAdapter** (`crypto.ts`):
 Uses `crypto.subtle.digest` for hashing (no bridge round-trip). Signing still bridges to native because the private key lives in the native keychain.
+
 - `hash(input, algo)`: `crypto.subtle.digest(algo, input)` — pure Web Crypto, no bridge
 - `sign(data, keyRef)`: `bridge.request('crypto', 'sign', { data, keyRef })` — bridge to native (key access)
 
 **ConsoleAnalyticsAdapter** (`analytics-web.ts`):
 Logs to console in dev, fetches to analytics endpoint in prod. No bridge round-trip.
+
 - `trackEvent(event, payload)`: `console.log(...)` in dev, `fetch(endpoint, ...)` in prod
 - `trackNfcEvent(name, properties)`: Same pattern
 - `logNFCEvent(level, message, context, details)`: Same pattern
 
 ```typescript
-export function consoleAnalyticsAdapter(options?: { endpoint?: string }): AnalyticsAdapter {
+export function consoleAnalyticsAdapter(options?: {
+  endpoint?: string;
+}): AnalyticsAdapter {
   const isDev = import.meta.env?.DEV ?? true;
   const endpoint = options?.endpoint;
 
@@ -312,16 +406,19 @@ export function consoleAnalyticsAdapter(options?: { endpoint?: string }): Analyt
   return {
     trackEvent: (event, payload) => send(event, payload),
     trackNfcEvent: (name, properties) => send(`nfc.${name}`, properties),
-    logNFCEvent: (level, message, context, details) => send(`nfc.log.${level}`, { message, context, details }),
+    logNFCEvent: (level, message, context, details) =>
+      send(`nfc.log.${level}`, { message, context, details }),
   };
 }
 ```
 
 **Navigation** (`navigation.ts`) — NO bridge round-trip, uses React Router:
+
 - `goBack()`: Calls provided `goBack` callback
 - `goTo(routeName, params)`: Maps `RouteName` to URL path, calls provided `navigate` callback
 
 Route map:
+
 ```typescript
 const routeMap: Record<RouteName, string> = {
   DocumentCamera: '/onboarding/camera',
@@ -341,6 +438,7 @@ const routeMap: Record<RouteName, string> = {
 ```
 
 **Lifecycle** (`lifecycle.ts`):
+
 - `ready()`: `bridge.fire('lifecycle', 'ready', {})`
 - `dismiss()`: `bridge.fire('lifecycle', 'dismiss', {})`
 - `setResult(result)`: `bridge.request('lifecycle', 'setResult', result)` — this one awaits
@@ -372,6 +470,7 @@ npx tsc --noEmit      # type-check
 ### Purpose
 
 A private Vite-bundled React app that runs inside the native WebView. It:
+
 1. Renders all screens using Tamagui
 2. Wires screens to `mobile-sdk-alpha` via Zustand stores
 3. Uses `@selfxyz/webview-bridge` adapters to connect SDK operations to native
@@ -478,7 +577,13 @@ export default defineConfig({
       config: resolve(__dirname, 'tamagui.config.ts'),
       components: ['tamagui'],
       enableDynamicEvaluation: true,
-      excludeReactNativeWebExports: ['Switch', 'ProgressBar', 'Picker', 'CheckBox', 'Touchable'],
+      excludeReactNativeWebExports: [
+        'Switch',
+        'ProgressBar',
+        'Picker',
+        'CheckBox',
+        'Touchable',
+      ],
       platform: 'web',
       optimize: true,
     }),
@@ -487,7 +592,7 @@ export default defineConfig({
   build: {
     target: ['chrome90', 'safari15'],
     rollupOptions: { output: { manualChunks: undefined } },
-    assetsInlineLimit: 102400,  // Inline assets <100KB (fonts, small images)
+    assetsInlineLimit: 102400, // Inline assets <100KB (fonts, small images)
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: true,
@@ -540,7 +645,10 @@ export const App: React.FC = () => (
       <Route path="/onboarding/id-type" element={<IDSelectionScreen />} />
       <Route path="/onboarding/camera" element={<DocumentCameraScreen />} />
       <Route path="/onboarding/nfc" element={<DocumentNFCScreen />} />
-      <Route path="/onboarding/confirm" element={<ConfirmIdentificationScreen />} />
+      <Route
+        path="/onboarding/confirm"
+        element={<ConfirmIdentificationScreen />}
+      />
       <Route path="/proving" element={<ProvingScreen />} />
       <Route path="/proving/result" element={<VerificationResultScreen />} />
       <Route path="/settings" element={<SettingsScreen />} />
@@ -557,7 +665,10 @@ export const App: React.FC = () => (
 Creates a singleton `WebViewBridge` instance with debug logging in dev mode. Provides it via React context.
 
 ```tsx
-const bridge = useMemo(() => new WebViewBridge({ debug: import.meta.env.DEV }), []);
+const bridge = useMemo(
+  () => new WebViewBridge({ debug: import.meta.env.DEV }),
+  [],
+);
 ```
 
 #### SelfClientProvider.tsx
@@ -567,18 +678,20 @@ Creates all bridge adapters, wires navigation to React Router, and signals `life
 ```tsx
 // Creates adapters — mix of bridge (native) and web fallbacks:
 const adapters = {
-  scanner: bridgeNFCScannerAdapter(bridge),          // Bridge → native NFC hardware
-  crypto: webCryptoAdapter(bridge),                   // Hash: Web Crypto API, Sign: bridge → native keychain
-  auth: bridgeAuthAdapter(bridge),                    // Bridge → native biometrics
-  documents: indexedDBDocumentsAdapter(),              // Web fallback: IndexedDB (no bridge)
-  storage: bridgeStorageAdapter(bridge),              // Bridge → native keychain
-  analytics: consoleAnalyticsAdapter(),               // Web fallback: console.log / fetch (no bridge)
+  scanner: bridgeNFCScannerAdapter(bridge), // Bridge → native NFC hardware
+  crypto: webCryptoAdapter(bridge), // Hash: Web Crypto API, Sign: bridge → native keychain
+  auth: bridgeAuthAdapter(bridge), // Bridge → native biometrics
+  documents: indexedDBDocumentsAdapter(), // Web fallback: IndexedDB (no bridge)
+  storage: bridgeStorageAdapter(bridge), // Bridge → native keychain
+  analytics: consoleAnalyticsAdapter(), // Web fallback: console.log / fetch (no bridge)
   navigation: webNavigationAdapter(navigate, goBack), // React Router (no bridge)
 };
 const lifecycle = bridgeLifecycleAdapter(bridge);
 
 // Signals ready on mount:
-useEffect(() => { lifecycle.ready(); }, []);
+useEffect(() => {
+  lifecycle.ready();
+}, []);
 ```
 
 ### Screen Design Pattern
@@ -586,14 +699,29 @@ useEffect(() => { lifecycle.ready(); }, []);
 Every screen uses Tamagui components, imports colors/fonts from `@selfxyz/mobile-sdk-alpha/constants`, and accesses SDK via `useSelfClient()` hook.
 
 ```tsx
-import { Text, View, YStack, XStack, ScrollView, Button, Spinner } from 'tamagui';
+import {
+  Text,
+  View,
+  YStack,
+  XStack,
+  ScrollView,
+  Button,
+  Spinner,
+} from 'tamagui';
 import { useNavigate } from 'react-router-dom';
-import { black, white, slate300, slate500, amber50 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  black,
+  white,
+  slate300,
+  slate500,
+  amber50,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 ```
 
 **Consistent patterns across screens:**
+
 - Header with back button (left arrow `\u2190`) and title
 - `YStack flex={1} backgroundColor={white}` as page wrapper
 - `fontFamily={dinot}` for all text
@@ -613,7 +741,12 @@ import { config } from '@tamagui/config/v3';
 // Custom fonts: advercase, dinot, plexMono
 const appConfig = createTamagui({
   ...config,
-  fonts: { ...config.fonts, advercase: advercaseFont, dinot: dinotFont, plexMono: plexMonoFont },
+  fonts: {
+    ...config.fonts,
+    advercase: advercaseFont,
+    dinot: dinotFont,
+    plexMono: plexMonoFont,
+  },
 });
 ```
 
@@ -622,11 +755,28 @@ const appConfig = createTamagui({
 Copy `app/web/fonts/*.otf` into `packages/webview-app/public/fonts/`.
 
 CSS (`fonts.css`):
+
 ```css
-@font-face { font-family: 'Advercase-Regular'; src: url('/fonts/Advercase-Regular.otf') format('opentype'); font-display: swap; }
-@font-face { font-family: 'DINOT-Bold'; src: url('/fonts/DINOT-Bold.otf') format('opentype'); font-display: swap; }
-@font-face { font-family: 'DINOT-Medium'; src: url('/fonts/DINOT-Medium.otf') format('opentype'); font-display: swap; }
-@font-face { font-family: 'IBMPlexMono-Regular'; src: url('/fonts/IBMPlexMono-Regular.otf') format('opentype'); font-display: swap; }
+@font-face {
+  font-family: 'Advercase-Regular';
+  src: url('/fonts/Advercase-Regular.otf') format('opentype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINOT-Bold';
+  src: url('/fonts/DINOT-Bold.otf') format('opentype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINOT-Medium';
+  src: url('/fonts/DINOT-Medium.otf') format('opentype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBMPlexMono-Regular';
+  src: url('/fonts/IBMPlexMono-Regular.otf') format('opentype');
+  font-display: swap;
+}
 ```
 
 ---
@@ -635,18 +785,18 @@ CSS (`fonts.css`):
 
 Use these existing app screens as UI reference for what the screens should look like and do:
 
-| WebView Screen | RN App Reference | Key Elements |
-|---------------|-----------------|--------------|
-| CountryPickerScreen | `app/src/screens/documents/selection/CountryPickerScreen.tsx` | Search input, country list with flags |
-| IDSelectionScreen | `app/src/screens/documents/selection/IDPickerScreen.tsx` | Grid of ID document types |
-| DocumentCameraScreen | `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` | MRZ camera view (calls `camera.scanMRZ`) |
-| DocumentNFCScreen | `app/src/screens/documents/scanning/DocumentNFCScanScreen.tsx` | NFC scan progress, Lottie animation |
-| ConfirmIdentificationScreen | `app/src/screens/documents/selection/ConfirmBelongingScreen.tsx` | Document preview, confirm/retry |
-| ProvingScreen | `app/src/screens/verification/ProveScreen.tsx` | Disclosure items list, verify button |
-| VerificationResultScreen | `app/src/screens/onboarding/AccountVerifiedSuccessScreen.tsx` | Success/failure with Lottie |
-| HomeScreen | `app/src/screens/home/HomeScreen.tsx` | Document cards, points section |
-| SettingsScreen | `app/src/screens/account/settings/SettingsScreen.tsx` | Settings list |
-| ComingSoonScreen | `app/src/screens/shared/ComingSoonScreen.tsx` | Placeholder |
+| WebView Screen              | RN App Reference                                                 | Key Elements                             |
+| --------------------------- | ---------------------------------------------------------------- | ---------------------------------------- |
+| CountryPickerScreen         | `app/src/screens/documents/selection/CountryPickerScreen.tsx`    | Search input, country list with flags    |
+| IDSelectionScreen           | `app/src/screens/documents/selection/IDPickerScreen.tsx`         | Grid of ID document types                |
+| DocumentCameraScreen        | `app/src/screens/documents/scanning/DocumentCameraScreen.tsx`    | MRZ camera view (calls `camera.scanMRZ`) |
+| DocumentNFCScreen           | `app/src/screens/documents/scanning/DocumentNFCScanScreen.tsx`   | NFC scan progress, Lottie animation      |
+| ConfirmIdentificationScreen | `app/src/screens/documents/selection/ConfirmBelongingScreen.tsx` | Document preview, confirm/retry          |
+| ProvingScreen               | `app/src/screens/verification/ProveScreen.tsx`                   | Disclosure items list, verify button     |
+| VerificationResultScreen    | `app/src/screens/onboarding/AccountVerifiedSuccessScreen.tsx`    | Success/failure with Lottie              |
+| HomeScreen                  | `app/src/screens/home/HomeScreen.tsx`                            | Document cards, points section           |
+| SettingsScreen              | `app/src/screens/account/settings/SettingsScreen.tsx`            | Settings list                            |
+| ComingSoonScreen            | `app/src/screens/shared/ComingSoonScreen.tsx`                    | Placeholder                              |
 
 ---
 
@@ -657,6 +807,7 @@ Use these existing app screens as UI reference for what the screens should look 
 **Goal:** Build `packages/webview-bridge/` from scratch.
 
 **Steps:**
+
 1. Delete `packages/webview-bridge/` if it exists
 2. Create package structure (package.json, tsconfig, tsup.config)
 3. Implement `types.ts` — all protocol types
@@ -674,6 +825,7 @@ Use these existing app screens as UI reference for what the screens should look 
 **Goal:** Build all screen components in `packages/webview-app/src/screens/`.
 
 Each screen should:
+
 - Use Tamagui components (`Text`, `View`, `YStack`, `XStack`, `ScrollView`, `Button`, `Spinner`)
 - Import colors/fonts from `@selfxyz/mobile-sdk-alpha/constants`
 - Access SDK via `useSelfClient()` and `useBridge()` hooks
@@ -685,6 +837,7 @@ Each screen should:
 **Goal:** Wire everything together in `packages/webview-app/`.
 
 **Steps:**
+
 1. Delete `packages/webview-app/` if it exists
 2. Create package structure (package.json, vite.config, tamagui.config, index.html)
 3. Copy fonts into `public/fonts/`
