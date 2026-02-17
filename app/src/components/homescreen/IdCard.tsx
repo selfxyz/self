@@ -9,6 +9,7 @@ import { Separator, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import type { AadhaarData } from '@selfxyz/common';
+import { commonNames } from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types/passport';
 import type { KycData } from '@selfxyz/common/utils/types';
 import {
@@ -276,6 +277,17 @@ const COUNTRY_DEMONYMS: Record<string, string> = {
   TUV: 'TUVALUAN',
   VUT: 'NI-VANUATU',
   TLS: 'TIMORESE',
+};
+
+/**
+ * Resolve a 3-letter country code to its full country name.
+ * Falls back to the code itself if no mapping exists.
+ */
+const getCountryName = (code: string): string => {
+  if (!code) return '';
+  const cleaned = code.toUpperCase().replace(/</g, '').trim();
+  if (!cleaned) return '';
+  return (commonNames as Record<string, string>)[cleaned] || cleaned;
 };
 
 /**
@@ -580,7 +592,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
                 <YStack flex={1}>
                   <IdAttribute
                     name="NATIONALITY"
-                    value={docAttributes.nationalitySlice}
+                    value={getCountryName(docAttributes.nationalitySlice)}
                   />
                 </YStack>
                 <YStack flex={1}>
@@ -600,7 +612,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
                 <YStack flex={1}>
                   <IdAttribute
                     name="AUTHORITY"
-                    value={docAttributes.issuingStateSlice}
+                    value={getCountryName(docAttributes.issuingStateSlice)}
                   />
                 </YStack>
                 <YStack flex={1} />
