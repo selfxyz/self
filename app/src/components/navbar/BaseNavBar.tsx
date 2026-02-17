@@ -97,7 +97,7 @@ const NavBarTitle: React.FC<NavBarTitleProps> = ({
   }
 
   return typeof children === 'string' ? (
-    <Title style={[color ? { color } : undefined, style]} {...props}>
+    <Title style={[color ? { color } : undefined, style] as any} {...props}>
       {children}
     </Title>
   ) : (
