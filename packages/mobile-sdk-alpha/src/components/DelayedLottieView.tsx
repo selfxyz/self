@@ -5,17 +5,16 @@
 import type { LottieViewProps } from 'lottie-react-native';
 import LottieView from 'lottie-react-native';
 import type React from 'react';
-import { forwardRef, useEffect, useRef } from 'react';
+import { forwardRef, useCallback, useRef } from 'react';
 
 /**
  * Wrapper around LottieView that fixes iOS native module initialization timing.
  *
  * On iOS, the Lottie native module isn't always fully initialized when components
- * first render during app startup. This causes animations to not appear until
- * after navigating to another screen that triggers native module initialization.
- *
- * This component adds a 100ms delay before starting autoPlay animations, giving
- * the native module time to initialize properly.
+ * first render during app startup, and dotLottie (.lottie) sources load
+ * asynchronously on the native side. This component waits for `onAnimationLoaded`
+ * before calling `play()`, so the animation starts reliably regardless of source
+ * format (JSON or dotLottie).
  *
  * Usage: Drop-in replacement for LottieView
  * @example
@@ -30,21 +29,23 @@ export const DelayedLottieView = forwardRef<LottieView, LottieViewProps>((props,
   const internalRef = useRef<LottieView>(null);
   const ref = (forwardedRef as React.RefObject<LottieView>) || internalRef;
 
-  useEffect(() => {
-    // Only auto-trigger for autoPlay animations
+  const handleAnimationLoaded = useCallback(() => {
     if (props.autoPlay) {
-      const timer = setTimeout(() => {
-        ref.current?.play();
-      }, 100);
-
-      return () => clearTimeout(timer);
+      ref.current?.play();
     }
-  }, [props.autoPlay, ref]);
+    props.onAnimationLoaded?.();
+  }, [props.autoPlay, props.onAnimationLoaded, ref]);
 
   // For autoPlay animations, disable native autoPlay and control it ourselves
   const modifiedProps = props.autoPlay ? { ...props, autoPlay: false } : props;
 
-  return <LottieView ref={ref} {...modifiedProps} />;
+  return (
+    <LottieView
+      ref={ref}
+      {...modifiedProps}
+      onAnimationLoaded={handleAnimationLoaded}
+    />
+  );
 });
 
 DelayedLottieView.displayName = 'DelayedLottieView';
