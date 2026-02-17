@@ -811,6 +811,18 @@ Before starting RN SDK implementation:
 2. **`@selfxyz/webview-app`** must produce a working Vite build (`dist/index.html` + bundle). This is bundled as the WebView content.
 3. **SPEC-PERSON3-SDK-CORE Chunk 3F** (web fallback adapters) should be complete so the WebView can handle documents/crypto/analytics without bridging to native for those capabilities.
 
+### Spec Corrections (from PR #1765 CodeRabbit review)
+
+The following issues were identified during review and must be addressed when implementing the corresponding chunks:
+
+| Issue | Severity | Chunk | Description | Fix |
+|-------|----------|-------|-------------|-----|
+| `react-native-webview` dep type | Major | 4A | Listed as `dependency` but must be a `peerDependency` — native modules must be linked by the host app. Having it as a direct dep causes JS/native version mismatch. | Move to `peerDependencies` as `"react-native-webview": ">=13.0.0"` |
+| `createHandlers` missing `router` arg | Critical | 4A | `SelfVerification.tsx` calls `createHandlers` without the `router` field, but the registry function requires `router: MessageRouter`. Will fail at compile and runtime. | Pass `router` in the `createHandlers` config object |
+| Android-only WebView `source` | Major | 4D | The `source` constant only sets `file:///android_asset/...`. iOS path is missing — WebView will show a blank screen on iOS. | Use `Platform.select({ android: { uri: '...' }, ios: { uri: Bundle.main path } })` |
+| `crypto.randomUUID` polyfill | Minor | 4A | `crypto.randomUUID()` may not be available in all RN environments. | Use `react-native-get-random-values` polyfill or a UUID library |
+| `RNFS.MainBundlePath` without peer dep | Major | 4D | iOS asset path uses `react-native-fs` but it's not in `peerDependencies`. Host apps won't have it. | Either add `react-native-fs` to peerDeps or use RN built-in `Image.resolveAssetSource` / `require()` |
+
 ### What Already Exists (from PR #1765)
 
 The following pieces were implemented in `@selfxyz/mobile-sdk-alpha` (not in `rn-sdk`) and can be used by both the RN SDK's WebView engine and direct RN consumers:

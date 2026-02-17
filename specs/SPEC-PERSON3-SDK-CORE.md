@@ -1360,9 +1360,16 @@ Once created, `src/browser.ts` must re-export these factories so `webview-app` c
 
 | Item | Description | Location |
 |------|-------------|----------|
-| `proof` field never populated | `VERIFICATION_COMPLETE` event type includes `proof?: unknown` but all three emission sites (`completed`, `failure`, `error` states in `provingMachine.ts`) never pass proof data. Consumers will get `undefined`. | `src/proving/provingMachine.ts` — `emitVerificationComplete()` helper |
+| `proof` field never populated | `VERIFICATION_COMPLETE` event type includes `proof?: unknown` but all three emission sites (`completed`, `failure`, `error` states in `provingMachine.ts`) never pass proof data. Consumers will get `undefined`. Remove the field or populate it once real proof data is available. | `src/proving/provingMachine.ts` — `emitVerificationComplete()` helper |
 | Remaining `__DEV__` references | PR replaced `__DEV__` with `config.debug` in attestation validation but there may be other `__DEV__` references in the proving machine or elsewhere. Audit needed. | `src/proving/provingMachine.ts` |
 | `plexMono` font hardcoded | Changed from `Platform.OS === 'ios' ? 'IBM Plex Mono' : 'IBMPlexMono-Regular'` to just `'IBMPlexMono-Regular'`. Architecturally correct (logical tokens) but may break iOS font rendering if the PostScript name differs. Needs verification on iOS device or a platform-aware `getFontFamily()` factory. | `src/constants/fonts.ts` |
+
+**Chunk 3F implementation notes (from PR #1765 CodeRabbit review):**
+
+| Item | Description | Action |
+|------|-------------|--------|
+| SHA algorithm name mapping | `crypto.subtle.digest` requires hyphenated identifiers (`"SHA-256"`, not `"sha256"`). The spec's `.toUpperCase()` transform is insufficient — implementers must normalize input (e.g. `sha256` → `SHA-256`) before calling `crypto.subtle.digest`. | Fix in `createWebCryptoAdapter()` implementation |
+| `fake-indexeddb` needed for tests | jsdom does not provide IndexedDB. Chunk 3F unit tests for `createIndexedDBDocumentsAdapter()` require `fake-indexeddb` as a devDependency and a Vitest setup file to install `fake-indexeddb/auto`. | Add to devDependencies when implementing Chunk 3F |
 
 ### SDK vs App Gap Summary
 
