@@ -77,7 +77,7 @@ class AppDelegate: EXAppDelegateWrapper, UNUserNotificationCenterDelegate {
     _ application: UIApplication,
     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
   ) {
-    let token = deviceToken.map { String(format: "%02X", $0) }.joined()
+    super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
 
     #if DEBUG
     Messaging.messaging().setAPNSToken(deviceToken, type: .sandbox)
