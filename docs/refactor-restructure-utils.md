@@ -11,6 +11,7 @@
 This refactor reorganizes the mobile app codebase into a clean, layered architecture with clear separation of concerns. The primary goal was to improve code organization, discoverability, and maintainability by grouping related functionality into logical directories.
 
 ### Key Changes
+
 - **5 new top-level directories** created: `config/`, `integrations/`, `proving/`, `services/`, refined `utils/`
 - **~50+ new files** created for better organization
 - **~20+ files** moved/reorganized
@@ -101,100 +102,100 @@ app/src/
 
 ### **Config Layer** (`app/src/config/`)
 
-| File | Purpose | Exports |
-|------|---------|---------|
-| `index.ts` | Barrel export for all config | All config functions/types |
-| `remoteConfig.shared.ts` | Shared types & constants | Types, LOCAL_OVERRIDES_KEY |
-| `remoteConfig.ts` | Native remote config | Feature flag functions |
-| `remoteConfig.web.ts` | Web remote config | Feature flag functions |
-| `segment.ts` | Analytics client setup | createSegmentClient |
-| `sentry.ts` | Error tracking (native) | initSentry, logNFCEvent, etc |
-| `sentry.web.ts` | Error tracking (web) | initSentry, logNFCEvent, etc |
+| File                     | Purpose                      | Exports                      |
+| ------------------------ | ---------------------------- | ---------------------------- |
+| `index.ts`               | Barrel export for all config | All config functions/types   |
+| `remoteConfig.shared.ts` | Shared types & constants     | Types, LOCAL_OVERRIDES_KEY   |
+| `remoteConfig.ts`        | Native remote config         | Feature flag functions       |
+| `remoteConfig.web.ts`    | Web remote config            | Feature flag functions       |
+| `segment.ts`             | Analytics client setup       | createSegmentClient          |
+| `sentry.ts`              | Error tracking (native)      | initSentry, logNFCEvent, etc |
+| `sentry.web.ts`          | Error tracking (web)         | initSentry, logNFCEvent, etc |
 
 ### **Integrations Layer** (`app/src/integrations/`)
 
-| File | Purpose | Exports |
-|------|---------|---------|
-| `haptics/index.ts` | Re-exports SDK haptics | buttonTap, confirmTap, etc |
-| `keychain/index.ts` | Keychain integration | Security utilities |
-| `nfc/nfcScanner.ts` | NFC scanning logic | scan, parseScanResponse |
+| File                    | Purpose                | Exports                     |
+| ----------------------- | ---------------------- | --------------------------- |
+| `haptics/index.ts`      | Re-exports SDK haptics | buttonTap, confirmTap, etc  |
+| `keychain/index.ts`     | Keychain integration   | Security utilities          |
+| `nfc/nfcScanner.ts`     | NFC scanning logic     | scan, parseScanResponse     |
 | `nfc/passportReader.ts` | Native passport reader | PassportReader, scan, reset |
-| `qrScanner.ts` | QR code scanning | QR utilities |
-| `sharing.ts` | Native share sheet | Share functions |
-| `turnkey.ts` | Turnkey OAuth | Turnkey utilities |
+| `qrScanner.ts`          | QR code scanning       | QR utilities                |
+| `sharing.ts`            | Native share sheet     | Share functions             |
+| `turnkey.ts`            | Turnkey OAuth          | Turnkey utilities           |
 
 ### **Proving Layer** (`app/src/proving/`)
 
-| File | Purpose | Exports |
-|------|---------|---------|
-| `index.ts` | Barrel export | ProvingStateType, utils |
-| `loadingScreenStateText.ts` | Loading screen text | getLoadingScreenText |
-| `validateDocument.ts` | Document validation | checkAndUpdateRegistrationStates, getAlternativeCSCA |
+| File                        | Purpose             | Exports                                              |
+| --------------------------- | ------------------- | ---------------------------------------------------- |
+| `index.ts`                  | Barrel export       | ProvingStateType, utils                              |
+| `loadingScreenStateText.ts` | Loading screen text | getLoadingScreenText                                 |
+| `validateDocument.ts`       | Document validation | checkAndUpdateRegistrationStates, getAlternativeCSCA |
 
 ### **Services Layer** (`app/src/services/`)
 
 #### Points Service (`services/points/`)
 
-| File | Purpose | Key Functions |
-|------|---------|---------------|
-| `index.ts` | Barrel export | All points functions |
-| `api.ts` | API requests with crypto signatures | makeApiRequest, generateSignature |
-| `constants.ts` | Configuration | POINTS_API_BASE_URL |
-| `types.ts` | TypeScript types | PointEvent, IncomingPoints, POINT_VALUES |
-| `utils.ts` | Utility functions | getPointsAddress, getTotalPoints, getWhiteListedDisclosureAddresses, pointsSelfApp |
-| `getEvents.ts` | Event retrieval | getAllPointEvents, getDisclosurePointEvents, getBackupPointEvents |
-| `recordEvents.ts` | Event recording | recordBackupPointEvent, recordNotificationPointEvent |
-| `registerEvents.ts` | Event registration | registerBackupPoints, registerNotificationPoints |
-| `eventPolling.ts` | Status polling | pollEventProcessingStatus |
-| `jobStatus.ts` | Job status | checkEventProcessingStatus |
+| File                | Purpose                             | Key Functions                                                                      |
+| ------------------- | ----------------------------------- | ---------------------------------------------------------------------------------- |
+| `index.ts`          | Barrel export                       | All points functions                                                               |
+| `api.ts`            | API requests with crypto signatures | makeApiRequest, generateSignature                                                  |
+| `constants.ts`      | Configuration                       | POINTS_API_BASE_URL                                                                |
+| `types.ts`          | TypeScript types                    | PointEvent, IncomingPoints, POINT_VALUES                                           |
+| `utils.ts`          | Utility functions                   | getPointsAddress, getTotalPoints, getWhiteListedDisclosureAddresses, pointsSelfApp |
+| `getEvents.ts`      | Event retrieval                     | getAllPointEvents, getDisclosurePointEvents, getBackupPointEvents                  |
+| `recordEvents.ts`   | Event recording                     | recordBackupPointEvent, recordNotificationPointEvent                               |
+| `registerEvents.ts` | Event registration                  | registerBackupPoints, registerNotificationPoints                                   |
+| `eventPolling.ts`   | Status polling                      | pollEventProcessingStatus                                                          |
+| `jobStatus.ts`      | Job status                          | checkEventProcessingStatus                                                         |
 
 #### Cloud Backup Service (`services/cloud-backup/`)
 
-| File | Purpose | Key Functions |
-|------|---------|---------------|
-| `index.ts` | Platform dispatcher | upload, download, disableBackup |
-| `ios.ts` | iCloud implementation | upload, download, disableBackup (iOS) |
-| `google.ts` | Google Drive impl | createGDrive |
-| `helpers.ts` | Shared utilities | FILE_NAME, FOLDER, ENCRYPTED_FILE_PATH |
+| File         | Purpose               | Key Functions                          |
+| ------------ | --------------------- | -------------------------------------- |
+| `index.ts`   | Platform dispatcher   | upload, download, disableBackup        |
+| `ios.ts`     | iCloud implementation | upload, download, disableBackup (iOS)  |
+| `google.ts`  | Google Drive impl     | createGDrive                           |
+| `helpers.ts` | Shared utilities      | FILE_NAME, FOLDER, ENCRYPTED_FILE_PATH |
 
 #### Logging Service (`services/logging/`)
 
-| File | Purpose | Exports |
-|------|---------|---------|
-| `index.ts` | Logger instances | AppLogger, AuthLogger, NfcLogger, etc |
-| `logger/consoleInterceptor.ts` | Console redirection | interceptConsole |
-| `logger/lokiTransport.ts` | Loki transport | lokiTransport |
-| `logger/nativeLoggerBridge.ts` | Native bridge | setupNativeLoggerBridge |
+| File                           | Purpose             | Exports                               |
+| ------------------------------ | ------------------- | ------------------------------------- |
+| `index.ts`                     | Logger instances    | AppLogger, AuthLogger, NfcLogger, etc |
+| `logger/consoleInterceptor.ts` | Console redirection | interceptConsole                      |
+| `logger/lokiTransport.ts`      | Loki transport      | lokiTransport                         |
+| `logger/nativeLoggerBridge.ts` | Native bridge       | setupNativeLoggerBridge               |
 
 #### Notifications Service (`services/notifications/`)
 
-| File | Purpose | Key Functions |
-|------|---------|---------------|
-| `notificationService.ts` | Native implementation | subscribeToTopics, requestPermission |
-| `notificationService.web.ts` | Web implementation | subscribeToTopics, requestPermission |
-| `notificationService.shared.ts` | Shared logic | Common notification logic |
+| File                            | Purpose               | Key Functions                        |
+| ------------------------------- | --------------------- | ------------------------------------ |
+| `notificationService.ts`        | Native implementation | subscribeToTopics, requestPermission |
+| `notificationService.web.ts`    | Web implementation    | subscribeToTopics, requestPermission |
+| `notificationService.shared.ts` | Shared logic          | Common notification logic            |
 
 #### Other Services
 
-| File | Purpose | Exports |
-|------|---------|---------|
+| File           | Purpose           | Exports                                                       |
+| -------------- | ----------------- | ------------------------------------------------------------- |
 | `analytics.ts` | Analytics wrapper | default analytics() factory, trackNfcEvent, flushAllAnalytics |
-| `email.ts` | Email integration | Email utilities |
+| `email.ts`     | Email integration | Email utilities                                               |
 
 ### **Utils Layer** (`app/src/utils/`)
 
-| File | Purpose | Key Functions |
-|------|---------|---------------|
-| `index.ts` | Barrel export | All utility functions |
-| `crypto/cryptoLoader.ts` | Lazy crypto loading | loadCryptoUtils, loadProvingUtils |
-| `crypto/ethers.ts` | Ethers.js wrappers | sha256, sha512, pbkdf2, randomBytes |
-| `crypto/mnemonic.ts` | Mnemonic utilities | parseMnemonic, isMnemonic |
-| `devUtils.ts` | Dev mode utilities | IS_DEV_MODE |
-| `formatUserId.ts` | User ID formatting | formatUserId |
-| `jsonUtils.ts` | Safe JSON parsing | safeJsonParse, safeJsonStringify |
+| File                       | Purpose               | Key Functions                             |
+| -------------------------- | --------------------- | ----------------------------------------- |
+| `index.ts`                 | Barrel export         | All utility functions                     |
+| `crypto/cryptoLoader.ts`   | Lazy crypto loading   | loadCryptoUtils, loadProvingUtils         |
+| `crypto/ethers.ts`         | Ethers.js wrappers    | sha256, sha512, pbkdf2, randomBytes       |
+| `crypto/mnemonic.ts`       | Mnemonic utilities    | parseMnemonic, isMnemonic                 |
+| `devUtils.ts`              | Dev mode utilities    | IS_DEV_MODE                               |
+| `formatUserId.ts`          | User ID formatting    | formatUserId                              |
+| `jsonUtils.ts`             | Safe JSON parsing     | safeJsonParse, safeJsonStringify          |
 | `modalCallbackRegistry.ts` | Modal callback system | registerModalCallbacks, getModalCallbacks |
-| `retry.ts` | Retry logic | withRetries |
-| `styleUtils.ts` | Style utilities | normalizeBorderWidth, extraYPadding |
+| `retry.ts`                 | Retry logic           | withRetries                               |
+| `styleUtils.ts`            | Style utilities       | normalizeBorderWidth, extraYPadding       |
 
 ---
 
@@ -218,6 +219,7 @@ import analytics from '@/services/analytics';
 ### Files with Updated Imports
 
 **Screens** (7 files):
+
 - `screens/verification/ProveScreen.tsx` - Added `@/services/points`
 - `screens/verification/ProofRequestStatusScreen.tsx` - Updated to `@/services/points/utils`
 - `screens/account/settings/CloudBackupScreen.tsx` - Updated to `@/services/cloud-backup`
@@ -227,6 +229,7 @@ import analytics from '@/services/analytics';
 - `screens/shared/WebViewScreen.tsx` - No changes needed
 
 **Providers** (5 files):
+
 - `providers/authProvider.tsx` - Now exports `getOrGeneratePointsAddress`
 - `providers/passportDataProvider.tsx` - Updated to `@/proving/validateDocument`
 - `providers/loggerProvider.tsx` - Updated to `@/services/logging`
@@ -234,6 +237,7 @@ import analytics from '@/services/analytics';
 - `providers/notificationTrackingProvider.tsx` - Updated to `@/services/notifications`
 
 **Hooks** (5 files):
+
 - `hooks/useEarnPointsFlow.ts` - Updated to `@/services/points`
 - `hooks/usePoints.ts` - Updated to `@/services/points`
 - `hooks/usePointsGuardrail.ts` - Updated to `@/services/points`
@@ -241,9 +245,11 @@ import analytics from '@/services/analytics';
 - `hooks/useHapticNavigation.ts` - Updated to `@/integrations/haptics`
 
 **Stores** (1 file):
+
 - `stores/pointEventStore.ts` - Updated to `@/services/points`
 
 **Components** (2 files):
+
 - `components/navbar/Points.tsx` - Updated to `@/services/points`
 - `components/PointHistoryList.tsx` - Updated to `@/services/points`
 
@@ -295,6 +301,7 @@ import { scan } from '@/integrations/nfc';
 ### 3. **Better Tree-Shaking**
 
 Core new directories like `config/`, `integrations/`, `proving/`, `services`, and `utils/` use **feature-level barrel exports** (`index.ts` inside each feature folder) that:
+
 - Enable clean imports: `@/services/points` instead of `@/services/points/utils`
 - Allow bundlers to eliminate unused code
 - Provide a single source of truth for exports within each feature
@@ -305,6 +312,7 @@ Core new directories like `config/`, `integrations/`, `proving/`, `services`, an
 ### 4. **Enhanced Discoverability**
 
 Developers can now quickly find:
+
 - **Configuration?** → `config/`
 - **Business logic?** → `services/`
 - **Native code?** → `integrations/`
@@ -314,6 +322,7 @@ Developers can now quickly find:
 ### 5. **Platform-Specific Code**
 
 Consistent naming convention:
+
 - `.ts` = Native (iOS/Android)
 - `.web.ts` = Web platform
 - `.shared.ts` = Shared logic
@@ -325,16 +334,19 @@ Example: `notificationService.ts`, `notificationService.web.ts`, `notificationSe
 ## ✅ Verification Checklist
 
 ### Compile-Time Checks
+
 - [x] `yarn types` passes ✓
 - [x] `yarn lint` passes ✓
 - [x] `yarn build` succeeds ✓
 
 ### Runtime Checks
+
 - [x] No import errors
 - [x] No circular dependencies
 - [x] All barrel exports work correctly
 
 ### Test Checks
+
 - [x] `yarn test` passes ✓
 - [x] No test failures from refactor
 - [x] Test imports updated correctly
@@ -346,6 +358,7 @@ Example: `notificationService.ts`, `notificationService.web.ts`, `notificationSe
 ### If You're Adding New Code
 
 **1. Business Logic** → `services/`
+
 ```typescript
 // Create a new service
 app/src/services/my-feature/
@@ -356,6 +369,7 @@ app/src/services/my-feature/
 ```
 
 **2. Native/3rd Party Integration** → `integrations/`
+
 ```typescript
 // Add new integration
 app/src/integrations/my-integration.ts
@@ -367,20 +381,22 @@ app/src/integrations/my-integration/
 ```
 
 **3. Pure Utilities** → `utils/`
+
 ```typescript
 // Add pure function
-app/src/utils/my-utility.ts
+app / src / utils / my - utility.ts;
 // Export from barrel
-app/src/utils/index.ts
+app / src / utils / index.ts;
 ```
 
 **4. Configuration** → `config/`
+
 ```typescript
 // Add config
-app/src/config/my-config.ts
-app/src/config/my-config.web.ts
+app / src / config / my - config.ts;
+app / src / config / my - config.web.ts;
 // Export from barrel
-app/src/config/index.ts
+app / src / config / index.ts;
 ```
 
 ### If You're Working on Existing Code
@@ -415,6 +431,7 @@ import { makeApiRequest } from '@/services/points';
 ## 📊 Impact Summary
 
 ### Stats
+
 ```
 📁 New Directories:       5 (config, integrations, proving, services, utils reorganized)
 ✨ New Files:             ~50+ files created
@@ -427,10 +444,12 @@ import { makeApiRequest } from '@/services/points';
 ```
 
 ### Complexity Reduction
+
 - **Before**: Scattered logic across screens/hooks/providers
 - **After**: Centralized in services with clear boundaries
 
 ### Maintenance Improvement
+
 - **Before**: "Where is the points logic?" → Multiple locations
 - **After**: "Where is the points logic?" → `services/points/`
 

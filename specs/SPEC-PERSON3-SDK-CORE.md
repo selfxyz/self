@@ -5,6 +5,7 @@
 You are making **`@selfxyz/mobile-sdk-alpha`** work cleanly inside a browser/WebView context. This package is the "UI backend" — it contains all core logic (proving machine, stores, document management, protocol state) that Person 1's screen components consume via `useSelfClient()`.
 
 Today the package is entangled with React Native. Your job is to sever those ties so the same core logic runs in both:
+
 - **React Native** (existing Self Wallet app — must not regress)
 - **Browser/WebView** (Person 1's `@selfxyz/webview-app` running inside Person 2's KMP shell)
 
@@ -16,19 +17,19 @@ You are NOT building screens or native handlers. You are making the engine porta
 
 `mobile-sdk-alpha` currently has React Native leaking into core logic:
 
-| File | Issue |
-|------|-------|
-| `src/proving/provingMachine.ts:6` | `import { Platform } from 'react-native'` — `getPlatform()` helper |
-| `src/proving/provingMachine.ts:543,547` | `__DEV__` global for TEE attestation validation |
-| `src/constants/fonts.ts:10` | `Platform.OS === 'ios'` for font family selection |
-| `src/nfc/index.ts:27` | `Platform.OS` for logging scan type |
-| `src/adapters/react-native/nfc-scanner.ts` | `NativeModules`, `Platform`, `Buffer` — full RN NFC impl |
-| `src/bridge/nativeEvents.native.ts` | `NativeEventEmitter`, `NativeModules` |
-| `src/haptic/index.ts`, `trigger.ts` | `Platform`-dependent vibration APIs |
-| `src/components/MRZScannerView.tsx` | `requireNativeComponent()`, `NativeModules`, `UIManager` |
-| `src/flows/onboarding/document-nfc-screen.tsx` | `NativeEventEmitter`, `NativeModules`, `Platform`, `Linking` |
-| `src/documents/useCountries.tsx` | `react-native-localize` for device locale |
-| `src/stores/selfAppStore.tsx` | `socket.io-client` (works in browser, but needs WsAdapter) |
+| File                                           | Issue                                                              |
+| ---------------------------------------------- | ------------------------------------------------------------------ |
+| `src/proving/provingMachine.ts:6`              | `import { Platform } from 'react-native'` — `getPlatform()` helper |
+| `src/proving/provingMachine.ts:543,547`        | `__DEV__` global for TEE attestation validation                    |
+| `src/constants/fonts.ts:10`                    | `Platform.OS === 'ios'` for font family selection                  |
+| `src/nfc/index.ts:27`                          | `Platform.OS` for logging scan type                                |
+| `src/adapters/react-native/nfc-scanner.ts`     | `NativeModules`, `Platform`, `Buffer` — full RN NFC impl           |
+| `src/bridge/nativeEvents.native.ts`            | `NativeEventEmitter`, `NativeModules`                              |
+| `src/haptic/index.ts`, `trigger.ts`            | `Platform`-dependent vibration APIs                                |
+| `src/components/MRZScannerView.tsx`            | `requireNativeComponent()`, `NativeModules`, `UIManager`           |
+| `src/flows/onboarding/document-nfc-screen.tsx` | `NativeEventEmitter`, `NativeModules`, `Platform`, `Linking`       |
+| `src/documents/useCountries.tsx`               | `react-native-localize` for device locale                          |
+| `src/stores/selfAppStore.tsx`                  | `socket.io-client` (works in browser, but needs WsAdapter)         |
 
 Some of these are in "leaf" files (components, adapters) that the WebView will never import. Others are in core files (proving machine, fonts, stores) that the WebView **must** import.
 
@@ -42,34 +43,34 @@ The good news: `mobile-sdk-alpha` already has a clean adapter architecture. The 
 
 ```typescript
 interface Adapters {
-  scanner: NFCScannerAdapter;    // NFC → bridge to native (hardware required)
-  crypto: CryptoAdapter;         // hash() → Web Crypto API (web fallback), sign() → bridge to native (biometric-gated key ops)
-  network: NetworkAdapter;       // fetch() everywhere, WsAdapter for WebSocket
-  auth: AuthAdapter;             // bridge to native (keychain, native-managed)
-  documents: DocumentsAdapter;   // IndexedDB (web fallback, NOT bridge)
+  scanner: NFCScannerAdapter; // NFC → bridge to native (hardware required)
+  crypto: CryptoAdapter; // hash() → Web Crypto API (web fallback), sign() → bridge to native (biometric-gated key ops)
+  network: NetworkAdapter; // fetch() everywhere, WsAdapter for WebSocket
+  auth: AuthAdapter; // bridge to native (keychain, native-managed)
+  documents: DocumentsAdapter; // IndexedDB (web fallback, NOT bridge)
   navigation: NavigationAdapter; // React Router in WebView, React Navigation in RN
-  storage?: StorageAdapter;      // bridge to native (keychain, native-managed)
-  analytics?: AnalyticsAdapter;  // console/fetch (web fallback, NOT bridge)
-  haptic?: HapticAdapter;        // no-op in WebView (not critical)
-  clock?: ClockAdapter;          // Date.now() + setTimeout everywhere
-  logger?: LoggerAdapter;        // console everywhere
+  storage?: StorageAdapter; // bridge to native (keychain, native-managed)
+  analytics?: AnalyticsAdapter; // console/fetch (web fallback, NOT bridge)
+  haptic?: HapticAdapter; // no-op in WebView (not critical)
+  clock?: ClockAdapter; // Date.now() + setTimeout everywhere
+  logger?: LoggerAdapter; // console everywhere
 }
 ```
 
 **Adapter mapping — web fallback vs bridge:**
 
-| Adapter | WebView Strategy | Why |
-|---------|-----------------|-----|
-| `NFCScannerAdapter` | Bridge to native | Hardware access (NFC radio) |
-| `CryptoAdapter.hash()` | **Web Crypto API (web fallback)** | Standard web API, no native needed |
-| `CryptoAdapter.sign()` | Bridge to native | Biometric-gated key operations |
-| `AuthAdapter` | Bridge to native | Keychain access, host app policy |
-| `DocumentsAdapter` | **IndexedDB (web fallback)** | Standard web storage, no native needed |
-| `StorageAdapter` | Bridge to native | Keychain/SecureStorage, native-managed |
-| `AnalyticsAdapter` | **console/fetch (web fallback)** | No native dependency |
-| `HapticAdapter` | No-op | Not critical for verification flow |
-| `NavigationAdapter` | React Router (web) | Standard web routing |
-| `NetworkAdapter` | `fetch()` / `WebSocket` (web) | Standard web APIs |
+| Adapter                | WebView Strategy                  | Why                                    |
+| ---------------------- | --------------------------------- | -------------------------------------- |
+| `NFCScannerAdapter`    | Bridge to native                  | Hardware access (NFC radio)            |
+| `CryptoAdapter.hash()` | **Web Crypto API (web fallback)** | Standard web API, no native needed     |
+| `CryptoAdapter.sign()` | Bridge to native                  | Biometric-gated key operations         |
+| `AuthAdapter`          | Bridge to native                  | Keychain access, host app policy       |
+| `DocumentsAdapter`     | **IndexedDB (web fallback)**      | Standard web storage, no native needed |
+| `StorageAdapter`       | Bridge to native                  | Keychain/SecureStorage, native-managed |
+| `AnalyticsAdapter`     | **console/fetch (web fallback)**  | No native dependency                   |
+| `HapticAdapter`        | No-op                             | Not critical for verification flow     |
+| `NavigationAdapter`    | React Router (web)                | Standard web routing                   |
+| `NetworkAdapter`       | `fetch()` / `WebSocket` (web)     | Standard web APIs                      |
 
 `createSelfClient({ config, adapters, listeners })` already wires these in. Person 1's `SelfClientProvider` calls this with bridge-backed adapter implementations. The core logic (`provingMachine`, `protocolStore`, `documents/utils`) talks only through `SelfClient` — it never reaches for native APIs directly.
 
@@ -104,7 +105,8 @@ This avoids a risky big-bang migration while ensuring the SDK is battle-tested b
 ```typescript
 // BEFORE
 import { Platform } from 'react-native';
-const getPlatform = (): 'ios' | 'android' => (Platform.OS === 'ios' ? 'ios' : 'android');
+const getPlatform = (): 'ios' | 'android' =>
+  Platform.OS === 'ios' ? 'ios' : 'android';
 ```
 
 The `getPlatform()` function is used only for the `ProofContext.platform` field in structured logging. This should be injected through config or derived from the environment.
@@ -207,7 +209,9 @@ This is a **breaking change for Android** if anything reads `dinot` and expects 
 **If this is too risky**, provide a platform-aware factory instead:
 
 ```typescript
-export const getFontFamily = (platform: 'ios' | 'android' | 'web'): typeof fontTokens => ({
+export const getFontFamily = (
+  platform: 'ios' | 'android' | 'web',
+): typeof fontTokens => ({
   advercase: 'Advercase-Regular',
   dinot: platform === 'android' ? 'dinot' : 'DINOT-Medium',
   dinotBold: platform === 'android' ? 'dinot_bold' : 'DINOT-Bold',
@@ -241,6 +245,7 @@ But the proving machine doesn't use it. It creates raw `WebSocket` instances and
 **Fix:** Refactor the proving machine to use `WsAdapter` from the `SelfClient` adapters. This is the largest refactor in the spec.
 
 **Why it matters:** In the WebView, `WebSocket` works natively in the browser — so this isn't strictly broken. But using the adapter:
+
 - Enables the host to intercept/log connections
 - Enables mock testing without real WebSockets
 - Is consistent with the adapter architecture
@@ -276,6 +281,7 @@ conn.onClose(handler);
 ```
 
 > **Decision needed:** The current `WsConn` interface lacks `onOpen`. Either:
+>
 > - (a) Add `onOpen(cb: () => void): void` to `WsConn`
 > - (b) Have `connect()` return a Promise that resolves when open
 > - (c) Keep using raw `WebSocket` in browser (it works) and only refactor for testability later
@@ -283,6 +289,7 @@ conn.onClose(handler);
 > **Recommendation:** Option (a) — add `onOpen` to `WsConn`. It's a one-line interface change.
 
 c. For `socket.io-client` usage (status listener at line 676): This is trickier. Socket.IO is a higher-level protocol with rooms, namespaces, reconnection. Options:
+
 - Keep `socket.io-client` as a direct dependency (it works in browser)
 - Abstract behind a new `StatusAdapter` interface
 
@@ -293,6 +300,7 @@ c. For `socket.io-client` usage (status listener at line 676): This is trickier.
 ### 5. Ensure `Buffer` Polyfill Story Is Clean
 
 `Buffer` is used in `provingMachine.ts` indirectly through `@selfxyz/common/utils/proving`:
+
 - `clientKey`, `clientPublicKeyHex`, `ec` — elliptic curve operations
 - `encryptAES256GCM` — AES encryption using `node-forge`
 - `getPayload` — payload construction
@@ -333,6 +341,7 @@ Person 3 should verify that `@selfxyz/common` functions work in a browser with t
 **`src/browser.ts`** already exists but is a near-copy of `src/index.ts` with a few web-safe swaps. This is the right pattern but needs to be extended.
 
 **What the WebView imports:**
+
 - `createSelfClient`, `createListenersMap` — factory
 - `SelfClientProvider`, `useSelfClient` — React context
 - Adapter type interfaces — `Adapters`, `NFCScannerAdapter`, etc.
@@ -344,6 +353,7 @@ Person 3 should verify that `@selfxyz/common` functions work in a browser with t
 - Error classes — `SdkError`, etc.
 
 **What the WebView must NOT import:**
+
 - `reactNativeScannerAdapter` — RN-specific NFC adapter
 - `MRZScannerView` — native component
 - `RCTFragment` — Android-specific
@@ -390,15 +400,15 @@ This way, `SelfClientProvider` in the `webview-app` can compose adapters:
 
 ```typescript
 const adapters: Adapters = {
-  scanner: createBridgeNFCAdapter(bridge),           // bridge — hardware
+  scanner: createBridgeNFCAdapter(bridge), // bridge — hardware
   crypto: {
-    ...createBridgeCryptoAdapter(bridge),             // bridge — sign()
-    ...createWebCryptoAdapter(),                      // web fallback — hash()
+    ...createBridgeCryptoAdapter(bridge), // bridge — sign()
+    ...createWebCryptoAdapter(), // web fallback — hash()
   },
-  auth: createBridgeAuthAdapter(bridge),              // bridge — keychain
-  documents: createIndexedDBDocumentsAdapter(),        // web fallback
-  analytics: createWebAnalyticsAdapter({ debug }),     // web fallback
-  storage: createBridgeStorageAdapter(bridge),         // bridge — keychain
+  auth: createBridgeAuthAdapter(bridge), // bridge — keychain
+  documents: createIndexedDBDocumentsAdapter(), // web fallback
+  analytics: createWebAnalyticsAdapter({ debug }), // web fallback
+  storage: createBridgeStorageAdapter(bridge), // bridge — keychain
   // ...
 };
 ```
@@ -419,7 +429,7 @@ a. **Make the store's socket creation conditional.** If no relay URL is configur
 startAppListener: (selfClient, relayUrl?) => {
   if (!relayUrl) return; // WebView mode — request comes via lifecycle bridge
   // ... existing Socket.IO logic
-}
+};
 ```
 
 b. **Move the Socket.IO dependency behind `NetworkAdapter.ws`** so the host controls connection creation.
@@ -491,7 +501,7 @@ VERIFICATION_COMPLETE = 'verification_complete',
 Person 1's `SelfClientProvider` subscribes:
 
 ```typescript
-selfClient.on(SdkEvents.VERIFICATION_COMPLETE, (result) => {
+selfClient.on(SdkEvents.VERIFICATION_COMPLETE, result => {
   lifecycle.setResult(result);
 });
 ```
@@ -526,6 +536,7 @@ export function createIndexedDBDocumentsAdapter(): DocumentsAdapter {
 ```
 
 **Implementation notes:**
+
 - Use the `idb` npm package (or raw IndexedDB API) for async key-value access
 - Database name: `'self-sdk-documents'`, version `1`
 - Two object stores: `'documents'` and `'catalog'`
@@ -612,31 +623,31 @@ export function createNoOpHapticAdapter(): HapticAdapter {
 
 ## Files You Will Modify
 
-| File | Change | Risk |
-|------|--------|------|
-| `src/proving/provingMachine.ts` | Remove `Platform` import, replace `__DEV__` with `config.debug`, optionally refactor WS to use adapter | **High** — core proving logic, must not regress |
-| `src/types/public.ts` | Add `platform`, `debug` to `Config`; add `onOpen` to `WsConn`; add `network` to `SelfClient`; add `SdkInitialConfig` | **Medium** — type-only changes, but public API |
-| `src/constants/fonts.ts` | Remove `Platform` import, export static tokens | **Medium** — affects font rendering on Android |
-| `src/nfc/index.ts` | Remove `Platform.OS`, get platform from `SelfClient` context | **Low** — logging only |
-| `src/stores/selfAppStore.tsx` | Make Socket.IO conditional | **Medium** — affects QR flow in Self Wallet |
-| `src/types/events.ts` | Add `VERIFICATION_COMPLETE` event | **Low** — additive |
-| `src/client.ts` | Wire new config fields, expose `network` adapter | **Low** — additive |
-| `src/browser.ts` | Audit and clean up exports | **Low** — web-only entry |
-| `src/config/defaults.ts` | Add defaults for `platform`, `debug` | **Low** — additive |
-| `package.json` | Update `exports` field for conditional entry points | **Medium** — affects bundler resolution |
+| File                            | Change                                                                                                               | Risk                                            |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `src/proving/provingMachine.ts` | Remove `Platform` import, replace `__DEV__` with `config.debug`, optionally refactor WS to use adapter               | **High** — core proving logic, must not regress |
+| `src/types/public.ts`           | Add `platform`, `debug` to `Config`; add `onOpen` to `WsConn`; add `network` to `SelfClient`; add `SdkInitialConfig` | **Medium** — type-only changes, but public API  |
+| `src/constants/fonts.ts`        | Remove `Platform` import, export static tokens                                                                       | **Medium** — affects font rendering on Android  |
+| `src/nfc/index.ts`              | Remove `Platform.OS`, get platform from `SelfClient` context                                                         | **Low** — logging only                          |
+| `src/stores/selfAppStore.tsx`   | Make Socket.IO conditional                                                                                           | **Medium** — affects QR flow in Self Wallet     |
+| `src/types/events.ts`           | Add `VERIFICATION_COMPLETE` event                                                                                    | **Low** — additive                              |
+| `src/client.ts`                 | Wire new config fields, expose `network` adapter                                                                     | **Low** — additive                              |
+| `src/browser.ts`                | Audit and clean up exports                                                                                           | **Low** — web-only entry                        |
+| `src/config/defaults.ts`        | Add defaults for `platform`, `debug`                                                                                 | **Low** — additive                              |
+| `package.json`                  | Update `exports` field for conditional entry points                                                                  | **Medium** — affects bundler resolution         |
 
 ---
 
 ## Files You Will NOT Modify
 
-| File | Why |
-|------|-----|
-| `src/adapters/react-native/*` | RN-specific, never imported by WebView |
-| `src/components/*` | RN UI components, Person 1 builds web equivalents |
-| `src/flows/*` | RN screen flows, replaced by Person 1's webview-app screens |
-| `src/bridge/nativeEvents.native.ts` | RN-only, `.native.ts` suffix means bundlers skip it on web |
-| `src/haptic/*` | Delegated to adapters in WebView (bridge fire-and-forget) |
-| `src/layouts/*` | RN layout components |
+| File                                | Why                                                         |
+| ----------------------------------- | ----------------------------------------------------------- |
+| `src/adapters/react-native/*`       | RN-specific, never imported by WebView                      |
+| `src/components/*`                  | RN UI components, Person 1 builds web equivalents           |
+| `src/flows/*`                       | RN screen flows, replaced by Person 1's webview-app screens |
+| `src/bridge/nativeEvents.native.ts` | RN-only, `.native.ts` suffix means bundlers skip it on web  |
+| `src/haptic/*`                      | Delegated to adapters in WebView (bridge fire-and-forget)   |
+| `src/layouts/*`                     | RN layout components                                        |
 
 ---
 
@@ -647,6 +658,7 @@ export function createNoOpHapticAdapter(): HapticAdapter {
 **Goal:** Remove all `Platform` and `__DEV__` imports from core logic.
 
 **Steps:**
+
 1. Add `platform` and `debug` fields to `Config` in `src/types/public.ts`
 2. Update `src/config/defaults.ts` with sensible defaults
 3. Update `src/proving/provingMachine.ts`:
@@ -665,6 +677,7 @@ export function createNoOpHapticAdapter(): HapticAdapter {
 **Goal:** Clean browser entry point that excludes all RN-specific code.
 
 **Steps:**
+
 1. Audit `src/browser.ts` — ensure no transitive `react-native` imports
 2. Update `package.json` `exports` field with conditional `react-native` vs `import` resolution
 3. Verify that `webview-app` can import core types, stores, and `createSelfClient` without pulling in RN
@@ -677,6 +690,7 @@ export function createNoOpHapticAdapter(): HapticAdapter {
 **Goal:** Define the integration points between the proving machine and the WebView host.
 
 **Steps:**
+
 1. Add `VERIFICATION_COMPLETE` event to `src/types/events.ts` and `SDKEventMap`
 2. Add `SdkInitialConfig` and `VerificationRequest` types to `src/types/public.ts`
 3. Emit `VERIFICATION_COMPLETE` in the proving machine on `completed` and `failure` states
@@ -691,6 +705,7 @@ export function createNoOpHapticAdapter(): HapticAdapter {
 **Goal:** Refactor proving machine to use `NetworkAdapter.ws` instead of raw `WebSocket`.
 
 **Steps:**
+
 1. Add `onOpen` to `WsConn` interface in `src/types/public.ts`
 2. Expose `network` on `SelfClient` interface and in `client.ts`
 3. Refactor `initTeeConnection` in `provingMachine.ts` to use `selfClient.network.ws.connect()`
@@ -706,6 +721,7 @@ export function createNoOpHapticAdapter(): HapticAdapter {
 **Goal:** Make the Socket.IO relay in `selfAppStore` optional.
 
 **Steps:**
+
 1. Make `startAppListener` skip Socket.IO when no relay URL is provided
 2. Add a `setSelfApp` method that accepts a pre-built `SelfApp` payload (for WebView mode where the host provides the request directly)
 3. Validate: QR scanning flow in RN app still works, WebView mode can set SelfApp without Socket.IO
@@ -717,6 +733,7 @@ export function createNoOpHapticAdapter(): HapticAdapter {
 **Goal:** Create web-native adapter implementations for use inside the WebView, eliminating unnecessary bridge round-trips for documents, crypto hashing, and analytics.
 
 **Steps:**
+
 1. Create `src/adapters/browser/documents.ts` — `createIndexedDBDocumentsAdapter()` using IndexedDB for document storage
 2. Create `src/adapters/browser/crypto.ts` — `createWebCryptoAdapter()` providing `hash()` via `crypto.subtle.digest`
 3. Create `src/adapters/browser/analytics.ts` — `createWebAnalyticsAdapter()` using `console.log` (dev) and `fetch` (prod)
@@ -784,17 +801,17 @@ grep -r "react-native" packages/webview-app/dist/ && echo "FAIL: RN leaked" || e
 
 ## Key Reference Files
 
-| File | What to Look At |
-|------|-----------------|
-| `packages/mobile-sdk-alpha/src/client.ts` | `createSelfClient()` factory — this is the integration point |
-| `packages/mobile-sdk-alpha/src/types/public.ts` | All adapter interfaces and `SelfClient` type |
-| `packages/mobile-sdk-alpha/src/context.tsx` | `SelfClientProvider` and `useSelfClient()` — React integration |
-| `packages/mobile-sdk-alpha/src/proving/provingMachine.ts` | Proving state machine — largest file, most RN contamination |
-| `packages/mobile-sdk-alpha/src/stores/` | Zustand stores (protocol, selfApp, mrz) |
-| `packages/mobile-sdk-alpha/src/browser.ts` | Existing browser entry point (incomplete) |
-| `packages/mobile-sdk-alpha/src/constants/` | Colors (clean), fonts (needs fix) |
-| `packages/mobile-sdk-alpha/src/documents/utils.ts` | Document CRUD — clean, uses adapters |
-| `packages/mobile-sdk-alpha/package.json` | Exports and dependencies |
+| File                                                      | What to Look At                                                |
+| --------------------------------------------------------- | -------------------------------------------------------------- |
+| `packages/mobile-sdk-alpha/src/client.ts`                 | `createSelfClient()` factory — this is the integration point   |
+| `packages/mobile-sdk-alpha/src/types/public.ts`           | All adapter interfaces and `SelfClient` type                   |
+| `packages/mobile-sdk-alpha/src/context.tsx`               | `SelfClientProvider` and `useSelfClient()` — React integration |
+| `packages/mobile-sdk-alpha/src/proving/provingMachine.ts` | Proving state machine — largest file, most RN contamination    |
+| `packages/mobile-sdk-alpha/src/stores/`                   | Zustand stores (protocol, selfApp, mrz)                        |
+| `packages/mobile-sdk-alpha/src/browser.ts`                | Existing browser entry point (incomplete)                      |
+| `packages/mobile-sdk-alpha/src/constants/`                | Colors (clean), fonts (needs fix)                              |
+| `packages/mobile-sdk-alpha/src/documents/utils.ts`        | Document CRUD — clean, uses adapters                           |
+| `packages/mobile-sdk-alpha/package.json`                  | Exports and dependencies                                       |
 
 ---
 
@@ -834,7 +851,7 @@ grep -r "react-native" packages/webview-app/dist/ && echo "FAIL: RN leaked" || e
 
 **Key principle: Person 1 only imports from Person 3.** Person 1 never imports from Person 2.
 
-- **Code imports** (left side): Person 1 imports adapter interfaces, hooks, and `createSelfClient` from Person 3. Person 1 *implements* adapter interfaces that internally use the bridge protocol.
+- **Code imports** (left side): Person 1 imports adapter interfaces, hooks, and `createSelfClient` from Person 3. Person 1 _implements_ adapter interfaces that internally use the bridge protocol.
 - **Runtime bridge** (right side): The bridge is a message-passing boundary (`postMessage` / `evaluateJavascript`), not a code dependency. Person 1's adapter implementations send bridge messages; Person 2's handlers receive them. Neither side imports code from the other.
 - **Person 3 delivers the engine.** It defines all contracts (adapter interfaces, event types, lifecycle types) and contains the core logic. Person 1 and Person 2 only couple to Person 3's interfaces — never to each other.
 
@@ -848,17 +865,17 @@ The core challenge: Person 3 sits in the middle. You can't wait for Person 1's s
 
 `mobile-sdk-alpha` already has solid test coverage:
 
-| Path | What |
-|------|------|
-| `tests/proving/provingMachine.test.ts` | State machine transitions with actor mocks |
-| `tests/proving/provingMachine.integration.test.ts` | Integration flow |
-| `tests/proving/actorMock.ts` | Minimal XState actor stub (`send`, `subscribe`, `emitState`) |
-| `tests/proving/internal/statusHandlers.test.ts` | Pure function tests for TEE status parsing |
-| `tests/proving/internal/websocketHandlers.test.ts` | WS message handling |
-| `tests/proving/internal/payloadGenerator.test.ts` | Encrypted payload generation |
-| `tests/utils/testHelpers.ts` | Mock adapters (`mockScanner`, `mockNetwork`, `mockCrypto`, `mockDocuments`, `mockAuth`, `mockNavigation`) |
-| `tests/mock/generator.test.ts` | Mock document generation (534 lines) |
-| `src/mock/generator.ts` | `generateMockDocument()` — creates valid signed mock passports |
+| Path                                               | What                                                                                                      |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `tests/proving/provingMachine.test.ts`             | State machine transitions with actor mocks                                                                |
+| `tests/proving/provingMachine.integration.test.ts` | Integration flow                                                                                          |
+| `tests/proving/actorMock.ts`                       | Minimal XState actor stub (`send`, `subscribe`, `emitState`)                                              |
+| `tests/proving/internal/statusHandlers.test.ts`    | Pure function tests for TEE status parsing                                                                |
+| `tests/proving/internal/websocketHandlers.test.ts` | WS message handling                                                                                       |
+| `tests/proving/internal/payloadGenerator.test.ts`  | Encrypted payload generation                                                                              |
+| `tests/utils/testHelpers.ts`                       | Mock adapters (`mockScanner`, `mockNetwork`, `mockCrypto`, `mockDocuments`, `mockAuth`, `mockNavigation`) |
+| `tests/mock/generator.test.ts`                     | Mock document generation (534 lines)                                                                      |
+| `src/mock/generator.ts`                            | `generateMockDocument()` — creates valid signed mock passports                                            |
 
 The test runner is Vitest with jsdom environment. The `tests/setup.ts` already mocks React Native modules (`Platform.OS = 'web'`).
 
@@ -903,13 +920,17 @@ describe('platform via config', () => {
 });
 ```
 
-#### `tests/proving/provingMachine.debug.test.ts` — Debug mode replaces __DEV__
+#### `tests/proving/provingMachine.debug.test.ts` — Debug mode replaces **DEV**
 
 ```typescript
 // After Chunk 3A: verify __DEV__ is gone, config.debug is used
 describe('debug mode via config', () => {
-  it('relaxes attestation checks when debug=true', () => { /* ... */ });
-  it('enforces PCR0 mapping when debug=false', () => { /* ... */ });
+  it('relaxes attestation checks when debug=true', () => {
+    /* ... */
+  });
+  it('enforces PCR0 mapping when debug=false', () => {
+    /* ... */
+  });
 });
 ```
 
@@ -996,7 +1017,11 @@ export default defineConfig({
 #### `mock-adapters.ts` — Full mock adapter set for browser
 
 ```typescript
-import type { Adapters, DocumentCatalog, IDDocument } from '@selfxyz/mobile-sdk-alpha';
+import type {
+  Adapters,
+  DocumentCatalog,
+  IDDocument,
+} from '@selfxyz/mobile-sdk-alpha';
 
 // In-memory document store (survives page navigation, not reload)
 const documentStore = new Map<string, IDDocument>();
@@ -1006,11 +1031,12 @@ export function createMockAdapters(): Adapters {
   return {
     scanner: {
       // Mock NFC: resolves after 2s delay simulating a scan
-      scan: async (opts) => {
+      scan: async opts => {
         console.log('[mock-nfc] scan requested', opts);
         await new Promise(r => setTimeout(r, 2000));
         // Use generateMockDocument() from the SDK itself
-        const { generateMockDocument } = await import('@selfxyz/mobile-sdk-alpha');
+        const { generateMockDocument } =
+          await import('@selfxyz/mobile-sdk-alpha');
         const doc = await generateMockDocument({
           age: 30,
           expiryYears: 10,
@@ -1023,12 +1049,15 @@ export function createMockAdapters(): Adapters {
       },
     },
     crypto: {
-      hash: async (input) => {
+      hash: async input => {
         const buf = await crypto.subtle.digest('SHA-256', input);
         return new Uint8Array(buf);
       },
       sign: async (data, keyRef) => {
-        console.log('[mock-crypto] sign requested', { keyRef, dataLen: data.length });
+        console.log('[mock-crypto] sign requested', {
+          keyRef,
+          dataLen: data.length,
+        });
         // Return dummy signature
         return new Uint8Array(64);
       },
@@ -1036,15 +1065,15 @@ export function createMockAdapters(): Adapters {
     network: {
       http: { fetch: globalThis.fetch.bind(globalThis) },
       ws: {
-        connect: (url) => {
+        connect: url => {
           console.log('[mock-ws] connect', url);
           const ws = new WebSocket(url);
           return {
-            send: (d) => ws.send(d),
+            send: d => ws.send(d),
             close: () => ws.close(),
-            onMessage: (cb) => ws.addEventListener('message', (e) => cb(e.data)),
-            onError: (cb) => ws.addEventListener('error', cb),
-            onClose: (cb) => ws.addEventListener('close', cb),
+            onMessage: cb => ws.addEventListener('message', e => cb(e.data)),
+            onError: cb => ws.addEventListener('error', cb),
+            onClose: cb => ws.addEventListener('close', cb),
           };
         },
       },
@@ -1057,19 +1086,28 @@ export function createMockAdapters(): Adapters {
     },
     documents: {
       loadDocumentCatalog: async () => catalog,
-      saveDocumentCatalog: async (c) => { catalog = c; },
-      loadDocumentById: async (id) => documentStore.get(id) ?? null,
-      saveDocument: async (id, data) => { documentStore.set(id, data); },
-      deleteDocument: async (id) => { documentStore.delete(id); },
+      saveDocumentCatalog: async c => {
+        catalog = c;
+      },
+      loadDocumentById: async id => documentStore.get(id) ?? null,
+      saveDocument: async (id, data) => {
+        documentStore.set(id, data);
+      },
+      deleteDocument: async id => {
+        documentStore.delete(id);
+      },
     },
     navigation: {
       goBack: () => console.log('[mock-nav] goBack'),
       goTo: (route, params) => console.log('[mock-nav] goTo', route, params),
     },
     analytics: {
-      trackEvent: (event, payload) => console.log('[analytics]', event, payload),
-      trackNfcEvent: (name, props) => console.log('[analytics:nfc]', name, props),
-      logNFCEvent: (level, msg, ctx, details) => console.log(`[nfc:${level}]`, msg, details),
+      trackEvent: (event, payload) =>
+        console.log('[analytics]', event, payload),
+      trackNfcEvent: (name, props) =>
+        console.log('[analytics:nfc]', name, props),
+      logNFCEvent: (level, msg, ctx, details) =>
+        console.log(`[nfc:${level}]`, msg, details),
     },
   };
 }
@@ -1093,7 +1131,12 @@ export function ProveFlowPanel() {
   const [logs, setLogs] = useState<string[]>([]);
 
   const log = (msg: string) => {
-    setLogs(prev => [`[${new Date().toISOString().slice(11,19)}] ${msg}`, ...prev].slice(0, 200));
+    setLogs(prev =>
+      [`[${new Date().toISOString().slice(11, 19)}] ${msg}`, ...prev].slice(
+        0,
+        200,
+      ),
+    );
   };
 
   // Initialize client once
@@ -1101,8 +1144,10 @@ export function ProveFlowPanel() {
     const { map, addListener } = createListenersMap();
 
     // Listen to all SDK events
-    addListener(SdkEvents.PROOF_EVENT, (payload) => {
-      log(`PROOF: ${payload.event} [${payload.level}] ${JSON.stringify(payload.details ?? {})}`);
+    addListener(SdkEvents.PROOF_EVENT, payload => {
+      log(
+        `PROOF: ${payload.event} [${payload.level}] ${JSON.stringify(payload.details ?? {})}`,
+      );
     });
 
     const c = createSelfClient({
@@ -1114,7 +1159,7 @@ export function ProveFlowPanel() {
     log('SelfClient created');
 
     // Subscribe to proving state changes
-    const unsub = c.useProvingStore.subscribe((state) => {
+    const unsub = c.useProvingStore.subscribe(state => {
       setProvingState(state.currentState ?? 'idle');
       log(`State → ${state.currentState}`);
     });
@@ -1131,61 +1176,106 @@ export function ProveFlowPanel() {
       <h2>SDK Core Test Harness</h2>
 
       {/* Current State */}
-      <div style={{ fontSize: 24, margin: '16px 0', padding: 12, background: '#f0f0f0', borderRadius: 8 }}>
+      <div
+        style={{
+          fontSize: 24,
+          margin: '16px 0',
+          padding: 12,
+          background: '#f0f0f0',
+          borderRadius: 8,
+        }}
+      >
         Proving State: <strong>{provingState}</strong>
       </div>
 
       {/* Action Buttons */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-        <button onClick={() => {
-          log('Starting DSC flow...');
-          provingStore.getState().init(client, 'dsc');
-        }}>
+      <div
+        style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}
+      >
+        <button
+          onClick={() => {
+            log('Starting DSC flow...');
+            provingStore.getState().init(client, 'dsc');
+          }}
+        >
           Init DSC
         </button>
-        <button onClick={() => {
-          log('Starting Register flow...');
-          provingStore.getState().init(client, 'register');
-        }}>
+        <button
+          onClick={() => {
+            log('Starting Register flow...');
+            provingStore.getState().init(client, 'register');
+          }}
+        >
           Init Register
         </button>
-        <button onClick={() => {
-          log('Starting Disclose flow...');
-          provingStore.getState().init(client, 'disclose');
-        }}>
+        <button
+          onClick={() => {
+            log('Starting Disclose flow...');
+            provingStore.getState().init(client, 'disclose');
+          }}
+        >
           Init Disclose
         </button>
-        <button onClick={() => {
-          log('User confirmed');
-          provingStore.getState().setUserConfirmed(client);
-        }}>
+        <button
+          onClick={() => {
+            log('User confirmed');
+            provingStore.getState().setUserConfirmed(client);
+          }}
+        >
           Confirm (user tap)
         </button>
       </div>
 
       {/* Store Inspector */}
       <details open>
-        <summary><strong>Proving Store Snapshot</strong></summary>
-        <pre style={{ background: '#1a1a1a', color: '#0f0', padding: 12, overflow: 'auto', maxHeight: 300 }}>
-          {JSON.stringify({
-            currentState: provingStore.getState().currentState,
-            circuitType: provingStore.getState().circuitType,
-            env: provingStore.getState().env,
-            uuid: provingStore.getState().uuid,
-            userConfirmed: provingStore.getState().userConfirmed,
-            hasPassportData: !!provingStore.getState().passportData,
-            hasSharedKey: !!provingStore.getState().sharedKey,
-            error_code: provingStore.getState().error_code,
-            reason: provingStore.getState().reason,
-          }, null, 2)}
+        <summary>
+          <strong>Proving Store Snapshot</strong>
+        </summary>
+        <pre
+          style={{
+            background: '#1a1a1a',
+            color: '#0f0',
+            padding: 12,
+            overflow: 'auto',
+            maxHeight: 300,
+          }}
+        >
+          {JSON.stringify(
+            {
+              currentState: provingStore.getState().currentState,
+              circuitType: provingStore.getState().circuitType,
+              env: provingStore.getState().env,
+              uuid: provingStore.getState().uuid,
+              userConfirmed: provingStore.getState().userConfirmed,
+              hasPassportData: !!provingStore.getState().passportData,
+              hasSharedKey: !!provingStore.getState().sharedKey,
+              error_code: provingStore.getState().error_code,
+              reason: provingStore.getState().reason,
+            },
+            null,
+            2,
+          )}
         </pre>
       </details>
 
       {/* Event Log */}
       <details open>
-        <summary><strong>Event Log</strong> ({logs.length})</summary>
-        <div style={{ background: '#1a1a1a', color: '#ccc', padding: 12, maxHeight: 400, overflow: 'auto', fontSize: 12 }}>
-          {logs.map((l, i) => <div key={i}>{l}</div>)}
+        <summary>
+          <strong>Event Log</strong> ({logs.length})
+        </summary>
+        <div
+          style={{
+            background: '#1a1a1a',
+            color: '#ccc',
+            padding: 12,
+            maxHeight: 400,
+            overflow: 'auto',
+            fontSize: 12,
+          }}
+        >
+          {logs.map((l, i) => (
+            <div key={i}>{l}</div>
+          ))}
         </div>
       </details>
     </div>
@@ -1212,11 +1302,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 ```html
 <!DOCTYPE html>
 <html>
-<head><title>SDK Core Test Harness</title></head>
-<body>
-  <div id="root"></div>
-  <script type="module" src="/main.tsx"></script>
-</body>
+  <head>
+    <title>SDK Core Test Harness</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/main.tsx"></script>
+  </body>
 </html>
 ```
 
@@ -1231,18 +1323,19 @@ yarn dev
 
 **What you can test:**
 
-| Action | What it validates |
-|--------|-------------------|
-| Page loads without errors | Browser entry point works, no RN imports leak |
-| Click "Init DSC" | `createSelfClient` works, proving machine initializes, `generateMockDocument` produces a valid document in browser |
-| Watch state transitions | `idle → parsing_id_document → fetching_data → ...` proves the state machine runs in browser context |
-| Check console for `[mock-*]` logs | Adapter calls flow correctly through `SelfClient` to mock implementations |
-| State reaches `validating_document` | Protocol store fetches work (real network calls to Self API) |
-| State reaches `init_tee_connexion` | WebSocket creation works in browser |
-| State reaches `error` with `debug: true` | Attestation check uses `config.debug` instead of `__DEV__` |
-| `VERIFICATION_COMPLETE` event fires | Lifecycle event wiring works (Chunk 3C) |
+| Action                                   | What it validates                                                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Page loads without errors                | Browser entry point works, no RN imports leak                                                                      |
+| Click "Init DSC"                         | `createSelfClient` works, proving machine initializes, `generateMockDocument` produces a valid document in browser |
+| Watch state transitions                  | `idle → parsing_id_document → fetching_data → ...` proves the state machine runs in browser context                |
+| Check console for `[mock-*]` logs        | Adapter calls flow correctly through `SelfClient` to mock implementations                                          |
+| State reaches `validating_document`      | Protocol store fetches work (real network calls to Self API)                                                       |
+| State reaches `init_tee_connexion`       | WebSocket creation works in browser                                                                                |
+| State reaches `error` with `debug: true` | Attestation check uses `config.debug` instead of `__DEV__`                                                         |
+| `VERIFICATION_COMPLETE` event fires      | Lifecycle event wiring works (Chunk 3C)                                                                            |
 
 **What will fail (and that's OK):**
+
 - TEE connection will fail (no real TEE endpoint for mock passports) — you'll see the state hit `error` after `init_tee_connexion`. This is expected. The point is validating the **path to that point** works in a browser.
 - NFC scan returns mock data — not a real passport. This is intentional.
 
@@ -1297,17 +1390,17 @@ cd app && npx react-native run-android
 
 ### Test Matrix
 
-| Test | When | What it catches | Who runs it |
-|------|------|-----------------|-------------|
-| `vitest run` | After every change | Logic regressions | Person 3 (CI) |
-| `tsc --noEmit` | After every change | Type errors | Person 3 (CI) |
-| Test harness `vite dev` | After Chunks 3A+3B | RN imports leaking into browser, `Platform`/`__DEV__` not removed | Person 3 |
-| Test harness "Init DSC" | After Chunks 3A+3C | Proving machine runs in browser, events fire | Person 3 |
-| `madge src/browser.ts` | After Chunk 3B | Circular deps, transitive RN imports | Person 3 (CI) |
-| Bundle purity check | Before integration | Stray RN code in Vite output | Person 1 + 3 |
-| WebView DevTools | Integration phase | Bridge + SDK + native working together | All three |
-| Physical device scan | Final validation | Real NFC + TEE + proving | All three |
-| RN app regression | Before merge | Existing app not broken | Person 3 |
+| Test                    | When               | What it catches                                                   | Who runs it   |
+| ----------------------- | ------------------ | ----------------------------------------------------------------- | ------------- |
+| `vitest run`            | After every change | Logic regressions                                                 | Person 3 (CI) |
+| `tsc --noEmit`          | After every change | Type errors                                                       | Person 3 (CI) |
+| Test harness `vite dev` | After Chunks 3A+3B | RN imports leaking into browser, `Platform`/`__DEV__` not removed | Person 3      |
+| Test harness "Init DSC" | After Chunks 3A+3C | Proving machine runs in browser, events fire                      | Person 3      |
+| `madge src/browser.ts`  | After Chunk 3B     | Circular deps, transitive RN imports                              | Person 3 (CI) |
+| Bundle purity check     | Before integration | Stray RN code in Vite output                                      | Person 1 + 3  |
+| WebView DevTools        | Integration phase  | Bridge + SDK + native working together                            | All three     |
+| Physical device scan    | Final validation   | Real NFC + TEE + proving                                          | All three     |
+| RN app regression       | Before merge       | Existing app not broken                                           | Person 3      |
 
 ---
 
@@ -1325,18 +1418,18 @@ cd app && npx react-native run-android
 
 ## Completion Status
 
-*Audit date: 2026-02-17*
+_Audit date: 2026-02-17_
 
 ### Chunk Status
 
-| Chunk | Description | Status |
-|-------|-------------|--------|
-| 3A | Config & Platform Abstraction | **Done** |
-| 3B | Browser Entry Point & Package Exports | **Done** |
-| 3C | WebView Lifecycle Events | **Done** |
-| 3D | WsAdapter Integration | **Skipped** (optional, non-blocking — raw `WebSocket` works in browser) |
-| 3E | Conditional SelfApp Store | **Done** |
-| 3F | Web Fallback Adapter Implementations | **Pending** — IndexedDB documents, Web Crypto hash, console/fetch analytics, no-op haptic |
+| Chunk | Description                           | Status                                                                                    |
+| ----- | ------------------------------------- | ----------------------------------------------------------------------------------------- |
+| 3A    | Config & Platform Abstraction         | **Done**                                                                                  |
+| 3B    | Browser Entry Point & Package Exports | **Done**                                                                                  |
+| 3C    | WebView Lifecycle Events              | **Done**                                                                                  |
+| 3D    | WsAdapter Integration                 | **Skipped** (optional, non-blocking — raw `WebSocket` works in browser)                   |
+| 3E    | Conditional SelfApp Store             | **Done**                                                                                  |
+| 3F    | Web Fallback Adapter Implementations  | **Pending** — IndexedDB documents, Web Crypto hash, console/fetch analytics, no-op haptic |
 
 4 of 6 chunks complete. Chunk 3D is explicitly optional per spec design — the proving machine's raw `WebSocket` usage works natively in browser/WebView contexts. Refactoring to `WsAdapter` remains a cleanliness improvement that can be picked up later for testability and host-level interception. **Chunk 3F is pending work** — it implements the web-native fallback adapters that allow the WebView to handle documents, crypto hashing, and analytics without bridging to native.
 
@@ -1346,30 +1439,30 @@ cd app && npx react-native run-android
 
 The WebView engine needs browser-native adapters so it can handle documents, crypto hashing, and analytics without bridging to native for every operation. None of these exist yet:
 
-| Adapter | File to Create | Implementation |
-|---------|---------------|----------------|
+| Adapter                             | File to Create                      | Implementation                                                                      |
+| ----------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------- |
 | `createIndexedDBDocumentsAdapter()` | `src/adapters/browser/documents.ts` | IndexedDB-backed `DocumentsAdapter` with two object stores (`documents`, `catalog`) |
-| `createWebCryptoAdapter()` | `src/adapters/browser/crypto.ts` | `crypto.subtle.digest` for `hash()`, `sign()` left to bridge adapter |
-| `createWebAnalyticsAdapter()` | `src/adapters/browser/analytics.ts` | `console.log` (dev) + `fetch` (prod) fire-and-forget |
-| `createNoOpHapticAdapter()` | `src/adapters/browser/haptic.ts` | Silent no-op |
-| Barrel export | `src/adapters/browser/index.ts` | Re-exports all browser adapter factories |
+| `createWebCryptoAdapter()`          | `src/adapters/browser/crypto.ts`    | `crypto.subtle.digest` for `hash()`, `sign()` left to bridge adapter                |
+| `createWebAnalyticsAdapter()`       | `src/adapters/browser/analytics.ts` | `console.log` (dev) + `fetch` (prod) fire-and-forget                                |
+| `createNoOpHapticAdapter()`         | `src/adapters/browser/haptic.ts`    | Silent no-op                                                                        |
+| Barrel export                       | `src/adapters/browser/index.ts`     | Re-exports all browser adapter factories                                            |
 
 Once created, `src/browser.ts` must re-export these factories so `webview-app` can import them.
 
 **Minor items from PR #1765 review:**
 
-| Item | Description | Location |
-|------|-------------|----------|
-| `proof` field never populated | `VERIFICATION_COMPLETE` event type includes `proof?: unknown` but all three emission sites (`completed`, `failure`, `error` states in `provingMachine.ts`) never pass proof data. Consumers will get `undefined`. Remove the field or populate it once real proof data is available. | `src/proving/provingMachine.ts` — `emitVerificationComplete()` helper |
-| Remaining `__DEV__` references | PR replaced `__DEV__` with `config.debug` in attestation validation but there may be other `__DEV__` references in the proving machine or elsewhere. Audit needed. | `src/proving/provingMachine.ts` |
-| `plexMono` font hardcoded | Changed from `Platform.OS === 'ios' ? 'IBM Plex Mono' : 'IBMPlexMono-Regular'` to just `'IBMPlexMono-Regular'`. Architecturally correct (logical tokens) but may break iOS font rendering if the PostScript name differs. Needs verification on iOS device or a platform-aware `getFontFamily()` factory. | `src/constants/fonts.ts` |
+| Item                           | Description                                                                                                                                                                                                                                                                                               | Location                                                              |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `proof` field never populated  | `VERIFICATION_COMPLETE` event type includes `proof?: unknown` but all three emission sites (`completed`, `failure`, `error` states in `provingMachine.ts`) never pass proof data. Consumers will get `undefined`. Remove the field or populate it once real proof data is available.                      | `src/proving/provingMachine.ts` — `emitVerificationComplete()` helper |
+| Remaining `__DEV__` references | PR replaced `__DEV__` with `config.debug` in attestation validation but there may be other `__DEV__` references in the proving machine or elsewhere. Audit needed.                                                                                                                                        | `src/proving/provingMachine.ts`                                       |
+| `plexMono` font hardcoded      | Changed from `Platform.OS === 'ios' ? 'IBM Plex Mono' : 'IBMPlexMono-Regular'` to just `'IBMPlexMono-Regular'`. Architecturally correct (logical tokens) but may break iOS font rendering if the PostScript name differs. Needs verification on iOS device or a platform-aware `getFontFamily()` factory. | `src/constants/fonts.ts`                                              |
 
 **Chunk 3F implementation notes (from PR #1765 CodeRabbit review):**
 
-| Item | Description | Action |
-|------|-------------|--------|
-| SHA algorithm name mapping | `crypto.subtle.digest` requires hyphenated identifiers (`"SHA-256"`, not `"sha256"`). The spec's `.toUpperCase()` transform is insufficient — implementers must normalize input (e.g. `sha256` → `SHA-256`) before calling `crypto.subtle.digest`. | Fix in `createWebCryptoAdapter()` implementation |
-| `fake-indexeddb` needed for tests | jsdom does not provide IndexedDB. Chunk 3F unit tests for `createIndexedDBDocumentsAdapter()` require `fake-indexeddb` as a devDependency and a Vitest setup file to install `fake-indexeddb/auto`. | Add to devDependencies when implementing Chunk 3F |
+| Item                              | Description                                                                                                                                                                                                                                        | Action                                            |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| SHA algorithm name mapping        | `crypto.subtle.digest` requires hyphenated identifiers (`"SHA-256"`, not `"sha256"`). The spec's `.toUpperCase()` transform is insufficient — implementers must normalize input (e.g. `sha256` → `SHA-256`) before calling `crypto.subtle.digest`. | Fix in `createWebCryptoAdapter()` implementation  |
+| `fake-indexeddb` needed for tests | jsdom does not provide IndexedDB. Chunk 3F unit tests for `createIndexedDBDocumentsAdapter()` require `fake-indexeddb` as a devDependency and a Vitest setup file to install `fake-indexeddb/auto`.                                                | Add to devDependencies when implementing Chunk 3F |
 
 ### SDK vs App Gap Summary
 
@@ -1377,15 +1470,15 @@ During audit, the following gaps were identified where the RN app (`app/`) reimp
 
 **Gaps where the app reimplements what the SDK should provide:**
 
-| Gap | App Code | SDK Has | Migration Priority |
-|-----|----------|---------|-------------------|
-| NFC scanner | `app/src/integrations/nfc/` (2 files, custom NativeModules) | `reactNativeScannerAdapter` (incomplete) | **P1** — both WebView and RN need this |
-| Document storage | `app/src/providers/passportDataProvider.tsx` (972 lines, Keychain) | `DocumentsAdapter` interface only | **P1** — both need this |
-| Auth adapter | `app/src/providers/authProvider.tsx` (Keychain + biometric) | `AuthAdapter` interface only | **P2** — WebView uses bridge, RN needs Keychain impl |
-| SelfClient wiring | `app/src/providers/selfClientProvider.tsx` (509 lines) | No default adapter set | **P2** — `createReactNativeAdapters()` helper |
-| Analytics adapter | `app/src/services/analytics.ts` (349 lines, Segment+Mixpanel) | `AnalyticsAdapter` interface only | **P3** — app-specific backends |
-| Screen flows | `app/src/screens/` (70 screens) vs SDK (9 screens) | Onboarding partial, disclosing stubs | **P3** — large effort, defer |
-| Navigation | `app/src/navigation/` (14 modules) | `NavigationAdapter` interface only | **P3** — inherently app-specific |
+| Gap               | App Code                                                           | SDK Has                                  | Migration Priority                                   |
+| ----------------- | ------------------------------------------------------------------ | ---------------------------------------- | ---------------------------------------------------- |
+| NFC scanner       | `app/src/integrations/nfc/` (2 files, custom NativeModules)        | `reactNativeScannerAdapter` (incomplete) | **P1** — both WebView and RN need this               |
+| Document storage  | `app/src/providers/passportDataProvider.tsx` (972 lines, Keychain) | `DocumentsAdapter` interface only        | **P1** — both need this                              |
+| Auth adapter      | `app/src/providers/authProvider.tsx` (Keychain + biometric)        | `AuthAdapter` interface only             | **P2** — WebView uses bridge, RN needs Keychain impl |
+| SelfClient wiring | `app/src/providers/selfClientProvider.tsx` (509 lines)             | No default adapter set                   | **P2** — `createReactNativeAdapters()` helper        |
+| Analytics adapter | `app/src/services/analytics.ts` (349 lines, Segment+Mixpanel)      | `AnalyticsAdapter` interface only        | **P3** — app-specific backends                       |
+| Screen flows      | `app/src/screens/` (70 screens) vs SDK (9 screens)                 | Onboarding partial, disclosing stubs     | **P3** — large effort, defer                         |
+| Navigation        | `app/src/navigation/` (14 modules)                                 | `NavigationAdapter` interface only       | **P3** — inherently app-specific                     |
 
 **Legitimately app-only (no migration needed):**
 

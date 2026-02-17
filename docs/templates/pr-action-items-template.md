@@ -42,6 +42,7 @@ CRITICAL FILTERING RULES - MUST FOLLOW EXACTLY:
 # PR {{PR_NUMBER}} Action Items
 
 ## Overview
+
 **Title:** {{PR_TITLE}}
 **Author:** {{AUTHOR}}
 **Status:** {{STATUS}}
@@ -53,17 +54,22 @@ CRITICAL FILTERING RULES - MUST FOLLOW EXACTLY:
 ## Analysis Summary
 
 <!-- IF ALL ISSUES RESOLVED, USE THIS SECTION: -->
+
 **After thorough review of all {{TOTAL_COMMENTS}} CodeRabbit comments, ALL issues have been resolved in subsequent commits. The PR is ready for merge.**
 
 ### Resolved Comments ✅ ({{TOTAL_COMMENTS}}/{{TOTAL_COMMENTS}})
+
 All comments show ✅ "Addressed" status, indicating they were fixed in commits:
+
 - {{RESOLVED_CATEGORY_1}} - Fixed in commits {{COMMIT_RANGE}}
 - {{RESOLVED_CATEGORY_2}} - Fixed in commits {{COMMIT_RANGE}}
 
 ### Unresolved Comments 🔴 (0/{{TOTAL_COMMENTS}})
+
 **None** - All comments have been addressed.
 
 ## Conclusion
+
 **This PR is ready for merge.** All CodeRabbit issues have been resolved.
 
 <!-- IF UNRESOLVED ISSUES EXIST, USE SECTIONS BELOW INSTEAD: -->
@@ -73,17 +79,20 @@ All comments show ✅ "Addressed" status, indicating they were fixed in commits:
 <!-- ONLY include if there are ACTUAL unresolved medium+ severity issues -->
 
 ### 1. {{ISSUE_TITLE}}
+
 **Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`
 **CodeRabbit Comment:** {{COMMENT_ID}}
 **Problem:** {{PROBLEM_DESCRIPTION}}
 **Fix:** {{SPECIFIC_FIX_OR_ACTION}}
 
 **Code Example:**
+
 ```{{LANGUAGE}}
 {{CODE_EXAMPLE}}
 ```
 
 ### 2. {{ISSUE_TITLE}}
+
 **Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`
 **CodeRabbit Comment:** {{COMMENT_ID}}
 **Problem:** {{PROBLEM_DESCRIPTION}}
@@ -92,41 +101,51 @@ All comments show ✅ "Addressed" status, indicating they were fixed in commits:
 ## Required Actions
 
 ### Issue 1: {{GROUPED_ISSUE_TITLE}}
+
 **Root Cause:** {{ROOT_CAUSE_DESCRIPTION}}
 **Files Affected:**
+
 - `{{FILE_PATH}}:{{LINE_NUMBER}}` - {{ISSUE_DESCRIPTION}}
 - `{{FILE_PATH}}:{{LINE_NUMBER}}` - {{ISSUE_DESCRIPTION}}
 
 **Actions:**
+
 - [ ] {{SPECIFIC_ACTION_1}}
 - [ ] {{SPECIFIC_ACTION_2}}
 - [ ] {{SPECIFIC_ACTION_3}}
 
 **Code Example:**
+
 ```{{LANGUAGE}}
 {{CODE_EXAMPLE}}
 ```
 
 ### Issue 2: {{GROUPED_ISSUE_TITLE}}
+
 **Root Cause:** {{ROOT_CAUSE_DESCRIPTION}}
 **Files Affected:**
+
 - `{{FILE_PATH}}:{{LINE_NUMBER}}` - {{ISSUE_DESCRIPTION}}
 
 **Actions:**
+
 - [ ] {{SPECIFIC_ACTION_1}}
 - [ ] {{SPECIFIC_ACTION_2}}
 
 ## CodeRabbit Analysis Summary
 
 ### Resolved Comments ✅
+
 - {{RESOLVED_COMMENT_1}}
 - {{RESOLVED_COMMENT_2}}
 
 ### Unresolved Comments 🔴
+
 - {{UNRESOLVED_COMMENT_1}} - {{STATUS}}
 - {{UNRESOLVED_COMMENT_2}} - {{STATUS}}
 
 ### Comment Categories
+
 - **Critical:** {{COUNT}} comments (React Native compatibility, security, memory leaks)
 - **Architecture:** {{COUNT}} comments (API design, type safety)
 - **Code Quality:** {{COUNT}} comments (testing, imports, documentation)
@@ -134,21 +153,25 @@ All comments show ✅ "Addressed" status, indicating they were fixed in commits:
 ## Testing Checklist
 
 ### Before Merge
+
 - [ ] {{SPECIFIC_TEST_TO_RUN}}
 - [ ] {{SPECIFIC_VALIDATION}}
 - [ ] {{SPECIFIC_BUILD_TEST}}
 
 ### Post-Merge
+
 - [ ] {{INTEGRATION_TEST}}
 - [ ] {{PERFORMANCE_TEST}}
 
 ## Breaking Changes
 
 ### For Consumers
+
 - [ ] {{SPECIFIC_BREAKING_CHANGE}}
 - [ ] {{MIGRATION_NEEDED}}
 
 ### Migration Guide
+
 - [ ] Update import statements
 - [ ] Replace deprecated API calls
 - [ ] Handle new dependencies
@@ -156,14 +179,17 @@ All comments show ✅ "Addressed" status, indicating they were fixed in commits:
 ## Implementation Priority
 
 ### Phase 1: Critical Fixes (Blocking Merge)
+
 1. {{CRITICAL_FIX_1}}
 2. {{CRITICAL_FIX_2}}
 
 ### Phase 2: Architecture Improvements
+
 1. {{ARCHITECTURE_FIX_1}}
 2. {{ARCHITECTURE_FIX_2}}
 
 ### Phase 3: Polish & Documentation
+
 1. {{POLISH_ITEM_1}}
 2. {{POLISH_ITEM_2}}
 
@@ -178,6 +204,7 @@ All comments show ✅ "Addressed" status, indicating they were fixed in commits:
 ## Agent Verification Checklist
 
 **BEFORE FINALIZING - VERIFY EACH ITEM:**
+
 - [ ] ✅ Read ALL {{TOTAL_COMMENTS}} CodeRabbit comments thoroughly
 - [ ] ✅ Checked each comment for "✅ Addressed" status
 - [ ] ✅ Excluded all nitpick/style/documentation-only suggestions
@@ -187,6 +214,7 @@ All comments show ✅ "Addressed" status, indicating they were fixed in commits:
 - [ ] ✅ Double-checked that each "unresolved" issue is actually unresolved
 
 **SEVERITY VERIFICATION:**
+
 - [ ] ✅ CRITICAL: Security, memory leaks, platform compatibility ({{CRITICAL_COUNT}})
 - [ ] ✅ HIGH: API inconsistencies, type safety, architecture ({{HIGH_COUNT}})
 - [ ] ✅ MEDIUM: Test coverage, performance, minor architecture ({{MEDIUM_COUNT}})
