@@ -34,7 +34,7 @@
 
 9. **Keychain/SecureStorage is always native-managed.** No web fallbacks for `AuthAdapter` or `StorageAdapter`. The WebView does not get direct keychain access. This is a security boundary.
 
-10. **Adapter interfaces are the coupling layer.** Person 1 (webview) imports adapter interfaces from Person 3 (SDK core). Person 2 (native shells) implements bridge handlers. Nobody imports code across the bridge boundary.
+10. **Adapter interfaces are the coupling layer.** Person 1 (webview) imports adapter interfaces from Person 4 (SDK core). Person 2 (native shells) implements bridge handlers. Nobody imports code across the bridge boundary.
 
 11. **No logic in native shells.** Native handlers are pass-through: receive bridge request → call platform API → return bridge response. No parsing, no formatting, no validation, no error mapping, no state management. If a native handler is growing beyond ~50-100 lines per method, logic is leaking out of the WebView.
 
@@ -43,6 +43,10 @@
 12. **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self Wallet app. Validate with `vitest run` and manual testing.
 
 13. **Specs stay current.** When implementation deviates from the spec, update the spec. A stale spec is worse than no spec — it misleads the next person.
+
+14. **Review status checklists before starting a work session.** Read the OVERVIEW.md status checklist and SPEC.md chunk status table before doing anything. Verify the status reflects reality. If something is marked "Done" that isn't, or "Pending" that's actually in progress, fix it first. Don't build on stale assumptions.
+
+15. **Update status checklists as you complete work.** When you finish a chunk, check off the corresponding items in both the OVERVIEW.md status checklist and the SPEC.md chunk status table. This is the primary way devs and leads track progress — stale checklists erode trust in the specs.
 
 ---
 
@@ -91,11 +95,11 @@ cd packages/webview-bridge && npx vitest run
 
 ---
 
-## SDK Core (Person 3)
+## SDK Core (Person 4)
 
 1. **Don't refactor what works.** The adapter architecture and proving machine are sound. Remove platform contamination only — don't redesign.
 
-2. **`@selfxyz/common` is out of scope.** If `common/` has Buffer or Node-specific issues, file those as a separate spec. Person 3 owns `mobile-sdk-alpha` only.
+2. **`@selfxyz/common` is out of scope.** If `common/` has Buffer or Node-specific issues, file those as a separate spec. Person 4 owns `mobile-sdk-alpha` only.
 
 3. **Browser entry point (`src/browser.ts`) must have zero transitive `react-native` imports.** Verify with `madge` or bundle analysis after every change.
 
@@ -115,7 +119,7 @@ cd packages/webview-bridge && npx vitest run
 
 ## WebView UI (Person 1)
 
-1. **Don't duplicate TypeScript from `app/`.** If a utility, type, or flow exists in the RN app and the webview needs it, migrate it to `mobile-sdk-alpha` first (or request Person 3 to).
+1. **Don't duplicate TypeScript from `app/`.** If a utility, type, or flow exists in the RN app and the webview needs it, migrate it to `mobile-sdk-alpha` first (or request Person 4 to).
 
 2. **All native capabilities go through the bridge.** No direct native module calls. Use adapter implementations that call `bridge.request()`.
 
@@ -123,7 +127,7 @@ cd packages/webview-bridge && npx vitest run
 
 ---
 
-## RN SDK (Person 4 / New)
+## RN SDK (Person 5)
 
 1. **Thin wrapper only.** `<SelfVerification />` is a `react-native-webview` component with 5 native handler bridges. Target: 200-300 LOC. If it's growing beyond that, logic is leaking out of the WebView.
 

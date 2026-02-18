@@ -155,6 +155,10 @@ The overview spec must have an ASCII architecture diagram. This is the single mo
 
 The project overview has an aggregated checklist of all milestones. Each workstream overview has a per-workstream checklist placed immediately after the north star — it's the first thing devs check. Each implementation spec has a per-chunk status table. Between the three, anyone can find overall, workstream, or detailed status in one place.
 
+**Review checklists before starting work.** At the start of every work session, read the OVERVIEW.md status checklist and SPEC.md chunk status table for your workstream. Verify the status reflects reality — if something is marked "Done" that isn't, or "Pending" that's actually in progress, fix it before doing anything else. This prevents building on stale assumptions.
+
+**Keep checklists current.** When you complete a chunk, check off the corresponding items in both the OVERVIEW.md status checklist and the SPEC.md chunk status table. Stale checklists erode trust in the specs — if the status is wrong, devs stop reading them.
+
 ### 4. Input / Output Examples
 
 Every piece of work (task, chunk, endpoint, adapter) includes concrete I/O examples. These act as mini mock tests so you can visually validate the direction before and after implementation.
