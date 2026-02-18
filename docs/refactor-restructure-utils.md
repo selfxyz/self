@@ -382,21 +382,21 @@ app/src/integrations/my-integration/
 
 **3. Pure Utilities** → `utils/`
 
-```typescript
+```
 // Add pure function
-app / src / utils / my - utility.ts;
+app/src/utils/my-utility.ts
 // Export from barrel
-app / src / utils / index.ts;
+app/src/utils/index.ts
 ```
 
 **4. Configuration** → `config/`
 
-```typescript
+```
 // Add config
-app / src / config / my - config.ts;
-app / src / config / my - config.web.ts;
+app/src/config/my-config.ts
+app/src/config/my-config.web.ts
 // Export from barrel
-app / src / config / index.ts;
+app/src/config/index.ts
 ```
 
 ### If You're Working on Existing Code

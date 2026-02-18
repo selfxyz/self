@@ -38,11 +38,11 @@ The Self Wallet is a monolithic React Native app where all logic, NFC, proving, 
 
 ## Design Principles
 
-1. **No logic in native handlers.** Handlers are thin bridges between the WebView's JSON requests and platform APIs. All verification logic, state management, and proof generation live in TypeScript inside the WebView.
-2. **Only bridge to native what the browser cannot do.** NFC (hardware), camera (hardware), biometrics (OS prompt), keychain (host-app-managed), and lifecycle (Activity/VC management) are native. Documents (IndexedDB), crypto hashing (Web Crypto), analytics (fetch), and haptic (skipped) run inside the WebView.
-3. **No parsing, formatting, or validation in Kotlin or Swift.** The WebView sends ready-to-use parameters; native code calls platform APIs and returns raw results. JSON structure decisions belong to the TypeScript bridge layer.
-4. **cinterop stays disabled.** All Apple framework calls happen in Swift via the provider pattern. The Kotlin iOS handlers only call provider interface methods.
-5. **Callback-based Swift APIs bridge to Kotlin suspend functions.** Swift closures dispatch to main queue, Kotlin handlers use `suspendCancellableCoroutine` to bridge.
+1. **No logic in native handlers.** Your handlers are thin bridges between the WebView's JSON requests and platform APIs. All verification logic, state management, and proof generation live in TypeScript inside the WebView. If you're writing logic in Kotlin or Swift, you're doing it wrong.
+2. **Only bridge to native what the browser cannot do.** You bridge NFC (hardware), camera (hardware), biometrics (OS prompt), keychain (host-app-managed), and lifecycle (Activity/VC management). Documents (IndexedDB), crypto hashing (Web Crypto), analytics (fetch), and haptic (skipped) run inside the WebView.
+3. **No parsing, formatting, or validation in Kotlin or Swift.** The WebView sends you ready-to-use parameters; your native code calls platform APIs and returns raw results. JSON structure decisions belong to the TypeScript bridge layer.
+4. **cinterop stays disabled.** You make all Apple framework calls in Swift via the provider pattern. Your Kotlin iOS handlers only call provider interface methods.
+5. **Callback-based Swift APIs bridge to Kotlin suspend functions.** Your Swift closures dispatch to main queue; your Kotlin handlers use `suspendCancellableCoroutine` to bridge.
 
 ## Definition of Done
 
@@ -50,7 +50,7 @@ The Self Wallet is a monolithic React Native app where all logic, NFC, proving, 
 
 ## Web Fallback Migration
 
-Four Android handlers are being **deleted** because the WebView can handle their functionality using standard web APIs. This reduces native code, eliminates iOS porting work, and keeps behavior consistent across platforms.
+Delete four Android handlers -- the WebView handles their functionality using standard web APIs. This reduces native code, eliminates iOS porting work, and keeps behavior consistent across platforms.
 
 | Deleted Handler            | LOC Removed | Web Fallback        | Notes                                                                                                                              |
 | -------------------------- | ----------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -1713,7 +1713,7 @@ BUILD SUCCESSFUL (both)
 | iOS Kotlin compilation                        | Build gate | Interfaces compile without cinterop           |
 | Swift package compilation                     | Build gate | SPM resolves NFCPassportReader dependency     |
 
-**Status: NOT DONE**
+**Status: Pending**
 
 ---
 
@@ -1771,7 +1771,7 @@ Output: false
 | Biometric `isAvailable` on simulator     | Integration | Returns false gracefully (no crash)                       |
 | Kotlin iOS compilation                   | Build gate  | Handler compiles with provider delegation                 |
 
-**Status: NOT DONE**
+**Status: Pending**
 
 ---
 
@@ -1829,7 +1829,7 @@ Output: SelfSdkCallback.onCancelled() called, ViewController dismissed
 | `dismiss` -> `onCancelled`         | Unit | Cancel callback fires + dismiss action invoked          |
 | `ready` -> no-op                   | Unit | No crash, no callback                                   |
 
-**Status: NOT DONE**
+**Status: Pending**
 
 ---
 
@@ -1889,7 +1889,7 @@ Output: IllegalStateException with message: "iOS requires Swift providers. Call 
 | `onSuccess` callback fires              | Integration | Full lifecycle from WebView setResult to host callback |
 | Launch without configure throws         | Unit        | Clear error message for misconfiguration               |
 
-**Status: NOT DONE**
+**Status: Pending**
 
 ---
 
@@ -1962,7 +1962,7 @@ Output: null (no crash, NfcPassportHelper released)
 | Test app migration                  | Integration | `SelfSdkSwift.configure()` replaces manual factory registration with identical behavior |
 | End-to-end: launch -> NFC -> result | Integration | Full flow on physical device                                                            |
 
-**Status: NOT DONE**
+**Status: Pending**
 
 ---
 
@@ -1985,7 +1985,7 @@ Output: null (no crash, NfcPassportHelper released)
 4. Create `CameraMrzProviderImpl.swift`
 5. Add optional `cameraMrz` field to `SdkProviderRegistry`
 
-**Status: NOT DONE (deferred to Phase 2)**
+**Status: Deferred (Phase 2)**
 
 ---
 

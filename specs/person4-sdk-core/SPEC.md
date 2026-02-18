@@ -619,7 +619,7 @@ import 'fake-indexeddb/auto';
 ```bash
 cd packages/mobile-sdk-alpha && npx vitest run
 # Verify browser exports include web fallback adapters
-node -e "const m = require('./src/adapters/browser/index.ts'); console.log(Object.keys(m))"
+npx tsx -e "import * as m from './src/adapters/browser/index.ts'; console.log(Object.keys(m))"
 ```
 
 **Expected Output:**

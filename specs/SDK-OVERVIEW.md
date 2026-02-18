@@ -130,20 +130,26 @@
 
 ## Decision Matrix
 
-| Capability      | Must be native?    | KMP Android             | KMP iOS       | RN SDK | WebView Fallback      |
-| --------------- | ------------------ | ----------------------- | ------------- | ------ | --------------------- |
-| **NFC**         | YES                | KEEP (497 LOC)          | BUILD (Swift) | BUILD  | None (hardware)       |
-| **Camera/MRZ**  | YES                | KEEP (247 LOC)          | Phase 2       | BUILD  | None (hardware)       |
-| **Biometrics**  | YES                | KEEP (142 LOC)          | BUILD (Swift) | BUILD  | None (OS prompt)      |
-| **Keychain**    | YES (host decides) | KEEP (120 LOC)          | BUILD (Swift) | BUILD  | None (native-managed) |
-| **Lifecycle**   | YES                | KEEP (91 LOC)           | DONE (86 LOC) | BUILD  | None (Activity/VC)    |
-| **Documents**   | NO                 | **DELETE** (146 LOC)    | Skip          | Skip   | IndexedDB             |
-| **Crypto hash** | NO                 | **DELETE** (177 LOC)    | Skip          | Skip   | Web Crypto API        |
-| **Crypto sign** | YES †              | KEEP (in SecureStorage) | BUILD (Swift) | BUILD  | None (secure enclave) |
-| **Analytics**   | NO                 | **DELETE** (94 LOC)     | Skip          | Skip   | console/fetch         |
-| **Haptic**      | NO                 | **DELETE** (94 LOC)     | Skip          | Skip   | Not critical          |
+| Capability      | Must be native?    | KMP Android          | KMP iOS           | RN SDK            | WebView Fallback           |
+| --------------- | ------------------ | -------------------- | ----------------- | ----------------- | -------------------------- |
+| **NFC**         | YES                | KEEP (497 LOC)       | BUILD (Swift)     | BUILD             | None (hardware)            |
+| **Camera/MRZ**  | YES                | KEEP (247 LOC)       | Phase 2           | BUILD             | None (hardware)            |
+| **Biometrics**  | YES                | KEEP (142 LOC)       | BUILD (Swift)     | BUILD             | None (OS prompt)           |
+| **Keychain**    | YES (host decides) | KEEP (120 LOC)       | Host-managed      | BUILD             | None (native-managed)      |
+| **Lifecycle**   | YES                | KEEP (91 LOC)        | DONE (86 LOC)     | BUILD             | None (Activity/VC)         |
+| **Documents**   | NO                 | **DELETE** (146 LOC) | Skip              | Skip              | IndexedDB                  |
+| **Crypto hash** | NO                 | **DELETE** (177 LOC) | Skip              | Skip              | Web Crypto API             |
+| **Crypto sign** | NO †               | Via SecureStorage    | Via SecureStorage | Via SecureStorage | secureStorage + Web Crypto |
+| **Analytics**   | NO                 | **DELETE** (94 LOC)  | Skip              | Skip              | console/fetch              |
+| **Haptic**      | NO                 | **DELETE** (94 LOC)  | Skip              | Skip              | Not critical               |
 
-> **† Crypto sign note:** The standalone `CryptoBridgeHandler` (177 LOC) was deleted because it primarily handled hashing (Web Crypto covers that). Crypto signing (key generation, public key retrieval, and signing) currently routes through the `secureStorage` domain — the private key is stored in the native keychain, retrieved via biometrics, and the actual signing operation uses Web Crypto in the WebView. If hardware-backed secure enclave signing is needed in the future (signing without exposing the key to the WebView), a dedicated slim handler would need to be added. See [Person 2 SPEC Follow-Up](./person2-native-shells/SPEC.md#follow-up-out-of-scope) for this tracked item.
+> **† Crypto domain note:** The `crypto` domain is defined in the bridge protocol but the standalone `CryptoBridgeHandler` (177 LOC) was deleted because it primarily handled hashing (Web Crypto covers that). **Current routing for crypto operations:**
+>
+> - **Hashing** (`hash()`) — runs entirely in the WebView via `crypto.subtle.digest`. No bridge call.
+> - **Signing** (`sign()`) — the private key is stored in the native keychain (`secureStorage` domain), retrieved via biometrics, and the actual signing uses Web Crypto in the WebView. No dedicated `crypto` handler needed.
+> - **Key generation / retrieval** (`generateKey()`, `getPublicKey()`) — routes through `secureStorage` domain methods.
+>
+> If hardware-backed secure enclave signing is needed in the future (signing without exposing the key to the WebView), a dedicated slim `crypto` handler would need to be added. See [Person 2 SPEC Follow-Up](./person2-native-shells/SPEC.md#follow-up-out-of-scope) for this tracked item.
 
 ## Impact Summary
 
@@ -156,6 +162,36 @@
 | Code shared across platforms    | ~20%                                    | ~95% (WebView engine)          | Massive reduction in per-platform work |
 
 ## Shared Contracts / Protocols
+
+### Canonical Types
+
+These types are the **single source of truth**. All workstreams must converge on these shapes. Platform-specific serialization (e.g., Kotlin `Map<String, String>`) is acceptable, but the fields and semantics must match.
+
+```typescript
+// TypeScript (Person 1, 4, 5)
+interface VerificationResult {
+  success: boolean;
+  userId?: string;
+  verificationId?: string;
+  proof?: unknown;
+  claims?: Record<string, unknown>;
+  error?: { code: string; message: string };
+}
+```
+
+```kotlin
+// Kotlin (Person 2, 3)
+data class VerificationResult(
+    val success: Boolean,
+    val userId: String?,
+    val verificationId: String?,
+    val proof: String?,
+    val claims: Map<String, Any?>?,
+    val error: SelfSdkError?,
+)
+```
+
+> **Divergence note:** Person 3's MiniPay SPEC currently uses `{ verified, disclosedClaims, timestamp }` — a different shape. This must be aligned to the canonical type above. `verified` → `success`, `disclosedClaims` → `claims`, `timestamp` moves into the proof payload. Person 2's `claims: Map<String, String>` should widen to `Map<String, Any?>` to match the TypeScript `Record<string, unknown>`.
 
 All communication between native shells and the WebView uses a versioned JSON protocol over `postMessage`.
 
@@ -199,7 +235,7 @@ Event    (Native → WebView, unsolicited)
 | `secureStorage` | `get`, `set`, `remove`                                     | —                                            | **Native**              | "Keychain" in UI/docs = `secureStorage` domain in bridge protocol. Host app controls access. |
 | `camera`        | `scanMRZ`, `isAvailable`                                   | —                                            | **Native**              | MRZ OCR from camera                                                                          |
 | `lifecycle`     | `ready`, `dismiss`, `setResult`                            | —                                            | **Native**              | WebView ↔ host communication                                                                 |
-| `crypto`        | `sign`, `generateKey`, `getPublicKey`                      | —                                            | **Native** (sign)       | `hash()` uses Web Crypto                                                                     |
+| `crypto`        | `sign`, `generateKey`, `getPublicKey`                      | —                                            | **Deprecated** †        | Domain exists but standalone handler deleted. See footnote below.                            |
 | `documents`     | `loadCatalog`, `saveCatalog`, `loadById`, `save`, `delete` | —                                            | **Web** (IndexedDB)     | No bridge round-trip                                                                         |
 | `analytics`     | `trackEvent`, `trackNfcEvent`, `logNfcEvent`               | —                                            | **Web** (console/fetch) | Fire-and-forget                                                                              |
 | `haptic`        | `trigger`                                                  | —                                            | **Web** (skip)          | Not critical                                                                                 |
@@ -454,10 +490,10 @@ Integration samples (MiniPay)
 
 > **Note:** This table may be stale. Check GitHub for current status before relying on it.
 
-| PR                                                    | Title                                           | Impact                                                                                                                                           | Files                    | Status |
-| ----------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ | ------ |
-| [#1762](https://github.com/selfxyz/selfapp/pull/1762) | iOS bridge handlers with Swift provider pattern | Adds `self-sdk-swift` package, Swift native providers (NFC, biometrics, crypto, storage), rewires KMP iOS handlers from stubs to provider-backed | 82 files (+6,187/-5,513) | Open   |
-| [#1767](https://github.com/selfxyz/selfapp/pull/1767) | MRZ data confirmation for NFC scanning          | Adds DataConfirmationScreen in Self Wallet app, diff calculator utility with tests, new analytics constants                                      | 7 files (+227/-1)        | Open   |
+| PR                                                 | Title                                           | Impact                                                                                                                                           | Files                    | Status |
+| -------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ | ------ |
+| [#1762](https://github.com/selfxyz/self/pull/1762) | iOS bridge handlers with Swift provider pattern | Adds `self-sdk-swift` package, Swift native providers (NFC, biometrics, crypto, storage), rewires KMP iOS handlers from stubs to provider-backed | 82 files (+6,187/-5,513) | Open   |
+| [#1767](https://github.com/selfxyz/self/pull/1767) | MRZ data confirmation for NFC scanning          | Adds DataConfirmationScreen in Self Wallet app, diff calculator utility with tests, new analytics constants                                      | 7 files (+227/-1)        | Open   |
 
 ## Migration Path
 

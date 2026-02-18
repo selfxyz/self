@@ -16,8 +16,11 @@
 
 - [x] 275+ tests passing
 - [x] React Native adapters built and working
-- [ ] Browser entry point with zero RN transitive imports
-- [ ] Web fallback adapters (IndexedDB documents, Web Crypto hash, console analytics)
+- [x] Config & Platform Abstraction (Chunk 4A — Done)
+- [x] Browser Entry Point & Package Exports (Chunk 4B — Done)
+- [x] WebView Lifecycle Events (Chunk 4C — Done)
+- [x] Conditional SelfApp Store (Chunk 4E — Done)
+- [ ] Web Fallback Adapter Implementations (Chunk 4F — Pending)
 - [ ] `Platform` / `__DEV__` contamination removed from core files
 
 ## What You Own

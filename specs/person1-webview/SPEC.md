@@ -407,7 +407,53 @@ export function bridgeStorageAdapter(bridge: WebViewBridge): StorageAdapter {
 
 Storage bridges to native because keychain access is managed by the host app. Some host apps (like MiniPay) have policies about WebView keychain access.
 
-#### 3d. Lifecycle Adapter — `packages/webview-bridge/src/adapters/lifecycle.ts`
+#### 3e. Biometrics Adapter — `packages/webview-bridge/src/adapters/biometrics.ts`
+
+```typescript
+export function bridgeBiometricsAdapter(bridge: WebViewBridge): BiometricsAdapter {
+  return {
+    authenticate(params: BiometricAuthParams): Promise<boolean>;
+    isAvailable(): Promise<boolean>;
+    getBiometryType(): Promise<string>;
+  };
+}
+```
+
+- `authenticate(params)`: Calls `bridge.request('biometrics', 'authenticate', { reason: params.reason })`, returns `true` on success
+- `isAvailable()`: Calls `bridge.request('biometrics', 'isAvailable', {})`, returns boolean
+- `getBiometryType()`: Calls `bridge.request('biometrics', 'getBiometryType', {})`, returns `"faceId"`, `"touchId"`, or `"none"`
+
+##### Input / Output
+
+**Input:**
+
+```typescript
+const result = await biometrics.authenticate({
+  reason: 'Confirm your identity',
+});
+```
+
+**Expected Output:**
+
+```
+true
+```
+
+**Edge case — user cancels biometric prompt:**
+
+```
+Input:  biometrics.authenticate({ reason: 'Confirm' })
+Output: Promise rejects with BridgeHandlerException("BIOMETRIC_ERROR", "User cancelled")
+```
+
+**Edge case — biometrics not available (e.g., simulator):**
+
+```
+Input:  biometrics.isAvailable()
+Output: false
+```
+
+#### 3f. Lifecycle Adapter — `packages/webview-bridge/src/adapters/lifecycle.ts`
 
 ```typescript
 export function bridgeLifecycleAdapter(bridge: WebViewBridge): LifecycleAdapter {
@@ -538,53 +584,7 @@ const routeMap: Record<RouteName, string> = {
 };
 ```
 
-#### 4e. Biometrics Adapter — `packages/webview-bridge/src/adapters/biometrics.ts`
-
-```typescript
-export function bridgeBiometricsAdapter(bridge: WebViewBridge): BiometricsAdapter {
-  return {
-    authenticate(params: BiometricAuthParams): Promise<boolean>;
-    isAvailable(): Promise<boolean>;
-    getBiometryType(): Promise<string>;
-  };
-}
-```
-
-- `authenticate(params)`: Calls `bridge.request('biometrics', 'authenticate', { reason: params.reason })`, returns `true` on success
-- `isAvailable()`: Calls `bridge.request('biometrics', 'isAvailable', {})`, returns boolean
-- `getBiometryType()`: Calls `bridge.request('biometrics', 'getBiometryType', {})`, returns `"faceId"`, `"touchId"`, or `"none"`
-
-##### Input / Output
-
-**Input:**
-
-```typescript
-const result = await biometrics.authenticate({
-  reason: 'Confirm your identity',
-});
-```
-
-**Expected Output:**
-
-```
-true
-```
-
-**Edge case — user cancels biometric prompt:**
-
-```
-Input:  biometrics.authenticate({ reason: 'Confirm' })
-Output: Promise rejects with BridgeHandlerException("BIOMETRIC_ERROR", "User cancelled")
-```
-
-**Edge case — biometrics not available (e.g., simulator):**
-
-```
-Input:  biometrics.isAvailable()
-Output: false
-```
-
-#### 4f. Haptic Adapter — `packages/webview-bridge/src/adapters/haptic.ts`
+#### 4e. Haptic Adapter — `packages/webview-bridge/src/adapters/haptic.ts`
 
 ```typescript
 export function hapticAdapter(): HapticAdapter {

@@ -44,8 +44,9 @@ A **wave** is a batch of chunks that can execute in parallel because they have n
 | **3A** | **Person 3 (Integrations)**  | **MiniPay Project Setup**                      | **M** | **Pending**         | —            |
 | **3B** | **Person 3 (Integrations)**  | **Wire SelfSdk.launch()**                      | **M** | **Pending**         | 3A           |
 | **3C** | **Person 3 (Integrations)**  | **Polish + Error Handling**                    | **S** | **Pending**         | 3B           |
+| 2L     | Person 2 (Native Shells)     | Camera MRZ Handler (iOS)                       | S     | Deferred (Phase 2)  | 2J           |
 
-**Totals:** 29 chunks — 11 done, 1 skipped (4D optional), 2 superseded (2D/2E → 2G-2K), 2 in progress (1E, 2F), **13 pending**
+**Totals:** 30 chunks — 11 done, 1 skipped (4D optional), 2 superseded (2D/2E → 2G-2K), 1 deferred (2L Phase 2), 2 in progress (1E, 2F), **13 pending**
 
 ## Execution Waves
 
@@ -110,9 +111,21 @@ Wave 5:              ▼      ▼    2F
                                DONE
 ```
 
+## Critical Path
+
+The longest dependency chain determines minimum wall-clock time:
+
+```
+2G → 2H/2I → 2J → 2K → 2F
+ S     S/S     M    M    M
+```
+
+This iOS chain spans Waves 1–5 (5 sequential steps). Everything else can parallelize around it. **Person 2's iOS work is the bottleneck.** If iOS slips, the SDK public API (2F) slips.
+
 ## Notes
 
 - **2D/2E overlap**: Chunks 2D and 2E were the original iOS stubs. They are superseded by the 2G→2K Swift wrapper chain. The wave plan uses 2G-2K.
+- **2L deferred**: Camera MRZ on iOS (Chunk 2L) is Phase 2. Not scheduled in any wave. Add to a future wave when Phase 2 planning starts.
 - **3A soft block**: MiniPay sample technically depends on Person 2's KMP SDK artifact, but project scaffolding (3A) can proceed with mocks. Hard dependency starts at 3B.
 - **5D depends on 1E**: Asset bundling needs the Vite bundle output from Person 1's WebView app shell.
 - **Use `claude --remote`** for M and L chunks to avoid tying up terminals.

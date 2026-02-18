@@ -36,7 +36,7 @@ There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not e
 
 ## Design Principles
 
-1. **Thin wrapper only.** The RN SDK is ~200-300 LOC. All logic lives in the WebView engine (`mobile-sdk-alpha`). If you are writing business logic in this package, you are doing it wrong.
+1. **Thin wrapper only.** The RN SDK is ~200-300 LOC. All logic lives in the WebView engine (`mobile-sdk-alpha`). If you're writing business logic in this package, you're doing it wrong.
 2. **Same bridge protocol as KMP.** The RN handlers implement the exact same domain/method/params contract as the Kotlin handlers. The WebView does not know which native shell it is running in.
 3. **Peer dependencies for native modules.** Every React Native native module (`react-native-webview`, `react-native-nfc-manager`, `react-native-biometrics`, `react-native-keychain`) is a `peerDependency`. The host app installs and links them. This avoids version conflicts and duplicate native code.
 4. **Platform.select for asset loading.** The WebView source must work on both Android (`file:///android_asset/...`) and iOS (`RNFS.MainBundlePath` or equivalent). Never hardcode a single platform path.
@@ -83,7 +83,7 @@ There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not e
 }
 ```
 
-**Spec correction (PR #1765 review):** `react-native-webview` is a `peerDependency`, not a direct `dependency`. Native modules must be linked by the host app. Having it as a direct dep causes JS/native version mismatch.
+> **Note:** `react-native-webview` is a `peerDependency`, not a direct `dependency`. Native modules must be linked by the host app. Having it as a direct dep causes JS/native version mismatch.
 
 **Create:** `packages/rn-sdk/tsconfig.json`, `packages/rn-sdk/tsup.config.ts`
 
@@ -181,7 +181,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
     [],
   );
 
-  useMemo(() => {
+  useEffect(() => {
     const handlers = createHandlers({
       request,
       onSuccess,
@@ -191,6 +191,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
       router,                         // <-- Spec correction: pass router
     });
     handlers.forEach(h => router.register(h));
+    return () => handlers.forEach(h => router.unregister(h));
   }, [request, onSuccess, onFailure, onCancelled, debug]);
 
   const onMessage = useCallback(
@@ -605,7 +606,7 @@ export function createHandlers(config: {
 }
 ```
 
-**Spec correction (PR #1765 review):** The original spec's `SelfVerification.tsx` called `createHandlers` without the `router` field, but `NfcHandler` requires it for pushing progress events. The `router` must be passed in the config object.
+> **Note:** `SelfVerification.tsx` must pass `router` in the `createHandlers` config object — `NfcHandler` requires it for pushing progress events.
 
 ---
 
@@ -631,9 +632,9 @@ const source = devServerUrl
     });
 ```
 
-**Spec correction (PR #1765 review):** The original spec only set `file:///android_asset/...` — iOS was missing. Use `Platform.select` with both paths. The iOS path uses `react-native-fs` (`RNFS.MainBundlePath`), which must either be added to `peerDependencies` or replaced with RN's built-in `require()` / `Image.resolveAssetSource()`.
+> **Note:** Use `Platform.select` with both Android and iOS paths. The iOS path uses `react-native-fs` (`RNFS.MainBundlePath`), which must either be added to `peerDependencies` or replaced with RN's built-in `require()` / `Image.resolveAssetSource()`.
 
-**Spec correction (PR #1765 review):** If `react-native-fs` is used for iOS asset path, add it to `peerDependencies`:
+If `react-native-fs` is used for the iOS asset path, add it to `peerDependencies`:
 
 ```json
 "peerDependencies": {
@@ -662,7 +663,7 @@ If `react-native-fs` is not available, fall back to React Native's `require()` w
 
 ---
 
-### 8. What's Native vs WebView
+### 8. Native vs WebView Boundary
 
 | Capability        | Native (RN bridge)     | WebView (web fallback) |
 | ----------------- | ---------------------- | ---------------------- |
@@ -1064,18 +1065,6 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 | Camera library selection for MRZ scanning       | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter |
 | iOS asset loading strategy (RNFS vs require)    | PR #1765 review   | Decide in Chunk 5D implementation                                 |
 
-## Spec Corrections Summary (PR #1765 Review)
-
-These issues were identified during PR #1765 code review and are incorporated throughout this spec:
-
-| Issue                                  | Severity | Chunk | Description                                                                                      | Fix Applied                                                             |
-| -------------------------------------- | -------- | ----- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| `react-native-webview` dep type        | Major    | 5A    | Listed as `dependency` but must be `peerDependency` -- native modules must be linked by host app | Moved to `peerDependencies` as `"react-native-webview": ">=13.0.0"`     |
-| `createHandlers` missing `router` arg  | Critical | 5A    | `SelfVerification.tsx` called `createHandlers` without `router`, but `NfcHandler` requires it    | `router` passed in `createHandlers` config; component passes `router`   |
-| Android-only WebView `source`          | Major    | 5D    | `source` only set `file:///android_asset/...` -- iOS blank screen                                | Use `Platform.select({ android: ..., ios: ... })`                       |
-| `crypto.randomUUID` polyfill           | Minor    | 5A    | May not be available in all RN environments                                                      | Fallback: `crypto.randomUUID?.() ?? \`${Date.now()}-${Math.random()}\`` |
-| `RNFS.MainBundlePath` without peer dep | Major    | 5D    | iOS path uses `react-native-fs` but not in `peerDependencies`                                    | Add `react-native-fs` to peerDeps OR use RN built-in asset resolution   |
-
 ## Spec Deviations
 
 | Suggestion skipped                     | Reason                                                                                                                                         |
@@ -1083,6 +1072,16 @@ These issues were identified during PR #1765 code review and are incorporated th
 | BEFORE/AFTER code blocks               | All tasks are new file creation (package does not exist yet) -- used CREATE + SKELETON pattern                                                 |
 | `--remote` recommendation for L chunks | Chunk 5C (NFC) requires physical device testing -- remote execution insufficient                                                               |
 | Full handler implementation code       | Handlers are thin wrappers (~20-40 LOC each); showing full implementation would over-specify what should be a direct native library delegation |
+
+### PR #1765 Review Corrections (incorporated inline)
+
+| Issue                                  | Severity | Chunk | Fix Applied                                                             |
+| -------------------------------------- | -------- | ----- | ----------------------------------------------------------------------- |
+| `react-native-webview` dep type        | Major    | 5A    | Moved to `peerDependencies` as `"react-native-webview": ">=13.0.0"`     |
+| `createHandlers` missing `router` arg  | Critical | 5A    | `router` passed in `createHandlers` config; component passes `router`   |
+| Android-only WebView `source`          | Major    | 5D    | Use `Platform.select({ android: ..., ios: ... })`                       |
+| `crypto.randomUUID` polyfill           | Minor    | 5A    | Fallback: `crypto.randomUUID?.() ?? \`${Date.now()}-${Math.random()}\`` |
+| `RNFS.MainBundlePath` without peer dep | Major    | 5D    | Add `react-native-fs` to peerDeps OR use RN built-in asset resolution   |
 
 ## Related Specs
 

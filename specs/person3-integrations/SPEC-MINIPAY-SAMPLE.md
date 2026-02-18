@@ -219,13 +219,18 @@ sdk.launch(
 **Expected Output (success callback):**
 
 ```kotlin
+// TODO: Align with canonical VerificationResult — see SDK-OVERVIEW.md § Canonical Types
+// Current shape diverges: verified→success, disclosedClaims→claims, timestamp moves to proof payload
 VerificationResult(
-    verified = true,
-    disclosedClaims = mapOf(
+    success = true,
+    userId = "user-uuid-123",
+    verificationId = "ver-uuid",
+    proof = "...",
+    claims = mapOf(
         "nationality" to "NLD",
         "date_of_birth" to "1990-01-15"
     ),
-    timestamp = "2026-02-17T12:00:00Z"
+    error = null,
 )
 ```
 
