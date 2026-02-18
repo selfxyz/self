@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
@@ -53,7 +54,7 @@ class DocumentsBridgeHandler : BridgeHandler {
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "Documents provider not configured")
 
         val catalogData =
-            (params["data"] as? JsonPrimitive)?.content
+            params["data"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_DATA", "Catalog data parameter must be a string")
 
         try {
@@ -70,7 +71,7 @@ class DocumentsBridgeHandler : BridgeHandler {
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "Documents provider not configured")
 
         val id =
-            (params["id"] as? JsonPrimitive)?.content
+            params["id"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
 
         val documentJson =
@@ -88,10 +89,10 @@ class DocumentsBridgeHandler : BridgeHandler {
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "Documents provider not configured")
 
         val id =
-            (params["id"] as? JsonPrimitive)?.content
+            params["id"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
         val document =
-            (params["document"] as? JsonPrimitive)?.content
+            params["document"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_DOCUMENT", "Document parameter required")
 
         try {
@@ -112,7 +113,7 @@ class DocumentsBridgeHandler : BridgeHandler {
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "Documents provider not configured")
 
         val id =
-            (params["id"] as? JsonPrimitive)?.content
+            params["id"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_ID", "Document ID parameter required")
 
         try {
