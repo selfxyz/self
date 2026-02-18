@@ -19,4 +19,5 @@ class BridgeHandlerException(
     val code: String,
     override val message: String,
     val details: Map<String, JsonElement>? = null,
-) : Exception(message)
+    cause: Throwable? = null,
+) : Exception(message, cause)
