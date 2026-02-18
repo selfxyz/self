@@ -1,0 +1,113 @@
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
+package xyz.self.minipay
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import xyz.self.sdk.api.SelfSdk
+import xyz.self.sdk.api.SelfSdkCallback
+import xyz.self.sdk.api.SelfSdkConfig
+import xyz.self.sdk.api.SelfSdkError
+import xyz.self.sdk.api.VerificationRequest
+import xyz.self.sdk.api.VerificationResult
+
+data class HomeState(
+    val isVerified: Boolean = false,
+    val lastProofDate: String? = null,
+    val verifiedClaims: Map<String, String>? = null,
+)
+
+sealed class Screen {
+    data object Home : Screen()
+    data object Result : Screen()
+}
+
+class MainViewModel(
+    private val sdk: SelfSdk = SelfSdk.configure(SelfSdkConfig(debug = true)),
+) {
+    var currentScreen by mutableStateOf<Screen>(Screen.Home)
+        private set
+
+    var verificationResult: VerificationResult? by mutableStateOf(null)
+        private set
+
+    var verificationError: SelfSdkError? by mutableStateOf(null)
+        private set
+
+    var homeState by mutableStateOf(HomeState())
+        private set
+
+    var isLaunching by mutableStateOf(false)
+        private set
+
+    private val sdkCallback =
+        object : SelfSdkCallback {
+            override fun onSuccess(result: VerificationResult) {
+                verificationResult = result
+                verificationError = null
+                currentScreen = Screen.Result
+                isLaunching = false
+            }
+
+            override fun onFailure(error: SelfSdkError) {
+                verificationResult = null
+                verificationError = error
+                currentScreen = Screen.Result
+                isLaunching = false
+            }
+
+            override fun onCancelled() {
+                // Stay on home screen
+                isLaunching = false
+            }
+        }
+
+    fun launchVerification() {
+        isLaunching = true
+        sdk.launch(
+            request =
+                VerificationRequest(
+                    userId = "minipay-user",
+                    disclosures = listOf("nationality", "date_of_birth"),
+                ),
+            callback = sdkCallback,
+        )
+    }
+
+    fun onVerificationSuccess(result: VerificationResult) {
+        verificationResult = result
+        verificationError = null
+        currentScreen = Screen.Result
+    }
+
+    fun onVerificationFailure(error: SelfSdkError) {
+        verificationResult = null
+        verificationError = error
+        currentScreen = Screen.Result
+    }
+
+    fun onVerificationCancelled() {
+        // Stay on home screen, no state change
+    }
+
+    fun returnToHome() {
+        // Update home state if verification was successful
+        val result = verificationResult
+        if (result != null && result.success) {
+            homeState =
+                HomeState(
+                    isVerified = true,
+                    lastProofDate = result.verificationId,
+                    verifiedClaims = result.claims,
+                )
+        }
+
+        // Clear transient state
+        verificationResult = null
+        verificationError = null
+        currentScreen = Screen.Home
+    }
+}
