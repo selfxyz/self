@@ -26,7 +26,7 @@
    - UI components shared between flows → `mobile-sdk-alpha`
    - Only screen-level composition and routing belong in `webview-app`
 
-7. **New native handlers MUST follow the bridge protocol exactly.** Every native handler implements the JSON schema defined in OVERVIEW.md (request/response/event). No custom messaging, no side channels, no platform-specific extensions. The WebView must not know which native shell it's running inside.
+7. **New native handlers MUST follow the bridge protocol exactly.** Every native handler implements the JSON schema defined in SDK-OVERVIEW.md (request/response/event). No custom messaging, no side channels, no platform-specific extensions. The WebView must not know which native shell it's running inside.
 
 ### Code
 

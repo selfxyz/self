@@ -6,11 +6,11 @@
 
 Copy-paste one of these prompts to start a new spec session:
 
-**New overview spec (tier 1 — architecture):**
+**New project overview (tier 1 — architecture):**
 
 ```
-Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, and specs/TEMPLATE-OVERVIEW.md.
-Then analyze the codebase to create an overview spec for [PROJECT NAME].
+Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, and specs/TEMPLATES.md (Project Overview section).
+Then analyze the codebase to create a project overview for [PROJECT NAME].
 
 Before writing, research:
 - What modules/packages exist and their current state
@@ -18,16 +18,35 @@ Before writing, research:
 - Dependencies between components
 - What's done vs what's remaining
 
-Write the spec to specs/OVERVIEW.md using the template.
+Write the spec to specs/SDK-OVERVIEW.md using the template.
 Do not skip: north star, architecture diagram, module table, status checklist, system-level I/O.
 Run the review checklist from SPEC-GUIDE.md before finishing.
 ```
 
-**New implementation spec (tier 2 — for a specific workstream):**
+**New workstream overview (tier 2 — orientation for a specific workstream):**
 
 ```
-Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, specs/TEMPLATE-IMPLEMENTATION.md,
-and specs/OVERVIEW.md.
+Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, specs/TEMPLATES.md (Workstream Overview section),
+and specs/SDK-OVERVIEW.md.
+Then analyze the codebase to create a workstream overview for [PERSON/SCOPE].
+
+Before writing, research:
+- What packages and files this workstream owns
+- Dependencies on other workstreams (both directions)
+- Current status and milestones
+- Key decisions specific to this workstream
+
+Write the spec to specs/[person-scope]/OVERVIEW.md using the template.
+Do not skip: north star, what you own, architecture context diagram, dependencies table,
+status milestones, deliverables.
+Run the review checklist from SPEC-GUIDE.md before finishing.
+```
+
+**New implementation spec (tier 3 — for a specific workstream):**
+
+```
+Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, specs/TEMPLATES.md (Implementation Spec section),
+and specs/[person-scope]/OVERVIEW.md.
 Then analyze the codebase to create an implementation spec for [PERSON/SCOPE].
 
 Before writing, research:
@@ -45,7 +64,7 @@ Run the review checklist from SPEC-GUIDE.md before finishing.
 **Refactor an existing spec to match the new format:**
 
 ```
-Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, and specs/TEMPLATE-IMPLEMENTATION.md.
+Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, and specs/TEMPLATES.md.
 Then read the existing spec at specs/[OLD-SPEC].md.
 
 Refactor it to match the template format. Analyze the codebase to verify:
@@ -68,24 +87,25 @@ Specs serve two audiences simultaneously:
 
 A good spec lets a new dev comprehend the system in 60 seconds and lets an AI agent produce a correct PR from a single chunk.
 
-## The Two-Tier System
+## The Three-Tier System
 
-Every project has two types of specs:
+Every project has three types of specs:
 
-| Tier               | File               | Audience                     | Purpose                                        |
-| ------------------ | ------------------ | ---------------------------- | ---------------------------------------------- |
-| **Overview**       | `OVERVIEW.md`      | Architect, eng lead, new dev | System-level architecture, status, cross-links |
-| **Implementation** | `person-*/SPEC.md` | Implementer (human or agent) | Exact scope, code changes, I/O, chunks         |
+| Tier                     | File                    | Audience                     | Purpose                                                    | Change Frequency |
+| ------------------------ | ----------------------- | ---------------------------- | ---------------------------------------------------------- | ---------------- |
+| **Project Overview**     | `SDK-OVERVIEW.md`       | Architect, eng lead, new dev | System-level architecture, ties all workstreams together   | Rarely           |
+| **Workstream Overview**  | `person-*/OVERVIEW.md`  | Dev joining a workstream     | What this workstream owns, dependencies, status, context   | Occasionally     |
+| **Implementation**       | `person-*/SPEC.md`      | Implementer (human or agent) | Exact scope, code changes, I/O, token-budgeted chunks      | Frequently       |
 
-The overview is the map. The implementation spec is turn-by-turn directions. Both reference each other.
+The project overview is the map. The workstream overview is orientation for a new team member. The implementation spec is turn-by-turn directions. All three reference each other.
 
-Use `TEMPLATE-OVERVIEW.md` and `TEMPLATE-IMPLEMENTATION.md` to create new specs.
+All three templates live in `TEMPLATES.md` — pick the section that matches what you're writing.
 
 ## How to Create a Spec
 
 Templates are useless without a research process. Follow this workflow:
 
-1. **Read** `OVERVIEW.md` and `PROJECT-RULES.md` — understand the system and constraints
+1. **Read** `SDK-OVERVIEW.md` and `PROJECT-RULES.md` — understand the system and constraints
 2. **Analyze the codebase** — run the code, read key files, check test coverage, review open PRs. Don't assume — verify.
 3. **Fill in the Problem section first** — this forces you to do real research before writing solutions
 4. **Write scope of work with I/O examples** — if you can't write the I/O, you don't understand the requirement
@@ -200,6 +220,10 @@ The overview links to all implementation specs. Each implementation spec links b
 
 Implementation specs are written in second person, addressing the implementer directly. "You are building the native side of the SDK" not "The native side of the SDK will be built." This makes specs actionable — the reader knows they are the one doing the work. It also makes specs work as AI agent prompts without modification.
 
+### 14. Per-Person Overview Files
+
+Every workstream folder has both an `OVERVIEW.md` (stable orientation) and a `SPEC.md` (living implementation details). The overview answers "what do I own and why?" — it changes rarely. The implementation spec answers "how do I build it?" — it changes with every chunk. Separating them means the project overview ties workstreams together without coupling to implementation churn, and new devs can understand their workstream's context in 2 minutes without reading the full implementation spec.
+
 ## Test Plan Guidance
 
 Each implementation spec includes a test section per chunk. Keep it tabular:
@@ -253,24 +277,27 @@ This keeps accountability without rigidity. Development has no hard and fast rul
 specs/
   SPEC-GUIDE.md                  <- This file (generic, portable)
   PROJECT-RULES.md               <- Project-specific rules
-  TEMPLATE-OVERVIEW.md           <- Copy-paste tier 1 template
-  TEMPLATE-IMPLEMENTATION.md     <- Copy-paste tier 2 template
-  OVERVIEW.md                    <- The architecture spec
+  TEMPLATES.md                   <- All three templates in one file
+  SDK-OVERVIEW.md                <- The project architecture spec (stable)
 
   person1-webview/
-    SPEC.md                      <- Person 1's implementation spec
+    OVERVIEW.md                  <- Person 1's workstream overview (stable)
+    SPEC.md                      <- Person 1's implementation spec (living)
 
   person2-native-shells/
-    SPEC.md                      <- Person 2's implementation spec
+    OVERVIEW.md                  <- Person 2's workstream overview (stable)
+    SPEC.md                      <- Person 2's implementation spec (living)
 
   personN-scope/
-    SPEC.md                      <- Additional workstreams
+    OVERVIEW.md                  <- Workstream overview
+    SPEC.md                      <- Implementation spec
 
   integrations/
-    SPEC-[NAME].md               <- Cross-cutting integration specs
+    OVERVIEW.md                  <- Integration workstream overview
+    SPEC-[NAME].md               <- Integration-specific implementation specs
 ```
 
-Each person gets a folder (room for supporting docs later). `SPEC.md` inside each folder is always the implementation spec — consistent naming. Integration specs that span multiple workstreams live in `integrations/`.
+Each person gets a folder with two files: `OVERVIEW.md` (what you own, context, dependencies — changes rarely) and `SPEC.md` (how to build it, chunks, code — changes often). Integration specs that span multiple workstreams live in `integrations/`.
 
 ## Gold Standard Reference
 
