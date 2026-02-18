@@ -28,11 +28,11 @@ You are building a Kotlin sample app demonstrating how a host app integrates Sel
 
 The MiniPay sample app does not exist yet. Third-party integrators have no reference implementation showing how to embed Self verification into a Kotlin Multiplatform app with minimal code.
 
-| File / Area                         | Issue                                                                  |
-| ----------------------------------- | ---------------------------------------------------------------------- |
-| `packages/kmp-minipay-sample/`      | Directory does not exist — entire project needs to be scaffolded       |
-| KMP SDK public API                  | No consumer exists to validate the `SelfSdk.launch()` integration path |
-| Third-party integrator docs         | No working sample to point integrators to                              |
+| File / Area                    | Issue                                                                  |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| `packages/kmp-minipay-sample/` | Directory does not exist — entire project needs to be scaffolded       |
+| KMP SDK public API             | No consumer exists to validate the `SelfSdk.launch()` integration path |
+| Third-party integrator docs    | No working sample to point integrators to                              |
 
 ## Design Principles
 
@@ -109,7 +109,7 @@ packages/kmp-minipay-sample/
   androidApp/
     build.gradle.kts
     src/main/
-      AndroidManifest.xml
+      AndroidManifest.xml          # See permissions note below
       java/.../MainApplication.kt
 
   iosApp/
@@ -448,38 +448,74 @@ android {
 
 Note: No QR scanning libraries, no ML Kit, no CameraX in the sample app's own dependencies. The KMP SDK bundles everything needed for the verification flow (NFC, camera, etc.) and handles it within the WebView.
 
+#### AndroidManifest Permissions
+
+The sample app's `AndroidManifest.xml` must declare permissions required by the KMP SDK's native handlers:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- NFC passport scanning -->
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
+
+    <!-- Camera for MRZ scanning -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <!-- Biometrics (fingerprint/face) -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+
+    <!-- Internet for WebView content and proof submission -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".MainApplication"
+        ...>
+        <!-- NFC intent filter for tag discovery -->
+        <intent-filter>
+            <action android:name="android.nfc.action.TECH_DISCOVERED" />
+        </intent-filter>
+        <meta-data
+            android:name="android.nfc.action.TECH_DISCOVERED"
+            android:resource="@xml/nfc_tech_filter" />
+    </application>
+</manifest>
+```
+
+The `nfc_tech_filter.xml` resource (in `res/xml/`) should list `android.nfc.tech.IsoDep` for passport NFC chip communication. These permissions are declared but the KMP SDK handles all runtime permission requests internally.
+
 ---
 
 ## Files You Will Modify
 
-| File                                                                       | Change                                     | Risk                                                   |
-| -------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------ |
-| `packages/kmp-minipay-sample/build.gradle.kts`                             | Create — root project config               | **Low** — new file, no existing code affected           |
-| `packages/kmp-minipay-sample/composeApp/build.gradle.kts`                  | Create — Compose Multiplatform build config | **Med** — must match kmp-sdk dependency correctly       |
-| `packages/kmp-minipay-sample/composeApp/src/commonMain/.../App.kt`         | Create — root composable + navigation      | **Low** — new file                                     |
-| `packages/kmp-minipay-sample/composeApp/src/commonMain/.../MainViewModel.kt` | Create — launch/result state management  | **Low** — new file                                     |
-| `packages/kmp-minipay-sample/composeApp/src/commonMain/.../HomeScreen.kt`  | Create — landing screen with verify button | **Low** — new file                                     |
-| `packages/kmp-minipay-sample/composeApp/src/commonMain/.../ResultScreen.kt`| Create — success/failure display           | **Low** — new file                                     |
-| `packages/kmp-minipay-sample/composeApp/src/commonMain/.../Theme.kt`       | Create — MiniPay-style theming             | **Low** — new file                                     |
-| `packages/kmp-minipay-sample/composeApp/src/androidMain/.../MainActivity.kt` | Create — Android entry point             | **Low** — new file                                     |
-| `packages/kmp-minipay-sample/composeApp/src/iosMain/.../MainViewController.kt` | Create — iOS entry point               | **Low** — new file                                     |
-| `packages/kmp-minipay-sample/androidApp/build.gradle.kts`                  | Create — Android app module config         | **Low** — new file                                     |
-| `packages/kmp-minipay-sample/androidApp/src/main/AndroidManifest.xml`      | Create — Android manifest                  | **Low** — new file                                     |
-| `packages/kmp-minipay-sample/iosApp/iosApp/iOSApp.swift`                   | Create — SwiftUI wrapper                   | **Low** — new file                                     |
-| `packages/kmp-minipay-sample/iosApp/iosApp/ContentView.swift`              | Create — SwiftUI content view              | **Low** — new file                                     |
-| `settings.gradle.kts` (monorepo root)                                      | Add `include(":kmp-minipay-sample")`       | **Med** — affects monorepo build graph                 |
+| File                                                                           | Change                                      | Risk                                              |
+| ------------------------------------------------------------------------------ | ------------------------------------------- | ------------------------------------------------- |
+| `packages/kmp-minipay-sample/build.gradle.kts`                                 | Create — root project config                | **Low** — new file, no existing code affected     |
+| `packages/kmp-minipay-sample/composeApp/build.gradle.kts`                      | Create — Compose Multiplatform build config | **Med** — must match kmp-sdk dependency correctly |
+| `packages/kmp-minipay-sample/composeApp/src/commonMain/.../App.kt`             | Create — root composable + navigation       | **Low** — new file                                |
+| `packages/kmp-minipay-sample/composeApp/src/commonMain/.../MainViewModel.kt`   | Create — launch/result state management     | **Low** — new file                                |
+| `packages/kmp-minipay-sample/composeApp/src/commonMain/.../HomeScreen.kt`      | Create — landing screen with verify button  | **Low** — new file                                |
+| `packages/kmp-minipay-sample/composeApp/src/commonMain/.../ResultScreen.kt`    | Create — success/failure display            | **Low** — new file                                |
+| `packages/kmp-minipay-sample/composeApp/src/commonMain/.../Theme.kt`           | Create — MiniPay-style theming              | **Low** — new file                                |
+| `packages/kmp-minipay-sample/composeApp/src/androidMain/.../MainActivity.kt`   | Create — Android entry point                | **Low** — new file                                |
+| `packages/kmp-minipay-sample/composeApp/src/iosMain/.../MainViewController.kt` | Create — iOS entry point                    | **Low** — new file                                |
+| `packages/kmp-minipay-sample/androidApp/build.gradle.kts`                      | Create — Android app module config          | **Low** — new file                                |
+| `packages/kmp-minipay-sample/androidApp/src/main/AndroidManifest.xml`          | Create — Android manifest                   | **Low** — new file                                |
+| `packages/kmp-minipay-sample/iosApp/iosApp/iOSApp.swift`                       | Create — SwiftUI wrapper                    | **Low** — new file                                |
+| `packages/kmp-minipay-sample/iosApp/iosApp/ContentView.swift`                  | Create — SwiftUI content view               | **Low** — new file                                |
+| `settings.gradle.kts` (monorepo root)                                          | Add `include(":kmp-minipay-sample")`        | **Med** — affects monorepo build graph            |
 
 ## Files You Will NOT Modify
 
-| File                                                                         | Why                                                            |
-| ---------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `packages/kmp-sdk/shared/src/**`                                             | SDK internals — owned by Person 2 native shells workstream     |
-| `packages/webview-bridge/src/**`                                             | Bridge protocol — owned by Person 1 webview workstream         |
-| `packages/webview-app/src/**`                                                | WebView UI — owned by Person 1 webview workstream              |
-| `packages/mobile-sdk-alpha/src/**`                                           | SDK core — owned by Person 4 sdk core workstream               |
-| `app/src/**`                                                                 | Self Wallet — out of scope, separate app                       |
-| `packages/kmp-sdk/testApp/**`                                                | Test app — separate from integration sample, different purpose |
-| `common/src/**`                                                              | Shared utilities — stable, no changes needed                   |
+| File                               | Why                                                            |
+| ---------------------------------- | -------------------------------------------------------------- |
+| `packages/kmp-sdk/shared/src/**`   | SDK internals — owned by Person 2 native shells workstream     |
+| `packages/webview-bridge/src/**`   | Bridge protocol — owned by Person 1 webview workstream         |
+| `packages/webview-app/src/**`      | WebView UI — owned by Person 1 webview workstream              |
+| `packages/mobile-sdk-alpha/src/**` | SDK core — owned by Person 4 sdk core workstream               |
+| `app/src/**`                       | Self Wallet — out of scope, separate app                       |
+| `packages/kmp-test-app/**`         | Test app — separate from integration sample, different purpose |
+| `common/src/**`                    | Shared utilities — stable, no changes needed                   |
 
 ---
 
@@ -533,12 +569,12 @@ Output: HomeScreen renders with "MiniPay" title, "Unverified" status card, "Veri
 
 #### Tests
 
-| Test                                   | Type       | What it validates                                              |
-| -------------------------------------- | ---------- | -------------------------------------------------------------- |
-| `HomeState defaults to unverified`     | Unit       | Initial state has `isVerified = false` and null claims         |
-| `MainViewModel initial screen is Home` | Unit       | `currentScreen` starts as `Screen.Home`                        |
-| Android emulator launch                | Build gate | App compiles and launches without crash on Android             |
-| iOS simulator launch                   | Build gate | App compiles and launches without crash on iOS simulator       |
+| Test                                   | Type       | What it validates                                        |
+| -------------------------------------- | ---------- | -------------------------------------------------------- |
+| `HomeState defaults to unverified`     | Unit       | Initial state has `isVerified = false` and null claims   |
+| `MainViewModel initial screen is Home` | Unit       | `currentScreen` starts as `Screen.Home`                  |
+| Android emulator launch                | Build gate | App compiles and launches without crash on Android       |
+| iOS simulator launch                   | Build gate | App compiles and launches without crash on iOS simulator |
 
 ---
 
@@ -597,13 +633,13 @@ Output: onFailure() fires with descriptive error, app shows error on ResultScree
 
 #### Tests
 
-| Test                                              | Type        | What it validates                                         |
-| ------------------------------------------------- | ----------- | --------------------------------------------------------- |
-| `onVerificationSuccess stores result, navigates`  | Unit        | ViewModel sets result and moves to Result screen          |
-| `onVerificationFailure stores error, navigates`   | Unit        | ViewModel sets error and moves to Result screen           |
-| `onVerificationCancelled stays on Home`            | Unit        | ViewModel does not change screen on cancel                |
-| Tap Verify -> WebView opens                        | Integration | `SelfSdk.launch()` opens the WebView on a real device    |
-| Complete flow -> callback fires                    | Integration | End-to-end: WebView flow completes, native callback fires|
+| Test                                             | Type        | What it validates                                         |
+| ------------------------------------------------ | ----------- | --------------------------------------------------------- |
+| `onVerificationSuccess stores result, navigates` | Unit        | ViewModel sets result and moves to Result screen          |
+| `onVerificationFailure stores error, navigates`  | Unit        | ViewModel sets error and moves to Result screen           |
+| `onVerificationCancelled stays on Home`          | Unit        | ViewModel does not change screen on cancel                |
+| Tap Verify -> WebView opens                      | Integration | `SelfSdk.launch()` opens the WebView on a real device     |
+| Complete flow -> callback fires                  | Integration | End-to-end: WebView flow completes, native callback fires |
 
 ---
 
@@ -661,14 +697,14 @@ Output: WebView dismisses, onCancelled() fires, HomeScreen shown
 
 #### Tests
 
-| Test                                          | Type        | What it validates                                             |
-| --------------------------------------------- | ----------- | ------------------------------------------------------------- |
-| `returnToHome updates HomeState on success`   | Unit        | HomeState reflects verified status after successful flow      |
-| `returnToHome clears transient state`          | Unit        | verificationResult and verificationError are nulled           |
-| Error code mapping                             | Unit        | Known SelfSdkError codes map to user-friendly strings        |
-| Persisted state survives restart               | Integration | Verification status is preserved across app process death    |
-| Full E2E on Android physical device            | Integration | Country -> MRZ -> NFC -> Prove -> Result on real hardware    |
-| Full E2E on iOS physical device                | Integration | Same flow on iOS with real passport                           |
+| Test                                        | Type        | What it validates                                         |
+| ------------------------------------------- | ----------- | --------------------------------------------------------- |
+| `returnToHome updates HomeState on success` | Unit        | HomeState reflects verified status after successful flow  |
+| `returnToHome clears transient state`       | Unit        | verificationResult and verificationError are nulled       |
+| Error code mapping                          | Unit        | Known SelfSdkError codes map to user-friendly strings     |
+| Persisted state survives restart            | Integration | Verification status is preserved across app process death |
+| Full E2E on Android physical device         | Integration | Country -> MRZ -> NFC -> Prove -> Result on real hardware |
+| Full E2E on iOS physical device             | Integration | Same flow on iOS with real passport                       |
 
 ---
 
@@ -684,11 +720,11 @@ All three chunks are sequential — each builds on the previous.
 
 ## Completion Status
 
-| Chunk | Description                                   | Size   | Status      |
-| ----- | --------------------------------------------- | ------ | ----------- |
-| 3A    | Project Setup + Home Screen + Launch Button   | M ~6k  | **Pending** |
-| 3B    | Wire SelfSdk.launch() + Handle Callback       | M ~5k  | **Pending** |
-| 3C    | Polish Result Display + Error Handling         | S ~4k  | **Pending** |
+| Chunk | Description                                 | Size  | Status      |
+| ----- | ------------------------------------------- | ----- | ----------- |
+| 3A    | Project Setup + Home Screen + Launch Button | M ~6k | **Pending** |
+| 3B    | Wire SelfSdk.launch() + Handle Callback     | M ~5k | **Pending** |
+| 3C    | Polish Result Display + Error Handling      | S ~4k | **Pending** |
 
 **Overall: 0% implemented.**
 
@@ -775,19 +811,19 @@ Run on: Android physical device + iOS physical device.
 
 ## Key Reference Files
 
-| File                                                           | What to Look At                                        |
-| -------------------------------------------------------------- | ------------------------------------------------------ |
-| `packages/kmp-sdk/shared/src/commonMain/.../SelfSdk.kt`        | Public API: `configure()`, `launch()`, callback types  |
-| `packages/kmp-sdk/shared/src/commonMain/.../BridgeMessage.kt`  | Bridge message types (for understanding, not modifying) |
-| `packages/kmp-sdk/testApp/`                                    | Existing test app — reference for project structure     |
-| `packages/webview-app/src/App.tsx`                             | WebView flow screens (what the user sees inside SDK)    |
+| File                                                          | What to Look At                                         |
+| ------------------------------------------------------------- | ------------------------------------------------------- |
+| `packages/kmp-sdk/shared/src/commonMain/.../SelfSdk.kt`       | Public API: `configure()`, `launch()`, callback types   |
+| `packages/kmp-sdk/shared/src/commonMain/.../BridgeMessage.kt` | Bridge message types (for understanding, not modifying) |
+| `packages/kmp-test-app/`                                      | Existing test app — reference for project structure     |
+| `packages/webview-app/src/App.tsx`                            | WebView flow screens (what the user sees inside SDK)    |
 
 ## Dependencies
 
 - **[person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md)** — KMP SDK with 5 native handlers (NFC, Camera, Biometrics, Keychain, Lifecycle) and WebView host
 - **[person1-webview/SPEC.md](../person1-webview/SPEC.md)** — Bundled Vite app that runs inside the WebView (all verification screens + proving logic)
 
-## Cross-References
+## Related Specs
 
 - **Parent:** [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) — Architecture overview and north star
 - **Sibling specs:**
@@ -828,15 +864,15 @@ Run on: Android physical device + iOS physical device.
 
 ## Follow-Up (Out of Scope)
 
-| Item                                         | Discovered during | Suggested spec                |
-| -------------------------------------------- | ----------------- | ----------------------------- |
-| Production publishing (AAR + XCFramework)    | —                 | New spec: SPEC-PUBLISHING.md  |
-| Self Wallet migration to `<SelfVerification />` | —              | person5-rn-sdk/SPEC.md        |
+| Item                                            | Discovered during | Suggested spec               |
+| ----------------------------------------------- | ----------------- | ---------------------------- |
+| Production publishing (AAR + XCFramework)       | —                 | New spec: SPEC-PUBLISHING.md |
+| Self Wallet migration to `<SelfVerification />` | —                 | person5-rn-sdk/SPEC.md       |
 
 ## Spec Deviations
 
-| Suggestion skipped                | Reason                                                                                                                                                    |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| BEFORE/AFTER code blocks          | All files are new (CREATE, not MODIFY). There is no existing code to show BEFORE/AFTER diffs for.                                                         |
+| Suggestion skipped                | Reason                                                                                                                                                     |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BEFORE/AFTER code blocks          | All files are new (CREATE, not MODIFY). There is no existing code to show BEFORE/AFTER diffs for.                                                          |
 | File:line references in Problem   | The problem is that the project does not exist yet. There are no existing files to reference with line numbers.                                            |
 | Architecture diagram in impl spec | Included because the sample app's position in the overall architecture is essential context for the implementer, per SPEC-GUIDE "include if it clarifies." |

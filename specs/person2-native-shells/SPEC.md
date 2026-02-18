@@ -28,13 +28,13 @@ You are building the native side of the Self Mobile SDK — the Kotlin Multiplat
 
 The Self Wallet is a monolithic React Native app where all logic, NFC, proving, and UI are tangled together. To ship an embeddable SDK:
 
-| Problem area | Issue |
-| --- | --- |
-| `packages/kmp-shell/` (deleted) | Previous KMP experiment — bridge protocol and handler pattern are sound, but module structure needed rebuild as proper KMP SDK with Android target (not just JVM + iOS) |
-| `androidMain/handlers/` — 4 extra handlers | Documents, Crypto, Analytics, Haptic handlers exist but are unnecessary — WebView handles them via web fallbacks. 511 LOC to delete. |
-| `iosMain/handlers/` — cinterop approach | Kotlin/Native cinterop with Apple frameworks blocked by Xcode SDK compatibility issues. Stubs in place, nothing functional. |
-| `packages/self-sdk-swift/` — does not exist | Swift companion package needed for iOS providers (NFC, Biometrics, WebView hosting) |
-| No public API for host apps | `SelfSdk.launch()` exists as expect/actual skeleton but iOS side has no working implementation |
+| Problem area                                | Issue                                                                                                                                                                   |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/kmp-shell/` (deleted)             | Previous KMP experiment — bridge protocol and handler pattern are sound, but module structure needed rebuild as proper KMP SDK with Android target (not just JVM + iOS) |
+| `androidMain/handlers/` — 4 extra handlers  | Documents, Crypto, Analytics, Haptic handlers exist but are unnecessary — WebView handles them via web fallbacks. 511 LOC to delete.                                    |
+| `iosMain/handlers/` — cinterop approach     | Kotlin/Native cinterop with Apple frameworks blocked by Xcode SDK compatibility issues. Stubs in place, nothing functional.                                             |
+| `packages/self-sdk-swift/` — does not exist | Swift companion package needed for iOS providers (NFC, Biometrics, WebView hosting)                                                                                     |
+| No public API for host apps                 | `SelfSdk.launch()` exists as expect/actual skeleton but iOS side has no working implementation                                                                          |
 
 ## Design Principles
 
@@ -52,12 +52,12 @@ The Self Wallet is a monolithic React Native app where all logic, NFC, proving, 
 
 Four Android handlers are being **deleted** because the WebView can handle their functionality using standard web APIs. This reduces native code, eliminates iOS porting work, and keeps behavior consistent across platforms.
 
-| Deleted Handler | LOC Removed | Web Fallback | Notes |
-| --- | --- | --- | --- |
-| **DocumentsBridgeHandler** | 146 LOC | IndexedDB | WebView stores documents in IndexedDB; no native file I/O needed |
-| **CryptoBridgeHandler** | 177 LOC | Web Crypto API | Hashing and key derivation run in Web Crypto; signing keys live in SecureStorage (native keychain), accessed via biometrics bridge |
-| **AnalyticsBridgeHandler** | 94 LOC | `console` / `fetch` | Analytics events logged via console or sent via fetch from the WebView; fire-and-forget |
-| **HapticBridgeHandler** | 94 LOC | Skipped | Haptic feedback is not critical to verification flow; WebView skips it |
+| Deleted Handler            | LOC Removed | Web Fallback        | Notes                                                                                                                              |
+| -------------------------- | ----------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **DocumentsBridgeHandler** | 146 LOC     | IndexedDB           | WebView stores documents in IndexedDB; no native file I/O needed                                                                   |
+| **CryptoBridgeHandler**    | 177 LOC     | Web Crypto API      | Hashing and key derivation run in Web Crypto; signing keys live in SecureStorage (native keychain), accessed via biometrics bridge |
+| **AnalyticsBridgeHandler** | 94 LOC      | `console` / `fetch` | Analytics events logged via console or sent via fetch from the WebView; fire-and-forget                                            |
+| **HapticBridgeHandler**    | 94 LOC      | Skipped             | Haptic feedback is not critical to verification flow; WebView skips it                                                             |
 
 **Total savings:** 511 LOC deleted from Android, 6 fewer iOS handlers to build. See the Decision Matrix in [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) for the full architecture rationale.
 
@@ -604,7 +604,14 @@ class NfcBridgeHandler(
 **Input:**
 
 ```json
-{ "method": "scan", "params": { "passportNumber": "AB1234567", "dateOfBirth": "900115", "dateOfExpiry": "300115" } }
+{
+  "method": "scan",
+  "params": {
+    "passportNumber": "AB1234567",
+    "dateOfBirth": "900115",
+    "dateOfExpiry": "300115"
+  }
+}
 ```
 
 **Expected Output:**
@@ -735,7 +742,10 @@ class SecureStorageBridgeHandler(context: Context) : BridgeHandler {
 **Input:**
 
 ```json
-{ "method": "set", "params": { "key": "signing_key", "value": "base64-encoded-key-data" } }
+{
+  "method": "set",
+  "params": { "key": "signing_key", "value": "base64-encoded-key-data" }
+}
 ```
 
 **Expected Output:**
@@ -806,7 +816,10 @@ class LifecycleBridgeHandler(private val activity: Activity) : BridgeHandler {
 **Input:**
 
 ```json
-{ "method": "setResult", "params": { "success": true, "data": { "proof": "..." } } }
+{
+  "method": "setResult",
+  "params": { "success": true, "data": { "proof": "..." } }
+}
 ```
 
 **Expected Output:**
@@ -912,11 +925,11 @@ interface WebViewProvider {
 
 Only 3 native handlers are needed for iOS (down from 9 in the original spec):
 
-| Handler | Why Native? |
-| --- | --- |
-| **NFC** | Hardware — browser cannot access NFC chip |
-| **Biometrics** | OS prompt — Face ID / Touch ID requires native LAContext |
-| **Lifecycle** | ViewController management — dismiss/result delivery needs native VC reference |
+| Handler        | Why Native?                                                                   |
+| -------------- | ----------------------------------------------------------------------------- |
+| **NFC**        | Hardware — browser cannot access NFC chip                                     |
+| **Biometrics** | OS prompt — Face ID / Touch ID requires native LAContext                      |
+| **Lifecycle**  | ViewController management — dismiss/result delivery needs native VC reference |
 
 #### BiometricBridgeHandler.kt (iOS)
 
@@ -1385,28 +1398,28 @@ Pure Kotlin, already correct in the prototype. ICAO 9303 check digit computation
 
 ## Files You Will Modify
 
-| File | Change | Risk |
-| --- | --- | --- |
-| `packages/kmp-sdk/shared/build.gradle.kts` | Add Android library target, disable cinterop, configure iOS framework | **Med** -- Gradle config affects all compilations |
-| `packages/kmp-sdk/shared/src/commonMain/kotlin/xyz/self/sdk/bridge/` | Bridge protocol types, router | **Low** -- new files in correct structure |
-| `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/` | 5 native handlers, delete 4 web-fallback handlers | **Med** -- NFC handler is complex port |
-| `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/webview/` | WebView host + Activity | **Low** -- standard Android patterns |
-| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/providers/` | 3 provider interfaces + registry | **Low** -- interfaces only |
-| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/` | 3 iOS handlers delegating to providers | **Low** -- thin delegation |
-| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/api/SelfSdk.ios.kt` | iOS launch flow using providers | **Med** -- VC presentation logic |
-| `packages/self-sdk-swift/` | Entire Swift companion package (new) | **Med** -- new package, SPM config |
-| `packages/kmp-test-app/iosApp/iosApp/iOSApp.swift` | Replace manual factory registrations with `SelfSdkSwift.configure()` | **Low** -- one-line change |
+| File                                                                         | Change                                                                | Risk                                              |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------- |
+| `packages/kmp-sdk/shared/build.gradle.kts`                                   | Add Android library target, disable cinterop, configure iOS framework | **Med** -- Gradle config affects all compilations |
+| `packages/kmp-sdk/shared/src/commonMain/kotlin/xyz/self/sdk/bridge/`         | Bridge protocol types, router                                         | **Low** -- new files in correct structure         |
+| `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/`      | 5 native handlers, delete 4 web-fallback handlers                     | **Med** -- NFC handler is complex port            |
+| `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/webview/`       | WebView host + Activity                                               | **Low** -- standard Android patterns              |
+| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/providers/`         | 3 provider interfaces + registry                                      | **Low** -- interfaces only                        |
+| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/`          | 3 iOS handlers delegating to providers                                | **Low** -- thin delegation                        |
+| `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/api/SelfSdk.ios.kt` | iOS launch flow using providers                                       | **Med** -- VC presentation logic                  |
+| `packages/self-sdk-swift/`                                                   | Entire Swift companion package (new)                                  | **Med** -- new package, SPM config                |
+| `packages/kmp-test-app/iosApp/iosApp/iOSApp.swift`                           | Replace manual factory registrations with `SelfSdkSwift.configure()`  | **Low** -- one-line change                        |
 
 ## Files You Will NOT Modify
 
-| File | Why |
-| --- | --- |
-| `packages/webview-bridge/src/*` | Owned by Person 1 (WebView UI + Bridge). Bridge protocol TypeScript types are read-only reference. |
-| `packages/webview-app/src/*` | Owned by Person 1. Vite bundle is consumed as-is. |
-| `packages/mobile-sdk-alpha/src/*` | Owned by Person 4 (SDK Core). Adapter interfaces are read-only reference. |
-| `common/src/*` | Shared utilities -- stable, no changes needed. |
-| `app/` | Self Wallet app -- out of scope for SDK work. |
-| `packages/rn-sdk/` | Owned by Person 5 (RN Native Shell). Does not exist yet. |
+| File                              | Why                                                                                                |
+| --------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `packages/webview-bridge/src/*`   | Owned by Person 1 (WebView UI + Bridge). Bridge protocol TypeScript types are read-only reference. |
+| `packages/webview-app/src/*`      | Owned by Person 1. Vite bundle is consumed as-is.                                                  |
+| `packages/mobile-sdk-alpha/src/*` | Owned by Person 4 (SDK Core). Adapter interfaces are read-only reference.                          |
+| `common/src/*`                    | Shared utilities -- stable, no changes needed.                                                     |
+| `app/`                            | Self Wallet app -- out of scope for SDK work.                                                      |
+| `packages/rn-sdk/`                | Owned by Person 5 (RN Native Shell). Does not exist yet.                                           |
 
 ---
 
@@ -1417,6 +1430,7 @@ Pure Kotlin, already correct in the prototype. ICAO 9303 check digit computation
 **Goal:** Create `packages/kmp-sdk/` with Gradle KMP config, bridge protocol types, common models.
 
 **You Will NOT:**
+
 - Add any logic beyond serialization/deserialization to bridge types
 - Parse or validate passport data in common models -- that happens in the WebView
 - Import any Android or iOS framework dependencies in `commonMain`
@@ -1451,13 +1465,13 @@ All tests passed (MessageRouterTest, MrzKeyUtilsTest)
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| `MessageRouterTest` — route to registered handler | Unit | Router dispatches request to correct handler by domain |
+| Test                                               | Type | What it validates                                                |
+| -------------------------------------------------- | ---- | ---------------------------------------------------------------- |
+| `MessageRouterTest` — route to registered handler  | Unit | Router dispatches request to correct handler by domain           |
 | `MessageRouterTest` — unknown domain returns error | Unit | Router returns `HANDLER_NOT_FOUND` error for unregistered domain |
-| `MessageRouterTest` — malformed JSON returns error | Unit | Router handles parse failures gracefully |
-| `MrzKeyUtilsTest` — ICAO 9303 check digits | Unit | MRZ key derivation matches known test vectors |
-| `MrzKeyUtilsTest` — padding with `<` | Unit | Short passport numbers are padded correctly |
+| `MessageRouterTest` — malformed JSON returns error | Unit | Router handles parse failures gracefully                         |
+| `MrzKeyUtilsTest` — ICAO 9303 check digits         | Unit | MRZ key derivation matches known test vectors                    |
+| `MrzKeyUtilsTest` — padding with `<`               | Unit | Short passport numbers are padded correctly                      |
 
 **Status: DONE**
 
@@ -1470,6 +1484,7 @@ All tests passed (MessageRouterTest, MrzKeyUtilsTest)
 **Goal:** Android WebView hosting, JS injection, dev mode URL loading, asset bundling Gradle task.
 
 **You Will NOT:**
+
 - Add any verification logic to the WebView host -- it only loads HTML and passes messages
 - Modify the bridge protocol types from Chunk 2A
 - Enable `allowFileAccess` or `allowContentAccess` on the WebView (security)
@@ -1499,10 +1514,10 @@ BUILD SUCCESSFUL
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| Android compilation succeeds | Build gate | WebView host compiles against Android SDK 35 |
-| WebView security settings | Manual | `allowFileAccess=false`, `allowContentAccess=false` verified in code review |
+| Test                         | Type       | What it validates                                                           |
+| ---------------------------- | ---------- | --------------------------------------------------------------------------- |
+| Android compilation succeeds | Build gate | WebView host compiles against Android SDK 35                                |
+| WebView security settings    | Manual     | `allowFileAccess=false`, `allowContentAccess=false` verified in code review |
 
 **Status: DONE**
 
@@ -1515,6 +1530,7 @@ BUILD SUCCESSFUL
 **Goal:** The 5 native Android bridge handlers. Delete the 4 web-fallback handlers.
 
 **You Will NOT:**
+
 - Add any verification logic, proof generation, or state management to handlers
 - Parse passport MRZ data beyond what JMRTD returns -- pass raw results back
 - Format or transform JSON in handlers -- return `JsonElement` directly from platform APIs
@@ -1560,160 +1576,24 @@ Output: BridgeHandlerException("METHOD_NOT_FOUND", "Unknown NFC method: unknownM
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| NFC handler routes `scan`, `cancelScan`, `isSupported` | Unit | Method dispatch works for all 3 NFC methods |
-| NFC handler rejects unknown method | Unit | `METHOD_NOT_FOUND` error for unknown methods |
-| Biometric handler routes 3 methods | Unit | Method dispatch works for authenticate, isAvailable, getBiometryType |
-| SecureStorage get/set/remove round-trip | Unit | Values persist and can be retrieved/deleted |
-| SecureStorage missing key returns `JsonNull` | Unit | Get on nonexistent key returns null, not exception |
-| Lifecycle `setResult` sets Activity result | Unit | Intent extra contains result JSON |
-| Lifecycle `dismiss` finishes Activity | Unit | Activity.finish() called |
-| Deleted handlers are gone | Build gate | No compilation errors after deletion |
+| Test                                                   | Type       | What it validates                                                    |
+| ------------------------------------------------------ | ---------- | -------------------------------------------------------------------- |
+| NFC handler routes `scan`, `cancelScan`, `isSupported` | Unit       | Method dispatch works for all 3 NFC methods                          |
+| NFC handler rejects unknown method                     | Unit       | `METHOD_NOT_FOUND` error for unknown methods                         |
+| Biometric handler routes 3 methods                     | Unit       | Method dispatch works for authenticate, isAvailable, getBiometryType |
+| SecureStorage get/set/remove round-trip                | Unit       | Values persist and can be retrieved/deleted                          |
+| SecureStorage missing key returns `JsonNull`           | Unit       | Get on nonexistent key returns null, not exception                   |
+| Lifecycle `setResult` sets Activity result             | Unit       | Intent extra contains result JSON                                    |
+| Lifecycle `dismiss` finishes Activity                  | Unit       | Activity.finish() called                                             |
+| Deleted handlers are gone                              | Build gate | No compilation errors after deletion                                 |
 
 **Status: DONE**
 
 ---
 
-### Chunk 2D: iOS WebView Host + Provider Infrastructure -- M ~6k tokens
+### Chunks 2D/2E: (SUPERSEDED)
 
-**Depends on:** Chunk 2A
-
-**Goal:** iOS WebView hosting via provider pattern, provider interfaces, registry, Swift companion package skeleton.
-
-**You Will NOT:**
-- Enable cinterop -- `build.gradle.kts` cinterop lines remain commented out
-- Import any Apple framework directly in Kotlin -- all Apple API calls happen in Swift
-- Add verification logic to the WebView host
-- Implement handler logic in this chunk (handlers come in 2E and 2H-2K)
-
-**Steps:**
-
-1. Create provider interfaces in `iosMain/providers/` (NfcProvider, BiometricProvider, WebViewProvider, SdkProviderRegistry)
-2. Implement `iosMain/webview/IosWebViewHost.kt` delegating to `WebViewProvider`
-3. Create `packages/self-sdk-swift/Package.swift` (SPM skeleton)
-4. Create `SelfSdkSwift.swift` public setup API
-5. Create `WebViewProviderImpl.swift` with WKWebView + WKScriptMessageHandler
-6. Update `SelfSdk.ios.kt` to check `SdkProviderRegistry.isConfigured()` and throw clear error if not
-7. Validate: `./gradlew :shared:compileKotlinIosArm64` and `cd packages/self-sdk-swift && swift build`
-
-#### Input / Output -- Chunk Validation
-
-**Input:**
-
-```bash
-cd packages/kmp-sdk && ./gradlew :shared:compileKotlinIosArm64
-```
-
-**Expected Output:**
-
-```
-BUILD SUCCESSFUL (no cinterop errors)
-```
-
-**Input:**
-
-```bash
-cd packages/self-sdk-swift && swift build
-```
-
-**Expected Output:**
-
-```
-Build complete!
-```
-
-**Edge case -- launch without configure:**
-
-```
-Input:  SelfSdk.launch(request, callback) without calling SelfSdkSwift.configure()
-Output: IllegalStateException("iOS requires Swift providers. Call SelfSdkSwift.configure() at app startup.")
-```
-
-#### Tests
-
-| Test | Type | What it validates |
-| --- | --- | --- |
-| iOS Kotlin compilation | Build gate | Provider interfaces compile without cinterop |
-| Swift package builds | Build gate | SPM resolves dependencies and compiles |
-| Provider interfaces visible from Swift | Manual | XCFramework exports show NfcProvider, BiometricProvider, WebViewProvider |
-| `isConfigured()` returns false when empty | Unit | Registry correctly reports missing providers |
-
-**Status: SUPERSEDED** — Replaced by Chunks 2G-2K (Swift wrapper pattern). Original stubs remain for reference.
-
----
-
-### Chunk 2E: iOS Native Handlers (3 handlers) -- M ~6k tokens
-
-**Depends on:** Chunk 2D
-
-**Goal:** Only 3 iOS bridge handlers (Biometrics, Lifecycle, NFC). Camera is Phase 2 optional.
-
-**You Will NOT:**
-- Write any Apple framework calls in Kotlin -- all calls go through Swift providers
-- Add verification logic to handlers -- they are thin bridges
-- Parse or validate passport data in Kotlin -- the Swift `NfcPassportHelper` returns JSON, Kotlin passes it through
-- Build a CameraMrzBridgeHandler for iOS (Phase 2)
-
-**Steps:**
-
-1. `BiometricBridgeHandler` (iOS) -- delegates to `BiometricProvider` (simplest, good to start)
-2. `LifecycleBridgeHandler` (iOS) -- self-contained, callback/dismiss wiring
-3. `NfcBridgeHandler` (iOS) -- delegates to `NfcProvider`, progress events via router
-4. Create `BiometricProviderImpl.swift` in Swift companion package
-5. Create `NfcProviderImpl.swift` in Swift companion package
-6. Move `NfcPassportHelper.swift` from test app into Swift companion package `Helpers/`
-7. Validate: `./gradlew :shared:compileKotlinIosArm64`
-
-#### Input / Output -- Chunk Validation
-
-**Input:**
-
-```bash
-cd packages/kmp-sdk && ./gradlew :shared:compileKotlinIosArm64
-```
-
-**Expected Output:**
-
-```
-BUILD SUCCESSFUL
-```
-
-**iOS Biometric validation (physical device):**
-
-```
-Input:  { "domain": "biometrics", "method": "authenticate", "params": { "reason": "Verify identity" } }
-Output: true (after Face ID prompt succeeds)
-```
-
-**iOS NFC validation (physical device):**
-
-```
-Input:  { "domain": "nfc", "method": "scan", "params": { "passportNumber": "AB1234567", "dateOfBirth": "900115", "dateOfExpiry": "300115" } }
-Output: PassportScanResult JSON (same structure as Android)
-Events: scanProgress events with stateIndex 0-7
-```
-
-**Edge case -- biometric on simulator:**
-
-```
-Input:  { "method": "isAvailable" }
-Output: false (simulator has no biometric hardware)
-```
-
-#### Tests
-
-| Test | Type | What it validates |
-| --- | --- | --- |
-| Biometric handler delegates to provider | Unit | `authenticate` calls `provider.authenticate()` |
-| Biometric handler returns provider `isAvailable` | Unit | Delegates correctly, no own logic |
-| Lifecycle `setResult` invokes `SelfSdkCallback.onSuccess` | Unit | Callback wiring works |
-| Lifecycle `dismiss` invokes `onCancelled` + dismiss action | Unit | Both callback and dismiss fire |
-| NFC handler delegates scan to provider | Unit | Progress events route through `router.pushEvent()` |
-| NFC handler rejects missing params | Unit | `MISSING_PARAM` error for missing passportNumber |
-| iOS compilation | Build gate | All 3 handlers compile for iosArm64 |
-
-**Status: SUPERSEDED** — Replaced by Chunks 2H, 2I, 2K (individual iOS handlers via Swift wrapper pattern).
+Chunks 2D (iOS WebView Host + Provider Infrastructure) and 2E (iOS Native Handlers) were the original iOS stubs. They are fully superseded by Chunks 2G-2K, which implement the same scope using the Swift wrapper pattern instead. See Chunks 2G, 2H, 2I, 2J, and 2K below for the current iOS implementation plan.
 
 ---
 
@@ -1724,6 +1604,7 @@ Output: false (simulator has no biometric hardware)
 **Goal:** Public API (`SelfSdk.launch()`) + test app on both platforms.
 
 **You Will NOT:**
+
 - Add verification logic to the public API -- it launches the WebView and delivers callbacks
 - Modify bridge protocol types
 - Build anything for React Native (that is Person 5)
@@ -1771,14 +1652,14 @@ SelfSdkCallback fires on completion/dismissal
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| Android test app builds | Build gate | AAR dependency resolution works |
-| iOS test app builds | Build gate | XCFramework + SPM dependency resolution works |
-| `SelfSdk.launch()` presents WebView (Android) | Integration | Full Activity launch flow |
-| `SelfSdk.launch()` presents WebView (iOS) | Integration | Modal VC presentation via providers |
-| `SelfSdkCallback.onSuccess` fires | Integration | Result delivery from WebView through lifecycle handler |
-| `SelfSdkCallback.onCancelled` fires on dismiss | Integration | Dismiss wiring works end-to-end |
+| Test                                           | Type        | What it validates                                      |
+| ---------------------------------------------- | ----------- | ------------------------------------------------------ |
+| Android test app builds                        | Build gate  | AAR dependency resolution works                        |
+| iOS test app builds                            | Build gate  | XCFramework + SPM dependency resolution works          |
+| `SelfSdk.launch()` presents WebView (Android)  | Integration | Full Activity launch flow                              |
+| `SelfSdk.launch()` presents WebView (iOS)      | Integration | Modal VC presentation via providers                    |
+| `SelfSdkCallback.onSuccess` fires              | Integration | Result delivery from WebView through lifecycle handler |
+| `SelfSdkCallback.onCancelled` fires on dismiss | Integration | Dismiss wiring works end-to-end                        |
 
 **Status: PARTIAL** (Android works end-to-end, iOS uses Swift workarounds in test app)
 
@@ -1791,6 +1672,7 @@ SelfSdkCallback fires on completion/dismissal
 **Goal:** Define the 3 provider interfaces in the SDK and create the Swift companion package skeleton. This is the foundation for all iOS handler work.
 
 **You Will NOT:**
+
 - Enable cinterop
 - Write any handler logic (that comes in 2H-2K)
 - Import Apple frameworks in Kotlin
@@ -1824,12 +1706,12 @@ BUILD SUCCESSFUL (both)
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| `isConfigured()` returns false initially | Unit | Empty registry correctly reports unconfigured |
-| `isConfigured()` returns true after all 3 set | Unit | Registry detects all providers present |
-| iOS Kotlin compilation | Build gate | Interfaces compile without cinterop |
-| Swift package compilation | Build gate | SPM resolves NFCPassportReader dependency |
+| Test                                          | Type       | What it validates                             |
+| --------------------------------------------- | ---------- | --------------------------------------------- |
+| `isConfigured()` returns false initially      | Unit       | Empty registry correctly reports unconfigured |
+| `isConfigured()` returns true after all 3 set | Unit       | Registry detects all providers present        |
+| iOS Kotlin compilation                        | Build gate | Interfaces compile without cinterop           |
+| Swift package compilation                     | Build gate | SPM resolves NFCPassportReader dependency     |
 
 **Status: NOT DONE**
 
@@ -1844,6 +1726,7 @@ BUILD SUCCESSFUL (both)
 **Goal:** Implement the simplest handler end-to-end (Kotlin handler + Swift provider). Validates the full Swift wrapper pattern.
 
 **You Will NOT:**
+
 - Add any logic beyond delegating to the Swift provider
 - Parse or transform the authentication result -- pass boolean through
 - Call LAContext from Kotlin -- all LAContext calls happen in Swift
@@ -1860,7 +1743,11 @@ BUILD SUCCESSFUL (both)
 **Input (physical device):**
 
 ```json
-{ "domain": "biometrics", "method": "authenticate", "params": { "reason": "Verify identity" } }
+{
+  "domain": "biometrics",
+  "method": "authenticate",
+  "params": { "reason": "Verify identity" }
+}
 ```
 
 **Expected Output:**
@@ -1878,11 +1765,11 @@ Output: false
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
+| Test                                     | Type        | What it validates                                         |
+| ---------------------------------------- | ----------- | --------------------------------------------------------- |
 | Biometric authenticate succeeds (device) | Integration | Face ID / Touch ID prompt appears, success callback fires |
-| Biometric `isAvailable` on simulator | Integration | Returns false gracefully (no crash) |
-| Kotlin iOS compilation | Build gate | Handler compiles with provider delegation |
+| Biometric `isAvailable` on simulator     | Integration | Returns false gracefully (no crash)                       |
+| Kotlin iOS compilation                   | Build gate  | Handler compiles with provider delegation                 |
 
 **Status: NOT DONE**
 
@@ -1895,6 +1782,7 @@ Output: false
 **Goal:** Implement the Lifecycle handler with callback/dismiss wiring. Self-contained in Kotlin (no Swift provider).
 
 **You Will NOT:**
+
 - Create a Swift provider for Lifecycle -- it is self-contained
 - Add any verification logic
 - Parse proof data -- pass `JsonElement` through to callback
@@ -1911,7 +1799,11 @@ Output: false
 **Input:**
 
 ```json
-{ "domain": "lifecycle", "method": "setResult", "params": { "success": true, "data": { "proof": "..." } } }
+{
+  "domain": "lifecycle",
+  "method": "setResult",
+  "params": { "success": true, "data": { "proof": "..." } }
+}
 ```
 
 **Expected Output:**
@@ -1930,12 +1822,12 @@ Output: SelfSdkCallback.onCancelled() called, ViewController dismissed
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| `setResult` success -> `onSuccess` | Unit | Callback correctly dispatches success |
+| Test                               | Type | What it validates                                       |
+| ---------------------------------- | ---- | ------------------------------------------------------- |
+| `setResult` success -> `onSuccess` | Unit | Callback correctly dispatches success                   |
 | `setResult` failure -> `onFailure` | Unit | Callback correctly dispatches error with code + message |
-| `dismiss` -> `onCancelled` | Unit | Cancel callback fires + dismiss action invoked |
-| `ready` -> no-op | Unit | No crash, no callback |
+| `dismiss` -> `onCancelled`         | Unit | Cancel callback fires + dismiss action invoked          |
+| `ready` -> no-op                   | Unit | No crash, no callback                                   |
 
 **Status: NOT DONE**
 
@@ -1948,6 +1840,7 @@ Output: SelfSdkCallback.onCancelled() called, ViewController dismissed
 **Goal:** Full WebView-based verification flow working on iOS via Swift wrapper.
 
 **You Will NOT:**
+
 - Enable cinterop
 - Add verification logic to the WebView host
 - Modify bridge protocol types
@@ -1988,13 +1881,13 @@ Output: IllegalStateException with message: "iOS requires Swift providers. Call 
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| WebView loads in debug mode (localhost) | Integration | Dev server URL works |
-| WebView loads in release mode (bundled) | Integration | Asset bundling works |
-| Bridge message round-trip | Integration | Request -> handler -> response flows correctly |
-| `onSuccess` callback fires | Integration | Full lifecycle from WebView setResult to host callback |
-| Launch without configure throws | Unit | Clear error message for misconfiguration |
+| Test                                    | Type        | What it validates                                      |
+| --------------------------------------- | ----------- | ------------------------------------------------------ |
+| WebView loads in debug mode (localhost) | Integration | Dev server URL works                                   |
+| WebView loads in release mode (bundled) | Integration | Asset bundling works                                   |
+| Bridge message round-trip               | Integration | Request -> handler -> response flows correctly         |
+| `onSuccess` callback fires              | Integration | Full lifecycle from WebView setResult to host callback |
+| Launch without configure throws         | Unit        | Clear error message for misconfiguration               |
 
 **Status: NOT DONE**
 
@@ -2007,6 +1900,7 @@ Output: IllegalStateException with message: "iOS requires Swift providers. Call 
 **Goal:** Connect existing `NfcPassportHelper.swift` to the SDK's factory pattern. Most complex iOS handler.
 
 **You Will NOT:**
+
 - Rewrite NfcPassportHelper -- move it as-is from the test app
 - Parse passport data in Kotlin -- Swift returns JSON string, Kotlin parses to JsonElement
 - Add NFC logic in Kotlin -- all NFCPassportReader calls happen in Swift
@@ -2025,7 +1919,15 @@ Output: IllegalStateException with message: "iOS requires Swift providers. Call 
 **Input (physical device):**
 
 ```json
-{ "domain": "nfc", "method": "scan", "params": { "passportNumber": "AB1234567", "dateOfBirth": "900115", "dateOfExpiry": "300115" } }
+{
+  "domain": "nfc",
+  "method": "scan",
+  "params": {
+    "passportNumber": "AB1234567",
+    "dateOfBirth": "900115",
+    "dateOfExpiry": "300115"
+  }
+}
 ```
 
 **Expected Output:**
@@ -2052,13 +1954,13 @@ Output: null (no crash, NfcPassportHelper released)
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| NFC scan on physical device | Integration | Same JSON output as test app (before migration) |
-| Progress callbacks in correct order | Integration | States 0-7 fire sequentially |
-| Cancel during scan | Integration | No crash, helper released |
-| Test app migration | Integration | `SelfSdkSwift.configure()` replaces manual factory registration with identical behavior |
-| End-to-end: launch -> NFC -> result | Integration | Full flow on physical device |
+| Test                                | Type        | What it validates                                                                       |
+| ----------------------------------- | ----------- | --------------------------------------------------------------------------------------- |
+| NFC scan on physical device         | Integration | Same JSON output as test app (before migration)                                         |
+| Progress callbacks in correct order | Integration | States 0-7 fire sequentially                                                            |
+| Cancel during scan                  | Integration | No crash, helper released                                                               |
+| Test app migration                  | Integration | `SelfSdkSwift.configure()` replaces manual factory registration with identical behavior |
+| End-to-end: launch -> NFC -> result | Integration | Full flow on physical device                                                            |
 
 **Status: NOT DONE**
 
@@ -2071,6 +1973,7 @@ Output: null (no crash, NfcPassportHelper released)
 **Goal:** iOS camera MRZ scanning via Vision framework. Not needed for initial launch.
 
 **You Will NOT:**
+
 - Build this for initial launch -- WebView supports manual MRZ entry as fallback
 - Rewrite MrzCameraHelper -- move as-is if needed
 
@@ -2093,47 +1996,41 @@ Chunk 2A: KMP Setup + Bridge Protocol (no deps -- start here)
   |
   |---> Chunk 2B: Android WebView Host (after 2A)
   |       |
-  |       '---> Chunk 2C: Android Native Handlers (after 2B)
-  |               |
-  |               '---> Chunk 2F: SDK Public API + Test App (after 2C + 2E)
-  |
-  |---> Chunk 2D: iOS WebView Host + Provider Infrastructure (after 2A)
-  |       |
-  |       '---> Chunk 2E: iOS Native Handlers (after 2D)
-  |               |
-  |               '---> Chunk 2F (see above)
-  |
-  '---> Chunk 2G: Factory Infrastructure (after 2A)
-          |
-          |---> Chunk 2H: Biometric Handler (after 2G)
-          |
-          |---> Chunk 2I: Lifecycle Handler (after 2G)
-          |
-          '---> Chunk 2J: iOS WebView Host + SelfSdk.launch() (after 2G, 2H, 2I)
-                  |
-                  '---> Chunk 2K: NFC Handler (after 2J)
-                          |
-                          '---> Chunk 2L: Camera MRZ (after 2K, optional Phase 2)
+  |       '---> Chunk 2C: Android Native Handlers (after 2B) ──┐
+  |                                                             |
+  '---> Chunk 2G: Factory Infrastructure (after 2A)            |
+          |                                                     |
+          |---> Chunk 2H: Biometric Handler (after 2G)         |
+          |                                                     |
+          |---> Chunk 2I: Lifecycle Handler (after 2G)         |
+          |                                                     |
+          '---> Chunk 2J: iOS WebView + launch() (after 2G-2I) |
+                  |                                             |
+                  '---> Chunk 2K: NFC Handler (after 2J) ──────┘
+                          |                                     |
+                          '---> Chunk 2L: Camera MRZ (optional) |
+                                                                |
+  Chunk 2F: SDK Public API + Test App (after 2C + 2K) <────────┘
 ```
 
-> **Note:** Chunks 2D/2E and 2G-2K overlap in scope (iOS infrastructure). Chunk 2D created the initial stubs; Chunks 2G-2K replace them with the Swift wrapper pattern. In practice, work 2G-2K supersedes 2D-2E.
+> **Note:** Chunks 2D/2E (original iOS stubs) are **superseded** by 2G-2K (Swift wrapper pattern). They are not shown in this graph. Chunk 2F depends on both the Android chain (2C) and the iOS chain (2K).
 
 ## Completion Status
 
-| Chunk | Description | Size | Status |
-| --- | --- | --- | --- |
-| 2A | KMP Setup + Bridge Protocol | S ~3k | **Done** |
-| 2B | Android WebView Host | S ~2k | **Done** |
-| 2C | Android Native Handlers (5 handlers) | L ~12k | **Done** |
-| 2D | iOS WebView Host + Provider Infrastructure | M ~6k | **Superseded** by 2G-2K (Swift wrapper pattern) |
-| 2E | iOS Native Handlers (3 handlers) | M ~6k | **Superseded** by 2G-2K (Swift wrapper pattern) |
-| 2F | SDK Public API + Test App | M ~5k | **In Progress** (Android works, iOS uses workarounds) |
-| 2G | Factory Infrastructure | S ~3k | **Pending** |
-| 2H | Biometric Handler (iOS) | S ~2k | **Pending** |
-| 2I | Lifecycle Handler (iOS) | S ~2k | **Pending** |
-| 2J | iOS WebView Host + SelfSdk.launch() | M ~5k | **Pending** |
-| 2K | NFC Handler (iOS) | M ~5k | **Pending** |
-| 2L | Camera MRZ (iOS, Phase 2) | S ~2k | **Skipped** (deferred) |
+| Chunk | Description                                | Size   | Status                                                |
+| ----- | ------------------------------------------ | ------ | ----------------------------------------------------- |
+| 2A    | KMP Setup + Bridge Protocol                | S ~3k  | **Done**                                              |
+| 2B    | Android WebView Host                       | S ~2k  | **Done**                                              |
+| 2C    | Android Native Handlers (5 handlers)       | L ~12k | **Done**                                              |
+| 2D    | iOS WebView Host + Provider Infrastructure | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)       |
+| 2E    | iOS Native Handlers (3 handlers)           | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)       |
+| 2F    | SDK Public API + Test App                  | M ~5k  | **In Progress** (Android works, iOS uses workarounds) |
+| 2G    | Factory Infrastructure                     | S ~3k  | **Pending**                                           |
+| 2H    | Biometric Handler (iOS)                    | S ~2k  | **Pending**                                           |
+| 2I    | Lifecycle Handler (iOS)                    | S ~2k  | **Pending**                                           |
+| 2J    | iOS WebView Host + SelfSdk.launch()        | M ~5k  | **Pending**                                           |
+| 2K    | NFC Handler (iOS)                          | M ~5k  | **Pending**                                           |
+| 2L    | Camera MRZ (iOS, Phase 2)                  | S ~2k  | **Skipped** (deferred)                                |
 
 ## Validation Plan
 
@@ -2167,29 +2064,29 @@ cd packages/self-sdk-swift && swift build
 
 ## Key Reference Files
 
-| File | What to Look At |
-| --- | --- |
-| `app/android/.../RNPassportReaderModule.kt` | Android NFC implementation to port (PACE, BAC, DG reading, chip auth, passive auth) |
-| `app/android/.../PassportNFC.kt` | Additional NFC utilities (if exists) |
-| `app/ios/PassportReader.swift` | iOS NFC flow reference (MRZ key, readPassport call, SOD extraction) |
-| `packages/kmp-shell/shared/` | Previous KMP prototype (bridge protocol, handler pattern, MRZ utils -- all reusable) |
-| `packages/webview-bridge/src/types.ts` | Bridge protocol TypeScript types (must match Kotlin exactly) |
-| `packages/mobile-sdk-alpha/src/types/public.ts` | Adapter interfaces (what the WebView expects the bridge to implement) |
-| `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/` | Android handlers (reference for iOS method contracts) |
-| `packages/kmp-test-app/iosApp/iosApp/NfcPassportHelper.swift` | Move to Swift companion package |
-| `packages/kmp-test-app/iosApp/iosApp/NfcScanFactoryImpl.swift` | Reference pattern, then delete |
+| File                                                                    | What to Look At                                                                      |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `app/android/.../RNPassportReaderModule.kt`                             | Android NFC implementation to port (PACE, BAC, DG reading, chip auth, passive auth)  |
+| `app/android/.../PassportNFC.kt`                                        | Additional NFC utilities (if exists)                                                 |
+| `app/ios/PassportReader.swift`                                          | iOS NFC flow reference (MRZ key, readPassport call, SOD extraction)                  |
+| `packages/kmp-shell/shared/`                                            | Previous KMP prototype (bridge protocol, handler pattern, MRZ utils -- all reusable) |
+| `packages/webview-bridge/src/types.ts`                                  | Bridge protocol TypeScript types (must match Kotlin exactly)                         |
+| `packages/mobile-sdk-alpha/src/types/public.ts`                         | Adapter interfaces (what the WebView expects the bridge to implement)                |
+| `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/` | Android handlers (reference for iOS method contracts)                                |
+| `packages/kmp-test-app/iosApp/iosApp/NfcPassportHelper.swift`           | Move to Swift companion package                                                      |
+| `packages/kmp-test-app/iosApp/iosApp/NfcScanFactoryImpl.swift`          | Reference pattern, then delete                                                       |
 
 ---
 
-## Cross-References
+## Related Specs
 
-| Spec | Relationship |
-| --- | --- |
-| [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) | Parent architecture spec -- north star, decision matrix, shared contracts |
-| [person1-webview/SPEC.md](../person1-webview/SPEC.md) | Sibling -- owns WebView UI, bridge adapters, Vite bundle you consume |
-| [person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md) | Sibling -- owns SDK core, adapter interfaces your handlers implement |
-| [person5-rn-sdk/SPEC.md](../person5-rn-sdk/SPEC.md) | Sibling -- separate native shell using same bridge protocol |
-| [person3-integrations/SPEC-MINIPAY-SAMPLE.md](../person3-integrations/SPEC-MINIPAY-SAMPLE.md) | Downstream -- MiniPay sample app depends on this SDK |
+| Spec                                                                                          | Relationship                                                              |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                                                         | Parent architecture spec -- north star, decision matrix, shared contracts |
+| [person1-webview/SPEC.md](../person1-webview/SPEC.md)                                         | Sibling -- owns WebView UI, bridge adapters, Vite bundle you consume      |
+| [person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md)                                       | Sibling -- owns SDK core, adapter interfaces your handlers implement      |
+| [person5-rn-sdk/SPEC.md](../person5-rn-sdk/SPEC.md)                                           | Sibling -- separate native shell using same bridge protocol               |
+| [person3-integrations/SPEC-MINIPAY-SAMPLE.md](../person3-integrations/SPEC-MINIPAY-SAMPLE.md) | Downstream -- MiniPay sample app depends on this SDK                      |
 
 ---
 
@@ -2206,14 +2103,14 @@ cd packages/self-sdk-swift && swift build
 ### Deviations from Spec
 
 | Spec said | We did | Why |
-| --- | --- | --- |
-| | | |
+| --------- | ------ | --- |
+|           |        |     |
 
 ### Key Files (final)
 
 | File | Role |
-| --- | --- |
-| | |
+| ---- | ---- |
+|      |      |
 
 ### Lessons / Gotchas
 
@@ -2223,16 +2120,16 @@ cd packages/self-sdk-swift && swift build
 
 ## Follow-Up (Out of Scope)
 
-| Item | Discovered during | Suggested spec |
-| --- | --- | --- |
-| Camera MRZ handler for iOS | Chunk 2L scoping | Phase 2 -- add to this spec when needed |
-| SecureStorage handler for iOS | Design review | May not be needed -- host app manages keychain directly |
-| Crypto signing handler for iOS | Design review | Depends on whether secure enclave signing is needed vs. Web Crypto |
+| Item                           | Discovered during | Suggested spec                                                     |
+| ------------------------------ | ----------------- | ------------------------------------------------------------------ |
+| Camera MRZ handler for iOS     | Chunk 2L scoping  | Phase 2 -- add to this spec when needed                            |
+| SecureStorage handler for iOS  | Design review     | May not be needed -- host app manages keychain directly            |
+| Crypto signing handler for iOS | Design review     | Depends on whether secure enclave signing is needed vs. Web Crypto |
 
 ## Spec Deviations
 
-| Suggestion skipped | Reason |
-| --- | --- |
-| BEFORE/AFTER code blocks for modifications | Most work is creating new files, not modifying existing ones. Full code examples are provided instead. |
-| Single-file task format | Scope covers 30+ files across two packages. Organized by subsystem (bridge, handlers, providers) instead of individual file tasks. |
-| Strict "Lines X-Y" references | Files do not exist yet (new creation). Directory structure and full code examples serve as the implementation guide. |
+| Suggestion skipped                         | Reason                                                                                                                             |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| BEFORE/AFTER code blocks for modifications | Most work is creating new files, not modifying existing ones. Full code examples are provided instead.                             |
+| Single-file task format                    | Scope covers 30+ files across two packages. Organized by subsystem (bridge, handlers, providers) instead of individual file tasks. |
+| Strict "Lines X-Y" references              | Files do not exist yet (new creation). Directory structure and full code examples serve as the implementation guide.               |

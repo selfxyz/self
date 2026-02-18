@@ -91,11 +91,11 @@ A good spec lets a new dev comprehend the system in 60 seconds and lets an AI ag
 
 Every project has three types of specs:
 
-| Tier                     | File                    | Audience                     | Purpose                                                    | Change Frequency |
-| ------------------------ | ----------------------- | ---------------------------- | ---------------------------------------------------------- | ---------------- |
-| **Project Overview**     | `SDK-OVERVIEW.md`       | Architect, eng lead, new dev | System-level architecture, ties all workstreams together   | Rarely           |
-| **Workstream Overview**  | `person-*/OVERVIEW.md`  | Dev joining a workstream     | What this workstream owns, dependencies, status, context   | Occasionally     |
-| **Implementation**       | `person-*/SPEC.md`      | Implementer (human or agent) | Exact scope, code changes, I/O, token-budgeted chunks      | Frequently       |
+| Tier                    | File                   | Audience                     | Purpose                                                  | Change Frequency |
+| ----------------------- | ---------------------- | ---------------------------- | -------------------------------------------------------- | ---------------- |
+| **Project Overview**    | `SDK-OVERVIEW.md`      | Architect, eng lead, new dev | System-level architecture, ties all workstreams together | Rarely           |
+| **Workstream Overview** | `person-*/OVERVIEW.md` | Dev joining a workstream     | What this workstream owns, dependencies, status, context | Occasionally     |
+| **Implementation**      | `person-*/SPEC.md`     | Implementer (human or agent) | Exact scope, code changes, I/O, token-budgeted chunks    | Frequently       |
 
 The project overview is the map. The workstream overview is orientation for a new team member. The implementation spec is turn-by-turn directions. All three reference each other.
 
@@ -138,6 +138,7 @@ Specs serve as prompts. Write them so an AI agent can produce a correct PR from 
 - **One chunk = one self-contained prompt.** The chunk must include enough context to execute without reading the full spec. Reference specific sections of the spec if needed, but don't assume the agent has read everything.
 - **Distinguish modification from creation.** Use BEFORE/AFTER for existing files. Use "Create" + skeleton + interface it implements for new files.
 - **Use `--remote` for M and L chunks.** Medium and large chunks benefit from running Claude Code with `claude --remote` so work continues in the background without tying up a terminal. This is especially useful when running multiple chunks in parallel across different workstreams.
+- **Write plans to disk before executing.** Before starting multi-step work, write the plan to a file (update WAVE-PLAN.md, SPEC.md status tables, or create a session plan file). Session memory is ephemeral — API errors, context overflow, or `/clear` will destroy it. A plan on disk survives session loss, enables multiple agents to work from the same plan, and creates an audit trail. Never rely on session transcript as the only record of what was planned.
 
 ## Strong Suggestions
 
@@ -296,7 +297,7 @@ specs/
     OVERVIEW.md                  <- Workstream overview
     SPEC.md                      <- Implementation spec
 
-  integrations/
+  personN-integrations/
     OVERVIEW.md                  <- Integration workstream overview
     SPEC-[NAME].md               <- Integration-specific implementation specs
 ```
@@ -305,4 +306,4 @@ Each person gets a folder with two files: `OVERVIEW.md` (what you own, context, 
 
 ## Gold Standard Reference
 
-When filling in a template, use `person3-sdk-core/SPEC.md` as the reference implementation of a well-executed implementation spec. It demonstrates: concrete file:line problem identification, BEFORE/AFTER code blocks, decision points with recommendations, files in/out of scope, token-sized chunks with dependency graphs, and multi-level validation plans.
+When filling in a template, use `person4-sdk-core/SPEC.md` as the reference implementation of a well-executed implementation spec. It demonstrates: concrete file:line problem identification, BEFORE/AFTER code blocks, decision points with recommendations, files in/out of scope, token-sized chunks with dependency graphs, and multi-level validation plans.

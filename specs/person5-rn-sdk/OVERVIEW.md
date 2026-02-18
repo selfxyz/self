@@ -76,36 +76,45 @@ The WebView does not know which native shell it is running inside. Your handlers
 
 ## Dependencies
 
-| Direction     | Person / Package              | What                                                  | Status      |
-| ------------- | ----------------------------- | ----------------------------------------------------- | ----------- |
-| **You need**  | Person 1 (`webview-app`)      | Vite bundle (`dist/`) — same one KMP uses             | In progress |
-| **You need**  | Person 4 (`webview-bridge`)   | Bridge protocol types (`@selfxyz/webview-bridge`)     | In progress |
-| **You need**  | Person 2 (`kmp-sdk`)          | Handler pattern as reference (same bridge contract)   | In progress |
-| **Needs you** | Self Wallet app               | `<SelfVerification />` for verification flow (Phase 2)| Not started |
+| Direction     | Person / Package            | What                                                   | Status      |
+| ------------- | --------------------------- | ------------------------------------------------------ | ----------- |
+| **You need**  | Person 1 (`webview-app`)    | Vite bundle (`dist/`) — same one KMP uses              | In progress |
+| **You need**  | Person 1 (`webview-bridge`) | Bridge protocol types (`@selfxyz/webview-bridge`)      | In progress |
+| **You need**  | Person 2 (`kmp-sdk`)        | Handler pattern as reference (same bridge contract)    | In progress |
+| **Needs you** | Self Wallet app             | `<SelfVerification />` for verification flow (Phase 2) | Not started |
+
+## Design Principles
+
+1. **Thin wrapper only.** The RN SDK is ~200-300 LOC. All logic lives in the WebView engine (`mobile-sdk-alpha`). If you're writing business logic in this package, you're doing it wrong.
+2. **Same bridge protocol as KMP.** The RN handlers implement the exact same domain/method/params contract as the Kotlin handlers. The WebView does not know which native shell it's running in.
+3. **Peer dependencies for native modules.** Every React Native native module is a `peerDependency`. The host app installs and links them. This avoids version conflicts and duplicate native code.
+4. **No state beyond routing.** The `MessageRouter` dispatches messages and returns responses. It does not cache, retry, or transform data. Handlers are stateless wrappers around native libraries.
 
 ## Key Decisions
 
-| Decision                          | Choice                                  | Rationale                                                              |
-| --------------------------------- | --------------------------------------- | ---------------------------------------------------------------------- |
-| Package size                      | Thin wrapper (~200-300 LOC)             | All logic lives in the WebView engine. Native shell is pure glue.      |
-| Bridge protocol                   | Same as KMP                             | WebView must not know which shell it runs in. One protocol, two shells.|
-| Native module dependency strategy | All as `peerDependencies`               | Host app installs and links. Avoids version conflicts and duplicate native code. |
-| Asset loading                     | `Platform.select` for Android vs iOS    | Android uses `file:///android_asset/`, iOS uses `MainBundlePath`.      |
-| State management                  | No state beyond routing                 | MessageRouter dispatches and returns. No caching, retrying, or transforming. |
+| Decision                          | Choice                               | Rationale                                                                                             |
+| --------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| Package size                      | Thin wrapper (~200-300 LOC)          | All logic lives in the WebView engine. Native shell is pure glue.                                     |
+| Bridge protocol                   | Same as KMP                          | WebView must not know which shell it runs in. One protocol, two shells.                               |
+| Native module dependency strategy | All as `peerDependencies`            | Host app installs and links. Avoids version conflicts and duplicate native code.                      |
+| Asset loading                     | `Platform.select` for Android vs iOS | Android uses `file:///android_asset/`, iOS path TBD (see Chunk 5D).                                   |
+| State management                  | No state beyond routing              | MessageRouter dispatches and returns. No caching, retrying, or transforming.                          |
+| iOS asset loading                 | Decision deferred to Chunk 5D        | Options: `react-native-fs` (adds peer dep) vs RN `require()` with Metro config. Needs device testing. |
 
 ## Deliverables
 
-| Deliverable                    | Type        | Consumers                              |
-| ------------------------------ | ----------- | -------------------------------------- |
-| `@selfxyz/rn-sdk`             | npm package | Self Wallet app, third-party RN hosts  |
-| `<SelfVerification />` component | React component | Any RN app embedding verification  |
+| Deliverable                      | Type            | Consumers                             |
+| -------------------------------- | --------------- | ------------------------------------- |
+| `@selfxyz/rn-sdk`                | npm package     | Self Wallet app, third-party RN hosts |
+| `<SelfVerification />` component | React component | Any RN app embedding verification     |
 
 ## Related Specs
 
-| Spec                                                           | What it covers                                             |
-| -------------------------------------------------------------- | ---------------------------------------------------------- |
-| [SPEC.md](./SPEC.md)                                           | Implementation details, chunks, code changes               |
-| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                       | Project-level architecture, bridge protocol, glossary      |
-| [../person1-webview/SPEC.md](../person1-webview/SPEC.md)       | WebView UI + bridge (delivers your Vite bundle)            |
-| [../person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md) | KMP native shell (reference handler pattern)         |
-| [../person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md)     | SDK core adaptation (delivers bridge types you import)     |
+| Spec                                                                         | What it covers                                                            |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [SPEC.md](./SPEC.md)                                                         | Implementation details, chunks, code changes                              |
+| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                                     | Project-level architecture, bridge protocol, glossary                     |
+| [../person1-webview/OVERVIEW.md](../person1-webview/OVERVIEW.md)             | WebView UI + bridge workstream (delivers your Vite bundle + bridge types) |
+| [../person2-native-shells/OVERVIEW.md](../person2-native-shells/OVERVIEW.md) | KMP native shell workstream (reference handler pattern)                   |
+| [../person3-integrations/OVERVIEW.md](../person3-integrations/OVERVIEW.md)   | Integration samples (MiniPay — validates the SDK)                         |
+| [../person4-sdk-core/OVERVIEW.md](../person4-sdk-core/OVERVIEW.md)           | SDK core workstream (delivers adapter interfaces)                         |

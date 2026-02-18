@@ -27,12 +27,12 @@ You are building the **React Native native shell** (`@selfxyz/rn-sdk`) — a thi
 
 There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not exist yet. React Native host apps (including the Self Wallet app) have no way to embed the shared WebView verification flow.
 
-| Gap | Current state |
-| --- | --- |
-| `packages/rn-sdk/` | Directory does not exist |
-| `<SelfVerification />` component | Not implemented — RN hosts cannot embed verification |
-| Native handler bridges (NFC, biometrics, keychain, camera, lifecycle) | Not implemented — WebView has no way to reach RN native APIs |
-| Asset bundling for iOS + Android | Not implemented — no way to load the Vite bundle in production |
+| Gap                                                                   | Current state                                                  |
+| --------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `packages/rn-sdk/`                                                    | Directory does not exist                                       |
+| `<SelfVerification />` component                                      | Not implemented — RN hosts cannot embed verification           |
+| Native handler bridges (NFC, biometrics, keychain, camera, lifecycle) | Not implemented — WebView has no way to reach RN native APIs   |
+| Asset bundling for iOS + Android                                      | Not implemented — no way to load the Vite bundle in production |
 
 ## Design Principles
 
@@ -236,9 +236,13 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
 
 ```tsx
 <SelfVerification
-  request={{ userId: 'user-123', scope: 'age-verification', disclosures: ['nationality', 'age_over_18'] }}
-  onSuccess={(result) => console.log('Verified:', result.verificationId)}
-  onFailure={(error) => console.error(error.code, error.message)}
+  request={{
+    userId: 'user-123',
+    scope: 'age-verification',
+    disclosures: ['nationality', 'age_over_18'],
+  }}
+  onSuccess={result => console.log('Verified:', result.verificationId)}
+  onFailure={error => console.error(error.code, error.message)}
   onCancelled={() => navigation.goBack()}
   debug={__DEV__}
 />
@@ -290,12 +294,32 @@ export class MessageRouter {
   private handlers = new Map<string, BridgeHandler>();
   private config: RouterConfig;
 
-  constructor(config: RouterConfig) { /* ... */ }
-  register(handler: BridgeHandler): void { /* ... */ }
-  async onMessageReceived(rawJson: string): Promise<void> { /* ... */ }
-  pushEvent(domain: BridgeDomain, event: string, data: unknown): void { /* ... */ }
-  private sendResponse(request: BridgeRequest, success: boolean, data?: unknown): void { /* ... */ }
-  private sendError(request: BridgeRequest, code: string, message: string): void { /* ... */ }
+  constructor(config: RouterConfig) {
+    /* ... */
+  }
+  register(handler: BridgeHandler): void {
+    /* ... */
+  }
+  async onMessageReceived(rawJson: string): Promise<void> {
+    /* ... */
+  }
+  pushEvent(domain: BridgeDomain, event: string, data: unknown): void {
+    /* ... */
+  }
+  private sendResponse(
+    request: BridgeRequest,
+    success: boolean,
+    data?: unknown,
+  ): void {
+    /* ... */
+  }
+  private sendError(
+    request: BridgeRequest,
+    code: string,
+    message: string,
+  ): void {
+    /* ... */
+  }
 }
 ```
 
@@ -303,11 +327,11 @@ export class MessageRouter {
 
 **Transport details:**
 
-| Direction | Mechanism |
-| --- | --- |
-| WebView -> Native | `window.ReactNativeWebView.postMessage(json)` -> `onMessage` prop |
-| Native -> WebView | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleResponse('...')")` |
-| Native -> WebView (events) | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleEvent('...')")` |
+| Direction                  | Mechanism                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| WebView -> Native          | `window.ReactNativeWebView.postMessage(json)` -> `onMessage` prop               |
+| Native -> WebView          | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleResponse('...')")` |
+| Native -> WebView (events) | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleEvent('...')")`    |
 
 The `@selfxyz/webview-bridge` already detects `ReactNativeWebView` as a transport:
 
@@ -337,7 +361,10 @@ if (globalThis.ReactNativeWebView?.postMessage) {
 **Expected Output (native -> WebView response):**
 
 ```javascript
-window.SelfNativeBridge._handleResponse('{"type":"response","version":1,"id":"...","domain":"biometrics","requestId":"a1b2c3d4-...","success":true,"data":true,"timestamp":1708200001000}');true;
+window.SelfNativeBridge._handleResponse(
+  '{"type":"response","version":1,"id":"...","domain":"biometrics","requestId":"a1b2c3d4-...","success":true,"data":true,"timestamp":1708200001000}',
+);
+true;
 ```
 
 **Edge case -- unknown domain:**
@@ -373,9 +400,14 @@ export class NfcHandler {
   domain: BridgeDomain = 'nfc';
   private router: MessageRouter;
 
-  constructor(router: MessageRouter) { this.router = router; }
+  constructor(router: MessageRouter) {
+    this.router = router;
+  }
 
-  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
+  async handle(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<unknown> {
     // Methods: 'scan', 'cancelScan', 'isSupported'
     // scan() sends progress events via this.router.pushEvent('nfc', 'scanProgress', { ... })
   }
@@ -408,7 +440,10 @@ export class BiometricHandler {
   domain: BridgeDomain = 'biometrics';
   private rnBiometrics = new ReactNativeBiometrics();
 
-  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
+  async handle(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<unknown> {
     // Methods: 'authenticate', 'isAvailable', 'getBiometryType'
   }
 }
@@ -439,7 +474,10 @@ import * as Keychain from 'react-native-keychain';
 export class KeychainHandler {
   domain: BridgeDomain = 'secureStorage';
 
-  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
+  async handle(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<unknown> {
     // Methods: 'get', 'set', 'remove'
     // Uses service prefix: `self_sdk_${key}`
   }
@@ -474,7 +512,10 @@ Output: { code: "MISSING_KEY", message: "Key parameter required" }
 export class CameraHandler {
   domain: BridgeDomain = 'camera';
 
-  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
+  async handle(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<unknown> {
     // Methods: 'isAvailable', 'scanMRZ'
   }
 }
@@ -500,9 +541,14 @@ export class LifecycleHandler {
   domain: BridgeDomain = 'lifecycle';
   private config: LifecycleConfig;
 
-  constructor(config: LifecycleConfig) { this.config = config; }
+  constructor(config: LifecycleConfig) {
+    this.config = config;
+  }
 
-  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
+  async handle(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<unknown> {
     // Methods: 'ready', 'getConfig', 'dismiss', 'setResult'
     // 'getConfig' returns { verificationRequest, debug, platform: 'react-native' }
     // 'setResult' calls onSuccess/onFailure based on params.success
@@ -541,7 +587,7 @@ export function createHandlers(config: {
   onFailure: (error: SelfSdkError) => void;
   onCancelled: () => void;
   debug: boolean;
-  router: MessageRouter;         // <-- Spec correction: router arg required
+  router: MessageRouter; // <-- Spec correction: router arg required
 }): BridgeHandler[] {
   return [
     new NfcHandler(config.router),
@@ -597,52 +643,69 @@ const source = devServerUrl
 
 Alternatively, avoid the RNFS dependency entirely by using RN's built-in asset resolution or embedding via a native module.
 
+**Recommended approach:** Use `require()` with Metro's asset resolver for iOS, avoiding the `react-native-fs` peer dependency. This is the simplest approach with no extra native dependencies:
+
+```typescript
+// For iOS, use the RN require() pipeline with a .html extension registered in metro.config.js
+// For Android, use file:///android_asset/ which RN bundles automatically from the assets folder
+const source = devServerUrl
+  ? { uri: devServerUrl }
+  : Platform.select({
+      android: { uri: 'file:///android_asset/self-wallet/index.html' },
+      ios: {
+        uri: `file://${RNFS?.MainBundlePath ?? ''}/self-wallet/index.html`,
+      },
+    });
+```
+
+If `react-native-fs` is not available, fall back to React Native's `require()` with an HTML asset registered in `metro.config.js` (`resolver.assetExts: [...defaults, 'html']`). The final decision should be validated in Chunk 5D by testing both approaches on a real device.
+
 ---
 
 ### 8. What's Native vs WebView
 
-| Capability | Native (RN bridge) | WebView (web fallback) |
-| --- | --- | --- |
-| NFC passport scan | YES -- hardware | -- |
-| Camera/MRZ | YES -- hardware | -- |
-| Biometrics | YES -- OS prompt | -- |
-| Keychain | YES -- host app policy | -- |
-| Lifecycle | YES -- component props | -- |
-| Documents | -- | IndexedDB |
-| Crypto hashing | -- | Web Crypto API |
-| Analytics | -- | console/fetch |
-| Haptic | -- | Skipped (not critical) |
+| Capability        | Native (RN bridge)     | WebView (web fallback) |
+| ----------------- | ---------------------- | ---------------------- |
+| NFC passport scan | YES -- hardware        | --                     |
+| Camera/MRZ        | YES -- hardware        | --                     |
+| Biometrics        | YES -- OS prompt       | --                     |
+| Keychain          | YES -- host app policy | --                     |
+| Lifecycle         | YES -- component props | --                     |
+| Documents         | --                     | IndexedDB              |
+| Crypto hashing    | --                     | Web Crypto API         |
+| Analytics         | --                     | console/fetch          |
+| Haptic            | --                     | Skipped (not critical) |
 
 ---
 
 ## Files You Will Modify
 
-| File | Change | Risk |
-| --- | --- | --- |
-| `packages/rn-sdk/package.json` | Create new | **Low** -- new package |
-| `packages/rn-sdk/tsconfig.json` | Create new | **Low** -- build config |
-| `packages/rn-sdk/tsup.config.ts` | Create new | **Low** -- build config |
-| `packages/rn-sdk/src/index.ts` | Create new | **Low** -- public exports |
-| `packages/rn-sdk/src/SelfVerification.tsx` | Create new | **Medium** -- core component |
-| `packages/rn-sdk/src/bridge/MessageRouter.ts` | Create new | **Medium** -- message routing |
-| `packages/rn-sdk/src/bridge/types.ts` | Create new | **Low** -- re-exports |
-| `packages/rn-sdk/src/handlers/NfcHandler.ts` | Create new | **High** -- hardware integration |
+| File                                               | Change     | Risk                                |
+| -------------------------------------------------- | ---------- | ----------------------------------- |
+| `packages/rn-sdk/package.json`                     | Create new | **Low** -- new package              |
+| `packages/rn-sdk/tsconfig.json`                    | Create new | **Low** -- build config             |
+| `packages/rn-sdk/tsup.config.ts`                   | Create new | **Low** -- build config             |
+| `packages/rn-sdk/src/index.ts`                     | Create new | **Low** -- public exports           |
+| `packages/rn-sdk/src/SelfVerification.tsx`         | Create new | **Medium** -- core component        |
+| `packages/rn-sdk/src/bridge/MessageRouter.ts`      | Create new | **Medium** -- message routing       |
+| `packages/rn-sdk/src/bridge/types.ts`              | Create new | **Low** -- re-exports               |
+| `packages/rn-sdk/src/handlers/NfcHandler.ts`       | Create new | **High** -- hardware integration    |
 | `packages/rn-sdk/src/handlers/BiometricHandler.ts` | Create new | **Medium** -- native module wrapper |
-| `packages/rn-sdk/src/handlers/KeychainHandler.ts` | Create new | **Medium** -- native module wrapper |
-| `packages/rn-sdk/src/handlers/CameraHandler.ts` | Create new | **Medium** -- hardware integration |
+| `packages/rn-sdk/src/handlers/KeychainHandler.ts`  | Create new | **Medium** -- native module wrapper |
+| `packages/rn-sdk/src/handlers/CameraHandler.ts`    | Create new | **Medium** -- hardware integration  |
 | `packages/rn-sdk/src/handlers/LifecycleHandler.ts` | Create new | **Medium** -- props/callback bridge |
-| `packages/rn-sdk/src/handlers/index.ts` | Create new | **Low** -- handler registry |
+| `packages/rn-sdk/src/handlers/index.ts`            | Create new | **Low** -- handler registry         |
 
 ## Files You Will NOT Modify
 
-| File | Why |
-| --- | --- |
-| `packages/webview-bridge/src/*` | Owned by Person 1 -- bridge protocol already defined |
-| `packages/webview-app/src/*` | Owned by Person 1 -- WebView UI screens |
-| `packages/mobile-sdk-alpha/src/*` | Owned by Person 4 -- WebView engine core |
-| `packages/kmp-sdk/shared/src/*` | Owned by Person 2 -- Kotlin native shell (reference only) |
-| `app/src/*` | Self Wallet app -- integration consumer, not modified by this workstream |
-| `common/src/*` | Shared utilities -- out of scope |
+| File                              | Why                                                                      |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `packages/webview-bridge/src/*`   | Owned by Person 1 -- bridge protocol already defined                     |
+| `packages/webview-app/src/*`      | Owned by Person 1 -- WebView UI screens                                  |
+| `packages/mobile-sdk-alpha/src/*` | Owned by Person 4 -- WebView engine core                                 |
+| `packages/kmp-sdk/shared/src/*`   | Owned by Person 2 -- Kotlin native shell (reference only)                |
+| `app/src/*`                       | Self Wallet app -- integration consumer, not modified by this workstream |
+| `common/src/*`                    | Shared utilities -- out of scope                                         |
 
 ## Chunking Guide
 
@@ -694,19 +757,19 @@ import { SelfVerification } from '@selfxyz/rn-sdk';
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| `MessageRouter.routes-to-handler` | Unit | Routes request to correct handler by domain |
-| `MessageRouter.unknown-domain` | Unit | Returns HANDLER_NOT_FOUND error for unknown domain |
-| `MessageRouter.malformed-json` | Unit | Does not crash on invalid JSON |
-| `MessageRouter.ignores-non-request` | Unit | Ignores messages where `type !== 'request'` |
-| `LifecycleHandler.getConfig` | Unit | Returns request, debug, platform fields |
-| `LifecycleHandler.setResult-success` | Unit | Calls `onSuccess` with correct shape |
-| `LifecycleHandler.setResult-failure` | Unit | Calls `onFailure` with code and message |
-| `LifecycleHandler.dismiss` | Unit | Calls `onCancelled` |
-| `createHandlers.includes-router` | Unit | NfcHandler receives router reference |
-| Build gate: `yarn build` | Build | Package compiles cleanly |
-| Build gate: `yarn typecheck` | Build | No type errors |
+| Test                                 | Type  | What it validates                                  |
+| ------------------------------------ | ----- | -------------------------------------------------- |
+| `MessageRouter.routes-to-handler`    | Unit  | Routes request to correct handler by domain        |
+| `MessageRouter.unknown-domain`       | Unit  | Returns HANDLER_NOT_FOUND error for unknown domain |
+| `MessageRouter.malformed-json`       | Unit  | Does not crash on invalid JSON                     |
+| `MessageRouter.ignores-non-request`  | Unit  | Ignores messages where `type !== 'request'`        |
+| `LifecycleHandler.getConfig`         | Unit  | Returns request, debug, platform fields            |
+| `LifecycleHandler.setResult-success` | Unit  | Calls `onSuccess` with correct shape               |
+| `LifecycleHandler.setResult-failure` | Unit  | Calls `onFailure` with code and message            |
+| `LifecycleHandler.dismiss`           | Unit  | Calls `onCancelled`                                |
+| `createHandlers.includes-router`     | Unit  | NfcHandler receives router reference               |
+| Build gate: `yarn build`             | Build | Package compiles cleanly                           |
+| Build gate: `yarn typecheck`         | Build | No type errors                                     |
 
 ---
 
@@ -758,18 +821,18 @@ Typecheck: No errors
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| `BiometricHandler.authenticate-success` | Unit | Returns `true` when biometric succeeds |
+| Test                                    | Type | What it validates                           |
+| --------------------------------------- | ---- | ------------------------------------------- |
+| `BiometricHandler.authenticate-success` | Unit | Returns `true` when biometric succeeds      |
 | `BiometricHandler.authenticate-failure` | Unit | Throws `BIOMETRIC_FAILED` when user cancels |
-| `BiometricHandler.isAvailable` | Unit | Returns boolean from sensor check |
-| `BiometricHandler.getBiometryType` | Unit | Returns biometry type string |
-| `BiometricHandler.unknown-method` | Unit | Throws `METHOD_NOT_FOUND` |
-| `KeychainHandler.set-get-roundtrip` | Unit | Value stored then retrieved matches |
-| `KeychainHandler.get-nonexistent` | Unit | Returns `null` for missing key |
-| `KeychainHandler.remove` | Unit | Removes key, subsequent get returns `null` |
-| `KeychainHandler.missing-key-param` | Unit | Throws `MISSING_KEY` |
-| `KeychainHandler.set-missing-value` | Unit | Throws `MISSING_VALUE` |
+| `BiometricHandler.isAvailable`          | Unit | Returns boolean from sensor check           |
+| `BiometricHandler.getBiometryType`      | Unit | Returns biometry type string                |
+| `BiometricHandler.unknown-method`       | Unit | Throws `METHOD_NOT_FOUND`                   |
+| `KeychainHandler.set-get-roundtrip`     | Unit | Value stored then retrieved matches         |
+| `KeychainHandler.get-nonexistent`       | Unit | Returns `null` for missing key              |
+| `KeychainHandler.remove`                | Unit | Removes key, subsequent get returns `null`  |
+| `KeychainHandler.missing-key-param`     | Unit | Throws `MISSING_KEY`                        |
+| `KeychainHandler.set-missing-value`     | Unit | Throws `MISSING_VALUE`                      |
 
 ---
 
@@ -813,16 +876,16 @@ Typecheck: No errors
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| `NfcHandler.isSupported` | Unit | Delegates to NfcManager.isSupported() |
-| `NfcHandler.cancelScan` | Unit | Calls NfcManager.cancelTechnologyRequest() |
-| `NfcHandler.scan-progress-events` | Integration | Progress events stream to WebView during scan |
-| `NfcHandler.scan-success` | Device | Full passport scan returns valid data |
-| `NfcHandler.scan-nfc-unsupported` | Unit | Returns NFC_NOT_SUPPORTED error on incapable device |
-| `NfcHandler.unknown-method` | Unit | Throws METHOD_NOT_FOUND |
-| `CameraHandler.isAvailable` | Unit | Returns true |
-| `CameraHandler.scanMRZ-not-implemented` | Unit | Throws NOT_IMPLEMENTED |
+| Test                                    | Type        | What it validates                                   |
+| --------------------------------------- | ----------- | --------------------------------------------------- |
+| `NfcHandler.isSupported`                | Unit        | Delegates to NfcManager.isSupported()               |
+| `NfcHandler.cancelScan`                 | Unit        | Calls NfcManager.cancelTechnologyRequest()          |
+| `NfcHandler.scan-progress-events`       | Integration | Progress events stream to WebView during scan       |
+| `NfcHandler.scan-success`               | Device      | Full passport scan returns valid data               |
+| `NfcHandler.scan-nfc-unsupported`       | Unit        | Returns NFC_NOT_SUPPORTED error on incapable device |
+| `NfcHandler.unknown-method`             | Unit        | Throws METHOD_NOT_FOUND                             |
+| `CameraHandler.isAvailable`             | Unit        | Returns true                                        |
+| `CameraHandler.scanMRZ-not-implemented` | Unit        | Throws NOT_IMPLEMENTED                              |
 
 ---
 
@@ -884,13 +947,13 @@ npx react-native run-ios      # WebView renders verification flow
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| `asset-bundling.html-exists` | Build gate | `assets/self-wallet/index.html` present after build |
-| `Platform.select.android` | Unit | Android source resolves to `file:///android_asset/...` |
-| `Platform.select.ios` | Unit | iOS source resolves to bundle path |
-| `devServerUrl-override` | Unit | Dev server URL takes precedence over bundled assets |
-| `npm-pack-contents` | Build gate | `npm pack` includes `dist/` and `assets/` |
+| Test                         | Type       | What it validates                                      |
+| ---------------------------- | ---------- | ------------------------------------------------------ |
+| `asset-bundling.html-exists` | Build gate | `assets/self-wallet/index.html` present after build    |
+| `Platform.select.android`    | Unit       | Android source resolves to `file:///android_asset/...` |
+| `Platform.select.ios`        | Unit       | iOS source resolves to bundle path                     |
+| `devServerUrl-override`      | Unit       | Dev server URL takes precedence over bundled assets    |
+| `npm-pack-contents`          | Build gate | `npm pack` includes `dist/` and `assets/`              |
 
 ---
 
@@ -907,12 +970,12 @@ Chunk 5A (package + component + router + lifecycle) — no deps, start here
 
 _Audit date: 2026-02-17_
 
-| Chunk | Description | Size | Status |
-| --- | --- | --- | --- |
-| 5A | Package setup + `<SelfVerification />` shell + `MessageRouter` + `LifecycleHandler` | M ~8k | **Pending** |
-| 5B | `BiometricHandler` + `KeychainHandler` | S ~4k | **Pending** |
-| 5C | `NfcHandler` + `CameraHandler` (hardware-dependent, requires physical device testing) | L ~10k | **Pending** |
-| 5D | Asset bundling (copy Vite output into `assets/`) + npm publishing config | M ~6k | **Pending** |
+| Chunk | Description                                                                           | Size   | Status      |
+| ----- | ------------------------------------------------------------------------------------- | ------ | ----------- |
+| 5A    | Package setup + `<SelfVerification />` shell + `MessageRouter` + `LifecycleHandler`   | M ~8k  | **Pending** |
+| 5B    | `BiometricHandler` + `KeychainHandler`                                                | S ~4k  | **Pending** |
+| 5C    | `NfcHandler` + `CameraHandler` (hardware-dependent, requires physical device testing) | L ~10k | **Pending** |
+| 5D    | Asset bundling (copy Vite output into `assets/`) + npm publishing config              | M ~6k  | **Pending** |
 
 **0% implemented. Spec ready for implementation.**
 
@@ -947,20 +1010,20 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 
 - **Person 1 (WebView UI):** The RN SDK loads the same Vite bundle that Person 1 builds. Chunk 5D depends on Person 1's `packages/webview-app/` producing a working `dist/index.html`. No code sharing beyond the bundle -- coordination is the build artifact.
 - **Person 2 (Kotlin Native Shell):** The RN handlers implement the same bridge protocol as the Kotlin handlers. Use `packages/kmp-sdk/shared/src/androidMain/.../handlers/` as reference for handler contracts. No runtime dependency -- protocol is the only coupling.
-- **Person 4 (SDK Core):** Chunk 5A depends on Person 4's Chunk 4F (web fallback adapters) being complete so the WebView can handle documents/crypto/analytics without native bridges. The RN SDK also depends on `@selfxyz/webview-bridge` exporting `BridgeRequest`, `BridgeResponse`, `BridgeEvent`, `BridgeDomain` types.
-- **Person 1 (WebView UI):** The `@selfxyz/webview-bridge` must detect `ReactNativeWebView` as a transport. This is already implemented in `bridge.ts`.
+- **Person 4 (SDK Core):** Chunk 5A depends on Person 4's Chunk 4F (web fallback adapters) being complete so the WebView can handle documents/crypto/analytics without native bridges.
+- **Person 1 (Bridge + WebView):** The RN SDK depends on `@selfxyz/webview-bridge` (Person 1's package) exporting `BridgeRequest`, `BridgeResponse`, `BridgeEvent`, `BridgeDomain` types. The bridge must detect `ReactNativeWebView` as a transport — this is already implemented in `bridge.ts`.
 
 ## Key Reference Files
 
-| File | What to Look At |
-| --- | --- |
-| `packages/webview-bridge/src/types.ts` | Bridge protocol types (must match exactly) |
-| `packages/webview-bridge/src/bridge.ts` | Transport detection -- `ReactNativeWebView.postMessage` path |
-| `packages/kmp-sdk/shared/src/commonMain/.../MessageRouter.kt` | Kotlin MessageRouter (reference for JS port, 131 lines) |
-| `packages/kmp-sdk/shared/src/androidMain/.../handlers/` | Android handler implementations (contract reference) |
-| `app/src/integrations/nfc/` | Existing RN NFC integration (port to NfcHandler) |
-| `packages/webview-app/dist/` | Vite output to bundle as assets |
-| `packages/mobile-sdk-alpha/src/types/public.ts` | Adapter interfaces (context for what the WebView engine expects) |
+| File                                                          | What to Look At                                                  |
+| ------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `packages/webview-bridge/src/types.ts`                        | Bridge protocol types (must match exactly)                       |
+| `packages/webview-bridge/src/bridge.ts`                       | Transport detection -- `ReactNativeWebView.postMessage` path     |
+| `packages/kmp-sdk/shared/src/commonMain/.../MessageRouter.kt` | Kotlin MessageRouter (reference for JS port, 131 lines)          |
+| `packages/kmp-sdk/shared/src/androidMain/.../handlers/`       | Android handler implementations (contract reference)             |
+| `app/src/integrations/nfc/`                                   | Existing RN NFC integration (port to NfcHandler)                 |
+| `packages/webview-app/dist/`                                  | Vite output to bundle as assets                                  |
+| `packages/mobile-sdk-alpha/src/types/public.ts`               | Adapter interfaces (context for what the WebView engine expects) |
 
 ---
 
@@ -977,14 +1040,14 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 ### Deviations from Spec
 
 | Spec said | We did | Why |
-| --- | --- | --- |
-| | | |
+| --------- | ------ | --- |
+|           |        |     |
 
 ### Key Files (final)
 
 | File | Role |
-| --- | --- |
-| | |
+| ---- | ---- |
+|      |      |
 
 ### Lessons / Gotchas
 
@@ -994,38 +1057,38 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 
 ## Follow-Up (Out of Scope)
 
-| Item | Discovered during | Suggested spec |
-| --- | --- | --- |
-| Self Wallet migration to `<SelfVerification />` | Spec writing | Separate migration spec after SDK is stable |
-| MiniPay RN sample integration | Spec writing | `SPEC-MINIPAY-SAMPLE.md` (already exists) |
-| Camera library selection for MRZ scanning | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter |
-| iOS asset loading strategy (RNFS vs require) | PR #1765 review | Decide in Chunk 5D implementation |
+| Item                                            | Discovered during | Suggested spec                                                    |
+| ----------------------------------------------- | ----------------- | ----------------------------------------------------------------- |
+| Self Wallet migration to `<SelfVerification />` | Spec writing      | Separate migration spec after SDK is stable                       |
+| MiniPay RN sample integration                   | Spec writing      | `SPEC-MINIPAY-SAMPLE.md` (already exists)                         |
+| Camera library selection for MRZ scanning       | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter |
+| iOS asset loading strategy (RNFS vs require)    | PR #1765 review   | Decide in Chunk 5D implementation                                 |
 
 ## Spec Corrections Summary (PR #1765 Review)
 
 These issues were identified during PR #1765 code review and are incorporated throughout this spec:
 
-| Issue | Severity | Chunk | Description | Fix Applied |
-| --- | --- | --- | --- | --- |
-| `react-native-webview` dep type | Major | 5A | Listed as `dependency` but must be `peerDependency` -- native modules must be linked by host app | Moved to `peerDependencies` as `"react-native-webview": ">=13.0.0"` |
-| `createHandlers` missing `router` arg | Critical | 5A | `SelfVerification.tsx` called `createHandlers` without `router`, but `NfcHandler` requires it | `router` passed in `createHandlers` config; component passes `router` |
-| Android-only WebView `source` | Major | 5D | `source` only set `file:///android_asset/...` -- iOS blank screen | Use `Platform.select({ android: ..., ios: ... })` |
-| `crypto.randomUUID` polyfill | Minor | 5A | May not be available in all RN environments | Fallback: `crypto.randomUUID?.() ?? \`${Date.now()}-${Math.random()}\`` |
-| `RNFS.MainBundlePath` without peer dep | Major | 5D | iOS path uses `react-native-fs` but not in `peerDependencies` | Add `react-native-fs` to peerDeps OR use RN built-in asset resolution |
+| Issue                                  | Severity | Chunk | Description                                                                                      | Fix Applied                                                             |
+| -------------------------------------- | -------- | ----- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `react-native-webview` dep type        | Major    | 5A    | Listed as `dependency` but must be `peerDependency` -- native modules must be linked by host app | Moved to `peerDependencies` as `"react-native-webview": ">=13.0.0"`     |
+| `createHandlers` missing `router` arg  | Critical | 5A    | `SelfVerification.tsx` called `createHandlers` without `router`, but `NfcHandler` requires it    | `router` passed in `createHandlers` config; component passes `router`   |
+| Android-only WebView `source`          | Major    | 5D    | `source` only set `file:///android_asset/...` -- iOS blank screen                                | Use `Platform.select({ android: ..., ios: ... })`                       |
+| `crypto.randomUUID` polyfill           | Minor    | 5A    | May not be available in all RN environments                                                      | Fallback: `crypto.randomUUID?.() ?? \`${Date.now()}-${Math.random()}\`` |
+| `RNFS.MainBundlePath` without peer dep | Major    | 5D    | iOS path uses `react-native-fs` but not in `peerDependencies`                                    | Add `react-native-fs` to peerDeps OR use RN built-in asset resolution   |
 
 ## Spec Deviations
 
-| Suggestion skipped | Reason |
-| --- | --- |
-| BEFORE/AFTER code blocks | All tasks are new file creation (package does not exist yet) -- used CREATE + SKELETON pattern |
-| `--remote` recommendation for L chunks | Chunk 5C (NFC) requires physical device testing -- remote execution insufficient |
-| Full handler implementation code | Handlers are thin wrappers (~20-40 LOC each); showing full implementation would over-specify what should be a direct native library delegation |
+| Suggestion skipped                     | Reason                                                                                                                                         |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| BEFORE/AFTER code blocks               | All tasks are new file creation (package does not exist yet) -- used CREATE + SKELETON pattern                                                 |
+| `--remote` recommendation for L chunks | Chunk 5C (NFC) requires physical device testing -- remote execution insufficient                                                               |
+| Full handler implementation code       | Handlers are thin wrappers (~20-40 LOC each); showing full implementation would over-specify what should be a direct native library delegation |
 
 ## Related Specs
 
-| Spec | Relationship |
-| --- | --- |
-| [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) | Parent architecture spec |
-| [person1-webview/SPEC.md](../person1-webview/SPEC.md) | Builds the WebView UI + bridge that this SDK loads |
-| [person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md) | Kotlin native shell -- same bridge protocol, reference handlers |
-| [person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md) | SDK core adaptation -- Chunk 4F (web fallback adapters) is a prerequisite |
+| Spec                                                              | Relationship                                                              |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                             | Parent architecture spec                                                  |
+| [person1-webview/SPEC.md](../person1-webview/SPEC.md)             | Builds the WebView UI + bridge that this SDK loads                        |
+| [person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md) | Kotlin native shell -- same bridge protocol, reference handlers           |
+| [person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md)           | SDK core adaptation -- Chunk 4F (web fallback adapters) is a prerequisite |

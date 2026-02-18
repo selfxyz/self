@@ -55,6 +55,8 @@
 │  ├─ Biometrics      │   │  ├─ Biometrics      │
 │  ├─ Keychain ★      │   │  ├─ Keychain ★      │
 │  └─ Lifecycle       │   │  └─ Lifecycle        │
+│                     │   │                     │
+│  KMP iOS: 3 init.†  │   │                     │
 └─────────┬───────────┘   └──────────┬──────────┘
           │                          │
           └────────────┬─────────────┘
@@ -101,7 +103,8 @@
           │  Certificate handling   │
           └─────────────────────────┘
 
-★ = Keychain is native-managed (host app controls access)
+★ = Keychain is native-managed (host app controls access). In the bridge protocol, Keychain = the `secureStorage` domain.
+† = KMP iOS initially ships with 3 handlers (NFC, Biometrics, Lifecycle). Camera is Phase 2. Keychain on iOS is managed directly by the host app.
 ```
 
 ## Design Principles
@@ -127,18 +130,20 @@
 
 ## Decision Matrix
 
-| Capability      | Must be native?    | KMP Android              | KMP iOS       | RN SDK | WebView Fallback      |
-| --------------- | ------------------ | ------------------------ | ------------- | ------ | --------------------- |
-| **NFC**         | YES                | KEEP (497 LOC)           | BUILD (Swift) | BUILD  | None (hardware)       |
-| **Camera/MRZ**  | YES                | KEEP (247 LOC)           | Phase 2       | BUILD  | None (hardware)       |
-| **Biometrics**  | YES                | KEEP (142 LOC)           | BUILD (Swift) | BUILD  | None (OS prompt)      |
-| **Keychain**    | YES (host decides) | KEEP (120 LOC)           | BUILD (Swift) | BUILD  | None (native-managed) |
-| **Lifecycle**   | YES                | KEEP (91 LOC)            | DONE (86 LOC) | BUILD  | None (Activity/VC)    |
-| **Documents**   | NO                 | **DELETE** (146 LOC)     | Skip          | Skip   | IndexedDB             |
-| **Crypto hash** | NO                 | **DELETE** (177 LOC)     | Skip          | Skip   | Web Crypto API        |
-| **Crypto sign** | YES                | KEEP (in crypto handler) | BUILD (Swift) | BUILD  | None (secure enclave) |
-| **Analytics**   | NO                 | **DELETE** (94 LOC)      | Skip          | Skip   | console/fetch         |
-| **Haptic**      | NO                 | **DELETE** (94 LOC)      | Skip          | Skip   | Not critical          |
+| Capability      | Must be native?    | KMP Android             | KMP iOS       | RN SDK | WebView Fallback      |
+| --------------- | ------------------ | ----------------------- | ------------- | ------ | --------------------- |
+| **NFC**         | YES                | KEEP (497 LOC)          | BUILD (Swift) | BUILD  | None (hardware)       |
+| **Camera/MRZ**  | YES                | KEEP (247 LOC)          | Phase 2       | BUILD  | None (hardware)       |
+| **Biometrics**  | YES                | KEEP (142 LOC)          | BUILD (Swift) | BUILD  | None (OS prompt)      |
+| **Keychain**    | YES (host decides) | KEEP (120 LOC)          | BUILD (Swift) | BUILD  | None (native-managed) |
+| **Lifecycle**   | YES                | KEEP (91 LOC)           | DONE (86 LOC) | BUILD  | None (Activity/VC)    |
+| **Documents**   | NO                 | **DELETE** (146 LOC)    | Skip          | Skip   | IndexedDB             |
+| **Crypto hash** | NO                 | **DELETE** (177 LOC)    | Skip          | Skip   | Web Crypto API        |
+| **Crypto sign** | YES †              | KEEP (in SecureStorage) | BUILD (Swift) | BUILD  | None (secure enclave) |
+| **Analytics**   | NO                 | **DELETE** (94 LOC)     | Skip          | Skip   | console/fetch         |
+| **Haptic**      | NO                 | **DELETE** (94 LOC)     | Skip          | Skip   | Not critical          |
+
+> **† Crypto sign note:** The standalone `CryptoBridgeHandler` (177 LOC) was deleted because it primarily handled hashing (Web Crypto covers that). Crypto signing (key generation, public key retrieval, and signing) currently routes through the `secureStorage` domain — the private key is stored in the native keychain, retrieved via biometrics, and the actual signing operation uses Web Crypto in the WebView. If hardware-backed secure enclave signing is needed in the future (signing without exposing the key to the WebView), a dedicated slim handler would need to be added. See [Person 2 SPEC Follow-Up](./person2-native-shells/SPEC.md#follow-up-out-of-scope) for this tracked item.
 
 ## Impact Summary
 
@@ -187,42 +192,44 @@ Event    (Native → WebView, unsolicited)
 
 ### Domain Catalog
 
-| Domain          | Methods                                                    | Events                                       | Handling                | Notes                            |
-| --------------- | ---------------------------------------------------------- | -------------------------------------------- | ----------------------- | -------------------------------- |
-| `nfc`           | `scan`, `cancelScan`, `isSupported`                        | `scanProgress`, `tagDiscovered`, `scanError` | **Native**              | 120s timeout, progress streaming |
-| `biometrics`    | `authenticate`, `isAvailable`, `getBiometryType`           | —                                            | **Native**              | Required for key access          |
-| `secureStorage` | `get`, `set`, `remove`                                     | —                                            | **Native**              | Keychain — host app controls     |
-| `camera`        | `scanMRZ`, `isAvailable`                                   | —                                            | **Native**              | MRZ OCR from camera              |
-| `lifecycle`     | `ready`, `dismiss`, `setResult`                            | —                                            | **Native**              | WebView ↔ host communication     |
-| `crypto`        | `sign`, `generateKey`, `getPublicKey`                      | —                                            | **Native** (sign)       | `hash()` uses Web Crypto         |
-| `documents`     | `loadCatalog`, `saveCatalog`, `loadById`, `save`, `delete` | —                                            | **Web** (IndexedDB)     | No bridge round-trip             |
-| `analytics`     | `trackEvent`, `trackNfcEvent`, `logNfcEvent`               | —                                            | **Web** (console/fetch) | Fire-and-forget                  |
-| `haptic`        | `trigger`                                                  | —                                            | **Web** (skip)          | Not critical                     |
-| `navigation`    | `goBack`, `goTo`                                           | —                                            | **Web** (React Router)  | WebView-internal                 |
+| Domain          | Methods                                                    | Events                                       | Handling                | Notes                                                                                        |
+| --------------- | ---------------------------------------------------------- | -------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------- |
+| `nfc`           | `scan`, `cancelScan`, `isSupported`                        | `scanProgress`, `tagDiscovered`, `scanError` | **Native**              | 120s timeout, progress streaming                                                             |
+| `biometrics`    | `authenticate`, `isAvailable`, `getBiometryType`           | —                                            | **Native**              | Required for key access                                                                      |
+| `secureStorage` | `get`, `set`, `remove`                                     | —                                            | **Native**              | "Keychain" in UI/docs = `secureStorage` domain in bridge protocol. Host app controls access. |
+| `camera`        | `scanMRZ`, `isAvailable`                                   | —                                            | **Native**              | MRZ OCR from camera                                                                          |
+| `lifecycle`     | `ready`, `dismiss`, `setResult`                            | —                                            | **Native**              | WebView ↔ host communication                                                                 |
+| `crypto`        | `sign`, `generateKey`, `getPublicKey`                      | —                                            | **Native** (sign)       | `hash()` uses Web Crypto                                                                     |
+| `documents`     | `loadCatalog`, `saveCatalog`, `loadById`, `save`, `delete` | —                                            | **Web** (IndexedDB)     | No bridge round-trip                                                                         |
+| `analytics`     | `trackEvent`, `trackNfcEvent`, `logNfcEvent`               | —                                            | **Web** (console/fetch) | Fire-and-forget                                                                              |
+| `haptic`        | `trigger`                                                  | —                                            | **Web** (skip)          | Not critical                                                                                 |
+| `navigation`    | `goBack`, `goTo`                                           | —                                            | **Web** (React Router)  | WebView-internal                                                                             |
 
 ### Adapter Interface Mapping
 
-| SDK Adapter Interface  | Bridges to Native? | Implementation                                    | Notes                             |
-| ---------------------- | ------------------ | ------------------------------------------------- | --------------------------------- |
-| `NFCScannerAdapter`    | Yes                | `nfc.scan` bridge call                            | Core flow: scan passport NFC chip |
-| `CryptoAdapter.sign()` | Yes                | `crypto.sign` bridge call                         | Native secure enclave             |
-| `CryptoAdapter.hash()` | No                 | Web Crypto API                                    | Runs entirely in WebView          |
-| `AuthAdapter`          | Yes                | `secureStorage.get` with `requireBiometric: true` | Private key gated by biometrics   |
-| `StorageAdapter`       | Yes                | `secureStorage.*` bridge calls                    | Keychain access only              |
-| `DocumentsAdapter`     | No                 | IndexedDB                                         | Runs entirely in WebView          |
-| `AnalyticsAdapter`     | No                 | console/fetch                                     | Fire-and-forget                   |
-| `NavigationAdapter`    | No                 | React Router                                      | WebView-internal                  |
-| `NetworkAdapter`       | No                 | `fetch()`                                         | Works in WebView                  |
-| `ClockAdapter`         | No                 | `Date.now()` + `setTimeout`                       | Works in WebView                  |
-| `LoggerAdapter`        | No                 | `console.*`                                       | Works in WebView                  |
+| SDK Adapter Interface  | Bridges to Native? | Implementation                                     | Notes                             |
+| ---------------------- | ------------------ | -------------------------------------------------- | --------------------------------- |
+| `NFCScannerAdapter`    | Yes                | `nfc.scan` bridge call                             | Core flow: scan passport NFC chip |
+| `CryptoAdapter.sign()` | Yes †              | `secureStorage` key retrieval + Web Crypto signing | See Decision Matrix footnote      |
+| `CryptoAdapter.hash()` | No                 | Web Crypto API                                     | Runs entirely in WebView          |
+| `AuthAdapter`          | Yes                | `secureStorage.get` with `requireBiometric: true`  | Private key gated by biometrics   |
+| `StorageAdapter`       | Yes                | `secureStorage.*` bridge calls                     | Keychain access only              |
+| `DocumentsAdapter`     | No                 | IndexedDB                                          | Runs entirely in WebView          |
+| `AnalyticsAdapter`     | No                 | console/fetch                                      | Fire-and-forget                   |
+| `NavigationAdapter`    | No                 | React Router                                       | WebView-internal                  |
+| `NetworkAdapter`       | No                 | `fetch()`                                          | Works in WebView                  |
+| `ClockAdapter`         | No                 | `Date.now()` + `setTimeout`                        | Works in WebView                  |
+| `LoggerAdapter`        | No                 | `console.*`                                        | Works in WebView                  |
 
 ### Transport
 
-| Platform         | WebView → Native                                                | Native → WebView                                                               |
-| ---------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **Android**      | `window.SelfNativeAndroid.postMessage(json)`                    | `evaluateJavascript("window.SelfNativeBridge._handleResponse(json)")`          |
-| **iOS**          | `window.webkit.messageHandlers.SelfNativeIOS.postMessage(json)` | `evaluateJavaScript("window.SelfNativeBridge._handleResponse(json)")`          |
-| **React Native** | `window.ReactNativeWebView.postMessage(json)`                   | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleResponse(json)")` |
+| Platform         | WebView → Native                                                | Native → WebView (responses)                                                   | Native → WebView (events)                                                   |
+| ---------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| **Android**      | `window.SelfNativeAndroid.postMessage(json)`                    | `evaluateJavascript("window.SelfNativeBridge._handleResponse(json)")`          | `evaluateJavascript("window.SelfNativeBridge._handleEvent(json)")`          |
+| **iOS**          | `window.webkit.messageHandlers.SelfNativeIOS.postMessage(json)` | `evaluateJavaScript("window.SelfNativeBridge._handleResponse(json)")`          | `evaluateJavaScript("window.SelfNativeBridge._handleEvent(json)")`          |
+| **React Native** | `window.ReactNativeWebView.postMessage(json)`                   | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleResponse(json)")` | `webViewRef.injectJavaScript("window.SelfNativeBridge._handleEvent(json)")` |
+
+> **Note:** Responses (`_handleResponse`) are paired to a specific request via `requestId`. Events (`_handleEvent`) are unsolicited — the native side pushes them (e.g., NFC `scanProgress`) without a prior request.
 
 ### Timeouts
 
@@ -347,6 +354,7 @@ Person 5 — RN Native Shell (NEW)        OVERVIEW | SPEC
 ```
 
 Links:
+
 - Person 1: [Overview](./person1-webview/OVERVIEW.md) | [Spec](./person1-webview/SPEC.md)
 - Person 2: [Overview](./person2-native-shells/OVERVIEW.md) | [Spec](./person2-native-shells/SPEC.md)
 - Person 3: [Overview](./person3-integrations/OVERVIEW.md) | [MiniPay Spec](./person3-integrations/SPEC-MINIPAY-SAMPLE.md)
@@ -443,6 +451,8 @@ Integration samples (MiniPay)
 ```
 
 ## In-Flight PRs
+
+> **Note:** This table may be stale. Check GitHub for current status before relying on it.
 
 | PR                                                    | Title                                           | Impact                                                                                                                                           | Files                    | Status |
 | ----------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ | ------ |
@@ -544,18 +554,18 @@ cd app && npx react-native run-ios  # integration test
 
 ## Related Specs
 
-| Spec                                                                                                | Type     | Audience | What it covers                                          |
-| --------------------------------------------------------------------------------------------------- | -------- | -------- | ------------------------------------------------------- |
-| [person1-webview/OVERVIEW.md](./person1-webview/OVERVIEW.md)                                         | Overview | Person 1 | WebView workstream orientation, scope, dependencies     |
-| [person1-webview/SPEC.md](./person1-webview/SPEC.md)                                                 | Impl     | Person 1 | WebView screens, bridge adapters, SelfClientProvider    |
-| [person2-native-shells/OVERVIEW.md](./person2-native-shells/OVERVIEW.md)                             | Overview | Person 2 | Native shells workstream orientation, scope, deps       |
-| [person2-native-shells/SPEC.md](./person2-native-shells/SPEC.md)                                     | Impl     | Person 2 | KMP native shell, Android/iOS handlers, Swift providers |
-| [person3-integrations/OVERVIEW.md](./person3-integrations/OVERVIEW.md)                               | Overview | Person 3 | Integration samples orientation, scope                  |
-| [person3-integrations/SPEC-MINIPAY-SAMPLE.md](./person3-integrations/SPEC-MINIPAY-SAMPLE.md)        | Impl     | Person 3 | MiniPay integration example                             |
-| [person4-sdk-core/OVERVIEW.md](./person4-sdk-core/OVERVIEW.md)                                       | Overview | Person 4 | SDK core workstream orientation, scope, dependencies    |
-| [person4-sdk-core/SPEC.md](./person4-sdk-core/SPEC.md)                                               | Impl     | Person 4 | SDK core adaptation, RN dep removal, web fallbacks      |
-| [person5-rn-sdk/OVERVIEW.md](./person5-rn-sdk/OVERVIEW.md)                                           | Overview | Person 5 | RN SDK workstream orientation, scope, dependencies      |
-| [person5-rn-sdk/SPEC.md](./person5-rn-sdk/SPEC.md)                                                   | Impl     | Person 5 | RN native shell, `<SelfVerification />` component       |
+| Spec                                                                                         | Type     | Audience | What it covers                                          |
+| -------------------------------------------------------------------------------------------- | -------- | -------- | ------------------------------------------------------- |
+| [person1-webview/OVERVIEW.md](./person1-webview/OVERVIEW.md)                                 | Overview | Person 1 | WebView workstream orientation, scope, dependencies     |
+| [person1-webview/SPEC.md](./person1-webview/SPEC.md)                                         | Impl     | Person 1 | WebView screens, bridge adapters, SelfClientProvider    |
+| [person2-native-shells/OVERVIEW.md](./person2-native-shells/OVERVIEW.md)                     | Overview | Person 2 | Native shells workstream orientation, scope, deps       |
+| [person2-native-shells/SPEC.md](./person2-native-shells/SPEC.md)                             | Impl     | Person 2 | KMP native shell, Android/iOS handlers, Swift providers |
+| [person3-integrations/OVERVIEW.md](./person3-integrations/OVERVIEW.md)                       | Overview | Person 3 | Integration samples orientation, scope                  |
+| [person3-integrations/SPEC-MINIPAY-SAMPLE.md](./person3-integrations/SPEC-MINIPAY-SAMPLE.md) | Impl     | Person 3 | MiniPay integration example                             |
+| [person4-sdk-core/OVERVIEW.md](./person4-sdk-core/OVERVIEW.md)                               | Overview | Person 4 | SDK core workstream orientation, scope, dependencies    |
+| [person4-sdk-core/SPEC.md](./person4-sdk-core/SPEC.md)                                       | Impl     | Person 4 | SDK core adaptation, RN dep removal, web fallbacks      |
+| [person5-rn-sdk/OVERVIEW.md](./person5-rn-sdk/OVERVIEW.md)                                   | Overview | Person 5 | RN SDK workstream orientation, scope, dependencies      |
+| [person5-rn-sdk/SPEC.md](./person5-rn-sdk/SPEC.md)                                           | Impl     | Person 5 | RN native shell, `<SelfVerification />` component       |
 
 ## Spec Deviations
 

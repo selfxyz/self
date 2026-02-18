@@ -67,36 +67,36 @@ You own the SDK engine layer. It sits below Person 1's WebView UI and above the 
 
 ## Dependencies
 
-| Direction     | Person / Package | What                                                               | Status      |
-| ------------- | ---------------- | ------------------------------------------------------------------ | ----------- |
-| **You need**  | Nobody           | Your work is independent in Phase 1                                | Ready       |
+| Direction     | Person / Package | What                                                                        | Status      |
+| ------------- | ---------------- | --------------------------------------------------------------------------- | ----------- |
+| **You need**  | Nobody           | Your work is independent in Phase 1                                         | Ready       |
 | **Needs you** | Person 1         | Adapter interfaces, core logic (`useSelfClient()`, stores, proving machine) | In progress |
-| **Needs you** | Person 2         | Web fallback adapters to confirm which bridge domains are unnecessary | Pending     |
-| **Needs you** | Person 5         | Browser entry point working in RN WebView context                  | Pending     |
+| **Needs you** | Person 2         | Web fallback adapters to confirm which bridge domains are unnecessary       | Pending     |
+| **Needs you** | Person 5         | Browser entry point working in RN WebView context                           | Pending     |
 
 ## Key Decisions
 
-| Decision                             | Choice                      | Rationale                                                        |
-| ------------------------------------ | --------------------------- | ---------------------------------------------------------------- |
-| Adapter interface design             | Keep as-is                  | Already right — don't redesign, just remove platform contamination |
-| Keychain / SecureStorage             | Always bridges to native    | Security boundary — host app controls access                     |
-| Documents, crypto hash, analytics    | Web fallback adapters       | Eliminates unnecessary bridge round-trips                        |
-| Proving machine + adapter arch       | Don't refactor              | They work — you are removing contamination, not redesigning      |
-| `@selfxyz/common` issues             | Out of scope                | If Buffer or Node-specific issues exist, file separately         |
+| Decision                          | Choice                   | Rationale                                                          |
+| --------------------------------- | ------------------------ | ------------------------------------------------------------------ |
+| Adapter interface design          | Keep as-is               | Already right — don't redesign, just remove platform contamination |
+| Keychain / SecureStorage          | Always bridges to native | Security boundary — host app controls access                       |
+| Documents, crypto hash, analytics | Web fallback adapters    | Eliminates unnecessary bridge round-trips                          |
+| Proving machine + adapter arch    | Don't refactor           | They work — you are removing contamination, not redesigning        |
+| `@selfxyz/common` issues          | Out of scope             | If Buffer or Node-specific issues exist, file separately           |
 
 ## Deliverables
 
-| Deliverable                                   | Type        | Consumers                      |
-| --------------------------------------------- | ----------- | ------------------------------ |
-| `@selfxyz/mobile-sdk-alpha` (clean browser entry) | npm package | Person 1 (webview-app), Person 5 (rn-sdk) |
-| Web fallback adapters (documents, crypto hash, analytics) | Source (in package) | Person 1 (SelfClientProvider wiring) |
+| Deliverable                                               | Type                | Consumers                                 |
+| --------------------------------------------------------- | ------------------- | ----------------------------------------- |
+| `@selfxyz/mobile-sdk-alpha` (clean browser entry)         | npm package         | Person 1 (webview-app), Person 5 (rn-sdk) |
+| Web fallback adapters (documents, crypto hash, analytics) | Source (in package) | Person 1 (SelfClientProvider wiring)      |
 
 ## Related Specs
 
-| Spec                                                           | What it covers                                       |
-| -------------------------------------------------------------- | ---------------------------------------------------- |
-| [SPEC.md](./SPEC.md)                                          | Implementation details, chunks, code changes         |
-| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                       | Project-level architecture, bridge protocol, glossary |
-| [../person1-webview/OVERVIEW.md](../person1-webview/OVERVIEW.md) | WebView UI — your primary consumer                   |
-| [../person2-native-shells/OVERVIEW.md](../person2-native-shells/OVERVIEW.md) | Native shells — consumes your web fallback signals   |
-| [../person5-rn-sdk/OVERVIEW.md](../person5-rn-sdk/OVERVIEW.md)  | RN SDK — consumes your browser entry point           |
+| Spec                                                                         | What it covers                                        |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------- |
+| [SPEC.md](./SPEC.md)                                                         | Implementation details, chunks, code changes          |
+| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                                     | Project-level architecture, bridge protocol, glossary |
+| [../person1-webview/OVERVIEW.md](../person1-webview/OVERVIEW.md)             | WebView UI — your primary consumer                    |
+| [../person2-native-shells/OVERVIEW.md](../person2-native-shells/OVERVIEW.md) | Native shells — consumes your web fallback signals    |
+| [../person5-rn-sdk/OVERVIEW.md](../person5-rn-sdk/OVERVIEW.md)               | RN SDK — consumes your browser entry point            |
