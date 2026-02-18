@@ -14,6 +14,8 @@ import {
   bridgeLifecycleAdapter,
   webNavigationAdapter,
   bridgeHapticAdapter,
+  bridgeBiometricsAdapter,
+  bridgeCameraAdapter,
 } from '@selfxyz/webview-bridge/adapters';
 import type {
   BridgeNFCScannerAdapter,
@@ -25,6 +27,8 @@ import type {
   BridgeLifecycleAdapter,
   BridgeNavigationAdapter,
   BridgeHapticAdapter,
+  BridgeBiometricsAdapter,
+  BridgeCameraAdapter,
 } from '@selfxyz/webview-bridge/adapters';
 import { useBridge } from './BridgeProvider';
 
@@ -38,6 +42,8 @@ export interface SelfClientAdapters {
   lifecycle: BridgeLifecycleAdapter;
   navigation: BridgeNavigationAdapter;
   haptic: BridgeHapticAdapter;
+  biometrics: BridgeBiometricsAdapter;
+  camera: BridgeCameraAdapter;
 }
 
 const SelfClientContext = createContext<SelfClientAdapters | null>(null);
@@ -71,6 +77,8 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
         () => navigate(-1),
       ),
       haptic: bridgeHapticAdapter(bridge),
+      biometrics: bridgeBiometricsAdapter(bridge),
+      camera: bridgeCameraAdapter(bridge),
     };
   }, [bridge, navigate]);
 

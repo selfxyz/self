@@ -28,3 +28,9 @@ export type { BridgeNavigationAdapter, RouteName } from './navigation';
 
 export { bridgeLifecycleAdapter } from './lifecycle';
 export type { BridgeLifecycleAdapter } from './lifecycle';
+
+export { bridgeBiometricsAdapter } from './biometrics';
+export type { BridgeBiometricsAdapter } from './biometrics';
+
+export { bridgeCameraAdapter } from './camera';
+export type { BridgeCameraAdapter, MrzScanResult } from './camera';
