@@ -4,36 +4,18 @@
 
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, ScrollView, Text, View, XStack, YStack } from 'tamagui';
+import {
+  SettingsViewScreen,
+  LeftArrowIcon,
+  QuestionCircleStrokeIcon,
+  DocumentDetailsIcon,
+  LockIcon,
+  CloudKeyIcon,
+  ChatStrokeIcon,
+  ShareIcon,
+} from '@selfxyz/euclid-web';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
-
-interface MenuItemProps {
-  icon: string;
-  label: string;
-  onPress: () => void;
-}
-
-const MenuItem: React.FC<MenuItemProps> = ({ icon, label, onPress }) => (
-  <XStack
-    backgroundColor="#ffffff"
-    borderRadius={12}
-    padding={16}
-    alignItems="center"
-    gap={12}
-    pressStyle={{ backgroundColor: '#F8FAFC' }}
-    onPress={onPress}
-    cursor="pointer"
-  >
-    <Text fontSize={20}>{icon}</Text>
-    <Text fontFamily="DINOT-Medium" fontSize={16} color="#000000" flex={1}>
-      {label}
-    </Text>
-    <Text fontSize={16} color="#94A3B8">
-      ›
-    </Text>
-  </XStack>
-);
 
 export const SettingsScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -51,101 +33,69 @@ export const SettingsScreen: React.FC = () => {
   }, [haptic, analytics, lifecycle]);
 
   return (
-    <YStack flex={1} backgroundColor="#F8FAFC">
-      {/* Header */}
-      <XStack
-        paddingHorizontal={20}
-        paddingTop={20}
-        paddingBottom={16}
-        alignItems="center"
-        gap={12}
-      >
-        <Button
-          unstyled
-          onPress={onBack}
-          pressStyle={{ opacity: 0.7 }}
-          cursor="pointer"
-        >
-          <Text fontSize={24} color="#000000">
-            ←
-          </Text>
-        </Button>
-        <Text fontFamily="Advercase-Regular" fontSize={20} color="#000000">
-          Settings
-        </Text>
-      </XStack>
-
-      <ScrollView flex={1} paddingHorizontal={20}>
-        <YStack gap={8}>
-          <Text
-            fontFamily="DINOT-Medium"
-            fontSize={12}
-            color="#94A3B8"
-            textTransform="uppercase"
-            letterSpacing={1}
-            paddingBottom={8}
-          >
-            Account
-          </Text>
-
-          <MenuItem
-            icon="📄"
-            label="View document info"
-            onPress={() => navigate('/coming-soon')}
-          />
-          <MenuItem
-            icon="🔒"
-            label="Recovery phrase"
-            onPress={() => navigate('/coming-soon')}
-          />
-          <MenuItem
-            icon="☁️"
-            label="Cloud backup"
-            onPress={() => navigate('/coming-soon')}
-          />
-
-          <View height={24} />
-
-          <Text
-            fontFamily="DINOT-Medium"
-            fontSize={12}
-            color="#94A3B8"
-            textTransform="uppercase"
-            letterSpacing={1}
-            paddingBottom={8}
-          >
-            Support
-          </Text>
-
-          <MenuItem
-            icon="💬"
-            label="Get support"
-            onPress={() => navigate('/coming-soon')}
-          />
-          <MenuItem
-            icon="📤"
-            label="Share Self"
-            onPress={() => navigate('/coming-soon')}
-          />
-
-          <View height={24} />
-
-          {/* Dismiss SDK button */}
-          <Button
-            backgroundColor="transparent"
-            borderWidth={1}
-            borderColor="#CBD5E1"
-            borderRadius={12}
-            height={52}
-            fontFamily="DINOT-Medium"
-            color="#EF4444"
-            onPress={onDismiss}
-            pressStyle={{ opacity: 0.7 }}
-          >
-            Close Self
-          </Button>
-        </YStack>
-      </ScrollView>
-    </YStack>
+    <SettingsViewScreen
+      insets={{ top: 0, bottom: 0 }}
+      escapeIcon={({ size, color }) => (
+        <LeftArrowIcon size={size} color={color} />
+      )}
+      infoIcon={({ size, color }) => (
+        <QuestionCircleStrokeIcon size={size} color={color} />
+      )}
+      onClose={onBack}
+      showBackupInfoBox={false}
+      isBackupEnabled={false}
+      CTAs={[]}
+      sections={[
+        {
+          title: 'Account',
+          items: [
+            {
+              icon: DocumentDetailsIcon,
+              label: 'View document info',
+              description: 'View your stored document details',
+              onPress: () => navigate('/coming-soon'),
+            },
+            {
+              icon: LockIcon,
+              label: 'Recovery phrase',
+              description: 'View your recovery phrase',
+              onPress: () => navigate('/coming-soon'),
+            },
+            {
+              icon: CloudKeyIcon,
+              label: 'Cloud backup',
+              description: 'Manage your cloud backup',
+              onPress: () => navigate('/coming-soon'),
+            },
+          ],
+        },
+        {
+          title: 'Support',
+          items: [
+            {
+              icon: ChatStrokeIcon,
+              label: 'Get support',
+              description: 'Contact us for help',
+              onPress: () => navigate('/coming-soon'),
+            },
+            {
+              icon: ShareIcon,
+              label: 'Share Self',
+              description: 'Share Self with friends',
+              onPress: () => navigate('/coming-soon'),
+            },
+          ],
+        },
+      ]}
+      connectHeading=""
+      connectSubheading=""
+      connectButtons={[]}
+      bottomSectionItems={[
+        {
+          label: 'Close Self',
+          onPress: onDismiss,
+        },
+      ]}
+    />
   );
 };

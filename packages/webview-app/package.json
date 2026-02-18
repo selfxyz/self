@@ -10,20 +10,18 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@selfxyz/euclid-core": "^1.0.1",
+    "@selfxyz/euclid-web": "^1.0.2",
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
     "@selfxyz/webview-bridge": "workspace:^",
-    "@tamagui/config": "1.126.14",
     "lottie-react": "^2.4.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-native-web": "^0.19.13",
     "react-router-dom": "^6.28.0",
-    "tamagui": "1.126.14",
     "uuid": "^11.1.0",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
-    "@tamagui/vite-plugin": "1.126.14",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
