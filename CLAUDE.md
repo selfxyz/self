@@ -20,25 +20,42 @@ nvm use && corepack enable && yarn install
 - **Native handlers are thin wrappers.** No business logic in Kotlin or Swift. All logic lives in TypeScript.
 - **Keychain is always native-managed.** No web fallbacks for secure storage. This is a security boundary.
 
-## SDK Specs
+## Specs & Planning
 
-For SDK implementation work, read the specs in `specs/`:
+**Every feature — even minor ones — uses the spec system.** Before implementing, read the relevant specs, write a plan to disk, then execute. No exceptions. A plan that only exists in session memory is a plan that will be lost.
 
-- **Start:** [specs/README.md](./specs/README.md) — table of contents and reading order
-- **Architecture:** [specs/SDK-OVERVIEW.md](./specs/SDK-OVERVIEW.md) — bridge protocol, module table, decision matrix
-- **Rules:** [specs/PROJECT-RULES.md](./specs/PROJECT-RULES.md) — project-specific guardrails
-- **Wave plan:** [specs/WAVE-PLAN.md](./specs/WAVE-PLAN.md) — parallel execution plan
+### Spec System (`specs/`)
 
-## Planning Protocol
+| File                                         | Purpose                                                                       | When to Read                               |
+| -------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------ |
+| [README.md](./specs/README.md)               | Table of contents, reading order                                              | First. Always.                             |
+| [SPEC-GUIDE.md](./specs/SPEC-GUIDE.md)       | How to write specs (three-tier system, review checklist, AI agent guidelines) | Before writing or reviewing any spec       |
+| [TEMPLATES.md](./specs/TEMPLATES.md)         | Copy-paste templates for all three tiers                                      | When creating a new spec                   |
+| [PROJECT-RULES.md](./specs/PROJECT-RULES.md) | Project-specific rules and guardrails                                         | Before starting any implementation work    |
+| [SDK-OVERVIEW.md](./specs/SDK-OVERVIEW.md)   | Architecture, bridge protocol, module table, decision matrix                  | For system-level context                   |
+| [WAVE-PLAN.md](./specs/WAVE-PLAN.md)         | Dependency-ordered execution plan                                             | When planning which chunks to execute next |
 
-**Always write plans to disk before executing.** When working on multi-step tasks:
+Workstream specs live in `specs/person*-*/` with `OVERVIEW.md` (stable orientation) and `SPEC.md` (living implementation details).
 
-1. Read relevant specs and understand the current state
-2. Create a plan (markdown file or update to the spec's chunk status)
-3. **Write the plan to a file** (e.g., update WAVE-PLAN.md, or create a session plan in specs/)
-4. Then start implementing
+### Planning Protocol
 
-This protects against session loss (API errors, context overflow, `/clear`), enables multiple agents to work from the same plan, and creates an audit trail. A plan that only exists in session memory is a plan that will be lost.
+1. **Read** `specs/PROJECT-RULES.md` and the relevant workstream specs — understand the current state and constraints
+2. **Write a plan to disk** — use the appropriate tier from `specs/TEMPLATES.md`:
+   - **Large features / new workstreams:** Create a full implementation spec (`specs/person-scope/SPEC.md`)
+   - **Medium features / multi-chunk work:** Create a session plan file in `specs/` or update the relevant SPEC.md
+   - **Small features / single-chunk fixes:** Add a chunk to an existing SPEC.md, or create a minimal plan in the spec folder
+3. **Include in every plan:** scope of work, files modified, I/O examples, validation command, definition of done
+4. **Then implement** — update chunk status as you complete work
+5. **After completion:** Mark chunks done in both SPEC.md and OVERVIEW.md status checklists
+
+Quick-start prompts for creating new specs are in [SPEC-GUIDE.md](./specs/SPEC-GUIDE.md#quick-start).
+
+### Why Even Minor Features
+
+- Prevents scope creep — writing "files NOT modified" forces focus
+- Survives session loss — API errors, context overflow, `/clear` won't destroy the plan
+- Enables parallel work — multiple agents can pick up chunks from the same plan
+- Creates audit trail — what was planned vs what was built
 
 ## Validation Commands
 
