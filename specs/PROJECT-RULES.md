@@ -135,6 +135,6 @@ cd packages/webview-bridge && npx vitest run
 
 ## RN SDK (Person 5)
 
-1. **Thin wrapper only.** `<SelfVerification />` is a `react-native-webview` component with 5 native handler bridges. Target: 200-300 LOC. If it's growing beyond that, logic is leaking out of the WebView.
+1. **Thin wrapper only.** `SelfVerification` is a `react-native-webview` component with 5 native handler bridges. Target: 200-300 LOC. If it's growing beyond that, logic is leaking out of the WebView.
 
 2. **Same bridge protocol as KMP.** No custom messaging. The WebView doesn't know if it's inside a KMP shell or an RN shell.

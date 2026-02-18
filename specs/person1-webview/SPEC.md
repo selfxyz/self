@@ -1365,7 +1365,7 @@ ls packages/webview-app/dist/index.html  # file must exist
   - Bridge domain methods must match exactly (e.g., `secureStorage.get` not `keychain.get`).
   - They will delete 4 handlers (documents, crypto, analytics, haptic) — those now run as web fallback adapters in your code.
 - **Person 4 (SDK Core Adaptation):** They own `mobile-sdk-alpha`. You import adapter interfaces and constants from their package. If an adapter interface changes, your adapter factories must update. They are also building web fallback adapter implementations in `mobile-sdk-alpha` — coordinate to avoid duplication.
-- **Person 5 (RN Native Shell):** They will wrap your Vite bundle in a `<SelfVerification />` React Native component. The same bridge protocol applies. Your React Native transport detection (`window.ReactNativeWebView.postMessage`) must work with their setup.
+- **Person 5 (RN Native Shell):** They will wrap your Vite bundle in a `SelfVerification` React Native component. The same bridge protocol applies. Your React Native transport detection (`window.ReactNativeWebView.postMessage`) must work with their setup.
 - **All:** The Vite build output (`dist/index.html` + bundle) is the artifact that Person 2 bundles into the KMP SDK and Person 5 loads via `react-native-webview`. Any breaking change to the build output affects everyone.
 
 ## Key Reference Files
@@ -1391,7 +1391,7 @@ ls packages/webview-app/dist/index.html  # file must exist
 | [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                             | All      | Architecture, bridge protocol, domain catalog, dependency graph |
 | [person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md) | Person 2 | Kotlin/Swift native shells, Android/iOS handlers                |
 | [person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md)           | Person 4 | SDK core adaptation, RN dep removal, web fallbacks              |
-| [person5-rn-sdk/SPEC.md](../person5-rn-sdk/SPEC.md)               | Person 5 | RN native shell, `<SelfVerification />` component               |
+| [person5-rn-sdk/SPEC.md](../person5-rn-sdk/SPEC.md)               | Person 5 | RN native shell, `SelfVerification` component                   |
 
 ---
 

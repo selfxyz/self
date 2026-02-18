@@ -869,10 +869,10 @@ Run on: Android physical device + iOS physical device.
 
 ## Follow-Up (Out of Scope)
 
-| Item                                            | Discovered during | Suggested spec               |
-| ----------------------------------------------- | ----------------- | ---------------------------- |
-| Production publishing (AAR + XCFramework)       | —                 | New spec: SPEC-PUBLISHING.md |
-| Self Wallet migration to `<SelfVerification />` | —                 | person5-rn-sdk/SPEC.md       |
+| Item                                        | Discovered during | Suggested spec               |
+| ------------------------------------------- | ----------------- | ---------------------------- |
+| Production publishing (AAR + XCFramework)   | —                 | New spec: SPEC-PUBLISHING.md |
+| Self Wallet migration to `SelfVerification` | —                 | person5-rn-sdk/SPEC.md       |
 
 ## Spec Deviations
 

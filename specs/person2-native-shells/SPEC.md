@@ -855,7 +855,7 @@ package xyz.self.sdk.providers
  *
  * Documents, Crypto, Analytics, Haptic are handled by web fallbacks
  * inside the WebView (IndexedDB, Web Crypto API, fetch).
- * Keychain access is native-managed by the host app directly.
+ * SecureStorage is provided via factory pattern (same as NFC/Biometrics).
  */
 object SdkProviderRegistry {
     var nfc: NfcProvider? = null
@@ -1346,7 +1346,7 @@ actual fun launch(request: VerificationRequest, callback: SelfSdkCallback) {
     // Crypto     -> Web Crypto API in WebView
     // Analytics  -> console/fetch in WebView
     // Haptic     -> skipped (not critical)
-    // Keychain   -> native-managed by host app (e.g. MiniPay)
+    // SecureStorage -> via SecureStorageProvider (factory pattern, same as NFC/Biometrics)
 
     // Create WebView
     webViewHost = IosWebViewHost(router, config.debug)
@@ -2058,7 +2058,7 @@ cd packages/self-sdk-swift && swift build
 
 - **Person 1 (WebView UI + Bridge):** You consume their Vite bundle (`dist/`) as a static asset. When they change bridge message shapes in `packages/webview-bridge/src/types.ts`, you must update the Kotlin `BridgeMessage.kt` types to match. Coordinate on any domain or method name changes.
 - **Person 4 (SDK Core):** They own the adapter interfaces in `packages/mobile-sdk-alpha/src/types/public.ts`. The WebView engine calls your native handlers through these adapters. If adapter signatures change, the bridge protocol may need updating.
-- **Person 5 (RN Native Shell):** They build a separate native shell (`packages/rn-sdk/`) using the same bridge protocol. Share handler method contracts and test vectors. Their `<SelfVerification />` component loads the same Vite bundle you do.
+- **Person 5 (RN Native Shell):** They build a separate native shell (`packages/rn-sdk/`) using the same bridge protocol. Share handler method contracts and test vectors. Their `SelfVerification` component loads the same Vite bundle you do.
 - **PR #1762:** iOS bridge handlers with Swift provider pattern -- adds `self-sdk-swift` package, 82 files changed. Must be merged before Chunks 2G-2K can proceed on the main branch.
 - **MiniPay Integration:** The [SPEC-MINIPAY-SAMPLE.md](../person3-integrations/SPEC-MINIPAY-SAMPLE.md) depends on this spec for iOS SDK functionality. Android side is already working.
 
@@ -2120,11 +2120,11 @@ cd packages/self-sdk-swift && swift build
 
 ## Follow-Up (Out of Scope)
 
-| Item                           | Discovered during | Suggested spec                                                     |
-| ------------------------------ | ----------------- | ------------------------------------------------------------------ |
-| Camera MRZ handler for iOS     | Chunk 2L scoping  | Phase 2 -- add to this spec when needed                            |
-| SecureStorage handler for iOS  | Design review     | May not be needed -- host app manages keychain directly            |
-| Crypto signing handler for iOS | Design review     | Depends on whether secure enclave signing is needed vs. Web Crypto |
+| Item                           | Discovered during | Suggested spec                                                                                |
+| ------------------------------ | ----------------- | --------------------------------------------------------------------------------------------- |
+| Camera MRZ handler for iOS     | Chunk 2L scoping  | Phase 2 -- add to this spec when needed                                                       |
+| SecureStorage handler for iOS  | Design review     | **Decided:** Add `SecureStorageProvider` to factory pattern (see SDK-OVERVIEW canonical rule) |
+| Crypto signing handler for iOS | Design review     | Depends on whether secure enclave signing is needed vs. Web Crypto                            |
 
 ## Spec Deviations
 

@@ -23,11 +23,11 @@
 - [ ] Camera bridge adapter wiring in webview-app
 - [ ] Web fallback adapters (IndexedDB for docs, Web Crypto for hashing)
 - [x] Browser entry point with zero RN transitive imports
-- [ ] RN SDK (`<SelfVerification />` component — does not exist yet)
+- [ ] RN SDK (`SelfVerification` component — does not exist yet)
 - [ ] MiniPay sample integration
 - [ ] Dynamic proof request items (currently hardcoded in ProvingScreen)
 - [ ] MRZ data confirmation screen (PR #1767, not yet merged)
-- [ ] Self Wallet migration to `<SelfVerification />`
+- [ ] Self Wallet migration to `SelfVerification`
 - [ ] Production publishing (npm + AAR + XCFramework)
 
 ## Architecture Diagram
@@ -124,24 +124,24 @@
 | **Bridge Protocol**     | `packages/webview-bridge/`   | TypeScript             | JSON messaging, 10 domains, 9 adapters, timeout/error handling, mock transport              | 62 tests pass, production-ready protocol                    | **80%** | Add biometrics adapter (domain defined, no implementation). Web fallback adapters for documents/storage                           |
 | **Kotlin Native Shell** | `packages/kmp-sdk/`          | Kotlin                 | Android: 5 handlers + WebView host + Activity. iOS: stubs (Swift providers in PR #1762)     | Android fully implemented, iOS stubs                        | **70%** | iOS: implement via Swift provider pattern                                                                                         |
 | **Swift Providers**     | `packages/self-sdk-swift/`   | Swift                  | iOS native implementations: NFC, biometrics, crypto, secure storage, WebView hosting        | In PR #1762 (not merged)                                    | **30%** | Merge PR #1762. Complete NFC + biometrics + lifecycle providers                                                                   |
-| **RN Native Shell**     | `packages/rn-sdk/` — **NEW** | React Native           | `<SelfVerification />` WebView wrapper, 5 native handler bridges                            | Does not exist                                              | **0%**  | Create thin wrapper: ~200-300 LOC, same bridge protocol as KMP                                                                    |
+| **RN Native Shell**     | `packages/rn-sdk/` — **NEW** | React Native           | `SelfVerification` WebView wrapper, 5 native handler bridges                                | Does not exist                                              | **0%**  | Create thin wrapper: ~200-300 LOC, same bridge protocol as KMP                                                                    |
 | **Shared Utilities**    | `common/`                    | TypeScript             | Poseidon, Merkle trees, passport parsing, certificates, 150+ files, 88+ exports             | Production, 98% browser-compatible                          | **95%** | No changes needed. Only 2 files require Node.js (optional)                                                                        |
-| **Self Wallet App**     | `app/`                       | React Native (v0.76.9) | Full wallet: documents, NFC, proving, KYC, recovery, settings, Turnkey wallet               | Production (v2.9.16)                                        | **N/A** | Test environment for SDK. Eventually migrates to `<SelfVerification />`                                                           |
+| **Self Wallet App**     | `app/`                       | React Native (v0.76.9) | Full wallet: documents, NFC, proving, KYC, recovery, settings, Turnkey wallet               | Production (v2.9.16)                                        | **N/A** | Test environment for SDK. Eventually migrates to `SelfVerification`                                                               |
 
 ## Decision Matrix
 
-| Capability      | Must be native?    | KMP Android          | KMP iOS           | RN SDK            | WebView Fallback           |
-| --------------- | ------------------ | -------------------- | ----------------- | ----------------- | -------------------------- |
-| **NFC**         | YES                | KEEP (497 LOC)       | BUILD (Swift)     | BUILD             | None (hardware)            |
-| **Camera/MRZ**  | YES                | KEEP (247 LOC)       | Phase 2           | BUILD             | None (hardware)            |
-| **Biometrics**  | YES                | KEEP (142 LOC)       | BUILD (Swift)     | BUILD             | None (OS prompt)           |
-| **Keychain**    | YES (host decides) | KEEP (120 LOC)       | Host-managed      | BUILD             | None (native-managed)      |
-| **Lifecycle**   | YES                | KEEP (91 LOC)        | DONE (86 LOC)     | BUILD             | None (Activity/VC)         |
-| **Documents**   | NO                 | **DELETE** (146 LOC) | Skip              | Skip              | IndexedDB                  |
-| **Crypto hash** | NO                 | **DELETE** (177 LOC) | Skip              | Skip              | Web Crypto API             |
-| **Crypto sign** | NO †               | Via SecureStorage    | Via SecureStorage | Via SecureStorage | secureStorage + Web Crypto |
-| **Analytics**   | NO                 | **DELETE** (94 LOC)  | Skip              | Skip              | console/fetch              |
-| **Haptic**      | NO                 | **DELETE** (94 LOC)  | Skip              | Skip              | Not critical               |
+| Capability      | Must be native? | KMP Android          | KMP iOS           | RN SDK            | WebView Fallback           |
+| --------------- | --------------- | -------------------- | ----------------- | ----------------- | -------------------------- |
+| **NFC**         | YES             | KEEP (497 LOC)       | BUILD (Swift)     | BUILD             | None (hardware)            |
+| **Camera/MRZ**  | YES             | KEEP (247 LOC)       | Phase 2           | BUILD             | None (hardware)            |
+| **Biometrics**  | YES             | KEEP (142 LOC)       | BUILD (Swift)     | BUILD             | None (OS prompt)           |
+| **Keychain**    | YES             | KEEP (120 LOC)       | BUILD (provider)  | BUILD             | None (native-managed)      |
+| **Lifecycle**   | YES             | KEEP (91 LOC)        | DONE (86 LOC)     | BUILD             | None (Activity/VC)         |
+| **Documents**   | NO              | **DELETE** (146 LOC) | Skip              | Skip              | IndexedDB                  |
+| **Crypto hash** | NO              | **DELETE** (177 LOC) | Skip              | Skip              | Web Crypto API             |
+| **Crypto sign** | NO †            | Via SecureStorage    | Via SecureStorage | Via SecureStorage | secureStorage + Web Crypto |
+| **Analytics**   | NO              | **DELETE** (94 LOC)  | Skip              | Skip              | console/fetch              |
+| **Haptic**      | NO              | **DELETE** (94 LOC)  | Skip              | Skip              | Not critical               |
 
 > **† Crypto domain note:** The `crypto` domain is defined in the bridge protocol but the standalone `CryptoBridgeHandler` (177 LOC) was deleted because it primarily handled hashing (Web Crypto covers that). **Current routing for crypto operations:**
 >
@@ -151,15 +151,30 @@
 >
 > If hardware-backed secure enclave signing is needed in the future (signing without exposing the key to the WebView), a dedicated slim `crypto` handler would need to be added. See [Person 2 SPEC Follow-Up](./person2-native-shells/SPEC.md#follow-up-out-of-scope) for this tracked item.
 
+> **Keychain/SecureStorage canonical rule:** The `secureStorage` bridge domain is always SDK-provided on every platform — there is no web fallback. The SDK ships a default handler; the host app does not need to implement its own unless it wants to override access policy.
+>
+> - **Android (KMP):** `SecureStorageBridgeHandler` backed by `EncryptedSharedPreferences`. Ships with the SDK.
+> - **React Native:** `KeychainHandler` backed by `react-native-keychain` (peer dependency). Ships with the SDK.
+> - **iOS (KMP):** `SecureStorageProvider` injected via factory pattern (same as NFC/Biometrics). The Swift companion package provides a default implementation using iOS Keychain Services. Host apps can override with a custom provider.
+>
+> The WebView never has direct keychain access. All `secureStorage` domain calls bridge to native. This is a security boundary.
+
+> **Web fallback adapter ownership:** Two packages provide adapters, at different layers:
+>
+> - **`mobile-sdk-alpha` (`src/adapters/browser/`)** — Engine-level adapters that satisfy the `Adapters` interface (e.g., `createIndexedDBDocumentsAdapter`, `createWebCryptoAdapter`). These are what `SelfClientProvider` in `webview-app` wires up. **This is the canonical source for web fallback implementations.**
+> - **`webview-bridge`** — Bridge-level adapters that translate between the bridge protocol and the engine adapters (e.g., `NfcBridgeAdapter` calls `bridge.request('nfc', 'scan', ...)`). For capabilities that don't need native (documents, crypto hash, analytics), the bridge adapter is a thin pass-through to the engine adapter.
+>
+> Rule: if a capability runs entirely in the WebView, the engine adapter in `mobile-sdk-alpha` owns the implementation. The bridge package provides the messaging plumbing, not the business logic.
+
 ## Impact Summary
 
-| Metric                          | Current                                 | After                          | Saved                                  |
-| ------------------------------- | --------------------------------------- | ------------------------------ | -------------------------------------- |
-| Kotlin Android handlers         | 9 (1,608 LOC)                           | 5 (~1,097 LOC)                 | -511 LOC                               |
-| Kotlin iOS handlers to build    | 9                                       | 3 (NFC, Biometrics, Lifecycle) | -6 handlers                            |
-| Entire Kotlin packages to build | 3 (kmp-sdk, common-lib, proving-client) | 1 (kmp-sdk)                    | -2 packages                            |
-| RN SDK new code                 | —                                       | ~200-300 LOC (thin wrapper)    | Shares 95% with Kotlin path            |
-| Code shared across platforms    | ~20%                                    | ~95% (WebView engine)          | Massive reduction in per-platform work |
+| Metric                          | Current                                 | After                                         | Saved                                  |
+| ------------------------------- | --------------------------------------- | --------------------------------------------- | -------------------------------------- |
+| Kotlin Android handlers         | 9 (1,608 LOC)                           | 5 (~1,097 LOC)                                | -511 LOC                               |
+| Kotlin iOS handlers to build    | 9                                       | 4 (NFC, Biometrics, SecureStorage, Lifecycle) | -5 handlers                            |
+| Entire Kotlin packages to build | 3 (kmp-sdk, common-lib, proving-client) | 1 (kmp-sdk)                                   | -2 packages                            |
+| RN SDK new code                 | —                                       | ~200-300 LOC (thin wrapper)                   | Shares 95% with Kotlin path            |
+| Code shared across platforms    | ~20%                                    | ~95% (WebView engine)                         | Massive reduction in per-platform work |
 
 ## Shared Contracts / Protocols
 
@@ -498,7 +513,7 @@ Integration samples (MiniPay)
 ## Migration Path
 
 1. **Phase 1 (Now):** Self Wallet serves as a **test environment** for validating code moved from `app/` into the WebView engine (`mobile-sdk-alpha`). SDK core, bridge, and UI are being built in parallel.
-2. **Phase 2:** Once the SDK ships to production (MiniPay integration works), Self Wallet integrates the `<SelfVerification />` RN component for its verification flow. This replaces native verification screens with the shared WebView flow.
+2. **Phase 2:** Once the SDK ships to production (MiniPay integration works), Self Wallet integrates the `SelfVerification` RN component for its verification flow. This replaces native verification screens with the shared WebView flow.
 3. **Phase 3:** Remaining Self Wallet features (document management, settings, cloud backup) can optionally migrate to the WebView or stay native — product decision.
 
 ## Dependency Graph
@@ -601,7 +616,7 @@ cd app && npx react-native run-ios  # integration test
 | [person4-sdk-core/OVERVIEW.md](./person4-sdk-core/OVERVIEW.md)                               | Overview | Person 4 | SDK core workstream orientation, scope, dependencies    |
 | [person4-sdk-core/SPEC.md](./person4-sdk-core/SPEC.md)                                       | Impl     | Person 4 | SDK core adaptation, RN dep removal, web fallbacks      |
 | [person5-rn-sdk/OVERVIEW.md](./person5-rn-sdk/OVERVIEW.md)                                   | Overview | Person 5 | RN SDK workstream orientation, scope, dependencies      |
-| [person5-rn-sdk/SPEC.md](./person5-rn-sdk/SPEC.md)                                           | Impl     | Person 5 | RN native shell, `<SelfVerification />` component       |
+| [person5-rn-sdk/SPEC.md](./person5-rn-sdk/SPEC.md)                                           | Impl     | Person 5 | RN native shell, `SelfVerification` component           |
 
 ## Spec Deviations
 

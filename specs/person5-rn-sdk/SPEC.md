@@ -13,7 +13,7 @@
 
 ## Overview
 
-You are building the **React Native native shell** (`@selfxyz/rn-sdk`) — a thin `<SelfVerification />` component that wraps `react-native-webview` to embed the Self verification flow inside any React Native app. It shares the same WebView engine, bridge protocol, and UI as the Kotlin native shell. The only RN-specific code is ~200-300 LOC of native handler bridges and the component wrapper. This matters because React Native hosts (Self Wallet, third-party apps) need the same verification flow that Kotlin hosts (MiniPay) get, without duplicating any logic.
+You are building the **React Native native shell** (`@selfxyz/rn-sdk`) — a thin `SelfVerification` component that wraps `react-native-webview` to embed the Self verification flow inside any React Native app. It shares the same WebView engine, bridge protocol, and UI as the Kotlin native shell. The only RN-specific code is ~200-300 LOC of native handler bridges and the component wrapper. This matters because React Native hosts (Self Wallet, third-party apps) need the same verification flow that Kotlin hosts (MiniPay) get, without duplicating any logic.
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not e
 | Gap                                                                   | Current state                                                  |
 | --------------------------------------------------------------------- | -------------------------------------------------------------- |
 | `packages/rn-sdk/`                                                    | Directory does not exist                                       |
-| `<SelfVerification />` component                                      | Not implemented — RN hosts cannot embed verification           |
+| `SelfVerification` component                                          | Not implemented — RN hosts cannot embed verification           |
 | Native handler bridges (NFC, biometrics, keychain, camera, lifecycle) | Not implemented — WebView has no way to reach RN native APIs   |
 | Asset bundling for iOS + Android                                      | Not implemented — no way to load the Vite bundle in production |
 
@@ -44,7 +44,7 @@ There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not e
 
 ## Definition of Done
 
-> **Done when:** `<SelfVerification />` component renders a working WebView that completes a full verification flow with NFC, biometrics, and keychain bridged to native.
+> **Done when:** `SelfVerification` component renders a working WebView that completes a full verification flow with NFC, biometrics, and keychain bridged to native.
 
 ## Scope of Work
 
@@ -119,7 +119,7 @@ packages/rn-sdk/
 
 ---
 
-### 3. `<SelfVerification />` Component
+### 3. `SelfVerification` Component
 
 **Create:** `packages/rn-sdk/src/SelfVerification.tsx`
 
@@ -712,7 +712,7 @@ If `react-native-fs` is not available, fall back to React Native's `require()` w
 
 ### Chunk 5A: Package Setup + Component Shell + MessageRouter + LifecycleHandler -- M ~8k tokens
 
-**Goal:** Create `packages/rn-sdk/` with a working `<SelfVerification />` that loads the WebView, routes bridge messages, and handles lifecycle domain.
+**Goal:** Create `packages/rn-sdk/` with a working `SelfVerification` that loads the WebView, routes bridge messages, and handles lifecycle domain.
 
 **Steps:**
 
@@ -973,7 +973,7 @@ _Audit date: 2026-02-17_
 
 | Chunk | Description                                                                           | Size   | Status      |
 | ----- | ------------------------------------------------------------------------------------- | ------ | ----------- |
-| 5A    | Package setup + `<SelfVerification />` shell + `MessageRouter` + `LifecycleHandler`   | M ~8k  | **Pending** |
+| 5A    | Package setup + `SelfVerification` shell + `MessageRouter` + `LifecycleHandler`       | M ~8k  | **Pending** |
 | 5B    | `BiometricHandler` + `KeychainHandler`                                                | S ~4k  | **Pending** |
 | 5C    | `NfcHandler` + `CameraHandler` (hardware-dependent, requires physical device testing) | L ~10k | **Pending** |
 | 5D    | Asset bundling (copy Vite output into `assets/`) + npm publishing config              | M ~6k  | **Pending** |
@@ -1058,12 +1058,12 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 
 ## Follow-Up (Out of Scope)
 
-| Item                                            | Discovered during | Suggested spec                                                    |
-| ----------------------------------------------- | ----------------- | ----------------------------------------------------------------- |
-| Self Wallet migration to `<SelfVerification />` | Spec writing      | Separate migration spec after SDK is stable                       |
-| MiniPay RN sample integration                   | Spec writing      | `SPEC-MINIPAY-SAMPLE.md` (already exists)                         |
-| Camera library selection for MRZ scanning       | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter |
-| iOS asset loading strategy (RNFS vs require)    | PR #1765 review   | Decide in Chunk 5D implementation                                 |
+| Item                                         | Discovered during | Suggested spec                                                    |
+| -------------------------------------------- | ----------------- | ----------------------------------------------------------------- |
+| Self Wallet migration to `SelfVerification`  | Spec writing      | Separate migration spec after SDK is stable                       |
+| MiniPay RN sample integration                | Spec writing      | `SPEC-MINIPAY-SAMPLE.md` (already exists)                         |
+| Camera library selection for MRZ scanning    | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter |
+| iOS asset loading strategy (RNFS vs require) | PR #1765 review   | Decide in Chunk 5D implementation                                 |
 
 ## Spec Deviations
 

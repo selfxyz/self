@@ -117,11 +117,7 @@ cd ios && pod install && cd ..
 Provide `scanner`, `network`, and `crypto` adapters. `storage`, `clock`, and `logger` default to no-ops.
 
 ```ts
-import {
-  createSelfClient,
-  webNFCScannerShim,
-  extractMRZInfo,
-} from '@selfxyz/mobile-sdk-alpha';
+import { createSelfClient, webNFCScannerShim, extractMRZInfo } from '@selfxyz/mobile-sdk-alpha';
 const sdk = createSelfClient({
   config: {},
   adapters: {
@@ -178,11 +174,7 @@ If you're upgrading from a Tamagui-based version of this SDK, please note the fo
 
    ```ts
    // These imports still work
-   import {
-     PrimaryButton,
-     Title,
-     Body,
-   } from '@selfxyz/mobile-sdk-alpha/components';
+   import { PrimaryButton, Title, Body } from '@selfxyz/mobile-sdk-alpha/components';
    ```
 
 5. **Remove Tamagui configuration** - If you had Tamagui config specifically for this SDK, it's no longer needed
@@ -208,9 +200,7 @@ The SDK emits events throughout the verification lifecycle. Subscribe using `sel
 ```ts
 selfClient.on(SdkEvents.DOCUMENT_COUNTRY_SELECTED, payload => {
   // payload: { countryCode: string, countryName: string, documentTypes: string[] }
-  console.log(
-    `Country selected: ${payload.countryName} (${payload.countryCode})`,
-  );
+  console.log(`Country selected: ${payload.countryName} (${payload.countryCode})`);
   console.log(`Available types: ${payload.documentTypes.join(', ')}`);
 });
 ```
@@ -220,9 +210,7 @@ selfClient.on(SdkEvents.DOCUMENT_COUNTRY_SELECTED, payload => {
 ```ts
 selfClient.on(SdkEvents.DOCUMENT_TYPE_SELECTED, payload => {
   // payload: { documentType: string, documentName: string, countryCode: string }
-  console.log(
-    `Document selected: ${payload.documentName} from ${payload.countryCode}`,
-  );
+  console.log(`Document selected: ${payload.documentName} from ${payload.countryCode}`);
 });
 ```
 
@@ -246,11 +234,7 @@ See `SdkEvents` enum and `SDKEventMap` in `src/types/events.ts` for complete pay
 ## Processing utilities
 
 ```ts
-import {
-  extractMRZInfo,
-  formatDateToYYMMDD,
-  parseNFCResponse,
-} from '@selfxyz/mobile-sdk-alpha';
+import { extractMRZInfo, formatDateToYYMMDD, parseNFCResponse } from '@selfxyz/mobile-sdk-alpha';
 
 const mrzInfo = extractMRZInfo(mrzString);
 const compact = formatDateToYYMMDD('1974-08-12');

@@ -1,4 +1,4 @@
-# SDK Core Adaptation — Implementation Spec
+# Person 4: SDK Core Adaptation — Implementation Spec
 
 > Last updated: 2026-02-17
 > Owner: Person 4 (SDK Core)

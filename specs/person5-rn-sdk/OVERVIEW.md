@@ -4,7 +4,7 @@
 > Owner: Person 5 (RN SDK)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC.md](./SPEC.md)
-> Status: Draft
+> Status: Active
 
 ## North Star
 
@@ -15,7 +15,7 @@
 ## Status
 
 - [ ] Package scaffolding (`packages/rn-sdk/`, `package.json`, tsconfig, tsup)
-- [ ] `<SelfVerification />` component with `react-native-webview`
+- [ ] `SelfVerification` component with `react-native-webview`
 - [ ] `MessageRouter` dispatching bridge messages to handlers
 - [ ] 5 native handler bridges (NFC, Camera, Biometrics, Keychain, Lifecycle)
 - [ ] Asset bundling (Vite bundle into iOS + Android via `Platform.select`)
@@ -27,7 +27,7 @@
 ## What You Own
 
 - **`@selfxyz/rn-sdk`** — the React Native SDK package (does not exist yet)
-- **`<SelfVerification />`** component (~200-300 LOC) — the single public API surface
+- **`SelfVerification`** component (~200-300 LOC) — the single public API surface
 - **5 native handler bridges** — NFC, Camera, Biometrics, Keychain, Lifecycle (thin wrappers around RN native modules)
 - **Asset bundling** — Vite bundle loaded into `react-native-webview` on iOS + Android via `Platform.select`
 
@@ -76,12 +76,12 @@ The WebView does not know which native shell it is running inside. Your handlers
 
 ## Dependencies
 
-| Direction     | Person / Package            | What                                                   | Status      |
-| ------------- | --------------------------- | ------------------------------------------------------ | ----------- |
-| **You need**  | Person 1 (`webview-app`)    | Vite bundle (`dist/`) — same one KMP uses              | In progress |
-| **You need**  | Person 1 (`webview-bridge`) | Bridge protocol types (`@selfxyz/webview-bridge`)      | In progress |
-| **You need**  | Person 2 (`kmp-sdk`)        | Handler pattern as reference (same bridge contract)    | In progress |
-| **Needs you** | Self Wallet app             | `<SelfVerification />` for verification flow (Phase 2) | Not started |
+| Direction     | Person / Package            | What                                                | Status      |
+| ------------- | --------------------------- | --------------------------------------------------- | ----------- |
+| **You need**  | Person 1 (`webview-app`)    | Vite bundle (`dist/`) — same one KMP uses           | In progress |
+| **You need**  | Person 1 (`webview-bridge`) | Bridge protocol types (`@selfxyz/webview-bridge`)   | In progress |
+| **You need**  | Person 2 (`kmp-sdk`)        | Handler pattern as reference (same bridge contract) | In progress |
+| **Needs you** | Self Wallet app             | `SelfVerification` for verification flow (Phase 2)  | Not started |
 
 ## Design Principles
 
@@ -103,10 +103,10 @@ The WebView does not know which native shell it is running inside. Your handlers
 
 ## Deliverables
 
-| Deliverable                      | Type            | Consumers                             |
-| -------------------------------- | --------------- | ------------------------------------- |
-| `@selfxyz/rn-sdk`                | npm package     | Self Wallet app, third-party RN hosts |
-| `<SelfVerification />` component | React component | Any RN app embedding verification     |
+| Deliverable                  | Type            | Consumers                             |
+| ---------------------------- | --------------- | ------------------------------------- |
+| `@selfxyz/rn-sdk`            | npm package     | Self Wallet app, third-party RN hosts |
+| `SelfVerification` component | React component | Any RN app embedding verification     |
 
 ## Related Specs
 
