@@ -14,6 +14,7 @@ class MainApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        AppStorage.init(this)
         sdk = SelfSdk.configure(SelfSdkConfig(debug = false))
     }
 }

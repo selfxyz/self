@@ -7,6 +7,9 @@ package xyz.self.minipay
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import xyz.self.sdk.api.SelfSdk
 import xyz.self.sdk.api.SelfSdkCallback
 import xyz.self.sdk.api.SelfSdkConfig
@@ -14,6 +17,9 @@ import xyz.self.sdk.api.SelfSdkError
 import xyz.self.sdk.api.VerificationRequest
 import xyz.self.sdk.api.VerificationResult
 
+private const val HOME_STATE_KEY = "home_state"
+
+@Serializable
 data class HomeState(
     val isVerified: Boolean = false,
     val lastProofDate: String? = null,
@@ -43,6 +49,17 @@ class MainViewModel(
     var isLaunching by mutableStateOf(false)
         private set
 
+    init {
+        val stored = AppStorage.load(HOME_STATE_KEY)
+        if (stored != null) {
+            try {
+                homeState = Json.decodeFromString<HomeState>(stored)
+            } catch (_: Exception) {
+                AppStorage.clear(HOME_STATE_KEY)
+            }
+        }
+    }
+
     private val sdkCallback =
         object : SelfSdkCallback {
             override fun onSuccess(result: VerificationResult) {
@@ -50,6 +67,15 @@ class MainViewModel(
                 verificationError = null
                 currentScreen = Screen.Result
                 isLaunching = false
+
+                // Update homeState eagerly so system back shows correct state
+                val newState = HomeState(
+                    isVerified = true,
+                    lastProofDate = result.verificationId,
+                    verifiedClaims = result.claims,
+                )
+                homeState = newState
+                AppStorage.save(HOME_STATE_KEY, Json.encodeToString(newState))
             }
 
             override fun onFailure(error: SelfSdkError) {
@@ -78,22 +104,6 @@ class MainViewModel(
         )
     }
 
-    fun onVerificationSuccess(result: VerificationResult) {
-        verificationResult = result
-        verificationError = null
-        currentScreen = Screen.Result
-    }
-
-    fun onVerificationFailure(error: SelfSdkError) {
-        verificationResult = null
-        verificationError = error
-        currentScreen = Screen.Result
-    }
-
-    fun onVerificationCancelled() {
-        // Stay on home screen, no state change
-    }
-
     fun returnToHome() {
         // Update home state if verification was successful
         val result = verificationResult
@@ -104,6 +114,7 @@ class MainViewModel(
                     lastProofDate = result.verificationId,
                     verifiedClaims = result.claims,
                 )
+            AppStorage.save(HOME_STATE_KEY, Json.encodeToString(homeState))
         }
 
         // Clear transient state
