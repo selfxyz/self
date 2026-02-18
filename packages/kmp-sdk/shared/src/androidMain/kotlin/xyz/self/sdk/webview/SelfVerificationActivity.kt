@@ -7,12 +7,8 @@ package xyz.self.sdk.webview
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import xyz.self.sdk.bridge.MessageRouter
-import xyz.self.sdk.handlers.AnalyticsBridgeHandler
 import xyz.self.sdk.handlers.BiometricBridgeHandler
 import xyz.self.sdk.handlers.CameraMrzBridgeHandler
-import xyz.self.sdk.handlers.CryptoBridgeHandler
-import xyz.self.sdk.handlers.DocumentsBridgeHandler
-import xyz.self.sdk.handlers.HapticBridgeHandler
 import xyz.self.sdk.handlers.LifecycleBridgeHandler
 import xyz.self.sdk.handlers.NfcBridgeHandler
 import xyz.self.sdk.handlers.SecureStorageBridgeHandler
@@ -70,20 +66,8 @@ class SelfVerificationActivity : AppCompatActivity() {
         // Secure Storage - Encrypted key-value storage
         router.register(SecureStorageBridgeHandler(this))
 
-        // Crypto - Signing and key management
-        router.register(CryptoBridgeHandler())
-
-        // Haptic - Vibration feedback
-        router.register(HapticBridgeHandler(this))
-
-        // Analytics - Event tracking and logging
-        router.register(AnalyticsBridgeHandler())
-
         // Lifecycle - WebView lifecycle management
         router.register(LifecycleBridgeHandler(this))
-
-        // Documents - Encrypted document storage
-        router.register(DocumentsBridgeHandler(this))
     }
 
     override fun onDestroy() {
