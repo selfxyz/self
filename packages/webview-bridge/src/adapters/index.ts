@@ -20,8 +20,8 @@ export type { BridgeStorageAdapter } from './storage';
 
 export { bridgeAnalyticsAdapter } from './analytics';
 export type { BridgeAnalyticsAdapter } from './analytics';
-export { webAnalyticsAdapter } from './analytics-web';
-export type { WebAnalyticsOptions } from './analytics-web';
+export { consoleAnalyticsAdapter } from './analytics-web';
+export type { ConsoleAnalyticsOptions } from './analytics-web';
 
 export { bridgeHapticAdapter } from './haptic';
 export type { BridgeHapticAdapter } from './haptic';

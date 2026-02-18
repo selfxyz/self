@@ -4,25 +4,25 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { webAnalyticsAdapter } from '../adapters/analytics-web';
+import { consoleAnalyticsAdapter } from '../adapters/analytics-web';
 
-describe('webAnalyticsAdapter', () => {
+describe('consoleAnalyticsAdapter', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
   it('should call trackEvent without throwing', () => {
-    const adapter = webAnalyticsAdapter();
+    const adapter = consoleAnalyticsAdapter();
     expect(() => adapter.trackEvent('page_view', { reason: 'test' })).not.toThrow();
   });
 
   it('should call trackNfcEvent without throwing', () => {
-    const adapter = webAnalyticsAdapter();
+    const adapter = consoleAnalyticsAdapter();
     expect(() => adapter.trackNfcEvent('scan_started', { device: 'pixel' })).not.toThrow();
   });
 
   it('should call logNFCEvent without throwing', () => {
-    const adapter = webAnalyticsAdapter();
+    const adapter = consoleAnalyticsAdapter();
     expect(() =>
       adapter.logNFCEvent('info', 'Scan begun', { sessionId: 's1' }),
     ).not.toThrow();
@@ -30,7 +30,7 @@ describe('webAnalyticsAdapter', () => {
 
   it('should log to console when debug is true', () => {
     const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    const adapter = webAnalyticsAdapter({ debug: true });
+    const adapter = consoleAnalyticsAdapter({ debug: true });
 
     adapter.trackEvent('test_event');
     expect(spy).toHaveBeenCalledWith(
@@ -41,7 +41,7 @@ describe('webAnalyticsAdapter', () => {
 
   it('should POST to endpoint when configured', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
-    const adapter = webAnalyticsAdapter({ endpoint: 'https://analytics.example.com/events' });
+    const adapter = consoleAnalyticsAdapter({ endpoint: 'https://analytics.example.com/events' });
 
     adapter.trackEvent('test_event', { reason: 'test' });
 
@@ -59,7 +59,7 @@ describe('webAnalyticsAdapter', () => {
 
   it('should not throw when fetch fails', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network error'));
-    const adapter = webAnalyticsAdapter({ endpoint: 'https://analytics.example.com/events' });
+    const adapter = consoleAnalyticsAdapter({ endpoint: 'https://analytics.example.com/events' });
 
     expect(() => adapter.trackEvent('test_event')).not.toThrow();
 

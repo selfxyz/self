@@ -4,7 +4,7 @@
 
 import type { BridgeAnalyticsAdapter } from './analytics';
 
-export interface WebAnalyticsOptions {
+export interface ConsoleAnalyticsOptions {
   /** Remote endpoint to POST events to. When omitted, events are only logged to console. */
   endpoint?: string;
   /** When true, logs every event to console regardless of endpoint. */
@@ -18,7 +18,7 @@ export interface WebAnalyticsOptions {
  * This is a web fallback — no native bridge required. All methods are
  * fire-and-forget so analytics never block critical user flows.
  */
-export function webAnalyticsAdapter(options?: WebAnalyticsOptions): BridgeAnalyticsAdapter {
+export function consoleAnalyticsAdapter(options?: ConsoleAnalyticsOptions): BridgeAnalyticsAdapter {
   const { endpoint, debug = false } = options ?? {};
 
   function send(payload: Record<string, unknown>): void {

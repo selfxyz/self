@@ -10,7 +10,7 @@ import {
   bridgeAuthAdapter,
   indexedDBDocumentsAdapter,
   bridgeStorageAdapter,
-  webAnalyticsAdapter,
+  consoleAnalyticsAdapter,
   bridgeLifecycleAdapter,
   webNavigationAdapter,
   bridgeHapticAdapter,
@@ -70,7 +70,7 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
       auth: bridgeAuthAdapter(bridge),
       documents: indexedDBDocumentsAdapter(),
       storage: bridgeStorageAdapter(bridge),
-      analytics: webAnalyticsAdapter(),
+      analytics: consoleAnalyticsAdapter(),
       lifecycle,
       navigation: webNavigationAdapter(
         (path: string) => navigate(path),
