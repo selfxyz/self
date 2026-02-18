@@ -1,7 +1,7 @@
-# Person 4: RN Native Shell — Workstream Overview
+# Person 5: RN Native Shell — Workstream Overview
 
 > Last updated: 2026-02-17
-> Owner: Person 4 (RN SDK)
+> Owner: Person 5 (RN SDK)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC.md](./SPEC.md)
 > Status: Draft
@@ -54,7 +54,7 @@ You are building a thin React Native wrapper that hosts the exact same WebView a
                │ postMessage (JSON)
                │ Same bridge protocol as KMP
 ┌──────────────▼──────────────────────────┐
-│  SHARED WEBVIEW (Person 1 + 3)          │
+│  SHARED WEBVIEW (Person 1 + 4)          │
 │  Vite bundle: webview-app + engine      │
 │  Same dist/ loaded by KMP and RN shells │
 └─────────────────────────────────────────┘
@@ -67,7 +67,7 @@ The WebView does not know which native shell it is running inside. Your handlers
 | Direction     | Person / Package              | What                                                  | Status      |
 | ------------- | ----------------------------- | ----------------------------------------------------- | ----------- |
 | **You need**  | Person 1 (`webview-app`)      | Vite bundle (`dist/`) — same one KMP uses             | In progress |
-| **You need**  | Person 3 (`webview-bridge`)   | Bridge protocol types (`@selfxyz/webview-bridge`)     | In progress |
+| **You need**  | Person 4 (`webview-bridge`)   | Bridge protocol types (`@selfxyz/webview-bridge`)     | In progress |
 | **You need**  | Person 2 (`kmp-sdk`)          | Handler pattern as reference (same bridge contract)   | In progress |
 | **Needs you** | Self Wallet app               | `<SelfVerification />` for verification flow (Phase 2)| Not started |
 
@@ -81,7 +81,7 @@ The WebView does not know which native shell it is running inside. Your handlers
 - [ ] Integration test with Self Wallet app
 - [ ] npm publish (`@selfxyz/rn-sdk`)
 
-**Overall: 0%** — package does not exist yet. This is Phase 2 work, blocked until Persons 1-3 deliver Phase 1.
+**Overall: 0%** — package does not exist yet. This is Phase 2 work, blocked until Persons 1-4 deliver Phase 1.
 
 ## Key Decisions
 
@@ -108,4 +108,4 @@ The WebView does not know which native shell it is running inside. Your handlers
 | [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                       | Project-level architecture, bridge protocol, glossary      |
 | [../person1-webview/SPEC.md](../person1-webview/SPEC.md)       | WebView UI + bridge (delivers your Vite bundle)            |
 | [../person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md) | KMP native shell (reference handler pattern)         |
-| [../person3-sdk-core/SPEC.md](../person3-sdk-core/SPEC.md)     | SDK core adaptation (delivers bridge types you import)     |
+| [../person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md)     | SDK core adaptation (delivers bridge types you import)     |

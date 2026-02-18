@@ -913,10 +913,10 @@ export default defineConfig({
 
 | File | Why |
 | --- | --- |
-| `packages/mobile-sdk-alpha/src/**` | Owned by Person 3 (SDK Core Adaptation). You consume its adapter interfaces and constants, never modify them. |
+| `packages/mobile-sdk-alpha/src/**` | Owned by Person 4 (SDK Core Adaptation). You consume its adapter interfaces and constants, never modify them. |
 | `packages/kmp-sdk/**` | Owned by Person 2 (Kotlin/Swift Native Shells). You define the bridge protocol; they implement native handlers. |
 | `packages/self-sdk-swift/**` | Owned by Person 2. iOS Swift providers are their responsibility. |
-| `packages/rn-sdk/**` | Owned by Person 4 (RN Native Shell). Does not exist yet. |
+| `packages/rn-sdk/**` | Owned by Person 5 (RN Native Shell). Does not exist yet. |
 | `app/src/**` | Self Wallet app. Reference only for screen UI fidelity — never modify. |
 | `common/**` | Shared utilities. Production-stable, no changes needed. |
 
@@ -1224,9 +1224,9 @@ ls packages/webview-app/dist/index.html  # file must exist
   - The iOS handler name is `SelfNativeIOS` (WKScriptMessageHandler). Confirm this matches their implementation.
   - Bridge domain methods must match exactly (e.g., `secureStorage.get` not `keychain.get`).
   - They will delete 4 handlers (documents, crypto, analytics, haptic) — those now run as web fallback adapters in your code.
-- **Person 3 (SDK Core Adaptation):** They own `mobile-sdk-alpha`. You import adapter interfaces and constants from their package. If an adapter interface changes, your adapter factories must update. They are also building web fallback adapter implementations in `mobile-sdk-alpha` — coordinate to avoid duplication.
-- **Person 4 (RN Native Shell):** They will wrap your Vite bundle in a `<SelfVerification />` React Native component. The same bridge protocol applies. Your React Native transport detection (`window.ReactNativeWebView.postMessage`) must work with their setup.
-- **All:** The Vite build output (`dist/index.html` + bundle) is the artifact that Person 2 bundles into the KMP SDK and Person 4 loads via `react-native-webview`. Any breaking change to the build output affects everyone.
+- **Person 4 (SDK Core Adaptation):** They own `mobile-sdk-alpha`. You import adapter interfaces and constants from their package. If an adapter interface changes, your adapter factories must update. They are also building web fallback adapter implementations in `mobile-sdk-alpha` — coordinate to avoid duplication.
+- **Person 5 (RN Native Shell):** They will wrap your Vite bundle in a `<SelfVerification />` React Native component. The same bridge protocol applies. Your React Native transport detection (`window.ReactNativeWebView.postMessage`) must work with their setup.
+- **All:** The Vite build output (`dist/index.html` + bundle) is the artifact that Person 2 bundles into the KMP SDK and Person 5 loads via `react-native-webview`. Any breaking change to the build output affects everyone.
 
 ## Key Reference Files
 
@@ -1251,8 +1251,8 @@ ls packages/webview-app/dist/index.html  # file must exist
 | [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) | All | Architecture, bridge protocol, domain catalog, dependency graph |
 | [SPEC-KMP-SDK.md](../SPEC-KMP-SDK.md) | Person 2 | Kotlin native shell, Android/iOS handlers |
 | [SPEC-IOS-HANDLERS.md](../SPEC-IOS-HANDLERS.md) | Person 2 | iOS-specific handler implementations |
-| [SPEC-PERSON3-SDK-CORE.md](../SPEC-PERSON3-SDK-CORE.md) | Person 3 | SDK core adaptation, RN dep removal, web fallbacks |
-| [SPEC-RN-SDK.md](../SPEC-RN-SDK.md) | Person 4 | RN native shell, `<SelfVerification />` component |
+| [SPEC-PERSON4-SDK-CORE.md](../SPEC-PERSON4-SDK-CORE.md) | Person 4 | SDK core adaptation, RN dep removal, web fallbacks |
+| [SPEC-RN-SDK.md](../SPEC-RN-SDK.md) | Person 5 | RN native shell, `<SelfVerification />` component |
 
 ---
 
@@ -1290,7 +1290,7 @@ ls packages/webview-app/dist/index.html  # file must exist
 | Camera bridge adapter wiring in webview-app | Chunk 1E | This spec (SelfClientProvider needs camera adapter) |
 | Dynamic proof request items (currently hardcoded in ProvingScreen) | Chunk 1C | New spec or this spec extension |
 | MRZ data confirmation screen (PR #1767) | Chunk 1B | PR #1767 |
-| `createSelfClient(adapters)` integration | Chunk 1E | Person 3 spec — once factory function is available, SelfClientProvider calls it |
+| `createSelfClient(adapters)` integration | Chunk 1E | Person 4 spec — once factory function is available, SelfClientProvider calls it |
 
 ## Spec Deviations
 

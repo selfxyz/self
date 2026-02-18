@@ -178,6 +178,16 @@ the reader has context without navigating up. 2-4 bullets. -->
 - [Success metric — measurable outcome]
 - [Key constraint — the non-negotiable]
 
+### Status
+
+<!-- High-level milestones for this workstream. Mirrors the chunking
+in SPEC.md but at a summary level. This is the FIRST thing devs check —
+keep it at the top. -->
+
+- [x] [milestone]
+- [ ] [milestone]
+- [ ] [milestone]
+
 ### What You Own
 
 <!-- 3-5 bullets. What packages, deliverables, and outputs does this
@@ -206,15 +216,6 @@ Update status as work progresses. -->
 | -------------- | ---------------- | ----------------------------- | ------- |
 | **You need**   | Person X         | [what you consume from them]  | [state] |
 | **Needs you**  | Person Y         | [what they consume from you]  | [state] |
-
-### Status
-
-<!-- High-level milestones for this workstream. Mirrors the chunking
-in SPEC.md but at a summary level. -->
-
-- [x] [milestone]
-- [ ] [milestone]
-- [ ] [milestone]
 
 ### Key Decisions
 

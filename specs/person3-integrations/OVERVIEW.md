@@ -1,7 +1,7 @@
-## Integration Samples — Workstream Overview
+## Person 3: Integration Samples — Workstream Overview
 
 > Last updated: 2026-02-17
-> Owner: Person 2 (integration sample)
+> Owner: Person 3 (Integrations)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md)
 > Status: Draft

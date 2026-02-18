@@ -151,9 +151,9 @@ Every spec opens with a bullet-point list (2-4 bullets) covering: business/produ
 
 The overview spec must have an ASCII architecture diagram. This is the single most impactful element — a new dev reads it and understands the system in 30 seconds. Implementation specs include diagrams only if they clarify that workstream's specific scope.
 
-### 3. Status Checklist
+### 3. Status Checklist Near the Top
 
-The overview has an aggregated checklist of all milestones. Each implementation spec has a per-chunk status table. Between the two, anyone can find overall or detailed status in one place.
+The project overview has an aggregated checklist of all milestones. Each workstream overview has a per-workstream checklist placed immediately after the north star — it's the first thing devs check. Each implementation spec has a per-chunk status table. Between the three, anyone can find overall, workstream, or detailed status in one place.
 
 ### 4. Input / Output Examples
 

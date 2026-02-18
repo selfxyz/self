@@ -1,7 +1,7 @@
 # SDK Core Adaptation — Implementation Spec
 
 > Last updated: 2026-02-17
-> Owner: Person 3 (SDK Core)
+> Owner: Person 4 (SDK Core)
 > Parent: [OVERVIEW.md](./OVERVIEW.md)
 > Status: Active
 
@@ -373,11 +373,11 @@ Re-export web fallback adapter factories from `src/browser.ts`.
 | `src/bridge/nativeEvents.native.ts` | RN-only, `.native.ts` suffix means bundlers skip it on web |
 | `src/haptic/*` | Delegated to adapters in WebView |
 | `src/layouts/*` | RN layout components |
-| `common/` | Out of scope — Person 3 only owns `mobile-sdk-alpha` |
+| `common/` | Out of scope — Person 4 only owns `mobile-sdk-alpha` |
 
 ## Chunking Guide
 
-### Chunk 3A: Config & Platform Abstraction — S ~3k tokens
+### Chunk 4A: Config & Platform Abstraction — S ~3k tokens
 
 **Goal:** Remove all `Platform` and `__DEV__` imports from core logic.
 
@@ -426,9 +426,9 @@ grep: No output (no RN imports in core files)
 
 ---
 
-### Chunk 3B: Browser Entry Point & Package Exports — S ~2k tokens
+### Chunk 4B: Browser Entry Point & Package Exports — S ~2k tokens
 
-**Depends on:** Chunk 3A
+**Depends on:** Chunk 4A
 
 **Goal:** Clean browser entry point that excludes all RN-specific code.
 
@@ -471,9 +471,9 @@ tsc: No errors
 
 ---
 
-### Chunk 3C: WebView Lifecycle Events — S ~2k tokens
+### Chunk 4C: WebView Lifecycle Events — S ~2k tokens
 
-**Depends on:** Chunk 3A
+**Depends on:** Chunk 4A
 
 **Goal:** Define integration points between proving machine and WebView host.
 
@@ -515,9 +515,9 @@ vitest: All tests pass (new event type is additive)
 
 ---
 
-### Chunk 3D: WsAdapter Integration — M ~5k tokens [OPTIONAL]
+### Chunk 4D: WsAdapter Integration — M ~5k tokens [OPTIONAL]
 
-**Depends on:** Chunk 3A
+**Depends on:** Chunk 4A
 
 **Goal:** Refactor proving machine to use `NetworkAdapter.ws` instead of raw `WebSocket`.
 
@@ -539,9 +539,9 @@ This chunk is **optional** — raw `WebSocket` works natively in the browser. Sk
 
 ---
 
-### Chunk 3E: Conditional SelfApp Store — S ~2k tokens
+### Chunk 4E: Conditional SelfApp Store — S ~2k tokens
 
-**Depends on:** Chunk 3A
+**Depends on:** Chunk 4A
 
 **Goal:** Make the Socket.IO relay in `selfAppStore` optional.
 
@@ -576,9 +576,9 @@ cd packages/mobile-sdk-alpha && npx vitest run
 
 ---
 
-### Chunk 3F: Web Fallback Adapter Implementations — M ~6k tokens
+### Chunk 4F: Web Fallback Adapter Implementations — M ~6k tokens
 
-**Depends on:** Chunk 3B
+**Depends on:** Chunk 4B
 
 **Goal:** Create web-native adapter implementations for IndexedDB documents, Web Crypto hashing, console/fetch analytics, and no-op haptic.
 
@@ -631,15 +631,15 @@ exports: ['createIndexedDBDocumentsAdapter', 'createWebCryptoAdapter', 'createWe
 ## Dependency Graph
 
 ```
-Chunk 3A (config + platform) — no deps, start here
-  ├──→ Chunk 3B (browser entry point)
-  │     └──→ Chunk 3F (web fallback adapters)
-  ├──→ Chunk 3C (lifecycle events)
-  ├──→ Chunk 3D (WsAdapter refactor) [optional]
-  └──→ Chunk 3E (conditional selfAppStore)
+Chunk 4A (config + platform) — no deps, start here
+  ├──→ Chunk 4B (browser entry point)
+  │     └──→ Chunk 4F (web fallback adapters)
+  ├──→ Chunk 4C (lifecycle events)
+  ├──→ Chunk 4D (WsAdapter refactor) [optional]
+  └──→ Chunk 4E (conditional selfAppStore)
 
-Person 1 (screens)  ←── depends on ──→  Person 3 (SDK core)
-Person 2 (KMP)      ←── contract via ──→ Person 3 (lifecycle types)
+Person 1 (screens)  ←── depends on ──→  Person 4 (SDK core)
+Person 2 (KMP)      ←── contract via ──→ Person 4 (lifecycle types)
 ```
 
 ## Completion Status
@@ -648,18 +648,18 @@ _Audit date: 2026-02-17_
 
 | Chunk | Description | Size | Status |
 | --- | --- | --- | --- |
-| 3A | Config & Platform Abstraction | S ~3k | **Done** |
-| 3B | Browser Entry Point & Package Exports | S ~2k | **Done** |
-| 3C | WebView Lifecycle Events | S ~2k | **Done** |
-| 3D | WsAdapter Integration | M ~5k | **Skipped** (optional — raw WebSocket works in browser) |
-| 3E | Conditional SelfApp Store | S ~2k | **Done** |
-| 3F | Web Fallback Adapter Implementations | M ~6k | **Pending** |
+| 4A | Config & Platform Abstraction | S ~3k | **Done** |
+| 4B | Browser Entry Point & Package Exports | S ~2k | **Done** |
+| 4C | WebView Lifecycle Events | S ~2k | **Done** |
+| 4D | WsAdapter Integration | M ~5k | **Skipped** (optional — raw WebSocket works in browser) |
+| 4E | Conditional SelfApp Store | S ~2k | **Done** |
+| 4F | Web Fallback Adapter Implementations | M ~6k | **Pending** |
 
-4 of 6 chunks complete. Chunk 3D explicitly optional. **Chunk 3F is the remaining work.**
+4 of 6 chunks complete. Chunk 4D explicitly optional. **Chunk 4F is the remaining work.**
 
 ### What's Left
 
-**Chunk 3F — Web Fallback Adapters (blocking for WebView integration)**
+**Chunk 4F — Web Fallback Adapters (blocking for WebView integration)**
 
 | Adapter | File to Create | Implementation |
 | --- | --- | --- |
@@ -682,7 +682,7 @@ _Audit date: 2026-02-17_
 cd packages/mobile-sdk-alpha && npx tsc --noEmit
 cd packages/mobile-sdk-alpha && npx vitest run
 
-# Verify no react-native in browser entry (after 3B):
+# Verify no react-native in browser entry (after 4B):
 cd packages/mobile-sdk-alpha && npx madge --no-spinner src/browser.ts | grep -i "react-native"
 # Should return nothing
 
@@ -696,9 +696,9 @@ grep -r "NativeModules\|NativeEventEmitter\|requireNativeComponent" packages/web
 
 ## Coordination Notes
 
-- **Person 1 (WebView UI):** When `VERIFICATION_COMPLETE` event and `SdkInitialConfig` types are added (Chunk 3C), Person 1 wires them into `SelfClientProvider` and the lifecycle adapter.
-- **Person 2 (Native Shells):** When `VerificationRequest` is defined (Chunk 3C), Person 2 ensures `LifecycleBridgeHandler.getConfig()` returns the matching shape.
-- **Person 1 (WebView UI):** After Chunk 3F, Person 1 can import web fallback adapter factories from `@selfxyz/mobile-sdk-alpha` for `SelfClientProvider` wiring.
+- **Person 1 (WebView UI):** When `VERIFICATION_COMPLETE` event and `SdkInitialConfig` types are added (Chunk 4C), Person 1 wires them into `SelfClientProvider` and the lifecycle adapter.
+- **Person 2 (Native Shells):** When `VerificationRequest` is defined (Chunk 4C), Person 2 ensures `LifecycleBridgeHandler.getConfig()` returns the matching shape.
+- **Person 1 (WebView UI):** After Chunk 4F, Person 1 can import web fallback adapter factories from `@selfxyz/mobile-sdk-alpha` for `SelfClientProvider` wiring.
 
 ## Key Reference Files
 
@@ -722,13 +722,13 @@ grep -r "NativeModules\|NativeEventEmitter\|requireNativeComponent" packages/web
 
 ### Architecture (brief)
 
-Chunks 3A–3E removed React Native contamination from core logic. `Platform` and `__DEV__` replaced with config fields (`config.platform`, `config.debug`). Browser entry point (`src/browser.ts`) serves web consumers with zero transitive RN imports. `VERIFICATION_COMPLETE` event provides lifecycle integration for WebView hosts. Socket.IO in `selfAppStore` made conditional. Chunk 3D (WsAdapter) intentionally skipped — raw WebSocket works in browser contexts.
+Chunks 4A–4E removed React Native contamination from core logic. `Platform` and `__DEV__` replaced with config fields (`config.platform`, `config.debug`). Browser entry point (`src/browser.ts`) serves web consumers with zero transitive RN imports. `VERIFICATION_COMPLETE` event provides lifecycle integration for WebView hosts. Socket.IO in `selfAppStore` made conditional. Chunk 4D (WsAdapter) intentionally skipped — raw WebSocket works in browser contexts.
 
 ### Deviations from Spec
 
 | Spec said | We did | Why |
 | --- | --- | --- |
-| Chunk 3D: Refactor to WsAdapter | Skipped | Raw WebSocket works in browser; testability improvement deferred |
+| Chunk 4D: Refactor to WsAdapter | Skipped | Raw WebSocket works in browser; testability improvement deferred |
 | `plexMono` font: platform-aware factory | Hardcoded to `'IBMPlexMono-Regular'` | Simpler; may need iOS verification |
 
 ### Lessons / Gotchas
@@ -743,10 +743,10 @@ Chunks 3A–3E removed React Native contamination from core logic. `Platform` an
 
 | Item | Discovered during | Suggested spec |
 | --- | --- | --- |
-| `@selfxyz/common` Buffer polyfill for browser | Chunk 3B | New spec: common-browser-compat |
-| `proof` field never populated in VERIFICATION_COMPLETE | PR #1765 review | Chunk 3F or follow-up |
-| Remaining `__DEV__` references outside proving machine | PR #1765 review | Audit in Chunk 3F |
-| `plexMono` font may break iOS rendering | Chunk 3A | Manual verification needed |
+| `@selfxyz/common` Buffer polyfill for browser | Chunk 4B | New spec: common-browser-compat |
+| `proof` field never populated in VERIFICATION_COMPLETE | PR #1765 review | Chunk 4F or follow-up |
+| Remaining `__DEV__` references outside proving machine | PR #1765 review | Audit in Chunk 4F |
+| `plexMono` font may break iOS rendering | Chunk 4A | Manual verification needed |
 
 ## SDK vs App Gap Summary
 

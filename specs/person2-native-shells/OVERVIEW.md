@@ -53,7 +53,7 @@ You build the native shells that sit between the host app and the bridge protoco
     └────────────────┼────────────────┘
                      │ JSON postMessage
     ┌────────────────▼────────────────┐
-    │    BRIDGE PROTOCOL (Person 3)   │
+    │    BRIDGE PROTOCOL (Person 4)   │
     │    webview-bridge               │
     └────────────────┬────────────────┘
                      │
@@ -68,8 +68,8 @@ You build the native shells that sit between the host app and the bridge protoco
 | Direction     | Person / Package  | What                                                 | Status       |
 | ------------- | ----------------- | ---------------------------------------------------- | ------------ |
 | **You need**  | Person 1          | Vite bundle (`dist/`) loaded into your WebView       | In progress  |
-| **You need**  | Person 3          | Bridge protocol contract (message format, domains)   | Ready        |
-| **Needs you** | Person 4          | Bridge protocol as reference for RN handler pattern  | Ready        |
+| **You need**  | Person 4          | Bridge protocol contract (message format, domains)   | Ready        |
+| **Needs you** | Person 5          | Bridge protocol as reference for RN handler pattern  | Ready        |
 | **Needs you** | Integrations      | `SelfSdk.launch()` API consumed by MiniPay sample    | Android done |
 
 ## Status
@@ -110,6 +110,6 @@ You build the native shells that sit between the host app and the bridge protoco
 | [SPEC.md](./SPEC.md)                                | Implementation details, chunks, code changes         |
 | [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)             | Project-level architecture, bridge protocol, glossary |
 | [../person1-webview/OVERVIEW.md](../person1-webview/OVERVIEW.md) | WebView UI + bridge — delivers the Vite bundle you host |
-| [../person3-sdk-core/OVERVIEW.md](../person3-sdk-core/OVERVIEW.md) | SDK core adaptation — delivers adapter interfaces you implement |
-| [../person4-rn-sdk/OVERVIEW.md](../person4-rn-sdk/OVERVIEW.md) | RN native shell — mirrors your bridge pattern for React Native |
-| [../integrations/OVERVIEW.md](../integrations/OVERVIEW.md) | MiniPay sample — first consumer of your `SelfSdk.launch()` API |
+| [../person4-sdk-core/OVERVIEW.md](../person4-sdk-core/OVERVIEW.md) | SDK core adaptation — delivers adapter interfaces you implement |
+| [../person5-rn-sdk/OVERVIEW.md](../person5-rn-sdk/OVERVIEW.md) | RN native shell — mirrors your bridge pattern for React Native |
+| [../person3-integrations/OVERVIEW.md](../person3-integrations/OVERVIEW.md) | MiniPay sample — first consumer of your `SelfSdk.launch()` API |

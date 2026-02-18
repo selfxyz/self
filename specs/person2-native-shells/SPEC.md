@@ -1403,10 +1403,10 @@ Pure Kotlin, already correct in the prototype. ICAO 9303 check digit computation
 | --- | --- |
 | `packages/webview-bridge/src/*` | Owned by Person 1 (WebView UI + Bridge). Bridge protocol TypeScript types are read-only reference. |
 | `packages/webview-app/src/*` | Owned by Person 1. Vite bundle is consumed as-is. |
-| `packages/mobile-sdk-alpha/src/*` | Owned by Person 3 (SDK Core). Adapter interfaces are read-only reference. |
+| `packages/mobile-sdk-alpha/src/*` | Owned by Person 4 (SDK Core). Adapter interfaces are read-only reference. |
 | `common/src/*` | Shared utilities -- stable, no changes needed. |
 | `app/` | Self Wallet app -- out of scope for SDK work. |
-| `packages/rn-sdk/` | Owned by Person 4 (RN Native Shell). Does not exist yet. |
+| `packages/rn-sdk/` | Owned by Person 5 (RN Native Shell). Does not exist yet. |
 
 ---
 
@@ -1585,7 +1585,7 @@ Output: BridgeHandlerException("METHOD_NOT_FOUND", "Unknown NFC method: unknownM
 - Enable cinterop -- `build.gradle.kts` cinterop lines remain commented out
 - Import any Apple framework directly in Kotlin -- all Apple API calls happen in Swift
 - Add verification logic to the WebView host
-- Implement handler logic in this chunk (handlers come in 2E and 3B-3E)
+- Implement handler logic in this chunk (handlers come in 2E and 2H-2K)
 
 **Steps:**
 
@@ -1726,7 +1726,7 @@ Output: false (simulator has no biometric hardware)
 **You Will NOT:**
 - Add verification logic to the public API -- it launches the WebView and delivers callbacks
 - Modify bridge protocol types
-- Build anything for React Native (that is Person 4)
+- Build anything for React Native (that is Person 5)
 
 **Steps:**
 
@@ -1784,7 +1784,7 @@ SelfSdkCallback fires on completion/dismissal
 
 ---
 
-### Chunk 3A: Factory Infrastructure -- S ~3k tokens
+### Chunk 2G: Factory Infrastructure -- S ~3k tokens
 
 **Depends on:** Chunk 2A (bridge protocol)
 
@@ -1792,7 +1792,7 @@ SelfSdkCallback fires on completion/dismissal
 
 **You Will NOT:**
 - Enable cinterop
-- Write any handler logic (that comes in 3B-3E)
+- Write any handler logic (that comes in 2H-2K)
 - Import Apple frameworks in Kotlin
 - Add more than 3 providers (NFC, Biometric, WebView) -- Lifecycle is self-contained
 
@@ -1835,9 +1835,11 @@ BUILD SUCCESSFUL (both)
 
 ---
 
-### Chunk 3B: Biometric Handler -- S ~2k tokens
+---
 
-**Depends on:** Chunk 3A
+### Chunk 2H: Biometric Handler -- S ~2k tokens
+
+**Depends on:** Chunk 2G
 
 **Goal:** Implement the simplest handler end-to-end (Kotlin handler + Swift provider). Validates the full Swift wrapper pattern.
 
@@ -1886,9 +1888,9 @@ Output: false
 
 ---
 
-### Chunk 3C: Lifecycle Handler -- S ~2k tokens
+### Chunk 2I: Lifecycle Handler -- S ~2k tokens
 
-**Depends on:** Chunk 3A
+**Depends on:** Chunk 2G
 
 **Goal:** Implement the Lifecycle handler with callback/dismiss wiring. Self-contained in Kotlin (no Swift provider).
 
@@ -1939,9 +1941,9 @@ Output: SelfSdkCallback.onCancelled() called, ViewController dismissed
 
 ---
 
-### Chunk 3D: iOS WebView Host + `SelfSdk.launch()` -- M ~5k tokens
+### Chunk 2J: iOS WebView Host + `SelfSdk.launch()` -- M ~5k tokens
 
-**Depends on:** Chunk 3A, 3B, 3C
+**Depends on:** Chunk 2G, 2H, 2I
 
 **Goal:** Full WebView-based verification flow working on iOS via Swift wrapper.
 
@@ -1998,9 +2000,9 @@ Output: IllegalStateException with message: "iOS requires Swift providers. Call 
 
 ---
 
-### Chunk 3E: NFC Handler -- M ~5k tokens
+### Chunk 2K: NFC Handler -- M ~5k tokens
 
-**Depends on:** Chunk 3D
+**Depends on:** Chunk 2J
 
 **Goal:** Connect existing `NfcPassportHelper.swift` to the SDK's factory pattern. Most complex iOS handler.
 
@@ -2062,9 +2064,9 @@ Output: null (no crash, NfcPassportHelper released)
 
 ---
 
-### Chunk 3F: Camera MRZ Handler (Phase 2, Optional) -- S ~2k tokens
+### Chunk 2L: Camera MRZ Handler (Phase 2, Optional) -- S ~2k tokens
 
-**Depends on:** Chunk 3E
+**Depends on:** Chunk 2K
 
 **Goal:** iOS camera MRZ scanning via Vision framework. Not needed for initial launch.
 
@@ -2101,20 +2103,20 @@ Chunk 2A: KMP Setup + Bridge Protocol (no deps -- start here)
   |               |
   |               '---> Chunk 2F (see above)
   |
-  '---> Chunk 3A: Factory Infrastructure (after 2A)
+  '---> Chunk 2G: Factory Infrastructure (after 2A)
           |
-          |---> Chunk 3B: Biometric Handler (after 3A)
+          |---> Chunk 2H: Biometric Handler (after 2G)
           |
-          |---> Chunk 3C: Lifecycle Handler (after 3A)
+          |---> Chunk 2I: Lifecycle Handler (after 2G)
           |
-          '---> Chunk 3D: iOS WebView Host + SelfSdk.launch() (after 3A, 3B, 3C)
+          '---> Chunk 2J: iOS WebView Host + SelfSdk.launch() (after 2G, 2H, 2I)
                   |
-                  '---> Chunk 3E: NFC Handler (after 3D)
+                  '---> Chunk 2K: NFC Handler (after 2J)
                           |
-                          '---> Chunk 3F: Camera MRZ (after 3E, optional Phase 2)
+                          '---> Chunk 2L: Camera MRZ (after 2K, optional Phase 2)
 ```
 
-> **Note:** Chunks 2D/2E and 3A-3E overlap in scope (iOS infrastructure). Chunk 2D created the initial stubs; Chunks 3A-3E replace them with the Swift wrapper pattern. In practice, work 3A-3E supersedes 2D-2E.
+> **Note:** Chunks 2D/2E and 2G-2K overlap in scope (iOS infrastructure). Chunk 2D created the initial stubs; Chunks 2G-2K replace them with the Swift wrapper pattern. In practice, work 2G-2K supersedes 2D-2E.
 
 ## Completion Status
 
@@ -2126,12 +2128,12 @@ Chunk 2A: KMP Setup + Bridge Protocol (no deps -- start here)
 | 2D | iOS WebView Host + Provider Infrastructure | M ~6k | **In Progress** (cinterop blocked, stubs in place) |
 | 2E | iOS Native Handlers (3 handlers) | M ~6k | **Pending** |
 | 2F | SDK Public API + Test App | M ~5k | **In Progress** (Android works, iOS uses workarounds) |
-| 3A | Factory Infrastructure | S ~3k | **Pending** |
-| 3B | Biometric Handler (iOS) | S ~2k | **Pending** |
-| 3C | Lifecycle Handler (iOS) | S ~2k | **Pending** |
-| 3D | iOS WebView Host + SelfSdk.launch() | M ~5k | **Pending** |
-| 3E | NFC Handler (iOS) | M ~5k | **Pending** |
-| 3F | Camera MRZ (iOS, Phase 2) | S ~2k | **Skipped** (deferred) |
+| 2G | Factory Infrastructure | S ~3k | **Pending** |
+| 2H | Biometric Handler (iOS) | S ~2k | **Pending** |
+| 2I | Lifecycle Handler (iOS) | S ~2k | **Pending** |
+| 2J | iOS WebView Host + SelfSdk.launch() | M ~5k | **Pending** |
+| 2K | NFC Handler (iOS) | M ~5k | **Pending** |
+| 2L | Camera MRZ (iOS, Phase 2) | S ~2k | **Skipped** (deferred) |
 
 ## Validation Plan
 
@@ -2158,10 +2160,10 @@ cd packages/self-sdk-swift && swift build
 ## Coordination Notes
 
 - **Person 1 (WebView UI + Bridge):** You consume their Vite bundle (`dist/`) as a static asset. When they change bridge message shapes in `packages/webview-bridge/src/types.ts`, you must update the Kotlin `BridgeMessage.kt` types to match. Coordinate on any domain or method name changes.
-- **Person 3 (SDK Core):** They own the adapter interfaces in `packages/mobile-sdk-alpha/src/types/public.ts`. The WebView engine calls your native handlers through these adapters. If adapter signatures change, the bridge protocol may need updating.
-- **Person 4 (RN Native Shell):** They build a separate native shell (`packages/rn-sdk/`) using the same bridge protocol. Share handler method contracts and test vectors. Their `<SelfVerification />` component loads the same Vite bundle you do.
-- **PR #1762:** iOS bridge handlers with Swift provider pattern -- adds `self-sdk-swift` package, 82 files changed. Must be merged before Chunks 3A-3E can proceed on the main branch.
-- **MiniPay Integration:** The [SPEC-MINIPAY-SAMPLE.md](../integrations/SPEC-MINIPAY-SAMPLE.md) depends on this spec for iOS SDK functionality. Android side is already working.
+- **Person 4 (SDK Core):** They own the adapter interfaces in `packages/mobile-sdk-alpha/src/types/public.ts`. The WebView engine calls your native handlers through these adapters. If adapter signatures change, the bridge protocol may need updating.
+- **Person 5 (RN Native Shell):** They build a separate native shell (`packages/rn-sdk/`) using the same bridge protocol. Share handler method contracts and test vectors. Their `<SelfVerification />` component loads the same Vite bundle you do.
+- **PR #1762:** iOS bridge handlers with Swift provider pattern -- adds `self-sdk-swift` package, 82 files changed. Must be merged before Chunks 2G-2K can proceed on the main branch.
+- **MiniPay Integration:** The [SPEC-MINIPAY-SAMPLE.md](../person3-integrations/SPEC-MINIPAY-SAMPLE.md) depends on this spec for iOS SDK functionality. Android side is already working.
 
 ## Key Reference Files
 
@@ -2185,9 +2187,9 @@ cd packages/self-sdk-swift && swift build
 | --- | --- |
 | [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) | Parent architecture spec -- north star, decision matrix, shared contracts |
 | [person1-webview/SPEC.md](../person1-webview/SPEC.md) | Sibling -- owns WebView UI, bridge adapters, Vite bundle you consume |
-| [person3-sdk-core/SPEC.md](../person3-sdk-core/SPEC.md) | Sibling -- owns SDK core, adapter interfaces your handlers implement |
-| [person4-rn-sdk/SPEC.md](../person4-rn-sdk/SPEC.md) | Sibling -- separate native shell using same bridge protocol |
-| [integrations/SPEC-MINIPAY-SAMPLE.md](../integrations/SPEC-MINIPAY-SAMPLE.md) | Downstream -- MiniPay sample app depends on this SDK |
+| [person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md) | Sibling -- owns SDK core, adapter interfaces your handlers implement |
+| [person5-rn-sdk/SPEC.md](../person5-rn-sdk/SPEC.md) | Sibling -- separate native shell using same bridge protocol |
+| [person3-integrations/SPEC-MINIPAY-SAMPLE.md](../person3-integrations/SPEC-MINIPAY-SAMPLE.md) | Downstream -- MiniPay sample app depends on this SDK |
 
 ---
 
@@ -2223,7 +2225,7 @@ cd packages/self-sdk-swift && swift build
 
 | Item | Discovered during | Suggested spec |
 | --- | --- | --- |
-| Camera MRZ handler for iOS | Chunk 3F scoping | Phase 2 -- add to this spec when needed |
+| Camera MRZ handler for iOS | Chunk 2L scoping | Phase 2 -- add to this spec when needed |
 | SecureStorage handler for iOS | Design review | May not be needed -- host app manages keychain directly |
 | Crypto signing handler for iOS | Design review | Depends on whether secure enclave signing is needed vs. Web Crypto |
 

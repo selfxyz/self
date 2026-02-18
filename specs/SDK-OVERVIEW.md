@@ -327,16 +327,19 @@ Person 1 — WebView UI + Bridge          OVERVIEW | SPEC
 Person 2 — Kotlin/Swift Native Shells   OVERVIEW | SPEC
 ├── kmp-sdk: delete 4 handlers, keep 5
 ├── iOS: Swift provider implementations (PR #1762)
-├── Test app validation
-└── MiniPay sample integration           integrations/OVERVIEW | integrations/SPEC
+└── Test app validation
 
-Person 3 — SDK Core Adaptation           OVERVIEW | SPEC
+Person 3 — Integrations                 OVERVIEW | SPEC
+├── MiniPay sample integration
+└── Integration samples + validation
+
+Person 4 — SDK Core Adaptation           OVERVIEW | SPEC
 ├── mobile-sdk-alpha: finish RN dep removal
 ├── Browser entry point exports (zero RN imports)
 ├── WebView lifecycle events
 └── Web fallback adapter implementations
 
-Person 4 — RN Native Shell (NEW)        OVERVIEW | SPEC
+Person 5 — RN Native Shell (NEW)        OVERVIEW | SPEC
 ├── <SelfVerification /> component (~200-300 LOC)
 ├── 5 native handler bridges (same protocol)
 ├── Package setup + publishing
@@ -346,9 +349,9 @@ Person 4 — RN Native Shell (NEW)        OVERVIEW | SPEC
 Links:
 - Person 1: [Overview](./person1-webview/OVERVIEW.md) | [Spec](./person1-webview/SPEC.md)
 - Person 2: [Overview](./person2-native-shells/OVERVIEW.md) | [Spec](./person2-native-shells/SPEC.md)
-- Person 3: [Overview](./person3-sdk-core/OVERVIEW.md) | [Spec](./person3-sdk-core/SPEC.md)
-- Person 4: [Overview](./person4-rn-sdk/OVERVIEW.md) | [Spec](./person4-rn-sdk/SPEC.md)
-- Integrations: [Overview](./integrations/OVERVIEW.md) | [MiniPay Spec](./integrations/SPEC-MINIPAY-SAMPLE.md)
+- Person 3: [Overview](./person3-integrations/OVERVIEW.md) | [MiniPay Spec](./person3-integrations/SPEC-MINIPAY-SAMPLE.md)
+- Person 4: [Overview](./person4-sdk-core/OVERVIEW.md) | [Spec](./person4-sdk-core/SPEC.md)
+- Person 5: [Overview](./person5-rn-sdk/OVERVIEW.md) | [Spec](./person5-rn-sdk/SPEC.md)
 
 ## Input / Output — System Level
 
@@ -424,14 +427,19 @@ Person 1 delivers:                     Person 2 delivers:
   ↓                                   ├─ SelfSdk.launch() API
   └────── bundled into ──────────────→ Kotlin SDK artifact
 
-                                       Person 4 delivers:
-Person 3 delivers:
+                                       Person 5 delivers:
+Person 4 delivers:
                                        RN Native Shell (@selfxyz/rn-sdk)
 @selfxyz/mobile-sdk-alpha (npm)       ├─ <SelfVerification /> component
   ↓                                   ├─ 5 native handler bridges
   ↓ core logic, adapters,             ├─ Same bridge protocol as Kotlin shell
   ↓ web fallbacks                     ├─ Loads same Vite bundle
   └────── imported by ───────────────→ webview-app + rn-sdk
+
+Person 3 delivers:
+Integration samples (MiniPay)
+├─ Sample integration code
+└─ Validation against SDK artifacts
 ```
 
 ## In-Flight PRs
@@ -453,18 +461,20 @@ Person 3 delivers:
 Phase 1 (parallel — no inter-dependencies):
   Person 1: Bridge package + web adapters
   Person 2: KMP setup + Android handlers
-  Person 3: SDK core RN dep removal + browser entry point
+  Person 4: SDK core RN dep removal + browser entry point
 
 Phase 2 (after Phase 1):
   Person 1: UI screens wired to bridge
   Person 2: iOS Swift providers (NFC, Biometrics, Lifecycle)
-  Person 3: Web fallback adapter implementations
-  Person 4: RN SDK <SelfVerification /> component
+  Person 3: MiniPay sample integration
+  Person 4: Web fallback adapter implementations
+  Person 5: RN SDK <SelfVerification /> component
 
 Phase 3 (integration):
   Person 1: Vite bundle finalized
-  Person 2: KMP test app + MiniPay sample
-  Person 4: RN SDK integration with Self Wallet
+  Person 2: KMP test app
+  Person 3: Integration validation
+  Person 5: RN SDK integration with Self Wallet
   All: End-to-end NFC scan on physical device
 ```
 
@@ -480,17 +490,20 @@ cd packages/kmp-sdk && ./gradlew :shared:jvmTest
 cd packages/kmp-sdk && ./gradlew :shared:compileDebugKotlinAndroid
 cd packages/kmp-sdk && ./gradlew :shared:compileKotlinIosArm64
 
-# Person 3 — SDK Core
+# Person 3 — Integrations
+# MiniPay sample build + validation against SDK artifacts
+
+# Person 4 — SDK Core
 cd packages/mobile-sdk-alpha && npx vitest run
 
-# Person 4 — RN SDK
+# Person 5 — RN SDK
 cd packages/rn-sdk && yarn build
 cd app && npx react-native run-ios  # integration test
 
 # Integration test (all):
 # 1. Person 1 runs `vite build` → dist/
 # 2. Person 2 copies dist/ into KMP test app assets → launch WebView
-# 3. Person 4 loads same Vite bundle via react-native-webview
+# 3. Person 5 loads same Vite bundle via react-native-webview
 # 4. NFC scan on physical device with real passport (final validation)
 ```
 
@@ -531,18 +544,18 @@ cd app && npx react-native run-ios  # integration test
 
 ## Related Specs
 
-| Spec                                                                          | Type     | Audience | What it covers                                          |
-| ----------------------------------------------------------------------------- | -------- | -------- | ------------------------------------------------------- |
-| [person1-webview/OVERVIEW.md](./person1-webview/OVERVIEW.md)                   | Overview | Person 1 | WebView workstream orientation, scope, dependencies     |
-| [person1-webview/SPEC.md](./person1-webview/SPEC.md)                           | Impl     | Person 1 | WebView screens, bridge adapters, SelfClientProvider    |
-| [person2-native-shells/OVERVIEW.md](./person2-native-shells/OVERVIEW.md)       | Overview | Person 2 | Native shells workstream orientation, scope, deps       |
-| [person2-native-shells/SPEC.md](./person2-native-shells/SPEC.md)               | Impl     | Person 2 | KMP native shell, Android/iOS handlers, Swift providers |
-| [person3-sdk-core/OVERVIEW.md](./person3-sdk-core/OVERVIEW.md)                 | Overview | Person 3 | SDK core workstream orientation, scope, dependencies    |
-| [person3-sdk-core/SPEC.md](./person3-sdk-core/SPEC.md)                         | Impl     | Person 3 | SDK core adaptation, RN dep removal, web fallbacks      |
-| [person4-rn-sdk/OVERVIEW.md](./person4-rn-sdk/OVERVIEW.md)                     | Overview | Person 4 | RN SDK workstream orientation, scope, dependencies      |
-| [person4-rn-sdk/SPEC.md](./person4-rn-sdk/SPEC.md)                             | Impl     | Person 4 | RN native shell, `<SelfVerification />` component       |
-| [integrations/OVERVIEW.md](./integrations/OVERVIEW.md)                         | Overview | Person 2 | Integration samples orientation, scope                  |
-| [integrations/SPEC-MINIPAY-SAMPLE.md](./integrations/SPEC-MINIPAY-SAMPLE.md)  | Impl     | Person 2 | MiniPay integration example                             |
+| Spec                                                                                                | Type     | Audience | What it covers                                          |
+| --------------------------------------------------------------------------------------------------- | -------- | -------- | ------------------------------------------------------- |
+| [person1-webview/OVERVIEW.md](./person1-webview/OVERVIEW.md)                                         | Overview | Person 1 | WebView workstream orientation, scope, dependencies     |
+| [person1-webview/SPEC.md](./person1-webview/SPEC.md)                                                 | Impl     | Person 1 | WebView screens, bridge adapters, SelfClientProvider    |
+| [person2-native-shells/OVERVIEW.md](./person2-native-shells/OVERVIEW.md)                             | Overview | Person 2 | Native shells workstream orientation, scope, deps       |
+| [person2-native-shells/SPEC.md](./person2-native-shells/SPEC.md)                                     | Impl     | Person 2 | KMP native shell, Android/iOS handlers, Swift providers |
+| [person3-integrations/OVERVIEW.md](./person3-integrations/OVERVIEW.md)                               | Overview | Person 3 | Integration samples orientation, scope                  |
+| [person3-integrations/SPEC-MINIPAY-SAMPLE.md](./person3-integrations/SPEC-MINIPAY-SAMPLE.md)        | Impl     | Person 3 | MiniPay integration example                             |
+| [person4-sdk-core/OVERVIEW.md](./person4-sdk-core/OVERVIEW.md)                                       | Overview | Person 4 | SDK core workstream orientation, scope, dependencies    |
+| [person4-sdk-core/SPEC.md](./person4-sdk-core/SPEC.md)                                               | Impl     | Person 4 | SDK core adaptation, RN dep removal, web fallbacks      |
+| [person5-rn-sdk/OVERVIEW.md](./person5-rn-sdk/OVERVIEW.md)                                           | Overview | Person 5 | RN SDK workstream orientation, scope, dependencies      |
+| [person5-rn-sdk/SPEC.md](./person5-rn-sdk/SPEC.md)                                                   | Impl     | Person 5 | RN native shell, `<SelfVerification />` component       |
 
 ## Spec Deviations
 

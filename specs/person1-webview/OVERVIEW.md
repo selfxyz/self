@@ -25,7 +25,7 @@ You build the middle two layers: the bridge protocol library and the WebView UI.
 
 ```
 ┌──────────────────────────────────────────────────┐
-│               NATIVE SHELLS (Person 2 / 4)       │
+│               NATIVE SHELLS (Person 2 / 5)       │
 │  KMP (Android + iOS)  |  RN (react-native-webview)│
 │  5 native handlers: NFC, Camera, Bio, Key, Life  │
 └──────────────────────┬───────────────────────────┘
@@ -42,7 +42,7 @@ You build the middle two layers: the bridge protocol library and the WebView UI.
          └─────────────┬──────────────┘
                        │  imports adapters + hooks
          ┌─────────────▼──────────────┐
-         │  @selfxyz/mobile-sdk-alpha │  (Person 3)
+         │  @selfxyz/mobile-sdk-alpha │  (Person 4)
          │  Proving machine, stores,  │
          │  adapter interfaces        │
          └────────────────────────────┘
@@ -52,10 +52,10 @@ You build the middle two layers: the bridge protocol library and the WebView UI.
 
 | Direction     | Person / Package              | What                                                      | Status      |
 | ------------- | ----------------------------- | --------------------------------------------------------- | ----------- |
-| **You need**  | Person 3 (`mobile-sdk-alpha`) | Adapter interfaces, `useSelfClient()` hook, color/font constants | Active      |
+| **You need**  | Person 4 (`mobile-sdk-alpha`) | Adapter interfaces, `useSelfClient()` hook, color/font constants | Active      |
 | **You need**  | Person 2 (KMP / Swift shells) | Native handler implementations on the other side of the bridge   | Android done, iOS in progress |
 | **Needs you** | Person 2 (KMP / Swift shells) | Vite bundle (`dist/index.html` + JS) embedded into native SDK artifacts | Ready       |
-| **Needs you** | Person 4 (RN SDK)             | Same Vite bundle loaded via `react-native-webview`               | Not started |
+| **Needs you** | Person 5 (RN SDK)             | Same Vite bundle loaded via `react-native-webview`               | Not started |
 
 ## Status
 
@@ -85,8 +85,8 @@ You build the middle two layers: the bridge protocol library and the WebView UI.
 
 | Deliverable                | Type                          | Consumers                                    |
 | -------------------------- | ----------------------------- | -------------------------------------------- |
-| `@selfxyz/webview-bridge`  | Public npm package            | `webview-app`, Person 2 (test mocks), Person 4 |
-| `@selfxyz/webview-app` dist | Vite bundle (`dist/index.html` + JS) | Person 2 (bundled into KMP SDK), Person 4 (loaded via RN WebView) |
+| `@selfxyz/webview-bridge`  | Public npm package            | `webview-app`, Person 2 (test mocks), Person 5 |
+| `@selfxyz/webview-app` dist | Vite bundle (`dist/index.html` + JS) | Person 2 (bundled into KMP SDK), Person 5 (loaded via RN WebView) |
 
 ## Related Specs
 
@@ -95,5 +95,5 @@ You build the middle two layers: the bridge protocol library and the WebView UI.
 | [SPEC.md](./SPEC.md)                                            | Implementation details, chunks, code changes, tests   |
 | [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                         | Project-level architecture, bridge protocol, glossary  |
 | [../person2-native-shells/OVERVIEW.md](../person2-native-shells/OVERVIEW.md) | Native shells workstream — your bridge consumers       |
-| [../person3-sdk-core/OVERVIEW.md](../person3-sdk-core/OVERVIEW.md)           | SDK core workstream — your adapter interface source    |
-| [../person4-rn-sdk/OVERVIEW.md](../person4-rn-sdk/OVERVIEW.md)               | RN SDK workstream — loads your Vite bundle             |
+| [../person4-sdk-core/OVERVIEW.md](../person4-sdk-core/OVERVIEW.md)           | SDK core workstream — your adapter interface source    |
+| [../person5-rn-sdk/OVERVIEW.md](../person5-rn-sdk/OVERVIEW.md)               | RN SDK workstream — loads your Vite bundle             |

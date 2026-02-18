@@ -1,7 +1,7 @@
 # RN Native Shell — Implementation Spec
 
 > Last updated: 2026-02-17
-> Owner: Person 4 (RN SDK)
+> Owner: Person 5 (RN SDK)
 > Parent: [OVERVIEW.md](./OVERVIEW.md)
 > Status: Active
 
@@ -209,7 +209,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
       });
   // NOTE: iOS asset path requires either react-native-fs (add to peerDeps)
   // or using RN's built-in require()/Image.resolveAssetSource(). Decision
-  // deferred to Chunk 4D implementation.
+  // deferred to Chunk 5D implementation.
 
   return (
     <View style={[{ flex: 1 }, style]}>
@@ -639,14 +639,14 @@ Alternatively, avoid the RNFS dependency entirely by using RN's built-in asset r
 | --- | --- |
 | `packages/webview-bridge/src/*` | Owned by Person 1 -- bridge protocol already defined |
 | `packages/webview-app/src/*` | Owned by Person 1 -- WebView UI screens |
-| `packages/mobile-sdk-alpha/src/*` | Owned by Person 3 -- WebView engine core |
+| `packages/mobile-sdk-alpha/src/*` | Owned by Person 4 -- WebView engine core |
 | `packages/kmp-sdk/shared/src/*` | Owned by Person 2 -- Kotlin native shell (reference only) |
 | `app/src/*` | Self Wallet app -- integration consumer, not modified by this workstream |
 | `common/src/*` | Shared utilities -- out of scope |
 
 ## Chunking Guide
 
-### Chunk 4A: Package Setup + Component Shell + MessageRouter + LifecycleHandler -- M ~8k tokens
+### Chunk 5A: Package Setup + Component Shell + MessageRouter + LifecycleHandler -- M ~8k tokens
 
 **Goal:** Create `packages/rn-sdk/` with a working `<SelfVerification />` that loads the WebView, routes bridge messages, and handles lifecycle domain.
 
@@ -665,8 +665,8 @@ Alternatively, avoid the RNFS dependency entirely by using RN's built-in asset r
 
 - Write business logic beyond routing bridge messages
 - Import from `mobile-sdk-alpha` (all core logic is in the WebView)
-- Implement NFC, biometrics, keychain, or camera handlers (those are Chunks 4B/4C)
-- Bundle Vite assets (that is Chunk 4D)
+- Implement NFC, biometrics, keychain, or camera handlers (those are Chunks 5B/5C)
+- Bundle Vite assets (that is Chunk 5D)
 - Add more than ~100 LOC in this chunk
 
 #### Input / Output -- Chunk Validation
@@ -710,9 +710,9 @@ import { SelfVerification } from '@selfxyz/rn-sdk';
 
 ---
 
-### Chunk 4B: Biometric + Keychain Handlers -- S ~4k tokens
+### Chunk 5B: Biometric + Keychain Handlers -- S ~4k tokens
 
-**Depends on:** Chunk 4A
+**Depends on:** Chunk 5A
 
 **Goal:** Implement the two simplest native handler bridges.
 
@@ -773,9 +773,9 @@ Typecheck: No errors
 
 ---
 
-### Chunk 4C: NFC + Camera Handlers -- L ~10k tokens
+### Chunk 5C: NFC + Camera Handlers -- L ~10k tokens
 
-**Depends on:** Chunk 4A
+**Depends on:** Chunk 5A
 
 **Goal:** Implement hardware-dependent handlers. NFC is the most complex handler due to passport reading and progress event streaming.
 
@@ -826,9 +826,9 @@ Typecheck: No errors
 
 ---
 
-### Chunk 4D: Asset Bundling + Publishing -- M ~6k tokens
+### Chunk 5D: Asset Bundling + Publishing -- M ~6k tokens
 
-**Depends on:** Chunks 4A-4C + `webview-app` Vite build working (Person 1)
+**Depends on:** Chunks 5A-5C + `webview-app` Vite build working (Person 1)
 
 **Goal:** Bundle WebView assets for production and prepare npm publishing.
 
@@ -897,10 +897,10 @@ npx react-native run-ios      # WebView renders verification flow
 ## Dependency Graph
 
 ```
-Chunk 4A (package + component + router + lifecycle) — no deps, start here
-  ├──→ Chunk 4B (biometric + keychain handlers)
-  ├──→ Chunk 4C (NFC + camera handlers)
-  └──→ Chunk 4D (asset bundling + publishing) — after 4A-4C + webview-app Vite build
+Chunk 5A (package + component + router + lifecycle) — no deps, start here
+  ├──→ Chunk 5B (biometric + keychain handlers)
+  ├──→ Chunk 5C (NFC + camera handlers)
+  └──→ Chunk 5D (asset bundling + publishing) — after 5A-5C + webview-app Vite build
 ```
 
 ## Completion Status
@@ -909,10 +909,10 @@ _Audit date: 2026-02-17_
 
 | Chunk | Description | Size | Status |
 | --- | --- | --- | --- |
-| 4A | Package setup + `<SelfVerification />` shell + `MessageRouter` + `LifecycleHandler` | M ~8k | **Pending** |
-| 4B | `BiometricHandler` + `KeychainHandler` | S ~4k | **Pending** |
-| 4C | `NfcHandler` + `CameraHandler` (hardware-dependent, requires physical device testing) | L ~10k | **Pending** |
-| 4D | Asset bundling (copy Vite output into `assets/`) + npm publishing config | M ~6k | **Pending** |
+| 5A | Package setup + `<SelfVerification />` shell + `MessageRouter` + `LifecycleHandler` | M ~8k | **Pending** |
+| 5B | `BiometricHandler` + `KeychainHandler` | S ~4k | **Pending** |
+| 5C | `NfcHandler` + `CameraHandler` (hardware-dependent, requires physical device testing) | L ~10k | **Pending** |
+| 5D | Asset bundling (copy Vite output into `assets/`) + npm publishing config | M ~6k | **Pending** |
 
 **0% implemented. Spec ready for implementation.**
 
@@ -923,13 +923,13 @@ _Audit date: 2026-02-17_
 cd packages/rn-sdk && yarn build
 cd packages/rn-sdk && yarn typecheck
 
-# After Chunk 4A:
+# After Chunk 5A:
 # Manual: <SelfVerification /> renders WebView, lifecycle messages flow
 
-# After Chunk 4B:
+# After Chunk 5B:
 # Manual on device: biometric prompt appears, keychain roundtrip works
 
-# After Chunk 4C:
+# After Chunk 5C:
 # Manual on physical device: NFC passport scan completes, progress events stream
 
 # After all chunks — integration validation:
@@ -945,9 +945,9 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 
 ## Coordination Notes
 
-- **Person 1 (WebView UI):** The RN SDK loads the same Vite bundle that Person 1 builds. Chunk 4D depends on Person 1's `packages/webview-app/` producing a working `dist/index.html`. No code sharing beyond the bundle -- coordination is the build artifact.
+- **Person 1 (WebView UI):** The RN SDK loads the same Vite bundle that Person 1 builds. Chunk 5D depends on Person 1's `packages/webview-app/` producing a working `dist/index.html`. No code sharing beyond the bundle -- coordination is the build artifact.
 - **Person 2 (Kotlin Native Shell):** The RN handlers implement the same bridge protocol as the Kotlin handlers. Use `packages/kmp-sdk/shared/src/androidMain/.../handlers/` as reference for handler contracts. No runtime dependency -- protocol is the only coupling.
-- **Person 3 (SDK Core):** Chunk 4A depends on Person 3's Chunk 3F (web fallback adapters) being complete so the WebView can handle documents/crypto/analytics without native bridges. The RN SDK also depends on `@selfxyz/webview-bridge` exporting `BridgeRequest`, `BridgeResponse`, `BridgeEvent`, `BridgeDomain` types.
+- **Person 4 (SDK Core):** Chunk 5A depends on Person 4's Chunk 4F (web fallback adapters) being complete so the WebView can handle documents/crypto/analytics without native bridges. The RN SDK also depends on `@selfxyz/webview-bridge` exporting `BridgeRequest`, `BridgeResponse`, `BridgeEvent`, `BridgeDomain` types.
 - **Person 1 (WebView UI):** The `@selfxyz/webview-bridge` must detect `ReactNativeWebView` as a transport. This is already implemented in `bridge.ts`.
 
 ## Key Reference Files
@@ -998,8 +998,8 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 | --- | --- | --- |
 | Self Wallet migration to `<SelfVerification />` | Spec writing | Separate migration spec after SDK is stable |
 | MiniPay RN sample integration | Spec writing | `SPEC-MINIPAY-SAMPLE.md` (already exists) |
-| Camera library selection for MRZ scanning | Chunk 4C planning | Depends on host app camera setup -- may need configurable adapter |
-| iOS asset loading strategy (RNFS vs require) | PR #1765 review | Decide in Chunk 4D implementation |
+| Camera library selection for MRZ scanning | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter |
+| iOS asset loading strategy (RNFS vs require) | PR #1765 review | Decide in Chunk 5D implementation |
 
 ## Spec Corrections Summary (PR #1765 Review)
 
@@ -1007,18 +1007,18 @@ These issues were identified during PR #1765 code review and are incorporated th
 
 | Issue | Severity | Chunk | Description | Fix Applied |
 | --- | --- | --- | --- | --- |
-| `react-native-webview` dep type | Major | 4A | Listed as `dependency` but must be `peerDependency` -- native modules must be linked by host app | Moved to `peerDependencies` as `"react-native-webview": ">=13.0.0"` |
-| `createHandlers` missing `router` arg | Critical | 4A | `SelfVerification.tsx` called `createHandlers` without `router`, but `NfcHandler` requires it | `router` passed in `createHandlers` config; component passes `router` |
-| Android-only WebView `source` | Major | 4D | `source` only set `file:///android_asset/...` -- iOS blank screen | Use `Platform.select({ android: ..., ios: ... })` |
-| `crypto.randomUUID` polyfill | Minor | 4A | May not be available in all RN environments | Fallback: `crypto.randomUUID?.() ?? \`${Date.now()}-${Math.random()}\`` |
-| `RNFS.MainBundlePath` without peer dep | Major | 4D | iOS path uses `react-native-fs` but not in `peerDependencies` | Add `react-native-fs` to peerDeps OR use RN built-in asset resolution |
+| `react-native-webview` dep type | Major | 5A | Listed as `dependency` but must be `peerDependency` -- native modules must be linked by host app | Moved to `peerDependencies` as `"react-native-webview": ">=13.0.0"` |
+| `createHandlers` missing `router` arg | Critical | 5A | `SelfVerification.tsx` called `createHandlers` without `router`, but `NfcHandler` requires it | `router` passed in `createHandlers` config; component passes `router` |
+| Android-only WebView `source` | Major | 5D | `source` only set `file:///android_asset/...` -- iOS blank screen | Use `Platform.select({ android: ..., ios: ... })` |
+| `crypto.randomUUID` polyfill | Minor | 5A | May not be available in all RN environments | Fallback: `crypto.randomUUID?.() ?? \`${Date.now()}-${Math.random()}\`` |
+| `RNFS.MainBundlePath` without peer dep | Major | 5D | iOS path uses `react-native-fs` but not in `peerDependencies` | Add `react-native-fs` to peerDeps OR use RN built-in asset resolution |
 
 ## Spec Deviations
 
 | Suggestion skipped | Reason |
 | --- | --- |
 | BEFORE/AFTER code blocks | All tasks are new file creation (package does not exist yet) -- used CREATE + SKELETON pattern |
-| `--remote` recommendation for L chunks | Chunk 4C (NFC) requires physical device testing -- remote execution insufficient |
+| `--remote` recommendation for L chunks | Chunk 5C (NFC) requires physical device testing -- remote execution insufficient |
 | Full handler implementation code | Handlers are thin wrappers (~20-40 LOC each); showing full implementation would over-specify what should be a direct native library delegation |
 
 ## Related Specs
@@ -1028,4 +1028,4 @@ These issues were identified during PR #1765 code review and are incorporated th
 | [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) | Parent architecture spec |
 | [person1-webview/SPEC.md](../person1-webview/SPEC.md) | Builds the WebView UI + bridge that this SDK loads |
 | [person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md) | Kotlin native shell -- same bridge protocol, reference handlers |
-| [person3-sdk-core/SPEC.md](../person3-sdk-core/SPEC.md) | SDK core adaptation -- Chunk 3F (web fallback adapters) is a prerequisite |
+| [person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md) | SDK core adaptation -- Chunk 4F (web fallback adapters) is a prerequisite |

@@ -1,8 +1,9 @@
-# MiniPay Integration Sample — Implementation Spec
+# Person 3: MiniPay Integration Sample — Implementation Spec
 
 > Last updated: 2026-02-17
-> Owner: Person 2 (integration sample)
+> Owner: Person 3 (Integrations)
 > Parent: [OVERVIEW.md](./OVERVIEW.md)
+> Project: [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Status: Draft
 
 ## North Star
@@ -475,7 +476,7 @@ Note: No QR scanning libraries, no ML Kit, no CameraX in the sample app's own de
 | `packages/kmp-sdk/shared/src/**`                                             | SDK internals — owned by Person 2 native shells workstream     |
 | `packages/webview-bridge/src/**`                                             | Bridge protocol — owned by Person 1 webview workstream         |
 | `packages/webview-app/src/**`                                                | WebView UI — owned by Person 1 webview workstream              |
-| `packages/mobile-sdk-alpha/src/**`                                           | SDK core — owned by Person 3 sdk core workstream               |
+| `packages/mobile-sdk-alpha/src/**`                                           | SDK core — owned by Person 4 sdk core workstream               |
 | `app/src/**`                                                                 | Self Wallet — out of scope, separate app                       |
 | `packages/kmp-sdk/testApp/**`                                                | Test app — separate from integration sample, different purpose |
 | `common/src/**`                                                              | Shared utilities — stable, no changes needed                   |
@@ -484,7 +485,7 @@ Note: No QR scanning libraries, no ML Kit, no CameraX in the sample app's own de
 
 ## Chunking Guide
 
-### Chunk 5A: Project Setup + Home Screen + Launch Button — M ~6k tokens
+### Chunk 3A: Project Setup + Home Screen + Launch Button — M ~6k tokens
 
 **Goal:** Create the project scaffolding, build the home screen, and wire the "Verify Identity" button.
 
@@ -493,7 +494,7 @@ Note: No QR scanning libraries, no ML Kit, no CameraX in the sample app's own de
 - Modify any KMP SDK internals — you are a consumer of `SelfSdk.launch()`, not a contributor to it
 - Add any native dependencies beyond what Compose Multiplatform provides — no ML Kit, no CameraX, no NFC libraries in this project
 - Build more than 2 native screens — HomeScreen and ResultScreen only; all verification logic is in the WebView
-- Implement the actual `SelfSdk.launch()` call yet — that is Chunk 5B
+- Implement the actual `SelfSdk.launch()` call yet — that is Chunk 3B
 
 **Steps:**
 
@@ -541,9 +542,9 @@ Output: HomeScreen renders with "MiniPay" title, "Unverified" status card, "Veri
 
 ---
 
-### Chunk 5B: Wire SelfSdk.launch() + Handle Callback — M ~5k tokens
+### Chunk 3B: Wire SelfSdk.launch() + Handle Callback — M ~5k tokens
 
-**Depends on:** Chunk 5A
+**Depends on:** Chunk 3A
 
 **Goal:** Connect the button to `SelfSdk.launch()` and handle the three callback paths (success, failure, cancelled).
 
@@ -606,9 +607,9 @@ Output: onFailure() fires with descriptive error, app shows error on ResultScree
 
 ---
 
-### Chunk 5C: Polish Result Display + Error Handling — S ~4k tokens
+### Chunk 3C: Polish Result Display + Error Handling — S ~4k tokens
 
-**Depends on:** Chunk 5B
+**Depends on:** Chunk 3B
 
 **Goal:** Polish the result screen, persist verification status, and handle edge cases.
 
@@ -674,9 +675,9 @@ Output: WebView dismisses, onCancelled() fires, HomeScreen shown
 ## Dependency Graph
 
 ```
-Chunk 5A (no deps)
-  └──→ Chunk 5B (after 5A)
-         └──→ Chunk 5C (after 5B)
+Chunk 3A (no deps)
+  └──→ Chunk 3B (after 3A)
+         └──→ Chunk 3C (after 3B)
 ```
 
 All three chunks are sequential — each builds on the previous.
@@ -685,9 +686,9 @@ All three chunks are sequential — each builds on the previous.
 
 | Chunk | Description                                   | Size   | Status      |
 | ----- | --------------------------------------------- | ------ | ----------- |
-| 5A    | Project Setup + Home Screen + Launch Button   | M ~6k  | **Pending** |
-| 5B    | Wire SelfSdk.launch() + Handle Callback       | M ~5k  | **Pending** |
-| 5C    | Polish Result Display + Error Handling         | S ~4k  | **Pending** |
+| 3A    | Project Setup + Home Screen + Launch Button   | M ~6k  | **Pending** |
+| 3B    | Wire SelfSdk.launch() + Handle Callback       | M ~5k  | **Pending** |
+| 3C    | Polish Result Display + Error Handling         | S ~4k  | **Pending** |
 
 **Overall: 0% implemented.**
 
@@ -698,11 +699,11 @@ All three chunks are sequential — each builds on the previous.
 cd packages/kmp-minipay-sample && ./gradlew :composeApp:compileDebugKotlinAndroid
 cd packages/kmp-minipay-sample && ./gradlew :composeApp:compileKotlinIosSimulatorArm64
 
-# After Chunk 5A:
+# After Chunk 3A:
 # Launch on Android emulator — HomeScreen renders, button visible
 # Launch on iOS simulator — HomeScreen renders, button visible
 
-# After Chunk 5B:
+# After Chunk 3B:
 # Tap "Verify Identity" — WebView opens with verification flow
 # Complete flow — callback fires, ResultScreen displays
 
@@ -720,8 +721,8 @@ cd packages/kmp-minipay-sample && ./gradlew :composeApp:compileKotlinIosSimulato
 ## Coordination Notes
 
 - **Person 2 (native shells):** This sample depends on the KMP SDK's `SelfSdk.launch()` API being stable. Coordinate on API surface changes. The sample will need to be updated if the callback interface changes.
-- **Person 1 (WebView UI):** The WebView verification flow must be functional and bundled into the KMP SDK assets before Chunk 5B can be fully validated. The sample does not control or modify the WebView.
-- **Person 3 (SDK core):** The WebView engine must support the bridge protocol for NFC, camera, biometrics domains. The sample does not interact with the engine directly.
+- **Person 1 (WebView UI):** The WebView verification flow must be functional and bundled into the KMP SDK assets before Chunk 3B can be fully validated. The sample does not control or modify the WebView.
+- **Person 4 (SDK core):** The WebView engine must support the bridge protocol for NFC, camera, biometrics domains. The sample does not interact with the engine directly.
 - **All:** The end-to-end acceptance test (physical device NFC scan) requires all workstreams to be integrated. This is the final validation gate.
 
 ## Testing
@@ -738,13 +739,13 @@ cd packages/kmp-minipay-sample && ./gradlew :composeApp:compileKotlinIosSimulato
 
 ### Device Tests (manual, per-chunk)
 
-**Chunk 5A — Home Screen:**
+**Chunk 3A — Home Screen:**
 
 - App launches on Android emulator and iOS simulator
 - HomeScreen displays "Unverified" status
 - "Verify Identity" button is visible and tappable
 
-**Chunk 5B — SDK Launch + Callback:**
+**Chunk 3B — SDK Launch + Callback:**
 
 - Tapping "Verify Identity" opens the WebView verification flow
 - Completing the flow in the WebView fires `onSuccess` callback
@@ -752,7 +753,7 @@ cd packages/kmp-minipay-sample && ./gradlew :composeApp:compileKotlinIosSimulato
 - A failure scenario fires `onFailure` callback
 - Result screen displays after callback
 
-**Chunk 5C — Polish:**
+**Chunk 3C — Polish:**
 
 - Success screen shows disclosed claims matching the request
 - Failure screen shows error message
@@ -793,8 +794,8 @@ Run on: Android physical device + iOS physical device.
   - [SPEC-KMP-SDK.md](../SPEC-KMP-SDK.md) — Kotlin native shell (Person 2)
   - [SPEC-IOS-HANDLERS.md](../SPEC-IOS-HANDLERS.md) — iOS handler implementations (Person 2)
   - [SPEC-WEBVIEW-UI.md](../SPEC-WEBVIEW-UI.md) — WebView UI + bridge (Person 1)
-  - [SPEC-PERSON3-SDK-CORE.md](../SPEC-PERSON3-SDK-CORE.md) — SDK core adaptation (Person 3)
-  - [SPEC-RN-SDK.md](../SPEC-RN-SDK.md) — React Native SDK (Person 4)
+  - [SPEC-PERSON4-SDK-CORE.md](../SPEC-PERSON4-SDK-CORE.md) — SDK core adaptation (Person 4)
+  - [SPEC-RN-SDK.md](../SPEC-RN-SDK.md) — React Native SDK (Person 5)
 
 ---
 
