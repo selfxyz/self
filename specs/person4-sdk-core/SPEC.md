@@ -324,14 +324,14 @@ Output: Adapter throws with descriptive error, not silent failure
 
 #### Input / Output — Web Crypto Hash
 
-**Input:** `adapter.hash('sha256', new Uint8Array([1, 2, 3]))`
+**Input:** `adapter.hash(new Uint8Array([1, 2, 3]), 'sha256')`
 
 **Expected Output:** SHA-256 hash as `Uint8Array`
 
 **Edge case — algorithm name normalization:**
 
 ```text
-Input:  adapter.hash('sha-256', data)  // already hyphenated
+Input:  adapter.hash(data, 'sha-256')  // already hyphenated
 Output: Same hash result (normalize handles both formats)
 ```
 

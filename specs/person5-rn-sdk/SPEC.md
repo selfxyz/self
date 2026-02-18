@@ -103,6 +103,7 @@ There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not e
 packages/rn-sdk/
   src/
     index.ts                        # Public exports
+    types.ts                        # Shared SDK types (breaks circular import with handlers)
     SelfVerification.tsx             # Main component
     bridge/
       MessageRouter.ts              # Routes WebView messages to handlers
@@ -125,28 +126,14 @@ packages/rn-sdk/
 
 ---
 
-### 3. `SelfVerification` Component
+### 3. Shared SDK types
 
-**Create:** `packages/rn-sdk/src/SelfVerification.tsx`
+**Create:** `packages/rn-sdk/src/types.ts`
+
+Shared types used by `SelfVerification`, `LifecycleHandler`, and `createHandlers`. Defining them here (instead of in `SelfVerification.tsx`) avoids a circular dependency: handlers would otherwise need to import from the component that imports them.
 
 ```typescript
 // SKELETON
-import React, { useRef, useCallback, useMemo, useEffect } from 'react';
-import { View, Platform, type ViewStyle } from 'react-native';
-import WebView, { type WebViewMessageEvent } from 'react-native-webview';
-import { MessageRouter } from './bridge/MessageRouter';
-import { createHandlers } from './handlers';
-
-export interface SelfVerificationProps {
-  request: VerificationRequest;
-  onSuccess: (result: VerificationResult) => void;
-  onFailure: (error: SelfSdkError) => void;
-  onCancelled: () => void;
-  debug?: boolean;
-  devServerUrl?: string;
-  style?: ViewStyle;
-}
-
 export interface VerificationRequest {
   userId?: string;
   scope?: string;
@@ -164,6 +151,32 @@ export interface VerificationResult {
 export interface SelfSdkError {
   code: string;
   message: string;
+}
+```
+
+---
+
+### 4. `SelfVerification` Component
+
+**Create:** `packages/rn-sdk/src/SelfVerification.tsx`
+
+```typescript
+// SKELETON
+import React, { useRef, useCallback, useMemo, useEffect } from 'react';
+import { View, Platform, type ViewStyle } from 'react-native';
+import WebView, { type WebViewMessageEvent } from 'react-native-webview';
+import { MessageRouter } from './bridge/MessageRouter';
+import { createHandlers } from './handlers';
+import type { VerificationRequest, VerificationResult, SelfSdkError } from './types';
+
+export interface SelfVerificationProps {
+  request: VerificationRequest;
+  onSuccess: (result: VerificationResult) => void;
+  onFailure: (error: SelfSdkError) => void;
+  onCancelled: () => void;
+  debug?: boolean;
+  devServerUrl?: string;
+  style?: ViewStyle;
 }
 
 export const SelfVerification: React.FC<SelfVerificationProps> = ({
@@ -288,7 +301,7 @@ Output: WebView loads, lifecycle.getConfig returns { verificationRequest: {}, de
 
 ---
 
-### 4. MessageRouter
+### 5. MessageRouter
 
 **Create:** `packages/rn-sdk/src/bridge/MessageRouter.ts`
 
@@ -408,11 +421,11 @@ Output: console.error('[SelfSDK] Failed to parse bridge message: ...'), no crash
 
 ---
 
-### 5. Native Handlers
+### 6. Native Handlers
 
 Each handler implements the same bridge protocol as the Kotlin SDK handlers. They are thin wrappers around existing React Native libraries.
 
-#### 5a. NfcHandler
+#### 6a. NfcHandler
 
 **Create:** `packages/rn-sdk/src/handlers/NfcHandler.ts`
 
@@ -453,7 +466,7 @@ Error:  { domain: "nfc", method: "unknownMethod", params: {} }
 Output: { success: false, error: { code: "METHOD_NOT_FOUND", message: "Unknown NFC method: unknownMethod" } }
 ```
 
-#### 5b. BiometricHandler
+#### 6b. BiometricHandler
 
 **Create:** `packages/rn-sdk/src/handlers/BiometricHandler.ts`
 
@@ -489,7 +502,7 @@ Input:  { domain: "biometrics", method: "getBiometryType", params: {} }
 Output: "FaceID" | "TouchID" | "Biometrics" | "none"
 ```
 
-#### 5c. KeychainHandler
+#### 6c. KeychainHandler
 
 **Create:** `packages/rn-sdk/src/handlers/KeychainHandler.ts`
 
@@ -530,7 +543,7 @@ Error:  { domain: "secureStorage", method: "get", params: {} }  (missing key)
 Output: { code: "MISSING_KEY", message: "Key parameter required" }
 ```
 
-#### 5d. CameraHandler
+#### 6d. CameraHandler
 
 **Create:** `packages/rn-sdk/src/handlers/CameraHandler.ts`
 
@@ -560,13 +573,14 @@ Input:  { domain: "camera", method: "scanMRZ", params: {} }
 Output: (not yet implemented — throws { code: "NOT_IMPLEMENTED", message: "MRZ scan not yet implemented" })
 ```
 
-#### 5e. LifecycleHandler
+#### 6e. LifecycleHandler
 
 **Create:** `packages/rn-sdk/src/handlers/LifecycleHandler.ts`
 
 ```typescript
 // SKELETON
 import type { BridgeDomain } from '@selfxyz/webview-bridge';
+import type { VerificationRequest, VerificationResult, SelfSdkError } from '../types';
 
 export interface LifecycleConfig {
   request: VerificationRequest;
@@ -614,12 +628,14 @@ Output: null (calls props.onCancelled())
 
 ---
 
-### 6. Handler Registry
+### 7. Handler Registry
 
 **Create:** `packages/rn-sdk/src/handlers/index.ts`
 
 ```typescript
 // SKELETON
+import type { VerificationRequest, VerificationResult, SelfSdkError } from '../types';
+
 export function createHandlers(config: {
   request: VerificationRequest;
   onSuccess: (result: VerificationResult) => void;
@@ -648,7 +664,7 @@ export function createHandlers(config: {
 
 ---
 
-### 7. Asset Bundling
+### 8. Asset Bundling
 
 The Vite output (`packages/webview-app/dist/`) is copied into the RN SDK's assets at build time:
 
@@ -701,7 +717,7 @@ If `react-native-fs` is not available, fall back to React Native's `require()` w
 
 ---
 
-### 8. Native vs WebView Boundary
+### 9. Native vs WebView Boundary
 
 | Capability        | Native (RN bridge)     | WebView (web fallback) |
 | ----------------- | ---------------------- | ---------------------- |
@@ -725,6 +741,7 @@ If `react-native-fs` is not available, fall back to React Native's `require()` w
 | `packages/rn-sdk/tsconfig.json`                    | Create new | **Low** -- build config             |
 | `packages/rn-sdk/tsup.config.ts`                   | Create new | **Low** -- build config             |
 | `packages/rn-sdk/src/index.ts`                     | Create new | **Low** -- public exports           |
+| `packages/rn-sdk/src/types.ts`                     | Create new | **Low** -- shared SDK types (breaks circular import) |
 | `packages/rn-sdk/src/SelfVerification.tsx`         | Create new | **Medium** -- core component        |
 | `packages/rn-sdk/src/bridge/MessageRouter.ts`      | Create new | **Medium** -- message routing       |
 | `packages/rn-sdk/src/bridge/types.ts`              | Create new | **Low** -- re-exports               |
@@ -755,13 +772,14 @@ If `react-native-fs` is not available, fall back to React Native's `require()` w
 **Steps:**
 
 1. Create directory structure, `package.json` (with `react-native-webview` as peerDep), `tsconfig.json`, `tsup.config.ts`
-2. Implement `bridge/types.ts` -- re-export types from `@selfxyz/webview-bridge`
-3. Implement `MessageRouter.ts` -- message routing with `crypto.randomUUID` fallback polyfill
-4. Implement `LifecycleHandler.ts` -- `ready`, `getConfig`, `dismiss`, `setResult`
-5. Implement `handlers/index.ts` -- `createHandlers()` with `router` arg
-6. Implement `SelfVerification.tsx` -- WebView wrapper with `onMessage`, `Platform.select` for source
-7. Implement `index.ts` -- public exports
-8. Validate: `cd packages/rn-sdk && yarn build && yarn typecheck`
+2. Implement `src/types.ts` -- shared `VerificationRequest`, `VerificationResult`, `SelfSdkError` (so handlers and component import from here, not from each other)
+3. Implement `bridge/types.ts` -- re-export types from `@selfxyz/webview-bridge`
+4. Implement `MessageRouter.ts` -- message routing with `crypto.randomUUID` fallback polyfill
+5. Implement `LifecycleHandler.ts` -- `ready`, `getConfig`, `dismiss`, `setResult` (import types from `../types`)
+6. Implement `handlers/index.ts` -- `createHandlers()` with `router` arg (import types from `../types`)
+7. Implement `SelfVerification.tsx` -- WebView wrapper with `onMessage`, `Platform.select` for source (import types from `./types`)
+8. Implement `index.ts` -- public exports
+9. Validate: `cd packages/rn-sdk && yarn build && yarn typecheck`
 
 **You will NOT:**
 
