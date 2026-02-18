@@ -83,7 +83,6 @@ There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not e
   },
   "devDependencies": {
     "@types/react": "^18.3.4",
-    "@types/react-native": "^0.73.0",
     "tsup": "^8.0.1",
     "typescript": "^5.9.3"
   }
@@ -100,7 +99,7 @@ There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not e
 
 **Create:** full directory tree
 
-```
+```text
 packages/rn-sdk/
   src/
     index.ts                        # Public exports
@@ -223,9 +222,16 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   }
 
   const isAndroidAsset = source.uri?.startsWith('file:///android_asset/');
-  const originWhitelist = devServerUrl
-    ? [new URL(devServerUrl).origin]
-    : ['file://'];
+  let origin = 'file://';
+  if (devServerUrl) {
+    try {
+      origin = new URL(devServerUrl).origin;
+    } catch {
+      const match = devServerUrl.match(/^(https?:\/\/[^/]+)/);
+      origin = match ? match[1] : 'file://';
+    }
+  }
+  const originWhitelist = devServerUrl ? [origin] : ['file://'];
 
   return (
     <View style={[{ flex: 1 }, style]}>
@@ -297,7 +303,7 @@ import type {
   BridgeDomain,
 } from '@selfxyz/webview-bridge';
 
-interface BridgeHandler {
+export interface BridgeHandler {
   domain: BridgeDomain;
   handle(method: string, params: Record<string, unknown>): Promise<unknown>;
 }
@@ -315,6 +321,9 @@ export class MessageRouter {
   }
   register(handler: BridgeHandler): void {
     /* ... */
+  }
+  unregister(handler: BridgeHandler): void {
+    this.handlers.delete(handler.domain);
   }
   async onMessageReceived(rawJson: string): Promise<void> {
     /* ... */

@@ -173,33 +173,28 @@ Output: Status card shows "Verified" with proof date and claims summary
 
 **Create:** SDK integration logic in `MainViewModel.kt`
 
-The entire integration fits in a single call site:
+The entire integration fits in a single call site. **Configure the SDK once** (e.g. ViewModel init), not on every button tap. **Dispatch callbacks to the main thread** before updating Compose state (SDK may call back from a background thread):
 
 ```kotlin
-// Configure once (e.g., in Application.onCreate or ViewModel init)
-val sdk = SelfSdk.configure(SelfSdkConfig(debug = true))
+// In MainViewModel: hold a single SDK instance (init once)
+private val sdk = SelfSdk.configure(SelfSdkConfig(debug = BuildConfig.DEBUG))
 
-// Launch verification from a button tap
-sdk.launch(
-    request = VerificationRequest(
-        userId = "...",
-        disclosures = listOf("nationality", "age"),
-    ),
-    callback = object : SelfSdkCallback {
-        override fun onSuccess(result: VerificationResult) {
-            // Navigate to ResultScreen with success
-            viewModel.onVerificationSuccess(result)
+fun launchVerification(scope: CoroutineScope) {
+    sdk.launch(
+        request = VerificationRequest(userId = "...", disclosures = listOf("nationality", "age")),
+        callback = object : SelfSdkCallback {
+            override fun onSuccess(result: VerificationResult) {
+                scope.launch(Dispatchers.Main) { onVerificationSuccess(result) }
+            }
+            override fun onFailure(error: SelfSdkError) {
+                scope.launch(Dispatchers.Main) { onVerificationFailure(error) }
+            }
+            override fun onCancelled() {
+                scope.launch(Dispatchers.Main) { onVerificationCancelled() }
+            }
         }
-        override fun onFailure(error: SelfSdkError) {
-            // Navigate to ResultScreen with error
-            viewModel.onVerificationFailure(error)
-        }
-        override fun onCancelled() {
-            // User dismissed -- stay on HomeScreen
-            viewModel.onVerificationCancelled()
-        }
-    }
-)
+    )
+}
 ```
 
 #### Input / Output
@@ -659,7 +654,7 @@ Output: onFailure() fires with descriptive error, app shows error on ResultScree
 
 1. Success: Display all disclosed claims from `VerificationResult` in a clean list
 2. Failure: Map `SelfSdkError` codes to user-friendly messages
-3. Persist verification status so HomeScreen reflects verified state across app restarts
+3. Persist verification status so HomeScreen reflects verified state across app restarts (use a KMP-compatible store: e.g. `multiplatform-settings` in `commonMain.dependencies`, or an expect/actual `VerificationStore` with DataStore/NSUserDefaults actuals)
 4. Theme: Apply MiniPay-style colors and typography consistently
 5. Edge cases: Handle Activity recreation during WebView flow, back button behavior
 6. Validate: Full end-to-end flow on physical device, error cases handled gracefully

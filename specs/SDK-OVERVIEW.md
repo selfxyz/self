@@ -450,8 +450,8 @@ SelfSdk.launch(
 {
   "type": "proofGenerated",
   "proof": {
-    "verified": true,
-    "disclosures": {
+    "success": true,
+    "claims": {
       "nationality": "NLD",
       "date_of_birth": "1990-01-15",
       "document_expiry": "2030-01-15"

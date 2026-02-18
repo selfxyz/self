@@ -35,7 +35,7 @@
 
 You are building a thin React Native wrapper that hosts the exact same WebView as Person 2's Kotlin/Swift shell. Same bridge protocol, same Vite bundle, different native shell.
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │           HOST APP (React Native)       │
 │        (Self Wallet / third-party)      │

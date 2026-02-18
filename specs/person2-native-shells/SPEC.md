@@ -853,23 +853,18 @@ package xyz.self.sdk.providers
  * Central registry for iOS native provider implementations.
  * Swift companion package calls SdkProviderRegistry.configure() at app startup.
  *
- * Only 3 providers are needed:
- * - NFC: hardware access (NFCPassportReader)
- * - Biometric: OS-level prompt (LAContext)
- * - WebView: WKWebView hosting and JS bridge
- *
- * Documents, Crypto, Analytics, Haptic are handled by web fallbacks
- * inside the WebView (IndexedDB, Web Crypto API, fetch).
- * SecureStorage is provided via factory pattern (same as NFC/Biometrics).
+ * Required providers: NFC, Biometric, WebView. SecureStorage is optional
+ * (factory pattern; if not set, WebView uses in-memory fallback).
+ * Documents, Crypto, Analytics, Haptic are handled by web fallbacks inside the WebView.
  */
 object SdkProviderRegistry {
     var nfc: NfcProvider? = null
     var biometric: BiometricProvider? = null
     var webView: WebViewProvider? = null
+    var secureStorage: SecureStorageProvider? = null
 
     /**
-     * Returns true if all required providers are registered.
-     * Lifecycle handler is self-contained (no external provider needed).
+     * Returns true if all required providers (NFC, Biometric, WebView) are registered.
      */
     fun isConfigured(): Boolean = nfc != null && biometric != null && webView != null
 }
@@ -1079,7 +1074,7 @@ let package = Package(
         .library(name: "SelfSdkSwift", targets: ["SelfSdkSwift"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/AndyQ/NFCPassportReader", .upToNextMinor(from: "1.0.0")),
+        .package(url: "https://github.com/AndyQ/NFCPassportReader", .upToNextMinor(from: "2.3.0")),
     ],
     targets: [
         .target(
@@ -1324,7 +1319,7 @@ data class VerificationResult(
     val userId: String?,
     val verificationId: String?,
     val proof: String?,
-    val claims: Map<String, String>?,
+    val claims: Map<String, Any?>?,
 )
 
 data class SelfSdkError(

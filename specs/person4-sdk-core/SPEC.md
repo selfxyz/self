@@ -81,7 +81,7 @@ const getPlatform = (): 'ios' | 'android' =>
 // AFTER — in src/types/public.ts, extend Config
 export interface Config {
   // ... existing fields
-  platform?: 'ios' | 'android' | 'web' | string;
+  platform?: 'ios' | 'android' | 'web' | (string & {});
 }
 
 // In provingMachine.ts — replace getPlatform()
@@ -192,11 +192,14 @@ export interface SdkInitialConfig {
   debug?: boolean;
 }
 
+/** Placeholder until Person 2 defines concrete SelfApp shape (Chunk 4C sync). */
+export type SelfAppConfig = Record<string, unknown>;
+
 export interface VerificationRequest {
   userId?: string;
   scope?: string;
   disclosures?: string[];
-  selfApp?: unknown;
+  selfApp?: SelfAppConfig;
 }
 ```
 
@@ -267,12 +270,14 @@ export function createIndexedDBDocumentsAdapter(): DocumentsAdapter {
 // SKELETON — hash() only, sign() left to bridge adapter
 export function createWebCryptoAdapter(): CryptoAdapter {
   return {
-    hash: async (algorithm: string, data: Uint8Array): Promise<Uint8Array> => {
-      // Normalize: 'sha256' → 'SHA-256', 'sha-1' → 'SHA-1'
+    hash: async (data: Uint8Array, algorithm?: string): Promise<Uint8Array> => {
+      const normalizedAlgo = (algorithm ?? 'sha256')
+        .toUpperCase()
+        .replace(/^SHA(\d)/, 'SHA-$1');
       const buf = await crypto.subtle.digest(normalizedAlgo, data);
       return new Uint8Array(buf);
     },
-    sign: async () => {
+    sign: async (_data: Uint8Array, _keyRef: string) => {
       throw new Error(
         'sign() requires bridge adapter — use webCryptoAdapter(bridge) instead',
       );
