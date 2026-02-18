@@ -2,7 +2,7 @@
 
 Shows model name, estimated session cost, token usage, and duration in the Claude Code statusline.
 
-```
+```text
 Claude Opus 4.6  $1.23  42.3k tokens  5m30s
 ```
 
@@ -10,7 +10,7 @@ Claude Opus 4.6  $1.23  42.3k tokens  5m30s
 
 Paste this into Claude Code to set it up automatically:
 
-```
+```text
 Read docs/claude-statusline-setup.md and follow the Manual Setup steps exactly.
 Copy the script to ~/.claude/statusline-command.sh, make it executable,
 and add the statusLine block to ~/.claude/settings.json.
@@ -110,7 +110,7 @@ Add the `statusLine` block to your existing settings:
 ## Platform Notes
 
 - **macOS:** Works as-is. Uses `stat -f "%B"` for file birth time.
-- **Linux:** Change `stat -f "%B"` to `stat -c "%W"` on line 43. The rest is portable.
+- **Linux:** Change `stat -f "%B"` to `stat -c "%W"` on line 43. Note: `stat -c "%W"` returns 0 on filesystems that don't record birth time (e.g. ext4, xfs), so the guard `[ "$start_epoch" -gt 0 ]` will hide duration. As a fallback, use modification time: `stat -c "%Y"` (mtime) for best-effort duration (reduced accuracy).
 - **Requires:** `jq` must be installed (`brew install jq` / `apt install jq`).
 
 ## Cost Estimates

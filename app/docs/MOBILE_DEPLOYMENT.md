@@ -117,7 +117,7 @@ Average build times with cache: iOS ~15min, Android ~10min
 Set in workflow files:
 
 ```yaml
-NODE_VERSION: 18
+NODE_VERSION: 22
 RUBY_VERSION: 3.2
 JAVA_VERSION: 17
 ANDROID_API_LEVEL: 35

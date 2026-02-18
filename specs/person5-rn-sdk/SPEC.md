@@ -74,6 +74,13 @@ There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not e
     "react-native-biometrics": "^3.0.1",
     "react-native-keychain": "^8.2.0"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "devDependencies": {
     "@types/react": "^18.3.4",
     "@types/react-native": "^0.73.0",
@@ -125,7 +132,7 @@ packages/rn-sdk/
 
 ```typescript
 // SKELETON
-import React, { useRef, useCallback, useMemo } from 'react';
+import React, { useRef, useCallback, useMemo, useEffect } from 'react';
 import { View, Platform, type ViewStyle } from 'react-native';
 import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 import { MessageRouter } from './bridge/MessageRouter';
@@ -206,11 +213,19 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
     ? { uri: devServerUrl }
     : Platform.select({
         android: { uri: 'file:///android_asset/self-wallet/index.html' },
-        ios: { uri: `${/* RNFS.MainBundlePath or require() — see note below */ ''}/self-wallet/index.html` },
+        ios: { uri: `${/* Metro require() — see Chunk 5D */ ''}/self-wallet/index.html` },
+        default: undefined,
       });
-  // NOTE: iOS asset path requires either react-native-fs (add to peerDeps)
-  // or using RN's built-in require()/Image.resolveAssetSource(). Decision
-  // deferred to Chunk 5D implementation.
+
+  if (!source) {
+    console.error('[SelfSDK] Unsupported platform:', Platform.OS);
+    return null;
+  }
+
+  const isAndroidAsset = source.uri?.startsWith('file:///android_asset/');
+  const originWhitelist = devServerUrl
+    ? [new URL(devServerUrl).origin]
+    : ['file://'];
 
   return (
     <View style={[{ flex: 1 }, style]}>
@@ -220,10 +235,10 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
         onMessage={onMessage}
         javaScriptEnabled
         domStorageEnabled
-        allowFileAccess={false}
+        allowFileAccess={isAndroidAsset}
         allowUniversalAccessFromFileURLs={false}
         mediaPlaybackRequiresUserGesture={false}
-        originWhitelist={['*']}
+        originWhitelist={originWhitelist}
         style={{ flex: 1 }}
       />
     </View>
@@ -435,6 +450,7 @@ Output: { success: false, error: { code: "METHOD_NOT_FOUND", message: "Unknown N
 
 ```typescript
 // SKELETON
+import type { BridgeDomain } from '@selfxyz/webview-bridge';
 import ReactNativeBiometrics from 'react-native-biometrics';
 
 export class BiometricHandler {
@@ -470,6 +486,7 @@ Output: "FaceID" | "TouchID" | "Biometrics" | "none"
 
 ```typescript
 // SKELETON
+import type { BridgeDomain } from '@selfxyz/webview-bridge';
 import * as Keychain from 'react-native-keychain';
 
 export class KeychainHandler {
@@ -510,6 +527,8 @@ Output: { code: "MISSING_KEY", message: "Key parameter required" }
 
 ```typescript
 // SKELETON
+import type { BridgeDomain } from '@selfxyz/webview-bridge';
+
 export class CameraHandler {
   domain: BridgeDomain = 'camera';
 
@@ -538,6 +557,16 @@ Output: (not yet implemented — throws { code: "NOT_IMPLEMENTED", message: "MRZ
 
 ```typescript
 // SKELETON
+import type { BridgeDomain } from '@selfxyz/webview-bridge';
+
+export interface LifecycleConfig {
+  request: VerificationRequest;
+  onSuccess: (result: VerificationResult) => void;
+  onFailure: (error: SelfSdkError) => void;
+  onCancelled: () => void;
+  debug: boolean;
+}
+
 export class LifecycleHandler {
   domain: BridgeDomain = 'lifecycle';
   private config: LifecycleConfig;

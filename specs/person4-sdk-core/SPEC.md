@@ -100,7 +100,7 @@ The RN app passes `platform: Platform.OS` in config. The WebView passes `platfor
 
 **Edge case — no platform provided:**
 
-```
+```text
 Input:  createSelfClient({ config: {}, adapters, listeners })
 Output: Proof context uses 'unknown' as platform field
 ```
@@ -265,12 +265,17 @@ export function createIndexedDBDocumentsAdapter(): DocumentsAdapter {
 
 ```typescript
 // SKELETON — hash() only, sign() left to bridge adapter
-export function createWebCryptoAdapter(): Partial<CryptoAdapter> {
+export function createWebCryptoAdapter(): CryptoAdapter {
   return {
     hash: async (algorithm: string, data: Uint8Array): Promise<Uint8Array> => {
       // Normalize: 'sha256' → 'SHA-256', 'sha-1' → 'SHA-1'
       const buf = await crypto.subtle.digest(normalizedAlgo, data);
       return new Uint8Array(buf);
+    },
+    sign: async () => {
+      throw new Error(
+        'sign() requires bridge adapter — use webCryptoAdapter(bridge) instead',
+      );
     },
   };
 }
@@ -307,7 +312,7 @@ export function createNoOpHapticAdapter(): HapticAdapter {
 
 **Error case — IndexedDB unavailable:**
 
-```
+```text
 Input:  Browser with IndexedDB disabled
 Output: Adapter throws with descriptive error, not silent failure
 ```
@@ -320,7 +325,7 @@ Output: Adapter throws with descriptive error, not silent failure
 
 **Edge case — algorithm name normalization:**
 
-```
+```text
 Input:  adapter.hash('sha-256', data)  // already hyphenated
 Output: Same hash result (normalize handles both formats)
 ```
@@ -337,9 +342,10 @@ Update `package.json` `exports` field:
 {
   "exports": {
     ".": {
-      "react-native": "./src/index.ts",
-      "import": "./src/browser.ts",
-      "default": "./src/browser.ts"
+      "react-native": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/browser.js",
+      "default": "./dist/browser.js"
     }
   }
 }
@@ -624,7 +630,7 @@ npx tsx -e "import * as m from './src/adapters/browser/index.ts'; console.log(Ob
 
 **Expected Output:**
 
-```
+```text
 vitest: All tests pass including new adapter tests
 exports: ['createIndexedDBDocumentsAdapter', 'createWebCryptoAdapter', 'createWebAnalyticsAdapter', 'createNoOpHapticAdapter']
 ```

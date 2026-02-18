@@ -261,8 +261,8 @@ class MainViewModel {
     var currentScreen by mutableStateOf<Screen>(Screen.Home)
 
     // Result data
-    var verificationResult: VerificationResult? = null
-    var verificationError: SelfSdkError? = null
+    var verificationResult: VerificationResult? by mutableStateOf(null)
+    var verificationError: SelfSdkError? by mutableStateOf(null)
 
     // Home state
     var homeState by mutableStateOf(HomeState())
@@ -293,16 +293,7 @@ currentScreen = Screen.Result
 
 **Input:** `returnToHome()` called after a successful verification.
 
-**Expected Output:**
-
-```
-homeState.isVerified = true
-homeState.lastProofDate = result.timestamp
-homeState.verifiedClaims = result.disclosedClaims
-verificationResult = null
-verificationError = null
-currentScreen = Screen.Home
-```
+**Expected Output:** Copy from `verificationResult` into `homeState` (e.g. `lastProofDate = verificationResult.timestamp`, `verifiedClaims = verificationResult.disclosedClaims`), then set `homeState.isVerified = true`, then clear `verificationResult = null`, `verificationError = null`, and `currentScreen = Screen.Home`.
 
 ### 5. ResultScreen
 
@@ -397,7 +388,7 @@ plugins {
 
 kotlin {
     androidTarget {
-        compilations.all { kotlinOptions { jvmTarget = "17" } }
+        compilations.all { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) } }
     }
     iosArm64()
     iosSimulatorArm64()
@@ -473,16 +464,19 @@ The sample app's `AndroidManifest.xml` must declare permissions required by the 
     <!-- Internet for WebView content and proof submission -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <application
-        android:name=".MainApplication"
-        ...>
-        <!-- NFC intent filter for tag discovery -->
-        <intent-filter>
-            <action android:name="android.nfc.action.TECH_DISCOVERED" />
-        </intent-filter>
-        <meta-data
-            android:name="android.nfc.action.TECH_DISCOVERED"
-            android:resource="@xml/nfc_tech_filter" />
+    <application android:name=".MainApplication" ...>
+        <!-- Declare the Activity that will receive NFC events -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <!-- NFC intent filter for tag discovery — must be on the Activity that handles NFC -->
+            <intent-filter>
+                <action android:name="android.nfc.action.TECH_DISCOVERED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.nfc.action.TECH_DISCOVERED"
+                android:resource="@xml/nfc_tech_filter" />
+        </activity>
     </application>
 </manifest>
 ```

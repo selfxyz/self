@@ -359,8 +359,8 @@ Example: `notificationService.ts`, `notificationService.web.ts`, `notificationSe
 
 **1. Business Logic** → `services/`
 
-```typescript
-// Create a new service
+```bash
+# Create a new service
 app/src/services/my-feature/
   ├── index.ts        - Barrel export
   ├── api.ts          - API calls
@@ -370,10 +370,10 @@ app/src/services/my-feature/
 
 **2. Native/3rd Party Integration** → `integrations/`
 
-```typescript
-// Add new integration
+```bash
+# Add new integration
 app/src/integrations/my-integration.ts
-// or
+# or
 app/src/integrations/my-integration/
   ├── index.ts
   ├── native.ts
@@ -382,20 +382,20 @@ app/src/integrations/my-integration/
 
 **3. Pure Utilities** → `utils/`
 
-```
-// Add pure function
+```bash
+# Add pure function
 app/src/utils/my-utility.ts
-// Export from barrel
+# Export from barrel
 app/src/utils/index.ts
 ```
 
 **4. Configuration** → `config/`
 
-```
-// Add config
+```bash
+# Add config
 app/src/config/my-config.ts
 app/src/config/my-config.web.ts
-// Export from barrel
+# Export from barrel
 app/src/config/index.ts
 ```
 

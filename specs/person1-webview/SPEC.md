@@ -407,7 +407,7 @@ export function bridgeStorageAdapter(bridge: WebViewBridge): StorageAdapter {
 
 Storage bridges to native because keychain access is managed by the host app. Some host apps (like MiniPay) have policies about WebView keychain access.
 
-#### 3e. Biometrics Adapter — `packages/webview-bridge/src/adapters/biometrics.ts`
+#### 3d. Biometrics Adapter — `packages/webview-bridge/src/adapters/biometrics.ts`
 
 ```typescript
 export function bridgeBiometricsAdapter(bridge: WebViewBridge): BiometricsAdapter {
@@ -453,7 +453,7 @@ Input:  biometrics.isAvailable()
 Output: false
 ```
 
-#### 3f. Lifecycle Adapter — `packages/webview-bridge/src/adapters/lifecycle.ts`
+#### 3e. Lifecycle Adapter — `packages/webview-bridge/src/adapters/lifecycle.ts`
 
 ```typescript
 export function bridgeLifecycleAdapter(bridge: WebViewBridge): LifecycleAdapter {
@@ -470,9 +470,9 @@ export function bridgeLifecycleAdapter(bridge: WebViewBridge): LifecycleAdapter 
 
 ---
 
-### 4. Web Fallback Adapters (No Bridge Calls)
+### 4. Hybrid Adapters (Web APIs + Bridge Where Needed)
 
-These adapters run entirely in the WebView with no native bridge calls. They use standard web APIs.
+These adapters use standard web APIs where possible. `webCryptoAdapter` implements `hash()` via `crypto.subtle.digest` (no bridge) and `sign()` via `bridge.request('crypto', 'sign', ...)` (native keychain).
 
 #### 4a. IndexedDB Documents Adapter — `packages/webview-bridge/src/adapters/documents.ts`
 

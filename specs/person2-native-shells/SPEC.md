@@ -202,9 +202,9 @@ kotlin {
                 implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
                 implementation("commons-io:commons-io:2.14.0")
                 // Biometrics
-                implementation("androidx.biometric:biometric:1.2.0-alpha05")
+                implementation("androidx.biometric:biometric:1.1.0")
                 // Encrypted storage (keychain)
-                implementation("androidx.security:security-crypto:1.1.0-alpha06")
+                implementation("androidx.security:security-crypto:1.1.0")
                 // Camera / MRZ
                 implementation("com.google.mlkit:text-recognition:16.0.0")
                 // Activity / Lifecycle
@@ -349,6 +349,8 @@ fun escapeForJs(json: String): String {
         .replace("'", "\\'")
         .replace("\n", "\\n")
         .replace("\r", "\\r")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
     return "'$escaped'"
 }
 ```
@@ -390,14 +392,14 @@ fun escapeForJs(json: String): String {
 
 **Edge case — unknown domain:**
 
-```
+```text
 Input:  { "domain": "unknown_domain", ... }
 Output: Response with success: false, error: { "code": "HANDLER_NOT_FOUND", "message": "No handler for domain: unknown_domain" }
 ```
 
 **Edge case — malformed JSON:**
 
-```
+```text
 Input:  "not valid json {{"
 Output: Response with success: false, error: { "code": "PARSE_ERROR", "message": "Failed to parse bridge request" }
 ```
@@ -704,10 +706,13 @@ Uses `EncryptedSharedPreferences` backed by Android Keystore. This handler stays
 class SecureStorageBridgeHandler(context: Context) : BridgeHandler {
     override val domain = BridgeDomain.SECURE_STORAGE
 
+    private val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
     private val prefs = EncryptedSharedPreferences.create(
-        "self_sdk_secure_prefs",
-        MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
         context,
+        "self_sdk_secure_prefs",
+        masterKey,
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
     )
@@ -750,13 +755,13 @@ class SecureStorageBridgeHandler(context: Context) : BridgeHandler {
 
 **Expected Output:**
 
-```
+```text
 null (void — no return value)
 ```
 
 **Edge case — get missing key:**
 
-```
+```text
 Input:  { "method": "get", "params": { "key": "nonexistent" } }
 Output: JsonNull
 ```
@@ -1074,7 +1079,7 @@ let package = Package(
         .library(name: "SelfSdkSwift", targets: ["SelfSdkSwift"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/AcroMace/NFCPassportReader", branch: "main"),
+        .package(url: "https://github.com/AndyQ/NFCPassportReader", .upToNextMinor(from: "1.0.0")),
     ],
     targets: [
         .target(
@@ -1182,7 +1187,27 @@ class NfcProviderImpl: NSObject, NfcProvider {
     }
 
     func cancelScan() {
-        nfcHelper = nil  // Releasing triggers cleanup
+        nfcHelper?.cancel()  // Explicitly invalidate session before release
+        nfcHelper = nil
+    }
+}
+```
+
+#### WeakScriptMessageHandler.swift (weak proxy to avoid retain cycle)
+
+```swift
+import WebKit
+
+final class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
+    weak var delegate: WKScriptMessageHandler?
+
+    init(_ delegate: WKScriptMessageHandler) {
+        self.delegate = delegate
+        super.init()
+    }
+
+    func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+        delegate?.userContentController(controller, didReceive: message)
     }
 }
 ```
@@ -1198,12 +1223,15 @@ class WebViewProviderImpl: NSObject, WebViewProvider, WKScriptMessageHandler {
     private var webView: WKWebView?
     private var viewController: UIViewController?
     private var onMessageReceived: ((String) -> Void)?
+    private weak var scriptMessageHandlerProxy: WeakScriptMessageHandler?
 
     func createWebView(onMessageReceived: @escaping (String) -> Void, isDebugMode: Bool) -> UIView {
         self.onMessageReceived = onMessageReceived
 
         let config = WKWebViewConfiguration()
-        config.userContentController.add(self, name: "SelfNativeIOS")
+        let proxy = WeakScriptMessageHandler(self)
+        self.scriptMessageHandlerProxy = proxy
+        config.userContentController.add(proxy, name: "SelfNativeIOS")
 
         let wv = WKWebView(frame: .zero, configuration: config)
         wv.scrollView.isScrollEnabled = true
@@ -1236,7 +1264,11 @@ class WebViewProviderImpl: NSObject, WebViewProvider, WKScriptMessageHandler {
         return vc
     }
 
-    // WKScriptMessageHandler
+    deinit {
+        webView?.configuration.userContentController.removeScriptMessageHandler(forName: "SelfNativeIOS")
+    }
+
+    // WKScriptMessageHandler (called via WeakScriptMessageHandler proxy)
     func userContentController(_ controller: WKUserContentController,
                                 didReceive message: WKScriptMessage) {
         guard let body = message.body as? String else { return }
@@ -1359,7 +1391,11 @@ actual fun launch(request: VerificationRequest, callback: SelfSdkCallback) {
 }
 
 private fun findTopViewController(): UIViewController? {
-    var vc = UIApplication.sharedApplication.keyWindow?.rootViewController
+    val scene = UIApplication.sharedApplication.connectedScenes
+        .filterIsInstance<UIWindowScene>()
+        .firstOrNull { it.activationState == UIScene.ActivationState.foregroundActive }
+    val window = scene?.windows?.firstOrNull { it.isKeyWindow }
+    var vc = window?.rootViewController
     while (vc?.presentedViewController != null) {
         vc = vc?.presentedViewController
     }

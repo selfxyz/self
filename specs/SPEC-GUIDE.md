@@ -8,7 +8,7 @@ Copy-paste one of these prompts to start a new spec session:
 
 **New project overview (tier 1 — architecture):**
 
-```
+```text
 Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, and specs/TEMPLATES.md (Project Overview section).
 Then analyze the codebase to create a project overview for [PROJECT NAME].
 
@@ -25,7 +25,7 @@ Run the review checklist from SPEC-GUIDE.md before finishing.
 
 **New workstream overview (tier 2 — orientation for a specific workstream):**
 
-```
+```text
 Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, specs/TEMPLATES.md (Workstream Overview section),
 and specs/SDK-OVERVIEW.md.
 Then analyze the codebase to create a workstream overview for [PERSON/SCOPE].
@@ -44,7 +44,7 @@ Run the review checklist from SPEC-GUIDE.md before finishing.
 
 **New implementation spec (tier 3 — for a specific workstream):**
 
-```
+```text
 Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, specs/TEMPLATES.md (Implementation Spec section),
 and specs/[person-scope]/OVERVIEW.md.
 Then analyze the codebase to create an implementation spec for [PERSON/SCOPE].
@@ -63,7 +63,7 @@ Run the review checklist from SPEC-GUIDE.md before finishing.
 
 **Refactor an existing spec to match the new format:**
 
-```
+```text
 Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, and specs/TEMPLATES.md.
 Then read the existing spec at specs/[OLD-SPEC].md.
 
@@ -278,7 +278,7 @@ This keeps accountability without rigidity. Development has no hard and fast rul
 
 ## Folder Structure
 
-```
+```text
 specs/
   SPEC-GUIDE.md                  <- This file (generic, portable)
   PROJECT-RULES.md               <- Project-specific rules
