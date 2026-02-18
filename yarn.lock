@@ -9481,6 +9481,42 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@selfxyz/rn-sdk@workspace:packages/rn-sdk":
+  version: 0.0.0-use.local
+  resolution: "@selfxyz/rn-sdk@workspace:packages/rn-sdk"
+  dependencies:
+    "@selfxyz/webview-bridge": "workspace:^"
+    "@types/react": "npm:^18.3.4"
+    react: "npm:^18.3.1"
+    react-native: "npm:0.76.9"
+    react-native-biometrics: "npm:^3.0.1"
+    react-native-fs: "npm:^2.20.0"
+    react-native-keychain: "npm:^9.2.3"
+    react-native-nfc-manager: "npm:^3.17.2"
+    react-native-webview: "npm:13.16.0"
+    tsup: "npm:^8.0.1"
+    typescript: "npm:^5.9.3"
+    vitest: "npm:^2.1.8"
+  peerDependencies:
+    react: ^18.0.0
+    react-native: ">=0.72.0"
+    react-native-biometrics: ^3.0.1
+    react-native-fs: ^2.20.0
+    react-native-keychain: ^8.2.0
+    react-native-nfc-manager: ^3.14.0
+    react-native-webview: ">=13.0.0"
+  peerDependenciesMeta:
+    react-native-biometrics:
+      optional: true
+    react-native-fs:
+      optional: true
+    react-native-keychain:
+      optional: true
+    react-native-nfc-manager:
+      optional: true
+  languageName: unknown
+  linkType: soft
+
 "@selfxyz/sdk-common@workspace:^, @selfxyz/sdk-common@workspace:sdk/sdk-common":
   version: 0.0.0-use.local
   resolution: "@selfxyz/sdk-common@workspace:sdk/sdk-common"
@@ -17525,6 +17561,13 @@ __metadata:
   dependencies:
     bare-path: "npm:^3.0.0"
   checksum: 10c0/4fd0046314390a54404519d9db20e130ab3a341ef638d040f9603ae3fa0a1d84f6970357d21c8fc64e6163d1f61fd212cb1cfa4cb537dfead99fb06e3c030b15
+  languageName: node
+  linkType: hard
+
+"base-64@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "base-64@npm:0.1.0"
+  checksum: 10c0/fe0dcf076e823f04db7ee9b02495be08a91c445fbc6db03cb9913be9680e2fcc0af8b74459041fe08ad16800b1f65a549501d8f08696a8a6d32880789b7de69d
   languageName: node
   linkType: hard
 
@@ -30410,6 +30453,22 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 10c0/809dcf1c68f79cff788963ec7691b37024986e82470be5047bfbe42929fc2c7d45db23eab816321e776f0bb3a8295f7efa526377bce6a559c10681cd409d597d
+  languageName: node
+  linkType: hard
+
+"react-native-fs@npm:^2.20.0":
+  version: 2.20.0
+  resolution: "react-native-fs@npm:2.20.0"
+  dependencies:
+    base-64: "npm:^0.1.0"
+    utf8: "npm:^3.0.0"
+  peerDependencies:
+    react-native: "*"
+    react-native-windows: "*"
+  peerDependenciesMeta:
+    react-native-windows:
+      optional: true
+  checksum: 10c0/3722b5568610cd72f319c90f60ba8b019a005d015f27e49017ddd0ea314d1ea6991f79288c28549fdc2964dc81c0fa24f8a5f87a4a6283c97c6ea88d4caa6851
   languageName: node
   linkType: hard
 
