@@ -6,4 +6,4 @@ export { createIndexedDBDocumentsAdapter } from './documents';
 export { createWebCryptoAdapter } from './crypto';
 export { createWebAnalyticsAdapter } from './analytics';
 export type { WebAnalyticsOptions } from './analytics';
-export { createNoOpHapticFeedback } from './haptic';
+export { createNoOpHapticAdapter } from './haptic';

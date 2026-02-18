@@ -4,16 +4,16 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { createNoOpHapticFeedback } from '../../../src/adapters/browser/haptic';
+import { createNoOpHapticAdapter } from '../../../src/adapters/browser/haptic';
 
-describe('createNoOpHapticFeedback', () => {
+describe('createNoOpHapticAdapter', () => {
   it('should return a function', () => {
-    const trigger = createNoOpHapticFeedback();
+    const trigger = createNoOpHapticAdapter();
     expect(typeof trigger).toBe('function');
   });
 
   it('should not throw when called with any haptic type', () => {
-    const trigger = createNoOpHapticFeedback();
+    const trigger = createNoOpHapticAdapter();
     expect(() => trigger('selection')).not.toThrow();
     expect(() => trigger('impactLight')).not.toThrow();
     expect(() => trigger('impactMedium')).not.toThrow();

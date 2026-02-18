@@ -92,6 +92,6 @@ export {
   createIndexedDBDocumentsAdapter,
   createWebCryptoAdapter,
   createWebAnalyticsAdapter,
-  createNoOpHapticFeedback,
+  createNoOpHapticAdapter,
 } from './adapters/browser';
 export type { WebAnalyticsOptions } from './adapters/browser';

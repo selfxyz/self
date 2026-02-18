@@ -28,9 +28,18 @@ describe('createWebCryptoAdapter', () => {
     expect(hashExplicit).toEqual(hashDefault);
   });
 
-  it('should throw on unsupported algorithm', async () => {
+  it('should handle already-hyphenated algo input (sha-256)', async () => {
     const input = new TextEncoder().encode('test');
-    await expect(adapter.hash(input, 'md5' as any)).rejects.toThrow('Unsupported hash algorithm');
+    const hashHyphenated = await adapter.hash(input, 'sha-256' as any);
+    const hashDefault = await adapter.hash(input, 'sha256');
+    expect(hashHyphenated).toEqual(hashDefault);
+  });
+
+  it('should handle uppercase no-hyphen algo input (SHA256)', async () => {
+    const input = new TextEncoder().encode('test');
+    const hashUpper = await adapter.hash(input, 'SHA256' as any);
+    const hashDefault = await adapter.hash(input, 'sha256');
+    expect(hashUpper).toEqual(hashDefault);
   });
 
   it('should throw on sign (not implemented)', async () => {

@@ -10,7 +10,7 @@ import type { HapticType, HapticOptions } from '../../haptic/shared';
  *
  * Matches the `triggerFeedback` signature from `haptic/trigger.ts`.
  */
-export function createNoOpHapticFeedback(): (type: HapticType | 'custom', options?: HapticOptions) => void {
+export function createNoOpHapticAdapter(): (type: HapticType | 'custom', options?: HapticOptions) => void {
   return (_type: HapticType | 'custom', _options?: HapticOptions): void => {
     // Intentionally empty — haptic feedback is unavailable in this context.
   };

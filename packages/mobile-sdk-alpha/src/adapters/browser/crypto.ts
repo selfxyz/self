@@ -4,9 +4,13 @@
 
 import type { CryptoAdapter } from '../../types/public';
 
-const ALGO_MAP: Record<string, string> = {
-  sha256: 'SHA-256',
-};
+/**
+ * Normalizes algorithm names to the Web Crypto API format.
+ * e.g. "sha256" → "SHA-256", "SHA256" → "SHA-256", "sha-256" → "SHA-256"
+ */
+function normalizeAlgo(algo: string): string {
+  return algo.toUpperCase().replace(/^SHA(\d)/, 'SHA-$1');
+}
 
 /**
  * Creates a partial {@link CryptoAdapter} backed by the Web Crypto API.
@@ -18,10 +22,7 @@ const ALGO_MAP: Record<string, string> = {
 export function createWebCryptoAdapter(): CryptoAdapter {
   return {
     async hash(input: Uint8Array, algo: 'sha256' = 'sha256'): Promise<Uint8Array> {
-      const webCryptoAlgo = ALGO_MAP[algo];
-      if (!webCryptoAlgo) {
-        throw new Error(`Unsupported hash algorithm: ${algo}`);
-      }
+      const webCryptoAlgo = normalizeAlgo(algo);
       const buffer = new Uint8Array(input).buffer as ArrayBuffer;
       const digest = await crypto.subtle.digest(webCryptoAlgo, buffer);
       return new Uint8Array(digest);
