@@ -580,7 +580,11 @@ Output: (not yet implemented — throws { code: "NOT_IMPLEMENTED", message: "MRZ
 ```typescript
 // SKELETON
 import type { BridgeDomain } from '@selfxyz/webview-bridge';
-import type { VerificationRequest, VerificationResult, SelfSdkError } from '../types';
+import type {
+  VerificationRequest,
+  VerificationResult,
+  SelfSdkError,
+} from '../types';
 
 export interface LifecycleConfig {
   request: VerificationRequest;
@@ -634,7 +638,11 @@ Output: null (calls props.onCancelled())
 
 ```typescript
 // SKELETON
-import type { VerificationRequest, VerificationResult, SelfSdkError } from '../types';
+import type {
+  VerificationRequest,
+  VerificationResult,
+  SelfSdkError,
+} from '../types';
 
 export function createHandlers(config: {
   request: VerificationRequest;
@@ -735,22 +743,22 @@ If `react-native-fs` is not available, fall back to React Native's `require()` w
 
 ## Files You Will Modify
 
-| File                                               | Change     | Risk                                |
-| -------------------------------------------------- | ---------- | ----------------------------------- |
-| `packages/rn-sdk/package.json`                     | Create new | **Low** -- new package              |
-| `packages/rn-sdk/tsconfig.json`                    | Create new | **Low** -- build config             |
-| `packages/rn-sdk/tsup.config.ts`                   | Create new | **Low** -- build config             |
-| `packages/rn-sdk/src/index.ts`                     | Create new | **Low** -- public exports           |
+| File                                               | Change     | Risk                                                 |
+| -------------------------------------------------- | ---------- | ---------------------------------------------------- |
+| `packages/rn-sdk/package.json`                     | Create new | **Low** -- new package                               |
+| `packages/rn-sdk/tsconfig.json`                    | Create new | **Low** -- build config                              |
+| `packages/rn-sdk/tsup.config.ts`                   | Create new | **Low** -- build config                              |
+| `packages/rn-sdk/src/index.ts`                     | Create new | **Low** -- public exports                            |
 | `packages/rn-sdk/src/types.ts`                     | Create new | **Low** -- shared SDK types (breaks circular import) |
-| `packages/rn-sdk/src/SelfVerification.tsx`         | Create new | **Medium** -- core component        |
-| `packages/rn-sdk/src/bridge/MessageRouter.ts`      | Create new | **Medium** -- message routing       |
-| `packages/rn-sdk/src/bridge/types.ts`              | Create new | **Low** -- re-exports               |
-| `packages/rn-sdk/src/handlers/NfcHandler.ts`       | Create new | **High** -- hardware integration    |
-| `packages/rn-sdk/src/handlers/BiometricHandler.ts` | Create new | **Medium** -- native module wrapper |
-| `packages/rn-sdk/src/handlers/KeychainHandler.ts`  | Create new | **Medium** -- native module wrapper |
-| `packages/rn-sdk/src/handlers/CameraHandler.ts`    | Create new | **Medium** -- hardware integration  |
-| `packages/rn-sdk/src/handlers/LifecycleHandler.ts` | Create new | **Medium** -- props/callback bridge |
-| `packages/rn-sdk/src/handlers/index.ts`            | Create new | **Low** -- handler registry         |
+| `packages/rn-sdk/src/SelfVerification.tsx`         | Create new | **Medium** -- core component                         |
+| `packages/rn-sdk/src/bridge/MessageRouter.ts`      | Create new | **Medium** -- message routing                        |
+| `packages/rn-sdk/src/bridge/types.ts`              | Create new | **Low** -- re-exports                                |
+| `packages/rn-sdk/src/handlers/NfcHandler.ts`       | Create new | **High** -- hardware integration                     |
+| `packages/rn-sdk/src/handlers/BiometricHandler.ts` | Create new | **Medium** -- native module wrapper                  |
+| `packages/rn-sdk/src/handlers/KeychainHandler.ts`  | Create new | **Medium** -- native module wrapper                  |
+| `packages/rn-sdk/src/handlers/CameraHandler.ts`    | Create new | **Medium** -- hardware integration                   |
+| `packages/rn-sdk/src/handlers/LifecycleHandler.ts` | Create new | **Medium** -- props/callback bridge                  |
+| `packages/rn-sdk/src/handlers/index.ts`            | Create new | **Low** -- handler registry                          |
 
 ## Files You Will NOT Modify
 
