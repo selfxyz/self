@@ -86,3 +86,12 @@ export { parseNFCResponse, scanNFC } from './nfc';
 export { sanitizeErrorMessage } from './utils/utils';
 
 export { webNFCScannerShim } from './adapters/web/shims';
+
+// Browser-native adapter factories (no React Native dependencies)
+export {
+  createIndexedDBDocumentsAdapter,
+  createWebCryptoAdapter,
+  createWebAnalyticsAdapter,
+  createNoOpHapticFeedback,
+} from './adapters/browser';
+export type { WebAnalyticsOptions } from './adapters/browser';

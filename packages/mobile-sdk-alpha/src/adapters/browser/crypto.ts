@@ -1,0 +1,37 @@
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
+import type { CryptoAdapter } from '../../types/public';
+
+const ALGO_MAP: Record<string, string> = {
+  sha256: 'SHA-256',
+};
+
+/**
+ * Creates a partial {@link CryptoAdapter} backed by the Web Crypto API.
+ *
+ * - `hash()` uses `crypto.subtle.digest`.
+ * - `sign()` is **not** implemented — signing requires native keychain access
+ *   via the bridge and cannot be done in pure browser JS.
+ */
+export function createWebCryptoAdapter(): CryptoAdapter {
+  return {
+    async hash(input: Uint8Array, algo: 'sha256' = 'sha256'): Promise<Uint8Array> {
+      const webCryptoAlgo = ALGO_MAP[algo];
+      if (!webCryptoAlgo) {
+        throw new Error(`Unsupported hash algorithm: ${algo}`);
+      }
+      const buffer = new Uint8Array(input).buffer as ArrayBuffer;
+      const digest = await crypto.subtle.digest(webCryptoAlgo, buffer);
+      return new Uint8Array(digest);
+    },
+
+    async sign(_data: Uint8Array, _keyRef: string): Promise<Uint8Array> {
+      throw new Error(
+        'Signing is not implemented in the browser crypto adapter. ' +
+          'Signing requires native keychain access via the bridge.',
+      );
+    },
+  };
+}

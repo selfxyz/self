@@ -13,12 +13,15 @@ export type { BridgeAuthAdapter } from './auth';
 
 export { bridgeDocumentsAdapter } from './documents';
 export type { BridgeDocumentsAdapter } from './documents';
+export { indexedDBDocumentsAdapter } from './documents-web';
 
 export { bridgeStorageAdapter } from './storage';
 export type { BridgeStorageAdapter } from './storage';
 
 export { bridgeAnalyticsAdapter } from './analytics';
 export type { BridgeAnalyticsAdapter } from './analytics';
+export { webAnalyticsAdapter } from './analytics-web';
+export type { WebAnalyticsOptions } from './analytics-web';
 
 export { bridgeHapticAdapter } from './haptic';
 export type { BridgeHapticAdapter } from './haptic';
