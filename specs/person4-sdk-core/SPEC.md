@@ -714,6 +714,16 @@ grep -r "NativeModules\|NativeEventEmitter\|requireNativeComponent" packages/web
 | `packages/mobile-sdk-alpha/src/documents/utils.ts` | Document CRUD — clean, uses adapters |
 | `packages/mobile-sdk-alpha/package.json` | Exports and dependencies |
 
+## Related Specs
+
+| Spec | Relationship |
+| --- | --- |
+| [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) | Parent architecture spec |
+| [person1-webview/SPEC.md](../person1-webview/SPEC.md) | Sibling — builds WebView UI that consumes your adapter interfaces and browser entry point |
+| [person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md) | Sibling — builds native handlers that implement bridge protocol, consumes your lifecycle types |
+| [person5-rn-sdk/SPEC.md](../person5-rn-sdk/SPEC.md) | Sibling — RN native shell that uses your browser entry point |
+| [person3-integrations/SPEC-MINIPAY-SAMPLE.md](../person3-integrations/SPEC-MINIPAY-SAMPLE.md) | Downstream — MiniPay sample depends on SDK core through KMP SDK |
+
 ---
 
 <!-- Everything below this line is filled in AFTER implementation. -->

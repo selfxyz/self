@@ -17,12 +17,12 @@
 - [x] WebView UI screens built (10 screens, routing works)
 - [x] WebView engine core working (275+ tests pass, XState proving machine)
 - [x] Android native shell implemented (5 handlers, WebView host, Activity)
-- [ ] Delete 4 unnecessary Android handlers (documents, crypto, analytics, haptic)
+- [x] Delete 4 unnecessary Android handlers (documents, crypto, analytics, haptic)
 - [ ] iOS native shell implemented (Swift providers via PR #1762, not yet merged)
 - [ ] Biometrics bridge adapter (domain defined, no adapter implementation)
 - [ ] Camera bridge adapter wiring in webview-app
 - [ ] Web fallback adapters (IndexedDB for docs, Web Crypto for hashing)
-- [ ] Browser entry point with zero RN transitive imports
+- [x] Browser entry point with zero RN transitive imports
 - [ ] RN SDK (`<SelfVerification />` component — does not exist yet)
 - [ ] MiniPay sample integration
 - [ ] Dynamic proof request items (currently hardcoded in ProvingScreen)
@@ -119,7 +119,7 @@
 | **WebView Engine**      | `packages/mobile-sdk-alpha/` | TypeScript             | Proving machine (XState), stores (Zustand), adapter interfaces, 105 source files            | 275+ tests pass, RN adapters built                          | **80%** | Browser entry point with zero RN imports. Web fallback adapters (IndexedDB, Web Crypto). Finish decoupling core from RN peer deps |
 | **WebView UI**          | `packages/webview-app/`      | TypeScript (React)     | 10 screens: home, country, ID, camera, NFC, confirm, proving, result, settings, coming-soon | All screens render, routing works, bridge integration wired | **75%** | Biometrics + camera adapter wiring. Dynamic proof request items. Wire SelfClientProvider to web fallback adapters                 |
 | **Bridge Protocol**     | `packages/webview-bridge/`   | TypeScript             | JSON messaging, 10 domains, 9 adapters, timeout/error handling, mock transport              | 62 tests pass, production-ready protocol                    | **80%** | Add biometrics adapter (domain defined, no implementation). Web fallback adapters for documents/storage                           |
-| **Kotlin Native Shell** | `packages/kmp-sdk/`          | Kotlin                 | Android: 9 handlers + WebView host + Activity. iOS: stubs (Swift providers in PR #1762)     | Android fully implemented, iOS stubs                        | **70%** | Delete 4 handlers (documents, crypto, analytics, haptic). iOS: implement via Swift provider pattern                               |
+| **Kotlin Native Shell** | `packages/kmp-sdk/`          | Kotlin                 | Android: 5 handlers + WebView host + Activity. iOS: stubs (Swift providers in PR #1762)     | Android fully implemented, iOS stubs                        | **70%** | iOS: implement via Swift provider pattern                                                                                         |
 | **Swift Providers**     | `packages/self-sdk-swift/`   | Swift                  | iOS native implementations: NFC, biometrics, crypto, secure storage, WebView hosting        | In PR #1762 (not merged)                                    | **30%** | Merge PR #1762. Complete NFC + biometrics + lifecycle providers                                                                   |
 | **RN Native Shell**     | `packages/rn-sdk/` — **NEW** | React Native           | `<SelfVerification />` WebView wrapper, 5 native handler bridges                            | Does not exist                                              | **0%**  | Create thin wrapper: ~200-300 LOC, same bridge protocol as KMP                                                                    |
 | **Shared Utilities**    | `common/`                    | TypeScript             | Poseidon, Merkle trees, passport parsing, certificates, 150+ files, 88+ exports             | Production, 98% browser-compatible                          | **95%** | No changes needed. Only 2 files require Node.js (optional)                                                                        |

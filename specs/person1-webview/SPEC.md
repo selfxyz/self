@@ -1249,10 +1249,9 @@ ls packages/webview-app/dist/index.html  # file must exist
 | Spec | Audience | What it covers |
 | --- | --- | --- |
 | [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) | All | Architecture, bridge protocol, domain catalog, dependency graph |
-| [SPEC-KMP-SDK.md](../SPEC-KMP-SDK.md) | Person 2 | Kotlin native shell, Android/iOS handlers |
-| [SPEC-IOS-HANDLERS.md](../SPEC-IOS-HANDLERS.md) | Person 2 | iOS-specific handler implementations |
-| [SPEC-PERSON4-SDK-CORE.md](../SPEC-PERSON4-SDK-CORE.md) | Person 4 | SDK core adaptation, RN dep removal, web fallbacks |
-| [SPEC-RN-SDK.md](../SPEC-RN-SDK.md) | Person 5 | RN native shell, `<SelfVerification />` component |
+| [person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md) | Person 2 | Kotlin/Swift native shells, Android/iOS handlers |
+| [person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md) | Person 4 | SDK core adaptation, RN dep removal, web fallbacks |
+| [person5-rn-sdk/SPEC.md](../person5-rn-sdk/SPEC.md) | Person 5 | RN native shell, `<SelfVerification />` component |
 
 ---
 

@@ -784,18 +784,17 @@ Run on: Android physical device + iOS physical device.
 
 ## Dependencies
 
-- **[SPEC-KMP-SDK.md](../SPEC-KMP-SDK.md)** — KMP SDK with 5 native handlers (NFC, Camera, Biometrics, Keychain, Lifecycle) and WebView host
-- **[SPEC-WEBVIEW-UI.md](../SPEC-WEBVIEW-UI.md)** — Bundled Vite app that runs inside the WebView (all verification screens + proving logic)
+- **[person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md)** — KMP SDK with 5 native handlers (NFC, Camera, Biometrics, Keychain, Lifecycle) and WebView host
+- **[person1-webview/SPEC.md](../person1-webview/SPEC.md)** — Bundled Vite app that runs inside the WebView (all verification screens + proving logic)
 
 ## Cross-References
 
 - **Parent:** [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) — Architecture overview and north star
 - **Sibling specs:**
-  - [SPEC-KMP-SDK.md](../SPEC-KMP-SDK.md) — Kotlin native shell (Person 2)
-  - [SPEC-IOS-HANDLERS.md](../SPEC-IOS-HANDLERS.md) — iOS handler implementations (Person 2)
-  - [SPEC-WEBVIEW-UI.md](../SPEC-WEBVIEW-UI.md) — WebView UI + bridge (Person 1)
-  - [SPEC-PERSON4-SDK-CORE.md](../SPEC-PERSON4-SDK-CORE.md) — SDK core adaptation (Person 4)
-  - [SPEC-RN-SDK.md](../SPEC-RN-SDK.md) — React Native SDK (Person 5)
+  - [person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md) — Kotlin/Swift native shell (Person 2)
+  - [person1-webview/SPEC.md](../person1-webview/SPEC.md) — WebView UI + bridge (Person 1)
+  - [person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md) — SDK core adaptation (Person 4)
+  - [person5-rn-sdk/SPEC.md](../person5-rn-sdk/SPEC.md) — React Native SDK (Person 5)
 
 ---
 
@@ -832,7 +831,7 @@ Run on: Android physical device + iOS physical device.
 | Item                                         | Discovered during | Suggested spec                |
 | -------------------------------------------- | ----------------- | ----------------------------- |
 | Production publishing (AAR + XCFramework)    | —                 | New spec: SPEC-PUBLISHING.md  |
-| Self Wallet migration to `<SelfVerification />` | —              | SPEC-RN-SDK.md                |
+| Self Wallet migration to `<SelfVerification />` | —              | person5-rn-sdk/SPEC.md        |
 
 ## Spec Deviations
 

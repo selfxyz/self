@@ -1639,7 +1639,7 @@ Output: IllegalStateException("iOS requires Swift providers. Call SelfSdkSwift.c
 | Provider interfaces visible from Swift | Manual | XCFramework exports show NfcProvider, BiometricProvider, WebViewProvider |
 | `isConfigured()` returns false when empty | Unit | Registry correctly reports missing providers |
 
-**Status: PARTIAL** (cinterop blocked by Xcode SDK issues, stubs in place, Swift companion package skeleton started)
+**Status: SUPERSEDED** — Replaced by Chunks 2G-2K (Swift wrapper pattern). Original stubs remain for reference.
 
 ---
 
@@ -1713,13 +1713,13 @@ Output: false (simulator has no biometric hardware)
 | NFC handler rejects missing params | Unit | `MISSING_PARAM` error for missing passportNumber |
 | iOS compilation | Build gate | All 3 handlers compile for iosArm64 |
 
-**Status: NOT DONE**
+**Status: SUPERSEDED** — Replaced by Chunks 2H, 2I, 2K (individual iOS handlers via Swift wrapper pattern).
 
 ---
 
 ### Chunk 2F: SDK Public API + Test App -- M ~5k tokens
 
-**Depends on:** Chunk 2C (Android), Chunk 2E (iOS)
+**Depends on:** Chunk 2C (Android), Chunk 2K (iOS — final iOS handler in the 2G-2K chain)
 
 **Goal:** Public API (`SelfSdk.launch()`) + test app on both platforms.
 
@@ -2125,8 +2125,8 @@ Chunk 2A: KMP Setup + Bridge Protocol (no deps -- start here)
 | 2A | KMP Setup + Bridge Protocol | S ~3k | **Done** |
 | 2B | Android WebView Host | S ~2k | **Done** |
 | 2C | Android Native Handlers (5 handlers) | L ~12k | **Done** |
-| 2D | iOS WebView Host + Provider Infrastructure | M ~6k | **In Progress** (cinterop blocked, stubs in place) |
-| 2E | iOS Native Handlers (3 handlers) | M ~6k | **Pending** |
+| 2D | iOS WebView Host + Provider Infrastructure | M ~6k | **Superseded** by 2G-2K (Swift wrapper pattern) |
+| 2E | iOS Native Handlers (3 handlers) | M ~6k | **Superseded** by 2G-2K (Swift wrapper pattern) |
 | 2F | SDK Public API + Test App | M ~5k | **In Progress** (Android works, iOS uses workarounds) |
 | 2G | Factory Infrastructure | S ~3k | **Pending** |
 | 2H | Biometric Handler (iOS) | S ~2k | **Pending** |
