@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val sdk = (application as MainApplication).sdk
         setContent {
-            App(sdk = sdk)
+            App(sdk = sdk, platformContext = this@MainActivity)
         }
     }
 }

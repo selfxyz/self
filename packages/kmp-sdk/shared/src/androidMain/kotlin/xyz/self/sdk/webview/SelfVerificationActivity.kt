@@ -4,8 +4,12 @@
 
 package xyz.self.sdk.webview
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.BiometricBridgeHandler
 import xyz.self.sdk.handlers.CameraMrzBridgeHandler
@@ -22,9 +26,35 @@ class SelfVerificationActivity : AppCompatActivity() {
     private lateinit var webViewHost: AndroidWebViewHost
     private lateinit var router: MessageRouter
 
+    private val requiredPermissions = arrayOf(
+        Manifest.permission.CAMERA,
+        Manifest.permission.NFC,
+    )
+
+    private val permissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            // Permissions granted or denied — proceed either way.
+            // Individual handlers will fail gracefully if their permission was denied.
+            initVerificationFlow()
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Request runtime permissions before initializing the WebView.
+        // Camera and NFC are dangerous permissions that require user consent.
+        val missingPermissions = requiredPermissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (missingPermissions.isNotEmpty()) {
+            permissionLauncher.launch(missingPermissions.toTypedArray())
+        } else {
+            initVerificationFlow()
+        }
+    }
+
+    private fun initVerificationFlow() {
         // Determine if we're in debug mode
         val isDebugMode = intent.getBooleanExtra(EXTRA_DEBUG_MODE, false)
 
@@ -71,7 +101,9 @@ class SelfVerificationActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        webViewHost.destroy()
+        if (::webViewHost.isInitialized) {
+            webViewHost.destroy()
+        }
         super.onDestroy()
     }
 

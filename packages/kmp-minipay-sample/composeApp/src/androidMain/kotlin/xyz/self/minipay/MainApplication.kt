@@ -14,6 +14,6 @@ class MainApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        sdk = SelfSdk.configure(SelfSdkConfig(debug = true))
+        sdk = SelfSdk.configure(SelfSdkConfig(debug = false))
     }
 }

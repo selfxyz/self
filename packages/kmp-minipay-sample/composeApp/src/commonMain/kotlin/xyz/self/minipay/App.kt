@@ -15,7 +15,7 @@ import xyz.self.minipay.theme.MiniPayTheme
 import xyz.self.sdk.api.SelfSdk
 
 @Composable
-fun App(sdk: SelfSdk? = null) {
+fun App(sdk: SelfSdk? = null, platformContext: Any? = null) {
     MiniPayTheme {
         val navController = rememberNavController()
         val viewModel = remember {
@@ -29,7 +29,7 @@ fun App(sdk: SelfSdk? = null) {
             composable("home") {
                 HomeScreen(
                     viewModel = viewModel,
-                    onVerify = { viewModel.launchVerification() },
+                    onVerify = { viewModel.launchVerification(platformContext) },
                     onNavigateToResult = { navController.navigate("result") },
                 )
             }
@@ -43,7 +43,7 @@ fun App(sdk: SelfSdk? = null) {
                     },
                     onRetry = {
                         navController.popBackStack("home", inclusive = false)
-                        viewModel.launchVerification()
+                        viewModel.launchVerification(platformContext)
                     },
                 )
             }

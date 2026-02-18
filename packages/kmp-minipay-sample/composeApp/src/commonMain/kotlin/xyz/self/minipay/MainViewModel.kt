@@ -26,7 +26,7 @@ sealed class Screen {
 }
 
 class MainViewModel(
-    private val sdk: SelfSdk = SelfSdk.configure(SelfSdkConfig(debug = true)),
+    private val sdk: SelfSdk = SelfSdk.configure(SelfSdkConfig(debug = false)),
 ) {
     var currentScreen by mutableStateOf<Screen>(Screen.Home)
         private set
@@ -65,15 +65,16 @@ class MainViewModel(
             }
         }
 
-    fun launchVerification() {
+    fun launchVerification(platformContext: Any? = null) {
         isLaunching = true
-        sdk.launch(
-            request =
-                VerificationRequest(
-                    userId = "minipay-user",
-                    disclosures = listOf("nationality", "date_of_birth"),
-                ),
+        platformLaunch(
+            sdk = sdk,
+            request = VerificationRequest(
+                userId = "minipay-user",
+                disclosures = listOf("nationality", "date_of_birth"),
+            ),
             callback = sdkCallback,
+            platformContext = platformContext,
         )
     }
 
