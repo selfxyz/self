@@ -12,6 +12,20 @@
 - **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire flow runs inside a shared WebView.
 - **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
 
+## Status
+
+- [x] Bridge protocol types and `WebViewBridge` class (62 tests pass)
+- [x] Bridge adapters: NFC, auth, storage, lifecycle, crypto (sign + hash)
+- [x] Web fallback adapters: IndexedDB documents, Web Crypto, console analytics, navigation, haptic
+- [x] Mock transport (`MockNativeBridge`) for testing
+- [x] Schema validation for bridge messages
+- [x] All 10 screens built and routing works
+- [x] BridgeProvider and SelfClientProvider wired
+- [ ] Biometrics bridge adapter (domain defined, no implementation)
+- [ ] Camera bridge adapter wiring in `SelfClientProvider`
+- [ ] Web fallback adapters not all connected in `SelfClientProvider`
+- [ ] Dynamic proof request items (currently hardcoded in ProvingScreen)
+
 ## What You Own
 
 - **`@selfxyz/webview-bridge`** — Bridge protocol library (public npm). Pure TypeScript, no react-native imports. Defines the JSON messaging protocol, `WebViewBridge` class, bridge adapters (NFC, auth, storage, lifecycle, crypto), and web fallback adapters (IndexedDB documents, Web Crypto hashing, console analytics).
@@ -56,20 +70,6 @@ You build the middle two layers: the bridge protocol library and the WebView UI.
 | **You need**  | Person 2 (KMP / Swift shells) | Native handler implementations on the other side of the bridge   | Android done, iOS in progress |
 | **Needs you** | Person 2 (KMP / Swift shells) | Vite bundle (`dist/index.html` + JS) embedded into native SDK artifacts | Ready       |
 | **Needs you** | Person 5 (RN SDK)             | Same Vite bundle loaded via `react-native-webview`               | Not started |
-
-## Status
-
-- [x] Bridge protocol types and `WebViewBridge` class (62 tests pass)
-- [x] Bridge adapters: NFC, auth, storage, lifecycle, crypto (sign + hash)
-- [x] Web fallback adapters: IndexedDB documents, Web Crypto, console analytics, navigation, haptic
-- [x] Mock transport (`MockNativeBridge`) for testing
-- [x] Schema validation for bridge messages
-- [x] All 10 screens built and routing works
-- [x] BridgeProvider and SelfClientProvider wired
-- [ ] Biometrics bridge adapter (domain defined, no implementation)
-- [ ] Camera bridge adapter wiring in `SelfClientProvider`
-- [ ] Web fallback adapters not all connected in `SelfClientProvider`
-- [ ] Dynamic proof request items (currently hardcoded in ProvingScreen)
 
 ## Key Decisions
 

@@ -12,6 +12,18 @@
 - **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire flow runs inside a shared WebView.
 - **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
 
+## Status
+
+- [x] KMP module structure with `expect`/`actual` pattern
+- [x] Android WebView host + Activity
+- [x] Android handlers: NFC, Camera, Biometrics, Keychain, Lifecycle (5 of 5)
+- [x] Bridge message routing (`MessageRouter`)
+- [ ] Delete 4 unnecessary Android handlers (documents, crypto, analytics, haptic — 511 LOC)
+- [ ] iOS Swift providers via PR #1762 (NFC, Biometrics, Lifecycle, WebView host)
+- [ ] `SelfSdk.launch()` working on iOS
+- [ ] KMP test app validation on both platforms
+- [ ] MiniPay sample integration
+
 ## What You Own
 
 - `packages/kmp-sdk/` — Kotlin Multiplatform SDK (Android + iOS targets)
@@ -71,18 +83,6 @@ You build the native shells that sit between the host app and the bridge protoco
 | **You need**  | Person 4          | Bridge protocol contract (message format, domains)   | Ready        |
 | **Needs you** | Person 5          | Bridge protocol as reference for RN handler pattern  | Ready        |
 | **Needs you** | Integrations      | `SelfSdk.launch()` API consumed by MiniPay sample    | Android done |
-
-## Status
-
-- [x] KMP module structure with `expect`/`actual` pattern
-- [x] Android WebView host + Activity
-- [x] Android handlers: NFC, Camera, Biometrics, Keychain, Lifecycle (5 of 5)
-- [x] Bridge message routing (`MessageRouter`)
-- [ ] Delete 4 unnecessary Android handlers (documents, crypto, analytics, haptic — 511 LOC)
-- [ ] iOS Swift providers via PR #1762 (NFC, Biometrics, Lifecycle, WebView host)
-- [ ] `SelfSdk.launch()` working on iOS
-- [ ] KMP test app validation on both platforms
-- [ ] MiniPay sample integration
 
 ## Key Decisions
 

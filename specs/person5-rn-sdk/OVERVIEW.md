@@ -12,6 +12,18 @@
 - **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire flow runs inside a shared WebView.
 - **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
 
+## Status
+
+- [ ] Package scaffolding (`packages/rn-sdk/`, `package.json`, tsconfig, tsup)
+- [ ] `<SelfVerification />` component with `react-native-webview`
+- [ ] `MessageRouter` dispatching bridge messages to handlers
+- [ ] 5 native handler bridges (NFC, Camera, Biometrics, Keychain, Lifecycle)
+- [ ] Asset bundling (Vite bundle into iOS + Android via `Platform.select`)
+- [ ] Integration test with Self Wallet app
+- [ ] npm publish (`@selfxyz/rn-sdk`)
+
+**Overall: 0%** — package does not exist yet. This is Phase 2 work, blocked until Persons 1-4 deliver Phase 1.
+
 ## What You Own
 
 - **`@selfxyz/rn-sdk`** — the React Native SDK package (does not exist yet)
@@ -70,18 +82,6 @@ The WebView does not know which native shell it is running inside. Your handlers
 | **You need**  | Person 4 (`webview-bridge`)   | Bridge protocol types (`@selfxyz/webview-bridge`)     | In progress |
 | **You need**  | Person 2 (`kmp-sdk`)          | Handler pattern as reference (same bridge contract)   | In progress |
 | **Needs you** | Self Wallet app               | `<SelfVerification />` for verification flow (Phase 2)| Not started |
-
-## Status
-
-- [ ] Package scaffolding (`packages/rn-sdk/`, `package.json`, tsconfig, tsup)
-- [ ] `<SelfVerification />` component with `react-native-webview`
-- [ ] `MessageRouter` dispatching bridge messages to handlers
-- [ ] 5 native handler bridges (NFC, Camera, Biometrics, Keychain, Lifecycle)
-- [ ] Asset bundling (Vite bundle into iOS + Android via `Platform.select`)
-- [ ] Integration test with Self Wallet app
-- [ ] npm publish (`@selfxyz/rn-sdk`)
-
-**Overall: 0%** — package does not exist yet. This is Phase 2 work, blocked until Persons 1-4 deliver Phase 1.
 
 ## Key Decisions
 

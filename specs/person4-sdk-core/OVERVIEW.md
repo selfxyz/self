@@ -12,6 +12,14 @@
 - **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire flow runs inside a shared WebView.
 - **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
 
+## Status
+
+- [x] 275+ tests passing
+- [x] React Native adapters built and working
+- [ ] Browser entry point with zero RN transitive imports
+- [ ] Web fallback adapters (IndexedDB documents, Web Crypto hash, console analytics)
+- [ ] `Platform` / `__DEV__` contamination removed from core files
+
 ## What You Own
 
 - **`@selfxyz/mobile-sdk-alpha`** — the WebView engine (proving machine, stores, adapters, document management).
@@ -65,14 +73,6 @@ You own the SDK engine layer. It sits below Person 1's WebView UI and above the 
 | **Needs you** | Person 1         | Adapter interfaces, core logic (`useSelfClient()`, stores, proving machine) | In progress |
 | **Needs you** | Person 2         | Web fallback adapters to confirm which bridge domains are unnecessary | Pending     |
 | **Needs you** | Person 5         | Browser entry point working in RN WebView context                  | Pending     |
-
-## Status
-
-- [x] 275+ tests passing
-- [x] React Native adapters built and working
-- [ ] Browser entry point with zero RN transitive imports
-- [ ] Web fallback adapters (IndexedDB documents, Web Crypto hash, console analytics)
-- [ ] `Platform` / `__DEV__` contamination removed from core files
 
 ## Key Decisions
 
