@@ -109,30 +109,22 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 5
           command: yarn install --immutable --silent
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 30
-        with:
-          limit-access-to-actor: true
 
       - name: Validate Maestro test file
-        if: false # Skip for build-only test - keep logic for future E2E
         run: |
           [ -f app/tests/e2e/launch.android.flow.yaml ] || { echo "❌ Android E2E test file missing"; exit 1; }
       - name: Cache Maestro
-        if: false # Skip for build-only test - keep logic for future E2E
         id: cache-maestro
         uses: actions/cache@v4
         with:
           path: ~/.maestro
           key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
       - name: Install Maestro
-        if: false # Skip for build-only test - keep logic for future E2E
         run: curl -Ls "https://get.maestro.mobile.dev" | bash
       - name: Add Maestro to path
-        if: false # Skip for build-only test - keep logic for future E2E
         run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
       - name: Free up disk space
+        if: false # We should be fine for self-hosted
         uses: ./.github/actions/free-disk-space
       - name: Setup Java environment
         uses: actions/setup-java@v4
@@ -145,6 +137,13 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 30
+        with:
+          limit-access-to-actor: true
+
       - name: Install NDK
         uses: nick-fields/retry@v3
         with:
@@ -152,6 +151,7 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 10
           command: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
@@ -238,6 +238,7 @@ jobs:
             echo "🎭 Running Maestro tests..."
             export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
             maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
+
       - name: Upload test results
         if: false # Skip for build-only test - keep logic for future E2E
         uses: actions/upload-artifact@v4
