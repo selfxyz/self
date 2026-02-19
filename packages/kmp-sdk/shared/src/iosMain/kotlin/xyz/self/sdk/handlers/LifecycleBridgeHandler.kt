@@ -44,12 +44,18 @@ class LifecycleBridgeHandler : BridgeHandler {
     }
 
     private fun setResult(params: Map<String, JsonElement>): JsonElement? {
+        val type = params["type"]?.jsonPrimitive?.content
         val success = params["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
         val data = params["data"]?.toString()
         val errorCode = params["errorCode"]?.jsonPrimitive?.content
         val errorMessage = params["errorMessage"]?.jsonPrimitive?.content
 
-        if (success && data != null) {
+        if (type != null) {
+            // Flat lifecycle payload (e.g. { type: "proofRequested" }) — treat as success
+            pendingCallback?.onSuccess(
+                VerificationResult(success = true),
+            )
+        } else if (success && data != null) {
             try {
                 val result = Json.decodeFromString(VerificationResult.serializer(), data)
                 pendingCallback?.onSuccess(result)

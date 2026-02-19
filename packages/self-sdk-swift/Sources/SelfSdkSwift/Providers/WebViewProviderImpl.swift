@@ -62,7 +62,7 @@ public class WebViewProviderImpl: NSObject {
 
         // Load the bundled HTML or localhost for debug
         if isDebugMode {
-            if let url = URL(string: "http://localhost:3000") {
+            if let url = URL(string: "http://localhost:5173") {
                 wv.load(URLRequest(url: url))
             }
         } else {

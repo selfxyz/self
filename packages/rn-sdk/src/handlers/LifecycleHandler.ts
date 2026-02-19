@@ -47,11 +47,21 @@ export class LifecycleHandler implements BridgeHandler {
   }
 
   private setResult(params: Record<string, unknown>): null {
+    const type = params.type as string | undefined;
     const success = params.success === true || params.success === 'true';
     const errorCode = params.errorCode as string | undefined;
     const errorMessage = params.errorMessage as string | undefined;
 
-    if (success) {
+    if (type) {
+      // Flat lifecycle payload (e.g. { type: 'proofRequested' }) — treat as success
+      this.config.onSuccess({
+        success: true,
+        userId: params.userId as string | undefined,
+        verificationId: params.verificationId as string | undefined,
+        proof: params.proof,
+        claims: params.claims as Record<string, unknown> | undefined,
+      });
+    } else if (success) {
       this.config.onSuccess({
         success: true,
         userId: params.userId as string | undefined,

@@ -61,6 +61,7 @@ class LifecycleBridgeHandler(
      * Used to communicate verification results back to the host app.
      */
     private fun setResult(params: Map<String, JsonElement>): JsonElement? {
+        val type = params["type"]?.jsonPrimitive?.content
         val success = params["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
         val data = params["data"]?.toString()
         val errorCode = params["errorCode"]?.jsonPrimitive?.content
@@ -69,7 +70,11 @@ class LifecycleBridgeHandler(
         activity.runOnUiThread {
             val intent = Intent()
 
-            if (success && data != null) {
+            if (type != null) {
+                // Flat lifecycle payload (e.g. { type: "proofRequested" }) — treat as success
+                intent.putExtra("xyz.self.sdk.RESULT_TYPE", type)
+                activity.setResult(Activity.RESULT_OK, intent)
+            } else if (success && data != null) {
                 // Success result
                 intent.putExtra("xyz.self.sdk.RESULT_DATA", data)
                 activity.setResult(Activity.RESULT_OK, intent)

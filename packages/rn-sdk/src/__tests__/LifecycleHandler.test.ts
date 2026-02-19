@@ -87,7 +87,33 @@ describe('LifecycleHandler', () => {
       });
     });
 
-    it('calls onCancelled when neither success nor error code', async () => {
+    it('calls onSuccess for flat payload with type field', async () => {
+      const { handler, onSuccess } = createHandler();
+      await handler.handle('setResult', { type: 'proofRequested' });
+
+      expect(onSuccess).toHaveBeenCalledWith({
+        success: true,
+        userId: undefined,
+        verificationId: undefined,
+        proof: undefined,
+        claims: undefined,
+      });
+    });
+
+    it('calls onSuccess for documentOwnershipConfirmed flat payload', async () => {
+      const { handler, onSuccess } = createHandler();
+      await handler.handle('setResult', { type: 'documentOwnershipConfirmed' });
+
+      expect(onSuccess).toHaveBeenCalledWith({
+        success: true,
+        userId: undefined,
+        verificationId: undefined,
+        proof: undefined,
+        claims: undefined,
+      });
+    });
+
+    it('calls onCancelled when neither success, type, nor error code', async () => {
       const { handler, onCancelled } = createHandler();
       await handler.handle('setResult', {});
 
