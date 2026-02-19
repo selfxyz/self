@@ -112,7 +112,7 @@
 ## Design Principles
 
 1. **One WebView engine, two thin native shells, zero duplicated logic.** All core logic lives in TypeScript inside the WebView. Native code is the minimum required glue.
-2. **Only bridge to native what the browser cannot do.** NFC, camera, biometrics, and lifecycle require hardware/OS APIs. Keychain stays native because the host app controls access. Everything else runs in the WebView.
+2. **Only bridge to native what the browser cannot do.** NFC, camera, biometrics, and lifecycle require hardware/OS APIs. Keychain stays native because the host app controls access. Crypto signing/key-gen stays native so private keys never leave secure storage. Everything else runs in the WebView.
 3. **TypeScript is the primary surface area.** ZK circuits are the backend. The proving machine, state machines, stores, document management, and UI all run as TypeScript in the WebView. If you're writing logic in Kotlin or Swift, you're doing it wrong.
 4. **The bridge protocol is the only coupling.** Native shells and the WebView share a JSON contract, not code. Any native shell that implements the protocol works with the same WebView bundle.
 5. **Self Wallet is the test environment, not the target.** The SDK ships to third-party hosts (MiniPay). Self Wallet validates the SDK before others depend on it, then migrates to use it.
