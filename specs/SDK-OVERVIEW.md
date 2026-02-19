@@ -212,10 +212,6 @@ data class VerificationResult(
 
 All communication between native shells and the WebView uses a versioned JSON protocol over `postMessage`.
 
-### Message Types
-
-```
-
 ### Protocol Compatibility Policy (Fail Closed)
 
 Security posture is strict compatibility:
@@ -225,6 +221,10 @@ Security posture is strict compatibility:
 - Do not silently downgrade or ignore unknown protocol versions.
 - Launch should fail before starting verification if the shell and bundle are known to be incompatible.
 - No best-effort mode in production; incompatibility is a hard error.
+
+### Message Types
+
+```
 Request  (WebView → Native)
 ├── type: "request"
 ├── version: 1
