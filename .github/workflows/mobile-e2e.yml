@@ -122,14 +122,6 @@ jobs:
         with:
           path: ~/.maestro
           key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
-      - name: Install Maestro
-        run: curl -Ls "https://get.maestro.mobile.dev" | bash
-      - name: Add Maestro to path
-        run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
-      - name: Free up disk space
-        if: false # We should be fine for self-hosted
-        uses: ./.github/actions/free-disk-space
-
       - name: Check Java installation
         run: |
           echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"
@@ -145,6 +137,13 @@ jobs:
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
+      - name: Install Maestro
+        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+      - name: Add Maestro to path
+        run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Free up disk space
+        if: false # We should be fine for self-hosted
+        uses: ./.github/actions/free-disk-space
       - name: Cache Gradle packages
         uses: ./.github/actions/cache-gradle
       - name: Setup Android SDK
