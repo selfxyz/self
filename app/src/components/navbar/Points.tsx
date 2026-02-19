@@ -32,6 +32,7 @@ import { PointHistoryList } from '@/components/PointHistoryList';
 import { appsUrl } from '@/consts/links';
 import { useIncomingPoints, usePoints } from '@/hooks/usePoints';
 import { usePointsGuardrail } from '@/hooks/usePointsGuardrail';
+import { useResponsiveScale } from '@/hooks/useResponsiveScale';
 import type { RootStackParamList } from '@/navigation';
 import { trackScreenView } from '@/services/analytics';
 import {
@@ -63,6 +64,8 @@ const Points: React.FC = () => {
   const { hasCompletedBackupForPoints, setBackupForPointsCompleted } =
     useSettingStore();
   const [isBackingUp, setIsBackingUp] = useState(false);
+  const s = useResponsiveScale();
+  const localStyles = React.useMemo(() => createStyles(s), [s]);
 
   // Guard: Validate that user has registered a document and completed points disclosure
   usePointsGuardrail();
@@ -319,32 +322,34 @@ const Points: React.FC = () => {
   };
 
   const ListHeader = (
-    <YStack paddingHorizontal={5} gap={20} paddingTop={20}>
-      <YStack style={styles.pointsCard}>
-        <Pressable style={styles.helpButton} onPress={onHelpButtonPress}>
-          <HelpCircle size={32} color={blue600} />
+    <YStack paddingHorizontal={s(5)} gap={s(20)} paddingTop={s(20)}>
+      <YStack style={localStyles.pointsCard}>
+        <Pressable style={localStyles.helpButton} onPress={onHelpButtonPress}>
+          <HelpCircle size={s(32)} color={blue600} />
         </Pressable>
-        <YStack style={styles.pointsCardContent}>
-          <View style={styles.logoContainer}>
-            <LogoInversed width={33} height={33} />
+        <YStack style={localStyles.pointsCardContent}>
+          <View style={localStyles.logoContainer}>
+            <LogoInversed width={s(33)} height={s(33)} />
           </View>
-          <YStack gap={12} alignItems="center">
-            <XStack gap={4} alignItems="center">
-              <Text style={styles.pointsTitle}>{`${points} Self points`}</Text>
+          <YStack gap={s(12)} alignItems="center">
+            <XStack gap={s(4)} alignItems="center">
+              <Text
+                style={localStyles.pointsTitle}
+              >{`${points} Self points`}</Text>
             </XStack>
-            <Text style={styles.pointsDescription}>
+            <Text style={localStyles.pointsDescription}>
               Earn points by referring friends, disclosing proof requests, and
               more.
             </Text>
           </YStack>
         </YStack>
         {incomingPoints && (
-          <XStack style={styles.incomingPointsBar}>
-            <ClockIcon width={16} height={16} />
-            <Text style={styles.incomingPointsAmount}>
+          <XStack style={localStyles.incomingPointsBar}>
+            <ClockIcon width={s(16)} height={s(16)} />
+            <Text style={localStyles.incomingPointsAmount}>
               {`${incomingPoints.amount} incoming points`}
             </Text>
-            <Text style={styles.incomingPointsTime}>
+            <Text style={localStyles.incomingPointsTime}>
               {`Expected in ${formatTimeUntilDate(incomingPoints.expectedDate)}`}
             </Text>
           </XStack>
@@ -353,18 +358,18 @@ const Points: React.FC = () => {
       {!isGeneralSubscribed && (
         <Pressable onPress={handleEnableNotifications} disabled={isEnabling}>
           <XStack
-            style={[styles.actionCard, { opacity: isEnabling ? 0.5 : 1 }]}
+            style={[localStyles.actionCard, { opacity: isEnabling ? 0.5 : 1 }]}
           >
-            <View style={styles.actionIconContainer}>
-              <BellWhiteIcon width={30} height={26} />
+            <View style={localStyles.actionIconContainer}>
+              <BellWhiteIcon width={s(30)} height={s(26)} />
             </View>
-            <YStack gap={4} justifyContent="center">
-              <Text style={styles.actionTitle}>
+            <YStack gap={s(4)} justifyContent="center">
+              <Text style={localStyles.actionTitle}>
                 {isEnabling
                   ? 'Enabling notifications...'
                   : 'Turn on push notifications'}
               </Text>
-              <Text style={styles.actionSubtitle}>
+              <Text style={localStyles.actionSubtitle}>
                 Earn {POINT_VALUES.notification} points
               </Text>
             </YStack>
@@ -374,16 +379,16 @@ const Points: React.FC = () => {
       {!hasUserBackedUpAccount() && (
         <Pressable onPress={handleBackupSecret} disabled={isBackingUp}>
           <XStack
-            style={[styles.actionCard, { opacity: isBackingUp ? 0.5 : 1 }]}
+            style={[localStyles.actionCard, { opacity: isBackingUp ? 0.5 : 1 }]}
           >
-            <View style={styles.actionIconContainer}>
-              <LockWhiteIcon width={30} height={26} />
+            <View style={localStyles.actionIconContainer}>
+              <LockWhiteIcon width={s(30)} height={s(26)} />
             </View>
-            <YStack gap={4} justifyContent="center">
-              <Text style={styles.actionTitle}>
+            <YStack gap={s(4)} justifyContent="center">
+              <Text style={localStyles.actionTitle}>
                 {isBackingUp ? 'Processing backup...' : 'Backup your account'}
               </Text>
-              <Text style={styles.actionSubtitle}>
+              <Text style={localStyles.actionSubtitle}>
                 Earn {POINT_VALUES.backup} points
               </Text>
             </YStack>
@@ -396,20 +401,20 @@ const Points: React.FC = () => {
           navigation.navigate('Referral');
         }}
       >
-        <YStack style={styles.referralCard}>
-          <ZStack style={styles.referralImageContainer}>
-            <Image source={MajongImage} style={styles.referralImage} />
+        <YStack style={localStyles.referralCard}>
+          <ZStack style={localStyles.referralImageContainer}>
+            <Image source={MajongImage} style={localStyles.referralImage} />
             <StarBlackIcon
-              width={24}
-              height={24}
-              style={styles.referralStarIcon}
+              width={s(24)}
+              height={s(24)}
+              style={localStyles.referralStarIcon}
             />
           </ZStack>
-          <YStack padding={16} paddingBottom={32} gap={10}>
-            <Text style={styles.referralTitle}>
+          <YStack padding={s(16)} paddingBottom={s(32)} gap={s(10)}>
+            <Text style={localStyles.referralTitle}>
               Refer friends and earn rewards
             </Text>
-            <Text style={styles.referralLink}>Refer now</Text>
+            <Text style={localStyles.referralLink}>Refer now</Text>
           </YStack>
         </YStack>
       </Pressable>
@@ -421,10 +426,13 @@ const Points: React.FC = () => {
       <ZStack flex={1}>
         <PointHistoryList ListHeaderComponent={ListHeader} />
         <YStack
-          style={[styles.exploreButtonContainer, { bottom: bottom + 20 }]}
+          style={[
+            localStyles.exploreButtonContainer,
+            { bottom: bottom + s(20) },
+          ]}
         >
           <Button
-            style={styles.exploreButton}
+            style={localStyles.exploreButton}
             onPress={() => {
               selfClient.trackEvent(PointEvents.EXPLORE_APPS);
               navigation.navigate('WebView', {
@@ -433,7 +441,7 @@ const Points: React.FC = () => {
               });
             }}
           >
-            <Text style={styles.exploreButtonText}>Explore apps</Text>
+            <Text style={localStyles.exploreButtonText}>Explore apps</Text>
           </Button>
         </YStack>
       </ZStack>
@@ -441,160 +449,161 @@ const Points: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  pointsCard: {
-    backgroundColor: white,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: slate200,
-    overflow: 'hidden',
-  },
-  pointsCardContent: {
-    paddingVertical: 30,
-    paddingHorizontal: 40,
-    alignItems: 'center',
-    gap: 20,
-  },
-  logoContainer: {
-    width: 68,
-    height: 68,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: slate200,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: white,
-  },
-  pointsTitle: {
-    color: black,
-    textAlign: 'center',
-    fontFamily: dinot,
-    fontWeight: '500',
-    fontSize: 32,
-    lineHeight: 32,
-    letterSpacing: -1,
-  },
-  pointsDescription: {
-    color: black,
-    fontFamily: dinot,
-    fontSize: 18,
-    fontWeight: '500',
-    textAlign: 'center',
-    paddingHorizontal: 20,
-  },
-  incomingPointsBar: {
-    backgroundColor: slate50,
-    borderTopWidth: 1,
-    borderTopColor: slate200,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    alignItems: 'center',
-    gap: 4,
-  },
-  incomingPointsAmount: {
-    flex: 1,
-    fontFamily: dinot,
-    fontWeight: '500',
-    fontSize: 14,
-    color: black,
-  },
-  incomingPointsTime: {
-    fontFamily: dinot,
-    fontWeight: '500',
-    fontSize: 14,
-    color: blue600,
-  },
-  actionCard: {
-    gap: 22,
-    backgroundColor: white,
-    padding: 16,
-    borderRadius: 17,
-    borderWidth: 1,
-    borderColor: slate200,
-  },
-  actionIconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: black,
-  },
-  actionTitle: {
-    color: black,
-    fontFamily: dinot,
-    fontWeight: '500',
-    fontSize: 16,
-  },
-  actionSubtitle: {
-    color: slate500,
-    fontFamily: dinot,
-    fontSize: 14,
-  },
-  referralCard: {
-    height: 270,
-    backgroundColor: white,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: slate200,
-  },
-  referralImageContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: slate200,
-    height: 170,
-  },
-  referralImage: {
-    width: '80%',
-    height: '100%',
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  referralStarIcon: {
-    marginLeft: 16,
-    marginTop: 16,
-  },
-  referralTitle: {
-    fontFamily: dinot,
-    fontSize: 16,
-    color: black,
-  },
-  referralLink: {
-    fontFamily: dinot,
-    fontSize: 16,
-    color: blue600,
-  },
-  blurView: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 100,
-  },
-  exploreButtonContainer: {
-    position: 'absolute',
-    left: 20,
-    right: 20,
-  },
-  exploreButton: {
-    backgroundColor: black,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderRadius: 5,
-    height: 52,
-  },
-  exploreButtonText: {
-    fontFamily: dinot,
-    fontSize: 16,
-    color: white,
-    textAlign: 'center',
-  },
-  helpButton: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    padding: 12,
-  },
-});
+const createStyles = (s: (value: number) => number) =>
+  StyleSheet.create({
+    pointsCard: {
+      backgroundColor: white,
+      borderRadius: s(10),
+      borderWidth: 1,
+      borderColor: slate200,
+      overflow: 'hidden',
+    },
+    pointsCardContent: {
+      paddingVertical: s(30),
+      paddingHorizontal: s(40),
+      alignItems: 'center',
+      gap: s(20),
+    },
+    logoContainer: {
+      width: s(68),
+      height: s(68),
+      borderRadius: s(12),
+      borderWidth: 1,
+      borderColor: slate200,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: white,
+    },
+    pointsTitle: {
+      color: black,
+      textAlign: 'center',
+      fontFamily: dinot,
+      fontWeight: '500',
+      fontSize: s(32),
+      lineHeight: s(32),
+      letterSpacing: s(-1),
+    },
+    pointsDescription: {
+      color: black,
+      fontFamily: dinot,
+      fontSize: s(18),
+      fontWeight: '500',
+      textAlign: 'center',
+      paddingHorizontal: s(20),
+    },
+    incomingPointsBar: {
+      backgroundColor: slate50,
+      borderTopWidth: 1,
+      borderTopColor: slate200,
+      paddingVertical: s(10),
+      paddingHorizontal: s(10),
+      alignItems: 'center',
+      gap: s(4),
+    },
+    incomingPointsAmount: {
+      flex: 1,
+      fontFamily: dinot,
+      fontWeight: '500',
+      fontSize: s(14),
+      color: black,
+    },
+    incomingPointsTime: {
+      fontFamily: dinot,
+      fontWeight: '500',
+      fontSize: s(14),
+      color: blue600,
+    },
+    actionCard: {
+      gap: s(22),
+      backgroundColor: white,
+      padding: s(16),
+      borderRadius: s(17),
+      borderWidth: 1,
+      borderColor: slate200,
+    },
+    actionIconContainer: {
+      width: s(60),
+      height: s(60),
+      borderRadius: s(16),
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: black,
+    },
+    actionTitle: {
+      color: black,
+      fontFamily: dinot,
+      fontWeight: '500',
+      fontSize: s(16),
+    },
+    actionSubtitle: {
+      color: slate500,
+      fontFamily: dinot,
+      fontSize: s(14),
+    },
+    referralCard: {
+      height: s(270),
+      backgroundColor: white,
+      borderRadius: s(16),
+      borderWidth: 1,
+      borderColor: slate200,
+    },
+    referralImageContainer: {
+      borderBottomWidth: 1,
+      borderBottomColor: slate200,
+      height: s(170),
+    },
+    referralImage: {
+      width: '80%',
+      height: '100%',
+      position: 'absolute',
+      right: 0,
+      top: 0,
+    },
+    referralStarIcon: {
+      marginLeft: s(16),
+      marginTop: s(16),
+    },
+    referralTitle: {
+      fontFamily: dinot,
+      fontSize: s(16),
+      color: black,
+    },
+    referralLink: {
+      fontFamily: dinot,
+      fontSize: s(16),
+      color: blue600,
+    },
+    blurView: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: s(100),
+    },
+    exploreButtonContainer: {
+      position: 'absolute',
+      left: s(20),
+      right: s(20),
+    },
+    exploreButton: {
+      backgroundColor: black,
+      paddingHorizontal: s(20),
+      paddingVertical: s(14),
+      borderRadius: s(5),
+      height: s(52),
+    },
+    exploreButtonText: {
+      fontFamily: dinot,
+      fontSize: s(16),
+      color: white,
+      textAlign: 'center',
+    },
+    helpButton: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      padding: s(12),
+    },
+  });
 
 export default Points;

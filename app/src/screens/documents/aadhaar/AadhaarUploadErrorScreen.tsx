@@ -27,6 +27,7 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
 import { NavBar } from '@/components/navbar/BaseNavBar';
+import { useResponsiveScale } from '@/hooks/useResponsiveScale';
 import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
@@ -61,7 +62,8 @@ const getErrorMessages = (
 
 const AadhaarUploadErrorScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const paddingBottom = useSafeBottomPadding(extraYPadding + 35);
+  const s = useResponsiveScale();
+  const paddingBottom = useSafeBottomPadding(extraYPadding + s(35));
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<AadhaarUploadErrorRoute>();
@@ -107,7 +109,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
           barStyle="dark"
           paddingHorizontal="$4"
           paddingTop={insets.top + extraYPadding}
-          paddingBottom={10}
+          paddingBottom={s(10)}
           alignItems="center"
           justifyContent="space-between"
         >
@@ -116,22 +118,26 @@ const AadhaarUploadErrorScreen: React.FC = () => {
             color={black}
             onPress={handleClose}
           />
-          <NavBar.Title style={{ fontFamily: dinot, fontSize: 17 }}>
+          <NavBar.Title style={{ fontFamily: dinot, fontSize: s(17) }}>
             AADHAAR REGISTRATION
           </NavBar.Title>
           {/* Invisible spacer to balance header */}
-          <YStack width={30} height={30} />
+          <YStack width={s(30)} height={s(30)} />
         </NavBar.Container>
 
         {/* Progress Bar - Step 2 for Aadhaar upload */}
-        <YStack paddingHorizontal={40} paddingBottom={14} paddingTop={4}>
-          <XStack gap={3} height={6}>
+        <YStack
+          paddingHorizontal={s(40)}
+          paddingBottom={s(14)}
+          paddingTop={s(4)}
+        >
+          <XStack gap={s(3)} height={s(6)}>
             {[1, 2, 3, 4].map(step => (
               <YStack
                 key={step}
                 flex={1}
                 backgroundColor={step === 2 ? cyan300 : slate300}
-                borderRadius={10}
+                borderRadius={s(10)}
               />
             ))}
           </XStack>
@@ -146,30 +152,30 @@ const AadhaarUploadErrorScreen: React.FC = () => {
         borderBottomColor={slate200}
       >
         {/* Warning Icon */}
-        <YStack flex={1} paddingHorizontal={20} paddingBottom={20}>
+        <YStack flex={1} paddingHorizontal={s(20)} paddingBottom={s(20)}>
           <YStack flex={1} justifyContent="center" alignItems="center">
-            <WarningIcon width={150} height={150} />
+            <WarningIcon width={s(150)} height={s(150)} />
           </YStack>
         </YStack>
 
         {/* Error Message and Retry Button */}
         <YStack
-          paddingHorizontal={20}
+          paddingHorizontal={s(20)}
           paddingTop={20}
-          paddingBottom={20}
-          gap={20}
+          paddingBottom={s(20)}
+          gap={s(20)}
           borderTopWidth={1}
           borderTopColor={slate200}
         >
-          <YStack alignItems="center" gap={4}>
+          <YStack alignItems="center" gap={s(4)}>
             <BodyText
-              style={{ fontSize: 18, textAlign: 'center', color: black }}
+              style={{ fontSize: s(18), textAlign: 'center', color: black }}
             >
               {title}
             </BodyText>
             <BodyText
               style={{
-                fontSize: 16,
+                fontSize: s(16),
                 textAlign: 'center',
                 color: slate500,
               }}
@@ -181,17 +187,17 @@ const AadhaarUploadErrorScreen: React.FC = () => {
           {/* Retry Button - Primary style with icon */}
           <Button
             backgroundColor={black}
-            borderRadius={100}
-            height={52}
+            borderRadius={s(100)}
+            height={s(52)}
             pressStyle={{ opacity: 0.8 }}
             onPress={handleTryAgain}
             disabled={isRetrying}
           >
             <XStack alignItems="center" gap={8}>
-              <Image size={20} color={white} />
+              <Image size={s(20)} color={white} />
               <BodyText
                 style={{
-                  fontSize: 17,
+                  fontSize: s(17),
                   fontWeight: '500',
                   fontFamily: dinot,
                   color: white,
@@ -206,25 +212,25 @@ const AadhaarUploadErrorScreen: React.FC = () => {
 
       {/* Bottom Section */}
       <YStack
-        paddingHorizontal={20}
+        paddingHorizontal={s(20)}
         paddingTop={20}
         paddingBottom={paddingBottom}
-        gap={10}
+        gap={s(10)}
       >
         {/* Secondary Button - White fill, black text, rounded */}
         <Button
           backgroundColor={white}
           borderWidth={1}
           borderColor={slate200}
-          borderRadius={100}
-          height={52}
+          borderRadius={s(100)}
+          height={s(52)}
           pressStyle={{ opacity: 0.8 }}
           onPress={handleTryAlternative}
           disabled={isRetrying}
         >
           <BodyText
             style={{
-              fontSize: 17,
+              fontSize: s(17),
               fontWeight: '500',
               fontFamily: dinot,
               color: black,
@@ -237,7 +243,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
         {/* Footer Text - Not italic */}
         <BodyText
           style={{
-            fontSize: 16,
+            fontSize: s(16),
             textAlign: 'center',
             color: slate500,
           }}

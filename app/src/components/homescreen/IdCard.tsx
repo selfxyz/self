@@ -864,7 +864,11 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
                   justifyContent="center"
                   overflow="hidden"
                 >
-                  <DevCardLogo width={logoSize} height={logoSize} />
+                  <DevCardLogo
+                    width={logoSize}
+                    height={logoSize}
+                    style={{ flexShrink: 0 }}
+                  />
                 </YStack>
               ) : (
                 // Real document: Country flag
@@ -897,9 +901,17 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
             {/* Right spacer for dev cards, Self logo for real documents */}
             {isMockDocument ? (
               // Empty spacer matching Figma (85x19)
-              <YStack width={85 * scale} height={19 * scale} />
+              <YStack
+                width={85 * scale}
+                height={19 * scale}
+                style={{ flexShrink: 0 }}
+              />
             ) : (
-              <SelfLogoPending width={logoSize} height={logoSize} />
+              <SelfLogoPending
+                width={logoSize}
+                height={logoSize}
+                style={{ flexShrink: 0 }}
+              />
             )}
           </XStack>
         </LinearGradient>

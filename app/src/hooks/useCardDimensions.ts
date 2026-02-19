@@ -4,6 +4,8 @@
 
 import { useWindowDimensions } from 'react-native';
 
+import { useResponsiveScale } from '@/hooks/useResponsiveScale';
+
 const CARD_WIDTH_FACTOR = 0.95;
 const CARD_HORIZONTAL_OFFSET = 16;
 
@@ -47,9 +49,10 @@ export interface CardFontSizes {
 
 export function useCardDimensions(selected = true): CardDimensions {
   const { width } = useWindowDimensions();
+  const s = useResponsiveScale();
 
   const cardWidth = width * CARD_WIDTH_FACTOR - CARD_HORIZONTAL_OFFSET;
-  const scale = cardWidth / FIGMA_CARD_WIDTH;
+  const scale = s(FIGMA_CARD_WIDTH) / FIGMA_CARD_WIDTH;
 
   const expandedAspectRatio = FIGMA_CARD_WIDTH / FIGMA_CARD_HEIGHT;
   const collapsedAspectRatio = FIGMA_CARD_WIDTH / FIGMA_HEADER_HEIGHT;
@@ -59,7 +62,7 @@ export function useCardDimensions(selected = true): CardDimensions {
     cardHeight: selected
       ? cardWidth / expandedAspectRatio
       : cardWidth / collapsedAspectRatio,
-    borderRadius: FIGMA_BORDER_RADIUS,
+    borderRadius: FIGMA_BORDER_RADIUS * scale,
     scale,
     headerHeight: FIGMA_HEADER_HEIGHT * scale,
     figmaPadding: FIGMA_PADDING * scale,

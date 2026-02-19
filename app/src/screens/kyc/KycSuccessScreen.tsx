@@ -21,6 +21,7 @@ import {
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import { useResponsiveScale } from '@/hooks/useResponsiveScale';
 import { useSumsubWebSocket } from '@/hooks/useSumsubWebSocket';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
@@ -49,6 +50,8 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
   const setFcmToken = useSettingStore(state => state.setFcmToken);
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
+  const s = useResponsiveScale();
+  const localStyles = React.useMemo(() => createStyles(s), [s]);
 
   const hasSubscribedRef = useRef<boolean>(false);
 
@@ -109,32 +112,32 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-      <View style={styles.centerSection}>
-        <View style={styles.animationContainer}>
+    <View style={[localStyles.container, { paddingBottom: insets.bottom }]}>
+      <View style={localStyles.centerSection}>
+        <View style={localStyles.animationContainer}>
           <DelayedLottieView
             autoPlay
             loop={true}
             source={loadingAnimation}
-            style={styles.animation}
+            style={localStyles.animation}
             cacheComposition={true}
             renderMode="HARDWARE"
           />
         </View>
         <YStack
-          paddingHorizontal={24}
+          paddingHorizontal={s(24)}
           justifyContent="center"
           alignItems="center"
-          gap={12}
+          gap={s(12)}
         >
-          <Title style={styles.title}>Your ID is being verified</Title>
-          <Description style={styles.description}>
+          <Title style={localStyles.title}>Your ID is being verified</Title>
+          <Description style={localStyles.description}>
             Turn on push notifications to receive an update on your
             verification. It's also safe the close the app and come back later.
           </Description>
         </YStack>
       </View>
-      <YStack gap={12} paddingHorizontal={20} paddingBottom={24}>
+      <YStack gap={s(12)} paddingHorizontal={s(20)} paddingBottom={s(24)}>
         <AbstractButton
           bgColor={white}
           color={black}
@@ -156,38 +159,39 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: black,
-  },
-  centerSection: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  animationContainer: {
-    width: 80,
-    height: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  animation: {
-    width: 160,
-    height: 160,
-  },
-  title: {
-    color: white,
-    textAlign: 'center',
-    fontSize: 28,
-    letterSpacing: 1,
-  },
-  description: {
-    color: white,
-    textAlign: 'center',
-    fontSize: 18,
-  },
-});
+const createStyles = (s: (value: number) => number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: black,
+    },
+    centerSection: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    animationContainer: {
+      width: s(80),
+      height: s(80),
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: s(32),
+    },
+    animation: {
+      width: s(160),
+      height: s(160),
+    },
+    title: {
+      color: white,
+      textAlign: 'center',
+      fontSize: s(28),
+      letterSpacing: s(1),
+    },
+    description: {
+      color: white,
+      textAlign: 'center',
+      fontSize: s(18),
+    },
+  });
 
 export default KycSuccessScreen;

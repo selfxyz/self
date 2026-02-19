@@ -180,7 +180,7 @@ const KycIdCard: FC<KycIdCardProps> = ({
         alignItems="stretch"
       >
         {/* Header Section - Dark gradient (same as IdCard) */}
-        <View style={{ width: cardWidth * 1.05, height: headerHeight }}>
+        <View style={{ width: '100%', height: headerHeight }}>
           <LinearGradient
             colors={['#000000', '#343434']}
             start={{ x: 0, y: 0 }}
@@ -194,7 +194,7 @@ const KycIdCard: FC<KycIdCardProps> = ({
             }}
           >
             {/* Logo + Text */}
-            <XStack alignItems="center" gap={headerGap}>
+            <XStack alignItems="center" gap={headerGap} flex={1}>
               {/* Country flag */}
               <RoundFlag countryCode={country} size={logoSize} />
 
@@ -223,7 +223,11 @@ const KycIdCard: FC<KycIdCardProps> = ({
             </XStack>
 
             {/* Self logo on right */}
-            <SelfLogoPending width={logoSize * 0.56 * 5} height={logoSize} />
+            <SelfLogoPending
+              width={logoSize}
+              height={logoSize}
+              style={{ flexShrink: 0 }}
+            />
           </LinearGradient>
         </View>
 

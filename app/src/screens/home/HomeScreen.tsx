@@ -49,6 +49,7 @@ import useConnectionModal from '@/hooks/useConnectionModal';
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
 import { usePoints } from '@/hooks/usePoints';
 import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
+import { useResponsiveScale } from '@/hooks/useResponsiveScale';
 import { useTestReferralFlow } from '@/hooks/useTestReferralFlow';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -84,6 +85,7 @@ const HomeScreen: React.FC = () => {
   const [isSelectedDocumentInactive, setIsSelectedDocumentInactive] = useState<
     boolean | null
   >(null);
+  const s = useResponsiveScale();
 
   const { pendingVerifications, removeExpiredVerifications } =
     usePendingKycStore();
@@ -230,7 +232,7 @@ const HomeScreen: React.FC = () => {
       <YStack
         backgroundColor={slate50}
         flex={1}
-        paddingHorizontal={20}
+        paddingHorizontal={s(20)}
         paddingBottom={bottomPadding}
         justifyContent="center"
         alignItems="center"
@@ -246,10 +248,10 @@ const HomeScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         flex={1}
         contentContainerStyle={{
-          gap: 15,
-          paddingVertical: 20,
-          paddingHorizontal: 15, // Add horizontal padding for shadow space
-          paddingBottom: 35, // Add extra bottom padding for shadow
+          gap: s(15),
+          paddingVertical: s(20),
+          paddingHorizontal: s(15), // Add horizontal padding for shadow space
+          paddingBottom: s(35), // Add extra bottom padding for shadow
         }}
       >
         {/* Show pending KYC cards at the top */}
@@ -343,11 +345,11 @@ const HomeScreen: React.FC = () => {
         elevation={8}
         backgroundColor="white"
         width="100%"
-        paddingTop={20}
-        paddingHorizontal={20}
+        paddingTop={s(20)}
+        paddingHorizontal={s(20)}
         paddingBottom={bottomPadding}
-        borderTopLeftRadius={18}
-        borderTopRightRadius={18}
+        borderTopLeftRadius={s(18)}
+        borderTopRightRadius={s(18)}
         style={{
           // Matches: box-shadow: 0 -6px 14px 0 rgba(0, 0, 0, 0.05);
           shadowOffset: { width: 0, height: -2 },
@@ -356,26 +358,26 @@ const HomeScreen: React.FC = () => {
           elevation: 8,
         }}
       >
-        <XStack marginBottom={32} gap={22}>
+        <XStack marginBottom={s(32)} gap={s(22)}>
           <View
-            width={68}
-            height={68}
-            borderRadius={12}
+            width={s(68)}
+            height={s(68)}
+            borderRadius={s(12)}
             borderWidth={1}
             borderColor={slate300}
             alignItems="center"
             justifyContent="center"
           >
-            <LogoInversed width={33} height={33} />
+            <LogoInversed width={s(33)} height={s(33)} />
           </View>
-          <YStack gap={4}>
+          <YStack gap={s(4)}>
             <Text
               color={black}
               fontFamily={dinot}
-              fontSize={20}
+              fontSize={s(20)}
               fontStyle="normal"
               fontWeight="500"
-              lineHeight={22}
+              lineHeight={s(22)}
               textTransform="uppercase"
             >
               {`${selfPoints} SELF POINTS`}
@@ -384,10 +386,10 @@ const HomeScreen: React.FC = () => {
               color={black}
               width="60%"
               fontFamily={dinot}
-              fontSize={16}
+              fontSize={s(16)}
               fontStyle="normal"
               fontWeight="500"
-              lineHeight={22}
+              lineHeight={s(22)}
             >
               Earn points by referring friends, disclosing proof requests, and
               more.
@@ -396,9 +398,9 @@ const HomeScreen: React.FC = () => {
         </XStack>
         <Button
           backgroundColor="white"
-          paddingHorizontal={22}
-          paddingVertical={24}
-          borderRadius={5}
+          paddingHorizontal={s(22)}
+          paddingVertical={s(24)}
+          borderRadius={s(5)}
           borderWidth={1}
           borderColor={slate300}
           testID="earn-points-button"
@@ -412,8 +414,8 @@ const HomeScreen: React.FC = () => {
             color={blue600}
             textAlign="center"
             fontFamily={dinot}
-            fontSize={18}
-            height={22}
+            fontSize={s(18)}
+            height={s(22)}
           >
             Earn points
           </Text>

@@ -29,6 +29,7 @@ import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import Cloud from '@/assets/icons/logo_cloud_backup.svg';
 import { useModal } from '@/hooks/useModal';
+import { useResponsiveScale } from '@/hooks/useResponsiveScale';
 import { buttonTap, confirmTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
@@ -66,6 +67,8 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [_selectedMethod, setSelectedMethod] = useState<BackupMethod>(null);
+  const s = useResponsiveScale();
+  const localStyles = React.useMemo(() => createStyles(s), [s]);
   const [iCloudPending, setICloudPending] = useState(false);
   const selfClient = useSelfClient();
   // DISABLED FOR NOW: Turnkey functionality
@@ -256,23 +259,23 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         flex={1}
         alignItems="center"
         justifyContent="center"
-        paddingHorizontal={20}
-        paddingBottom={20}
+        paddingHorizontal={s(20)}
+        paddingBottom={s(20)}
       >
-        <View style={styles.content}>
-          <View style={styles.iconContainer}>
-            <Cloud width={56} height={56} color={white} />
+        <View style={localStyles.content}>
+          <View style={localStyles.iconContainer}>
+            <Cloud width={s(56)} height={s(56)} color={white} />
           </View>
 
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.title}>Protect your account</Text>
-            <Text style={styles.description}>
+          <View style={localStyles.descriptionContainer}>
+            <Text style={localStyles.title}>Protect your account</Text>
+            <Text style={localStyles.description}>
               Back up your account so you can restore your data if you lose your
               device or get a new one.
             </Text>
           </View>
 
-          <View style={styles.optionsContainer}>
+          <View style={localStyles.optionsContainer}>
             {cloudBackupEnabled ? (
               <SecondaryButton
                 onPress={disableCloudBackups}
@@ -285,15 +288,15 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
             ) : (
               <Pressable
                 style={[
-                  styles.optionButton,
+                  localStyles.optionButton,
                   (iCloudPending || !biometricsAvailable) &&
-                    styles.optionButtonDisabled,
+                    localStyles.optionButtonDisabled,
                 ]}
                 onPress={handleICloudBackup}
                 disabled={iCloudPending || !biometricsAvailable}
               >
-                <Cloud width={24} height={24} color={black} />
-                <Text style={styles.optionText}>
+                <Cloud width={s(24)} height={s(24)} color={black} />
+                <Text style={localStyles.optionText}>
                   {iCloudPending ? 'Enabling' : 'Backup with'} {STORAGE_NAME}
                   {iCloudPending ? '…' : ''}
                 </Text>
@@ -311,14 +314,14 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
             ) : (
               <Pressable
                 style={[
-                  styles.optionButton,
-                  turnkeyPending && styles.optionButtonDisabled,
+                  localStyles.optionButton,
+                  turnkeyPending && localStyles.optionButtonDisabled,
                 ]}
                 onPress={handleTurnkeyBackup}
                 disabled={turnkeyPending}
               >
                 <Wallet size={24} color={black} />
-                <Text style={styles.optionText}>
+                <Text style={localStyles.optionText}>
                   {turnkeyPending ? 'Importing' : 'Backup with'} Turnkey
                   {turnkeyPending ? '…' : ''}
                 </Text>
@@ -333,7 +336,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
           </View>
 
           {!biometricsAvailable && (
-            <Text style={styles.warningText}>
+            <Text style={localStyles.warningText}>
               Your device doesn't support biometrics or is disabled for apps and
               is required for cloud storage.
             </Text>
@@ -410,74 +413,75 @@ function BottomButton({
   }
 }
 
-const styles = StyleSheet.create({
-  content: {
-    width: '100%',
-    alignItems: 'center',
-    gap: 30,
-  },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: blue600,
-  },
-  descriptionContainer: {
-    width: '100%',
-    gap: 12,
-    alignItems: 'center',
-  },
-  title: {
-    width: '100%',
-    fontSize: 28,
-    letterSpacing: 1,
-    fontFamily: advercase,
-    color: black,
-    textAlign: 'center',
-  },
-  description: {
-    width: '100%',
-    fontSize: 18,
-    fontWeight: '500',
-    fontFamily: dinot,
-    color: black,
-    textAlign: 'center',
-  },
-  optionsContainer: {
-    width: '100%',
-    gap: 10,
-  },
-  optionButton: {
-    backgroundColor: white,
-    borderWidth: 1,
-    borderColor: slate200,
-    borderRadius: 5,
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  optionButtonDisabled: {
-    opacity: 0.5,
-  },
-  optionText: {
-    fontFamily: dinot,
-    fontWeight: '500',
-    fontSize: 18,
-    color: black,
-  },
-  warningText: {
-    fontFamily: dinot,
-    fontWeight: '500',
-    fontSize: 14,
-    color: slate500,
-    textAlign: 'center',
-    marginTop: 10,
-  },
-});
+const createStyles = (s: (value: number) => number) =>
+  StyleSheet.create({
+    content: {
+      width: '100%',
+      alignItems: 'center',
+      gap: s(30),
+    },
+    iconContainer: {
+      width: s(120),
+      height: s(120),
+      borderRadius: s(32),
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: blue600,
+    },
+    descriptionContainer: {
+      width: '100%',
+      gap: s(12),
+      alignItems: 'center',
+    },
+    title: {
+      width: '100%',
+      fontSize: s(28),
+      letterSpacing: s(1),
+      fontFamily: advercase,
+      color: black,
+      textAlign: 'center',
+    },
+    description: {
+      width: '100%',
+      fontSize: s(18),
+      fontWeight: '500',
+      fontFamily: dinot,
+      color: black,
+      textAlign: 'center',
+    },
+    optionsContainer: {
+      width: '100%',
+      gap: s(10),
+    },
+    optionButton: {
+      backgroundColor: white,
+      borderWidth: 1,
+      borderColor: slate200,
+      borderRadius: s(5),
+      paddingVertical: s(20),
+      paddingHorizontal: s(20),
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: s(8),
+    },
+    optionButtonDisabled: {
+      opacity: 0.5,
+    },
+    optionText: {
+      fontFamily: dinot,
+      fontWeight: '500',
+      fontSize: s(18),
+      color: black,
+    },
+    warningText: {
+      fontFamily: dinot,
+      fontWeight: '500',
+      fontSize: s(14),
+      color: slate500,
+      textAlign: 'center',
+      marginTop: s(10),
+    },
+  });
 
 export default CloudBackupScreen;

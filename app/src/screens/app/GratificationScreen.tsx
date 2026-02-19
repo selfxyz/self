@@ -28,6 +28,7 @@ import { dinot, dinotBold } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import GratificationBg from '@/assets/images/gratification_bg.svg';
 import SelfLogo from '@/assets/logos/self.svg';
 import { SystemBars } from '@/components/SystemBars';
+import { useResponsiveScale } from '@/hooks/useResponsiveScale';
 import type { RootStackParamList } from '@/navigation';
 
 const GratificationScreen: React.FC = () => {
@@ -39,6 +40,7 @@ const GratificationScreen: React.FC = () => {
   const pointsEarned = params?.points ?? 0;
   const [isAnimationFinished, setIsAnimationFinished] = useState(false);
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+  const s = useResponsiveScale();
 
   const handleExploreRewards = () => {
     // Navigate to Points screen
@@ -57,6 +59,8 @@ const GratificationScreen: React.FC = () => {
     setIsAnimationFinished(true);
   }, []);
 
+  const localStyles = React.useMemo(() => createStyles(s), [s]);
+
   // Show animation first, then content after it finishes
   if (!isAnimationFinished) {
     return (
@@ -70,7 +74,7 @@ const GratificationScreen: React.FC = () => {
           autoPlay
           loop={false}
           source={youWinAnimation}
-          style={styles.animation}
+          style={localStyles.animation}
           onAnimationFinish={handleAnimationFinish}
           resizeMode="contain"
           cacheComposition={true}
@@ -123,17 +127,17 @@ const GratificationScreen: React.FC = () => {
       />
 
       {/* Back button */}
-      <View position="absolute" top={top + 20} left={20} zIndex={10}>
+      <View position="absolute" top={top + s(20)} left={s(20)} zIndex={10}>
         <Pressable onPress={handleBackPress}>
           <View
             backgroundColor={white}
-            width={46}
-            height={46}
-            borderRadius={23}
+            width={s(46)}
+            height={s(46)}
+            borderRadius={s(23)}
             alignItems="center"
             justifyContent="center"
           >
-            <X width={24} height={24} />
+            <X width={s(24)} height={s(24)} />
           </View>
         </Pressable>
       </View>
@@ -141,48 +145,48 @@ const GratificationScreen: React.FC = () => {
       {/* Main content container */}
       <YStack
         flex={1}
-        paddingTop={top + 54}
-        paddingBottom={bottom + 50}
-        paddingHorizontal={20}
+        paddingTop={top + s(54)}
+        paddingBottom={bottom + s(50)}
+        paddingHorizontal={s(20)}
         zIndex={2}
       >
         {/* Dialogue container */}
         <YStack
           flex={1}
-          borderRadius={14}
-          borderTopLeftRadius={14}
-          borderTopRightRadius={14}
-          paddingTop={84}
-          paddingBottom={24}
-          paddingHorizontal={24}
+          borderRadius={s(14)}
+          borderTopLeftRadius={s(14)}
+          borderTopRightRadius={s(14)}
+          paddingTop={s(84)}
+          paddingBottom={s(24)}
+          paddingHorizontal={s(24)}
           alignItems="center"
           justifyContent="center"
         >
           {/* Logo icon */}
-          <View marginBottom={12} style={styles.logoContainer}>
-            <SelfLogo width={37} height={37} />
+          <View marginBottom={s(12)} style={localStyles.logoContainer}>
+            <SelfLogo width={s(37)} height={s(37)} />
           </View>
 
           {/* Points display */}
-          <YStack alignItems="center" gap={0} marginBottom={18}>
+          <YStack alignItems="center" gap={s(0)} marginBottom={s(18)}>
             <Text
               fontFamily={dinotBold}
-              fontSize={98}
+              fontSize={s(98)}
               color={white}
               textAlign="center"
-              letterSpacing={-2}
-              lineHeight={98}
+              letterSpacing={s(-2)}
+              lineHeight={s(98)}
             >
               {pointsEarned}
             </Text>
             <Text
               fontFamily={dinot}
-              fontSize={48}
+              fontSize={s(48)}
               fontWeight="900"
               color={white}
               textAlign="center"
-              letterSpacing={-2}
-              lineHeight={48}
+              letterSpacing={s(-2)}
+              lineHeight={s(48)}
             >
               points earned
             </Text>
@@ -191,13 +195,13 @@ const GratificationScreen: React.FC = () => {
           {/* Description text */}
           <Text
             fontFamily={dinot}
-            fontSize={18}
+            fontSize={s(18)}
             fontWeight="500"
             color={white}
             textAlign="center"
-            lineHeight={24}
-            marginBottom={20}
-            paddingHorizontal={0}
+            lineHeight={s(24)}
+            marginBottom={s(20)}
+            paddingHorizontal={s(0)}
           >
             Earn more points by proving your identity and referring friends
           </Text>
@@ -205,25 +209,27 @@ const GratificationScreen: React.FC = () => {
 
         {/* Bottom button container */}
         <YStack
-          paddingTop={20}
-          paddingBottom={20}
-          paddingHorizontal={20}
-          gap={12}
+          paddingTop={s(20)}
+          paddingBottom={s(20)}
+          paddingHorizontal={s(20)}
+          gap={s(12)}
         >
           <PrimaryButton
             onPress={handleExploreRewards}
-            style={styles.primaryButton}
+            style={localStyles.primaryButton}
           >
             Explore rewards
           </PrimaryButton>
           <Pressable
             onPress={handleInviteFriend}
             style={({ pressed }) => [
-              styles.secondaryButton,
-              pressed && styles.secondaryButtonPressed,
+              localStyles.secondaryButton,
+              pressed && localStyles.secondaryButtonPressed,
             ]}
           >
-            <RNText style={styles.secondaryButtonText}>Invite friends</RNText>
+            <RNText style={localStyles.secondaryButtonText}>
+              Invite friends
+            </RNText>
           </Pressable>
         </YStack>
       </YStack>
@@ -233,37 +239,38 @@ const GratificationScreen: React.FC = () => {
 
 export default GratificationScreen;
 
-const styles = StyleSheet.create({
-  primaryButton: {
-    borderRadius: 60,
-    borderWidth: 1,
-    borderColor: slate700,
-    padding: 14,
-  },
-  secondaryButton: {
-    width: '100%',
-    backgroundColor: white,
-    borderWidth: 1,
-    borderColor: white,
-    padding: 14,
-    borderRadius: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  secondaryButtonPressed: {
-    opacity: 0.8,
-  },
-  secondaryButtonText: {
-    fontFamily: dinot,
-    fontSize: 18,
-    color: black,
-    textAlign: 'center',
-  },
-  logoContainer: {
-    paddingBottom: 24,
-  },
-  animation: {
-    width: '100%',
-    height: '100%',
-  },
-});
+const createStyles = (s: (value: number) => number) =>
+  StyleSheet.create({
+    primaryButton: {
+      borderRadius: s(60),
+      borderWidth: 1,
+      borderColor: slate700,
+      padding: s(14),
+    },
+    secondaryButton: {
+      width: '100%',
+      backgroundColor: white,
+      borderWidth: 1,
+      borderColor: white,
+      padding: s(14),
+      borderRadius: s(60),
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    secondaryButtonPressed: {
+      opacity: 0.8,
+    },
+    secondaryButtonText: {
+      fontFamily: dinot,
+      fontSize: s(18),
+      color: black,
+      textAlign: 'center',
+    },
+    logoContainer: {
+      paddingBottom: s(24),
+    },
+    animation: {
+      width: '100%',
+      height: '100%',
+    },
+  });

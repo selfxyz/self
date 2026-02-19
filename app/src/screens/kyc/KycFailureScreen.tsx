@@ -22,6 +22,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import ShieldErrorIcon from '@/assets/icons/shield_error.svg';
+import { useResponsiveScale } from '@/hooks/useResponsiveScale';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 
@@ -37,6 +38,8 @@ const KycFailureScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<KycFailureRoute>();
   const insets = useSafeAreaInsets();
+  const s = useResponsiveScale();
+  const localStyles = React.useMemo(() => createStyles(s), [s]);
 
   const canRetry = route.params?.canRetry ?? true;
 
@@ -51,36 +54,36 @@ const KycFailureScreen: React.FC = () => {
   }, [navigation]);
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+    <View style={[localStyles.container, { paddingBottom: insets.bottom }]}>
       <YStack
         flex={1}
         justifyContent="flex-end"
         alignItems="center"
-        paddingBottom={60}
+        paddingBottom={s(60)}
       >
-        <ShieldErrorIcon width={150} height={150} />
+        <ShieldErrorIcon width={s(150)} height={s(150)} />
       </YStack>
       <YStack
-        paddingHorizontal={32}
+        paddingHorizontal={s(32)}
         alignItems="center"
-        gap={16}
-        marginBottom={64}
+        gap={s(16)}
+        marginBottom={s(64)}
       >
-        <Title style={styles.title}>
+        <Title style={localStyles.title}>
           Unfortunately we couldn't verify your ID
         </Title>
-        <Description style={styles.description}>
+        <Description style={localStyles.description}>
           This may be because the files you uploaded were unreadable for some
           other issue.
         </Description>
       </YStack>
-      <YStack gap={12} paddingHorizontal={24} paddingBottom={32}>
+      <YStack gap={s(12)} paddingHorizontal={s(24)} paddingBottom={s(32)}>
         <AbstractButton
           bgColor="transparent"
           color={white}
           borderColor={slate600}
           borderWidth={1}
-          style={styles.button}
+          style={localStyles.button}
           onPress={handleDismiss}
         >
           Dismiss
@@ -89,7 +92,7 @@ const KycFailureScreen: React.FC = () => {
           <AbstractButton
             bgColor={white}
             color={black}
-            style={styles.button}
+            style={localStyles.button}
             onPress={handleTryAgain}
           >
             Try again
@@ -100,27 +103,28 @@ const KycFailureScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: black,
-  },
-  title: {
-    color: white,
-    textAlign: 'center',
-    fontSize: 36,
-    lineHeight: 44,
-    letterSpacing: 1,
-  },
-  description: {
-    color: white,
-    textAlign: 'center',
-    fontSize: 20,
-    lineHeight: 30,
-  },
-  button: {
-    borderRadius: 100,
-  },
-});
+const createStyles = (s: (value: number) => number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: black,
+    },
+    title: {
+      color: white,
+      textAlign: 'center',
+      fontSize: s(36),
+      lineHeight: s(44),
+      letterSpacing: s(1),
+    },
+    description: {
+      color: white,
+      textAlign: 'center',
+      fontSize: s(20),
+      lineHeight: s(30),
+    },
+    button: {
+      borderRadius: s(100),
+    },
+  });
 
 export default KycFailureScreen;
