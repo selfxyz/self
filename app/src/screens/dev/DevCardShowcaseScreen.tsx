@@ -5,6 +5,8 @@
 import React from 'react';
 import { ScrollView, Text, YStack } from 'tamagui';
 
+import type { PassportData } from '@selfxyz/common/types/passport';
+import type { KycData } from '@selfxyz/common/utils/types';
 import {
   black,
   slate100,
@@ -20,31 +22,46 @@ const PASSPORT_MRZ =
 const ID_CARD_MRZ =
   'I<UTOD231458907<<<<<<<<<<<<<<<7408122F3001019UTO<<<<<<<<<<<6MUSTERFRAU<<ISOLDE<<<<<<<<<<';
 
-const REAL_PASSPORT = {
-  documentType: 'p',
+// Dev fixtures — only fields used by the card renderer are meaningful;
+// the rest are stubs to satisfy the type contract.
+const STUB_CRYPTO = {
+  dsc: '',
+  eContent: [] as number[],
+  signedAttr: [] as number[],
+  encryptedDigest: [] as number[],
+};
+
+const REAL_PASSPORT: PassportData = {
+  documentType: 'passport',
   documentCategory: 'passport',
+  mock: false,
   mrz: PASSPORT_MRZ,
   dg2Hash: [1, 2, 3],
-} as const;
+  ...STUB_CRYPTO,
+};
 
-const REAL_ID_CARD = {
-  documentType: 'i',
+const REAL_ID_CARD: PassportData = {
+  documentType: 'id_card',
   documentCategory: 'id_card',
+  mock: false,
   mrz: ID_CARD_MRZ,
   dg2Hash: [1, 2, 3],
-} as const;
+  ...STUB_CRYPTO,
+};
 
-const DEV_PASSPORT = {
+const DEV_PASSPORT: PassportData = {
   ...REAL_PASSPORT,
   mock: true,
-} as const;
+};
 
-const KYC_DOCUMENT = {
-  documentType: 'i',
-  documentCategory: 'id_card',
+const KYC_DOCUMENT: KycData = {
+  documentType: 'id_card',
+  documentCategory: 'kyc',
+  mock: false,
   serializedApplicantInfo: 'invalid-base64-for-dev-preview',
-  idNumber: '1234567890',
-} as const;
+  signature: '',
+  pubkey: [],
+};
 
 const CardSection = ({
   title,
@@ -81,7 +98,7 @@ const DevCardShowcaseScreen: React.FC = () => {
 
       <CardSection title="Passport · Expanded">
         <IdCardLayout
-          idDocument={REAL_PASSPORT as never}
+          idDocument={REAL_PASSPORT}
           selected={true}
           hidden={false}
         />
@@ -89,7 +106,7 @@ const DevCardShowcaseScreen: React.FC = () => {
 
       <CardSection title="Passport · Collapsed">
         <IdCardLayout
-          idDocument={REAL_PASSPORT as never}
+          idDocument={REAL_PASSPORT}
           selected={false}
           hidden={false}
         />
@@ -97,7 +114,7 @@ const DevCardShowcaseScreen: React.FC = () => {
 
       <CardSection title="ID card · Expanded">
         <IdCardLayout
-          idDocument={REAL_ID_CARD as never}
+          idDocument={REAL_ID_CARD}
           selected={true}
           hidden={false}
         />
@@ -105,7 +122,7 @@ const DevCardShowcaseScreen: React.FC = () => {
 
       <CardSection title="ID card · Collapsed">
         <IdCardLayout
-          idDocument={REAL_ID_CARD as never}
+          idDocument={REAL_ID_CARD}
           selected={false}
           hidden={false}
         />
@@ -113,7 +130,7 @@ const DevCardShowcaseScreen: React.FC = () => {
 
       <CardSection title="Dev passport · Expanded">
         <IdCardLayout
-          idDocument={DEV_PASSPORT as never}
+          idDocument={DEV_PASSPORT}
           selected={true}
           hidden={false}
         />
@@ -121,7 +138,7 @@ const DevCardShowcaseScreen: React.FC = () => {
 
       <CardSection title="Dev passport · Collapsed">
         <IdCardLayout
-          idDocument={DEV_PASSPORT as never}
+          idDocument={DEV_PASSPORT}
           selected={false}
           hidden={false}
         />
@@ -129,7 +146,7 @@ const DevCardShowcaseScreen: React.FC = () => {
 
       <CardSection title="KYC card · Expanded">
         <IdCardLayout
-          idDocument={KYC_DOCUMENT as never}
+          idDocument={KYC_DOCUMENT}
           selected={true}
           hidden={false}
         />
@@ -137,7 +154,7 @@ const DevCardShowcaseScreen: React.FC = () => {
 
       <CardSection title="KYC card · Collapsed">
         <IdCardLayout
-          idDocument={KYC_DOCUMENT as never}
+          idDocument={KYC_DOCUMENT}
           selected={false}
           hidden={false}
         />

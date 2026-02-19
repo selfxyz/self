@@ -27,6 +27,12 @@ jest.mock('react-native', () => {
     },
     Text: MockText,
     View: MockView,
+    useWindowDimensions: jest.fn(() => ({
+      width: 393,
+      height: 852,
+      scale: 3,
+      fontScale: 1,
+    })),
   };
 });
 

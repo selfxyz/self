@@ -12,7 +12,10 @@ const MAX_SCALE = 1.15; // large phones (~452px)
 
 export function useResponsiveScale() {
   const { width } = useWindowDimensions();
-  const scale = Math.max(MIN_SCALE, Math.min(width / FIGMA_SCREEN_WIDTH, MAX_SCALE));
+  const scale = Math.max(
+    MIN_SCALE,
+    Math.min(width / FIGMA_SCREEN_WIDTH, MAX_SCALE),
+  );
 
   return useCallback((figmaPx: number) => figmaPx * scale, [scale]);
 }

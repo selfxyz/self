@@ -38,6 +38,12 @@ jest.mock('react-native', () => ({
     removeAllListeners: jest.fn(),
   })),
   requireNativeComponent: jest.fn(() => 'NativeComponent'),
+  useWindowDimensions: jest.fn(() => ({
+    width: 393,
+    height: 852,
+    scale: 3,
+    fontScale: 1,
+  })),
 }));
 
 jest.mock('react-native-edge-to-edge', () => ({
