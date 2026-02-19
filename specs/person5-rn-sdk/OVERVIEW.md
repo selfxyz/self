@@ -92,14 +92,14 @@ The WebView does not know which native shell it is running inside. Your handlers
 
 ## Key Decisions
 
-| Decision                          | Choice                               | Rationale                                                                                             |
-| --------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| Package size                      | Thin wrapper (~200-300 LOC)          | All logic lives in the WebView engine. Native shell is pure glue.                                     |
-| Bridge protocol                   | Same as KMP                          | WebView must not know which shell it runs in. One protocol, two shells.                               |
-| Native module dependency strategy | All as `peerDependencies`            | Host app installs and links. Avoids version conflicts and duplicate native code.                      |
-| Asset loading                     | `Platform.select` for Android vs iOS | Android uses `file:///android_asset/`, iOS path TBD (see Chunk 5D).                                   |
-| State management                  | No state beyond routing              | MessageRouter dispatches and returns. No caching, retrying, or transforming.                          |
-| iOS asset loading                 | Decision deferred to Chunk 5D        | Options: `react-native-fs` (adds peer dep) vs RN `require()` with Metro config. Needs device testing. |
+| Decision                          | Choice                               | Rationale                                                                                          |
+| --------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| Package size                      | Thin wrapper (~200-300 LOC)          | All logic lives in the WebView engine. Native shell is pure glue.                                  |
+| Bridge protocol                   | Same as KMP                          | WebView must not know which shell it runs in. One protocol, two shells.                            |
+| Native module dependency strategy | All as `peerDependencies`            | Host app installs and links. Avoids version conflicts and duplicate native code.                   |
+| Asset loading                     | `Platform.select` for Android vs iOS | Android uses `file:///android_asset/`; iOS uses RN `require()` + Metro `html` asset support.       |
+| State management                  | No state beyond routing              | MessageRouter dispatches and returns. No caching, retrying, or transforming.                       |
+| Dev server policy                 | Debug-only override                  | `devServerUrl` allowed only in debug builds. Release builds fail closed if remote URL is provided. |
 
 ## Deliverables
 
