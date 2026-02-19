@@ -1,6 +1,6 @@
 # Person 2: Native Shells (KMP SDK + Swift Providers) — Workstream Overview
 
-> Last updated: 2026-02-17
+> Last updated: 2026-02-19
 > Owner: Person 2 (Native Shells)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC.md](./SPEC.md)
@@ -19,10 +19,11 @@
 - [x] Android handlers: NFC, Camera, Biometrics, Keychain, Lifecycle (5 of 5)
 - [x] Bridge message routing (`MessageRouter`)
 - [x] Delete 4 unnecessary Android handlers (documents, crypto, analytics, haptic — 511 LOC)
-- [ ] iOS Swift providers via PR #1762 (NFC, Biometrics, Lifecycle, WebView host)
-- [ ] `SelfSdk.launch()` working on iOS
-- [ ] KMP test app validation on both platforms
-- [ ] MiniPay sample integration
+- [x] iOS Swift providers are implemented and wired (NFC, Biometrics, Lifecycle, WebView host + additional providers)
+- [x] `SelfSdk.launch()` flow is implemented on iOS
+- [ ] KMP test app validation on both platforms remains a follow-up validation task
+- [ ] Platform contract alignment is still open (iOS expanded domains vs Android web fallbacks)
+- [x] MiniPay sample integration is wired (`SelfSdk.launch()` call path present)
 
 ## What You Own
 
@@ -54,7 +55,7 @@ You build the native shells that sit between the host app and the bridge protoco
     │  │  (Kotlin)  │  │  Swift pkg │  │
     │  └─────┬─────┘  └──────┬─────┘  │
     │        │  Android: 5    │        │
-    │        │  iOS: 3 *      │        │
+    │        │  iOS: 9 *      │        │
     │  NFC · Camera · Biometrics      │
     │  Keychain · Lifecycle           │
     │        │               │        │
@@ -74,7 +75,7 @@ You build the native shells that sit between the host app and the bridge protoco
     │    webview-app Vite bundle      │
     └─────────────────────────────────┘
 
-* iOS initially has 3 handlers (NFC, Biometrics, Lifecycle). Camera is Phase 2. SecureStorage is provided via the Swift companion package's factory pattern (same as NFC/Biometrics).
+* iOS implementation now registers 9 handlers (NFC, Camera, Biometrics, SecureStorage, Lifecycle, Documents, Crypto, Analytics, Haptic); Android remains focused on 5 core native handlers. This asymmetry is implemented and needs explicit policy documentation.
 ```
 
 ## Dependencies

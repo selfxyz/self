@@ -1,10 +1,10 @@
 # Person 3: Integration Samples — Workstream Overview
 
-> Last updated: 2026-02-17
+> Last updated: 2026-02-19
 > Owner: Person 3 (Integrations)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md)
-> Status: Draft
+> Status: Active
 
 ## North Star
 
@@ -14,12 +14,12 @@
 
 ## Status
 
-- [ ] MiniPay sample project scaffolded (`packages/kmp-minipay-sample/`)
-- [ ] Android: home screen + SDK launch + result screen
-- [ ] iOS: identical behavior via Compose Multiplatform
-- [ ] End-to-end: NFC scan on physical device through sample app
+- [x] MiniPay sample project scaffolded (`packages/kmp-minipay-sample/`)
+- [x] Android: home screen + SDK launch + result screen wiring present
+- [x] iOS: Compose Multiplatform launch path is present
+- [ ] End-to-end: NFC scan on physical device through sample app still requires validation
 
-Overall: **0%** — MiniPay sample does not exist yet. Blocked on Person 2 delivering the KMP SDK.
+Overall: **Partial** — sample implementation exists and launch wiring is in place; device-level verification validation remains.
 
 ## What You Own
 
