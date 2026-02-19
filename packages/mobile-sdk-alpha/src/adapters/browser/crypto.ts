@@ -23,8 +23,7 @@ export function createWebCryptoAdapter(): CryptoAdapter {
   return {
     async hash(input: Uint8Array, algo: 'sha256' = 'sha256'): Promise<Uint8Array> {
       const webCryptoAlgo = normalizeAlgo(algo);
-      const buffer = new Uint8Array(input).buffer as ArrayBuffer;
-      const digest = await crypto.subtle.digest(webCryptoAlgo, buffer);
+      const digest = await crypto.subtle.digest(webCryptoAlgo, input);
       return new Uint8Array(digest);
     },
 
