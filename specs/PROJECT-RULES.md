@@ -38,21 +38,23 @@
 
 11. **No logic in native shells.** Native handlers are pass-through: receive bridge request → call platform API → return bridge response. No parsing, no formatting, no validation, no error mapping, no state management. If a native handler is growing beyond ~50-100 lines per method, logic is leaking out of the WebView.
 
+12. **Fail closed on security-critical boundaries.** For protocol compatibility, remote bundle loading, and verification session lifecycle, default-deny behavior is required. Reject unknown protocol versions, block remote `devServerUrl` in production, and allow only one active verification session at a time.
+
 ### Quality
 
-12. **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self Wallet app. Validate with `vitest run` and manual testing.
+13. **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self Wallet app. Validate with `vitest run` and manual testing.
 
-13. **Specs stay current.** When implementation deviates from the spec, update the spec. A stale spec is worse than no spec — it misleads the next person.
+14. **Specs stay current.** When implementation deviates from the spec, update the spec. A stale spec is worse than no spec — it misleads the next person.
 
-14. **Review status checklists before starting a work session.** Read the OVERVIEW.md status checklist and SPEC.md chunk status table before doing anything. Verify the status reflects reality. If something is marked "Done" that isn't, or "Pending" that's actually in progress, fix it first. Don't build on stale assumptions.
+15. **Review status checklists before starting a work session.** Read the OVERVIEW.md status checklist and SPEC.md chunk status table before doing anything. Verify the status reflects reality. If something is marked "Done" that isn't, or "Pending" that's actually in progress, fix it first. Don't build on stale assumptions.
 
-15. **Update status checklists as you complete work.** When you finish a chunk, check off the corresponding items in both the OVERVIEW.md status checklist and the SPEC.md chunk status table. This is the primary way devs and leads track progress — stale checklists erode trust in the specs.
+16. **Update status checklists as you complete work.** When you finish a chunk, check off the corresponding items in both the OVERVIEW.md status checklist and the SPEC.md chunk status table. This is the primary way devs and leads track progress — stale checklists erode trust in the specs.
 
 ### Planning
 
-16. **Write plans to disk before executing.** When working on multi-step tasks (multiple chunks, cross-workstream coordination, or anything requiring more than one session), write the plan to a file BEFORE starting implementation. Update WAVE-PLAN.md, the relevant SPEC.md status table, or create a session-specific plan file. A plan that only exists in session memory will be lost to API errors, context overflow, or `/clear`. Writing it to disk enables multiple agents to work from the same plan and creates an audit trail.
+17. **Write plans to disk before executing.** When working on multi-step tasks (multiple chunks, cross-workstream coordination, or anything requiring more than one session), write the plan to a file BEFORE starting implementation. Update WAVE-PLAN.md, the relevant SPEC.md status table, or create a session-specific plan file. A plan that only exists in session memory will be lost to API errors, context overflow, or `/clear`. Writing it to disk enables multiple agents to work from the same plan and creates an audit trail.
 
-17. **Update plan files as you go.** When a chunk is completed, mark it done in the plan file immediately. When scope changes, update the plan file. The plan file is the single source of truth for what's been done and what's next — not the session transcript.
+18. **Update plan files as you go.** When a chunk is completed, mark it done in the plan file immediately. When scope changes, update the plan file. The plan file is the single source of truth for what's been done and what's next — not the session transcript.
 
 ---
 

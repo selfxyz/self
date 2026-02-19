@@ -39,8 +39,9 @@ There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not e
 1. **Thin wrapper only.** The RN SDK is ~200-300 LOC. All logic lives in the WebView engine (`mobile-sdk-alpha`). If you're writing business logic in this package, you're doing it wrong.
 2. **Same bridge protocol as KMP.** The RN handlers implement the exact same domain/method/params contract as the Kotlin handlers. The WebView does not know which native shell it is running in.
 3. **Peer dependencies for native modules.** Every React Native native module (`react-native-webview`, `react-native-nfc-manager`, `react-native-biometrics`, `react-native-keychain`) is a `peerDependency`. The host app installs and links them. This avoids version conflicts and duplicate native code.
-4. **Platform.select for asset loading.** The WebView source must work on both Android (`file:///android_asset/...`) and iOS (`RNFS.MainBundlePath` or equivalent). Never hardcode a single platform path.
-5. **No state beyond routing.** The `MessageRouter` dispatches messages and returns responses. It does not cache, retry, or transform data. Handlers are stateless wrappers around native libraries.
+4. **Platform.select for asset loading.** The WebView source must work on both Android (`file:///android_asset/...`) and iOS (RN `require()` path with Metro `html` asset support). Never hardcode a single platform path.
+5. **Fail closed in production.** `devServerUrl` is debug-only. Release builds must reject remote URLs and load bundled local assets only.
+6. **No state beyond routing.** The `MessageRouter` dispatches messages and returns responses. It does not cache, retry, or transform data. Handlers are stateless wrappers around native libraries.
 
 ## Definition of Done
 
@@ -221,13 +222,16 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   );
 
   // Spec correction: platform-aware source (not Android-only)
-  const source = devServerUrl
-    ? { uri: devServerUrl }
-    : Platform.select({
-        android: { uri: 'file:///android_asset/self-wallet/index.html' },
-        ios: { uri: `${/* Metro require() — see Chunk 5D */ ''}/self-wallet/index.html` },
-        default: undefined,
-      });
+  const bundledSource = Platform.select({
+    android: { uri: 'file:///android_asset/self-wallet/index.html' },
+    ios: require('../assets/self-wallet/index.html'),
+    default: undefined,
+  });
+  const useDevServer = Boolean(__DEV__ && devServerUrl);
+  if (!__DEV__ && devServerUrl) {
+    throw new Error('[SelfSDK] devServerUrl is debug-only');
+  }
+  const source = useDevServer ? { uri: devServerUrl! } : bundledSource;
 
   if (!source) {
     console.error('[SelfSDK] Unsupported platform:', Platform.OS);
@@ -690,38 +694,26 @@ const source = devServerUrl
   ? { uri: devServerUrl }
   : Platform.select({
       android: { uri: 'file:///android_asset/self-wallet/index.html' },
-      ios: { uri: `${RNFS.MainBundlePath}/self-wallet/index.html` },
+      ios: require('../assets/self-wallet/index.html'),
     });
 ```
 
-> **Note:** Use `Platform.select` with both Android and iOS paths. The iOS path uses `react-native-fs` (`RNFS.MainBundlePath`), which must either be added to `peerDependencies` or replaced with RN's built-in `require()` / `Image.resolveAssetSource()`.
+Use `require()` with Metro's asset resolver for iOS (register `html` in Metro config). This avoids adding `react-native-fs` as a peer dependency.
 
-If `react-native-fs` is used for the iOS asset path, add it to `peerDependencies`:
-
-```json
-"peerDependencies": {
-  "react-native-fs": "^2.20.0"
-}
-```
-
-Alternatively, avoid the RNFS dependency entirely by using RN's built-in asset resolution or embedding via a native module.
-
-**Recommended approach:** Use `require()` with Metro's asset resolver for iOS, avoiding the `react-native-fs` peer dependency. This is the simplest approach with no extra native dependencies:
+Security rule for release builds:
 
 ```typescript
-// For iOS, use the RN require() pipeline with a .html extension registered in metro.config.js
-// For Android, use file:///android_asset/ which RN bundles automatically from the assets folder
-const source = devServerUrl
-  ? { uri: devServerUrl }
+const useDevServer = Boolean(__DEV__ && devServerUrl);
+if (!__DEV__ && devServerUrl) {
+  throw new Error('[SelfSDK] devServerUrl is debug-only');
+}
+const source = useDevServer
+  ? { uri: devServerUrl! }
   : Platform.select({
       android: { uri: 'file:///android_asset/self-wallet/index.html' },
-      ios: {
-        uri: `file://${RNFS?.MainBundlePath ?? ''}/self-wallet/index.html`,
-      },
+      ios: require('../assets/self-wallet/index.html'),
     });
 ```
-
-If `react-native-fs` is not available, fall back to React Native's `require()` with an HTML asset registered in `metro.config.js` (`resolver.assetExts: [...defaults, 'html']`). The final decision should be validated in Chunk 5D by testing both approaches on a real device.
 
 ---
 
@@ -965,8 +957,8 @@ Typecheck: No errors
 1. Set up build script to copy Vite output (`packages/webview-app/dist/`) into `assets/self-wallet/`
 2. Configure platform-specific asset loading:
    - Android: `file:///android_asset/self-wallet/index.html` (RN bundles files from `assets/` into APK)
-   - iOS: resolve via `RNFS.MainBundlePath` or RN built-in asset resolution
-3. Decide iOS asset strategy: add `react-native-fs` to peerDeps OR use `require()`-based approach
+   - iOS: resolve via RN `require()` with Metro `html` asset support
+3. Enforce security policy: `devServerUrl` accepted only when `__DEV__ === true`
 4. Test: Production build loads bundled HTML correctly on both platforms
 5. Configure npm publishing pipeline (`prepublishOnly` script, `.npmignore`)
 6. Validate: Install in fresh RN project, verify component renders WebView with bundled content
@@ -1016,8 +1008,9 @@ npx react-native run-ios      # WebView renders verification flow
 | ---------------------------- | ---------- | ------------------------------------------------------ |
 | `asset-bundling.html-exists` | Build gate | `assets/self-wallet/index.html` present after build    |
 | `Platform.select.android`    | Unit       | Android source resolves to `file:///android_asset/...` |
-| `Platform.select.ios`        | Unit       | iOS source resolves to bundle path                     |
-| `devServerUrl-override`      | Unit       | Dev server URL takes precedence over bundled assets    |
+| `Platform.select.ios`        | Unit       | iOS source resolves via RN `require()`                 |
+| `devServerUrl-override`      | Unit       | Dev server URL takes precedence only in debug          |
+| `devServerUrl-release-block` | Unit       | Release build rejects remote URL (fail closed)         |
 | `npm-pack-contents`          | Build gate | `npm pack` includes `dist/` and `assets/`              |
 
 ---
@@ -1127,7 +1120,7 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 | Self Wallet migration to `SelfVerification`  | Spec writing      | Separate migration spec after SDK is stable                       |
 | MiniPay RN sample integration                | Spec writing      | `SPEC-MINIPAY-SAMPLE.md` (already exists)                         |
 | Camera library selection for MRZ scanning    | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter |
-| iOS asset loading strategy (RNFS vs require) | PR #1765 review   | Decide in Chunk 5D implementation                                 |
+| iOS asset loading strategy (RNFS vs require) | PR #1765 review   | **Decided:** Use RN `require()` + Metro `html` asset support      |
 
 ## Spec Deviations
 
@@ -1139,13 +1132,13 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 
 ### PR #1765 Review Corrections (incorporated inline)
 
-| Issue                                  | Severity | Chunk | Fix Applied                                                             |
-| -------------------------------------- | -------- | ----- | ----------------------------------------------------------------------- |
-| `react-native-webview` dep type        | Major    | 5A    | Moved to `peerDependencies` as `"react-native-webview": ">=13.0.0"`     |
-| `createHandlers` missing `router` arg  | Critical | 5A    | `router` passed in `createHandlers` config; component passes `router`   |
-| Android-only WebView `source`          | Major    | 5D    | Use `Platform.select({ android: ..., ios: ... })`                       |
-| `crypto.randomUUID` polyfill           | Minor    | 5A    | Fallback: `crypto.randomUUID?.() ?? \`${Date.now()}-${Math.random()}\`` |
-| `RNFS.MainBundlePath` without peer dep | Major    | 5D    | Add `react-native-fs` to peerDeps OR use RN built-in asset resolution   |
+| Issue                                 | Severity | Chunk | Fix Applied                                                             |
+| ------------------------------------- | -------- | ----- | ----------------------------------------------------------------------- |
+| `react-native-webview` dep type       | Major    | 5A    | Moved to `peerDependencies` as `"react-native-webview": ">=13.0.0"`     |
+| `createHandlers` missing `router` arg | Critical | 5A    | `router` passed in `createHandlers` config; component passes `router`   |
+| Android-only WebView `source`         | Major    | 5D    | Use `Platform.select({ android: ..., ios: ... })`                       |
+| `crypto.randomUUID` polyfill          | Minor    | 5A    | Fallback: `crypto.randomUUID?.() ?? \`${Date.now()}-${Math.random()}\`` |
+| iOS asset loading ambiguity           | Major    | 5D    | Standardize on RN `require()` + Metro `html` asset support              |
 
 ## Related Specs
 

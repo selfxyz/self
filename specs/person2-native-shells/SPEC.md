@@ -113,7 +113,7 @@ packages/kmp-sdk/
           NfcProvider.kt            # NFC passport scanning
           BiometricProvider.kt      # Face ID / Touch ID
           WebViewProvider.kt        # WKWebView hosting
-          SdkProviderRegistry.kt    # Central registry (3 providers)
+          SdkProviderRegistry.kt    # Central registry (4 providers)
         webview/
           IosWebViewHost.kt        # Delegates to WebViewProvider
         handlers/
@@ -853,8 +853,8 @@ package xyz.self.sdk.providers
  * Central registry for iOS native provider implementations.
  * Swift companion package calls SdkProviderRegistry.configure() at app startup.
  *
- * Required providers: NFC, Biometric, WebView. SecureStorage is optional
- * (factory pattern; if not set, WebView uses in-memory fallback).
+ * Required providers: NFC, Biometric, WebView, SecureStorage.
+ * No in-memory fallback is allowed for secureStorage.
  * Documents, Crypto, Analytics, Haptic are handled by web fallbacks inside the WebView.
  */
 object SdkProviderRegistry {
@@ -864,9 +864,9 @@ object SdkProviderRegistry {
     var secureStorage: SecureStorageProvider? = null
 
     /**
-     * Returns true if all required providers (NFC, Biometric, WebView) are registered.
+     * Returns true if all required providers (NFC, Biometric, WebView, SecureStorage) are registered.
      */
-    fun isConfigured(): Boolean = nfc != null && biometric != null && webView != null
+    fun isConfigured(): Boolean = nfc != null && biometric != null && webView != null && secureStorage != null
 }
 ```
 
@@ -921,9 +921,9 @@ interface WebViewProvider {
 }
 ```
 
-### 6. iOS Native Handlers (3 Handlers)
+### 6. iOS Native Handlers (3 Handlers + required secureStorage provider)
 
-Only 3 native handlers are needed for iOS (down from 9 in the original spec):
+Only 3 custom iOS handlers are needed (down from 9 in the original spec). `secureStorage` remains required and native-managed via provider-backed bridge wiring.
 
 | Handler        | Why Native?                                                                   |
 | -------------- | ----------------------------------------------------------------------------- |
@@ -1096,10 +1096,11 @@ public class SelfSdkSwift {
     /// Call this at app startup to register all default Swift provider implementations.
     /// After calling this, SelfSdk.launch() will work on iOS.
     ///
-    /// Only 3 providers are registered:
+    /// Required providers registered:
     /// - NFC (hardware access)
     /// - Biometric (OS prompt)
     /// - WebView (WKWebView hosting)
+    /// - SecureStorage (native keychain boundary)
     ///
     /// Documents, Crypto, Analytics, and Haptic are handled by web
     /// fallbacks inside the WebView -- no native providers needed.
@@ -1108,6 +1109,7 @@ public class SelfSdkSwift {
         registry.nfc = NfcProviderImpl()
         registry.biometric = BiometricProviderImpl()
         registry.webView = WebViewProviderImpl()
+        registry.secureStorage = SecureStorageProviderImpl()
     }
 }
 ```
@@ -1357,7 +1359,7 @@ actual fun launch(request: VerificationRequest, callback: SelfSdkCallback) {
         sendToWebView = { js -> webViewHost?.evaluateJs(js) }
     )
 
-    // Register only 3 handlers -- everything else handled by WebView web fallbacks
+    // Register iOS handlers; secureStorage remains native-managed via provider-backed bridge wiring
     val lifecycleHandler = LifecycleBridgeHandler().apply {
         pendingCallback = callback
         dismissAction = {
@@ -1700,14 +1702,14 @@ SelfSdkCallback fires on completion/dismissal
 
 **Depends on:** Chunk 2A (bridge protocol)
 
-**Goal:** Define the 3 provider interfaces in the SDK and create the Swift companion package skeleton. This is the foundation for all iOS handler work.
+**Goal:** Define required provider interfaces in the SDK (including secureStorage) and create the Swift companion package skeleton. This is the foundation for all iOS handler work.
 
 **You Will NOT:**
 
 - Enable cinterop
 - Write any handler logic (that comes in 2H-2K)
 - Import Apple frameworks in Kotlin
-- Add more than 3 providers (NFC, Biometric, WebView) -- Lifecycle is self-contained
+- Add providers beyond the required set (NFC, Biometric, WebView, SecureStorage)
 
 **Steps:**
 
@@ -1715,10 +1717,11 @@ SelfSdkCallback fires on completion/dismissal
 2. Create `iosMain/providers/NfcProvider.kt`
 3. Create `iosMain/providers/BiometricProvider.kt`
 4. Create `iosMain/providers/WebViewProvider.kt`
-5. Create `packages/self-sdk-swift/Package.swift`
-6. Create `Sources/SelfSdkSwift/SelfSdkSwift.swift`
-7. Update `SelfSdk.ios.kt` to check `isConfigured()`
-8. Validate: Kotlin compiles for iOS, Swift package builds
+5. Create `iosMain/providers/SecureStorageProvider.kt`
+6. Create `packages/self-sdk-swift/Package.swift`
+7. Create `Sources/SelfSdkSwift/SelfSdkSwift.swift`
+8. Update `SelfSdk.ios.kt` to check `isConfigured()`
+9. Validate: Kotlin compiles for iOS, Swift package builds
 
 #### Input / Output -- Chunk Validation
 
@@ -1740,7 +1743,7 @@ BUILD SUCCESSFUL (both)
 | Test                                          | Type       | What it validates                             |
 | --------------------------------------------- | ---------- | --------------------------------------------- |
 | `isConfigured()` returns false initially      | Unit       | Empty registry correctly reports unconfigured |
-| `isConfigured()` returns true after all 3 set | Unit       | Registry detects all providers present        |
+| `isConfigured()` returns true after all 4 set | Unit       | Registry detects all providers present        |
 | iOS Kotlin compilation                        | Build gate | Interfaces compile without cinterop           |
 | Swift package compilation                     | Build gate | SPM resolves NFCPassportReader dependency     |
 
@@ -1883,7 +1886,8 @@ Output: SelfSdkCallback.onCancelled() called, ViewController dismissed
 3. Update `SelfSdk.ios.kt` launch flow: register 3 handlers, create WebView, present modally
 4. Test: `SelfSdk.launch()` -> WebView loads -> bridge messages flow -> result callback
 5. Test: launch without `SelfSdkSwift.configure()` -> clear error message
-6. Validate in test app
+6. Enforce single active launch policy: reject concurrent launch attempts with `SDK_ALREADY_ACTIVE`
+7. Validate in test app
 
 #### Input / Output -- Chunk Validation
 
@@ -1910,6 +1914,13 @@ Input:  SelfSdk.launch() without SelfSdkSwift.configure()
 Output: IllegalStateException with message: "iOS requires Swift providers. Call SelfSdkSwift.configure() at app startup."
 ```
 
+**Edge case -- concurrent launch while active:**
+
+```
+Input:  SelfSdk.launch() called while a verification session is already active
+Output: callback.onFailure(SelfSdkError("SDK_ALREADY_ACTIVE", "...")) and no second WebView is presented
+```
+
 #### Tests
 
 | Test                                    | Type        | What it validates                                      |
@@ -1919,6 +1930,7 @@ Output: IllegalStateException with message: "iOS requires Swift providers. Call 
 | Bridge message round-trip               | Integration | Request -> handler -> response flows correctly         |
 | `onSuccess` callback fires              | Integration | Full lifecycle from WebView setResult to host callback |
 | Launch without configure throws         | Unit        | Clear error message for misconfiguration               |
+| Concurrent launch rejected              | Unit        | Single-flight policy enforced (`SDK_ALREADY_ACTIVE`)   |
 
 **Status: Done**
 
