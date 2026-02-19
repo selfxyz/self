@@ -141,7 +141,7 @@
     "build:ts-only": "tsup && yarn postbuild",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
-    "format": "yarn nice",
+    "format": "yarn nice && prettier --write .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "nice": "yarn lint:fix",

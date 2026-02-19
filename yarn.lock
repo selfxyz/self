@@ -9504,6 +9504,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/rn-sdk@workspace:packages/rn-sdk"
   dependencies:
+    "@selfxyz/webview-app": "workspace:^"
     "@selfxyz/webview-bridge": "workspace:^"
     "@types/react": "npm:^18.3.4"
     react: "npm:^18.3.1"
@@ -9545,7 +9546,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/webview-app@workspace:packages/webview-app":
+"@selfxyz/webview-app@workspace:^, @selfxyz/webview-app@workspace:packages/webview-app":
   version: 0.0.0-use.local
   resolution: "@selfxyz/webview-app@workspace:packages/webview-app"
   dependencies:
