@@ -210,12 +210,20 @@ jobs:
 
           echo "🎉 Build verification completed successfully!"
           echo "ℹ️  Emulator testing is temporarily disabled - build testing only"
+      - name: Pre-install emulator dependencies
+        run: |
+          sdkmanager --install \
+            "platforms;android-${{ env.ANDROID_API_LEVEL }}" \
+            "system-images;android-${{ env.ANDROID_API_LEVEL }};google_apis;x86_64" \
+            "emulator"
+
       - name: Install and Test on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           arch: x86_64
           target: google_apis
+          channel: 0
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
           disable-animations: true
