@@ -138,7 +138,7 @@ packages/kmp-minipay-sample/
 data class HomeState(
     val isVerified: Boolean = false,
     val lastProofDate: String? = null,
-    val verifiedClaims: Map<String, Any?>? = null,
+    val verifiedClaims: Map<String, String>? = null,
 )
 ```
 
@@ -215,16 +215,16 @@ sdk.launch(
 
 ```kotlin
 // Must match SDK-OVERVIEW canonical VerificationResult shape.
+// proof is String? (opaque proof data), claims is Map<String, String>?.
 VerificationResult(
     success = true,
     userId = "user-uuid-123",
     verificationId = "ver-uuid",
-    proof = mapOf("timestamp" to "2026-02-17T12:00:00Z"),
+    proof = "eyJhbGciOiJFZDI1NTE5...",  // opaque proof string
     claims = mapOf(
         "nationality" to "NLD",
         "date_of_birth" to "1990-01-15"
     ),
-    error = null,
 )
 ```
 
@@ -287,7 +287,7 @@ currentScreen = Screen.Result
 
 **Input:** `returnToHome()` called after a successful verification.
 
-**Expected Output:** Copy from `verificationResult` into `homeState` (e.g. `lastProofDate = verificationResult.proof?.timestamp`, `verifiedClaims = verificationResult.claims`), then set `homeState.isVerified = true`, then clear `verificationResult = null`, `verificationError = null`, and `currentScreen = Screen.Home`.
+**Expected Output:** Copy from `verificationResult` into `homeState` (e.g. `lastProofDate = Clock.System.now().toString()`, `verifiedClaims = verificationResult.claims`), then set `homeState.isVerified = true`, then clear `verificationResult = null`, `verificationError = null`, and `currentScreen = Screen.Home`.
 
 ### 5. ResultScreen
 
@@ -318,7 +318,7 @@ currentScreen = Screen.Result
 verificationResult = VerificationResult(
     success = true,
     claims = mapOf("nationality" to "NLD", "age" to "36"),
-    proof = mapOf("timestamp" to "2026-02-17T12:00:00Z")
+    proof = "eyJhbGciOiJFZDI1NTE5..."  // opaque proof string
 )
 ```
 

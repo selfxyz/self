@@ -145,13 +145,13 @@
 | **Analytics**   | NO              | **DELETE** (94 LOC)  | Skip              | Skip              | console/fetch              |
 | **Haptic**      | NO              | **DELETE** (94 LOC)  | Skip              | Skip              | Not critical               |
 
-> **† Crypto domain note:** The `crypto` domain is defined in the bridge protocol but the standalone `CryptoBridgeHandler` (177 LOC) was deleted because it primarily handled hashing (Web Crypto covers that). **Current routing for crypto operations:**
+> **† Crypto domain note:** The `crypto` domain is defined in the bridge protocol. The standalone `CryptoBridgeHandler` (177 LOC) was deleted because it primarily handled hashing (Web Crypto covers that). However, the `crypto` domain bridge calls for signing and key operations remain active and must be handled by native message routers. **Current routing for crypto operations:**
 >
 > - **Hashing** (`hash()`) — runs entirely in the WebView via `crypto.subtle.digest`. No bridge call.
-> - **Signing** (`sign()`) — the private key stays native-only in secure storage and is never exported to the WebView runtime. Signing executes via native-backed `secureStorage` methods with biometric gating.
-> - **Key generation / retrieval** (`generateKey()`, `getPublicKey()`) — routes through `secureStorage` domain methods.
+> - **Signing** (`sign()`) — routes through `bridge.request('crypto', 'sign', ...)`. The native handler implements signing internally using the key stored in secure storage. The private key never leaves the native layer and is never exported to the WebView runtime. Biometric gating is enforced by the native handler before key access.
+> - **Key generation / retrieval** (`generateKey()`, `getPublicKey()`) — routes through `bridge.request('crypto', 'generateKey', ...)` and `bridge.request('crypto', 'getPublicKey', ...)`. Native handlers store/retrieve keys in secure storage. The `secureStorage` domain (`get/set/remove`) is for general keychain access only — it does not handle crypto-specific operations.
 >
-> Secure enclave / hardware-backed key implementations are compatible with this model and should remain non-exportable.
+> The `crypto` domain is _not_ fully deprecated: only the standalone Kotlin handler class was removed. Native shells must still route `crypto` domain messages to a handler that performs signing/key-gen backed by secure storage. Secure enclave / hardware-backed key implementations are compatible with this model and should remain non-exportable.
 
 > **Keychain/SecureStorage canonical rule:** The `secureStorage` bridge domain is always native-managed on every platform. There is no web fallback and no in-memory fallback. Host apps control access policy.
 >
@@ -262,7 +262,7 @@ Event    (Native → WebView, unsolicited)
 | `secureStorage` | `get`, `set`, `remove`                                     | —                                            | **Native**              | "Keychain" in UI/docs = `secureStorage` domain in bridge protocol. Host app controls access. |
 | `camera`        | `scanMRZ`, `isAvailable`                                   | —                                            | **Native**              | MRZ OCR from camera                                                                          |
 | `lifecycle`     | `ready`, `dismiss`, `setResult`                            | —                                            | **Native**              | WebView ↔ host communication                                                                 |
-| `crypto`        | `sign`, `generateKey`, `getPublicKey`                      | —                                            | **Deprecated** †        | Domain exists but standalone handler deleted. See footnote below.                            |
+| `crypto`        | `sign`, `generateKey`, `getPublicKey`                      | —                                            | **Native** †            | Standalone handler deleted; methods routed by native message router to secure-storage-backed impl. See footnote. |
 | `documents`     | `loadCatalog`, `saveCatalog`, `loadById`, `save`, `delete` | —                                            | **Web** (IndexedDB)     | No bridge round-trip                                                                         |
 | `analytics`     | `trackEvent`, `trackNfcEvent`, `logNfcEvent`               | —                                            | **Web** (console/fetch) | Fire-and-forget                                                                              |
 | `haptic`        | `trigger`                                                  | —                                            | **Web** (skip)          | Not critical                                                                                 |
@@ -273,7 +273,7 @@ Event    (Native → WebView, unsolicited)
 | SDK Adapter Interface  | Bridges to Native? | Implementation                                     | Notes                             |
 | ---------------------- | ------------------ | -------------------------------------------------- | --------------------------------- |
 | `NFCScannerAdapter`    | Yes                | `nfc.scan` bridge call                             | Core flow: scan passport NFC chip |
-| `CryptoAdapter.sign()` | Yes †              | `secureStorage` key retrieval + Web Crypto signing | See Decision Matrix footnote      |
+| `CryptoAdapter.sign()` | Yes †              | `bridge.request('crypto', 'sign', ...)` — native signs using secure storage key | Key never leaves native            |
 | `CryptoAdapter.hash()` | No                 | Web Crypto API                                     | Runs entirely in WebView          |
 | `AuthAdapter`          | Yes                | `secureStorage.get` with `requireBiometric: true`  | Private key gated by biometrics   |
 | `StorageAdapter`       | Yes                | `secureStorage.*` bridge calls                     | Keychain access only              |
