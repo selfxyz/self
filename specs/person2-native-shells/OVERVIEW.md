@@ -74,7 +74,7 @@ You build the native shells that sit between the host app and the bridge protoco
     │    webview-app Vite bundle      │
     └─────────────────────────────────┘
 
-* iOS initially has 3 handlers (NFC, Biometrics, Lifecycle). Camera is Phase 2. SecureStorage is provided via the Swift companion package's factory pattern (same as NFC/Biometrics).
+* iOS initially has 3 custom iOS handlers (NFC, Biometrics, Lifecycle). Camera is Phase 2. `secureStorage` remains required and native-managed via the Swift companion package's factory pattern (no in-memory fallback).
 ```
 
 ## Dependencies

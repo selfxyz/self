@@ -138,7 +138,7 @@ packages/kmp-minipay-sample/
 data class HomeState(
     val isVerified: Boolean = false,
     val lastProofDate: String? = null,
-    val verifiedClaims: Map<String, String>? = null,
+    val verifiedClaims: Map<String, Any?>? = null,
 )
 ```
 
@@ -214,13 +214,12 @@ sdk.launch(
 **Expected Output (success callback):**
 
 ```kotlin
-// TODO: Align with canonical VerificationResult — see SDK-OVERVIEW.md § Canonical Types
-// Current shape diverges: verified→success, disclosedClaims→claims, timestamp moves to proof payload
+// Must match SDK-OVERVIEW canonical VerificationResult shape.
 VerificationResult(
     success = true,
     userId = "user-uuid-123",
     verificationId = "ver-uuid",
-    proof = "...",
+    proof = mapOf("timestamp" to "2026-02-17T12:00:00Z"),
     claims = mapOf(
         "nationality" to "NLD",
         "date_of_birth" to "1990-01-15"
@@ -288,7 +287,7 @@ currentScreen = Screen.Result
 
 **Input:** `returnToHome()` called after a successful verification.
 
-**Expected Output:** Copy from `verificationResult` into `homeState` (e.g. `lastProofDate = verificationResult.timestamp`, `verifiedClaims = verificationResult.disclosedClaims`), then set `homeState.isVerified = true`, then clear `verificationResult = null`, `verificationError = null`, and `currentScreen = Screen.Home`.
+**Expected Output:** Copy from `verificationResult` into `homeState` (e.g. `lastProofDate = verificationResult.proof?.timestamp`, `verifiedClaims = verificationResult.claims`), then set `homeState.isVerified = true`, then clear `verificationResult = null`, `verificationError = null`, and `currentScreen = Screen.Home`.
 
 ### 5. ResultScreen
 
@@ -317,9 +316,9 @@ currentScreen = Screen.Result
 
 ```kotlin
 verificationResult = VerificationResult(
-    verified = true,
-    disclosedClaims = mapOf("nationality" to "NLD", "age" to "36"),
-    timestamp = "2026-02-17T12:00:00Z"
+    success = true,
+    claims = mapOf("nationality" to "NLD", "age" to "36"),
+    proof = mapOf("timestamp" to "2026-02-17T12:00:00Z")
 )
 ```
 
@@ -736,6 +735,10 @@ cd packages/kmp-minipay-sample && ./gradlew :composeApp:compileKotlinIosSimulato
 # After Chunk 3B:
 # Tap "Verify Identity" — WebView opens with verification flow
 # Complete flow — callback fires, ResultScreen displays
+# Enforce canonical result contract (fail if legacy fields appear)
+rg -n "verified\\s*=|disclosedClaims|\\.timestamp\\b" packages/kmp-minipay-sample/composeApp/src/ \
+  && echo "FAIL: legacy result fields found" \
+  || echo "PASS: canonical result contract only"
 
 # After all chunks (end-to-end acceptance):
 # 1. Launch app — Home screen shows "Unverified"
