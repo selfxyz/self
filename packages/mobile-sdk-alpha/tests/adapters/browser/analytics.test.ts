@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createWebAnalyticsAdapter } from '../../../src/adapters/browser/analytics';
 
@@ -24,9 +24,7 @@ describe('createWebAnalyticsAdapter', () => {
 
   it('should call logNFCEvent without throwing', () => {
     const adapter = createWebAnalyticsAdapter();
-    expect(() =>
-      adapter.logNFCEvent!('info', 'Scan begun', { sessionId: 's1' } as any),
-    ).not.toThrow();
+    expect(() => adapter.logNFCEvent!('info', 'Scan begun', { sessionId: 's1' } as any)).not.toThrow();
   });
 
   it('should log to console when debug is true', () => {

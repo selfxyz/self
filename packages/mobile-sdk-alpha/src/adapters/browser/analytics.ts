@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { AnalyticsAdapter, TrackEventParams } from '../../types/public';
-import type { LogLevel } from '../../types/base';
 import type { NFCScanContext } from '../../proving/internal/logging';
+import type { LogLevel } from '../../types/base';
+import type { AnalyticsAdapter, TrackEventParams } from '../../types/public';
 
 export interface WebAnalyticsOptions {
   /** Remote endpoint to POST events to. When omitted, events are only logged to console. */

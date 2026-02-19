@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import 'fake-indexeddb/auto';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createIndexedDBDocumentsAdapter } from '../../../src/adapters/browser/documents';
 import type { DocumentsAdapter } from '../../../src/types/public';
+
+import 'fake-indexeddb/auto';
 
 describe('createIndexedDBDocumentsAdapter', () => {
   let adapter: DocumentsAdapter;

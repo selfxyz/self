@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-export { createIndexedDBDocumentsAdapter } from './documents';
-export { createWebCryptoAdapter } from './crypto';
-export { createWebAnalyticsAdapter } from './analytics';
 export type { WebAnalyticsOptions } from './analytics';
+export { createIndexedDBDocumentsAdapter } from './documents';
 export { createNoOpHapticAdapter } from './haptic';
+export { createWebAnalyticsAdapter } from './analytics';
+export { createWebCryptoAdapter } from './crypto';

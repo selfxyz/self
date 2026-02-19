@@ -26,10 +26,11 @@ class SelfVerificationActivity : AppCompatActivity() {
     private lateinit var webViewHost: AndroidWebViewHost
     private lateinit var router: MessageRouter
 
-    private val requiredPermissions = arrayOf(
-        Manifest.permission.CAMERA,
-        Manifest.permission.NFC,
-    )
+    private val requiredPermissions =
+        arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.NFC,
+        )
 
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -43,9 +44,10 @@ class SelfVerificationActivity : AppCompatActivity() {
 
         // Request runtime permissions before initializing the WebView.
         // Camera and NFC are dangerous permissions that require user consent.
-        val missingPermissions = requiredPermissions.filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-        }
+        val missingPermissions =
+            requiredPermissions.filter {
+                ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+            }
 
         if (missingPermissions.isNotEmpty()) {
             permissionLauncher.launch(missingPermissions.toTypedArray())

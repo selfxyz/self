@@ -40,32 +40,36 @@ class AndroidWebViewHost(
         // Custom PathHandler that serves from the self-wallet/ subdirectory of assets.
         // This way, a request to /assets/foo.js resolves to self-wallet/assets/foo.js
         // and /index.html resolves to self-wallet/index.html.
-        val selfWalletHandler = WebViewAssetLoader.PathHandler { path ->
-            try {
-                val assetPath = "self-wallet/$path"
-                val inputStream = context.assets.open(assetPath)
-                val mimeType = when {
-                    path.endsWith(".js") -> "application/javascript"
-                    path.endsWith(".css") -> "text/css"
-                    path.endsWith(".html") -> "text/html"
-                    path.endsWith(".json") -> "application/json"
-                    path.endsWith(".woff2") -> "font/woff2"
-                    path.endsWith(".woff") -> "font/woff"
-                    path.endsWith(".otf") -> "font/otf"
-                    path.endsWith(".ttf") -> "font/ttf"
-                    path.endsWith(".png") -> "image/png"
-                    path.endsWith(".svg") -> "image/svg+xml"
-                    else -> "application/octet-stream"
+        val selfWalletHandler =
+            WebViewAssetLoader.PathHandler { path ->
+                try {
+                    val assetPath = "self-wallet/$path"
+                    val inputStream = context.assets.open(assetPath)
+                    val mimeType =
+                        when {
+                            path.endsWith(".js") -> "application/javascript"
+                            path.endsWith(".css") -> "text/css"
+                            path.endsWith(".html") -> "text/html"
+                            path.endsWith(".json") -> "application/json"
+                            path.endsWith(".woff2") -> "font/woff2"
+                            path.endsWith(".woff") -> "font/woff"
+                            path.endsWith(".otf") -> "font/otf"
+                            path.endsWith(".ttf") -> "font/ttf"
+                            path.endsWith(".png") -> "image/png"
+                            path.endsWith(".svg") -> "image/svg+xml"
+                            else -> "application/octet-stream"
+                        }
+                    WebResourceResponse(mimeType, "UTF-8", inputStream)
+                } catch (e: Exception) {
+                    null
                 }
-                WebResourceResponse(mimeType, "UTF-8", inputStream)
-            } catch (e: Exception) {
-                null
             }
-        }
 
-        val assetLoader = WebViewAssetLoader.Builder()
-            .addPathHandler("/", selfWalletHandler)
-            .build()
+        val assetLoader =
+            WebViewAssetLoader
+                .Builder()
+                .addPathHandler("/", selfWalletHandler)
+                .build()
 
         webView =
             WebView(context).apply {

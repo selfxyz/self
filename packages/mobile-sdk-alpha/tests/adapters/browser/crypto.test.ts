@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { createWebCryptoAdapter } from '../../../src/adapters/browser/crypto';
 
@@ -43,8 +43,6 @@ describe('createWebCryptoAdapter', () => {
   });
 
   it('should throw on sign (not implemented)', async () => {
-    await expect(adapter.sign(new Uint8Array([1, 2, 3]), 'key-ref')).rejects.toThrow(
-      'Signing is not implemented',
-    );
+    await expect(adapter.sign(new Uint8Array([1, 2, 3]), 'key-ref')).rejects.toThrow('Signing is not implemented');
   });
 });
