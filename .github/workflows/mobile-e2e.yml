@@ -129,7 +129,18 @@ jobs:
       - name: Free up disk space
         if: false # We should be fine for self-hosted
         uses: ./.github/actions/free-disk-space
+
+      - name: Check Java installation
+        run: |
+          echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"
+          if command -v java &> /dev/null && java -version &> /dev/null; then
+            echo "Java already installed: $(java -version 2>&1 | head -n 1)"
+          else
+            echo "Java not found or not working, will install..."
+            echo "INSTALL_JAVA=true" >> "$GITHUB_ENV"
+          fi
       - name: Setup Java environment
+        if: env.INSTALL_JAVA == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
