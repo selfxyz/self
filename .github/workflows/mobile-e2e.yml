@@ -211,7 +211,6 @@ jobs:
           echo "🎉 Build verification completed successfully!"
           echo "ℹ️  Emulator testing is temporarily disabled - build testing only"
       - name: Install and Test on Android
-        if: false # Skip emulator/E2E for build-only test - keep logic for future E2E
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
@@ -235,7 +234,6 @@ jobs:
             maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
 
       - name: Upload test results
-        if: false # Skip for build-only test - keep logic for future E2E
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-android
