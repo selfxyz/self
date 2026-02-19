@@ -193,7 +193,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
             onPress={handleTryAgain}
             disabled={isRetrying}
           >
-            <XStack alignItems="center" gap={8}>
+            <XStack alignItems="center" gap={s(8)}>
               <Image size={s(20)} color={white} />
               <BodyText
                 style={{
