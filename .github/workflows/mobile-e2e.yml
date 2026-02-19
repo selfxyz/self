@@ -109,6 +109,12 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 5
           command: yarn install --immutable --silent
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 30
+        with:
+          limit-access-to-actor: true
+
       - name: Validate Maestro test file
         if: false # Skip for build-only test - keep logic for future E2E
         run: |
