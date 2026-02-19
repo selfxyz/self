@@ -152,6 +152,8 @@
 > - **Key generation / retrieval** (`generateKey()`, `getPublicKey()`) — routes through `bridge.request('crypto', 'generateKey', ...)` and `bridge.request('crypto', 'getPublicKey', ...)`. Native handlers store/retrieve keys in secure storage. The `secureStorage` domain (`get/set/remove`) is for general keychain access only — it does not handle crypto-specific operations.
 >
 > The `crypto` domain is _not_ fully deprecated: only the standalone Kotlin handler class was removed. Native shells must still route `crypto` domain messages to a handler that performs signing/key-gen backed by secure storage. Secure enclave / hardware-backed key implementations are compatible with this model and should remain non-exportable.
+>
+> **Trust boundary:** The native signing handler signs whatever payload the WebView sends after biometric clearance — it does not inspect the data. This is safe only because the Vite bundle is statically embedded in the native artifact (AAR / XCFramework / RN assets) at build time and is never fetched or updated at runtime. A compromised or remotely-loaded bundle could request signatures over arbitrary data. Any change to this distribution model (e.g., OTA bundle updates) requires a security review of the signing handler's trust assumptions. Changes to native crypto handlers should be flagged for dedicated security review.
 
 > **Keychain/SecureStorage canonical rule:** The `secureStorage` bridge domain is always native-managed on every platform. There is no web fallback and no in-memory fallback. Host apps control access policy.
 >

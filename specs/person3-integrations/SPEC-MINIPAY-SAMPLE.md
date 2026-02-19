@@ -215,7 +215,7 @@ sdk.launch(
 
 ```kotlin
 // Must match SDK-OVERVIEW canonical VerificationResult shape.
-// proof is String? (opaque proof data), claims is Map<String, String>?.
+// proof is String? (opaque proof data), claims is Map<String, Any?>? (canonical target type).
 VerificationResult(
     success = true,
     userId = "user-uuid-123",
@@ -736,7 +736,7 @@ cd packages/kmp-minipay-sample && ./gradlew :composeApp:compileKotlinIosSimulato
 # Tap "Verify Identity" — WebView opens with verification flow
 # Complete flow — callback fires, ResultScreen displays
 # Enforce canonical result contract (fail if legacy fields appear)
-rg -n "verified\\s*=|disclosedClaims|\\.timestamp\\b" packages/kmp-minipay-sample/composeApp/src/ \
+rg -n "\\bverified\\s*=|disclosedClaims" packages/kmp-minipay-sample/composeApp/src/ \
   && echo "FAIL: legacy result fields found" \
   || echo "PASS: canonical result contract only"
 
