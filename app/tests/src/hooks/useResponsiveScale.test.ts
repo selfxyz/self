@@ -53,4 +53,34 @@ describe('useResponsiveScale', () => {
     expect(result.current(100)).toBeCloseTo((440 / 393) * 100);
     expect(result.current(24)).toBeCloseTo((440 / 393) * 24);
   });
+
+  it('clamps at max scale (1.15) for very large screens', () => {
+    (useWindowDimensions as jest.Mock).mockReturnValue({
+      width: 1024,
+      height: 1366,
+      scale: 2,
+      fontScale: 1,
+    });
+
+    const { result } = renderHook(() => useResponsiveScale());
+
+    // Should clamp to 1.15, not 1024/393 = 2.6
+    expect(result.current(100)).toBeCloseTo(115);
+    expect(result.current(16)).toBeCloseTo(16 * 1.15);
+  });
+
+  it('clamps at min scale (0.85) for very small screens', () => {
+    (useWindowDimensions as jest.Mock).mockReturnValue({
+      width: 280,
+      height: 568,
+      scale: 2,
+      fontScale: 1,
+    });
+
+    const { result } = renderHook(() => useResponsiveScale());
+
+    // Should clamp to 0.85, not 280/393 = 0.71
+    expect(result.current(100)).toBeCloseTo(85);
+    expect(result.current(16)).toBeCloseTo(16 * 0.85);
+  });
 });

@@ -139,7 +139,7 @@ const LoadingUI: React.FC<LoadingUIProps> = ({
               textAlign="center"
               letterSpacing={s(1)}
               fontWeight="100"
-              marginTop={30}
+              marginTop={s(30)}
               marginBottom={s(20)}
             >
               {actionText}

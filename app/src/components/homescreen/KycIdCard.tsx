@@ -136,6 +136,7 @@ const KycIdCard: FC<KycIdCardProps> = ({
     cardWidth,
     cardHeight,
     borderRadius,
+    scale,
     headerHeight,
     figmaPadding,
     logoSize,
@@ -176,7 +177,7 @@ const KycIdCard: FC<KycIdCardProps> = ({
         shadowOpacity={0.25}
         shadowRadius={14}
         elevation={8}
-        marginBottom={8}
+        marginBottom={8 * scale}
         alignItems="stretch"
       >
         {/* Header Section - Dark gradient (same as IdCard) */}
@@ -199,7 +200,7 @@ const KycIdCard: FC<KycIdCardProps> = ({
               <RoundFlag countryCode={country} size={logoSize} />
 
               {/* Text container */}
-              <YStack gap={2}>
+              <YStack gap={2 * scale}>
                 <Text
                   fontFamily={dinot}
                   fontSize={fontSize.header}
@@ -251,7 +252,7 @@ const KycIdCard: FC<KycIdCardProps> = ({
               alignItems="flex-end"
             >
               {/* Bottom Left: ID + Document Label */}
-              <YStack gap={4}>
+              <YStack gap={4 * scale}>
                 {truncatedId ? (
                   <Text
                     fontFamily={plexMono}
@@ -276,7 +277,7 @@ const KycIdCard: FC<KycIdCardProps> = ({
               {/* STANDARD Badge - KYC documents always show STANDARD */}
               <YStack
                 backgroundColor="rgba(0, 0, 0, 0.5)"
-                borderRadius={30}
+                borderRadius={30 * scale}
                 paddingHorizontal={padding * 0.6}
                 paddingVertical={padding * 0.3}
               >

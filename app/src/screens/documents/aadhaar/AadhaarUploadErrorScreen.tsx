@@ -161,7 +161,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
         {/* Error Message and Retry Button */}
         <YStack
           paddingHorizontal={s(20)}
-          paddingTop={20}
+          paddingTop={s(20)}
           paddingBottom={s(20)}
           gap={s(20)}
           borderTopWidth={1}
@@ -213,7 +213,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
       {/* Bottom Section */}
       <YStack
         paddingHorizontal={s(20)}
-        paddingTop={20}
+        paddingTop={s(20)}
         paddingBottom={paddingBottom}
         gap={s(10)}
       >

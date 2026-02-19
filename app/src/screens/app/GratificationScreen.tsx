@@ -4,10 +4,10 @@
 
 import React, { useCallback, useState } from 'react';
 import {
-  Dimensions,
   Pressable,
   StyleSheet,
   Text as RNText,
+  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, YStack } from 'tamagui';
@@ -39,7 +39,7 @@ const GratificationScreen: React.FC = () => {
   const params = route.params as { points?: number } | undefined;
   const pointsEarned = params?.points ?? 0;
   const [isAnimationFinished, setIsAnimationFinished] = useState(false);
-  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const s = useResponsiveScale();
 
   const handleExploreRewards = () => {
@@ -168,7 +168,7 @@ const GratificationScreen: React.FC = () => {
           </View>
 
           {/* Points display */}
-          <YStack alignItems="center" gap={s(0)} marginBottom={s(18)}>
+          <YStack alignItems="center" marginBottom={s(18)}>
             <Text
               fontFamily={dinotBold}
               fontSize={s(98)}
@@ -201,7 +201,6 @@ const GratificationScreen: React.FC = () => {
             textAlign="center"
             lineHeight={s(24)}
             marginBottom={s(20)}
-            paddingHorizontal={s(0)}
           >
             Earn more points by proving your identity and referring friends
           </Text>

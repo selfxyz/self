@@ -573,13 +573,6 @@ const createStyles = (s: (value: number) => number) =>
       fontSize: s(16),
       color: blue600,
     },
-    blurView: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      height: s(100),
-    },
     exploreButtonContainer: {
       position: 'absolute',
       left: s(20),
