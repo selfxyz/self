@@ -1,6 +1,6 @@
 # Person 1: WebView UI + Bridge — Workstream Overview
 
-> Last updated: 2026-02-17
+> Last updated: 2026-02-19
 > Owner: Person 1 (WebView UI + Bridge)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC.md](./SPEC.md)
@@ -21,10 +21,12 @@
 - [x] Schema validation for bridge messages
 - [x] All 10 screens built and routing works
 - [x] BridgeProvider and SelfClientProvider wired
-- [ ] Biometrics bridge adapter (domain defined, no implementation)
-- [ ] Camera bridge adapter wiring in `SelfClientProvider`
-- [ ] Web fallback adapters not all connected in `SelfClientProvider`
-- [ ] Dynamic proof request items (currently hardcoded in ProvingScreen)
+- [x] Biometrics bridge adapter wired in `SelfClientProvider`
+- [x] Camera bridge adapter wired in `SelfClientProvider`
+- [ ] Fallback wiring correctness gap remains:
+  - `haptic` currently uses native bridge trigger instead of web no-op
+  - `crypto` is hybrid (`hash` web, `sign` bridge) and needs explicit contract decision
+- [ ] Dynamic proof request items are still hardcoded in `ProvingScreen`
 
 ## What You Own
 
@@ -64,12 +66,12 @@ You build the middle two layers: the bridge protocol library and the WebView UI.
 
 ## Dependencies
 
-| Direction     | Person / Package              | What                                                                    | Status                        |
-| ------------- | ----------------------------- | ----------------------------------------------------------------------- | ----------------------------- |
-| **You need**  | Person 4 (`mobile-sdk-alpha`) | Adapter interfaces, `useSelfClient()` hook, color/font constants        | Active                        |
-| **You need**  | Person 2 (KMP / Swift shells) | Native handler implementations on the other side of the bridge          | Android done, iOS in progress |
-| **Needs you** | Person 2 (KMP / Swift shells) | Vite bundle (`dist/index.html` + JS) embedded into native SDK artifacts | Ready                         |
-| **Needs you** | Person 5 (RN SDK)             | Same Vite bundle loaded via `react-native-webview`                      | Not started                   |
+| Direction     | Person / Package              | What                                                                    | Status                                     |
+| ------------- | ----------------------------- | ----------------------------------------------------------------------- | ------------------------------------------ |
+| **You need**  | Person 4 (`mobile-sdk-alpha`) | Adapter interfaces, `useSelfClient()` hook, color/font constants        | Active                                     |
+| **You need**  | Person 2 (KMP / Swift shells) | Native handler implementations on the other side of the bridge          | Implemented (contract alignment follow-up) |
+| **Needs you** | Person 2 (KMP / Swift shells) | Vite bundle (`dist/index.html` + JS) embedded into native SDK artifacts | Ready                                      |
+| **Needs you** | Person 5 (RN SDK)             | Same Vite bundle loaded via `react-native-webview`                      | In progress                                |
 
 ## Key Decisions
 

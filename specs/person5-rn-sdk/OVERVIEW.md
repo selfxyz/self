@@ -1,6 +1,6 @@
 # Person 5: RN Native Shell — Workstream Overview
 
-> Last updated: 2026-02-17
+> Last updated: 2026-02-19
 > Owner: Person 5 (RN SDK)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC.md](./SPEC.md)
@@ -14,19 +14,19 @@
 
 ## Status
 
-- [ ] Package scaffolding (`packages/rn-sdk/`, `package.json`, tsconfig, tsup)
-- [ ] `SelfVerification` component with `react-native-webview`
-- [ ] `MessageRouter` dispatching bridge messages to handlers
-- [ ] 5 native handler bridges (NFC, Camera, Biometrics, Keychain, Lifecycle)
-- [ ] Asset bundling (Vite bundle into iOS + Android via `Platform.select`)
-- [ ] Integration test with Self Wallet app
-- [ ] npm publish (`@selfxyz/rn-sdk`)
+- [x] Package scaffolding exists (`packages/rn-sdk/`, package config, tsconfig, tsup)
+- [x] `SelfVerification` component with `react-native-webview` is implemented
+- [x] `MessageRouter` dispatching bridge messages to handlers is implemented
+- [x] 5 native handler bridges are implemented (NFC, Camera, Biometrics, Keychain, Lifecycle)
+- [x] Asset loading strategy is implemented for iOS + Android, including dev override
+- [ ] Integration validation in Self Wallet app is still a follow-up validation task
+- [ ] npm publish (`@selfxyz/rn-sdk`) not completed in this branch
 
-**Overall: 0%** — package does not exist yet. This is Phase 2 work, blocked until Persons 1-4 deliver Phase 1.
+**Overall: Partial** — package implementation is present; highest-risk carry-forward items are NFC APDU-path deviation and camera/MRZ stub.
 
 ## What You Own
 
-- **`@selfxyz/rn-sdk`** — the React Native SDK package (does not exist yet)
+- **`@selfxyz/rn-sdk`** — the React Native SDK package
 - **`SelfVerification`** component (~200-300 LOC) — the single public API surface
 - **5 native handler bridges** — NFC, Camera, Biometrics, Keychain, Lifecycle (thin wrappers around RN native modules)
 - **Asset bundling** — Vite bundle loaded into `react-native-webview` on iOS + Android via `Platform.select`
@@ -92,14 +92,14 @@ The WebView does not know which native shell it is running inside. Your handlers
 
 ## Key Decisions
 
-| Decision                          | Choice                               | Rationale                                                                                          |
-| --------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| Package size                      | Thin wrapper (~200-300 LOC)          | All logic lives in the WebView engine. Native shell is pure glue.                                  |
-| Bridge protocol                   | Same as KMP                          | WebView must not know which shell it runs in. One protocol, two shells.                            |
-| Native module dependency strategy | All as `peerDependencies`            | Host app installs and links. Avoids version conflicts and duplicate native code.                   |
-| Asset loading                     | `Platform.select` for Android vs iOS | Android uses `file:///android_asset/`; iOS uses RN `require()` + Metro `html` asset support.       |
-| State management                  | No state beyond routing              | MessageRouter dispatches and returns. No caching, retrying, or transforming.                       |
-| Dev server policy                 | Debug-only override                  | `devServerUrl` allowed only in debug builds. Release builds fail closed if remote URL is provided. |
+| Decision                          | Choice                               | Rationale                                                                                                  |
+| --------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| Package size                      | Thin wrapper (~200-300 LOC)          | All logic lives in the WebView engine. Native shell is pure glue.                                          |
+| Bridge protocol                   | Same as KMP                          | WebView must not know which shell it runs in. One protocol, two shells.                                    |
+| Native module dependency strategy | All as `peerDependencies`            | Host app installs and links. Avoids version conflicts and duplicate native code.                           |
+| Asset loading                     | `Platform.select` for Android vs iOS | Android uses `file:///android_asset/`, iOS path TBD (see Chunk 5D).                                        |
+| State management                  | No state beyond routing              | MessageRouter dispatches and returns. No caching, retrying, or transforming.                               |
+| iOS asset loading                 | Implemented in current package       | Uses RNFS main bundle path when available, with documented fallback and manual host bundling requirements. |
 
 ## Deliverables
 

@@ -1,6 +1,6 @@
 # Person 2: Native Shells (KMP SDK + Swift Providers) — Implementation Spec
 
-> Last updated: 2026-02-17
+> Last updated: 2026-02-19
 > Owner: Person 2 (Native Shells)
 > Parent: [OVERVIEW.md](./OVERVIEW.md)
 > Status: Active
@@ -28,13 +28,13 @@ You are building the native side of the Self Mobile SDK — the Kotlin Multiplat
 
 The Self Wallet is a monolithic React Native app where all logic, NFC, proving, and UI are tangled together. To ship an embeddable SDK:
 
-| Problem area                                | Issue                                                                                                                                                                   |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/kmp-shell/` (deleted)             | Previous KMP experiment — bridge protocol and handler pattern are sound, but module structure needed rebuild as proper KMP SDK with Android target (not just JVM + iOS) |
-| `androidMain/handlers/` — 4 extra handlers  | Documents, Crypto, Analytics, Haptic handlers exist but are unnecessary — WebView handles them via web fallbacks. 511 LOC to delete.                                    |
-| `iosMain/handlers/` — cinterop approach     | Kotlin/Native cinterop with Apple frameworks blocked by Xcode SDK compatibility issues. Stubs in place, nothing functional.                                             |
-| `packages/self-sdk-swift/` — does not exist | Swift companion package needed for iOS providers (NFC, Biometrics, WebView hosting)                                                                                     |
-| No public API for host apps                 | `SelfSdk.launch()` exists as expect/actual skeleton but iOS side has no working implementation                                                                          |
+| Problem area                               | Issue                                                                                                                                                                   |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/kmp-shell/` (deleted)            | Previous KMP experiment — bridge protocol and handler pattern are sound, but module structure needed rebuild as proper KMP SDK with Android target (not just JVM + iOS) |
+| `androidMain/handlers/` — 4 extra handlers | Documents, Crypto, Analytics, Haptic handlers exist but are unnecessary — WebView handles them via web fallbacks. 511 LOC to delete.                                    |
+| `iosMain/handlers/` — cinterop approach    | Kotlin/Native cinterop with Apple frameworks blocked by Xcode SDK compatibility issues. Stubs in place, nothing functional.                                             |
+| `packages/self-sdk-swift/`                 | Swift companion package for iOS providers (NFC, Biometrics, WebView hosting) is now implemented                                                                         |
+| No public API for host apps                | `SelfSdk.launch()` exists as expect/actual skeleton but iOS side has no working implementation                                                                          |
 
 ## Design Principles
 
@@ -1694,7 +1694,7 @@ SelfSdkCallback fires on completion/dismissal
 | `SelfSdkCallback.onSuccess` fires              | Integration | Result delivery from WebView through lifecycle handler |
 | `SelfSdkCallback.onCancelled` fires on dismiss | Integration | Dismiss wiring works end-to-end                        |
 
-**Status: PARTIAL** (Android works end-to-end, iOS uses Swift workarounds in test app)
+**Status: PARTIAL** (Android + iOS implementation paths are present; full cross-platform validation remains)
 
 ---
 
@@ -1747,7 +1747,7 @@ BUILD SUCCESSFUL (both)
 | iOS Kotlin compilation                        | Build gate | Interfaces compile without cinterop           |
 | Swift package compilation                     | Build gate | SPM resolves NFCPassportReader dependency     |
 
-**Status: Pending**
+**Status: Done**
 
 ---
 
@@ -1805,7 +1805,7 @@ Output: false
 | Biometric `isAvailable` on simulator     | Integration | Returns false gracefully (no crash)                       |
 | Kotlin iOS compilation                   | Build gate  | Handler compiles with provider delegation                 |
 
-**Status: Pending**
+**Status: Done**
 
 ---
 
@@ -1863,7 +1863,7 @@ Output: SelfSdkCallback.onCancelled() called, ViewController dismissed
 | `dismiss` -> `onCancelled`         | Unit | Cancel callback fires + dismiss action invoked          |
 | `ready` -> no-op                   | Unit | No crash, no callback                                   |
 
-**Status: Pending**
+**Status: Done**
 
 ---
 
@@ -1932,7 +1932,7 @@ Output: callback.onFailure(SelfSdkError("SDK_ALREADY_ACTIVE", "...")) and no sec
 | Launch without configure throws         | Unit        | Clear error message for misconfiguration               |
 | Concurrent launch rejected              | Unit        | Single-flight policy enforced (`SDK_ALREADY_ACTIVE`)   |
 
-**Status: Pending**
+**Status: Done**
 
 ---
 
@@ -2005,7 +2005,7 @@ Output: null (no crash, NfcPassportHelper released)
 | Test app migration                  | Integration | `SelfSdkSwift.configure()` replaces manual factory registration with identical behavior |
 | End-to-end: launch -> NFC -> result | Integration | Full flow on physical device                                                            |
 
-**Status: Pending**
+**Status: Done**
 
 ---
 
@@ -2060,20 +2060,20 @@ Chunk 2A: KMP Setup + Bridge Protocol (no deps -- start here)
 
 ## Completion Status
 
-| Chunk | Description                                | Size   | Status                                                |
-| ----- | ------------------------------------------ | ------ | ----------------------------------------------------- |
-| 2A    | KMP Setup + Bridge Protocol                | S ~3k  | **Done**                                              |
-| 2B    | Android WebView Host                       | S ~2k  | **Done**                                              |
-| 2C    | Android Native Handlers (5 handlers)       | L ~12k | **Done**                                              |
-| 2D    | iOS WebView Host + Provider Infrastructure | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)       |
-| 2E    | iOS Native Handlers (3 handlers)           | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)       |
-| 2F    | SDK Public API + Test App                  | M ~5k  | **In Progress** (Android works, iOS uses workarounds) |
-| 2G    | Factory Infrastructure                     | S ~3k  | **Pending**                                           |
-| 2H    | Biometric Handler (iOS)                    | S ~2k  | **Pending**                                           |
-| 2I    | Lifecycle Handler (iOS)                    | S ~2k  | **Pending**                                           |
-| 2J    | iOS WebView Host + SelfSdk.launch()        | M ~5k  | **Pending**                                           |
-| 2K    | NFC Handler (iOS)                          | M ~5k  | **Pending**                                           |
-| 2L    | Camera MRZ (iOS, Phase 2)                  | S ~2k  | **Skipped** (deferred)                                |
+| Chunk | Description                                | Size   | Status                                                                      |
+| ----- | ------------------------------------------ | ------ | --------------------------------------------------------------------------- |
+| 2A    | KMP Setup + Bridge Protocol                | S ~3k  | **Done**                                                                    |
+| 2B    | Android WebView Host                       | S ~2k  | **Done**                                                                    |
+| 2C    | Android Native Handlers (5 handlers)       | L ~12k | **Done**                                                                    |
+| 2D    | iOS WebView Host + Provider Infrastructure | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)                             |
+| 2E    | iOS Native Handlers (3 handlers)           | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)                             |
+| 2F    | SDK Public API + Test App                  | M ~5k  | **Partial** (implementation present; validation/contract alignment pending) |
+| 2G    | Factory Infrastructure                     | S ~3k  | **Done**                                                                    |
+| 2H    | Biometric Handler (iOS)                    | S ~2k  | **Done**                                                                    |
+| 2I    | Lifecycle Handler (iOS)                    | S ~2k  | **Done**                                                                    |
+| 2J    | iOS WebView Host + SelfSdk.launch()        | M ~5k  | **Done**                                                                    |
+| 2K    | NFC Handler (iOS)                          | M ~5k  | **Done**                                                                    |
+| 2L    | Camera MRZ (iOS, Phase 2)                  | S ~2k  | **Skipped** (deferred)                                                      |
 
 ## Validation Plan
 
@@ -2102,7 +2102,7 @@ cd packages/self-sdk-swift && swift build
 - **Person 1 (WebView UI + Bridge):** You consume their Vite bundle (`dist/`) as a static asset. When they change bridge message shapes in `packages/webview-bridge/src/types.ts`, you must update the Kotlin `BridgeMessage.kt` types to match. Coordinate on any domain or method name changes.
 - **Person 4 (SDK Core):** They own the adapter interfaces in `packages/mobile-sdk-alpha/src/types/public.ts`. The WebView engine calls your native handlers through these adapters. If adapter signatures change, the bridge protocol may need updating.
 - **Person 5 (RN Native Shell):** They build a separate native shell (`packages/rn-sdk/`) using the same bridge protocol. Share handler method contracts and test vectors. Their `SelfVerification` component loads the same Vite bundle you do.
-- **PR #1762:** iOS bridge handlers with Swift provider pattern -- adds `self-sdk-swift` package, 82 files changed. Must be merged before Chunks 2G-2K can proceed on the main branch.
+- **PR #1762:** iOS bridge handlers with Swift provider pattern added `self-sdk-swift` and unblocked the 2G-2K implementation path.
 - **MiniPay Integration:** The [SPEC-MINIPAY-SAMPLE.md](../person3-integrations/SPEC-MINIPAY-SAMPLE.md) depends on this spec for iOS SDK functionality. Android side is already working.
 
 ## Key Reference Files

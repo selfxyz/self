@@ -22,3 +22,9 @@ body {
   -webkit-user-select: none;
   user-select: none;
 }
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

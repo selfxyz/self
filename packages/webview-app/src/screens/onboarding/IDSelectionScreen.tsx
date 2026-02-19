@@ -4,120 +4,37 @@
 
 import React, { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Text, View, XStack, YStack } from 'tamagui';
+import { IDTypeScreen } from '@selfxyz/euclid-web';
+import type { IDType } from '@selfxyz/euclid-web';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { getCountryName, renderFlag } from '../../utils/countryFlags';
 
-const getDocumentName = (docType: string): string => {
+const docTypeToIDType = (docType: string): IDType => {
   switch (docType) {
     case 'p':
-      return 'Passport';
+      return { id: 'p', title: 'Passport', subtitle: 'Verified Biometric Passport' };
     case 'i':
-      return 'ID Card';
+      return { id: 'i', title: 'ID Card', subtitle: 'Verified Biometric ID card' };
     case 'a':
-      return 'Aadhaar';
+      return { id: 'a', title: 'Aadhaar', subtitle: 'Verified mAadhaar QR code' };
     case 'kyc':
-      return 'Other IDs';
+      return { id: 'kyc', title: 'Other IDs', subtitle: "National ID, Driver's License etc." };
     default:
-      return 'Unknown Document';
+      return { id: docType, title: 'Unknown Document', subtitle: '' };
   }
 };
 
-const getDocumentDescription = (docType: string): string => {
-  switch (docType) {
-    case 'p':
-      return 'Verified Biometric Passport';
-    case 'i':
-      return 'Verified Biometric ID card';
-    case 'a':
-      return 'Verified mAadhaar QR code';
-    case 'kyc':
-      return "National ID, Driver's License etc.";
-    default:
-      return '';
-  }
-};
-
-const getSecurityBadge = (docType: string): string | null => {
-  switch (docType) {
-    case 'p':
-    case 'i':
-    case 'a':
-      return 'Best security';
-    default:
-      return null;
-  }
-};
-
-const DocumentItem: React.FC<{
-  docType: string;
-  onPress: () => void;
-}> = ({ docType, onPress }) => {
-  const badge = getSecurityBadge(docType);
-  const description = getDocumentDescription(docType);
-
-  return (
-    <XStack
-      backgroundColor="#ffffff"
-      borderWidth={1}
-      borderColor="#CBD5E1"
-      borderRadius={12}
-      padding={16}
-      alignItems="center"
-      gap={12}
-      pressStyle={{ transform: [{ scale: 0.97 }], backgroundColor: '#F8FAFC' }}
-      onPress={onPress}
-      cursor="pointer"
-      position="relative"
-    >
-      {badge && (
-        <Text
-          fontSize={12}
-          fontFamily="DINOT-Medium"
-          color="#2563EB"
-          backgroundColor="#DBEAFE"
-          borderRadius={12}
-          borderWidth={1}
-          borderColor="#2563EB"
-          paddingHorizontal={8}
-          paddingVertical={4}
-          position="absolute"
-          top={-14}
-          right={-8}
-        >
-          {badge}
-        </Text>
-      )}
-      <View
-        width={48}
-        height={48}
-        borderRadius={8}
-        backgroundColor="#F8FAFC"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Text fontSize={24}>
-          {docType === 'p'
-            ? '🛂'
-            : docType === 'i'
-              ? '🪪'
-              : docType === 'a'
-                ? '🆔'
-                : '📄'}
-        </Text>
-      </View>
-      <YStack gap={2}>
-        <Text fontFamily="DINOT-Medium" fontSize={24} color="#000000">
-          {getDocumentName(docType)}
-        </Text>
-        {description && (
-          <Text fontFamily="DINOT-Medium" fontSize={14} color="#94A3B8">
-            {description}
-          </Text>
-        )}
-      </YStack>
-    </XStack>
-  );
+const renderIDTypeIcon = (idType: IDType): React.ReactNode => {
+  const emoji =
+    idType.id === 'p'
+      ? '🛂'
+      : idType.id === 'i'
+        ? '🪪'
+        : idType.id === 'a'
+          ? '🆔'
+          : '📄';
+  return <span style={{ fontSize: 24 }}>{emoji}</span>;
 };
 
 export const IDSelectionScreen: React.FC = () => {
@@ -131,111 +48,40 @@ export const IDSelectionScreen: React.FC = () => {
       documentTypes?: string[];
     }) || {};
 
+  const idTypes = documentTypes.map(docTypeToIDType);
+
   const onSelect = useCallback(
-    (docType: string) => {
+    (idType: IDType) => {
       haptic.trigger('selection');
       analytics.trackEvent('document_type_selected', {
-        documentType: docType,
+        documentType: idType.id,
         countryCode,
       });
 
-      if (docType === 'kyc') {
+      if (idType.id === 'kyc') {
         navigate('/coming-soon', {
           state: { countryCode, documentCategory: 'kyc' },
         });
         return;
       }
 
-      // Navigate to camera for MRZ scanning
       navigate('/onboarding/camera', {
-        state: { countryCode, documentType: docType },
+        state: { countryCode, documentType: idType.id },
       });
     },
     [navigate, analytics, haptic, countryCode],
   );
 
   return (
-    <YStack flex={1} backgroundColor="#F8FAFC" paddingHorizontal={16}>
-      {/* Header */}
-      <XStack paddingTop={16} paddingBottom={8}>
-        <Text
-          fontFamily="DINOT-Medium"
-          fontSize={12}
-          letterSpacing={1}
-          color="#94A3B8"
-          textTransform="uppercase"
-        >
-          Getting Started
-        </Text>
-      </XStack>
-
-      {/* Title area */}
-      <YStack alignItems="center" paddingTop={24} paddingBottom={32} gap={16}>
-        <XStack alignItems="center" gap={10}>
-          <View
-            width={48}
-            height={48}
-            borderRadius={24}
-            backgroundColor="#E2E8F0"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Text fontSize={20}>{countryCode.slice(0, 2)}</Text>
-          </View>
-          <Text fontSize={18} color="#94A3B8">
-            +
-          </Text>
-          <View
-            width={48}
-            height={48}
-            borderRadius={12}
-            backgroundColor="#000000"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Text fontSize={20} color="#ffffff">
-              S
-            </Text>
-          </View>
-        </XStack>
-
-        <Text
-          fontFamily="Advercase-Regular"
-          fontSize={29}
-          color="#000000"
-          textAlign="center"
-        >
-          Select an ID type
-        </Text>
-      </YStack>
-
-      {/* Document type cards */}
-      <YStack gap={16}>
-        {documentTypes
-          .filter((dt: string) => dt !== 'kyc')
-          .map((docType: string) => (
-            <DocumentItem
-              key={docType}
-              docType={docType}
-              onPress={() => onSelect(docType)}
-            />
-          ))}
-
-        <Text
-          fontFamily="DINOT-Medium"
-          fontSize={18}
-          color="#94A3B8"
-          textAlign="center"
-          paddingVertical={8}
-        >
-          Be sure your document is ready to scan
-        </Text>
-
-        {/* KYC option */}
-        <YStack paddingTop={20}>
-          <DocumentItem docType="kyc" onPress={() => onSelect('kyc')} />
-        </YStack>
-      </YStack>
-    </YStack>
+    <IDTypeScreen
+      insets={{ top: 0, bottom: 0 }}
+      countryCode={countryCode}
+      countryName={getCountryName(countryCode)}
+      idTypes={idTypes}
+      onIDTypeSelect={onSelect}
+      onBack={() => navigate(-1)}
+      renderFlag={renderFlag}
+      renderIDTypeIcon={renderIDTypeIcon}
+    />
   );
 };

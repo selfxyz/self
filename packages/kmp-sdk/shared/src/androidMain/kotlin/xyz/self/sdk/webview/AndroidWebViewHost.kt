@@ -10,13 +10,18 @@ import android.net.http.SslError
 import android.webkit.JavascriptInterface
 import android.webkit.SslErrorHandler
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.webkit.WebViewAssetLoader
 import xyz.self.sdk.bridge.MessageRouter
 
 /**
  * Manages an Android WebView instance for hosting the Self verification UI.
  * Handles bidirectional communication between WebView JavaScript and native Kotlin code.
+ *
+ * Uses WebViewAssetLoader to serve bundled assets under https://appassets.androidplatform.net/
+ * so the WebView has a proper origin for History API, CORS, and other web platform features.
  */
 class AndroidWebViewHost(
     private val context: Context,
@@ -30,6 +35,42 @@ class AndroidWebViewHost(
      */
     @SuppressLint("SetJavaScriptEnabled")
     fun createWebView(): WebView {
+        // WebViewAssetLoader serves files from android_asset/ under a proper https:// domain,
+        // avoiding file:// origin issues with History API, CORS, etc.
+        // Custom PathHandler that serves from the self-wallet/ subdirectory of assets.
+        // This way, a request to /assets/foo.js resolves to self-wallet/assets/foo.js
+        // and /index.html resolves to self-wallet/index.html.
+        val selfWalletHandler =
+            WebViewAssetLoader.PathHandler { path ->
+                try {
+                    val assetPath = "self-wallet/$path"
+                    val inputStream = context.assets.open(assetPath)
+                    val mimeType =
+                        when {
+                            path.endsWith(".js") -> "application/javascript"
+                            path.endsWith(".css") -> "text/css"
+                            path.endsWith(".html") -> "text/html"
+                            path.endsWith(".json") -> "application/json"
+                            path.endsWith(".woff2") -> "font/woff2"
+                            path.endsWith(".woff") -> "font/woff"
+                            path.endsWith(".otf") -> "font/otf"
+                            path.endsWith(".ttf") -> "font/ttf"
+                            path.endsWith(".png") -> "image/png"
+                            path.endsWith(".svg") -> "image/svg+xml"
+                            else -> "application/octet-stream"
+                        }
+                    WebResourceResponse(mimeType, "UTF-8", inputStream)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+
+        val assetLoader =
+            WebViewAssetLoader
+                .Builder()
+                .addPathHandler("/", selfWalletHandler)
+                .build()
+
         webView =
             WebView(context).apply {
                 settings.apply {
@@ -37,7 +78,7 @@ class AndroidWebViewHost(
                     javaScriptEnabled = true
                     domStorageEnabled = true
 
-                    // Security: disable file access
+                    // File access not needed — assets served via WebViewAssetLoader
                     allowFileAccess = false
                     allowContentAccess = false
 
@@ -50,15 +91,23 @@ class AndroidWebViewHost(
                     }
                 }
 
-                // Set WebViewClient for URL filtering and SSL security
                 webViewClient =
                     object : WebViewClient() {
+                        override fun shouldInterceptRequest(
+                            view: WebView?,
+                            request: WebResourceRequest?,
+                        ): WebResourceResponse? {
+                            request ?: return null
+                            return assetLoader.shouldInterceptRequest(request.url)
+                        }
+
                         override fun shouldOverrideUrlLoading(
                             view: WebView?,
                             request: WebResourceRequest?,
                         ): Boolean {
                             val url = request?.url?.toString() ?: return true
-                            if (url.startsWith("file:///android_asset/")) return false
+                            val assetHost = "https://appassets.androidplatform.net/"
+                            if (url.startsWith(assetHost)) return false
                             if (isDebugMode && url.startsWith("http://10.0.2.2:5173")) return false
                             return true // block everything else
                         }
@@ -82,8 +131,11 @@ class AndroidWebViewHost(
                     // Android emulator uses 10.0.2.2 to access host machine's localhost
                     loadUrl("http://10.0.2.2:5173")
                 } else {
-                    // Production mode: load bundled assets
-                    loadUrl("file:///android_asset/self-wallet/index.html")
+                    // Production mode: load via WebViewAssetLoader.
+                    // The custom PathHandler prepends self-wallet/ to all paths,
+                    // so /index.html → self-wallet/index.html in assets,
+                    // and /assets/foo.js → self-wallet/assets/foo.js in assets.
+                    loadUrl("https://appassets.androidplatform.net/index.html")
                 }
             }
         return webView

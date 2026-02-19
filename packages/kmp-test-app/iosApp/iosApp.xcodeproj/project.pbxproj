@@ -3,14 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		097D34EF2F41B7FC005F3E2A /* MrzCameraHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097D34EE2F41B7FC005F3E2A /* MrzCameraHelper.swift */; };
-		097D34F02F41B7FC005F3E2A /* MrzCameraFactoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097D34ED2F41B7FC005F3E2A /* MrzCameraFactoryImpl.swift */; };
-		097D34F12F41B7FC005F3E2A /* NfcPassportHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097D34F32F41B7FC005F3E2A /* NfcPassportHelper.swift */; };
-		097D34F22F41B7FC005F3E2A /* NfcScanFactoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097D34F42F41B7FC005F3E2A /* NfcScanFactoryImpl.swift */; };
+		0979CBA92F44018D007B599C /* SelfSdkSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 0979CBA82F44018D007B599C /* SelfSdkSwift */; };
 		56A8344685FC588789B90E28 /* Pods_iosApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F8275FF784D8D1C5E80963E /* Pods_iosApp.framework */; };
 		B10000010000000000000001 /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000020000000000000001 /* iOSApp.swift */; };
 		B10000010000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000020000000000000002 /* ContentView.swift */; };
@@ -18,10 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		097D34ED2F41B7FC005F3E2A /* MrzCameraFactoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MrzCameraFactoryImpl.swift; sourceTree = "<group>"; };
-		097D34EE2F41B7FC005F3E2A /* MrzCameraHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MrzCameraHelper.swift; sourceTree = "<group>"; };
-		097D34F32F41B7FC005F3E2A /* NfcPassportHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NfcPassportHelper.swift; sourceTree = "<group>"; };
-		097D34F42F41B7FC005F3E2A /* NfcScanFactoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NfcScanFactoryImpl.swift; sourceTree = "<group>"; };
+		0979CBA72F44018D007B599C /* self-sdk-swift */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "self-sdk-swift"; path = "../../self-sdk-swift"; sourceTree = "<group>"; };
 		526CA672865BCEB6790DC053 /* Pods-iosApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosApp.release.xcconfig"; path = "Target Support Files/Pods-iosApp/Pods-iosApp.release.xcconfig"; sourceTree = "<group>"; };
 		9F8275FF784D8D1C5E80963E /* Pods_iosApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iosApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10000020000000000000001 /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
@@ -37,6 +31,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0979CBA92F44018D007B599C /* SelfSdkSwift in Frameworks */,
 				56A8344685FC588789B90E28 /* Pods_iosApp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -50,7 +45,6 @@
 				FD075BC19DEE8279095366DE /* Pods-iosApp.debug.xcconfig */,
 				526CA672865BCEB6790DC053 /* Pods-iosApp.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -67,10 +61,6 @@
 		B10000040000000000000002 /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
-				097D34ED2F41B7FC005F3E2A /* MrzCameraFactoryImpl.swift */,
-				097D34EE2F41B7FC005F3E2A /* MrzCameraHelper.swift */,
-				097D34F32F41B7FC005F3E2A /* NfcPassportHelper.swift */,
-				097D34F42F41B7FC005F3E2A /* NfcScanFactoryImpl.swift */,
 				B10000020000000000000001 /* iOSApp.swift */,
 				B10000020000000000000002 /* ContentView.swift */,
 				B10000020000000000000003 /* Assets.xcassets */,
@@ -90,6 +80,7 @@
 		EAF0A9C14B5FCF4F2A4854FC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0979CBA72F44018D007B599C /* self-sdk-swift */,
 				9F8275FF784D8D1C5E80963E /* Pods_iosApp.framework */,
 			);
 			name = Frameworks;
@@ -107,13 +98,15 @@
 				B10000030000000000000002 /* Sources */,
 				B10000030000000000000001 /* Frameworks */,
 				B10000030000000000000003 /* Resources */,
-				49AF1110583997DFFE7E72AC /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = iosApp;
+			packageProductDependencies = (
+				0979CBA82F44018D007B599C /* SelfSdkSwift */,
+			);
 			productName = iosApp;
 			productReference = B10000020000000000000010 /* iosApp.app */;
 			productType = "com.apple.product-type.application";
@@ -137,6 +130,9 @@
 				Base,
 			);
 			mainGroup = B10000040000000000000001;
+			packageReferences = (
+				0979CBA62F44010F007B599C /* XCLocalSwiftPackageReference "self-sdk-swift" */,
+			);
 			productRefGroup = B10000040000000000000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -180,23 +176,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		49AF1110583997DFFE7E72AC /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		B10000060000000000000001 /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -222,10 +201,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				097D34EF2F41B7FC005F3E2A /* MrzCameraHelper.swift in Sources */,
-				097D34F02F41B7FC005F3E2A /* MrzCameraFactoryImpl.swift in Sources */,
-				097D34F12F41B7FC005F3E2A /* NfcPassportHelper.swift in Sources */,
-				097D34F22F41B7FC005F3E2A /* NfcScanFactoryImpl.swift in Sources */,
 				B10000010000000000000001 /* iOSApp.swift in Sources */,
 				B10000010000000000000002 /* ContentView.swift in Sources */,
 			);
@@ -388,6 +363,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		0979CBA62F44010F007B599C /* XCLocalSwiftPackageReference "self-sdk-swift" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../self-sdk-swift";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0979CBA82F44018D007B599C /* SelfSdkSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SelfSdkSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B10000080000000000000001 /* Project object */;
 }

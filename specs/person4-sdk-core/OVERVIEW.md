@@ -1,6 +1,6 @@
 # Person 4: SDK Core Adaptation — Workstream Overview
 
-> Last updated: 2026-02-17
+> Last updated: 2026-02-19
 > Owner: Person 4 (SDK Core)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC.md](./SPEC.md)
@@ -20,8 +20,9 @@
 - [x] Browser Entry Point & Package Exports (Chunk 4B — Done)
 - [x] WebView Lifecycle Events (Chunk 4C — Done)
 - [x] Conditional SelfApp Store (Chunk 4E — Done)
-- [ ] Web Fallback Adapter Implementations (Chunk 4F — Pending)
-- [ ] `Platform` / `__DEV__` contamination removed from core files
+- [x] Web Fallback Adapter Implementations (Chunk 4F — Done)
+- [ ] Duplicate fallback ownership remains unresolved (`mobile-sdk-alpha` vs `webview-bridge`)
+- [ ] Final contract for web-only fallback vs bridge routing (crypto/haptic behavior) still needs explicit decision
 
 ## What You Own
 
