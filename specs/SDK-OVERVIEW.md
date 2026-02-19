@@ -8,7 +8,7 @@
 
 - **Goal:** Embed Self's identity verification into any host app (MiniPay, Self Wallet, others) — some Kotlin (KMP), some React Native — with zero duplicated logic.
 - **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire verification flow runs inside a shared WebView.
-- **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
+- **Constraint:** NFC, camera, biometrics, keychain, and crypto signing/key-gen are the ONLY things that touch native code. Everything else runs in the WebView.
 
 ## Status Checklist
 
@@ -18,7 +18,7 @@
 - [x] WebView UI screens built (10 screens, routing works)
 - [x] WebView engine core working (275+ tests pass, XState proving machine)
 - [x] Android native shell implemented (5 handlers, WebView host, Activity)
-- [x] Delete 4 unnecessary Android handlers (documents, crypto, analytics, haptic)
+- [x] Delete 3 unnecessary Android handlers (documents, analytics, haptic); crypto standalone handler deleted but crypto domain still routed natively for signing/key-gen
 - [ ] iOS native shell implemented (Swift providers via PR #1762, not yet merged)
 - [ ] Biometrics bridge adapter (domain defined, no adapter implementation)
 - [ ] Camera bridge adapter wiring in webview-app
@@ -58,7 +58,7 @@
 │  ├─ Keychain ★      │   │  ├─ Keychain ★      │
 │  └─ Lifecycle       │   │  └─ Lifecycle        │
 │                     │   │                     │
-│  KMP iOS: 3 init.†  │   │                     │
+│  KMP iOS: 4 init.†  │   │                     │
 └─────────┬───────────┘   └──────────┬──────────┘
           │                          │
           └────────────┬─────────────┘
@@ -106,7 +106,7 @@
           └─────────────────────────┘
 
 ★ = Keychain is native-managed (host app controls access). In the bridge protocol, Keychain = the `secureStorage` domain.
-† = KMP iOS initially ships with 3 handlers (NFC, Biometrics, Lifecycle). Camera is Phase 2. Keychain on iOS is managed directly by the host app.
+† = KMP iOS initially ships with 4 required providers (NFC, Biometrics, SecureStorage, Lifecycle). Camera is Phase 2. SecureStorage on iOS is injected via factory pattern and required at startup — no in-memory fallback.
 ```
 
 ## Design Principles
@@ -125,7 +125,7 @@
 | **WebView UI**          | `packages/webview-app/`      | TypeScript (React)     | 10 screens: home, country, ID, camera, NFC, confirm, proving, result, settings, coming-soon | All screens render, routing works, bridge integration wired | **75%** | Biometrics + camera adapter wiring. Dynamic proof request items. Wire SelfClientProvider to web fallback adapters                 |
 | **Bridge Protocol**     | `packages/webview-bridge/`   | TypeScript             | JSON messaging, 10 domains, 9 adapters, timeout/error handling, mock transport              | 62 tests pass, production-ready protocol                    | **80%** | Add biometrics adapter (domain defined, no implementation). Web fallback adapters for documents/storage                           |
 | **Kotlin Native Shell** | `packages/kmp-sdk/`          | Kotlin                 | Android: 5 handlers + WebView host + Activity. iOS: stubs (Swift providers in PR #1762)     | Android fully implemented, iOS stubs                        | **70%** | iOS: implement via Swift provider pattern                                                                                         |
-| **Swift Providers**     | `packages/self-sdk-swift/`   | Swift                  | iOS native implementations: NFC, biometrics, crypto, secure storage, WebView hosting        | In PR #1762 (not merged)                                    | **30%** | Merge PR #1762. Complete NFC + biometrics + lifecycle providers                                                                   |
+| **Swift Providers**     | `packages/self-sdk-swift/`   | Swift                  | iOS native implementations: NFC, biometrics, secure storage, WebView hosting                | In PR #1762 (not merged)                                    | **30%** | Merge PR #1762. Complete NFC + biometrics + secure storage + lifecycle providers                                                  |
 | **RN Native Shell**     | `packages/rn-sdk/` — **NEW** | React Native           | `SelfVerification` WebView wrapper, 5 native handler bridges                                | Does not exist                                              | **0%**  | Create thin wrapper: ~200-300 LOC, same bridge protocol as KMP                                                                    |
 | **Shared Utilities**    | `common/`                    | TypeScript             | Poseidon, Merkle trees, passport parsing, certificates, 150+ files, 88+ exports             | Production, 98% browser-compatible                          | **95%** | No changes needed. Only 2 files require Node.js (optional)                                                                        |
 | **Self Wallet App**     | `app/`                       | React Native (v0.76.9) | Full wallet: documents, NFC, proving, KYC, recovery, settings, Turnkey wallet               | Production (v2.9.16)                                        | **N/A** | Test environment for SDK. Eventually migrates to `SelfVerification`                                                               |
@@ -255,34 +255,34 @@ Event    (Native → WebView, unsolicited)
 
 ### Domain Catalog
 
-| Domain          | Methods                                                    | Events                                       | Handling                | Notes                                                                                        |
-| --------------- | ---------------------------------------------------------- | -------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------- |
-| `nfc`           | `scan`, `cancelScan`, `isSupported`                        | `scanProgress`, `tagDiscovered`, `scanError` | **Native**              | 120s timeout, progress streaming                                                             |
-| `biometrics`    | `authenticate`, `isAvailable`, `getBiometryType`           | —                                            | **Native**              | Required for key access                                                                      |
-| `secureStorage` | `get`, `set`, `remove`                                     | —                                            | **Native**              | "Keychain" in UI/docs = `secureStorage` domain in bridge protocol. Host app controls access. |
-| `camera`        | `scanMRZ`, `isAvailable`                                   | —                                            | **Native**              | MRZ OCR from camera                                                                          |
-| `lifecycle`     | `ready`, `dismiss`, `setResult`                            | —                                            | **Native**              | WebView ↔ host communication                                                                 |
+| Domain          | Methods                                                    | Events                                       | Handling                | Notes                                                                                                            |
+| --------------- | ---------------------------------------------------------- | -------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `nfc`           | `scan`, `cancelScan`, `isSupported`                        | `scanProgress`, `tagDiscovered`, `scanError` | **Native**              | 120s timeout, progress streaming                                                                                 |
+| `biometrics`    | `authenticate`, `isAvailable`, `getBiometryType`           | —                                            | **Native**              | Required for key access                                                                                          |
+| `secureStorage` | `get`, `set`, `remove`                                     | —                                            | **Native**              | "Keychain" in UI/docs = `secureStorage` domain in bridge protocol. Host app controls access.                     |
+| `camera`        | `scanMRZ`, `isAvailable`                                   | —                                            | **Native**              | MRZ OCR from camera                                                                                              |
+| `lifecycle`     | `ready`, `dismiss`, `setResult`                            | —                                            | **Native**              | WebView ↔ host communication                                                                                     |
 | `crypto`        | `sign`, `generateKey`, `getPublicKey`                      | —                                            | **Native** †            | Standalone handler deleted; methods routed by native message router to secure-storage-backed impl. See footnote. |
-| `documents`     | `loadCatalog`, `saveCatalog`, `loadById`, `save`, `delete` | —                                            | **Web** (IndexedDB)     | No bridge round-trip                                                                         |
-| `analytics`     | `trackEvent`, `trackNfcEvent`, `logNfcEvent`               | —                                            | **Web** (console/fetch) | Fire-and-forget                                                                              |
-| `haptic`        | `trigger`                                                  | —                                            | **Web** (skip)          | Not critical                                                                                 |
-| `navigation`    | `goBack`, `goTo`                                           | —                                            | **Web** (React Router)  | WebView-internal                                                                             |
+| `documents`     | `loadCatalog`, `saveCatalog`, `loadById`, `save`, `delete` | —                                            | **Web** (IndexedDB)     | No bridge round-trip                                                                                             |
+| `analytics`     | `trackEvent`, `trackNfcEvent`, `logNfcEvent`               | —                                            | **Web** (console/fetch) | Fire-and-forget                                                                                                  |
+| `haptic`        | `trigger`                                                  | —                                            | **Web** (skip)          | Not critical                                                                                                     |
+| `navigation`    | `goBack`, `goTo`                                           | —                                            | **Web** (React Router)  | WebView-internal                                                                                                 |
 
 ### Adapter Interface Mapping
 
-| SDK Adapter Interface  | Bridges to Native? | Implementation                                     | Notes                             |
-| ---------------------- | ------------------ | -------------------------------------------------- | --------------------------------- |
-| `NFCScannerAdapter`    | Yes                | `nfc.scan` bridge call                             | Core flow: scan passport NFC chip |
-| `CryptoAdapter.sign()` | Yes †              | `bridge.request('crypto', 'sign', ...)` — native signs using secure storage key | Key never leaves native            |
-| `CryptoAdapter.hash()` | No                 | Web Crypto API                                     | Runs entirely in WebView          |
-| `AuthAdapter`          | Yes                | `secureStorage.get` with `requireBiometric: true`  | Private key gated by biometrics   |
-| `StorageAdapter`       | Yes                | `secureStorage.*` bridge calls                     | Keychain access only              |
-| `DocumentsAdapter`     | No                 | IndexedDB                                          | Runs entirely in WebView          |
-| `AnalyticsAdapter`     | No                 | console/fetch                                      | Fire-and-forget                   |
-| `NavigationAdapter`    | No                 | React Router                                       | WebView-internal                  |
-| `NetworkAdapter`       | No                 | `fetch()`                                          | Works in WebView                  |
-| `ClockAdapter`         | No                 | `Date.now()` + `setTimeout`                        | Works in WebView                  |
-| `LoggerAdapter`        | No                 | `console.*`                                        | Works in WebView                  |
+| SDK Adapter Interface  | Bridges to Native? | Implementation                                                                  | Notes                             |
+| ---------------------- | ------------------ | ------------------------------------------------------------------------------- | --------------------------------- |
+| `NFCScannerAdapter`    | Yes                | `nfc.scan` bridge call                                                          | Core flow: scan passport NFC chip |
+| `CryptoAdapter.sign()` | Yes †              | `bridge.request('crypto', 'sign', ...)` — native signs using secure storage key | Key never leaves native           |
+| `CryptoAdapter.hash()` | No                 | Web Crypto API                                                                  | Runs entirely in WebView          |
+| `AuthAdapter`          | Yes                | `secureStorage.get` with `requireBiometric: true`                               | Private key gated by biometrics   |
+| `StorageAdapter`       | Yes                | `secureStorage.*` bridge calls                                                  | Keychain access only              |
+| `DocumentsAdapter`     | No                 | IndexedDB                                                                       | Runs entirely in WebView          |
+| `AnalyticsAdapter`     | No                 | console/fetch                                                                   | Fire-and-forget                   |
+| `NavigationAdapter`    | No                 | React Router                                                                    | WebView-internal                  |
+| `NetworkAdapter`       | No                 | `fetch()`                                                                       | Works in WebView                  |
+| `ClockAdapter`         | No                 | `Date.now()` + `setTimeout`                                                     | Works in WebView                  |
+| `LoggerAdapter`        | No                 | `console.*`                                                                     | Works in WebView                  |
 
 ### Transport
 
