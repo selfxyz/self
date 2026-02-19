@@ -2,36 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { tamaguiPlugin } from '@tamagui/vite-plugin';
 
 export default defineConfig({
-  resolve: {
-    extensions: ['.web.tsx', '.web.ts', '.web.js', '.tsx', '.ts', '.js'],
-    alias: {
-      'react-native': 'react-native-web',
-      'lottie-react-native': 'lottie-react',
-    },
-  },
-  plugins: [
-    react(),
-    tamaguiPlugin({
-      config: resolve(__dirname, 'tamagui.config.ts'),
-      components: ['tamagui'],
-      enableDynamicEvaluation: true,
-      excludeReactNativeWebExports: [
-        'Switch',
-        'ProgressBar',
-        'Picker',
-        'CheckBox',
-        'Touchable',
-      ],
-      platform: 'web',
-      optimize: true,
-    }),
-  ],
+  plugins: [react()],
   define: { global: 'globalThis' },
   build: {
     target: ['chrome90', 'safari15'],

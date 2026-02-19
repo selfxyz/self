@@ -4,8 +4,16 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Button, Spinner, Text, View, YStack } from 'tamagui';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  Button,
+  Title,
+  Description,
+  BodyText,
+  Caption,
+  colors,
+  spacing,
+} from '@selfxyz/euclid-web';
 
 import { onNfcProgress } from '@selfxyz/webview-bridge/adapters';
 
@@ -41,7 +49,6 @@ export const DocumentNFCScreen: React.FC = () => {
   const abortRef = useRef<AbortController | null>(null);
   const sessionIdRef = useRef(uuidv4());
 
-  // Subscribe to NFC progress events
   useEffect(() => {
     const unsub = onNfcProgress(bridge, progress => {
       setProgressMessage(progress.message ?? progress.step);
@@ -82,7 +89,6 @@ export const DocumentNFCScreen: React.FC = () => {
       haptic.trigger('success');
       setScanState('success');
 
-      // Store the scanned passport data
       if (result && typeof result === 'object') {
         const passportData = (result as { passportData?: unknown })
           .passportData;
@@ -97,7 +103,6 @@ export const DocumentNFCScreen: React.FC = () => {
         }
       }
 
-      // Brief delay for UX, then navigate to confirm
       setTimeout(() => {
         navigate('/onboarding/confirm');
       }, 700);
@@ -135,191 +140,179 @@ export const DocumentNFCScreen: React.FC = () => {
   }, [navigate, analytics]);
 
   return (
-    <YStack flex={1} backgroundColor="#000000">
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        height: '100vh',
+        backgroundColor: colors.white,
+      }}
+    >
       {/* Top: animation area */}
-      <View
-        flex={1}
-        backgroundColor="#F8FAFC"
-        borderBottomLeftRadius={24}
-        borderBottomRightRadius={24}
-        alignItems="center"
-        justifyContent="center"
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.slate50,
+          borderBottomLeftRadius: 24,
+          borderBottomRightRadius: 24,
+        }}
       >
         {scanState === 'scanning' ? (
-          <YStack alignItems="center" gap={16}>
-            <Spinner size="large" color="#000000" />
-            <Text fontFamily="DINOT-Medium" fontSize={16} color="#000000">
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: spacing.md,
+            }}
+          >
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                border: `3px solid ${colors.slate200}`,
+                borderTopColor: colors.black,
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite',
+              }}
+            />
+            <BodyText color={colors.black}>
               {progressMessage ?? 'Hold your device against the ID chip...'}
-            </Text>
+            </BodyText>
             {progressPercent > 0 && (
-              <View
-                width={200}
-                height={4}
-                backgroundColor="#E2E8F0"
-                borderRadius={2}
-                overflow="hidden"
+              <div
+                style={{
+                  width: 200,
+                  height: 4,
+                  backgroundColor: colors.slate200,
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                }}
               >
-                <View
-                  width={`${progressPercent}%`}
-                  height="100%"
-                  backgroundColor="#2563EB"
-                  borderRadius={2}
+                <div
+                  style={{
+                    width: `${progressPercent}%`,
+                    height: '100%',
+                    backgroundColor: colors.blue600,
+                    borderRadius: 2,
+                    transition: 'width 0.3s ease',
+                  }}
                 />
-              </View>
+              </div>
             )}
-          </YStack>
+          </div>
         ) : scanState === 'success' ? (
-          <YStack alignItems="center" gap={12}>
-            <Text fontSize={64}>✅</Text>
-            <Text fontFamily="DINOT-Medium" fontSize={18} color="#000000">
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: spacing.sm,
+            }}
+          >
+            <span style={{ fontSize: 64 }}>✅</span>
+            <BodyText color={colors.black} fontSize={18}>
               Scan complete
-            </Text>
-          </YStack>
+            </BodyText>
+          </div>
         ) : scanState === 'error' ? (
-          <YStack alignItems="center" gap={12} paddingHorizontal={24}>
-            <Text fontSize={48}>⚠️</Text>
-            <Text
-              fontFamily="DINOT-Medium"
-              fontSize={16}
-              color="#EF4444"
-              textAlign="center"
-            >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: spacing.sm,
+              padding: `0 ${spacing.lg}px`,
+            }}
+          >
+            <span style={{ fontSize: 48 }}>⚠️</span>
+            <BodyText color={colors.red500} textAlign="center">
               {errorMessage}
-            </Text>
-          </YStack>
+            </BodyText>
+          </div>
         ) : (
-          <YStack alignItems="center" gap={12}>
-            <Text fontSize={64}>📱</Text>
-            <Text fontFamily="DINOT-Medium" fontSize={16} color="#64748B">
-              Ready to scan NFC chip
-            </Text>
-          </YStack>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: spacing.sm,
+            }}
+          >
+            <span style={{ fontSize: 64 }}>📱</span>
+            <BodyText color={colors.slate500}>Ready to scan NFC chip</BodyText>
+          </div>
         )}
-      </View>
+      </div>
 
       {/* Bottom: instructions + buttons */}
-      <YStack
-        paddingHorizontal={24}
-        paddingVertical={24}
-        gap={16}
-        backgroundColor="#ffffff"
+      <div
+        style={{
+          padding: spacing.lg,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: spacing.md,
+          backgroundColor: colors.white,
+        }}
       >
         {scanState === 'scanning' ? (
           <>
-            <Text
-              fontFamily="Advercase-Regular"
-              fontSize={24}
-              color="#000000"
-              textAlign="center"
-            >
-              Ready to scan
-            </Text>
-            <Text
-              fontFamily="DINOT-Medium"
-              fontSize={14}
-              color="#64748B"
-              textAlign="center"
-            >
+            <Title textAlign="center">Ready to scan</Title>
+            <Description textAlign="center">
               Hold your device near the NFC tag and stop moving when it
               vibrates.
-            </Text>
+            </Description>
           </>
         ) : scanState === 'error' ? (
           <>
-            <Text
-              fontFamily="Advercase-Regular"
-              fontSize={24}
-              color="#000000"
-              textAlign="center"
-            >
-              Scan failed
-            </Text>
-            <Text
-              fontFamily="DINOT-Medium"
-              fontSize={14}
-              color="#64748B"
-              textAlign="center"
-            >
+            <Title textAlign="center">Scan failed</Title>
+            <Description textAlign="center">
               Please try again. Make sure your document&apos;s chip is near your
               phone.
-            </Text>
+            </Description>
             <Button
-              backgroundColor="#000000"
-              color="#ffffff"
-              fontFamily="DINOT-Medium"
-              borderRadius={12}
-              height={52}
+              variant="primary-no-icon"
+              text="Try Again"
               onPress={startScan}
-              pressStyle={{ opacity: 0.7 }}
-            >
-              Try Again
-            </Button>
+              fullWidth
+            />
           </>
         ) : (
           <>
-            <Text
-              fontFamily="Advercase-Regular"
-              fontSize={24}
-              color="#000000"
-              textAlign="center"
-            >
-              Verify your ID
-            </Text>
-            <Text
-              fontFamily="DINOT-Medium"
-              fontSize={16}
-              color="#1E293B"
-              textAlign="center"
-            >
+            <Title textAlign="center">Verify your ID</Title>
+            <BodyText color={colors.slate800} textAlign="center">
               Find the RFID chip in your ID
-            </Text>
-            <Text
-              fontFamily="DINOT-Medium"
-              fontSize={14}
-              color="#64748B"
-              textAlign="center"
-            >
+            </BodyText>
+            <Description textAlign="center">
               Place your phone against the chip and keep it still until the
               sensor reads it.
-            </Text>
-            <Text
-              fontFamily="DINOT-Medium"
-              fontSize={11}
-              color="#94A3B8"
+            </Description>
+            <Caption
               textAlign="center"
-              textTransform="uppercase"
-              letterSpacing={0.44}
+              style={{ textTransform: 'uppercase', letterSpacing: 0.44 }}
             >
               Self does not store this information.
-            </Text>
+            </Caption>
             <Button
-              backgroundColor="#000000"
-              color="#ffffff"
-              fontFamily="DINOT-Medium"
-              borderRadius={12}
-              height={52}
+              variant="primary-no-icon"
+              text="Start Scan"
               onPress={startScan}
-              pressStyle={{ opacity: 0.7 }}
-            >
-              Start Scan
-            </Button>
+              fullWidth
+            />
           </>
         )}
 
         <Button
-          backgroundColor="transparent"
-          borderWidth={1}
-          borderColor="#CBD5E1"
-          borderRadius={12}
-          height={52}
-          fontFamily="DINOT-Medium"
-          color="#000000"
+          variant="secondary-label"
+          text="Cancel"
           onPress={cancelScan}
-          pressStyle={{ opacity: 0.7 }}
-        >
-          Cancel
-        </Button>
-      </YStack>
-    </YStack>
+          fullWidth
+        />
+      </div>
+    </div>
   );
 };

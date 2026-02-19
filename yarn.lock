@@ -8082,7 +8082,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-async-storage/async-storage@npm:^2.2.0":
+"@react-native-async-storage/async-storage@npm:^2.1.2, @react-native-async-storage/async-storage@npm:^2.2.0":
   version: 2.2.0
   resolution: "@react-native-async-storage/async-storage@npm:2.2.0"
   dependencies:
@@ -9981,6 +9981,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@selfxyz/euclid-core@npm:^1.0.0, @selfxyz/euclid-core@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@selfxyz/euclid-core@npm:1.0.1"
+  checksum: 10c0/13b704c3fe1c8be99cd39a22a8ab22925e26c97b43f41a04e59ff313068c6806ead84f3417b6945253acaa85e2134815b8008320e9fcc4dcb15e640878a3b40e
+  languageName: node
+  linkType: hard
+
+"@selfxyz/euclid-web@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@selfxyz/euclid-web@npm:1.0.2"
+  dependencies:
+    "@selfxyz/euclid-core": "npm:^1.0.0"
+  peerDependencies:
+    react: ">=18.2.0"
+    react-dom: ">=18.2.0"
+  checksum: 10c0/3fb4afe120e69bba9545ad358be1b5405c65030df35fe0c53a75adc96fe2515e79570aefe57b38e328ee653e55c20a8c09094071038e06f071ef7ee5387cfad4
+  languageName: node
+  linkType: hard
+
 "@selfxyz/euclid@npm:^0.6.1":
   version: 0.6.1
   resolution: "@selfxyz/euclid@npm:0.6.1"
@@ -10170,7 +10189,9 @@ __metadata:
   resolution: "@selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha"
   dependencies:
     "@babel/runtime": "npm:^7.28.6"
+    "@noble/hashes": "npm:^1.5.0"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
+    "@react-native-async-storage/async-storage": "npm:^2.1.2"
     "@selfxyz/common": "workspace:^"
     "@selfxyz/euclid": "npm:^0.6.1"
     "@testing-library/react": "npm:^14.1.2"
@@ -10187,6 +10208,7 @@ __metadata:
     eslint-plugin-react: "npm:^7.37.5"
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
     eslint-plugin-sort-exports: "npm:^0.9.1"
+    fake-indexeddb: "npm:^6.2.5"
     jsdom: "npm:^25.0.1"
     lottie-react-native: "npm:7.2.2"
     node-forge: "npm:^1.3.3"
@@ -10196,7 +10218,9 @@ __metadata:
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.9"
     react-native-blur-effect: "npm:^1.1.3"
+    react-native-get-random-values: "npm:^1.11.0"
     react-native-haptic-feedback: "npm:^2.3.3"
+    react-native-keychain: "npm:^9.2.3"
     react-native-localize: "npm:^3.6.1"
     react-native-nfc-manager: "npm:^3.17.2"
     react-native-svg: "npm:15.12.1"
@@ -10211,14 +10235,24 @@ __metadata:
     xstate: "npm:^5.20.2"
     zustand: "npm:^4.5.2"
   peerDependencies:
+    "@react-native-async-storage/async-storage": ">=1.0.0"
     lottie-react-native: 7.2.2
     react: ^18.3.1
     react-native: 0.76.9
     react-native-blur-effect: ^1.1.3
+    react-native-get-random-values: ">=1.0.0"
     react-native-haptic-feedback: "*"
+    react-native-keychain: ">=8.0.0"
     react-native-localize: "*"
     react-native-svg: "*"
     react-native-webview: ^13.16.0
+  peerDependenciesMeta:
+    "@react-native-async-storage/async-storage":
+      optional: true
+    react-native-get-random-values:
+      optional: true
+    react-native-keychain:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -10315,6 +10349,43 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@selfxyz/rn-sdk@workspace:packages/rn-sdk":
+  version: 0.0.0-use.local
+  resolution: "@selfxyz/rn-sdk@workspace:packages/rn-sdk"
+  dependencies:
+    "@selfxyz/webview-app": "workspace:^"
+    "@selfxyz/webview-bridge": "workspace:^"
+    "@types/react": "npm:^18.3.4"
+    react: "npm:^18.3.1"
+    react-native: "npm:0.76.9"
+    react-native-biometrics: "npm:^3.0.1"
+    react-native-fs: "npm:^2.20.0"
+    react-native-keychain: "npm:^9.2.3"
+    react-native-nfc-manager: "npm:^3.17.2"
+    react-native-webview: "npm:13.16.0"
+    tsup: "npm:^8.0.1"
+    typescript: "npm:^5.9.3"
+    vitest: "npm:^2.1.8"
+  peerDependencies:
+    react: ^18.0.0
+    react-native: ">=0.72.0"
+    react-native-biometrics: ^3.0.1
+    react-native-fs: ^2.20.0
+    react-native-keychain: ^8.2.0
+    react-native-nfc-manager: ^3.14.0
+    react-native-webview: ">=13.0.0"
+  peerDependenciesMeta:
+    react-native-biometrics:
+      optional: true
+    react-native-fs:
+      optional: true
+    react-native-keychain:
+      optional: true
+    react-native-nfc-manager:
+      optional: true
+  languageName: unknown
+  linkType: soft
+
 "@selfxyz/sdk-common@workspace:^, @selfxyz/sdk-common@workspace:sdk/sdk-common":
   version: 0.0.0-use.local
   resolution: "@selfxyz/sdk-common@workspace:sdk/sdk-common"
@@ -10324,14 +10395,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/webview-app@workspace:packages/webview-app":
+"@selfxyz/webview-app@workspace:^, @selfxyz/webview-app@workspace:packages/webview-app":
   version: 0.0.0-use.local
   resolution: "@selfxyz/webview-app@workspace:packages/webview-app"
   dependencies:
+    "@selfxyz/euclid-core": "npm:^1.0.1"
+    "@selfxyz/euclid-web": "npm:^1.0.2"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@selfxyz/webview-bridge": "workspace:^"
-    "@tamagui/config": "npm:1.126.14"
-    "@tamagui/vite-plugin": "npm:1.126.14"
     "@testing-library/react": "npm:^14.1.2"
     "@types/react": "npm:^18.3.4"
     "@types/react-dom": "npm:^18.3.0"
@@ -10339,9 +10410,7 @@ __metadata:
     lottie-react: "npm:^2.4.0"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
-    react-native-web: "npm:^0.19.13"
     react-router-dom: "npm:^6.28.0"
-    tamagui: "npm:1.126.14"
     typescript: "npm:^5.9.3"
     uuid: "npm:^11.1.0"
     vite: "npm:^6.1.0"
@@ -10355,6 +10424,7 @@ __metadata:
   resolution: "@selfxyz/webview-bridge@workspace:packages/webview-bridge"
   dependencies:
     "@types/node": "npm:^22.18.3"
+    fake-indexeddb: "npm:^6.2.5"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.3"
     uuid: "npm:^11.1.0"
@@ -18454,6 +18524,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"base-64@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "base-64@npm:0.1.0"
+  checksum: 10c0/fe0dcf076e823f04db7ee9b02495be08a91c445fbc6db03cb9913be9680e2fcc0af8b74459041fe08ad16800b1f65a549501d8f08696a8a6d32880789b7de69d
+  languageName: node
+  linkType: hard
+
 "base-x@npm:^5.0.0":
   version: 5.0.1
   resolution: "base-x@npm:5.0.1"
@@ -23245,6 +23322,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fake-indexeddb@npm:^6.2.5":
+  version: 6.2.5
+  resolution: "fake-indexeddb@npm:6.2.5"
+  checksum: 10c0/6c5e2fe84a61daa06d7ad63699d1041fe61847f15f92db12415634b3db94f363a64be9e08a3c3c4434af9c3c0132086b85c4d5dc5e8e06edae1e7daf70ce1f3c
+  languageName: node
+  linkType: hard
+
 "fast-base64-decode@npm:^1.0.0":
   version: 1.0.0
   resolution: "fast-base64-decode@npm:1.0.0"
@@ -23297,13 +23381,6 @@ __metadata:
   version: 2.0.6
   resolution: "fast-levenshtein@npm:2.0.6"
   checksum: 10c0/111972b37338bcb88f7d9e2c5907862c280ebf4234433b95bc611e518d192ccb2d38119c4ac86e26b668d75f7f3894f4ff5c4982899afced7ca78633b08287c4
-  languageName: node
-  linkType: hard
-
-"fast-loops@npm:^1.1.3":
-  version: 1.1.4
-  resolution: "fast-loops@npm:1.1.4"
-  checksum: 10c0/25e8a608fccc0d84c1d037efa715ab1e6f21576e1070931b3ed966657204c47ed2b1cba16e5c46ddde2d62aba0b4100d86616d995318b7367fa0a902a78ed885
   languageName: node
   linkType: hard
 
@@ -25433,16 +25510,6 @@ __metadata:
   dependencies:
     tslib: "npm:^2.0.0"
   checksum: 10c0/8947b3382c5e9e9aab2e80a010ae339cdfda1fd5d8116138bb3098a1e99316f5bc09d057ea57627707b56527e24119d3e8c5afdb01a82911d80025a4fe4c3b92
-  languageName: node
-  linkType: hard
-
-"inline-style-prefixer@npm:^6.0.1":
-  version: 6.0.4
-  resolution: "inline-style-prefixer@npm:6.0.4"
-  dependencies:
-    css-in-js-utils: "npm:^3.1.0"
-    fast-loops: "npm:^1.1.3"
-  checksum: 10c0/d3d42bf0c48d621ea4bcfb077b5d370b106995422300a3a472674f96c9b489d96b4aac6f29dea3bb26ff2dfd7293e4752098bc2b53407769eafdb66c6c4c1764
   languageName: node
   linkType: hard
 
@@ -32357,6 +32424,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-keychain@npm:^9.2.3":
+  version: 9.2.3
+  resolution: "react-native-keychain@npm:9.2.3"
+  checksum: 10c0/aba1cb083e3703f9ca5ad755eee6303eed19dc8f56ff144bd828d5770086ff9c4fe2f30ce42d94b88d9ffdbbb14e4363907d3d740e8abee2dfe3c2b5baa603bf
+  languageName: node
+  linkType: hard
+
 "react-native-linear-gradient@npm:^2.8.3":
   version: 2.8.3
   resolution: "react-native-linear-gradient@npm:2.8.3"
@@ -32538,25 +32612,6 @@ __metadata:
     fa6-upgrade: bin/fa6-upgrade.sh
     generate-icon: bin/generate-icon.js
   checksum: 10c0/247804affcf74906062ed088d755c3d4632e3f2b62c38226ccb05e2a8dc42414c2378040a4acb474704bed09cd06cb285770c765ffff67fb2d3b896cd46e76ca
-  languageName: node
-  linkType: hard
-
-"react-native-web@npm:^0.19.13":
-  version: 0.19.13
-  resolution: "react-native-web@npm:0.19.13"
-  dependencies:
-    "@babel/runtime": "npm:^7.18.6"
-    "@react-native/normalize-colors": "npm:^0.74.1"
-    fbjs: "npm:^3.0.4"
-    inline-style-prefixer: "npm:^6.0.1"
-    memoize-one: "npm:^6.0.0"
-    nullthrows: "npm:^1.1.1"
-    postcss-value-parser: "npm:^4.2.0"
-    styleq: "npm:^0.1.3"
-  peerDependencies:
-    react: ^18.0.0
-    react-dom: ^18.0.0
-  checksum: 10c0/55e82a6f656843b2b4f6e4c4006a82ae8feed548e880e9fa3c2623da415d3abd9399c91c5360b71d5f24f47c5cbe30872a3ad785fa1a32cf152383d595f8ebd5
   languageName: node
   linkType: hard
 

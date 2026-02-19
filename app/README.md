@@ -9,6 +9,7 @@ Run the interactive setup script to check and install all dependencies:
 ```
 
 The script will prompt you to choose between:
+
 1. **Check only** - Just show what's installed/missing
 2. **Interactive setup** - Check and confirm before installing (recommended)
 3. **Auto-install** - Install everything without prompts

@@ -38,6 +38,7 @@ import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.UIKit.UIColor
 import platform.UIKit.UIView
 import xyz.self.sdk.models.MrzDetectionState
+import xyz.self.sdk.providers.SdkProviderRegistry
 import xyz.self.testapp.components.MrzViewfinder
 import xyz.self.testapp.models.PassportData
 import xyz.self.testapp.models.VerificationFlowState
@@ -387,8 +388,7 @@ private suspend fun requestCameraPermission(): Boolean =
 
 /**
  * Creates a native camera preview view with MRZ detection
- *
- * Note: This uses a factory pattern - the iOS app registers the factory implementation
+ * Uses SdkProviderRegistry.cameraMrz provider registered by SelfSdkSwift.configure()
  */
 @OptIn(ExperimentalForeignApi::class)
 private fun createCameraPreview(
@@ -396,13 +396,12 @@ private fun createCameraPreview(
     onProgress: (MrzDetectionState) -> Unit,
     onError: (String) -> Unit,
 ): UIView {
-    val factory = MrzCameraFactory.instance
+    val provider = SdkProviderRegistry.cameraMrz
 
-    if (factory != null) {
-        return factory.createCameraView(
-            onMrzDetected = { result ->
+    if (provider != null) {
+        return provider.createCameraView(
+            onMrzDetected = { jsonString ->
                 try {
-                    val jsonString = result as? String ?: result.toString()
                     val jsonElement = Json.parseToJsonElement(jsonString)
                     onMrzDetected(jsonElement)
                 } catch (e: Exception) {
@@ -414,14 +413,10 @@ private fun createCameraPreview(
                 try {
                     val stateIndex =
                         when (stateAny) {
-                            is Long -> stateAny.toInt()
-                            is Int -> stateAny
                             is Number -> stateAny.toInt()
                             else -> 0
                         }
-
                     val state = MrzDetectionState.entries.getOrNull(stateIndex) ?: MrzDetectionState.NO_TEXT
-
                     onProgress(state)
                 } catch (e: Exception) {
                     Logger.e("MrzScan", "Failed to convert progress state", e)
@@ -433,25 +428,6 @@ private fun createCameraPreview(
         )
     }
 
-    onError("MRZ camera not configured. Factory not registered from iOS app.")
+    onError("MRZ camera not configured. Call SelfSdkSwift.configure() first.")
     return UIView().apply { backgroundColor = UIColor.blackColor }
-}
-
-/**
- * Factory interface for creating MRZ camera views
- * Will be implemented and registered by the iOS app
- */
-interface MrzCameraViewFactory {
-    fun createCameraView(
-        onMrzDetected: (Any) -> Unit,
-        onProgress: (Any) -> Unit,
-        onError: (String) -> Unit,
-    ): UIView
-}
-
-/**
- * Singleton to hold the factory instance (set from iOS app)
- */
-object MrzCameraFactory {
-    var instance: MrzCameraViewFactory? = null
 }
