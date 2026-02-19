@@ -1,9 +1,9 @@
 # Claude Code Statusline Setup
 
-Shows model name, estimated session cost, token usage, and duration in the Claude Code statusline.
+Shows model name, estimated session cost, token usage, duration, and git branch in the Claude Code statusline.
 
 ```text
-Claude Opus 4.6  $1.23  42.3k tokens  5m30s
+Claude Opus 4.6  $1.23  42.3k tokens  5m30s  main
 ```
 
 ## Quick Setup Prompt
@@ -28,6 +28,9 @@ and add the statusLine block to ~/.claude/settings.json.
 TRACK_RESUMES="true"
 
 input=$(cat)
+
+# Git branch
+branch=$(git branch --show-current 2>/dev/null)
 
 model=$(echo "$input" | jq -r '.model.display_name // "Unknown"')
 model_id=$(echo "$input" | jq -r '.model.id // ""')
@@ -159,10 +162,15 @@ if [ -n "$transcript" ] && [ -f "$transcript" ]; then
 fi
 
 # Build output
+branch_part=""
+if [ -n "$branch" ]; then
+  branch_part=$(printf "  \033[0;34m%s\033[0m" "$branch")
+fi
+
 if [ -n "$duration" ]; then
-  printf "\033[0;36m%s\033[0m  \033[0;33m$%.2f\033[0m  \033[0;32m%s tokens\033[0m  \033[0;35m%s\033[0m" "$model" "$cost" "$tokens_display" "$duration"
+  printf "\033[0;36m%s\033[0m  \033[0;33m$%.2f\033[0m  \033[0;32m%s tokens\033[0m  \033[0;35m%s\033[0m%s" "$model" "$cost" "$tokens_display" "$duration" "$branch_part"
 else
-  printf "\033[0;36m%s\033[0m  \033[0;33m$%.2f\033[0m  \033[0;32m%s tokens\033[0m" "$model" "$cost" "$tokens_display"
+  printf "\033[0;36m%s\033[0m  \033[0;33m$%.2f\033[0m  \033[0;32m%s tokens\033[0m%s" "$model" "$cost" "$tokens_display" "$branch_part"
 fi
 ```
 
