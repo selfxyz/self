@@ -138,12 +138,6 @@ jobs:
         with:
           accept-android-sdk-licenses: true
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 30
-        with:
-          limit-access-to-actor: true
-
       - name: Install NDK
         uses: nick-fields/retry@v3
         with:
@@ -173,6 +167,7 @@ jobs:
           chmod +x app/android/gradlew
           (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
+
       - name: Clean up Gradle build artifacts
         uses: ./.github/actions/cleanup-gradle-artifacts
       - name: Verify APK and android-passport-nfc-reader integration
