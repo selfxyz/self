@@ -18,7 +18,7 @@
 - [x] Android WebView host + Activity
 - [x] Android handlers: NFC, Camera, Biometrics, Keychain, Lifecycle (5 of 5)
 - [x] Bridge message routing (`MessageRouter`)
-- [ ] Delete 4 unnecessary Android handlers (documents, crypto, analytics, haptic — 511 LOC)
+- [x] Delete 4 unnecessary Android handlers (documents, crypto, analytics, haptic — 511 LOC)
 - [ ] iOS Swift providers via PR #1762 (NFC, Biometrics, Lifecycle, WebView host)
 - [ ] `SelfSdk.launch()` working on iOS
 - [ ] KMP test app validation on both platforms
@@ -53,8 +53,8 @@ You build the native shells that sit between the host app and the bridge protoco
     │  │  kmp-sdk   │  │  kmp-sdk + │  │
     │  │  (Kotlin)  │  │  Swift pkg │  │
     │  └─────┬─────┘  └──────┬─────┘  │
-    │        │  5 handlers    │        │
-    │        │  each          │        │
+    │        │  Android: 5    │        │
+    │        │  iOS: 3 *      │        │
     │  NFC · Camera · Biometrics      │
     │  Keychain · Lifecycle           │
     │        │               │        │
@@ -65,7 +65,7 @@ You build the native shells that sit between the host app and the bridge protoco
     └────────────────┼────────────────┘
                      │ JSON postMessage
     ┌────────────────▼────────────────┐
-    │    BRIDGE PROTOCOL (Person 4)   │
+    │    BRIDGE PROTOCOL (Person 1)   │
     │    webview-bridge               │
     └────────────────┬────────────────┘
                      │
@@ -73,43 +73,45 @@ You build the native shells that sit between the host app and the bridge protoco
     │    WEBVIEW UI (Person 1)        │
     │    webview-app Vite bundle      │
     └─────────────────────────────────┘
+
+* iOS initially has 3 handlers (NFC, Biometrics, Lifecycle). Camera is Phase 2. SecureStorage is provided via the Swift companion package's factory pattern (same as NFC/Biometrics).
 ```
 
 ## Dependencies
 
-| Direction     | Person / Package  | What                                                 | Status       |
-| ------------- | ----------------- | ---------------------------------------------------- | ------------ |
-| **You need**  | Person 1          | Vite bundle (`dist/`) loaded into your WebView       | In progress  |
-| **You need**  | Person 4          | Bridge protocol contract (message format, domains)   | Ready        |
-| **Needs you** | Person 5          | Bridge protocol as reference for RN handler pattern  | Ready        |
-| **Needs you** | Integrations      | `SelfSdk.launch()` API consumed by MiniPay sample    | Android done |
+| Direction     | Person / Package | What                                                | Status       |
+| ------------- | ---------------- | --------------------------------------------------- | ------------ |
+| **You need**  | Person 1         | Vite bundle (`dist/`) loaded into your WebView      | In progress  |
+| **You need**  | Person 1         | Bridge protocol types (`@selfxyz/webview-bridge`)   | Ready        |
+| **Needs you** | Person 5         | Bridge protocol as reference for RN handler pattern | Ready        |
+| **Needs you** | Integrations     | `SelfSdk.launch()` API consumed by MiniPay sample   | Android done |
 
 ## Key Decisions
 
-| Decision                            | Choice                    | Rationale                                                                      |
-| ----------------------------------- | ------------------------- | ------------------------------------------------------------------------------ |
-| cinterop for Apple frameworks       | **Disabled**              | Xcode SDK compatibility issues. All Apple calls go through Swift providers.    |
-| 4 extra Android handlers            | **Delete**                | Web fallbacks replace them (IndexedDB, Web Crypto, console/fetch, skip haptic) |
-| iOS provider pattern                | **Swift factory**         | Swift protocols injected into KMP iOS handlers at init time                    |
-| Swift async bridging                | **Callback-based**        | Swift closures dispatch to main queue; Kotlin uses `suspendCancellableCoroutine` |
-| WebView bundle location             | **Bundled in assets**     | Person 1's Vite output (`dist/`) copied into app assets at build time          |
+| Decision                      | Choice                | Rationale                                                                        |
+| ----------------------------- | --------------------- | -------------------------------------------------------------------------------- |
+| cinterop for Apple frameworks | **Disabled**          | Xcode SDK compatibility issues. All Apple calls go through Swift providers.      |
+| 4 extra Android handlers      | **Delete**            | Web fallbacks replace them (IndexedDB, Web Crypto, console/fetch, skip haptic)   |
+| iOS provider pattern          | **Swift factory**     | Swift protocols injected into KMP iOS handlers at init time                      |
+| Swift async bridging          | **Callback-based**    | Swift closures dispatch to main queue; Kotlin uses `suspendCancellableCoroutine` |
+| WebView bundle location       | **Bundled in assets** | Person 1's Vite output (`dist/`) copied into app assets at build time            |
 
 ## Deliverables
 
-| Deliverable              | Type         | Consumers                         |
-| ------------------------ | ------------ | --------------------------------- |
-| KMP SDK artifact         | AAR          | Android host apps (MiniPay)       |
-| XCFramework              | XCFramework  | iOS host apps                     |
-| `SelfSdk.launch()` API   | Public API   | Any host app calling verification |
-| Swift provider package   | SPM package  | iOS host apps (companion to KMP)  |
+| Deliverable            | Type        | Consumers                         |
+| ---------------------- | ----------- | --------------------------------- |
+| KMP SDK artifact       | AAR         | Android host apps (MiniPay)       |
+| XCFramework            | XCFramework | iOS host apps                     |
+| `SelfSdk.launch()` API | Public API  | Any host app calling verification |
+| Swift provider package | SPM package | iOS host apps (companion to KMP)  |
 
 ## Related Specs
 
-| Spec                                                | What it covers                                       |
-| --------------------------------------------------- | ---------------------------------------------------- |
-| [SPEC.md](./SPEC.md)                                | Implementation details, chunks, code changes         |
-| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)             | Project-level architecture, bridge protocol, glossary |
-| [../person1-webview/OVERVIEW.md](../person1-webview/OVERVIEW.md) | WebView UI + bridge — delivers the Vite bundle you host |
-| [../person4-sdk-core/OVERVIEW.md](../person4-sdk-core/OVERVIEW.md) | SDK core adaptation — delivers adapter interfaces you implement |
-| [../person5-rn-sdk/OVERVIEW.md](../person5-rn-sdk/OVERVIEW.md) | RN native shell — mirrors your bridge pattern for React Native |
-| [../person3-integrations/OVERVIEW.md](../person3-integrations/OVERVIEW.md) | MiniPay sample — first consumer of your `SelfSdk.launch()` API |
+| Spec                                                                       | What it covers                                                  |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| [SPEC.md](./SPEC.md)                                                       | Implementation details, chunks, code changes                    |
+| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                                   | Project-level architecture, bridge protocol, glossary           |
+| [../person1-webview/OVERVIEW.md](../person1-webview/OVERVIEW.md)           | WebView UI + bridge — delivers the Vite bundle you host         |
+| [../person4-sdk-core/OVERVIEW.md](../person4-sdk-core/OVERVIEW.md)         | SDK core adaptation — delivers adapter interfaces you implement |
+| [../person5-rn-sdk/OVERVIEW.md](../person5-rn-sdk/OVERVIEW.md)             | RN native shell — mirrors your bridge pattern for React Native  |
+| [../person3-integrations/OVERVIEW.md](../person3-integrations/OVERVIEW.md) | MiniPay sample — first consumer of your `SelfSdk.launch()` API  |

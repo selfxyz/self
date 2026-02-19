@@ -64,36 +64,36 @@ You build the middle two layers: the bridge protocol library and the WebView UI.
 
 ## Dependencies
 
-| Direction     | Person / Package              | What                                                      | Status      |
-| ------------- | ----------------------------- | --------------------------------------------------------- | ----------- |
-| **You need**  | Person 4 (`mobile-sdk-alpha`) | Adapter interfaces, `useSelfClient()` hook, color/font constants | Active      |
-| **You need**  | Person 2 (KMP / Swift shells) | Native handler implementations on the other side of the bridge   | Android done, iOS in progress |
-| **Needs you** | Person 2 (KMP / Swift shells) | Vite bundle (`dist/index.html` + JS) embedded into native SDK artifacts | Ready       |
-| **Needs you** | Person 5 (RN SDK)             | Same Vite bundle loaded via `react-native-webview`               | Not started |
+| Direction     | Person / Package              | What                                                                    | Status                        |
+| ------------- | ----------------------------- | ----------------------------------------------------------------------- | ----------------------------- |
+| **You need**  | Person 4 (`mobile-sdk-alpha`) | Adapter interfaces, `useSelfClient()` hook, color/font constants        | Active                        |
+| **You need**  | Person 2 (KMP / Swift shells) | Native handler implementations on the other side of the bridge          | Android done, iOS in progress |
+| **Needs you** | Person 2 (KMP / Swift shells) | Vite bundle (`dist/index.html` + JS) embedded into native SDK artifacts | Ready                         |
+| **Needs you** | Person 5 (RN SDK)             | Same Vite bundle loaded via `react-native-webview`                      | Not started                   |
 
 ## Key Decisions
 
-| Decision                         | Choice                    | Rationale                                                        |
-| -------------------------------- | ------------------------- | ---------------------------------------------------------------- |
-| No react-native in bridge        | Pure TypeScript           | Bridge works in any browser; RN alias lives only in Vite config  |
-| Web-first, bridge only when forced | Web APIs for 5/10 domains | Fewer round-trips, no native work for things the browser handles |
-| Single bundle, zero external fetches | Vite inlines everything  | `dist/` is self-contained; no CDN, no external scripts           |
-| Screen parity with RN app        | Pixel-level match         | RN screens are the design reference; Tamagui + same fonts/colors |
-| Native handlers are dumb pipes   | Zero business logic       | Adapters serialize/deserialize; logic lives in `mobile-sdk-alpha`|
+| Decision                             | Choice                    | Rationale                                                         |
+| ------------------------------------ | ------------------------- | ----------------------------------------------------------------- |
+| No react-native in bridge            | Pure TypeScript           | Bridge works in any browser; RN alias lives only in Vite config   |
+| Web-first, bridge only when forced   | Web APIs for 5/10 domains | Fewer round-trips, no native work for things the browser handles  |
+| Single bundle, zero external fetches | Vite inlines everything   | `dist/` is self-contained; no CDN, no external scripts            |
+| Screen parity with RN app            | Pixel-level match         | RN screens are the design reference; Tamagui + same fonts/colors  |
+| Native handlers are dumb pipes       | Zero business logic       | Adapters serialize/deserialize; logic lives in `mobile-sdk-alpha` |
 
 ## Deliverables
 
-| Deliverable                | Type                          | Consumers                                    |
-| -------------------------- | ----------------------------- | -------------------------------------------- |
-| `@selfxyz/webview-bridge`  | Public npm package            | `webview-app`, Person 2 (test mocks), Person 5 |
+| Deliverable                 | Type                                 | Consumers                                                         |
+| --------------------------- | ------------------------------------ | ----------------------------------------------------------------- |
+| `@selfxyz/webview-bridge`   | Public npm package                   | `webview-app`, Person 2 (test mocks), Person 5                    |
 | `@selfxyz/webview-app` dist | Vite bundle (`dist/index.html` + JS) | Person 2 (bundled into KMP SDK), Person 5 (loaded via RN WebView) |
 
 ## Related Specs
 
-| Spec                                                            | What it covers                                        |
-| --------------------------------------------------------------- | ----------------------------------------------------- |
-| [SPEC.md](./SPEC.md)                                            | Implementation details, chunks, code changes, tests   |
-| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                         | Project-level architecture, bridge protocol, glossary  |
-| [../person2-native-shells/OVERVIEW.md](../person2-native-shells/OVERVIEW.md) | Native shells workstream — your bridge consumers       |
-| [../person4-sdk-core/OVERVIEW.md](../person4-sdk-core/OVERVIEW.md)           | SDK core workstream — your adapter interface source    |
-| [../person5-rn-sdk/OVERVIEW.md](../person5-rn-sdk/OVERVIEW.md)               | RN SDK workstream — loads your Vite bundle             |
+| Spec                                                                         | What it covers                                        |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------- |
+| [SPEC.md](./SPEC.md)                                                         | Implementation details, chunks, code changes, tests   |
+| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                                     | Project-level architecture, bridge protocol, glossary |
+| [../person2-native-shells/OVERVIEW.md](../person2-native-shells/OVERVIEW.md) | Native shells workstream — your bridge consumers      |
+| [../person4-sdk-core/OVERVIEW.md](../person4-sdk-core/OVERVIEW.md)           | SDK core workstream — your adapter interface source   |
+| [../person5-rn-sdk/OVERVIEW.md](../person5-rn-sdk/OVERVIEW.md)               | RN SDK workstream — loads your Vite bundle            |

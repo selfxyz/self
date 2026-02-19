@@ -8,7 +8,7 @@ Copy-paste one of these prompts to start a new spec session:
 
 **New project overview (tier 1 — architecture):**
 
-```
+```text
 Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, and specs/TEMPLATES.md (Project Overview section).
 Then analyze the codebase to create a project overview for [PROJECT NAME].
 
@@ -25,7 +25,7 @@ Run the review checklist from SPEC-GUIDE.md before finishing.
 
 **New workstream overview (tier 2 — orientation for a specific workstream):**
 
-```
+```text
 Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, specs/TEMPLATES.md (Workstream Overview section),
 and specs/SDK-OVERVIEW.md.
 Then analyze the codebase to create a workstream overview for [PERSON/SCOPE].
@@ -44,7 +44,7 @@ Run the review checklist from SPEC-GUIDE.md before finishing.
 
 **New implementation spec (tier 3 — for a specific workstream):**
 
-```
+```text
 Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, specs/TEMPLATES.md (Implementation Spec section),
 and specs/[person-scope]/OVERVIEW.md.
 Then analyze the codebase to create an implementation spec for [PERSON/SCOPE].
@@ -63,7 +63,7 @@ Run the review checklist from SPEC-GUIDE.md before finishing.
 
 **Refactor an existing spec to match the new format:**
 
-```
+```text
 Read specs/SPEC-GUIDE.md, specs/PROJECT-RULES.md, and specs/TEMPLATES.md.
 Then read the existing spec at specs/[OLD-SPEC].md.
 
@@ -91,11 +91,11 @@ A good spec lets a new dev comprehend the system in 60 seconds and lets an AI ag
 
 Every project has three types of specs:
 
-| Tier                     | File                    | Audience                     | Purpose                                                    | Change Frequency |
-| ------------------------ | ----------------------- | ---------------------------- | ---------------------------------------------------------- | ---------------- |
-| **Project Overview**     | `SDK-OVERVIEW.md`       | Architect, eng lead, new dev | System-level architecture, ties all workstreams together   | Rarely           |
-| **Workstream Overview**  | `person-*/OVERVIEW.md`  | Dev joining a workstream     | What this workstream owns, dependencies, status, context   | Occasionally     |
-| **Implementation**       | `person-*/SPEC.md`      | Implementer (human or agent) | Exact scope, code changes, I/O, token-budgeted chunks      | Frequently       |
+| Tier                    | File                   | Audience                     | Purpose                                                  | Change Frequency |
+| ----------------------- | ---------------------- | ---------------------------- | -------------------------------------------------------- | ---------------- |
+| **Project Overview**    | `SDK-OVERVIEW.md`      | Architect, eng lead, new dev | System-level architecture, ties all workstreams together | Rarely           |
+| **Workstream Overview** | `person-*/OVERVIEW.md` | Dev joining a workstream     | What this workstream owns, dependencies, status, context | Occasionally     |
+| **Implementation**      | `person-*/SPEC.md`     | Implementer (human or agent) | Exact scope, code changes, I/O, token-budgeted chunks    | Frequently       |
 
 The project overview is the map. The workstream overview is orientation for a new team member. The implementation spec is turn-by-turn directions. All three reference each other.
 
@@ -138,6 +138,7 @@ Specs serve as prompts. Write them so an AI agent can produce a correct PR from 
 - **One chunk = one self-contained prompt.** The chunk must include enough context to execute without reading the full spec. Reference specific sections of the spec if needed, but don't assume the agent has read everything.
 - **Distinguish modification from creation.** Use BEFORE/AFTER for existing files. Use "Create" + skeleton + interface it implements for new files.
 - **Use `--remote` for M and L chunks.** Medium and large chunks benefit from running Claude Code with `claude --remote` so work continues in the background without tying up a terminal. This is especially useful when running multiple chunks in parallel across different workstreams.
+- **Write plans to disk before executing.** Before starting multi-step work, write the plan to a file (update WAVE-PLAN.md, SPEC.md status tables, or create a session plan file). Session memory is ephemeral — API errors, context overflow, or `/clear` will destroy it. A plan on disk survives session loss, enables multiple agents to work from the same plan, and creates an audit trail. Never rely on session transcript as the only record of what was planned.
 
 ## Strong Suggestions
 
@@ -154,6 +155,10 @@ The overview spec must have an ASCII architecture diagram. This is the single mo
 ### 3. Status Checklist Near the Top
 
 The project overview has an aggregated checklist of all milestones. Each workstream overview has a per-workstream checklist placed immediately after the north star — it's the first thing devs check. Each implementation spec has a per-chunk status table. Between the three, anyone can find overall, workstream, or detailed status in one place.
+
+**Review checklists before starting work.** At the start of every work session, read the OVERVIEW.md status checklist and SPEC.md chunk status table for your workstream. Verify the status reflects reality — if something is marked "Done" that isn't, or "Pending" that's actually in progress, fix it before doing anything else. This prevents building on stale assumptions.
+
+**Keep checklists current.** When you complete a chunk, check off the corresponding items in both the OVERVIEW.md status checklist and the SPEC.md chunk status table. Stale checklists erode trust in the specs — if the status is wrong, devs stop reading them.
 
 ### 4. Input / Output Examples
 
@@ -273,7 +278,7 @@ This keeps accountability without rigidity. Development has no hard and fast rul
 
 ## Folder Structure
 
-```
+```text
 specs/
   SPEC-GUIDE.md                  <- This file (generic, portable)
   PROJECT-RULES.md               <- Project-specific rules
@@ -292,7 +297,7 @@ specs/
     OVERVIEW.md                  <- Workstream overview
     SPEC.md                      <- Implementation spec
 
-  integrations/
+  personN-integrations/
     OVERVIEW.md                  <- Integration workstream overview
     SPEC-[NAME].md               <- Integration-specific implementation specs
 ```
@@ -301,4 +306,4 @@ Each person gets a folder with two files: `OVERVIEW.md` (what you own, context, 
 
 ## Gold Standard Reference
 
-When filling in a template, use `person3-sdk-core/SPEC.md` as the reference implementation of a well-executed implementation spec. It demonstrates: concrete file:line problem identification, BEFORE/AFTER code blocks, decision points with recommendations, files in/out of scope, token-sized chunks with dependency graphs, and multi-level validation plans.
+When filling in a template, use `person4-sdk-core/SPEC.md` as the reference implementation of a well-executed implementation spec. It demonstrates: concrete file:line problem identification, BEFORE/AFTER code blocks, decision points with recommendations, files in/out of scope, token-sized chunks with dependency graphs, and multi-level validation plans.

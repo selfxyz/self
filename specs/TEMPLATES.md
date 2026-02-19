@@ -2,11 +2,11 @@
 
 Three copy-paste templates. Pick the one that matches what you're writing.
 
-| Template | When to use | Output file |
-| -------- | ----------- | ----------- |
-| [Project Overview](#project-overview-template) | One per project. System-level architecture. Changes rarely. | `specs/SDK-OVERVIEW.md` |
-| [Workstream Overview](#workstream-overview-template) | One per person/workstream. Orientation for new devs. Changes occasionally. | `specs/person-*/OVERVIEW.md` |
-| [Implementation Spec](#implementation-spec-template) | One per person/workstream. Detailed build instructions. Changes frequently. | `specs/person-*/SPEC.md` |
+| Template                                             | When to use                                                                 | Output file                  |
+| ---------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------- |
+| [Project Overview](#project-overview-template)       | One per project. System-level architecture. Changes rarely.                 | `specs/SDK-OVERVIEW.md`      |
+| [Workstream Overview](#workstream-overview-template) | One per person/workstream. Orientation for new devs. Changes occasionally.  | `specs/person-*/OVERVIEW.md` |
+| [Implementation Spec](#implementation-spec-template) | One per person/workstream. Detailed build instructions. Changes frequently. | `specs/person-*/SPEC.md`     |
 
 ---
 
@@ -141,10 +141,10 @@ would confuse a new dev or AI agent. -->
 
 <!-- Link to every workstream overview, implementation spec, and integration spec. -->
 
-| Spec                                                  | Audience    | What it covers |
-| ----------------------------------------------------- | ----------- | -------------- |
-| [person1-scope/OVERVIEW.md](./person1-scope/OVERVIEW.md) | Dev joining  | [scope]        |
-| [person1-scope/SPEC.md](./person1-scope/SPEC.md)        | Implementer | [scope]        |
+| Spec                                                     | Audience    | What it covers |
+| -------------------------------------------------------- | ----------- | -------------- |
+| [person1-scope/OVERVIEW.md](./person1-scope/OVERVIEW.md) | Dev joining | [scope]        |
+| [person1-scope/SPEC.md](./person1-scope/SPEC.md)         | Implementer | [scope]        |
 
 ### Spec Deviations
 
@@ -212,35 +212,35 @@ Keep it simpler than the project-level diagram — just enough context. -->
 <!-- What you need from other workstreams and what they need from you.
 Update status as work progresses. -->
 
-| Direction      | Person / Package | What                          | Status  |
-| -------------- | ---------------- | ----------------------------- | ------- |
-| **You need**   | Person X         | [what you consume from them]  | [state] |
-| **Needs you**  | Person Y         | [what they consume from you]  | [state] |
+| Direction     | Person / Package | What                         | Status  |
+| ------------- | ---------------- | ---------------------------- | ------- |
+| **You need**  | Person X         | [what you consume from them] | [state] |
+| **Needs you** | Person Y         | [what they consume from you] | [state] |
 
 ### Key Decisions
 
 <!-- Decisions specific to this workstream. Link to the project overview
 decision matrix for system-wide decisions. -->
 
-| Decision    | Choice    | Rationale   |
-| ----------- | --------- | ----------- |
-| [decision]  | [choice]  | [why]       |
+| Decision   | Choice   | Rationale |
+| ---------- | -------- | --------- |
+| [decision] | [choice] | [why]     |
 
 ### Deliverables
 
 <!-- What this workstream ships. Artifact names, types, consumers. -->
 
-| Deliverable          | Type            | Consumers                |
-| -------------------- | --------------- | ------------------------ |
-| [package / artifact] | [npm / AAR / …] | [who uses it]            |
+| Deliverable          | Type            | Consumers     |
+| -------------------- | --------------- | ------------- |
+| [package / artifact] | [npm / AAR / …] | [who uses it] |
 
 ### Related Specs
 
-| Spec                                                | What it covers                                       |
-| --------------------------------------------------- | ---------------------------------------------------- |
-| [SPEC.md](./SPEC.md)                                | Implementation details, chunks, code changes         |
-| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)             | Project-level architecture, bridge protocol, glossary |
-| [../personX/OVERVIEW.md](../personX/OVERVIEW.md)     | [dependency context]                                 |
+| Spec                                             | What it covers                                        |
+| ------------------------------------------------ | ----------------------------------------------------- |
+| [SPEC.md](./SPEC.md)                             | Implementation details, chunks, code changes          |
+| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)         | Project-level architecture, bridge protocol, glossary |
+| [../personX/OVERVIEW.md](../personX/OVERVIEW.md) | [dependency context]                                  |
 
 ### Spec Deviations
 

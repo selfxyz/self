@@ -117,12 +117,14 @@ Average build times with cache: iOS ~15min, Android ~10min
 Set in workflow files:
 
 ```yaml
-NODE_VERSION: 18
+NODE_VERSION: 22
 RUBY_VERSION: 3.2
 JAVA_VERSION: 17
 ANDROID_API_LEVEL: 35
 ANDROID_NDK_VERSION: 27.0.12077973
 ```
+
+The authoritative Node version is in `.nvmrc`; workflows may read it from there instead of a static env var.
 
 ## 🏷️ Git Tags & Releases
 
@@ -229,4 +231,4 @@ Before certificates expire:
 
 ---
 
-For local development and manual release processes, see [`app/README.md`](../app/README.md)
+For local development and manual release processes, see [`app/README.md`](../README.md)

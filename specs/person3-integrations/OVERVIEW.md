@@ -55,32 +55,35 @@ Your sample apps sit **on top of** the SDK. You consume `SelfSdk.launch()` and n
 
 ## Dependencies
 
-| Direction     | Person / Package           | What                                                   | Status      |
-| ------------- | -------------------------- | ------------------------------------------------------ | ----------- |
-| **You need**  | Person 2 (KMP SDK)         | `SelfSdk.launch()` API and Kotlin SDK artifact         | In progress |
-| **You need**  | Person 1 (WebView UI)      | Vite bundle embedded in the SDK                        | In progress |
-| **Needs you** | Third-party integrators    | Reference implementation showing how to embed Self     | Not started |
+| Direction     | Person / Package        | What                                               | Status      |
+| ------------- | ----------------------- | -------------------------------------------------- | ----------- |
+| **You need**  | Person 2 (KMP SDK)      | `SelfSdk.launch()` API and Kotlin SDK artifact     | In progress |
+| **You need**  | Person 1 (WebView UI)   | Vite bundle embedded in the SDK                    | In progress |
+| **Needs you** | Third-party integrators | Reference implementation showing how to embed Self | Not started |
 
 ## Key Decisions
 
-| Decision                | Choice                       | Rationale                                                    |
-| ----------------------- | ---------------------------- | ------------------------------------------------------------ |
-| Native UI scope         | 2 screens (home + result)    | Demonstrates that integrators write almost no UI code        |
-| SDK call site           | Single: configure + launch   | Keeps integration surface area minimal and copyable          |
-| Code quality standard   | Reference quality            | Third-party developers will copy this code directly          |
-| Platform parity         | Android + iOS identical      | Shared Kotlin handles all logic; platform code = entry points |
+| Decision              | Choice                     | Rationale                                                     |
+| --------------------- | -------------------------- | ------------------------------------------------------------- |
+| Native UI scope       | 2 screens (home + result)  | Demonstrates that integrators write almost no UI code         |
+| SDK call site         | Single: configure + launch | Keeps integration surface area minimal and copyable           |
+| Code quality standard | Reference quality          | Third-party developers will copy this code directly           |
+| Platform parity       | Android + iOS identical    | Shared Kotlin handles all logic; platform code = entry points |
 
 ## Deliverables
 
-| Deliverable                    | Type                      | Consumers                    |
-| ------------------------------ | ------------------------- | ---------------------------- |
-| MiniPay sample app             | KMP app (`kmp-minipay-sample/`) | Third-party integrators |
-| Integration documentation      | By-example (in the code)  | Third-party integrators      |
+| Deliverable               | Type                            | Consumers               |
+| ------------------------- | ------------------------------- | ----------------------- |
+| MiniPay sample app        | KMP app (`kmp-minipay-sample/`) | Third-party integrators |
+| Integration documentation | By-example (in the code)        | Third-party integrators |
 
 ## Related Specs
 
-| Spec                                                                         | What it covers                                        |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------- |
-| [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md)                          | Implementation details, chunks, code changes          |
-| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                                     | Project-level architecture, bridge protocol, glossary |
-| [../person2-native-shells/OVERVIEW.md](../person2-native-shells/OVERVIEW.md) | KMP SDK workstream (delivers the artifact you depend on) |
+| Spec                                                                         | What it covers                                            |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------- |
+| [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md)                           | Implementation details, chunks, code changes              |
+| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                                     | Project-level architecture, bridge protocol, glossary     |
+| [../person1-webview/OVERVIEW.md](../person1-webview/OVERVIEW.md)             | WebView UI + bridge workstream (delivers the Vite bundle) |
+| [../person2-native-shells/OVERVIEW.md](../person2-native-shells/OVERVIEW.md) | KMP SDK workstream (delivers the artifact you depend on)  |
+| [../person4-sdk-core/OVERVIEW.md](../person4-sdk-core/OVERVIEW.md)           | SDK core workstream (adapter interfaces, web fallbacks)   |
+| [../person5-rn-sdk/OVERVIEW.md](../person5-rn-sdk/OVERVIEW.md)               | RN SDK workstream (alternative native shell for RN hosts) |

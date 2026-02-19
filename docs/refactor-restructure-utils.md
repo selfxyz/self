@@ -1,7 +1,7 @@
 # Refactor Summary: Restructure Utils and Organize Project Files
 
-**Branch**: `codex/restructure-utils-and-organize-project-files`
-**Date**: November 2025
+**Branch**: `justin/refactor-specs-with-new-style`
+**Date**: February 2026
 **Status**: ✅ Complete - Ready for Review
 
 ---
@@ -359,8 +359,8 @@ Example: `notificationService.ts`, `notificationService.web.ts`, `notificationSe
 
 **1. Business Logic** → `services/`
 
-```typescript
-// Create a new service
+```bash
+# Create a new service
 app/src/services/my-feature/
   ├── index.ts        - Barrel export
   ├── api.ts          - API calls
@@ -370,10 +370,10 @@ app/src/services/my-feature/
 
 **2. Native/3rd Party Integration** → `integrations/`
 
-```typescript
-// Add new integration
+```bash
+# Add new integration
 app/src/integrations/my-integration.ts
-// or
+# or
 app/src/integrations/my-integration/
   ├── index.ts
   ├── native.ts
@@ -382,21 +382,21 @@ app/src/integrations/my-integration/
 
 **3. Pure Utilities** → `utils/`
 
-```typescript
-// Add pure function
-app / src / utils / my - utility.ts;
-// Export from barrel
-app / src / utils / index.ts;
+```bash
+# Add pure function
+app/src/utils/my-utility.ts
+# Export from barrel
+app/src/utils/index.ts
 ```
 
 **4. Configuration** → `config/`
 
-```typescript
-// Add config
-app / src / config / my - config.ts;
-app / src / config / my - config.web.ts;
-// Export from barrel
-app / src / config / index.ts;
+```bash
+# Add config
+app/src/config/my-config.ts
+app/src/config/my-config.web.ts
+# Export from barrel
+app/src/config/index.ts
 ```
 
 ### If You're Working on Existing Code
@@ -491,9 +491,9 @@ These are tracked separately and not blocking this refactor.
 ## ✍️ Author & Review
 
 **Refactor By**: Codex AI Assistant
-**Reviewed By**: _Pending_
-**Date**: November 2025
-**Branch**: `codex/restructure-utils-and-organize-project-files`
+**Reviewed By**: See PR history
+**Date**: February 2026
+**Branch**: `justin/refactor-specs-with-new-style`
 
 ---
 

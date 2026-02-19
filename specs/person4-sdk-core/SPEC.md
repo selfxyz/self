@@ -1,4 +1,4 @@
-# SDK Core Adaptation — Implementation Spec
+# Person 4: SDK Core Adaptation — Implementation Spec
 
 > Last updated: 2026-02-17
 > Owner: Person 4 (SDK Core)
@@ -34,19 +34,19 @@ You are NOT building screens or native handlers. You are making the engine porta
 
 `mobile-sdk-alpha` currently has React Native leaking into core logic:
 
-| File | Issue |
-| --- | --- |
-| `src/proving/provingMachine.ts:6` | `import { Platform } from 'react-native'` — `getPlatform()` helper |
-| `src/proving/provingMachine.ts:543,547` | `__DEV__` global for TEE attestation validation |
-| `src/constants/fonts.ts:10` | `Platform.OS === 'ios'` for font family selection |
-| `src/nfc/index.ts:27` | `Platform.OS` for logging scan type |
-| `src/adapters/react-native/nfc-scanner.ts` | `NativeModules`, `Platform`, `Buffer` — full RN NFC impl |
-| `src/bridge/nativeEvents.native.ts` | `NativeEventEmitter`, `NativeModules` |
-| `src/haptic/index.ts`, `trigger.ts` | `Platform`-dependent vibration APIs |
-| `src/components/MRZScannerView.tsx` | `requireNativeComponent()`, `NativeModules`, `UIManager` |
-| `src/flows/onboarding/document-nfc-screen.tsx` | `NativeEventEmitter`, `NativeModules`, `Platform`, `Linking` |
-| `src/documents/useCountries.tsx` | `react-native-localize` for device locale |
-| `src/stores/selfAppStore.tsx` | `socket.io-client` (works in browser, but needs conditional creation) |
+| File                                           | Issue                                                                 |
+| ---------------------------------------------- | --------------------------------------------------------------------- |
+| `src/proving/provingMachine.ts:6`              | `import { Platform } from 'react-native'` — `getPlatform()` helper    |
+| `src/proving/provingMachine.ts:543,547`        | `__DEV__` global for TEE attestation validation                       |
+| `src/constants/fonts.ts:10`                    | `Platform.OS === 'ios'` for font family selection                     |
+| `src/nfc/index.ts:27`                          | `Platform.OS` for logging scan type                                   |
+| `src/adapters/react-native/nfc-scanner.ts`     | `NativeModules`, `Platform`, `Buffer` — full RN NFC impl              |
+| `src/bridge/nativeEvents.native.ts`            | `NativeEventEmitter`, `NativeModules`                                 |
+| `src/haptic/index.ts`, `trigger.ts`            | `Platform`-dependent vibration APIs                                   |
+| `src/components/MRZScannerView.tsx`            | `requireNativeComponent()`, `NativeModules`, `UIManager`              |
+| `src/flows/onboarding/document-nfc-screen.tsx` | `NativeEventEmitter`, `NativeModules`, `Platform`, `Linking`          |
+| `src/documents/useCountries.tsx`               | `react-native-localize` for device locale                             |
+| `src/stores/selfAppStore.tsx`                  | `socket.io-client` (works in browser, but needs conditional creation) |
 
 Some are in leaf files the WebView never imports. Others are in core files (proving machine, fonts, stores) the WebView **must** import.
 
@@ -81,7 +81,7 @@ const getPlatform = (): 'ios' | 'android' =>
 // AFTER — in src/types/public.ts, extend Config
 export interface Config {
   // ... existing fields
-  platform?: 'ios' | 'android' | 'web' | string;
+  platform?: 'ios' | 'android' | 'web' | (string & {});
 }
 
 // In provingMachine.ts — replace getPlatform()
@@ -100,7 +100,7 @@ The RN app passes `platform: Platform.OS` in config. The WebView passes `platfor
 
 **Edge case — no platform provided:**
 
-```
+```text
 Input:  createSelfClient({ config: {}, adapters, listeners })
 Output: Proof context uses 'unknown' as platform field
 ```
@@ -192,11 +192,14 @@ export interface SdkInitialConfig {
   debug?: boolean;
 }
 
+/** Placeholder until Person 2 defines concrete SelfApp shape (Chunk 4C sync). */
+export type SelfAppConfig = Record<string, unknown>;
+
 export interface VerificationRequest {
   userId?: string;
   scope?: string;
   disclosures?: string[];
-  selfApp?: unknown;
+  selfApp?: SelfAppConfig;
 }
 ```
 
@@ -265,12 +268,19 @@ export function createIndexedDBDocumentsAdapter(): DocumentsAdapter {
 
 ```typescript
 // SKELETON — hash() only, sign() left to bridge adapter
-export function createWebCryptoAdapter(): Partial<CryptoAdapter> {
+export function createWebCryptoAdapter(): CryptoAdapter {
   return {
-    hash: async (algorithm: string, data: Uint8Array): Promise<Uint8Array> => {
-      // Normalize: 'sha256' → 'SHA-256', 'sha-1' → 'SHA-1'
+    hash: async (data: Uint8Array, algorithm?: string): Promise<Uint8Array> => {
+      const normalizedAlgo = (algorithm ?? 'sha256')
+        .toUpperCase()
+        .replace(/^SHA(\d)/, 'SHA-$1');
       const buf = await crypto.subtle.digest(normalizedAlgo, data);
       return new Uint8Array(buf);
+    },
+    sign: async (_data: Uint8Array, _keyRef: string) => {
+      throw new Error(
+        'sign() requires bridge adapter — use webCryptoAdapter(bridge) instead',
+      );
     },
   };
 }
@@ -307,21 +317,21 @@ export function createNoOpHapticAdapter(): HapticAdapter {
 
 **Error case — IndexedDB unavailable:**
 
-```
+```text
 Input:  Browser with IndexedDB disabled
 Output: Adapter throws with descriptive error, not silent failure
 ```
 
 #### Input / Output — Web Crypto Hash
 
-**Input:** `adapter.hash('sha256', new Uint8Array([1, 2, 3]))`
+**Input:** `adapter.hash(new Uint8Array([1, 2, 3]), 'sha256')`
 
 **Expected Output:** SHA-256 hash as `Uint8Array`
 
 **Edge case — algorithm name normalization:**
 
-```
-Input:  adapter.hash('sha-256', data)  // already hyphenated
+```text
+Input:  adapter.hash(data, 'sha-256')  // already hyphenated
 Output: Same hash result (normalize handles both formats)
 ```
 
@@ -337,9 +347,10 @@ Update `package.json` `exports` field:
 {
   "exports": {
     ".": {
-      "react-native": "./src/index.ts",
-      "import": "./src/browser.ts",
-      "default": "./src/browser.ts"
+      "react-native": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/browser.js",
+      "default": "./dist/browser.js"
     }
   }
 }
@@ -351,29 +362,29 @@ Re-export web fallback adapter factories from `src/browser.ts`.
 
 ## Files You Will Modify
 
-| File | Change | Risk |
-| --- | --- | --- |
-| `src/proving/provingMachine.ts` | Remove `Platform` import, replace `__DEV__` with `config.debug` | **High** — core proving logic |
-| `src/types/public.ts` | Add `platform`, `debug` to `Config`; add `SdkInitialConfig`, `VerificationRequest` | **Medium** — public API types |
-| `src/types/events.ts` | Add `VERIFICATION_COMPLETE` event | **Low** — additive |
-| `src/constants/fonts.ts` | Remove `Platform` import | **Medium** — affects font rendering |
-| `src/nfc/index.ts` | Remove `Platform.OS` from logging | **Low** — logging only |
-| `src/stores/selfAppStore.tsx` | Make Socket.IO conditional | **Medium** — affects QR flow |
-| `src/client.ts` | Wire new config fields, expose `network` adapter | **Low** — additive |
-| `src/browser.ts` | Audit exports, re-export web fallback adapters | **Low** — web-only entry |
-| `package.json` | Update `exports` field | **Medium** — bundler resolution |
+| File                            | Change                                                                             | Risk                                |
+| ------------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------- |
+| `src/proving/provingMachine.ts` | Remove `Platform` import, replace `__DEV__` with `config.debug`                    | **High** — core proving logic       |
+| `src/types/public.ts`           | Add `platform`, `debug` to `Config`; add `SdkInitialConfig`, `VerificationRequest` | **Medium** — public API types       |
+| `src/types/events.ts`           | Add `VERIFICATION_COMPLETE` event                                                  | **Low** — additive                  |
+| `src/constants/fonts.ts`        | Remove `Platform` import                                                           | **Medium** — affects font rendering |
+| `src/nfc/index.ts`              | Remove `Platform.OS` from logging                                                  | **Low** — logging only              |
+| `src/stores/selfAppStore.tsx`   | Make Socket.IO conditional                                                         | **Medium** — affects QR flow        |
+| `src/client.ts`                 | Wire new config fields, expose `network` adapter                                   | **Low** — additive                  |
+| `src/browser.ts`                | Audit exports, re-export web fallback adapters                                     | **Low** — web-only entry            |
+| `package.json`                  | Update `exports` field                                                             | **Medium** — bundler resolution     |
 
 ## Files You Will NOT Modify
 
-| File | Why |
-| --- | --- |
-| `src/adapters/react-native/*` | RN-specific, never imported by WebView |
-| `src/components/*` | RN UI components, Person 1 builds web equivalents |
-| `src/flows/*` | RN screen flows, replaced by Person 1's webview-app |
+| File                                | Why                                                        |
+| ----------------------------------- | ---------------------------------------------------------- |
+| `src/adapters/react-native/*`       | RN-specific, never imported by WebView                     |
+| `src/components/*`                  | RN UI components, Person 1 builds web equivalents          |
+| `src/flows/*`                       | RN screen flows, replaced by Person 1's webview-app        |
 | `src/bridge/nativeEvents.native.ts` | RN-only, `.native.ts` suffix means bundlers skip it on web |
-| `src/haptic/*` | Delegated to adapters in WebView |
-| `src/layouts/*` | RN layout components |
-| `common/` | Out of scope — Person 4 only owns `mobile-sdk-alpha` |
+| `src/haptic/*`                      | Delegated to adapters in WebView                           |
+| `src/layouts/*`                     | RN layout components                                       |
+| `common/`                           | Out of scope — Person 4 only owns `mobile-sdk-alpha`       |
 
 ## Chunking Guide
 
@@ -391,7 +402,7 @@ Re-export web fallback adapter factories from `src/browser.ts`.
 6. Update `src/client.ts` — wire new config fields
 7. Validate: `cd packages/mobile-sdk-alpha && npx vitest run && npx tsc --noEmit`
 
-**You will NOT:**
+**You Will NOT:**
 
 - Add logic to Kotlin or Swift code
 - Import `react-native` in any file outside `src/adapters/react-native/`
@@ -418,11 +429,11 @@ grep: No output (no RN imports in core files)
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
+| Test                                   | Type | What it validates                              |
+| -------------------------------------- | ---- | ---------------------------------------------- |
 | `tests/proving/provingMachine.test.ts` | Unit | Existing tests pass with config-based platform |
-| New: `provingMachine.platform.test.ts` | Unit | `config.platform` used in proof context |
-| New: `provingMachine.debug.test.ts` | Unit | `config.debug` replaces `__DEV__` |
+| New: `provingMachine.platform.test.ts` | Unit | `config.platform` used in proof context        |
+| New: `provingMachine.debug.test.ts`    | Unit | `config.debug` replaces `__DEV__`              |
 
 ---
 
@@ -439,7 +450,7 @@ grep: No output (no RN imports in core files)
 3. Verify that `webview-app` can import core types, stores, and `createSelfClient` without pulling in RN
 4. Validate: `npx madge --no-spinner src/browser.ts | grep -i "react-native"` returns nothing
 
-**You will NOT:**
+**You Will NOT:**
 
 - Modify the RN entry point (`src/index.ts`)
 - Remove any existing exports (backwards compat)
@@ -464,10 +475,10 @@ tsc: No errors
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| New: `tests/browser-entry.test.ts` | Unit | Browser exports include `createSelfClient`, `useSelfClient`, `useProvingStore` |
-| `madge` dependency check | Build gate | No transitive RN imports |
+| Test                               | Type       | What it validates                                                              |
+| ---------------------------------- | ---------- | ------------------------------------------------------------------------------ |
+| New: `tests/browser-entry.test.ts` | Unit       | Browser exports include `createSelfClient`, `useSelfClient`, `useProvingStore` |
+| `madge` dependency check           | Build gate | No transitive RN imports                                                       |
 
 ---
 
@@ -485,7 +496,7 @@ tsc: No errors
 4. Document for Person 1 how `SelfClientProvider` subscribes
 5. Validate: type-check clean, no runtime changes to existing flows
 
-**You will NOT:**
+**You Will NOT:**
 
 - Modify bridge protocol types (those are in `webview-bridge`)
 - Build WebView UI components
@@ -508,9 +519,9 @@ vitest: All tests pass (new event type is additive)
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| Existing proving machine tests | Unit | No regressions |
+| Test                               | Type | What it validates                                  |
+| ---------------------------------- | ---- | -------------------------------------------------- |
+| Existing proving machine tests     | Unit | No regressions                                     |
 | New: lifecycle event emission test | Unit | `VERIFICATION_COMPLETE` fires on completed/failure |
 
 ---
@@ -531,7 +542,7 @@ This chunk is **optional** — raw `WebSocket` works natively in the browser. Sk
 4. Create default `WsAdapter` in `src/adapters/browser/ws.ts`
 5. Validate: proving flow works end-to-end in RN app
 
-**You will NOT:**
+**You Will NOT:**
 
 - Change the Socket.IO client usage (that's separate)
 - Modify WebSocket reconnection strategy
@@ -551,7 +562,7 @@ This chunk is **optional** — raw `WebSocket` works natively in the browser. Sk
 2. Verify QR scanning flow in RN app still works
 3. Validate: `npx vitest run`
 
-**You will NOT:**
+**You Will NOT:**
 
 - Remove Socket.IO dependency entirely (still needed for Self Wallet)
 - Change the store's state shape
@@ -569,9 +580,9 @@ cd packages/mobile-sdk-alpha && npx vitest run
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| Existing store tests | Unit | No regressions |
+| Test                         | Type | What it validates                            |
+| ---------------------------- | ---- | -------------------------------------------- |
+| Existing store tests         | Unit | No regressions                               |
 | New: store without relay URL | Unit | No Socket.IO connection when no URL provided |
 
 ---
@@ -593,12 +604,24 @@ cd packages/mobile-sdk-alpha && npx vitest run
 7. Add unit tests with `fake-indexeddb` devDependency
 8. Validate: `npx vitest run`
 
-**You will NOT:**
+**You Will NOT:**
 
 - Implement `sign()` in the web crypto adapter (bridge handles that)
 - Give the WebView direct keychain access
 - Modify existing RN adapters
 - Import `react-native` in any browser adapter
+
+**Implementation notes:**
+
+- Add `fake-indexeddb` (`^6.0.0`) as a `devDependency` in `packages/mobile-sdk-alpha/package.json`. jsdom does not provide IndexedDB.
+- In `vitest.config.ts`, add the setup file that imports `fake-indexeddb/auto` before tests run:
+
+```typescript
+// vitest.config.ts (or vitest.setup.ts)
+import 'fake-indexeddb/auto';
+```
+
+- SHA algorithm name mapping: `crypto.subtle.digest` requires hyphenated identifiers (`"SHA-256"`, not `"sha256"`). The `createWebCryptoAdapter` must normalize input: `algo.toUpperCase().replace(/^SHA(\d)/, 'SHA-$1')`.
 
 #### Input / Output — Chunk Validation
 
@@ -607,24 +630,24 @@ cd packages/mobile-sdk-alpha && npx vitest run
 ```bash
 cd packages/mobile-sdk-alpha && npx vitest run
 # Verify browser exports include web fallback adapters
-node -e "const m = require('./src/adapters/browser/index.ts'); console.log(Object.keys(m))"
+npx tsx -e "import * as m from './src/adapters/browser/index.ts'; console.log(Object.keys(m))"
 ```
 
 **Expected Output:**
 
-```
+```text
 vitest: All tests pass including new adapter tests
 exports: ['createIndexedDBDocumentsAdapter', 'createWebCryptoAdapter', 'createWebAnalyticsAdapter', 'createNoOpHapticAdapter']
 ```
 
 #### Tests
 
-| Test | Type | What it validates |
-| --- | --- | --- |
-| `tests/adapters/browser/documents.test.ts` | Unit | IndexedDB CRUD with `fake-indexeddb` |
-| `tests/adapters/browser/crypto.test.ts` | Unit | Web Crypto hash with algorithm normalization |
-| `tests/adapters/browser/analytics.test.ts` | Unit | Console logging, fetch fire-and-forget |
-| `tests/adapters/browser/haptic.test.ts` | Unit | No-op doesn't throw |
+| Test                                       | Type | What it validates                            |
+| ------------------------------------------ | ---- | -------------------------------------------- |
+| `tests/adapters/browser/documents.test.ts` | Unit | IndexedDB CRUD with `fake-indexeddb`         |
+| `tests/adapters/browser/crypto.test.ts`    | Unit | Web Crypto hash with algorithm normalization |
+| `tests/adapters/browser/analytics.test.ts` | Unit | Console logging, fetch fire-and-forget       |
+| `tests/adapters/browser/haptic.test.ts`    | Unit | No-op doesn't throw                          |
 
 ---
 
@@ -646,14 +669,14 @@ Person 2 (KMP)      ←── contract via ──→ Person 4 (lifecycle types)
 
 _Audit date: 2026-02-17_
 
-| Chunk | Description | Size | Status |
-| --- | --- | --- | --- |
-| 4A | Config & Platform Abstraction | S ~3k | **Done** |
-| 4B | Browser Entry Point & Package Exports | S ~2k | **Done** |
-| 4C | WebView Lifecycle Events | S ~2k | **Done** |
-| 4D | WsAdapter Integration | M ~5k | **Skipped** (optional — raw WebSocket works in browser) |
-| 4E | Conditional SelfApp Store | S ~2k | **Done** |
-| 4F | Web Fallback Adapter Implementations | M ~6k | **Pending** |
+| Chunk | Description                           | Size  | Status                                                  |
+| ----- | ------------------------------------- | ----- | ------------------------------------------------------- |
+| 4A    | Config & Platform Abstraction         | S ~3k | **Done**                                                |
+| 4B    | Browser Entry Point & Package Exports | S ~2k | **Done**                                                |
+| 4C    | WebView Lifecycle Events              | S ~2k | **Done**                                                |
+| 4D    | WsAdapter Integration                 | M ~5k | **Skipped** (optional — raw WebSocket works in browser) |
+| 4E    | Conditional SelfApp Store             | S ~2k | **Done**                                                |
+| 4F    | Web Fallback Adapter Implementations  | M ~6k | **Pending**                                             |
 
 4 of 6 chunks complete. Chunk 4D explicitly optional. **Chunk 4F is the remaining work.**
 
@@ -661,13 +684,13 @@ _Audit date: 2026-02-17_
 
 **Chunk 4F — Web Fallback Adapters (blocking for WebView integration)**
 
-| Adapter | File to Create | Implementation |
-| --- | --- | --- |
-| `createIndexedDBDocumentsAdapter()` | `src/adapters/browser/documents.ts` | IndexedDB with two object stores |
-| `createWebCryptoAdapter()` | `src/adapters/browser/crypto.ts` | `crypto.subtle.digest` for `hash()` |
-| `createWebAnalyticsAdapter()` | `src/adapters/browser/analytics.ts` | console + fetch fire-and-forget |
-| `createNoOpHapticAdapter()` | `src/adapters/browser/haptic.ts` | Silent no-op |
-| Barrel export | `src/adapters/browser/index.ts` | Re-exports all factories |
+| Adapter                             | File to Create                      | Implementation                      |
+| ----------------------------------- | ----------------------------------- | ----------------------------------- |
+| `createIndexedDBDocumentsAdapter()` | `src/adapters/browser/documents.ts` | IndexedDB with two object stores    |
+| `createWebCryptoAdapter()`          | `src/adapters/browser/crypto.ts`    | `crypto.subtle.digest` for `hash()` |
+| `createWebAnalyticsAdapter()`       | `src/adapters/browser/analytics.ts` | console + fetch fire-and-forget     |
+| `createNoOpHapticAdapter()`         | `src/adapters/browser/haptic.ts`    | Silent no-op                        |
+| Barrel export                       | `src/adapters/browser/index.ts`     | Re-exports all factories            |
 
 **Implementation notes from PR review:**
 
@@ -702,17 +725,27 @@ grep -r "NativeModules\|NativeEventEmitter\|requireNativeComponent" packages/web
 
 ## Key Reference Files
 
-| File | What to Look At |
-| --- | --- |
-| `packages/mobile-sdk-alpha/src/client.ts` | `createSelfClient()` factory — integration point |
-| `packages/mobile-sdk-alpha/src/types/public.ts` | All adapter interfaces and `SelfClient` type |
-| `packages/mobile-sdk-alpha/src/context.tsx` | `SelfClientProvider` and `useSelfClient()` |
+| File                                                      | What to Look At                                             |
+| --------------------------------------------------------- | ----------------------------------------------------------- |
+| `packages/mobile-sdk-alpha/src/client.ts`                 | `createSelfClient()` factory — integration point            |
+| `packages/mobile-sdk-alpha/src/types/public.ts`           | All adapter interfaces and `SelfClient` type                |
+| `packages/mobile-sdk-alpha/src/context.tsx`               | `SelfClientProvider` and `useSelfClient()`                  |
 | `packages/mobile-sdk-alpha/src/proving/provingMachine.ts` | Proving state machine — largest file, most RN contamination |
-| `packages/mobile-sdk-alpha/src/stores/` | Zustand stores (protocol, selfApp, mrz) |
-| `packages/mobile-sdk-alpha/src/browser.ts` | Browser entry point |
-| `packages/mobile-sdk-alpha/src/constants/` | Colors (clean), fonts (needs fix) |
-| `packages/mobile-sdk-alpha/src/documents/utils.ts` | Document CRUD — clean, uses adapters |
-| `packages/mobile-sdk-alpha/package.json` | Exports and dependencies |
+| `packages/mobile-sdk-alpha/src/stores/`                   | Zustand stores (protocol, selfApp, mrz)                     |
+| `packages/mobile-sdk-alpha/src/browser.ts`                | Browser entry point                                         |
+| `packages/mobile-sdk-alpha/src/constants/`                | Colors (clean), fonts (needs fix)                           |
+| `packages/mobile-sdk-alpha/src/documents/utils.ts`        | Document CRUD — clean, uses adapters                        |
+| `packages/mobile-sdk-alpha/package.json`                  | Exports and dependencies                                    |
+
+## Related Specs
+
+| Spec                                                                                          | Relationship                                                                                   |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                                                         | Parent architecture spec                                                                       |
+| [person1-webview/SPEC.md](../person1-webview/SPEC.md)                                         | Sibling — builds WebView UI that consumes your adapter interfaces and browser entry point      |
+| [person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md)                             | Sibling — builds native handlers that implement bridge protocol, consumes your lifecycle types |
+| [person5-rn-sdk/SPEC.md](../person5-rn-sdk/SPEC.md)                                           | Sibling — RN native shell that uses your browser entry point                                   |
+| [person3-integrations/SPEC-MINIPAY-SAMPLE.md](../person3-integrations/SPEC-MINIPAY-SAMPLE.md) | Downstream — MiniPay sample depends on SDK core through KMP SDK                                |
 
 ---
 
@@ -726,10 +759,10 @@ Chunks 4A–4E removed React Native contamination from core logic. `Platform` an
 
 ### Deviations from Spec
 
-| Spec said | We did | Why |
-| --- | --- | --- |
-| Chunk 4D: Refactor to WsAdapter | Skipped | Raw WebSocket works in browser; testability improvement deferred |
-| `plexMono` font: platform-aware factory | Hardcoded to `'IBMPlexMono-Regular'` | Simpler; may need iOS verification |
+| Spec said                               | We did                               | Why                                                              |
+| --------------------------------------- | ------------------------------------ | ---------------------------------------------------------------- |
+| Chunk 4D: Refactor to WsAdapter         | Skipped                              | Raw WebSocket works in browser; testability improvement deferred |
+| `plexMono` font: platform-aware factory | Hardcoded to `'IBMPlexMono-Regular'` | Simpler; may need iOS verification                               |
 
 ### Lessons / Gotchas
 
@@ -741,28 +774,28 @@ Chunks 4A–4E removed React Native contamination from core logic. `Platform` an
 
 ## Follow-Up (Out of Scope)
 
-| Item | Discovered during | Suggested spec |
-| --- | --- | --- |
-| `@selfxyz/common` Buffer polyfill for browser | Chunk 4B | New spec: common-browser-compat |
-| `proof` field never populated in VERIFICATION_COMPLETE | PR #1765 review | Chunk 4F or follow-up |
-| Remaining `__DEV__` references outside proving machine | PR #1765 review | Audit in Chunk 4F |
-| `plexMono` font may break iOS rendering | Chunk 4A | Manual verification needed |
+| Item                                                   | Discovered during | Suggested spec                  |
+| ------------------------------------------------------ | ----------------- | ------------------------------- |
+| `@selfxyz/common` Buffer polyfill for browser          | Chunk 4B          | New spec: common-browser-compat |
+| `proof` field never populated in VERIFICATION_COMPLETE | PR #1765 review   | Chunk 4F or follow-up           |
+| Remaining `__DEV__` references outside proving machine | PR #1765 review   | Audit in Chunk 4F               |
+| `plexMono` font may break iOS rendering                | Chunk 4A          | Manual verification needed      |
 
 ## SDK vs App Gap Summary
 
 Gaps where the RN app (`app/`) reimplements what the SDK should provide:
 
-| Gap | App Code | SDK Has | Priority |
-| --- | --- | --- | --- |
-| NFC scanner | `app/src/integrations/nfc/` (2 files) | `reactNativeScannerAdapter` (incomplete) | **P1** |
-| Document storage | `app/src/providers/passportDataProvider.tsx` (972 lines) | `DocumentsAdapter` interface only | **P1** |
-| Auth adapter | `app/src/providers/authProvider.tsx` (Keychain + biometric) | `AuthAdapter` interface only | **P2** |
-| SelfClient wiring | `app/src/providers/selfClientProvider.tsx` (509 lines) | No default adapter set | **P2** |
-| Analytics adapter | `app/src/services/analytics.ts` (349 lines) | `AnalyticsAdapter` interface only | **P3** |
+| Gap               | App Code                                                    | SDK Has                                  | Priority |
+| ----------------- | ----------------------------------------------------------- | ---------------------------------------- | -------- |
+| NFC scanner       | `app/src/integrations/nfc/` (2 files)                       | `reactNativeScannerAdapter` (incomplete) | **P1**   |
+| Document storage  | `app/src/providers/passportDataProvider.tsx` (972 lines)    | `DocumentsAdapter` interface only        | **P1**   |
+| Auth adapter      | `app/src/providers/authProvider.tsx` (Keychain + biometric) | `AuthAdapter` interface only             | **P2**   |
+| SelfClient wiring | `app/src/providers/selfClientProvider.tsx` (509 lines)      | No default adapter set                   | **P2**   |
+| Analytics adapter | `app/src/services/analytics.ts` (349 lines)                 | `AnalyticsAdapter` interface only        | **P3**   |
 
 ## Spec Deviations
 
-| Suggestion skipped | Reason |
-| --- | --- |
-| BEFORE/AFTER for every task | Tasks 4-7 are new file creation, not modification — used CREATE + SKELETON pattern instead |
-| `--remote` recommendation per chunk | All chunks are S or M size — local execution is fine |
+| Suggestion skipped                  | Reason                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------ |
+| BEFORE/AFTER for every task         | Tasks 4-7 are new file creation, not modification — used CREATE + SKELETON pattern instead |
+| `--remote` recommendation per chunk | All chunks are S or M size — local execution is fine                                       |
