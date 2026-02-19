@@ -71,6 +71,7 @@ export type AppRoutesParamList = {
 export type DevRoutesParamList = {
   CreateMock: undefined;
   MockDataDeepLink: undefined;
+  DevCardShowcase: undefined;
 };
 
 // =============================================================================

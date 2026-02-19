@@ -78,6 +78,30 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
             </XStack>
           </Button>
         )}
+
+        <Button
+          style={{ backgroundColor: 'white' }}
+          borderColor={slate200}
+          borderRadius="$2"
+          height="$5"
+          padding={0}
+          onPress={() => {
+            navigation.navigate('DevCardShowcase');
+          }}
+        >
+          <XStack
+            width="100%"
+            justifyContent="space-between"
+            paddingVertical="$3"
+            paddingLeft="$4"
+            paddingRight="$1.5"
+          >
+            <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+              Card Showcase
+            </Text>
+            <ChevronRight color={slate500} strokeWidth={2.5} />
+          </XStack>
+        </Button>
         <ScreenSelector />
       </YStack>
     </ParameterSection>

@@ -110,6 +110,12 @@ jest.mock('react-native', () => {
       };
     }),
     PixelRatio: mockPixelRatio,
+    useWindowDimensions: jest.fn(() => ({
+      width: 375,
+      height: 667,
+      scale: 2,
+      fontScale: 1,
+    })),
     Dimensions: {
       get: jest.fn(dimension => {
         const dimensions = {

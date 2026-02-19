@@ -66,6 +66,7 @@ describe('navigation', () => {
         'CountryPicker',
         'CreateMock',
         'DeferredLinkingInfo',
+        'DevCardShowcase',
         'DevFeatureFlags',
         'DevHapticFeedback',
         'DevLoadingScreen',
