@@ -9,7 +9,7 @@
 // CRITICAL: Import crypto polyfill FIRST, before any modules that use crypto/uuid
 // eslint-disable-next-line simple-import-sort/imports
 import 'react-native-get-random-values';
-// eslint-disable-next-line simple-import-sort/imports
+
 import './src/polyfills/buffer';
 
 import React from 'react';
