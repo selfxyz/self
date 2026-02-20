@@ -223,7 +223,7 @@ export const getCountryAdjective = (
   if (!countryCode) return '';
   const upper = countryCode.toUpperCase();
   if (COUNTRY_ADJECTIVES[upper]) return COUNTRY_ADJECTIVES[upper];
-  const name = commonNames[countryCode as keyof typeof commonNames];
+  const name = commonNames[upper];
   return name ? name.toUpperCase() : upper;
 };
 
@@ -283,11 +283,12 @@ const COUNTRY_ADJECTIVES: Record<string, string> = {
  */
 export const getCountryDemonym = (code: string): string => {
   if (!code) return '';
-  const upperCode = code.toUpperCase().replace(/</g, '').trim();
-  if (!upperCode) return '';
-  // Fallback for any remaining special codes with <
-  if (code.includes('<')) {
+  const upper = code.toUpperCase().trim();
+  // Handle D<< (German passports)
+  if (upper.startsWith('D') && upper.includes('<')) {
     return COUNTRY_DEMONYMS['D<<'] || 'GERMAN';
   }
-  return COUNTRY_DEMONYMS[upperCode] || upperCode;
+  const cleaned = upper.replace(/</g, '');
+  if (!cleaned) return '';
+  return COUNTRY_DEMONYMS[cleaned] || cleaned;
 };
