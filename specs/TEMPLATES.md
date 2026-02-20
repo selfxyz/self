@@ -20,6 +20,12 @@ Three copy-paste templates. Pick the one that matches what you're writing.
 > Owner: [name/team]
 > Status: [Draft | Active | Complete]
 
+### Required References
+
+<!-- Keep these links intact so spec authors always read the right context. -->
+
+- [PROJECT-RULES.md](./PROJECT-RULES.md)
+
 ### North Star
 
 <!-- Bullet-point list. Why does this project exist? What does success look
@@ -37,6 +43,10 @@ like? Use 2-4 bullets for easy scanning, not a paragraph. -->
 - [ ] [Milestone]
 - [ ] [Milestone]
 - [ ] Integration: [target]
+
+### Rules Reminder
+
+Apply [PROJECT-RULES.md](./PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work and **Architecture** for native/bridge work. Refer to the relevant sections rather than duplicating rules here.
 
 ### Architecture Diagram
 
@@ -169,6 +179,13 @@ document which ones and why. Remove this section if none. -->
 > Implementation: [SPEC.md](./SPEC.md)
 > Status: [Draft | Active | Complete]
 
+### Required References
+
+<!-- Keep these links intact so spec authors always read the right context. -->
+
+- [PROJECT-RULES.md](../PROJECT-RULES.md)
+- [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
+
 ### North Star
 
 <!-- Same project-level north star from the project overview. Repeated so
@@ -187,6 +204,10 @@ keep it at the top. -->
 - [x] [milestone]
 - [ ] [milestone]
 - [ ] [milestone]
+
+### Rules Reminder
+
+Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work and **Architecture** for native/bridge work. Refer to the relevant sections rather than duplicating rules here.
 
 ### What You Own
 
@@ -263,6 +284,14 @@ document which ones and why. Remove this section if none. -->
 > Owner: [name]
 > Parent: [OVERVIEW.md](./OVERVIEW.md)
 > Status: [Draft | Active | Complete]
+
+### Required References
+
+<!-- Keep these links intact so spec authors always read the right context. -->
+
+- [PROJECT-RULES.md](../PROJECT-RULES.md)
+- [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
+- [OVERVIEW.md](./OVERVIEW.md)
 
 ### North Star
 
@@ -406,6 +435,10 @@ Output: [expected error behavior]
 | File         | Why                                                 |
 | ------------ | --------------------------------------------------- |
 | `src/bar.ts` | [out of scope / owned by another workstream / etc.] |
+
+### Rules Reminder
+
+Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work and **Architecture** for native/bridge work. Include relevant constraints in each chunk's "You will NOT" section rather than duplicating the full list here.
 
 ### Chunking Guide
 

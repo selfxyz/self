@@ -2,6 +2,7 @@
 
 > Rules specific to the Self SDK project. Global rules apply to everyone.
 > Section rules apply to that workstream. Each rule has a one-line rationale.
+> Read with [SDK-OVERVIEW.md](./SDK-OVERVIEW.md) when it exists.
 
 ## Global Rules
 
@@ -13,48 +14,71 @@
 
 3. **Native shell work can run in parallel with SDK core work.** They share a contract (bridge protocol), not code. No blocking dependency.
 
+### Reuse & Maintainability
+
+4. **Keep the codebase DRY.** Before writing new code, search for existing utilities/components/flows and reuse or refactor to shared modules. Create new code only if a reusable option does not exist.
+
+5. **Extract repeated UI.** If the same UI sub-structure appears in 2+ places, extract a shared component.
+
+6. **Reusable UI belongs in shared libraries.** If a UI primitive is broadly reusable, add it to a shared library (e.g., `@selfxyz/euclid` or another shared package) instead of duplicating in feature code.
+
+7. **Keep files small.** Aim for <800 LOC per file. If a file approaches 800 LOC, split it into smaller modules.
+
+8. **Move static data out of UI.** Large static maps/lookups/constants do not belong in screen/components; move them to `utils/` or `data/` modules.
+
+9. **Prefer design tokens over hex.** Use shared color/font/spacing tokens instead of raw hex values in UI code.
+
+10. **No “slop comments.”** Only add comments when they convey non-obvious intent or constraints. Never add generic or chatty comments.
+
+11. **Test value over mock wiring.** Prefer tests that validate behavior. Avoid tests that only assert mocks were called unless that is the behavior being validated.
+
+12. **PR size target:** 1k–3k LOC changed. Smaller is fine for focused fixes. If >3k, add a brief justification for why it can’t be split.
+
+13. **No generated artifacts in source PRs.** Do not commit build outputs or generated assets unless the build system requires them for runtime or distribution.
+
 ### Architecture
 
-4. **TypeScript is the primary surface area. Native code is the minimum.** The WebView carries all core logic: proving machine, state machines, stores, document management, UI. Kotlin and Swift exist only for hardware access (NFC, camera, biometrics) and OS-level APIs (keychain, lifecycle). ZK circuits are the backend; TypeScript is the frontend. If you're writing logic in Kotlin or Swift that could run in the WebView, you're doing it wrong.
+14. **TypeScript is the primary surface area. Native code is the minimum.** The WebView carries all core logic: proving machine, state machines, stores, document management, UI. Kotlin and Swift exist only for hardware access (NFC, camera, biometrics) and OS-level APIs (keychain, lifecycle). ZK circuits are the backend; TypeScript is the frontend. If you're writing logic in Kotlin or Swift that could run in the WebView, you're doing it wrong.
 
-5. **"Can this run in the WebView?" gate.** Before writing ANY native code (Kotlin or Swift), answer this question. If the answer is yes — or even maybe — it belongs in TypeScript. Native code is ONLY justified when it requires: hardware APIs (NFC chip, camera sensor, biometric prompt), OS-level APIs (keychain, activity/VC lifecycle), or platform SDKs with no JS equivalent. Parsing, formatting, validation, error mapping, state management, and business logic are NEVER native — they run in the WebView.
+15. **"Can this run in the WebView?" gate.** Before writing ANY native code (Kotlin or Swift), answer this question. If the answer is yes — or even maybe — it belongs in TypeScript. Native code is ONLY justified when it requires: hardware APIs (NFC chip, camera sensor, biometric prompt), OS-level APIs (keychain, activity/VC lifecycle), or platform SDKs with no JS equivalent. Parsing, formatting, validation, error mapping, state management, and business logic are NEVER native — they run in the WebView.
 
-6. **Maximize code reuse through `mobile-sdk-alpha`.** Before adding code to `webview-app`, `kmp-sdk`, or `app/`, check if `mobile-sdk-alpha` already has it or should have it. If two packages need the same logic, it belongs in the SDK. Extend the SDK rather than duplicating. Specifically:
-   - Types, interfaces, constants → `mobile-sdk-alpha`
-   - Parsing, validation, formatting → `mobile-sdk-alpha`
-   - State machines, stores → `mobile-sdk-alpha`
-   - UI components shared between flows → `mobile-sdk-alpha`
-   - Only screen-level composition and routing belong in `webview-app`
+16. **Maximize code reuse through `mobile-sdk-alpha`.** Before adding code to `webview-app`, `kmp-sdk`, or `app/`, check if `mobile-sdk-alpha` already has it or should have it. If two packages need the same logic, it belongs in the SDK. Extend the SDK rather than duplicating. Specifically:
 
-7. **New native handlers MUST follow the bridge protocol exactly.** Every native handler implements the JSON schema defined in SDK-OVERVIEW.md (request/response/event). No custom messaging, no side channels, no platform-specific extensions. The WebView must not know which native shell it's running inside.
+- Types, interfaces, constants → `mobile-sdk-alpha`
+- Parsing, validation, formatting → `mobile-sdk-alpha`
+- State machines, stores → `mobile-sdk-alpha`
+- UI components shared between flows → `mobile-sdk-alpha`
+- Only screen-level composition and routing belong in `webview-app`
+
+17. **New native handlers MUST follow the bridge protocol exactly.** Every native handler implements the JSON schema defined in SDK-OVERVIEW.md (request/response/event). No custom messaging, no side channels, no platform-specific extensions. The WebView must not know which native shell it's running inside.
 
 ### Code
 
-8. **No `react-native` imports outside `src/adapters/react-native/`.** Core logic, stores, types, and constants must be platform-agnostic. Use adapter interfaces.
+18. **No `react-native` imports outside `src/adapters/react-native/`.** Core logic, stores, types, and constants must be platform-agnostic. Use adapter interfaces.
 
-9. **Keychain/SecureStorage is always native-managed.** No web fallbacks for `AuthAdapter` or `StorageAdapter`. The WebView does not get direct keychain access. This is a security boundary.
+19. **Keychain/SecureStorage is always native-managed.** No web fallbacks for `AuthAdapter` or `StorageAdapter`. The WebView does not get direct keychain access. This is a security boundary.
 
-10. **Adapter interfaces are the coupling layer.** Person 1 (webview) imports adapter interfaces from Person 4 (SDK core). Person 2 (native shells) implements bridge handlers. Nobody imports code across the bridge boundary.
+20. **Adapter interfaces are the coupling layer.** Person 1 (webview) imports adapter interfaces from Person 4 (SDK core). Person 2 (native shells) implements bridge handlers. Nobody imports code across the bridge boundary.
 
-11. **No logic in native shells.** Native handlers are pass-through: receive bridge request → call platform API → return bridge response. No parsing, no formatting, no validation, no error mapping, no state management. If a native handler is growing beyond ~50-100 lines per method, logic is leaking out of the WebView.
+21. **No logic in native shells.** Native handlers are pass-through: receive bridge request → call platform API → return bridge response. No parsing, no formatting, no validation, no error mapping, no state management. If a native handler is growing beyond ~50-100 lines per method, logic is leaking out of the WebView.
 
-12. **Fail closed on security-critical boundaries.** For protocol compatibility, remote bundle loading, and verification session lifecycle, default-deny behavior is required. Reject unknown protocol versions, block remote `devServerUrl` in production, and allow only one active verification session at a time.
+22. **Fail closed on security-critical boundaries.** For protocol compatibility, remote bundle loading, and verification session lifecycle, default-deny behavior is required. Reject unknown protocol versions, block remote `devServerUrl` in production, and allow only one active verification session at a time.
 
 ### Quality
 
-13. **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self Wallet app. Validate with `vitest run` and manual testing.
+23. **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self Wallet app. Validate with `vitest run` and manual testing.
 
-14. **Specs stay current.** When implementation deviates from the spec, update the spec. A stale spec is worse than no spec — it misleads the next person.
+24. **Specs stay current.** When implementation deviates from the spec, update the spec. A stale spec is worse than no spec — it misleads the next person.
 
-15. **Review status checklists before starting a work session.** Read the OVERVIEW.md status checklist and SPEC.md chunk status table before doing anything. Verify the status reflects reality. If something is marked "Done" that isn't, or "Pending" that's actually in progress, fix it first. Don't build on stale assumptions.
+25. **Review status checklists before starting a work session.** Read the OVERVIEW.md status checklist and SPEC.md chunk status table before doing anything. Verify the status reflects reality. If something is marked "Done" that isn't, or "Pending" that's actually in progress, fix it first. Don't build on stale assumptions.
 
-16. **Update status checklists as you complete work.** When you finish a chunk, check off the corresponding items in both the OVERVIEW.md status checklist and the SPEC.md chunk status table. This is the primary way devs and leads track progress — stale checklists erode trust in the specs.
+26. **Update status checklists as you complete work.** When you finish a chunk, check off the corresponding items in both the OVERVIEW.md status checklist and the SPEC.md chunk status table. This is the primary way devs and leads track progress — stale checklists erode trust in the specs.
 
 ### Planning
 
-17. **Write plans to disk before executing.** When working on multi-step tasks (multiple chunks, cross-workstream coordination, or anything requiring more than one session), write the plan to a file BEFORE starting implementation. Update WAVE-PLAN.md, the relevant SPEC.md status table, or create a session-specific plan file. A plan that only exists in session memory will be lost to API errors, context overflow, or `/clear`. Writing it to disk enables multiple agents to work from the same plan and creates an audit trail.
+27. **Write plans to disk before executing.** When working on multi-step tasks (multiple chunks, cross-workstream coordination, or anything requiring more than one session), write the plan to a file BEFORE starting implementation. Update WAVE-PLAN.md, the relevant SPEC.md status table, or create a session-specific plan file. A plan that only exists in session memory will be lost to API errors, context overflow, or `/clear`. Writing it to disk enables multiple agents to work from the same plan and creates an audit trail.
 
-18. **Update plan files as you go.** When a chunk is completed, mark it done in the plan file immediately. When scope changes, update the plan file. The plan file is the single source of truth for what's been done and what's next — not the session transcript.
+28. **Update plan files as you go.** When a chunk is completed, mark it done in the plan file immediately. When scope changes, update the plan file. The plan file is the single source of truth for what's been done and what's next — not the session transcript.
 
 ---
 

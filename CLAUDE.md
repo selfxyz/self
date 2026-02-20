@@ -16,9 +16,19 @@ nvm use && corepack enable && yarn install
 ## Key Rules
 
 - **Package manager:** Yarn (never npm or pnpm)
+- **Keep the codebase DRY.** Before writing new code, search for existing utilities/components/flows and reuse or refactor to shared modules. Create new code only if a reusable option does not exist.
+- **Extract repeated UI.** If the same UI sub-structure appears in 2+ places, extract a shared component.
+- **Reusable UI belongs in shared libraries.** If a UI primitive is broadly reusable, add it to a shared library (e.g., `@selfxyz/euclid` or another shared package) instead of duplicating in feature code.
+- **Keep files small.** Aim for <800 LOC per file. If a file approaches 800 LOC, split it into smaller modules.
+- **Move static data out of UI.** Large static maps/lookups/constants do not belong in screen/components; move them to `utils/` or `data/` modules.
+- **Prefer design tokens over hex.** Use shared color/font/spacing tokens instead of raw hex values in UI code.
 - **No `react-native` imports in SDK core.** `packages/mobile-sdk-alpha/src/` must be platform-agnostic outside of `src/adapters/react-native/`.
 - **Native handlers are thin wrappers.** No business logic in Kotlin or Swift. All logic lives in TypeScript.
 - **Keychain is always native-managed.** No web fallbacks for secure storage. This is a security boundary.
+- **No “slop comments.”** Only add comments when they convey non-obvious intent or constraints. Never add generic or chatty comments.
+- **Test value over mock wiring.** Prefer tests that validate behavior. Avoid tests that only assert mocks were called unless that is the behavior being validated.
+- **PR size target:** 1k–3k LOC changed. Smaller is fine for focused fixes. If >3k, add a brief justification for why it can’t be split.
+- **No generated artifacts in source PRs.** Do not commit build outputs or generated assets unless the build system requires them for runtime or distribution.
 
 ## Specs & Planning
 
