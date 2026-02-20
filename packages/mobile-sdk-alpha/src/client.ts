@@ -219,6 +219,7 @@ export function createSelfClient({
       adapters.navigation.goTo(routeName, params);
     },
     navigation: adapters.navigation,
+    network: adapters.network,
     // for reactivity (if needed)
     useProvingStore,
     useSelfAppStore,

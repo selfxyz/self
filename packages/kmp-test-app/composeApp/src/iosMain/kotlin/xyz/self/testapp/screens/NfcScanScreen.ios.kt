@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import xyz.self.sdk.models.NfcScanState
+import xyz.self.sdk.providers.SdkProviderRegistry
 import xyz.self.testapp.components.NfcProgressIndicator
 import xyz.self.testapp.models.VerificationFlowState
 import xyz.self.testapp.utils.Logger
@@ -224,12 +225,12 @@ fun NfcScanScreen(
  */
 @OptIn(ExperimentalForeignApi::class)
 private fun isNfcAvailable(): Boolean {
-    if (NfcScanFactory.instance == null) return false
-    return platform.Foundation.NSProcessInfo.processInfo.environment["SIMULATOR_DEVICE_NAME"] == null
+    val provider = SdkProviderRegistry.nfc ?: return false
+    return provider.isAvailable()
 }
 
 /**
- * Scans passport using NFC via Swift helper (through factory bridge)
+ * Scans passport using NFC via Swift helper (through SdkProviderRegistry)
  */
 private suspend fun scanPassportWithNfc(
     passportNumber: String,
@@ -238,15 +239,15 @@ private suspend fun scanPassportWithNfc(
     onProgress: (NfcScanState) -> Unit,
 ): JsonElement =
     suspendCancellableCoroutine { cont ->
-        val factory = NfcScanFactory.instance
-        if (factory == null) {
+        val provider = SdkProviderRegistry.nfc
+        if (provider == null) {
             cont.resumeWithException(
-                Exception("NFC scanner not configured. Factory not registered from iOS app."),
+                Exception("NFC provider not configured. Call SelfSdkSwift.configure() first."),
             )
             return@suspendCancellableCoroutine
         }
 
-        factory.scanPassport(
+        provider.scanPassport(
             passportNumber = passportNumber,
             dateOfBirth = dateOfBirth,
             dateOfExpiry = dateOfExpiry,
@@ -254,8 +255,6 @@ private suspend fun scanPassportWithNfc(
                 try {
                     val stateIndex =
                         when (stateAny) {
-                            is Long -> stateAny.toInt()
-                            is Int -> stateAny
                             is Number -> stateAny.toInt()
                             else -> 0
                         }
@@ -267,39 +266,24 @@ private suspend fun scanPassportWithNfc(
                     Logger.e("NfcScan", "Failed to convert progress state", e)
                 }
             },
-            onComplete = { resultAny ->
-                try {
-                    val jsonString = resultAny as? String ?: resultAny.toString()
-                    val jsonElement = Json.parseToJsonElement(jsonString)
-                    if (cont.isActive) cont.resume(jsonElement)
-                } catch (e: Exception) {
-                    if (cont.isActive) cont.resumeWithException(Exception("Failed to parse NFC result: ${e.message}"))
+            onComplete = { result ->
+                if (cont.isActive) {
+                    try {
+                        val jsonElement = Json.parseToJsonElement(result)
+                        cont.resume(jsonElement)
+                    } catch (e: Exception) {
+                        cont.resumeWithException(Exception("Failed to parse NFC result: ${e.message}"))
+                    }
                 }
             },
             onError = { error ->
-                if (cont.isActive) cont.resumeWithException(Exception(error))
+                if (cont.isActive) {
+                    cont.resumeWithException(Exception(error))
+                }
             },
         )
+
+        cont.invokeOnCancellation {
+            provider.cancelScan()
+        }
     }
-
-/**
- * Factory interface for creating NFC scan sessions.
- * Implemented and registered by the iOS app (NfcScanFactoryImpl.swift).
- */
-interface NfcScanViewFactory {
-    fun scanPassport(
-        passportNumber: String,
-        dateOfBirth: String,
-        dateOfExpiry: String,
-        onProgress: (Any) -> Unit,
-        onComplete: (Any) -> Unit,
-        onError: (String) -> Unit,
-    )
-}
-
-/**
- * Singleton to hold the factory instance (set from iOS app)
- */
-object NfcScanFactory {
-    var instance: NfcScanViewFactory? = null
-}

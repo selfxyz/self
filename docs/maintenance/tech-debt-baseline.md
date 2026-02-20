@@ -23,4 +23,3 @@ Generated from `package.json` workspaces. This file is intended as an immutable 
 
 - Threshold: >= 85 total dependencies (mean + 1σ, minimum 50).
 - `app`: 152 total (90 deps, 62 devDeps, 0 peerDeps)
-

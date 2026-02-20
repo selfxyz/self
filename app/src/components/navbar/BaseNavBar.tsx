@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useMemo } from 'react';
-import type { TextProps } from 'react-native';
+import type { TextStyle } from 'react-native';
 import { ChevronLeft } from '@tamagui/lucide-icons/icons/ChevronLeft';
 import { X } from '@tamagui/lucide-icons/icons/X';
 
@@ -32,10 +32,8 @@ interface RightActionProps extends ViewProps {
   component?: React.ReactNode;
   onPress?: () => void;
 }
-interface NavBarTitleProps extends TextProps {
-  children?: React.ReactNode;
-  size?: 'large' | undefined;
-  color?: string;
+interface NavBarTitleProps extends React.ComponentProps<typeof Title> {
+  color?: TextStyle['color'];
 }
 
 export const LeftAction: React.FC<LeftActionProps> = ({
@@ -97,8 +95,15 @@ const NavBarTitle: React.FC<NavBarTitleProps> = ({
     return null;
   }
 
+  const titleStyle = color ? [{ color }, style] : style;
+
   return typeof children === 'string' ? (
-    <Title style={[color ? { color } : undefined, style]} {...props}>
+    <Title
+      style={
+        titleStyle as unknown as React.ComponentProps<typeof Title>['style']
+      }
+      {...props}
+    >
       {children}
     </Title>
   ) : (

@@ -45,6 +45,7 @@ const entry = {
   'hooks/useSafeBottomPadding': 'src/hooks/useSafeBottomPadding.ts',
   stores: 'src/stores/index.ts',
   'utils/utils': 'src/utils/utils.ts',
+  'adapters/react-native/index': 'src/adapters/react-native/index.ts',
   ...flowEntries,
 };
 
@@ -78,6 +79,12 @@ export default defineConfig([
       'lottie-react-native',
       'react-native-haptic-feedback',
       'react-native-localize',
+      // Optional RN adapter peer dependencies
+      '@react-native-async-storage/async-storage',
+      'react-native-keychain',
+      'react-native-get-random-values',
+      '@noble/hashes',
+      /^@noble\/hashes\/.*/,
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
       // Externalize animation files so Metro can deduplicate them
@@ -131,6 +138,12 @@ export default defineConfig([
       'lottie-react-native',
       'react-native-haptic-feedback',
       'react-native-localize',
+      // Optional RN adapter peer dependencies
+      '@react-native-async-storage/async-storage',
+      'react-native-keychain',
+      'react-native-get-random-values',
+      '@noble/hashes',
+      /^@noble\/hashes\/.*/,
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
       // Externalize animation files so Metro can deduplicate them

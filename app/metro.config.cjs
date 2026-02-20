@@ -43,6 +43,8 @@ const config = {
   resolver: {
     // Prevent Haste module naming collisions from duplicate package.json files
     blockList: [
+      // Ignore Claude Code worktrees to prevent duplicate Haste module entries
+      /\.claude\//,
       // Ignore built package.json files to prevent Haste collisions
       /.*\/dist\/package\.json$/,
       /.*\/dist\/esm\/package\.json$/,

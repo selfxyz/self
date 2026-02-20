@@ -24,6 +24,8 @@ require Pod::Executable.execute_command("node", ["-p",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+require File.join(File.dirname(`node --print "require.resolve('expo/package.json', {paths: ['#{__dir__}/..']})"`.strip), "scripts/autolinking")
+
 project "Self.xcodeproj"
 
 # Define consistent iOS deployment target
@@ -54,6 +56,7 @@ def using_https_git_auth?
 end
 
 target "Self" do
+  use_expo_modules!
   # Native module exclusion for E2E testing is handled in react-native.config.cjs
   config = use_native_modules!
   # Skip NFCPassportReader for e2e testing to avoid build issues
