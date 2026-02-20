@@ -39,13 +39,7 @@ export const DelayedLottieView = forwardRef<LottieView, LottieViewProps>((props,
   // For autoPlay animations, disable native autoPlay and control it ourselves
   const modifiedProps = props.autoPlay ? { ...props, autoPlay: false } : props;
 
-  return (
-    <LottieView
-      ref={ref}
-      {...modifiedProps}
-      onAnimationLoaded={handleAnimationLoaded}
-    />
-  );
+  return <LottieView ref={ref} {...modifiedProps} onAnimationLoaded={handleAnimationLoaded} />;
 });
 
 DelayedLottieView.displayName = 'DelayedLottieView';

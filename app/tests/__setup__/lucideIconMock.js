@@ -6,8 +6,7 @@
 // Uses a Proxy so any named export resolves to a lightweight mock component
 // that renders with a predictable testID (e.g. icon-check, icon-chevron-down).
 
-const toKebab = str =>
-  str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+const toKebab = str => str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 
 module.exports = new Proxy(
   { __esModule: true },
