@@ -295,6 +295,10 @@ document which ones and why. Remove this section if none. -->
 - [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) (if this project has a project overview, link it here)
 - [OVERVIEW.md](./OVERVIEW.md)
 
+### Rules Reminder
+
+Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work, **Architecture** for native/bridge work, and **Quality/Planning** for checklist and plan discipline. Include relevant constraints in each chunk's "You will NOT" section, prefer repo validation commands, and note that token-sized chunks and LOC-sized PRs are different constraints.
+
 ### North Star
 
 <!-- Bullet-point list of what success looks like. Same project-level north
@@ -437,10 +441,6 @@ Output: [expected error behavior]
 | File         | Why                                                 |
 | ------------ | --------------------------------------------------- |
 | `src/bar.ts` | [out of scope / owned by another workstream / etc.] |
-
-### Rules Reminder
-
-Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work, **Architecture** for native/bridge work, and **Quality/Planning** for checklist and plan discipline. Include relevant constraints in each chunk's "You will NOT" section, prefer repo validation commands, and note that token-sized chunks and LOC-sized PRs are different constraints.
 
 ### Chunking Guide
 

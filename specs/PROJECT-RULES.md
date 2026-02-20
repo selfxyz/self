@@ -111,7 +111,7 @@ Concrete commands that catch violations after code is written. Include these in 
 
 ```bash
 # Verify no RN imports leaked into core
-grep -r "from ['\"]react-native['\"]" packages/mobile-sdk-alpha/src/ \
+grep -rE "from ['\"]react-native['\"]|require\(['\"]react-native['\"]\)" packages/mobile-sdk-alpha/src/ \
   --include="*.ts" --include="*.tsx" \
   | grep -v "adapters/react-native" \
   | grep -v ".native." && echo "FAIL: RN import in core" || echo "PASS"
