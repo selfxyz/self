@@ -8,6 +8,7 @@ import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import CreateMockScreen from '@/screens/dev/CreateMockScreen';
 import CreateMockScreenDeepLink from '@/screens/dev/CreateMockScreenDeepLink';
+import DevCardScreen from '@/screens/dev/DevCardScreen';
 import DevFeatureFlagsScreen from '@/screens/dev/DevFeatureFlagsScreen';
 import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
@@ -79,6 +80,13 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'Dev Loading Screen',
+    } as NativeStackNavigationOptions,
+  },
+  DevCards: {
+    screen: DevCardScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'Card Components',
     } as NativeStackNavigationOptions,
   },
 };

@@ -5,10 +5,11 @@
 import type { FC } from 'react';
 import React from 'react';
 import { Image } from 'react-native';
-import { Text, XStack, YStack } from 'tamagui';
+import { Text, YStack } from 'tamagui';
 
 import {
-  gray400,
+  black,
+  gray200,
   red600,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -16,6 +17,7 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import SelfLogoInactive from '@/assets/images/self_logo_inactive.svg';
 import WavePatternBody from '@/assets/images/wave_pattern_body.png';
+import CardHeader from '@/components/homescreen/CardHeader';
 import { cardStyles } from '@/components/homescreen/cardStyles';
 import { useCardDimensions } from '@/hooks/useCardDimensions';
 
@@ -55,62 +57,38 @@ const UnregisteredIdCard: FC<UnregisteredIdCardProps> = ({
         borderRadius={borderRadius}
         overflow="hidden"
         borderWidth={1}
-        borderColor="#E5E7EB"
+        borderColor={gray200}
         backgroundColor={white}
         marginBottom={8}
-        shadowColor="#000"
+        shadowColor={black}
         shadowOffset={{ width: 0, height: 44 }}
         shadowOpacity={0.25}
         shadowRadius={68}
         elevation={12}
       >
         {/* Header Section - White background with red divider */}
-        <YStack
-          height={headerHeight}
-          padding={figmaPadding}
+        <CardHeader
+          variant="flat"
+          title="UNREGISTERED ID"
+          subtitle="DOCUMENT NEEDS TO FINISH REGISTRATION"
+          titleColor={red600}
+          headerHeight={headerHeight}
+          figmaPadding={figmaPadding}
+          headerGap={headerGap}
+          fontSize={fontSize}
           backgroundColor={white}
-          justifyContent="center"
-          borderBottomWidth={2}
           borderBottomColor={red600}
-        >
-          {/* Content row */}
-          <XStack flex={1} alignItems="center">
-            {/* Logo + Text */}
-            <XStack alignItems="center" gap={headerGap} flex={1}>
-              {/* Red Self logo */}
-              <YStack
-                width={logoSize}
-                height={logoSize}
-                alignItems="center"
-                justifyContent="center"
-              >
-                <SelfLogoInactive width={logoSize} height={logoSize} />
-              </YStack>
-              {/* Text container */}
-              <YStack gap={2}>
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.header}
-                  fontWeight="500"
-                  color={red600}
-                  textTransform="uppercase"
-                  lineHeight={fontSize.header * 1.1}
-                >
-                  UNREGISTERED ID
-                </Text>
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.subtitle}
-                  color={gray400}
-                  letterSpacing={0.7}
-                  textTransform="uppercase"
-                >
-                  DOCUMENT NEEDS TO FINISH REGISTRATION
-                </Text>
-              </YStack>
-            </XStack>
-          </XStack>
-        </YStack>
+          logo={
+            <YStack
+              width={logoSize}
+              height={logoSize}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <SelfLogoInactive width={logoSize} height={logoSize} />
+            </YStack>
+          }
+        />
 
         {/* Body Section - White background with wave pattern */}
         <YStack style={[cardStyles.body, { backgroundColor: white }]}>
