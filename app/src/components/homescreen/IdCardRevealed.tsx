@@ -8,6 +8,7 @@ import { Dimensions } from 'react-native';
 import { Separator, Text, XStack, YStack } from 'tamagui';
 
 import type { AadhaarData } from '@selfxyz/common';
+import { commonNames } from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types/passport';
 import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 import {
@@ -36,6 +37,17 @@ const logoSvg = `<svg width="47" height="46" viewBox="0 0 47 46" fill="none" xml
 <path d="M34.2186 16.8515V32.3552C34.2186 32.8663 33.8008 33.2751 33.2786 33.2751H17.4357L4.43236 46H35.7592L47 34.9999V16.8579H34.2186V16.8515Z" fill="white"/>
 <path d="M28.9703 17.6525H18.0362V28.3539H28.9703V17.6525Z" fill="#00FFB6"/>
 </svg>`;
+
+/**
+ * Resolve a 3-letter country code to its full country name.
+ * Falls back to the code itself if no mapping exists.
+ */
+const getCountryName = (code: string): string => {
+  if (!code) return '';
+  const cleaned = code.toUpperCase().replace(/</g, '').trim();
+  if (!cleaned) return '';
+  return (commonNames as Record<string, string>)[cleaned] || cleaned;
+};
 
 interface IdCardRevealedProps {
   idDocument: PassportData | AadhaarData;
@@ -237,7 +249,7 @@ const IdCardRevealed: FC<IdCardRevealedProps> = ({ idDocument }) => {
               <YStack flex={1}>
                 <IdAttribute
                   name="NATIONALITY"
-                  value={docAttributes.nationalitySlice}
+                  value={getCountryName(docAttributes.nationalitySlice)}
                 />
               </YStack>
               <YStack flex={1}>
@@ -257,7 +269,7 @@ const IdCardRevealed: FC<IdCardRevealedProps> = ({ idDocument }) => {
               <YStack flex={1}>
                 <IdAttribute
                   name="AUTHORITY"
-                  value={docAttributes.issuingStateSlice}
+                  value={getCountryName(docAttributes.issuingStateSlice)}
                 />
               </YStack>
               <YStack flex={1} />

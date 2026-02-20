@@ -9,7 +9,6 @@ import { Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import type { AadhaarData } from '@selfxyz/common';
-import { commonNames } from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types/passport';
 import type { KycData } from '@selfxyz/common/utils/types';
 import {
