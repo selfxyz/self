@@ -49,7 +49,6 @@ PODS:
     - Yoga
   - fast_float (6.1.4)
   - FBLazyVector (0.77.0)
-  - FingerprintPro (2.12.0)
   - Firebase (10.24.0):
     - Firebase/Core (= 10.24.0)
   - Firebase/Core (10.24.0):
@@ -2565,7 +2564,6 @@ SPEC CHECKSUMS:
   ExpoModulesCore: bcee92d3a2c68c408b2d8da43e3094109340dc17
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 2bc03a5cf64e29c611bbc5d7eb9d9f7431f37ee6
-  FingerprintPro: 035517a1b4e3e4fc073486b53b9956509010f8db
   Firebase: 91fefd38712feb9186ea8996af6cbdef41473442
   FirebaseABTesting: d87f56707159bae64e269757a6e963d490f2eebe
   FirebaseAnalytics: b5efc493eb0f40ec560b04a472e3e1a15d39ca13
@@ -2686,6 +2684,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: c34725819ab0a5962e85455b9e56679b306910ee
 
-PODFILE CHECKSUM: 819cc2c73ef2429fda27c9f3e3ac757539b52c75
+PODFILE CHECKSUM: 6bc48c2b16d32ddda1a5a9eb175c463ee9d46ac0
 
 COCOAPODS: 1.16.2
