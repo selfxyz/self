@@ -71,13 +71,13 @@ Quick-start prompts for creating new specs are in [SPEC-GUIDE.md](./specs/SPEC-G
 
 ```bash
 # SDK core
-cd packages/mobile-sdk-alpha && npx vitest run && npx tsc --noEmit
+cd packages/mobile-sdk-alpha && yarn test && yarn types
 
 # Bridge
-cd packages/webview-bridge && yarn build && yarn vitest run
+cd packages/webview-bridge && yarn build && yarn test
 
 # WebView app
-cd packages/webview-app && npx tsc --noEmit && npx vite build
+cd packages/webview-app && yarn build
 
 # KMP
 cd packages/kmp-sdk && ./gradlew :shared:jvmTest

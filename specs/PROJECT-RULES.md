@@ -117,14 +117,14 @@ grep -rE "from ['\"]react-native['\"]|require\(['\"]react-native['\"]\)" package
   | grep -v ".native." && echo "FAIL: RN import in core" || echo "PASS"
 
 # Verify browser entry point is clean
-npx madge --circular packages/mobile-sdk-alpha/src/browser.ts 2>/dev/null \
+yarn dlx madge --circular packages/mobile-sdk-alpha/src/browser.ts 2>/dev/null \
   || echo "Install madge for circular dependency check"
 
 # Verify SDK tests still pass (no regressions)
-cd packages/mobile-sdk-alpha && npx vitest run
+cd packages/mobile-sdk-alpha && yarn test
 
 # Verify bridge tests pass
-cd packages/webview-bridge && npx vitest run
+cd packages/webview-bridge && yarn test
 ```
 
 ---
