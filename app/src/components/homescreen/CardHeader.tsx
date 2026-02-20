@@ -58,7 +58,7 @@ const CardHeader: FC<CardHeaderProps> = ({
     subtitleColor ?? (variant === 'gradient' ? '#9193A2' : gray400);
 
   const content = (
-    <XStack flex={1} alignItems="center">
+    <XStack flex={1} alignItems="center" paddingHorizontal={figmaPadding}>
       <XStack alignItems="center" gap={headerGap} flex={1}>
         {logo}
         <YStack gap={2}>
@@ -97,7 +97,6 @@ const CardHeader: FC<CardHeaderProps> = ({
           styles.header,
           {
             height: headerHeight,
-            paddingHorizontal: figmaPadding,
           },
         ]}
       >
@@ -109,7 +108,7 @@ const CardHeader: FC<CardHeaderProps> = ({
   return (
     <YStack
       height={headerHeight}
-      padding={figmaPadding}
+      paddingVertical={figmaPadding}
       backgroundColor={backgroundColor ?? white}
       justifyContent="center"
       borderBottomWidth={borderBottomWidth}
