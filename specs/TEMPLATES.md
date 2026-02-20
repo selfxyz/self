@@ -20,6 +20,14 @@ Three copy-paste templates. Pick the one that matches what you're writing.
 > Owner: [name/team]
 > Status: [Draft | Active | Complete]
 
+### Required References
+
+<!-- Keep these links intact so spec authors always read the right context.
+     This IS the project overview, so don't link it to itself.
+     Workstream/impl specs link back here; this links to rules only. -->
+
+- [PROJECT-RULES.md](./PROJECT-RULES.md)
+
 ### North Star
 
 <!-- Bullet-point list. Why does this project exist? What does success look
@@ -37,6 +45,10 @@ like? Use 2-4 bullets for easy scanning, not a paragraph. -->
 - [ ] [Milestone]
 - [ ] [Milestone]
 - [ ] Integration: [target]
+
+### Rules Reminder
+
+Apply [PROJECT-RULES.md](./PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work, **Architecture** for native/bridge work, and **Quality/Planning** for checklist and plan discipline. Prefer repo validation commands and note that token-sized chunks and LOC-sized PRs are different constraints.
 
 ### Architecture Diagram
 
@@ -169,6 +181,13 @@ document which ones and why. Remove this section if none. -->
 > Implementation: [SPEC.md](./SPEC.md)
 > Status: [Draft | Active | Complete]
 
+### Required References
+
+<!-- Keep these links intact so spec authors always read the right context. -->
+
+- [PROJECT-RULES.md](../PROJECT-RULES.md)
+- [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) (if this project has a project overview, link it here)
+
 ### North Star
 
 <!-- Same project-level north star from the project overview. Repeated so
@@ -187,6 +206,10 @@ keep it at the top. -->
 - [x] [milestone]
 - [ ] [milestone]
 - [ ] [milestone]
+
+### Rules Reminder
+
+Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work, **Architecture** for native/bridge work, and **Quality/Planning** for checklist and plan discipline. Prefer repo validation commands and note that token-sized chunks and LOC-sized PRs are different constraints.
 
 ### What You Own
 
@@ -263,6 +286,18 @@ document which ones and why. Remove this section if none. -->
 > Owner: [name]
 > Parent: [OVERVIEW.md](./OVERVIEW.md)
 > Status: [Draft | Active | Complete]
+
+### Required References
+
+<!-- Keep these links intact so spec authors always read the right context. -->
+
+- [PROJECT-RULES.md](../PROJECT-RULES.md)
+- [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) (if this project has a project overview, link it here)
+- [OVERVIEW.md](./OVERVIEW.md)
+
+### Rules Reminder
+
+Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work, **Architecture** for native/bridge work, and **Quality/Planning** for checklist and plan discipline. Include relevant constraints in each chunk's "You will NOT" section, prefer repo validation commands, and note that token-sized chunks and LOC-sized PRs are different constraints.
 
 ### North Star
 
