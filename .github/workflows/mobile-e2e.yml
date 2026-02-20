@@ -223,12 +223,13 @@ jobs:
 
           echo "🎉 Build verification completed successfully!"
           echo "ℹ️  Emulator testing is temporarily disabled - build testing only"
-      - name: Enable KVM access
+      - name: Check KVM access
+        id: kvm
         run: |
           if [ ! -e /dev/kvm ]; then
-            echo "::error::/dev/kvm not found. The runner needs KVM access for the Android emulator."
-            echo "For K8s runners, mount /dev/kvm via a device plugin in the pod spec."
-            exit 1
+            echo "::warning::/dev/kvm not found — emulator will run in software mode (slow). Enable nested virtualization for better performance."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
           if [ -w /dev/kvm ]; then
             echo "✅ /dev/kvm is already writable"
@@ -242,6 +243,7 @@ jobs:
             sudo chmod 666 /dev/kvm
           fi
           ls -la /dev/kvm
+          echo "available=true" >> "$GITHUB_OUTPUT"
       - name: Pre-install emulator dependencies
         run: |
           sdkmanager --install \
@@ -256,7 +258,10 @@ jobs:
           target: google_apis
           channel: 0
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
+          emulator-options: >-
+            -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+            -camera-back none -camera-front none -memory 8192 -cores 4
+            ${{ steps.kvm.outputs.available == 'true' && '-accel on' || '-accel off' }}
           disable-animations: true
           script: |
             echo "Installing app on emulator..."
@@ -273,6 +278,7 @@ jobs:
             maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
 
       - name: Upload test results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-android
