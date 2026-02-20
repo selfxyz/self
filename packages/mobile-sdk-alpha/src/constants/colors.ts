@@ -22,6 +22,7 @@ export const cyan300 = '#67E8F9';
 
 export const emerald500 = '#10B981';
 
+export const gray200 = '#E5E7EB';
 export const gray400 = '#9CA3AF';
 
 export const green500 = '#22C55E';

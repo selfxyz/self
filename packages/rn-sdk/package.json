@@ -1,0 +1,71 @@
+{
+  "name": "@selfxyz/rn-sdk",
+  "version": "0.0.1-alpha.1",
+  "description": "Self Protocol React Native SDK — thin WebView wrapper for identity verification",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "assets"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "yarn copy-assets && tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "copy-assets": "cp -r ../webview-app/dist/ ./assets/self-wallet/",
+    "prepublishOnly": "yarn build"
+  },
+  "dependencies": {
+    "@selfxyz/webview-bridge": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-native": ">=0.72.0",
+    "react-native-biometrics": "^3.0.1",
+    "react-native-fs": "^2.20.0",
+    "react-native-keychain": "^8.2.0",
+    "react-native-nfc-manager": "^3.14.0",
+    "react-native-webview": ">=13.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react-native-biometrics": {
+      "optional": true
+    },
+    "react-native-fs": {
+      "optional": true
+    },
+    "react-native-keychain": {
+      "optional": true
+    },
+    "react-native-nfc-manager": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@selfxyz/webview-app": "workspace:^",
+    "@types/react": "^18.3.4",
+    "react": "^18.3.1",
+    "react-native": "0.76.9",
+    "react-native-biometrics": "^3.0.1",
+    "react-native-fs": "^2.20.0",
+    "react-native-keychain": "^9.2.3",
+    "react-native-nfc-manager": "^3.17.2",
+    "react-native-webview": "13.16.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.8"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}

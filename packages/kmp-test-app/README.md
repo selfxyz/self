@@ -17,12 +17,14 @@ kmp-test-app/
 ### Setup
 
 1. Build the SDK:
+
 ```bash
 cd ../kmp-sdk
 ./gradlew :shared:assembleDebug
 ```
 
 2. Run the Android app:
+
 ```bash
 cd ../kmp-test-app
 ./gradlew :androidApp:installDebug
@@ -75,12 +77,14 @@ class MainActivity : ComponentActivity() {
 ### Setup
 
 1. Build the iOS framework:
+
 ```bash
 cd ../kmp-sdk
 ./gradlew :shared:linkDebugFrameworkIosArm64
 ```
 
 2. Open the iOS project in Xcode:
+
 ```bash
 cd ../kmp-test-app
 open iosApp/iosApp.xcodeproj
@@ -136,12 +140,14 @@ class TestCallback: SelfSdkCallback {
 ## Status
 
 ### Android ✅
+
 - SDK implementation: **COMPLETE**
 - All native handlers implemented and functional
 - WebView hosting configured
 - Bridge communication working
 
 ### iOS ✅
+
 - SDK infrastructure: **COMPLETE** (compiles successfully)
 - NFC passport scanning: **WORKING** (via Swift helper + NFCPassportReader)
 - MRZ camera scanning: **WORKING** (via Swift helper + AVFoundation + Vision)

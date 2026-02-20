@@ -47,7 +47,7 @@ chk_java()    { command -v java &>/dev/null && { v=$(java -version 2>&1 | head -
 chk_xcode()   { xcode-select -p &>/dev/null && [[ "$(xcode-select -p)" == *Xcode.app* ]] && echo "ok" || echo "missing"; }
 chk_studio()  { [[ -d "/Applications/Android Studio.app" ]] && echo "ok" || echo "missing"; }
 chk_sdk()     { [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}" ]] && echo "ok" || echo "missing"; }
-chk_ndk()     { [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}/ndk/27.0.12077973" ]] && echo "ok" || echo "missing"; }
+chk_ndk()     { [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}/ndk/28.0.13004108" ]] && echo "ok" || echo "missing"; }
 chk_shell()   { local rc=~/.zshrc; [[ "$SHELL" == *bash* ]] && rc=~/.bashrc; grep -q "ANDROID_HOME" "$rc" 2>/dev/null && echo "ok" || echo "missing"; }
 
 # Install functions
@@ -120,7 +120,7 @@ DEPS=(
   "Xcode|chk_xcode||Install from App Store: https://apps.apple.com/app/xcode/id497799835"
   "Android Studio|chk_studio||Download: https://developer.android.com/studio"
   "Android SDK|chk_sdk||Open Android Studio → SDK Manager"
-  "Android NDK|chk_ndk||SDK Manager → SDK Tools → NDK 27.0.12077973"
+  "Android NDK|chk_ndk||SDK Manager → SDK Tools → NDK 28.0.13004108"
   "Shell Config|chk_shell|inst_shell|"
 )
 

@@ -85,6 +85,22 @@ module.exports = {
   },
   overrides: [
     {
+      // Enable TypeScript project service for source files (required by consistent-type-exports)
+      files: ['src/**/*.{ts,tsx}'],
+      parserOptions: {
+        project: true,
+        EXPERIMENTAL_useProjectService: true,
+      },
+      rules: {
+        '@typescript-eslint/consistent-type-exports': [
+          'error',
+          {
+            fixMixedExportsWithInlineTypeSpecifier: false,
+          },
+        ],
+      },
+    },
+    {
       files: ['*.cjs'],
       env: {
         node: true,

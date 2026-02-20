@@ -4,15 +4,15 @@
 
 package xyz.self.sdk.webview
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import xyz.self.sdk.bridge.MessageRouter
-import xyz.self.sdk.handlers.AnalyticsBridgeHandler
 import xyz.self.sdk.handlers.BiometricBridgeHandler
 import xyz.self.sdk.handlers.CameraMrzBridgeHandler
-import xyz.self.sdk.handlers.CryptoBridgeHandler
-import xyz.self.sdk.handlers.DocumentsBridgeHandler
-import xyz.self.sdk.handlers.HapticBridgeHandler
 import xyz.self.sdk.handlers.LifecycleBridgeHandler
 import xyz.self.sdk.handlers.NfcBridgeHandler
 import xyz.self.sdk.handlers.SecureStorageBridgeHandler
@@ -26,9 +26,37 @@ class SelfVerificationActivity : AppCompatActivity() {
     private lateinit var webViewHost: AndroidWebViewHost
     private lateinit var router: MessageRouter
 
+    private val requiredPermissions =
+        arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.NFC,
+        )
+
+    private val permissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            // Permissions granted or denied — proceed either way.
+            // Individual handlers will fail gracefully if their permission was denied.
+            initVerificationFlow()
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Request runtime permissions before initializing the WebView.
+        // Camera and NFC are dangerous permissions that require user consent.
+        val missingPermissions =
+            requiredPermissions.filter {
+                ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+            }
+
+        if (missingPermissions.isNotEmpty()) {
+            permissionLauncher.launch(missingPermissions.toTypedArray())
+        } else {
+            initVerificationFlow()
+        }
+    }
+
+    private fun initVerificationFlow() {
         // Determine if we're in debug mode
         val isDebugMode = intent.getBooleanExtra(EXTRA_DEBUG_MODE, false)
 
@@ -70,24 +98,14 @@ class SelfVerificationActivity : AppCompatActivity() {
         // Secure Storage - Encrypted key-value storage
         router.register(SecureStorageBridgeHandler(this))
 
-        // Crypto - Signing and key management
-        router.register(CryptoBridgeHandler())
-
-        // Haptic - Vibration feedback
-        router.register(HapticBridgeHandler(this))
-
-        // Analytics - Event tracking and logging
-        router.register(AnalyticsBridgeHandler())
-
         // Lifecycle - WebView lifecycle management
         router.register(LifecycleBridgeHandler(this))
-
-        // Documents - Encrypted document storage
-        router.register(DocumentsBridgeHandler(this))
     }
 
     override fun onDestroy() {
-        webViewHost.destroy()
+        if (::webViewHost.isInitialized) {
+            webViewHost.destroy()
+        }
         super.onDestroy()
     }
 

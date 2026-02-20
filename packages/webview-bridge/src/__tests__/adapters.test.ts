@@ -16,6 +16,8 @@ import {
   bridgeHapticAdapter,
   bridgeLifecycleAdapter,
   webNavigationAdapter,
+  bridgeBiometricsAdapter,
+  bridgeCameraAdapter,
 } from '../adapters';
 
 describe('Adapter integration tests', () => {
@@ -278,6 +280,83 @@ describe('Adapter integration tests', () => {
       expect(navigate).not.toHaveBeenCalled();
 
       warn.mockRestore();
+    });
+  });
+
+  describe('Biometrics Adapter', () => {
+    it('should authenticate via bridge', async () => {
+      // Native handler returns bare true on success
+      mock.handleWith('biometrics', 'authenticate', true);
+
+      const biometrics = bridgeBiometricsAdapter(bridge);
+      const result = await biometrics.authenticate({ reason: 'Verify identity' });
+
+      expect(result).toBe(true);
+      expect(mock.messagesFor('biometrics')).toHaveLength(1);
+      expect(mock.messagesFor('biometrics')[0].params).toEqual({
+        reason: 'Verify identity',
+      });
+    });
+
+    it('should reject when authentication fails', async () => {
+      // Native handler throws BridgeHandlerException on failure
+      mock.handleWithError('biometrics', 'authenticate', {
+        code: 'BIOMETRIC_ERROR',
+        message: 'User cancelled biometric',
+      });
+
+      const biometrics = bridgeBiometricsAdapter(bridge);
+      await expect(
+        biometrics.authenticate({ reason: 'Verify identity' }),
+      ).rejects.toThrow('User cancelled biometric');
+    });
+
+    it('should check availability', async () => {
+      // Native handler returns bare boolean
+      mock.handleWith('biometrics', 'isAvailable', true);
+
+      const biometrics = bridgeBiometricsAdapter(bridge);
+      const result = await biometrics.isAvailable();
+
+      expect(result).toBe(true);
+    });
+
+    it('should get biometry type', async () => {
+      // Native handler returns bare string
+      mock.handleWith('biometrics', 'getBiometryType', 'FaceID');
+
+      const biometrics = bridgeBiometricsAdapter(bridge);
+      const result = await biometrics.getBiometryType();
+
+      expect(result).toBe('FaceID');
+    });
+  });
+
+  describe('Camera Adapter', () => {
+    it('should scan MRZ via bridge', async () => {
+      // Native handler parses MRZ JSON into an object
+      const mrzData = {
+        documentNumber: 'AB1234567',
+        dateOfBirth: '900101',
+        dateOfExpiry: '300101',
+      };
+      mock.handleWith('camera', 'scanMRZ', mrzData);
+
+      const camera = bridgeCameraAdapter(bridge);
+      const result = await camera.scanMRZ();
+
+      expect(result).toEqual(mrzData);
+      expect(mock.messagesFor('camera')).toHaveLength(1);
+    });
+
+    it('should check camera availability', async () => {
+      // Native handler returns bare boolean
+      mock.handleWith('camera', 'isAvailable', true);
+
+      const camera = bridgeCameraAdapter(bridge);
+      const result = await camera.isAvailable();
+
+      expect(result).toBe(true);
     });
   });
 });

@@ -202,6 +202,23 @@ These workspace-specific files override or extend the root instructions for thei
 - Run `yarn types` to see all type errors across workspaces
 - Some packages may need to be built first: `yarn build:deps`
 
+## SDK Specs
+
+The `specs/` folder contains architecture and implementation specs for the Self SDK project (WebView engine + native shells). These specs are designed to serve as both human documentation and AI agent prompts.
+
+**Start here:** [specs/README.md](./specs/README.md) — table of contents and reading order.
+
+Key files:
+
+- `specs/SDK-OVERVIEW.md` — Architecture, bridge protocol, module table, decision matrix
+- `specs/WAVE-PLAN.md` — Dependency-ordered execution plan for parallel agent work
+- `specs/SPEC-GUIDE.md` — How to write specs
+- `specs/PROJECT-RULES.md` — Project-specific rules and guardrails
+- `specs/person*/OVERVIEW.md` — Workstream orientation (what you own, dependencies)
+- `specs/person*/SPEC.md` — Implementation details (chunks, code changes, I/O examples)
+
+**Before implementing SDK work:** Read `specs/PROJECT-RULES.md` and the relevant workstream's `SPEC.md`. These specs contain explicit constraints ("You will NOT..."), validation commands, and file ownership boundaries that prevent common mistakes.
+
 ## Scope
 
 These instructions apply to the entire repository unless overridden by a nested `AGENTS.md`.
