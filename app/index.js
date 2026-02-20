@@ -9,8 +9,9 @@
 // CRITICAL: Import crypto polyfill FIRST, before any modules that use crypto/uuid
 // eslint-disable-next-line simple-import-sort/imports
 import 'react-native-get-random-values';
+// eslint-disable-next-line simple-import-sort/imports
+import './src/polyfills/buffer';
 
-import { Buffer } from 'buffer';
 import React from 'react';
 import { AppRegistry, LogBox } from 'react-native';
 import { TamaguiProvider } from 'tamagui';
@@ -21,9 +22,6 @@ import tamaguiConfig from './tamagui.config';
 
 import './src/utils/crypto/ethers';
 import 'react-native-gesture-handler';
-
-// Set global Buffer before any other imports
-global.Buffer = Buffer;
 
 LogBox.ignoreLogs([
   /bad setState/,
