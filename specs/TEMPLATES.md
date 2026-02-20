@@ -22,7 +22,9 @@ Three copy-paste templates. Pick the one that matches what you're writing.
 
 ### Required References
 
-<!-- Keep these links intact so spec authors always read the right context. -->
+<!-- Keep these links intact so spec authors always read the right context.
+     This IS the project overview, so don't link it to itself.
+     Workstream/impl specs link back here; this links to rules only. -->
 
 - [PROJECT-RULES.md](./PROJECT-RULES.md)
 
@@ -46,7 +48,7 @@ like? Use 2-4 bullets for easy scanning, not a paragraph. -->
 
 ### Rules Reminder
 
-Apply [PROJECT-RULES.md](./PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work and **Architecture** for native/bridge work. Refer to the relevant sections rather than duplicating rules here.
+Apply [PROJECT-RULES.md](./PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work, **Architecture** for native/bridge work, and **Quality/Planning** for checklist and plan discipline. Prefer repo validation commands and note that token-sized chunks and LOC-sized PRs are different constraints.
 
 ### Architecture Diagram
 
@@ -184,7 +186,7 @@ document which ones and why. Remove this section if none. -->
 <!-- Keep these links intact so spec authors always read the right context. -->
 
 - [PROJECT-RULES.md](../PROJECT-RULES.md)
-- [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
+- [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) (if this project has a project overview, link it here)
 
 ### North Star
 
@@ -207,7 +209,7 @@ keep it at the top. -->
 
 ### Rules Reminder
 
-Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work and **Architecture** for native/bridge work. Refer to the relevant sections rather than duplicating rules here.
+Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work, **Architecture** for native/bridge work, and **Quality/Planning** for checklist and plan discipline. Prefer repo validation commands and note that token-sized chunks and LOC-sized PRs are different constraints.
 
 ### What You Own
 
@@ -290,7 +292,7 @@ document which ones and why. Remove this section if none. -->
 <!-- Keep these links intact so spec authors always read the right context. -->
 
 - [PROJECT-RULES.md](../PROJECT-RULES.md)
-- [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
+- [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) (if this project has a project overview, link it here)
 - [OVERVIEW.md](./OVERVIEW.md)
 
 ### North Star
@@ -438,7 +440,7 @@ Output: [expected error behavior]
 
 ### Rules Reminder
 
-Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work and **Architecture** for native/bridge work. Include relevant constraints in each chunk's "You will NOT" section rather than duplicating the full list here.
+Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work, **Architecture** for native/bridge work, and **Quality/Planning** for checklist and plan discipline. Include relevant constraints in each chunk's "You will NOT" section, prefer repo validation commands, and note that token-sized chunks and LOC-sized PRs are different constraints.
 
 ### Chunking Guide
 

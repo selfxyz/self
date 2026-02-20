@@ -36,13 +36,15 @@
 
 13. **No generated artifacts in source PRs.** Do not commit build outputs or generated assets unless the build system requires them for runtime or distribution.
 
+14. **Constraint tie-breaker.** If rules conflict, prioritize correctness and security first, then scope/clarity (small PRs, small files), then reuse. Document the tradeoff in the spec.
+
 ### Architecture
 
-14. **TypeScript is the primary surface area. Native code is the minimum.** The WebView carries all core logic: proving machine, state machines, stores, document management, UI. Kotlin and Swift exist only for hardware access (NFC, camera, biometrics) and OS-level APIs (keychain, lifecycle). ZK circuits are the backend; TypeScript is the frontend. If you're writing logic in Kotlin or Swift that could run in the WebView, you're doing it wrong.
+15. **TypeScript is the primary surface area. Native code is the minimum.** The WebView carries all core logic: proving machine, state machines, stores, document management, UI. Kotlin and Swift exist only for hardware access (NFC, camera, biometrics) and OS-level APIs (keychain, lifecycle). ZK circuits are the backend; TypeScript is the frontend. If you're writing logic in Kotlin or Swift that could run in the WebView, you're doing it wrong.
 
-15. **"Can this run in the WebView?" gate.** Before writing ANY native code (Kotlin or Swift), answer this question. If the answer is yes — or even maybe — it belongs in TypeScript. Native code is ONLY justified when it requires: hardware APIs (NFC chip, camera sensor, biometric prompt), OS-level APIs (keychain, activity/VC lifecycle), or platform SDKs with no JS equivalent. Parsing, formatting, validation, error mapping, state management, and business logic are NEVER native — they run in the WebView.
+16. **"Can this run in the WebView?" gate.** Before writing ANY native code (Kotlin or Swift), answer this question. If the answer is yes — or even maybe — it belongs in TypeScript. Native code is ONLY justified when it requires: hardware APIs (NFC chip, camera sensor, biometric prompt), OS-level APIs (keychain, activity/VC lifecycle), or platform SDKs with no JS equivalent. Parsing, formatting, validation, error mapping, state management, and business logic are NEVER native — they run in the WebView.
 
-16. **Maximize code reuse through `mobile-sdk-alpha`.** Before adding code to `webview-app`, `kmp-sdk`, or `app/`, check if `mobile-sdk-alpha` already has it or should have it. If two packages need the same logic, it belongs in the SDK. Extend the SDK rather than duplicating. Specifically:
+17. **Maximize code reuse through `mobile-sdk-alpha`.** Before adding code to `webview-app`, `kmp-sdk`, or `app/`, check if `mobile-sdk-alpha` already has it or should have it. If two packages need the same logic, it belongs in the SDK. Extend the SDK rather than duplicating. Specifically:
 
 - Types, interfaces, constants → `mobile-sdk-alpha`
 - Parsing, validation, formatting → `mobile-sdk-alpha`
@@ -50,35 +52,35 @@
 - UI components shared between flows → `mobile-sdk-alpha`
 - Only screen-level composition and routing belong in `webview-app`
 
-17. **New native handlers MUST follow the bridge protocol exactly.** Every native handler implements the JSON schema defined in SDK-OVERVIEW.md (request/response/event). No custom messaging, no side channels, no platform-specific extensions. The WebView must not know which native shell it's running inside.
+18. **New native handlers MUST follow the bridge protocol exactly.** Every native handler implements the JSON schema defined in SDK-OVERVIEW.md (request/response/event). No custom messaging, no side channels, no platform-specific extensions. The WebView must not know which native shell it's running inside.
 
 ### Code
 
-18. **No `react-native` imports outside `src/adapters/react-native/`.** Core logic, stores, types, and constants must be platform-agnostic. Use adapter interfaces.
+19. **No `react-native` imports outside `src/adapters/react-native/`.** Core logic, stores, types, and constants must be platform-agnostic. Use adapter interfaces.
 
-19. **Keychain/SecureStorage is always native-managed.** No web fallbacks for `AuthAdapter` or `StorageAdapter`. The WebView does not get direct keychain access. This is a security boundary.
+20. **Keychain/SecureStorage is always native-managed.** No web fallbacks for `AuthAdapter` or `StorageAdapter`. The WebView does not get direct keychain access. This is a security boundary.
 
-20. **Adapter interfaces are the coupling layer.** Person 1 (webview) imports adapter interfaces from Person 4 (SDK core). Person 2 (native shells) implements bridge handlers. Nobody imports code across the bridge boundary.
+21. **Adapter interfaces are the coupling layer.** Person 1 (webview) imports adapter interfaces from Person 4 (SDK core). Person 2 (native shells) implements bridge handlers. Nobody imports code across the bridge boundary.
 
-21. **No logic in native shells.** Native handlers are pass-through: receive bridge request → call platform API → return bridge response. No parsing, no formatting, no validation, no error mapping, no state management. If a native handler is growing beyond ~50-100 lines per method, logic is leaking out of the WebView.
+22. **No logic in native shells.** Native handlers are pass-through: receive bridge request → call platform API → return bridge response. No parsing, no formatting, no validation, no error mapping, no state management. If a native handler is growing beyond ~50-100 lines per method, logic is leaking out of the WebView.
 
-22. **Fail closed on security-critical boundaries.** For protocol compatibility, remote bundle loading, and verification session lifecycle, default-deny behavior is required. Reject unknown protocol versions, block remote `devServerUrl` in production, and allow only one active verification session at a time.
+23. **Fail closed on security-critical boundaries.** For protocol compatibility, remote bundle loading, and verification session lifecycle, default-deny behavior is required. Reject unknown protocol versions, block remote `devServerUrl` in production, and allow only one active verification session at a time.
 
 ### Quality
 
-23. **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self Wallet app. Validate with `vitest run` and manual testing.
+24. **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self Wallet app. Validate with `vitest run` and manual testing.
 
-24. **Specs stay current.** When implementation deviates from the spec, update the spec. A stale spec is worse than no spec — it misleads the next person.
+25. **Specs stay current.** When implementation deviates from the spec, update the spec. A stale spec is worse than no spec — it misleads the next person.
 
-25. **Review status checklists before starting a work session.** Read the OVERVIEW.md status checklist and SPEC.md chunk status table before doing anything. Verify the status reflects reality. If something is marked "Done" that isn't, or "Pending" that's actually in progress, fix it first. Don't build on stale assumptions.
+26. **Review status checklists before starting a work session.** Read the OVERVIEW.md status checklist and SPEC.md chunk status table before doing anything. Verify the status reflects reality. If something is marked "Done" that isn't, or "Pending" that's actually in progress, fix it first. Don't build on stale assumptions.
 
-26. **Update status checklists as you complete work.** When you finish a chunk, check off the corresponding items in both the OVERVIEW.md status checklist and the SPEC.md chunk status table. This is the primary way devs and leads track progress — stale checklists erode trust in the specs.
+27. **Update status checklists as you complete work.** When you finish a chunk, check off the corresponding items in both the OVERVIEW.md status checklist and the SPEC.md chunk status table. This is the primary way devs and leads track progress — stale checklists erode trust in the specs.
 
 ### Planning
 
-27. **Write plans to disk before executing.** When working on multi-step tasks (multiple chunks, cross-workstream coordination, or anything requiring more than one session), write the plan to a file BEFORE starting implementation. Update WAVE-PLAN.md, the relevant SPEC.md status table, or create a session-specific plan file. A plan that only exists in session memory will be lost to API errors, context overflow, or `/clear`. Writing it to disk enables multiple agents to work from the same plan and creates an audit trail.
+28. **Write plans to disk before executing.** When working on multi-step tasks (multiple chunks, cross-workstream coordination, or anything requiring more than one session), write the plan to a file BEFORE starting implementation. Update WAVE-PLAN.md, the relevant SPEC.md status table, or create a session-specific plan file. A plan that only exists in session memory will be lost to API errors, context overflow, or `/clear`. Writing it to disk enables multiple agents to work from the same plan and creates an audit trail.
 
-28. **Update plan files as you go.** When a chunk is completed, mark it done in the plan file immediately. When scope changes, update the plan file. The plan file is the single source of truth for what's been done and what's next — not the session transcript.
+29. **Update plan files as you go.** When a chunk is completed, mark it done in the plan file immediately. When scope changes, update the plan file. The plan file is the single source of truth for what's been done and what's next — not the session transcript.
 
 ---
 
@@ -109,7 +111,7 @@ Concrete commands that catch violations after code is written. Include these in 
 
 ```bash
 # Verify no RN imports leaked into core
-grep -r "from 'react-native'" packages/mobile-sdk-alpha/src/ \
+grep -r "from ['\"]react-native['\"]" packages/mobile-sdk-alpha/src/ \
   --include="*.ts" --include="*.tsx" \
   | grep -v "adapters/react-native" \
   | grep -v ".native." && echo "FAIL: RN import in core" || echo "PASS"

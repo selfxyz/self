@@ -116,6 +116,12 @@ Templates are useless without a research process. Follow this workflow:
 
 Every spec must respect [PROJECT-RULES.md](./PROJECT-RULES.md). When writing chunk instructions, apply the rules that are relevant to the work — especially the **Reuse & Maintainability** section for UI/component work and the **Architecture** section for native/bridge work. Don’t cargo-cult UI rules into non-UI specs or vice versa.
 
+Also:
+
+- Write plans to disk before implementation and keep status checklists current.
+- Prefer repository validation commands (Yarn workspaces) over ad hoc `npx` when available.
+- Token-budgeted chunks and LOC-based PR sizing are different constraints; satisfy both.
+
 ## Spec Review Checklist
 
 Before sharing a spec, verify:
