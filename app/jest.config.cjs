@@ -32,6 +32,7 @@ module.exports = {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
     '\\.svg$': '<rootDir>/tests/__setup__/svgMock.js',
     '\\.(png|jpg|jpeg|gif|webp)$': '<rootDir>/tests/__setup__/imageMock.js',
+    '\\.lottie$': '<rootDir>/tests/__setup__/imageMock.js',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@$': '<rootDir>/src',
     '^@tests/(.*)$': '<rootDir>/tests/src/$1',
@@ -52,6 +53,9 @@ module.exports = {
       '<rootDir>/../packages/mobile-sdk-alpha/dist/$1.json',
     '^@selfxyz/mobile-sdk-alpha/(.*)$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/$1.cjs',
+    // Mock lucide icon deep imports to avoid Tamagui theme requirement
+    '^@tamagui/lucide-icons/icons/(.*)$':
+      '<rootDir>/tests/__setup__/lucideIconMock.js',
     // Fix snarkjs resolution for @anon-aadhaar/core
     '^snarkjs$': '<rootDir>/../circuits/node_modules/snarkjs/build/main.cjs',
     // Fix ffjavascript resolution for snarkjs dependencies
