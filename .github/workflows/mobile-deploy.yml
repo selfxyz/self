@@ -1308,7 +1308,11 @@ jobs:
         run: |
           BUILD_REF="${{ github.ref_name }}"
           echo "📋 Using version-manager.cjs from build branch: $BUILD_REF"
-          git show "origin/${BUILD_REF}:app/scripts/version-manager.cjs" > "${{ env.APP_PATH }}/scripts/version-manager.cjs"
+          SCRIPT_CONTENT=$(git show "origin/${BUILD_REF}:app/scripts/version-manager.cjs") || {
+            echo "❌ Failed to read version-manager.cjs from origin/${BUILD_REF}"
+            exit 1
+          }
+          echo "$SCRIPT_CONTENT" > "${{ env.APP_PATH }}/scripts/version-manager.cjs"
 
       - name: Apply version bump from outputs
         run: |
@@ -1336,7 +1340,11 @@ jobs:
             exit 1
           fi
 
-          echo "VERSION_MANAGED_FILES=$VERSION_MANAGED_FILES" >> $GITHUB_ENV
+          {
+            echo "VERSION_MANAGED_FILES<<EOF"
+            echo "$VERSION_MANAGED_FILES"
+            echo "EOF"
+          } >> $GITHUB_ENV
           echo "🗂️ Version-managed files: $VERSION_MANAGED_FILES"
 
       - name: Verify version changes
