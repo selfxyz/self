@@ -244,16 +244,18 @@ jobs:
           fi
           ls -la /dev/kvm
           echo "available=true" >> "$GITHUB_OUTPUT"
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true
+      # jcortejoso: Retry as it intermittently fails because network issues
       - name: Pre-install emulator dependencies
-        run: |
-          sdkmanager --install \
-            "platforms;android-${{ env.ANDROID_API_LEVEL }}" \
-            "system-images;android-${{ env.ANDROID_API_LEVEL }};google_apis;x86_64" \
-            "emulator"
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 20
+          max_attempts: 3
+          retry_wait_seconds: 15
+          command: |
+            sdkmanager --install \
+              "platforms;android-${{ env.ANDROID_API_LEVEL }}" \
+              "system-images;android-${{ env.ANDROID_API_LEVEL }};google_apis;x86_64" \
+              "emulator"
       - name: Install and Test on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
