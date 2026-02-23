@@ -254,7 +254,7 @@ jobs:
           command: |
             sdkmanager --install \
               "platforms;android-${{ env.ANDROID_API_LEVEL }}" \
-              "system-images;android-${{ env.ANDROID_API_LEVEL }};google_apis;x86_64" \
+              "system-images;android-${{ env.ANDROID_API_LEVEL }};default;x86_64" \
               "emulator"
       - name: Install emulator runtime dependencies
         run: |
@@ -271,7 +271,7 @@ jobs:
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           arch: x86_64
-          target: google_apis
+          target: default
           channel: stable
           force-avd-creation: false
           emulator-options: >-
