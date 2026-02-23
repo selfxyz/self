@@ -20,13 +20,23 @@ class LifecycleBridgeHandler : BridgeHandler {
     override val domain = BridgeDomain.LIFECYCLE
 
     private val mutex = Mutex()
-    internal var pendingCallback: SelfSdkCallback? = null
-    internal var dismissAction: (() -> Unit)? = null
+    private var pendingCallback: SelfSdkCallback? = null
+    private var dismissAction: (() -> Unit)? = null
 
     private data class LifecycleState(
         val callback: SelfSdkCallback?,
         val dismiss: (() -> Unit)?,
     )
+
+    internal suspend fun configure(
+        callback: SelfSdkCallback?,
+        dismiss: (() -> Unit)?,
+    ) {
+        mutex.withLock {
+            pendingCallback = callback
+            dismissAction = dismiss
+        }
+    }
 
     override suspend fun handle(
         method: String,
@@ -72,7 +82,8 @@ class LifecycleBridgeHandler : BridgeHandler {
         val errorMessage = params["errorMessage"]?.jsonPrimitive?.content
 
         if (type != null) {
-            // Flat lifecycle payload (e.g. { type: "proofRequested" }) — pass type through
+            // Flat lifecycle payload is a protocol-level success signal.
+            // `type` communicates what completed (e.g. proofRequested).
             state.callback?.onSuccess(
                 VerificationResult(success = true, type = type),
             )

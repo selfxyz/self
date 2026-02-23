@@ -9,6 +9,10 @@ import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid-web';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 
 const DEFAULT_REQUEST_TYPE = 'proofRequested';
+const ALLOWED_REQUEST_TYPES = new Set([
+  'proofRequested',
+  'documentOwnershipConfirmed',
+]);
 const DEFAULT_PROOF_ITEMS = [
   'Age verification',
   'Nationality',
@@ -31,13 +35,38 @@ function titleCaseDisclosure(disclosure: string): string {
     .replace(/\b\w/g, (match) => match.toUpperCase());
 }
 
+function normalizeRequestType(value: string | null | undefined): string {
+  if (!value) return DEFAULT_REQUEST_TYPE;
+  return ALLOWED_REQUEST_TYPES.has(value) ? value : DEFAULT_REQUEST_TYPE;
+}
+
+function normalizeAppEndpoint(value: string | null | undefined): string {
+  if (!value) return '';
+
+  try {
+    const endpoint = new URL(value);
+    const isHttps = endpoint.protocol === 'https:';
+    const isLocalHttp =
+      endpoint.protocol === 'http:' &&
+      (endpoint.hostname === 'localhost' || endpoint.hostname === '127.0.0.1');
+
+    if (!isHttps && !isLocalHttp) {
+      return '';
+    }
+
+    return endpoint.host;
+  } catch {
+    return '';
+  }
+}
+
 function parseProofItems(search: string): string[] | null {
   const params = new URLSearchParams(search);
   const proofItems = params.get('proofItems');
   if (proofItems) {
     const items = proofItems
       .split(',')
-      .map((item) => decodeURIComponent(item).trim())
+      .map((item) => item.trim())
       .filter(Boolean);
     if (items.length > 0) return items;
   }
@@ -46,7 +75,7 @@ function parseProofItems(search: string): string[] | null {
   if (disclosures) {
     const items = disclosures
       .split(',')
-      .map((item) => titleCaseDisclosure(decodeURIComponent(item)))
+      .map((item) => titleCaseDisclosure(item))
       .filter(Boolean);
     if (items.length > 0) return items;
   }
@@ -63,10 +92,9 @@ export const ProvingScreen: React.FC = () => {
 
   const requestType = useMemo(() => {
     const params = new URLSearchParams(location.search);
-    return (
+    return normalizeRequestType(
       locationState.requestType ??
-      params.get('resultType') ??
-      DEFAULT_REQUEST_TYPE
+        params.get('resultType'),
     );
   }, [location.search, locationState.requestType]);
 
@@ -84,7 +112,9 @@ export const ProvingScreen: React.FC = () => {
 
   const appEndpoint = useMemo(() => {
     const params = new URLSearchParams(location.search);
-    return locationState.appEndpoint ?? params.get('appEndpoint') ?? '';
+    return normalizeAppEndpoint(
+      locationState.appEndpoint ?? params.get('appEndpoint'),
+    );
   }, [location.search, locationState.appEndpoint]);
 
   const timestamp = useMemo(() => {

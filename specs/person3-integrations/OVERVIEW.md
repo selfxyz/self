@@ -19,8 +19,8 @@
 - [x] iOS: Compose Multiplatform launch path is present
 - [x] Integration hardening paths are implemented in sample result UX (error-code to user-message mapping)
 - [x] Non-device validation evidence captured:
-  - `@selfxyz/rn-sdk` tests: 64/64 passing (includes NFC failure modes and APDU path handling)
-  - `@selfxyz/webview-bridge` tests: 63/63 passing
+  - `@selfxyz/rn-sdk` tests: all passing at merge time (includes NFC failure modes and APDU path handling; see CI checks)
+  - `@selfxyz/webview-bridge` tests: all passing at merge time (see CI checks)
   - iOS launch E2E artifact: `app/maestro-results.xml` (1 test, 0 failures, 19s on iPhone 16 simulator)
 - [ ] End-to-end: NFC scan on physical device through sample app still requires validation
 

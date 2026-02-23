@@ -47,8 +47,8 @@ describe('CameraHandler', () => {
 
     await expect(handler.handle('scanMRZ', {})).resolves.toEqual({
       documentNumber: 'L898902C3',
-      birthDate: '740812',
-      expiryDate: '120415',
+      dateOfBirth: '740812',
+      dateOfExpiry: '120415',
       documentType: 'P',
       countryCode: 'UTO',
     });

@@ -13,8 +13,8 @@ interface MrzScannerModule {
 
 interface MrzScanData {
   documentNumber: string;
-  birthDate: string;
-  expiryDate: string;
+  dateOfBirth: string;
+  dateOfExpiry: string;
   documentType?: string;
   countryCode?: string;
 }
@@ -31,13 +31,28 @@ function normalizeMrzScanResult(result: unknown): MrzScanData {
   const root = (result ?? {}) as Record<string, unknown>;
   const payload = (root.data ?? root) as Record<string, unknown>;
 
-  const documentNumber = typeof payload.documentNumber === 'string' ? payload.documentNumber : '';
-  const birthDate = typeof payload.birthDate === 'string' ? payload.birthDate : '';
-  const expiryDate = typeof payload.expiryDate === 'string' ? payload.expiryDate : '';
+  const documentNumber =
+    typeof payload.documentNumber === 'string'
+      ? payload.documentNumber
+      : typeof payload.passportNumber === 'string'
+        ? payload.passportNumber
+        : '';
+  const dateOfBirth =
+    typeof payload.dateOfBirth === 'string'
+      ? payload.dateOfBirth
+      : typeof payload.birthDate === 'string'
+        ? payload.birthDate
+        : '';
+  const dateOfExpiry =
+    typeof payload.dateOfExpiry === 'string'
+      ? payload.dateOfExpiry
+      : typeof payload.expiryDate === 'string'
+        ? payload.expiryDate
+        : '';
   const documentType = typeof payload.documentType === 'string' ? payload.documentType : undefined;
   const countryCode = typeof payload.countryCode === 'string' ? payload.countryCode : undefined;
 
-  if (!documentNumber || !birthDate || !expiryDate) {
+  if (!documentNumber || !dateOfBirth || !dateOfExpiry) {
     throw new BridgeHandlerError(
       'MRZ_SCAN_INVALID_RESULT',
       'MRZ scan returned incomplete data',
@@ -46,8 +61,8 @@ function normalizeMrzScanResult(result: unknown): MrzScanData {
 
   return {
     documentNumber,
-    birthDate,
-    expiryDate,
+    dateOfBirth,
+    dateOfExpiry,
     documentType,
     countryCode,
   };

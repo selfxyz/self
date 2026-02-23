@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { Platform } from 'react-native';
-
 import type { BridgeDomain } from '../bridge/types';
 import type { BridgeHandler } from '../bridge/types';
 import { BridgeHandlerError } from '../bridge/types';
@@ -106,7 +104,7 @@ export class NfcHandler implements BridgeHandler {
       await manager.start();
       this.pushProgress('waiting_for_tag', 10);
 
-      const nfcTech = Platform.OS === 'ios' ? tech.IsoDep : tech.IsoDep;
+      const nfcTech = tech.IsoDep;
 
       await manager.requestTechnology(nfcTech);
       this.pushProgress('tag_discovered', 30);
