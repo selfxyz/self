@@ -22,7 +22,7 @@ import { SdkEvents } from '../../types/events';
 import type { SelfClient } from '../../types/public';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
-const successAnimation = require('src/animations/loading/success.lottie');
+const successAnimation = require('../../animations/loading/success.lottie');
 
 /*
   Screen to confirm identification ownership

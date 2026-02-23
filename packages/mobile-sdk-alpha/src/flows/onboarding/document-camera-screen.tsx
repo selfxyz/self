@@ -20,7 +20,7 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { SdkEvents } from '../../types/events';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
-const passportScanAnimation = require('src/animations/passport_scan.lottie');
+const passportScanAnimation = require('../../animations/passport_scan.lottie');
 
 type Props = {
   onBack?: () => void;

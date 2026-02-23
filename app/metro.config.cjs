@@ -135,31 +135,37 @@ const config = {
 
       // Deduplicate SDK animation imports — resolve to app's single copy when possible
       if (
-        moduleName.startsWith('src/animations/') &&
         /\.(json|lottie)$/.test(moduleName) &&
         context.originModulePath?.includes('mobile-sdk-alpha')
       ) {
-        // Try app's animations first (deduplication)
-        const relPath = moduleName.replace('src/animations/', '');
-        const appAnimPath = path.resolve(
-          projectRoot,
-          'src/assets/animations',
-          relPath,
-        );
-        if (fs.existsSync(appAnimPath)) {
-          return { type: 'sourceFile', filePath: appAnimPath };
+        // Extract the animation-relative path from either bare or relative specifiers
+        let animRelPath;
+        if (moduleName.startsWith('src/animations/')) {
+          animRelPath = moduleName.replace('src/animations/', '');
+        } else if (/\/animations\//.test(moduleName)) {
+          animRelPath = moduleName.split('/animations/').pop();
         }
-        // Fall back to SDK's own copy (for SDK-only animations like loading/*)
-        const sdkAnimPath = path.resolve(
-          workspaceRoot,
-          'packages/mobile-sdk-alpha',
-          moduleName,
-        );
-        if (fs.existsSync(sdkAnimPath)) {
-          return { type: 'sourceFile', filePath: sdkAnimPath };
+
+        if (animRelPath) {
+          // Try app's animations first (deduplication)
+          const appAnimPath = path.resolve(
+            projectRoot,
+            'src/assets/animations',
+            animRelPath,
+          );
+          if (fs.existsSync(appAnimPath)) {
+            return { type: 'sourceFile', filePath: appAnimPath };
+          }
+          // Fall back to SDK's own copy (for SDK-only animations like loading/*)
+          const sdkAnimPath = path.resolve(
+            sdkAlphaPath,
+            'src/animations',
+            animRelPath,
+          );
+          if (fs.existsSync(sdkAnimPath)) {
+            return { type: 'sourceFile', filePath: sdkAnimPath };
+          }
         }
-        // Let default resolver handle it (will produce a clear "module not found" error)
-        return context.resolveRequest(context, moduleName, platform);
       }
 
       // Custom resolver to handle Node.js modules and dynamic flow imports

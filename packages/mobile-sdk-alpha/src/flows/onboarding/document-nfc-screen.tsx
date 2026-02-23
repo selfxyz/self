@@ -27,7 +27,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { PassportData } from '@selfxyz/common';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
-const passportVerifyAnimation = require('src/animations/passport_verify.lottie');
+const passportVerifyAnimation = require('../../animations/passport_verify.lottie');
 
 const emitter = Platform.OS === 'android' ? new NativeEventEmitter(NativeModules.nativeModule) : null;
 

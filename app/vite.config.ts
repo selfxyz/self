@@ -17,6 +17,7 @@ export default defineConfig({
   root: 'web',
   publicDir: 'web',
   envDir: '..', // This is the directory where Vite will look for .env files relative to the root
+  assetsInclude: ['**/*.lottie'],
   resolve: {
     extensions: [
       '.web.tsx',
@@ -192,7 +193,7 @@ export default defineConfig({
 
           // Large animations - split out heavy Lottie files
           'animations-passport-onboarding': [
-            './src/assets/animations/passport_onboarding.json',
+            './src/assets/animations/passport_onboarding.lottie',
           ],
 
           // Other screens
