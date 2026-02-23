@@ -2,14 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-// Browser-safe exports with explicit tree-shaking friendly imports
+// Browser-safe exports with explicit tree-shaking friendly imports.
 
 // Types
 export type {
   Adapters,
+  AnalyticsAdapter,
+  AuthAdapter,
   ClockAdapter,
   Config,
   CryptoAdapter,
+  DocumentsAdapter,
   HttpAdapter,
   LogLevel,
   LoggerAdapter,
@@ -17,60 +20,47 @@ export type {
   MRZValidation,
   NFCScanResult,
   NFCScannerAdapter,
+  NavigationAdapter,
   NetworkAdapter,
   Progress,
+  RouteName,
+  SdkInitialConfig,
   SelfClient,
   StorageAdapter,
+  TrackEventParams,
   Unsubscribe,
+  VerificationRequest,
   WsAdapter,
   WsConn,
 } from './types/public';
 
+export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
 export type { DG1, DG2, ParsedNFCResponse } from './nfc';
-export type { HapticOptions, HapticType } from './haptic/shared';
-export type { MRZScanOptions } from './mrz';
 export type { PassportValidationCallbacks } from './validation/document';
-
+export type { ProvingStateType, provingMachineCircuitType } from './proving/provingMachine';
 export type { SDKEvent, SDKEventMap } from './types/events';
 export type { SdkErrorCategory } from './errors';
 
+export type { WebAnalyticsOptions } from './adapters/browser';
+
 export {
-  type BottomSectionProps,
-  ExpandableBottomLayout,
-  type FullSectionProps,
-  type LayoutProps,
-  type TopSectionProps,
-} from './layouts/ExpandableBottomLayout';
-
-export { DelayedLottieView } from './components/DelayedLottieView.web';
-
-export { type ProvingStateType } from './proving/provingMachine';
-
-export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
+  InitError,
+  LivenessError,
+  MrzParseError,
+  NfcParseError,
+  SCANNER_ERROR_CODES,
+  SdkError,
+  notImplemented,
+  sdkError,
+} from './errors';
 
 export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
-export { advercase, dinot, plexMono } from './constants/fonts';
+export { advercase, dinot, dinotBold, plexMono } from './constants/fonts';
 
-export {
-  buttonTap,
-  cancelTap,
-  confirmTap,
-  feedbackProgress,
-  feedbackSuccess,
-  feedbackUnsuccessful,
-  impactLight,
-  impactMedium,
-  loadingScreenProgress,
-  notificationError,
-  notificationSuccess,
-  notificationWarning,
-  selectionChange,
-  triggerFeedback,
-} from './haptic';
-
+// Browser-native adapter factories (no React Native dependencies)
 export {
   clearPassportData,
   getAllDocuments,
@@ -78,26 +68,30 @@ export {
   loadSelectedDocument,
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
+  storePassportData,
 } from './documents/utils';
+
+export {
+  createIndexedDBDocumentsAdapter,
+  createNoOpHapticAdapter,
+  createWebAnalyticsAdapter,
+  createWebCryptoAdapter,
+} from './adapters/browser';
 
 export { createListenersMap, createSelfClient } from './client';
 
+/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { defaultConfig } from './config/defaults';
 
-/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
-// Core functions
 export { isPassportDataValid } from './validation/document';
 
 export { mergeConfig } from './config/merge';
 
 export { parseNFCResponse, scanNFC } from './nfc';
 
-export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
 export { sanitizeErrorMessage } from './utils/utils';
-export { useCountries } from './documents/useCountries';
-
 export { webNFCScannerShim } from './adapters/web/shims';

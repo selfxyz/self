@@ -26,7 +26,7 @@
         <activity
             android:name="xyz.self.sdk.webview.SelfVerificationActivity"
             android:exported="false"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" />
     </application>
