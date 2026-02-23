@@ -1304,6 +1304,12 @@ jobs:
         with:
           node-version-file: .nvmrc
 
+      - name: Copy version-manager from build branch
+        run: |
+          BUILD_REF="${{ github.ref_name }}"
+          echo "📋 Using version-manager.cjs from build branch: $BUILD_REF"
+          git show "origin/${BUILD_REF}:app/scripts/version-manager.cjs" > "${{ env.APP_PATH }}/scripts/version-manager.cjs"
+
       - name: Apply version bump from outputs
         run: |
           cd ${{ env.APP_PATH }}
