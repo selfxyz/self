@@ -262,7 +262,7 @@ jobs:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           arch: x86_64
           target: google_apis
-          channel: 0
+          channel: stable
           force-avd-creation: false
           emulator-options: >-
             -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
