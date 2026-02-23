@@ -5,6 +5,4 @@
 
 @interface RCT_EXTERN_MODULE(NativeLoggerBridge, RCTEventEmitter)
 
-RCT_EXTERN_METHOD(requiresMainQueueSetup)
-
 @end 

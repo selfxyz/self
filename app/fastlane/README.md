@@ -1,5 +1,4 @@
-fastlane documentation
-----
+## fastlane documentation
 
 # Installation
 
@@ -39,8 +38,7 @@ Push a new build to TestFlight Internal Testing
 
 Deploy iOS app with automatic version management
 
-----
-
+---
 
 ## Android
 
@@ -84,7 +82,7 @@ Build Android app without uploading
 
 Deploy Android app with automatic version management
 
-----
+---
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 

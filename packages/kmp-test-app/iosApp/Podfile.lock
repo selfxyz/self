@@ -1,35 +1,3 @@
-PODS:
-  - Mixpanel-swift (5.0.0):
-    - Mixpanel-swift/Complete (= 5.0.0)
-  - Mixpanel-swift/Complete (5.0.0)
-  - NFCPassportReader (2.1.1):
-    - Mixpanel-swift (~> 5.0.0)
-    - OpenSSL-Universal (= 1.1.1900)
-  - OpenSSL-Universal (1.1.1900)
-
-DEPENDENCIES:
-  - "NFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b`)"
-
-SPEC REPOS:
-  trunk:
-    - Mixpanel-swift
-    - OpenSSL-Universal
-
-EXTERNAL SOURCES:
-  NFCPassportReader:
-    :commit: 9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b
-    :git: "git@github.com:selfxyz/NFCPassportReader.git"
-
-CHECKOUT OPTIONS:
-  NFCPassportReader:
-    :commit: 9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b
-    :git: "git@github.com:selfxyz/NFCPassportReader.git"
-
-SPEC CHECKSUMS:
-  Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
-  NFCPassportReader: 48873f856f91215dbfa1eaaec20eae639672862e
-  OpenSSL-Universal: 84efb8a29841f2764ac5403e0c4119a28b713346
-
-PODFILE CHECKSUM: fa8595bd47b8bbab86f8c261a23529fd5f8b9f99
+PODFILE CHECKSUM: 1dde59545c9476a0aad967e5aba959e5d65e6547
 
 COCOAPODS: 1.16.2

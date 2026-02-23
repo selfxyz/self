@@ -28,6 +28,7 @@ declare global {
         SelfNativeIOS?: NativeTransport;
       };
     };
+    ReactNativeWebView?: NativeTransport;
   }
 }
 
@@ -47,16 +48,20 @@ export class WebViewBridge {
   }
 
   private detectTransport(): NativeTransport | null {
-    // Android
+    // Android (KMP)
     if (globalThis.SelfNativeAndroid?.postMessage) {
       return globalThis.SelfNativeAndroid;
     }
-    // iOS
+    // iOS (KMP)
     if (
       typeof window !== 'undefined' &&
       window.webkit?.messageHandlers?.SelfNativeIOS?.postMessage
     ) {
       return window.webkit.messageHandlers.SelfNativeIOS;
+    }
+    // React Native WebView
+    if (typeof window !== 'undefined' && window.ReactNativeWebView?.postMessage) {
+      return window.ReactNativeWebView;
     }
     return null;
   }
