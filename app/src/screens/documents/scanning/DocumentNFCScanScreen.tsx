@@ -51,7 +51,6 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
 import NFC_IMAGE from '@/assets/images/nfc.png';
 import { logNFCEvent } from '@/config/sentry';
 import { useErrorInjection } from '@/hooks/useErrorInjection';
@@ -99,6 +98,9 @@ type DocumentNFCScanRoute = RouteProp<
   Record<string, DocumentNFCScanRouteParams>,
   string
 >;
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const passportVerifyAnimation = require('@/assets/animations/passport_verify.lottie');
 
 const DocumentNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();

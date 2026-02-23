@@ -7,7 +7,6 @@ import { StyleSheet } from 'react-native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
-import successAnimation from '../../animations/loading/success.json';
 import { PrimaryButton } from '../../components';
 import { DelayedLottieView } from '../../components/DelayedLottieView';
 import Description from '../../components/typography/Description';
@@ -21,6 +20,9 @@ import { useSafeBottomPadding } from '../../hooks/useSafeBottomPadding';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { SdkEvents } from '../../types/events';
 import type { SelfClient } from '../../types/public';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const successAnimation = require('src/animations/loading/success.lottie');
 
 /*
   Screen to confirm identification ownership

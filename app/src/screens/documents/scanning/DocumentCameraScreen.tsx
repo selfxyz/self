@@ -31,7 +31,6 @@ import {
   useReadMRZ,
 } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
-import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import Scan from '@/assets/icons/passport_camera_scan.svg';
 import { PassportCamera } from '@/components/native/PassportCamera';
 import { useErrorInjection } from '@/hooks/useErrorInjection';
@@ -39,6 +38,9 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { getDocumentScanPrompt } from '@/utils/documentAttributes';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const passportScanAnimation = require('@/assets/animations/passport_scan.lottie');
 
 const DocumentCameraScreen: React.FC = () => {
   const isFocused = useIsFocused();

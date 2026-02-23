@@ -102,7 +102,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
   },
 }));
 
-jest.mock('@selfxyz/mobile-sdk-alpha/animations/loading/misc.json', () => ({}));
+jest.mock('@selfxyz/mobile-sdk-alpha/animations/loading/misc.lottie', () => 1);
 
 jest.mock('@/integrations/haptics', () => ({
   buttonTap: jest.fn(),

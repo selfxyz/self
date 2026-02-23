@@ -27,7 +27,6 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import qrScanAnimation from '@/assets/animations/qr_scan.json';
 import QRScan from '@/assets/icons/qr_code.svg';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
@@ -38,6 +37,9 @@ import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const qrScanAnimation = require('@/assets/animations/qr_scan.lottie');
 
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();

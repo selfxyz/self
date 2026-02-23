@@ -87,6 +87,8 @@ export default defineConfig([
       /^@noble\/hashes\/.*/,
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
+      // Externalize animation files so Metro can deduplicate them
+      /\/animations\/.*\.(json|lottie)$/,
     ],
     esbuildOptions(options) {
       options.supported = {
@@ -144,6 +146,8 @@ export default defineConfig([
       /^@noble\/hashes\/.*/,
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
+      // Externalize animation files so Metro can deduplicate them
+      /\/animations\/.*\.(json|lottie)$/,
     ],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
     esbuildOptions(options) {

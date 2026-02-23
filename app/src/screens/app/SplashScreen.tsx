@@ -14,7 +14,6 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import splashAnimation from '@/assets/animations/splash.json';
 import { impactLight } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import {
@@ -31,6 +30,9 @@ import {
 } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const splashAnimation = require('@/assets/animations/splash.lottie');
 
 const SplashScreen: React.FC = ({}) => {
   const selfClient = useSelfClient();
