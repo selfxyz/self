@@ -3,7 +3,7 @@ name: Mobile E2E
 env:
   # Build environment versions
   JAVA_VERSION: 17
-  ANDROID_API_LEVEL: 33
+  ANDROID_API_LEVEL: 34
   ANDROID_NDK_VERSION: 27.0.12077973
   XCODE_VERSION: 26
   # Cache versions
