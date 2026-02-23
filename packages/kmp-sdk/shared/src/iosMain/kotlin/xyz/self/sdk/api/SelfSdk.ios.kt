@@ -10,6 +10,8 @@ import platform.UIKit.UIModalPresentationFullScreen
 import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowScene
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.AnalyticsBridgeHandler
 import xyz.self.sdk.handlers.BiometricBridgeHandler
@@ -94,8 +96,10 @@ actual class SelfSdk private constructor(
 
         // Wire up dismiss action to dismiss the VC
         lifecycleHandler.dismissAction = {
-            sdkVC.dismissViewControllerAnimated(true) {
-                pendingCallback = null
+            dispatch_async(dispatch_get_main_queue()) {
+                sdkVC.dismissViewControllerAnimated(true) {
+                    pendingCallback = null
+                }
             }
         }
 

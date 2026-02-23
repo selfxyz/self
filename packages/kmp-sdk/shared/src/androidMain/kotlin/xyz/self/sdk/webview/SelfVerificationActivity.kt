@@ -121,6 +121,7 @@ class SelfVerificationActivity : AppCompatActivity() {
 
         // Result extras
         const val EXTRA_RESULT_DATA = "xyz.self.sdk.RESULT_DATA"
+        const val EXTRA_RESULT_TYPE = "xyz.self.sdk.RESULT_TYPE"
         const val EXTRA_ERROR_CODE = "xyz.self.sdk.ERROR_CODE"
         const val EXTRA_ERROR_MESSAGE = "xyz.self.sdk.ERROR_MESSAGE"
     }

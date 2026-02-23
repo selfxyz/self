@@ -4,6 +4,8 @@
 
 package xyz.self.sdk.handlers
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonPrimitive
@@ -17,6 +19,7 @@ import xyz.self.sdk.bridge.BridgeHandlerException
 class LifecycleBridgeHandler : BridgeHandler {
     override val domain = BridgeDomain.LIFECYCLE
 
+    private val mutex = Mutex()
     internal var pendingCallback: SelfSdkCallback? = null
     internal var dismissAction: (() -> Unit)? = null
 
@@ -36,50 +39,54 @@ class LifecycleBridgeHandler : BridgeHandler {
 
     private fun ready(): JsonElement? = null
 
-    private fun dismiss(): JsonElement? {
-        pendingCallback?.onCancelled()
-        pendingCallback = null
-        dismissAction?.invoke()
+    private suspend fun dismiss(): JsonElement? {
+        mutex.withLock {
+            pendingCallback?.onCancelled()
+            pendingCallback = null
+            dismissAction?.invoke()
+        }
         return null
     }
 
-    private fun setResult(params: Map<String, JsonElement>): JsonElement? {
-        val type = params["type"]?.jsonPrimitive?.content
-        val success = params["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
-        val data = params["data"]?.toString()
-        val errorCode = params["errorCode"]?.jsonPrimitive?.content
-        val errorMessage = params["errorMessage"]?.jsonPrimitive?.content
+    private suspend fun setResult(params: Map<String, JsonElement>): JsonElement? {
+        mutex.withLock {
+            val type = params["type"]?.jsonPrimitive?.content
+            val success = params["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
+            val data = params["data"]?.toString()
+            val errorCode = params["errorCode"]?.jsonPrimitive?.content
+            val errorMessage = params["errorMessage"]?.jsonPrimitive?.content
 
-        if (type != null) {
-            // Flat lifecycle payload (e.g. { type: "proofRequested" }) — treat as success
-            pendingCallback?.onSuccess(
-                VerificationResult(success = true),
-            )
-        } else if (success && data != null) {
-            try {
-                val result = Json.decodeFromString(VerificationResult.serializer(), data)
-                pendingCallback?.onSuccess(result)
-            } catch (e: Exception) {
+            if (type != null) {
+                // Flat lifecycle payload (e.g. { type: "proofRequested" }) — pass type through
+                pendingCallback?.onSuccess(
+                    VerificationResult(success = true, type = type),
+                )
+            } else if (success && data != null) {
+                try {
+                    val result = Json.decodeFromString(VerificationResult.serializer(), data)
+                    pendingCallback?.onSuccess(result)
+                } catch (e: Exception) {
+                    pendingCallback?.onFailure(
+                        SelfSdkError(
+                            code = "PARSE_ERROR",
+                            message = "Failed to parse verification result: ${e.message}",
+                        ),
+                    )
+                }
+            } else if (!success && errorCode != null) {
                 pendingCallback?.onFailure(
                     SelfSdkError(
-                        code = "PARSE_ERROR",
-                        message = "Failed to parse verification result: ${e.message}",
+                        code = errorCode,
+                        message = errorMessage ?: "Unknown error",
                     ),
                 )
+            } else {
+                pendingCallback?.onCancelled()
             }
-        } else if (!success && errorCode != null) {
-            pendingCallback?.onFailure(
-                SelfSdkError(
-                    code = errorCode,
-                    message = errorMessage ?: "Unknown error",
-                ),
-            )
-        } else {
-            pendingCallback?.onCancelled()
-        }
 
-        pendingCallback = null
-        dismissAction?.invoke()
+            pendingCallback = null
+            dismissAction?.invoke()
+        }
         return null
     }
 }
