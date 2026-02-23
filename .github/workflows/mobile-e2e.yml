@@ -266,6 +266,23 @@ jobs:
             libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
             libgbm1 libgtk-3-0 libpango-1.0-0 libcairo2 \
             > /dev/null 2>&1
+      - name: Create E2E test script
+        run: |
+          cat > /tmp/run-e2e.sh << 'EOF'
+          #!/bin/bash
+          set -euo pipefail
+          echo "Installing app on emulator..."
+          APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
+          [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
+          adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
+          echo "✅ App installed successfully"
+          echo "⏰ Giving the emulator a moment to settle..."
+          sleep 5
+          echo "🎭 Running Maestro tests..."
+          export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
+          maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
+          EOF
+          chmod +x /tmp/run-e2e.sh
       - name: Install and Test on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -279,15 +296,7 @@ jobs:
             -camera-back none -camera-front none -memory 8192 -cores 4
             ${{ steps.kvm.outputs.available == 'true' && '-accel on' || '-accel off' }}
           disable-animations: true
-          script: |
-            echo "Installing app on emulator..." && \
-            [ -f "app/android/app/build/outputs/apk/debug/app-debug.apk" ] || { echo "❌ APK not found"; exit 1; } && \
-            adb install -r "app/android/app/build/outputs/apk/debug/app-debug.apk" || { echo "❌ App installation failed"; exit 1; } && \
-            echo "✅ App installed successfully" && \
-            echo "⏰ Giving the emulator a moment to settle..." && \
-            sleep 5 && \
-            echo "🎭 Running Maestro tests..." && \
-            MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
+          script: /tmp/run-e2e.sh
 
       - name: Upload test results
         if: always()
