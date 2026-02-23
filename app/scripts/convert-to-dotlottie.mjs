@@ -5,6 +5,10 @@
 
 // Convert large Lottie JSON animations to compressed dotLottie format.
 // Usage: node scripts/convert-to-dotlottie.mjs
+//
+// Web compatibility: lottie-react-native supports .lottie natively, but
+// lottie-web does NOT. If these animations are ever used on the web, use
+// @lottiefiles/dotlottie-web (or its React/Vue wrappers) instead of lottie-web.
 
 import { readFileSync, writeFileSync, statSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
