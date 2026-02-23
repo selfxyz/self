@@ -256,6 +256,16 @@ jobs:
               "platforms;android-${{ env.ANDROID_API_LEVEL }}" \
               "system-images;android-${{ env.ANDROID_API_LEVEL }};google_apis;x86_64" \
               "emulator"
+      - name: Install emulator runtime dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libx11-6 libgl1 libpulse0 libnss3 \
+            libxcomposite1 libxcursor1 libxi6 libxtst6 \
+            libxrandr2 libxss1 libxdamage1 libxfixes3 \
+            libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
+            libgbm1 libgtk-3-0 libpango-1.0-0 libcairo2 \
+            > /dev/null 2>&1
       - name: Install and Test on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
