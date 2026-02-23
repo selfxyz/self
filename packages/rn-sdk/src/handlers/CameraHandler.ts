@@ -76,7 +76,7 @@ export class CameraHandler implements BridgeHandler {
 
     switch (method) {
       case 'isAvailable':
-        return scanner !== null;
+        return scanner !== null && typeof scanner.startScanning === 'function';
       case 'scanMRZ':
         if (!scanner || typeof scanner.startScanning !== 'function') {
           throw new BridgeHandlerError(
@@ -94,7 +94,7 @@ export class CameraHandler implements BridgeHandler {
           }
           throw new BridgeHandlerError(
             'MRZ_SCAN_FAILED',
-            err instanceof Error ? err.message : 'MRZ scan failed',
+            'MRZ scan failed',
           );
         }
       default:

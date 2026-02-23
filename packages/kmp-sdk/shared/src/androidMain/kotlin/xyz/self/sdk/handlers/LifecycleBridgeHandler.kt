@@ -77,12 +77,12 @@ class LifecycleBridgeHandler(
                 activity.setResult(Activity.RESULT_OK, intent)
             } else if (success && data != null) {
                 // Success result
-                intent.putExtra("xyz.self.sdk.RESULT_DATA", data)
+                intent.putExtra(SelfVerificationActivity.EXTRA_RESULT_DATA, data)
                 activity.setResult(Activity.RESULT_OK, intent)
             } else if (!success && errorCode != null) {
                 // Error result
-                intent.putExtra("xyz.self.sdk.ERROR_CODE", errorCode)
-                intent.putExtra("xyz.self.sdk.ERROR_MESSAGE", errorMessage ?: "Unknown error")
+                intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_CODE, errorCode)
+                intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_MESSAGE, errorMessage ?: "Unknown error")
                 activity.setResult(Activity.RESULT_FIRST_USER, intent)
             } else {
                 // Cancelled or invalid result

@@ -139,7 +139,6 @@ export class NfcHandler implements BridgeHandler {
         tagId: tag?.id ?? null,
         techType: nfcTech,
         apduResponses,
-        params,
       };
     } catch (err) {
       if (err instanceof BridgeHandlerError) {

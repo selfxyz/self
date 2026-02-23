@@ -112,7 +112,7 @@ checking for `SelfMRZScannerModule` (preferred) or `MRZScannerModule`
 
 - `isAvailable()` returns whether a native MRZ module was found.
 - `scanMRZ()` calls `scanner.startScanning()`, normalizes the result
-  (extracts `documentNumber`, `birthDate`, `expiryDate`, plus optional
+  (extracts `documentNumber`, `dateOfBirth`, `dateOfExpiry`, plus optional
   `documentType` and `countryCode`), and throws `MRZ_SCAN_FAILED` on
   scanner errors or `MRZ_SCAN_INVALID_RESULT` if required fields are missing.
 - If no native module is present, `scanMRZ()` throws `NOT_AVAILABLE`.

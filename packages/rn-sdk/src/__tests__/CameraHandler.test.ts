@@ -62,7 +62,7 @@ describe('CameraHandler', () => {
       expect.unreachable('Should have thrown');
     } catch (err: unknown) {
       expect((err as { code: string }).code).toBe('MRZ_SCAN_FAILED');
-      expect((err as Error).message).toBe('Camera permission denied');
+      expect((err as Error).message).toBe('MRZ scan failed');
     }
   });
 
