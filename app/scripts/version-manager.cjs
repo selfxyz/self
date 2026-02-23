@@ -28,20 +28,29 @@ const fs = require('fs');
 const path = require('path');
 
 const APP_DIR = path.resolve(__dirname, '..');
-const PACKAGE_JSON_PATH = path.join(APP_DIR, 'package.json');
-const VERSION_JSON_PATH = path.join(APP_DIR, 'version.json');
-const ANDROID_GRADLE_PATH = path.join(
-  APP_DIR,
-  'android',
-  'app',
-  'build.gradle',
-);
-const IOS_PBXPROJ_PATH = path.join(
-  APP_DIR,
-  'ios',
-  'Self.xcodeproj',
-  'project.pbxproj',
-);
+const VERSION_MANAGED_RELATIVE_PATHS = [
+  'package.json',
+  'version.json',
+  path.join('android', 'app', 'build.gradle'),
+  path.join('ios', 'Self.xcodeproj', 'project.pbxproj'),
+];
+const [
+  PACKAGE_JSON_REL_PATH,
+  VERSION_JSON_REL_PATH,
+  ANDROID_GRADLE_REL_PATH,
+  IOS_PBXPROJ_REL_PATH,
+] = VERSION_MANAGED_RELATIVE_PATHS;
+const PACKAGE_JSON_PATH = path.join(APP_DIR, PACKAGE_JSON_REL_PATH);
+const VERSION_JSON_PATH = path.join(APP_DIR, VERSION_JSON_REL_PATH);
+const ANDROID_GRADLE_PATH = path.join(APP_DIR, ANDROID_GRADLE_REL_PATH);
+const IOS_PBXPROJ_PATH = path.join(APP_DIR, IOS_PBXPROJ_REL_PATH);
+
+/**
+ * Get the list of files managed by applyVersions()
+ */
+function getVersionManagedFiles() {
+  return [...VERSION_MANAGED_RELATIVE_PATHS];
+}
 
 /**
  * Read package.json
@@ -439,6 +448,34 @@ function main() {
         break;
       }
 
+      case 'files': {
+        // List files managed by applyVersions()
+        const format = args[1];
+
+        if (format && !['--shell', '--json'].includes(format)) {
+          throw new Error('Usage: files [--shell|--json]');
+        }
+
+        const files = getVersionManagedFiles();
+
+        if (format === '--shell') {
+          console.log(files.join(' '));
+        } else if (format === '--json') {
+          console.log(JSON.stringify(files));
+        } else {
+          console.log(files.join('\n'));
+        }
+
+        if (process.env.GITHUB_OUTPUT) {
+          fs.appendFileSync(
+            process.env.GITHUB_OUTPUT,
+            `version_managed_files=${files.join(' ')}\n`,
+          );
+        }
+
+        break;
+      }
+
       default:
         console.log(`
 Mobile Version Manager
@@ -455,6 +492,10 @@ Commands:
                                   Apply specific version and build numbers
                                   iosResult/androidResult: "success" to update,
                                   any other value to skip (default: "success")
+  files [--shell|--json]        List files managed by applyVersions()
+                                default output: one path per line
+                                --shell: space-separated paths
+                                --json: JSON array
 
 Examples:
   node version-manager.cjs get
@@ -462,6 +503,7 @@ Examples:
   node version-manager.cjs bump patch ios
   node version-manager.cjs apply 2.7.0 180 109
   node version-manager.cjs apply 2.7.0 180 109 success failure
+  node version-manager.cjs files --shell
         `);
         process.exit(command ? 1 : 0);
     }
@@ -480,6 +522,7 @@ if (require.main === module) {
 module.exports = {
   applyVersions,
   bumpVersion,
+  getVersionManagedFiles,
   getVersionInfo,
   readPackageJson,
   readVersionJson,

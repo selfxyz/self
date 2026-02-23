@@ -1320,16 +1320,29 @@ jobs:
           # Pass build results so the script only updates platforms that succeeded
           node scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD" "$IOS_SUCCESS" "$ANDROID_SUCCESS"
 
+      - name: Load version-managed files
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          VERSION_MANAGED_FILES="$(node scripts/version-manager.cjs files --shell)"
+          if [ -z "$VERSION_MANAGED_FILES" ]; then
+            echo "❌ Failed to load version-managed files"
+            exit 1
+          fi
+
+          echo "VERSION_MANAGED_FILES=$VERSION_MANAGED_FILES" >> $GITHUB_ENV
+          echo "🗂️ Version-managed files: $VERSION_MANAGED_FILES"
+
       - name: Verify version changes
         run: |
           cd ${{ env.APP_PATH }}
 
-          # Check that version files actually changed
-          if ! git diff --quiet package.json version.json; then
+          # Check that version-managed files actually changed
+          if ! git diff --quiet -- $VERSION_MANAGED_FILES; then
             echo "✅ Version changes detected"
-            git diff package.json version.json
+            git diff -- $VERSION_MANAGED_FILES
           else
-            echo "⚠️  No version changes detected in package.json or version.json"
+            echo "⚠️  No version changes detected in version-managed files"
             echo "This may indicate a problem with version application"
             exit 1
           fi
@@ -1396,7 +1409,7 @@ jobs:
 
           # Commit the version changes
           cd ${{ env.APP_PATH }}
-          git add package.json version.json android/app/build.gradle ios/Self.xcodeproj/project.pbxproj
+          git add $VERSION_MANAGED_FILES
 
           if git diff --cached --quiet; then
             echo "⚠️  No version changes to commit"
@@ -1428,6 +1441,7 @@ jobs:
 
           This PR updates:
           - Build numbers for deployed platforms
+          - Platform build files (Android `versionCode`, iOS `CURRENT_PROJECT_VERSION` and `MARKETING_VERSION`)
           - Deployment timestamps (\`lastDeployed\`) for successful builds
 
           This PR was automatically created by the mobile deployment workflow." \
