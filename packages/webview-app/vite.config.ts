@@ -10,7 +10,7 @@ export default defineConfig({
   plugins: [react()],
   define: { global: 'globalThis' },
   build: {
-    target: ['chrome90', 'safari15'],
+    target: ['chrome90', 'safari15.4'],
     rollupOptions: { output: { manualChunks: undefined } },
     assetsInlineLimit: 102400,
     outDir: 'dist',

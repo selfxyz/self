@@ -23,6 +23,11 @@ class LifecycleBridgeHandler : BridgeHandler {
     internal var pendingCallback: SelfSdkCallback? = null
     internal var dismissAction: (() -> Unit)? = null
 
+    private data class LifecycleState(
+        val callback: SelfSdkCallback?,
+        val dismiss: (() -> Unit)?,
+    )
+
     override suspend fun handle(
         method: String,
         params: Map<String, JsonElement>,
@@ -39,54 +44,62 @@ class LifecycleBridgeHandler : BridgeHandler {
 
     private fun ready(): JsonElement? = null
 
-    private suspend fun dismiss(): JsonElement? {
+    private suspend fun consumeLifecycleState(): LifecycleState =
         mutex.withLock {
-            pendingCallback?.onCancelled()
+            val state =
+                LifecycleState(
+                    callback = pendingCallback,
+                    dismiss = dismissAction,
+                )
             pendingCallback = null
-            dismissAction?.invoke()
+            dismissAction = null
+            state
         }
+
+    private suspend fun dismiss(): JsonElement? {
+        val state = consumeLifecycleState()
+        state.callback?.onCancelled()
+        state.dismiss?.invoke()
         return null
     }
 
     private suspend fun setResult(params: Map<String, JsonElement>): JsonElement? {
-        mutex.withLock {
-            val type = params["type"]?.jsonPrimitive?.content
-            val success = params["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
-            val data = params["data"]?.toString()
-            val errorCode = params["errorCode"]?.jsonPrimitive?.content
-            val errorMessage = params["errorMessage"]?.jsonPrimitive?.content
+        val state = consumeLifecycleState()
+        val type = params["type"]?.jsonPrimitive?.content
+        val success = params["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
+        val data = params["data"]?.toString()
+        val errorCode = params["errorCode"]?.jsonPrimitive?.content
+        val errorMessage = params["errorMessage"]?.jsonPrimitive?.content
 
-            if (type != null) {
-                // Flat lifecycle payload (e.g. { type: "proofRequested" }) — pass type through
-                pendingCallback?.onSuccess(
-                    VerificationResult(success = true, type = type),
-                )
-            } else if (success && data != null) {
-                try {
-                    val result = Json.decodeFromString(VerificationResult.serializer(), data)
-                    pendingCallback?.onSuccess(result)
-                } catch (e: Exception) {
-                    pendingCallback?.onFailure(
-                        SelfSdkError(
-                            code = "PARSE_ERROR",
-                            message = "Failed to parse verification result: ${e.message}",
-                        ),
-                    )
-                }
-            } else if (!success && errorCode != null) {
-                pendingCallback?.onFailure(
+        if (type != null) {
+            // Flat lifecycle payload (e.g. { type: "proofRequested" }) — pass type through
+            state.callback?.onSuccess(
+                VerificationResult(success = true, type = type),
+            )
+        } else if (success && data != null) {
+            try {
+                val result = Json.decodeFromString(VerificationResult.serializer(), data)
+                state.callback?.onSuccess(result)
+            } catch (e: Exception) {
+                state.callback?.onFailure(
                     SelfSdkError(
-                        code = errorCode,
-                        message = errorMessage ?: "Unknown error",
+                        code = "PARSE_ERROR",
+                        message = "Failed to parse verification result: ${e.message}",
                     ),
                 )
-            } else {
-                pendingCallback?.onCancelled()
             }
-
-            pendingCallback = null
-            dismissAction?.invoke()
+        } else if (!success && errorCode != null) {
+            state.callback?.onFailure(
+                SelfSdkError(
+                    code = errorCode,
+                    message = errorMessage ?: "Unknown error",
+                ),
+            )
+        } else {
+            state.callback?.onCancelled()
         }
+
+        state.dismiss?.invoke()
         return null
     }
 }

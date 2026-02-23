@@ -1,6 +1,6 @@
 # Person 4: SDK Core Adaptation — Workstream Overview
 
-> Last updated: 2026-02-19
+> Last updated: 2026-02-23
 > Owner: Person 4 (SDK Core)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC.md](./SPEC.md)
@@ -21,8 +21,10 @@
 - [x] WebView Lifecycle Events (Chunk 4C — Done)
 - [x] Conditional SelfApp Store (Chunk 4E — Done)
 - [x] Web Fallback Adapter Implementations (Chunk 4F — Done)
-- [ ] Duplicate fallback ownership remains unresolved (`mobile-sdk-alpha` vs `webview-bridge`)
-- [ ] Final contract for web-only fallback vs bridge routing (crypto/haptic behavior) still needs explicit decision
+- [x] Fallback ownership decision documented (`mobile-sdk-alpha` owns WebView-only fallback logic)
+- [x] Web-only fallback vs bridge-routing contract documented (hybrid crypto + no-op haptic)
+- [ ] Implementation consolidation still pending (bridge-layer fallback duplicates not yet fully removed)
+- [ ] `generateKey()`/`getPublicKey()` not exposed in `BridgeCryptoAdapter` interface — methods exist in iOS native handler and bridge protocol types but unreachable from WebView client code
 
 ## What You Own
 

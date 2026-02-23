@@ -14,6 +14,7 @@ export interface NfcManagerModule {
   start(): Promise<void>;
   requestTechnology(tech: string): Promise<void>;
   getTag(): Promise<{ id?: string } | null>;
+  transceive?(command: number[]): Promise<number[]>;
   cancelTechnologyRequest(): Promise<void>;
 }
 
@@ -25,6 +26,28 @@ export interface NfcTechEnum {
 interface NfcDeps {
   manager: NfcManagerModule;
   tech: NfcTechEnum;
+}
+
+function parseApduCommand(hexCommand: string): number[] {
+  const normalized = hexCommand.trim().replace(/\s+/g, '').toUpperCase();
+  if (!/^[0-9A-F]+$/.test(normalized) || normalized.length % 2 !== 0) {
+    throw new BridgeHandlerError(
+      'INVALID_PARAMS',
+      `Invalid APDU hex command: ${hexCommand}`,
+    );
+  }
+
+  const bytes: number[] = [];
+  for (let i = 0; i < normalized.length; i += 2) {
+    bytes.push(Number.parseInt(normalized.slice(i, i + 2), 16));
+  }
+  return bytes;
+}
+
+function toHex(bytes: number[]): string {
+  return bytes
+    .map((value) => value.toString(16).padStart(2, '0').toUpperCase())
+    .join('');
 }
 
 function loadNfc(): NfcDeps | undefined {
@@ -91,13 +114,40 @@ export class NfcHandler implements BridgeHandler {
       const tag = await manager.getTag();
       this.pushProgress('connected', 50);
 
+      const apduCommands = Array.isArray(params.apduCommands)
+        ? params.apduCommands.filter((entry): entry is string => typeof entry === 'string')
+        : [];
+      let apduResponses: string[] | undefined;
+      if (apduCommands.length > 0) {
+        if (typeof manager.transceive !== 'function') {
+          throw new BridgeHandlerError(
+            'NFC_APDU_NOT_SUPPORTED',
+            'NFC transceive is not supported by the installed nfc manager',
+          );
+        }
+
+        this.pushProgress('apdu_exchange', 70);
+        apduResponses = [];
+        for (const command of apduCommands) {
+          const commandBytes = parseApduCommand(command);
+          const responseBytes = await manager.transceive(commandBytes);
+          apduResponses.push(toHex(responseBytes));
+        }
+        this.pushProgress('apdu_complete', 90);
+      }
+
       return {
         connected: true,
         tagId: tag?.id ?? null,
         techType: nfcTech,
+        apduResponses,
         params,
       };
     } catch (err) {
+      if (err instanceof BridgeHandlerError) {
+        this.pushProgress('error', 0);
+        throw err;
+      }
       this.pushProgress('error', 0);
       throw new BridgeHandlerError(
         'NFC_SCAN_FAILED',
