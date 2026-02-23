@@ -244,6 +244,10 @@ jobs:
           fi
           ls -la /dev/kvm
           echo "available=true" >> "$GITHUB_OUTPUT"
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
       - name: Pre-install emulator dependencies
         run: |
           sdkmanager --install \
