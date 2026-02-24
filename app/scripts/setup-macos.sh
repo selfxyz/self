@@ -68,6 +68,7 @@ chk_studio()  { [[ -d "/Applications/Android Studio.app" ]] && echo "ok" || echo
 chk_sdk()     { [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}" ]] && echo "ok" || echo "missing"; }
 chk_ndk()     { [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}/ndk/28.0.13004108" ]] && echo "ok" || echo "missing"; }
 chk_shell()   { local rc=~/.zshrc; [[ "$SHELL" == *bash* ]] && rc=~/.bashrc; grep -q "ANDROID_HOME" "$rc" 2>/dev/null && echo "ok" || echo "missing"; }
+chk_yarn()    { command -v yarn &>/dev/null && echo "ok:$(yarn -v 2>/dev/null)" || echo "missing"; }
 
 # Install functions
 inst_brew()    { /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; }
@@ -84,16 +85,35 @@ inst_node()    {
 }
 inst_watch()   { brew install watchman; }
 inst_rbenv()   { brew install rbenv; eval "$(rbenv init -)"; }
-inst_ruby()    { eval "$(rbenv init -)" 2>/dev/null; rbenv install "$RUBY_VERSION"; rbenv rehash; }
+inst_ruby()    { eval "$(rbenv init -)" 2>/dev/null; rbenv install "$RUBY_VERSION"; rbenv global "$RUBY_VERSION"; rbenv rehash; }
 inst_pods()    {
-  if [[ -n "$COCOAPODS_VERSION" ]]; then
-    gem install cocoapods -v "$COCOAPODS_VERSION"
+  if command -v rbenv &>/dev/null; then
+    eval "$(rbenv init -)" 2>/dev/null
+    rbenv shell "$RUBY_VERSION" 2>/dev/null || true
+    if [[ -n "$COCOAPODS_VERSION" ]]; then
+      rbenv exec gem install cocoapods -v "$COCOAPODS_VERSION"
+    else
+      rbenv exec gem install cocoapods
+    fi
   else
-    gem install cocoapods
+    if [[ -n "$COCOAPODS_VERSION" ]]; then
+      gem install cocoapods -v "$COCOAPODS_VERSION"
+    else
+      gem install cocoapods
+    fi
   fi
 }
 inst_bundler() { gem install bundler; }
 inst_java()    { brew install openjdk@17; sudo ln -sfn "$(brew --prefix openjdk@17)/libexec/openjdk.jdk" /Library/Java/JavaVirtualMachines/openjdk-17.jdk 2>/dev/null || true; }
+inst_yarn()    {
+  if command -v corepack &>/dev/null; then
+    corepack enable
+    corepack prepare yarn@stable --activate
+  else
+    err "corepack not available; ensure Node.js is installed and on PATH"
+    return 1
+  fi
+}
 
 inst_shell() {
   local rc=~/.zshrc
@@ -110,6 +130,7 @@ inst_shell() {
 
 # Self.xyz Dev Environment
 export JAVA_HOME=$(/usr/libexec/java_home -v 17 2>/dev/null || echo "")
+export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
 export ANDROID_HOME=~/Library/Android/sdk
 export ANDROID_SDK_ROOT=$ANDROID_HOME
 export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools
@@ -145,6 +166,7 @@ DEPS=(
   "Homebrew|chk_brew|inst_brew|"
   "nvm|chk_nvm|inst_nvm|"
   "Node.js $NODE_VERSION|chk_node|inst_node|"
+  "Yarn|chk_yarn|inst_yarn|"
   "Watchman|chk_watch|inst_watch|"
   "rbenv|chk_rbenv|inst_rbenv|"
   "Ruby $RUBY_VERSION|chk_ruby|inst_ruby|"
@@ -200,18 +222,22 @@ fi
 # Yarn install
 echo ""
 if confirm "Run 'yarn install' in repo root?"; then
-  info "Running yarn install..."
-  set +e  # Temporarily disable exit-on-error
-  cd "$REPO_ROOT" && yarn install
-  yarn_exit=$?
-  set -e  # Re-enable exit-on-error
-
-  if [[ $yarn_exit -eq 0 ]]; then
-    ok "Done!"
+  if ! command -v yarn &>/dev/null; then
+    err "yarn not available; run 'corepack enable && corepack prepare yarn@stable --activate' and retry"
   else
-    err "Yarn install failed (exit code: $yarn_exit)"
-    warn "This may be due to network issues or registry timeouts"
-    info "Try running manually: cd $REPO_ROOT && yarn install"
+    info "Running yarn install..."
+    set +e  # Temporarily disable exit-on-error
+    cd "$REPO_ROOT" && yarn install
+    yarn_exit=$?
+    set -e  # Re-enable exit-on-error
+
+    if [[ $yarn_exit -eq 0 ]]; then
+      ok "Done!"
+    else
+      err "Yarn install failed (exit code: $yarn_exit)"
+      warn "This may be due to network issues or registry timeouts"
+      info "Try running manually: cd $REPO_ROOT && yarn install"
+    fi
   fi
 fi
 
