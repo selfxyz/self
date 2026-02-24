@@ -4,11 +4,16 @@
 
 set -e
 
+trap 'err "Setup failed at line $LINENO: $BASH_COMMAND"' ERR
+
 # Config
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 APP_DIR="$REPO_ROOT/app"
 RUBY_VERSION=$(cat "$APP_DIR/.ruby-version" 2>/dev/null | tr -d '[:space:]')
-NODE_MAJOR=22
+NODE_VERSION=$(cat "$REPO_ROOT/.nvmrc" 2>/dev/null | tr -d '[:space:]')
+NODE_VERSION=${NODE_VERSION:-22}
+NODE_MAJOR=${NODE_VERSION%%.*}
+COCOAPODS_VERSION=$(grep -E '^    cocoapods \\(' "$APP_DIR/Gemfile.lock" 2>/dev/null | head -1 | sed -E 's/.*\\(([^)]+)\\).*/\\1/')
 
 # Args (can be overridden interactively)
 CHECK_ONLY=false; AUTO_YES=false
@@ -37,11 +42,25 @@ confirm() {
 # Check functions - return "ok:version" or "missing" or "wrong:version"
 chk_brew()    { command -v brew &>/dev/null && echo "ok:$(brew --version | head -1 | cut -d' ' -f2)" || echo "missing"; }
 chk_nvm()     { [[ -s "$HOME/.nvm/nvm.sh" ]] && echo "ok" || echo "missing"; }
-chk_node()    { command -v node &>/dev/null && { v=$(node -v 2>/dev/null | tr -d 'v'); [[ -n "$v" && "${v%%.*}" -ge $NODE_MAJOR ]] && echo "ok:$v" || echo "wrong:$v"; } || echo "missing"; }
+chk_node()    {
+  command -v node &>/dev/null && {
+    v=$(node -v 2>/dev/null | tr -d 'v')
+    if [[ "$NODE_VERSION" == *.* ]]; then
+      [[ -n "$v" && "$v" == "$NODE_VERSION" ]] && echo "ok:$v" || echo "wrong:$v"
+    else
+      [[ -n "$v" && "${v%%.*}" -ge $NODE_MAJOR ]] && echo "ok:$v" || echo "wrong:$v"
+    fi
+  } || echo "missing"
+}
 chk_watch()   { command -v watchman &>/dev/null && echo "ok:$(watchman --version 2>/dev/null)" || echo "missing"; }
 chk_rbenv()   { command -v rbenv &>/dev/null && echo "ok" || echo "missing"; }
 chk_ruby()    { command -v ruby &>/dev/null && { v=$(ruby -v 2>/dev/null | cut -d' ' -f2); [[ "$v" == "$RUBY_VERSION"* ]] && echo "ok:$v" || echo "wrong:$v"; } || echo "missing"; }
-chk_pods()    { command -v pod &>/dev/null && echo "ok:$(pod --version 2>/dev/null)" || echo "missing"; }
+chk_pods()    {
+  command -v pod &>/dev/null && {
+    v=$(pod --version 2>/dev/null)
+    [[ -n "$COCOAPODS_VERSION" && "$v" != "$COCOAPODS_VERSION" ]] && echo "wrong:$v" || echo "ok:$v"
+  } || echo "missing"
+}
 chk_bundler() { command -v bundle &>/dev/null && echo "ok" || echo "missing"; }
 chk_java()    { command -v java &>/dev/null && { v=$(java -version 2>&1 | head -1 | cut -d'"' -f2); [[ "$v" == 17* ]] && echo "ok:$v" || echo "wrong:$v"; } || echo "missing"; }
 chk_xcode()   { xcode-select -p &>/dev/null && [[ "$(xcode-select -p)" == *Xcode.app* ]] && echo "ok" || echo "missing"; }
@@ -52,12 +71,27 @@ chk_shell()   { local rc=~/.zshrc; [[ "$SHELL" == *bash* ]] && rc=~/.bashrc; gre
 
 # Install functions
 inst_brew()    { /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; }
-inst_nvm()     { curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; }
-inst_node()    { export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; nvm install $NODE_MAJOR; }
+inst_nvm()     { curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; }
+inst_node()    {
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+  if ! command -v nvm &>/dev/null; then
+    err "nvm not available after install"
+    return 1
+  fi
+  nvm install "$NODE_VERSION"
+  nvm alias default "$NODE_VERSION" >/dev/null 2>&1 || true
+}
 inst_watch()   { brew install watchman; }
 inst_rbenv()   { brew install rbenv; eval "$(rbenv init -)"; }
 inst_ruby()    { eval "$(rbenv init -)" 2>/dev/null; rbenv install "$RUBY_VERSION"; rbenv rehash; }
-inst_pods()    { gem install cocoapods; }
+inst_pods()    {
+  if [[ -n "$COCOAPODS_VERSION" ]]; then
+    gem install cocoapods -v "$COCOAPODS_VERSION"
+  else
+    gem install cocoapods
+  fi
+}
 inst_bundler() { gem install bundler; }
 inst_java()    { brew install openjdk@17; sudo ln -sfn "$(brew --prefix openjdk@17)/libexec/openjdk.jdk" /Library/Java/JavaVirtualMachines/openjdk-17.jdk 2>/dev/null || true; }
 
@@ -110,7 +144,7 @@ fi
 DEPS=(
   "Homebrew|chk_brew|inst_brew|"
   "nvm|chk_nvm|inst_nvm|"
-  "Node.js $NODE_MAJOR|chk_node|inst_node|"
+  "Node.js $NODE_VERSION|chk_node|inst_node|"
   "Watchman|chk_watch|inst_watch|"
   "rbenv|chk_rbenv|inst_rbenv|"
   "Ruby $RUBY_VERSION|chk_ruby|inst_ruby|"
