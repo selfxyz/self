@@ -39,6 +39,14 @@ confirm() {
   [[ ! $REPLY =~ ^[Nn]$ ]]
 }
 
+load_shell_env() {
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+  if command -v rbenv &>/dev/null; then
+    eval "$(rbenv init -)" 2>/dev/null
+  fi
+}
+
 # Check functions - return "ok:version" or "missing" or "wrong:version"
 chk_brew()    { command -v brew &>/dev/null && echo "ok:$(brew --version | head -1 | cut -d' ' -f2)" || echo "missing"; }
 chk_nvm()     { [[ -s "$HOME/.nvm/nvm.sh" ]] && echo "ok" || echo "missing"; }
@@ -69,6 +77,7 @@ chk_sdk()     { [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}" ]] && echo "o
 chk_ndk()     { [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}/ndk/28.0.13004108" ]] && echo "ok" || echo "missing"; }
 chk_shell()   { local rc=~/.zshrc; [[ "$SHELL" == *bash* ]] && rc=~/.bashrc; grep -q "ANDROID_HOME" "$rc" 2>/dev/null && echo "ok" || echo "missing"; }
 chk_yarn()    { command -v yarn &>/dev/null && echo "ok:$(yarn -v 2>/dev/null)" || echo "missing"; }
+chk_swiftlint() { command -v swiftlint &>/dev/null && echo "ok:$(swiftlint version 2>/dev/null | head -1)" || echo "missing"; }
 
 # Install functions
 inst_brew()    { /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; }
@@ -114,6 +123,7 @@ inst_yarn()    {
     return 1
   fi
 }
+inst_swiftlint() { brew install swiftlint; }
 
 inst_shell() {
   local rc=~/.zshrc
@@ -177,6 +187,7 @@ DEPS=(
   "Android Studio|chk_studio||Download: https://developer.android.com/studio"
   "Android SDK|chk_sdk||Open Android Studio → SDK Manager"
   "Android NDK|chk_ndk||SDK Manager → SDK Tools → NDK 28.0.13004108"
+  "SwiftLint|chk_swiftlint|inst_swiftlint|"
   "Shell Config|chk_shell|inst_shell|"
 )
 
@@ -184,6 +195,7 @@ MISSING=()
 MANUAL=()
 
 info "Checking dependencies...\n"
+load_shell_env
 for dep in "${DEPS[@]}"; do
   IFS='|' read -r name chk inst manual <<< "$dep"
   status=$($chk)
@@ -241,4 +253,9 @@ if confirm "Run 'yarn install' in repo root?"; then
   fi
 fi
 
-echo -e "\n${G}${BOLD}Setup complete!${NC} Open a new terminal, then: cd $APP_DIR && yarn ios\n"
+echo -e "\n${G}${BOLD}Setup complete!${NC}"
+echo -e "Next steps:"
+echo -e "  1) Open a new terminal and run: source ~/.zshrc (or ~/.bashrc)"
+echo -e "  2) Install dependencies: cd $REPO_ROOT && yarn install"
+echo -e "  3) Run the app: cd $APP_DIR && yarn ios (or yarn android)"
+echo -e "  4) If Metro cache issues: cd $APP_DIR && yarn start:clean\n"
