@@ -14,6 +14,7 @@ NODE_VERSION=$(cat "$REPO_ROOT/.nvmrc" 2>/dev/null | tr -d '[:space:]')
 NODE_VERSION=${NODE_VERSION:-22}
 NODE_MAJOR=${NODE_VERSION%%.*}
 COCOAPODS_VERSION=$(grep -E '^    cocoapods \\(' "$APP_DIR/Gemfile.lock" 2>/dev/null | head -1 | sed -E 's/.*\\(([^)]+)\\).*/\\1/')
+BUNDLER_VERSION=$(grep -A 1 '^BUNDLED WITH$' "$APP_DIR/Gemfile.lock" 2>/dev/null | tail -n 1 | tr -d '[:space:]')
 
 # Args (can be overridden interactively)
 CHECK_ONLY=false; AUTO_YES=false
@@ -69,7 +70,12 @@ chk_pods()    {
     [[ -n "$COCOAPODS_VERSION" && "$v" != "$COCOAPODS_VERSION" ]] && echo "wrong:$v" || echo "ok:$v"
   } || echo "missing"
 }
-chk_bundler() { command -v bundle &>/dev/null && echo "ok" || echo "missing"; }
+chk_bundler() {
+  command -v bundle &>/dev/null && {
+    v=$(bundle -v 2>/dev/null | awk '{print $3}')
+    [[ -n "$BUNDLER_VERSION" && "$v" != "$BUNDLER_VERSION" ]] && echo "wrong:$v" || echo "ok:$v"
+  } || echo "missing"
+}
 chk_java()    { command -v java &>/dev/null && { v=$(java -version 2>&1 | head -1 | cut -d'"' -f2); [[ "$v" == 17* ]] && echo "ok:$v" || echo "wrong:$v"; } || echo "missing"; }
 chk_xcode()   { xcode-select -p &>/dev/null && [[ "$(xcode-select -p)" == *Xcode.app* ]] && echo "ok" || echo "missing"; }
 chk_studio()  { [[ -d "/Applications/Android Studio.app" ]] && echo "ok" || echo "missing"; }
@@ -112,7 +118,23 @@ inst_pods()    {
     fi
   fi
 }
-inst_bundler() { gem install bundler; }
+inst_bundler() {
+  if command -v rbenv &>/dev/null; then
+    eval "$(rbenv init -)" 2>/dev/null
+    rbenv shell "$RUBY_VERSION" 2>/dev/null || true
+    if [[ -n "$BUNDLER_VERSION" ]]; then
+      rbenv exec gem install bundler -v "$BUNDLER_VERSION"
+    else
+      rbenv exec gem install bundler
+    fi
+  else
+    if [[ -n "$BUNDLER_VERSION" ]]; then
+      gem install bundler -v "$BUNDLER_VERSION"
+    else
+      gem install bundler
+    fi
+  fi
+}
 inst_java()    { brew install openjdk@17; sudo ln -sfn "$(brew --prefix openjdk@17)/libexec/openjdk.jdk" /Library/Java/JavaVirtualMachines/openjdk-17.jdk 2>/dev/null || true; }
 inst_yarn()    {
   if command -v corepack &>/dev/null; then
