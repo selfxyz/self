@@ -14,7 +14,7 @@ The device keychain is the root of trust. No web fallbacks for security-critical
 │   └── Auth adapter secrets              │
 │                                         │
 │   Access requires:                      │
-│   ├── Biometric auth OR device passcode │
+│   ├── Biometric or passcode auth        │
 │   └── Active session (15-min timeout)   │
 │                                         │
 │   NO web implementation.                │
@@ -29,9 +29,9 @@ The keychain configuration automatically adapts to the device's highest availabl
 
 | Device Capability | Security Level | Access Control |
 |-------------------|---------------|----------------|
-| Secure hardware (StrongBox/SE) | `SECURE_HARDWARE` | `BIOMETRY_ANY_OR_DEVICE_PASSCODE` |
-| Biometrics only | `SECURE_SOFTWARE` | `BIOMETRY_ANY_OR_DEVICE_PASSCODE` |
-| Passcode only | `ANY` | `DEVICE_PASSCODE` |
+| Secure hardware (StrongBox/SE) + biometrics + passcode | `SECURE_HARDWARE` | `BIOMETRY_ANY_OR_DEVICE_PASSCODE` |
+| Biometrics + passcode (no secure hardware) | `SECURE_SOFTWARE` | `BIOMETRY_ANY_OR_DEVICE_PASSCODE` |
+| Passcode only (no biometrics) | `ANY` | `DEVICE_PASSCODE` |
 | None | NOT ALLOWED | Block secret storage; require device passcode or biometrics |
 
 Detection functions in `app/src/integrations/keychain/index.ts`:
@@ -46,7 +46,7 @@ Detection functions in `app/src/integrations/keychain/index.ts`:
 
 ## Session Management
 
-- Session starts on successful biometric auth
+- Session starts on successful biometric auth or device passcode (`allowDeviceCredentials: true`)
 - Timeout: 15 minutes of inactivity
 - Expired session requires re-authentication
 - Tracked via `isAuthenticated` flag in AuthProvider
