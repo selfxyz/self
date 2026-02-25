@@ -99,7 +99,7 @@ feature branches
    main         ← Production releases
 ```
 
-- Feature branches fork off `main`
+- Feature branches fork off `dev` (source of truth)
 - PRs always target `dev`
 - `dev` merges into `staging` for QA
 - `staging` merges into `main` for production releases
