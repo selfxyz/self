@@ -39,8 +39,8 @@ const { top, bottom } = useSafeAreaInsets();
 
 ### Responsive Sizing
 ```
-import { useWindowDimensions } from 'react-native';
-const { width, height } = useWindowDimensions();
+import { Dimensions } from 'react-native';
+const { width, height } = Dimensions.get('window');
 const scale = measuredWidth / FIGMA_REFERENCE_WIDTH;
 ```
 
@@ -59,7 +59,7 @@ Platform.OS === 'web' ? 'Home' : 'Splash'   // Web skips splash
 
 - DO use platform file extensions (`.web.ts`, `.native.tsx`) for divergent implementations
 - DO use `useSafeAreaInsets()` for all edge-to-edge screens
-- DO use `useWindowDimensions()` for responsive sizing calculations
+- DO use `Dimensions.get('window')` for responsive sizing calculations
 - DO test on both iOS and Android — shadows, elevation, and fonts differ
 - DO provide web stubs for native-only features (NFC, biometrics, keychain)
 - DO use Figma-based scale factors for pixel-perfect layout

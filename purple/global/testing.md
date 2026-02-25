@@ -5,12 +5,17 @@
 | Package         | Framework              | Command                     |
 |-----------------|------------------------|-----------------------------|
 | `app/`          | Jest + babel-jest      | `yarn test`                 |
-| `packages/*`    | Vitest                 | `yarn test`                 |
+| `packages/mobile-sdk-alpha/` | Vitest      | `npx vitest run && npx tsc --noEmit` |
+| `packages/webview-bridge/`   | Vitest      | `yarn build && yarn vitest run` |
+| `packages/webview-app/`      | Vite        | `npx tsc --noEmit && npx vite build` |
+| `packages/kmp-sdk/`          | Kotlin      | `./gradlew :shared:jvmTest` |
 | `common/`       | Vitest                 | `yarn test`                 |
 | `contracts/`    | Hardhat (Mocha + Chai) | `yarn hardhat test`         |
 | `circuits/`     | ts-mocha + circom_tester | `yarn test`               |
 | `app/` E2E      | Detox                  | `yarn test:e2e:ios/android` |
 | `scripts/`      | Node.js native `--test`| `node --test scripts/tests/*.cjs` |
+
+**Full repo validation:** `yarn lint && yarn types && yarn build`
 
 ## Test File Locations
 

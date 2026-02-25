@@ -65,8 +65,10 @@ Platform adapters implement this — React Native uses keychain, web uses volati
 Device has secure hardware?  → SECURE_HARDWARE + BIOMETRY_ANY_OR_DEVICE_PASSCODE
 Device has biometrics only?  → SECURE_SOFTWARE + BIOMETRY_ANY_OR_DEVICE_PASSCODE
 Device has passcode only?    → ANY + DEVICE_PASSCODE
-None available?              → ANY (no access control)
+None available?              → BLOCKED (do not store secrets)
 ```
+
+> When the device has no passcode or biometrics, secrets are not protected at rest. The app must warn the user and block sensitive operations (proving, key derivation) until device security is configured.
 
 Migration function `migrateToSecureKeychain()` upgrades old entries to the highest available level.
 

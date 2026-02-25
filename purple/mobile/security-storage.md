@@ -32,7 +32,7 @@ The keychain configuration automatically adapts to the device's highest availabl
 | Secure hardware (StrongBox/SE) | `SECURE_HARDWARE` | `BIOMETRY_ANY_OR_DEVICE_PASSCODE` |
 | Biometrics only | `SECURE_SOFTWARE` | `BIOMETRY_ANY_OR_DEVICE_PASSCODE` |
 | Passcode only | `ANY` | `DEVICE_PASSCODE` |
-| None | `ANY` | None |
+| None | NOT ALLOWED | Block secret storage; require device passcode or biometrics |
 
 Detection functions in `app/src/integrations/keychain/index.ts`:
 - `checkBiometricsAvailable()`

@@ -4,19 +4,19 @@
 
 | Service | Package | Purpose | Location |
 |---------|---------|---------|----------|
-| Firebase Messaging | `@react-native-firebase/messaging` | Push notifications | `src/services/notifications/` |
-| Firebase Remote Config | `@react-native-firebase/remote-config` | Feature flags, remote config | `src/providers/remoteConfigProvider.tsx` |
-| Segment | `@segment/analytics-react-native` | Analytics / event tracking | `src/services/analytics.ts` |
-| Sentry | `@sentry/react-native` | Error tracking / crash reporting | `src/config/sentry.ts` |
-| Sumsub | `@sumsub/react-native-mobilesdk-module` | KYC identity verification | `src/integrations/sumsub/` |
-| Google Drive | `@robinbobin/react-native-google-drive-api-wrapper` | Cloud mnemonic backup | `src/services/cloud-backup/google.ts` |
-| Google OAuth | `react-native-app-auth` | OAuth 2.0 for Drive access | `src/services/cloud-backup/google.ts` |
+| Firebase Messaging | `@react-native-firebase/messaging` | Push notifications | `app/src/services/notifications/` |
+| Firebase Remote Config | `@react-native-firebase/remote-config` | Feature flags, remote config | `app/src/providers/remoteConfigProvider.tsx` |
+| Segment | `@segment/analytics-react-native` | Analytics / event tracking | `app/src/services/analytics.ts` |
+| Sentry | `@sentry/react-native` | Error tracking / crash reporting | `app/src/config/sentry.ts` |
+| Sumsub | `@sumsub/react-native-mobilesdk-module` | KYC identity verification | `app/src/integrations/sumsub/` |
+| Google Drive | `@robinbobin/react-native-google-drive-api-wrapper` | Cloud mnemonic backup | `app/src/services/cloud-backup/google.ts` |
+| Google OAuth | `react-native-app-auth` | OAuth 2.0 for Drive access | `app/src/services/cloud-backup/google.ts` |
 
 ## Integration Patterns
 
 ### Analytics (Segment)
-- Centralized in `src/services/analytics.ts`
-- Events defined as constants in `mobile-sdk-alpha/constants/analytics.ts`
+- Centralized in `app/src/services/analytics.ts`
+- Events defined as constants in `packages/mobile-sdk-alpha/src/constants/analytics.ts`
 - Track via the analytics adapter (SDK) or service directly (app)
 
 ### Error Tracking (Sentry)
