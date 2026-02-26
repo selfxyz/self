@@ -241,7 +241,12 @@ const HomeScreen: React.FC = () => {
   }
 
   return (
-    <YStack backgroundColor={'#F8FAFC'} flex={1} alignItems="center">
+    <YStack
+      backgroundColor={'#F8FAFC'}
+      flex={1}
+      alignItems="center"
+      testID="home-screen-root"
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
         flex={1}
