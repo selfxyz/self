@@ -39,7 +39,7 @@ export const PointsNavBar = (props: NativeStackHeaderProps) => {
           color={black}
           fontSize={15}
           fontWeight="500"
-          fontFamily="DIN OT"
+          fontFamily="DINOT-Medium"
           textAlign="center"
           style={{
             letterSpacing: 0.6,

@@ -1,6 +1,6 @@
 # Person 5: RN Native Shell — Workstream Overview
 
-> Last updated: 2026-02-19
+> Last updated: 2026-02-23
 > Owner: Person 5 (RN SDK)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC.md](./SPEC.md)
@@ -19,10 +19,12 @@
 - [x] `MessageRouter` dispatching bridge messages to handlers is implemented
 - [x] 5 native handler bridges are implemented (NFC, Camera, Biometrics, Keychain, Lifecycle)
 - [x] Asset loading strategy is implemented for iOS + Android, including dev override
+- [x] NFC handler supports APDU command exchange (`apduCommands` -> `apduResponses`)
+- [x] Camera MRZ bridge is implemented against native scanner modules
 - [ ] Integration validation in Self Wallet app is still a follow-up validation task
 - [ ] npm publish (`@selfxyz/rn-sdk`) not completed in this branch
 
-**Overall: Partial** — package implementation is present; highest-risk carry-forward items are NFC APDU-path deviation and camera/MRZ stub.
+**Overall: Partial** — package implementation is present; highest-risk carry-forward item is breadth of physical-device integration validation across host apps.
 
 ## What You Own
 

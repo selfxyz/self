@@ -1,6 +1,6 @@
 # Self SDK — Architecture Specification
 
-> Last updated: 2026-02-17
+> Last updated: 2026-02-23
 > Owner: Self Engineering
 > Status: Active
 
@@ -13,19 +13,19 @@
 ## Status Checklist
 
 - [x] Architecture finalized (WebView engine + two native shells)
-- [x] Bridge protocol defined and tested (62 tests pass)
+- [x] Bridge protocol defined and tested (63 tests pass)
 - [x] Protocol compatibility policy defined (fail closed on version mismatch)
 - [x] WebView UI screens built (10 screens, routing works)
 - [x] WebView engine core working (275+ tests pass, XState proving machine)
 - [x] Android native shell implemented (5 handlers, WebView host, Activity)
 - [x] Delete 3 unnecessary Android handlers (documents, analytics, haptic); crypto standalone handler deleted but crypto domain still routed natively for signing/key-gen
-- [ ] iOS native shell implemented (Swift providers via PR #1762, not yet merged)
-- [ ] Biometrics bridge adapter (domain defined, no adapter implementation)
-- [ ] Camera bridge adapter wiring in webview-app
-- [ ] Web fallback adapters (IndexedDB for docs, Web Crypto for hashing)
+- [x] iOS native shell implemented (provider-based chain present in repo; merge/publish track separately)
+- [x] Biometrics bridge adapter wired in webview-app
+- [x] Camera bridge adapter wiring in webview-app
+- [x] Web fallback adapters (IndexedDB for docs, Web Crypto for hashing)
 - [x] Browser entry point with zero RN transitive imports
-- [ ] RN SDK (`SelfVerification` component — does not exist yet)
-- [ ] MiniPay sample integration
+- [x] RN SDK (`SelfVerification` component + handlers) implemented
+- [x] MiniPay sample integration scaffold + launch/result wiring implemented
 - [x] Canonical `VerificationResult` contract locked in specs (legacy fields disallowed)
 - [ ] Dynamic proof request items (currently hardcoded in ProvingScreen)
 - [ ] MRZ data confirmation screen (PR #1767, not yet merged)
@@ -119,16 +119,16 @@
 
 ## Module Table
 
-| Module                  | Location                     | Language               | What It Does                                                                                | Status                                                      | % Done  | Action Needed                                                                                                                     |
-| ----------------------- | ---------------------------- | ---------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| **WebView Engine**      | `packages/mobile-sdk-alpha/` | TypeScript             | Proving machine (XState), stores (Zustand), adapter interfaces, 105 source files            | 275+ tests pass, RN adapters built                          | **80%** | Browser entry point with zero RN imports. Web fallback adapters (IndexedDB, Web Crypto). Finish decoupling core from RN peer deps |
-| **WebView UI**          | `packages/webview-app/`      | TypeScript (React)     | 10 screens: home, country, ID, camera, NFC, confirm, proving, result, settings, coming-soon | All screens render, routing works, bridge integration wired | **75%** | Biometrics + camera adapter wiring. Dynamic proof request items. Wire SelfClientProvider to web fallback adapters                 |
-| **Bridge Protocol**     | `packages/webview-bridge/`   | TypeScript             | JSON messaging, 10 domains, 9 adapters, timeout/error handling, mock transport              | 62 tests pass, production-ready protocol                    | **80%** | Add biometrics adapter (domain defined, no implementation). Web fallback adapters for documents/storage                           |
-| **Kotlin Native Shell** | `packages/kmp-sdk/`          | Kotlin                 | Android: 5 handlers + WebView host + Activity. iOS: stubs (Swift providers in PR #1762)     | Android fully implemented, iOS stubs                        | **70%** | iOS: implement via Swift provider pattern                                                                                         |
-| **Swift Providers**     | `packages/self-sdk-swift/`   | Swift                  | iOS native implementations: NFC, biometrics, secure storage, WebView hosting                | In PR #1762 (not merged)                                    | **30%** | Merge PR #1762. Complete NFC + biometrics + secure storage + lifecycle providers                                                  |
-| **RN Native Shell**     | `packages/rn-sdk/` — **NEW** | React Native           | `SelfVerification` WebView wrapper, 5 native handler bridges                                | Does not exist                                              | **0%**  | Create thin wrapper: ~200-300 LOC, same bridge protocol as KMP                                                                    |
-| **Shared Utilities**    | `common/`                    | TypeScript             | Poseidon, Merkle trees, passport parsing, certificates, 150+ files, 88+ exports             | Production, 98% browser-compatible                          | **95%** | No changes needed. Only 2 files require Node.js (optional)                                                                        |
-| **Self Wallet App**     | `app/`                       | React Native (v0.76.9) | Full wallet: documents, NFC, proving, KYC, recovery, settings, Turnkey wallet               | Production (v2.9.16)                                        | **N/A** | Test environment for SDK. Eventually migrates to `SelfVerification`                                                               |
+| Module                  | Location                     | Language               | What It Does                                                                                | Status                                                       | % Done  | Action Needed                                                                                    |
+| ----------------------- | ---------------------------- | ---------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------ |
+| **WebView Engine**      | `packages/mobile-sdk-alpha/` | TypeScript             | Proving machine (XState), stores (Zustand), adapter interfaces, 105 source files            | Browser/RN paths and fallback adapters implemented           | **85%** | Consolidate fallback adapter ownership cleanup and finish remaining decoupling from RN peer deps |
+| **WebView UI**          | `packages/webview-app/`      | TypeScript (React)     | 10 screens: home, country, ID, camera, NFC, confirm, proving, result, settings, coming-soon | All screens render, routing works, bridge integration wired  | **85%** | Dynamic proof request items are still hardcoded and need request-context sourcing                |
+| **Bridge Protocol**     | `packages/webview-bridge/`   | TypeScript             | JSON messaging, 10 domains, 9 adapters, timeout/error handling, mock transport              | 63+ tests pass, protocol stable                              | **85%** | Complete adapter de-duplication with engine-owned web fallbacks                                  |
+| **Kotlin Native Shell** | `packages/kmp-sdk/`          | Kotlin                 | Android: 5 handlers + WebView host + Activity. iOS: provider-backed handler chain           | Android and iOS implementations present                      | **85%** | Complete physical-device validation matrix (NFC success/failure on both platforms)               |
+| **Swift Providers**     | `packages/self-sdk-swift/`   | Swift                  | iOS native implementations: NFC, biometrics, secure storage, WebView hosting                | Implemented in repo and wired through KMP iOS                | **80%** | Final artifact/packaging readiness and physical-device validation                                |
+| **RN Native Shell**     | `packages/rn-sdk/` — **NEW** | React Native           | `SelfVerification` WebView wrapper, 5 native handler bridges                                | Implemented with tests, asset strategy, and APDU-capable NFC | **85%** | Expand real-device integration validation coverage in host apps                                  |
+| **Shared Utilities**    | `common/`                    | TypeScript             | Poseidon, Merkle trees, passport parsing, certificates, 150+ files, 88+ exports             | Production, 98% browser-compatible                           | **95%** | No changes needed. Only 2 files require Node.js (optional)                                       |
+| **Self Wallet App**     | `app/`                       | React Native (v0.76.9) | Full wallet: documents, NFC, proving, KYC, recovery, settings, Turnkey wallet               | Production (v2.9.16)                                         | **N/A** | Test environment for SDK. Eventually migrates to `SelfVerification`                              |
 
 ## Decision Matrix
 
@@ -165,10 +165,20 @@
 
 > **Web fallback adapter ownership:** Two packages provide adapters, at different layers:
 >
-> - **`mobile-sdk-alpha` (`src/adapters/browser/`)** — Engine-level adapters that satisfy the `Adapters` interface (e.g., `createIndexedDBDocumentsAdapter`, `createWebCryptoAdapter`). These are what `SelfClientProvider` in `webview-app` wires up. **This is the canonical source for web fallback implementations.**
+> - **`mobile-sdk-alpha` (`src/adapters/browser/`)** — Engine-level adapters that satisfy the `Adapters` interface (e.g., `createIndexedDBDocumentsAdapter`, `createWebCryptoAdapter`). **This is the canonical source for web fallback implementations.**
 > - **`webview-bridge`** — Bridge-level adapters that translate between the bridge protocol and the engine adapters (e.g., `NfcBridgeAdapter` calls `bridge.request('nfc', 'scan', ...)`). For capabilities that don't need native (documents, crypto hash, analytics), the bridge adapter is a thin pass-through to the engine adapter.
 >
 > Rule: if a capability runs entirely in the WebView, the engine adapter in `mobile-sdk-alpha` owns the implementation. The bridge package provides the messaging plumbing, not the business logic.
+>
+> **Current transitional state (2026-02-23):** `webview-app` still imports web fallback helpers from `webview-bridge` for some domains. This is accepted short-term, but those helpers must remain behavior-compatible with engine adapters until consolidation is complete.
+
+### Platform Asymmetry Contract (Signed 2026-02-23)
+
+- **Normative minimum contract (all shells):** `nfc`, `camera`, `biometrics`, `secureStorage`, `lifecycle`, and native `crypto` methods (`sign`, `generateKey`, `getPublicKey`).
+- **Android KMP:** Implements the normative minimum (5 handlers + native crypto routing).
+- **iOS KMP:** Implements a compatibility superset (registers additional `documents`, `analytics`, `haptic`, and `crypto` handlers).
+- **Sign-off rule:** iOS superset handlers are compatibility shims only; they must not become the authoritative implementation for domains designated as WebView fallbacks.
+- **Cross-platform invariant:** host app callback semantics and `VerificationResult` contract must be identical regardless of shell or platform.
 
 ## Impact Summary
 

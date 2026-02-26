@@ -1,6 +1,6 @@
 # Person 3: Integration Samples — Workstream Overview
 
-> Last updated: 2026-02-19
+> Last updated: 2026-02-23
 > Owner: Person 3 (Integrations)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC-MINIPAY-SAMPLE.md](./SPEC-MINIPAY-SAMPLE.md)
@@ -17,9 +17,14 @@
 - [x] MiniPay sample project scaffolded (`packages/kmp-minipay-sample/`)
 - [x] Android: home screen + SDK launch + result screen wiring present
 - [x] iOS: Compose Multiplatform launch path is present
+- [x] Integration hardening paths are implemented in sample result UX (error-code to user-message mapping)
+- [x] Non-device validation evidence captured:
+  - `@selfxyz/rn-sdk` tests: all passing at merge time (includes NFC failure modes and APDU path handling; see CI checks)
+  - `@selfxyz/webview-bridge` tests: all passing at merge time (see CI checks)
+  - iOS launch E2E artifact: `app/maestro-results.xml` (1 test, 0 failures, 19s on iPhone 16 simulator)
 - [ ] End-to-end: NFC scan on physical device through sample app still requires validation
 
-Overall: **Partial** — sample implementation exists and launch wiring is in place; device-level verification validation remains.
+Overall: **Partial** — implementation and non-device validation are in place; final physical-device NFC verification outcomes remain the blocking gap.
 
 ## What You Own
 

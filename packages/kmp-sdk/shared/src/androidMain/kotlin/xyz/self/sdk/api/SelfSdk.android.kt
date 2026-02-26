@@ -108,8 +108,8 @@ actual class SelfSdk private constructor(
     ) {
         when (resultCode) {
             Activity.RESULT_OK -> {
-                // Success
                 val resultDataJson = data?.getStringExtra(SelfVerificationActivity.EXTRA_RESULT_DATA)
+                val resultType = data?.getStringExtra(SelfVerificationActivity.EXTRA_RESULT_TYPE)
                 if (resultDataJson != null) {
                     try {
                         val result = deserializeResult(resultDataJson)
@@ -122,6 +122,10 @@ actual class SelfSdk private constructor(
                             ),
                         )
                     }
+                } else if (resultType != null) {
+                    callback.onSuccess(
+                        VerificationResult(success = true, type = resultType),
+                    )
                 } else {
                     callback.onFailure(
                         SelfSdkError(
