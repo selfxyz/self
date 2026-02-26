@@ -18,6 +18,7 @@ function createMockNfc() {
     start: vi.fn(),
     requestTechnology: vi.fn(),
     getTag: vi.fn(),
+    transceive: vi.fn(),
     cancelTechnologyRequest: vi.fn(),
   };
   const tech: NfcTechEnum = {
@@ -79,6 +80,7 @@ describe('NfcHandler', () => {
       (mockNfc.manager.start as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
       (mockNfc.manager.requestTechnology as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
       (mockNfc.manager.getTag as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'tag-123' });
+      (mockNfc.manager.transceive as ReturnType<typeof vi.fn>).mockResolvedValue([0x90, 0x00]);
       (mockNfc.manager.cancelTechnologyRequest as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
     });
 
@@ -121,6 +123,29 @@ describe('NfcHandler', () => {
         connected: true,
         tagId: 'tag-456',
       });
+    });
+
+    it('returns APDU responses when apduCommands are provided', async () => {
+      (mockNfc.manager.transceive as ReturnType<typeof vi.fn>).mockResolvedValueOnce([0x90, 0x00]);
+      (mockNfc.manager.transceive as ReturnType<typeof vi.fn>).mockResolvedValueOnce([0x6A, 0x82]);
+
+      const result = await handler.handle('scan', {
+        apduCommands: ['00A4040007A0000002471001', '00B0000000'],
+      }) as Record<string, unknown>;
+
+      expect(result.apduResponses).toEqual(['9000', '6A82']);
+      expect(mockNfc.manager.transceive).toHaveBeenCalledTimes(2);
+    });
+
+    it('throws NFC_APDU_NOT_SUPPORTED when transceive is unavailable', async () => {
+      delete (mockNfc.manager as Partial<NfcManagerModule>).transceive;
+
+      try {
+        await handler.handle('scan', { apduCommands: ['00A4040000'] });
+        expect.unreachable('Should have thrown');
+      } catch (err: unknown) {
+        expect((err as { code: string }).code).toBe('NFC_APDU_NOT_SUPPORTED');
+      }
     });
 
     it('throws NFC_SCAN_FAILED on NFC error', async () => {
