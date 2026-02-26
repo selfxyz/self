@@ -178,7 +178,10 @@ jobs:
         run: |
           echo "Building Android APK..."
           chmod +x app/android/gradlew
-          (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
+          (
+            cd app/android &&
+            E2E_BUILD=true ./gradlew assembleDebug -PbundleInDebug=true --quiet --parallel --build-cache --no-configuration-cache
+          ) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
 
       - name: Clean up Gradle build artifacts
@@ -271,16 +274,25 @@ jobs:
           cat > /tmp/run-e2e.sh << 'EOF'
           #!/bin/bash
           set -euo pipefail
+          APP_ID="com.proofofpassportapp"
           echo "Installing app on emulator..."
           APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
           [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
+          adb uninstall "$APP_ID" >/dev/null 2>&1 || true
           adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
+          adb shell pm clear "$APP_ID" >/dev/null 2>&1 || true
           echo "✅ App installed successfully"
           echo "⏰ Giving the emulator a moment to settle..."
           sleep 5
           echo "🎭 Running Maestro tests..."
           export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
-          maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
+          export LAUNCH_WAIT_MS=180000
+          if ! maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml; then
+            echo "❌ Maestro failed - dumping Android diagnostics"
+            adb shell dumpsys activity activities | sed -n '1,240p' || true
+            adb logcat -d | tail -n 400 || true
+            exit 1
+          fi
           EOF
           chmod +x /tmp/run-e2e.sh
       - name: Install and Test on Android
