@@ -46,7 +46,7 @@ export const DocumentCameraScreen: React.FC = () => {
 
     try {
       const result = await bridge.request<{
-        passportNumber: string;
+        documentNumber: string;
         dateOfBirth: string;
         dateOfExpiry: string;
       }>('camera', 'scanMRZ', { documentType, countryCode });
@@ -58,7 +58,7 @@ export const DocumentCameraScreen: React.FC = () => {
         state: {
           countryCode,
           documentType,
-          passportNumber: result.passportNumber,
+          passportNumber: result.documentNumber,
           dateOfBirth: result.dateOfBirth,
           dateOfExpiry: result.dateOfExpiry,
         },

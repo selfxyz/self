@@ -10,6 +10,13 @@ const DOCUMENTS_STORE = 'documents';
 const CATALOG_STORE = 'catalog';
 const CATALOG_KEY = 'current';
 
+function cloneForStorage<T>(value: T): T {
+  if (typeof globalThis.structuredClone === 'function') {
+    return globalThis.structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -84,7 +91,7 @@ export function indexedDBDocumentsAdapter(): BridgeDocumentsAdapter {
 
     async saveDocumentCatalog(catalog: unknown): Promise<void> {
       const db = await getDB();
-      await txPut(db, CATALOG_STORE, CATALOG_KEY, structuredClone(catalog));
+      await txPut(db, CATALOG_STORE, CATALOG_KEY, cloneForStorage(catalog));
     },
 
     async loadDocumentById(id: string): Promise<unknown> {
@@ -95,7 +102,7 @@ export function indexedDBDocumentsAdapter(): BridgeDocumentsAdapter {
 
     async saveDocument(id: string, data: unknown): Promise<void> {
       const db = await getDB();
-      await txPut(db, DOCUMENTS_STORE, id, structuredClone(data));
+      await txPut(db, DOCUMENTS_STORE, id, cloneForStorage(data));
     },
 
     async deleteDocument(id: string): Promise<void> {

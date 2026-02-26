@@ -6,7 +6,7 @@
 
 - Install nargo via noirup (pin the version used in CI for reproducibility):
   - curl -L https://raw.githubusercontent.com/noir-lang/noirup/main/install | bash
-  - noirup -v <noir_version> # e.g., noirup -v v0.30.0
+  - noirup -v <noir_version> # e.g., noirup -v v0.31.0 (>= 0.31.0 required for --package flag)
 - Verify nargo is on the expected version:
   - nargo --version
 - Ensure Rust toolchain is installed and up to date (required by nargo).

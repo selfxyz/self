@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class VerificationResult(
     val success: Boolean,
+    val type: String? = null,
     val userId: String? = null,
     val verificationId: String? = null,
     val proof: String? = null,
