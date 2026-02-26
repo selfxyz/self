@@ -247,18 +247,6 @@ jobs:
           fi
           ls -la /dev/kvm
           echo "available=true" >> "$GITHUB_OUTPUT"
-      # jcortejoso: Retry as it intermittently fails because network issues
-      - name: Pre-install emulator dependencies
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 20
-          max_attempts: 3
-          retry_wait_seconds: 15
-          command: |
-            sdkmanager --install \
-              "platforms;android-${{ env.ANDROID_API_LEVEL }}" \
-              "system-images;android-${{ env.ANDROID_API_LEVEL }};default;x86_64" \
-              "emulator"
       - name: Install emulator runtime dependencies
         run: |
           sudo apt-get update -qq
@@ -302,7 +290,7 @@ jobs:
           arch: x86_64
           target: default
           channel: stable
-          force-avd-creation: false
+          force-avd-creation: true
           emulator-options: >-
             -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
             -camera-back none -camera-front none -memory 8192 -cores 4
