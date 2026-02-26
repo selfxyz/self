@@ -7,6 +7,7 @@ import { qrWrapperStyle } from '../utils/styles.js';
 import { QRcodeSteps } from '../utils/utils.js';
 import { initWebSocket } from '../utils/websocket.js';
 import DesktopQRcode from './DesktopQRcode.js';
+import MobileQRcode from './MobileQRcode.js';
 import QRCode from './QRCode.js';
 import StatusBanner from './StatusBanner.js';
 
@@ -20,7 +21,7 @@ interface SelfQRcodeProps {
   darkMode?: boolean;
   showBorder?: boolean;
   showStatusText?: boolean;
-  variant?: 'hybrid' | 'desktop';
+  variant?: 'hybrid' | 'desktop' | 'mobile';
 }
 
 const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
@@ -102,6 +103,16 @@ const SelfQRcode = ({
           ...selfAppRef.current,
           sessionId: sessionId,
         });
+
+  if (variant === 'mobile') {
+    return (
+      <MobileQRcode
+        proofStep={proofStep}
+        qrValue={qrValue}
+        selfApp={selfAppRef.current}
+      />
+    );
+  }
 
   if (variant === 'desktop') {
     return (

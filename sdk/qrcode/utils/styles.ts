@@ -244,6 +244,95 @@ export const desktopStatusSubtitleStyle = (): React.CSSProperties => ({
   margin: 0,
 });
 
+// Mobile variant styles
+
+export const mobileCardStyle = (): React.CSSProperties => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  border: '1px solid #E2E8F0',
+  borderRadius: '10px',
+  backgroundColor: '#FFFFFF',
+  overflow: 'hidden',
+  width: '373px',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+});
+
+export const mobilePhoneSectionStyle = (): React.CSSProperties => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
+  backgroundColor: '#2563EB',
+  borderRadius: '10px',
+  width: '100%',
+  height: '202px',
+  overflow: 'hidden',
+  position: 'relative',
+  boxSizing: 'border-box',
+});
+
+export const mobilePhoneSectionWrapperStyle = (): React.CSSProperties => ({
+  padding: '20px 20px 0',
+  width: '100%',
+  boxSizing: 'border-box',
+});
+
+export const mobilePhoneImgStyle = (): React.CSSProperties => ({
+  width: '185px',
+  height: 'auto',
+  display: 'block',
+  margin: '0 auto',
+  position: 'relative',
+  top: '15px',
+});
+
+export const mobileFooterStyle = (): React.CSSProperties => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+  width: '100%',
+  padding: '16px 20px 20px',
+  boxSizing: 'border-box',
+});
+
+export const mobileCtaSectionStyle = (): React.CSSProperties => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: '16px 20px',
+  width: '100%',
+  borderTop: '1px solid #E2E8F0',
+  boxSizing: 'border-box',
+});
+
+export const mobileCtaButtonStyle = (): React.CSSProperties => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '10px',
+  width: '100%',
+  padding: '10px 0 14px',
+  backgroundColor: '#000000',
+  borderRadius: '5px',
+  border: 'none',
+  cursor: 'pointer',
+  textDecoration: 'none',
+});
+
+export const mobileCtaTextStyle = (): React.CSSProperties => ({
+  fontSize: '18px',
+  fontWeight: 700,
+  lineHeight: 'normal',
+  color: '#FFFFFF',
+  textAlign: 'center',
+});
+
+export const mobileCtaLogoStyle = (): React.CSSProperties => ({
+  width: '26px',
+  height: '26px',
+});
+
 // Hybrid variant styles
 
 export const statusBannerLogoStyle: React.CSSProperties = {
