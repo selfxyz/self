@@ -13,7 +13,7 @@ import {
   consoleAnalyticsAdapter,
   bridgeLifecycleAdapter,
   webNavigationAdapter,
-  bridgeHapticAdapter,
+  noOpHapticAdapter,
   bridgeBiometricsAdapter,
   bridgeCameraAdapter,
 } from '@selfxyz/webview-bridge/adapters';
@@ -64,6 +64,7 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const adapters = useMemo<SelfClientAdapters>(() => {
     const lifecycle = bridgeLifecycleAdapter(bridge);
+
     return {
       scanner: bridgeNFCScannerAdapter(bridge),
       crypto: bridgeCryptoAdapter(bridge),
@@ -76,7 +77,7 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
         (path: string) => navigate(path),
         () => navigate(-1),
       ),
-      haptic: bridgeHapticAdapter(bridge),
+      haptic: noOpHapticAdapter(),
       biometrics: bridgeBiometricsAdapter(bridge),
       camera: bridgeCameraAdapter(bridge),
     };

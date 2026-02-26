@@ -1,6 +1,6 @@
 # Execution Wave Plan
 
-> Last updated: 2026-02-19
+> Last updated: 2026-02-23
 > Project: [SDK-OVERVIEW.md](./SDK-OVERVIEW.md)
 
 Cross-workstream chunk execution plan for parallel AI agent work via `claude --remote`.
@@ -46,14 +46,17 @@ A **wave** is a batch of chunks that can execute in parallel because they have n
 | **3C** | **Person 3 (Integrations)**  | **Polish + Error Handling**                    | **S** | **Partial**         | 3B           |
 | 2L     | Person 2 (Native Shells)     | Camera MRZ Handler (iOS)                       | S     | Deferred (Phase 2)  | 2J           |
 
-**Totals (reconciled 2026-02-19):** 30 chunks — 23 done, 3 partial (1E, 2F, 3C), 1 skipped (4D optional), 2 superseded (2D/2E → 2G-2K), 1 deferred (2L Phase 2).  
+**Totals (reconciled 2026-02-23):** 30 chunks — 23 done, 3 partial (1E, 2F, 3C), 1 skipped (4D optional), 2 superseded (2D/2E → 2G-2K), 1 deferred (2L Phase 2).  
 **Remaining to close:** 4 items (3 partial + 1 deferred).
 
-## Reconciliation Notes (2026-02-19)
+## Reconciliation Notes (2026-02-23)
 
 - This file now reflects post-implementation reconciliation, not just pre-execution planning.
 - The older aggregate summary (`11 done / 13 pending`) was stale and has been replaced by audited counts.
-- Partial items are blocked on correctness/validation decisions rather than missing package scaffolding.
+- Decision/documentation blockers from the 2026-02-19 handoff are now reconciled:
+  - hybrid crypto + fallback ownership decisions are explicit
+  - iOS/Android asymmetry contract is documented and signed off
+- Remaining partials are now primarily validation/outcome gaps (physical-device NFC E2E), plus residual implementation cleanup (fallback adapter de-duplication + dynamic proving request config).
 - Key carry-forward risks are tracked in `specs/HANDOFF.md`.
 
 ## Execution Waves

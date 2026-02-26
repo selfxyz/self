@@ -6,10 +6,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
+  base: './',
   plugins: [react()],
   define: { global: 'globalThis' },
   build: {
-    target: ['chrome90', 'safari15'],
+    target: ['chrome90', 'safari15.4'],
     rollupOptions: { output: { manualChunks: undefined } },
     assetsInlineLimit: 102400,
     outDir: 'dist',

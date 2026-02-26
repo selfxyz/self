@@ -49,7 +49,7 @@ PODS:
     - Yoga
   - fast_float (6.1.4)
   - FBLazyVector (0.77.0)
-  - FingerprintPro (2.12.0)
+  - FingerprintPro (2.13.0)
   - Firebase (10.24.0):
     - Firebase/Core (= 10.24.0)
   - Firebase/Core (10.24.0):
@@ -2570,7 +2570,7 @@ SPEC CHECKSUMS:
   ExpoModulesCore: bcee92d3a2c68c408b2d8da43e3094109340dc17
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 2bc03a5cf64e29c611bbc5d7eb9d9f7431f37ee6
-  FingerprintPro: 035517a1b4e3e4fc073486b53b9956509010f8db
+  FingerprintPro: 2f419138022451a72f783db9c94967f5a68e9977
   Firebase: 91fefd38712feb9186ea8996af6cbdef41473442
   FirebaseABTesting: d87f56707159bae64e269757a6e963d490f2eebe
   FirebaseAnalytics: b5efc493eb0f40ec560b04a472e3e1a15d39ca13

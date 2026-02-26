@@ -18,8 +18,8 @@ Host App
             ├─ LifecycleHandler    (init, ready, close, error, success)
             ├─ BiometricHandler    (authenticate, isAvailable)
             ├─ KeychainHandler     (get, set, remove)
-            ├─ NfcHandler          (scan, cancelScan, isSupported)
-            └─ CameraHandler       (isAvailable, scanMRZ — stub)
+            ├─ NfcHandler          (scan + APDU exchange, cancelScan, isSupported)
+            └─ CameraHandler       (isAvailable, scanMRZ via native module)
 ```
 
 ### File List
@@ -32,12 +32,12 @@ Host App
 | `src/handlers/LifecycleHandler.ts` | ~70 | App lifecycle + verification callbacks |
 | `src/handlers/BiometricHandler.ts` | ~60 | Biometric auth via react-native-biometrics |
 | `src/handlers/KeychainHandler.ts` | ~65 | Secure storage via react-native-keychain |
-| `src/handlers/NfcHandler.ts` | ~130 | NFC tag reading via react-native-nfc-manager |
-| `src/handlers/CameraHandler.ts` | ~25 | Camera stub (isAvailable, scanMRZ not yet impl) |
+| `src/handlers/NfcHandler.ts` | ~180 | NFC tag reading + APDU exchange via react-native-nfc-manager |
+| `src/handlers/CameraHandler.ts` | ~90 | MRZ scanning via native SelfMRZScannerModule / MRZScannerModule |
 | `src/handlers/index.ts` | ~30 | Handler factory (createHandlers) |
 | `src/index.ts` | ~5 | Public exports |
 | **Total source** | **~715** | |
-| **Tests (8 files)** | **~880** | 59 tests |
+| **Tests (8 files)** | **~950** | 64 tests |
 
 ### Dependencies
 
@@ -85,31 +85,40 @@ into their platform build:
 
 ### NFC Scan Return Shape
 
-The webview-bridge spec expects `nfc.scan` to return raw APDU response
-bytes. Our implementation returns a higher-level object:
+The NFC handler returns tag metadata plus optional APDU exchange results:
 
 ```typescript
-{ connected: true, tagId: string | null, techType: string, params: {...} }
+{
+  connected: true,
+  tagId: string | null,
+  techType: string,
+  params: {...},
+  apduResponses?: string[]  // hex-encoded responses when apduCommands are provided
+}
 ```
 
-**Justification:** `react-native-nfc-manager` provides tag discovery and
-technology negotiation but does not expose raw APDU transceive at the
-`getTag()` level without additional low-level calls. The current shape
-gives the web layer enough information to confirm a tag was found and
-proceed with the verification flow. When APDU command exchange is needed,
-a `transceive` method should be added to `NfcHandler` that wraps
-`NfcManager.transceive()`.
+When `params.apduCommands` (array of hex strings) is provided, the handler
+iterates through each command, calls `NfcManager.transceive()`, and returns
+hex-encoded response bytes in `apduResponses`. Progress events are emitted
+at `apdu_exchange` (70%) and `apdu_complete` (90%).
 
 ---
 
-## Deferred Decision
+## Camera / MRZ Implementation
 
-**Camera / MRZ scanning** — `CameraHandler.scanMRZ` throws
-`NOT_IMPLEMENTED`. A full implementation requires choosing a camera
-library (`react-native-vision-camera` is the modern choice) plus an
-OCR/MRZ parsing layer. `isAvailable` currently returns `true`
-unconditionally. This should be wired to a real permission check once
-a camera library is chosen.
+`CameraHandler` loads the native MRZ scanner module at init time,
+checking for `SelfMRZScannerModule` (preferred) or `MRZScannerModule`
+(fallback) from React Native's `NativeModules`.
+
+- `isAvailable()` returns whether a native MRZ module was found.
+- `scanMRZ()` calls `scanner.startScanning()`, normalizes the result
+  (extracts `documentNumber`, `dateOfBirth`, `dateOfExpiry`, plus optional
+  `documentType` and `countryCode`), and throws `MRZ_SCAN_FAILED` on
+  scanner errors or `MRZ_SCAN_INVALID_RESULT` if required fields are missing.
+- If no native module is present, `scanMRZ()` throws `NOT_AVAILABLE`.
+
+The host app must provide a native MRZ scanner module (e.g., via
+`react-native-vision-camera` + OCR) that exposes `startScanning()`.
 
 ---
 
@@ -119,7 +128,7 @@ a camera library is chosen.
 
 ```bash
 cd packages/rn-sdk
-npx vitest run          # 59 tests across 8 files
+npx vitest run          # 64 tests across 8 files
 ```
 
 ### Device Testing Checklist
@@ -180,16 +189,15 @@ import { SelfVerification } from '@selfxyz/rn-sdk';
 | Lifecycle handler | Done | init, ready, close, error, success |
 | Biometric handler | Done | authenticate, isAvailable via react-native-biometrics |
 | Keychain handler | Done | get, set, remove via react-native-keychain |
-| NFC handler | Done | scan, cancelScan, isSupported via react-native-nfc-manager |
+| NFC handler | Done | scan + APDU exchange, cancelScan, isSupported via react-native-nfc-manager |
 | iOS asset path | Done | Absolute path via react-native-fs, relative fallback |
 | Android asset path | Done | `file:///android_asset/` |
 | Dev server override | Done | `devServerUrl` prop |
-| Camera / MRZ scan | Stub | `isAvailable` hardcoded true, `scanMRZ` throws NOT_IMPLEMENTED |
+| Camera / MRZ scan | Done | scanMRZ via native SelfMRZScannerModule with result normalization |
 
 ## Known Limitations
 
-- Camera `scanMRZ` is a stub — needs camera library + OCR (see Deferred Decision)
-- NFC returns tag metadata, not raw APDU bytes (see Spec Deviation)
-- `CameraHandler.isAvailable` returns `true` unconditionally
+- Camera/MRZ requires host app to provide a native MRZ scanner module (`SelfMRZScannerModule` or `MRZScannerModule`)
 - No retry/reconnect logic for WebView crashes
 - Asset bundling requires manual platform setup by the host app
+- Physical-device validation breadth for NFC/APDU and camera across host apps is still limited
