@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -23,6 +23,7 @@ interface DangerZoneSectionProps {
   onResetBackupState: () => void;
   onClearBackupEvents: () => void;
   onClearPendingKyc: () => void;
+  onRemoveExpirationDateFlag: () => void;
 }
 
 export const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({
@@ -32,6 +33,7 @@ export const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({
   onResetBackupState,
   onClearBackupEvents,
   onClearPendingKyc,
+  onRemoveExpirationDateFlag,
 }) => {
   const dangerActions = [
     {
@@ -62,6 +64,11 @@ export const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({
     {
       label: 'Clear Pending KYC verifications',
       onPress: onClearPendingKyc,
+      dangerTheme: true,
+    },
+    {
+      label: 'Remove expiration date flag',
+      onPress: onRemoveExpirationDateFlag,
       dangerTheme: true,
     },
   ];

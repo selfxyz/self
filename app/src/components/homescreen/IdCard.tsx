@@ -1,12 +1,12 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { FC } from 'react';
-import React from 'react';
-import { Dimensions, Image, StyleSheet } from 'react-native';
+import React, { type FC, useCallback } from 'react';
+import { Image, Pressable, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text, XStack, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
 
 import type { AadhaarData } from '@selfxyz/common';
 import type { PassportData } from '@selfxyz/common/types/passport';
@@ -16,9 +16,15 @@ import {
   isKycDocument,
   isMRZDocument,
 } from '@selfxyz/common/utils/types';
+import { WarningTriangleIcon } from '@selfxyz/euclid/dist/components/icons/WarningTriangleIcon';
 import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
-import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import {
+  black,
+  red600,
+  white,
+  yellow500,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import CardBackgroundId1 from '@/assets/images/card_background_id1.png';
 import CardBackgroundId2 from '@/assets/images/card_background_id2.png';
@@ -30,10 +36,17 @@ import DevCardLogo from '@/assets/images/dev_card_logo.svg';
 import DevCardWave from '@/assets/images/dev_card_wave.svg';
 import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
 import WaveOverlay from '@/assets/images/wave_overlay.png';
+import CardBottomContent from '@/components/homescreen/CardBottomContent';
+import CardHeader from '@/components/homescreen/CardHeader';
 import { getSecurityLevel } from '@/components/homescreen/cardSecurityBadge';
+import { cardStyles } from '@/components/homescreen/cardStyles';
+import IdCardRevealed from '@/components/homescreen/IdCardRevealed';
 import KycIdCard from '@/components/homescreen/KycIdCard';
+import { useCardDimensions } from '@/hooks/useCardDimensions';
 import { getBackgroundIndex } from '@/utils/cardBackgroundSelector';
+import { getCountryDemonym } from '@/utils/countryDemonyms';
 import { getDocumentAttributes } from '@/utils/documentAttributes';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 const CARD_BACKGROUNDS = [
   CardBackgroundId1,
@@ -48,235 +61,11 @@ const CARD_BACKGROUNDS = [
 const DEV_LOGO_BG = '#52525B'; // zinc/600 - grey circle background for dev logo
 const DEV_BODY_COLOR = '#1E1B4B'; // indigo/950 - dev card body background
 
-// Country code to demonym mapping - comprehensive list for all supported countries
-const COUNTRY_DEMONYMS: Record<string, string> = {
-  // Major countries
-  USA: 'AMERICAN',
-  GBR: 'BRITISH',
-  JPN: 'JAPANESE',
-  DEU: 'GERMAN',
-  'D<<': 'GERMAN', // German passports use D<<
-  FRA: 'FRENCH',
-  CAN: 'CANADIAN',
-  IND: 'INDIAN',
-  AUS: 'AUSTRALIAN',
-  NGA: 'NIGERIAN',
-  FIN: 'FINNISH',
-  ITA: 'ITALIAN',
-  ESP: 'SPANISH',
-  BRA: 'BRAZILIAN',
-  MEX: 'MEXICAN',
-  CHN: 'CHINESE',
-  KOR: 'SOUTH KOREAN',
-  PRK: 'NORTH KOREAN',
-  NLD: 'DUTCH',
-  SWE: 'SWEDISH',
-  NOR: 'NORWEGIAN',
-  DNK: 'DANISH',
-  CHE: 'SWISS',
-  AUT: 'AUSTRIAN',
-  BEL: 'BELGIAN',
-  PRT: 'PORTUGUESE',
-  GRC: 'GREEK',
-  POL: 'POLISH',
-  IRL: 'IRISH',
-  NZL: 'NEW ZEALANDER',
-  ZAF: 'SOUTH AFRICAN',
-  SGP: 'SINGAPOREAN',
-  MYS: 'MALAYSIAN',
-  THA: 'THAI',
-  PHL: 'FILIPINO',
-  IDN: 'INDONESIAN',
-  VNM: 'VIETNAMESE',
-  ARE: 'EMIRATI',
-  SAU: 'SAUDI',
-  ISR: 'ISRAELI',
-  EGY: 'EGYPTIAN',
-  TUR: 'TURKISH',
-  RUS: 'RUSSIAN',
-  UKR: 'UKRAINIAN',
-  ARG: 'ARGENTINIAN',
-  COL: 'COLOMBIAN',
-  CHL: 'CHILEAN',
-  PER: 'PERUVIAN',
-  // Europe
-  ALB: 'ALBANIAN',
-  AND: 'ANDORRAN',
-  ARM: 'ARMENIAN',
-  AZE: 'AZERBAIJANI',
-  BLR: 'BELARUSIAN',
-  BIH: 'BOSNIAN',
-  BGR: 'BULGARIAN',
-  HRV: 'CROATIAN',
-  CYP: 'CYPRIOT',
-  CZE: 'CZECH',
-  EST: 'ESTONIAN',
-  GEO: 'GEORGIAN',
-  HUN: 'HUNGARIAN',
-  ISL: 'ICELANDIC',
-  LVA: 'LATVIAN',
-  LIE: 'LIECHTENSTEINER',
-  LTU: 'LITHUANIAN',
-  LUX: 'LUXEMBOURGISH',
-  MLT: 'MALTESE',
-  MDA: 'MOLDOVAN',
-  MCO: 'MONACAN',
-  MNE: 'MONTENEGRIN',
-  MKD: 'MACEDONIAN',
-  ROU: 'ROMANIAN',
-  SMR: 'SAMMARINESE',
-  SRB: 'SERBIAN',
-  SVK: 'SLOVAK',
-  SVN: 'SLOVENIAN',
-  VAT: 'VATICAN',
-  // Americas
-  ATG: 'ANTIGUAN',
-  BHS: 'BAHAMIAN',
-  BRB: 'BARBADIAN',
-  BLZ: 'BELIZEAN',
-  BOL: 'BOLIVIAN',
-  CRI: 'COSTA RICAN',
-  CUB: 'CUBAN',
-  DMA: 'DOMINICAN',
-  DOM: 'DOMINICAN',
-  ECU: 'ECUADORIAN',
-  SLV: 'SALVADORAN',
-  GRD: 'GRENADIAN',
-  GTM: 'GUATEMALAN',
-  GUY: 'GUYANESE',
-  HTI: 'HAITIAN',
-  HND: 'HONDURAN',
-  JAM: 'JAMAICAN',
-  NIC: 'NICARAGUAN',
-  PAN: 'PANAMANIAN',
-  PRY: 'PARAGUAYAN',
-  KNA: 'KITTITIAN',
-  LCA: 'SAINT LUCIAN',
-  VCT: 'VINCENTIAN',
-  SUR: 'SURINAMESE',
-  TTO: 'TRINIDADIAN',
-  URY: 'URUGUAYAN',
-  VEN: 'VENEZUELAN',
-  // Africa
-  DZA: 'ALGERIAN',
-  AGO: 'ANGOLAN',
-  BEN: 'BENINESE',
-  BWA: 'BOTSWANAN',
-  BFA: 'BURKINABE',
-  BDI: 'BURUNDIAN',
-  CPV: 'CAPE VERDEAN',
-  CMR: 'CAMEROONIAN',
-  CAF: 'CENTRAL AFRICAN',
-  TCD: 'CHADIAN',
-  COM: 'COMORIAN',
-  COG: 'CONGOLESE',
-  COD: 'CONGOLESE',
-  CIV: 'IVORIAN',
-  DJI: 'DJIBOUTIAN',
-  GNQ: 'EQUATOGUINEAN',
-  ERI: 'ERITREAN',
-  SWZ: 'SWAZI',
-  ETH: 'ETHIOPIAN',
-  GAB: 'GABONESE',
-  GMB: 'GAMBIAN',
-  GHA: 'GHANAIAN',
-  GIN: 'GUINEAN',
-  GNB: 'BISSAU-GUINEAN',
-  KEN: 'KENYAN',
-  LSO: 'BASOTHO',
-  LBR: 'LIBERIAN',
-  LBY: 'LIBYAN',
-  MDG: 'MALAGASY',
-  MWI: 'MALAWIAN',
-  MLI: 'MALIAN',
-  MRT: 'MAURITANIAN',
-  MUS: 'MAURITIAN',
-  MAR: 'MOROCCAN',
-  MOZ: 'MOZAMBICAN',
-  NAM: 'NAMIBIAN',
-  NER: 'NIGERIEN',
-  RWA: 'RWANDAN',
-  STP: 'SAO TOMEAN',
-  SEN: 'SENEGALESE',
-  SYC: 'SEYCHELLOIS',
-  SLE: 'SIERRA LEONEAN',
-  SOM: 'SOMALI',
-  SSD: 'SOUTH SUDANESE',
-  SDN: 'SUDANESE',
-  TZA: 'TANZANIAN',
-  TGO: 'TOGOLESE',
-  TUN: 'TUNISIAN',
-  UGA: 'UGANDAN',
-  ZMB: 'ZAMBIAN',
-  ZWE: 'ZIMBABWEAN',
-  // Asia & Middle East
-  AFG: 'AFGHAN',
-  BHR: 'BAHRAINI',
-  BGD: 'BANGLADESHI',
-  BTN: 'BHUTANESE',
-  BRN: 'BRUNEIAN',
-  KHM: 'CAMBODIAN',
-  TWN: 'TAIWANESE',
-  HKG: 'HONG KONGER',
-  IRQ: 'IRAQI',
-  IRN: 'IRANIAN',
-  JOR: 'JORDANIAN',
-  KAZ: 'KAZAKHSTANI',
-  KWT: 'KUWAITI',
-  KGZ: 'KYRGYZSTANI',
-  LAO: 'LAOTIAN',
-  LBN: 'LEBANESE',
-  MAC: 'MACANESE',
-  MDV: 'MALDIVIAN',
-  MNG: 'MONGOLIAN',
-  MMR: 'MYANMAR',
-  NPL: 'NEPALI',
-  OMN: 'OMANI',
-  PAK: 'PAKISTANI',
-  PSE: 'PALESTINIAN',
-  QAT: 'QATARI',
-  LKA: 'SRI LANKAN',
-  SYR: 'SYRIAN',
-  TJK: 'TAJIKISTANI',
-  TKM: 'TURKMEN',
-  UZB: 'UZBEKISTANI',
-  YEM: 'YEMENI',
-  // Oceania
-  FJI: 'FIJIAN',
-  KIR: 'I-KIRIBATI',
-  MHL: 'MARSHALLESE',
-  FSM: 'MICRONESIAN',
-  NRU: 'NAURUAN',
-  PLW: 'PALAUAN',
-  PNG: 'PAPUA NEW GUINEAN',
-  WSM: 'SAMOAN',
-  SLB: 'SOLOMON ISLANDER',
-  TON: 'TONGAN',
-  TUV: 'TUVALUAN',
-  VUT: 'NI-VANUATU',
-  TLS: 'TIMORESE',
-};
-
-/**
- * Get country demonym from 3-letter country code.
- * Falls back to the code itself if no mapping exists.
- * Note: D<< (German passports) should be normalized to DEU before calling this.
- */
-const getCountryDemonym = (code: string): string => {
-  if (!code) return '';
-  const upperCode = code.toUpperCase().replace(/</g, '').trim();
-  if (!upperCode) return '';
-  // Fallback for any remaining special codes with <
-  if (code.includes('<')) {
-    return COUNTRY_DEMONYMS['D<<'] || 'GERMAN';
-  }
-  return COUNTRY_DEMONYMS[upperCode] || upperCode;
-};
-
 interface IdCardLayoutAttributes {
   idDocument: PassportData | AadhaarData | KycData | null;
   selected: boolean;
   hidden: boolean;
+  isInactive?: boolean;
 }
 
 /**
@@ -291,7 +80,51 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   idDocument,
   selected,
   hidden,
+  isInactive = false,
 }) => {
+  const navigation = useNavigation();
+  const navigateToDocumentOnboarding = useCallback(() => {
+    switch (idDocument?.documentCategory) {
+      case 'passport':
+      case 'id_card':
+        navigation.navigate('DocumentOnboarding');
+        break;
+      case 'aadhaar':
+        navigation.navigate('AadhaarUpload', { countryCode: 'IND' });
+        break;
+    }
+  }, [idDocument?.documentCategory, navigation]);
+
+  const handleInactivePress = useCallback(() => {
+    const callbackId = registerModalCallbacks({
+      onButtonPress: navigateToDocumentOnboarding,
+      onModalDismiss: () => {},
+    });
+
+    navigation.navigate('Modal', {
+      titleText: 'Your ID needs to be reactivated to continue',
+      bodyText:
+        'Make sure that you have your document and recovery method ready.',
+      buttonText: 'Continue',
+      secondaryButtonText: 'Not now',
+      callbackId,
+    });
+  }, [navigateToDocumentOnboarding, navigation]);
+
+  // Early return if document is null
+  // Call hooks at the top, before any conditional returns
+  const {
+    cardWidth,
+    cardHeight,
+    borderRadius,
+    scale,
+    headerHeight,
+    figmaPadding,
+    logoSize,
+    headerGap,
+    fontSize,
+  } = useCardDimensions(selected);
+
   if (!idDocument) {
     return null;
   }
@@ -303,12 +136,11 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
     );
   }
 
-  const { width: screenWidth } = Dimensions.get('window');
+  // When data is revealed (hidden=false), show the white data-view card
+  if (!hidden && selected) {
+    return <IdCardRevealed idDocument={idDocument} />;
+  }
 
-  // Card dimensions (matching Figma: 353x224 for expanded, 353x67 for header only)
-  const cardWidth = screenWidth * 0.95 - 16;
-  const cardHeight = selected ? cardWidth * 0.635 : cardWidth * 0.19;
-  const borderRadius = 12;
   const padding = cardWidth * 0.04;
 
   // Get document attributes
@@ -358,14 +190,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   // Bottom label (uses demonym: "AMERICAN PASSPORT")
   const bottomLabel = `${countryDemonym} ${getDocumentTypeLabel()}`;
 
-  // Figma exact dimensions (scaled from 353px reference width)
-  const scale = cardWidth / 353;
-  const headerHeight = 67 * scale;
-  const bodyHeight = 157 * scale;
-  const figmaPadding = 14 * scale;
-  const logoCircleSize = 32 * scale;
-  const logoIconSize = 32 * scale;
-  const headerGap = 12 * scale;
+  const bodyHeight = cardHeight - headerHeight;
 
   // Get truncated selfId for display (e.g., "0xd9..b94")
   const getTruncatedId = (): string => {
@@ -397,24 +222,55 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
 
   const truncatedId = getTruncatedId();
 
-  // Font sizes
-  const fontSize = {
-    header: cardWidth * 0.057, // 20px at 353px width
-    subtitle: cardWidth * 0.02, // 7px at 353px width
-    badge: cardWidth * 0.028, // 10px at 353px width
-    bottomLabel: cardWidth * 0.043, // 15px at 353px width
-    bottomId: cardWidth * 0.028, // 10px at 353px width
-  };
-
   return (
-    <YStack width="100%" alignItems="center" justifyContent="center">
+    // Container wrapper to handle shadow space properly
+    <YStack
+      width="100%" // Add space for horizontal margins
+      alignItems="center"
+      justifyContent="center"
+    >
+      {isInactive && (
+        <Pressable
+          style={styles.inactiveWarningContainer}
+          onPress={handleInactivePress}
+        >
+          <XStack
+            backgroundColor={red600}
+            borderRadius={8}
+            padding={16}
+            gap={16}
+          >
+            <YStack padding={8} backgroundColor={white} borderRadius={8}>
+              <WarningTriangleIcon color={yellow500} />
+            </YStack>
+            <YStack gap={4}>
+              <Text
+                color={white}
+                fontFamily={dinot}
+                fontSize={16}
+                fontWeight="500"
+              >
+                Your document is inactive
+              </Text>
+              <Text
+                color={white}
+                fontFamily={dinot}
+                fontSize={14}
+                fontWeight="400"
+              >
+                Tap here to recover your ID
+              </Text>
+            </YStack>
+          </XStack>
+        </Pressable>
+      )}
       <YStack
         width={cardWidth}
         height={cardHeight}
         borderRadius={borderRadius}
         overflow="hidden"
-        backgroundColor="#000000"
-        shadowColor="#000"
+        backgroundColor={black}
+        shadowColor={black}
         shadowOffset={{ width: 0, height: 4 }}
         shadowOpacity={0.25}
         shadowRadius={14}
@@ -423,75 +279,39 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
         alignItems="stretch"
       >
         {/* Header Section - Dark gradient */}
-        <LinearGradient
-          colors={['#000000', '#343434']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[
-            styles.header,
-            {
-              height: headerHeight,
-              paddingHorizontal: figmaPadding,
-            },
-          ]}
-        >
-          {/* Content row */}
-          <XStack flex={1} alignItems="center">
-            {/* Logo + Text */}
-            <XStack alignItems="center" gap={headerGap} flex={1}>
-              {isMockDocument ? (
-                // Dev card: Self logo (white) in grey circle - exact Figma asset
-                <YStack
-                  width={logoCircleSize}
-                  height={logoCircleSize}
-                  borderRadius={logoCircleSize / 2}
-                  backgroundColor={DEV_LOGO_BG}
-                  alignItems="center"
-                  justifyContent="center"
-                  overflow="hidden"
-                >
-                  <DevCardLogo width={logoIconSize} height={logoIconSize} />
-                </YStack>
-              ) : (
-                // Real document: Country flag
-                <RoundFlag
-                  countryCode={nationalityCode}
-                  size={logoCircleSize}
-                />
-              )}
-              {/* Text container */}
-              <YStack gap={2}>
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.header}
-                  fontWeight="500"
-                  color={white}
-                  textTransform="uppercase"
-                  lineHeight={fontSize.header * 1.1}
-                >
-                  {headerTitle}
-                </Text>
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.subtitle}
-                  color="#9193A2"
-                  letterSpacing={0.7}
-                  textTransform="uppercase"
-                >
-                  {subtitleText}
-                </Text>
+        <CardHeader
+          variant="gradient"
+          title={headerTitle}
+          subtitle={subtitleText}
+          headerHeight={headerHeight}
+          figmaPadding={figmaPadding}
+          headerGap={headerGap}
+          fontSize={fontSize}
+          logo={
+            isMockDocument ? (
+              <YStack
+                width={logoSize}
+                height={logoSize}
+                borderRadius={logoSize / 2}
+                backgroundColor={DEV_LOGO_BG}
+                alignItems="center"
+                justifyContent="center"
+                overflow="hidden"
+              >
+                <DevCardLogo width={logoSize} height={logoSize} />
               </YStack>
-            </XStack>
-
-            {/* Right spacer for dev cards, Self logo for real documents */}
-            {isMockDocument ? (
-              // Empty spacer matching Figma (85x19)
+            ) : (
+              <RoundFlag countryCode={nationalityCode} size={logoSize} />
+            )
+          }
+          rightElement={
+            isMockDocument ? (
               <YStack width={85 * scale} height={19 * scale} />
             ) : (
-              <SelfLogoPending width={logoCircleSize} height={logoCircleSize} />
-            )}
-          </XStack>
-        </LinearGradient>
+              <SelfLogoPending width={logoSize} height={logoSize} />
+            )
+          }
+        />
 
         {/* Gradient divider line for dev cards - dark edges, light middle */}
         {isMockDocument && selected && (
@@ -509,7 +329,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
             // Dev card body - solid indigo background with wave pattern (exact Figma)
             <YStack
               style={[
-                styles.body,
+                cardStyles.body,
                 { backgroundColor: DEV_BODY_COLOR, height: bodyHeight },
               ]}
             >
@@ -531,11 +351,11 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
             </YStack>
           ) : (
             // Real document body - gradient background with wave overlay
-            <YStack style={styles.body}>
+            <YStack style={cardStyles.body}>
               {/* Gradient background */}
               <Image
                 source={cardBackground}
-                style={styles.backgroundImage}
+                style={cardStyles.backgroundImage}
                 resizeMode="cover"
               />
               {/* Wave pattern overlay */}
@@ -546,56 +366,28 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
               />
 
               {/* Bottom content: Left text + Right badge (real documents only) */}
-              <XStack
-                position="absolute"
-                bottom={padding}
-                left={padding}
-                right={padding}
-                justifyContent="space-between"
-                alignItems="flex-end"
-              >
-                {/* Bottom Left: ID + Document Label */}
-                <YStack gap={4}>
-                  {truncatedId ? (
-                    <Text
-                      fontFamily={plexMono}
-                      fontSize={fontSize.bottomId}
-                      color={white}
-                    >
-                      {truncatedId}
-                    </Text>
-                  ) : null}
-                  <Text
-                    fontFamily={dinot}
-                    fontSize={fontSize.bottomLabel}
-                    fontWeight="500"
-                    color={white}
-                    textTransform="uppercase"
-                    letterSpacing={0.6}
-                  >
-                    {bottomLabel}
-                  </Text>
-                </YStack>
-
-                {/* Security Badge */}
-                <YStack
-                  backgroundColor="rgba(0, 0, 0, 0.5)"
-                  borderRadius={30}
-                  paddingHorizontal={padding * 0.6}
-                  paddingVertical={padding * 0.3}
-                >
-                  <Text
-                    fontFamily={dinot}
-                    fontSize={fontSize.badge}
-                    fontWeight="500"
-                    color={white}
-                    textTransform="uppercase"
-                    letterSpacing={0.6}
-                  >
-                    {securityLevel}
-                  </Text>
-                </YStack>
-              </XStack>
+              <CardBottomContent
+                truncatedId={truncatedId}
+                bottomLabel={bottomLabel}
+                badges={[
+                  ...(isInactive
+                    ? [
+                        {
+                          text: 'INACTIVE',
+                          backgroundColor: red600,
+                          textColor: white,
+                        },
+                      ]
+                    : []),
+                  {
+                    text: securityLevel,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    textColor: white,
+                  },
+                ]}
+                padding={padding}
+                fontSize={fontSize}
+              />
             </YStack>
           ))}
       </YStack>
@@ -604,24 +396,6 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
 };
 
 const styles = StyleSheet.create({
-  header: {
-    justifyContent: 'center',
-    width: '100%',
-  },
-  body: {
-    flex: 1,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  backgroundImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-  },
   waveOverlay: {
     position: 'absolute',
     top: -10,
@@ -629,6 +403,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '90%',
     opacity: 0.6,
+  },
+  inactiveWarningContainer: {
+    width: '100%',
+    marginBottom: 16,
   },
 });
 

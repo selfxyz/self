@@ -19,7 +19,12 @@ export function bigIntToString(bigInt: bigint): string {
 
 export function formatEndpoint(endpoint: string): string {
   if (!endpoint) return '';
-  return endpoint.replace(/^https?:\/\//, '').split('/')[0];
+  const formatted = endpoint.replace(/^https?:\/\//, '').split('/')[0];
+  // Contract addresses must be lowercased to match Solidity's addressToHexString
+  if (formatted.startsWith('0x')) {
+    return formatted.toLowerCase();
+  }
+  return formatted;
 }
 
 export function hashEndpointWithScope(endpoint: string, scope: string): string {

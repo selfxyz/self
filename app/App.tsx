@@ -1,9 +1,8 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 // CI/CD Pipeline Test - July 31, 2025 - With Permissions Fix
-import { Buffer } from 'buffer';
 import React from 'react';
 import { Platform } from 'react-native';
 import { YStack } from 'tamagui';
@@ -43,8 +42,6 @@ import '@turnkey/encoding';
 import '@turnkey/api-key-stamper';
 
 initSentry();
-
-global.Buffer = Buffer;
 
 export const TURNKEY_CALLBACKS: TurnkeyCallbacks = {
   beforeSessionExpiry: ({ sessionKey: _sessionKey }) => {

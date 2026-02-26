@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -10,7 +10,8 @@
 // eslint-disable-next-line simple-import-sort/imports
 import 'react-native-get-random-values';
 
-import { Buffer } from 'buffer';
+import './src/polyfills/buffer';
+
 import React from 'react';
 import { AppRegistry, LogBox } from 'react-native';
 import { TamaguiProvider } from 'tamagui';
@@ -21,9 +22,6 @@ import tamaguiConfig from './tamagui.config';
 
 import './src/utils/crypto/ethers';
 import 'react-native-gesture-handler';
-
-// Set global Buffer before any other imports
-global.Buffer = Buffer;
 
 LogBox.ignoreLogs([
   /bad setState/,

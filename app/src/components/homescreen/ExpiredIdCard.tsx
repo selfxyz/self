@@ -1,15 +1,15 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { FC } from 'react';
 import React from 'react';
-import { Dimensions, Image, StyleSheet } from 'react-native';
-import { Text, XStack, YStack } from 'tamagui';
+import { Image } from 'react-native';
+import { Text, YStack } from 'tamagui';
 
 import {
   black,
-  gray400,
+  gray200,
   red600,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -17,6 +17,9 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import SelfLogoInactive from '@/assets/images/self_logo_inactive.svg';
 import WavePatternBody from '@/assets/images/wave_pattern_body.png';
+import CardHeader from '@/components/homescreen/CardHeader';
+import { cardStyles } from '@/components/homescreen/cardStyles';
+import { useCardDimensions } from '@/hooks/useCardDimensions';
 
 /**
  * Expired state card shown when user's identity document has expired.
@@ -27,97 +30,65 @@ import WavePatternBody from '@/assets/images/wave_pattern_body.png';
  * - Black "EXPIRED ID" badge in bottom right
  */
 const ExpiredIdCard: FC = () => {
-  const { width: screenWidth } = Dimensions.get('window');
-
-  // Card dimensions (matching IdCardLayout)
-  const cardWidth = screenWidth * 0.95 - 16;
-  const cardHeight = cardWidth * 0.635;
-  const borderRadius = 12;
-
-  // Figma exact dimensions (scaled from 353px reference width)
-  const scale = cardWidth / 353;
-  const headerHeight = 67 * scale;
-  const figmaPadding = 14 * scale;
-  const logoSize = 32 * scale;
-  const headerGap = 12 * scale;
-
-  // Font sizes from Figma
-  const fontSize = {
-    header: 20 * scale, // 20px in Figma
-    subtitle: 7 * scale, // 7px in Figma
-  };
+  const {
+    cardWidth,
+    borderRadius,
+    scale,
+    headerHeight,
+    figmaPadding,
+    logoSize,
+    headerGap,
+    expandedAspectRatio,
+    fontSize,
+  } = useCardDimensions();
 
   return (
     <YStack width="100%" alignItems="center" justifyContent="center">
       <YStack
         width={cardWidth}
-        height={cardHeight}
+        aspectRatio={expandedAspectRatio}
         borderRadius={borderRadius}
         overflow="hidden"
         borderWidth={1}
-        borderColor="#E5E7EB"
+        borderColor={gray200}
         backgroundColor={white}
         marginBottom={8}
-        shadowColor="#000"
+        shadowColor={black}
         shadowOffset={{ width: 0, height: 44 }}
         shadowOpacity={0.25}
         shadowRadius={68}
         elevation={12}
       >
         {/* Header Section - White background with red divider */}
-        <YStack
-          height={headerHeight}
-          padding={figmaPadding}
+        <CardHeader
+          variant="flat"
+          title="EXPIRED ID"
+          subtitle="TIME TO REGISTER A VALID COPY"
+          titleColor={red600}
+          headerHeight={headerHeight}
+          figmaPadding={figmaPadding}
+          headerGap={headerGap}
+          fontSize={fontSize}
           backgroundColor={white}
-          justifyContent="center"
-          borderBottomWidth={2}
           borderBottomColor={red600}
-        >
-          {/* Content row */}
-          <XStack flex={1} alignItems="center">
-            {/* Logo + Text */}
-            <XStack alignItems="center" gap={headerGap} flex={1}>
-              {/* Red Self logo (reuses inactive logo) */}
-              <YStack
-                width={logoSize}
-                height={logoSize}
-                alignItems="center"
-                justifyContent="center"
-              >
-                <SelfLogoInactive width={logoSize} height={logoSize} />
-              </YStack>
-              {/* Text container */}
-              <YStack gap={2}>
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.header}
-                  fontWeight="500"
-                  color={red600}
-                  textTransform="uppercase"
-                  lineHeight={fontSize.header * 1.1}
-                >
-                  EXPIRED ID
-                </Text>
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.subtitle}
-                  color={gray400}
-                  letterSpacing={0.7}
-                  textTransform="uppercase"
-                >
-                  TIME TO REGISTER A VALID COPY
-                </Text>
-              </YStack>
-            </XStack>
-          </XStack>
-        </YStack>
+          logo={
+            <YStack
+              width={logoSize}
+              height={logoSize}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <SelfLogoInactive width={logoSize} height={logoSize} />
+            </YStack>
+          }
+        />
 
         {/* Body Section - White background with wave pattern */}
-        <YStack flex={1} position="relative" overflow="hidden">
+        <YStack style={cardStyles.body}>
           {/* Wave pattern background */}
           <Image
             source={WavePatternBody}
-            style={styles.wavePattern}
+            style={cardStyles.wavePattern}
             resizeMode="cover"
           />
 
@@ -133,7 +104,7 @@ const ExpiredIdCard: FC = () => {
           >
             <Text
               fontFamily={dinot}
-              fontSize={10 * scale}
+              fontSize={fontSize.badge}
               fontWeight="500"
               color={white}
               letterSpacing={0.6}
@@ -147,17 +118,5 @@ const ExpiredIdCard: FC = () => {
     </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  wavePattern: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-  },
-});
 
 export default ExpiredIdCard;

@@ -1,0 +1,31 @@
+## Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+## IDE
+.idea/
+*.iml
+.DS_Store
+
+## Kotlin
+*.class
+*.log
+*.tmp
+
+## iOS
+iosApp/iosApp.xcodeproj/project.xcworkspace/
+iosApp/iosApp.xcodeproj/xcuserdata/
+iosApp/build/
+iosApp/Pods/
+iosApp/DerivedData/
+iosApp/*.xcworkspace/xcuserdata/
+iosApp/*.xcworkspace/xcshareddata/
+iosApp/.swiftpm/
+iosApp/*.hmap
+iosApp/*.ipa
+iosApp/*.dSYM.zip
+iosApp/*.dSYM
+
+## Android
+local.properties

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -164,7 +164,6 @@ module.exports = {
         disallowTypeAnnotations: false,
       },
     ],
-
     // Custom rule to prevent export * (bad for tree shaking)
     // This rule prevents the use of export * which disables tree shaking
     // and can significantly increase bundle size. Use selective exports instead.
@@ -188,6 +187,14 @@ module.exports = {
       parserOptions: {
         project: true,
         EXPERIMENTAL_useProjectService: true,
+      },
+      rules: {
+        '@typescript-eslint/consistent-type-exports': [
+          'error',
+          {
+            fixMixedExportsWithInlineTypeSpecifier: false,
+          },
+        ],
       },
     },
     {
