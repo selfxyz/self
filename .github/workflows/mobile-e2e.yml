@@ -41,9 +41,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  android-build-test:
-    # Currently build-only for Android with private repos. E2E steps are preserved but skipped (if: false).
-    # To re-enable full E2E: change `if: false` to `if: true` on Maestro and emulator steps.
+  e2e-android:
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
@@ -225,7 +223,6 @@ jobs:
           fi
 
           echo "🎉 Build verification completed successfully!"
-          echo "ℹ️  Emulator testing is temporarily disabled - build testing only"
       - name: Check KVM access
         id: kvm
         run: |
