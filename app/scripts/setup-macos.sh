@@ -13,7 +13,7 @@ RUBY_VERSION=$(cat "$APP_DIR/.ruby-version" 2>/dev/null | tr -d '[:space:]')
 NODE_VERSION=$(cat "$REPO_ROOT/.nvmrc" 2>/dev/null | tr -d '[:space:]')
 NODE_VERSION=${NODE_VERSION:-22.22.0}
 NODE_MAJOR=${NODE_VERSION%%.*}
-COCOAPODS_VERSION=$(grep -E '^    cocoapods \\(' "$APP_DIR/Gemfile.lock" 2>/dev/null | head -1 | sed -E 's/.*\\(([^)]+)\\).*/\\1/')
+COCOAPODS_VERSION=$(grep -E '^    cocoapods \(' "$APP_DIR/Gemfile.lock" 2>/dev/null | head -1 | sed -E 's/.*\(([^)]+)\).*/\1/')
 BUNDLER_VERSION=$(grep -A 1 '^BUNDLED WITH$' "$APP_DIR/Gemfile.lock" 2>/dev/null | tail -n 1 | tr -d '[:space:]')
 
 # Args (can be overridden interactively)
