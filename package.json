@@ -5,6 +5,7 @@
       "app",
       "circuits",
       "common",
+      "new-common",
       "contracts",
       "packages/*",
       "prover/tests",

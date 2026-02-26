@@ -16,6 +16,14 @@ import {
 import fs from 'fs';
 import { pubkeys } from './pubkeys.js';
 
+for (const cert of pubkeys) {
+  const certObj = forge.pki.certificateFromPem(cert);
+  const modulusHex = (certObj.publicKey as forge.pki.rsa.PublicKey).n.toString(16);
+  const pubkey = BigInt('0x' + modulusHex);
+  const pubkeyCommitment = customHasher(splitToWords(pubkey, BigInt(121), BigInt(17)));
+  console.log(pubkeyCommitment);
+}
+
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 const privateKeyPem = fs.readFileSync(
@@ -190,7 +198,7 @@ describe('REGISTER AADHAAR Circuit Tests', function () {
     assert(BigInt(out.commitment) === BigInt(commitment));
   });
 
-  it.skip('should log all pubkey commitments', async function () {
+  it.only('should log all pubkey commitments', async function () {
     this.timeout(0);
     for (const cert of pubkeys) {
       const certObj = forge.pki.certificateFromPem(cert);
