@@ -11,7 +11,7 @@ REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 APP_DIR="$REPO_ROOT/app"
 RUBY_VERSION=$(cat "$APP_DIR/.ruby-version" 2>/dev/null | tr -d '[:space:]')
 NODE_VERSION=$(cat "$REPO_ROOT/.nvmrc" 2>/dev/null | tr -d '[:space:]')
-NODE_VERSION=${NODE_VERSION:-22}
+NODE_VERSION=${NODE_VERSION:-22.22.0}
 NODE_MAJOR=${NODE_VERSION%%.*}
 COCOAPODS_VERSION=$(grep -E '^    cocoapods \\(' "$APP_DIR/Gemfile.lock" 2>/dev/null | head -1 | sed -E 's/.*\\(([^)]+)\\).*/\\1/')
 BUNDLER_VERSION=$(grep -A 1 '^BUNDLED WITH$' "$APP_DIR/Gemfile.lock" 2>/dev/null | tail -n 1 | tr -d '[:space:]')
@@ -101,7 +101,7 @@ chk_swiftlint() { command -v swiftlint &>/dev/null && echo "ok:$(swiftlint versi
 
 # Install functions
 inst_brew()    { /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; }
-inst_nvm()     { curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; }
+inst_nvm()     { curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; }
 inst_node()    {
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
@@ -171,17 +171,20 @@ inst_shell() {
     return 0
   fi
 
+  local jdk_path
+  jdk_path="$(brew --prefix openjdk@17 2>/dev/null || echo /opt/homebrew/opt/openjdk@17)"
+
   info "Adding environment to $rc..."
-  cat >> "$rc" << 'EOF'
+  cat >> "$rc" << EOF
 
 # Self.xyz Dev Environment
-export JAVA_HOME=$(/usr/libexec/java_home -v 17 2>/dev/null || echo "")
-export PATH="$(brew --prefix openjdk@17 2>/dev/null || echo /opt/homebrew/opt/openjdk@17)/bin:$PATH"
+export JAVA_HOME=\$(/usr/libexec/java_home -v 17 2>/dev/null || echo "")
+export PATH="$jdk_path/bin:\$PATH"
 export ANDROID_HOME=~/Library/Android/sdk
-export ANDROID_SDK_ROOT=$ANDROID_HOME
-export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools
-command -v rbenv &>/dev/null && eval "$(rbenv init - --no-rehash)"
-export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+export ANDROID_SDK_ROOT=\$ANDROID_HOME
+export PATH=\$PATH:\$ANDROID_HOME/emulator:\$ANDROID_HOME/platform-tools
+command -v rbenv &>/dev/null && eval "\$(rbenv init - --no-rehash)"
+export NVM_DIR="\$HOME/.nvm"; [ -s "\$NVM_DIR/nvm.sh" ] && . "\$NVM_DIR/nvm.sh"
 EOF
   ok "Shell configured. Run: source $rc"
 }
