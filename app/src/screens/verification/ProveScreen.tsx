@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -25,6 +25,7 @@ import {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import type { DocumentMetadata } from '@selfxyz/common';
 import { isMRZDocument } from '@selfxyz/common';
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -51,10 +52,12 @@ import {
 } from '@/services/points';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
+import { registerModalCallbacks } from '@/utils';
 import {
   checkDocumentExpiration,
   getDocumentAttributes,
 } from '@/utils/documentAttributes';
+import { isDocumentInactive } from '@/utils/documents';
 import { getDocumentTypeName } from '@/utils/documentUtils';
 
 const ProveScreen: React.FC = () => {
@@ -85,6 +88,9 @@ const ProveScreen: React.FC = () => {
   const scrollViewRef = useRef<ScrollViewType>(null);
   const hasInitializedScrollStateRef = useRef(false);
 
+  const [hasCheckedForInactiveDocument, setHasCheckedForInactiveDocument] =
+    useState<boolean>(false);
+
   const isContentShorterThanScrollView = useMemo(
     () => scrollViewContentHeight <= scrollViewHeight + 50,
     [scrollViewContentHeight, scrollViewHeight],
@@ -114,8 +120,70 @@ const ProveScreen: React.FC = () => {
 
   const { addProofHistory } = useProofHistoryStore();
   const { loadDocumentCatalog } = usePassport();
+  const navigateToDocumentOnboarding = useCallback(
+    (documentMetadata: DocumentMetadata) => {
+      switch (documentMetadata.documentCategory) {
+        case 'passport':
+        case 'id_card':
+          navigate('DocumentOnboarding');
+          break;
+        case 'aadhaar':
+          navigate('AadhaarUpload', { countryCode: 'IND' });
+          break;
+      }
+    },
+    [navigate],
+  );
 
   useEffect(() => {
+    // Don't check twice
+    if (hasCheckedForInactiveDocument) {
+      return;
+    }
+
+    const checkForInactiveDocument = async () => {
+      const catalog = await loadDocumentCatalog();
+      const selectedDocumentId = catalog.selectedDocumentId;
+
+      for (const documentMetadata of catalog.documents) {
+        if (
+          documentMetadata.id === selectedDocumentId &&
+          isDocumentInactive(documentMetadata)
+        ) {
+          const callbackId = registerModalCallbacks({
+            onButtonPress: () => navigateToDocumentOnboarding(documentMetadata),
+            onModalDismiss: () => navigate('Home' as never),
+          });
+
+          navigate('Modal', {
+            titleText: 'Your ID needs to be reactivated to continue',
+            bodyText:
+              'Make sure that you have your document and recovery method ready.',
+            buttonText: 'Continue',
+            secondaryButtonText: 'Not now',
+            callbackId,
+          });
+
+          return;
+        }
+      }
+
+      setHasCheckedForInactiveDocument(true);
+    };
+
+    checkForInactiveDocument();
+  }, [
+    loadDocumentCatalog,
+    navigateToDocumentOnboarding,
+    navigate,
+    hasCheckedForInactiveDocument,
+  ]);
+
+  useEffect(() => {
+    if (!hasCheckedForInactiveDocument) {
+      return;
+    }
+
     const addHistory = async () => {
       if (provingStore.uuid && selectedApp) {
         const catalog = await loadDocumentCatalog();
@@ -137,9 +205,19 @@ const ProveScreen: React.FC = () => {
       }
     };
     addHistory();
-  }, [addProofHistory, loadDocumentCatalog, provingStore.uuid, selectedApp]);
+  }, [
+    addProofHistory,
+    provingStore.uuid,
+    selectedApp,
+    loadDocumentCatalog,
+    hasCheckedForInactiveDocument,
+  ]);
 
   useEffect(() => {
+    if (!hasCheckedForInactiveDocument) {
+      return;
+    }
+
     // Wait for actual measurements before determining initial scroll state
     // Both start at 0, causing false-positive on first render
     const hasMeasurements = scrollViewContentHeight > 0 && scrollViewHeight > 0;
@@ -161,10 +239,11 @@ const ProveScreen: React.FC = () => {
     isContentShorterThanScrollView,
     scrollViewContentHeight,
     scrollViewHeight,
+    hasCheckedForInactiveDocument,
   ]);
 
   useEffect(() => {
-    if (!isFocused || !selectedApp) {
+    if (!isFocused || !selectedApp || !hasCheckedForInactiveDocument) {
       return;
     }
 
@@ -172,6 +251,20 @@ const ProveScreen: React.FC = () => {
     if (selectedAppRef.current?.sessionId !== selectedApp.sessionId) {
       hasInitializedScrollStateRef.current = false;
       setHasScrolledToBottom(false);
+
+      // After state reset, check if content is short using current measurements.
+      // Use setTimeout(0) to ensure we read values AFTER React processes the reset,
+      // without adding measurements to dependencies (which causes race conditions).
+      setTimeout(() => {
+        const hasMeasurements =
+          scrollViewContentHeight > 0 && scrollViewHeight > 0;
+        const isShort = scrollViewContentHeight <= scrollViewHeight + 50;
+
+        if (hasMeasurements && isShort) {
+          setHasScrolledToBottom(true);
+          hasInitializedScrollStateRef.current = true;
+        }
+      }, 0);
     }
 
     setDefaultDocumentTypeIfNeeded();
@@ -215,12 +308,21 @@ const ProveScreen: React.FC = () => {
     //removed provingStore from dependencies because it causes infinite re-render on longpressing the button
     //as it sets provingStore.setUserConfirmed()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedApp?.sessionId, isFocused, selfClient]);
+  }, [
+    selectedApp?.sessionId,
+    isFocused,
+    selfClient,
+    hasCheckedForInactiveDocument,
+  ]);
 
   // Enhance selfApp with user's points address if not already set
   useEffect(() => {
     console.log('useEffect selectedApp', selectedApp);
-    if (!selectedApp || selectedApp.selfDefinedData) {
+    if (
+      !selectedApp ||
+      selectedApp.selfDefinedData ||
+      !hasCheckedForInactiveDocument
+    ) {
       return;
     }
 
@@ -263,11 +365,11 @@ const ProveScreen: React.FC = () => {
     };
 
     enhanceApp();
-  }, [selectedApp, selfClient]);
+  }, [selectedApp, selfClient, hasCheckedForInactiveDocument]);
 
   function onVerify() {
-    provingStore.setUserConfirmed(selfClient);
     buttonTap();
+    provingStore.setUserConfirmed(selfClient);
     trackEvent(ProofEvents.PROOF_VERIFY_CONFIRMATION_ACCEPTED, {
       appName: selectedApp?.appName,
       sessionId: provingStore.uuid,
@@ -374,6 +476,7 @@ const ProveScreen: React.FC = () => {
         isReadyToProve={isReadyToProve}
         isDocumentExpired={isDocumentExpired}
         testID="prove-screen-verify-bar"
+        hasCheckedForInactiveDocument={hasCheckedForInactiveDocument}
       />
 
       {formattedUserId && selectedApp?.userId && (

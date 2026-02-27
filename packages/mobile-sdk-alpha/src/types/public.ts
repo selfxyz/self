@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -16,6 +16,24 @@ import type { SDKEvent, SDKEventMap } from './events';
 
 export type { PassportValidationCallbacks } from '../validation/document';
 export type { DocumentCatalog, IDDocument, PassportData };
+
+export interface VerificationRequest {
+  userId?: string;
+  scope?: string;
+  disclosures?: string[];
+  selfApp?: unknown;
+}
+
+export interface SdkInitialConfig {
+  /** Verification request payload passed from the embedding host. */
+  verificationRequest?: VerificationRequest;
+  /** Optional environment override used when bootstrapping proving state. */
+  env?: 'prod' | 'stg';
+  /** Platform identifier for logging, diagnostics, and analytics context. */
+  platform?: string;
+  /** Debug mode flag for development-only behavior. */
+  debug?: boolean;
+}
 export interface Config {
   /**
    * Optional knobs to tweak SDK behaviour. All values are nullable so consumers
@@ -35,6 +53,28 @@ export interface Config {
    * treated as `false` and the SDK will continue using legacy flows.
    */
   features?: Record<string, boolean>;
+  /**
+   * Optional dev-mode configuration for error injection and testing. Should
+   * only be provided in development builds. Production builds should omit this.
+   */
+  devConfig?: {
+    /**
+     * Callback to check if a specific error type should be injected for testing.
+     * @param errorType - The type of error to check (e.g., 'mrz_unknown_error')
+     * @returns true if the error should be injected, false otherwise
+     */
+    shouldTrigger?: (errorType: string) => boolean;
+  };
+  /**
+   * Platform identifier used for structured logging and observability.
+   * Hosts can provide explicit values like `ios`, `android`, or `webview`.
+   */
+  platform?: string;
+  /**
+   * Development toggle for non-production diagnostics and relaxed checks.
+   * This must remain `false` in production environments.
+   */
+  debug?: boolean;
 }
 
 /**
@@ -319,6 +359,8 @@ export interface SelfClient {
   goBack(): void;
   goTo(routeName: RouteName, params?: Record<string, unknown>): void;
   navigation: NavigationAdapter;
+  /** Exposes the host networking adapter for internal SDK workflows. */
+  network: NetworkAdapter;
 
   /**
    * Convenience wrapper around {@link AnalyticsAdapter.trackEvent}. Calls are
@@ -375,6 +417,9 @@ export interface SelfClient {
   useProtocolStore: ReturnType<typeof create<ProtocolState, []>>;
   /** Zustand store hook mirroring {@link MRZState}. */
   useMRZStore: ReturnType<typeof create<MRZState, []>>;
+
+  /** The merged configuration object passed to createSelfClient. */
+  config: Config;
 }
 
 /** Function returned by {@link SelfClient.on} to detach a listener. */

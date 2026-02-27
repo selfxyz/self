@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -23,6 +23,24 @@ jest.mock('@/services/analytics', () => ({
   trackScreenView: jest.fn(),
   flush: jest.fn(),
 }));
+
+// Mock Sumsub SDK to prevent ES module parsing errors in isolateModules
+jest.mock('@sumsub/react-native-mobilesdk-module', () => {
+  const createBuilder = () => ({
+    withHandlers: jest.fn().mockReturnThis(),
+    withDebug: jest.fn().mockReturnThis(),
+    withLocale: jest.fn().mockReturnThis(),
+    withAnalyticsEnabled: jest.fn().mockReturnThis(),
+    build: jest.fn().mockReturnValue({
+      launch: jest.fn().mockResolvedValue({ success: true }),
+    }),
+  });
+
+  return {
+    __esModule: true,
+    default: { init: jest.fn(() => createBuilder()) },
+  };
+});
 
 describe('navigation', () => {
   beforeEach(() => {
@@ -67,7 +85,12 @@ describe('navigation', () => {
         'Home',
         'IDPicker',
         'IdDetails',
+        'KYCVerified',
+        'KycConnectionError',
+        'KycFailure',
+        'KycSuccess',
         'Loading',
+        'LogoConfirmation',
         'ManageDocuments',
         'MockDataDeepLink',
         'Modal',
@@ -83,6 +106,8 @@ describe('navigation', () => {
         'QRCodeViewFinder',
         'RecoverWithPhrase',
         'Referral',
+        'RegistrationFallbackMRZ',
+        'RegistrationFallbackNFC',
         'SaveRecoveryPhrase',
         'Settings',
         'ShowRecoveryPhrase',

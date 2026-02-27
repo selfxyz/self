@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -165,6 +165,28 @@ export enum SdkEvents {
    *
    */
   DOCUMENT_OWNERSHIP_CONFIRMED = 'DOCUMENT_OWNERSHIP_CONFIRMED',
+
+  /**
+   * Emitted when the user confirms they see the e-passport chip logo on their document.
+   *
+   * **Required:** Navigate to the document scanning flow (DocumentOnboarding).
+   */
+  LOGO_CONFIRMED = 'LOGO_CONFIRMED',
+
+  /**
+   * Emitted when the user indicates they do not see the e-passport chip logo on their document.
+   *
+   * **Required:** Show an error message indicating the document is not supported as it is not a biometric ID.
+   */
+  LOGO_NOT_FOUND = 'LOGO_NOT_FOUND',
+
+  /**
+   * Emitted when a verification flow reaches a terminal state.
+   *
+   * **Recommended:** WebView hosts should forward this payload to their
+   * native lifecycle bridge (for example `lifecycle.setResult`).
+   */
+  VERIFICATION_COMPLETE = 'VERIFICATION_COMPLETE',
 }
 
 /**
@@ -222,6 +244,22 @@ export interface SDKEventMap {
     documentCategory?: DocumentCategory;
     signatureAlgorithm?: string;
     curveOrExponent?: string;
+  };
+  [SdkEvents.LOGO_CONFIRMED]: {
+    documentType: string;
+    countryCode: string;
+  };
+  [SdkEvents.LOGO_NOT_FOUND]: {
+    documentType: string;
+    countryCode: string;
+  };
+
+  [SdkEvents.VERIFICATION_COMPLETE]: {
+    success: boolean;
+    userId?: string;
+    verificationId?: string;
+    proof?: unknown;
+    error?: { code: string; message: string };
   };
 }
 

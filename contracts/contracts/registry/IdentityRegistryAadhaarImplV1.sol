@@ -290,7 +290,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     }
 
     // ====================================================
-    // External Functions - Only Owner
+    // External Functions - Role-Based Access Control
     // ====================================================
 
     /// @notice Updates the hub address.

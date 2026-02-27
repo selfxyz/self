@@ -1,19 +1,23 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { slate500, slate700 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
+import { selectionChange } from '@/integrations/haptics';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
 import { openSupportForm, SUPPORT_FORM_BUTTON_TEXT } from '@/services/support';
@@ -46,10 +50,21 @@ const tips: TipProps[] = [
 ];
 
 const DocumentNFCTroubleScreen: React.FC = () => {
-  const go = useHapticNavigation('DocumentNFCScan', { action: 'cancel' });
+  const navigation = useNavigation();
+  const handleDismiss = useCallback(() => {
+    selectionChange();
+    navigation.goBack();
+  }, [navigation]);
   const goToNFCMethodSelection = useHapticNavigation(
     'DocumentNFCMethodSelection',
   );
+  const selfClient = useSelfClient();
+  const { useMRZStore } = selfClient;
+  const { countryCode } = useMRZStore();
+  const { launchSumsubVerification, isLoading } = useSumsubLauncher({
+    countryCode,
+    errorSource: 'nfc_scan_failed',
+  });
   useFeedbackAutoHide();
 
   // error screen, flush analytics
@@ -67,13 +82,28 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   return (
     <SimpleScrolledTitleLayout
       title="Having trouble verifying your ID?"
-      onDismiss={go}
+      onDismiss={handleDismiss}
       secondaryButtonText="Open NFC Options"
       onSecondaryButtonPress={goToNFCMethodSelection}
       footer={
-        <SecondaryButton onPress={openSupportForm} style={{ marginBottom: 0 }}>
-          {SUPPORT_FORM_BUTTON_TEXT}
-        </SecondaryButton>
+        <YStack gap="$3">
+          <SecondaryButton
+            onPress={openSupportForm}
+            textColor={slate700}
+            style={{ marginBottom: 0 }}
+          >
+            {SUPPORT_FORM_BUTTON_TEXT}
+          </SecondaryButton>
+
+          <SecondaryButton
+            onPress={launchSumsubVerification}
+            disabled={isLoading}
+            textColor={slate700}
+            style={{ marginBottom: 0 }}
+          >
+            {isLoading ? 'Loading...' : 'Try Alternative Verification'}
+          </SecondaryButton>
+        </YStack>
       }
     >
       <YStack

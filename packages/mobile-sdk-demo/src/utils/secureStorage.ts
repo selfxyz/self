@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -16,14 +16,8 @@ import * as Keychain from 'react-native-keychain';
  *   platform's secure hardware-backed Keystore (Android) or Keychain (iOS).
  *   This is a production-ready, secure approach for mobile.
  *
- * - WEB/OTHER: Falls back to an INSECURE `localStorage` implementation.
- *   This is for development and demo purposes ONLY.
- *
- *   Security Limitations of the Web Implementation:
- *   1. localStorage is NOT secure - accessible to any JavaScript on the same origin
- *   2. Vulnerable to XSS attacks
- *   3. No encryption at rest
- *   4. Visible in browser DevTools
+ * - WEB/OTHER: Falls back to an in-memory store for development and demo
+ *   purposes ONLY. Secrets are NOT persisted across page reloads.
  *
  * DO NOT use the web fallback in a production web environment with real user data.
  */
@@ -54,25 +48,21 @@ export const generateSecret = (): string => {
     .join('');
 };
 
-// --- Web (Insecure) Implementation ---
+// --- Web (In-Memory) Implementation ---
+// Uses an in-memory store instead of localStorage to avoid clear-text storage.
+// Secrets do not persist across page reloads; this is acceptable for a demo app.
+
+const memoryStore = new Map<string, string>();
 
 const getOrCreateSecretWeb = async (): Promise<string> => {
   try {
-    // Try to load existing secret
-    const existingSecret = localStorage.getItem(SECRET_STORAGE_KEY);
-    const metadataStr = localStorage.getItem(SECRET_VERSION_KEY);
+    const existingSecret = memoryStore.get(SECRET_STORAGE_KEY);
 
-    if (existingSecret && metadataStr) {
-      // Update last accessed time
-      const metadata: SecretMetadata = JSON.parse(metadataStr);
-      metadata.lastAccessed = new Date().toISOString();
-      localStorage.setItem(SECRET_VERSION_KEY, JSON.stringify(metadata));
-
-      console.log('[SecureStorage] Loaded existing secret from localStorage');
+    if (existingSecret) {
+      console.log('[SecureStorage] Loaded existing secret from memory');
       return existingSecret;
     }
 
-    // Generate new secret
     const newSecret = generateSecret();
     const metadata: SecretMetadata = {
       version: CURRENT_VERSION,
@@ -80,12 +70,10 @@ const getOrCreateSecretWeb = async (): Promise<string> => {
       lastAccessed: new Date().toISOString(),
     };
 
-    // Store secret and metadata
-    localStorage.setItem(SECRET_STORAGE_KEY, newSecret);
-    localStorage.setItem(SECRET_VERSION_KEY, JSON.stringify(metadata));
+    memoryStore.set(SECRET_STORAGE_KEY, newSecret);
+    memoryStore.set(SECRET_VERSION_KEY, JSON.stringify(metadata));
 
-    console.log('[SecureStorage] Generated new secret for demo app');
-    console.warn('[SecureStorage] ⚠️  SECRET STORED IN INSECURE localStorage - DEMO ONLY ⚠️');
+    console.log('[SecureStorage] Generated new secret for demo app (in-memory only)');
 
     return newSecret;
   } catch (error) {
@@ -95,11 +83,11 @@ const getOrCreateSecretWeb = async (): Promise<string> => {
 };
 
 const hasSecretWeb = (): boolean => {
-  return !!localStorage.getItem(SECRET_STORAGE_KEY);
+  return memoryStore.has(SECRET_STORAGE_KEY);
 };
 
 const getSecretMetadataWeb = (): SecretMetadata | null => {
-  const metadataStr = localStorage.getItem(SECRET_VERSION_KEY);
+  const metadataStr = memoryStore.get(SECRET_VERSION_KEY);
   if (!metadataStr) return null;
 
   try {
@@ -110,9 +98,9 @@ const getSecretMetadataWeb = (): SecretMetadata | null => {
 };
 
 const clearSecretWeb = (): void => {
-  localStorage.removeItem(SECRET_STORAGE_KEY);
-  localStorage.removeItem(SECRET_VERSION_KEY);
-  console.log('[SecureStorage] Secret cleared from localStorage');
+  memoryStore.delete(SECRET_STORAGE_KEY);
+  memoryStore.delete(SECRET_VERSION_KEY);
+  console.log('[SecureStorage] Secret cleared from memory');
 };
 
 // --- Native (Secure) Implementation ---
@@ -173,7 +161,7 @@ const clearSecretNative = async (): Promise<void> => {
 
 /**
  * Get or create a secret for the demo app.
- * Uses Keychain on native and localStorage on web.
+ * Uses Keychain on native and in-memory storage on web.
  *
  * @returns A Promise resolving to the secret as a hex string (64 characters).
  */
@@ -186,7 +174,7 @@ export const getOrCreateSecret = async (): Promise<string> => {
 
 /**
  * Check if a secret exists in storage.
- * Uses Keychain on native and localStorage on web.
+ * Uses Keychain on native and in-memory storage on web.
  *
  * @returns A Promise resolving to true if a secret exists, false otherwise.
  */
@@ -216,7 +204,7 @@ export const getSecretMetadata = async (): Promise<SecretMetadata | null> => {
 /**
  * Clear the stored secret (for testing/reset).
  * ⚠️ This will permanently delete the user's identity commitment!
- * Uses Keychain on native and localStorage on web.
+ * Uses Keychain on native and in-memory storage on web.
  *
  * @returns A Promise that resolves when the secret has been cleared.
  */

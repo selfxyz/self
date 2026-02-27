@@ -1,15 +1,9 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { Dimensions, Image, Pressable } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Pressable } from 'react-native';
 import {
   Button,
   ScrollView,
@@ -45,8 +39,11 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import LogoInversed from '@/assets/images/logo_inversed.svg';
-import UnverifiedHumanImage from '@/assets/images/unverified_human.png';
+import EmptyIdCard from '@/components/homescreen/EmptyIdCard';
+import ExpiredIdCard from '@/components/homescreen/ExpiredIdCard';
 import IdCardLayout from '@/components/homescreen/IdCard';
+import PendingIdCard from '@/components/homescreen/PendingIdCard';
+import UnregisteredIdCard from '@/components/homescreen/UnregisteredIdCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
@@ -55,8 +52,14 @@ import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
 import { useTestReferralFlow } from '@/hooks/useTestReferralFlow';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
+import { usePendingKycStore } from '@/stores/pendingKycStore';
 import { useSettingStore } from '@/stores/settingStore';
 import useUserStore from '@/stores/userStore';
+import {
+  checkDocumentExpiration,
+  getDocumentAttributes,
+} from '@/utils/documentAttributes';
+import { isDocumentInactive } from '@/utils/documents';
 
 const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -66,7 +69,8 @@ const HomeScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { setIdDetailsDocumentId } = useUserStore();
-  const { getAllDocuments, loadDocumentCatalog } = usePassport();
+  const { getAllDocuments, loadDocumentCatalog, setSelectedDocument } =
+    usePassport();
   const [isNewVersionAvailable, showAppUpdateModal, isModalDismissed] =
     useAppUpdates();
   const [documentCatalog, setDocumentCatalog] = useState<DocumentCatalog>({
@@ -77,12 +81,22 @@ const HomeScreen: React.FC = () => {
   >({});
   const [loading, setLoading] = useState(true);
   const hasIncrementedOnFocus = useRef(false);
+  const [isSelectedDocumentInactive, setIsSelectedDocumentInactive] = useState<
+    boolean | null
+  >(null);
+
+  const { pendingVerifications, removeExpiredVerifications } =
+    usePendingKycStore();
+
+  useEffect(() => {
+    removeExpiredVerifications();
+  }, [removeExpiredVerifications]);
+
+  const activePendingVerifications = pendingVerifications.filter(
+    v => v.status === 'pending' || v.status === 'processing',
+  );
 
   const { amount: selfPoints } = usePoints();
-
-  // Calculate card dimensions exactly like IdCardLayout does
-  const { width: screenWidth } = Dimensions.get('window');
-  const cardWidth = screenWidth * 0.95 - 16; // 95% of screen width minus horizontal padding
 
   // DEV MODE: Test referral flow hook (only show alert when screen is focused)
   const isFocused = useIsFocused();
@@ -116,12 +130,28 @@ const HomeScreen: React.FC = () => {
 
   const loadDocuments = useCallback(async () => {
     setLoading(true);
+
     try {
       const catalog = await loadDocumentCatalog();
       const docs = await getAllDocuments();
 
       setDocumentCatalog(catalog);
       setAllDocuments(docs);
+
+      if (catalog.selectedDocumentId) {
+        const documentData = docs[catalog.selectedDocumentId];
+
+        if (documentData) {
+          try {
+            setIsSelectedDocumentInactive(
+              isDocumentInactive(documentData.metadata),
+            );
+          } catch (error) {
+            // we don't want to block the home screen from loading
+            console.warn('Failed to check if document is inactive:', error);
+          }
+        }
+      }
     } catch (error) {
       console.warn('Failed to load documents:', error);
     }
@@ -157,10 +187,6 @@ const HomeScreen: React.FC = () => {
 
   // Prevents back navigation
   usePreventRemove(true, () => {});
-
-  const hasValidRegisteredDocument = useMemo(() => {
-    return documentCatalog.documents.some(doc => doc.isRegistered === true);
-  }, [documentCatalog]);
 
   // Calculate bottom padding to prevent button bleeding into system navigation
   const bottomPadding = useSafeBottomPadding(20);
@@ -215,7 +241,12 @@ const HomeScreen: React.FC = () => {
   }
 
   return (
-    <YStack backgroundColor={'#F8FAFC'} flex={1} alignItems="center">
+    <YStack
+      backgroundColor={'#F8FAFC'}
+      flex={1}
+      alignItems="center"
+      testID="home-screen-root"
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
         flex={1}
@@ -226,56 +257,92 @@ const HomeScreen: React.FC = () => {
           paddingBottom: 35, // Add extra bottom padding for shadow
         }}
       >
-        {!hasValidRegisteredDocument ? (
-          <Pressable
-            onPress={() => {
-              navigation.navigate('CountryPicker');
+        {/* Show pending KYC cards at the top */}
+        {activePendingVerifications.map(verification => (
+          <PendingIdCard
+            key={verification.userId}
+            onClick={() => {
+              if (
+                verification.status === 'processing' &&
+                verification.documentId
+              ) {
+                navigation.navigate('KYCVerified', {
+                  documentId: verification.documentId,
+                });
+              }
             }}
-          >
-            <View
-              width={cardWidth}
-              borderRadius={8}
-              overflow="hidden"
-              alignSelf="center"
-              style={{
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 8,
-                elevation: 4,
+          />
+        ))}
+
+        {/* Show EmptyIdCard only when no documents AND no pending verifications */}
+        {documentCatalog.documents.length === 0 &&
+          activePendingVerifications.length === 0 && (
+            <EmptyIdCard
+              onRegisterPress={() => {
+                navigation.navigate('CountryPicker');
               }}
-            >
-              <Image
-                source={UnverifiedHumanImage}
-                style={{ width: cardWidth, height: cardWidth * (418 / 640) }}
-                resizeMode="cover"
-              />
-            </View>
-          </Pressable>
-        ) : (
-          documentCatalog.documents.map((metadata: DocumentMetadata) => {
-            const documentData = allDocuments[metadata.id];
-            const isSelected =
-              documentCatalog.selectedDocumentId === metadata.id;
+            />
+          )}
 
-            if (!documentData || !documentData.metadata.isRegistered) {
-              return null;
-            }
+        {/* Show document cards */}
+        {documentCatalog.documents.map((metadata: DocumentMetadata) => {
+          const documentData = allDocuments[metadata.id];
+          const isSelected = documentCatalog.selectedDocumentId === metadata.id;
 
+          if (!documentData) {
+            return null;
+          }
+          //return early if the document is a pending KYC document as we are already displaying
+          //another card.
+          if (
+            !documentData.metadata.isRegistered &&
+            activePendingVerifications.some(
+              doc => doc.documentId === documentData.metadata.id,
+            )
+          ) {
+            return;
+          }
+
+          // Show UnregisteredIdCard for documents not yet registered on-chain
+          if (!documentData.metadata.isRegistered) {
             return (
-              <Pressable
+              <UnregisteredIdCard
                 key={metadata.id}
-                onPress={() => handleDocumentPress(metadata, documentData.data)}
-              >
-                <IdCardLayout
-                  idDocument={documentData.data}
-                  selected={isSelected}
-                  hidden={true}
-                />
-              </Pressable>
+                onRegisterPress={async () => {
+                  await setSelectedDocument(metadata.id);
+                  navigation.navigate('ConfirmBelonging', {});
+                }}
+              />
             );
-          })
-        )}
+          }
+
+          // Check if document is expired
+          const attributes = getDocumentAttributes(documentData.data);
+          const isExpired = checkDocumentExpiration(attributes.expiryDateSlice);
+
+          if (isExpired) {
+            return <ExpiredIdCard key={metadata.id} />;
+          }
+
+          // Show normal IdCardLayout for valid registered documents
+          return (
+            <Pressable
+              key={metadata.id}
+              onPress={() => handleDocumentPress(metadata, documentData.data)}
+            >
+              <IdCardLayout
+                idDocument={documentData.data}
+                isInactive={
+                  isSelected &&
+                  isSelectedDocumentInactive === true &&
+                  !metadata.mock
+                }
+                selected={isSelected}
+                hidden={true}
+              />
+            </Pressable>
+          );
+        })}
       </ScrollView>
       <YStack
         elevation={8}

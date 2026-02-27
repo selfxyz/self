@@ -1,4 +1,4 @@
-import type { IDDocument, PassportData } from '../types.js';
+import { type IDDocument, isKycDocument, type PassportData } from '../types.js';
 
 export function getCircuitNameFromPassportData(
   passportData: IDDocument,
@@ -13,6 +13,10 @@ export function getCircuitNameFromPassportData(
 
 function getDSCircuitNameFromPassportData(passportData: IDDocument) {
   console.log('Getting DSC circuit name from passport data...');
+
+  if (isKycDocument(passportData)) {
+    throw new Error('KYC documents do not have a DSC circuit');
+  }
 
   if (passportData.documentCategory === 'aadhaar') {
     throw new Error('Aadhaar does not have a DSC circuit');
@@ -85,6 +89,10 @@ function getRegisterNameFromPassportData(passportData: IDDocument) {
 
   if (passportData.documentCategory === 'aadhaar') {
     return 'register_aadhaar';
+  }
+
+  if (isKycDocument(passportData)) {
+    return 'register_kyc';
   }
 
   if (!passportData.passportMetadata) {

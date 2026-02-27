@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -207,12 +207,15 @@ describe('useEarnPointsFlow', () => {
 
       expect(mockNavigate).toHaveBeenCalledWith('PointsInfo', {
         showNextButton: true,
-        onNextButtonPress: expect.any(Function),
+        callbackId: expect.any(Number),
       });
 
-      // We pass onNextButtonPress() that displays the points disclosure modal
+      // We pass callbackId to retrieve and invoke the callback that displays the points disclosure modal
+      const callbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const callbacks = getModalCallbacks(callbackId);
+
       await act(async () => {
-        await mockNavigate.mock.calls[0][1].onNextButtonPress();
+        await callbacks!.onButtonPress();
       });
 
       expect(mockNavigate).toHaveBeenCalledWith('Modal', {
@@ -243,11 +246,14 @@ describe('useEarnPointsFlow', () => {
 
       expect(mockNavigate).toHaveBeenCalledWith('PointsInfo', {
         showNextButton: true,
-        onNextButtonPress: expect.any(Function),
+        callbackId: expect.any(Number),
       });
 
+      const pointsInfoCallbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const pointsInfoCallbacks = getModalCallbacks(pointsInfoCallbackId);
+
       await act(async () => {
-        await mockNavigate.mock.calls[0][1].onNextButtonPress();
+        await pointsInfoCallbacks!.onButtonPress();
       });
 
       const callbackId = mockNavigate.mock.calls[1][1].callbackId;
@@ -290,11 +296,14 @@ describe('useEarnPointsFlow', () => {
 
       expect(mockNavigate).toHaveBeenCalledWith('PointsInfo', {
         showNextButton: true,
-        onNextButtonPress: expect.any(Function),
+        callbackId: expect.any(Number),
       });
 
+      const pointsInfoCallbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const pointsInfoCallbacks = getModalCallbacks(pointsInfoCallbackId);
+
       await act(async () => {
-        await mockNavigate.mock.calls[0][1].onNextButtonPress();
+        await pointsInfoCallbacks!.onButtonPress();
       });
 
       const callbackId = mockNavigate.mock.calls[1][1].callbackId;
@@ -662,11 +671,14 @@ describe('useEarnPointsFlow', () => {
 
       expect(mockNavigate).toHaveBeenCalledWith('PointsInfo', {
         showNextButton: true,
-        onNextButtonPress: expect.any(Function),
+        callbackId: expect.any(Number),
       });
 
+      const pointsInfoCallbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const pointsInfoCallbacks = getModalCallbacks(pointsInfoCallbackId);
+
       await act(async () => {
-        await mockNavigate.mock.calls[0][1].onNextButtonPress();
+        await pointsInfoCallbacks!.onButtonPress();
       });
 
       // The function catches errors and returns false, so it should show points disclosure modal
@@ -697,11 +709,14 @@ describe('useEarnPointsFlow', () => {
 
       expect(mockNavigate).toHaveBeenCalledWith('PointsInfo', {
         showNextButton: true,
-        onNextButtonPress: expect.any(Function),
+        callbackId: expect.any(Number),
       });
 
+      const pointsInfoCallbackId = mockNavigate.mock.calls[0][1].callbackId;
+      const pointsInfoCallbacks = getModalCallbacks(pointsInfoCallbackId);
+
       await act(async () => {
-        await mockNavigate.mock.calls[0][1].onNextButtonPress();
+        await pointsInfoCallbacks!.onButtonPress();
       });
 
       const callbackId = mockNavigate.mock.calls[1][1].callbackId;

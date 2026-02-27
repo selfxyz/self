@@ -2,7 +2,7 @@
 
 # run from root
 # first argument should register | dsc | disclose
-if [[  $1 != "register" && $1 != "dsc" && $1 != "disclose" && $1 != "register_id" && $1 != "register_aadhaar" ]]; then
+if [[  $1 != "register" && $1 != "dsc" && $1 != "disclose" && $1 != "register_id" && $1 != "register_aadhaar" && $1 != "register_kyc" ]]; then
     echo "first argument should be register | dsc | disclose | register_id | register_aadhaar"
     exit 1
 fi
@@ -76,10 +76,15 @@ REGISTER_AADHAAR_CIRCUITS=(
     "register_aadhaar:true"
 )
 
+REGISTER_KYC_CIRCUITS=(
+    "register_kyc:true"
+)
+
 DISCLOSE_CIRCUITS=(
     "vc_and_disclose:true"
     "vc_and_disclose_id:true"
     "vc_and_disclose_aadhaar:true"
+    "vc_and_disclose_kyc:true"
 )
 
 DSC_CIRCUITS=(
@@ -124,6 +129,11 @@ elif [[ $1 == "register_aadhaar" ]]; then
     output="output/register"
     mkdir -p $output
     basepath="./circuits/circuits/register/instances"
+elif [[ $1 == "register_kyc" ]]; then
+    allowed_circuits=("${REGISTER_KYC_CIRCUITS[@]}")
+    output="output/register"
+    mkdir -p $output
+    basepath="./circuits/circuits/register/instances"
 elif [[ $1 == "dsc" ]]; then
     allowed_circuits=("${DSC_CIRCUITS[@]}")
     output="output/dsc"
@@ -146,7 +156,7 @@ for item in "${allowed_circuits[@]}"; do
         continue
     fi
 
-    while [[ ${#pids[@]} -ge 2 ]]; do
+    while [[ ${#pids[@]} -ge 1 ]]; do
         new_pids=()
         for pid in "${pids[@]}"; do
             if kill -0 "$pid" 2>/dev/null; then

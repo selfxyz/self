@@ -72,20 +72,12 @@ function PHONE_NUMBER_LENGTH() {
     return 12;
 }
 
-function DOCUMENT_INDEX() {
+function GENDER_INDEX() {
     return PHONE_NUMBER_INDEX() + PHONE_NUMBER_LENGTH();
 }
 
-function DOCUMENT_LENGTH() {
-    return 32;
-}
-
-function GENDER_INDEX() {
-    return DOCUMENT_INDEX() + DOCUMENT_LENGTH();
-}
-
 function GENDER_LENGTH() {
-    return 6;
+    return 1;
 }
 
 function ADDRESS_INDEX() {

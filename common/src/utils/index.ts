@@ -5,6 +5,7 @@ export type {
   DocumentCategory,
   DocumentMetadata,
   IDDocument,
+  KycData,
   OfacTree,
   PassportData,
 } from './types.js';
@@ -70,6 +71,6 @@ export {
 export { getCircuitNameFromPassportData } from './circuits/circuitsName.js';
 export { getSKIPEM } from './csca.js';
 export { initElliptic } from './certificate_parsing/elliptic.js';
-export { isAadhaarDocument, isMRZDocument } from './types.js';
+export { isAadhaarDocument, isKycDocument, isMRZDocument } from './types.js';
 export { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple.js';
 export { parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData.js';

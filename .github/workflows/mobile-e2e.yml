@@ -3,9 +3,9 @@ name: Mobile E2E
 env:
   # Build environment versions
   JAVA_VERSION: 17
-  ANDROID_API_LEVEL: 33
+  ANDROID_API_LEVEL: 34
   ANDROID_NDK_VERSION: 27.0.12077973
-  XCODE_VERSION: 16.4
+  XCODE_VERSION: 26
   # Cache versions
   GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
@@ -15,6 +15,9 @@ env:
   # Disable Maestro analytics in CI
   MAESTRO_CLI_NO_ANALYTICS: true
   MAESTRO_VERSION: 1.41.0
+  MAESTRO_CACHE_VERSION: v1 # Bump this to clear Maestro cache
+  # Disable Maestro recording/artifacts (keep for debugging - set to "true" to re-enable)
+  ENABLE_MAESTRO_RECORDING: false
 
 on:
   push:
@@ -38,14 +41,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  android-build-test:
-    # Currently build-only for Android with private repos. E2E steps are preserved but skipped (if: false).
-    # To re-enable full E2E: change `if: false` to `if: true` on Maestro and emulator steps.
+  e2e-android:
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
     timeout-minutes: 120
-    runs-on: ubuntu-latest
+    runs-on:
+      - "self-hosted"
+      - "selfxyz-org"
+      - "ubuntu-24-04"
     steps:
       - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
@@ -106,36 +110,45 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 5
           command: yarn install --immutable --silent
+
       - name: Validate Maestro test file
-        if: false # Skip for build-only test - keep logic for future E2E
         run: |
           [ -f app/tests/e2e/launch.android.flow.yaml ] || { echo "❌ Android E2E test file missing"; exit 1; }
       - name: Cache Maestro
-        if: false # Skip for build-only test - keep logic for future E2E
         id: cache-maestro
         uses: actions/cache@v4
         with:
           path: ~/.maestro
           key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
-      - name: Install Maestro
-        if: false # Skip for build-only test - keep logic for future E2E
-        run: curl -Ls "https://get.maestro.mobile.dev" | bash
-      - name: Add Maestro to path
-        if: false # Skip for build-only test - keep logic for future E2E
-        run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
-      - name: Free up disk space
-        uses: ./.github/actions/free-disk-space
+      - name: Check Java installation
+        run: |
+          echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"
+          if command -v java &> /dev/null && java -version &> /dev/null; then
+            echo "Java already installed: $(java -version 2>&1 | head -n 1)"
+          else
+            echo "Java not found or not working, will install..."
+            echo "INSTALL_JAVA=true" >> "$GITHUB_ENV"
+          fi
       - name: Setup Java environment
+        if: env.INSTALL_JAVA == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
+      - name: Install Maestro
+        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+      - name: Add Maestro to path
+        run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Free up disk space
+        if: false # We should be fine for self-hosted
+        uses: ./.github/actions/free-disk-space
       - name: Cache Gradle packages
         uses: ./.github/actions/cache-gradle
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
+
       - name: Install NDK
         uses: nick-fields/retry@v3
         with:
@@ -143,6 +156,7 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 10
           command: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
@@ -162,8 +176,12 @@ jobs:
         run: |
           echo "Building Android APK..."
           chmod +x app/android/gradlew
-          (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
+          (
+            cd app/android &&
+            E2E_BUILD=true ./gradlew assembleDebug -PbundleInDebug=true --quiet --parallel --build-cache --no-configuration-cache
+          ) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
+
       - name: Clean up Gradle build artifacts
         uses: ./.github/actions/cleanup-gradle-artifacts
       - name: Verify APK and android-passport-nfc-reader integration
@@ -205,32 +223,80 @@ jobs:
           fi
 
           echo "🎉 Build verification completed successfully!"
-          echo "ℹ️  Emulator testing is temporarily disabled - build testing only"
+      - name: Check KVM access
+        id: kvm
+        run: |
+          if [ ! -e /dev/kvm ]; then
+            echo "::warning::/dev/kvm not found — emulator will run in software mode (slow). Enable nested virtualization for better performance."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -w /dev/kvm ]; then
+            echo "✅ /dev/kvm is already writable"
+          elif [ -d /etc/udev/rules.d ]; then
+            echo "Setting KVM permissions via udev..."
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm
+          else
+            echo "No udev available, setting /dev/kvm permissions directly..."
+            sudo chmod 666 /dev/kvm
+          fi
+          ls -la /dev/kvm
+          echo "available=true" >> "$GITHUB_OUTPUT"
+      - name: Install emulator runtime dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libx11-6 libgl1 libpulse0 libnss3 \
+            libxcomposite1 libxcursor1 libxi6 libxtst6 \
+            libxrandr2 libxss1 libxdamage1 libxfixes3 \
+            libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
+            libgbm1 libgtk-3-0 libpango-1.0-0 libcairo2 \
+            > /dev/null 2>&1
+      - name: Create E2E test script
+        run: |
+          cat > /tmp/run-e2e.sh << 'EOF'
+          #!/bin/bash
+          set -euo pipefail
+          APP_ID="com.proofofpassportapp"
+          echo "Installing app on emulator..."
+          APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
+          [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
+          adb uninstall "$APP_ID" >/dev/null 2>&1 || true
+          adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
+          adb shell pm clear "$APP_ID" >/dev/null 2>&1 || true
+          echo "✅ App installed successfully"
+          echo "⏰ Giving the emulator a moment to settle..."
+          sleep 5
+          echo "🎭 Running Maestro tests..."
+          export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
+          export LAUNCH_WAIT_MS=180000
+          if ! maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml; then
+            echo "❌ Maestro failed - dumping Android diagnostics"
+            adb shell dumpsys activity activities | sed -n '1,240p' || true
+            adb logcat -d | tail -n 400 || true
+            exit 1
+          fi
+          EOF
+          chmod +x /tmp/run-e2e.sh
       - name: Install and Test on Android
-        if: false # Skip emulator/E2E for build-only test - keep logic for future E2E
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           arch: x86_64
-          target: google_apis
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
+          target: default
+          channel: stable
+          force-avd-creation: true
+          emulator-options: >-
+            -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+            -camera-back none -camera-front none -memory 8192 -cores 4
+            ${{ steps.kvm.outputs.available == 'true' && '-accel on' || '-accel off' }}
           disable-animations: true
-          script: |
-            echo "Installing app on emulator..."
-            APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
-            [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
-            adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
-            echo "✅ App installed successfully"
+          script: /tmp/run-e2e.sh
 
-            echo "⏰ Giving the emulator a moment to settle..."
-            sleep 5
-
-            echo "🎭 Running Maestro tests..."
-            export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
-            maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
       - name: Upload test results
-        if: false # Skip for build-only test - keep logic for future E2E
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-android
@@ -241,6 +307,7 @@ jobs:
     timeout-minutes: 120
     # runs-on: macos-latest-large
     runs-on: namespace-profile-apple-silicon-6cpu
+    if: false
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
       cancel-in-progress: true
@@ -333,9 +400,35 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.maestro
-          key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
+          key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}-${{ env.MAESTRO_CACHE_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}-
+      - name: Validate Maestro cache
+        if: steps.cache-maestro.outputs.cache-hit == 'true'
+        run: |
+          echo "✅ Maestro restored from cache"
+          echo "Validating cached Maestro installation..."
+
+          if [ ! -f "$HOME/.maestro/bin/maestro" ]; then
+            echo "❌ Maestro binary not found in cache - cache is corrupted"
+            echo "Clearing corrupted cache..."
+            rm -rf ~/.maestro
+            echo "MAESTRO_CACHE_VALID=false" >> $GITHUB_ENV
+          else
+            echo "✅ Maestro binary found in cache"
+            # Test if Maestro is executable
+            if "$HOME/.maestro/bin/maestro" --version &>/dev/null; then
+              echo "✅ Maestro cache is valid"
+              echo "MAESTRO_CACHE_VALID=true" >> $GITHUB_ENV
+            else
+              echo "❌ Maestro binary is not executable - cache is corrupted"
+              echo "Clearing corrupted cache..."
+              rm -rf ~/.maestro
+              echo "MAESTRO_CACHE_VALID=false" >> $GITHUB_ENV
+            fi
+          fi
       - name: Install Maestro
-        if: steps.cache-maestro.outputs.cache-hit != 'true'
+        if: steps.cache-maestro.outputs.cache-hit != 'true' || env.MAESTRO_CACHE_VALID == 'false'
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 5
@@ -344,6 +437,20 @@ jobs:
           command: curl -Ls "https://get.maestro.mobile.dev" | bash
       - name: Add Maestro to path
         run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Verify Maestro installation
+        run: |
+          echo "🔍 Verifying Maestro installation..."
+          echo "Maestro path: $(which maestro)"
+          echo "Maestro version:"
+          maestro --version || {
+            echo "❌ Maestro installation verification failed"
+            echo "Maestro binary location:"
+            find ~/.maestro -name maestro -type f 2>/dev/null || echo "No maestro binary found"
+            echo ""
+            echo "To fix: Bump MAESTRO_CACHE_VERSION in workflow file"
+            exit 1
+          }
+          echo "✅ Maestro installation verified"
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -417,6 +524,7 @@ jobs:
             BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
+          E2E_TESTING: 1
       - name: Setup iOS Simulator
         run: |
           echo "Setting up iOS Simulator..."
@@ -504,6 +612,8 @@ jobs:
           echo "WORKSPACE_PATH=$WORKSPACE_PATH" >> "$GITHUB_ENV"
           echo "Resolved workspace: $WORKSPACE_PATH"
       - name: Build iOS App
+        env:
+          E2E_TESTING: 1
         run: |
           echo "Building iOS app..."
           echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
@@ -538,10 +648,13 @@ jobs:
           # Use cached derived data and enable parallel builds for faster compilation
           # Additional flags disable indexing, restrict architecture, and use whole-module Swift compilation
           # Use the simulator that was set up earlier in the workflow
+          # E2E_TESTING compilation condition excludes NFCPassportReader which isn't available on simulator
           FORCE_BUNDLING=1 RCT_NO_LAUNCH_PACKAGER=1 \
-            xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Debug -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule || { echo "❌ iOS build failed"; exit 1; }
+            xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Debug -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule 'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) E2E_TESTING' || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
+        continue-on-error: true
+        id: maestro-test
         run: |
           echo "Installing app on simulator..."
           APP_PATH=$(find app/ios/build/Build/Products/Debug-iphonesimulator -name "*.app" | head -1)
@@ -589,20 +702,213 @@ jobs:
           # Final readiness check (suppress errors to avoid annotations)
           xcrun simctl get_app_container "$SIMULATOR_ID" "$IOS_BUNDLE_ID" app >/dev/null 2>&1 || sleep 5
 
-          echo "🎭 Running Maestro tests..."
-          echo "Starting test execution..."
+          echo ""
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║                  🔍 PRE-TEST DIAGNOSTICS                       ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+          echo ""
 
-          # Verify Maestro test file exists
-          if [ ! -f "app/tests/e2e/launch.ios.flow.yaml" ]; then
-            echo "❌ Maestro test file not found: app/tests/e2e/launch.ios.flow.yaml"
+          # Create directory for test artifacts
+          mkdir -p app/test-artifacts
+
+          # Check Maestro version and health
+          echo "📦 Maestro installation details:"
+          echo "Binary location: $(which maestro)"
+          echo "Maestro version:"
+          maestro --version || {
+            echo "❌ Failed to get Maestro version"
+            echo "This is a critical error - Maestro is not working"
             exit 1
+          }
+          echo ""
+
+          # Check Java (required by Maestro)
+          echo "☕ Java status (required by Maestro):"
+          if command -v java &>/dev/null; then
+            java -version 2>&1 | head -3
+            echo "✅ Java is available"
+          else
+            echo "⚠️ Java not found - this may cause Maestro to fail"
+          fi
+          echo ""
+
+          # Check simulator state
+          echo "📱 Simulator state:"
+          xcrun simctl list devices | grep -A 2 "$SIMULATOR_ID" || echo "⚠️ Simulator not found"
+          echo ""
+
+          # Check if app is installed
+          echo "📲 Checking app installation:"
+          xcrun simctl listapps "$SIMULATOR_ID" | grep -i "$IOS_BUNDLE_ID" && echo "✅ App is installed" || echo "⚠️ App not found in installed apps"
+          echo ""
+
+          # Check if app is running
+          echo "🏃 Checking if app is running:"
+          APP_PID=$(xcrun simctl spawn "$SIMULATOR_ID" launchctl list | grep "$IOS_BUNDLE_ID" | awk '{print $1}' || echo "")
+          if [ -n "$APP_PID" ]; then
+            echo "✅ App process found (PID: $APP_PID)"
+          else
+            echo "ℹ️ App not currently running (will be launched by Maestro)"
+          fi
+          echo ""
+
+          # Verify test file
+          echo "📄 Maestro test file:"
+          if [ -f "app/tests/e2e/launch.ios.flow.yaml" ]; then
+            echo "✅ Found: app/tests/e2e/launch.ios.flow.yaml"
+            echo "Contents:"
+            cat app/tests/e2e/launch.ios.flow.yaml
+          else
+            echo "❌ Test file not found"
+          fi
+          echo ""
+
+          # Note: Maestro 1.41.0 doesn't have daemon or devices commands
+          # The test command handles daemon management internally
+          echo "🔧 Maestro will manage its daemon automatically during test execution"
+          echo ""
+
+          # Take a screenshot before running tests (if recording enabled)
+          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ]; then
+            echo "📸 Taking pre-test screenshot..."
+            xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/pre-test-screenshot.png || echo "⚠️ Screenshot failed"
+            echo ""
           fi
 
-          # Run Maestro with error handling for cleanup issues
-          # Note: Maestro may show NSPOSIXErrorDomain code=3 errors during cleanup when
-          # terminating the test runner app that's already terminated. This is harmless.
-          MAESTRO_OUTPUT=$(maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml 2>&1)
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║                  🎭 STARTING MAESTRO TEST                      ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+          echo ""
+
+          # Start native simulator recording BEFORE running tests (if recording enabled)
+          # This ensures we capture everything even if Maestro fails immediately
+          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ]; then
+            echo "📹 Starting native simulator recording..."
+            xcrun simctl io "$SIMULATOR_ID" recordVideo --codec=h264 app/test-artifacts/simulator-recording.mp4 &
+            RECORDING_PID=$!
+            echo "✅ Recording started (PID: $RECORDING_PID)"
+
+            # Give recording a moment to initialize
+            sleep 2
+          else
+            echo "ℹ️ Maestro recording disabled (ENABLE_MAESTRO_RECORDING=false)"
+          fi
+
+          # Run Maestro with verbose output and capture all output (including errors)
+          echo "🎭 Starting Maestro test with verbose logging..."
+          echo "Command: maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml"
+          echo "Environment variables:"
+          echo "  MAESTRO_DEVICE_ID: $SIMULATOR_ID"
+          echo "  MAESTRO_DRIVER_STARTUP_TIMEOUT: 180000"
+          echo "  MAESTRO_CLI_NO_ANALYTICS: $MAESTRO_CLI_NO_ANALYTICS"
+          echo "  Working directory: $(pwd)"
+          echo ""
+
+          set +e  # Don't exit on error
+          # Run with explicit device ID, increased timeout, and verbose output
+          # Note: exit code 2 typically means Maestro couldn't connect to device or daemon
+          MAESTRO_OUTPUT=$(MAESTRO_DEVICE_ID="$SIMULATOR_ID" MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml 2>&1)
           MAESTRO_EXIT_CODE=$?
+          set -e
+
+          echo "Maestro command completed with exit code: $MAESTRO_EXIT_CODE"
+          echo ""
+
+          # Stop the simulator recording (if recording was started)
+          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ] && [ -n "${RECORDING_PID:-}" ]; then
+            echo ""
+            echo "🛑 Stopping recording..."
+            kill -SIGINT $RECORDING_PID 2>/dev/null || true
+            wait $RECORDING_PID 2>/dev/null || true
+            sleep 2  # Give time for video to finalize
+          fi
+
+          # Take a screenshot after test (if recording enabled)
+          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ]; then
+            echo "📸 Taking post-test screenshot..."
+            xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/post-test-screenshot.png || echo "⚠️ Screenshot failed"
+            echo ""
+          fi
+
+          # Save Maestro output to file for debugging
+          echo "$MAESTRO_OUTPUT" > app/test-artifacts/maestro-output.log
+          echo "📝 Maestro output saved to maestro-output.log"
+
+          # Show Maestro output
+          echo ""
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║                     📋 MAESTRO OUTPUT                          ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+          echo "$MAESTRO_OUTPUT"
+          echo ""
+
+          # Post-test diagnostics
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║                  🔍 POST-TEST DIAGNOSTICS                      ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+          echo ""
+
+          # Check if app is still running
+          echo "🏃 App status after test:"
+          APP_PID_AFTER=$(xcrun simctl spawn "$SIMULATOR_ID" launchctl list | grep "$IOS_BUNDLE_ID" | awk '{print $1}' || echo "")
+          if [ -n "$APP_PID_AFTER" ]; then
+            echo "✅ App still running (PID: $APP_PID_AFTER)"
+          else
+            echo "⚠️ App not running"
+          fi
+          echo ""
+
+          # Check simulator logs for any crashes
+          echo "🔍 Checking for crash logs..."
+          CRASH_LOGS=$(find ~/Library/Logs/DiagnosticReports -name "Self*.crash" -o -name "OpenPassport*.crash" -mmin -5 2>/dev/null | head -5)
+          if [ -n "$CRASH_LOGS" ]; then
+            echo "⚠️ Recent crash logs found:"
+            echo "$CRASH_LOGS"
+            # Copy crash logs to artifacts
+            for log in $CRASH_LOGS; do
+              cp "$log" app/test-artifacts/ 2>/dev/null || true
+            done
+          else
+            echo "✅ No recent crash logs"
+          fi
+          echo ""
+
+          # Check system log for relevant messages
+          echo "📋 Recent simulator system logs (last 50 lines):"
+          xcrun simctl spawn "$SIMULATOR_ID" log show --predicate 'process == "Self" OR process == "OpenPassport"' --last 5m --style compact 2>/dev/null | tail -50 > app/test-artifacts/simulator-system.log || echo "⚠️ Could not retrieve system logs"
+          if [ -f app/test-artifacts/simulator-system.log ]; then
+            echo "✅ System logs saved to simulator-system.log"
+            echo "Last 20 lines:"
+            tail -20 app/test-artifacts/simulator-system.log
+          fi
+          echo ""
+
+          # Check if video was created (if recording was enabled)
+          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ]; then
+            if [ -f "app/test-artifacts/simulator-recording.mp4" ]; then
+              VIDEO_SIZE=$(ls -lh app/test-artifacts/simulator-recording.mp4 | awk '{print $5}')
+              echo "✅ Video recording saved: simulator-recording.mp4 ($VIDEO_SIZE)"
+              echo ""
+              echo "📹 ===================================================="
+              echo "📹 VIDEO RECORDING AVAILABLE"
+              echo "📹 ===================================================="
+              echo "📹 To view the test recording:"
+              echo "📹 1. Go to: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              echo "📹 2. Scroll to the 'Artifacts' section at the bottom"
+              echo "📹 3. Download 'maestro-artifacts-ios'"
+              echo "📹 4. Extract and open 'simulator-recording.mp4'"
+              echo "📹 ===================================================="
+              echo ""
+            else
+              echo "⚠️ Video recording not created"
+            fi
+          else
+            echo "ℹ️ Video recording disabled (ENABLE_MAESTRO_RECORDING=false)"
+          fi
+
+          # Analyze test results
+          echo "🔍 Analyzing test results..."
+          echo "Maestro exit code: $MAESTRO_EXIT_CODE"
 
           # Check if tests actually passed (ignore cleanup errors)
           if echo "$MAESTRO_OUTPUT" | grep -q "Flow Passed"; then
@@ -616,20 +922,76 @@ jobs:
             fi
           elif echo "$MAESTRO_OUTPUT" | grep -q "Flow Failed"; then
             echo "❌ Maestro tests failed"
+            echo "Check the video recording and maestro-output.log for details"
             exit 1
           elif [ $MAESTRO_EXIT_CODE -ne 0 ]; then
             # Check results file if exit code is non-zero
             if [ -f "app/maestro-results.xml" ] && ! grep -q "<failure" app/maestro-results.xml; then
               echo "✅ Tests passed (cleanup error caused non-zero exit)"
             else
-              echo "❌ Maestro test failed"
+              echo "❌ Maestro test failed with exit code: $MAESTRO_EXIT_CODE"
+              echo "Check the video recording and maestro-output.log for details"
               exit 1
             fi
           fi
       - name: Upload test results
-        if: always()
+        if: always() && env.ENABLE_MAESTRO_RECORDING == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-ios
           path: app/maestro-results.xml
           if-no-files-found: warn
+      - name: Upload test artifacts (video and screenshots)
+        if: always() && env.ENABLE_MAESTRO_RECORDING == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-artifacts-ios
+          path: app/test-artifacts/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Artifact download instructions
+        if: always() && env.ENABLE_MAESTRO_RECORDING == 'true'
+        run: |
+          echo ""
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║                    📹 TEST ARTIFACTS UPLOADED                  ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "📦 Artifact name: maestro-artifacts-ios"
+          echo "🎬 Contains:"
+          echo "   📹 simulator-recording.mp4 - Full video of simulator during test"
+          echo "   📝 maestro-output.log - Complete Maestro command output"
+          echo "   📋 simulator-system.log - iOS simulator system logs"
+          echo "   📸 pre-test-screenshot.png - Simulator state before test"
+          echo "   📸 post-test-screenshot.png - Simulator state after test"
+          echo "   📊 maestro-results.xml - Test results (if generated)"
+          echo "   💥 *.crash - Crash logs (if any crashes occurred)"
+          echo "⏰ Retention: 7 days"
+          echo ""
+          echo "🔗 Direct link to this run:"
+          echo "   https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo ""
+          echo "💡 How to download:"
+          echo "   1. Click the link above (or find this run in the Actions tab)"
+          echo "   2. Scroll down to the 'Artifacts' section"
+          echo "   3. Click 'maestro-artifacts-ios' to download the ZIP"
+          echo "   4. Extract and review:"
+          echo "      🎬 Play simulator-recording.mp4 to see what happened"
+          echo "      📝 Read maestro-output.log for Maestro errors"
+          echo "      📋 Check simulator-system.log for iOS system errors"
+          echo "      📸 Compare pre/post screenshots to see UI state"
+          echo "      💥 Review crash logs if app crashed"
+          echo ""
+          echo "📝 Alternative - Using GitHub CLI:"
+          echo "   gh run download ${{ github.run_id }} -n maestro-artifacts-ios"
+          echo ""
+
+          # List what files were actually created
+          echo "📂 Files in test-artifacts directory:"
+          ls -lh app/test-artifacts/ 2>/dev/null || echo "   (No artifacts directory found)"
+          echo ""
+      - name: Fail job if tests failed
+        if: steps.maestro-test.outcome == 'failure'
+        run: |
+          echo "❌ Maestro tests failed - failing job after artifact upload"
+          exit 1

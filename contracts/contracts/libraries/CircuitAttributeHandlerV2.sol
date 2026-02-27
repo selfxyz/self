@@ -125,14 +125,14 @@ library CircuitAttributeHandlerV2 {
                     nationalityEnd: 2,
                     dateOfBirthStart: 142,
                     dateOfBirthEnd: 149,
-                    genderStart: 226,
-                    genderEnd: 232,
+                    genderStart: 194,
+                    genderEnd: 194,
                     expiryDateStart: 70,
                     expiryDateEnd: 77,
-                    olderThanStart: 334,
-                    olderThanEnd: 334,
-                    ofacStart: 332,
-                    ofacEnd: 333
+                    olderThanStart: 297,
+                    olderThanEnd: 297,
+                    ofacStart: 295,
+                    ofacEnd: 296
                 });
         } else {
             revert("Invalid attestation ID");
