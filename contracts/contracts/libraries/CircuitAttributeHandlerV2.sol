@@ -147,7 +147,7 @@ library CircuitAttributeHandlerV2 {
      */
     function getIssuingState(bytes32 attestationId, bytes memory charcodes) internal pure returns (string memory) {
         FieldPositions memory positions = getFieldPositions(attestationId);
-        return extractStringAttribute(charcodes, positions.issuingStateStart, positions.issuingStateEnd);
+        return _normalizeMrzCountryCode(extractStringAttribute(charcodes, positions.issuingStateStart, positions.issuingStateEnd));
     }
 
     /**
@@ -186,7 +186,7 @@ library CircuitAttributeHandlerV2 {
      */
     function getNationality(bytes32 attestationId, bytes memory charcodes) internal pure returns (string memory) {
         FieldPositions memory positions = getFieldPositions(attestationId);
-        return extractStringAttribute(charcodes, positions.nationalityStart, positions.nationalityEnd);
+        return _normalizeMrzCountryCode(extractStringAttribute(charcodes, positions.nationalityStart, positions.nationalityEnd));
     }
 
     /**
@@ -395,6 +395,21 @@ library CircuitAttributeHandlerV2 {
             attributeBytes[i - start] = charcodes[i];
         }
         return string(attributeBytes);
+    }
+
+    /**
+     * @notice Normalizes German MRZ country code D<< to the standard ISO 3166-1 alpha-3 code DEU.
+     * @dev German passports and ID cards use "D<<" instead of "DEU" per ICAO Doc 9303. This is the
+     *      only country with a non-standard 3-letter MRZ code.
+     * @param code The raw 3-character MRZ country code.
+     * @return The normalized country code ("DEU" if input is "D<<", otherwise unchanged).
+     */
+    function _normalizeMrzCountryCode(string memory code) internal pure returns (string memory) {
+        bytes memory b = bytes(code);
+        if (b.length == 3 && b[0] == 0x44 && b[1] == 0x3C && b[2] == 0x3C) {
+            return "DEU";
+        }
+        return code;
     }
 
     // ====================================================
