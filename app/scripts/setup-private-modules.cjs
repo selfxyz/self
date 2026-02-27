@@ -24,7 +24,6 @@ const PRIVATE_MODULES = [
     repoName: 'react-native-passport-reader',
     localPath: path.join(ANDROID_DIR, 'react-native-passport-reader'),
     validationFiles: ['android/build.gradle'],
-    commit: '99122a8',
   },
 ];
 
