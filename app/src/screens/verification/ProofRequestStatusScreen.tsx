@@ -8,6 +8,7 @@ import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import type { DotLottieSource } from '@selfxyz/mobile-sdk-alpha';
 import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
@@ -38,8 +39,6 @@ const failAnimation = require('@/assets/animations/proof_failed.lottie');
 const succesAnimation = require('@/assets/animations/proof_success.lottie');
 /* eslint-enable @typescript-eslint/no-require-imports */
 
-type AnimationSource = string | { uri: string };
-
 const SuccessScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
@@ -60,7 +59,7 @@ const SuccessScreen: React.FC = () => {
   const isFocused = useIsFocused();
 
   const [animationSource, setAnimationSource] =
-    useState<AnimationSource>(loadingAnimation);
+    useState<DotLottieSource>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
   const [whitelistedPoints, setWhitelistedPoints] = useState<number | null>(

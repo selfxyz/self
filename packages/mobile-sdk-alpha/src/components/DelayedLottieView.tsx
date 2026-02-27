@@ -22,7 +22,7 @@ import { DotLottie } from '@lottiefiles/dotlottie-react-native';
  * @example
  * <DelayedLottieView autoPlay loop source={animation} style={styles.animation} />
  */
-type DotLottieSource = string | { uri: string };
+export type DotLottieSource = string | { uri: string };
 
 type DotLottieEvents = {
   onLoad?: () => void;
@@ -34,20 +34,12 @@ type DotLottieEvents = {
   onUnFreeze?: () => void;
   onFreeze?: () => void;
   onPause?: () => void;
-  onFrame?: (frameNo: number) => void;
+  onFrame?: () => void;
   onStop?: () => void;
-  onRender?: (frameNo: number) => void;
-  onStateMachineStart?: () => void;
-  onStateMachineStop?: () => void;
-  onStateMachineStateEntered?: (enteringState: string) => void;
-  onStateMachineStateExit?: (leavingState: string) => void;
-  onStateMachineTransition?: (previousState: string, newState: string) => void;
-  onStateMachineBooleanInputChange?: (inputName: string, oldValue: boolean, newValue: boolean) => void;
-  onStateMachineNumericInputChange?: (inputName: string, oldValue: number, newValue: number) => void;
-  onStateMachineStringInputChange?: (inputName: string, oldValue: string, newValue: string) => void;
-  onStateMachineInputFired?: (inputName: string) => void;
-  onStateMachineCustomEvent?: (message: string) => void;
-  onStateMachineError?: (message: string) => void;
+  onRender?: () => void;
+  onTransition?: (state: { previousState: string; newState: string }) => void;
+  onStateExit?: (state: { leavingState: string }) => void;
+  onStateEntered?: (state: { enteringState: string }) => void;
 };
 
 type DelayedLottieViewProps = DotLottieEvents & {
@@ -58,10 +50,8 @@ type DelayedLottieViewProps = DotLottieEvents & {
   speed?: number;
   themeId?: string;
   marker?: string;
-  segment?: [number, number];
+  segment?: number[];
   playMode?: Mode;
-  useFrameInterpolation?: boolean;
-  stateMachineId?: string;
   // Legacy LottieView prop kept for mechanical migration
   autoPlay?: boolean;
   // Legacy lifecycle callbacks
@@ -125,7 +115,7 @@ export const DelayedLottieView = forwardRef<Dotlottie, DelayedLottieViewProps>((
       ref={handleRef}
       {...rest}
       style={style ?? {}}
-      autoplay={shouldAutoPlay ? false : undefined}
+      autoplay={false}
       onLoad={handleLoad}
       onComplete={handleComplete}
     />

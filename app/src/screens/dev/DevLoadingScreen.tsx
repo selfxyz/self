@@ -7,6 +7,7 @@ import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 import { Check, ChevronDown } from '@tamagui/lucide-icons';
 
 import type {
+  DotLottieSource,
   provingMachineCircuitType,
   ProvingStateType,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -39,13 +40,11 @@ const allProvingStates = [
   'passport_data_not_found',
 ] as const;
 
-type AnimationSource = string | { uri: string };
-
 const DevLoadingScreen: React.FC = () => {
   const [currentState, setCurrentState] = useState<ProvingStateType>('idle');
   const [documentType, setDocumentType] =
     useState<provingMachineCircuitType>('dsc');
-  const [animationSource, setAnimationSource] = useState<AnimationSource>(
+  const [animationSource, setAnimationSource] = useState<DotLottieSource>(
     proveLoadingAnimation,
   );
   const [loadingText, setLoadingText] = useState<{

@@ -88,7 +88,8 @@
   "dependencies": {
     "@babel/runtime": "^7.28.6",
     "@ethersproject/shims": "^5.8.0",
-    "@lottiefiles/dotlottie-react-native": "^0.7.1",
+    "@lottiefiles/dotlottie-react": "^0.17.15",
+    "@lottiefiles/dotlottie-react-native": "0.5.0",
     "@noble/hashes": "^1.5.0",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",

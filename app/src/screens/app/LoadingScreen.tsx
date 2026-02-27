@@ -8,7 +8,10 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
-import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha';
+import type {
+  DotLottieSource,
+  ProvingStateType,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   advercase,
   dinot,
@@ -40,8 +43,6 @@ type LoadingScreenParams = {
 };
 
 type LoadingScreenProps = StaticScreenProps<LoadingScreenParams>;
-type AnimationSource = string | { uri: string };
-
 // Define all terminal states that should stop animations and haptics
 const terminalStates: ProvingStateType[] = [
   'completed',
@@ -58,7 +59,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const [isInitializing, setIsInitializing] = useState(false);
 
   // Animation states
-  const [animationSource, setAnimationSource] = useState<AnimationSource>(
+  const [animationSource, setAnimationSource] = useState<DotLottieSource>(
     proveLoadingAnimation,
   );
 

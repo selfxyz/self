@@ -63,6 +63,7 @@ export type { SdkErrorCategory } from './errors';
 export type { provingMachineCircuitType } from './proving/provingMachine';
 
 export { DelayedLottieView } from './components/DelayedLottieView';
+export type { DotLottieSource } from './components/DelayedLottieView';
 
 export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
 

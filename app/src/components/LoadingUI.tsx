@@ -6,6 +6,7 @@ import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, XStack, YStack } from 'tamagui';
 
+import type { DotLottieSource } from '@selfxyz/mobile-sdk-alpha';
 import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import {
   black,
@@ -22,10 +23,8 @@ import CloseWarningIcon from '@/assets/icons/close_warning.svg';
 import Plus from '@/assets/icons/plus_slate600.svg';
 import { extraYPadding } from '@/utils/styleUtils';
 
-type AnimationSource = string | { uri: string };
-
 interface LoadingUIProps {
-  animationSource: AnimationSource;
+  animationSource: DotLottieSource;
   shouldLoopAnimation: boolean;
   actionText: string;
   actionSubText: string;

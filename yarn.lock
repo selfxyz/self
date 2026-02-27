@@ -6676,19 +6676,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lottiefiles/dotlottie-react-native@npm:^0.7.1":
-  version: 0.7.1
-  resolution: "@lottiefiles/dotlottie-react-native@npm:0.7.1"
+"@lottiefiles/dotlottie-react-native@npm:0.5.0":
+  version: 0.5.0
+  resolution: "@lottiefiles/dotlottie-react-native@npm:0.5.0"
   dependencies:
     "@lottiefiles/dotlottie-react": "npm:^0.17.5"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/1c53f2d2d500b47395312476a12294c5048febe3f267c5a84605ad86c610569592a0e7bc5c636ef026974334a95753a41bd149f5b4a6ba2be3fad08944861896
+  checksum: 10c0/6ac03d93dced68749632b80455d6460b0075dd1fe1c71f77f130f3ce4351c6833c6dbe13c5fec5f206c8a41fabde4bce5a02c9f351ecfb0a9556d3e291d275fb
   languageName: node
   linkType: hard
 
-"@lottiefiles/dotlottie-react@npm:^0.17.5":
+"@lottiefiles/dotlottie-react@npm:^0.17.15, @lottiefiles/dotlottie-react@npm:^0.17.5":
   version: 0.17.15
   resolution: "@lottiefiles/dotlottie-react@npm:0.17.15"
   dependencies:
@@ -10326,7 +10326,8 @@ __metadata:
     "@babel/runtime": "npm:^7.28.6"
     "@dotlottie/dotlottie-js": "npm:^1.6.2"
     "@ethersproject/shims": "npm:^5.8.0"
-    "@lottiefiles/dotlottie-react-native": "npm:^0.7.1"
+    "@lottiefiles/dotlottie-react": "npm:^0.17.15"
+    "@lottiefiles/dotlottie-react-native": "npm:0.5.0"
     "@noble/hashes": "npm:^1.5.0"
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
@@ -10476,7 +10477,7 @@ __metadata:
   resolution: "@selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha"
   dependencies:
     "@babel/runtime": "npm:^7.28.6"
-    "@lottiefiles/dotlottie-react-native": "npm:^0.7.1"
+    "@lottiefiles/dotlottie-react-native": "npm:0.5.0"
     "@noble/hashes": "npm:^1.5.0"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@react-native-async-storage/async-storage": "npm:^2.1.2"

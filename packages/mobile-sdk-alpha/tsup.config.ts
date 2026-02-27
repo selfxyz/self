@@ -76,7 +76,7 @@ export default defineConfig([
       'ethers',
       // React Native dependencies
       'react-native-svg-circle-country-flags',
-      'lottie-react-native',
+      '@lottiefiles/dotlottie-react-native',
       'react-native-haptic-feedback',
       'react-native-localize',
       // Optional RN adapter peer dependencies
@@ -135,7 +135,7 @@ export default defineConfig([
       'ethers',
       // React Native dependencies
       'react-native-svg-circle-country-flags',
-      'lottie-react-native',
+      '@lottiefiles/dotlottie-react-native',
       'react-native-haptic-feedback',
       'react-native-localize',
       // Optional RN adapter peer dependencies
