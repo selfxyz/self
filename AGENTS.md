@@ -170,6 +170,7 @@ Each action accepts an optional `cache-version` input (often combined with `GH_C
 Some workspaces have additional instructions in their own `AGENTS.md` files:
 
 - `app/AGENTS.md` - Mobile app development, E2E testing, deployment
+- `contracts/AGENTS.md` - Smart contracts: setup, architecture, integration pitfalls, deployment
 - `packages/mobile-sdk-alpha/AGENTS.md` - SDK development, testing guidelines, package validation
 - `noir/AGENTS.md` - Noir circuit development
 
