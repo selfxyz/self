@@ -114,7 +114,7 @@ jobs:
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
           VERSION=$(node -p "require('./package.json').version")
           TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
-          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
+          npx npm@latest publish package.tgz --access public --provenance $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -179,7 +179,7 @@ jobs:
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
           VERSION=$(node -p "require('./package.json').version")
           TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
-          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
+          npx npm@latest publish package.tgz --access public --provenance $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -243,7 +243,7 @@ jobs:
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
           VERSION=$(node -p "require('./package.json').version")
           TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
-          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
+          npx npm@latest publish package.tgz --access public --provenance $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -305,7 +305,7 @@ jobs:
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
           VERSION=$(node -p "require('./package.json').version")
           TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
-          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
+          npx npm@latest publish package.tgz --access public --provenance $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
@@ -369,7 +369,7 @@ jobs:
           DRY_RUN="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
           VERSION=$(node -p "require('./package.json').version")
           TAG=$([[ "$VERSION" == *-* ]] && echo "--tag beta" || echo "")
-          npx npm@latest publish package.tgz --access public $TAG $DRY_RUN
+          npx npm@latest publish package.tgz --access public --provenance $TAG $DRY_RUN
 
       - name: Publish result
         if: always()
