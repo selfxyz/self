@@ -307,7 +307,6 @@ jobs:
     timeout-minutes: 120
     # runs-on: macos-latest-large
     runs-on: namespace-profile-apple-silicon-6cpu
-    if: false
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
       cancel-in-progress: true
