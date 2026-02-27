@@ -228,6 +228,31 @@ class MrzParserTest {
         assertEquals("ANNA MARIA", obj["givenNames"]?.jsonPrimitive?.content)
     }
 
+    // --- German D<< handling ---
+
+    @Test
+    fun td3_preserves_german_nationality_code() {
+        val result = MrzParser.parseTd3(
+            "P<D<<MUSTERMANN<<ERIKA<<<<<<<<<<<<<<<<<<<<<<<",
+            "C01X00T478D<<6408125F2702283<<<<<<<<<<<<<<04",
+        )
+        val obj = result.jsonObject
+        assertEquals("D<<", obj["nationality"]?.jsonPrimitive?.content)
+        assertEquals("D<<", obj["issuingState"]?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun td1_preserves_german_nationality_code() {
+        val result = MrzParser.parseTd1(
+            "IDD<<C01X00T478<<<<<<<<<<<<<<<",
+            "6408125F2702287D<<<<<<<<<<<0<<",
+            "MUSTERMANN<<ERIKA<<<<<<<<<<<<<",
+        )
+        val obj = result.jsonObject
+        assertEquals("D<<", obj["nationality"]?.jsonPrimitive?.content)
+        assertEquals("D<<", obj["issuingState"]?.jsonPrimitive?.content)
+    }
+
     // --- trimFiller ---
 
     @Test

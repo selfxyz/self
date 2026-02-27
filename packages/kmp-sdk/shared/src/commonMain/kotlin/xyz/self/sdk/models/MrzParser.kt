@@ -69,14 +69,14 @@ object MrzParser {
         line2: String,
     ): JsonElement {
         val documentCode = line1.substring(0, 2).trimFiller()
-        val issuingState = line1.substring(2, 5).trimFiller()
+        val issuingState = line1.substring(2, 5)
         val nameField = line1.substring(5, 44)
         val nameParts = nameField.split("<<", limit = 2)
         val surname = nameParts[0].replace("<", " ").trim()
         val givenNames = if (nameParts.size > 1) nameParts[1].replace("<", " ").trim() else ""
 
         val documentNumber = line2.substring(0, 9).trimFiller()
-        val nationality = line2.substring(10, 13).trimFiller()
+        val nationality = line2.substring(10, 13)
         val dateOfBirth = line2.substring(13, 19)
         val gender = line2.substring(20, 21).trimFiller()
         val dateOfExpiry = line2.substring(21, 27)
@@ -103,13 +103,13 @@ object MrzParser {
         line3: String,
     ): JsonElement {
         val documentCode = line1.substring(0, 2).trimFiller()
-        val issuingState = line1.substring(2, 5).trimFiller()
+        val issuingState = line1.substring(2, 5)
         val documentNumber = line1.substring(5, 14).trimFiller()
 
         val dateOfBirth = line2.substring(0, 6)
         val gender = line2.substring(7, 8).trimFiller()
         val dateOfExpiry = line2.substring(8, 14)
-        val nationality = line2.substring(15, 18).trimFiller()
+        val nationality = line2.substring(15, 18)
 
         val nameField = line3
         val nameParts = nameField.split("<<", limit = 2)

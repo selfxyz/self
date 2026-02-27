@@ -511,8 +511,9 @@ func (s *BackendVerifier) validateWithConfig(
 	isForbiddenCountryListValid := true
 	for _, country := range verificationConfig.ExcludedCountries {
 		found := false
+		normalizedCountry := normalizeMrzCountry(string(country))
 		for _, circuitCountry := range forbiddenCountriesList {
-			if string(country) == circuitCountry {
+			if normalizedCountry == normalizeMrzCountry(circuitCountry) {
 				found = true
 				break
 			}

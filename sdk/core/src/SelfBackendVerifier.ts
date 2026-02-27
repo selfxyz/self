@@ -189,8 +189,10 @@ export class SelfBackendVerifier {
     );
     const forbiddenCountriesListVerificationConfig = verificationConfig.excludedCountries || [];
 
+    const normalizeMrzCountry = (code: string): string => (code === 'D<<' ? 'DEU' : code);
+    const normalizedForbiddenList = forbiddenCountriesList.map(normalizeMrzCountry);
     const isForbiddenCountryListValid = forbiddenCountriesListVerificationConfig.every((country) =>
-      forbiddenCountriesList.includes(country as Country3LetterCode)
+      normalizedForbiddenList.includes(normalizeMrzCountry(country) as Country3LetterCode)
     );
     if (!isForbiddenCountryListValid) {
       issues.push({

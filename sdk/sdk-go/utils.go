@@ -223,6 +223,15 @@ func trimU0000(unpackedReveal []string) []string {
 // Parameters:
 //   - forbiddenCountriesListPacked: A slice of packed strings representing forbidden countries
 //
+// normalizeMrzCountry maps the German MRZ code "D<<" to "DEU".
+// German passports use "D<<" instead of "DEU" per ICAO Doc 9303.
+func normalizeMrzCountry(code string) string {
+	if code == "D<<" {
+		return "DEU"
+	}
+	return code
+}
+
 // Returns:
 //   - A slice of 3-character country codes extracted from the packed input
 func UnpackForbiddenCountriesList(forbiddenCountriesListPacked []string) []string {

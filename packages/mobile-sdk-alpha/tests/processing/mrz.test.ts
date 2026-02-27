@@ -84,6 +84,21 @@ describe('extractMRZInfo', () => {
     expect(info.validation?.overall).toBe(false);
   });
 
+  it('preserves D<< nationality for German passport', () => {
+    const germanPassport = `P<D<<MUSTERMANN<<ERIKA<<<<<<<<<<<<<<<<<<<<<<<
+C01X00T478D<<6408125F2702283<<<<<<<<<<<<<<04`;
+    const info = extractMRZInfo(germanPassport);
+    expect(info.issuingCountry).toBe('D<<');
+  });
+
+  it('preserves D<< issuingCountry for German TD1 ID card', () => {
+    const germanId = `IDD<<C01X00T478<<<<<<<<<<<<<<<
+6408125F2702287D<<<<<<<<<<<0<<
+MUSTERMANN<<ERIKA<<<<<<<<<<<<<`;
+    const info = extractMRZInfo(germanId);
+    expect(info.issuingCountry).toBe('D<<');
+  });
+
   it('rejects malformed MRZ', () => {
     const invalid = 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<';
     expect(() => extractMRZInfo(invalid)).toThrowError(MrzParseError);

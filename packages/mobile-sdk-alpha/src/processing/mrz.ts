@@ -82,31 +82,13 @@ function extractTD3Info(lines: string[]): Omit<MRZInfo, 'validation'> {
 
   // Line 1: P<CCCSURNAME<<GIVENNAMES<<<<<<<<<<<<<<<<<<
   const documentType = line1.slice(0, 1);
-  const issuingCountry = line1
-    .slice(2, 5)
-    .replace(/</g, '')
-    .replace(/[^A-Z]/g, '');
+  const issuingCountry = line1.slice(2, 5);
 
   // Line 2: PASSPORT(9)CHECK(1)NATIONALITY(3)DOB(6)DOBCHECK(1)SEX(1)EXPIRY(6)EXPIRYCHECK(1)OPTIONAL(7)FINALCHECK(1)
   const documentNumber = line2.slice(0, 9).replace(/</g, '');
 
-  // Robust nationality extraction: scan 4-character window for three contiguous A-Z letters
-  const rawNat = line2.slice(10, 14);
-  let nationality = '';
-
-  // Look for a 3-letter uppercase sequence in the window
-  for (let i = 0; i <= rawNat.length - 3; i++) {
-    const candidate = rawNat.slice(i, i + 3);
-    if (/^[A-Z]{3}$/.test(candidate)) {
-      nationality = candidate;
-      break;
-    }
-  }
-
-  // If no 3-letter sequence found, fall back to original slice(10,13) with non-letters removed
-  if (!nationality) {
-    nationality = rawNat.slice(0, 3).replace(/[^A-Z]/g, '');
-  }
+  // Raw 3-char field per ICAO 9303. "D<<" is a valid code (Germany).
+  const nationality = line2.slice(10, 13);
   const dateOfBirth = line2.slice(13, 19);
   const dateOfExpiry = line2.slice(21, 27);
 

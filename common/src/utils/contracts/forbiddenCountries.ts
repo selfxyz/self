@@ -10,8 +10,23 @@ export function getPackedForbiddenCountries(
     );
   }
 
+  // Step 0: Normalize German MRZ code — ensure both "DEU" and "D<<" variants are packed
+  // so the circuit matches regardless of which code the document uses.
+  const normalized = [...forbiddenCountriesList] as Array<Country3LetterCode | '' | 'D<<'>;
+  if (normalized.includes('DEU' as Country3LetterCode) && !normalized.includes('D<<' as any)) {
+    normalized.push('D<<' as any);
+  } else if (normalized.includes('D<<' as any) && !normalized.includes('DEU' as Country3LetterCode)) {
+    normalized.push('DEU' as Country3LetterCode);
+  }
+
+  if (normalized.length > MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
+    throw new Error(
+      `Countries list (including D<< normalization) must be less than or equal to ${MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH}`
+    );
+  }
+
   // Step 1: Pad the list to the maximum length
-  const paddedCountries = [...forbiddenCountriesList];
+  const paddedCountries = [...normalized] as Array<string>;
   while (paddedCountries.length < MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     paddedCountries.push('');
   }

@@ -52,6 +52,7 @@ const alpha3ToAlpha2: Record<string, string> = {
   UZB: 'UZ', VAT: 'VA', VCT: 'VC', VEN: 'VE', VGB: 'VG', VIR: 'VI',
   VNM: 'VN', VUT: 'VU', WLF: 'WF', WSM: 'WS', YEM: 'YE', ZAF: 'ZA',
   ZMB: 'ZM', ZWE: 'ZW',
+  'D<<': 'DE',
 };
 
 /**
