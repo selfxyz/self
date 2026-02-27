@@ -91,3 +91,4 @@ yarn lint && yarn types && yarn build
 - `app/AGENTS.md` — Mobile app development, E2E testing, deployment
 - `packages/mobile-sdk-alpha/AGENTS.md` — SDK development, testing guidelines
 - `noir/AGENTS.md` — Noir circuit development
+- `contracts/CLAUDE.md` — Contracts: Celo/Hardhat gotchas, governance addresses
