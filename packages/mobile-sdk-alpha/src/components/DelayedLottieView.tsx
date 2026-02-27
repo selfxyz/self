@@ -10,15 +10,11 @@ import type { Dotlottie, Mode } from '@lottiefiles/dotlottie-react-native';
 import { DotLottie } from '@lottiefiles/dotlottie-react-native';
 
 /**
- * Wrapper around DotLottie that fixes iOS native module initialization timing.
+ * Wrapper around DotLottie with legacy LottieView prop compatibility.
  *
- * On iOS, the native animation module isn't always fully initialized when components
- * first render during app startup, and dotLottie (.lottie) sources load
- * asynchronously on the native side. This component waits for `onLoad`
- * before calling `play()`, so the animation starts reliably regardless of source
- * format.
+ * DotLottie loads .lottie sources asynchronously on the native side, so its
+ * built-in autoplay already waits for load — no manual delay needed.
  *
- * Usage: Drop-in replacement for LottieView with legacy prop compatibility.
  * @example
  * <DelayedLottieView autoPlay loop source={animation} style={styles.animation} />
  */
@@ -98,12 +94,9 @@ export const DelayedLottieView = forwardRef<Dotlottie, DelayedLottieViewProps>((
   );
 
   const handleLoad = useCallback(() => {
-    if (shouldAutoPlay) {
-      internalRef.current?.play();
-    }
     onAnimationLoaded?.();
     onLoad?.();
-  }, [shouldAutoPlay, onAnimationLoaded, onLoad]);
+  }, [onAnimationLoaded, onLoad]);
 
   const handleComplete = useCallback(() => {
     onAnimationFinish?.(false);
@@ -115,7 +108,7 @@ export const DelayedLottieView = forwardRef<Dotlottie, DelayedLottieViewProps>((
       ref={handleRef}
       {...rest}
       style={style ?? {}}
-      autoplay={false}
+      autoplay={shouldAutoPlay}
       onLoad={handleLoad}
       onComplete={handleComplete}
     />

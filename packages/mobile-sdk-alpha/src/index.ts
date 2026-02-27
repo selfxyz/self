@@ -48,6 +48,8 @@ export type { DocumentAttributes } from './documents/validation';
 
 export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
 
+export type { DotLottieSource } from './components/DelayedLottieView';
+
 export type { HapticOptions, HapticType } from './haptic/shared';
 
 export type { MRZScanOptions } from './mrz';
@@ -63,7 +65,6 @@ export type { SdkErrorCategory } from './errors';
 export type { provingMachineCircuitType } from './proving/provingMachine';
 
 export { DelayedLottieView } from './components/DelayedLottieView';
-export type { DotLottieSource } from './components/DelayedLottieView';
 
 export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
 
