@@ -88,6 +88,7 @@
   "dependencies": {
     "@babel/runtime": "^7.28.6",
     "@ethersproject/shims": "^5.8.0",
+    "@lottiefiles/dotlottie-react-native": "^0.7.1",
     "@noble/hashes": "^1.5.0",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
@@ -136,7 +137,6 @@
     "js-sha256": "^0.11.1",
     "js-sha512": "^0.9.0",
     "lottie-react": "^2.4.1",
-    "lottie-react-native": "7.2.2",
     "node-forge": "^1.3.3",
     "pkijs": "^3.3.3",
     "poseidon-lite": "^0.2.0",

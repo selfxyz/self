@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type LottieView from 'lottie-react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
@@ -41,6 +40,7 @@ type LoadingScreenParams = {
 };
 
 type LoadingScreenProps = StaticScreenProps<LoadingScreenParams>;
+type AnimationSource = string | { uri: string };
 
 // Define all terminal states that should stop animations and haptics
 const terminalStates: ProvingStateType[] = [
@@ -58,9 +58,9 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const [isInitializing, setIsInitializing] = useState(false);
 
   // Animation states
-  const [animationSource, setAnimationSource] = useState<
-    LottieView['props']['source']
-  >(proveLoadingAnimation);
+  const [animationSource, setAnimationSource] = useState<AnimationSource>(
+    proveLoadingAnimation,
+  );
 
   // Loading text state
   const [loadingText, setLoadingText] = useState<{

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type LottieView from 'lottie-react-native';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, XStack, YStack } from 'tamagui';
@@ -23,8 +22,10 @@ import CloseWarningIcon from '@/assets/icons/close_warning.svg';
 import Plus from '@/assets/icons/plus_slate600.svg';
 import { extraYPadding } from '@/utils/styleUtils';
 
+type AnimationSource = string | { uri: string };
+
 interface LoadingUIProps {
-  animationSource: LottieView['props']['source'];
+  animationSource: AnimationSource;
   shouldLoopAnimation: boolean;
   actionText: string;
   actionSubText: string;

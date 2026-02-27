@@ -35,7 +35,7 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
       '@/package.json': resolve(__dirname, 'package.json'),
       'react-native-svg': 'react-native-svg-web',
-      'lottie-react-native': 'lottie-react',
+      '@lottiefiles/dotlottie-react-native': '@lottiefiles/dotlottie-react',
       '@react-native-community/blur': resolve(
         __dirname,
         'src/devtools/mocks/react-native-community-blur.ts',
@@ -165,7 +165,10 @@ export default defineConfig({
           'vendor-analytics-sentry': ['@sentry/react', '@sentry/react-native'],
 
           // Animations
-          'vendor-animations-lottie': ['lottie-react-native', 'lottie-react'],
+          'vendor-animations-lottie': [
+            '@lottiefiles/dotlottie-react-native',
+            '@lottiefiles/dotlottie-react',
+          ],
 
           // WebSocket and Socket.IO
           'vendor-websocket': ['socket.io-client'],

@@ -180,6 +180,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@lottiefiles/dotlottie-react-native": "^0.7.1",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@testing-library/react": "^14.1.2",
@@ -197,7 +198,6 @@
     "eslint-plugin-sort-exports": "^0.9.1",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^25.0.1",
-    "lottie-react-native": "7.2.2",
     "poseidon-lite": "^0.3.0",
     "prettier": "^3.5.3",
     "react": "^18.3.1",
@@ -216,8 +216,8 @@
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
+    "@lottiefiles/dotlottie-react-native": "*",
     "@react-native-async-storage/async-storage": ">=1.0.0",
-    "lottie-react-native": "7.2.2",
     "react": "^18.3.1",
     "react-native": "0.76.9",
     "react-native-blur-effect": "^1.1.3",

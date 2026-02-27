@@ -8,6 +8,28 @@ PODS:
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
+  - dotlottie-react-native (0.7.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - LottieFiles-dotLottie-iOS (~> 0.9)
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - DoubleConversion (1.1.6)
   - EXApplication (6.0.2):
     - ExpoModulesCore
@@ -196,29 +218,8 @@ PODS:
   - IdensicMobileSDK/Fisherman (1.40.2):
     - FingerprintPro (~> 2.11)
     - IdensicMobileSDK/Core
-  - lottie-ios (4.5.0)
-  - lottie-react-native (7.2.2):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - lottie-ios (= 4.5.0)
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
+  - lottie-ios (4.6.0)
+  - LottieFiles-dotLottie-iOS (0.11.1)
   - Mixpanel-swift (5.0.0):
     - Mixpanel-swift/Complete (= 5.0.0)
   - Mixpanel-swift/Complete (5.0.0)
@@ -2182,6 +2183,7 @@ PODS:
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
+  - "dotlottie-react-native (from `../node_modules/@lottiefiles/dotlottie-react-native`)"
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
@@ -2202,7 +2204,6 @@ DEPENDENCIES:
   - GoogleUtilities
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - lottie-ios
-  - lottie-react-native (from `../node_modules/lottie-react-native`)
   - Mixpanel-swift
   - "NFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b`)"
   - QKMRZScanner
@@ -2319,6 +2320,7 @@ SPEC REPOS:
     - GoogleDataTransport
     - GoogleUtilities
     - lottie-ios
+    - LottieFiles-dotLottie-iOS
     - Mixpanel-swift
     - nanopb
     - OpenSSL-Universal
@@ -2334,6 +2336,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   BVLinearGradient:
     :path: "../node_modules/react-native-linear-gradient"
+  dotlottie-react-native:
+    :path: "../node_modules/@lottiefiles/dotlottie-react-native"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EXApplication:
@@ -2363,8 +2367,6 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2024-11-25-RNv0.77.0-d4f25d534ab744866448b36ca3bf3d97c08e638c
-  lottie-react-native:
-    :path: "../node_modules/lottie-react-native"
   NFCPassportReader:
     :commit: 9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b
     :git: "git@github.com:selfxyz/NFCPassportReader.git"
@@ -2559,6 +2561,7 @@ SPEC CHECKSUMS:
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
+  dotlottie-react-native: 11602f64ebf9eb2ed153de43779d12dd36c2a142
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXApplication: 4c72f6017a14a65e338c5e74fca418f35141e819
   EXConstants: fcfc75800824ac2d5c592b5bc74130bad17b146b
@@ -2589,8 +2592,8 @@ SPEC CHECKSUMS:
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
   hermes-engine: 1f783c3d53940aed0d2c84586f0b7a85ab7827ef
   IdensicMobileSDK: 00b13320e1b1e0574e68475bd0fbc7cd30fce26e
-  lottie-ios: a881093fab623c467d3bce374367755c272bdd59
-  lottie-react-native: 6cb05b7b4ea463afe657e3b46784f067858e1a5d
+  lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
+  LottieFiles-dotLottie-iOS: e9b34e7cff6d04f5affd97336c2dab934b86e6fb
   Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   NFCPassportReader: 48873f856f91215dbfa1eaaec20eae639672862e
@@ -2691,6 +2694,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: c34725819ab0a5962e85455b9e56679b306910ee
 
-PODFILE CHECKSUM: 819cc2c73ef2429fda27c9f3e3ac757539b52c75
+PODFILE CHECKSUM: 63b07a2aa49988e11d648524199e37c6a96de7aa
 
 COCOAPODS: 1.16.2

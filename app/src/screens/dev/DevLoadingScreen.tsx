@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type LottieView from 'lottie-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 import { Check, ChevronDown } from '@tamagui/lucide-icons';
@@ -40,13 +39,15 @@ const allProvingStates = [
   'passport_data_not_found',
 ] as const;
 
+type AnimationSource = string | { uri: string };
+
 const DevLoadingScreen: React.FC = () => {
   const [currentState, setCurrentState] = useState<ProvingStateType>('idle');
   const [documentType, setDocumentType] =
     useState<provingMachineCircuitType>('dsc');
-  const [animationSource, setAnimationSource] = useState<
-    LottieView['props']['source']
-  >(proveLoadingAnimation);
+  const [animationSource, setAnimationSource] = useState<AnimationSource>(
+    proveLoadingAnimation,
+  );
   const [loadingText, setLoadingText] = useState<{
     actionText: string;
     actionSubText: string;

@@ -2,15 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { LottieViewProps } from 'lottie-react-native';
-import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
   Description,
@@ -40,6 +38,8 @@ const failAnimation = require('@/assets/animations/proof_failed.lottie');
 const succesAnimation = require('@/assets/animations/proof_success.lottie');
 /* eslint-enable @typescript-eslint/no-require-imports */
 
+type AnimationSource = string | { uri: string };
+
 const SuccessScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
@@ -60,7 +60,7 @@ const SuccessScreen: React.FC = () => {
   const isFocused = useIsFocused();
 
   const [animationSource, setAnimationSource] =
-    useState<LottieViewProps['source']>(loadingAnimation);
+    useState<AnimationSource>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
   const [whitelistedPoints, setWhitelistedPoints] = useState<number | null>(
@@ -218,7 +218,7 @@ const SuccessScreen: React.FC = () => {
         marginTop={20}
         backgroundColor={black}
       >
-        <LottieView
+        <DelayedLottieView
           autoPlay
           loop={animationSource === loadingAnimation}
           source={animationSource}

@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
+import type { Dotlottie } from '@lottiefiles/dotlottie-react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   ButtonsContainer,
@@ -39,7 +39,7 @@ const DocumentOnboardingScreen: React.FC = () => {
     state => state.documentType,
   );
   const handleCameraPress = useHapticNavigation('DocumentCamera');
-  const animationRef = useRef<LottieView>(null);
+  const animationRef = useRef<Dotlottie | null>(null);
 
   const scanPrompt = getDocumentScanPrompt(selectedDocumentType);
 
@@ -60,7 +60,7 @@ const DocumentOnboardingScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
-        <LottieView
+        <DelayedLottieView
           ref={animationRef}
           autoPlay={false}
           loop={false}

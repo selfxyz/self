@@ -2,44 +2,134 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { LottieViewProps } from 'lottie-react-native';
-import LottieView from 'lottie-react-native';
-import type React from 'react';
-import { forwardRef, useCallback, useRef } from 'react';
+import type { MutableRefObject } from 'react';
+import { forwardRef, useCallback, useMemo, useRef } from 'react';
+import type { ViewStyle } from 'react-native';
+
+import type { Dotlottie, Mode } from '@lottiefiles/dotlottie-react-native';
+import { DotLottie } from '@lottiefiles/dotlottie-react-native';
 
 /**
- * Wrapper around LottieView that fixes iOS native module initialization timing.
+ * Wrapper around DotLottie that fixes iOS native module initialization timing.
  *
- * On iOS, the Lottie native module isn't always fully initialized when components
+ * On iOS, the native animation module isn't always fully initialized when components
  * first render during app startup, and dotLottie (.lottie) sources load
- * asynchronously on the native side. This component waits for `onAnimationLoaded`
+ * asynchronously on the native side. This component waits for `onLoad`
  * before calling `play()`, so the animation starts reliably regardless of source
- * format (JSON or dotLottie).
+ * format.
  *
- * Usage: Drop-in replacement for LottieView
+ * Usage: Drop-in replacement for LottieView with legacy prop compatibility.
  * @example
  * <DelayedLottieView autoPlay loop source={animation} style={styles.animation} />
  */
-export const DelayedLottieView = forwardRef<LottieView, LottieViewProps>((props, forwardedRef) => {
-  // If LottieView is undefined (peer dependency not installed), return null
-  if (typeof LottieView === 'undefined') {
-    return null;
-  }
+type DotLottieSource = string | { uri: string };
 
-  const internalRef = useRef<LottieView>(null);
-  const ref = (forwardedRef as React.RefObject<LottieView>) || internalRef;
+type DotLottieEvents = {
+  onLoad?: () => void;
+  onComplete?: () => void;
+  onLoadError?: () => void;
+  onPlay?: () => void;
+  onLoop?: (loopCount: number) => void;
+  onDestroy?: () => void;
+  onUnFreeze?: () => void;
+  onFreeze?: () => void;
+  onPause?: () => void;
+  onFrame?: (frameNo: number) => void;
+  onStop?: () => void;
+  onRender?: (frameNo: number) => void;
+  onStateMachineStart?: () => void;
+  onStateMachineStop?: () => void;
+  onStateMachineStateEntered?: (enteringState: string) => void;
+  onStateMachineStateExit?: (leavingState: string) => void;
+  onStateMachineTransition?: (previousState: string, newState: string) => void;
+  onStateMachineBooleanInputChange?: (inputName: string, oldValue: boolean, newValue: boolean) => void;
+  onStateMachineNumericInputChange?: (inputName: string, oldValue: number, newValue: number) => void;
+  onStateMachineStringInputChange?: (inputName: string, oldValue: string, newValue: string) => void;
+  onStateMachineInputFired?: (inputName: string) => void;
+  onStateMachineCustomEvent?: (message: string) => void;
+  onStateMachineError?: (message: string) => void;
+};
 
-  const handleAnimationLoaded = useCallback(() => {
-    if (props.autoPlay) {
-      ref.current?.play();
+type DelayedLottieViewProps = DotLottieEvents & {
+  source: DotLottieSource;
+  style?: ViewStyle;
+  loop?: boolean;
+  autoplay?: boolean;
+  speed?: number;
+  themeId?: string;
+  marker?: string;
+  segment?: [number, number];
+  playMode?: Mode;
+  useFrameInterpolation?: boolean;
+  stateMachineId?: string;
+  // Legacy LottieView prop kept for mechanical migration
+  autoPlay?: boolean;
+  // Legacy lifecycle callbacks
+  onAnimationLoaded?: () => void;
+  onAnimationFinish?: (isCancelled: boolean) => void;
+  // Legacy compatibility props (ignored by DotLottie)
+  cacheComposition?: boolean;
+  progress?: number;
+  renderMode?: 'AUTOMATIC' | 'HARDWARE' | 'SOFTWARE';
+  resizeMode?: 'cover' | 'contain' | 'center';
+};
+
+export const DelayedLottieView = forwardRef<Dotlottie, DelayedLottieViewProps>((props, forwardedRef) => {
+  const {
+    autoPlay,
+    autoplay,
+    onAnimationLoaded,
+    onAnimationFinish,
+    onLoad,
+    onComplete,
+    cacheComposition: _cacheComposition,
+    progress: _progress,
+    renderMode: _renderMode,
+    resizeMode: _resizeMode,
+    style,
+    ...rest
+  } = props;
+  const internalRef = useRef<Dotlottie | null>(null);
+  const shouldAutoPlay = useMemo(() => Boolean(autoPlay ?? autoplay), [autoPlay, autoplay]);
+
+  const handleRef = useCallback(
+    (instance: unknown) => {
+      const lottieInstance = instance as Dotlottie | null;
+      internalRef.current = lottieInstance;
+      if (typeof forwardedRef === 'function') {
+        forwardedRef(lottieInstance);
+        return;
+      }
+      if (forwardedRef) {
+        (forwardedRef as MutableRefObject<Dotlottie | null>).current = lottieInstance;
+      }
+    },
+    [forwardedRef],
+  );
+
+  const handleLoad = useCallback(() => {
+    if (shouldAutoPlay) {
+      internalRef.current?.play();
     }
-    props.onAnimationLoaded?.();
-  }, [props.autoPlay, props.onAnimationLoaded, ref]);
+    onAnimationLoaded?.();
+    onLoad?.();
+  }, [shouldAutoPlay, onAnimationLoaded, onLoad]);
 
-  // For autoPlay animations, disable native autoPlay and control it ourselves
-  const modifiedProps = props.autoPlay ? { ...props, autoPlay: false } : props;
+  const handleComplete = useCallback(() => {
+    onAnimationFinish?.(false);
+    onComplete?.();
+  }, [onAnimationFinish, onComplete]);
 
-  return <LottieView ref={ref} {...modifiedProps} onAnimationLoaded={handleAnimationLoaded} />;
+  return (
+    <DotLottie
+      ref={handleRef}
+      {...rest}
+      style={style ?? {}}
+      autoplay={shouldAutoPlay ? false : undefined}
+      onLoad={handleLoad}
+      onComplete={handleComplete}
+    />
+  );
 });
 
 DelayedLottieView.displayName = 'DelayedLottieView';

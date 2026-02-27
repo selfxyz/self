@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type LottieView from 'lottie-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Linking, NativeEventEmitter, NativeModules, Platform, StyleSheet } from 'react-native';
 import NfcManager from 'react-native-nfc-manager';
@@ -25,6 +24,8 @@ import { sanitizeErrorMessage } from 'src/utils/utils';
 import { v4 as uuidv4 } from 'uuid';
 
 import type { PassportData } from '@selfxyz/common';
+
+import type { Dotlottie } from '@lottiefiles/dotlottie-react-native';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
 const passportVerifyAnimation = require('../../animations/passport_verify.lottie');
@@ -67,7 +68,7 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
     [props.useCan],
   );
 
-  const animationRef = useRef<LottieView>(null);
+  const animationRef = useRef<Dotlottie | null>(null);
 
   useEffect(() => {
     animationRef.current?.play();

@@ -6676,6 +6676,36 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lottiefiles/dotlottie-react-native@npm:^0.7.1":
+  version: 0.7.1
+  resolution: "@lottiefiles/dotlottie-react-native@npm:0.7.1"
+  dependencies:
+    "@lottiefiles/dotlottie-react": "npm:^0.17.5"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/1c53f2d2d500b47395312476a12294c5048febe3f267c5a84605ad86c610569592a0e7bc5c636ef026974334a95753a41bd149f5b4a6ba2be3fad08944861896
+  languageName: node
+  linkType: hard
+
+"@lottiefiles/dotlottie-react@npm:^0.17.5":
+  version: 0.17.15
+  resolution: "@lottiefiles/dotlottie-react@npm:0.17.15"
+  dependencies:
+    "@lottiefiles/dotlottie-web": "npm:0.63.0"
+  peerDependencies:
+    react: ^17 || ^18 || ^19
+  checksum: 10c0/f65d17da5b63ca27f9e648ec8229632725416be08644746bfeb0fb1fc3c80cd52290eb94e1624dc0854b5120ef83011be0196f17cc30df5e094fdb6c13e467de
+  languageName: node
+  linkType: hard
+
+"@lottiefiles/dotlottie-web@npm:0.63.0":
+  version: 0.63.0
+  resolution: "@lottiefiles/dotlottie-web@npm:0.63.0"
+  checksum: 10c0/54f024bcfc723f4cbd7cdcf610dc62301435781c03adb1046aadb92adafb28042590854b8ba911dd5b584801382694a20c29d3ac8a0f41559fa7605179402d77
+  languageName: node
+  linkType: hard
+
 "@mapbox/node-pre-gyp@npm:^1.0":
   version: 1.0.11
   resolution: "@mapbox/node-pre-gyp@npm:1.0.11"
@@ -10296,6 +10326,7 @@ __metadata:
     "@babel/runtime": "npm:^7.28.6"
     "@dotlottie/dotlottie-js": "npm:^1.6.2"
     "@ethersproject/shims": "npm:^5.8.0"
+    "@lottiefiles/dotlottie-react-native": "npm:^0.7.1"
     "@noble/hashes": "npm:^1.5.0"
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
@@ -10386,7 +10417,6 @@ __metadata:
     js-sha256: "npm:^0.11.1"
     js-sha512: "npm:^0.9.0"
     lottie-react: "npm:^2.4.1"
-    lottie-react-native: "npm:7.2.2"
     node-forge: "npm:^1.3.3"
     path-browserify: "npm:^1.0.1"
     pkijs: "npm:^3.3.3"
@@ -10446,6 +10476,7 @@ __metadata:
   resolution: "@selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha"
   dependencies:
     "@babel/runtime": "npm:^7.28.6"
+    "@lottiefiles/dotlottie-react-native": "npm:^0.7.1"
     "@noble/hashes": "npm:^1.5.0"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@react-native-async-storage/async-storage": "npm:^2.1.2"
@@ -10467,7 +10498,6 @@ __metadata:
     eslint-plugin-sort-exports: "npm:^0.9.1"
     fake-indexeddb: "npm:^6.2.5"
     jsdom: "npm:^25.0.1"
-    lottie-react-native: "npm:7.2.2"
     node-forge: "npm:^1.3.3"
     poseidon-lite: "npm:^0.3.0"
     prettier: "npm:^3.5.3"
@@ -10492,8 +10522,8 @@ __metadata:
     xstate: "npm:^5.20.2"
     zustand: "npm:^4.5.2"
   peerDependencies:
+    "@lottiefiles/dotlottie-react-native": "*"
     "@react-native-async-storage/async-storage": ">=1.0.0"
-    lottie-react-native: 7.2.2
     react: ^18.3.1
     react-native: 0.76.9
     react-native-blur-effect: ^1.1.3
