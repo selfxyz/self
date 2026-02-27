@@ -233,19 +233,33 @@ class NfcBridgeHandler(
             service.sendSelectApplet(true)
         } catch (e: Exception) {
             val msg = e.message ?: ""
-            if (!msg.contains("6982") && !msg.contains("SECURITY STATUS NOT SATISFIED", ignoreCase = true)) {
+            if (!msg.contains("6982") && !msg.contains("6A82") && !msg.contains("SECURITY STATUS NOT SATISFIED", ignoreCase = true)) {
                 throw e
             }
         }
 
         // --- Read DG1 ---
         pushProgress("reading_dg1", 40, "Reading passport data...")
-        val dg1In = service.getInputStream(PassportService.EF_DG1)
+        val dg1In = try {
+            service.getInputStream(PassportService.EF_DG1)
+        } catch (e: Exception) {
+            throw BridgeHandlerException(
+                "NFC_FILE_NOT_FOUND",
+                "Failed to read document data (DG1). This document type may not be fully supported."
+            )
+        }
         val dg1File = DG1File(dg1In)
 
         // --- Read SOD ---
         pushProgress("reading_sod", 55, "Reading security data...")
-        val sodIn = service.getInputStream(PassportService.EF_SOD)
+        val sodIn = try {
+            service.getInputStream(PassportService.EF_SOD)
+        } catch (e: Exception) {
+            throw BridgeHandlerException(
+                "NFC_FILE_NOT_FOUND",
+                "Failed to read security data (SOD). This document type may not be fully supported."
+            )
+        }
         val sodFile = SODFile(sodIn)
 
         // --- Chip Authentication ---
