@@ -11,7 +11,7 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { LottieAnimation, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   AbstractButton,
   Description,
@@ -114,7 +114,7 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       <View style={styles.centerSection}>
         <View style={styles.animationContainer}>
-          <DelayedLottieView
+          <LottieAnimation
             autoPlay
             loop={true}
             source={loadingAnimation}

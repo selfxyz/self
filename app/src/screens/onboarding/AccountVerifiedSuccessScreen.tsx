@@ -7,7 +7,7 @@ import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
+import { LottieAnimation } from '@selfxyz/mobile-sdk-alpha';
 import {
   Description,
   PrimaryButton,
@@ -31,7 +31,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.TopSection backgroundColor={black} roundTop>
-        <DelayedLottieView
+        <LottieAnimation
           autoPlay
           loop={false}
           source={proofSuccessAnimation}

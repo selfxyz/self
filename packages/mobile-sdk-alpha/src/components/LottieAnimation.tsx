@@ -16,7 +16,7 @@ import { DotLottie } from '@lottiefiles/dotlottie-react-native';
  * built-in autoplay already waits for load — no manual delay needed.
  *
  * @example
- * <DelayedLottieView autoPlay loop source={animation} style={styles.animation} />
+ * <LottieAnimation autoPlay loop source={animation} style={styles.animation} />
  */
 export type DotLottieSource = string | { uri: string };
 
@@ -38,7 +38,7 @@ type DotLottieEvents = {
   onStateEntered?: (state: { enteringState: string }) => void;
 };
 
-type DelayedLottieViewProps = DotLottieEvents & {
+type LottieAnimationProps = DotLottieEvents & {
   source: DotLottieSource;
   style?: ViewStyle;
   loop?: boolean;
@@ -60,7 +60,7 @@ type DelayedLottieViewProps = DotLottieEvents & {
   resizeMode?: 'cover' | 'contain' | 'center';
 };
 
-export const DelayedLottieView = forwardRef<Dotlottie, DelayedLottieViewProps>((props, forwardedRef) => {
+export const LottieAnimation = forwardRef<Dotlottie, LottieAnimationProps>((props, forwardedRef) => {
   const {
     autoPlay,
     autoplay,
@@ -115,4 +115,4 @@ export const DelayedLottieView = forwardRef<Dotlottie, DelayedLottieViewProps>((
   );
 });
 
-DelayedLottieView.displayName = 'DelayedLottieView';
+LottieAnimation.displayName = 'LottieAnimation';

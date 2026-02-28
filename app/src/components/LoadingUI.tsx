@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, XStack, YStack } from 'tamagui';
 
 import type { DotLottieSource } from '@selfxyz/mobile-sdk-alpha';
-import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
+import { LottieAnimation } from '@selfxyz/mobile-sdk-alpha';
 import {
   black,
   cyan300,
@@ -117,7 +117,7 @@ const LoadingUI: React.FC<LoadingUIProps> = ({
           elevation={8}
         >
           <YStack alignItems="center" paddingHorizontal={10} flex={1}>
-            <DelayedLottieView
+            <LottieAnimation
               autoPlay
               loop={shouldLoopAnimation}
               source={animationSource}

@@ -9,8 +9,8 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
-  DelayedLottieView,
   dinot,
+  LottieAnimation,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -89,7 +89,7 @@ const DocumentCameraScreen: React.FC = () => {
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
         <PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
-        <DelayedLottieView
+        <LottieAnimation
           autoPlay
           loop
           source={passportScanAnimation}

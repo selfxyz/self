@@ -125,7 +125,7 @@ jest.mock('@/services/analytics', () => ({
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
-  DelayedLottieView: () => null,
+  LottieAnimation: () => null,
   useSelfClient: jest.fn(),
 }));
 

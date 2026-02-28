@@ -7,7 +7,7 @@ import { StyleSheet } from 'react-native';
 import type { Dotlottie } from '@lottiefiles/dotlottie-react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { LottieAnimation, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   ButtonsContainer,
@@ -60,7 +60,7 @@ const DocumentOnboardingScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
-        <DelayedLottieView
+        <LottieAnimation
           ref={animationRef}
           autoPlay={false}
           loop={false}

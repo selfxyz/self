@@ -8,7 +8,7 @@ import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
+import { LottieAnimation } from '@selfxyz/mobile-sdk-alpha';
 import {
   Caution,
   PrimaryButton,
@@ -37,7 +37,7 @@ const DisclaimerScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <DelayedLottieView
+        <LottieAnimation
           autoPlay
           loop={false}
           source={warningAnimation}

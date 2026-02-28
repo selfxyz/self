@@ -8,7 +8,7 @@ import { StyleSheet } from 'react-native';
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
 import { PrimaryButton } from '../../components';
-import { DelayedLottieView } from '../../components/DelayedLottieView';
+import { LottieAnimation } from '../../components/LottieAnimation';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { PassportEvents, ProofEvents } from '../../constants/analytics';
@@ -48,7 +48,7 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <DelayedLottieView
+        <LottieAnimation
           autoPlay
           loop={false}
           source={successAnimation}

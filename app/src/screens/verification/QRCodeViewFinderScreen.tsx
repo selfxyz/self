@@ -13,7 +13,7 @@ import {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { LottieAnimation, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   Description,
@@ -165,7 +165,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
           {shouldRenderCamera && (
             <>
               <QRCodeScannerView onQRData={onQRData} isMounted={isFocused} />
-              <DelayedLottieView
+              <LottieAnimation
                 autoPlay
                 loop
                 source={qrScanAnimation}

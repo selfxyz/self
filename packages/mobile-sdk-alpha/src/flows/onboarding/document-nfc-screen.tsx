@@ -7,7 +7,7 @@ import { Image, Linking, NativeEventEmitter, NativeModules, Platform, StyleSheet
 import NfcManager from 'react-native-nfc-manager';
 import { BodyText, PrimaryButton, SecondaryButton, Title, View, XStack } from 'src/components';
 import ButtonsContainer from 'src/components/ButtonsContainer';
-import { DelayedLottieView } from 'src/components/DelayedLottieView';
+import { LottieAnimation } from 'src/components/LottieAnimation';
 import TextsContainer from 'src/components/TextsContainer';
 import { PassportEvents } from 'src/constants/analytics';
 import { black, slate100, slate400, slate500, white } from 'src/constants/colors';
@@ -389,7 +389,7 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
       safeAreaBottom={props.safeAreaInsets?.bottom}
     >
       <ExpandableBottomLayout.TopSection backgroundColor={slate100} safeAreaTop={props.safeAreaInsets?.top}>
-        <DelayedLottieView
+        <LottieAnimation
           ref={animationRef}
           autoPlay={false}
           loop={false}

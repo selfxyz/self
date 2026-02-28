@@ -15,7 +15,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { X } from '@tamagui/lucide-icons';
 
-import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
+import { LottieAnimation } from '@selfxyz/mobile-sdk-alpha';
 import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
@@ -68,7 +68,7 @@ const GratificationScreen: React.FC = () => {
         alignItems="center"
         justifyContent="center"
       >
-        <DelayedLottieView
+        <LottieAnimation
           autoPlay
           loop={false}
           source={youWinAnimation}

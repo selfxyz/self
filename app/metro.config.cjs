@@ -154,7 +154,7 @@ const config = {
             animRelPath,
           );
           if (fs.existsSync(appAnimPath)) {
-            return { type: 'sourceFile', filePath: appAnimPath };
+            return { type: 'assetFiles', filePaths: [appAnimPath] };
           }
           // Fall back to SDK's own copy (for SDK-only animations like loading/*)
           const sdkAnimPath = path.resolve(
@@ -163,7 +163,7 @@ const config = {
             animRelPath,
           );
           if (fs.existsSync(sdkAnimPath)) {
-            return { type: 'sourceFile', filePath: sdkAnimPath };
+            return { type: 'assetFiles', filePaths: [sdkAnimPath] };
           }
         }
       }

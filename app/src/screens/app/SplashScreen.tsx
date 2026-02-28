@@ -8,8 +8,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
-  DelayedLottieView,
   hasAnyValidRegisteredDocument,
+  LottieAnimation,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -126,7 +126,7 @@ const SplashScreen: React.FC = ({}) => {
   }, [isAnimationFinished, nextScreen, queuedDeepLink, navigation, selfClient]);
 
   return (
-    <DelayedLottieView
+    <LottieAnimation
       autoPlay
       loop={false}
       source={splashAnimation}

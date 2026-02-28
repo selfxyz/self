@@ -33,7 +33,7 @@ import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
 import {
-  DelayedLottieView,
+  LottieAnimation,
   sanitizeErrorMessage,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -547,7 +547,7 @@ const DocumentNFCScanScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={slate100}>
-        <DelayedLottieView
+        <LottieAnimation
           ref={animationRef}
           autoPlay={false}
           loop={false}

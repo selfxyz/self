@@ -9,7 +9,7 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import type { DotLottieSource } from '@selfxyz/mobile-sdk-alpha';
-import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { LottieAnimation, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
   Description,
@@ -217,7 +217,7 @@ const SuccessScreen: React.FC = () => {
         marginTop={20}
         backgroundColor={black}
       >
-        <DelayedLottieView
+        <LottieAnimation
           autoPlay
           loop={animationSource === loadingAnimation}
           source={animationSource}

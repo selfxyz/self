@@ -44,8 +44,14 @@ Old `DelayedLottieView` had `if (typeof LottieView === 'undefined') return null`
 ### 6. Ref type cast uses `unknown`
 **`DelayedLottieView.tsx:108`** — `instance as Dotlottie | null` cast from `unknown`. If DotLottie provides the correct ref type, the cast is unnecessary. If it doesn't, this masks issues.
 
-### 7. Web alias may be broken — `@lottiefiles/dotlottie-react` not in dependencies
-**`vite.config.ts:38`** — Alias maps `dotlottie-react-native` → `dotlottie-react`, but `@lottiefiles/dotlottie-react` doesn't appear in `package.json`. Web build would break if this alias is hit.
+### 7. Web alias mismatch is currently non-blocking (known limitation)
+**`vite.config.ts:38`** — Alias maps `@lottiefiles/dotlottie-react-native` → `@lottiefiles/dotlottie-react`.
+
+Current behavior: the `.web.tsx` placeholder path renders an empty `<div />`, so this alias path is not exercised in normal flows.
+
+Important clarification: fixing alias wiring alone will not make web animations work. A proper web implementation is needed using `DotLottieReact` (canvas-based API, `src` prop, and different lifecycle/control patterns vs RN `source` + imperative ref methods).
+
+Treat this as a separate feature track, not a blocking defect in this migration branch.
 
 ### 8. iOS e2e re-enable is unrelated
 Removing `if: false` from the iOS e2e job is a separate concern. Could be its own commit.
