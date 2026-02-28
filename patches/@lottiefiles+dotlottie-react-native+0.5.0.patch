@@ -1,0 +1,73 @@
+diff --git a/node_modules/@lottiefiles/dotlottie-react-native/ios/DotlottieReactNativeViewManager.m b/node_modules/@lottiefiles/dotlottie-react-native/ios/DotlottieReactNativeViewManager.m
+index 0000000..0000001 100644
+--- a/node_modules/@lottiefiles/dotlottie-react-native/ios/DotlottieReactNativeViewManager.m
++++ b/node_modules/@lottiefiles/dotlottie-react-native/ios/DotlottieReactNativeViewManager.m
+@@ -24,6 +24,7 @@
+ RCT_EXPORT_VIEW_PROPERTY(speed, Double)
+ RCT_EXPORT_VIEW_PROPERTY(onPlay, RCTBubblingEventBlock)
+ RCT_EXPORT_VIEW_PROPERTY(onLoop, RCTBubblingEventBlock)
++RCT_EXPORT_VIEW_PROPERTY(onComplete, RCTBubblingEventBlock)
+ // RCT_EXPORT_VIEW_PROPERTY(onLoad, RCTBubblingEventBlock)
+ // RCT_EXPORT_VIEW_PROPERTY(onLoadError, RCTBubblingEventBlock)
+
+diff --git a/node_modules/@lottiefiles/dotlottie-react-native/ios/DotlottieReactNativeViewManager.swift b/node_modules/@lottiefiles/dotlottie-react-native/ios/DotlottieReactNativeViewManager.swift
+index 0000000..0000001 100644
+--- a/node_modules/@lottiefiles/dotlottie-react-native/ios/DotlottieReactNativeViewManager.swift
++++ b/node_modules/@lottiefiles/dotlottie-react-native/ios/DotlottieReactNativeViewManager.swift
+@@ -11,7 +11,8 @@
+   @Published var onLoad: RCTBubblingEventBlock = {_ in }
+   @Published var onLoadError: RCTBubblingEventBlock = {_ in }
+   @Published var onLoop: RCTBubblingEventBlock = {_ in }
+-
++  @Published var onComplete: RCTBubblingEventBlock = {_ in }
++
+   @Published var animation: DotLottieAnimation?
+
+    func createAnimation() {
+@@ -52,7 +53,7 @@
+           self.dataStore = dataStore
+       }
+     func onComplete() {
+-        // do something
++        dataStore.onComplete(["" : ""])
+     }
+
+     func onFrame(frameNo: Float) {
+@@ -97,11 +98,12 @@
+     var body: some View {
+       if let animation = dataStore.animation {
+                   DotLottieView(dotLottie: animation)
++                      .frame(maxWidth: .infinity, maxHeight: .infinity)
+                       .onAppear {
+                           subscribeToAnimation()
+                       }
+               } else {
+-                  Text("Loading animation...")
++                  Color.clear
+                       .onAppear {
+                           dataStore.createAnimation()
+                       }
+@@ -112,9 +114,8 @@
+
+   func subscribeToAnimation() {
+           guard let animation = dataStore.animation else { return }
+-          let animationView = DotLottieView(dotLottie: animation)
+           let myObserver = YourDotLottieObserver(dataStore: dataStore)
+-          animationView.subscribe(observer: myObserver)
++          animation.subscribe(observer: myObserver)
+       }
+ }
+
+@@ -342,6 +343,12 @@
+         }
+       }
+
++    @objc var onComplete: RCTBubblingEventBlock = {_ in} {
++        didSet{
++          dataStore.onComplete = onComplete
++        }
++      }
++
+
+      override func layoutSubviews() {
+        super.layoutSubviews()

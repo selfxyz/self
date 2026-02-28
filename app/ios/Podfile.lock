@@ -8,7 +8,7 @@ PODS:
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
-  - dotlottie-react-native (0.7.1):
+  - dotlottie-react-native (0.5.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2561,7 +2561,7 @@ SPEC CHECKSUMS:
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
-  dotlottie-react-native: 11602f64ebf9eb2ed153de43779d12dd36c2a142
+  dotlottie-react-native: 056445614fe969f8d8d90a744944089261e6a620
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXApplication: 4c72f6017a14a65e338c5e74fca418f35141e819
   EXConstants: fcfc75800824ac2d5c592b5bc74130bad17b146b
