@@ -33,21 +33,23 @@ index 0000000..0000001 100644
      }
 
      func onFrame(frameNo: Float) {
-@@ -97,11 +98,12 @@
+@@ -97,11 +98,14 @@
      var body: some View {
        if let animation = dataStore.animation {
                    DotLottieView(dotLottie: animation)
 +                      .frame(maxWidth: .infinity, maxHeight: .infinity)
++                      .edgesIgnoringSafeArea(.all)
                        .onAppear {
                            subscribeToAnimation()
                        }
                } else {
 -                  Text("Loading animation...")
 +                  Color.clear
++                      .edgesIgnoringSafeArea(.all)
                        .onAppear {
                            dataStore.createAnimation()
                        }
-@@ -112,9 +114,8 @@
+@@ -112,9 +116,8 @@
 
    func subscribeToAnimation() {
            guard let animation = dataStore.animation else { return }
@@ -58,7 +60,16 @@ index 0000000..0000001 100644
        }
  }
 
-@@ -342,6 +343,12 @@
+@@ -276,6 +279,8 @@
+   func createAnimation() {
+     dataStore.createAnimation()
+     let vc = UIHostingController(rootView: AnimationView().environmentObject(dataStore))
++    vc.view.backgroundColor = .clear
++    vc.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+     vc.view.frame = bounds
+     self.addSubview(vc.view)
+     self.view = vc.view
+@@ -342,6 +347,12 @@
          }
        }
 
