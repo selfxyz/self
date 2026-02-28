@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
+export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https' | 'token' | 'staging_token';
 export type UserIdType = 'hex' | 'uuid';
 
 export type Country3LetterCode = (typeof countries)[keyof typeof countries];
@@ -599,7 +599,7 @@ export class SelfAppBuilder {
     if (!config.userId) {
       throw new Error('userId is required');
     }
-    if (config.endpointType === 'https' && !config.endpoint.startsWith('https://')) {
+    if ((config.endpointType === 'https' || config.endpointType === 'token') && !config.endpoint.startsWith('https://')) {
       throw new Error('endpoint must start with https://');
     }
     if (config.endpointType === 'celo' && !config.endpoint.startsWith('0x')) {

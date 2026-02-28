@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Self Widget — Token Mode E2E Test</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; background: #f9f9f9; }
+    h1 { font-size: 22px; }
+    .info { background: #e8f4fd; padding: 16px; border-radius: 8px; margin: 16px 0; font-size: 13px; line-height: 1.6; }
+    .info code { background: #d0e8f5; padding: 2px 6px; border-radius: 4px; }
+    .widget-container { background: white; padding: 24px; border-radius: 12px; margin: 24px 0; }
+    .log { font-family: monospace; font-size: 12px; background: #1a1a1a; color: #00ff88; padding: 16px; border-radius: 8px; max-height: 400px; overflow-y: auto; margin: 16px 0; }
+    .log .error { color: #ff4444; }
+    .log .success { color: #00ff88; font-weight: bold; }
+    .log .status { color: #01BFFF; }
+    .log .token { color: #ffaa00; word-break: break-all; }
+    .jwt-box { background: #1a1a1a; color: #ffaa00; font-family: monospace; font-size: 11px; padding: 12px; border-radius: 8px; word-break: break-all; margin: 8px 0; max-height: 200px; overflow-y: auto; display: none; }
+  </style>
+</head>
+<body>
+  <h1>Self Widget — Token Mode E2E Test</h1>
+  <div class="info">
+    <strong>Mode:</strong> <code>token</code> (JWT via verify-service)<br>
+    <strong>Endpoint:</strong> <code id="endpoint-display"></code><br>
+    <strong>Scope:</strong> <code>widget-token-e2e</code><br>
+    <strong>Preset:</strong> age-18<br><br>
+    <strong>Flow:</strong><br>
+    1. Scan QR with Self app<br>
+    2. Proof goes to relayer → verify-service (NOT your backend)<br>
+    3. verify-service issues JWT<br>
+    4. Widget receives JWT in <code>self:success</code> event<br>
+    5. JWT shown below for inspection
+  </div>
+
+  <div class="widget-container">
+    <self-verify
+      app-name="Token Mode Test"
+      app-scope="widget-token-e2e"
+      app-endpoint="PLACEHOLDER"
+      preset="age-18"
+      mode="token"
+      id="widget"
+    ></self-verify>
+  </div>
+
+  <h3>JWT Token</h3>
+  <div class="jwt-box" id="jwt-box"></div>
+
+  <h3>Event Log</h3>
+  <div class="log" id="log"></div>
+
+  <script src="/dist/cdn/self-verify.js"></script>
+  <script>
+    var log = document.getElementById('log');
+    function addLog(msg, cls) {
+      var line = document.createElement('div');
+      if (cls) line.className = cls;
+      line.textContent = new Date().toISOString().slice(11, 23) + ' ' + msg;
+      log.appendChild(line);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    addLog('Widget loaded in TOKEN mode', 'status');
+
+    var widget = document.getElementById('widget');
+    widget.addEventListener('self:status', function(e) {
+      addLog('STATUS: ' + e.detail.label + ' (step=' + e.detail.step + ')', 'status');
+    });
+    widget.addEventListener('self:success', function(e) {
+      addLog('SUCCESS! verified=' + e.detail.verified + ' sessionId=' + e.detail.sessionId, 'success');
+      if (e.detail.token) {
+        addLog('JWT TOKEN RECEIVED (' + e.detail.token.length + ' chars)', 'token');
+
+        // Show JWT
+        var jwtBox = document.getElementById('jwt-box');
+        jwtBox.style.display = 'block';
+        jwtBox.textContent = e.detail.token;
+
+        // Decode JWT (header + payload)
+        try {
+          var parts = e.detail.token.split('.');
+          var header = JSON.parse(atob(parts[0]));
+          var payload = JSON.parse(atob(parts[1]));
+          addLog('JWT Header: ' + JSON.stringify(header), 'token');
+          addLog('JWT Payload: ' + JSON.stringify(payload, null, 2), 'token');
+          addLog('JWT iss=' + payload.iss + ' aud=' + payload.aud + ' verified=' + (payload.self && payload.self.verified), 'success');
+        } catch (e) {
+          addLog('JWT decode error: ' + e.message, 'error');
+        }
+      } else {
+        addLog('No JWT token in success event (mode may not be token)', 'error');
+      }
+    });
+    widget.addEventListener('self:error', function(e) {
+      addLog('ERROR: ' + (e.detail.reason || e.detail.errorCode || 'unknown'), 'error');
+    });
+  </script>
+</body>
+</html>

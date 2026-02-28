@@ -47,6 +47,7 @@
   "dependencies": {
     "@selfxyz/common": "workspace:^",
     "ethers": "^6.13.5",
+    "jose": "^6.1.3",
     "js-sha1": "^0.7.0",
     "js-sha256": "^0.11.0",
     "js-sha512": "^0.9.0",

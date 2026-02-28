@@ -100,13 +100,18 @@ export class SelfVerifyElement extends HTMLElement {
 
     const presetName = this.getAttribute('preset');
     const disclosuresStr = this.getAttribute('disclosures');
-    const endpointType = (this.getAttribute('endpoint-type') || 'https') as 'https' | 'celo';
+    let endpointType = (this.getAttribute('endpoint-type') || 'https') as string;
     const logo = this.getAttribute('logo') || '';
     const mode = this.getAttribute('mode') || 'websocket';
 
     if (endpointType === 'celo' && mode === 'token') {
       console.error('[self-verify] Token mode is incompatible with onchain (celo) endpoint type.');
       return;
+    }
+
+    // In token mode, override endpointType so the relayer routes to verify-service
+    if (mode === 'token') {
+      endpointType = endpointType.startsWith('staging') ? 'staging_token' : 'token';
     }
 
     let disclosures: SelfAppDisclosureConfig = {};
