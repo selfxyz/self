@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getAppStoreUrls, getDefaultBrowserName, isInAppBrowser, isMobile } from './utils/device.js';
 import { resolvePreset } from './utils/presets.js';
 import { renderQRToSVG } from './utils/qr.js';
+import { generateCodeChallenge, generateCodeVerifier } from './utils/pkce.js';
 import { getStepColor, getStepLabel, getWidgetCSS } from './utils/styles.js';
 import type { VerificationStepValue } from './utils/websocket.js';
 import { VerificationStep, WebSocketManager } from './utils/websocket.js';
@@ -48,6 +49,10 @@ export class SelfVerifyElement extends HTMLElement {
       'disclosures',
       'endpoint-type',
       'description',
+      'verify-url',
+      'redirect-uri',
+      'client-id',
+      'ws-url',
     ];
   }
 
@@ -65,6 +70,12 @@ export class SelfVerifyElement extends HTMLElement {
 
   connectedCallback() {
     this.sessionId = this.getAttribute('user-id') || uuidv4();
+
+    // Redirect mode: render a button that starts the OAuth flow
+    if (this.getAttribute('mode') === 'redirect') {
+      this.renderRedirectMode();
+      return;
+    }
 
     // Check for existing valid session
     if (this.checkSessionMemory()) return;
@@ -152,7 +163,8 @@ export class SelfVerifyElement extends HTMLElement {
 
   private connectWebSocket(): void {
     if (!this.selfApp || !this.wsManager) return;
-    this.wsManager.connect(WS_DB_RELAYER, this.selfApp);
+    const wsUrl = this.getAttribute('ws-url') || WS_DB_RELAYER;
+    this.wsManager.connect(wsUrl, this.selfApp);
   }
 
   private handleStepChange(step: VerificationStepValue): void {
@@ -170,7 +182,7 @@ export class SelfVerifyElement extends HTMLElement {
   private handleSuccess(data: Record<string, unknown>): void {
     const ttl = parseInt(this.getAttribute('session-ttl') || '0', 10);
     if (ttl > 0) {
-      this.saveSessionMemory(ttl);
+      this.saveSessionMemory(ttl, data.token as string | undefined);
     }
 
     this.dispatchEvent(
@@ -214,7 +226,7 @@ export class SelfVerifyElement extends HTMLElement {
         this.renderVerified();
         this.dispatchEvent(
           new CustomEvent('self:already-verified', {
-            detail: { scope: session.scope, verifiedAt: session.verifiedAt },
+            detail: { scope: session.scope, verifiedAt: session.verifiedAt, token: session.token },
             bubbles: true,
             composed: true,
           })
@@ -228,7 +240,7 @@ export class SelfVerifyElement extends HTMLElement {
     return false;
   }
 
-  private saveSessionMemory(ttlSeconds: number): void {
+  private saveSessionMemory(ttlSeconds: number, token?: string): void {
     try {
       localStorage.setItem(
         this.getSessionKey(),
@@ -236,6 +248,7 @@ export class SelfVerifyElement extends HTMLElement {
           scope: this.getAttribute('app-scope'),
           verifiedAt: Date.now(),
           expiresAt: Date.now() + ttlSeconds * 1000,
+          token: token || undefined,
         })
       );
     } catch {
@@ -509,6 +522,61 @@ export class SelfVerifyElement extends HTMLElement {
     div.appendChild(link);
     div.appendChild(document.createTextNode(' \u2014 zero-knowledge identity'));
     return div;
+  }
+
+  private renderRedirectMode(): void {
+    while (this.shadow.firstChild) {
+      this.shadow.removeChild(this.shadow.firstChild);
+    }
+
+    const styleEl = document.createElement('style');
+    styleEl.textContent = getWidgetCSS();
+    this.shadow.appendChild(styleEl);
+
+    const btn = document.createElement('button');
+    btn.className = 'trigger-button';
+    btn.setAttribute('aria-label', 'Verify with Self');
+    const logoSpan = document.createElement('span');
+    logoSpan.insertAdjacentHTML('afterbegin', SELF_LOGO_SVG);
+    btn.appendChild(logoSpan.firstElementChild!);
+    const label = document.createElement('span');
+    label.textContent = 'Verify with Self';
+    btn.appendChild(label);
+
+    btn.addEventListener('click', async () => {
+      const verifyUrl = this.getAttribute('verify-url');
+      const redirectUri = this.getAttribute('redirect-uri');
+      const clientId = this.getAttribute('client-id');
+
+      if (!verifyUrl || !redirectUri || !clientId) {
+        console.error('[self-verify] redirect mode requires verify-url, redirect-uri, and client-id attributes');
+        return;
+      }
+
+      try {
+        const codeVerifier = generateCodeVerifier();
+        const codeChallenge = await generateCodeChallenge(codeVerifier);
+        const state = generateCodeVerifier(); // reuse as random state
+
+        // Store PKCE verifier + state in sessionStorage keyed by scope
+        const scope = this.getAttribute('app-scope') || clientId;
+        sessionStorage.setItem(`self_oauth_${scope}`, JSON.stringify({ codeVerifier, state }));
+
+        const params = new URLSearchParams({
+          client_id: clientId,
+          redirect_uri: redirectUri,
+          state,
+          code_challenge: codeChallenge,
+          code_challenge_method: 'S256',
+        });
+
+        window.location.href = `${verifyUrl}/authorize?${params.toString()}`;
+      } catch (err) {
+        console.error('[self-verify] Failed to start OAuth flow:', (err as Error).message);
+      }
+    });
+
+    this.shadow.appendChild(btn);
   }
 
   private renderVerified(): void {
