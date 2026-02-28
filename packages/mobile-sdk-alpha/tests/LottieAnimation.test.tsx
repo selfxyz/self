@@ -5,20 +5,24 @@
 /* @vitest-environment jsdom */
 import { createRef, forwardRef, type Ref } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render } from '@testing-library/react';
 
 import { LottieAnimation } from '../src/components/LottieAnimation';
+
+import { render } from '@testing-library/react';
 
 // Track props and ref passed to the underlying DotLottie mock
 let capturedProps: Record<string, any> = {};
 let capturedRef: Ref<any> | null = null;
 
+const MockDotLottie = forwardRef((props: any, ref: any) => {
+  capturedProps = { ...props };
+  capturedRef = ref;
+  return null;
+});
+MockDotLottie.displayName = 'MockDotLottie';
+
 vi.mock('@lottiefiles/dotlottie-react-native', () => ({
-  DotLottie: forwardRef((props: any, ref: any) => {
-    capturedProps = { ...props };
-    capturedRef = ref;
-    return null;
-  }),
+  DotLottie: MockDotLottie,
   Mode: { FORWARD: 0, REVERSE: 1, BOUNCE: 2, REVERSE_BOUNCE: 3 },
 }));
 
@@ -66,9 +70,7 @@ describe('LottieAnimation', () => {
     it('calls both onAnimationLoaded and onLoad when both are set', () => {
       const onAnimationLoaded = vi.fn();
       const onLoad = vi.fn();
-      render(
-        <LottieAnimation source="test.lottie" onAnimationLoaded={onAnimationLoaded} onLoad={onLoad} />,
-      );
+      render(<LottieAnimation source="test.lottie" onAnimationLoaded={onAnimationLoaded} onLoad={onLoad} />);
       capturedProps.onLoad();
       expect(onAnimationLoaded).toHaveBeenCalledOnce();
       expect(onLoad).toHaveBeenCalledOnce();
@@ -96,13 +98,7 @@ describe('LottieAnimation', () => {
     it('calls both onAnimationFinish and onComplete when both are set', () => {
       const onAnimationFinish = vi.fn();
       const onComplete = vi.fn();
-      render(
-        <LottieAnimation
-          source="test.lottie"
-          onAnimationFinish={onAnimationFinish}
-          onComplete={onComplete}
-        />,
-      );
+      render(<LottieAnimation source="test.lottie" onAnimationFinish={onAnimationFinish} onComplete={onComplete} />);
       capturedProps.onComplete();
       expect(onAnimationFinish).toHaveBeenCalledWith(false);
       expect(onComplete).toHaveBeenCalledOnce();

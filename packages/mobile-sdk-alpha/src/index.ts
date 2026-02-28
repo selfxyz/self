@@ -64,8 +64,6 @@ export type { SdkErrorCategory } from './errors';
 
 export type { provingMachineCircuitType } from './proving/provingMachine';
 
-export { LottieAnimation } from './components/LottieAnimation';
-
 export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
 
 export {
@@ -80,6 +78,8 @@ export {
 } from './errors';
 
 export { default as LogoConfirmationScreen } from './flows/onboarding/logo-confirmation-screen';
+
+export { LottieAnimation } from './components/LottieAnimation';
 
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 
