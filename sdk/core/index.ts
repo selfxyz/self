@@ -15,6 +15,8 @@ import {
   VerifierContractError,
   ProofError,
 } from 'src/errors/index.js';
+import { verifyToken } from './src/verifyToken.js';
+import type { VerifyTokenResult, VerifyTokenOptions, SelfTokenPayload, SelfTokenClaims } from './src/verifyToken.js';
 
 export {
   SelfBackendVerifier,
@@ -34,4 +36,9 @@ export {
   RegistryContractError,
   VerifierContractError,
   ProofError,
+  verifyToken,
+  VerifyTokenResult,
+  VerifyTokenOptions,
+  SelfTokenPayload,
+  SelfTokenClaims,
 };
