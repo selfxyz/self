@@ -17,6 +17,8 @@ import {
 } from 'src/errors/index.js';
 import { verifyToken } from './src/verifyToken.js';
 import type { VerifyTokenResult, VerifyTokenOptions, SelfTokenPayload, SelfTokenClaims } from './src/verifyToken.js';
+import { SelfVerifier } from './src/SelfVerifier.js';
+import type { SelfVerifierOptions, PresetName } from './src/SelfVerifier.js';
 
 export {
   SelfBackendVerifier,
@@ -41,4 +43,7 @@ export {
   VerifyTokenOptions,
   SelfTokenPayload,
   SelfTokenClaims,
+  SelfVerifier,
+  SelfVerifierOptions,
+  PresetName,
 };
