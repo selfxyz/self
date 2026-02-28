@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Self Verify Widget — Test Page</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f5f5f5;
+    }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    h2 { font-size: 18px; margin-top: 32px; margin-bottom: 12px; color: #333; }
+    p { color: #666; font-size: 14px; }
+    .example { background: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; }
+    .log { font-family: monospace; font-size: 12px; background: #1a1a1a; color: #00ff88; padding: 16px; border-radius: 8px; max-height: 200px; overflow-y: auto; margin-top: 16px; }
+    .dark-example { background: #1a1a1a; }
+    hr { border: none; border-top: 1px solid #ddd; margin: 32px 0; }
+    button.modal-trigger { padding: 12px 24px; background: #01BFFF; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Self Verify Widget</h1>
+  <p>Test page for the <code>&lt;self-verify&gt;</code> web component.</p>
+
+  <h2>1. Inline — Age 18+ Preset</h2>
+  <div class="example">
+    <self-verify
+      app-name="Test Bar"
+      app-scope="age-gate-test"
+      app-endpoint="https://example.com/api/verify"
+      preset="age-18"
+    ></self-verify>
+  </div>
+
+  <h2>2. Inline — Human Preset (Dark Mode)</h2>
+  <div class="example dark-example">
+    <self-verify
+      app-name="Bot Check"
+      app-scope="captcha-test"
+      app-endpoint="https://example.com/api/verify"
+      preset="human"
+      dark-mode
+    ></self-verify>
+  </div>
+
+  <h2>3. Inline — Custom Disclosures</h2>
+  <div class="example">
+    <self-verify
+      app-name="Custom App"
+      app-scope="custom-test"
+      app-endpoint="https://example.com/api/verify"
+      disclosures='{"nationality": true, "ofac": true}'
+      description="Verify your nationality for compliance."
+    ></self-verify>
+  </div>
+
+  <h2>4. Themed with CSS Custom Properties</h2>
+  <div class="example">
+    <self-verify
+      app-name="Themed App"
+      app-scope="theme-test"
+      app-endpoint="https://example.com/api/verify"
+      preset="kyc-basic"
+      style="--self-primary: #7C3AED; --self-radius: 20px;"
+    ></self-verify>
+  </div>
+
+  <h2>5. Modal Mode (Programmatic)</h2>
+  <div class="example">
+    <button class="modal-trigger" onclick="openTestModal()">Open Verification Modal</button>
+  </div>
+
+  <h2>Event Log</h2>
+  <div class="log" id="log"></div>
+
+  <!-- Load the widget via CDN-style script tag -->
+  <script src="../dist/cdn/self-verify.js"></script>
+  <script>
+    const log = document.getElementById('log');
+    function addLog(msg) {
+      const line = document.createElement('div');
+      line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+      log.appendChild(line);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Listen to all widget events
+    document.querySelectorAll('self-verify').forEach(el => {
+      el.addEventListener('self:status', (e) => addLog('STATUS: ' + JSON.stringify(e.detail)));
+      el.addEventListener('self:success', (e) => addLog('SUCCESS: ' + JSON.stringify(e.detail)));
+      el.addEventListener('self:error', (e) => addLog('ERROR: ' + JSON.stringify(e.detail)));
+      el.addEventListener('self:already-verified', (e) => addLog('ALREADY VERIFIED: ' + JSON.stringify(e.detail)));
+    });
+
+    async function openTestModal() {
+      try {
+        const result = await SelfVerify.SelfVerify.open({
+          appName: 'Modal Test',
+          appScope: 'modal-test',
+          appEndpoint: 'https://example.com/api/verify',
+          preset: 'age-18',
+        });
+        addLog('MODAL SUCCESS: ' + JSON.stringify(result));
+      } catch (e) {
+        addLog('MODAL CLOSED: ' + e.message);
+      }
+    }
+  </script>
+</body>
+</html>
