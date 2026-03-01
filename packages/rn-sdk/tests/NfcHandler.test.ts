@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { describe, expect, it } from 'vitest';
-import { validateApduCommand } from '../src/handlers/NfcHandler';
+import { describe, expect, it, vi } from 'vitest';
+import { validateApduCommand, NfcHandler } from '../src/handlers/NfcHandler';
+import type { NfcManagerModule, NfcTechEnum } from '../src/handlers/NfcHandler';
 import { BridgeHandlerError } from '../src/bridge/types';
+import type { MessageRouter } from '../src/bridge/MessageRouter';
 
 describe('validateApduCommand', () => {
   it('accepts a valid SELECT command', () => {
@@ -145,6 +147,83 @@ describe('validateApduCommand', () => {
     } catch (err) {
       expect(err).toBeInstanceOf(BridgeHandlerError);
       expect((err as BridgeHandlerError).code).toBe('APDU_REJECTED');
+    }
+  });
+});
+
+function createMockNfc(overrides?: Partial<NfcManagerModule>): {
+  manager: NfcManagerModule;
+  tech: NfcTechEnum;
+} {
+  return {
+    manager: {
+      isSupported: vi.fn().mockResolvedValue(true),
+      start: vi.fn().mockResolvedValue(undefined),
+      requestTechnology: vi.fn().mockResolvedValue(undefined),
+      getTag: vi.fn().mockResolvedValue({ id: 'tag-1' }),
+      transceive: vi.fn().mockResolvedValue([0x90, 0x00]),
+      cancelTechnologyRequest: vi.fn().mockResolvedValue(undefined),
+      ...overrides,
+    },
+    tech: { IsoDep: 'IsoDep' },
+  };
+}
+
+function createMockRouter(): MessageRouter {
+  return { pushEvent: vi.fn() } as unknown as MessageRouter;
+}
+
+describe('NfcHandler redaction regression', () => {
+  it('never leaks attacker-controlled hex in parse error messages', async () => {
+    const nfc = createMockNfc();
+    const handler = new NfcHandler(createMockRouter(), nfc);
+    const maliciousHex = 'DEADBEEF_NOTVALID';
+
+    try {
+      await handler.handle('scan', { apduCommands: [maliciousHex] });
+      expect.fail('should have thrown');
+    } catch (err) {
+      expect(err).toBeInstanceOf(BridgeHandlerError);
+      const msg = (err as BridgeHandlerError).message;
+      expect(msg).not.toContain('DEADBEEF');
+      expect(msg).not.toContain(maliciousHex);
+    }
+  });
+
+  it('never leaks rejected APDU command bytes in validation error messages', async () => {
+    const nfc = createMockNfc();
+    const handler = new NfcHandler(createMockRouter(), nfc);
+    // Valid hex but disallowed CLA 0x80
+    const rejectedHex = '80B0000000';
+
+    try {
+      await handler.handle('scan', { apduCommands: [rejectedHex] });
+      expect.fail('should have thrown');
+    } catch (err) {
+      expect(err).toBeInstanceOf(BridgeHandlerError);
+      const msg = (err as BridgeHandlerError).message;
+      expect(msg).not.toContain('80B0');
+      expect(msg).not.toContain(rejectedHex);
+    }
+  });
+
+  it('never leaks native NFC error details through the bridge', async () => {
+    const nfc = createMockNfc({
+      transceive: vi.fn().mockRejectedValue(new Error('Sensitive native stack: 0xDEAD at /dev/nfc')),
+    });
+    const handler = new NfcHandler(createMockRouter(), nfc);
+    // Valid eMRTD SELECT command
+    const validHex = '00A4040007A0000002471001';
+
+    try {
+      await handler.handle('scan', { apduCommands: [validHex] });
+      expect.fail('should have thrown');
+    } catch (err) {
+      expect(err).toBeInstanceOf(BridgeHandlerError);
+      const msg = (err as BridgeHandlerError).message;
+      expect(msg).not.toContain('Sensitive');
+      expect(msg).not.toContain('0xDEAD');
+      expect(msg).toBe('NFC scan failed');
     }
   });
 });
