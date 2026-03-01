@@ -18,7 +18,7 @@ import { DotLottie } from '@lottiefiles/dotlottie-react-native';
  * @example
  * <LottieAnimation autoPlay loop source={animation} style={styles.animation} />
  */
-export type DotLottieSource = string | { uri: string };
+export type DotLottieSource = string | number | { uri: string };
 
 type DotLottieEvents = {
   onLoad?: () => void;

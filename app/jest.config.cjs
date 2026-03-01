@@ -51,6 +51,8 @@ module.exports = {
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/flows/disclosing/$1.cjs',
     '^@selfxyz/mobile-sdk-alpha/(.*)\\.json$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/$1.json',
+    '^@selfxyz/mobile-sdk-alpha/(.*)\\.lottie$':
+      '<rootDir>/tests/__setup__/imageMock.js',
     '^@selfxyz/mobile-sdk-alpha/(.*)$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/$1.cjs',
     // Fix snarkjs resolution for @anon-aadhaar/core

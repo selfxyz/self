@@ -24,16 +24,19 @@ index 0000000..0000001 100644
    @Published var animation: DotLottieAnimation?
 
     func createAnimation() {
-@@ -52,7 +53,7 @@
+@@ -52,7 +53,10 @@
            self.dataStore = dataStore
        }
      func onComplete() {
 -        // do something
-+        dataStore.onComplete(["" : ""])
++        let store = self.dataStore
++        DispatchQueue.main.async {
++            store.onComplete(["finished": true])
++        }
      }
 
      func onFrame(frameNo: Float) {
-@@ -97,11 +98,14 @@
+@@ -97,11 +101,14 @@
      var body: some View {
        if let animation = dataStore.animation {
                    DotLottieView(dotLottie: animation)
@@ -49,7 +52,7 @@ index 0000000..0000001 100644
                        .onAppear {
                            dataStore.createAnimation()
                        }
-@@ -112,9 +116,8 @@
+@@ -112,9 +119,8 @@
 
    func subscribeToAnimation() {
            guard let animation = dataStore.animation else { return }
@@ -60,7 +63,7 @@ index 0000000..0000001 100644
        }
  }
 
-@@ -276,6 +279,8 @@
+@@ -276,6 +282,8 @@
    func createAnimation() {
      dataStore.createAnimation()
      let vc = UIHostingController(rootView: AnimationView().environmentObject(dataStore))
@@ -69,7 +72,7 @@ index 0000000..0000001 100644
      vc.view.frame = bounds
      self.addSubview(vc.view)
      self.view = vc.view
-@@ -342,6 +347,12 @@
+@@ -342,6 +350,12 @@
          }
        }
 
