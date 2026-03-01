@@ -3,8 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /**
- * DelayedLottieView for web placeholder component.
+ * LottieAnimation web placeholder component.
  */
-export const DelayedLottieView = () => {
+export const LottieAnimation = () => {
   return <div />;
 };
