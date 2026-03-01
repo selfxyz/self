@@ -18,6 +18,36 @@ const ERROR_SVG = '<svg class="error-icon" viewBox="0 0 48 48"><circle cx="24" c
 
 const SESSION_KEY_PREFIX = 'self_session_';
 
+const DEFAULT_VERIFY_SERVICE = 'https://verify.self.xyz';
+
+/** Simple config cache: { data, fetchedAt } keyed by appId */
+const configCache = new Map<string, { data: Record<string, string | object | null>; fetchedAt: number }>();
+const CONFIG_CACHE_TTL = 60_000; // 60 seconds
+
+/** Validate that a verify-service URL is safe to fetch from. */
+function isAllowedVerifyUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    // Allow HTTPS always
+    if (parsed.protocol === 'https:') return true;
+    // Allow HTTP only for localhost/127.0.0.1 (development)
+    if (parsed.protocol === 'http:' && (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1')) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/** Validate that a config response has the expected shape. */
+function isValidConfig(data: unknown): data is Record<string, string | object | null> {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+  const obj = data as Record<string, unknown>;
+  // scope and endpoint are required for widget to function
+  if (typeof obj.scope !== 'string' || !obj.scope) return false;
+  if (typeof obj.endpoint !== 'string' || !obj.endpoint) return false;
+  return true;
+}
+
 /**
  * Safely creates a DOM tree from static template + escaped dynamic values.
  * All user-provided strings are escaped via textContent assignment before insertion.
@@ -36,6 +66,7 @@ function createTextEl(tag: string, className: string, text: string): HTMLElement
 export class SelfVerifyElement extends HTMLElement {
   static get observedAttributes() {
     return [
+      'app-id',
       'app-name',
       'app-scope',
       'app-endpoint',
@@ -53,6 +84,8 @@ export class SelfVerifyElement extends HTMLElement {
       'redirect-uri',
       'client-id',
       'ws-url',
+      'on-success',
+      'on-error',
     ];
   }
 
@@ -62,6 +95,8 @@ export class SelfVerifyElement extends HTMLElement {
   private currentStep: VerificationStepValue = VerificationStep.DISCONNECTED;
   private expanded = false;
   private selfApp: SelfApp | null = null;
+  private configLoaded = false;
+  private applyingConfig = false;
 
   constructor() {
     super();
@@ -71,6 +106,87 @@ export class SelfVerifyElement extends HTMLElement {
   connectedCallback() {
     this.sessionId = this.getAttribute('user-id') || uuidv4();
 
+    const appId = this.getAttribute('app-id');
+    if (appId && !this.configLoaded) {
+      this.fetchConfigAndInit(appId);
+      return;
+    }
+
+    this.initWidget();
+  }
+
+  private async fetchConfigAndInit(appId: string): Promise<void> {
+    this.renderLoading();
+
+    try {
+      const config = await this.fetchAppConfig(appId);
+
+      // Apply fetched values — explicit HTML attributes take precedence.
+      // Guard prevents attributeChangedCallback from triggering intermediate rebuilds.
+      this.applyingConfig = true;
+
+      const attrMap: Record<string, string> = {
+        appName: 'app-name',
+        scope: 'app-scope',
+        endpoint: 'app-endpoint',
+        preset: 'preset',
+      };
+
+      for (const [configKey, attrName] of Object.entries(attrMap)) {
+        const value = config[configKey];
+        if (value && typeof value === 'string' && !this.getAttribute(attrName)) {
+          this.setAttribute(attrName, value);
+        }
+      }
+
+      // Apply disclosures from config if not set via attribute
+      if (config.disclosures && !this.getAttribute('disclosures') && !this.getAttribute('preset')) {
+        const disclosuresObj = config.disclosures as Record<string, unknown>;
+        if (Object.keys(disclosuresObj).length > 0) {
+          this.setAttribute('disclosures', JSON.stringify(disclosuresObj));
+        }
+      }
+
+      this.applyingConfig = false;
+      this.configLoaded = true;
+      this.initWidget();
+    } catch (err) {
+      this.applyingConfig = false;
+      const message = (err as Error).message;
+      console.error('[self-verify] Failed to load config:', message);
+      this.renderError(message.includes('404') ? 'App not found — check your app-id' : 'Failed to load verification config');
+    }
+  }
+
+  private async fetchAppConfig(appId: string): Promise<Record<string, string | object | null>> {
+    // Check cache
+    const cached = configCache.get(appId);
+    if (cached && Date.now() - cached.fetchedAt < CONFIG_CACHE_TTL) {
+      return cached.data;
+    }
+
+    const verifyService = this.getAttribute('verify-url') || DEFAULT_VERIFY_SERVICE;
+    if (!isAllowedVerifyUrl(verifyService)) {
+      throw new Error('Invalid verify-url: must be HTTPS (or localhost for development)');
+    }
+
+    const url = `${verifyService}/apps/${encodeURIComponent(appId)}/config`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) {
+      throw new Error(`Config fetch failed: ${res.status}`);
+    }
+    const data = await res.json();
+    if (!isValidConfig(data)) {
+      throw new Error('Invalid config response: missing scope or endpoint');
+    }
+    configCache.set(appId, { data, fetchedAt: Date.now() });
+    return data;
+  }
+
+  private initWidget(): void {
     // Redirect mode: render a button that starts the OAuth flow
     if (this.getAttribute('mode') === 'redirect') {
       this.renderRedirectMode();
@@ -97,7 +213,7 @@ export class SelfVerifyElement extends HTMLElement {
   }
 
   attributeChangedCallback() {
-    if (!this.isConnected) return;
+    if (!this.isConnected || this.applyingConfig) return;
     this.buildSelfApp();
     this.render();
   }
@@ -185,28 +301,49 @@ export class SelfVerifyElement extends HTMLElement {
       this.saveSessionMemory(ttl, data.token as string | undefined);
     }
 
+    const successDetail = {
+      verified: true,
+      sessionId: this.sessionId,
+      token: data.token,
+      claims: data.claims,
+    };
+
     this.dispatchEvent(
       new CustomEvent('self:success', {
-        detail: {
-          verified: true,
-          sessionId: this.sessionId,
-          token: data.token,
-          claims: data.claims,
-        },
+        detail: successDetail,
         bubbles: true,
         composed: true,
       })
     );
+
+    // on-success="fnName" — call a global function (like Google's data-callback)
+    this.invokeCallback('on-success', successDetail);
   }
 
   private handleError(data: { error_code?: string; reason?: string }): void {
+    const errorDetail = { errorCode: data.error_code, reason: data.reason };
+
     this.dispatchEvent(
       new CustomEvent('self:error', {
-        detail: { errorCode: data.error_code, reason: data.reason },
+        detail: errorDetail,
         bubbles: true,
         composed: true,
       })
     );
+
+    this.invokeCallback('on-error', errorDetail);
+  }
+
+  /** Invoke a named global function from an attribute value (e.g. on-success="handleResult"). */
+  private invokeCallback(attr: string, detail: Record<string, unknown>): void {
+    const fnName = this.getAttribute(attr);
+    if (!fnName) return;
+    const fn = (window as unknown as Record<string, unknown>)[fnName];
+    if (typeof fn === 'function') {
+      try { fn(detail); } catch (e) { console.error(`[self-verify] ${attr} callback error:`, e); }
+    } else {
+      console.warn(`[self-verify] ${attr}="${fnName}" — window.${fnName} is not a function`);
+    }
   }
 
   // Session memory
@@ -577,6 +714,40 @@ export class SelfVerifyElement extends HTMLElement {
     });
 
     this.shadow.appendChild(btn);
+  }
+
+  private renderLoading(): void {
+    while (this.shadow.firstChild) {
+      this.shadow.removeChild(this.shadow.firstChild);
+    }
+    const styleEl = document.createElement('style');
+    styleEl.textContent = getWidgetCSS();
+    this.shadow.appendChild(styleEl);
+
+    const container = document.createElement('div');
+    container.className = 'widget widget--expanded';
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner';
+    container.appendChild(spinner);
+    container.appendChild(createTextEl('div', 'status-label', 'Loading...'));
+    this.shadow.appendChild(container);
+  }
+
+  private renderError(message: string): void {
+    while (this.shadow.firstChild) {
+      this.shadow.removeChild(this.shadow.firstChild);
+    }
+    const styleEl = document.createElement('style');
+    styleEl.textContent = getWidgetCSS();
+    this.shadow.appendChild(styleEl);
+
+    const container = document.createElement('div');
+    container.className = 'widget widget--expanded';
+    const iconDiv = document.createElement('div');
+    iconDiv.insertAdjacentHTML('afterbegin', ERROR_SVG);
+    container.appendChild(iconDiv.firstElementChild!);
+    container.appendChild(createTextEl('div', 'status-label', message));
+    this.shadow.appendChild(container);
   }
 
   private renderVerified(): void {

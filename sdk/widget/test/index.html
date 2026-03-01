@@ -26,7 +26,16 @@
   <h1>Self Verify Widget</h1>
   <p>Test page for the <code>&lt;self-verify&gt;</code> web component.</p>
 
-  <h2>1. Inline — Age 18+ Preset</h2>
+  <h2>1. App ID Mode (Simplified)</h2>
+  <div class="example">
+    <p style="color: #999; font-size: 12px; margin-bottom: 12px;">Widget fetches config from verify-service using app-id. Requires a running verify-service.</p>
+    <self-verify
+      app-id="test-app-id"
+      preset="age-18"
+    ></self-verify>
+  </div>
+
+  <h2>2. Inline — Age 18+ Preset (Legacy)</h2>
   <div class="example">
     <self-verify
       app-name="Test Bar"
@@ -36,7 +45,7 @@
     ></self-verify>
   </div>
 
-  <h2>2. Inline — Human Preset (Dark Mode)</h2>
+  <h2>3. Inline — Human Preset (Dark Mode)</h2>
   <div class="example dark-example">
     <self-verify
       app-name="Bot Check"
@@ -47,7 +56,7 @@
     ></self-verify>
   </div>
 
-  <h2>3. Inline — Custom Disclosures</h2>
+  <h2>4. Inline — Custom Disclosures</h2>
   <div class="example">
     <self-verify
       app-name="Custom App"
@@ -58,7 +67,7 @@
     ></self-verify>
   </div>
 
-  <h2>4. Themed with CSS Custom Properties</h2>
+  <h2>5. Themed with CSS Custom Properties</h2>
   <div class="example">
     <self-verify
       app-name="Themed App"
@@ -69,7 +78,7 @@
     ></self-verify>
   </div>
 
-  <h2>5. Modal Mode (Programmatic)</h2>
+  <h2>6. Modal Mode (Programmatic)</h2>
   <div class="example">
     <button class="modal-trigger" onclick="openTestModal()">Open Verification Modal</button>
   </div>
