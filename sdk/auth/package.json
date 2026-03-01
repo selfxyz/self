@@ -1,0 +1,88 @@
+{
+  "name": "@selfxyz/auth",
+  "version": "0.1.0",
+  "description": "Self verification OAuth providers for NextAuth, Passport.js, and standalone use",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfxyz/self"
+  },
+  "license": "MIT",
+  "author": "selfxyz",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./next": {
+      "import": {
+        "types": "./dist/next.d.ts",
+        "default": "./dist/next.js"
+      },
+      "require": {
+        "types": "./dist/next.d.cts",
+        "default": "./dist/next.cjs"
+      }
+    },
+    "./passport": {
+      "import": {
+        "types": "./dist/passport.d.ts",
+        "default": "./dist/passport.js"
+      },
+      "require": {
+        "types": "./dist/passport.d.cts",
+        "default": "./dist/passport.cjs"
+      }
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:deps": "yarn workspaces foreach --from @selfxyz/auth --topological-dev --recursive run build",
+    "format": "prettier --write .",
+    "lint": "prettier --check .",
+    "prepublishOnly": "yarn build",
+    "test": "echo 'no tests yet'"
+  },
+  "dependencies": {
+    "@selfxyz/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "next-auth": ">=5.0.0-beta.0",
+    "passport-oauth2": ">=1.8.0"
+  },
+  "peerDependenciesMeta": {
+    "next-auth": {
+      "optional": true
+    },
+    "passport-oauth2": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.3",
+    "@types/passport-oauth2": "^1.4.17",
+    "next-auth": "^5.0.0-beta.30",
+    "passport-oauth2": "^1.8.0",
+    "prettier": "^3.5.3",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
