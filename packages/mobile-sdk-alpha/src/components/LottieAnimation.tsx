@@ -4,7 +4,7 @@
 
 import type { MutableRefObject } from 'react';
 import { forwardRef, useCallback, useMemo, useRef } from 'react';
-import type { ViewStyle } from 'react-native';
+import { Image, type ViewStyle } from 'react-native';
 
 import type { Dotlottie, Mode } from '@lottiefiles/dotlottie-react-native';
 import { DotLottie } from '@lottiefiles/dotlottie-react-native';
@@ -64,6 +64,7 @@ export const LottieAnimation = forwardRef<Dotlottie, LottieAnimationProps>((prop
   const {
     autoPlay,
     autoplay,
+    source,
     onAnimationLoaded,
     onAnimationFinish,
     onLoad,
@@ -77,6 +78,15 @@ export const LottieAnimation = forwardRef<Dotlottie, LottieAnimationProps>((prop
   } = props;
   const internalRef = useRef<Dotlottie | null>(null);
   const shouldAutoPlay = useMemo(() => Boolean(autoPlay ?? autoplay), [autoPlay, autoplay]);
+
+  // Metro require() returns a number asset ID — resolve it to a { uri } for DotLottie
+  const resolvedSource = useMemo((): string | { uri: string } => {
+    if (typeof source === 'number') {
+      const asset = Image.resolveAssetSource(source);
+      return { uri: asset.uri };
+    }
+    return source;
+  }, [source]);
 
   const handleRef = useCallback(
     (instance: unknown) => {
@@ -107,6 +117,7 @@ export const LottieAnimation = forwardRef<Dotlottie, LottieAnimationProps>((prop
     <DotLottie
       ref={handleRef}
       {...rest}
+      source={resolvedSource}
       style={style ?? {}}
       autoplay={shouldAutoPlay}
       onLoad={handleLoad}
