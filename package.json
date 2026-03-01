@@ -14,7 +14,7 @@
   },
   "scripts": {
     "audit:tech-debt": "node scripts/audit/tech-debt-baseline.mjs",
-    "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts --exclude @selfxyz/circuits --exclude mobile-sdk-demo --exclude @selfxyz/kmp-sdk --exclude @selfxyz/kmp-test-app -i --all run build",
+    "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts --exclude @selfxyz/circuits --exclude mobile-sdk-demo --exclude @selfxyz/kmp-sdk --exclude @selfxyz/kmp-test-app --exclude @selfxyz/rn-test-app -i --all run build",
     "build:demo": "yarn workspace mobile-sdk-demo build",
     "build:mobile-sdk": "yarn workspace @selfxyz/mobile-sdk-alpha build",
     "check:versions": "node scripts/check-package-versions.mjs",

@@ -1,0 +1,36 @@
+{
+  "name": "@selfxyz/rn-test-app",
+  "version": "0.0.1-alpha",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "android": "react-native run-android --verbose",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "build": "yarn types",
+    "types": "tsc --noEmit",
+    "lint": "node -e \"process.exit(0)\"",
+    "nice": "yarn lint",
+    "test": "node -e \"process.exit(0)\""
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.6",
+    "@selfxyz/rn-sdk": "workspace:*",
+    "react": "^18.3.1",
+    "react-native": "0.76.9",
+    "react-native-biometrics": "^3.0.1",
+    "react-native-fs": "^2.20.0",
+    "react-native-keychain": "^9.2.3",
+    "react-native-nfc-manager": "^3.17.2",
+    "react-native-webview": "13.16.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.6",
+    "@react-native-community/cli": "^16.0.3",
+    "@react-native/gradle-plugin": "0.76.9",
+    "@react-native/metro-config": "0.76.9",
+    "@tsconfig/react-native": "^3.0.6",
+    "@types/react": "^18.3.4",
+    "typescript": "^5.9.3"
+  }
+}
