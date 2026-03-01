@@ -92,7 +92,6 @@ The NFC handler returns tag metadata plus optional APDU exchange results:
   connected: true,
   tagId: string | null,
   techType: string,
-  params: {...},
   apduResponses?: string[]  // hex-encoded responses when apduCommands are provided
 }
 ```
@@ -101,6 +100,40 @@ When `params.apduCommands` (array of hex strings) is provided, the handler
 iterates through each command, calls `NfcManager.transceive()`, and returns
 hex-encoded response bytes in `apduResponses`. Progress events are emitted
 at `apdu_exchange` (70%) and `apdu_complete` (90%).
+
+APDU commands are validated against an eMRTD-focused allowlist before
+transceive, and each APDU transceive has a timeout guard (default: 10s).
+
+### NFC Data-Handling Guidance
+
+- Treat `tagId` as sensitive identifier data. Do not log or persist it unless strictly required for your product flow.
+- Treat `apduResponses` as sensitive payload material. Do not send to analytics, crash logs, or external observability by default.
+- If debugging requires APDU payloads, gate it behind explicit local debug mode and ensure logs are scrubbed before release.
+
+### NFC APDU Error Contract
+
+The NFC bridge can return these APDU-related errors:
+
+- `INVALID_PARAMS`: malformed APDU hex input
+- `APDU_REJECTED`: APDU failed allowlist/format checks
+- `NFC_APDU_TIMEOUT`: APDU transceive timed out
+- `NFC_APDU_NOT_SUPPORTED`: native `transceive` unavailable
+
+For APDU parse/validation/timeout failures, `error.details` includes safe
+audit metadata:
+
+```typescript
+{
+  commandIndex: number,
+  totalCommands: number,
+  acceptedCount: number,
+  rejectedCount: number,
+  timedOutCount: number
+}
+```
+
+This metadata is designed for telemetry/debugging and intentionally excludes
+raw APDU command bytes.
 
 ---
 
@@ -127,8 +160,7 @@ The host app must provide a native MRZ scanner module (e.g., via
 ### Unit Tests
 
 ```bash
-cd packages/rn-sdk
-npx vitest run          # 64 tests across 8 files
+yarn workspace @selfxyz/rn-sdk test
 ```
 
 ### Device Testing Checklist

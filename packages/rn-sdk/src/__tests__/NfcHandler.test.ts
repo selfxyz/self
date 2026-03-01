@@ -137,6 +137,67 @@ describe('NfcHandler', () => {
       expect(mockNfc.manager.transceive).toHaveBeenCalledTimes(2);
     });
 
+    it('rejects disallowed APDU SELECT parameters before transceive', async () => {
+      try {
+        await handler.handle('scan', {
+          apduCommands: ['00A4040007A0000000000000'],
+        });
+        expect.unreachable('Should have thrown');
+      } catch (err: unknown) {
+        expect((err as { code: string }).code).toBe('APDU_REJECTED');
+        expect((err as Error).message).toBe('SELECT command parameters not allowed');
+        expect((err as { details?: Record<string, unknown> }).details).toMatchObject({
+          commandIndex: 0,
+          totalCommands: 1,
+          acceptedCount: 0,
+          rejectedCount: 1,
+          timedOutCount: 0,
+        });
+      }
+
+      expect(mockNfc.manager.transceive).not.toHaveBeenCalled();
+    });
+
+    it('rejects GET DATA (CB) without command data before transceive', async () => {
+      try {
+        await handler.handle('scan', {
+          apduCommands: ['00CB0100'],
+        });
+        expect.unreachable('Should have thrown');
+      } catch (err: unknown) {
+        expect((err as { code: string }).code).toBe('APDU_REJECTED');
+        expect((err as Error).message).toBe('GET DATA command data required');
+        expect((err as { details?: Record<string, unknown> }).details).toMatchObject({
+          commandIndex: 0,
+          totalCommands: 1,
+          acceptedCount: 0,
+          rejectedCount: 1,
+          timedOutCount: 0,
+        });
+      }
+
+      expect(mockNfc.manager.transceive).not.toHaveBeenCalled();
+    });
+
+    it('attaches audit details to INVALID_PARAMS for malformed APDU hex', async () => {
+      try {
+        await handler.handle('scan', {
+          apduCommands: ['GG'],
+        });
+        expect.unreachable('Should have thrown');
+      } catch (err: unknown) {
+        expect((err as { code: string }).code).toBe('INVALID_PARAMS');
+        expect((err as Error).message).toBe('Invalid APDU hex command format');
+        expect((err as { details?: Record<string, unknown> }).details).toMatchObject({
+          commandIndex: 0,
+          totalCommands: 1,
+          acceptedCount: 0,
+          rejectedCount: 0,
+          timedOutCount: 0,
+        });
+      }
+    });
+
     it('throws NFC_APDU_NOT_SUPPORTED when transceive is unavailable', async () => {
       delete (mockNfc.manager as Partial<NfcManagerModule>).transceive;
 
@@ -158,7 +219,29 @@ describe('NfcHandler', () => {
         expect.unreachable('Should have thrown');
       } catch (err: unknown) {
         expect((err as { code: string }).code).toBe('NFC_SCAN_FAILED');
-        expect((err as Error).message).toBe('NFC tag lost');
+        expect((err as Error).message).toBe('NFC scan failed');
+      }
+    });
+
+    it('throws NFC_APDU_TIMEOUT when transceive hangs', async () => {
+      handler = new NfcHandler(router, mockNfc, { apduTimeoutMs: 1 });
+      (mockNfc.manager.transceive as ReturnType<typeof vi.fn>).mockImplementation(
+        () => new Promise(() => {}),
+      );
+
+      try {
+        await handler.handle('scan', { apduCommands: ['00A4040007A0000002471001'] });
+        expect.unreachable('Should have thrown');
+      } catch (err: unknown) {
+        expect((err as { code: string }).code).toBe('NFC_APDU_TIMEOUT');
+        expect((err as Error).message).toBe('NFC APDU command timed out');
+        expect((err as { details?: Record<string, unknown> }).details).toMatchObject({
+          commandIndex: 0,
+          totalCommands: 1,
+          acceptedCount: 0,
+          rejectedCount: 0,
+          timedOutCount: 1,
+        });
       }
     });
   });
