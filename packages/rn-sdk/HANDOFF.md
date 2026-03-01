@@ -106,9 +106,15 @@ transceive, and each APDU transceive has a timeout guard (default: 10s).
 
 ### NFC Data-Handling Guidance
 
-- Treat `tagId` as sensitive identifier data. Do not log or persist it unless strictly required for your product flow.
-- Treat `apduResponses` as sensitive payload material. Do not send to analytics, crash logs, or external observability by default.
-- If debugging requires APDU payloads, gate it behind explicit local debug mode and ensure logs are scrubbed before release.
+**Protected fields:** `tagId` (persistent chip UID — PII under GDPR) and `apduResponses` (may contain raw MRZ data, face images, or key-derivation material).
+
+- **Never** send `tagId` or `apduResponses` to analytics, crash-reporting, or external observability services.
+- **Never** persist `tagId` or `apduResponses` to disk, databases, or shared preferences outside of an active verification session.
+- If on-device debugging requires raw APDU payloads, all of the following must be true:
+  1. A named debug flag (e.g., `NFC_APDU_DEBUG`) is enabled explicitly by a developer — not by a generic `debug: true` prop.
+  2. The flag has automatic expiry (e.g., single session, time-limited, or requires re-approval on each launch).
+  3. Output is limited to the local device console — no network transmission.
+  4. Logs are scrubbed or discarded before any build leaves the developer's machine.
 
 ### NFC APDU Error Contract
 
