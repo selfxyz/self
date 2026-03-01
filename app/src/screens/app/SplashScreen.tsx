@@ -106,6 +106,16 @@ const SplashScreen: React.FC = ({}) => {
     }
   }, [checkBiometricsAvailable, setBiometricsAvailable, selfClient]);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsAnimationFinished(prev => {
+        if (!prev) console.warn('SplashScreen: animation timeout, proceeding');
+        return true;
+      });
+    }, 5000);
+    return () => clearTimeout(timeout);
+  }, []);
+
   const handleAnimationFinish = useCallback(() => {
     impactLight();
     setIsAnimationFinished(true);

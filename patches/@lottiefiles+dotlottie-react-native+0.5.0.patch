@@ -82,3 +82,20 @@ index 0000000..0000001 100644
 
       override func layoutSubviews() {
         super.layoutSubviews()
+diff --git a/node_modules/@lottiefiles/dotlottie-react-native/android/src/main/java/com/dotlottiereactnative/DotlottieReactNativeView.kt b/node_modules/@lottiefiles/dotlottie-react-native/android/src/main/java/com/dotlottiereactnative/DotlottieReactNativeView.kt
+index 0000000..0000001 100644
+--- a/node_modules/@lottiefiles/dotlottie-react-native/android/src/main/java/com/dotlottiereactnative/DotlottieReactNativeView.kt
++++ b/node_modules/@lottiefiles/dotlottie-react-native/android/src/main/java/com/dotlottiereactnative/DotlottieReactNativeView.kt
+@@ -81,7 +81,11 @@
+ 
+     animationUrl?.let { url ->
+       DotLottieAnimation(
+-              source = DotLottieSource.Url(url),
++              source = if (url.startsWith("http://") || url.startsWith("https://")) {
++                DotLottieSource.Url(url)
++              } else {
++                DotLottieSource.Asset(url.substringAfterLast("/"))
++              },
+               autoplay = autoplay,
+               loop = loop,
+               speed = speed,
