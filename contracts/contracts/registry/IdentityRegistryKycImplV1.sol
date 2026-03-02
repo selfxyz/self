@@ -120,7 +120,7 @@ interface IPCR0Manager {
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
  * @dev Inherits from IdentityRegistryKycStorageV1 and implements IIdentityRegistryKycV1.
  *
- * @custom:version 1.1.0
+ * @custom:version 1.2.0
  */
 contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityRegistryKycV1 {
     using InternalLeanIMT for LeanIMTData;

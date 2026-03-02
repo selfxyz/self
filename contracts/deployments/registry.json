@@ -1,6 +1,6 @@
 {
   "$schema": "./registry.schema.json",
-  "lastUpdated": "2026-03-02T05:00:49.070Z",
+  "lastUpdated": "2026-03-02T10:19:46.004Z",
   "contracts": {
     "IdentityVerificationHub": {
       "source": "IdentityVerificationHubImplV2",
@@ -114,8 +114,8 @@
         },
         "IdentityRegistryKyc": {
           "proxy": "0x90e907E4AaB6e9bcFB94997Af4A097e8CAadBdf3",
-          "currentVersion": "1.1.0",
-          "currentImpl": "0x530eEA7E5b286108926B05510491560c4bAE018e"
+          "currentVersion": "1.2.0",
+          "currentImpl": "0x6E2889Bc9baa6F53bDdf4843675155811F0AAAEd"
         },
         "PCR0Manager": {
           "address": "0xf2810D5E9938816D42F0Ae69D33F013a23C0aED2",
@@ -353,6 +353,20 @@
             "deployedAt": "2026-03-02T05:00:49.070Z",
             "deployedBy": "0xC1C860804EFdA544fe79194d1a37e60b846CEdeb",
             "gitCommit": ""
+          }
+        }
+      },
+      "1.2.0": {
+        "initializerVersion": 1,
+        "initializerFunction": "",
+        "changelog": "Add rolling OFAC root window: store previous roots alongside current, accept either in checkOfacRoots for graceful mid-verification transitions",
+        "gitTag": "identityregistrykyc-v1.2.0",
+        "deployments": {
+          "celo-sepolia": {
+            "impl": "0x6E2889Bc9baa6F53bDdf4843675155811F0AAAEd",
+            "deployedAt": "2026-03-02T10:19:45.990Z",
+            "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
+            "gitCommit": "611c30d21"
           }
         }
       }
