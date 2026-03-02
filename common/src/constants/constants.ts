@@ -268,7 +268,7 @@ export const TREE_TRACKER_URL = 'https://tree.self.xyz';
 export const TREE_URL = 'https://tree.self.xyz';
 export const TREE_URL_STAGING = 'https://tree.staging.self.xyz';
 
-export const WS_DB_RELAYER = 'wss://webscoket.self.xyz';
+export const WS_DB_RELAYER = 'wss://websocket.self.xyz';
 
 export const WS_DB_RELAYER_STAGING = 'wss://websocket.staging.self.xyz';
 
