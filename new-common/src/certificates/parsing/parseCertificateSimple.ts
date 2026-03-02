@@ -13,7 +13,11 @@ import type {
 import { getCurveForElliptic, getECDSACurveBits, identifyCurve } from './curves.js';
 import { initElliptic } from './elliptic.js';
 import { getFriendlyName, getSecpFromNist } from './oids.js';
-import { getAuthorityKeyIdentifier, getIssuerCountryCode, getSubjectKeyIdentifier } from './utils.js';
+import {
+  getAuthorityKeyIdentifier,
+  getIssuerCountryCode,
+  getSubjectKeyIdentifier,
+} from './utils.js';
 
 export function getCertificateFromPem(pemContent: string): Certificate {
   const pemFormatted = pemContent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n|\r)/g, '');
@@ -37,7 +41,7 @@ export const getCircuitName = (
   signatureAlgorithm: string,
   hashFunction: string,
   domainParameter: string,
-  keyLength: string
+  keyLength: string,
 ) => {
   const circuit = circuitNameFromMode[circuitMode];
   if (circuit == 'vc_and_disclose') {
@@ -237,7 +241,7 @@ export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
 }
 
 export function getTBSBytesForge(certificate: Certificate): number[] {
-  return Array.from(certificate.tbsView.map((byte) => parseInt(byte.toString(16), 16)));
+  return Array.from(certificate.tbsView.map(byte => parseInt(byte.toString(16), 16)));
 }
 
 export function parseCertificateSimple(pem: string): CertificateData {

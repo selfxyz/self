@@ -3,7 +3,7 @@ import { MAX_BYTES_IN_FIELD } from './constants/crypto.js';
 export function bigIntToChunkedBytes(
   num: bigint | bigint,
   bytesPerChunk: number,
-  numChunks: number
+  numChunks: number,
 ) {
   const res: string[] = [];
   const bigintNum: bigint = typeof num == 'bigint' ? num : BigInt(num);

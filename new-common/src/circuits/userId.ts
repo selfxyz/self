@@ -25,8 +25,8 @@ function stringToBigInt(str: string): bigint {
   return BigInt(
     '1' +
       Array.from(str)
-        .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
-        .join('')
+        .map(char => char.charCodeAt(0).toString().padStart(3, '0'))
+        .join(''),
   );
 }
 
@@ -52,7 +52,7 @@ export function castToAddress(bigInt: bigint): string {
 export function castToScope(num: bigint): string {
   const str = num.toString().slice(1);
   const charCodes = str.match(/.{1,3}/g) || [];
-  return String.fromCharCode(...charCodes.map((code) => parseInt(code, 10)));
+  return String.fromCharCode(...charCodes.map(code => parseInt(code, 10)));
 }
 
 export function castToUUID(bigInt: bigint): string {
@@ -73,7 +73,7 @@ export function hexToUUID(hex: string): string {
 }
 
 export function stringToAsciiBigIntArray(str: string): bigint[] {
-  return Array.from(str, (char) => BigInt(char.charCodeAt(0)));
+  return Array.from(str, char => BigInt(char.charCodeAt(0)));
 }
 
 export function validateUserId(userId: string, type: UserIdType): boolean {
@@ -82,7 +82,7 @@ export function validateUserId(userId: string, type: UserIdType): boolean {
       return /^[0-9A-Fa-f]+$/.test(userId);
     case 'uuid':
       return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-        userId
+        userId,
       );
     default:
       return false;

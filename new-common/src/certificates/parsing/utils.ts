@@ -3,7 +3,7 @@ import { sha256 } from 'js-sha256';
 import type { Certificate } from 'pkijs';
 
 export const getAuthorityKeyIdentifier = (cert: Certificate): string => {
-  const authorityKeyIdentifierExt = cert.extensions.find((ext) => ext.extnID === '2.5.29.35');
+  const authorityKeyIdentifierExt = cert.extensions.find(ext => ext.extnID === '2.5.29.35');
   if (authorityKeyIdentifierExt) {
     const extnValueHex = authorityKeyIdentifierExt.extnValue.valueBlock.valueHexView;
     const asn1 = asn1js.fromBER(extnValueHex);
@@ -11,7 +11,7 @@ export const getAuthorityKeyIdentifier = (cert: Certificate): string => {
       const constructedValue = asn1.result.valueBlock as { value: Array<any> };
       if (constructedValue.value) {
         const keyIdentifierElement = constructedValue.value.find(
-          (element: any) => element.idBlock.tagClass === 3 && element.idBlock.tagNumber === 0
+          (element: any) => element.idBlock.tagClass === 3 && element.idBlock.tagNumber === 0,
         );
         if (keyIdentifierElement) {
           return Buffer.from(keyIdentifierElement.valueBlock.valueHexView).toString('hex');
@@ -37,10 +37,10 @@ export function getIssuerCountryCode(cert: Certificate): string {
 }
 
 export const getSubjectKeyIdentifier = (cert: Certificate): string => {
-  const subjectKeyIdentifier = cert.extensions.find((ext) => ext.extnID === '2.5.29.14');
+  const subjectKeyIdentifier = cert.extensions.find(ext => ext.extnID === '2.5.29.14');
   if (subjectKeyIdentifier) {
     let skiValue = Buffer.from(subjectKeyIdentifier.extnValue.valueBlock.valueHexView).toString(
-      'hex'
+      'hex',
     );
     skiValue = skiValue.replace(/^(?:30(?:16|1E|22|32|42))?(?:04(?:08|14|1C|20|30|40))?/, '');
     return skiValue;

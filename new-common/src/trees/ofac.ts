@@ -35,7 +35,7 @@ function addLeafIfNew(tree: SMT, leaf: bigint): boolean {
 export function buildSMT(
   field: OfacEntry[],
   treeType: string,
-  builder: LeafBuilder
+  builder: LeafBuilder,
 ): [number, number, SMT] {
   let count = 0;
   const startTime = performance.now();
@@ -101,7 +101,7 @@ export function buildKycSMT(field: OfacEntry[], treeType: string): [number, numb
 
 export function getCountryLeaf(
   country_by: (bigint | number)[],
-  country_to: (bigint | number)[]
+  country_to: (bigint | number)[],
 ): bigint {
   if (country_by.length !== 3 || country_to.length !== 3) return BigInt(0);
   return poseidon6(country_by.concat(country_to));

@@ -64,13 +64,31 @@ export const KYC_REVEAL_DATA_INDICES = {
 export const KYC_SELECTOR_BITS = {
   COUNTRY: Array.from({ length: KYC_COUNTRY_LENGTH }, (_, i) => KYC_COUNTRY_INDEX + i) as number[],
   ID_TYPE: Array.from({ length: KYC_ID_TYPE_LENGTH }, (_, i) => KYC_ID_TYPE_INDEX + i) as number[],
-  ID_NUMBER: Array.from({ length: KYC_ID_NUMBER_LENGTH }, (_, i) => KYC_ID_NUMBER_INDEX + i) as number[],
-  ISSUANCE_DATE: Array.from({ length: KYC_ISSUANCE_DATE_LENGTH }, (_, i) => KYC_ISSUANCE_DATE_INDEX + i) as number[],
-  EXPIRY_DATE: Array.from({ length: KYC_EXPIRY_DATE_LENGTH }, (_, i) => KYC_EXPIRY_DATE_INDEX + i) as number[],
-  FULL_NAME: Array.from({ length: KYC_FULL_NAME_LENGTH }, (_, i) => KYC_FULL_NAME_INDEX + i) as number[],
+  ID_NUMBER: Array.from(
+    { length: KYC_ID_NUMBER_LENGTH },
+    (_, i) => KYC_ID_NUMBER_INDEX + i,
+  ) as number[],
+  ISSUANCE_DATE: Array.from(
+    { length: KYC_ISSUANCE_DATE_LENGTH },
+    (_, i) => KYC_ISSUANCE_DATE_INDEX + i,
+  ) as number[],
+  EXPIRY_DATE: Array.from(
+    { length: KYC_EXPIRY_DATE_LENGTH },
+    (_, i) => KYC_EXPIRY_DATE_INDEX + i,
+  ) as number[],
+  FULL_NAME: Array.from(
+    { length: KYC_FULL_NAME_LENGTH },
+    (_, i) => KYC_FULL_NAME_INDEX + i,
+  ) as number[],
   DOB: Array.from({ length: KYC_DOB_LENGTH }, (_, i) => KYC_DOB_INDEX + i) as number[],
-  PHOTO_HASH: Array.from({ length: KYC_PHOTO_HASH_LENGTH }, (_, i) => KYC_PHOTO_HASH_INDEX + i) as number[],
-  PHONE_NUMBER: Array.from({ length: KYC_PHONE_NUMBER_LENGTH }, (_, i) => KYC_PHONE_NUMBER_INDEX + i) as number[],
+  PHOTO_HASH: Array.from(
+    { length: KYC_PHOTO_HASH_LENGTH },
+    (_, i) => KYC_PHOTO_HASH_INDEX + i,
+  ) as number[],
+  PHONE_NUMBER: Array.from(
+    { length: KYC_PHONE_NUMBER_LENGTH },
+    (_, i) => KYC_PHONE_NUMBER_INDEX + i,
+  ) as number[],
   GENDER: Array.from({ length: KYC_GENDER_LENGTH }, (_, i) => KYC_GENDER_INDEX + i) as number[],
   ADDRESS: Array.from({ length: KYC_ADDRESS_LENGTH }, (_, i) => KYC_ADDRESS_INDEX + i) as number[],
 } as const;

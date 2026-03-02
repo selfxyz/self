@@ -102,7 +102,6 @@ export type DocumentType =
   | 'passport'
   | 'id_card'
   | 'aadhaar'
-  | 'drivers_licence'
   | 'mock_passport'
   | 'mock_id_card'
   | 'mock_aadhaar';
@@ -211,4 +210,3 @@ export enum AttestationIdHex {
   aadhaar = '0x0000000000000000000000000000000000000000000000000000000000000003',
   kyc = '0x0000000000000000000000000000000000000000000000000000000000000004',
 }
-

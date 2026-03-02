@@ -2,8 +2,8 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import hre from "hardhat";
 import { readFileSync } from "fs";
 import path from "path";
-import { getCscaTreeRoot } from "@selfxyz/common/utils/trees";
-import serialized_csca_tree from "../../../../common/pubkeys/serialized_csca_tree.json";
+import { getCscaTreeRoot } from "@selfxyz/new-common/src/trees/proof";
+import serialized_csca_tree from "@selfxyz/new-common/src/data/serialized_csca_tree.json";
 
 module.exports = buildModule("UpdateRegistryCscaRoot", (m) => {
   const networkName = hre.network.config.chainId;

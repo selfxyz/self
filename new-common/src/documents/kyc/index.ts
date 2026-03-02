@@ -1,4 +1,4 @@
-export { KycDocument } from './adapter.js';
+export { KycDocument, disclosureToKycFields } from './adapter.js';
 export * from './constants.js';
 export { deserializeApplicantInfo, deserializeSignature } from './api.js';
 export type {

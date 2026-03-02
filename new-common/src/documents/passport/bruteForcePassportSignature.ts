@@ -53,7 +53,7 @@ export function bruteForceSignatureAlgorithm(passportData: PassportData) {
 function bruteForceHashAlgorithm(
   passportData: PassportData,
   signatureAlgorithm: string,
-  saltLength?: number
+  saltLength?: number,
 ): string | false {
   for (const hashFunction of hashAlgos) {
     if (verifySignature(passportData, signatureAlgorithm, hashFunction, saltLength)) {
@@ -67,7 +67,7 @@ export function verifySignature(
   passportData: PassportData,
   signatureAlgorithm: string,
   hashAlgorithm: string,
-  saltLength: number = 0
+  saltLength: number = 0,
 ): boolean {
   switch (signatureAlgorithm) {
     case 'ecdsa':
@@ -86,15 +86,13 @@ function verifyECDSA(passportData: PassportData, hashAlgorithm: string): boolean
   const { publicKeyDetails } = parseCertificateSimple(dsc);
   const certBuffer = Buffer.from(
     dsc.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-    'base64'
+    'base64',
   );
   const asn1Data = asn1js.fromBER(certBuffer);
   const cert = new Certificate({ schema: asn1Data.result });
   const publicKeyInfo = cert.subjectPublicKeyInfo;
   const publicKeyBuffer = publicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
-  const curveForElliptic = getCurveForElliptic(
-    (publicKeyDetails as PublicKeyDetailsECDSA).curve
-  );
+  const curveForElliptic = getCurveForElliptic((publicKeyDetails as PublicKeyDetailsECDSA).curve);
   const ec = new elliptic.ec(curveForElliptic);
 
   const key = ec.keyFromPublic(publicKeyBuffer);
@@ -120,7 +118,7 @@ function verifyRSA(passportData: PassportData, hashAlgorithm: string): boolean {
 function verifyRSAPSS(
   passportData: PassportData,
   hashAlgorithm: string,
-  saltLength: number
+  saltLength: number,
 ): boolean {
   const { dsc, signedAttr, encryptedDigest } = passportData;
   const cert = forge.pki.certificateFromPem(dsc);

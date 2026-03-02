@@ -1,13 +1,6 @@
 export { PassportDocument } from './adapter.js';
-export {
-  bruteForceSignatureAlgorithm,
-  verifySignature,
-} from './bruteForcePassportSignature.js';
-export {
-  generateCommitment,
-  generateNullifier,
-  getPassportSignatureInfos,
-} from './commitment.js';
+export { bruteForceSignatureAlgorithm, verifySignature } from './bruteForcePassportSignature.js';
+export { generateCommitment, generateNullifier, getPassportSignatureInfos } from './commitment.js';
 export { pad, padWithZeroes, inferDocumentCategory } from './core.js';
 export {
   formatAndConcatenateDataHashes,

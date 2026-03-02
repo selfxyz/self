@@ -26,7 +26,7 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
   return index;
 }
 
-export function generateCircuitInputsVCandDisclose(
+export function generatePassportDiscloseInputs(
   secret: string,
   attestation_id: string,
   passportData: PassportData,
@@ -40,7 +40,7 @@ export function generateCircuitInputsVCandDisclose(
   nameAndYob_smt: SMT,
   selector_ofac: string | number,
   forbidden_countries_list: string[],
-  user_identifier: string
+  user_identifier: string,
 ) {
   const { mrz, eContent, documentType } = passportData;
   const passportMetadata = passportData.passportMetadata!;
@@ -51,10 +51,10 @@ export function generateCircuitInputsVCandDisclose(
   const eContent_shaBytes = hash(
     passportMetadata.eContentHashFunction,
     Array.from(eContent),
-    'bytes'
+    'bytes',
   );
   const eContent_packed_hash = packBytesAndPoseidon(
-    (eContent_shaBytes as number[]).map((byte) => byte & 0xff)
+    (eContent_shaBytes as number[]).map(byte => byte & 0xff),
   );
 
   const dsc_tree_leaf = getLeafDscTree(passportData.dsc_parsed!, passportData.csca_parsed!);
@@ -64,11 +64,11 @@ export function generateCircuitInputsVCandDisclose(
   const { siblings, path, leaf_depth } = generateMerkleProof(
     merkletree,
     index,
-    COMMITMENT_TREE_DEPTH
+    COMMITMENT_TREE_DEPTH,
   );
 
   const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
-  const majority_ascii = formattedMajority.split('').map((char) => char.charCodeAt(0));
+  const majority_ascii = formattedMajority.split('').map(char => char.charCodeAt(0));
 
   const defaultSiblings = Array(OFAC_TREE_LEVELS).fill(BigInt(0));
   let passportNoProof = {
@@ -80,9 +80,7 @@ export function generateCircuitInputsVCandDisclose(
   const nameSlice = isPassportType ? formattedMrz.slice(10, 49) : formattedMrz.slice(65, 95);
   const dobSlice = isPassportType ? formattedMrz.slice(62, 68) : formattedMrz.slice(35, 41);
   const yobSlice = isPassportType ? formattedMrz.slice(62, 64) : formattedMrz.slice(35, 37);
-  const nationalitySlice = isPassportType
-    ? formattedMrz.slice(59, 62)
-    : formattedMrz.slice(50, 53);
+  const nationalitySlice = isPassportType ? formattedMrz.slice(59, 62) : formattedMrz.slice(50, 53);
   const passNoSlice = isPassportType ? formattedMrz.slice(49, 58) : formattedMrz.slice(10, 19);
 
   const namedob_leaf = getNameDobLeaf(nameSlice, dobSlice);

@@ -1,9 +1,5 @@
 import type { CertificateData } from '../foundation/types/certificate.js';
-import type {
-  DocumentCategory,
-  DocumentType,
-  IDDocument,
-} from '../foundation/types/document.js';
+import type { DocumentCategory, DocumentType, IDDocument } from '../foundation/types/document.js';
 
 export type DocumentAttribute =
   | 'name'
@@ -13,6 +9,22 @@ export type DocumentAttribute =
   | 'gender'
   | 'expiry_date'
   | 'issuing_state';
+
+/**
+ * Unified disclosure field vocabulary used across all document types.
+ * Each document adapter maps these abstract names to its internal
+ * selector format (e.g. MRZ byte bitmaps for passport, selector bits for aadhaar).
+ */
+export type DisclosureField =
+  | 'name'
+  | 'gender'
+  | 'date_of_birth'
+  | 'nationality'
+  | 'id_number'
+  | 'issuing_state'
+  | 'expiry_date'
+  | 'ofac'
+  | 'older_than';
 
 /**
  * Polymorphic document interface — wraps PassportData, AadhaarData, or KycData
@@ -37,8 +49,21 @@ export interface IDocument {
   getDscParsed(): CertificateData | undefined;
   getCscaParsed(): CertificateData | undefined;
 
+  // Circuit name resolution — each doc type encodes its own naming convention
+  getRegisterCircuitName(): string;
+  getDscCircuitName(): string;
+
+  // Commitment and nullifier generation
+  generateCommitment(secret: string): string;
+  generateNullifier(): string;
+
   // Disclosure helpers — handle attribute position differences per doc type
   getAttributePositions(): Record<string, number[]>;
   getRevealBitmap(disclosures: Record<string, boolean>): number[];
   getDisclosureSlice(attribute: string): string;
+
+  // Maps unified DisclosureField names to document-specific selector format.
+  // Passport returns { selectorDg1, selectorOlderThan, selectorOfac }.
+  // Aadhaar returns a formatted selector string.
+  buildDisclosureSelector(fields: DisclosureField[]): unknown;
 }

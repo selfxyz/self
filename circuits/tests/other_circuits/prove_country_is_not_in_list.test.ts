@@ -1,11 +1,10 @@
 import { expect } from 'chai';
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
-import { formatCountriesList } from '@selfxyz/common/utils/circuits/formatInputs';
-import { formatAndUnpackForbiddenCountriesList } from '@selfxyz/common/utils/circuits/formatOutputs';
-import { formatInput } from '@selfxyz/common/utils/circuits/generateInputs';
-import { formatMrz } from '@selfxyz/common/utils/passports/format';
-import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
+import { formatCountriesList, formatInput } from '@selfxyz/new-common/src/circuits/inputs/format.js';
+import { formatAndUnpackForbiddenCountriesList } from '@selfxyz/new-common/src/circuits/outputs/format.js';
+import { formatMrz } from '@selfxyz/new-common/src/documents/passport/format.js';
+import { genAndInitMockPassportData } from '@selfxyz/new-common/src/testing/genMockPassportData.js';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

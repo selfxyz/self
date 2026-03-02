@@ -3,16 +3,17 @@ import { ethers } from "hardhat";
 import { generateVcAndDiscloseAadhaarProof, getSMTs } from "../utils/generateProof";
 import { poseidon2 } from "poseidon-lite";
 import { BigNumberish } from "ethers";
-import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
-import { Country3LetterCode } from "@selfxyz/common/constants/countries";
+import { getPackedForbiddenCountries } from "@selfxyz/new-common/src/blockchain/forbiddenCountries";
+import { Country3LetterCode } from "@selfxyz/new-common/src/data/countries";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
-import { AADHAAR_ATTESTATION_ID } from "@selfxyz/common/constants/constants";
-import { calculateUserIdentifierHash } from "@selfxyz/common";
-import { prepareAadhaarDiscloseTestData } from "@selfxyz/common";
+import { AADHAAR_ATTESTATION_ID } from "@selfxyz/new-common/src/foundation/constants/identity";
+import { calculateUserIdentifierHash } from "@selfxyz/new-common/src/crypto/identity";
 import path from "path";
-import { createSelector } from "@selfxyz/common/utils/aadhaar/constants";
-import { formatInput } from "@selfxyz/common/utils/circuits/generateInputs";
+import { createSelector } from "@selfxyz/new-common/src/documents/aadhaar/constants";
+import { formatInput } from "@selfxyz/new-common/src/circuits/inputs/format";
+import { generateAadhaarDiscloseInputs } from "@selfxyz/new-common/src/circuits/inputs/disclose-aadhaar";
+import { testDefaultQRData, generateTestData, testCustomData } from "@selfxyz/new-common/src/testing/genMockAadhaarData";
 import fs from "fs";
 
 const privateKeyPem = fs.readFileSync(
@@ -70,30 +71,29 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
     const actualScope = await deployedActors.testSelfVerificationRoot.scope();
     scopeAsBigIntString = actualScope.toString();
 
-    const testData = prepareAadhaarDiscloseTestData(
-      privateKeyPem,
-      tree,
-      nameAndDob_smt,
-      nameAndYob_smt,
-      scopeAsBigIntString,
-      registerSecret,
-      userIdentifierHash.toString(),
-      createSelector([
-        "GENDER",
-        "NAME",
-        "YEAR_OF_BIRTH",
-        "MONTH_OF_BIRTH",
-        "DAY_OF_BIRTH",
-        "AADHAAR_LAST_4_DIGITS",
-        "STATE",
-      ]).toString(),
+    const customQRData = generateTestData({
+      privKeyPem: privateKeyPem,
+      data: testCustomData,
       name,
-      dateOfBirth,
+      dob: dateOfBirth,
       gender,
       pincode,
       state,
-      undefined,
-      true,
+    });
+
+    const testData = generateAadhaarDiscloseInputs(
+      customQRData.testQRData,
+      registerSecret,
+      {
+        merkletree: tree,
+        nameAndDob_smt: nameAndDob_smt,
+        nameAndYob_smt: nameAndYob_smt,
+        scope: scopeAsBigIntString,
+        fieldsToReveal: ["gender", "name", "date_of_birth", "id_number", "issuing_state"],
+        user_identifier: userIdentifierHash.toString(),
+        minimumAge: 0,
+        updateTree: true,
+      },
     );
     const aadhaarInputs = testData.inputs;
 
@@ -333,22 +333,29 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       const differentActualScope = await differentScopeContract.scope();
       const differentScopeAsBigIntString = differentActualScope.toString();
 
-      const aadhaarInputs = prepareAadhaarDiscloseTestData(
-        privateKeyPem,
-        tree,
-        nameAndDob_smt,
-        nameAndYob_smt,
-        differentScopeAsBigIntString,
-        registerSecret,
-        "123",
-        createSelector(["GENDER"]).toString(),
+      const customQRData = generateTestData({
+        privKeyPem: privateKeyPem,
+        data: testCustomData,
         name,
-        dateOfBirth,
+        dob: dateOfBirth,
         gender,
         pincode,
         state,
-        undefined,
-        true,
+      });
+
+      const aadhaarInputs = generateAadhaarDiscloseInputs(
+        customQRData.testQRData,
+        registerSecret,
+        {
+          merkletree: tree,
+          nameAndDob_smt: nameAndDob_smt,
+          nameAndYob_smt: nameAndYob_smt,
+          scope: differentScopeAsBigIntString,
+          fieldsToReveal: ["gender"],
+          user_identifier: "123",
+          minimumAge: 0,
+          updateTree: true,
+        },
       );
 
       const differentScopeProof = await generateVcAndDiscloseAadhaarProof(aadhaarInputs.inputs);
@@ -498,22 +505,29 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
       const imt = new LeanIMT<bigint>(hashFunction, []);
 
-      const aadhaarInputs = prepareAadhaarDiscloseTestData(
-        privateKeyPem,
-        imt,
-        nameAndDob_smt,
-        nameAndYob_smt,
-        scopeAsBigIntString,
-        registerSecret,
-        userIdentifierHash.toString(),
-        createSelector(["GENDER"]).toString(),
+      const customQRData2 = generateTestData({
+        privKeyPem: privateKeyPem,
+        data: testCustomData,
         name,
-        dateOfBirth,
+        dob: dateOfBirth,
         gender,
         pincode,
         state,
-        undefined,
-        true,
+      });
+
+      const aadhaarInputs = generateAadhaarDiscloseInputs(
+        customQRData2.testQRData,
+        registerSecret,
+        {
+          merkletree: imt,
+          nameAndDob_smt: nameAndDob_smt,
+          nameAndYob_smt: nameAndYob_smt,
+          scope: scopeAsBigIntString,
+          fieldsToReveal: ["gender"],
+          user_identifier: userIdentifierHash.toString(),
+          minimumAge: 0,
+          updateTree: true,
+        },
       );
 
       aadhaarInputs.inputs.currentDay = formatInput((+aadhaarInputs.inputs.currentDay[0] + 1).toString());
@@ -573,22 +587,29 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
       const imt = new LeanIMT<bigint>(hashFunction, []);
 
-      const aadhaarInputs = prepareAadhaarDiscloseTestData(
-        privateKeyPem,
-        imt,
-        nameAndDob_smt,
-        nameAndYob_smt,
-        scopeAsBigIntString,
-        registerSecret,
-        userIdentifierHash.toString(),
-        createSelector(["GENDER"]).toString(),
+      const customQRData3 = generateTestData({
+        privKeyPem: privateKeyPem,
+        data: testCustomData,
         name,
-        dateOfBirth,
+        dob: dateOfBirth,
         gender,
         pincode,
         state,
-        undefined,
-        true,
+      });
+
+      const aadhaarInputs = generateAadhaarDiscloseInputs(
+        customQRData3.testQRData,
+        registerSecret,
+        {
+          merkletree: imt,
+          nameAndDob_smt: nameAndDob_smt,
+          nameAndYob_smt: nameAndYob_smt,
+          scope: scopeAsBigIntString,
+          fieldsToReveal: ["gender"],
+          user_identifier: userIdentifierHash.toString(),
+          minimumAge: 0,
+          updateTree: true,
+        },
       );
 
       const commitment = aadhaarInputs.commitment;
@@ -893,22 +914,29 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
 
-      const aadhaarInputs = prepareAadhaarDiscloseTestData(
-        privateKeyPem,
-        tree,
-        nameAndDob_smt,
-        nameAndYob_smt,
-        scopeAsBigIntString,
-        registerSecret,
-        newUserIdentifierHash.toString(),
-        createSelector(["GENDER"]).toString(),
+      const customQRData4 = generateTestData({
+        privKeyPem: privateKeyPem,
+        data: testCustomData,
         name,
-        dateOfBirth,
+        dob: dateOfBirth,
         gender,
         pincode,
         state,
-        undefined,
-        true,
+      });
+
+      const aadhaarInputs = generateAadhaarDiscloseInputs(
+        customQRData4.testQRData,
+        registerSecret,
+        {
+          merkletree: tree,
+          nameAndDob_smt: nameAndDob_smt,
+          nameAndYob_smt: nameAndYob_smt,
+          scope: scopeAsBigIntString,
+          fieldsToReveal: ["gender"],
+          user_identifier: newUserIdentifierHash.toString(),
+          minimumAge: 0,
+          updateTree: true,
+        },
       );
 
       const commitment = aadhaarInputs.commitment;

@@ -42,7 +42,7 @@ function bruteForceHashAlgorithmDsc(
   dsc: CertificateData,
   csca: CertificateData,
   signatureAlgorithm: string,
-  saltLength?: number
+  saltLength?: number,
 ): any {
   for (const hashFunction of hashAlgos) {
     if (verifySignature(dsc, csca, signatureAlgorithm, hashFunction, saltLength)) {
@@ -57,7 +57,7 @@ function verifySignature(
   csca: CertificateData,
   signatureAlgorithm: string,
   hashAlgorithm: string,
-  saltLength: number = 0
+  saltLength: number = 0,
 ): boolean {
   switch (signatureAlgorithm) {
     case 'ecdsa':
@@ -74,14 +74,14 @@ function verifyECDSA(dsc: CertificateData, csca: CertificateData, hashAlgorithm:
   const elliptic = initElliptic();
   const certBuffer_csca = Buffer.from(
     csca.rawPem.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-    'base64'
+    'base64',
   );
   const asn1Data_csca = asn1js.fromBER(certBuffer_csca);
   const cert_csca = new Certificate({ schema: asn1Data_csca.result });
   const publicKeyInfo_csca = cert_csca.subjectPublicKeyInfo;
   const publicKeyBuffer_csca = publicKeyInfo_csca.subjectPublicKey.valueBlock.valueHexView;
   const curveForElliptic_csca = getCurveForElliptic(
-    (csca.publicKeyDetails as PublicKeyDetailsECDSA).curve
+    (csca.publicKeyDetails as PublicKeyDetailsECDSA).curve,
   );
   const ec_csca = new elliptic.ec(curveForElliptic_csca);
   const key_csca = ec_csca.keyFromPublic(publicKeyBuffer_csca);
@@ -90,7 +90,7 @@ function verifyECDSA(dsc: CertificateData, csca: CertificateData, hashAlgorithm:
 
   const certBuffer_dsc = Buffer.from(
     dsc.rawPem.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-    'base64'
+    'base64',
   );
   const asn1Data_dsc = asn1js.fromBER(certBuffer_dsc);
   const cert_dsc = new Certificate({ schema: asn1Data_dsc.result });
@@ -109,7 +109,7 @@ function verifyRSA(dsc: CertificateData, csca: CertificateData, hashAlgorithm: s
     const publicKey = cscaCert.publicKey as forge.pki.rsa.PublicKey;
     const certBuffer_dsc = Buffer.from(
       dsc.rawPem.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-      'base64'
+      'base64',
     );
     const asn1Data_dsc = asn1js.fromBER(certBuffer_dsc);
     const cert_dsc = new Certificate({ schema: asn1Data_dsc.result });
@@ -130,7 +130,7 @@ function verifyRSAPSS(
   dsc: CertificateData,
   csca: CertificateData,
   hashAlgorithm: string,
-  saltLength: number
+  saltLength: number,
 ): boolean {
   try {
     const dscCert = forge.pki.certificateFromPem(dsc.rawPem);
@@ -165,11 +165,11 @@ function verifyRSAPSS(
 export function getTBSHash(
   pem: string,
   hashFunction: string,
-  format: 'hex' | 'data' = 'data'
+  format: 'hex' | 'data' = 'data',
 ): string {
   const certBuffer = Buffer.from(
     pem.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-    'base64'
+    'base64',
   );
   const asn1Data_cert = asn1js.fromBER(certBuffer);
   const cert = new Certificate({ schema: asn1Data_cert.result });

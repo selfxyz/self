@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { TestSelfUtils, TestCountryCodes } from "../../typechain-types";
-import { packForbiddenCountriesList } from "@selfxyz/common/utils/contracts";
+import { packForbiddenCountriesList } from "@selfxyz/new-common/src/blockchain/formatCallData";
 
 describe("SelfUtils", function () {
   let testSelfUtils: TestSelfUtils;

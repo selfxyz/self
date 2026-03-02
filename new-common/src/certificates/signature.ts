@@ -22,7 +22,7 @@ import type { SignatureAlgorithm } from '../foundation/types/document.js';
 import { getCertificateFromPem } from './parsing/parseCertificateSimple.js';
 
 function formatInputToStrings(input: string[]): string[] {
-  return input.map((item) => BigInt(item).toString());
+  return input.map(item => BigInt(item).toString());
 }
 
 export function extractRSFromSignature(signatureBytes: number[]): { r: string; s: string } {
@@ -53,12 +53,12 @@ export function formatSignatureDSCCircuit(
   cscaSignatureAlgorithm: string,
   cscaHashFunction: string,
   cscaCertificateData: CertificateData,
-  signature: number[]
+  signature: number[],
 ): string[] {
   const cscaSignatureAlgorithmFullName = getSignatureAlgorithmFullName(
     cscaCertificateData,
     cscaSignatureAlgorithm,
-    cscaHashFunction
+    cscaHashFunction,
   );
   const { n, k } = getNAndK(cscaSignatureAlgorithmFullName as SignatureAlgorithm);
   if (cscaSignatureAlgorithm === 'ecdsa') {
@@ -74,7 +74,7 @@ export function formatSignatureDSCCircuit(
 export function getSignatureAlgorithmFullName(
   certificateData: CertificateData,
   signatureAlgorithm: string,
-  hashAlgorithm: string
+  hashAlgorithm: string,
 ): string {
   const { publicKeyDetails } = certificateData;
   if (signatureAlgorithm === 'ecdsa') {

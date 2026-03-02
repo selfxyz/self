@@ -133,6 +133,25 @@ export function extractField(unpackedData: string[], field: AadhaarField): strin
   return unpackedData.slice(range[0], range[1]).join('').replace(/\0+$/, '');
 }
 
+import type { DisclosureField } from '../interface.js';
+
+const DISCLOSURE_TO_AADHAAR: Record<DisclosureField, AadhaarField[]> = {
+  name: ['NAME'],
+  gender: ['GENDER'],
+  date_of_birth: ['YEAR_OF_BIRTH', 'MONTH_OF_BIRTH', 'DAY_OF_BIRTH'],
+  nationality: [],
+  id_number: ['AADHAAR_LAST_4_DIGITS'],
+  issuing_state: ['STATE'],
+  expiry_date: [],
+  ofac: ['OFAC_NAME_DOB_CHECK', 'OFAC_NAME_YOB_CHECK'],
+  older_than: [],
+};
+
+export function disclosureToAadhaarSelector(fields: DisclosureField[]): bigint {
+  const aadhaarFields: AadhaarField[] = fields.flatMap(f => DISCLOSURE_TO_AADHAAR[f] ?? []);
+  return createSelector(aadhaarFields);
+}
+
 export function createSelector(fieldsToReveal: AadhaarField[]): bigint {
   const bits = Array(119).fill(0);
 

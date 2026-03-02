@@ -28,13 +28,13 @@ function findHashSizeOfEContent(eContent: number[], signedAttr: number[]) {
 
 function findDG1HashInEContent(
   mrz: string,
-  eContent: number[]
+  eContent: number[],
 ): { hash: number[]; hashFunction: string; offset: number } | null {
   const formattedMrz = formatMrz(mrz);
 
   for (const hashFunction of hashAlgos) {
     const hashValue = hash(hashFunction, formattedMrz);
-    const normalizedHash = (hashValue as number[]).map((byte) => (byte > 127 ? byte - 256 : byte));
+    const normalizedHash = (hashValue as number[]).map(byte => (byte > 127 ? byte - 256 : byte));
     const hashOffset = findSubarrayIndex(eContent, normalizedHash);
 
     if (hashOffset !== -1) {
@@ -47,10 +47,10 @@ function findDG1HashInEContent(
 function getDgPaddingBytes(passportData: PassportData, dg1HashFunction: string): number {
   const formattedMrz = formatMrz(passportData.mrz);
   const hashValue = hash(dg1HashFunction, formattedMrz);
-  const normalizedHash = (hashValue as number[]).map((byte) => (byte > 127 ? byte - 256 : byte));
+  const normalizedHash = (hashValue as number[]).map(byte => (byte > 127 ? byte - 256 : byte));
   const dg1HashOffset = findSubarrayIndex(passportData.eContent, normalizedHash);
   const dg2Hash = passportData.dg2Hash;
-  const normalizedDg2Hash = (dg2Hash as number[]).map((byte) => (byte > 127 ? byte - 256 : byte));
+  const normalizedDg2Hash = (dg2Hash as number[]).map(byte => (byte > 127 ? byte - 256 : byte));
   const dg2HashOffset = findSubarrayIndex(passportData.eContent, normalizedDg2Hash);
   return dg2HashOffset - dg1HashOffset - getHashLen(dg1HashFunction);
 }
@@ -68,7 +68,7 @@ export function getCurveOrExponent(certData: CertificateData): string {
 
 export function parsePassportData(
   passportData: PassportData,
-  skiPem: any = null
+  skiPem: any = null,
 ): PassportMetadata {
   const dg1HashInfo = passportData.mrz
     ? findDG1HashInEContent(passportData.mrz, passportData.eContent)
@@ -82,8 +82,10 @@ export function parsePassportData(
   } catch (error) {
     console.error('Error getting DG padding bytes:', error);
   }
-  const { hashFunction: eContentHashFunction, offset: eContentHashOffset } =
-    findHashSizeOfEContent(passportData.eContent, passportData.signedAttr);
+  const { hashFunction: eContentHashFunction, offset: eContentHashOffset } = findHashSizeOfEContent(
+    passportData.eContent,
+    passportData.signedAttr,
+  );
 
   const brutForcedPublicKeyDetails = bruteForceSignatureAlgorithm(passportData);
 
@@ -103,7 +105,7 @@ export function parsePassportData(
       passportData.dgPresents
         ?.toString()
         .split(',')
-        .map((item) => item.replace('DG', ''))
+        .map(item => item.replace('DG', ''))
         .join(',') || 'None',
     dg1Size: passportData.mrz ? passportData.mrz.length : 0,
     dg1HashSize: passportData.dg1Hash ? passportData.dg1Hash.length : 0,

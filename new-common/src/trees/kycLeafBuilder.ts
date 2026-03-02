@@ -11,7 +11,7 @@ function hashKycName(name: string): bigint {
   const padded = name
     .padEnd(KYC_NAME_PAD_LENGTH, '\0')
     .split('')
-    .map((char) => char.charCodeAt(0));
+    .map(char => char.charCodeAt(0));
   return BigInt(packBytesAndPoseidon(padded));
 }
 

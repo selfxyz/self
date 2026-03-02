@@ -2,16 +2,16 @@ import { MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH } from '../../foundation/constants/
 
 export function formatInput(input: any) {
   if (Array.isArray(input)) {
-    return input.map((item) => BigInt(item).toString());
+    return input.map(item => BigInt(item).toString());
   } else if (input instanceof Uint8Array) {
-    return Array.from(input).map((num) => BigInt(num).toString());
+    return Array.from(input).map(num => BigInt(num).toString());
   } else if (typeof input === 'string' && input.includes(',')) {
     const numbers = input
       .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s !== '' && !isNaN(Number(s)))
+      .map(s => s.trim())
+      .filter(s => s !== '' && !isNaN(Number(s)))
       .map(Number);
-    return numbers.map((num) => BigInt(num).toString());
+    return numbers.map(num => BigInt(num).toString());
   } else {
     return [BigInt(input).toString()];
   }
@@ -20,26 +20,26 @@ export function formatInput(input: any) {
 export function formatCountriesList(countries: string[]) {
   if (countries.length > MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     throw new Error(
-      `Countries list must be inferior or equals to ${MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH}`
+      `Countries list must be inferior or equals to ${MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH}`,
     );
   }
 
   for (const country of countries) {
     if (!country || country.length !== 3) {
       throw new Error(
-        `Invalid country code: "${country}". Country codes must be exactly 3 characters long.`
+        `Invalid country code: "${country}". Country codes must be exactly 3 characters long.`,
       );
     }
   }
 
   const paddedCountries = countries.concat(
-    Array(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH - countries.length).fill('')
+    Array(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH - countries.length).fill(''),
   );
-  return paddedCountries.flatMap((country) =>
+  return paddedCountries.flatMap(country =>
     country
       .padEnd(3, '\0')
       .split('')
-      .map((char) => char.charCodeAt(0))
+      .map(char => char.charCodeAt(0)),
   );
 }
 

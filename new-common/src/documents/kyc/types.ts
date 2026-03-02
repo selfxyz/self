@@ -24,7 +24,7 @@ export const serializeKycData = (
   kycData: Omit<
     KycData,
     'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'
-  >
+  >,
 ) => {
   let serializedData = '';
   serializedData += kycData.country.padEnd(constants.KYC_COUNTRY_LENGTH, '\0');

@@ -28,7 +28,7 @@ export function getCurveOrExponent(certData: CertificateData): string {
 
 export function parseDscCertificateData(
   dscCert: CertificateData,
-  skiPem: any = null
+  skiPem: any = null,
 ): DscCertificateMetaData {
   let csca: string | undefined,
     cscaParsed: CertificateData | undefined,

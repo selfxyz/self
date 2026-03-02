@@ -19,7 +19,6 @@ export function inferDocumentCategory(documentType: DocumentType): DocumentCateg
       return 'passport';
     case 'id_card':
     case 'mock_id_card':
-    case 'drivers_licence':
       return 'id_card';
     case 'aadhaar':
     case 'mock_aadhaar':

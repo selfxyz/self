@@ -4,11 +4,10 @@ import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import {
   attributeToPosition_ID,
-  ID_CARD_ATTESTATION_ID,
-} from '@selfxyz/common/constants/constants';
+} from '@selfxyz/new-common/src/foundation/constants/index.js';
 import { poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { generateCircuitInputsVCandDisclose } from '@selfxyz/common/utils/circuits/generateInputs';
+import { createCircuitInputGenerator } from '@selfxyz/new-common/src/circuits/generator.js';
 import crypto from 'crypto';
 import { SMT } from '@openpassport/zk-kit-smt';
 import nameAndDobjson from '../consts/ofac/nameAndDobSMT_ID.json' with { type: 'json' };
@@ -17,12 +16,12 @@ import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,
   getAttributeFromUnpackedReveal,
-} from '@selfxyz/common/utils/circuits/formatOutputs';
-import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
-import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
-import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
+} from '@selfxyz/new-common/src/circuits/outputs/format.js';
+import { PassportDocument } from '@selfxyz/new-common/src/documents/passport/adapter.js';
+import { hashEndpointWithScope } from '@selfxyz/new-common/src/crypto/scope.js';
+import { genMockIdDocAndInitDataParsing } from '@selfxyz/new-common/src/testing/genMockIdDoc.js';
 import { fileURLToPath } from 'url';
-import { castFromUUID } from '@selfxyz/common/utils/circuits/uuid';
+import { castFromUUID } from '@selfxyz/new-common/src/circuits/userId.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,6 +33,7 @@ describe('Disclose', function () {
   const passportData = genMockIdDocAndInitDataParsing({
     idType: 'mock_id_card',
   });
+  const doc = new PassportDocument(passportData);
   console.log(passportData.mrz);
   const forbidden_countries_list = ['ALG', 'DZA'];
 
@@ -45,10 +45,8 @@ describe('Disclose', function () {
   const endpoint = 'https://example.com';
   const scope = 'scope';
   const fullScope = hashEndpointWithScope(endpoint, scope);
-  const attestation_id = ID_CARD_ATTESTATION_ID;
-
   // compute the commitment and insert it in the tree
-  const commitment = generateCommitment(secret, attestation_id, passportData);
+  const commitment = doc.generateCommitment(secret);
   console.log('commitment in js ', commitment);
   const tree: any = new LeanIMT((a, b) => poseidon2([a, b]), []);
   tree.insert(BigInt(commitment));
@@ -60,6 +58,8 @@ describe('Disclose', function () {
   nameAndYob_smt.import(nameAndYobjson);
 
   const selector_ofac = 1;
+
+  const generator = createCircuitInputGenerator();
 
   before(async () => {
     circuit = await wasm_tester(
@@ -73,27 +73,26 @@ describe('Disclose', function () {
       }
     );
 
-    inputs = generateCircuitInputsVCandDisclose(
+    inputs = generator.generateDiscloseInputs(
+      doc,
       secret,
-      ID_CARD_ATTESTATION_ID,
-      passportData,
-      fullScope,
-      selector_dg1,
-      selector_older_than,
-      tree,
-      majority,
-      null,
-      nameAndDob_smt,
-      nameAndYob_smt,
-      selector_ofac,
-      forbidden_countries_list,
-      user_identifier
+      {
+        scope: fullScope,
+        fieldsToReveal: ['issuing_state', 'name', 'id_number', 'nationality', 'date_of_birth', 'gender', 'expiry_date', 'older_than', 'ofac'],
+        merkletree: tree,
+        majority,
+        passportNo_smt: null,
+        nameAndDob_smt,
+        nameAndYob_smt,
+        forbidden_countries_list,
+        user_identifier,
+      }
     );
   });
 
-  // it('should compile and load the circuit', async function () {
-  //     expect(circuit).to.not.be.undefined;
-  // });
+  it('should compile and load the circuit', async function () {
+      expect(circuit).to.not.be.undefined;
+  });
 
   it('should have nullifier == poseidon(secret, scope)', async function () {
     w = await circuit.calculateWitness(inputs);
@@ -249,29 +248,24 @@ describe('Disclose', function () {
 
       for (const testCase of testCases) {
         console.log(`Testing: ${testCase.desc}`);
-        const passportData = testCase.data;
-        const sanctionedCommitment = generateCommitment(
-          secret,
-          ID_CARD_ATTESTATION_ID,
-          passportData
-        );
+        const testDoc = new PassportDocument(testCase.data);
+        const sanctionedCommitment = testDoc.generateCommitment(secret);
         tree.insert(BigInt(sanctionedCommitment));
 
-        const testInputs = generateCircuitInputsVCandDisclose(
+        const testInputs = generator.generateDiscloseInputs(
+          testDoc,
           secret,
-          ID_CARD_ATTESTATION_ID,
-          passportData,
-          fullScope,
-          Array(90).fill('0'), // selector_dg1
-          selector_older_than,
-          tree,
-          majority,
-          null,
-          nameAndDob_smt,
-          nameAndYob_smt,
-          '1', // selector_ofac
-          forbidden_countries_list,
-          user_identifier
+          {
+            scope: fullScope,
+            fieldsToReveal: ['ofac'],
+            merkletree: tree,
+            majority,
+            passportNo_smt: null,
+            nameAndDob_smt,
+            nameAndYob_smt,
+            forbidden_countries_list,
+            user_identifier,
+          }
         );
 
         w = await circuit.calculateWitness(testInputs);

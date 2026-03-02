@@ -27,9 +27,9 @@ export function getHashLen(hashFunction: string) {
 export function hash(
   hashFunction: string,
   bytesArray: number[],
-  format: string = 'bytes'
+  format: string = 'bytes',
 ): string | number[] {
-  const unsignedBytesArray = bytesArray.map((byte) => byte & 0xff);
+  const unsignedBytesArray = bytesArray.map(byte => byte & 0xff);
   let hashResult: string;
 
   switch (hashFunction) {

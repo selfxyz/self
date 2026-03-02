@@ -1,5 +1,11 @@
 export { formatInput, formatCountriesList, reverseBytes, reverseCountryBytes } from './format.js';
-export { generateCircuitInputsRegister, generateCircuitInputsRegisterForTests } from './register.js';
-export { generateCircuitInputsDSC } from './dsc.js';
-export { findIndexInTree, generateCircuitInputsVCandDisclose } from './disclose.js';
+export { generatePassportRegisterInputs } from './register.js';
+export { generatePassportDscInputs } from './dsc.js';
+export { findIndexInTree, generatePassportDiscloseInputs } from './disclose.js';
 export { generateCircuitInputsOfac, generateCircuitInputsCountryVerifier } from './ofac.js';
+export { generateAadhaarRegisterInputs } from './register-aadhaar.js';
+export type { AadhaarRegisterInputOpts } from './register-aadhaar.js';
+export { generateAadhaarDiscloseInputs } from './disclose-aadhaar.js';
+export { generateKycRegisterInputs, generateMockKycRegisterInputs } from './register-kyc.js';
+export { generateKycDiscloseInputs, generateKycDiscloseInputFromDummy } from './disclose-kyc.js';
+export type { KycDiscloseInputOpts } from './disclose-kyc.js';

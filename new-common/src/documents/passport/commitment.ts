@@ -16,7 +16,7 @@ import { formatMrz } from './format.js';
 export function generateCommitment(
   secret: string,
   attestation_id: string,
-  passportData: PassportData
+  passportData: PassportData,
 ) {
   const passportMetadata = passportData.passportMetadata!;
 
@@ -25,11 +25,11 @@ export function generateCommitment(
   const eContent_shaBytes = hash(
     passportMetadata.eContentHashFunction,
     Array.from(passportData.eContent),
-    'bytes'
+    'bytes',
   );
 
   const eContent_packed_hash = packBytesAndPoseidon(
-    (eContent_shaBytes as number[]).map((byte) => byte & 0xff)
+    (eContent_shaBytes as number[]).map(byte => byte & 0xff),
   );
 
   const dsc_hash = getLeafDscTree(passportData.dsc_parsed!, passportData.csca_parsed!);
@@ -60,7 +60,7 @@ export function getPassportSignatureInfos(passportData: PassportData) {
   const signatureAlgorithmFullName = getSignatureAlgorithmFullName(
     passportData.dsc_parsed!,
     passportMetadata.signatureAlgorithm,
-    passportMetadata.signedAttrHashFunction
+    passportMetadata.signedAttrHashFunction,
   );
   const { n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm);
 
@@ -68,7 +68,7 @@ export function getPassportSignatureInfos(passportData: PassportData) {
     pubKey: getCertificatePubKey(
       passportData.dsc_parsed!,
       passportMetadata.signatureAlgorithm,
-      passportMetadata.signedAttrHashFunction
+      passportMetadata.signedAttrHashFunction,
     ),
     signature: getPassportSignature(passportData, n, k),
     signatureAlgorithmFullName,
@@ -79,9 +79,7 @@ export function generateNullifier(passportData: PassportData) {
   const signedAttr_shaBytes = hash(
     passportData.passportMetadata!.signedAttrHashFunction,
     Array.from(passportData.signedAttr),
-    'bytes'
+    'bytes',
   );
-  return packBytesAndPoseidon(
-    (signedAttr_shaBytes as number[]).map((byte) => byte & 0xff)
-  );
+  return packBytesAndPoseidon((signedAttr_shaBytes as number[]).map(byte => byte & 0xff));
 }

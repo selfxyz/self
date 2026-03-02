@@ -474,6 +474,11 @@ export class KycDocument implements IDocument {
 
 **Files:** `documents/interface.ts`, `documents/factory.ts`, `documents/passport/adapter.ts`, `documents/aadhaar/adapter.ts`, `documents/kyc/adapter.ts`
 
+**Implementation notes:**
+- `IDocument` interface defined in `documents/interface.ts` with `DocumentAttribute` and `DisclosureField` types
+- `createDocument()` factory dispatches on `documentCategory` to `PassportDocument`, `AadhaarDocument`, `KycDocument`
+- Adapters implement `getAttribute()`, `isExpired()`, `getContentHash()`, `getAttestationId()`, circuit name resolution, commitment/nullifier generation, disclosure helpers
+
 **Why adapter pattern over class hierarchy:**
 - Existing `PassportData`, `AadhaarData`, `KycData` data interfaces stay unchanged — zero breaking changes for 150+ consumer files
 - Data remains serializable (plain objects) for storage, transport, circuit inputs
@@ -629,8 +634,11 @@ Foundation layer complete. 18 files in `new-common/src/foundation/`. Zero TypeSc
 - `crypto/identity.ts` — `calculateUserIdentifierHash()`, `getSolidityPackedUserContextData()`
 - `crypto/sha-pad.ts` — SHA padding for circuits
 - `crypto/encryption.ts` — `encryptAES256GCM`
+- `crypto/eddsa.ts` — `signEdDSA`, `modulus` (CJS-compatible via `getRequire()` helper)
 
 **Deps added:** `ethers`, `js-sha1`, `js-sha256`, `js-sha512`, `node-forge`, `poseidon-lite`
+
+**CJS fix (2026-03-02):** `eddsa.ts` uses `import.meta.url` which is undefined in CJS context. Added `getRequire()` helper that tries `import.meta.url` first, falls back to `__filename`. This is needed because tsup replaces `import.meta` with an empty object in CJS builds.
 
 ---
 
@@ -658,7 +666,7 @@ Foundation layer complete. 18 files in `new-common/src/foundation/`. Zero TypeSc
 
 ---
 
-### Task 8: IDocument Interface + Adapters (Highest Value)
+### Task 8: IDocument Interface + Adapters [DONE]
 
 Eliminates 33+ branching points across 13 files.
 
@@ -695,148 +703,161 @@ Eliminates 33+ branching points across 13 files.
 
 ---
 
-### Task 9: Document-Specific Utilities
+### Task 9: Document-Specific Utilities [DONE]
 
-**Creates:**
-- `documents/passport/parsing.ts` — `parsePassportData`, `initPassportDataParsing` from `passport_parsing/`
-- `documents/passport/format.ts` — `formatMrz` from `passports/format.ts`
-- `documents/passport/signature.ts` — `pad`, `padWithZeroes` from `passport.ts:376-384`
-- `documents/passport/validate.ts` — `checkDocumentSupported`, `checkIfPassportDscIsInTree`, `isDocumentNullified`, `isUserRegistered` from `passports/validate.ts`
-- `documents/aadhaar/utils.ts` — from `aadhaar/utils.ts`
-- `documents/aadhaar/constants.ts` — from `aadhaar/constants.ts`
-- `documents/kyc/utils.ts` — from `kyc/utils.ts`
-- `documents/kyc/constants.ts` — from `kyc/constants.ts`
-- `documents/kyc/types.ts` — from `kyc/types.ts`
-- `documents/kyc/api.ts` — from `kyc/api.ts`
+**Created:**
+- `documents/passport/parsing.ts` — `parsePassportData`, `initPassportDataParsing`
+- `documents/passport/format.ts` — `formatMrz`, DG1 helpers
+- `documents/passport/core.ts` — `pad`, `getNAndK`, `inferDocumentCategory`
+- `documents/passport/commitment.ts` — `generateCommitment`, `generateNullifier`, `calculateContentHash`
+- `documents/passport/bruteForcePassportSignature.ts` — brute-force signature algorithm detection
+- `documents/aadhaar/adapter.ts`, `utils.ts`, `constants.ts`, `qr.ts`
+- `documents/kyc/adapter.ts`, `utils.ts`, `constants.ts`, `types.ts`, `api.ts`
 
-**Source:** `passports/` (~800 LOC remaining), `aadhaar/` (5 files), `kyc/` (7 files)
+**Source:** `passports/` (~800 LOC), `aadhaar/` (5 files), `kyc/` (7 files)
 **DI:** None new. Implementation details used by adapters and low-level consumers.
-**Verify:** `yarn types` passes. `initPassportDataParsing(rawData)` works.
 
 ---
 
-### Task 10: Trees (ITreeBuilder)
+### Task 10: Trees [DONE]
 
-Decomposes `trees.ts` (860 LOC — largest single file) into 3 modules.
+Decomposed `trees.ts` (860 LOC) into 7 modules using inheritance-based leaf builder pattern.
 
-**Creates:**
-- `trees/types.ts` — `ITreeBuilder` interface:
-  ```
-  getLeafDscTree(dsc, csca): string
-  getLeafCscaTree(csca): string
-  getDscTreeInclusionProof(leaf, serializedTree): [...]
-  getCscaTreeInclusionProof(leaf, serializedTree): [...]
-  generateMerkleProof(imt, index, maxDepth): MerkleProofResult
-  generateSMTProof(smt, leaf): SMTProofResult
-  ```
-- `trees/builder.ts` — `TreeBuilder implements ITreeBuilder` (leaf computation + proof generation, ~300 LOC)
-- `trees/ofac.ts` — OFAC SMT: `buildSMT`, `buildAadhaarSMT`, `buildKycSMT`, `getNameLeaf`, `getDobLeaf`, etc. (~400 LOC)
-- `trees/factory.ts` — `createTreeBuilder(): ITreeBuilder`
-- `trees/index.ts` — barrel
+**Created:**
+- `trees/certificate.ts` — `getLeafDscTree`, `getLeafCscaTree` (certificate tree leaf computation)
+- `trees/proof.ts` — `generateMerkleProof`, `generateSMTProof`, `getDscTreeInclusionProof`, `getCscaTreeInclusionProof`, `getCscaTreeRoot`
+- `trees/leafBuilder.ts` — Abstract `LeafBuilder` base class + `generateSmallKey`, `cleanName`, `OfacEntry`
+- `trees/passportLeafBuilder.ts` — `PassportLeafBuilder` + `hashNameMrz`, `hashDobMrz`, `getNameDobLeafFromMrz`, `getNameYobLeafFromMrz`, `getPassportNumberAndNationalityLeafFromMrz`
+- `trees/aadhaarLeafBuilder.ts` — `AadhaarLeafBuilder` + `getNameDobLeafAadhaar`, `getNameYobLeafAadhaar`
+- `trees/kycLeafBuilder.ts` — `KycLeafBuilder` + `getNameDobLeafKyc`, `getNameYobLeafKyc`
+- `trees/ofac.ts` — `buildSMT`, `buildPassportSMT`, `buildIdCardSMT`, `buildAadhaarSMT`, `buildKycSMT`, `getCountryLeaf`, `getCountryCode`
+- `trees/index.ts` — barrel with backward-compatible aliases
+
+**Architecture note:** Used abstract `LeafBuilder` base class instead of `ITreeBuilder` interface — each document type extends it with its own name/DOB/YOB leaf generation. Singletons exported: `passportLeafBuilder`, `idCardLeafBuilder`, `aadhaarLeafBuilder`, `kycLeafBuilder`.
 
 **Source:** `common/src/utils/trees.ts` (860 LOC)
-**Deps to add:** `@openpassport/zk-kit-imt`, `@openpassport/zk-kit-lean-imt`, `@openpassport/zk-kit-smt`, `i18n-iso-countries`
-**DI:** `ITreeBuilder` — isolates tree library deps behind interface boundary.
-**Verify:** `yarn types` passes. Each file under 400 LOC. `createTreeBuilder().getLeafDscTree(dsc, csca)` works.
+**Deps:** `@openpassport/zk-kit-imt`, `@openpassport/zk-kit-lean-imt`, `@openpassport/zk-kit-smt`, `i18n-iso-countries`, `poseidon-lite`
 
 ---
 
-### Task 11: Circuit Input Generation (ICircuitInputGenerator)
+### Task 11: Circuit Input Generation (ICircuitInputGenerator) [DONE]
 
-**Creates:**
-- `circuits/types.ts` — `ICircuitInputGenerator` interface:
-  ```
-  generateRegisterInputs(secret, doc, serializedDscTree): Record<string, string[]>
-  generateDscInputs(doc, serializedCscaTree): Record<string, string[]>
-  generateDiscloseInputs(secret, attestationId, doc, opts): Record<string, string[]>
-  generateOfacInputs(doc, smt, proofLevel): Record<string, string[]>
-  ```
-- `circuits/inputs/register.ts` — `generateCircuitInputsRegister` from `generateInputs.ts`
-- `circuits/inputs/dsc.ts` — `generateCircuitInputsDSC`
-- `circuits/inputs/disclose.ts` — `generateCircuitInputsVCandDisclose`
+**Created:**
+- `circuits/types.ts` — `ICircuitInputGenerator` interface with typed generics per document category + `PassportRegisterOpts`, `PassportDiscloseOpts`, `RegisterOptsFor<C>`, `DiscloseOptsFor<C>`, `RegisterInputsFor<C>`, `DiscloseInputsFor<C>`, `DscInputsFor<C>`
+- `circuits/generator.ts` — `createCircuitInputGenerator()` factory dispatching to passport/aadhaar/kyc strategies
+- `circuits/inputs/register.ts` — `generatePassportRegisterInputs`
+- `circuits/inputs/dsc.ts` — `generatePassportDscInputs`
+- `circuits/inputs/disclose.ts` — `generatePassportDiscloseInputs`
+- `circuits/inputs/register-aadhaar.ts` — `generateAadhaarRegisterInputs`
+- `circuits/inputs/disclose-aadhaar.ts` — `generateAadhaarDiscloseInputs`
+- `circuits/inputs/register-kyc.ts` — `generateKycRegisterInputs`
+- `circuits/inputs/disclose-kyc.ts` — `generateKycDiscloseInputs`
 - `circuits/inputs/ofac.ts` — `generateCircuitInputsOfac`
 - `circuits/inputs/format.ts` — `formatInput`, `formatCountriesList`, `reverseBytes`
-- `circuits/outputs/format.ts` — from `formatOutputs.ts` (143 LOC)
-- `circuits/uuid.ts` — from `circuits/uuid.ts`
-- `circuits/factory.ts` — `createCircuitInputGenerator(): ICircuitInputGenerator`
+- `circuits/outputs/format.ts` — output formatting
+- `circuits/userId.ts` — `castFromUUID`, `validateUserId`, `UserIdType`
+- `circuits/circuitName.ts` — `getCircuitNameFromPassportData`
 - `circuits/index.ts` — barrel
 
+**Architecture note:** Uses typed generic strategy pattern — `ICircuitInputGenerator` is parameterized per document category with `RegisterOptsFor<C>`, `DiscloseOptsFor<C>` mapped types. Each document type has separate register + disclose input files rather than one monolithic `generateInputs.ts`.
+
 **Source:** `circuits/generateInputs.ts` (473), `formatInputs.ts` (77), `formatOutputs.ts` (143), `uuid.ts`
-**DI:** `ICircuitInputGenerator` — consumes `IDocument` + `ITreeBuilder` internally. Centralizes the 16-consumer entry point.
-**Verify:** `yarn types` passes. Circuit inputs produce same output shapes as original.
 
 ---
 
-### Task 12: Attestation (GCP only, no DI)
+### Task 12: Attestation (GCP only, no DI) [TODO — STUB ONLY]
 
-**Creates:**
+Currently `attestation/index.ts` exports nothing (`export {}`).
+
+**Needs:**
 - `attestation/gcp.ts` — `validatePKIToken`, `checkPCR0Mapping` from `attest.ts` (202 LOC). Direct functions, no interface.
 - `attestation/self.ts` — `parsePublicSignalsDisclose` from `selfAttestation.ts` (52 LOC)
-- `attestation/index.ts` — barrel
+- Update `attestation/index.ts` barrel
 
-**Source:** `attest.ts` (202), `selfAttestation.ts` (52)
+**Source:** `common/src/utils/attest.ts` (202), `common/src/utils/selfAttestation.ts` (52)
 **DI:** None. GCP is the only attestation provider. AWS COSE (`cose.ts`) is unused and dropped.
 **Verify:** `yarn types` passes.
 
+**Note:** This is low priority — attestation code is consumed by the TEE server, not by circuits/ or contracts/ which are the primary consumers migrated so far.
+
 ---
 
-### Task 13: Blockchain Utilities
+### Task 13: Blockchain Utilities [TODO — STUB ONLY]
 
-**Creates:**
+Currently `blockchain/index.ts` exports nothing (`export {}`).
+
+**Needs:**
 - `blockchain/proving.ts` — `getPayload`, `getWSDbRelayerUrl`, `clientKey`, `clientPublicKeyHex` from `proving.ts:1-45,62-124`
 - `blockchain/forbidden-countries.ts` — from `contracts/forbiddenCountries.ts` (54 LOC)
 - `blockchain/format-call-data.ts` — from `contracts/formatCallData.ts` (103 LOC)
 - `blockchain/ofac.ts` — `fetchOfacTrees` from `ofac.ts` (70 LOC)
-- `blockchain/index.ts` — barrel
+- Update `blockchain/index.ts` barrel
 
-**Source:** `proving.ts` (non-encryption), `contracts/` (2 files), `ofac.ts`
+**Source:** `common/src/utils/proving.ts` (non-encryption), `common/src/contracts/` (2 files), `common/src/utils/ofac.ts`
 **DI:** None. Thin wrappers around blockchain/network interactions.
 **Verify:** `yarn types` passes.
 
+**Note:** `contracts/` package has its own local `contractUtils.ts` for format-call-data functions. This task is primarily needed for app/ and sdk/ migration.
+
 ---
 
-### Task 14: App Layer (SelfAppBuilder)
+### Task 14: App Layer (SelfAppBuilder) [TODO — STUB ONLY]
 
-**Creates:**
+Currently `app/index.ts` exports nothing (`export {}`).
+
+**Needs:**
 - `app/builder.ts` — `SelfAppBuilder` class + `getUniversalLink` from `appType.ts` (132 LOC)
-- `app/index.ts` — barrel
+- Update `app/index.ts` barrel
 
 **Source:** `common/src/utils/appType.ts` (132 LOC)
 **DI:** None. Builder pattern.
 **Verify:** `yarn types` passes.
 
+**Note:** Consumed by `sdk/core/` and the app — needed for SDK migration.
+
 ---
 
-### Task 15: Testing Fixtures + Static Data
+### Task 15: Testing Fixtures + Static Data [DONE]
 
-**Creates:**
-- `testing/mock-passport.ts` — from `genMockPassportData.ts`, `genMockIdDoc.ts`, `getMockDSC.ts`, `mock.ts`, `mockDsc.ts`
-- `testing/mock-aadhaar.ts` — from `aadhaar/mockData.ts`
+**Created:**
+- `testing/genMockPassportData.ts` — `genMockPassportData`, `genAndInitMockPassportData`
+- `testing/genMockIdDoc.ts` — `genMockIdDoc`, `genMockIdDocAndInitDataParsing`, `generateMockDSC`
+- `testing/genMockAadhaarData.ts` — `generateTestData`, `createCustomV2TestData`, `returnNewDateString`, test QR data
+- `testing/genMockKycData.ts` — `genMockKycDocument`, `NON_OFAC_DUMMY_KYC_DATA`, `OFAC_DUMMY_KYC_DATA`
+- `testing/getMockDSC.ts` — `getMockDSC`
+- `testing/dg1.ts` — `genDG1`
+- `testing/mockAadhaarCert.ts` — `AADHAAR_MOCK_PRIVATE_KEY_PEM`, `AADHAAR_MOCK_PUBLIC_KEY_PEM`
 - `testing/index.ts` — barrel
-- `data/ski-pem.ts` — from `constants/skiPem.ts`
-- `data/mock-certificates.ts` — from `constants/mockCertificates.ts`
-- `data/sample-data-hashes.ts` — from `constants/sampleDataHashes.ts`
-- `data/vkey.ts` — from `constants/vkey.ts` (64KB)
-- `data/countries-extended.ts` — extended helpers from `countries.ts` (commonNames, alpha2/alpha3)
+- `data/countries.ts` — country code mappings
+- `data/mockCertificates.ts` — mock certificate data
+- `data/sampleDataHashes.ts` — `sampleDataHashes_large`, `sampleDataHashes_small`
+- `data/skiPem.ts` — SKI to PEM mapping
+- `data/serialized_csca_tree.json` — serialized CSCA merkle tree
+- `data/serialized_dsc_tree.json` — serialized DSC merkle tree
 - `data/index.ts` — barrel
 
 **DI:** None. Test fixtures and static data.
-**Verify:** `yarn types` passes. Mock generation produces valid document objects.
 
 ---
 
-### Task 16: Build Configuration + Final Validation
+### Task 16: Build Configuration + Final Validation [PARTIALLY DONE]
 
-**Creates/Updates:**
+**Done:**
+- `tsup.config.ts` — dual CJS/ESM build with 134 entry points covering all layers
+- `package.json` — `exports` map with CJS/ESM conditions:
+  - `"."` → `dist/esm/index.js` (import) / `dist/cjs/index.cjs` (require)
+  - `"./src/*"` → `dist/esm/src/*.js` (import) / `dist/cjs/src/*.cjs` (require)
+  - `"./src/data/*.json"` → raw JSON files
 - `src/index.ts` — master barrel exporting all layers
-- `package.json` — all runtime deps, subpath exports for `@selfxyz/new-common/documents`, etc.
-- `tsup.config.ts` — dual CJS/ESM build
+
+**Remaining:**
 - `polyfills/crypto.ts` — cross-platform crypto polyfill (copy from common)
+- Comprehensive verification across all consumers
 
 **Verification (comprehensive):**
 1. `yarn types` — zero errors
 2. `yarn build` — produces dist/esm and dist/cjs
-3. All 4 DI interfaces exported and constructable via factories
+3. All DI interfaces exported and constructable via factories
 4. No circular dependency warnings
 5. Every file under 800 LOC
 6. Layer boundaries: no foundation/ importing from crypto/ or above
@@ -854,23 +875,52 @@ Tasks 1-4 (foundation) ─── DONE
          │
     Task 7 (cert utils) ─── DONE
          │
-    Task 8 (IDocument) ◄── highest value, NEXT
+    Task 8 (IDocument) ─── DONE
          │
-    Task 9 (doc utils)
+    Task 9 (doc utils) ─── DONE
          │
     ┌─────┼──────┬──────────┐
   Task 10  Task 12  Task 13  Task 14
   (trees)  (attest)  (blockchain)  (app)
+   DONE     TODO      TODO       TODO
     │
-  Task 11 (circuits)
+  Task 11 (circuits) ─── DONE
     │
-  Task 15 (testing + data)
+  Task 15 (testing + data) ─── DONE
     │
-  Task 16 (build + validation)
+  Task 16 (build + validation) ─── PARTIAL
 ```
 
-**Parallelizable after Task 8:** Tasks 10, 12, 13, 14 are independent.
-**Parallelizable after Task 5:** Tasks 12, 13, 14 only need crypto, not documents.
+**Remaining work:** Tasks 12, 13, 14 (stubs) + Task 16 finalization.
+**Tasks 12, 13, 14 are independent** — can be parallelized.
+
+---
+
+## Consumer Migration Status
+
+After new-common internals are complete, each workspace consumer needs to migrate from `@selfxyz/common` to `@selfxyz/new-common`.
+
+| Consumer | Status | Notes |
+|----------|--------|-------|
+| `circuits/` | **DONE** | Migrated in prior session |
+| `contracts/` | **DONE** | Migrated 2026-03-02. 20/20 unit tests passing, all v2 tests passing |
+| `app/` | **TODO** | ~30 files still importing `@selfxyz/common` |
+| `sdk/core/` | **TODO** | 5 files |
+| `packages/mobile-sdk-alpha/` | **TODO** | ~20 files |
+| `packages/mobile-sdk-demo/` | **TODO** | ~8 files |
+
+### Key Infrastructure Fixes (for consumer migration)
+
+These fixes enable CJS consumers (Hardhat, ts-node) to use the ESM `new-common` package:
+
+1. **`exports` map in `new-common/package.json`** — Maps `"./src/*"` to CJS/ESM dual outputs. Matches the pattern old `@selfxyz/common` used (67 explicit export paths). This is the runtime fix.
+
+2. **`eddsa.ts` CJS compatibility** — `import.meta.url` is undefined in CJS. `getRequire()` helper tries `import.meta.url` first, falls back to `__filename`.
+
+3. **Consumer tsconfig pattern** — For CJS consumers (contracts/, circuits/):
+   - `"module": "NodeNext"` + `"moduleResolution": "NodeNext"` for type-checking
+   - `"paths"` mapping to source `.ts` files (type-checking only, not runtime)
+   - Runtime resolution goes through the `exports` map
 
 ---
 

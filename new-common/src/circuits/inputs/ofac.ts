@@ -13,7 +13,7 @@ import { formatInput } from './format.js';
 
 export function generateCircuitInputsCountryVerifier(
   passportData: PassportData,
-  sparsemerkletree: SMT
+  sparsemerkletree: SMT,
 ) {
   const mrz_bytes = formatMrz(passportData.mrz);
   const usa_ascii = stringToAsciiBigIntArray('USA');
@@ -32,7 +32,7 @@ export function generateCircuitInputsCountryVerifier(
 export function generateCircuitInputsOfac(
   passportData: PassportData,
   sparsemerkletree: SMT,
-  proofLevel: number
+  proofLevel: number,
 ) {
   const { mrz, documentType } = passportData;
   const isPassportType = documentType === 'passport' || documentType === 'mock_passport';
@@ -60,7 +60,7 @@ export function generateCircuitInputsOfac(
     case 3:
       if (!isPassportType) {
         throw new Error(
-          'Proof level 3 (Passport Number) is only applicable to passport document types.'
+          'Proof level 3 (Passport Number) is only applicable to passport document types.',
         );
       }
       leafToProve = getPassportNumberAndNationalityLeaf(passNoSlice, nationalitySlice);

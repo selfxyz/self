@@ -27,7 +27,7 @@ import {
 import type { KycData } from './types.js';
 
 export function deserializeApplicantInfo(
-  applicantInfoBase64: string
+  applicantInfoBase64: string,
 ): Omit<
   KycData,
   'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'

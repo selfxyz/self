@@ -11,7 +11,7 @@ function packName(name: string): bigint[] {
     .toUpperCase()
     .padEnd(AADHAAR_NAME_PAD_LENGTH, '\0')
     .split('')
-    .map((char) => char.charCodeAt(0));
+    .map(char => char.charCodeAt(0));
   return packBytes(padded) as bigint[];
 }
 
@@ -45,7 +45,7 @@ export class AadhaarLeafBuilder extends LeafBuilder {
     if (!mapped) return BigInt(0);
     const packed = packName(entry.First_Name + ' ' + entry.Last_Name);
     return generateSmallKey(
-      poseidon5([packed[0], packed[1], BigInt(entry.year), BigInt(mapped), BigInt(entry.day)])
+      poseidon5([packed[0], packed[1], BigInt(entry.year), BigInt(mapped), BigInt(entry.day)]),
     );
   }
 
@@ -62,11 +62,11 @@ export function getNameDobLeafAadhaar(
   name: string,
   year: string,
   month: string,
-  day: string
+  day: string,
 ): bigint {
   const packed = packName(name);
   return generateSmallKey(
-    poseidon5([packed[0], packed[1], BigInt(year), BigInt(month), BigInt(day)])
+    poseidon5([packed[0], packed[1], BigInt(year), BigInt(month), BigInt(day)]),
   );
 }
 

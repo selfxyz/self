@@ -10,12 +10,12 @@ import { getNAndK, getSignatureAlgorithmFullName } from './signature.js';
 export function getCertificatePubKey(
   certificateData: CertificateData,
   signatureAlgorithm: string,
-  hashFunction: string
+  hashFunction: string,
 ): string[] {
   const signatureAlgorithmFullName = getSignatureAlgorithmFullName(
     certificateData,
     signatureAlgorithm,
-    hashFunction
+    hashFunction,
   );
   const { n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm);
   const { publicKeyDetails } = certificateData;
@@ -32,7 +32,7 @@ export function getCertificatePubKey(
 
 export function formatCertificatePubKeyDSC(
   certificateData: CertificateData,
-  signatureAlgorithm: string
+  signatureAlgorithm: string,
 ): string[] {
   const { publicKeyDetails } = certificateData;
   if (signatureAlgorithm === 'ecdsa') {
@@ -48,7 +48,7 @@ export function formatCertificatePubKeyDSC(
 export function findStartPubKeyIndex(
   certificateData: CertificateData,
   rawCert: number[],
-  signatureAlgorithm: string
+  signatureAlgorithm: string,
 ): [number, number] {
   const { publicKeyDetails } = certificateData;
   if (signatureAlgorithm === 'ecdsa') {
@@ -110,7 +110,7 @@ export function findStartIndexEC(point: string, messagePadded: number[]): [numbe
 
 export function findOIDPosition(
   oid: string,
-  message: number[]
+  message: number[],
 ): { oid_index: number; oid_length: number } {
   const oidParts = oid.split('.').map(Number);
   const oidBytes = [40 * oidParts[0] + oidParts[1]];

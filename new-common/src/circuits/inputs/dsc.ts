@@ -8,9 +8,9 @@ import {
 import { pad, padWithZeroes } from '../../documents/passport/core.js';
 import { getCscaTreeInclusionProof, getLeafCscaTree } from '../../trees/index.js';
 
-export function generateCircuitInputsDSC(
+export function generatePassportDscInputs(
   passportData: PassportData,
-  serializedCscaTree: string[][]
+  serializedCscaTree: string[][],
 ) {
   const passportMetadata = passportData.passportMetadata!;
   const cscaParsed = passportData.csca_parsed!;
@@ -22,7 +22,7 @@ export function generateCircuitInputsDSC(
 
   const [dscTbsBytesPadded, dscTbsBytesLen] = pad(passportMetadata.cscaHashFunction)(
     dscTbsBytes,
-    max_dsc_bytes
+    max_dsc_bytes,
   );
 
   const leaf = getLeafCscaTree(cscaParsed);
@@ -31,7 +31,7 @@ export function generateCircuitInputsDSC(
   const csca_pubKey_formatted = getCertificatePubKey(
     cscaParsed,
     passportMetadata.cscaSignatureAlgorithm,
-    passportMetadata.cscaHashFunction
+    passportMetadata.cscaHashFunction,
   );
 
   const signatureRaw = extractSignatureFromDSC(raw_dsc);
@@ -39,21 +39,21 @@ export function generateCircuitInputsDSC(
     passportMetadata.cscaSignatureAlgorithm,
     passportMetadata.cscaHashFunction,
     cscaParsed,
-    signatureRaw
+    signatureRaw,
   );
 
   const [startIndex, keyLength] = findStartPubKeyIndex(
     cscaParsed,
     cscaTbsBytesPadded,
-    passportMetadata.cscaSignatureAlgorithm
+    passportMetadata.cscaSignatureAlgorithm,
   );
 
   return {
-    raw_csca: cscaTbsBytesPadded.map((x) => x.toString()),
+    raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
     raw_csca_actual_length: BigInt(cscaParsed.tbsBytes.length).toString(),
     csca_pubKey_offset: startIndex.toString(),
     csca_pubKey_actual_size: BigInt(keyLength).toString(),
-    raw_dsc: Array.from(dscTbsBytesPadded).map((x) => x.toString()),
+    raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
     raw_dsc_padded_length: BigInt(dscTbsBytesLen).toString(),
     csca_pubKey: csca_pubKey_formatted,
     signature,

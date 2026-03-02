@@ -13,10 +13,16 @@ import {
 import {
   attributeToPosition,
   attributeToPosition_ID,
+  disclosureToPassportSelectors,
   revealedDataTypes,
+  type PassportDisclosureSelector,
 } from '../../foundation/constants/disclosure.js';
 import { getCurrentDateYYMMDD } from '../../foundation/date.js';
-import type { DocumentAttribute, IDocument } from '../interface.js';
+import type { DisclosureField, DocumentAttribute, IDocument } from '../interface.js';
+import {
+  generateCommitment as commitmentFn,
+  generateNullifier as nullifierFn,
+} from './commitment.js';
 
 export class PassportDocument implements IDocument {
   readonly category: DocumentCategory;
@@ -36,7 +42,10 @@ export class PassportDocument implements IDocument {
     switch (name) {
       case 'name': {
         const [start, end] = positions.name;
-        return this.raw.mrz.substring(start, end + 1).replace(/</g, ' ').trim();
+        return this.raw.mrz
+          .substring(start, end + 1)
+          .replace(/</g, ' ')
+          .trim();
       }
       case 'date_of_birth': {
         const [start, end] = positions.date_of_birth;
@@ -101,6 +110,60 @@ export class PassportDocument implements IDocument {
     return this.raw.csca_parsed;
   }
 
+  getRegisterCircuitName(): string {
+    const meta = this.raw.passportMetadata;
+    if (!meta) throw new Error('Passport data are not parsed');
+    if (!meta.cscaFound) throw new Error('CSCA not found');
+
+    const prefix =
+      this.type === 'id_card' || this.type === 'mock_id_card' ? 'register_id' : 'register';
+
+    const { dg1HashFunction, eContentHashFunction, signedAttrHashFunction, signatureAlgorithm } =
+      meta;
+
+    if (signatureAlgorithm === 'ecdsa') {
+      return `${prefix}_${dg1HashFunction}_${eContentHashFunction}_${signedAttrHashFunction}_${signatureAlgorithm}_${meta.curveOrExponent}`;
+    } else if (signatureAlgorithm === 'rsa') {
+      if (meta.signatureAlgorithmBits > 4096)
+        throw new Error(`Unsupported key length: ${meta.signatureAlgorithmBits}`);
+      return `${prefix}_${dg1HashFunction}_${eContentHashFunction}_${signedAttrHashFunction}_${signatureAlgorithm}_${meta.curveOrExponent}_${4096}`;
+    } else if (signatureAlgorithm === 'rsapss') {
+      if (meta.signatureAlgorithmBits > 4096)
+        throw new Error(`Unsupported key length: ${meta.signatureAlgorithmBits}`);
+      return `${prefix}_${dg1HashFunction}_${eContentHashFunction}_${signedAttrHashFunction}_${signatureAlgorithm}_${meta.curveOrExponent}_${meta.saltLength}_${meta.signatureAlgorithmBits}`;
+    }
+    throw new Error(`Unsupported signature algorithm: ${signatureAlgorithm}`);
+  }
+
+  generateCommitment(secret: string): string {
+    return commitmentFn(secret, this.getAttestationId(), this.raw);
+  }
+
+  generateNullifier(): string {
+    return nullifierFn(this.raw);
+  }
+
+  getDscCircuitName(): string {
+    const meta = this.raw.passportMetadata;
+    if (!meta) throw new Error('Passport data are not parsed');
+    if (!meta.cscaFound) throw new Error('CSCA not found');
+
+    const { cscaSignatureAlgorithm, cscaHashFunction } = meta;
+
+    if (cscaSignatureAlgorithm === 'ecdsa') {
+      return `dsc_${cscaHashFunction}_${cscaSignatureAlgorithm}_${meta.cscaCurveOrExponent}`;
+    } else if (cscaSignatureAlgorithm === 'rsa') {
+      if (meta.cscaSignatureAlgorithmBits > 4096)
+        throw new Error(`Unsupported key length: ${meta.cscaSignatureAlgorithmBits}`);
+      return `dsc_${cscaHashFunction}_${cscaSignatureAlgorithm}_${meta.cscaCurveOrExponent}_${4096}`;
+    } else if (cscaSignatureAlgorithm === 'rsapss') {
+      if (meta.cscaSignatureAlgorithmBits > 4096)
+        throw new Error(`Unsupported key length: ${meta.cscaSignatureAlgorithmBits}`);
+      return `dsc_${cscaHashFunction}_${cscaSignatureAlgorithm}_${meta.cscaCurveOrExponent}_${meta.cscaSaltLength}_${meta.cscaSignatureAlgorithmBits}`;
+    }
+    throw new Error(`Unsupported signature algorithm: ${cscaSignatureAlgorithm}`);
+  }
+
   getAttributePositions(): Record<string, number[]> {
     return this.category === 'id_card'
       ? (attributeToPosition_ID as Record<string, number[]>)
@@ -120,5 +183,10 @@ export class PassportDocument implements IDocument {
     if (!pos) return '';
     const [start, end] = pos;
     return this.raw.mrz.substring(start, end + 1);
+  }
+
+  buildDisclosureSelector(fields: DisclosureField[]): PassportDisclosureSelector {
+    const idType = this.category === 'id_card' ? 'id' : 'passport';
+    return disclosureToPassportSelectors(fields, idType);
   }
 }

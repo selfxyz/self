@@ -46,7 +46,7 @@ export function generateSMTProof(smt: SMT, leaf: bigint) {
 
 export function getDscTreeInclusionProof(
   leaf: string,
-  serialized_dsc_tree: string | string[][]
+  serialized_dsc_tree: string | string[][],
 ): [string, number[], bigint[], number] {
   const hashFunction = (a: any, b: any) => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, serialized_dsc_tree as string);
@@ -60,7 +60,7 @@ export function getDscTreeInclusionProof(
 
 export function getCscaTreeInclusionProof(
   leaf: string,
-  _serialized_csca_tree: string[][]
+  _serialized_csca_tree: string[][],
 ): [string, string[], string[]] {
   const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
   tree.setNodes(_serialized_csca_tree);

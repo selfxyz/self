@@ -6,7 +6,7 @@ import {
 import type { SelfAppDisclosureConfig } from '../../foundation/types/app.js';
 
 function trimu0000(unpackedReveal: string[]): string[] {
-  return unpackedReveal.filter((value) => value !== '\u0000');
+  return unpackedReveal.filter(value => value !== '\u0000');
 }
 
 export function unpackReveal(revealedData_packed: string | string[]): string[] {
@@ -17,8 +17,8 @@ export function unpackReveal(revealedData_packed: string | string[]): string[] {
   const bytesArray = packedArray.flatMap((element: string) => {
     const elementBigInt = BigInt(element);
     const byteMask = BigInt(255);
-    return [...Array(MAX_BYTES_IN_FIELD)].map((_, byteIndex) =>
-      (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask
+    return [...Array(MAX_BYTES_IN_FIELD)].map(
+      (_, byteIndex) => (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask,
     );
   });
 
@@ -26,7 +26,7 @@ export function unpackReveal(revealedData_packed: string | string[]): string[] {
 }
 
 export function formatAndUnpackForbiddenCountriesList(
-  forbiddenCountriesList_packed: string[]
+  forbiddenCountriesList_packed: string[],
 ): string[] {
   const formatted = [
     forbiddenCountriesList_packed['forbidden_countries_list_packed[0]' as any],
@@ -47,7 +47,7 @@ export function formatAndUnpackForbiddenCountriesList(
 
 export function formatAndUnpackReveal(
   revealedData_packed: string[],
-  id_type: 'passport' | 'id'
+  id_type: 'passport' | 'id',
 ): string[] {
   const formatted_passport = [
     revealedData_packed['revealedData_packed[0]' as any],
@@ -64,10 +64,10 @@ export function formatAndUnpackReveal(
 }
 
 export function formatForbiddenCountriesListFromCircuitOutput(
-  forbiddenCountriesList: string
+  forbiddenCountriesList: string,
 ): string[] {
   const countryList = unpackReveal(forbiddenCountriesList);
-  const cleaned = countryList.filter((value) => value !== '\x00');
+  const cleaned = countryList.filter(value => value !== '\x00');
   const formatted: string[] = [];
   for (let i = 0; i < cleaned.length; i += 3) {
     const countryCode = cleaned.slice(i, i + 3).join('');
@@ -81,7 +81,7 @@ export function formatForbiddenCountriesListFromCircuitOutput(
 export function getAttributeFromUnpackedReveal(
   unpackedReveal: string[],
   attribute: string,
-  id_type: 'passport' | 'id'
+  id_type: 'passport' | 'id',
 ) {
   const position =
     id_type === 'passport' ? attributeToPosition[attribute] : attributeToPosition_ID[attribute];
@@ -95,14 +95,14 @@ export function getAttributeFromUnpackedReveal(
 }
 
 export function getOlderThanFromCircuitOutput(olderThan: string[]): number {
-  const ageString = olderThan.map((code) => String.fromCharCode(parseInt(code))).join('');
+  const ageString = olderThan.map(code => String.fromCharCode(parseInt(code))).join('');
   const age = parseInt(ageString, 10);
   return isNaN(age) ? 0 : age;
 }
 
 export function revealBitmapFromAttributes(
   disclosureOptions: SelfAppDisclosureConfig,
-  id_type: 'passport' | 'id'
+  id_type: 'passport' | 'id',
 ): string[] {
   const reveal_bitmap = Array(id_type === 'passport' ? 88 : 90).fill('0');
   const att_to_position = id_type === 'passport' ? attributeToPosition : attributeToPosition_ID;

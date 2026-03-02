@@ -1,19 +1,17 @@
 import { API_URL, API_URL_STAGING } from '../foundation/constants/network.js';
+import { SKI_PEM, SKI_PEM_DEV } from '../data/skiPem.js';
 
-export function getCSCAFromSKI(
-  ski: string,
-  skiPem: Record<string, string>
-): string {
+export function getCSCAFromSKI(ski: string, skiPem: Record<string, string> | null = null): string {
   const normalizedSki = ski.replace(/\s+/g, '').toLowerCase();
-  let cscaPem = skiPem[normalizedSki] ?? null;
+  let cscaPem: string | null = null;
+  if (skiPem !== null) {
+    cscaPem = skiPem[normalizedSki] ?? null;
+  } else {
+    cscaPem = (SKI_PEM_DEV as any)[normalizedSki] || (SKI_PEM as any)[normalizedSki] || null;
+  }
   if (!cscaPem) {
-    console.log(
-      '\x1b[33m%s\x1b[0m',
-      `[WRN] CSCA with SKI ${ski} not found`
-    );
-    throw new Error(
-      `CSCA not found, authorityKeyIdentifier: ${ski}`
-    );
+    console.log('\x1b[33m%s\x1b[0m', `[WRN] CSCA with SKI ${ski} not found`);
+    throw new Error(`CSCA not found, authorityKeyIdentifier: ${ski}`);
   }
   if (!cscaPem.includes('-----BEGIN CERTIFICATE-----')) {
     cscaPem = `-----BEGIN CERTIFICATE-----\n${cscaPem}\n-----END CERTIFICATE-----`;
@@ -22,7 +20,7 @@ export function getCSCAFromSKI(
 }
 
 export async function getSKIPEM(
-  environment: 'staging' | 'production'
+  environment: 'staging' | 'production',
 ): Promise<Record<string, string>> {
   const skiPemUrl = (environment === 'staging' ? API_URL_STAGING : API_URL) + '/ski-pem';
   console.log('Fetching SKI-PEM mapping from:', skiPemUrl);
@@ -50,7 +48,7 @@ export async function getSKIPEM(
   } catch (error) {
     console.error('Error fetching or parsing ski-pem:', error);
     throw new Error(
-      `Failed to get SKIPEM: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to get SKIPEM: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }

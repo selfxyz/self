@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { formatInput } from '@selfxyz/common/utils/circuits/generateInputs';
-import { customHasher, packBytesAndPoseidon } from '@selfxyz/common/utils/hash';
+import { formatInput } from '@selfxyz/new-common/src/circuits/inputs/format.js';
+import { customHasher, packBytesAndPoseidon } from '@selfxyz/new-common/src/crypto/hash/poseidon.js';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

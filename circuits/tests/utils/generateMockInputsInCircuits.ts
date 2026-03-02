@@ -1,9 +1,8 @@
 import crypto from 'crypto';
 
-import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
-import { hexToDecimal, splitToWords } from '@selfxyz/common/utils/bytes';
-import { bytesToBigDecimal } from '@selfxyz/common/utils/bytes';
-import { getNAndK } from '@selfxyz/common/utils/passports/passport';
+import type { SignatureAlgorithm } from '@selfxyz/new-common/src/foundation/types/document.js';
+import { hexToDecimal, splitToWords, bytesToBigDecimal } from '@selfxyz/new-common/src/foundation/bytes.js';
+import { getNAndK } from '@selfxyz/new-common/src/certificates/signature.js';
 
 export const generateMockRsaPkcs1v1_5Inputs = (signatureAlgorithm: SignatureAlgorithm) => {
   let privateKey: string;

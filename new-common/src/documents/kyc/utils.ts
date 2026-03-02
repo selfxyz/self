@@ -14,8 +14,8 @@ import { serializeKycData } from './types.js';
 export const generateKycCommitment = (kycData: KycDocumentData, secret: string) => {
   const applicantInfo = deserializeApplicantInfo(kycData.serializedApplicantInfo);
   const serializedData = serializeKycData(applicantInfo);
-  const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
-  const dataPadded = msgPadded.map((x) => Number(x));
+  const msgPadded = Array.from(serializedData, x => x.charCodeAt(0));
+  const dataPadded = msgPadded.map(x => Number(x));
   const commitment = poseidon2([secret, packBytesAndPoseidon(dataPadded)]);
   return commitment.toString();
 };
@@ -23,14 +23,14 @@ export const generateKycCommitment = (kycData: KycDocumentData, secret: string) 
 export const generateKycNullifier = (kycData: KycDocumentData) => {
   const applicantInfo = deserializeApplicantInfo(kycData.serializedApplicantInfo);
   const serializedData = serializeKycData(applicantInfo);
-  const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
-  const dataPadded = msgPadded.map((x) => Number(x));
+  const msgPadded = Array.from(serializedData, x => x.charCodeAt(0));
+  const dataPadded = msgPadded.map(x => Number(x));
   const idNumber = dataPadded.slice(
     KYC_ID_NUMBER_INDEX,
-    KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH
+    KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH,
   );
   const nullifierInputs = [
-    ...'sumsub'.split('').map((x) => x.charCodeAt(0)),
+    ...'sumsub'.split('').map(x => x.charCodeAt(0)),
     ...idNumber,
     ...dataPadded.slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH),
   ];

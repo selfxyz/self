@@ -1,11 +1,4 @@
-import {
-  poseidon2,
-  poseidon3,
-  poseidon6,
-  poseidon10,
-  poseidon12,
-  poseidon13,
-} from 'poseidon-lite';
+import { poseidon2, poseidon3, poseidon6, poseidon10, poseidon12, poseidon13 } from 'poseidon-lite';
 
 import { stringToAsciiBigIntArray } from '../circuits/userId.js';
 import { LeafBuilder, generateSmallKey, MONTH_MAP, cleanName } from './leafBuilder.js';
@@ -33,9 +26,10 @@ export class PassportLeafBuilder extends LeafBuilder {
     const cleanLast = cleanName(lastName);
     let arr = (cleanLast ? cleanLast + '<<' : '') + cleanFirst;
     if (arr.length === 0) return BigInt(0);
-    arr = arr.length > this.targetLength
-      ? arr.substring(0, this.targetLength)
-      : arr.padEnd(this.targetLength, '<');
+    arr =
+      arr.length > this.targetLength
+        ? arr.substring(0, this.targetLength)
+        : arr.padEnd(this.targetLength, '<');
     return hashNameMrz(stringToAsciiBigIntArray(arr));
   }
 
@@ -62,7 +56,7 @@ export class PassportLeafBuilder extends LeafBuilder {
     passNo = passNo.length < 9 ? passNo.padEnd(9, '<') : passNo.substring(0, 9);
     return getPassportNumberAndNationalityLeafFromMrz(
       stringToAsciiBigIntArray(passNo),
-      stringToAsciiBigIntArray(countryCode)
+      stringToAsciiBigIntArray(countryCode),
     );
   }
 }
@@ -76,13 +70,13 @@ export function hashNameMrz(nameMrz: (bigint | number)[]): bigint {
     middleChunks.push(
       poseidon13(nameMrz.slice(0, 13)),
       poseidon13(nameMrz.slice(13, 26)),
-      poseidon13(nameMrz.slice(26, 39))
+      poseidon13(nameMrz.slice(26, 39)),
     );
   } else if (nameMrz.length === 30) {
     middleChunks.push(
       poseidon10(nameMrz.slice(0, 10)),
       poseidon10(nameMrz.slice(10, 20)),
-      poseidon10(nameMrz.slice(20, 30))
+      poseidon10(nameMrz.slice(20, 30)),
     );
   } else {
     throw new Error(`Unsupported name MRZ length: ${nameMrz.length}`);
@@ -98,14 +92,14 @@ export function hashDobMrz(dobMrz: (bigint | number)[]): bigint {
 
 export function getNameDobLeafFromMrz(
   nameMrz: (bigint | number)[],
-  dobMrz: (bigint | number)[]
+  dobMrz: (bigint | number)[],
 ): bigint {
   return generateSmallKey(poseidon2([hashDobMrz(dobMrz), hashNameMrz(nameMrz)]));
 }
 
 export function getNameYobLeafFromMrz(
   nameMrz: (bigint | number)[],
-  yobMrz: (bigint | number)[]
+  yobMrz: (bigint | number)[],
 ): bigint {
   if (yobMrz.length !== 2) return BigInt(0);
   return generateSmallKey(poseidon2([poseidon2(yobMrz), hashNameMrz(nameMrz)]));
@@ -113,7 +107,7 @@ export function getNameYobLeafFromMrz(
 
 export function getPassportNumberAndNationalityLeafFromMrz(
   passport: (bigint | number)[],
-  nationality: (bigint | number)[]
+  nationality: (bigint | number)[],
 ): bigint {
   if (passport.length !== 9) {
     throw new Error(`Passport number must be 9 elements, got ${passport.length}`);

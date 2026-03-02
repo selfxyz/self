@@ -22,17 +22,12 @@ function paddedLength(msgLen: number, lengthFieldBytes: number, blockBytes: numb
   return Math.ceil((msgLen + 1 + lengthFieldBytes) / blockBytes) * blockBytes;
 }
 
-export function shaPad(
-  prehash_prepad_m_array: number[],
-  maxShaBytes: number
-): [number[], number] {
+export function shaPad(prehash_prepad_m_array: number[], maxShaBytes: number): [number[], number] {
   const msgLen = prehash_prepad_m_array.length;
   const paddedLen = paddedLength(msgLen, 8, 64);
 
   if (paddedLen > maxShaBytes) {
-    throw new Error(
-      `Padded message is ${paddedLen} bytes but max is ${maxShaBytes}`
-    );
+    throw new Error(`Padded message is ${paddedLen} bytes but max is ${maxShaBytes}`);
   }
 
   const result = new Uint8Array(maxShaBytes);
@@ -45,15 +40,13 @@ export function shaPad(
 
 export function sha384_512Pad(
   prehash_prepad_m_array: number[],
-  maxShaBytes: number
+  maxShaBytes: number,
 ): [number[], number] {
   const msgLen = prehash_prepad_m_array.length;
   const paddedLen = paddedLength(msgLen, 16, 128);
 
   if (paddedLen > maxShaBytes) {
-    throw new Error(
-      `Padded message is ${paddedLen} bytes but max is ${maxShaBytes}`
-    );
+    throw new Error(`Padded message is ${paddedLen} bytes but max is ${maxShaBytes}`);
   }
 
   const result = new Uint8Array(maxShaBytes);

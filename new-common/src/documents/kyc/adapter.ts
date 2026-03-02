@@ -1,13 +1,9 @@
 import { sha256 } from 'js-sha256';
 
 import type { CertificateData } from '../../foundation/types/certificate.js';
-import type {
-  DocumentCategory,
-  DocumentType,
-  KycData,
-} from '../../foundation/types/document.js';
+import type { DocumentCategory, DocumentType, KycData } from '../../foundation/types/document.js';
 import { KYC_ATTESTATION_ID } from '../../foundation/constants/identity.js';
-import type { DocumentAttribute, IDocument } from '../interface.js';
+import type { DisclosureField, DocumentAttribute, IDocument } from '../interface.js';
 import {
   KYC_COUNTRY_INDEX,
   KYC_COUNTRY_LENGTH,
@@ -31,7 +27,32 @@ import {
   KYC_PHOTO_HASH_LENGTH,
   KYC_ADDRESS_INDEX,
   KYC_ADDRESS_LENGTH,
+  createKycSelector,
 } from './constants.js';
+import type { KycField } from './constants.js';
+import { generateKycCommitment, generateKycNullifier } from './utils.js';
+
+const DISCLOSURE_TO_KYC: Record<DisclosureField, KycField[]> = {
+  name: ['FULL_NAME'],
+  gender: ['GENDER'],
+  date_of_birth: ['DOB'],
+  nationality: ['COUNTRY'],
+  id_number: ['ID_NUMBER'],
+  issuing_state: ['COUNTRY'],
+  expiry_date: ['EXPIRY_DATE'],
+  ofac: [],
+  older_than: [],
+};
+
+export function disclosureToKycFields(fields: DisclosureField[]): KycField[] {
+  const kycFields = new Set<KycField>();
+  for (const field of fields) {
+    for (const kf of DISCLOSURE_TO_KYC[field]) {
+      kycFields.add(kf);
+    }
+  }
+  return [...kycFields];
+}
 
 function parseApplicantField(applicantInfoBase64: string, index: number, length: number): string {
   const applicantInfo = Buffer.from(applicantInfoBase64, 'base64').toString('utf-8');
@@ -99,12 +120,31 @@ export class KycDocument implements IDocument {
     return undefined;
   }
 
+  getRegisterCircuitName(): string {
+    return 'register_kyc';
+  }
+
+  generateCommitment(secret: string): string {
+    return generateKycCommitment(this.raw, secret);
+  }
+
+  generateNullifier(): string {
+    return generateKycNullifier(this.raw).toString();
+  }
+
+  getDscCircuitName(): string {
+    throw new Error('KYC documents do not have a DSC circuit');
+  }
+
   getAttributePositions(): Record<string, number[]> {
     return {
       country: [KYC_COUNTRY_INDEX, KYC_COUNTRY_INDEX + KYC_COUNTRY_LENGTH - 1],
       id_type: [KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH - 1],
       id_number: [KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH - 1],
-      issuance_date: [KYC_ISSUANCE_DATE_INDEX, KYC_ISSUANCE_DATE_INDEX + KYC_ISSUANCE_DATE_LENGTH - 1],
+      issuance_date: [
+        KYC_ISSUANCE_DATE_INDEX,
+        KYC_ISSUANCE_DATE_INDEX + KYC_ISSUANCE_DATE_LENGTH - 1,
+      ],
       expiry_date: [KYC_EXPIRY_DATE_INDEX, KYC_EXPIRY_DATE_INDEX + KYC_EXPIRY_DATE_LENGTH - 1],
       full_name: [KYC_FULL_NAME_INDEX, KYC_FULL_NAME_INDEX + KYC_FULL_NAME_LENGTH - 1],
       dob: [KYC_DOB_INDEX, KYC_DOB_INDEX + KYC_DOB_LENGTH - 1],
@@ -128,5 +168,10 @@ export class KycDocument implements IDocument {
     if (!pos) return '';
     const applicantInfo = Buffer.from(this.raw.serializedApplicantInfo, 'base64').toString('utf-8');
     return applicantInfo.slice(pos[0], pos[1] + 1).replace(/\x00/g, '');
+  }
+
+  buildDisclosureSelector(fields: DisclosureField[]): [bigint, bigint] {
+    const kycFields = disclosureToKycFields(fields);
+    return createKycSelector(kycFields);
   }
 }

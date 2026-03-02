@@ -77,7 +77,7 @@ export function customHasher(pubKeyFormatted: string[]) {
         }
       }
     }
-    const finalHash = flexiblePoseidon(hash.map((h) => poseidon16(h.inputs)));
+    const finalHash = flexiblePoseidon(hash.map(h => poseidon16(h.inputs)));
     return finalHash.toString();
   }
 }

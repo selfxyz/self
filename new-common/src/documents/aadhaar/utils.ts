@@ -1,7 +1,4 @@
-import {
-  convertBigIntToByteArray,
-  decompressByteArray,
-} from '@anon-aadhaar/core';
+import { convertBigIntToByteArray, decompressByteArray } from '@anon-aadhaar/core';
 
 import type { ExtractedQRData } from '../../foundation/types/document.js';
 
@@ -34,7 +31,10 @@ export function extractQRDataFields(qrData: string | Uint8Array): ExtractedQRDat
   }
 
   const asciiToStr = (arr: number[]) =>
-    arr.filter((b) => b !== 0).map((b) => String.fromCharCode(b)).join('');
+    arr
+      .filter(b => b !== 0)
+      .map(b => String.fromCharCode(b))
+      .join('');
 
   const extractFieldData = (position: number): number[] => {
     const start = delimiterIndices[position - 1] + 1;
@@ -45,7 +45,10 @@ export function extractQRDataFields(qrData: string | Uint8Array): ExtractedQRDat
   };
 
   const aadhaarLast4Digits = asciiToStr([
-    signedData[5], signedData[6], signedData[7], signedData[8],
+    signedData[5],
+    signedData[6],
+    signedData[7],
+    signedData[8],
   ]);
 
   const nameData = extractFieldData(FIELD_POSITIONS.NAME);
@@ -76,11 +79,32 @@ export function extractQRDataFields(qrData: string | Uint8Array): ExtractedQRDat
   ].join('');
 
   return {
-    name, yob, mob, dob, gender, pincode, state,
-    aadhaarLast4Digits, phoneNoLast4Digits, timestamp,
+    name,
+    yob,
+    mob,
+    dob,
+    gender,
+    pincode,
+    state,
+    aadhaarLast4Digits,
+    phoneNoLast4Digits,
+    timestamp,
   };
 }
 
 export function stringToAsciiArray(str: string) {
-  return str.split('').map((char) => char.charCodeAt(0));
+  return str.split('').map(char => char.charCodeAt(0));
+}
+
+export function getCurrentDate(): {
+  currentYear: number;
+  currentMonth: number;
+  currentDay: number;
+} {
+  const now = new Date();
+  return {
+    currentYear: now.getUTCFullYear(),
+    currentMonth: now.getUTCMonth() + 1,
+    currentDay: now.getUTCDate(),
+  };
 }
