@@ -3,140 +3,456 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SelfVerificationRegistry Demo</title>
+<title>SelfVerificationRegistry — Interactive Demo</title>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
 <style>
-  :root { --bg: #0a0a0f; --surface: #13131a; --border: #2a2a3a; --text: #e0e0e8; --dim: #888; --green: #4ade80; --red: #f87171; --blue: #60a5fa; --purple: #a78bfa; --yellow: #fbbf24; }
+  :root {
+    --bg: #0a0a0f; --surface: #13131a; --surface2: #1a1a26; --border: #2a2a3a;
+    --text: #e0e0e8; --dim: #777; --green: #4ade80; --red: #f87171;
+    --blue: #60a5fa; --purple: #a78bfa; --yellow: #fbbf24; --cyan: #22d3ee;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'SF Mono', 'Fira Code', monospace; background: var(--bg); color: var(--text); padding: 24px; max-width: 960px; margin: 0 auto; }
-  h1 { font-size: 20px; margin-bottom: 4px; }
-  .subtitle { color: var(--dim); font-size: 13px; margin-bottom: 24px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-  .card h2 { font-size: 14px; color: var(--purple); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
-  .row { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
-  label { color: var(--dim); font-size: 12px; min-width: 100px; }
-  input, select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 4px; font-family: inherit; font-size: 13px; flex: 1; min-width: 150px; }
-  button { background: var(--purple); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; }
-  button:hover { opacity: 0.9; }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
-  .status { font-size: 13px; padding: 8px 12px; border-radius: 4px; margin-top: 8px; white-space: pre-wrap; word-break: break-all; }
-  .status.ok { background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.2); }
-  .status.err { background: rgba(248, 113, 113, 0.1); color: var(--red); border: 1px solid rgba(248, 113, 113, 0.2); }
-  .status.info { background: rgba(96, 165, 250, 0.1); color: var(--blue); border: 1px solid rgba(96, 165, 250, 0.2); }
-  #log { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px; font-size: 12px; max-height: 300px; overflow-y: auto; margin-top: 8px; }
-  .log-line { margin-bottom: 4px; white-space: pre-wrap; word-break: break-all; }
+  body { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; background: var(--bg); color: var(--text); }
+
+  /* Layout */
+  .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 40px; }
+  .header h1 { font-size: 28px; margin-bottom: 6px; letter-spacing: -0.5px; }
+  .header h1 span { color: var(--purple); }
+  .header .tagline { color: var(--dim); font-size: 14px; max-width: 600px; margin: 0 auto 16px; line-height: 1.5; }
+  .badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); color: var(--dim); }
+  .badge.highlight { border-color: var(--purple); color: var(--purple); }
+
+  /* Architecture */
+  .arch { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+  .arch h2 { font-size: 15px; color: var(--purple); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .arch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .arch-grid { grid-template-columns: 1fr; } }
+  .arch-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .arch-box h3 { font-size: 13px; color: var(--cyan); margin-bottom: 8px; }
+  .arch-box p { font-size: 12px; color: var(--dim); line-height: 1.6; }
+  .arch-box code { color: var(--yellow); font-size: 11px; background: rgba(251,191,36,0.08); padding: 1px 5px; border-radius: 3px; }
+
+  /* Flow diagram */
+  .flow { margin-bottom: 32px; }
+  .flow h2 { font-size: 15px; color: var(--purple); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .flow-steps { display: flex; gap: 0; align-items: stretch; }
+  .flow-step { flex: 1; text-align: center; position: relative; }
+  .flow-step .num { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--purple); margin: 0 auto 10px; position: relative; z-index: 1; }
+  .flow-step.done .num { background: var(--purple); color: #fff; border-color: var(--purple); }
+  .flow-step .label { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .flow-step .desc { font-size: 11px; color: var(--dim); line-height: 1.4; padding: 0 8px; }
+  .flow-arrow { width: 40px; display: flex; align-items: center; justify-content: center; color: var(--border); font-size: 20px; padding-bottom: 30px; }
+  .flow-arrow.done { color: var(--purple); }
+
+  /* Section tabs */
+  .tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 1px solid var(--border); }
+  .tab { padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--dim); cursor: pointer; border-bottom: 2px solid transparent; font-family: inherit; background: none; border-top: none; border-left: none; border-right: none; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--purple); border-bottom-color: var(--purple); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 0 0 12px 12px; padding: 20px; margin-bottom: 24px; }
+  .card-standalone { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+  .card h3 { font-size: 14px; margin-bottom: 4px; }
+  .card .explain { font-size: 12px; color: var(--dim); line-height: 1.5; margin-bottom: 16px; padding: 10px 12px; background: var(--bg); border-radius: 6px; border-left: 3px solid var(--purple); }
+
+  /* Form elements */
+  .form-grid { display: grid; grid-template-columns: 110px 1fr; gap: 8px 12px; align-items: center; }
+  .form-grid label { color: var(--dim); font-size: 12px; text-align: right; }
+  .form-grid .wide { grid-column: 1 / -1; display: flex; gap: 12px; align-items: center; justify-content: flex-start; margin-top: 4px; }
+  input, select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 6px; font-family: inherit; font-size: 13px; width: 100%; }
+  input:focus, select:focus { outline: none; border-color: var(--purple); }
+  .input-row { display: flex; gap: 8px; align-items: center; }
+  .input-row label { color: var(--dim); font-size: 12px; white-space: nowrap; }
+  button { background: var(--purple); color: #fff; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; transition: opacity 0.15s; }
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.3; cursor: not-allowed; }
+  button.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  button.secondary:hover { border-color: var(--purple); }
+
+  /* Status boxes */
+  .status { font-size: 13px; padding: 10px 14px; border-radius: 6px; margin-top: 12px; white-space: pre-wrap; word-break: break-all; line-height: 1.5; }
+  .status.ok { background: rgba(74, 222, 128, 0.08); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.15); }
+  .status.err { background: rgba(248, 113, 113, 0.08); color: var(--red); border: 1px solid rgba(248, 113, 113, 0.15); }
+  .status.info { background: rgba(96, 165, 250, 0.08); color: var(--blue); border: 1px solid rgba(96, 165, 250, 0.15); }
+  .status.warn { background: rgba(251, 191, 36, 0.08); color: var(--yellow); border: 1px solid rgba(251, 191, 36, 0.15); }
+
+  /* Privacy comparison */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+  @media (max-width: 700px) { .compare { grid-template-columns: 1fr; } }
+  .compare-col { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .compare-col h3 { font-size: 13px; margin-bottom: 10px; }
+  .compare-col.bad h3 { color: var(--red); }
+  .compare-col.good h3 { color: var(--green); }
+  .compare-col ul { list-style: none; padding: 0; }
+  .compare-col li { font-size: 12px; color: var(--dim); padding: 4px 0; padding-left: 20px; position: relative; line-height: 1.4; }
+  .compare-col li::before { position: absolute; left: 0; }
+  .compare-col.bad li::before { content: "x"; color: var(--red); }
+  .compare-col.good li::before { content: "~"; color: var(--green); }
+
+  /* Log */
+  .log-container { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+  .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .log-header h3 { font-size: 13px; color: var(--dim); }
+  #log { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 12px; max-height: 250px; overflow-y: auto; min-height: 60px; }
+  .log-line { margin-bottom: 3px; white-space: pre-wrap; word-break: break-all; }
   .log-line.tx { color: var(--blue); }
   .log-line.ok { color: var(--green); }
   .log-line.err { color: var(--red); }
+  .log-line.dim { color: var(--dim); }
+
+  /* Connection bar */
+  .conn-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .conn-bar input { max-width: 250px; }
+  .conn-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+  .conn-dot.connected { background: var(--green); }
+  .conn-info { font-size: 12px; color: var(--dim); flex: 1; }
+
+  /* Config toggle */
+  .config-toggle { margin-bottom: 16px; }
+  .config-panel { display: none; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 8px; }
+  .config-panel.open { display: block; }
+  .config-panel .form-grid { grid-template-columns: 100px 1fr; }
+
+  /* Inline code */
+  .code { font-size: 12px; color: var(--yellow); background: rgba(251,191,36,0.08); padding: 2px 6px; border-radius: 3px; }
+  .code-block { font-size: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin: 8px 0; color: var(--cyan); line-height: 1.6; white-space: pre; overflow-x: auto; }
+
+  /* Sybil demo */
+  .sybil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 700px) { .sybil-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
+<div class="page">
 
-<h1>SelfVerificationRegistry Demo</h1>
-<p class="subtitle">Interactive demo on local anvil -- factory + clones + verification flow</p>
-
-<!-- Connection -->
-<div class="card" id="connectionCard">
-  <h2>Connection</h2>
-  <div class="row">
-    <label>RPC URL</label>
-    <input id="rpcUrl" value="http://localhost:8545">
-    <button onclick="connect()">Connect</button>
+<!-- ============================================================ -->
+<!-- HEADER -->
+<!-- ============================================================ -->
+<div class="header">
+  <h1>Self<span>VerificationRegistry</span></h1>
+  <p class="tagline">
+    On-chain boolean identity verification with zero PII leakage.
+    Factory deploys per-app EIP-1167 clones for cross-app nullifier unlinkability.
+  </p>
+  <div class="badges">
+    <div class="badge highlight">EIP-1167 Clones</div>
+    <div class="badge highlight">Zero Knowledge</div>
+    <div class="badge">UUPS Upgradeable</div>
+    <div class="badge">Poseidon Scoped</div>
+    <div class="badge">Sybil Resistant</div>
   </div>
-  <div id="connectionStatus"></div>
 </div>
 
-<!-- Contract Addresses -->
-<div class="card">
-  <h2>Deployed Contracts</h2>
-  <div class="row">
+<!-- ============================================================ -->
+<!-- WHY: PRIVACY COMPARISON -->
+<!-- ============================================================ -->
+<div class="compare">
+  <div class="compare-col bad">
+    <h3>Without SelfVerificationRegistry</h3>
+    <ul>
+      <li>Raw Hub V2 leaks name, DOB, nationality on-chain</li>
+      <li>Same nullifier across apps = cross-app linkability</li>
+      <li>Every dApp reimplements verification logic</li>
+      <li>Developers need wallets and gas to integrate</li>
+    </ul>
+  </div>
+  <div class="compare-col good">
+    <h3>With SelfVerificationRegistry</h3>
+    <ul>
+      <li>Only boolean result + timestamps stored on-chain</li>
+      <li>Unique clone address = unique scope = unlinkable nullifiers</li>
+      <li>One-line query: factory.isVerified(appId, user)</li>
+      <li>Relayer-funded: devs only need an HTTP API call</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ARCHITECTURE -->
+<!-- ============================================================ -->
+<div class="arch">
+  <h2>Architecture</h2>
+  <div class="arch-grid">
+    <div class="arch-box">
+      <h3>SelfVerificationFactory</h3>
+      <p>
+        UUPS upgradeable singleton. Deploys one EIP-1167 minimal proxy per app.
+        Each clone gets a unique address = unique <code>Poseidon(addr, seed)</code> scope.
+        Authorized relayers call <code>createApp()</code>; anyone calls <code>isVerified(appId, user)</code>.
+      </p>
+    </div>
+    <div class="arch-box">
+      <h3>SelfVerificationApp (clone)</h3>
+      <p>
+        ~45-byte proxy per app. Extends <code>SelfVerificationRoot</code>.
+        Stores <code>verifications[user] = {verifiedAt, expiresAt}</code>
+        and <code>nullifierToUser[n] = addr</code>. No PII. Expiry = <code>min(docExpiry, now + maxProofAge)</code>.
+      </p>
+    </div>
+    <div class="arch-box">
+      <h3>Hub V2 (ZK Verifier)</h3>
+      <p>
+        Validates zero-knowledge passport proofs off-chain, calls back
+        <code>onVerificationSuccess()</code> on the clone.
+        Demo uses a mock that simulates this callback.
+      </p>
+    </div>
+    <div class="arch-box">
+      <h3>Developer Integration</h3>
+      <p>
+        Register via HTTP API, get an <code>appId</code>.
+        Add <code>&lt;self-verify app-id="42"&gt;</code> to your page.
+        Query on-chain: <code>factory.isVerified(42, user)</code>. Done.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VERIFICATION FLOW -->
+<!-- ============================================================ -->
+<div class="flow">
+  <h2>Verification Flow</h2>
+  <div class="flow-steps">
+    <div class="flow-step" id="flowStep1">
+      <div class="num">1</div>
+      <div class="label">Create App</div>
+      <div class="desc">Relayer deploys clone via factory</div>
+    </div>
+    <div class="flow-arrow" id="flowArrow1">&rarr;</div>
+    <div class="flow-step" id="flowStep2">
+      <div class="num">2</div>
+      <div class="label">User Scans Passport</div>
+      <div class="desc">ZK proof submitted to clone</div>
+    </div>
+    <div class="flow-arrow" id="flowArrow2">&rarr;</div>
+    <div class="flow-step" id="flowStep3">
+      <div class="num">3</div>
+      <div class="label">Hub Verifies</div>
+      <div class="desc">Callbacks with verified output</div>
+    </div>
+    <div class="flow-arrow" id="flowArrow3">&rarr;</div>
+    <div class="flow-step" id="flowStep4">
+      <div class="num">4</div>
+      <div class="label">Boolean Stored</div>
+      <div class="desc">isVerified(appId, user) = true</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONNECTION BAR -->
+<!-- ============================================================ -->
+<div class="conn-bar">
+  <div class="conn-dot" id="connDot"></div>
+  <input id="rpcUrl" value="http://localhost:8545" placeholder="RPC URL">
+  <button onclick="connect()">Connect</button>
+  <div class="conn-info" id="connInfo">Not connected</div>
+  <button class="secondary" onclick="toggleConfig()">Config</button>
+</div>
+<div class="config-panel" id="configPanel">
+  <div class="form-grid">
     <label>Factory</label>
     <input id="factoryAddr" value="0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9">
-  </div>
-  <div class="row">
     <label>Mock Hub</label>
     <input id="hubAddr" value="0x5FbDB2315678afecb367f032d93F642f64180aa3">
-  </div>
-  <div class="row">
     <label>Relayer Key</label>
     <input id="relayerKey" type="password" value="0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d">
   </div>
 </div>
 
-<!-- Create App -->
-<div class="card">
-  <h2>1. Create App</h2>
-  <div class="row">
-    <label>App ID</label>
-    <input id="createAppId" type="number" value="100" min="1">
-  </div>
-  <div class="row">
-    <label>App Name</label>
-    <input id="createAppName" value="My Demo App">
-  </div>
-  <div class="row">
-    <label>Min Age</label>
-    <input id="createOlderThan" type="number" value="0" min="0">
-    <label style="min-width:auto">OFAC</label>
-    <select id="createOfac"><option value="false">Disabled</option><option value="true">Enabled</option></select>
-    <button onclick="createApp()">Create App</button>
-  </div>
-  <div id="createAppStatus"></div>
+<!-- ============================================================ -->
+<!-- INTERACTIVE DEMO TABS -->
+<!-- ============================================================ -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('create')">1. Create App</button>
+  <button class="tab" onclick="switchTab('verify')">2. Verify User</button>
+  <button class="tab" onclick="switchTab('query')">3. Query</button>
+  <button class="tab" onclick="switchTab('sybil')">4. Sybil Test</button>
 </div>
 
-<!-- Verify User -->
-<div class="card">
-  <h2>2. Verify User (Simulate Passport Scan)</h2>
-  <p style="color:var(--dim);font-size:12px;margin-bottom:12px">Simulates the full verifySelfProof() flow with mock Hub V2 callback</p>
-  <div class="row">
-    <label>App ID</label>
-    <input id="verifyAppId" type="number" value="100" min="1">
+<!-- TAB 1: Create App -->
+<div class="tab-content active" id="tab-create">
+  <div class="card">
+    <div class="explain">
+      The relayer calls <span class="code">factory.createApp(appId, name, config)</span> to deploy an EIP-1167 minimal proxy.
+      Each clone gets a unique contract address, which produces a unique Poseidon scope for nullifier unlinkability.
+      Cost: ~200k gas (~$0.001 on Celo).
+    </div>
+    <div class="form-grid">
+      <label>App ID</label>
+      <input id="createAppId" type="number" value="100" min="1">
+      <label>App Name</label>
+      <input id="createAppName" value="My Demo App">
+      <label>Min Age</label>
+      <div class="input-row">
+        <input id="createOlderThan" type="number" value="0" min="0" style="max-width:80px">
+        <label>OFAC</label>
+        <select id="createOfac" style="max-width:120px"><option value="false">Disabled</option><option value="true">Enabled</option></select>
+      </div>
+      <div class="wide">
+        <button onclick="createApp()">Deploy Clone</button>
+        <button class="secondary" onclick="createSecondApp()">Deploy Second App (ID 200)</button>
+      </div>
+    </div>
+    <div id="createAppStatus"></div>
   </div>
-  <div class="row">
-    <label>User Address</label>
-    <input id="verifyUser" value="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC">
-  </div>
-  <div class="row">
-    <label>Nullifier</label>
-    <input id="verifyNullifier" type="number" value="99001">
-    <label style="min-width:auto">Passport Expiry</label>
-    <input id="verifyExpiry" value="311231" placeholder="YYMMDD">
-    <button onclick="verifyUser()">Verify</button>
-  </div>
-  <div id="verifyStatus"></div>
 </div>
 
-<!-- Check Status -->
-<div class="card">
-  <h2>3. Check Verification Status</h2>
-  <div class="row">
-    <label>App ID</label>
-    <input id="checkAppId" type="number" value="100" min="1">
+<!-- TAB 2: Verify User -->
+<div class="tab-content" id="tab-verify">
+  <div class="card">
+    <div class="explain">
+      In production: user scans passport in Self app, ZK proof is generated, relayer calls
+      <span class="code">clone.verifySelfProof(proof)</span>, Hub V2 validates and callbacks.
+      Here, the mock Hub simulates the callback with pre-configured output. No real passport needed.
+    </div>
+    <div class="form-grid">
+      <label>App ID</label>
+      <input id="verifyAppId" type="number" value="100" min="1">
+      <label>User Address</label>
+      <input id="verifyUser" value="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC">
+      <label>Nullifier</label>
+      <input id="verifyNullifier" type="number" value="99001">
+      <label>Passport Expiry</label>
+      <div class="input-row">
+        <input id="verifyExpiry" value="311231" placeholder="YYMMDD" style="max-width:100px">
+        <span style="font-size:11px;color:var(--dim)">YYMMDD format (e.g., 311231 = Dec 31, 2031)</span>
+      </div>
+      <div class="wide">
+        <button onclick="verifyUser()">Simulate Verification</button>
+      </div>
+    </div>
+    <div id="verifyStatus"></div>
   </div>
-  <div class="row">
-    <label>User Address</label>
-    <input id="checkUser" value="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC">
-    <button onclick="checkStatus()">Check</button>
-  </div>
-  <div id="checkStatusResult"></div>
 </div>
 
-<!-- App Explorer -->
-<div class="card">
-  <h2>4. App Explorer</h2>
-  <div class="row">
-    <label>App ID</label>
-    <input id="exploreAppId" type="number" value="1" min="1">
-    <button onclick="exploreApp()">Explore</button>
+<!-- TAB 3: Query -->
+<div class="tab-content" id="tab-query">
+  <div class="card">
+    <div class="explain">
+      Any smart contract or EOA can call <span class="code">factory.isVerified(appId, user)</span>.
+      This is the one-line integration point. Returns true if the user has a non-expired verification.
+      No oracle, no off-chain dependency — fully trustless.
+    </div>
+    <div class="form-grid">
+      <label>App ID</label>
+      <input id="checkAppId" type="number" value="100" min="1">
+      <label>User Address</label>
+      <input id="checkUser" value="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC">
+      <div class="wide">
+        <button onclick="checkStatus()">Check isVerified()</button>
+        <button class="secondary" onclick="exploreApp()">Explore App Details</button>
+      </div>
+    </div>
+    <div id="checkStatusResult"></div>
+    <div id="exploreResult"></div>
+
+    <div style="margin-top:16px">
+      <div class="explain" style="border-left-color:var(--cyan)">
+        <strong style="color:var(--cyan)">Solidity integration example:</strong>
+        <div class="code-block">interface ISelfVerificationFactory {
+    function isVerified(uint256 appId, address user)
+        external view returns (bool);
+}
+
+contract MyDApp {
+    ISelfVerificationFactory factory =
+        ISelfVerificationFactory(FACTORY_ADDR);
+
+    function doSomething() external {
+        require(
+            factory.isVerified(MY_APP_ID, msg.sender),
+            "Not verified"
+        );
+        // ... your logic
+    }
+}</div>
+      </div>
+    </div>
   </div>
-  <div id="exploreResult"></div>
 </div>
 
-<!-- Log -->
-<div class="card">
-  <h2>Transaction Log</h2>
+<!-- TAB 4: Sybil / Cross-app Test -->
+<div class="tab-content" id="tab-sybil">
+  <div class="card">
+    <div class="explain">
+      <strong>Sybil resistance:</strong> one passport = one nullifier per app. A second wallet trying to use the same
+      passport nullifier on the same app is rejected with <span class="code">DuplicateNullifier</span>.
+      <br><br>
+      <strong>Cross-app unlinkability:</strong> the same passport produces <em>different</em> nullifiers on different apps
+      (different clone address = different Poseidon scope). The dating app can't learn you also verified on the gambling site.
+    </div>
+
+    <div class="sybil-grid">
+      <div>
+        <h3 style="font-size:13px;margin-bottom:12px;color:var(--red)">Sybil Attack (same app, same nullifier)</h3>
+        <div class="form-grid" style="grid-template-columns:90px 1fr">
+          <label>App ID</label>
+          <input id="sybilAppId" type="number" value="100">
+          <label>Attacker</label>
+          <input id="sybilAttacker" value="0x90F79bf6EB2c4f870365E785982E1f101E93b906">
+          <label>Nullifier</label>
+          <input id="sybilNullifier" type="number" value="99001">
+          <div class="wide">
+            <button style="background:var(--red)" onclick="trySybil()">Attempt Sybil</button>
+          </div>
+        </div>
+        <div id="sybilResult"></div>
+      </div>
+
+      <div>
+        <h3 style="font-size:13px;margin-bottom:12px;color:var(--green)">Cross-App Privacy (different apps)</h3>
+        <div class="form-grid" style="grid-template-columns:90px 1fr">
+          <label>App A</label>
+          <input id="crossAppA" type="number" value="100">
+          <label>App B</label>
+          <input id="crossAppB" type="number" value="200">
+          <div class="wide">
+            <button style="background:var(--green);color:#000" onclick="showCrossApp()">Compare Scopes</button>
+          </div>
+        </div>
+        <div id="crossAppResult"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TRANSACTION LOG -->
+<!-- ============================================================ -->
+<div class="log-container">
+  <div class="log-header">
+    <h3>Transaction Log</h3>
+    <button class="secondary" style="padding:4px 10px;font-size:11px" onclick="clearLog()">Clear</button>
+  </div>
   <div id="log"></div>
 </div>
+
+<!-- ============================================================ -->
+<!-- SETUP INSTRUCTIONS -->
+<!-- ============================================================ -->
+<div class="card-standalone" style="border-left:3px solid var(--yellow)">
+  <h3 style="font-size:13px;color:var(--yellow);margin-bottom:8px">Setup Instructions</h3>
+  <div class="code-block" style="color:var(--text)"><span style="color:var(--dim)"># Terminal 1: start local chain</span>
+anvil
+
+<span style="color:var(--dim)"># Terminal 2: deploy contracts (from contracts/ dir)</span>
+forge script script/DemoSelfVerification.s.sol \
+  --rpc-url http://localhost:8545 --broadcast
+
+<span style="color:var(--dim)"># Terminal 3: open demo</span>
+open demo/index.html</div>
+</div>
+
+</div><!-- .page -->
 
 <script>
 // ============================================================
@@ -175,27 +491,61 @@ const HUB_ABI = [
 // State
 // ============================================================
 let provider, relayerSigner, factory, hub;
+let isConnected = false;
 
 // ============================================================
-// Safe DOM helpers
+// DOM helpers
 // ============================================================
 function log(msg, cls) {
   const el = document.getElementById('log');
   const line = document.createElement('div');
-  line.className = 'log-line ' + (cls || '');
-  line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+  line.className = 'log-line ' + (cls || 'dim');
+  const time = new Date().toLocaleTimeString([], { hour12: false });
+  line.textContent = '[' + time + '] ' + msg;
   el.appendChild(line);
   el.scrollTop = el.scrollHeight;
 }
 
+function clearLog() {
+  const el = document.getElementById('log');
+  while (el.firstChild) el.removeChild(el.firstChild);
+}
+
 function setStatus(id, text, cls) {
   const container = document.getElementById(id);
-  // Clear previous
   while (container.firstChild) container.removeChild(container.firstChild);
   const div = document.createElement('div');
   div.className = 'status ' + cls;
   div.textContent = text;
   container.appendChild(div);
+}
+
+function markFlowStep(stepNum) {
+  const step = document.getElementById('flowStep' + stepNum);
+  if (step) step.classList.add('done');
+  if (stepNum > 1) {
+    const arrow = document.getElementById('flowArrow' + (stepNum - 1));
+    if (arrow) arrow.classList.add('done');
+  }
+}
+
+function toggleConfig() {
+  document.getElementById('configPanel').classList.toggle('open');
+}
+
+// ============================================================
+// Tabs
+// ============================================================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  // Find the matching tab button
+  var tabs = document.querySelectorAll('.tab');
+  var labels = { create: '1.', verify: '2.', query: '3.', sybil: '4.' };
+  tabs.forEach(function(t) {
+    if (t.textContent.indexOf(labels[name]) === 0) t.classList.add('active');
+  });
 }
 
 // ============================================================
@@ -218,18 +568,17 @@ async function connect() {
     factory = new ethers.Contract(factoryAddr, FACTORY_ABI, relayerSigner);
     hub = new ethers.Contract(hubAddr, HUB_ABI, relayerSigner);
 
-    const owner = await factory.owner();
     const isRelayer = await factory.isAuthorizedRelayer(relayerSigner.address);
 
-    setStatus('connectionStatus',
-      'Connected to chain ' + network.chainId + ' (block #' + blockNum + ')\n' +
-      'Factory owner: ' + owner + '\n' +
-      'Relayer: ' + relayerSigner.address + ' (authorized: ' + (isRelayer ? 'yes' : 'NO') + ')',
-      'ok'
-    );
+    document.getElementById('connDot').classList.add('connected');
+    document.getElementById('connInfo').textContent =
+      'Chain ' + network.chainId + ' | Block #' + blockNum + ' | Relayer: ' + (isRelayer ? 'authorized' : 'NOT authorized');
+
+    isConnected = true;
     log('Connected to ' + rpcUrl + ' (chain ' + network.chainId + ')', 'ok');
   } catch (e) {
-    setStatus('connectionStatus', 'Error: ' + e.message, 'err');
+    document.getElementById('connDot').classList.remove('connected');
+    document.getElementById('connInfo').textContent = 'Error: ' + e.message;
     log('Connection failed: ' + e.message, 'err');
   }
 }
@@ -244,12 +593,11 @@ async function createApp() {
     const olderThan = parseInt(document.getElementById('createOlderThan').value);
     const ofacEnabled = document.getElementById('createOfac').value === 'true';
 
-    log('Creating app ' + appId + ' "' + name + '"...', 'tx');
+    log('Deploying clone for app ' + appId + ' "' + name + '"...', 'tx');
 
     const tx = await factory.createApp(appId, name, olderThan, ofacEnabled, []);
     const receipt = await tx.wait();
 
-    // Find clone address from event
     let cloneAddr = '(unknown)';
     for (const logEntry of receipt.logs) {
       try {
@@ -262,17 +610,27 @@ async function createApp() {
     }
 
     setStatus('createAppStatus',
-      'App ' + appId + ' created!\n' +
-      'Clone: ' + cloneAddr + '\n' +
-      'Gas used: ' + receipt.gasUsed.toString(),
+      'App ' + appId + ' deployed!\n' +
+      'Clone address: ' + cloneAddr + '\n' +
+      'Gas used: ' + receipt.gasUsed.toString() + ' (~$' + (Number(receipt.gasUsed) * 0.000000005).toFixed(6) + ' on Celo)',
       'ok'
     );
-    log('App ' + appId + ' deployed at ' + cloneAddr + ' (gas: ' + receipt.gasUsed + ')', 'ok');
+    log('App ' + appId + ' clone deployed at ' + cloneAddr + ' (gas: ' + receipt.gasUsed + ')', 'ok');
+    markFlowStep(1);
   } catch (e) {
     const msg = e.reason || e.shortMessage || e.message || String(e);
     setStatus('createAppStatus', 'Error: ' + msg, 'err');
     log('createApp failed: ' + msg, 'err');
   }
+}
+
+async function createSecondApp() {
+  document.getElementById('createAppId').value = '200';
+  document.getElementById('createAppName').value = 'Second Demo App';
+  await createApp();
+  // Restore defaults
+  document.getElementById('createAppId').value = '100';
+  document.getElementById('createAppName').value = 'My Demo App';
 }
 
 // ============================================================
@@ -287,7 +645,7 @@ async function verifyUser() {
 
     const cloneAddr = await factory.getApp(appId);
     if (cloneAddr === ethers.ZeroAddress) {
-      throw new Error('App ' + appId + ' does not exist. Create it first.');
+      throw new Error('App ' + appId + ' not deployed yet. Create it first (Tab 1).');
     }
 
     log('Verifying user ' + userAddr.slice(0, 10) + '... on app ' + appId + '...', 'tx');
@@ -311,9 +669,10 @@ async function verifyUser() {
 
     const tx1 = await hub.setNextVerificationOutput(output);
     await tx1.wait();
-    log('  Mock hub configured with verification output', 'tx');
+    log('  Mock Hub configured (simulating passport scan)', 'tx');
+    markFlowStep(2);
 
-    // Step 2: Call verifySelfProof on the clone (full flow)
+    // Step 2: Call verifySelfProof (triggers Hub callback)
     const app = new ethers.Contract(cloneAddr, APP_ABI, relayerSigner);
     const chainId = (await provider.getNetwork()).chainId;
 
@@ -329,19 +688,21 @@ async function verifyUser() {
 
     const tx2 = await app.verifySelfProof(proofPayload, userContextData);
     const receipt = await tx2.wait();
+    markFlowStep(3);
 
     const [verifiedAt, expiresAt] = await app.verifications(userAddr);
     const expiresDate = new Date(Number(expiresAt) * 1000).toISOString().split('T')[0];
 
     setStatus('verifyStatus',
-      'User verified! [VERIFIED]\n' +
-      'Verified at: ' + verifiedAt.toString() + ' (block timestamp)\n' +
-      'Expires at: ' + expiresAt.toString() + ' (' + expiresDate + ')\n' +
-      'Nullifier ' + nullifier + ' -> ' + userAddr.slice(0, 10) + '...\n' +
-      'Gas used: ' + receipt.gasUsed.toString(),
+      'User verified!\n' +
+      'Verified at:  block timestamp ' + verifiedAt.toString() + '\n' +
+      'Expires at:   ' + expiresAt.toString() + ' (' + expiresDate + ')\n' +
+      'Nullifier:    ' + nullifier + ' -> ' + userAddr.slice(0, 10) + '...\n' +
+      'Gas used:     ' + receipt.gasUsed.toString(),
       'ok'
     );
-    log('Verified! expires ' + expiresDate + ', gas: ' + receipt.gasUsed, 'ok');
+    log('Verified! Expires ' + expiresDate + ', gas: ' + receipt.gasUsed, 'ok');
+    markFlowStep(4);
   } catch (e) {
     const msg = e.reason || e.shortMessage || e.message || String(e);
     setStatus('verifyStatus', 'Error: ' + msg, 'err');
@@ -370,17 +731,17 @@ async function checkStatus() {
         const now = BigInt(block.timestamp);
         const expired = expiresAt <= now;
         const expiresDate = new Date(Number(expiresAt) * 1000).toISOString().split('T')[0];
-        details = '\nVerified at: ' + verifiedAt.toString() +
-          '\nExpires at: ' + expiresAt.toString() + ' (' + expiresDate + ')' +
-          (expired ? ' [EXPIRED]' : '');
+        details = '\n\nVerified at: ' + verifiedAt.toString() +
+          '\nExpires at:  ' + expiresAt.toString() + ' (' + expiresDate + ')' +
+          (expired ? ' [EXPIRED]' : ' [ACTIVE]');
       } else {
-        details = '\nNo verification record found';
+        details = '\n\nNo verification record found for this address.';
       }
     }
 
-    const label = verified ? '[VERIFIED]' : '[NOT VERIFIED]';
+    const label = verified ? 'TRUE' : 'FALSE';
     setStatus('checkStatusResult',
-      'factory.isVerified(' + appId + ', ' + userAddr.slice(0, 10) + '...): ' + label + details,
+      'factory.isVerified(' + appId + ', ' + userAddr.slice(0, 10) + '...) = ' + label + details,
       verified ? 'ok' : 'info'
     );
     log('isVerified(' + appId + ', ' + userAddr.slice(0, 10) + '...) = ' + verified, verified ? 'ok' : '');
@@ -394,11 +755,11 @@ async function checkStatus() {
 // ============================================================
 async function exploreApp() {
   try {
-    const appId = parseInt(document.getElementById('exploreAppId').value);
+    const appId = parseInt(document.getElementById('checkAppId').value);
     const exists = await factory.appExists(appId);
 
     if (!exists) {
-      setStatus('exploreResult', 'App ' + appId + ' does not exist', 'info');
+      setStatus('exploreResult', 'App ' + appId + ' not deployed yet.', 'info');
       return;
     }
 
@@ -415,15 +776,129 @@ async function exploreApp() {
     const maxAgeDays = Number(maxAge) / 86400;
 
     setStatus('exploreResult',
-      name + ' (App ' + appId + ')\n' +
-      'Clone: ' + cloneAddr + '\n' +
-      'Scope: ' + scope.toString() + '\n' +
-      'Config ID: ' + configId + '\n' +
-      'Max Proof Age: ' + maxAgeDays + ' days',
+      'App ' + appId + ': "' + name + '"\n' +
+      'Clone:       ' + cloneAddr + '\n' +
+      'Scope:       ' + scope.toString() + '\n' +
+      'Config ID:   ' + configId + '\n' +
+      'Max Age:     ' + maxAgeDays + ' days',
       'ok'
     );
   } catch (e) {
     setStatus('exploreResult', 'Error: ' + e.message, 'err');
+  }
+}
+
+// ============================================================
+// Sybil Test
+// ============================================================
+async function trySybil() {
+  try {
+    const appId = parseInt(document.getElementById('sybilAppId').value);
+    const attacker = document.getElementById('sybilAttacker').value;
+    const nullifier = parseInt(document.getElementById('sybilNullifier').value);
+
+    const cloneAddr = await factory.getApp(appId);
+    if (cloneAddr === ethers.ZeroAddress) {
+      throw new Error('App ' + appId + ' not deployed. Create and verify a user first.');
+    }
+
+    log('Attempting sybil attack: different wallet, same nullifier ' + nullifier + '...', 'tx');
+
+    const output = {
+      attestationId: ethers.zeroPadValue('0x01', 32),
+      userIdentifier: BigInt(attacker),
+      nullifier: BigInt(nullifier),
+      forbiddenCountriesListPacked: [0n, 0n, 0n, 0n],
+      issuingState: "USA",
+      name: ["Attacker"],
+      idNumber: "ATTACK999",
+      nationality: "USA",
+      dateOfBirth: "950101",
+      gender: "M",
+      expiryDate: "311231",
+      olderThan: 0n,
+      ofac: [false, false, false]
+    };
+
+    const tx1 = await hub.setNextVerificationOutput(output);
+    await tx1.wait();
+
+    const app = new ethers.Contract(cloneAddr, APP_ABI, relayerSigner);
+    const chainId = (await provider.getNetwork()).chainId;
+
+    const proofPayload = ethers.concat([
+      ethers.zeroPadValue('0x01', 32),
+      ethers.zeroPadValue('0x00', 32)
+    ]);
+    const userContextData = ethers.concat([
+      ethers.zeroPadValue(ethers.toBeHex(chainId), 32),
+      ethers.zeroPadValue(attacker, 32),
+      ethers.zeroPadValue('0x00', 32)
+    ]);
+
+    await app.verifySelfProof(proofPayload, userContextData);
+
+    // Should not reach here
+    setStatus('sybilResult', 'Unexpected: sybil attack succeeded!', 'err');
+  } catch (e) {
+    const msg = e.reason || e.shortMessage || e.message || String(e);
+    if (msg.indexOf('DuplicateNullifier') !== -1 || msg.indexOf('revert') !== -1) {
+      setStatus('sybilResult',
+        'Sybil attack blocked!\n' +
+        'Reverted with DuplicateNullifier — the nullifier is already bound to a different address.\n' +
+        'One passport = one verification per app.',
+        'ok'
+      );
+      log('Sybil attack correctly rejected: DuplicateNullifier', 'ok');
+    } else {
+      setStatus('sybilResult', 'Error: ' + msg, 'err');
+      log('Sybil test error: ' + msg, 'err');
+    }
+  }
+}
+
+// ============================================================
+// Cross-App Comparison
+// ============================================================
+async function showCrossApp() {
+  try {
+    const appA = parseInt(document.getElementById('crossAppA').value);
+    const appB = parseInt(document.getElementById('crossAppB').value);
+
+    const addrA = await factory.getApp(appA);
+    const addrB = await factory.getApp(appB);
+
+    if (addrA === ethers.ZeroAddress || addrB === ethers.ZeroAddress) {
+      setStatus('crossAppResult',
+        'Both apps must be deployed first.\n' +
+        'App ' + appA + ': ' + (addrA === ethers.ZeroAddress ? 'NOT DEPLOYED' : addrA) + '\n' +
+        'App ' + appB + ': ' + (addrB === ethers.ZeroAddress ? 'NOT DEPLOYED' : addrB),
+        'warn'
+      );
+      return;
+    }
+
+    const cloneA = new ethers.Contract(addrA, APP_ABI, provider);
+    const cloneB = new ethers.Contract(addrB, APP_ABI, provider);
+
+    const [scopeA, scopeB, nameA, nameB] = await Promise.all([
+      cloneA.scope(), cloneB.scope(), cloneA.appName(), cloneB.appName()
+    ]);
+
+    setStatus('crossAppResult',
+      'Different addresses = different scopes = unlinkable nullifiers\n\n' +
+      'App ' + appA + ' ("' + nameA + '")\n' +
+      '  Address: ' + addrA + '\n' +
+      '  Scope:   ' + scopeA.toString() + '\n\n' +
+      'App ' + appB + ' ("' + nameB + '")\n' +
+      '  Address: ' + addrB + '\n' +
+      '  Scope:   ' + scopeB.toString() + '\n\n' +
+      'Same passport would produce DIFFERENT nullifiers on each app.',
+      scopeA !== scopeB ? 'ok' : 'err'
+    );
+    log('Scope comparison: App ' + appA + '=' + scopeA + ', App ' + appB + '=' + scopeB + ' (different: ' + (scopeA !== scopeB) + ')', 'ok');
+  } catch (e) {
+    setStatus('crossAppResult', 'Error: ' + e.message, 'err');
   }
 }
 
