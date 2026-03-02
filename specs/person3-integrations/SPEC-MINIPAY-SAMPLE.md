@@ -1,10 +1,10 @@
 # Person 3: MiniPay Integration Sample — Implementation Spec
 
-> Last updated: 2026-02-17
+> Last updated: 2026-03-02
 > Owner: Person 3 (Integrations)
 > Parent: [OVERVIEW.md](./OVERVIEW.md)
 > Project: [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
-> Status: Draft
+> Status: Active
 
 ## North Star
 
@@ -715,11 +715,11 @@ All three chunks are sequential — each builds on the previous.
 
 | Chunk | Description                                 | Size  | Status      |
 | ----- | ------------------------------------------- | ----- | ----------- |
-| 3A    | Project Setup + Home Screen + Launch Button | M ~6k | **Pending** |
-| 3B    | Wire SelfSdk.launch() + Handle Callback     | M ~5k | **Pending** |
-| 3C    | Polish Result Display + Error Handling      | S ~4k | **Pending** |
+| 3A    | Project Setup + Home Screen + Launch Button | M ~6k | **Done**    |
+| 3B    | Wire SelfSdk.launch() + Handle Callback     | M ~5k | **Done**    |
+| 3C    | Polish Result Display + Error Handling      | S ~4k | **Partial** |
 
-**Overall: 0% implemented.**
+**Overall: Partial (implementation complete; physical-device NFC E2E remains).**
 
 ## Validation Plan
 

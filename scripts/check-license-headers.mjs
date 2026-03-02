@@ -54,6 +54,7 @@ function findFiles(
             'Pods',
             '.gradle',
             'vendor',
+            'assets',
           ].includes(item)
         ) {
           traverse(fullPath);

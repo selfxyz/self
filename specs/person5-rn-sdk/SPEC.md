@@ -1,6 +1,6 @@
 # RN Native Shell — Implementation Spec
 
-> Last updated: 2026-02-17
+> Last updated: 2026-03-02
 > Owner: Person 5 (RN SDK)
 > Parent: [OVERVIEW.md](./OVERVIEW.md)
 > Status: Active
@@ -1026,16 +1026,16 @@ Chunk 5A (package + component + router + lifecycle) — no deps, start here
 
 ## Completion Status
 
-_Audit date: 2026-02-17_
+_Audit date: 2026-03-02_
 
 | Chunk | Description                                                                           | Size   | Status      |
 | ----- | ------------------------------------------------------------------------------------- | ------ | ----------- |
-| 5A    | Package setup + `SelfVerification` shell + `MessageRouter` + `LifecycleHandler`       | M ~8k  | **Pending** |
-| 5B    | `BiometricHandler` + `KeychainHandler`                                                | S ~4k  | **Pending** |
-| 5C    | `NfcHandler` + `CameraHandler` (hardware-dependent, requires physical device testing) | L ~10k | **Pending** |
-| 5D    | Asset bundling (copy Vite output into `assets/`) + npm publishing config              | M ~6k  | **Pending** |
+| 5A    | Package setup + `SelfVerification` shell + `MessageRouter` + `LifecycleHandler`       | M ~8k  | **Done**    |
+| 5B    | `BiometricHandler` + `KeychainHandler`                                                | S ~4k  | **Done**    |
+| 5C    | `NfcHandler` + `CameraHandler` (hardware-dependent, requires physical device testing) | L ~10k | **Done**    |
+| 5D    | Asset bundling (copy Vite output into `assets/`) + npm publishing config              | M ~6k  | **Done**    |
 
-**0% implemented. Spec ready for implementation.**
+**Implementation chunks complete. Remaining work is integration validation + npm publish.**
 
 ## Validation Plan
 
