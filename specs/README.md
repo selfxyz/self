@@ -26,7 +26,7 @@ Specs double as AI agent prompts. Written in second person, sized for single con
 | ------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------ |
 | [SDK-OVERVIEW.md](./SDK-OVERVIEW.md) | Architecture, bridge protocol, module table, decision matrix, glossary | First. Always.                             |
 | [WAVE-PLAN.md](./WAVE-PLAN.md)       | Dependency-ordered execution plan for parallel agent work              | When planning which chunks to execute next |
-| [KMP-STATUS.md](./KMP-STATUS.md)     | At-a-glance KMP completion percentages                                 | When you need quick status only            |
+| [KMP-STATUS.md](./KMP-STATUS.md)     | At-a-glance SDK completion percentages (web + KMP)                     | When you need quick status only            |
 
 ## Workstream Specs
 
