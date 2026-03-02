@@ -73,6 +73,12 @@ abstract contract IdentityRegistryKycStorageV1 is ImplRoot {
 
     /// @notice The expected hash of the GCP root CA public key for JWT verification.
     uint256 internal _gcpRootCAPubkeyHash;
+
+    /// @notice Previous name and date of birth OFAC root (rolling window).
+    uint256 internal _prevNameAndDobOfacRoot;
+
+    /// @notice Previous name and year of birth OFAC root (rolling window).
+    uint256 internal _prevNameAndYobOfacRoot;
 }
 
 /**
@@ -342,13 +348,33 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
     }
 
     /**
+     * @notice Retrieves the previous name and date of birth OFAC root (rolling window).
+     * @return The stored previous name and date of birth OFAC root.
+     */
+    function getPrevNameAndDobOfacRoot() external view onlyProxy returns (uint256) {
+        return _prevNameAndDobOfacRoot;
+    }
+
+    /**
+     * @notice Retrieves the previous name and year of birth OFAC root (rolling window).
+     * @return The stored previous name and year of birth OFAC root.
+     */
+    function getPrevNameAndYobOfacRoot() external view onlyProxy returns (uint256) {
+        return _prevNameAndYobOfacRoot;
+    }
+
+    /**
      * @notice Checks if the provided OFAC roots match the stored OFAC roots.
      * @param nameAndDobRoot The name and date of birth OFAC root to verify.
      * @param nameAndYobRoot The name and year of birth OFAC root to verify.
      * @return True if both provided roots match the stored values, false otherwise.
      */
     function checkOfacRoots(uint256 nameAndDobRoot, uint256 nameAndYobRoot) external view onlyProxy returns (bool) {
-        return _nameAndDobOfacRoot == nameAndDobRoot && _nameAndYobOfacRoot == nameAndYobRoot;
+        bool dobMatch = (_nameAndDobOfacRoot == nameAndDobRoot) ||
+            (_prevNameAndDobOfacRoot != 0 && _prevNameAndDobOfacRoot == nameAndDobRoot);
+        bool yobMatch = (_nameAndYobOfacRoot == nameAndYobRoot) ||
+            (_prevNameAndYobOfacRoot != 0 && _prevNameAndYobOfacRoot == nameAndYobRoot);
+        return dobMatch && yobMatch;
     }
 
     /**
@@ -408,6 +434,7 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
      * @param nameAndDobOfacRoot The new name and date of birth OFAC root value.
      */
     function updateNameAndDobOfacRoot(uint256 nameAndDobOfacRoot) external virtual onlyProxy onlyRole(OPERATIONS_ROLE) {
+        _prevNameAndDobOfacRoot = _nameAndDobOfacRoot;
         _nameAndDobOfacRoot = nameAndDobOfacRoot;
         emit NameAndDobOfacRootUpdated(nameAndDobOfacRoot);
     }
@@ -418,6 +445,7 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
      * @param nameAndYobOfacRoot The new name and year of birth OFAC root value.
      */
     function updateNameAndYobOfacRoot(uint256 nameAndYobOfacRoot) external virtual onlyProxy onlyRole(OPERATIONS_ROLE) {
+        _prevNameAndYobOfacRoot = _nameAndYobOfacRoot;
         _nameAndYobOfacRoot = nameAndYobOfacRoot;
         emit NameAndYobOfacRootUpdated(nameAndYobOfacRoot);
     }
@@ -550,6 +578,8 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
         if (globalHash != rootsHashFromProof) revert InvalidRootsHash();
 
         // Update this registry's roots: [nameAndDob, nameAndYob]
+        _prevNameAndDobOfacRoot = _nameAndDobOfacRoot;
+        _prevNameAndYobOfacRoot = _nameAndYobOfacRoot;
         _nameAndDobOfacRoot = roots[0];
         _nameAndYobOfacRoot = roots[1];
 

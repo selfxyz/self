@@ -76,6 +76,15 @@ abstract contract IdentityRegistryStorageV1 is ImplRoot {
 
     /// @notice Current CSCA root.
     uint256 internal _cscaRoot;
+
+    /// @notice Previous passport number OFAC root (rolling window).
+    uint256 internal _prevPassportNoOfacRoot;
+
+    /// @notice Previous name and date of birth OFAC root (rolling window).
+    uint256 internal _prevNameAndDobOfacRoot;
+
+    /// @notice Previous name and year of birth OFAC root (rolling window).
+    uint256 internal _prevNameAndYobOfacRoot;
 }
 
 /**
@@ -303,6 +312,30 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
     }
 
     /**
+     * @notice Retrieves the previous passport number OFAC root (rolling window).
+     * @return The stored previous passport number OFAC root.
+     */
+    function getPrevPassportNoOfacRoot() external view onlyProxy returns (uint256) {
+        return _prevPassportNoOfacRoot;
+    }
+
+    /**
+     * @notice Retrieves the previous name and date of birth OFAC root (rolling window).
+     * @return The stored previous name and date of birth OFAC root.
+     */
+    function getPrevNameAndDobOfacRoot() external view onlyProxy returns (uint256) {
+        return _prevNameAndDobOfacRoot;
+    }
+
+    /**
+     * @notice Retrieves the previous name and year of birth OFAC root (rolling window).
+     * @return The stored previous name and year of birth OFAC root.
+     */
+    function getPrevNameAndYobOfacRoot() external view onlyProxy returns (uint256) {
+        return _prevNameAndYobOfacRoot;
+    }
+
+    /**
      * @notice Validates whether the provided OFAC roots match the stored values.
      * @param passportNoRoot The passport number OFAC root to validate.
      * @param nameAndDobRoot The name and date of birth OFAC root to validate.
@@ -314,10 +347,13 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
         uint256 nameAndDobRoot,
         uint256 nameAndYobRoot
     ) external view onlyProxy returns (bool) {
-        return
-            _passportNoOfacRoot == passportNoRoot &&
-            _nameAndDobOfacRoot == nameAndDobRoot &&
-            _nameAndYobOfacRoot == nameAndYobRoot;
+        bool passportNoMatch = (_passportNoOfacRoot == passportNoRoot) ||
+            (_prevPassportNoOfacRoot != 0 && _prevPassportNoOfacRoot == passportNoRoot);
+        bool dobMatch = (_nameAndDobOfacRoot == nameAndDobRoot) ||
+            (_prevNameAndDobOfacRoot != 0 && _prevNameAndDobOfacRoot == nameAndDobRoot);
+        bool yobMatch = (_nameAndYobOfacRoot == nameAndYobRoot) ||
+            (_prevNameAndYobOfacRoot != 0 && _prevNameAndYobOfacRoot == nameAndYobRoot);
+        return passportNoMatch && dobMatch && yobMatch;
     }
 
     /**
@@ -430,6 +466,7 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
      * @param newPassportNoOfacRoot The new passport number OFAC root value.
      */
     function updatePassportNoOfacRoot(uint256 newPassportNoOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+        _prevPassportNoOfacRoot = _passportNoOfacRoot;
         _passportNoOfacRoot = newPassportNoOfacRoot;
         emit PassportNoOfacRootUpdated(newPassportNoOfacRoot);
     }
@@ -440,6 +477,7 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
      * @param newNameAndDobOfacRoot The new name and date of birth OFAC root value.
      */
     function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+        _prevNameAndDobOfacRoot = _nameAndDobOfacRoot;
         _nameAndDobOfacRoot = newNameAndDobOfacRoot;
         emit NameAndDobOfacRootUpdated(newNameAndDobOfacRoot);
     }
@@ -450,6 +488,7 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
      * @param newNameAndYobOfacRoot The new name and year of birth OFAC root value.
      */
     function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+        _prevNameAndYobOfacRoot = _nameAndYobOfacRoot;
         _nameAndYobOfacRoot = newNameAndYobOfacRoot;
         emit NameAndYobOfacRootUpdated(newNameAndYobOfacRoot);
     }

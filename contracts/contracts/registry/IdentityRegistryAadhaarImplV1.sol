@@ -64,6 +64,12 @@ abstract contract IdentityRegistryAadhaarStorageV1 is ImplRoot {
 
     /// @notice Current name and year of birth OFAC root.
     uint256 internal _nameAndYobOfacRoot;
+
+    /// @notice Previous name and date of birth OFAC root (rolling window).
+    uint256 internal _prevNameAndDobOfacRoot;
+
+    /// @notice Previous name and year of birth OFAC root (rolling window).
+    uint256 internal _prevNameAndYobOfacRoot;
 }
 
 /**
@@ -253,6 +259,22 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
         return _nameAndYobOfacRoot;
     }
 
+    /**
+     * @notice Retrieves the previous name and date of birth OFAC root (rolling window).
+     * @return The stored previous name and date of birth OFAC root.
+     */
+    function getPrevNameAndDobOfacRoot() external view onlyProxy returns (uint256) {
+        return _prevNameAndDobOfacRoot;
+    }
+
+    /**
+     * @notice Retrieves the previous name and year of birth OFAC root (rolling window).
+     * @return The stored previous name and year of birth OFAC root.
+     */
+    function getPrevNameAndYobOfacRoot() external view onlyProxy returns (uint256) {
+        return _prevNameAndYobOfacRoot;
+    }
+
     /// @notice Validates whether the provided OFAC roots match the stored values.
     /// @param nameAndDobRoot The name and date of birth OFAC root to validate.
     /// @param nameAndYobRoot The name and year of birth OFAC root to validate.
@@ -261,7 +283,11 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
         uint256 nameAndDobRoot,
         uint256 nameAndYobRoot
     ) external view virtual onlyProxy returns (bool) {
-        return _nameAndDobOfacRoot == nameAndDobRoot && _nameAndYobOfacRoot == nameAndYobRoot;
+        bool dobMatch = (_nameAndDobOfacRoot == nameAndDobRoot) ||
+            (_prevNameAndDobOfacRoot != 0 && _prevNameAndDobOfacRoot == nameAndDobRoot);
+        bool yobMatch = (_nameAndYobOfacRoot == nameAndYobRoot) ||
+            (_prevNameAndYobOfacRoot != 0 && _prevNameAndYobOfacRoot == nameAndYobRoot);
+        return dobMatch && yobMatch;
     }
 
     /// @notice Checks if the provided UIDAI pubkey is stored in the registry and also if it's not expired.
@@ -306,6 +332,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param newNameAndDobOfacRoot The new name and date of birth OFAC root value.
     function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+        _prevNameAndDobOfacRoot = _nameAndDobOfacRoot;
         _nameAndDobOfacRoot = newNameAndDobOfacRoot;
         emit NameAndDobOfacRootUpdated(newNameAndDobOfacRoot);
     }
@@ -314,6 +341,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param newNameAndYobOfacRoot The new name and year of birth OFAC root value.
     function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+        _prevNameAndYobOfacRoot = _nameAndYobOfacRoot;
         _nameAndYobOfacRoot = newNameAndYobOfacRoot;
         emit NameAndYobOfacRootUpdated(newNameAndYobOfacRoot);
     }
