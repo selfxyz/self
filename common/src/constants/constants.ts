@@ -268,9 +268,9 @@ export const TREE_TRACKER_URL = 'https://tree.self.xyz';
 export const TREE_URL = 'https://tree.self.xyz';
 export const TREE_URL_STAGING = 'https://tree.staging.self.xyz';
 
-export const WS_DB_RELAYER = 'wss://4930-49-204-25-85.ngrok-free.app';
+export const WS_DB_RELAYER = 'wss://webscoket.self.xyz';
 
-export const WS_DB_RELAYER_STAGING = 'wss://4930-49-204-25-85.ngrok-free.app';
+export const WS_DB_RELAYER_STAGING = 'wss://websocket.staging.self.xyz';
 
 export const WS_RPC_URL_VC_AND_DISCLOSE = 'ws://disclose.proving.self.xyz:8888/';
 
