@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SelfVerificationRegistry Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<style>
+  :root { --bg: #0a0a0f; --surface: #13131a; --border: #2a2a3a; --text: #e0e0e8; --dim: #888; --green: #4ade80; --red: #f87171; --blue: #60a5fa; --purple: #a78bfa; --yellow: #fbbf24; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'SF Mono', 'Fira Code', monospace; background: var(--bg); color: var(--text); padding: 24px; max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: var(--dim); font-size: 13px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  .card h2 { font-size: 14px; color: var(--purple); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .row { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  label { color: var(--dim); font-size: 12px; min-width: 100px; }
+  input, select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 4px; font-family: inherit; font-size: 13px; flex: 1; min-width: 150px; }
+  button { background: var(--purple); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  button:hover { opacity: 0.9; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .status { font-size: 13px; padding: 8px 12px; border-radius: 4px; margin-top: 8px; white-space: pre-wrap; word-break: break-all; }
+  .status.ok { background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.2); }
+  .status.err { background: rgba(248, 113, 113, 0.1); color: var(--red); border: 1px solid rgba(248, 113, 113, 0.2); }
+  .status.info { background: rgba(96, 165, 250, 0.1); color: var(--blue); border: 1px solid rgba(96, 165, 250, 0.2); }
+  #log { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px; font-size: 12px; max-height: 300px; overflow-y: auto; margin-top: 8px; }
+  .log-line { margin-bottom: 4px; white-space: pre-wrap; word-break: break-all; }
+  .log-line.tx { color: var(--blue); }
+  .log-line.ok { color: var(--green); }
+  .log-line.err { color: var(--red); }
+</style>
+</head>
+<body>
+
+<h1>SelfVerificationRegistry Demo</h1>
+<p class="subtitle">Interactive demo on local anvil -- factory + clones + verification flow</p>
+
+<!-- Connection -->
+<div class="card" id="connectionCard">
+  <h2>Connection</h2>
+  <div class="row">
+    <label>RPC URL</label>
+    <input id="rpcUrl" value="http://localhost:8545">
+    <button onclick="connect()">Connect</button>
+  </div>
+  <div id="connectionStatus"></div>
+</div>
+
+<!-- Contract Addresses -->
+<div class="card">
+  <h2>Deployed Contracts</h2>
+  <div class="row">
+    <label>Factory</label>
+    <input id="factoryAddr" value="0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9">
+  </div>
+  <div class="row">
+    <label>Mock Hub</label>
+    <input id="hubAddr" value="0x5FbDB2315678afecb367f032d93F642f64180aa3">
+  </div>
+  <div class="row">
+    <label>Relayer Key</label>
+    <input id="relayerKey" type="password" value="0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d">
+  </div>
+</div>
+
+<!-- Create App -->
+<div class="card">
+  <h2>1. Create App</h2>
+  <div class="row">
+    <label>App ID</label>
+    <input id="createAppId" type="number" value="100" min="1">
+  </div>
+  <div class="row">
+    <label>App Name</label>
+    <input id="createAppName" value="My Demo App">
+  </div>
+  <div class="row">
+    <label>Min Age</label>
+    <input id="createOlderThan" type="number" value="0" min="0">
+    <label style="min-width:auto">OFAC</label>
+    <select id="createOfac"><option value="false">Disabled</option><option value="true">Enabled</option></select>
+    <button onclick="createApp()">Create App</button>
+  </div>
+  <div id="createAppStatus"></div>
+</div>
+
+<!-- Verify User -->
+<div class="card">
+  <h2>2. Verify User (Simulate Passport Scan)</h2>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:12px">Simulates the full verifySelfProof() flow with mock Hub V2 callback</p>
+  <div class="row">
+    <label>App ID</label>
+    <input id="verifyAppId" type="number" value="100" min="1">
+  </div>
+  <div class="row">
+    <label>User Address</label>
+    <input id="verifyUser" value="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC">
+  </div>
+  <div class="row">
+    <label>Nullifier</label>
+    <input id="verifyNullifier" type="number" value="99001">
+    <label style="min-width:auto">Passport Expiry</label>
+    <input id="verifyExpiry" value="311231" placeholder="YYMMDD">
+    <button onclick="verifyUser()">Verify</button>
+  </div>
+  <div id="verifyStatus"></div>
+</div>
+
+<!-- Check Status -->
+<div class="card">
+  <h2>3. Check Verification Status</h2>
+  <div class="row">
+    <label>App ID</label>
+    <input id="checkAppId" type="number" value="100" min="1">
+  </div>
+  <div class="row">
+    <label>User Address</label>
+    <input id="checkUser" value="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC">
+    <button onclick="checkStatus()">Check</button>
+  </div>
+  <div id="checkStatusResult"></div>
+</div>
+
+<!-- App Explorer -->
+<div class="card">
+  <h2>4. App Explorer</h2>
+  <div class="row">
+    <label>App ID</label>
+    <input id="exploreAppId" type="number" value="1" min="1">
+    <button onclick="exploreApp()">Explore</button>
+  </div>
+  <div id="exploreResult"></div>
+</div>
+
+<!-- Log -->
+<div class="card">
+  <h2>Transaction Log</h2>
+  <div id="log"></div>
+</div>
+
+<script>
+// ============================================================
+// Minimal ABIs
+// ============================================================
+const FACTORY_ABI = [
+  "function createApp(uint256 appId, string name, uint256 olderThan, bool ofacEnabled, string[] forbiddenCountries) returns (address)",
+  "function isVerified(uint256 appId, address user) view returns (bool)",
+  "function getApp(uint256 appId) view returns (address)",
+  "function appExists(uint256 appId) view returns (bool)",
+  "function owner() view returns (address)",
+  "function maxProofAge() view returns (uint256)",
+  "function appImplementation() view returns (address)",
+  "function isAuthorizedRelayer(address) view returns (bool)",
+  "event AppCreated(uint256 indexed appId, address indexed clone, string name)"
+];
+
+const APP_ABI = [
+  "function appName() view returns (string)",
+  "function configId() view returns (bytes32)",
+  "function maxProofAge() view returns (uint256)",
+  "function isVerified(address user) view returns (bool)",
+  "function verifications(address user) view returns (uint256 verifiedAt, uint256 expiresAt)",
+  "function nullifierToUser(uint256 nullifier) view returns (address)",
+  "function scope() view returns (uint256)",
+  "function verifySelfProof(bytes proofPayload, bytes userContextData)",
+  "event UserVerified(address indexed user, uint256 nullifier, uint256 expiresAt)"
+];
+
+const HUB_ABI = [
+  "function setNextVerificationOutput(tuple(bytes32 attestationId, uint256 userIdentifier, uint256 nullifier, uint256[4] forbiddenCountriesListPacked, string issuingState, string[] name, string idNumber, string nationality, string dateOfBirth, string gender, string expiryDate, uint256 olderThan, bool[3] ofac) output)",
+  "function verify(bytes baseVerificationInput, bytes userContextData)"
+];
+
+// ============================================================
+// State
+// ============================================================
+let provider, relayerSigner, factory, hub;
+
+// ============================================================
+// Safe DOM helpers
+// ============================================================
+function log(msg, cls) {
+  const el = document.getElementById('log');
+  const line = document.createElement('div');
+  line.className = 'log-line ' + (cls || '');
+  line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function setStatus(id, text, cls) {
+  const container = document.getElementById(id);
+  // Clear previous
+  while (container.firstChild) container.removeChild(container.firstChild);
+  const div = document.createElement('div');
+  div.className = 'status ' + cls;
+  div.textContent = text;
+  container.appendChild(div);
+}
+
+// ============================================================
+// Connect
+// ============================================================
+async function connect() {
+  try {
+    const rpcUrl = document.getElementById('rpcUrl').value;
+    provider = new ethers.JsonRpcProvider(rpcUrl);
+
+    const network = await provider.getNetwork();
+    const blockNum = await provider.getBlockNumber();
+
+    const relayerKey = document.getElementById('relayerKey').value;
+    relayerSigner = new ethers.Wallet(relayerKey, provider);
+
+    const factoryAddr = document.getElementById('factoryAddr').value;
+    const hubAddr = document.getElementById('hubAddr').value;
+
+    factory = new ethers.Contract(factoryAddr, FACTORY_ABI, relayerSigner);
+    hub = new ethers.Contract(hubAddr, HUB_ABI, relayerSigner);
+
+    const owner = await factory.owner();
+    const isRelayer = await factory.isAuthorizedRelayer(relayerSigner.address);
+
+    setStatus('connectionStatus',
+      'Connected to chain ' + network.chainId + ' (block #' + blockNum + ')\n' +
+      'Factory owner: ' + owner + '\n' +
+      'Relayer: ' + relayerSigner.address + ' (authorized: ' + (isRelayer ? 'yes' : 'NO') + ')',
+      'ok'
+    );
+    log('Connected to ' + rpcUrl + ' (chain ' + network.chainId + ')', 'ok');
+  } catch (e) {
+    setStatus('connectionStatus', 'Error: ' + e.message, 'err');
+    log('Connection failed: ' + e.message, 'err');
+  }
+}
+
+// ============================================================
+// Create App
+// ============================================================
+async function createApp() {
+  try {
+    const appId = parseInt(document.getElementById('createAppId').value);
+    const name = document.getElementById('createAppName').value;
+    const olderThan = parseInt(document.getElementById('createOlderThan').value);
+    const ofacEnabled = document.getElementById('createOfac').value === 'true';
+
+    log('Creating app ' + appId + ' "' + name + '"...', 'tx');
+
+    const tx = await factory.createApp(appId, name, olderThan, ofacEnabled, []);
+    const receipt = await tx.wait();
+
+    // Find clone address from event
+    let cloneAddr = '(unknown)';
+    for (const logEntry of receipt.logs) {
+      try {
+        const parsed = factory.interface.parseLog(logEntry);
+        if (parsed && parsed.name === 'AppCreated') {
+          cloneAddr = parsed.args.clone;
+          break;
+        }
+      } catch (_) {}
+    }
+
+    setStatus('createAppStatus',
+      'App ' + appId + ' created!\n' +
+      'Clone: ' + cloneAddr + '\n' +
+      'Gas used: ' + receipt.gasUsed.toString(),
+      'ok'
+    );
+    log('App ' + appId + ' deployed at ' + cloneAddr + ' (gas: ' + receipt.gasUsed + ')', 'ok');
+  } catch (e) {
+    const msg = e.reason || e.shortMessage || e.message || String(e);
+    setStatus('createAppStatus', 'Error: ' + msg, 'err');
+    log('createApp failed: ' + msg, 'err');
+  }
+}
+
+// ============================================================
+// Verify User
+// ============================================================
+async function verifyUser() {
+  try {
+    const appId = parseInt(document.getElementById('verifyAppId').value);
+    const userAddr = document.getElementById('verifyUser').value;
+    const nullifier = parseInt(document.getElementById('verifyNullifier').value);
+    const expiry = document.getElementById('verifyExpiry').value;
+
+    const cloneAddr = await factory.getApp(appId);
+    if (cloneAddr === ethers.ZeroAddress) {
+      throw new Error('App ' + appId + ' does not exist. Create it first.');
+    }
+
+    log('Verifying user ' + userAddr.slice(0, 10) + '... on app ' + appId + '...', 'tx');
+
+    // Step 1: Configure mock hub
+    const output = {
+      attestationId: ethers.zeroPadValue('0x01', 32),
+      userIdentifier: BigInt(userAddr),
+      nullifier: BigInt(nullifier),
+      forbiddenCountriesListPacked: [0n, 0n, 0n, 0n],
+      issuingState: "USA",
+      name: ["Demo User"],
+      idNumber: "DEMO12345",
+      nationality: "USA",
+      dateOfBirth: "900101",
+      gender: "M",
+      expiryDate: expiry,
+      olderThan: 0n,
+      ofac: [false, false, false]
+    };
+
+    const tx1 = await hub.setNextVerificationOutput(output);
+    await tx1.wait();
+    log('  Mock hub configured with verification output', 'tx');
+
+    // Step 2: Call verifySelfProof on the clone (full flow)
+    const app = new ethers.Contract(cloneAddr, APP_ABI, relayerSigner);
+    const chainId = (await provider.getNetwork()).chainId;
+
+    const proofPayload = ethers.concat([
+      ethers.zeroPadValue('0x01', 32),
+      ethers.zeroPadValue('0x00', 32)
+    ]);
+    const userContextData = ethers.concat([
+      ethers.zeroPadValue(ethers.toBeHex(chainId), 32),
+      ethers.zeroPadValue(userAddr, 32),
+      ethers.zeroPadValue('0x00', 32)
+    ]);
+
+    const tx2 = await app.verifySelfProof(proofPayload, userContextData);
+    const receipt = await tx2.wait();
+
+    const [verifiedAt, expiresAt] = await app.verifications(userAddr);
+    const expiresDate = new Date(Number(expiresAt) * 1000).toISOString().split('T')[0];
+
+    setStatus('verifyStatus',
+      'User verified! [VERIFIED]\n' +
+      'Verified at: ' + verifiedAt.toString() + ' (block timestamp)\n' +
+      'Expires at: ' + expiresAt.toString() + ' (' + expiresDate + ')\n' +
+      'Nullifier ' + nullifier + ' -> ' + userAddr.slice(0, 10) + '...\n' +
+      'Gas used: ' + receipt.gasUsed.toString(),
+      'ok'
+    );
+    log('Verified! expires ' + expiresDate + ', gas: ' + receipt.gasUsed, 'ok');
+  } catch (e) {
+    const msg = e.reason || e.shortMessage || e.message || String(e);
+    setStatus('verifyStatus', 'Error: ' + msg, 'err');
+    log('verify failed: ' + msg, 'err');
+  }
+}
+
+// ============================================================
+// Check Status
+// ============================================================
+async function checkStatus() {
+  try {
+    const appId = parseInt(document.getElementById('checkAppId').value);
+    const userAddr = document.getElementById('checkUser').value;
+
+    const verified = await factory.isVerified(appId, userAddr);
+    const cloneAddr = await factory.getApp(appId);
+
+    let details = '';
+    if (cloneAddr !== ethers.ZeroAddress) {
+      const app = new ethers.Contract(cloneAddr, APP_ABI, provider);
+      const [verifiedAt, expiresAt] = await app.verifications(userAddr);
+
+      if (verifiedAt > 0n) {
+        const block = await provider.getBlock('latest');
+        const now = BigInt(block.timestamp);
+        const expired = expiresAt <= now;
+        const expiresDate = new Date(Number(expiresAt) * 1000).toISOString().split('T')[0];
+        details = '\nVerified at: ' + verifiedAt.toString() +
+          '\nExpires at: ' + expiresAt.toString() + ' (' + expiresDate + ')' +
+          (expired ? ' [EXPIRED]' : '');
+      } else {
+        details = '\nNo verification record found';
+      }
+    }
+
+    const label = verified ? '[VERIFIED]' : '[NOT VERIFIED]';
+    setStatus('checkStatusResult',
+      'factory.isVerified(' + appId + ', ' + userAddr.slice(0, 10) + '...): ' + label + details,
+      verified ? 'ok' : 'info'
+    );
+    log('isVerified(' + appId + ', ' + userAddr.slice(0, 10) + '...) = ' + verified, verified ? 'ok' : '');
+  } catch (e) {
+    setStatus('checkStatusResult', 'Error: ' + e.message, 'err');
+  }
+}
+
+// ============================================================
+// Explore App
+// ============================================================
+async function exploreApp() {
+  try {
+    const appId = parseInt(document.getElementById('exploreAppId').value);
+    const exists = await factory.appExists(appId);
+
+    if (!exists) {
+      setStatus('exploreResult', 'App ' + appId + ' does not exist', 'info');
+      return;
+    }
+
+    const cloneAddr = await factory.getApp(appId);
+    const app = new ethers.Contract(cloneAddr, APP_ABI, provider);
+
+    const [name, scope, maxAge, configId] = await Promise.all([
+      app.appName(),
+      app.scope(),
+      app.maxProofAge(),
+      app.configId()
+    ]);
+
+    const maxAgeDays = Number(maxAge) / 86400;
+
+    setStatus('exploreResult',
+      name + ' (App ' + appId + ')\n' +
+      'Clone: ' + cloneAddr + '\n' +
+      'Scope: ' + scope.toString() + '\n' +
+      'Config ID: ' + configId + '\n' +
+      'Max Proof Age: ' + maxAgeDays + ' days',
+      'ok'
+    );
+  } catch (e) {
+    setStatus('exploreResult', 'Error: ' + e.message, 'err');
+  }
+}
+
+// Auto-connect on load
+window.addEventListener('load', function() {
+  setTimeout(connect, 500);
+});
+</script>
+</body>
+</html>
