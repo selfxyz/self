@@ -2,13 +2,9 @@ import { MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH } from "@selfxyz/new-common/src/fou
 
 type Country3LetterCode = string;
 
-export function getPackedForbiddenCountries(
-  forbiddenCountriesList: Array<Country3LetterCode | "">
-): string[] {
+export function getPackedForbiddenCountries(forbiddenCountriesList: Array<Country3LetterCode | "">): string[] {
   if (forbiddenCountriesList.length > MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
-    throw new Error(
-      `Countries list must be less than or equal to ${MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH}`
-    );
+    throw new Error(`Countries list must be less than or equal to ${MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH}`);
   }
 
   const paddedCountries = [...forbiddenCountriesList];
@@ -56,9 +52,7 @@ export function packForbiddenCountriesList(forbiddenCountries: string[]) {
 
   for (const country of forbiddenCountries) {
     if (!country || country.length !== 3) {
-      throw new Error(
-        `Invalid country code: "${country}". Country codes must be exactly 3 characters long.`
-      );
+      throw new Error(`Invalid country code: "${country}". Country codes must be exactly 3 characters long.`);
     }
   }
 
@@ -72,8 +66,7 @@ export function packForbiddenCountriesList(forbiddenCountries: string[]) {
   const packSize = MAX_BYTES_IN_FIELD;
   const maxBytes = bytes.length;
   const remain = maxBytes % packSize;
-  const numChunks =
-    remain > 0 ? Math.floor(maxBytes / packSize) + 1 : Math.floor(maxBytes / packSize);
+  const numChunks = remain > 0 ? Math.floor(maxBytes / packSize) + 1 : Math.floor(maxBytes / packSize);
 
   const output: `0x${string}`[] = new Array(REQUIRED_CHUNKS).fill("0x" + "0".repeat(64));
   for (let i = 0; i < numChunks; i++) {

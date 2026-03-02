@@ -1,7 +1,10 @@
 import { expect } from 'chai';
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
-import { formatCountriesList, formatInput } from '@selfxyz/new-common/src/circuits/inputs/format.js';
+import {
+  formatCountriesList,
+  formatInput,
+} from '@selfxyz/new-common/src/circuits/inputs/format.js';
 import { formatAndUnpackForbiddenCountriesList } from '@selfxyz/new-common/src/circuits/outputs/format.js';
 import { formatMrz } from '@selfxyz/new-common/src/documents/passport/format.js';
 import { genAndInitMockPassportData } from '@selfxyz/new-common/src/testing/genMockPassportData.js';

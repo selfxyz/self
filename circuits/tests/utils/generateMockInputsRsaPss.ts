@@ -1,7 +1,11 @@
 import forge from 'node-forge';
 
 import type { SignatureAlgorithm } from '@selfxyz/new-common/src/foundation/types/document.js';
-import { hexToDecimal, bytesToBigDecimal, splitToWords } from '@selfxyz/new-common/src/foundation/bytes.js';
+import {
+  hexToDecimal,
+  bytesToBigDecimal,
+  splitToWords,
+} from '@selfxyz/new-common/src/foundation/bytes.js';
 import { getNAndK } from '@selfxyz/new-common/src/certificates/signature.js';
 
 export const generateMockRsaPssInputs = (

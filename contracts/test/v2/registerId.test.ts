@@ -4,7 +4,12 @@ import { generateRandomFieldElement } from "../utils/utils";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
 import { generateDscProof, generateRegisterIdProof } from "../utils/generateProof";
-import { DscVerifierId, RegisterVerifierId, ID_CARD_ATTESTATION_ID, PASSPORT_ATTESTATION_ID } from "@selfxyz/new-common/src/foundation/constants/identity";
+import {
+  DscVerifierId,
+  RegisterVerifierId,
+  ID_CARD_ATTESTATION_ID,
+  PASSPORT_ATTESTATION_ID,
+} from "@selfxyz/new-common/src/foundation/constants/identity";
 import serialized_dsc_tree from "@selfxyz/new-common/src/data/serialized_dsc_tree.json";
 import { CIRCUIT_CONSTANTS } from "@selfxyz/new-common/src/foundation/constants/circuit";
 import { genMockIdDocAndInitDataParsing } from "@selfxyz/new-common/src/testing/genMockIdDoc";

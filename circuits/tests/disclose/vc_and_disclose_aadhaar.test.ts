@@ -9,9 +9,18 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 import { genMockIdDoc } from '@selfxyz/new-common/src/testing/genMockIdDoc.js';
-import { generateTestData, testCustomData } from '@selfxyz/new-common/src/testing/genMockAadhaarData.js';
-import { AADHAAR_MOCK_PRIVATE_KEY_PEM, AADHAAR_MOCK_PUBLIC_KEY_PEM } from '@selfxyz/new-common/src/testing/mockAadhaarCert.js';
-import { processQRData, extractSignatureBytes } from '@selfxyz/new-common/src/documents/aadhaar/qr.js';
+import {
+  generateTestData,
+  testCustomData,
+} from '@selfxyz/new-common/src/testing/genMockAadhaarData.js';
+import {
+  AADHAAR_MOCK_PRIVATE_KEY_PEM,
+  AADHAAR_MOCK_PUBLIC_KEY_PEM,
+} from '@selfxyz/new-common/src/testing/mockAadhaarCert.js';
+import {
+  processQRData,
+  extractSignatureBytes,
+} from '@selfxyz/new-common/src/documents/aadhaar/qr.js';
 import { AadhaarDocument } from '@selfxyz/new-common/src/documents/aadhaar/adapter.js';
 import { createCircuitInputGenerator } from '@selfxyz/new-common/src/circuits/generator.js';
 import { extractField } from '@selfxyz/new-common/src/documents/aadhaar/constants.js';
@@ -44,7 +53,14 @@ function createAadhaarDoc(opts?: {
   state?: string;
   timestamp?: string;
 }): AadhaarDocument {
-  if (opts?.name || opts?.dateOfBirth || opts?.gender || opts?.pincode || opts?.state || opts?.timestamp) {
+  if (
+    opts?.name ||
+    opts?.dateOfBirth ||
+    opts?.gender ||
+    opts?.pincode ||
+    opts?.state ||
+    opts?.timestamp
+  ) {
     const generated = generateTestData({
       privKeyPem: AADHAAR_MOCK_PRIVATE_KEY_PEM,
       data: testCustomData,

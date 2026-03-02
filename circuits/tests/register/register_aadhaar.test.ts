@@ -11,9 +11,18 @@ import { fileURLToPath } from 'url';
 import { customHasher } from '@selfxyz/new-common/src/crypto/hash/poseidon.js';
 import { AadhaarDocument } from '@selfxyz/new-common/src/documents/aadhaar/adapter.js';
 import { genMockIdDoc } from '@selfxyz/new-common/src/testing/genMockIdDoc.js';
-import { generateTestData, testCustomData } from '@selfxyz/new-common/src/testing/genMockAadhaarData.js';
-import { AADHAAR_MOCK_PRIVATE_KEY_PEM, AADHAAR_MOCK_PUBLIC_KEY_PEM } from '@selfxyz/new-common/src/testing/mockAadhaarCert.js';
-import { extractSignatureBytes, processQRData } from '@selfxyz/new-common/src/documents/aadhaar/qr.js';
+import {
+  generateTestData,
+  testCustomData,
+} from '@selfxyz/new-common/src/testing/genMockAadhaarData.js';
+import {
+  AADHAAR_MOCK_PRIVATE_KEY_PEM,
+  AADHAAR_MOCK_PUBLIC_KEY_PEM,
+} from '@selfxyz/new-common/src/testing/mockAadhaarCert.js';
+import {
+  extractSignatureBytes,
+  processQRData,
+} from '@selfxyz/new-common/src/documents/aadhaar/qr.js';
 import { createCircuitInputGenerator } from '@selfxyz/new-common/src/circuits/generator.js';
 import type { AadhaarData } from '@selfxyz/new-common/src/foundation/types/document.js';
 import { pubkeys } from './pubkeys.js';
@@ -29,7 +38,13 @@ function createAadhaarDoc(opts?: {
   state?: string;
   timestamp?: string;
 }): AadhaarDocument {
-  const hasCustom = opts?.name || opts?.dateOfBirth || opts?.gender || opts?.pincode || opts?.state || opts?.timestamp;
+  const hasCustom =
+    opts?.name ||
+    opts?.dateOfBirth ||
+    opts?.gender ||
+    opts?.pincode ||
+    opts?.state ||
+    opts?.timestamp;
   if (hasCustom) {
     // For custom fields or timestamp, we generate test data and build AadhaarData manually
     const generated = generateTestData({
@@ -105,7 +120,10 @@ describe('REGISTER AADHAAR Circuit Tests', function () {
     this.timeout(0);
     const doc = createAadhaarDoc();
     const inputs = generator.generateRegisterInputs(doc, '1234', '') as Record<string, any>;
-    const newTestData = generateTestData({ privKeyPem: AADHAAR_MOCK_PRIVATE_KEY_PEM, data: testCustomData });
+    const newTestData = generateTestData({
+      privKeyPem: AADHAAR_MOCK_PRIVATE_KEY_PEM,
+      data: testCustomData,
+    });
     const QRDataBytes = convertBigIntToByteArray(BigInt(newTestData.testQRData));
     const decodedData = decompressByteArray(QRDataBytes);
 

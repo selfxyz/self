@@ -75,21 +75,27 @@ describe('Disclose', function () {
       }
     );
 
-    inputs = generator.generateDiscloseInputs(
-      doc,
-      secret,
-      {
-        scope: fullScope,
-        fieldsToReveal: ['issuing_state', 'name', 'id_number', 'nationality', 'date_of_birth', 'gender', 'expiry_date', 'older_than', 'ofac'],
-        merkletree: tree,
-        majority,
-        passportNo_smt,
-        nameAndDob_smt,
-        nameAndYob_smt,
-        forbidden_countries_list,
-        user_identifier,
-      }
-    );
+    inputs = generator.generateDiscloseInputs(doc, secret, {
+      scope: fullScope,
+      fieldsToReveal: [
+        'issuing_state',
+        'name',
+        'id_number',
+        'nationality',
+        'date_of_birth',
+        'gender',
+        'expiry_date',
+        'older_than',
+        'ofac',
+      ],
+      merkletree: tree,
+      majority,
+      passportNo_smt,
+      nameAndDob_smt,
+      nameAndYob_smt,
+      forbidden_countries_list,
+      user_identifier,
+    });
   });
 
   it('should compile and load the circuit', async function () {
@@ -356,21 +362,17 @@ describe('Disclose', function () {
         const sanctionedCommitment = testDoc.generateCommitment(secret);
         tree.insert(BigInt(sanctionedCommitment));
 
-        const testInputs = generator.generateDiscloseInputs(
-          testDoc,
-          secret,
-          {
-            scope: fullScope,
-            fieldsToReveal: ['ofac'],
-            merkletree: tree,
-            majority,
-            passportNo_smt,
-            nameAndDob_smt,
-            nameAndYob_smt,
-            forbidden_countries_list,
-            user_identifier,
-          }
-        );
+        const testInputs = generator.generateDiscloseInputs(testDoc, secret, {
+          scope: fullScope,
+          fieldsToReveal: ['ofac'],
+          merkletree: tree,
+          majority,
+          passportNo_smt,
+          nameAndDob_smt,
+          nameAndYob_smt,
+          forbidden_countries_list,
+          user_identifier,
+        });
 
         w = await circuit.calculateWitness(testInputs);
         const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);

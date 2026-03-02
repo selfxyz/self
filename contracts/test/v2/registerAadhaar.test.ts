@@ -82,11 +82,7 @@ describe("Aadhaar Registration test", function () {
       const signatureBytes = decodedData.slice(decodedData.length - 256, decodedData.length);
       const signature = BigInt("0x" + Buffer.from(signatureBytes).toString("hex"));
 
-      aadhaarData = generateAadhaarRegisterInputs(
-        customQRData.testQRData,
-        "1234",
-        { pubKey: pubKeyBigInt, signature },
-      );
+      aadhaarData = generateAadhaarRegisterInputs(customQRData.testQRData, "1234", { pubKey: pubKeyBigInt, signature });
 
       registerSecret = generateRandomFieldElement();
 
@@ -194,11 +190,10 @@ describe("Aadhaar Registration test", function () {
       const signatureBytes = decodedData.slice(decodedData.length - 256, decodedData.length);
       const signature = BigInt("0x" + Buffer.from(signatureBytes).toString("hex"));
 
-      const newAadhaarData = generateAadhaarRegisterInputs(
-        customQRData.testQRData,
-        "1234",
-        { pubKey: pubKeyBigInt, signature },
-      );
+      const newAadhaarData = generateAadhaarRegisterInputs(customQRData.testQRData, "1234", {
+        pubKey: pubKeyBigInt,
+        signature,
+      });
       const newRegisterProof = await generateRegisterAadhaarProof(registerSecret, newAadhaarData.inputs);
 
       await expect(deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, newRegisterProof)).to.not.be
@@ -233,11 +228,10 @@ describe("Aadhaar Registration test", function () {
       const signatureBytes = decodedData.slice(decodedData.length - 256, decodedData.length);
       const signature = BigInt("0x" + Buffer.from(signatureBytes).toString("hex"));
 
-      const newAadhaarData = generateAadhaarRegisterInputs(
-        customQRData.testQRData,
-        "1234",
-        { pubKey: pubKeyBigInt, signature },
-      );
+      const newAadhaarData = generateAadhaarRegisterInputs(customQRData.testQRData, "1234", {
+        pubKey: pubKeyBigInt,
+        signature,
+      });
       const newRegisterProof = await generateRegisterAadhaarProof(registerSecret, newAadhaarData.inputs);
 
       await expect(

@@ -2,9 +2,7 @@ import { describe } from 'mocha';
 import { assert, expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import {
-  attributeToPosition_ID,
-} from '@selfxyz/new-common/src/foundation/constants/index.js';
+import { attributeToPosition_ID } from '@selfxyz/new-common/src/foundation/constants/index.js';
 import { poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { createCircuitInputGenerator } from '@selfxyz/new-common/src/circuits/generator.js';
@@ -73,25 +71,31 @@ describe('Disclose', function () {
       }
     );
 
-    inputs = generator.generateDiscloseInputs(
-      doc,
-      secret,
-      {
-        scope: fullScope,
-        fieldsToReveal: ['issuing_state', 'name', 'id_number', 'nationality', 'date_of_birth', 'gender', 'expiry_date', 'older_than', 'ofac'],
-        merkletree: tree,
-        majority,
-        passportNo_smt: null,
-        nameAndDob_smt,
-        nameAndYob_smt,
-        forbidden_countries_list,
-        user_identifier,
-      }
-    );
+    inputs = generator.generateDiscloseInputs(doc, secret, {
+      scope: fullScope,
+      fieldsToReveal: [
+        'issuing_state',
+        'name',
+        'id_number',
+        'nationality',
+        'date_of_birth',
+        'gender',
+        'expiry_date',
+        'older_than',
+        'ofac',
+      ],
+      merkletree: tree,
+      majority,
+      passportNo_smt: null,
+      nameAndDob_smt,
+      nameAndYob_smt,
+      forbidden_countries_list,
+      user_identifier,
+    });
   });
 
   it('should compile and load the circuit', async function () {
-      expect(circuit).to.not.be.undefined;
+    expect(circuit).to.not.be.undefined;
   });
 
   it('should have nullifier == poseidon(secret, scope)', async function () {
@@ -252,21 +256,17 @@ describe('Disclose', function () {
         const sanctionedCommitment = testDoc.generateCommitment(secret);
         tree.insert(BigInt(sanctionedCommitment));
 
-        const testInputs = generator.generateDiscloseInputs(
-          testDoc,
-          secret,
-          {
-            scope: fullScope,
-            fieldsToReveal: ['ofac'],
-            merkletree: tree,
-            majority,
-            passportNo_smt: null,
-            nameAndDob_smt,
-            nameAndYob_smt,
-            forbidden_countries_list,
-            user_identifier,
-          }
-        );
+        const testInputs = generator.generateDiscloseInputs(testDoc, secret, {
+          scope: fullScope,
+          fieldsToReveal: ['ofac'],
+          merkletree: tree,
+          majority,
+          passportNo_smt: null,
+          nameAndDob_smt,
+          nameAndYob_smt,
+          forbidden_countries_list,
+          user_identifier,
+        });
 
         w = await circuit.calculateWitness(testInputs);
         const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[4]']);

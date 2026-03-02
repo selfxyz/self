@@ -42,10 +42,7 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
 
     before(async () => {
       circuit = await wasm_tester(
-        path.join(
-          __dirname,
-          `../../circuits/dsc/instances/${doc.getDscCircuitName()}.circom`
-        ),
+        path.join(__dirname, `../../circuits/dsc/instances/${doc.getDscCircuitName()}.circom`),
         {
           include: [
             'node_modules',

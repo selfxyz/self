@@ -9,7 +9,11 @@ import {
   OFAC_DUMMY_KYC_DATA,
 } from '@selfxyz/new-common/src/testing/genMockKycData.js';
 import { serializeKycData } from '@selfxyz/new-common/src/documents/kyc/types.js';
-import { getNameDobLeafKyc, getNameYobLeafKyc, generateSMTProof } from '@selfxyz/new-common/src/trees/index.js';
+import {
+  getNameDobLeafKyc,
+  getNameYobLeafKyc,
+  generateSMTProof,
+} from '@selfxyz/new-common/src/trees/index.js';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { formatInput } from '@selfxyz/new-common/src/circuits/inputs/format.js';
 import type { KycData } from '@selfxyz/new-common/src/documents/kyc/types.js';
@@ -17,10 +21,18 @@ import { poseidon2 } from 'poseidon-lite';
 import nameAndDobjson from '../../../consts/ofac/nameAndDobKycSMT.json' with { type: 'json' };
 import nameAndYobjson from '../../../consts/ofac/nameAndYobKycSMT.json' with { type: 'json' };
 
-const generateCircuitInputsOfac = (data: Omit<KycData, 'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'>, smt: SMT, proofLevel: number) => {
-  const leaf = proofLevel === 2
-    ? getNameDobLeafKyc(data.fullName, data.dob)
-    : getNameYobLeafKyc(data.fullName, data.dob.slice(0, 4));
+const generateCircuitInputsOfac = (
+  data: Omit<
+    KycData,
+    'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'
+  >,
+  smt: SMT,
+  proofLevel: number
+) => {
+  const leaf =
+    proofLevel === 2
+      ? getNameDobLeafKyc(data.fullName, data.dob)
+      : getNameYobLeafKyc(data.fullName, data.dob.slice(0, 4));
   const { root, closestleaf, siblings } = generateSMTProof(smt, leaf);
   return {
     smt_root: formatInput(root),
