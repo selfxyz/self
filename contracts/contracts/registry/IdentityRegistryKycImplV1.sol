@@ -113,6 +113,8 @@ interface IPCR0Manager {
  * @title IdentityRegistryKycImplV1
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
  * @dev Inherits from IdentityRegistryKycStorageV1 and implements IIdentityRegistryKycV1.
+ *
+ * @custom:version 1.1.0
  */
 contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityRegistryKycV1 {
     using InternalLeanIMT for LeanIMTData;
@@ -148,6 +150,8 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
     );
     /// @notice Emitted when a public key commitment is successfully registered.
     event PubkeyCommitmentRegistered(uint256 indexed commitment);
+    /// @notice Emitted when OFAC roots are updated via proof.
+    event OfacRootsUpdatedWithProof(bytes32 rootsHash, uint256 timestamp);
 
     /// @notice Emitted when a identity commitment is added by dev team.
     event DevCommitmentRegistered(
@@ -187,6 +191,10 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
     error INVALID_IMAGE();
     /// @notice Thrown when the timestamp is invalid.
     error INVALID_TIMESTAMP();
+    /// @notice Thrown when the roots hash does not match the proof.
+    error InvalidRootsHash();
+    /// @notice Thrown when the wrong number of roots is provided.
+    error InvalidRootsCount();
 
     // ====================================================
     // Modifiers
@@ -485,6 +493,69 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
         if (currentTimestamp > block.timestamp + 1 hours) revert INVALID_TIMESTAMP(); //1 hour in the future
 
         emit PubkeyCommitmentRegistered(pubkeyCommitment);
+    }
+
+    /// @notice Updates OFAC roots via proof-verified TEE attestation.
+    /// @dev Verifies the Groth16 proof, validates TEE attestation claims, checks
+    /// this registry's roots hash against registryHashes[3], and verifies the
+    /// global rootsHash commitment. Restricted to the TEE address. The proof provides
+    /// cryptographic verification, and onlyTEE provides access control.
+    /// @param pA Groth16 proof element A.
+    /// @param pB Groth16 proof element B.
+    /// @param pC Groth16 proof element C.
+    /// @param pubSignals Circuit public signals [rootCA, eatNonce[0-2], unused, imageHash[0-2], date[0-11]].
+    /// @param roots This registry's roots: [nameAndDob, nameAndYob].
+    /// @param registryHashes All 4 registry hashes ordered alphabetically by registry key.
+    function updateOfacRootsWithProof(
+        uint256[2] calldata pA,
+        uint256[2][2] calldata pB,
+        uint256[2] calldata pC,
+        uint256[20] calldata pubSignals,
+        uint256[] calldata roots,
+        bytes32[4] calldata registryHashes
+    ) external onlyProxy onlyTEE {
+        if (roots.length != 2) revert InvalidRootsCount();
+
+        // Verify Groth16 proof
+        if (!IGCPJWTVerifier(_gcpJwtVerifier).verifyProof(pA, pB, pC, pubSignals)) revert INVALID_PROOF();
+
+        // Verify root CA pubkey hash
+        if (pubSignals[0] != _gcpRootCAPubkeyHash) revert INVALID_ROOT_CA();
+
+        // Verify TEE image hash
+        bytes memory imageHash = GCPJWTHelper.unpackAndConvertImageHash(pubSignals[5], pubSignals[6], pubSignals[7]);
+        if (!IPCR0Manager(_PCR0Manager).isPCR0Set(imageHash)) revert INVALID_IMAGE();
+
+        // Verify timestamp (±1 hour)
+        uint256 currentTimestamp = Formatter.toTimeStampWithSeconds(
+            2000 + pubSignals[8] * 10 + pubSignals[9],
+            pubSignals[10] * 10 + pubSignals[11],
+            pubSignals[12] * 10 + pubSignals[13],
+            pubSignals[14] * 10 + pubSignals[15],
+            pubSignals[16] * 10 + pubSignals[17],
+            pubSignals[18] * 10 + pubSignals[19]
+        );
+        if (currentTimestamp + 1 hours < block.timestamp) revert INVALID_TIMESTAMP();
+        if (currentTimestamp > block.timestamp + 1 hours) revert INVALID_TIMESTAMP();
+
+        // Verify this registry's roots hash matches registryHashes[3] (IdentityRegistryKyc)
+        bytes32 myHash = sha256(abi.encodePacked(roots[0], roots[1]));
+        if (myHash != registryHashes[3]) revert InvalidRootsHash();
+
+        // Verify global rootsHash matches eat_nonce from proof
+        uint256 rootsHashFromProof = GCPJWTHelper.unpackAndDecodeHexPubkey(pubSignals[1], pubSignals[2], pubSignals[3]);
+        uint256 globalHash = uint256(
+            sha256(abi.encodePacked(registryHashes[0], registryHashes[1], registryHashes[2], registryHashes[3]))
+        );
+        if (globalHash != rootsHashFromProof) revert InvalidRootsHash();
+
+        // Update this registry's roots: [nameAndDob, nameAndYob]
+        _nameAndDobOfacRoot = roots[0];
+        _nameAndYobOfacRoot = roots[1];
+
+        emit NameAndDobOfacRootUpdated(roots[0]);
+        emit NameAndYobOfacRootUpdated(roots[1]);
+        emit OfacRootsUpdatedWithProof(myHash, block.timestamp);
     }
 
     /// @notice (DEV) Force-adds an identity commitment.

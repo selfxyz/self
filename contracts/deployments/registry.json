@@ -1,6 +1,6 @@
 {
   "$schema": "./registry.schema.json",
-  "lastUpdated": "2026-02-09T11:26:31.105Z",
+  "lastUpdated": "2026-03-02T05:00:49.070Z",
   "contracts": {
     "IdentityVerificationHub": {
       "source": "IdentityVerificationHubImplV2",
@@ -114,8 +114,8 @@
         },
         "IdentityRegistryKyc": {
           "proxy": "0x90e907E4AaB6e9bcFB94997Af4A097e8CAadBdf3",
-          "currentVersion": "1.0.0",
-          "currentImpl": "0x94f6DE38E10140B9E3963a770B5B769b38459a3B"
+          "currentVersion": "1.1.0",
+          "currentImpl": "0x530eEA7E5b286108926B05510491560c4bAE018e"
         },
         "PCR0Manager": {
           "address": "0xf2810D5E9938816D42F0Ae69D33F013a23C0aED2",
@@ -173,20 +173,6 @@
             "deployedAt": "",
             "deployedBy": "0x846f1cf04ec494303e4b90440b130bb01913e703",
             "gitCommit": ""
-          }
-        }
-      },
-      "2.13.0": {
-        "initializerVersion": 12,
-        "initializerFunction": "",
-        "changelog": "Upgrade to v2.13.0",
-        "gitTag": "identityverificationhub-v2.13.0",
-        "deployments": {
-          "celo-sepolia": {
-            "impl": "0x244c93516Abd58E1952452d3D8C4Ce7D454776B8",
-            "deployedAt": "2026-02-02T14:47:21.882Z",
-            "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
-            "gitCommit": "33bca485"
           }
         }
       },
@@ -352,6 +338,20 @@
             "impl": "0x94f6DE38E10140B9E3963a770B5B769b38459a3B",
             "deployedAt": "2026-02-01T08:27:21.000Z",
             "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
+            "gitCommit": ""
+          }
+        }
+      },
+      "1.1.0": {
+        "initializerVersion": 1,
+        "initializerFunction": "",
+        "changelog": "Add TEE-attested OFAC root updates via updateOfacRootsWithProof",
+        "gitTag": "identityregistrykyc-v1.1.0",
+        "deployments": {
+          "celo-sepolia": {
+            "impl": "0x530eEA7E5b286108926B05510491560c4bAE018e",
+            "deployedAt": "2026-03-02T05:00:49.070Z",
+            "deployedBy": "0xC1C860804EFdA544fe79194d1a37e60b846CEdeb",
             "gitCommit": ""
           }
         }
