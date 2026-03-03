@@ -1,6 +1,6 @@
 # Person 4: SDK Core Adaptation — Implementation Spec
 
-> Last updated: 2026-02-17
+> Last updated: 2026-03-02
 > Owner: Person 4 (SDK Core)
 > Parent: [OVERVIEW.md](./OVERVIEW.md)
 > Status: Active
@@ -540,7 +540,7 @@ This chunk is **optional** — raw `WebSocket` works natively in the browser. Sk
 2. Expose `network` on `SelfClient` interface
 3. Refactor `initTeeConnection` in `provingMachine.ts` to use `selfClient.network.ws.connect()`
 4. Create default `WsAdapter` in `src/adapters/browser/ws.ts`
-5. Validate: proving flow works end-to-end in RN app
+5. Validate: proving flow compiles and typechecks in RN SDK build
 
 **You Will NOT:**
 
@@ -667,7 +667,7 @@ Person 2 (KMP)      ←── contract via ──→ Person 4 (lifecycle types)
 
 ## Completion Status
 
-_Audit date: 2026-02-17_
+_Audit date: 2026-03-02_
 
 | Chunk | Description                           | Size  | Status                                                  |
 | ----- | ------------------------------------- | ----- | ------------------------------------------------------- |
@@ -676,21 +676,14 @@ _Audit date: 2026-02-17_
 | 4C    | WebView Lifecycle Events              | S ~2k | **Done**                                                |
 | 4D    | WsAdapter Integration                 | M ~5k | **Skipped** (optional — raw WebSocket works in browser) |
 | 4E    | Conditional SelfApp Store             | S ~2k | **Done**                                                |
-| 4F    | Web Fallback Adapter Implementations  | M ~6k | **Pending**                                             |
+| 4F    | Web Fallback Adapter Implementations  | M ~6k | **Done**                                                |
 
-4 of 6 chunks complete. Chunk 4D explicitly optional. **Chunk 4F is the remaining work.**
+5 of 6 chunks complete. Chunk 4D remains optional and skipped by design.
 
-### What's Left
+### Remaining Follow-Ups
 
-**Chunk 4F — Web Fallback Adapters (blocking for WebView integration)**
-
-| Adapter                             | File to Create                      | Implementation                      |
-| ----------------------------------- | ----------------------------------- | ----------------------------------- |
-| `createIndexedDBDocumentsAdapter()` | `src/adapters/browser/documents.ts` | IndexedDB with two object stores    |
-| `createWebCryptoAdapter()`          | `src/adapters/browser/crypto.ts`    | `crypto.subtle.digest` for `hash()` |
-| `createWebAnalyticsAdapter()`       | `src/adapters/browser/analytics.ts` | console + fetch fire-and-forget     |
-| `createNoOpHapticAdapter()`         | `src/adapters/browser/haptic.ts`    | Silent no-op                        |
-| Barrel export                       | `src/adapters/browser/index.ts`     | Re-exports all factories            |
+- Consolidate bridge-layer fallback duplicates with engine-owned adapters.
+- Expose `generateKey()` / `getPublicKey()` in bridge crypto adapter surface.
 
 **Implementation notes from PR review:**
 

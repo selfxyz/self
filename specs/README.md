@@ -26,6 +26,7 @@ Specs double as AI agent prompts. Written in second person, sized for single con
 | ------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------ |
 | [SDK-OVERVIEW.md](./SDK-OVERVIEW.md) | Architecture, bridge protocol, module table, decision matrix, glossary | First. Always.                             |
 | [WAVE-PLAN.md](./WAVE-PLAN.md)       | Dependency-ordered execution plan for parallel agent work              | When planning which chunks to execute next |
+| [KMP-STATUS.md](./KMP-STATUS.md)     | At-a-glance SDK completion percentages (web + KMP)                     | When you need quick status only            |
 
 ## Workstream Specs
 
@@ -35,7 +36,7 @@ Each workstream has two files: `OVERVIEW.md` (stable orientation) and `SPEC.md` 
 | -------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------- |
 | Person 1 — WebView UI + Bridge         | [OVERVIEW](./person1-webview/OVERVIEW.md)       | [SPEC](./person1-webview/SPEC.md)                             | 28/29 done, 1 pending (dynamic proving config)  |
 | Person 2 — Native Shells (KMP + Swift) | [OVERVIEW](./person2-native-shells/OVERVIEW.md) | [SPEC](./person2-native-shells/SPEC.md)                       | 27/28 done, 1 pending (KMP test app validation) |
-| Person 3 — Integrations                | [OVERVIEW](./person3-integrations/OVERVIEW.md)  | [MiniPay Spec](./person3-integrations/SPEC-MINIPAY-SAMPLE.md) | 25/26 done, 1 pending (physical-device NFC E2E) |
+| Person 3 — Integrations                | [OVERVIEW](./person3-integrations/OVERVIEW.md)  | [MiniPay Spec](./person3-integrations/SPEC-MINIPAY-SAMPLE.md) | 26/26 done                                      |
 | Person 4 — SDK Core                    | [OVERVIEW](./person4-sdk-core/OVERVIEW.md)      | [SPEC](./person4-sdk-core/SPEC.md)                            | 23/25 done, 2 pending (adapter dedup, crypto)   |
 | Person 5 — RN SDK                      | [OVERVIEW](./person5-rn-sdk/OVERVIEW.md)        | [SPEC](./person5-rn-sdk/SPEC.md)                              | 21/23 done, 2 pending (wallet integration, npm) |
 

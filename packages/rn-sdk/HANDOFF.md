@@ -233,6 +233,15 @@ import { SelfVerification } from '@selfxyz/rn-sdk';
 | Dev server override | Done | `devServerUrl` prop |
 | Camera / MRZ scan | Done | scanMRZ via native SelfMRZScannerModule with result normalization |
 
+## RN Test Harness Status (`packages/rn-sdk-test-app`)
+
+- A minimal React Native host app now exists at `packages/rn-sdk-test-app/` for real-device integration validation of `@selfxyz/rn-sdk`.
+- It is wired to the local workspace SDK (`"@selfxyz/rn-sdk": "workspace:*"`) and includes key peers: `react-native-webview`, `react-native-nfc-manager`, `react-native-biometrics`, `react-native-keychain`, and `react-native-fs`.
+- Android wiring includes `sourceSets` asset bundling for `self-wallet/`; iOS wiring includes a build phase that copies `self-wallet/` into bundle resources.
+- Debug ATS is relaxed in `Info-Debug.plist` (`NSAllowsArbitraryLoads=true`) to support non-HTTPS test endpoints; non-debug `Info.plist` remains strict.
+- Camera/MRZ caveat in test harness: if no native `SelfMRZScannerModule`/`MRZScannerModule` is linked, the harness injects a stub module (returns hardcoded MRZ data) so the camera bridge path remains testable. Real camera/MRZ validation still requires linking a true native scanner module.
+- CI coverage added via `.github/workflows/rn-sdk-test-app-ci.yml` to typecheck both `@selfxyz/rn-sdk` and `@selfxyz/rn-sdk-test-app` on relevant path changes.
+
 ## Known Limitations
 
 - Camera/MRZ requires host app to provide a native MRZ scanner module (`SelfMRZScannerModule` or `MRZScannerModule`)

@@ -1,0 +1,12 @@
+{
+  "extends": "@tsconfig/react-native/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "allowJs": true,
+    "module": "ES2020",
+    "moduleResolution": "Bundler",
+    "types": ["react-native"]
+  },
+  "include": ["App.tsx", "index.js"],
+  "exclude": ["node_modules"]
+}
