@@ -1,0 +1,167 @@
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
+import type { AnyActorRef, AnyEventObject, StateFrom } from 'xstate';
+
+import { ProofEvents } from '../../constants/analytics';
+import { markCurrentDocumentAsRegistered } from '../../documents/utils';
+import { SdkEvents } from '../../types/events';
+import type { SelfClient } from '../../types/public';
+import type { ProvingStateType } from '../types';
+import type { ProvingDependencies, ProvingStoreSnapshot } from './dependencyFactory';
+import { createProofContext } from './helpers';
+import type { provingMachine } from './stateMachine';
+import { handleRegisterErrorOrFailure } from './websocketHandlers';
+
+type ProvingStateWithMethods = ProvingStoreSnapshot & {
+  parseIDDocument: (selfClient: SelfClient) => Promise<void>;
+  startFetchingData: (selfClient: SelfClient) => Promise<void>;
+  validatingDocument: (selfClient: SelfClient) => Promise<void>;
+  initTeeConnection: (selfClient: SelfClient) => Promise<boolean>;
+  startProving: (selfClient: SelfClient) => Promise<void>;
+  postProving: (selfClient: SelfClient) => void;
+  _handleAccountVerifiedSuccess: (selfClient: SelfClient) => void;
+  _handlePassportNotSupported: (selfClient: SelfClient) => void;
+  _handleAccountRecoveryChoice: (selfClient: SelfClient) => void;
+  _handlePassportDataNotFound: (selfClient: SelfClient) => void;
+};
+
+export function setupActorSubscriptions(newActor: AnyActorRef, selfClient: SelfClient, deps: ProvingDependencies) {
+  const get = deps.get;
+  const set = deps.set;
+
+  let lastTransition = Date.now();
+  let lastEvent: AnyEventObject = { type: 'init' };
+
+  const emitVerificationComplete = (success: boolean, error?: { code: string; message: string }) => {
+    const selfApp = selfClient.getSelfAppState().selfApp;
+    const provingState = get();
+
+    selfClient.emit(SdkEvents.VERIFICATION_COMPLETE, {
+      success,
+      userId: selfApp?.userId,
+      verificationId: provingState.uuid ?? undefined,
+      error,
+    });
+  };
+
+  newActor.on('*', (event: AnyEventObject) => {
+    lastEvent = event;
+  });
+  newActor.subscribe((state: StateFrom<typeof provingMachine>) => {
+    const now = Date.now();
+    const context = createProofContext(selfClient, 'stateTransition', {
+      currentState: String(state.value),
+    });
+    selfClient.emit(SdkEvents.PROOF_EVENT, {
+      context,
+      level: 'info',
+      event: `state transition: ${state.value}`,
+      details: {
+        event: lastEvent.type,
+        duration_ms: now - lastTransition,
+      },
+    });
+    lastTransition = now;
+    selfClient.trackEvent(ProofEvents.PROVING_STATE_CHANGE, {
+      state: state.value,
+    });
+    set({ currentState: state.value as ProvingStateType });
+
+    if (state.value === 'parsing_id_document') {
+      (get() as ProvingStateWithMethods).parseIDDocument(selfClient);
+    }
+    if (state.value === 'fetching_data') {
+      (get() as ProvingStateWithMethods).startFetchingData(selfClient);
+    }
+    if (state.value === 'validating_document') {
+      (get() as ProvingStateWithMethods).validatingDocument(selfClient);
+    }
+
+    if (state.value === 'init_tee_connexion') {
+      (get() as ProvingStateWithMethods).initTeeConnection(selfClient);
+    }
+
+    if (state.value === 'ready_to_prove' && get().userConfirmed) {
+      (get() as ProvingStateWithMethods).startProving(selfClient);
+    }
+
+    if (state.value === 'post_proving') {
+      (get() as ProvingStateWithMethods).postProving(selfClient);
+    }
+
+    if (get().circuitType !== 'disclose' && (state.value === 'error' || state.value === 'failure')) {
+      handleRegisterErrorOrFailure(selfClient);
+    }
+
+    if (state.value === 'completed') {
+      selfClient.trackEvent(ProofEvents.PROOF_COMPLETED, {
+        circuitType: get().circuitType,
+      });
+
+      // Mark document as registered onChain
+      if (get().circuitType === 'register') {
+        (async () => {
+          try {
+            await markCurrentDocumentAsRegistered(selfClient);
+          } catch (error) {
+            //This will be checked and updated when the app launches the next time
+            console.error('Error marking document as registered:', error);
+          }
+        })();
+      }
+
+      if (get().circuitType !== 'disclose') {
+        (get() as ProvingStateWithMethods)._handleAccountVerifiedSuccess(selfClient);
+      }
+
+      if (get().circuitType === 'disclose') {
+        selfClient.getSelfAppState().handleProofResult(true);
+      }
+
+      emitVerificationComplete(true);
+
+      // Disable keychain error modal when proving flow ends
+      selfClient.navigation?.disableKeychainErrorModal?.();
+    }
+
+    if (state.value === 'passport_not_supported') {
+      (get() as ProvingStateWithMethods)._handlePassportNotSupported(selfClient);
+    }
+
+    if (state.value === 'account_recovery_choice') {
+      (get() as ProvingStateWithMethods)._handleAccountRecoveryChoice(selfClient);
+    }
+
+    if (state.value === 'passport_data_not_found') {
+      (get() as ProvingStateWithMethods)._handlePassportDataNotFound(selfClient);
+    }
+
+    if (state.value === 'failure') {
+      const { error_code, reason } = get();
+
+      if (get().circuitType === 'disclose') {
+        selfClient.getSelfAppState().handleProofResult(false, error_code ?? undefined, reason ?? undefined);
+      }
+
+      emitVerificationComplete(false, {
+        code: error_code ?? 'proof_failure',
+        message: reason ?? 'Proof verification failed',
+      });
+    }
+    if (state.value === 'error') {
+      if (get().circuitType === 'disclose') {
+        selfClient.getSelfAppState().handleProofResult(false, 'error', 'error');
+      }
+
+      emitVerificationComplete(false, {
+        code: get().error_code ?? 'error',
+        message: get().reason ?? 'Unexpected proving error',
+      });
+
+      // Disable keychain error modal when proving flow ends
+      selfClient.navigation?.disableKeychainErrorModal?.();
+    }
+  });
+}
