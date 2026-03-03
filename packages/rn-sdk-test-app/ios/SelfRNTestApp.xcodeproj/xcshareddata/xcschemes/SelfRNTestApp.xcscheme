@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "SelfDemoApp.app"
-               BlueprintName = "SelfDemoApp"
-               ReferencedContainer = "container:SelfDemoApp.xcodeproj">
+               BuildableName = "SelfRNTestApp.app"
+               BlueprintName = "SelfRNTestApp"
+               ReferencedContainer = "container:SelfRNTestApp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -42,9 +42,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "SelfDemoApp.app"
-            BlueprintName = "SelfDemoApp"
-            ReferencedContainer = "container:SelfDemoApp.xcodeproj">
+            BuildableName = "SelfRNTestApp.app"
+            BlueprintName = "SelfRNTestApp"
+            ReferencedContainer = "container:SelfRNTestApp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -59,9 +59,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "SelfDemoApp.app"
-            BlueprintName = "SelfDemoApp"
-            ReferencedContainer = "container:SelfDemoApp.xcodeproj">
+            BuildableName = "SelfRNTestApp.app"
+            BlueprintName = "SelfRNTestApp"
+            ReferencedContainer = "container:SelfRNTestApp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
