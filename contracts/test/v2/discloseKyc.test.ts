@@ -1,21 +1,18 @@
-import {
-  calculateUserIdentifierHash,
-  hashEndpointWithScope,
-  KYC_ID_NUMBER_INDEX,
-  KYC_ID_NUMBER_LENGTH,
-  packBytesAndPoseidon,
-} from "@selfxyz/common";
-import { Country3LetterCode } from "@selfxyz/common/constants/countries";
+import { calculateUserIdentifierHash } from "@selfxyz/new-common/src/crypto/identity";
+import { hashEndpointWithScope } from "@selfxyz/new-common/src/crypto/scope";
+import { KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_LENGTH } from "@selfxyz/new-common/src/documents/kyc/constants";
+import { packBytesAndPoseidon } from "@selfxyz/new-common/src/crypto/hash/poseidon";
+import { Country3LetterCode } from "@selfxyz/new-common/src/data/countries";
 import { DeployedActorsV2 } from "../utils/types";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { generateKycDiscloseInput } from "@selfxyz/common";
+import { generateKycDiscloseInputFromDummy } from "@selfxyz/new-common/src/circuits/inputs/disclose-kyc";
 import { getSMTs } from "../utils/generateProof";
-import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
+import { getPackedForbiddenCountries } from "@selfxyz/new-common/src/blockchain/forbiddenCountries";
 import { BigNumberish } from "ethers";
 import { generateVcAndDiscloseKycProof } from "../utils/generateProof";
-import { KYC_ATTESTATION_ID } from "@selfxyz/common/constants/constants";
+import { KYC_ATTESTATION_ID } from "@selfxyz/new-common/src/foundation/constants/identity";
 import { poseidon2 } from "poseidon-lite";
 
 // KYC circuit indices - matches CircuitConstantsV2.getDiscloseIndices(KYC_ID_CARD)
@@ -58,7 +55,7 @@ describe("Self Verification Flow V2 - KYC", () => {
     const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
     tree = new LeanIMT<bigint>((a, b) => poseidon2([a, b]), []);
 
-    const testInputs = generateKycDiscloseInput(
+    const testInputs = generateKycDiscloseInputFromDummy(
       false,
       nameAndDob_smt,
       nameAndYob_smt,
@@ -718,7 +715,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
-      const inputs = generateKycDiscloseInput(
+      const inputs = generateKycDiscloseInputFromDummy(
         false,
         nameAndDob_smt,
         nameAndYob_smt,

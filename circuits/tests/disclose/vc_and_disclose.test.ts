@@ -9,18 +9,18 @@ import { poseidon1, poseidon2 } from 'poseidon-lite';
 import nameAndDobjson from '../consts/ofac/nameAndDobSMT.json' with { type: 'json' };
 import nameAndYobjson from '../consts/ofac/nameAndYobSMT.json' with { type: 'json' };
 import passportNojson from '../consts/ofac/passportNoAndNationalitySMT.json' with { type: 'json' };
-import { attributeToPosition, PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
+import { attributeToPosition } from '@selfxyz/new-common/src/foundation/constants/index.js';
 import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,
   getAttributeFromUnpackedReveal,
-} from '@selfxyz/common/utils/circuits/formatOutputs';
-import { generateCircuitInputsVCandDisclose } from '@selfxyz/common/utils/circuits/generateInputs';
-import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
-import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
-import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
+} from '@selfxyz/new-common/src/circuits/outputs/format.js';
+import { PassportDocument } from '@selfxyz/new-common/src/documents/passport/adapter.js';
+import { createCircuitInputGenerator } from '@selfxyz/new-common/src/circuits/generator.js';
+import { genAndInitMockPassportData } from '@selfxyz/new-common/src/testing/genMockPassportData.js';
+import { hashEndpointWithScope } from '@selfxyz/new-common/src/crypto/scope.js';
 import { fileURLToPath } from 'url';
-import { castFromUUID } from '@selfxyz/common/utils/circuits/uuid';
+import { castFromUUID } from '@selfxyz/new-common/src/circuits/userId.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -37,20 +37,17 @@ describe('Disclose', function () {
     '000101',
     '300101'
   );
+  const doc = new PassportDocument(passportData);
   const forbidden_countries_list = ['ALG', 'DZA'];
 
   const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
   const majority = '18';
   const user_identifier = castFromUUID(crypto.randomUUID());
-  const selector_dg1 = Array(88).fill('1');
-  const selector_older_than = '1';
   const endpoint = 'https://example.com';
   const scope = 'scope';
   const fullScope = hashEndpointWithScope(endpoint, scope);
-  const attestation_id = PASSPORT_ATTESTATION_ID;
-
   // compute the commitment and insert it in the tree
-  const commitment = generateCommitment(secret, attestation_id, passportData);
+  const commitment = doc.generateCommitment(secret);
   console.log('commitment in js ', commitment);
   const tree: any = new LeanIMT((a, b) => poseidon2([a, b]), []);
   tree.insert(BigInt(commitment));
@@ -64,7 +61,7 @@ describe('Disclose', function () {
   const nameAndYob_smt = new SMT(poseidon2, true);
   nameAndYob_smt.import(nameAndYobjson);
 
-  const selector_ofac = 1;
+  const generator = createCircuitInputGenerator();
 
   before(async () => {
     circuit = await wasm_tester(
@@ -78,22 +75,27 @@ describe('Disclose', function () {
       }
     );
 
-    inputs = generateCircuitInputsVCandDisclose(
-      secret,
-      PASSPORT_ATTESTATION_ID,
-      passportData,
-      fullScope,
-      selector_dg1,
-      selector_older_than,
-      tree,
+    inputs = generator.generateDiscloseInputs(doc, secret, {
+      scope: fullScope,
+      fieldsToReveal: [
+        'issuing_state',
+        'name',
+        'id_number',
+        'nationality',
+        'date_of_birth',
+        'gender',
+        'expiry_date',
+        'older_than',
+        'ofac',
+      ],
+      merkletree: tree,
       majority,
       passportNo_smt,
       nameAndDob_smt,
       nameAndYob_smt,
-      selector_ofac,
       forbidden_countries_list,
-      user_identifier
-    );
+      user_identifier,
+    });
   });
 
   it('should compile and load the circuit', async function () {
@@ -356,30 +358,21 @@ describe('Disclose', function () {
       for (const testCase of testCases) {
         console.log(`Testing: ${testCase.desc}`);
 
-        const passportData = testCase.data;
-        const sanctionedCommitment = generateCommitment(
-          secret,
-          PASSPORT_ATTESTATION_ID,
-          passportData
-        );
+        const testDoc = new PassportDocument(testCase.data);
+        const sanctionedCommitment = testDoc.generateCommitment(secret);
         tree.insert(BigInt(sanctionedCommitment));
 
-        const testInputs = generateCircuitInputsVCandDisclose(
-          secret,
-          PASSPORT_ATTESTATION_ID,
-          passportData,
-          fullScope,
-          Array(88).fill('0'), // selector_dg1
-          selector_older_than,
-          tree,
+        const testInputs = generator.generateDiscloseInputs(testDoc, secret, {
+          scope: fullScope,
+          fieldsToReveal: ['ofac'],
+          merkletree: tree,
           majority,
           passportNo_smt,
           nameAndDob_smt,
           nameAndYob_smt,
-          '1', // selector_ofac
           forbidden_countries_list,
-          user_identifier
-        );
+          user_identifier,
+        });
 
         w = await circuit.calculateWitness(testInputs);
         const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);

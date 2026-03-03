@@ -1,11 +1,11 @@
 import { ethers } from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { DscVerifierId, RegisterVerifierId } from "@selfxyz/common/constants";
-import { genAndInitMockPassportData } from "@selfxyz/common/utils/passports/genMockPassportData";
-import { getCscaTreeRoot } from "@selfxyz/common/utils/trees";
-import { PassportData } from "@selfxyz/common/utils/types";
+import { DscVerifierId, RegisterVerifierId } from "@selfxyz/new-common/src/foundation/constants/identity";
+import { genAndInitMockPassportData } from "@selfxyz/new-common/src/testing/genMockPassportData";
+import { getCscaTreeRoot } from "@selfxyz/new-common/src/trees/proof";
+import { PassportData } from "@selfxyz/new-common/src/foundation/types/document";
 import { getSMTs } from "./generateProof";
-import serialized_csca_tree from "../../../common/pubkeys/serialized_csca_tree.json";
+import serialized_csca_tree from "@selfxyz/new-common/src/data/serialized_csca_tree.json";
 import { DeployedActorsV2 } from "./types";
 
 // Verifier artifacts (local staging)

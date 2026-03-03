@@ -1,16 +1,45 @@
 import { expect } from 'chai';
 import { wasm as wasmTester } from 'circom_tester';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import {
-  generateCircuitInputsOfac,
-  NON_OFAC_DUMMY_INPUT,
-  OFAC_DUMMY_INPUT,
-} from '../../../../../common/src/utils/kyc/generateInputs';
-import { serializeKycData } from '../../../../../common/src/utils/kyc/types';
+  NON_OFAC_DUMMY_KYC_DATA,
+  OFAC_DUMMY_KYC_DATA,
+} from '@selfxyz/new-common/src/testing/genMockKycData.js';
+import { serializeKycData } from '@selfxyz/new-common/src/documents/kyc/types.js';
+import {
+  getNameDobLeafKyc,
+  getNameYobLeafKyc,
+  generateSMTProof,
+} from '@selfxyz/new-common/src/trees/index.js';
 import { SMT } from '@openpassport/zk-kit-smt';
+import { formatInput } from '@selfxyz/new-common/src/circuits/inputs/format.js';
+import type { KycData } from '@selfxyz/new-common/src/documents/kyc/types.js';
 import { poseidon2 } from 'poseidon-lite';
-import nameAndDobjson from '../../../consts/ofac/nameAndDobKycSMT.json';
-import nameAndYobjson from '../../../consts/ofac/nameAndYobKycSMT.json';
+import nameAndDobjson from '../../../consts/ofac/nameAndDobKycSMT.json' with { type: 'json' };
+import nameAndYobjson from '../../../consts/ofac/nameAndYobKycSMT.json' with { type: 'json' };
+
+const generateCircuitInputsOfac = (
+  data: Omit<
+    KycData,
+    'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'
+  >,
+  smt: SMT,
+  proofLevel: number
+) => {
+  const leaf =
+    proofLevel === 2
+      ? getNameDobLeafKyc(data.fullName, data.dob)
+      : getNameYobLeafKyc(data.fullName, data.dob.slice(0, 4));
+  const { root, closestleaf, siblings } = generateSMTProof(smt, leaf);
+  return {
+    smt_root: formatInput(root),
+    smt_leaf_key: formatInput(closestleaf),
+    smt_siblings: formatInput(siblings),
+  };
+};
 
 describe('OFAC - Name and DOB match', async function () {
   this.timeout(10000);
@@ -27,7 +56,7 @@ describe('OFAC - Name and DOB match', async function () {
       ],
     });
 
-    namedob_smt.import(nameAndDobjson);
+    namedob_smt.import(nameAndDobjson as any);
   });
 
   it('should compile and load the circuit', async () => {
@@ -35,8 +64,8 @@ describe('OFAC - Name and DOB match', async function () {
   });
 
   it('should return 0 if the person is in the ofac list', async () => {
-    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
-    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, namedob_smt, proofLevel);
+    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_KYC_DATA);
+    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_KYC_DATA, namedob_smt, proofLevel);
     const inputs = {
       data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
@@ -48,8 +77,8 @@ describe('OFAC - Name and DOB match', async function () {
   });
 
   it('should return 1 if the person is not in the ofac list', async () => {
-    const dummy_kyc_input = serializeKycData(NON_OFAC_DUMMY_INPUT);
-    const ofacInputs = generateCircuitInputsOfac(NON_OFAC_DUMMY_INPUT, namedob_smt, proofLevel);
+    const dummy_kyc_input = serializeKycData(NON_OFAC_DUMMY_KYC_DATA);
+    const ofacInputs = generateCircuitInputsOfac(NON_OFAC_DUMMY_KYC_DATA, namedob_smt, proofLevel);
     const inputs = {
       data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
@@ -61,8 +90,8 @@ describe('OFAC - Name and DOB match', async function () {
   });
 
   it('should return 0 if the internal computed merkle root is wrong (wrong leaf key)', async () => {
-    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
-    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, namedob_smt, proofLevel);
+    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_KYC_DATA);
+    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_KYC_DATA, namedob_smt, proofLevel);
     const inputs = {
       data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
@@ -75,8 +104,8 @@ describe('OFAC - Name and DOB match', async function () {
   });
 
   it('should return 0 if the internal computed merkle root is wrong (wrong siblings)', async () => {
-    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
-    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, namedob_smt, proofLevel);
+    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_KYC_DATA);
+    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_KYC_DATA, namedob_smt, proofLevel);
     ofacInputs.smt_siblings[0] = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     const inputs = {
       data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
@@ -89,8 +118,8 @@ describe('OFAC - Name and DOB match', async function () {
   });
 
   it('should return 0 if the merkle root is wrong', async () => {
-    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
-    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, namedob_smt, proofLevel);
+    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_KYC_DATA);
+    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_KYC_DATA, namedob_smt, proofLevel);
     const inputs = {
       data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
@@ -118,7 +147,7 @@ describe('OFAC - Name and YOB match', async function () {
       ],
     });
 
-    nameyob_smt.import(nameAndYobjson);
+    nameyob_smt.import(nameAndYobjson as any);
   });
 
   it('should compile and load the circuit', async () => {
@@ -126,8 +155,8 @@ describe('OFAC - Name and YOB match', async function () {
   });
 
   it('should return 0 if the person is in the ofac list', async () => {
-    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
-    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, nameyob_smt, proofLevel);
+    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_KYC_DATA);
+    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_KYC_DATA, nameyob_smt, proofLevel);
     const inputs = {
       data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
@@ -139,8 +168,8 @@ describe('OFAC - Name and YOB match', async function () {
   });
 
   it('should return 1 if the person is not in the ofac list', async () => {
-    const dummy_kyc_input = serializeKycData(NON_OFAC_DUMMY_INPUT);
-    const ofacInputs = generateCircuitInputsOfac(NON_OFAC_DUMMY_INPUT, nameyob_smt, proofLevel);
+    const dummy_kyc_input = serializeKycData(NON_OFAC_DUMMY_KYC_DATA);
+    const ofacInputs = generateCircuitInputsOfac(NON_OFAC_DUMMY_KYC_DATA, nameyob_smt, proofLevel);
     const inputs = {
       data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
@@ -152,8 +181,8 @@ describe('OFAC - Name and YOB match', async function () {
   });
 
   it('should return 0 if the internal computed merkle root is wrong (wrong leaf key)', async () => {
-    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
-    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, nameyob_smt, proofLevel);
+    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_KYC_DATA);
+    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_KYC_DATA, nameyob_smt, proofLevel);
     const inputs = {
       data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
@@ -166,8 +195,8 @@ describe('OFAC - Name and YOB match', async function () {
   });
 
   it('should return 0 if the internal computed merkle root is wrong (wrong siblings)', async () => {
-    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
-    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, nameyob_smt, proofLevel);
+    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_KYC_DATA);
+    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_KYC_DATA, nameyob_smt, proofLevel);
     ofacInputs.smt_siblings[0] = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     const inputs = {
       data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
@@ -180,8 +209,8 @@ describe('OFAC - Name and YOB match', async function () {
   });
 
   it('should return 0 if the merkle root is wrong', async () => {
-    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_INPUT);
-    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_INPUT, nameyob_smt, proofLevel);
+    const dummy_kyc_input = serializeKycData(OFAC_DUMMY_KYC_DATA);
+    const ofacInputs = generateCircuitInputsOfac(OFAC_DUMMY_KYC_DATA, nameyob_smt, proofLevel);
     const inputs = {
       data_padded: dummy_kyc_input.split('').map((x) => x.charCodeAt(0)),
       ...ofacInputs,
