@@ -39,7 +39,12 @@ function ensureMrzScannerModule(): void {
 
   if (!hasScanner) {
     // Keep camera bridge round-trip testable in this harness when host-native MRZ isn't wired.
-    nativeModules.SelfMRZScannerModule = fallbackMrzScannerModule;
+    // Hermes NativeModules host object can reject writes, so this fallback is best-effort.
+    try {
+      nativeModules.SelfMRZScannerModule = fallbackMrzScannerModule;
+    } catch {
+      // No-op: scanner stays unavailable until a native module is linked.
+    }
   }
 }
 
