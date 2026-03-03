@@ -29,10 +29,14 @@ jobs:
       - name: Check for nested require() in tests
         run: node scripts/check-test-requires.cjs
         working-directory: ./app
+      - name: Build webview-bridge
+        run: yarn workspace @selfxyz/webview-bridge build
       - name: Typecheck rn-sdk
         run: yarn workspace @selfxyz/rn-sdk typecheck
       - name: Test rn-sdk
         run: yarn workspace @selfxyz/rn-sdk test
+      - name: Build rn-sdk types
+        run: yarn workspace @selfxyz/rn-sdk tsup
       - name: Typecheck rn-sdk-test-app
         run: yarn workspace @selfxyz/rn-sdk-test-app types
 
@@ -48,6 +52,12 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+      - name: Generate debug keystore
+        run: |
+          keytool -genkeypair -v -keystore packages/rn-sdk-test-app/android/app/debug.keystore \
+            -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
       - name: Build Android debug APK
         run: |
           chmod +x packages/rn-sdk-test-app/android/gradlew
