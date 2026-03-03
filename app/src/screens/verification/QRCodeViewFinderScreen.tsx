@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,7 +13,7 @@ import {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { LottieAnimation, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   Description,
@@ -27,7 +26,6 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import qrScanAnimation from '@/assets/animations/qr_scan.json';
 import QRScan from '@/assets/icons/qr_code.svg';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
@@ -38,6 +36,9 @@ import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const qrScanAnimation = require('@/assets/animations/qr_scan.lottie');
 
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -164,7 +165,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
           {shouldRenderCamera && (
             <>
               <QRCodeScannerView onQRData={onQRData} isMounted={isFocused} />
-              <LottieView
+              <LottieAnimation
                 autoPlay
                 loop
                 source={qrScanAnimation}

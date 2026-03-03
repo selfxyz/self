@@ -24,6 +24,16 @@ const mockVersionJson = {
   ios: { build: 100, lastDeployed: '2024-01-01T00:00:00Z' },
   android: { build: 200, lastDeployed: '2024-01-01T00:00:00Z' },
 };
+const mockBuildGradle = `android {
+    defaultConfig {
+        versionCode 200
+        versionName "1.2.3"
+    }
+}`;
+const mockPbxproj = `buildSettings = {
+    CURRENT_PROJECT_VERSION = 100;
+    MARKETING_VERSION = 1.2.3;
+};`;
 
 // Use manual mocking instead of jest.mock to avoid hoisting issues
 const fs = require('fs');
@@ -42,6 +52,12 @@ function setupMocks() {
     }
     if (filePath.includes('version.json')) {
       return JSON.stringify(mockVersionJson);
+    }
+    if (filePath.includes('build.gradle')) {
+      return mockBuildGradle;
+    }
+    if (filePath.includes('project.pbxproj')) {
+      return mockPbxproj;
     }
     return originalReadFileSync(filePath, encoding);
   };
@@ -255,8 +271,11 @@ describe('version-manager', () => {
 
       versionManager.applyVersions('2.0.0', 150, 250);
 
-      // Verify writes occurred
-      expect(writeCalls.length).toBe(2);
+      // Verify writes occurred:
+      // 1. package.json, 2. version.json,
+      // 3. build.gradle (versionCode), 4. pbxproj (CURRENT_PROJECT_VERSION),
+      // 5. pbxproj (MARKETING_VERSION)
+      expect(writeCalls.length).toBe(5);
 
       // Find and verify package.json write
       const packageWrite = writeCalls.find(call =>
@@ -274,6 +293,53 @@ describe('version-manager', () => {
       const updatedVersion = JSON.parse(versionWrite.content);
       expect(updatedVersion.ios.build).toBe(150);
       expect(updatedVersion.android.build).toBe(250);
+
+      // Find and verify build.gradle write
+      const gradleWrite = writeCalls.find(call =>
+        call.filePath.includes('build.gradle'),
+      );
+      expect(gradleWrite).toBeDefined();
+      expect(gradleWrite.content).toContain('versionCode 250');
+
+      // Find and verify pbxproj writes
+      const pbxprojWrites = writeCalls.filter(call =>
+        call.filePath.includes('project.pbxproj'),
+      );
+      expect(pbxprojWrites.length).toBe(2);
+      expect(pbxprojWrites[0].content).toContain(
+        'CURRENT_PROJECT_VERSION = 150;',
+      );
+      expect(pbxprojWrites[1].content).toContain('MARKETING_VERSION = 2.0.0;');
+
+      // Ensure every managed file is touched by applyVersions.
+      // (pbxproj is written twice due to two replacements.)
+      const managedFiles = versionManager.getVersionManagedFiles();
+      for (const managedFile of managedFiles) {
+        const touched = writeCalls.some(call =>
+          call.filePath.includes(managedFile),
+        );
+        expect(touched).toBe(true);
+      }
+    });
+  });
+
+  describe('getVersionManagedFiles', () => {
+    it('should return the expected managed file paths', () => {
+      expect(versionManager.getVersionManagedFiles()).toEqual([
+        'package.json',
+        'version.json',
+        path.join('android', 'app', 'build.gradle'),
+        path.join('ios', 'Self.xcodeproj', 'project.pbxproj'),
+      ]);
+    });
+
+    it('should return a new array each time', () => {
+      const files = versionManager.getVersionManagedFiles();
+      files.push('unexpected-file');
+
+      expect(versionManager.getVersionManagedFiles()).not.toContain(
+        'unexpected-file',
+      );
     });
   });
 

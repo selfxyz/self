@@ -34,7 +34,7 @@ The Self Wallet is a monolithic React Native app where all logic, NFC, proving, 
 
 | Area                       | Issue                                                                                                                                          |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/webview-bridge/` | Prototype existed but needed rebuild with proper structure. Now mostly done (62 tests). Missing: biometrics adapter, camera adapter wiring.    |
+| `packages/webview-bridge/` | Implemented with current protocol/adapters and validated by tests (63 tests passing).                                                          |
 | `packages/webview-app/`    | Screens built, routing works. Missing: biometrics + camera adapter wiring, web fallback adapters not all connected in SelfClientProvider.      |
 | Web fallback adapters      | IndexedDB documents adapter, Web Crypto hashing adapter, and console analytics adapter exist in bridge package but need wiring in webview-app. |
 
@@ -1333,7 +1333,7 @@ Chunk 1F: Bridge Package (no deps — start here)
 
 | Chunk | Description              | Size | Status                                                                                                               |
 | ----- | ------------------------ | ---- | -------------------------------------------------------------------------------------------------------------------- |
-| 1F    | Bridge Package           | L    | **Done** — 62 tests pass, all adapters implemented except biometrics                                                 |
+| 1F    | Bridge Package           | L    | **Done** — 63 tests pass, bridge package and adapters implemented                                                    |
 | 1B    | Onboarding Screens       | M    | **Done** — all 5 screens render                                                                                      |
 | 1C    | Proving + Result Screens | M    | **Done** — screens render, proving wired                                                                             |
 | 1D    | Remaining Screens        | S    | **Done** — home, settings, coming-soon render                                                                        |
@@ -1353,7 +1353,7 @@ ls packages/webview-app/dist/index.html  # file must exist
 # After all chunks:
 # 1. vite dev serves all 10 routes without console errors
 # 2. vite build produces dist/ with index.html + bundle
-# 3. Bridge package: 62+ tests pass
+# 3. Bridge package: 63+ tests pass
 # 4. Manual: load dist/index.html in a WebView host (Android/iOS test app)
 #    and confirm lifecycle.ready() fires, screens navigate, NFC scan starts
 ```

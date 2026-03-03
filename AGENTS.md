@@ -42,7 +42,7 @@ Before creating a PR, ensure:
 
 #### AI Review Preparation
 
-- [ ] Clear commit messages following conventional format
+- [ ] Clear, imperative commit messages (e.g. `Fix address validation`)
 - [ ] PR description includes context for AI reviewers
 - [ ] Complex changes have inline comments explaining intent
 - [ ] Security-sensitive changes flagged for special review
