@@ -17,7 +17,7 @@ This harness validates:
 
 ## Camera / MRZ in this Harness
 
-- If no native `SelfMRZScannerModule`/`MRZScannerModule` is linked, `App.tsx` installs a fallback scanner module that returns deterministic MRZ data.
+- If no native `SelfMRZScannerModule`/`MRZScannerModule` is linked, `App.tsx` attempts to install a fallback scanner module that returns deterministic MRZ data.
 - This keeps the camera bridge path testable for integration validation, but it is not a real camera scan.
 - To validate real MRZ scanning on-device, replace the fallback with a native scanner module.
 
@@ -30,10 +30,12 @@ This harness validates:
 
 ```bash
 yarn install
-yarn workspace @selfxyz/rn-sdk-test-app install-app
 yarn workspace @selfxyz/rn-sdk-test-app android
 yarn workspace @selfxyz/rn-sdk-test-app ios
 ```
+
+On macOS, `yarn install` automatically runs Bundler + CocoaPods for this workspace.
+Set `SKIP_RN_SDK_TEST_APP_PODS=1` to skip that step.
 
 ## UI
 

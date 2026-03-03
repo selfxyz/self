@@ -12,6 +12,7 @@
     "ios": "react-native run-ios",
     "lint": "yarn types",
     "nice": "yarn types",
+    "postinstall": "node ./scripts/postinstall.cjs",
     "setup": "cd ios && bundle install && bundle exec pod install --repo-update && cd .. && yarn clean:xcode-env-local",
     "start": "react-native start",
     "test": "yarn types",

@@ -205,6 +205,22 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SelfDemoApp/Pods-SelfDemoApp-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		A1B2C3D4E5F60718293A4B5C /* Copy self-wallet assets */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(PROJECT_DIR)/../node_modules/@selfxyz/rn-sdk/assets/self-wallet/index.html",
+			);
+			name = "Copy self-wallet assets";
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/self-wallet/index.html",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nSRC=\"${PROJECT_DIR}/../node_modules/@selfxyz/rn-sdk/assets/self-wallet\"\nDST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/self-wallet\"\nrm -rf \"$DST\"\nmkdir -p \"$DST\"\ncp -R \"$SRC\"/. \"$DST\"\n";
+		};
 		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -243,23 +259,6 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SelfDemoApp/Pods-SelfDemoApp-resources.sh\"\n";
 			showEnvVarsInLog = 0;
-		};
-
-		A1B2C3D4E5F60718293A4B5C /* Copy self-wallet assets */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(PROJECT_DIR)/../node_modules/@selfxyz/rn-sdk/assets/self-wallet/index.html",
-			);
-			name = "Copy self-wallet assets";
-			outputPaths = (
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/self-wallet/index.html",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\nSRC=\"${PROJECT_DIR}/../node_modules/@selfxyz/rn-sdk/assets/self-wallet\"\nDST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/self-wallet\"\nrm -rf \"$DST\"\nmkdir -p \"$DST\"\ncp -R \"$SRC\"/. \"$DST\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
