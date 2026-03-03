@@ -30,9 +30,9 @@ This harness validates:
 
 ```bash
 yarn install
-cd packages/rn-test-app/ios && pod install && cd ../..
-yarn workspace @selfxyz/rn-test-app android
-yarn workspace @selfxyz/rn-test-app ios
+cd packages/rn-sdk-test-app/ios && pod install && cd ../..
+yarn workspace @selfxyz/rn-sdk-test-app android
+yarn workspace @selfxyz/rn-sdk-test-app ios
 ```
 
 ## UI

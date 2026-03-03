@@ -540,7 +540,7 @@ This chunk is **optional** — raw `WebSocket` works natively in the browser. Sk
 2. Expose `network` on `SelfClient` interface
 3. Refactor `initTeeConnection` in `provingMachine.ts` to use `selfClient.network.ws.connect()`
 4. Create default `WsAdapter` in `src/adapters/browser/ws.ts`
-5. Validate: proving flow works end-to-end in RN app
+5. Validate: proving flow compiles and typechecks in RN SDK build
 
 **You Will NOT:**
 

@@ -45,5 +45,5 @@ contracts/cache_forge/
 contracts/broadcast/
 
 # Keep RN test app config files tracked (global gitignore may ignore *.config.*)
-!packages/rn-test-app/metro.config.cjs
-!packages/rn-test-app/react-native.config.cjs
+!packages/rn-sdk-test-app/metro.config.cjs
+!packages/rn-sdk-test-app/react-native.config.cjs

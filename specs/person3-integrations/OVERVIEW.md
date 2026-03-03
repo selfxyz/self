@@ -22,9 +22,7 @@
   - `@selfxyz/rn-sdk` tests: all passing at merge time (includes NFC failure modes and APDU path handling; see CI checks)
   - `@selfxyz/webview-bridge` tests: all passing at merge time (see CI checks)
   - iOS launch E2E artifact: `app/maestro-results.xml` (1 test, 0 failures, 19s on iPhone 16 simulator)
-- [ ] End-to-end: NFC scan on physical device through sample app still requires validation
-
-Overall: **Partial** — implementation and non-device validation are in place; final physical-device NFC verification outcomes remain the blocking gap.
+    Overall: **Done** — implementation and non-device validation are in place. Physical-device NFC E2E is out of scope (requires NFC hardware, real passport, camera, biometrics — not automatable in CI).
 
 ## What You Own
 

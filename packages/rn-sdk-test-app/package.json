@@ -1,5 +1,5 @@
 {
-  "name": "@selfxyz/rn-test-app",
+  "name": "@selfxyz/rn-sdk-test-app",
   "version": "0.0.1-alpha",
   "private": true,
   "main": "index.js",
@@ -9,9 +9,9 @@
     "start": "react-native start",
     "build": "yarn types",
     "types": "tsc --noEmit",
-    "lint": "node -e \"process.exit(0)\"",
-    "nice": "yarn lint",
-    "test": "node -e \"process.exit(0)\""
+    "lint": "yarn types",
+    "nice": "yarn types",
+    "test": "yarn types"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",

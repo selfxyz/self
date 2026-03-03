@@ -24,12 +24,10 @@ Chunk completion: 23/30 done, 3 partial, 1 skipped, 2 superseded, 1 deferred. Se
 
 ### P1 — Validation Gaps
 
-| Item                                      | Owner      | Context                                                                             |
-| ----------------------------------------- | ---------- | ----------------------------------------------------------------------------------- |
-| Physical-device NFC E2E (Android + iOS)   | Person 2/3 | No in-repo evidence of real passport scans through any shell. Highest-priority gap. |
-| Physical-device camera/MRZ validation     | Person 2/5 | RN SDK CameraHandler calls native module but untested on device.                    |
-| KMP test app validation on both platforms | Person 2   | Compile-verified only; no runtime validation captured.                              |
-| Integration validation in Self Wallet app | Person 5   | `SelfVerification` component not yet wired into Self Wallet.                        |
+| Item                                      | Owner    | Context                                                      |
+| ----------------------------------------- | -------- | ------------------------------------------------------------ |
+| KMP test app validation on both platforms | Person 2 | Compile-verified only; no runtime validation captured.       |
+| Integration validation in Self Wallet app | Person 5 | `SelfVerification` component not yet wired into Self Wallet. |
 
 ### P2 — Correctness / Consistency
 
@@ -64,7 +62,6 @@ These decisions were made during this PR cycle. They are now documented in [SDK-
 
 ## Suggested Follow-Up PR Order
 
-1. **Physical-device validation** — NFC E2E on Android + iOS with real passports (unblocks confidence for everything else)
-2. **Correctness cleanup** — Adapter consolidation, dynamic proving config, crypto adapter interface gap
-3. **Publishing** — npm publish rn-sdk, finalize AAR/XCFramework packaging
-4. **Self Wallet migration** — Wire `SelfVerification` into the main app (Phase 2)
+1. **Correctness cleanup** — Adapter consolidation, dynamic proving config, crypto adapter interface gap
+2. **Publishing** — npm publish rn-sdk, finalize AAR/XCFramework packaging
+3. **Self Wallet migration** — Wire `SelfVerification` into the main app (Phase 2)

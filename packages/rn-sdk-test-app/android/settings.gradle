@@ -3,6 +3,6 @@ plugins { id("com.facebook.react.settings") }
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
   ex.autolinkLibrariesFromCommand(['yarn','exec','react-native','config'])
 }
-rootProject.name = 'SelfRNTestApp'
+rootProject.name = 'SelfRNSDKTestApp'
 include ':app'
 includeBuild('../../../node_modules/@react-native/gradle-plugin')

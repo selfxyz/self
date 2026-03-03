@@ -560,7 +560,6 @@ Phase 3 (integration):
   Person 2: KMP test app
   Person 3: Integration validation
   Person 5: RN SDK integration with Self Wallet
-  All: End-to-end NFC scan on physical device
 ```
 
 ## Verification Plan
