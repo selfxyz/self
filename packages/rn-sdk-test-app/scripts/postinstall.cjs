@@ -7,6 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const iosDir = path.resolve(__dirname, '..', 'ios');
+const isCi = process.env.CI === '1' || process.env.CI === 'true';
 
 function runOrExit(command, args, cwd) {
   const result = spawnSync(command, args, {
@@ -19,7 +20,7 @@ function runOrExit(command, args, cwd) {
   }
 }
 
-if (process.platform !== 'darwin' || process.env.SKIP_RN_SDK_TEST_APP_PODS === '1') {
+if (process.platform !== 'darwin' || isCi || process.env.SKIP_RN_SDK_TEST_APP_PODS === '1') {
   process.exit(0);
 }
 
