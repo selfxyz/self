@@ -5,13 +5,17 @@
   "main": "index.js",
   "scripts": {
     "android": "react-native run-android --verbose",
-    "ios": "react-native run-ios",
-    "start": "react-native start",
     "build": "yarn types",
-    "types": "tsc --noEmit",
+    "clean:xcode-env-local": "rm -f ios/.xcode.env.local",
+    "install-app": "yarn install-app:setup && yarn clean:xcode-env-local",
+    "install-app:setup": "cd ios && bundle install && scripts/pod-install-with-cache-fix.sh && cd ..",
+    "ios": "react-native run-ios",
     "lint": "yarn types",
     "nice": "yarn types",
-    "test": "yarn types"
+    "setup": "cd ios && bundle install && bundle exec pod install --repo-update && cd .. && yarn clean:xcode-env-local",
+    "start": "react-native start",
+    "test": "yarn types",
+    "types": "tsc --noEmit"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",

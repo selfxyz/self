@@ -6,11 +6,11 @@
   "scripts": {
     "analyze:bundle:android": "yarn build:deps && node ./scripts/bundle-analyze-ci.cjs android",
     "analyze:bundle:ios": "yarn build:deps && node ./scripts/bundle-analyze-ci.cjs ios",
-    "animations:convert": "node ./scripts/convert-to-dotlottie.mjs",
     "analyze:tree-shaking": "node ./scripts/analyze-tree-shaking.cjs imports",
     "analyze:tree-shaking:web": "yarn web:build && node ./scripts/analyze-tree-shaking.cjs web",
     "android": "yarn build:deps && yarn setup:android-deps && react-native run-android",
     "android:ci": "./scripts/mobile-ci-build-android.sh",
+    "animations:convert": "node ./scripts/convert-to-dotlottie.mjs",
     "build:deps": "yarn workspaces foreach --from @selfxyz/mobile-app --topological --recursive run build",
     "bump-version:major": "npm version major && yarn sync-versions",
     "bump-version:minor": "npm version minor && yarn sync-versions",
