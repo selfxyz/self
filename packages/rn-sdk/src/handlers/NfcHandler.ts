@@ -31,6 +31,14 @@ interface NfcHandlerOptions {
 }
 
 const DEFAULT_APDU_TIMEOUT_MS = 10_000;
+const MAX_APDU_TIMEOUT_MS = 60_000;
+
+function resolveApduTimeoutMs(value?: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    return DEFAULT_APDU_TIMEOUT_MS;
+  }
+  return Math.min(value, MAX_APDU_TIMEOUT_MS);
+}
 
 function withTimeout<T>(
   promise: Promise<T>,
@@ -55,8 +63,14 @@ function withTimeout<T>(
   });
 }
 
+const MAX_SHORT_APDU_BYTES = 261; // 4-byte header + 1-byte Lc + 255 data + optional Le
+const MAX_SHORT_APDU_HEX_LENGTH = MAX_SHORT_APDU_BYTES * 2;
+
 function parseApduCommand(hexCommand: string): number[] {
   const normalized = hexCommand.trim().replace(/\s+/g, '').toUpperCase();
+  if (normalized.length > MAX_SHORT_APDU_HEX_LENGTH) {
+    throw new BridgeHandlerError('INVALID_PARAMS', 'APDU command exceeds maximum length');
+  }
   if (!/^[0-9A-F]+$/.test(normalized) || normalized.length % 2 !== 0) {
     throw new BridgeHandlerError(
       'INVALID_PARAMS',
@@ -256,7 +270,7 @@ export class NfcHandler implements BridgeHandler {
   constructor(router: MessageRouter, nfc?: NfcDeps, options?: NfcHandlerOptions) {
     this.router = router;
     this.nfc = nfc ?? loadNfc();
-    this.apduTimeoutMs = options?.apduTimeoutMs ?? DEFAULT_APDU_TIMEOUT_MS;
+    this.apduTimeoutMs = resolveApduTimeoutMs(options?.apduTimeoutMs);
   }
 
   async handle(method: string, params: Record<string, unknown>): Promise<unknown> {

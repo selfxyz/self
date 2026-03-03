@@ -190,6 +190,31 @@ describe('NfcHandler', () => {
       expect(mockNfc.manager.transceive).not.toHaveBeenCalled();
     });
 
+    it('accepts APDU at max short-APDU length (261 bytes)', async () => {
+      // EXTERNAL AUTHENTICATE: 4-byte header + 1-byte Lc(255) + 255 data + 1-byte Le = 261 bytes
+      const maxHex = '00820000' + 'FF' + 'AA'.repeat(255) + '00';
+      expect(maxHex.length / 2).toBe(261);
+
+      (mockNfc.manager.transceive as ReturnType<typeof vi.fn>).mockResolvedValueOnce([0x90, 0x00]);
+      const result = await handler.handle('scan', { apduCommands: [maxHex] }) as Record<string, unknown>;
+      expect(result.apduResponses).toEqual(['9000']);
+    });
+
+    it('rejects APDU exceeding max short-APDU length (262 bytes)', async () => {
+      const oversizedHex = '00820000' + 'FF' + 'AA'.repeat(256) + '00';
+      expect(oversizedHex.length / 2).toBe(262);
+
+      try {
+        await handler.handle('scan', { apduCommands: [oversizedHex] });
+        expect.unreachable('Should have thrown');
+      } catch (err: unknown) {
+        expect((err as { code: string }).code).toBe('INVALID_PARAMS');
+        expect((err as Error).message).toBe('APDU command exceeds maximum length');
+      }
+
+      expect(mockNfc.manager.transceive).not.toHaveBeenCalled();
+    });
+
     it('attaches audit details to INVALID_PARAMS for malformed APDU hex', async () => {
       try {
         await handler.handle('scan', {
@@ -235,24 +260,32 @@ describe('NfcHandler', () => {
     });
 
     it('throws NFC_APDU_TIMEOUT when transceive hangs', async () => {
-      handler = new NfcHandler(router, mockNfc, { apduTimeoutMs: 1 });
-      (mockNfc.manager.transceive as ReturnType<typeof vi.fn>).mockImplementation(
-        () => new Promise(() => {}),
-      );
-
+      vi.useFakeTimers();
       try {
-        await handler.handle('scan', { apduCommands: ['00A4040007A0000002471001'] });
-        expect.unreachable('Should have thrown');
-      } catch (err: unknown) {
-        expect((err as { code: string }).code).toBe('NFC_APDU_TIMEOUT');
-        expect((err as Error).message).toBe('NFC APDU command timed out');
-        expect((err as { details?: Record<string, unknown> }).details).toMatchObject({
-          commandIndex: 0,
-          totalCommands: 1,
-          acceptedCount: 0,
-          rejectedCount: 0,
-          timedOutCount: 1,
+        handler = new NfcHandler(router, mockNfc, { apduTimeoutMs: 1 });
+        (mockNfc.manager.transceive as ReturnType<typeof vi.fn>).mockImplementation(
+          () => new Promise(() => {}),
+        );
+
+        // Attach rejection handler immediately to prevent unhandled rejection
+        const assertion = expect(
+          handler.handle('scan', { apduCommands: ['00A4040007A0000002471001'] }),
+        ).rejects.toMatchObject({
+          code: 'NFC_APDU_TIMEOUT',
+          message: 'NFC APDU command timed out',
+          details: {
+            commandIndex: 0,
+            totalCommands: 1,
+            acceptedCount: 0,
+            rejectedCount: 0,
+            timedOutCount: 1,
+          },
         });
+
+        await vi.runAllTimersAsync();
+        await assertion;
+      } finally {
+        vi.useRealTimers();
       }
     });
   });
