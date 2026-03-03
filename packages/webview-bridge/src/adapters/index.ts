@@ -23,7 +23,7 @@ export type { BridgeAnalyticsAdapter } from './analytics';
 export { consoleAnalyticsAdapter } from './analytics-web';
 export type { ConsoleAnalyticsOptions } from './analytics-web';
 
-export { bridgeHapticAdapter } from './haptic';
+export { bridgeHapticAdapter, noOpHapticAdapter } from './haptic';
 export type { BridgeHapticAdapter } from './haptic';
 
 export { webNavigationAdapter } from './navigation';

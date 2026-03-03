@@ -1,6 +1,6 @@
 # Person 2: Native Shells (KMP SDK + Swift Providers) — Workstream Overview
 
-> Last updated: 2026-02-19
+> Last updated: 2026-02-23
 > Owner: Person 2 (Native Shells)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC.md](./SPEC.md)
@@ -21,8 +21,9 @@
 - [x] Delete 4 unnecessary Android handlers (documents, crypto, analytics, haptic — 511 LOC)
 - [x] iOS Swift providers are implemented and wired (NFC, Biometrics, Lifecycle, WebView host + additional providers)
 - [x] `SelfSdk.launch()` flow is implemented on iOS
+- [x] Shared KMP validation baseline captured (`:shared:compileKotlinIosSimulatorArm64` + `:shared:jvmTest` successful)
 - [ ] KMP test app validation on both platforms remains a follow-up validation task
-- [ ] Platform contract alignment is still open (iOS expanded domains vs Android web fallbacks)
+- [x] Platform asymmetry contract documented and signed off (iOS 9-handler superset vs Android 5-handler core set)
 - [x] MiniPay sample integration is wired (`SelfSdk.launch()` call path present)
 
 ## What You Own
@@ -75,7 +76,7 @@ You build the native shells that sit between the host app and the bridge protoco
     │    webview-app Vite bundle      │
     └─────────────────────────────────┘
 
-* iOS implementation now registers 9 handlers (NFC, Camera, Biometrics, SecureStorage, Lifecycle, Documents, Crypto, Analytics, Haptic); Android remains focused on 5 core native handlers. This asymmetry is implemented and needs explicit policy documentation.
+* iOS implementation now registers 9 handlers (NFC, Camera, Biometrics, SecureStorage, Lifecycle, Documents, Crypto, Analytics, Haptic); Android remains focused on 5 core native handlers. This asymmetry is now explicitly accepted as a compatibility superset contract: Android is the normative minimum, iOS extra handlers must remain behavior-compatible and non-authoritative for web-fallback domains.
 ```
 
 ## Dependencies

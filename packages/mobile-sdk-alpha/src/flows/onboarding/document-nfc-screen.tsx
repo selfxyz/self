@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type LottieView from 'lottie-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Linking, NativeEventEmitter, NativeModules, Platform, StyleSheet } from 'react-native';
 import NfcManager from 'react-native-nfc-manager';
-import passportVerifyAnimation from 'src/animations/passport_verify.json';
 import { BodyText, PrimaryButton, SecondaryButton, Title, View, XStack } from 'src/components';
 import ButtonsContainer from 'src/components/ButtonsContainer';
-import { DelayedLottieView } from 'src/components/DelayedLottieView';
+import { LottieAnimation } from 'src/components/LottieAnimation';
 import TextsContainer from 'src/components/TextsContainer';
 import { PassportEvents } from 'src/constants/analytics';
 import { black, slate100, slate400, slate500, white } from 'src/constants/colors';
@@ -26,6 +24,11 @@ import { sanitizeErrorMessage } from 'src/utils/utils';
 import { v4 as uuidv4 } from 'uuid';
 
 import type { PassportData } from '@selfxyz/common';
+
+import type { Dotlottie } from '@lottiefiles/dotlottie-react-native';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const passportVerifyAnimation = require('../../animations/passport_verify.lottie');
 
 const emitter = Platform.OS === 'android' ? new NativeEventEmitter(NativeModules.nativeModule) : null;
 
@@ -65,7 +68,7 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
     [props.useCan],
   );
 
-  const animationRef = useRef<LottieView>(null);
+  const animationRef = useRef<Dotlottie | null>(null);
 
   useEffect(() => {
     animationRef.current?.play();
@@ -386,7 +389,7 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
       safeAreaBottom={props.safeAreaInsets?.bottom}
     >
       <ExpandableBottomLayout.TopSection backgroundColor={slate100} safeAreaTop={props.safeAreaInsets?.top}>
-        <DelayedLottieView
+        <LottieAnimation
           ref={animationRef}
           autoPlay={false}
           loop={false}

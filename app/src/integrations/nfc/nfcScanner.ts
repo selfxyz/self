@@ -93,6 +93,7 @@ const scanAndroid = async (
     useCan: inputs.useCan ?? false,
     sessionId: inputs.sessionId,
     skipReselect: inputs.skipReselect ?? false,
+    skipPACE: inputs.skipPACE ?? false,
   });
 };
 

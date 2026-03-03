@@ -5,11 +5,14 @@
 package xyz.self.sdk.api
 
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.runBlocking
 import platform.UIKit.UIApplication
 import platform.UIKit.UIModalPresentationFullScreen
 import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowScene
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.AnalyticsBridgeHandler
 import xyz.self.sdk.handlers.BiometricBridgeHandler
@@ -72,9 +75,24 @@ actual class SelfSdk private constructor(
 
         // Create lifecycle handler with callback and dismiss wiring
         val lifecycleHandler = LifecycleBridgeHandler()
-        lifecycleHandler.pendingCallback = callback
-        lifecycleHandler.dismissAction = {
-            pendingCallback = null
+        var dismissViewController: UIViewController? = null
+        runBlocking {
+            lifecycleHandler.configure(
+                callback = callback,
+                dismiss = {
+                    dispatch_async(dispatch_get_main_queue()) {
+                        val viewController = dismissViewController
+                        if (viewController == null) {
+                            pendingCallback = null
+                            return@dispatch_async
+                        }
+
+                        viewController.dismissViewControllerAnimated(true) {
+                            pendingCallback = null
+                        }
+                    }
+                },
+            )
         }
 
         // Register all iOS bridge handlers
@@ -91,13 +109,7 @@ actual class SelfSdk private constructor(
                     ?: throw IllegalStateException("WebView provider not configured. Call SelfSdkSwift.configure() first.")
             ).getViewController()
         sdkVC.setModalPresentationStyle(UIModalPresentationFullScreen)
-
-        // Wire up dismiss action to dismiss the VC
-        lifecycleHandler.dismissAction = {
-            sdkVC.dismissViewControllerAnimated(true) {
-                pendingCallback = null
-            }
-        }
+        dismissViewController = sdkVC
 
         val topVC = findTopViewController()
         if (topVC == null) {

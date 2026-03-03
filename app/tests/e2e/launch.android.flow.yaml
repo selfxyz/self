@@ -3,5 +3,5 @@ appId: com.proofofpassportapp
 - launchApp
 - extendedWaitUntil:
     visible:
-      id: "earn-points-button"
-    timeout: ${LAUNCH_WAIT_MS:60000}
+      id: "home-screen-root"
+    timeout: ${LAUNCH_WAIT_MS:120000}

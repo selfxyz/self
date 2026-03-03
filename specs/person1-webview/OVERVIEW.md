@@ -1,6 +1,6 @@
 # Person 1: WebView UI + Bridge — Workstream Overview
 
-> Last updated: 2026-02-19
+> Last updated: 2026-02-23
 > Owner: Person 1 (WebView UI + Bridge)
 > Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
 > Implementation: [SPEC.md](./SPEC.md)
@@ -14,7 +14,7 @@
 
 ## Status
 
-- [x] Bridge protocol types and `WebViewBridge` class (62 tests pass)
+- [x] Bridge protocol types and `WebViewBridge` class (63 tests pass)
 - [x] Bridge adapters: NFC, auth, storage, lifecycle, crypto (sign + hash)
 - [x] Web fallback adapters: IndexedDB documents, Web Crypto, console analytics, navigation, haptic
 - [x] Mock transport (`MockNativeBridge`) for testing
@@ -23,9 +23,8 @@
 - [x] BridgeProvider and SelfClientProvider wired
 - [x] Biometrics bridge adapter wired in `SelfClientProvider`
 - [x] Camera bridge adapter wired in `SelfClientProvider`
-- [ ] Fallback wiring correctness gap remains:
-  - `haptic` currently uses native bridge trigger instead of web no-op
-  - `crypto` is hybrid (`hash` web, `sign` bridge) and needs explicit contract decision
+- [x] Fallback wiring reconciled in `SelfClientProvider` (`haptic` uses web no-op)
+- [x] Hybrid crypto contract signed off (`hash` in WebView, `sign` via native bridge)
 - [ ] Dynamic proof request items are still hardcoded in `ProvingScreen`
 
 ## What You Own

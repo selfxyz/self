@@ -1,135 +1,70 @@
-# Handoff: Person 1-2-3 PR Review Reconciliation
+# SDK Implementation — Follow-Up Tracker
 
-> Branch: `feat/person1-2-3-implementation`
-> Review date: 2026-02-19
-> Scope: Documentation reconciliation against `origin/main..HEAD` and current codebase state.
+> Branch: `justin/kmp-wrap-up-evi-handoff-work`
+> Last updated: 2026-02-23
+> Prior review: 2026-02-19 (`feat/person1-2-3-implementation`)
 
-## What This PR Delivers
+## What Was Delivered
 
-- New bridge + WebView packages are implemented and present:
-  - `@selfxyz/webview-bridge`
-  - `@selfxyz/webview-app`
-- Native shell expansion is implemented across KMP + Swift:
-  - iOS provider + handler chain is present (beyond original 3-handler plan)
-  - Android handler set remains focused on core native needs
-- RN shell package is implemented:
-  - `@selfxyz/rn-sdk` with component, router, handlers, asset strategy, tests, and a package handoff doc
-- Integration sample package is implemented:
-  - `@selfxyz/kmp-minipay-sample` with launch flow and result handling
+Five new packages, all implemented. Validation status:
 
-## Package Inventory Added In This Branch
+| Package                       | Tests                | Status |
+| ----------------------------- | -------------------- | ------ |
+| `@selfxyz/webview-bridge`     | 63/63                | Done   |
+| `@selfxyz/webview-app`        | — (build-verified)   | Done   |
+| `@selfxyz/rn-sdk`             | 64/64                | Done   |
+| `@selfxyz/self-sdk-swift`     | — (compile-verified) | Done   |
+| `@selfxyz/kmp-minipay-sample` | — (scaffold)         | Done   |
 
-- `packages/webview-bridge/`
-- `packages/webview-app/`
-- `packages/self-sdk-swift/`
-- `packages/rn-sdk/`
-- `packages/kmp-minipay-sample/`
+KMP SDK: `compileKotlinIosSimulatorArm64` + `jvmTest` passing. iOS Maestro launch: 1 test, 0 failures.
 
-## Person 1 (WebView + Bridge)
+Chunk completion: 23/30 done, 3 partial, 1 skipped, 2 superseded, 1 deferred. See [WAVE-PLAN.md](./WAVE-PLAN.md) for details.
 
-### Delivered
+## Open Follow-Up Items
 
-- Bridge protocol, adapters, schema, mocks, and tests are implemented in `packages/webview-bridge/`.
-- WebView app shell/screens/provider wiring are implemented in `packages/webview-app/`.
+### P1 — Validation Gaps
 
-### Remaining / Follow-Up
+| Item                                      | Owner      | Context                                                                             |
+| ----------------------------------------- | ---------- | ----------------------------------------------------------------------------------- |
+| Physical-device NFC E2E (Android + iOS)   | Person 2/3 | No in-repo evidence of real passport scans through any shell. Highest-priority gap. |
+| Physical-device camera/MRZ validation     | Person 2/5 | RN SDK CameraHandler calls native module but untested on device.                    |
+| KMP test app validation on both platforms | Person 2   | Compile-verified only; no runtime validation captured.                              |
+| Integration validation in Self Wallet app | Person 5   | `SelfVerification` component not yet wired into Self Wallet.                        |
 
-- Correctness gap: fallback wiring consistency in `SelfClientProvider`:
-  - haptic currently bridges native (`bridgeHapticAdapter`) instead of no-op fallback
-  - crypto path is hybrid (`hash` via Web Crypto + `sign` via native bridge)
-- Dynamic proving request values remain hardcoded and should be sourced/configured by request context.
+### P2 — Correctness / Consistency
 
-## Person 2 (Native Shells)
+| Item                                                             | Owner      | Context                                                                                                                                                                                                                                                                               |
+| ---------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Consolidate duplicated fallback adapters                         | Person 4   | ~150 LOC duplicated across `webview-bridge/adapters/` and `mobile-sdk-alpha/adapters/browser/` (analytics, documents, haptic). `mobile-sdk-alpha` is canonical owner; bridge copies are transitional.                                                                                 |
+| Source dynamic proving request values from request context       | Person 1   | `ProvingScreen` now accepts params but default values are still hardcoded. Config should flow from `SelfSdk.launch(request)`.                                                                                                                                                         |
+| Expose `generateKey()`/`getPublicKey()` in `BridgeCryptoAdapter` | Person 1/4 | Methods exist in iOS native handler (`CryptoBridgeHandler.kt`) and bridge protocol types (`CryptoMethod`), but the `BridgeCryptoAdapter` interface in `webview-bridge/adapters/crypto.ts` only exposes `hash()` and `sign()`. WebView client code cannot call key management methods. |
 
-### Delivered
+### P3 — Publishing / Packaging
 
-- iOS chain (2G-2K scope) is implemented with handler/provider registration in KMP + Swift package.
-- Android shell + handlers remain implemented and integrated.
+| Item                                           | Owner    | Context                                                                           |
+| ---------------------------------------------- | -------- | --------------------------------------------------------------------------------- |
+| npm publish `@selfxyz/rn-sdk`                  | Person 5 | Package is implemented but not published.                                         |
+| Production artifact builds (AAR + XCFramework) | Person 2 | KMP SDK packaging for distribution not finalized.                                 |
+| Self Wallet migration to `SelfVerification`    | Person 5 | Phase 2 — Self Wallet replaces native verification screens with SDK WebView flow. |
 
-### Remaining / Follow-Up
+### Deferred (Phase 2)
 
-- **iOS lifecycle flat payload bug (P1):** `LifecycleBridgeHandler.kt` requires both `success` and `data` fields to classify a result as success, but WebView sends flat payloads like `{ type: 'proofRequested' }`. All iOS completion callbacks are misclassified as cancellations. See `packages/webview-app/src/screens/proving/ProvingScreen.tsx` and `.../ConfirmIdentificationScreen.tsx` for the call sites.
-- **iOS lifecycle race condition:** `dismiss()` and `setResult()` in `LifecycleBridgeHandler.kt` share `pendingCallback` and `dismissAction` on `Dispatchers.Default` (thread pool) with no synchronization. Concurrent invocation can double-fire callbacks. Fix: route to `Dispatchers.Main` or protect with `Mutex`.
-- **iOS dev server port mismatch:** `WebViewProviderImpl.swift` hardcodes `localhost:3000` for debug builds, but Vite dev server runs on `5173` (matching Android). Minor — dev-only.
-- Public API finalization and validation remain partially open:
-  - cross-platform behavior alignment and explicit platform contract documentation
-  - device-level validation coverage and integration hardening
-- iOS handler scope expanded beyond initial plan; this needs explicit architectural sign-off.
+| Item                         | Chunk | Context                                                                                              |
+| ---------------------------- | ----- | ---------------------------------------------------------------------------------------------------- |
+| iOS Camera MRZ Handler (KMP) | 2L    | Camera/MRZ on iOS via KMP deferred to Phase 2. RN SDK has its own implementation via native modules. |
 
-## Person 3 (Integrations)
+## Resolved Decisions (Reference)
 
-### Delivered
+These decisions were made during this PR cycle. They are now documented in [SDK-OVERVIEW.md](./SDK-OVERVIEW.md) and do not need further action:
 
-- MiniPay sample project scaffold exists and wires verification launch + result flow.
-
-### Remaining / Follow-Up
-
-- End-to-end physical device validation is still required (especially NFC path and failure modes).
-- Integration polish/error handling should be validated against real SDK outcomes, not only scaffolding.
-
-## Person 4 (SDK Core)
-
-### Delivered
-
-- Browser/web fallback adapter implementations are present.
-- Browser entry and exports are in place and consumed by WebView-oriented clients.
-
-### Remaining / Follow-Up
-
-- Ownership consolidation decision is needed for duplicated web fallback adapters:
-  - `packages/webview-bridge/src/adapters/`
-  - `packages/mobile-sdk-alpha/src/adapters/browser/`
-
-## Person 5 (RN SDK) Reconciliation
-
-Source reconciled from: `packages/rn-sdk/HANDOFF.md`
-
-### Implemented (confirmed)
-
-- `SelfVerification` component and `MessageRouter`
-- Biometric, keychain, lifecycle handlers
-- NFC handler
-- Asset loading paths and `devServerUrl` override
-- Test coverage for handlers/router/asset-loading behavior
-
-### Carry-Forward Risks / Gaps
-
-- **Asset paths break production WebView (P1):** `rn-sdk/assets/self-wallet/index.html` uses absolute paths (`src="/assets/..."`) that resolve to `file:///assets/...` on device instead of the bundle directory. Fix: add `base: './'` to `packages/webview-app/vite.config.ts` and rebuild.
-- NFC spec deviation:
-  - current return is tag metadata flow, not raw APDU exchange path
-- Camera/MRZ:
-  - `scanMRZ` is still `NOT_IMPLEMENTED`
-- Both NFC and Camera/MRZ should be prioritized before broad production rollout.
-
-## Cross-Workstream Findings
-
-- Duplicate fallback adapters exist in both bridge and core packages; consolidation is required.
-- Person 1 fallback wiring is inconsistent with intended web-first model (haptic + crypto behavior).
-- iOS handler scope expanded (9 handlers) while Android keeps web fallbacks for those domains, creating platform asymmetry that needs explicit decision and documentation.
-- `WAVE-PLAN` aggregate status values were stale and need replacement with reconciled counts.
-- **`structuredClone` compat:** `documents-web.ts` calls `structuredClone()` which is unavailable on Safari 15.0–15.3 / iOS 15.0–15.3 WKWebView. Vite build target is `safari15`. Either bump target to `safari15.4` or add a `JSON.parse(JSON.stringify())` fallback.
-- **Font-family name drift:** `webview-app/src/fonts.css` introduces new font names, but `mobile-sdk-alpha/src/constants/fonts.ts`, `app/tamagui.config.ts`, and `app/web/fonts.css` still reference old names (`Advercase-Regular`, `DINOT-Bold`, etc.). Affected code silently falls back to system fonts.
-
-## Stale / Descoped / Superseded Items
-
-- 2D/2E are superseded by 2G-2K implementation path.
-- 4D remains optional/skipped.
-- 2L remains deferred (Phase 2).
+- **Hybrid crypto contract:** `hash()` in WebView, `sign()`/`generateKey()`/`getPublicKey()` native.
+- **Fallback adapter ownership:** `mobile-sdk-alpha` is canonical; `webview-bridge` copies are transitional.
+- **Platform asymmetry:** Android = 5-handler normative minimum, iOS = 9-handler compatibility superset. Signed off.
+- **iOS lifecycle fixes:** Flat payload handling, Mutex synchronization, debug port 5173 — all implemented.
 
 ## Suggested Follow-Up PR Order
 
-1. **Fix runtime-breaking bugs:**
-   - iOS lifecycle flat payload misclassification (all completions fire as cancellations)
-   - iOS lifecycle race condition (`dismiss`/`setResult` concurrency)
-   - RN SDK absolute asset paths (production WebView load failure)
-2. **Resolve correctness gaps impacting runtime consistency:**
-   - Person 1 fallback wiring (haptic + crypto) and adapter ownership decision
-   - `structuredClone` Safari 15.0–15.3 compat in `documents-web.ts`
-3. **Resolve high-risk native capability gaps:**
-   - RN SDK NFC/APDU path and Camera/MRZ implementation decision
-4. **Resolve platform policy and API consistency:**
-   - iOS/Android handler asymmetry documentation + API contract finalization
-   - Font-family name alignment across webview-app, mobile-sdk-alpha, and app
-   - iOS dev server port alignment (`3000` → `5173`)
-5. **Complete validation and integration hardening:**
-   - Device E2E coverage for MiniPay and cross-platform verification outcomes
+1. **Physical-device validation** — NFC E2E on Android + iOS with real passports (unblocks confidence for everything else)
+2. **Correctness cleanup** — Adapter consolidation, dynamic proving config, crypto adapter interface gap
+3. **Publishing** — npm publish rn-sdk, finalize AAR/XCFramework packaging
+4. **Self Wallet migration** — Wire `SelfVerification` into the main app (Phase 2)
