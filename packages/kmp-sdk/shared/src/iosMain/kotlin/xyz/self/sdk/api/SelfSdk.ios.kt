@@ -5,6 +5,14 @@
 package xyz.self.sdk.api
 
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.runBlocking
+import platform.UIKit.UIApplication
+import platform.UIKit.UIModalPresentationFullScreen
+import platform.UIKit.UIViewController
+import platform.UIKit.UIWindow
+import platform.UIKit.UIWindowScene
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.AnalyticsBridgeHandler
 import xyz.self.sdk.handlers.BiometricBridgeHandler
@@ -15,6 +23,7 @@ import xyz.self.sdk.handlers.HapticBridgeHandler
 import xyz.self.sdk.handlers.LifecycleBridgeHandler
 import xyz.self.sdk.handlers.NfcBridgeHandler
 import xyz.self.sdk.handlers.SecureStorageBridgeHandler
+import xyz.self.sdk.providers.SdkProviderRegistry
 import xyz.self.sdk.webview.IosWebViewHost
 
 /**
@@ -48,6 +57,11 @@ actual class SelfSdk private constructor(
         request: VerificationRequest,
         callback: SelfSdkCallback,
     ) {
+        check(SdkProviderRegistry.isConfigured()) {
+            "SdkProviderRegistry is not configured. " +
+                "Call SelfSdkSwift.configure() from your iOS app before launching the SDK."
+        }
+
         // Store callback for later
         pendingCallback = callback
 
@@ -59,64 +73,85 @@ actual class SelfSdk private constructor(
                 },
             )
 
+        // Create lifecycle handler with callback and dismiss wiring
+        val lifecycleHandler = LifecycleBridgeHandler()
+        var dismissViewController: UIViewController? = null
+        runBlocking {
+            lifecycleHandler.configure(
+                callback = callback,
+                dismiss = {
+                    dispatch_async(dispatch_get_main_queue()) {
+                        val viewController = dismissViewController
+                        if (viewController == null) {
+                            pendingCallback = null
+                            return@dispatch_async
+                        }
+
+                        viewController.dismissViewControllerAnimated(true) {
+                            pendingCallback = null
+                        }
+                    }
+                },
+            )
+        }
+
         // Register all iOS bridge handlers
-        registerHandlers(router!!)
+        registerHandlers(router!!, lifecycleHandler)
 
-        // Create WebView host
+        // Create WebView host and the web view
         webViewHost = IosWebViewHost(router!!, config.debug)
+        webViewHost!!.createWebView()
 
-        // Create the WebView
-        val webView = webViewHost!!.createWebView()
+        // Get the ViewController from the WebView provider and present it
+        val sdkVC =
+            (
+                SdkProviderRegistry.webView
+                    ?: throw IllegalStateException("WebView provider not configured. Call SelfSdkSwift.configure() first.")
+            ).getViewController()
+        sdkVC.setModalPresentationStyle(UIModalPresentationFullScreen)
+        dismissViewController = sdkVC
 
-        // TODO: Full implementation requires:
-        // 1. Create a UIViewController to host the WKWebView
-        // 2. Present it modally from the current UIViewController
-        // 3. Wire up lifecycle handler to dismiss and deliver results
-        //
-        // For now, this creates the infrastructure but doesn't present the UI.
-        // The host app needs to:
-        // - Get access to the current UIViewController
-        // - Create a container UIViewController with the webView
-        // - Present it modally
-        // - Handle dismissal and results
-
-        throw NotImplementedError(
-            "iOS UI presentation not yet fully implemented. " +
-                "The WebView and handlers are configured, but UIViewController " +
-                "presentation requires integration with the host app's view hierarchy. " +
-                "See SelfSdk.android.kt for reference on the complete flow.",
-        )
+        val topVC = findTopViewController()
+        if (topVC == null) {
+            callback.onFailure(
+                SelfSdkError(
+                    code = "NO_VIEW_CONTROLLER",
+                    message = "Could not find a top view controller to present the SDK UI.",
+                ),
+            )
+            return
+        }
+        topVC.presentViewController(sdkVC, animated = true, completion = null)
     }
 
-    /**
-     * Registers all iOS bridge handlers with the MessageRouter.
-     */
-    private fun registerHandlers(router: MessageRouter) {
-        // Biometrics - Touch ID / Face ID
+    private fun findTopViewController(): UIViewController? {
+        val scenes = UIApplication.sharedApplication.connectedScenes
+        for (scene in scenes) {
+            val windowScene = scene as? UIWindowScene ?: continue
+            val keyWindow = windowScene.windows.firstOrNull { (it as? UIWindow)?.isKeyWindow() == true } as? UIWindow
+            if (keyWindow != null) {
+                var topVC = keyWindow.rootViewController
+                while (topVC?.presentedViewController != null) {
+                    topVC = topVC?.presentedViewController
+                }
+                return topVC
+            }
+        }
+        return null
+    }
+
+    private fun registerHandlers(
+        router: MessageRouter,
+        lifecycleHandler: LifecycleBridgeHandler,
+    ) {
         router.register(BiometricBridgeHandler())
-
-        // Secure Storage - Keychain
         router.register(SecureStorageBridgeHandler())
-
-        // Crypto - Signing and key management (stub)
         router.register(CryptoBridgeHandler())
-
-        // Haptic - Vibration feedback
         router.register(HapticBridgeHandler())
-
-        // Analytics - Event tracking
         router.register(AnalyticsBridgeHandler())
-
-        // Lifecycle - ViewController lifecycle (stub)
-        router.register(LifecycleBridgeHandler())
-
-        // Documents - Encrypted document storage
+        router.register(lifecycleHandler)
         router.register(DocumentsBridgeHandler())
-
-        // Camera - MRZ scanning (stub)
         router.register(CameraMrzBridgeHandler())
-
-        // NFC - Passport scanning (stub)
         router.register(NfcBridgeHandler(router))
     }
 }

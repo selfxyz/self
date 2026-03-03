@@ -31,7 +31,8 @@ module.exports = {
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
     '\\.svg$': '<rootDir>/tests/__setup__/svgMock.js',
-    '\\.(png|jpg|jpeg|gif|webp)$': '<rootDir>/tests/__setup__/imageMock.js',
+    '\\.(png|jpg|jpeg|gif|webp|lottie)$':
+      '<rootDir>/tests/__setup__/imageMock.js',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@$': '<rootDir>/src',
     '^@tests/(.*)$': '<rootDir>/tests/src/$1',
@@ -50,6 +51,8 @@ module.exports = {
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/flows/disclosing/$1.cjs',
     '^@selfxyz/mobile-sdk-alpha/(.*)\\.json$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/$1.json',
+    '^@selfxyz/mobile-sdk-alpha/(.*)\\.lottie$':
+      '<rootDir>/tests/__setup__/imageMock.js',
     '^@selfxyz/mobile-sdk-alpha/(.*)$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/$1.cjs',
     // Fix snarkjs resolution for @anon-aadhaar/core

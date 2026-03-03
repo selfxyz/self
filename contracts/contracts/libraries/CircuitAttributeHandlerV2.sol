@@ -115,8 +115,8 @@ library CircuitAttributeHandlerV2 {
         } else if (attestationId == AttestationId.KYC) {
             return
                 FieldPositions({
-                    issuingStateStart: 999,
-                    issuingStateEnd: 999,
+                    issuingStateStart: 195,
+                    issuingStateEnd: 294,
                     nameStart: 78,
                     nameEnd: 141,
                     documentNumberStart: 30,

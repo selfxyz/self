@@ -4,25 +4,39 @@
 
 package xyz.self.sdk.handlers
 
-import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonPrimitive
+import xyz.self.sdk.api.SelfSdkCallback
+import xyz.self.sdk.api.SelfSdkError
+import xyz.self.sdk.api.VerificationResult
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
 
-/**
- * iOS implementation of lifecycle bridge handler.
- * Manages WebView lifecycle and communication with the host ViewController.
- *
- * Note: This is a stub implementation. Full implementation requires:
- * - Reference to the presenting UIViewController
- * - Callback mechanism to communicate results to host app
- * - Modal dismissal logic
- */
-@OptIn(ExperimentalForeignApi::class)
 class LifecycleBridgeHandler : BridgeHandler {
     override val domain = BridgeDomain.LIFECYCLE
+
+    private val mutex = Mutex()
+    private var pendingCallback: SelfSdkCallback? = null
+    private var dismissAction: (() -> Unit)? = null
+
+    private data class LifecycleState(
+        val callback: SelfSdkCallback?,
+        val dismiss: (() -> Unit)?,
+    )
+
+    internal suspend fun configure(
+        callback: SelfSdkCallback?,
+        dismiss: (() -> Unit)?,
+    ) {
+        mutex.withLock {
+            pendingCallback = callback
+            dismissAction = dismiss
+        }
+    }
 
     override suspend fun handle(
         method: String,
@@ -38,49 +52,65 @@ class LifecycleBridgeHandler : BridgeHandler {
             )
         }
 
-    /**
-     * Called when the WebView has finished loading and is ready.
-     */
-    private fun ready(): JsonElement? {
-        // No-op for now. Host app can listen for this via events if needed.
+    private fun ready(): JsonElement? = null
+
+    private suspend fun consumeLifecycleState(): LifecycleState =
+        mutex.withLock {
+            val state =
+                LifecycleState(
+                    callback = pendingCallback,
+                    dismiss = dismissAction,
+                )
+            pendingCallback = null
+            dismissAction = null
+            state
+        }
+
+    private suspend fun dismiss(): JsonElement? {
+        val state = consumeLifecycleState()
+        state.callback?.onCancelled()
+        state.dismiss?.invoke()
         return null
     }
 
-    /**
-     * Dismisses the verification ViewController without setting a result.
-     * Equivalent to the user cancelling the flow.
-     */
-    private fun dismiss(): JsonElement? {
-        // TODO: Implement ViewController dismissal
-        // This requires a reference to the presenting UIViewController
-        // viewController.dismissViewControllerAnimated(true, completion = null)
-
-        throw BridgeHandlerException(
-            "NOT_IMPLEMENTED",
-            "iOS lifecycle dismiss not yet fully implemented. " +
-                "Requires UIViewController reference.",
-        )
-    }
-
-    /**
-     * Sets a result and dismisses the ViewController.
-     * Used to communicate verification results back to the host app.
-     */
-    private fun setResult(params: Map<String, JsonElement>): JsonElement? {
+    private suspend fun setResult(params: Map<String, JsonElement>): JsonElement? {
+        val state = consumeLifecycleState()
+        val type = params["type"]?.jsonPrimitive?.content
         val success = params["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
         val data = params["data"]?.toString()
         val errorCode = params["errorCode"]?.jsonPrimitive?.content
         val errorMessage = params["errorMessage"]?.jsonPrimitive?.content
 
-        // TODO: Implement result callback and dismissal
-        // 1. Store result data
-        // 2. Invoke callback to host app
-        // 3. Dismiss ViewController
+        if (type != null) {
+            // Flat lifecycle payload is a protocol-level success signal.
+            // `type` communicates what completed (e.g. proofRequested).
+            state.callback?.onSuccess(
+                VerificationResult(success = true, type = type),
+            )
+        } else if (success && data != null) {
+            try {
+                val result = Json.decodeFromString(VerificationResult.serializer(), data)
+                state.callback?.onSuccess(result)
+            } catch (e: Exception) {
+                state.callback?.onFailure(
+                    SelfSdkError(
+                        code = "PARSE_ERROR",
+                        message = "Failed to parse verification result: ${e.message}",
+                    ),
+                )
+            }
+        } else if (!success && errorCode != null) {
+            state.callback?.onFailure(
+                SelfSdkError(
+                    code = errorCode,
+                    message = errorMessage ?: "Unknown error",
+                ),
+            )
+        } else {
+            state.callback?.onCancelled()
+        }
 
-        throw BridgeHandlerException(
-            "NOT_IMPLEMENTED",
-            "iOS lifecycle setResult not yet fully implemented. " +
-                "Requires callback mechanism to host app.",
-        )
+        state.dismiss?.invoke()
+        return null
     }
 }

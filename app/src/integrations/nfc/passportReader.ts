@@ -93,6 +93,7 @@ if (Platform.OS === 'android') {
           useCan = false,
           quality = 1,
           skipReselect = false,
+          skipPACE = false,
           sessionId,
         } = options;
 
@@ -104,6 +105,7 @@ if (Platform.OS === 'android') {
           useCan,
           quality,
           skipReselect,
+          skipPACE,
           sessionId,
         });
       };

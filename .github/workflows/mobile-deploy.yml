@@ -712,6 +712,7 @@ jobs:
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SUMSUB_TEE_URL: ${{ secrets.SUMSUB_TEE_URL }}
           TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
           TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
           TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}
@@ -1170,6 +1171,7 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=6144"
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SUMSUB_TEE_URL: ${{ secrets.SUMSUB_TEE_URL }}
           TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
           TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
           TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}
@@ -1302,6 +1304,16 @@ jobs:
         with:
           node-version-file: .nvmrc
 
+      - name: Copy version-manager from build branch
+        run: |
+          BUILD_REF="${{ github.ref_name }}"
+          echo "📋 Using version-manager.cjs from build branch: $BUILD_REF"
+          SCRIPT_CONTENT=$(git show "origin/${BUILD_REF}:app/scripts/version-manager.cjs") || {
+            echo "❌ Failed to read version-manager.cjs from origin/${BUILD_REF}"
+            exit 1
+          }
+          echo "$SCRIPT_CONTENT" > "${{ env.APP_PATH }}/scripts/version-manager.cjs"
+
       - name: Apply version bump from outputs
         run: |
           cd ${{ env.APP_PATH }}
@@ -1312,56 +1324,39 @@ jobs:
           IOS_SUCCESS="${{ needs.build-ios.result }}"
           ANDROID_SUCCESS="${{ needs.build-android.result }}"
 
-          echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD, Android: $ANDROID_BUILD)"
+          echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD [$IOS_SUCCESS], Android: $ANDROID_BUILD [$ANDROID_SUCCESS])"
 
-          # Update package.json version
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            pkg.version = '$VERSION';
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-            console.log('✅ Updated package.json');
-          "
+          # Update package.json, version.json, and platform build files
+          # Pass build results so the script only updates platforms that succeeded
+          node scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD" "$IOS_SUCCESS" "$ANDROID_SUCCESS"
 
-          # Update version.json build numbers and deployment timestamps
-          node -e "
-            const fs = require('fs');
-            const version = JSON.parse(fs.readFileSync('version.json', 'utf8'));
-            const timestamp = new Date().toISOString();
+      - name: Load version-managed files
+        run: |
+          cd ${{ env.APP_PATH }}
 
-            // Only bump build numbers for successful builds
-            if ('$IOS_SUCCESS' === 'success') {
-              version.ios.build = $IOS_BUILD;
-              version.ios.lastDeployed = timestamp;
-              console.log('✅ Updated iOS build number to $IOS_BUILD and lastDeployed timestamp');
-            } else {
-              console.log('⏭️  Skipped iOS build number bump (build did not succeed)');
-            }
+          VERSION_MANAGED_FILES="$(node scripts/version-manager.cjs files --shell)"
+          if [ -z "$VERSION_MANAGED_FILES" ]; then
+            echo "❌ Failed to load version-managed files"
+            exit 1
+          fi
 
-            if ('$ANDROID_SUCCESS' === 'success') {
-              version.android.build = $ANDROID_BUILD;
-              version.android.lastDeployed = timestamp;
-              console.log('✅ Updated Android build number to $ANDROID_BUILD and lastDeployed timestamp');
-            } else {
-              console.log('⏭️  Skipped Android build number bump (build did not succeed)');
-            }
-
-            fs.writeFileSync('version.json', JSON.stringify(version, null, 2) + '\n');
-            console.log('✅ Updated version.json');
-          "
-
-          echo "✅ Versions applied successfully"
+          {
+            echo "VERSION_MANAGED_FILES<<EOF"
+            echo "$VERSION_MANAGED_FILES"
+            echo "EOF"
+          } >> $GITHUB_ENV
+          echo "🗂️ Version-managed files: $VERSION_MANAGED_FILES"
 
       - name: Verify version changes
         run: |
           cd ${{ env.APP_PATH }}
 
-          # Check that version files actually changed
-          if ! git diff --quiet package.json version.json; then
+          # Check that version-managed files actually changed
+          if ! git diff --quiet -- $VERSION_MANAGED_FILES; then
             echo "✅ Version changes detected"
-            git diff package.json version.json
+            git diff -- $VERSION_MANAGED_FILES
           else
-            echo "⚠️  No version changes detected in package.json or version.json"
+            echo "⚠️  No version changes detected in version-managed files"
             echo "This may indicate a problem with version application"
             exit 1
           fi
@@ -1428,14 +1423,14 @@ jobs:
 
           # Commit the version changes
           cd ${{ env.APP_PATH }}
-          git add package.json version.json
+          git add $VERSION_MANAGED_FILES
 
           if git diff --cached --quiet; then
             echo "⚠️  No version changes to commit"
             exit 0
           fi
 
-          git commit -m "chore: bump mobile app version to $VERSION" -m "Update build numbers and deployment timestamps after successful deployment."
+          git commit -m "chore: bump mobile app version to $VERSION" -m "Update build numbers, platform build files, and deployment timestamps after successful deployment."
 
           # Create new branch from current HEAD (bump target branch with version bump)
           git checkout -b ${BRANCH_NAME}
@@ -1460,6 +1455,7 @@ jobs:
 
           This PR updates:
           - Build numbers for deployed platforms
+          - Platform build files (Android `versionCode`, iOS `CURRENT_PROJECT_VERSION` and `MARKETING_VERSION`)
           - Deployment timestamps (\`lastDeployed\`) for successful builds
 
           This PR was automatically created by the mobile deployment workflow." \

@@ -11,6 +11,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
+import xyz.self.sdk.webview.SelfVerificationActivity
 
 /**
  * Android implementation of lifecycle bridge handler.
@@ -61,6 +62,7 @@ class LifecycleBridgeHandler(
      * Used to communicate verification results back to the host app.
      */
     private fun setResult(params: Map<String, JsonElement>): JsonElement? {
+        val type = params["type"]?.jsonPrimitive?.content
         val success = params["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
         val data = params["data"]?.toString()
         val errorCode = params["errorCode"]?.jsonPrimitive?.content
@@ -69,14 +71,18 @@ class LifecycleBridgeHandler(
         activity.runOnUiThread {
             val intent = Intent()
 
-            if (success && data != null) {
+            if (type != null) {
+                // Flat lifecycle payload (e.g. { type: "proofRequested" }) — treat as success
+                intent.putExtra(SelfVerificationActivity.EXTRA_RESULT_TYPE, type)
+                activity.setResult(Activity.RESULT_OK, intent)
+            } else if (success && data != null) {
                 // Success result
-                intent.putExtra("xyz.self.sdk.RESULT_DATA", data)
+                intent.putExtra(SelfVerificationActivity.EXTRA_RESULT_DATA, data)
                 activity.setResult(Activity.RESULT_OK, intent)
             } else if (!success && errorCode != null) {
                 // Error result
-                intent.putExtra("xyz.self.sdk.ERROR_CODE", errorCode)
-                intent.putExtra("xyz.self.sdk.ERROR_MESSAGE", errorMessage ?: "Unknown error")
+                intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_CODE, errorCode)
+                intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_MESSAGE, errorMessage ?: "Unknown error")
                 activity.setResult(Activity.RESULT_FIRST_USER, intent)
             } else {
                 // Cancelled or invalid result

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { Platform } from 'react-native';
-
 import { SdkEvents } from '../types/events';
 import type { NFCScanOpts, NFCScanResult, SelfClient } from '../types/public';
 
@@ -24,7 +22,7 @@ export async function scanNFC(selfClient: SelfClient, opts: NFCScanOpts): Promis
   const baseContext = {
     sessionId: opts.sessionId,
     userId: opts.userId,
-    platform: Platform.OS as 'ios' | 'android',
+    platform: selfClient?.config?.platform ?? 'unknown',
     scanType: opts.useCan ? 'can' : 'mrz',
   } as const;
 

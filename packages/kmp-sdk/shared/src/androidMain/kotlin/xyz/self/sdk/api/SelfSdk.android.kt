@@ -6,9 +6,9 @@ package xyz.self.sdk.api
 
 import android.app.Activity
 import android.content.Intent
+import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.fragment.app.FragmentActivity
 import kotlinx.serialization.json.Json
 import xyz.self.sdk.webview.SelfVerificationActivity
 
@@ -38,7 +38,7 @@ actual class SelfSdk private constructor(
 
     /**
      * Launches the verification flow.
-     * The calling Activity must be a FragmentActivity for result handling.
+     * The calling Activity must be a ComponentActivity for result handling.
      *
      * Note: For production use, the host app should register the ActivityResultLauncher
      * in onCreate() and pass it to this method, rather than registering it here.
@@ -64,12 +64,12 @@ actual class SelfSdk private constructor(
      * Android-specific launch method that takes an Activity parameter.
      * This is the recommended way to launch the verification flow on Android.
      *
-     * @param activity The FragmentActivity from which to launch verification
+     * @param activity The ComponentActivity from which to launch verification
      * @param request Verification request parameters
      * @param callback Callback to receive results
      */
     fun launch(
-        activity: FragmentActivity,
+        activity: ComponentActivity,
         request: VerificationRequest,
         callback: SelfSdkCallback,
     ) {
@@ -81,10 +81,13 @@ actual class SelfSdk private constructor(
                 putExtra(SelfVerificationActivity.EXTRA_CONFIG, serializeConfig(config))
             }
 
-        // Register for activity result if not already registered
+        // Register using the ActivityResultRegistry directly (without LifecycleOwner)
+        // so it can be called after onStart(). The host app's Activity may already
+        // be in RESUMED state when the user taps "verify".
         if (activityLauncher == null) {
             activityLauncher =
-                activity.registerForActivityResult(
+                activity.activityResultRegistry.register(
+                    "self-sdk-verification",
                     ActivityResultContracts.StartActivityForResult(),
                 ) { result ->
                     handleActivityResult(result.resultCode, result.data, callback)
@@ -105,8 +108,8 @@ actual class SelfSdk private constructor(
     ) {
         when (resultCode) {
             Activity.RESULT_OK -> {
-                // Success
                 val resultDataJson = data?.getStringExtra(SelfVerificationActivity.EXTRA_RESULT_DATA)
+                val resultType = data?.getStringExtra(SelfVerificationActivity.EXTRA_RESULT_TYPE)
                 if (resultDataJson != null) {
                     try {
                         val result = deserializeResult(resultDataJson)
@@ -119,6 +122,10 @@ actual class SelfSdk private constructor(
                             ),
                         )
                     }
+                } else if (resultType != null) {
+                    callback.onSuccess(
+                        VerificationResult(success = true, type = resultType),
+                    )
                 } else {
                     callback.onFailure(
                         SelfSdkError(
@@ -173,7 +180,7 @@ actual class SelfSdk private constructor(
  * Allows calling SelfSdk.launch() directly with an Activity parameter.
  */
 fun SelfSdk.Companion.launch(
-    activity: FragmentActivity,
+    activity: ComponentActivity,
     config: SelfSdkConfig,
     request: VerificationRequest,
     callback: SelfSdkCallback,

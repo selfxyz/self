@@ -1,19 +1,19 @@
 import { expect } from 'chai';
 import { wasm as wasmTester } from 'circom_tester';
 import path from 'path';
-import { packBytesAndPoseidon } from '@selfxyz/common/utils/hash';
+import { packBytesAndPoseidon } from '@selfxyz/new-common/src/crypto/hash/poseidon.js';
 import { poseidon2 } from 'poseidon-lite';
-import {
-  generateKycRegisterInput,
-  generateMockKycRegisterInput,
-} from '@selfxyz/common/utils/kyc/generateInputs.js';
-import { KycRegisterInput } from '@selfxyz/common/utils/kyc/types';
+import { generateMockKycRegisterInputs } from '@selfxyz/new-common/src/circuits/inputs/register-kyc.js';
+import type { KycRegisterInput } from '@selfxyz/new-common/src/documents/kyc/types.js';
 import {
   KYC_ID_NUMBER_INDEX,
   KYC_ID_NUMBER_LENGTH,
   KYC_ID_TYPE_INDEX,
   KYC_ID_TYPE_LENGTH,
-} from '@selfxyz/common/utils/kyc/constants';
+} from '@selfxyz/new-common/src/documents/kyc/constants.js';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('REGISTER KYC Circuit Tests', () => {
   let circuit: any;
@@ -21,7 +21,7 @@ describe('REGISTER KYC Circuit Tests', () => {
 
   before(async function () {
     this.timeout(0);
-    input = await generateMockKycRegisterInput(null, true, undefined);
+    input = generateMockKycRegisterInputs(null, true, undefined);
     circuit = await wasmTester(
       path.join(__dirname, '../../circuits/register/instances/register_kyc.circom'),
       {
@@ -83,7 +83,7 @@ describe('REGISTER KYC Circuit Tests', () => {
 
   it('should fail if data is tampered', async function () {
     this.timeout(0);
-    input = await generateMockKycRegisterInput(null, true, undefined);
+    input = generateMockKycRegisterInputs(null, true, undefined);
     input.data_padded[5] = Number(input.data_padded[5]) + 1;
     try {
       const w = await circuit.calculateWitness(input);
@@ -96,7 +96,7 @@ describe('REGISTER KYC Circuit Tests', () => {
 
   it('should fail if data is not bytes', async function () {
     this.timeout(0);
-    input = await generateMockKycRegisterInput(null, true, undefined);
+    input = generateMockKycRegisterInputs(null, true, undefined);
     input.data_padded[5] = 8000;
     try {
       const w = await circuit.calculateWitness(input);
@@ -123,7 +123,7 @@ describe('REGISTER KYC Circuit Tests', () => {
 
   it('should fail if s is 0', async function () {
     this.timeout(0);
-    input = await generateMockKycRegisterInput(null, true, undefined);
+    input = generateMockKycRegisterInputs(null, true, undefined);
     input.s = BigInt(0);
     try {
       const w = await circuit.calculateWitness(input);
@@ -136,7 +136,7 @@ describe('REGISTER KYC Circuit Tests', () => {
 
   it('should fail if R is not on the curve', async function () {
     this.timeout(0);
-    input = await generateMockKycRegisterInput(null, true, undefined);
+    input = generateMockKycRegisterInputs(null, true, undefined);
     //go beyond the suborder
     input.R[0] = BigInt(
       BigInt('9736030358979909402780800718157159386076813972158567259200215660948447373049') + 1n
@@ -153,7 +153,7 @@ describe('REGISTER KYC Circuit Tests', () => {
 
   it('should fail if pubKey is not on the curve', async function () {
     this.timeout(0);
-    input = await generateMockKycRegisterInput(null, true, undefined);
+    input = generateMockKycRegisterInputs(null, true, undefined);
     input.pubKey[0] = BigInt(
       '2736030358979909402780800718157159386076813972158567259200215660948447373049'
     );

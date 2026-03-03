@@ -2,6 +2,7 @@
   "name": "@selfxyz/circuits",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "license": "MIT",
   "author": "self team",
   "scripts": {
@@ -47,7 +48,7 @@
     "@openpassport/zk-kit-imt": "^0.0.4",
     "@openpassport/zk-kit-lean-imt": "^0.0.4",
     "@openpassport/zk-kit-smt": "^0.0.1",
-    "@selfxyz/common": "workspace:^",
+    "@selfxyz/new-common": "workspace:^",
     "@zk-email/circuits": "^6.3.2",
     "@zk-email/helpers": "^6.1.1",
     "@zk-email/jwt-tx-builder-circuits": "0.1.0",

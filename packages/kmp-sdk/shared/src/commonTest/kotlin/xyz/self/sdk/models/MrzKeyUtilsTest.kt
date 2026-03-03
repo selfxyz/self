@@ -49,7 +49,7 @@ class MrzKeyUtilsTest {
     fun computeMrzKey_pads_short_passport_number() {
         val key = MrzKeyUtils.computeMrzKey("AB1234", "900101", "300101")
         // "AB1234" padded to 9 → "AB1234<<<"
-        assert(key.startsWith("AB1234<<<"))
+        assertTrue(key.startsWith("AB1234<<<"))
         assertEquals(24, key.length)
     }
 

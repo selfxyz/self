@@ -1,8 +1,8 @@
 import { wasm as wasmTester } from 'circom_tester';
 import * as crypto from 'crypto';
-import { initElliptic } from '@selfxyz/common/utils/certificate_parsing/elliptic';
+import { initElliptic } from '@selfxyz/new-common/src/certificates/parsing/elliptic.js';
 import * as path from 'path';
-import { splitToWords } from '@selfxyz/common/utils/bytes';
+import { splitToWords } from '@selfxyz/new-common/src/foundation/bytes.js';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

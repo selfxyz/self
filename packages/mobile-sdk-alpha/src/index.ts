@@ -21,15 +21,26 @@ export type {
   NetworkAdapter,
   Progress,
   RouteName,
+  SdkInitialConfig,
   SelfClient,
   StorageAdapter,
   TrackEventParams,
   Unsubscribe,
+  VerificationRequest,
   WsAdapter,
   WsConn,
 } from './types/public';
 
 export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
+
+export type {
+  BottomSectionProps,
+  FullSectionProps,
+  LayoutProps,
+  TopSectionProps,
+} from './layouts/ExpandableBottomLayout';
+
+export type { CreateReactNativeAdaptersOptions } from './adapters/react-native/factory';
 
 export type { DG1, DG2, ParsedNFCResponse } from './nfc';
 
@@ -37,11 +48,15 @@ export type { DocumentAttributes } from './documents/validation';
 
 export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
 
+export type { DotLottieSource } from './components/LottieAnimation';
+
 export type { HapticOptions, HapticType } from './haptic/shared';
 
 export type { MRZScanOptions } from './mrz';
 
 export type { PassportValidationCallbacks } from './validation/document';
+
+export type { ProvingStateType } from './proving/provingMachine';
 
 export type { SDKEvent, SDKEventMap } from './types/events';
 
@@ -49,15 +64,7 @@ export type { SdkErrorCategory } from './errors';
 
 export type { provingMachineCircuitType } from './proving/provingMachine';
 
-export {
-  type BottomSectionProps,
-  ExpandableBottomLayout,
-  type FullSectionProps,
-  type LayoutProps,
-  type TopSectionProps,
-} from './layouts/ExpandableBottomLayout';
-
-export { DelayedLottieView } from './components/DelayedLottieView';
+export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
 
 export {
   InitError,
@@ -72,9 +79,9 @@ export {
 
 export { default as LogoConfirmationScreen } from './flows/onboarding/logo-confirmation-screen';
 
-export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
+export { LottieAnimation } from './components/LottieAnimation';
 
-export { type ProvingStateType } from './proving/provingMachine';
+export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 
@@ -118,7 +125,17 @@ export {
   storePassportData,
 } from './documents/utils';
 
+export { createAuthAdapter } from './adapters/react-native/auth';
+
+export { createCryptoAdapter } from './adapters/react-native/crypto';
+
+export { createDocumentsAdapter, createInMemoryDocumentsAdapter } from './adapters/react-native/documents';
+
 export { createListenersMap, createSelfClient } from './client';
+
+export { createNetworkAdapter } from './adapters/react-native/network';
+
+export { createReactNativeAdapters } from './adapters/react-native/factory';
 
 export { defaultConfig } from './config/defaults';
 
@@ -138,6 +155,7 @@ export { mergeConfig } from './config/merge';
 export { parseNFCResponse, scanNFC } from './nfc';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
+
 export { sanitizeErrorMessage } from './utils/utils';
 export { useCountries } from './documents/useCountries';
 export { useMRZStore } from './stores/mrzStore';

@@ -3,24 +3,20 @@ import path from "path";
 import { poseidon2, poseidon3 } from "poseidon-lite";
 import type { CircuitSignals, Groth16Proof, PublicSignals } from "snarkjs";
 import { groth16 } from "snarkjs";
-import { PassportData } from "@selfxyz/common/utils/types";
+import { PassportData } from "@selfxyz/new-common/src/foundation/types/document";
 import { CircuitArtifacts, DscCircuitProof, RegisterCircuitProof, VcAndDiscloseProof } from "./types.js";
-import {
-  generateMockKycRegisterInput,
-  generateKycDiscloseInput,
-  prepareAadhaarDiscloseTestData,
-  prepareAadhaarRegisterTestData,
-} from "@selfxyz/common";
+import { generateMockKycRegisterInputs } from "@selfxyz/new-common/src/circuits/inputs/register-kyc";
+import { generateKycDiscloseInputFromDummy } from "@selfxyz/new-common/src/circuits/inputs/disclose-kyc";
+import { generateAadhaarDiscloseInputs } from "@selfxyz/new-common/src/circuits/inputs/disclose-aadhaar";
+import { generateAadhaarRegisterInputs } from "@selfxyz/new-common/src/circuits/inputs/register-aadhaar";
 
 import { BigNumberish } from "ethers";
-import {
-  generateCircuitInputsDSC,
-  generateCircuitInputsRegister,
-  generateCircuitInputsVCandDisclose,
-} from "@selfxyz/common/utils/circuits/generateInputs";
-import { getCircuitNameFromPassportData } from "@selfxyz/common/utils/circuits/circuitsName";
-import serialized_csca_tree from "../../../common/pubkeys/serialized_csca_tree.json";
-import serialized_dsc_tree from "../../../common/pubkeys/serialized_dsc_tree.json";
+import { generatePassportDscInputs } from "@selfxyz/new-common/src/circuits/inputs/dsc";
+import { generatePassportRegisterInputs } from "@selfxyz/new-common/src/circuits/inputs/register";
+import { generatePassportDiscloseInputs } from "@selfxyz/new-common/src/circuits/inputs/disclose";
+import { getCircuitNameFromPassportData } from "@selfxyz/new-common/src/circuits/circuitName";
+import serialized_csca_tree from "@selfxyz/new-common/src/data/serialized_csca_tree.json";
+import serialized_dsc_tree from "@selfxyz/new-common/src/data/serialized_dsc_tree.json";
 import { GenericProofStructStruct } from "../../typechain-types/contracts/IdentityVerificationHubImplV2.js";
 const { LeanIMT, ChildNodes } = require("@openpassport/zk-kit-lean-imt");
 const { SMT } = require("@openpassport/zk-kit-smt");
@@ -96,7 +92,7 @@ const vcAndDiscloseCircuitsKyc: CircuitArtifacts = {
 
 export async function generateRegisterProof(secret: string, passportData: PassportData): Promise<RegisterCircuitProof> {
   // Get the circuit inputs
-  const registerCircuitInputs: CircuitSignals = await generateCircuitInputsRegister(
+  const registerCircuitInputs: CircuitSignals = await generatePassportRegisterInputs(
     secret,
     passportData,
     serialized_dsc_tree as string,
@@ -135,7 +131,7 @@ export async function generateRegisterIdProof(
   const circuitName = getCircuitNameFromPassportData(passportData, "register");
 
   // Get the circuit inputs for ID card - passportData should already be parsed from genMockIdDocAndInitDataParsing
-  const registerCircuitInputs: CircuitSignals = await generateCircuitInputsRegister(
+  const registerCircuitInputs: CircuitSignals = await generatePassportRegisterInputs(
     secret,
     passportData,
     serialized_dsc_tree as string,
@@ -181,7 +177,7 @@ export async function generateRegisterIdProof(
 export async function generateRegisterAadhaarProof(
   secret: string,
   //return type of prepareAadhaarTestData
-  inputs: ReturnType<typeof prepareAadhaarRegisterTestData>["inputs"],
+  inputs: ReturnType<typeof generateAadhaarRegisterInputs>["inputs"],
 ): Promise<GenericProofStructStruct> {
   const circuitName = "register_aadhaar";
 
@@ -209,7 +205,7 @@ export async function generateRegisterAadhaarProof(
 export async function generateRegisterKycProof(
   secret: string,
   //return type of prepareAadhaarTestData
-  inputs: Awaited<ReturnType<typeof generateMockKycRegisterInput>>,
+  inputs: Awaited<ReturnType<typeof generateMockKycRegisterInputs>>,
 ): Promise<GenericProofStructStruct> {
   const circuitName = "register_kyc";
 
@@ -235,7 +231,7 @@ export async function generateRegisterKycProof(
 }
 
 export async function generateDscProof(passportData: PassportData): Promise<DscCircuitProof> {
-  const dscCircuitInputs: CircuitSignals = await generateCircuitInputsDSC(passportData, serialized_csca_tree);
+  const dscCircuitInputs: CircuitSignals = await generatePassportDscInputs(passportData, serialized_csca_tree);
 
   const dscProof = await groth16.fullProve(
     dscCircuitInputs,
@@ -283,7 +279,7 @@ export async function generateVcAndDiscloseRawProof(
     nameAndYob_smt = smts.nameAndYob_smt;
   }
 
-  const vcAndDiscloseCircuitInputs: CircuitSignals = generateCircuitInputsVCandDisclose(
+  const vcAndDiscloseCircuitInputs: CircuitSignals = generatePassportDiscloseInputs(
     secret,
     attestationId,
     passportData,
@@ -467,7 +463,7 @@ export async function generateVcAndDiscloseIdProof(
     documentCategory: "id_card" as const,
   };
 
-  const vcAndDiscloseCircuitInputs: CircuitSignals = generateCircuitInputsVCandDisclose(
+  const vcAndDiscloseCircuitInputs: CircuitSignals = generatePassportDiscloseInputs(
     secret,
     attestationId,
     idCardPassportData,
@@ -504,7 +500,7 @@ export async function generateVcAndDiscloseIdProof(
 }
 
 export async function generateVcAndDiscloseAadhaarProof(
-  inputs: ReturnType<typeof prepareAadhaarDiscloseTestData>["inputs"],
+  inputs: ReturnType<typeof generateAadhaarDiscloseInputs>["inputs"],
 ): Promise<GenericProofStructStruct> {
   const circuitName = "vc_and_disclose_aadhaar";
 
@@ -530,7 +526,7 @@ export async function generateVcAndDiscloseAadhaarProof(
 }
 
 export async function generateVcAndDiscloseKycProof(
-  inputs: ReturnType<typeof generateKycDiscloseInput>,
+  inputs: ReturnType<typeof generateKycDiscloseInputFromDummy>,
 ): Promise<GenericProofStructStruct> {
   const circuitName = "vc_and_disclose_kyc";
   const circuitArtifacts = vcAndDiscloseCircuitsKyc;

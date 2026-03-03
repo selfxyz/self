@@ -22,10 +22,28 @@ mobile-sdk-alpha-ci.tgz
 dataInput.d.ts
 packages/mobile-sdk-alpha/docs/docstrings-report.json
 
+# Android SDK directories (local installs)
+app/build-tools/
+app/licenses/
+app/ndk/
+app/platform-tools/
+app/platforms/
+packages/mobile-sdk-alpha/licenses/
+packages/mobile-sdk-alpha/platforms/
+
 # Private Android modules (cloned at build time)
 app/android/android-passport-nfc-reader/
+
+# Swift Package Manager
+**/.build/
+**/.swiftpm/
+**/Package.resolved
 
 # Foundry
 contracts/out/
 contracts/cache_forge/
 contracts/broadcast/
+
+# Keep RN test app config files tracked (global gitignore may ignore *.config.*)
+!packages/rn-sdk-test-app/metro.config.cjs
+!packages/rn-sdk-test-app/react-native.config.cjs

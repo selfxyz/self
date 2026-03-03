@@ -2,7 +2,7 @@ import { wasm as wasmTester } from 'circom_tester';
 import { describe, it } from 'mocha';
 import path from 'path';
 import { generateMockRsaPkcs1v1_5Inputs } from './generateMockInputsInCircuits.js';
-import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
+import type { SignatureAlgorithm } from '@selfxyz/new-common/src/foundation/types/document.js';
 import { expect } from 'chai';
 import { fileURLToPath } from 'url';
 

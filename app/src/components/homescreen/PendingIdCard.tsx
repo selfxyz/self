@@ -5,7 +5,7 @@
 import type { FC } from 'react';
 import React from 'react';
 import { Image } from 'react-native';
-import { Text, XStack, YStack } from 'tamagui';
+import { Text, YStack } from 'tamagui';
 
 import {
   amber50,
@@ -13,13 +13,14 @@ import {
   amber500,
   amber700,
   black,
-  gray400,
+  gray200,
   yellow50,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
 import WavePatternPending from '@/assets/images/wave_pattern_pending.png';
+import CardHeader from '@/components/homescreen/CardHeader';
 import { cardStyles } from '@/components/homescreen/cardStyles';
 import { useCardDimensions } from '@/hooks/useCardDimensions';
 
@@ -57,7 +58,7 @@ const PendingIdCard: FC<PendingIdCardProps> = ({ onClick }) => {
         borderRadius={borderRadius}
         overflow="hidden"
         borderWidth={1}
-        borderColor="#E5E7EB"
+        borderColor={gray200}
         backgroundColor={yellow50}
         marginBottom={8}
         shadowColor={amber500}
@@ -69,58 +70,34 @@ const PendingIdCard: FC<PendingIdCardProps> = ({ onClick }) => {
         pressStyle={onClick ? { opacity: 0.7 } : undefined}
       >
         {/* Header Section */}
-        <YStack
-          height={headerHeight}
-          padding={figmaPadding}
+        <CardHeader
+          variant="flat"
+          title="IDENTITY UNDER REVIEW"
+          subtitle="NO IDENTITY FOUND"
+          titleColor={black}
+          headerHeight={headerHeight}
+          figmaPadding={figmaPadding}
+          headerGap={headerGap}
+          fontSize={fontSize}
           backgroundColor={amber50}
-          justifyContent="center"
-          borderBottomWidth={2}
           borderBottomColor={amber500}
-        >
-          {/* Content row */}
-          <XStack flex={1} alignItems="center">
-            {/* Logo + Text */}
-            <XStack alignItems="center" gap={headerGap} flex={1}>
-              {/* Orange circle with white Self logo */}
-              <YStack
-                width={logoSize}
-                height={logoSize}
-                borderRadius={logoSize / 2}
-                backgroundColor={amber500}
-                alignItems="center"
-                justifyContent="center"
-                overflow="hidden"
-              >
-                <SelfLogoPending
-                  width={logoSize * 0.56}
-                  height={logoSize * 0.56}
-                />
-              </YStack>
-              {/* Text container */}
-              <YStack gap={2}>
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.header}
-                  fontWeight="500"
-                  color={black}
-                  textTransform="uppercase"
-                  lineHeight={fontSize.header * 1.1}
-                >
-                  IDENTITY UNDER REVIEW
-                </Text>
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.subtitle}
-                  color={gray400}
-                  letterSpacing={0.7}
-                  textTransform="uppercase"
-                >
-                  NO IDENTITY FOUND
-                </Text>
-              </YStack>
-            </XStack>
-          </XStack>
-        </YStack>
+          logo={
+            <YStack
+              width={logoSize}
+              height={logoSize}
+              borderRadius={logoSize / 2}
+              backgroundColor={amber500}
+              alignItems="center"
+              justifyContent="center"
+              overflow="hidden"
+            >
+              <SelfLogoPending
+                width={logoSize * 0.56}
+                height={logoSize * 0.56}
+              />
+            </YStack>
+          }
+        />
 
         {/* Body Section */}
         <YStack style={cardStyles.body}>

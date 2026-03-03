@@ -15,8 +15,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { X } from '@tamagui/lucide-icons';
 
-import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
-import youWinAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/youWin.json';
+import { LottieAnimation } from '@selfxyz/mobile-sdk-alpha';
 import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
@@ -29,6 +28,9 @@ import GratificationBg from '@/assets/images/gratification_bg.svg';
 import SelfLogo from '@/assets/logos/self.svg';
 import { SystemBars } from '@/components/SystemBars';
 import type { RootStackParamList } from '@/navigation';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const youWinAnimation = require('@selfxyz/mobile-sdk-alpha/animations/loading/youWin.lottie');
 
 const GratificationScreen: React.FC = () => {
   const { top, bottom } = useSafeAreaInsets();
@@ -66,7 +68,7 @@ const GratificationScreen: React.FC = () => {
         alignItems="center"
         justifyContent="center"
       >
-        <DelayedLottieView
+        <LottieAnimation
           autoPlay
           loop={false}
           source={youWinAnimation}

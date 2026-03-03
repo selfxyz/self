@@ -4,19 +4,17 @@
 
 package xyz.self.sdk.handlers
 
-import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
+import xyz.self.sdk.providers.SdkProviderRegistry
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
-/**
- * iOS stub for camera MRZ scanning bridge handler.
- * The test app uses MrzCameraHelper.swift directly instead of this handler.
- * TODO: Wire up to Swift MrzCameraHelper via cinterop for full SDK integration.
- */
-@OptIn(ExperimentalForeignApi::class)
 class CameraMrzBridgeHandler : BridgeHandler {
     override val domain = BridgeDomain.CAMERA
 
@@ -27,22 +25,58 @@ class CameraMrzBridgeHandler : BridgeHandler {
         when (method) {
             "scanMRZ" -> scanMRZ()
             "isAvailable" -> isAvailable()
+            "stopCamera" -> stopCamera()
             else -> throw BridgeHandlerException(
                 "METHOD_NOT_FOUND",
                 "Unknown camera method: $method",
             )
         }
 
-    /** Stub — wire up to MrzCameraHelper.swift via cinterop. */
     private suspend fun scanMRZ(): JsonElement =
-        throw BridgeHandlerException(
-            "NOT_IMPLEMENTED",
-            "MRZ scanning is handled by MrzCameraHelper.swift in the test app. " +
-                "Wire up via cinterop for full SDK integration.",
-        )
+        suspendCancellableCoroutine { continuation ->
+            val provider = SdkProviderRegistry.cameraMrz
+            if (provider == null) {
+                continuation.resumeWithException(
+                    BridgeHandlerException("NOT_CONFIGURED", "CameraMrz provider not configured"),
+                )
+                return@suspendCancellableCoroutine
+            }
+
+            provider.createCameraView(
+                onMrzDetected = { jsonString ->
+                    if (continuation.isActive) {
+                        try {
+                            val jsonElement = Json.parseToJsonElement(jsonString)
+                            continuation.resume(jsonElement)
+                        } catch (e: Exception) {
+                            continuation.resumeWithException(
+                                BridgeHandlerException("PARSE_ERROR", "Failed to parse MRZ result: ${e.message}"),
+                            )
+                        }
+                    }
+                },
+                onProgress = { /* Progress handled by the view */ },
+                onError = { error ->
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(
+                            BridgeHandlerException("CAMERA_ERROR", error),
+                        )
+                    }
+                },
+            )
+
+            continuation.invokeOnCancellation {
+                provider.stopCamera()
+            }
+        }
 
     private fun isAvailable(): JsonElement {
-        // Stub: not implemented via cinterop yet, so report unavailable
-        return JsonPrimitive(false)
+        val provider = SdkProviderRegistry.cameraMrz ?: return JsonPrimitive(false)
+        return JsonPrimitive(provider.isAvailable())
+    }
+
+    private fun stopCamera(): JsonElement? {
+        SdkProviderRegistry.cameraMrz?.stopCamera()
+        return null
     }
 }

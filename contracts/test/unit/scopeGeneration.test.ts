@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { TestSelfVerificationRoot } from "../../typechain-types";
-import { stringToBigInt, bigIntToString, hashEndpointWithScope } from "@selfxyz/common/utils/scope";
+import { stringToBigInt, bigIntToString, hashEndpointWithScope } from "@selfxyz/new-common/src/crypto/scope";
 
 describe("SelfVerificationRoot - Automatic Scope Generation", () => {
   let testContract: TestSelfVerificationRoot;
