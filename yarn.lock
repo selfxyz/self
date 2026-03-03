@@ -6596,6 +6596,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@invertase/react-native-apple-authentication@npm:^2.5.1":
+  version: 2.5.1
+  resolution: "@invertase/react-native-apple-authentication@npm:2.5.1"
+  checksum: 10c0/04cc3e6fde99caea6cdb16bb50786afce141e5014939e9d51bfe29a21c0241d73eac529954ac4826851ce603f4d3e9f1b68cc54225e2df532ecd8021b7be4804
+  languageName: node
+  linkType: hard
+
 "@isaacs/balanced-match@npm:^4.0.1":
   version: 4.0.1
   resolution: "@isaacs/balanced-match@npm:4.0.1"
@@ -9236,6 +9243,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-google-signin/google-signin@npm:^16.1.1":
+  version: 16.1.2
+  resolution: "@react-native-google-signin/google-signin@npm:16.1.2"
+  peerDependencies:
+    expo: ">=52.0.40"
+    react: "*"
+    react-native: "*"
+  peerDependenciesMeta:
+    expo:
+      optional: true
+  checksum: 10c0/91f8f8c4ed5311e7cd7c2977696624d857abb18b7bedfec0a126d8cca38cd56d48d8e0976ba01cf75db385bdd0a054e51148b5a3c64476305ccfdd79370f57af
+  languageName: node
+  linkType: hard
+
 "@react-native/assets-registry@npm:0.76.9":
   version: 0.76.9
   resolution: "@react-native/assets-registry@npm:0.76.9"
@@ -10962,6 +10983,7 @@ __metadata:
     "@babel/runtime": "npm:^7.28.6"
     "@dotlottie/dotlottie-js": "npm:^1.6.2"
     "@ethersproject/shims": "npm:^5.8.0"
+    "@invertase/react-native-apple-authentication": "npm:^2.5.1"
     "@lottiefiles/dotlottie-react": "npm:^0.17.15"
     "@lottiefiles/dotlottie-react-native": "npm:0.5.0"
     "@noble/hashes": "npm:^1.5.0"
@@ -10977,6 +10999,7 @@ __metadata:
     "@react-native-firebase/app": "npm:^21.14.0"
     "@react-native-firebase/messaging": "npm:^21.14.0"
     "@react-native-firebase/remote-config": "npm:^21.14.0"
+    "@react-native-google-signin/google-signin": "npm:^16.1.1"
     "@react-native/babel-preset": "npm:0.77.0"
     "@react-native/eslint-config": "npm:0.77.0"
     "@react-native/gradle-plugin": "npm:0.77.0"
