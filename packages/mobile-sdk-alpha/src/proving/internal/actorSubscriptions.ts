@@ -50,6 +50,19 @@ export function setupActorSubscriptions(newActor: AnyActorRef, selfClient: SelfC
     lastEvent = event;
   });
   newActor.subscribe((state: StateFrom<typeof provingMachine>) => {
+    const runTask = (taskName: string, task: Promise<unknown>) => {
+      void task.catch(error => {
+        const errorContext = createProofContext(selfClient, 'stateTransition', {
+          currentState: String(state.value),
+        });
+        selfClient.logProofEvent('error', 'State handler failed', errorContext, {
+          failure: 'PROOF_FAILED_INTERNAL',
+          task: taskName,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    };
+
     const now = Date.now();
     const context = createProofContext(selfClient, 'stateTransition', {
       currentState: String(state.value),
@@ -70,21 +83,21 @@ export function setupActorSubscriptions(newActor: AnyActorRef, selfClient: SelfC
     set({ currentState: state.value as ProvingStateType });
 
     if (state.value === 'parsing_id_document') {
-      (get() as ProvingStateWithMethods).parseIDDocument(selfClient);
+      runTask('parseIDDocument', (get() as ProvingStateWithMethods).parseIDDocument(selfClient));
     }
     if (state.value === 'fetching_data') {
-      (get() as ProvingStateWithMethods).startFetchingData(selfClient);
+      runTask('startFetchingData', (get() as ProvingStateWithMethods).startFetchingData(selfClient));
     }
     if (state.value === 'validating_document') {
-      (get() as ProvingStateWithMethods).validatingDocument(selfClient);
+      runTask('validatingDocument', (get() as ProvingStateWithMethods).validatingDocument(selfClient));
     }
 
     if (state.value === 'init_tee_connexion') {
-      (get() as ProvingStateWithMethods).initTeeConnection(selfClient);
+      runTask('initTeeConnection', (get() as ProvingStateWithMethods).initTeeConnection(selfClient));
     }
 
     if (state.value === 'ready_to_prove' && get().userConfirmed) {
-      (get() as ProvingStateWithMethods).startProving(selfClient);
+      runTask('startProving', (get() as ProvingStateWithMethods).startProving(selfClient));
     }
 
     if (state.value === 'post_proving') {

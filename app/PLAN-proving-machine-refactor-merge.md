@@ -168,6 +168,12 @@ yarn lint
 
 # 4. Build must succeed
 yarn build
+
+# 5. Proof generation performance gate (client-side only)
+# Validate on a mid-tier mobile device profile using curve/circuit-specific baselines.
+# Do not regress median client-side proving phases by more than 10% for any circuit:
+# payload generation, encryption, WebSocket setup/reconnect, and state-machine transitions.
+# End-to-end proof time is backend-dependent and has no absolute SLA gate in this frontend refactor PR.
 ```
 
 ## Files Modified (extraction PR)
@@ -187,6 +193,8 @@ yarn build
 - [ ] All proving internals extracted into `internal/` modules
 - [ ] `provingMachine.ts` is orchestration-only (imports + wiring)
 - [ ] `yarn types && yarn test && yarn lint && yarn build` all pass
+- [ ] Client-side proving phases meet curve/circuit-specific baselines (<=10% median regression)
+- [ ] No absolute end-to-end proof-time bound is enforced in this PR (backend-dependent)
 - [ ] No behavioral changes — diff shows only moved code + imports
 - [ ] PR #1526 closed with link to new PR
 - [ ] Follow-up PR created for coderabbit safety fixes

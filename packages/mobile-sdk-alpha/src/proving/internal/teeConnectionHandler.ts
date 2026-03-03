@@ -35,7 +35,15 @@ export const initTeeConnection = async (selfClient: SelfClient, deps: ProvingDep
     });
     throw new Error('PassportData is not available');
   }
-  const circuitType = get().circuitType as 'disclose' | 'register' | 'dsc';
+  const circuitType = get().circuitType;
+  if (!circuitType) {
+    actor?.send({ type: 'CONNECT_ERROR' });
+    selfClient.logProofEvent('error', 'Circuit type missing', baseContext, {
+      failure: 'PROOF_FAILED_CONNECTION',
+      duration_ms: Date.now() - startTime,
+    });
+    return false;
+  }
 
   let circuitName;
   if (circuitType === 'disclose') {
@@ -46,7 +54,7 @@ export const initTeeConnection = async (selfClient: SelfClient, deps: ProvingDep
           ? 'disclose_kyc'
           : 'disclose';
   } else {
-    circuitName = getCircuitNameFromPassportData(passportData, circuitType as 'register' | 'dsc');
+    circuitName = getCircuitNameFromPassportData(passportData, circuitType);
   }
 
   const wsRpcUrl = resolveWebSocketUrl(selfClient, circuitType, passportData as PassportData, circuitName);
@@ -75,6 +83,14 @@ export const initTeeConnection = async (selfClient: SelfClient, deps: ProvingDep
   (get() as ProvingStateWithMethods)._closeConnections(selfClient);
   selfClient.trackEvent(ProofEvents.TEE_CONN_STARTED);
   selfClient.logProofEvent('info', 'TEE connection attempt', baseContext);
+
+  if (!actor) {
+    selfClient.logProofEvent('error', 'State machine actor missing', baseContext, {
+      failure: 'PROOF_FAILED_CONNECTION',
+      duration_ms: Date.now() - startTime,
+    });
+    return false;
+  }
 
   return new Promise(resolve => {
     const ws = new WebSocket(wsRpcUrl);
@@ -111,9 +127,6 @@ export const initTeeConnection = async (selfClient: SelfClient, deps: ProvingDep
     ws.addEventListener('error', wsHandlers.error);
     ws.addEventListener('close', wsHandlers.close);
 
-    if (!actor) {
-      return;
-    }
     const unsubscribe = actor.subscribe(state => {
       if (state.matches('ready_to_prove')) {
         handleConnectSuccess();

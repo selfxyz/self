@@ -35,7 +35,7 @@ export const resolveWebSocketUrl = (
   circuitName: string,
 ): string | undefined => {
   const { documentCategory } = passportData;
-  const circuitsMapping = selfClient.getProtocolState()[documentCategory].circuits_dns_mapping;
+  const circuitsMapping = selfClient.getProtocolState()?.[documentCategory]?.circuits_dns_mapping;
   const mappingKey = getMappingKey(circuitType, documentCategory);
 
   return circuitsMapping?.[mappingKey]?.[circuitName];

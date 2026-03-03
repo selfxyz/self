@@ -60,7 +60,7 @@ export const startSocketIOStatusListener = (
   socket.on('disconnect', (_reason: string) => {
     const currentActor = deps.getActor();
     selfClient.logProofEvent('warn', 'Socket.IO disconnected', context);
-    if (get().currentState === 'ready_to_prove' && currentActor) {
+    if (currentActor && (get().currentState === 'ready_to_prove' || get().currentState === 'proving')) {
       console.error('SocketIO disconnected unexpectedly during proof listening.');
       selfClient.trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
       selfClient.logProofEvent('error', 'Socket.IO disconnected unexpectedly', context, {

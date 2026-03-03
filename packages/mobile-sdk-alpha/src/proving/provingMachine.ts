@@ -163,6 +163,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         serverPublicKey: null,
         sharedKey: null,
         wsConnection: null,
+        wsHandlers: null,
+        wsReconnectAttempts: 0,
         socketConnection: null,
         uuid: null,
         userConfirmed: userConfirmed,
@@ -171,6 +173,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType,
         endpointType: null,
         env: null,
+        error_code: null,
+        reason: null,
       });
 
       actor = createActor(provingMachine);

@@ -346,13 +346,30 @@ export const reconnectTeeWebSocket = async (selfClient: SelfClient, deps: Provin
 
   return new Promise(resolve => {
     const ws = new WebSocket(wsRpcUrl);
+    let settled = false;
+    let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const settle = (value: boolean): boolean => {
+      if (settled) {
+        return false;
+      }
+      settled = true;
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      resolve(value);
+      return true;
+    };
 
     const wsHandlers: WsHandlers = {
       message: (event: MessageEvent) => (get() as ProvingStateWithMethods)._handleWebSocketMessage(event, selfClient),
       open: () => {
+        if (settled) {
+          return;
+        }
         selfClient.logProofEvent('info', 'TEE WebSocket reconnected', context);
         set({ wsReconnectAttempts: 0 });
-        resolve(true);
+        settle(true);
       },
       error: (error: Event) => (get() as ProvingStateWithMethods)._handleWsError(error, selfClient),
       close: (event: CloseEvent) => (get() as ProvingStateWithMethods)._handleWsClose(event, selfClient),
@@ -364,10 +381,21 @@ export const reconnectTeeWebSocket = async (selfClient: SelfClient, deps: Provin
     ws.addEventListener('error', wsHandlers.error);
     ws.addEventListener('close', wsHandlers.close);
 
-    setTimeout(() => {
+    reconnectTimeout = setTimeout(() => {
       if (ws.readyState !== WebSocket.OPEN) {
         selfClient.logProofEvent('warn', 'TEE WebSocket reconnection timeout', context);
-        resolve(false);
+        if (settle(false)) {
+          ws.removeEventListener('message', wsHandlers.message);
+          ws.removeEventListener('open', wsHandlers.open);
+          ws.removeEventListener('error', wsHandlers.error);
+          ws.removeEventListener('close', wsHandlers.close);
+          try {
+            ws.close();
+          } catch (error) {
+            console.error('Error closing timed out reconnect socket:', error);
+          }
+          set({ wsConnection: null, wsHandlers: null });
+        }
       }
     }, RECONNECT_TIMEOUT_MS);
   });
