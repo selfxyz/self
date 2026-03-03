@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import xyz.self.testapp.screens.PassportDetailsScreen
 import xyz.self.testapp.screens.ResultScreen
+import xyz.self.testapp.screens.SdkLaunchScreen
 import xyz.self.testapp.theme.SelfTestTheme
 import xyz.self.testapp.viewmodels.VerificationViewModel
 
@@ -22,8 +23,12 @@ fun App() {
 
         NavHost(
             navController = navController,
-            startDestination = "passport_details",
+            startDestination = "sdk_launch",
         ) {
+            composable("sdk_launch") {
+                SdkLaunchScreen(navController)
+            }
+
             composable("passport_details") {
                 PassportDetailsScreen(navController, viewModel)
             }

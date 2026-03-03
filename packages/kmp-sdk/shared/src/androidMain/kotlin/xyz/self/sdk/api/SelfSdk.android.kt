@@ -4,13 +4,13 @@
 
 package xyz.self.sdk.api
 
-import android.app.Activity
 import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import kotlinx.serialization.json.Json
 import xyz.self.sdk.webview.SelfVerificationActivity
+import java.lang.ref.WeakReference
 
 /**
  * Android implementation of the Self SDK.
@@ -20,10 +20,13 @@ actual class SelfSdk private constructor(
     private val config: SelfSdkConfig,
 ) {
     private var activityLauncher: ActivityResultLauncher<Intent>? = null
+    private var launcherOwner: WeakReference<ComponentActivity>? = null
+    private var boundActivity: WeakReference<ComponentActivity>? = null
     private var pendingCallback: SelfSdkCallback? = null
 
     actual companion object {
         private var instance: SelfSdk? = null
+        private var currentActivity: WeakReference<ComponentActivity>? = null
 
         /**
          * Configures and returns a singleton SelfSdk instance.
@@ -32,32 +35,45 @@ actual class SelfSdk private constructor(
             if (instance == null) {
                 instance = SelfSdk(config)
             }
+            val activity = currentActivity?.get()
+            if (activity != null) {
+                instance?.bindActivity(activity)
+            }
             return instance!!
+        }
+
+        /**
+         * Binds the currently active host Activity so common launch(request, callback)
+         * can work without Android-specific overloads.
+         */
+        fun bindActivity(activity: ComponentActivity) {
+            currentActivity = WeakReference(activity)
+            instance?.bindActivity(activity)
         }
     }
 
     /**
-     * Launches the verification flow.
-     * The calling Activity must be a ComponentActivity for result handling.
-     *
-     * Note: For production use, the host app should register the ActivityResultLauncher
-     * in onCreate() and pass it to this method, rather than registering it here.
-     * This implementation is simplified for the initial version.
+     * Launches the verification flow through the common API surface.
+     * On Android, this requires a bound ComponentActivity via SelfSdk.bindActivity(activity).
      */
     actual fun launch(
         request: VerificationRequest,
         callback: SelfSdkCallback,
     ) {
-        // Store callback for later
-        pendingCallback = callback
-
-        // Get current activity context
-        // Note: In production, the host app should pass the activity explicitly
-        // For now, we'll require the activity to be passed via a helper method
-        throw NotImplementedError(
-            "Please use launch(activity, request, callback) instead. " +
-                "The Activity parameter is required on Android.",
-        )
+        val activity =
+            resolveActivity()
+                ?: run {
+                    callback.onFailure(
+                        SelfSdkError(
+                            code = "MISSING_ACTIVITY",
+                            message =
+                                "No bound ComponentActivity found. " +
+                                    "Call SelfSdk.bindActivity(activity) in your Activity before launch().",
+                        ),
+                    )
+                    return
+                }
+        launchInternal(activity, request, callback)
     }
 
     /**
@@ -73,6 +89,28 @@ actual class SelfSdk private constructor(
         request: VerificationRequest,
         callback: SelfSdkCallback,
     ) {
+        bindActivity(activity)
+        Companion.currentActivity = WeakReference(activity)
+        launchInternal(activity, request, callback)
+    }
+
+    private fun launchInternal(
+        activity: ComponentActivity,
+        request: VerificationRequest,
+        callback: SelfSdkCallback,
+    ) {
+        if (pendingCallback != null) {
+            callback.onFailure(
+                SelfSdkError(
+                    code = "VERIFICATION_IN_PROGRESS",
+                    message = "A verification flow is already in progress",
+                ),
+            )
+            return
+        }
+
+        pendingCallback = callback
+
         // Create intent for SelfVerificationActivity
         val intent =
             Intent(activity, SelfVerificationActivity::class.java).apply {
@@ -81,21 +119,54 @@ actual class SelfSdk private constructor(
                 putExtra(SelfVerificationActivity.EXTRA_CONFIG, serializeConfig(config))
             }
 
-        // Register using the ActivityResultRegistry directly (without LifecycleOwner)
-        // so it can be called after onStart(). The host app's Activity may already
-        // be in RESUMED state when the user taps "verify".
-        if (activityLauncher == null) {
-            activityLauncher =
-                activity.activityResultRegistry.register(
-                    "self-sdk-verification",
-                    ActivityResultContracts.StartActivityForResult(),
-                ) { result ->
-                    handleActivityResult(result.resultCode, result.data, callback)
-                }
-        }
+        ensureLauncher(activity)
 
         // Launch the verification activity
-        activityLauncher?.launch(intent)
+        val launcher = activityLauncher
+        if (launcher == null) {
+            pendingCallback = null
+            callback.onFailure(
+                SelfSdkError(
+                    code = "LAUNCHER_NOT_AVAILABLE",
+                    message = "Could not initialize Android activity launcher",
+                ),
+            )
+            return
+        }
+        launcher.launch(intent)
+    }
+
+    private fun bindActivity(activity: ComponentActivity) {
+        boundActivity = WeakReference(activity)
+    }
+
+    private fun resolveActivity(): ComponentActivity? {
+        val resolved = boundActivity?.get() ?: Companion.currentActivity?.get()
+        if (resolved != null) {
+            bindActivity(resolved)
+        }
+        return resolved
+    }
+
+    private fun ensureLauncher(activity: ComponentActivity) {
+        val currentOwner = launcherOwner?.get()
+        if (activityLauncher != null && currentOwner === activity) {
+            return
+        }
+
+        activityLauncher?.unregister()
+        launcherOwner = WeakReference(activity)
+        activityLauncher =
+            activity.activityResultRegistry.register(
+                "self-sdk-verification-${activity.hashCode()}",
+                ActivityResultContracts.StartActivityForResult(),
+            ) { result ->
+                val callback = pendingCallback
+                pendingCallback = null
+                if (callback != null) {
+                    handleActivityResult(result.resultCode, result.data, callback)
+                }
+            }
     }
 
     /**
@@ -107,7 +178,7 @@ actual class SelfSdk private constructor(
         callback: SelfSdkCallback,
     ) {
         when (resultCode) {
-            Activity.RESULT_OK -> {
+            SelfVerificationActivity.RESULT_CODE_SUCCESS -> {
                 val resultDataJson = data?.getStringExtra(SelfVerificationActivity.EXTRA_RESULT_DATA)
                 val resultType = data?.getStringExtra(SelfVerificationActivity.EXTRA_RESULT_TYPE)
                 if (resultDataJson != null) {
@@ -135,7 +206,7 @@ actual class SelfSdk private constructor(
                     )
                 }
             }
-            Activity.RESULT_CANCELED -> {
+            SelfVerificationActivity.RESULT_CODE_CANCELLED -> {
                 // User cancelled
                 callback.onCancelled()
             }

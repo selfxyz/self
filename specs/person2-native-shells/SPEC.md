@@ -1694,7 +1694,7 @@ SelfSdkCallback fires on completion/dismissal
 | `SelfSdkCallback.onSuccess` fires              | Integration | Result delivery from WebView through lifecycle handler |
 | `SelfSdkCallback.onCancelled` fires on dismiss | Integration | Dismiss wiring works correctly                         |
 
-**Status: PARTIAL** (Android + iOS implementation paths are present; full cross-platform validation remains)
+**Status: DONE** (Android common launch signature fixed, test app now exercises `SelfSdk.configure(...).launch(...)`, and validation gates pass)
 
 ---
 
@@ -2065,7 +2065,7 @@ Chunk 2A: KMP Setup + Bridge Protocol (no deps -- start here)
 | 2C    | Android Native Handlers (5 handlers)       | L ~12k | **Done**                                                                    |
 | 2D    | iOS WebView Host + Provider Infrastructure | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)                             |
 | 2E    | iOS Native Handlers (3 handlers)           | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)                             |
-| 2F    | SDK Public API + Test App                  | M ~5k  | **Partial** (implementation present; validation/contract alignment pending) |
+| 2F    | SDK Public API + Test App                  | M ~5k  | **Done** (common Android launch fixed, test app launch screen wired, validation complete) |
 | 2G    | Factory Infrastructure                     | S ~3k  | **Done**                                                                    |
 | 2H    | Biometric Handler (iOS)                    | S ~2k  | **Done**                                                                    |
 | 2I    | Lifecycle Handler (iOS)                    | S ~2k  | **Done**                                                                    |
