@@ -35,8 +35,8 @@ The Self Wallet is a monolithic React Native app where all logic, NFC, proving, 
 | Area                       | Issue                                                                                                                                          |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/webview-bridge/` | Implemented with current protocol/adapters and validated by tests (63 tests passing).                                                          |
-| `packages/webview-app/`    | Screens built, routing works. Missing: biometrics + camera adapter wiring, web fallback adapters not all connected in SelfClientProvider.      |
-| Web fallback adapters      | IndexedDB documents adapter, Web Crypto hashing adapter, and console analytics adapter exist in bridge package but need wiring in webview-app. |
+| `packages/webview-app/`    | Screens built, routing works. SelfClientProvider wiring complete (biometrics, camera, and web fallback adapters connected).                     |
+| Web fallback adapters      | IndexedDB documents, Web Crypto hashing, console analytics, navigation, and no-op haptic are wired in webview-app.                             |
 
 ## Design Principles
 
@@ -1337,7 +1337,7 @@ Chunk 1F: Bridge Package (no deps — start here)
 | 1B    | Onboarding Screens       | M    | **Done** — all 5 screens render                                                                                      |
 | 1C    | Proving + Result Screens | M    | **Done** — screens render, proving wired                                                                             |
 | 1D    | Remaining Screens        | S    | **Done** — home, settings, coming-soon render                                                                        |
-| 1E    | WebView App Shell        | M    | **In Progress** — providers wired, missing: biometrics adapter, camera wiring, some web fallback adapter connections |
+| 1E    | WebView App Shell        | M    | **Done** — providers/router/entry wired, biometrics + camera adapters connected, web fallbacks connected, lifecycle.ready() on mount |
 
 ## Validation Plan
 

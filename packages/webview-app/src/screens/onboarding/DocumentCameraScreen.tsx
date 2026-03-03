@@ -15,14 +15,12 @@ import {
   spacing,
 } from '@selfxyz/euclid-web';
 
-import { useBridge } from '../../providers/BridgeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 
 export const DocumentCameraScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const bridge = useBridge();
-  const { analytics, haptic } = useSelfClient();
+  const { analytics, haptic, camera } = useSelfClient();
 
   const { countryCode = '', documentType = 'p' } =
     (location.state as {
@@ -45,11 +43,7 @@ export const DocumentCameraScreen: React.FC = () => {
     });
 
     try {
-      const result = await bridge.request<{
-        documentNumber: string;
-        dateOfBirth: string;
-        dateOfExpiry: string;
-      }>('camera', 'scanMRZ', { documentType, countryCode });
+      const result = await camera.scanMRZ({ documentType, countryCode });
 
       haptic.trigger('success');
       analytics.trackEvent('camera_mrz_scan_success');
@@ -70,7 +64,7 @@ export const DocumentCameraScreen: React.FC = () => {
     } finally {
       setScanning(false);
     }
-  }, [bridge, navigate, analytics, haptic, documentType, countryCode]);
+  }, [camera, navigate, analytics, haptic, documentType, countryCode]);
 
   useEffect(() => {
     startMRZScan();

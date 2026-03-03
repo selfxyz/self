@@ -36,4 +36,4 @@ export { bridgeBiometricsAdapter } from './biometrics';
 export type { BridgeBiometricsAdapter } from './biometrics';
 
 export { bridgeCameraAdapter } from './camera';
-export type { BridgeCameraAdapter, MrzScanResult } from './camera';
+export type { BridgeCameraAdapter, MrzScanParams, MrzScanResult } from './camera';
