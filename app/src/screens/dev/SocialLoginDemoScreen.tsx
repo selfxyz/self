@@ -80,7 +80,8 @@ const SocialLoginDemoScreen: React.FC = () => {
           });
         }
       } catch (error) {
-        console.warn('Silent Google sign-in failed', error);
+        const code = (error as { code?: string }).code;
+        console.warn('Silent Google sign-in failed', code ?? 'unknown');
       }
     };
 
@@ -111,7 +112,9 @@ const SocialLoginDemoScreen: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      await GoogleSignin.hasPlayServices();
+      if (Platform.OS === 'android') {
+        await GoogleSignin.hasPlayServices();
+      }
       const response = await GoogleSignin.signIn();
 
       if (response.type !== 'success') {
