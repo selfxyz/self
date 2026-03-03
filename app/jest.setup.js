@@ -720,7 +720,16 @@ jest.mock('@react-native-google-signin/google-signin', () => ({
   GoogleSignin: {
     configure: jest.fn(),
     hasPlayServices: jest.fn().mockResolvedValue(true),
-    signIn: jest.fn().mockResolvedValue({ user: {} }),
+    signIn: jest.fn().mockResolvedValue({
+      type: 'success',
+      data: {
+        user: {
+          id: 'mock-google-user-id',
+          name: 'Mock User',
+          email: 'mock@example.com',
+        },
+      },
+    }),
     signOut: jest.fn().mockResolvedValue(null),
     getCurrentUser: jest.fn().mockResolvedValue(null),
     getTokens: jest.fn().mockResolvedValue({ idToken: 'mock-token' }),
@@ -736,7 +745,11 @@ jest.mock('@react-native-google-signin/google-signin', () => ({
 jest.mock('@invertase/react-native-apple-authentication', () => ({
   __esModule: true,
   default: {
-    performRequest: jest.fn().mockResolvedValue({ user: 'mock-user-id' }),
+    performRequest: jest.fn().mockResolvedValue({
+      user: 'mock-apple-user-id',
+      fullName: { givenName: 'Mock', familyName: 'User' },
+      email: 'mock@example.com',
+    }),
     getCredentialStateForUser: jest.fn().mockResolvedValue(1),
     onCredentialRevoked: jest.fn(() => jest.fn()),
     isSupported: true,

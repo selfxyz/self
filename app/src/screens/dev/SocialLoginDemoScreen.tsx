@@ -108,6 +108,9 @@ const SocialLoginDemoScreen: React.FC = () => {
   };
 
   const handleGoogleSignIn = async () => {
+    if (loading) {
+      return;
+    }
     setLoading(true);
     setErrorMessage(null);
 
@@ -157,6 +160,9 @@ const SocialLoginDemoScreen: React.FC = () => {
   };
 
   const handleAppleSignIn = async () => {
+    if (loading) {
+      return;
+    }
     if (!appleAvailable) {
       handleError('Apple Sign-In', 'Apple Sign-In is not supported here.');
       return;
