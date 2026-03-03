@@ -39,6 +39,12 @@ describe('validateApduCommand', () => {
     expect(() => validateApduCommand(bytes)).not.toThrow();
   });
 
+  it('accepts a valid secure messaging + chaining CLA command', () => {
+    // 1C B0 00 00 00
+    const bytes = [0x1c, 0xb0, 0x00, 0x00, 0x00];
+    expect(() => validateApduCommand(bytes)).not.toThrow();
+  });
+
   it('accepts a valid EXTERNAL AUTHENTICATE command', () => {
     // 00 82 00 00
     const bytes = [0x00, 0x82, 0x00, 0x00];

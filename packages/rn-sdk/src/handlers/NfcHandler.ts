@@ -71,12 +71,12 @@ function parseApduCommand(hexCommand: string): number[] {
   return bytes;
 }
 
-// ISO 7816-4 command classes used in eMRTD reading
-const ALLOWED_CLA = new Set([
-  0x00, // Standard ISO 7816-4
-  0x0c, // Secure messaging (post BAC/PACE)
-  0x10, // Command chaining
-]);
+function isAllowedCla(cla: number): boolean {
+  // Accept ISO 7816 interindustry class space (0x00-0x7F), including
+  // secure-messaging/chaining/logical-channel variants, to avoid compatibility
+  // regressions across readers/chips. Reject proprietary class space (0x80-0xFF).
+  return cla >= 0x00 && cla <= 0x7f;
+}
 
 // ISO 7816-4 instructions used in eMRTD reading
 const ALLOWED_INS = new Set([
@@ -157,7 +157,7 @@ export function validateApduCommand(bytes: number[]): void {
   const cla = bytes[0];
   const ins = bytes[1];
 
-  if (!ALLOWED_CLA.has(cla)) {
+  if (!isAllowedCla(cla)) {
     throw new BridgeHandlerError('APDU_REJECTED', 'APDU command class not allowed');
   }
   if (!ALLOWED_INS.has(ins)) {

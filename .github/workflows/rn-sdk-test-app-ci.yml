@@ -35,6 +35,8 @@ jobs:
           echo "✅ No nested require() patterns found"
       - name: Build webview-bridge
         run: yarn workspace @selfxyz/webview-bridge build
+      - name: Build webview-app
+        run: yarn workspace @selfxyz/webview-app build
       - name: Typecheck rn-sdk
         run: yarn workspace @selfxyz/rn-sdk typecheck
       - name: Test rn-sdk

@@ -137,6 +137,17 @@ describe('NfcHandler', () => {
       expect(mockNfc.manager.transceive).toHaveBeenCalledTimes(2);
     });
 
+    it('accepts compatible interindustry CLA variants', async () => {
+      (mockNfc.manager.transceive as ReturnType<typeof vi.fn>).mockResolvedValueOnce([0x90, 0x00]);
+
+      const result = await handler.handle('scan', {
+        apduCommands: ['1CB0000000'],
+      }) as Record<string, unknown>;
+
+      expect(result.apduResponses).toEqual(['9000']);
+      expect(mockNfc.manager.transceive).toHaveBeenCalledWith([0x1c, 0xb0, 0x00, 0x00, 0x00]);
+    });
+
     it('rejects disallowed APDU SELECT parameters before transceive', async () => {
       try {
         await handler.handle('scan', {
