@@ -211,11 +211,11 @@
 			files = (
 			);
 			inputPaths = (
-				"$(PROJECT_DIR)/../node_modules/@selfxyz/rn-sdk/assets/self-wallet/index.html",
+				"$(PROJECT_DIR)/../node_modules/@selfxyz/rn-sdk/assets/self-wallet",
 			);
 			name = "Copy self-wallet assets";
 			outputPaths = (
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/self-wallet/index.html",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/self-wallet",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

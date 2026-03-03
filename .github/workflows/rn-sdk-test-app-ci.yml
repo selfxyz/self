@@ -27,8 +27,12 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
       - name: Check for nested require() in tests
-        run: node scripts/check-test-requires.cjs
-        working-directory: ./app
+        run: |
+          if grep -rE "require\(['\"]react(-native)?['\"])" packages/rn-sdk/src/__tests__/ 2>/dev/null; then
+            echo "❌ Found nested require() patterns that cause OOM in CI"
+            exit 1
+          fi
+          echo "✅ No nested require() patterns found"
       - name: Build webview-bridge
         run: yarn workspace @selfxyz/webview-bridge build
       - name: Typecheck rn-sdk

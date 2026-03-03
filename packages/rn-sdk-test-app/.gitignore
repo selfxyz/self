@@ -41,6 +41,11 @@ yarn-error.*
 *.tmp
 *.temp
 
+# Environment files
+.env
+.env.*
+!.env.example
+
 # Logs
 logs/
 *.log
