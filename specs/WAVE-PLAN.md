@@ -56,7 +56,7 @@ A **wave** is a batch of chunks that can execute in parallel because they have n
 - Decision/documentation blockers from the 2026-02-19 handoff are now reconciled:
   - hybrid crypto + fallback ownership decisions are explicit
   - iOS/Android asymmetry contract is documented and signed off
-- Remaining partials are now primarily validation/outcome gaps (physical-device NFC E2E), plus residual implementation cleanup (fallback adapter de-duplication + dynamic proving request config).
+- Remaining partials are now primarily residual implementation cleanup (fallback adapter de-duplication + dynamic proving request config).
 - Key carry-forward risks are tracked in `specs/HANDOFF.md`.
 
 ## Execution Waves

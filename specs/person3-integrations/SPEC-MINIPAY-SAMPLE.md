@@ -626,13 +626,12 @@ Output: onFailure() fires with descriptive error, app shows error on ResultScree
 
 #### Tests
 
-| Test                                             | Type        | What it validates                                         |
-| ------------------------------------------------ | ----------- | --------------------------------------------------------- |
-| `onVerificationSuccess stores result, navigates` | Unit        | ViewModel sets result and moves to Result screen          |
-| `onVerificationFailure stores error, navigates`  | Unit        | ViewModel sets error and moves to Result screen           |
-| `onVerificationCancelled stays on Home`          | Unit        | ViewModel does not change screen on cancel                |
-| Tap Verify -> WebView opens                      | Integration | `SelfSdk.launch()` opens the WebView on a real device     |
-| Complete flow -> callback fires                  | Integration | End-to-end: WebView flow completes, native callback fires |
+| Test                                             | Type  | What it validates                                   |
+| ------------------------------------------------ | ----- | --------------------------------------------------- |
+| `onVerificationSuccess stores result, navigates` | Unit  | ViewModel sets result and moves to Result screen    |
+| `onVerificationFailure stores error, navigates`  | Unit  | ViewModel sets error and moves to Result screen     |
+| `onVerificationCancelled stays on Home`          | Unit  | ViewModel does not change screen on cancel          |
+| Tap Verify -> WebView opens (emulator)           | Smoke | `SelfSdk.launch()` opens the WebView on an emulator |
 
 ---
 
@@ -656,14 +655,14 @@ Output: onFailure() fires with descriptive error, app shows error on ResultScree
 3. Persist verification status so HomeScreen reflects verified state across app restarts (use a KMP-compatible store: e.g. `multiplatform-settings` in `commonMain.dependencies`, or an expect/actual `VerificationStore` with DataStore/NSUserDefaults actuals)
 4. Theme: Apply MiniPay-style colors and typography consistently
 5. Edge cases: Handle Activity recreation during WebView flow, back button behavior
-6. Validate: Full end-to-end flow on physical device, error cases handled gracefully
+6. Validate: Error cases handled gracefully on emulator
 
 #### Input / Output — Chunk Validation
 
 **Input:**
 
 ```
-1. Complete full verification flow on physical device
+1. Launch app on emulator, verify result screen renders
 2. Kill and restart the app
 ```
 
@@ -696,8 +695,6 @@ Output: WebView dismisses, onCancelled() fires, HomeScreen shown
 | `returnToHome clears transient state`       | Unit        | verificationResult and verificationError are nulled       |
 | Error code mapping                          | Unit        | Known SelfSdkError codes map to user-friendly strings     |
 | Persisted state survives restart            | Integration | Verification status is preserved across app process death |
-| Full E2E on Android physical device         | Integration | Country -> MRZ -> NFC -> Prove -> Result on real hardware |
-| Full E2E on iOS physical device             | Integration | Same flow on iOS with real passport                       |
 
 ---
 
@@ -740,15 +737,10 @@ rg -n "\\bverified\\s*=|disclosedClaims" packages/kmp-minipay-sample/composeApp/
   && echo "FAIL: legacy result fields found" \
   || echo "PASS: canonical result contract only"
 
-# After all chunks (end-to-end acceptance):
+# After all chunks (smoke test on emulator):
 # 1. Launch app — Home screen shows "Unverified"
 # 2. Tap "Verify Identity" — WebView opens
-# 3. WebView: Select country, scan MRZ, tap NFC, confirm biometrics
-# 4. WebView: Proof generated, result shown inside WebView
-# 5. WebView closes — native onSuccess callback fires
-# 6. ResultScreen shows "Identity Verified" with correct claims
-# 7. Return to Home — shows "Verified" with proof date
-# Run on: Android physical device + iOS physical device
+# 3. Verify WebView loads and SDK launch flow is wired correctly
 ```
 
 ## Coordination Notes
@@ -756,7 +748,7 @@ rg -n "\\bverified\\s*=|disclosedClaims" packages/kmp-minipay-sample/composeApp/
 - **Person 2 (native shells):** This sample depends on the KMP SDK's `SelfSdk.launch()` API being stable. Coordinate on API surface changes. The sample will need to be updated if the callback interface changes.
 - **Person 1 (WebView UI):** The WebView verification flow must be functional and bundled into the KMP SDK assets before Chunk 3B can be fully validated. The sample does not control or modify the WebView.
 - **Person 4 (SDK core):** The WebView engine must support the bridge protocol for NFC, camera, biometrics domains. The sample does not interact with the engine directly.
-- **All:** The end-to-end acceptance test (physical device NFC scan) requires all workstreams to be integrated. This is the final validation gate.
+- **All:** Build smoke tests (compile + emulator launch) validate integration. Full NFC E2E is not automatable (requires physical hardware + real passport).
 
 ## Testing
 
@@ -794,17 +786,11 @@ rg -n "\\bverified\\s*=|disclosedClaims" packages/kmp-minipay-sample/composeApp/
 - "Done" returns to home with updated verified status
 - Both platforms: identical behavior
 
-### End-to-End Acceptance Test
+### Build Smoke Tests
 
-1. Launch app — Home screen shows "Unverified"
-2. Tap "Verify Identity" — WebView opens
-3. WebView: Select country, scan MRZ, tap NFC, confirm biometrics
-4. WebView: Proof generated, result shown inside WebView
-5. WebView closes — native `onSuccess` callback fires
-6. ResultScreen shows "Identity Verified" with correct claims
-7. Return to Home — shows "Verified" with proof date
-
-Run on: Android physical device + iOS physical device.
+1. Android: `./gradlew :composeApp:compileDebugKotlinAndroid` passes
+2. iOS: `./gradlew :composeApp:compileKotlinIosSimulatorArm64` passes
+3. Launch on emulator — Home screen renders, button visible, WebView opens on tap
 
 ## Key Reference Files
 

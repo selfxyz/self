@@ -10637,7 +10637,30 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/rn-sdk@workspace:packages/rn-sdk":
+"@selfxyz/rn-sdk-test-app@workspace:packages/rn-sdk-test-app":
+  version: 0.0.0-use.local
+  resolution: "@selfxyz/rn-sdk-test-app@workspace:packages/rn-sdk-test-app"
+  dependencies:
+    "@babel/core": "npm:^7.28.6"
+    "@babel/runtime": "npm:^7.28.6"
+    "@react-native-community/cli": "npm:^16.0.3"
+    "@react-native/gradle-plugin": "npm:0.76.9"
+    "@react-native/metro-config": "npm:0.76.9"
+    "@selfxyz/rn-sdk": "workspace:*"
+    "@tsconfig/react-native": "npm:^3.0.6"
+    "@types/react": "npm:^18.3.4"
+    react: "npm:^18.3.1"
+    react-native: "npm:0.76.9"
+    react-native-biometrics: "npm:^3.0.1"
+    react-native-fs: "npm:^2.20.0"
+    react-native-keychain: "npm:^9.2.3"
+    react-native-nfc-manager: "npm:^3.17.2"
+    react-native-webview: "npm:13.16.0"
+    typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
+"@selfxyz/rn-sdk@workspace:*, @selfxyz/rn-sdk@workspace:packages/rn-sdk":
   version: 0.0.0-use.local
   resolution: "@selfxyz/rn-sdk@workspace:packages/rn-sdk"
   dependencies:

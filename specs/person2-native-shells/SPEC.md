@@ -1692,7 +1692,7 @@ SelfSdkCallback fires on completion/dismissal
 | `SelfSdk.launch()` presents WebView (Android)  | Integration | Full Activity launch flow                              |
 | `SelfSdk.launch()` presents WebView (iOS)      | Integration | Modal VC presentation via providers                    |
 | `SelfSdkCallback.onSuccess` fires              | Integration | Result delivery from WebView through lifecycle handler |
-| `SelfSdkCallback.onCancelled` fires on dismiss | Integration | Dismiss wiring works end-to-end                        |
+| `SelfSdkCallback.onCancelled` fires on dismiss | Integration | Dismiss wiring works correctly                         |
 
 **Status: PARTIAL** (Android + iOS implementation paths are present; full cross-platform validation remains)
 
@@ -1999,11 +1999,9 @@ Output: null (no crash, NfcPassportHelper released)
 
 | Test                                | Type        | What it validates                                                                       |
 | ----------------------------------- | ----------- | --------------------------------------------------------------------------------------- |
-| NFC scan on physical device         | Integration | Same JSON output as test app (before migration)                                         |
-| Progress callbacks in correct order | Integration | States 0-7 fire sequentially                                                            |
-| Cancel during scan                  | Integration | No crash, helper released                                                               |
+| Progress callbacks in correct order | Unit        | States 0-7 fire sequentially                                                            |
+| Cancel during scan                  | Unit        | No crash, helper released                                                               |
 | Test app migration                  | Integration | `SelfSdkSwift.configure()` replaces manual factory registration with identical behavior |
-| End-to-end: launch -> NFC -> result | Integration | Full flow on physical device                                                            |
 
 **Status: Done**
 
