@@ -1053,6 +1053,15 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card';
       const hasParsedDsc = needsDscParsing && Boolean(passportData.dsc_parsed?.authorityKeyIdentifier);
 
+      if (circuitType === 'dsc' && !needsDscParsing) {
+        console.error(`DSC circuit is not supported for ${passportData.documentCategory} documents`);
+        selfClient.trackEvent(ProofEvents.PROOF_FAILED, {
+          message: `DSC circuit not supported for ${passportData.documentCategory}`,
+        });
+        actor.send({ type: 'ERROR' });
+        return;
+      }
+
       const shouldParseDocument = circuitType === 'dsc' || (needsDscParsing && !hasParsedDsc);
 
       if (shouldParseDocument) {
@@ -1163,13 +1172,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           case 'passport':
           case 'id_card':
             if (!passportData?.dsc_parsed?.authorityKeyIdentifier) {
-              selfClient.logProofEvent('error', 'Missing parsed DSC', context, {
+              const docType = passportData.documentCategory;
+              selfClient.logProofEvent('error', `Missing parsed DSC in ${docType} data`, context, {
                 failure: 'PROOF_FAILED_DATA_FETCH',
                 duration_ms: Date.now() - startTime,
               });
-              console.error('Missing parsed DSC in passport data');
+              console.error(`Missing parsed DSC in ${docType} data`);
               selfClient.trackEvent(ProofEvents.FETCH_DATA_FAILED, {
-                message: 'Missing parsed DSC in passport data',
+                message: `Missing parsed DSC in ${docType} data`,
               });
               actor!.send({ type: 'FETCH_ERROR' });
               return;
