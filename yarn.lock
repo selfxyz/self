@@ -10987,9 +10987,7 @@ __metadata:
     "@lottiefiles/dotlottie-react": "npm:^0.17.15"
     "@lottiefiles/dotlottie-react-native": "npm:0.5.0"
     "@noble/hashes": "npm:^1.5.0"
-    "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
-    "@openpassport/zk-kit-smt": "npm:^0.0.1"
     "@peculiar/x509": "npm:^1.14.3"
     "@react-native-async-storage/async-storage": "npm:^2.2.0"
     "@react-native-clipboard/clipboard": "npm:1.16.3"
@@ -11030,19 +11028,16 @@ __metadata:
     "@turnkey/core": "npm:1.7.0"
     "@turnkey/encoding": "npm:^0.6.0"
     "@turnkey/react-native-wallet-kit": "npm:1.1.5"
-    "@types/bn.js": "npm:^5.2.0"
     "@types/dompurify": "npm:^3.2.0"
     "@types/elliptic": "npm:^6.4.18"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^22.18.3"
     "@types/node-forge": "npm:^1.3.14"
-    "@types/path-browserify": "npm:^1"
     "@types/react": "npm:^18.3.4"
     "@types/react-dom": "npm:^18.3.0"
     "@types/react-native-dotenv": "npm:^0.2.0"
     "@types/react-native-sqlite-storage": "npm:^6.0.5"
     "@types/react-native-web": "npm:^0"
-    "@types/react-test-renderer": "npm:^18"
     "@typescript-eslint/eslint-plugin": "npm:^8.39.0"
     "@typescript-eslint/parser": "npm:^8.39.0"
     "@vitejs/plugin-react-swc": "npm:^4.2.2"
@@ -11070,15 +11065,9 @@ __metadata:
     ethers: "npm:^6.11.0"
     expo: "npm:~52.0.40"
     expo-application: "npm:~6.0.2"
-    hash.js: "npm:^1.1.7"
-    hermes-eslint: "npm:^0.19.1"
+    hermes-eslint: "npm:^0.33.3"
     jest: "npm:^30.2.0"
-    js-sha1: "npm:^0.7.0"
-    js-sha256: "npm:^0.11.1"
-    js-sha512: "npm:^0.9.0"
-    lottie-react: "npm:^2.4.1"
     node-forge: "npm:^1.3.3"
-    path-browserify: "npm:^1.0.1"
     pkijs: "npm:^3.3.3"
     poseidon-lite: "npm:^0.2.0"
     prettier: "npm:^3.5.3"
@@ -11108,7 +11097,7 @@ __metadata:
     react-native-safe-area-context: "npm:^5.6.2"
     react-native-screens: "npm:4.15.3"
     react-native-sqlite-storage: "npm:^6.0.1"
-    react-native-svg: "npm:15.12.1"
+    react-native-svg: "npm:15.14.0"
     react-native-svg-transformer: "npm:^1.5.2"
     react-native-svg-web: "npm:1.0.9"
     react-native-url-polyfill: "npm:^3.0.0"
@@ -11121,7 +11110,6 @@ __metadata:
     stream-browserify: "npm:^3.0.0"
     tamagui: "npm:1.126.14"
     ts-morph: "npm:^22.0.0"
-    ts-node: "npm:^10.9.2"
     typescript: "npm:^5.9.3"
     uuid: "npm:^11.1.0"
     vite: "npm:^7.3.1"
@@ -11164,13 +11152,12 @@ __metadata:
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.9"
-    react-native-blur-effect: "npm:^1.1.3"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-haptic-feedback: "npm:^2.3.3"
     react-native-keychain: "npm:^9.2.3"
     react-native-localize: "npm:^3.6.1"
     react-native-nfc-manager: "npm:^3.17.2"
-    react-native-svg: "npm:15.12.1"
+    react-native-svg: "npm:15.14.0"
     react-native-svg-circle-country-flags: "npm:^0.2.2"
     react-native-web: "npm:^0.21.2"
     react-native-webview: "npm:13.16.0"
@@ -11185,8 +11172,7 @@ __metadata:
     "@lottiefiles/dotlottie-react-native": "*"
     "@react-native-async-storage/async-storage": ">=1.0.0"
     react: ^18.3.1
-    react-native: 0.76.9
-    react-native-blur-effect: ^1.1.3
+    react-native: ">=0.76.0 <0.78.0"
     react-native-get-random-values: ">=1.0.0"
     react-native-haptic-feedback: "*"
     react-native-keychain: ">=8.0.0"
@@ -11372,7 +11358,7 @@ __metadata:
     react-native: ">=0.72.0"
     react-native-biometrics: ^3.0.1
     react-native-fs: ^2.20.0
-    react-native-keychain: ^8.2.0
+    react-native-keychain: ">=8.2.0 <11"
     react-native-nfc-manager: ^3.14.0
     react-native-webview: ">=13.0.0"
   peerDependenciesMeta:
@@ -16072,7 +16058,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bn.js@npm:*, @types/bn.js@npm:^5.1.0, @types/bn.js@npm:^5.2.0":
+"@types/bn.js@npm:*, @types/bn.js@npm:^5.1.0":
   version: 5.2.0
   resolution: "@types/bn.js@npm:5.2.0"
   dependencies:
@@ -16483,13 +16469,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/path-browserify@npm:^1":
-  version: 1.0.3
-  resolution: "@types/path-browserify@npm:1.0.3"
-  checksum: 10c0/6ed6de375c210dbc20d171ab547be6065ce9904463ca8ca63443a3b23efc7234ff5400d62be05b9be36fc2e863b77592c2e607896988ad39a45276b8a7e42d70
-  languageName: node
-  linkType: hard
-
 "@types/prettier@npm:^2.1.1":
   version: 2.7.3
   resolution: "@types/prettier@npm:2.7.3"
@@ -16567,15 +16546,6 @@ __metadata:
   dependencies:
     "@types/react": "npm:*"
   checksum: 10c0/09a5191dd0f3b85abfa8939df585860ba11a666d888846c7fd7d8d5d1cd72a39224e154403f90a5b82f1dc6c896fa3447e4f5061b2d3e102d0ce798e559d7f13
-  languageName: node
-  linkType: hard
-
-"@types/react-test-renderer@npm:^18":
-  version: 18.3.1
-  resolution: "@types/react-test-renderer@npm:18.3.1"
-  dependencies:
-    "@types/react": "npm:^18"
-  checksum: 10c0/9fc8467ff1a3f14be6cc3498a75fc788d2c92c0fffa7bf21269ed5d9d82db9195bf2178ddc42ea16a0836995c1b77601c6be8abb27bd1864668c418c6d0e5a3b
   languageName: node
   linkType: hard
 
@@ -25958,21 +25928,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hermes-eslint@npm:^0.19.1":
-  version: 0.19.2
-  resolution: "hermes-eslint@npm:0.19.2"
+"hermes-eslint@npm:^0.33.3":
+  version: 0.33.3
+  resolution: "hermes-eslint@npm:0.33.3"
   dependencies:
     esrecurse: "npm:^4.3.0"
-    hermes-estree: "npm:0.19.2"
-    hermes-parser: "npm:0.19.2"
-  checksum: 10c0/da161e075dbe49a02e6db37361a5c2858a5219c665d5ce740a350362532850dd61650f5010b01ab0ea105ac59eb70cb297da5e34d8d73b5b14ed1ad62aa353be
-  languageName: node
-  linkType: hard
-
-"hermes-estree@npm:0.19.2":
-  version: 0.19.2
-  resolution: "hermes-estree@npm:0.19.2"
-  checksum: 10c0/9d8c9876d8a7dce455d00115549e196e83545016710a92c0ca503e0dd61fad35567627016039e6dd07c70b774debfe133422897656357ad36d40cdfed37fb877
+    hermes-estree: "npm:0.33.3"
+    hermes-parser: "npm:0.33.3"
+  checksum: 10c0/5894dbe52f5de698934d7cba0fda512d685651763df0e436cbe7e354ca3dff19bf57d1738b7a86d29f7482cfaac9791ed77d96f81150a74518ff7370da257bd2
   languageName: node
   linkType: hard
 
@@ -25997,12 +25960,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hermes-parser@npm:0.19.2":
-  version: 0.19.2
-  resolution: "hermes-parser@npm:0.19.2"
-  dependencies:
-    hermes-estree: "npm:0.19.2"
-  checksum: 10c0/857bbb9a26bebc17b7dac2560cf2d44ac64146d9557c253b1d286128be52de26ea67dff198c01ea18a5dbab50464bcfc5301b3e863236a08291c25d79cd374dc
+"hermes-estree@npm:0.33.3":
+  version: 0.33.3
+  resolution: "hermes-estree@npm:0.33.3"
+  checksum: 10c0/4e04e767a706a93c59d64ef3f114075aeb93b08433655d4f11d310f0785c2a74d5b5041b80bc34d22630dece54865dd93a53fde160d48b8369cfef10dbd0520b
   languageName: node
   linkType: hard
 
@@ -26030,6 +25991,15 @@ __metadata:
   dependencies:
     hermes-estree: "npm:0.32.0"
   checksum: 10c0/5902d2c5d347c0629fba07a47eaad5569590ac69bc8bfb2e454e08d2dfbe1ebd989d88518dca2cba64061689b5eac5960ae6bd15a4a66600bbf377498a3234b7
+  languageName: node
+  linkType: hard
+
+"hermes-parser@npm:0.33.3":
+  version: 0.33.3
+  resolution: "hermes-parser@npm:0.33.3"
+  dependencies:
+    hermes-estree: "npm:0.33.3"
+  checksum: 10c0/f7d69de54c77321d8481e37a323bbac01d180ec982275ef8925ceaaf7e501fc3062593e84cf5da50852f36daffb34d0f5d6cbbef079fd0125a7b91c1fe84f225
   languageName: node
   linkType: hard
 
@@ -28038,7 +28008,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-sha256@npm:^0.11.0, js-sha256@npm:^0.11.1":
+"js-sha256@npm:^0.11.0":
   version: 0.11.1
   resolution: "js-sha256@npm:0.11.1"
   checksum: 10c0/ef8e294b6f38f218e4834cb653471dd1a76808cea93dc66eaffcb04124116bc36d6cebc4e8866753e184ab4e57892b6ef21918e8ab0450179a7e093ea962d974
@@ -30500,13 +30470,12 @@ __metadata:
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.9"
-    react-native-blur-effect: "npm:1.1.3"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-haptic-feedback: "npm:^2.3.3"
     react-native-keychain: "npm:^10.0.0"
     react-native-localize: "npm:^3.6.1"
     react-native-safe-area-context: "npm:^5.6.2"
-    react-native-svg: "npm:15.12.1"
+    react-native-svg: "npm:15.14.0"
     react-native-svg-transformer: "npm:^1.5.2"
     react-native-vector-icons: "npm:^10.3.0"
     react-native-webview: "npm:13.16.0"
@@ -33369,7 +33338,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-blur-effect@npm:1.1.3":
+"react-native-blur-effect@npm:^1.1.3":
   version: 1.1.3
   resolution: "react-native-blur-effect@npm:1.1.3"
   peerDependencies:
@@ -33575,13 +33544,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-passkey@npm:3.3.1":
-  version: 3.3.1
-  resolution: "react-native-passkey@npm:3.3.1"
+"react-native-passkey@npm:3.3.2":
+  version: 3.3.2
+  resolution: "react-native-passkey@npm:3.3.2"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/667a699f59547449d36baa622663c6e1f51bfa3dc0399a9dfb37f4080edfc9cc2649bfeb9f36ecbb49940f2e339005375f3a57d6580450c626d158e5665c56fa
+  checksum: 10c0/417a7f238ecd6c77dd1f6dfd44d6896cf784f6431f0ff78479b5bb8e42a25ad108531e32a256f6fb69b556e90fd9e84fa0c498934a69b2310d3baf13ebcea3c6
   languageName: node
   linkType: hard
 
@@ -33662,9 +33631,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-svg@npm:15.12.1":
-  version: 15.12.1
-  resolution: "react-native-svg@npm:15.12.1"
+"react-native-svg@npm:15.14.0":
+  version: 15.14.0
+  resolution: "react-native-svg@npm:15.14.0"
   dependencies:
     css-select: "npm:^5.1.0"
     css-tree: "npm:^1.1.3"
@@ -33672,7 +33641,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/ed94b57007125c715283fc760438ac8eac0677ced3201f6e272a7cd4459f3fecb672a8eed2c32664e5b8e6e0367585353b0f83f99b231f603d75094bb052c01f
+  checksum: 10c0/5855bee2a76313f580ac3f8c476d07bb63d1a8e5e0883154275be5a1f4224e35f2416b0ba3b03f5d4c637c3b2f9320df34ede918da27188adb6881b3b8ac96c8
   languageName: node
   linkType: hard
 
