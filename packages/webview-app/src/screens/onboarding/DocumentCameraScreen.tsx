@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Button,
@@ -17,6 +17,9 @@ import {
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 
+const GENERIC_SCAN_ERROR_MESSAGE = 'We could not read your document. Please try again.';
+const MRZ_INVALID_DATA_ERROR = 'MRZ_INVALID_DATA';
+
 export const DocumentCameraScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,11 +33,16 @@ export const DocumentCameraScreen: React.FC = () => {
 
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+  const scanGenerationRef = useRef(0);
 
   const scanPrompt =
     documentType === 'i' ? 'Scan your ID card' : 'Scan your passport';
 
   const startMRZScan = useCallback(async () => {
+    const scanGeneration = scanGenerationRef.current + 1;
+    scanGenerationRef.current = scanGeneration;
+
     setScanning(true);
     setError(null);
     analytics.trackEvent('camera_mrz_scan_started', {
@@ -44,6 +52,16 @@ export const DocumentCameraScreen: React.FC = () => {
 
     try {
       const result = await camera.scanMRZ({ documentType, countryCode });
+      if (!mountedRef.current || scanGenerationRef.current !== scanGeneration) {
+        return;
+      }
+
+      const passportNumber = result.documentNumber?.trim() ?? '';
+      const dateOfBirth = result.dateOfBirth?.trim() ?? '';
+      const dateOfExpiry = result.dateOfExpiry?.trim() ?? '';
+      if (!passportNumber || !dateOfBirth || !dateOfExpiry) {
+        throw new Error(MRZ_INVALID_DATA_ERROR);
+      }
 
       haptic.trigger('success');
       analytics.trackEvent('camera_mrz_scan_success');
@@ -52,25 +70,40 @@ export const DocumentCameraScreen: React.FC = () => {
         state: {
           countryCode,
           documentType,
-          passportNumber: result.documentNumber,
-          dateOfBirth: result.dateOfBirth,
-          dateOfExpiry: result.dateOfExpiry,
+          passportNumber,
+          dateOfBirth,
+          dateOfExpiry,
         },
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'MRZ scan failed';
-      setError(message);
-      analytics.trackEvent('camera_mrz_scan_failed', { error: message });
+      if (!mountedRef.current || scanGenerationRef.current !== scanGeneration) {
+        return;
+      }
+
+      const errorCode =
+        err instanceof Error && err.message === MRZ_INVALID_DATA_ERROR
+          ? 'MRZ_INVALID_DATA'
+          : 'MRZ_SCAN_FAILED';
+      setError(GENERIC_SCAN_ERROR_MESSAGE);
+      analytics.trackEvent('camera_mrz_scan_failed', { errorCode });
     } finally {
-      setScanning(false);
+      if (mountedRef.current && scanGenerationRef.current === scanGeneration) {
+        setScanning(false);
+      }
     }
   }, [camera, navigate, analytics, haptic, documentType, countryCode]);
 
   useEffect(() => {
+    mountedRef.current = true;
     startMRZScan();
+    return () => {
+      mountedRef.current = false;
+      scanGenerationRef.current += 1;
+    };
   }, [startMRZScan]);
 
   const onCancel = useCallback(() => {
+    scanGenerationRef.current += 1;
     analytics.trackEvent('camera_screen_closed');
     navigate('/');
   }, [navigate, analytics]);

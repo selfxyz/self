@@ -2166,6 +2166,7 @@ cd packages/self-sdk-swift && swift build
 | Camera MRZ handler for iOS     | Chunk 2L scoping  | Phase 2 -- add to this spec when needed                                                       |
 | SecureStorage handler for iOS  | Design review     | **Decided:** Add `SecureStorageProvider` to factory pattern (see SDK-OVERVIEW canonical rule) |
 | Crypto signing handler for iOS | Design review     | Depends on whether secure enclave signing is needed vs. Web Crypto                            |
+| LifecycleBridgeHandler thin-wrapper refactor | PR #1805 review | Both Android and iOS `setResult()` have 4-branch business logic (interpreting `type`/`success`/`errorCode` to decide result codes / callback methods). Per PROJECT-RULES.md rule 22 ("no error mapping in native"), TypeScript should send an explicit `resultCode` or `outcome` field, and the handler should pass it through without interpretation. Touches both platform handlers + bridge protocol. |
 
 ## Spec Deviations
 

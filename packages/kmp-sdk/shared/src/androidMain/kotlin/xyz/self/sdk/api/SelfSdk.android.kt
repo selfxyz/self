@@ -4,6 +4,7 @@
 
 package xyz.self.sdk.api
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
@@ -133,7 +134,25 @@ actual class SelfSdk private constructor(
             )
             return
         }
-        launcher.launch(intent)
+        try {
+            launcher.launch(intent)
+        } catch (e: ActivityNotFoundException) {
+            pendingCallback = null
+            callback.onFailure(
+                SelfSdkError(
+                    code = "ACTIVITY_NOT_FOUND",
+                    message = "Could not launch verification activity: ${e.message}",
+                ),
+            )
+        } catch (e: IllegalStateException) {
+            pendingCallback = null
+            callback.onFailure(
+                SelfSdkError(
+                    code = "LAUNCH_FAILED",
+                    message = "Could not launch verification activity: ${e.message}",
+                ),
+            )
+        }
     }
 
     private fun bindActivity(activity: ComponentActivity) {
@@ -158,7 +177,7 @@ actual class SelfSdk private constructor(
         launcherOwner = WeakReference(activity)
         activityLauncher =
             activity.activityResultRegistry.register(
-                "self-sdk-verification-${activity.hashCode()}",
+                "self-sdk-verification",
                 ActivityResultContracts.StartActivityForResult(),
             ) { result ->
                 val callback = pendingCallback
