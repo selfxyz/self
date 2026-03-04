@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { GOOGLE_SIGNIN_IOS_CLIENT_ID, GOOGLE_SIGNIN_WEB_CLIENT_ID } from '@env';
@@ -54,6 +54,7 @@ const formatFullName = (fullName?: {
 };
 
 const SocialLoginDemoScreen: React.FC = () => {
+  const authInFlightRef = useRef(false);
   const [user, setUser] = useState<SocialUser | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -108,9 +109,10 @@ const SocialLoginDemoScreen: React.FC = () => {
   };
 
   const handleGoogleSignIn = async () => {
-    if (loading) {
+    if (loading || authInFlightRef.current) {
       return;
     }
+    authInFlightRef.current = true;
     setLoading(true);
     setErrorMessage(null);
 
@@ -155,12 +157,13 @@ const SocialLoginDemoScreen: React.FC = () => {
         'Unable to sign in with Google. Please try again.',
       );
     } finally {
+      authInFlightRef.current = false;
       setLoading(false);
     }
   };
 
   const handleAppleSignIn = async () => {
-    if (loading) {
+    if (loading || authInFlightRef.current) {
       return;
     }
     if (!appleAvailable) {
@@ -168,6 +171,7 @@ const SocialLoginDemoScreen: React.FC = () => {
       return;
     }
 
+    authInFlightRef.current = true;
     setLoading(true);
     setErrorMessage(null);
 
@@ -208,6 +212,7 @@ const SocialLoginDemoScreen: React.FC = () => {
         'Unable to sign in with Apple. Please try again.',
       );
     } finally {
+      authInFlightRef.current = false;
       setLoading(false);
     }
   };
