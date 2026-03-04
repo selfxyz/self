@@ -5,23 +5,26 @@ import { poseidon5 } from 'poseidon-lite';
 import type { CertificateData } from '../../foundation/types/certificate.js';
 import type {
   AadhaarData,
+  DeployedCircuits,
   DocumentCategory,
   DocumentType,
 } from '../../foundation/types/document.js';
 import { AADHAAR_ATTESTATION_ID } from '../../foundation/constants/identity.js';
 import { packBytesAndPoseidon } from '../../crypto/hash/poseidon.js';
-import type { DisclosureField, DocumentAttribute, IDocument } from '../interface.js';
+import type { CircuitType, DisclosureField, DocumentAttribute } from '../interface.js';
+import { IDocument } from '../interface.js';
 import { disclosureToAadhaarSelector } from './constants.js';
 import { processQRData } from './qr.js';
 import { stringToAsciiArray } from './utils.js';
 
-export class AadhaarDocument implements IDocument {
+export class AadhaarDocument extends IDocument {
   readonly category: DocumentCategory = 'aadhaar';
   readonly type: DocumentType;
   readonly raw: AadhaarData;
   readonly isMock: boolean;
 
   constructor(data: AadhaarData) {
+    super();
     this.raw = data;
     this.type = data.documentType;
     this.isMock = data.mock;
@@ -73,6 +76,17 @@ export class AadhaarDocument implements IDocument {
 
   getCscaParsed(): CertificateData | undefined {
     return undefined;
+  }
+
+  getDnsMappingKey(circuitType: CircuitType): string {
+    switch (circuitType) {
+      case 'disclose':
+        return 'DISCLOSE_AADHAAR';
+      case 'register':
+        return 'REGISTER_AADHAAR';
+      case 'dsc':
+        throw new Error('Aadhaar does not have a DSC circuit');
+    }
   }
 
   getRegisterCircuitName(): string {
@@ -159,6 +173,16 @@ export class AadhaarDocument implements IDocument {
   getDisclosureSlice(attribute: string): string {
     const key = attribute as keyof typeof this.raw.extractedFields;
     return this.raw.extractedFields[key] ?? '';
+  }
+
+  isValidRegisterCircuit(deployedCircuits: DeployedCircuits): { isValid: boolean; circuitName: string | null } {
+    const circuitName = this.getRegisterCircuitName();
+    const isValid = deployedCircuits.REGISTER_AADHAAR.includes(circuitName);
+    return { isValid, circuitName };
+  }
+
+  isValidDscCircuit(_deployedCircuits: DeployedCircuits): { isValid: boolean; circuitName: string | null } {
+    return { isValid: false, circuitName: null };
   }
 
   buildDisclosureSelector(fields: DisclosureField[]): unknown {

@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { AadhaarData, IdDocInput, PassportData } from '@selfxyz/common';
-import { generateMockDSC, genMockIdDoc, getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
+import type { AadhaarData, PassportData } from '@selfxyz/new-common';
+import { getSKIPEM, initPassportDataParsing } from '@selfxyz/new-common';
+import type { IdDocInput } from '@selfxyz/new-common/src/testing/genMockIdDoc';
+import { generateMockDSC, genMockIdDoc } from '@selfxyz/new-common/src/testing/genMockIdDoc';
 
 export interface GenerateMockDocumentOptions {
   age: number;
@@ -65,7 +67,7 @@ export async function generateMockDocument({
       selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
     ];
 
-  const idDocInput: Partial<IdDocInput> = {
+  const idDocInput: Partial<IdDocInput> & { idType: IdDocInput['idType'] } = {
     nationality: selectedCountry as IdDocInput['nationality'],
     idType: selectedDocumentType as IdDocInput['idType'],
     dgHashAlgo: dgHashAlgo as IdDocInput['dgHashAlgo'],

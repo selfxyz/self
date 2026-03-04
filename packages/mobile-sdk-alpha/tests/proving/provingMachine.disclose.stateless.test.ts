@@ -42,8 +42,8 @@ vi.mock('xstate', async () => {
 });
 
 // Mock proving utils for payload building
-vi.mock('@selfxyz/common/utils/proving', async () => {
-  const actual = (await vi.importActual('@selfxyz/common/utils/proving')) as any;
+vi.mock('@selfxyz/new-common', async () => {
+  const actual = (await vi.importActual('@selfxyz/new-common')) as any;
   return {
     ...actual,
     getPayload: vi.fn(() => ({ mocked: true })),
@@ -87,11 +87,21 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         endpoint: 'https://dis',
       };
     });
-    vi.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
-      generateTEEInputsDiscloseStateless: genMock,
-      generateTEEInputsRegister: vi.fn(),
-      generateTEEInputsDSC: vi.fn(),
-    }));
+    vi.doMock('@selfxyz/new-common', async () => {
+      const actual = (await vi.importActual('@selfxyz/new-common')) as any;
+      return {
+        ...actual,
+        generateTEEInputsDiscloseStateless: genMock,
+        generateTEEInputsRegister: vi.fn(),
+        generateTEEInputsDSC: vi.fn(),
+        getPayload: vi.fn(() => ({ mocked: true })),
+        encryptAES256GCM: vi.fn(() => ({
+          nonce: [0],
+          cipher_text: [1],
+          auth_tag: [2],
+        })),
+      };
+    });
 
     // Act (reload module after doMock)
 
@@ -198,11 +208,15 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         endpoint: '',
       };
     });
-    vi.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
-      generateTEEInputsDiscloseStateless: genMock,
-      generateTEEInputsRegister: vi.fn(),
-      generateTEEInputsDSC: vi.fn(),
-    }));
+    vi.doMock('@selfxyz/new-common', async () => {
+      const actual = (await vi.importActual('@selfxyz/new-common')) as any;
+      return {
+        ...actual,
+        generateTEEInputsDiscloseStateless: genMock,
+        generateTEEInputsRegister: vi.fn(),
+        generateTEEInputsDSC: vi.fn(),
+      };
+    });
 
     const mod = await import('../../src/proving/provingMachine');
     const storeModule = await import('../../src/stores/protocolStore');
@@ -276,11 +290,15 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         endpoint: '',
       };
     });
-    vi.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
-      generateTEEInputsDiscloseStateless: genMock,
-      generateTEEInputsRegister: vi.fn(),
-      generateTEEInputsDSC: vi.fn(),
-    }));
+    vi.doMock('@selfxyz/new-common', async () => {
+      const actual = (await vi.importActual('@selfxyz/new-common')) as any;
+      return {
+        ...actual,
+        generateTEEInputsDiscloseStateless: genMock,
+        generateTEEInputsRegister: vi.fn(),
+        generateTEEInputsDSC: vi.fn(),
+      };
+    });
 
     const mod = await import('../../src/proving/provingMachine');
     const storeModule = await import('../../src/stores/protocolStore');

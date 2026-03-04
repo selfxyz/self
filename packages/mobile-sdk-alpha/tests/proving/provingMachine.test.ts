@@ -5,7 +5,7 @@
 /* @vitest-environment jsdom */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { PassportData } from '@selfxyz/common/types';
+import type { PassportData } from '@selfxyz/new-common';
 
 import type { SelfClient } from '../../src';
 import { SdkEvents } from '../../src';

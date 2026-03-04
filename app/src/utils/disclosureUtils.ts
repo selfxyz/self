@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { Country3LetterCode } from '@selfxyz/common/constants';
-import { countryCodes } from '@selfxyz/common/constants';
-import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
+import type { Country3LetterCode, SelfAppDisclosureConfig } from '@selfxyz/new-common';
+import { countryCodes } from '@selfxyz/new-common';
 
 function listToString(list: string[]): string {
   if (list.length === 1) {

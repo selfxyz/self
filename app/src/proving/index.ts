@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 // This module combines:
-// 1. Shared proving utilities from @selfxyz/common (cross-workspace)
+// 1. Shared proving utilities from @selfxyz/new-common (cross-workspace)
 // 2. App-specific proving helpers (loadingScreenStateText, validateDocument)
 
 // Only export what's actually used elsewhere to enable proper tree shaking
@@ -15,7 +15,7 @@ export {
   encryptAES256GCM,
   getPayload,
   getWSDbRelayerUrl,
-} from '@selfxyz/common/utils/proving';
+} from '@selfxyz/new-common';
 
 // From loadingScreenStateText - used in loading screen
 export { getLoadingScreenText } from '@/proving/loadingScreenStateText';

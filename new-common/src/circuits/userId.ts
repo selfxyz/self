@@ -1,4 +1,4 @@
-export type UserIdType = 'hex' | 'uuid';
+import type { UserIdType } from '../foundation/types/circuit.js';
 
 function hexToBigInt(hex: string): bigint {
   return BigInt(`0x${hex}`);

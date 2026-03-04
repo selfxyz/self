@@ -44,25 +44,8 @@ import type { PropsWithChildren } from 'react';
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { deserializeApplicantInfo } from '@selfxyz/common';
-import type {
-  PublicKeyDetailsECDSA,
-  PublicKeyDetailsRSA,
-} from '@selfxyz/common/types/certificates';
-import {
-  brutforceSignatureAlgorithmDsc,
-  calculateContentHash,
-  inferDocumentCategory,
-} from '@selfxyz/common/utils';
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
-import type {
-  AadhaarData,
-  DocumentCatalog,
-  DocumentMetadata,
-  IDDocument,
-  PassportData,
-} from '@selfxyz/common/utils/types';
-import { isKycDocument, isMRZDocument } from '@selfxyz/common/utils/types';
+import type { AadhaarData, DocumentCatalog, DocumentMetadata, IDDocument, PassportData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '@selfxyz/new-common';
+import { bruteForceSignatureAlgorithmDsc, calculateContentHash, deserializeApplicantInfo, inferDocumentCategory, isKycDocument, isMRZDocument, parseCertificateSimple } from '@selfxyz/new-common';
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
@@ -766,7 +749,7 @@ export async function reStorePassportDataWithRightCSCA(
   const cscaInCurrentPassporData = passportData.passportMetadata?.csca;
   if (!(csca === cscaInCurrentPassporData)) {
     const cscaParsed = parseCertificateSimple(csca);
-    const dscCertData = brutforceSignatureAlgorithmDsc(
+    const dscCertData = bruteForceSignatureAlgorithmDsc(
       passportData.dsc_parsed!,
       cscaParsed,
     );

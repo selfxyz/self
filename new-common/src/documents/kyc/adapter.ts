@@ -1,9 +1,10 @@
 import { sha256 } from 'js-sha256';
 
 import type { CertificateData } from '../../foundation/types/certificate.js';
-import type { DocumentCategory, DocumentType, KycData } from '../../foundation/types/document.js';
+import type { DeployedCircuits, DocumentCategory, DocumentType, KycData } from '../../foundation/types/document.js';
 import { KYC_ATTESTATION_ID } from '../../foundation/constants/identity.js';
-import type { DisclosureField, DocumentAttribute, IDocument } from '../interface.js';
+import type { CircuitType, DisclosureField, DocumentAttribute } from '../interface.js';
+import { IDocument } from '../interface.js';
 import {
   KYC_COUNTRY_INDEX,
   KYC_COUNTRY_LENGTH,
@@ -59,13 +60,14 @@ function parseApplicantField(applicantInfoBase64: string, index: number, length:
   return applicantInfo.slice(index, index + length).replace(/\x00/g, '');
 }
 
-export class KycDocument implements IDocument {
+export class KycDocument extends IDocument {
   readonly category: DocumentCategory = 'kyc';
   readonly type: DocumentType;
   readonly raw: KycData;
   readonly isMock: boolean;
 
   constructor(data: KycData) {
+    super();
     this.raw = data;
     this.type = data.documentType;
     this.isMock = data.mock;
@@ -120,6 +122,17 @@ export class KycDocument implements IDocument {
     return undefined;
   }
 
+  getDnsMappingKey(circuitType: CircuitType): string {
+    switch (circuitType) {
+      case 'disclose':
+        return 'DISCLOSE_KYC';
+      case 'register':
+        return 'REGISTER_KYC';
+      case 'dsc':
+        throw new Error('KYC documents do not have a DSC circuit');
+    }
+  }
+
   getRegisterCircuitName(): string {
     return 'register_kyc';
   }
@@ -168,6 +181,16 @@ export class KycDocument implements IDocument {
     if (!pos) return '';
     const applicantInfo = Buffer.from(this.raw.serializedApplicantInfo, 'base64').toString('utf-8');
     return applicantInfo.slice(pos[0], pos[1] + 1).replace(/\x00/g, '');
+  }
+
+  isValidRegisterCircuit(deployedCircuits: DeployedCircuits): { isValid: boolean; circuitName: string | null } {
+    const circuitName = this.getRegisterCircuitName();
+    const isValid = deployedCircuits.REGISTER_KYC.includes(circuitName);
+    return { isValid, circuitName };
+  }
+
+  isValidDscCircuit(_deployedCircuits: DeployedCircuits): { isValid: boolean; circuitName: string | null } {
+    return { isValid: false, circuitName: null };
   }
 
   buildDisclosureSelector(fields: DisclosureField[]): [bigint, bigint] {

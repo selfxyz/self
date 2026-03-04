@@ -4,7 +4,7 @@
 
 import { useCallback, useState } from 'react';
 
-import { commonNames } from '@selfxyz/common/constants/countries';
+import { commonNames } from '@selfxyz/new-common';
 import { CountryPickerScreen as CountryPickerUI, type SafeArea } from '@selfxyz/euclid';
 
 import { RoundFlag } from '../../components';

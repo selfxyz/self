@@ -7,7 +7,7 @@ import { StyleSheet } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
-import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import type { DocumentCategory } from '@selfxyz/new-common';
 import type {
   DotLottieSource,
   ProvingStateType,

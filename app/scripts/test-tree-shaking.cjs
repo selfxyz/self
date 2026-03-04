@@ -19,37 +19,36 @@ const os = require('os');
 const TEST_CONFIGS = [
   {
     name: 'full-import',
-    description: 'Import everything from @selfxyz/common (worst case)',
-    imports: `import common from '@selfxyz/common';
-console.log('API_URL:', common.API_URL);
-console.log('hash function exists:', typeof common.hash);`,
+    description: 'Import everything from @selfxyz/new-common root barrel (worst case)',
+    imports: `import { countryCodes, WS_DB_RELAYER, encryptAES256GCM, createDocument } from '@selfxyz/new-common';
+console.log('WS_DB_RELAYER:', WS_DB_RELAYER);
+console.log('countryCodes length:', countryCodes.length);`,
   },
   {
-    name: 'mixed-import',
-    description: 'Mixed import pattern (current typical usage)',
-    imports: `import { API_URL, hash, buildSMT, generateCommitment } from '@selfxyz/common';
-console.log('API_URL:', API_URL);
-console.log('hash result:', hash('test'));`,
+    name: 'constants-only',
+    description: 'Only constants from root barrel',
+    imports: `import { WS_DB_RELAYER, countryCodes } from '@selfxyz/new-common';
+console.log('WS_DB_RELAYER:', WS_DB_RELAYER);`,
   },
   {
-    name: 'granular-constants',
-    description: 'Only constants via granular import (best case)',
-    imports: `import { API_URL } from '@selfxyz/common/constants';
-console.log('API_URL:', API_URL);`,
+    name: 'sub-path-constants',
+    description: 'Constants via sub-path import (best case)',
+    imports: `import { WS_DB_RELAYER } from '@selfxyz/new-common/src/foundation/constants/index';
+console.log('WS_DB_RELAYER:', WS_DB_RELAYER);`,
   },
   {
-    name: 'granular-utils',
-    description: 'Only hash utils via granular import',
-    imports: `import { hash, customHasher } from '@selfxyz/common/utils';
-console.log('hash result:', hash('test'));`,
+    name: 'sub-path-crypto',
+    description: 'Only crypto utils via sub-path import',
+    imports: `import { encryptAES256GCM } from '@selfxyz/new-common/src/crypto/index';
+console.log('encrypt exists:', typeof encryptAES256GCM);`,
   },
   {
-    name: 'granular-mixed',
-    description: 'Mixed granular imports (recommended pattern)',
-    imports: `import { API_URL } from '@selfxyz/common/constants';
-import { hash } from '@selfxyz/common/utils';
-console.log('API_URL:', API_URL);
-console.log('hash result:', hash('test'));`,
+    name: 'sub-path-mixed',
+    description: 'Mixed sub-path imports (recommended pattern)',
+    imports: `import { WS_DB_RELAYER } from '@selfxyz/new-common/src/foundation/constants/index';
+import { encryptAES256GCM } from '@selfxyz/new-common/src/crypto/index';
+console.log('WS_DB_RELAYER:', WS_DB_RELAYER);
+console.log('encrypt exists:', typeof encryptAES256GCM);`,
   },
 ];
 
@@ -71,7 +70,7 @@ function createTestApp(config, testDir, commonPackagePath) {
     private: true,
     type: 'module',
     dependencies: {
-      '@selfxyz/common': `file:${commonPackagePath}`,
+      '@selfxyz/new-common': `file:${commonPackagePath}`,
     },
   };
 
@@ -223,7 +222,7 @@ function generateReport(results) {
   console.log('\n💡 RECOMMENDATIONS:');
   if (validResults.some(r => r.config.startsWith('granular'))) {
     console.log(
-      '✅ Use granular imports like "@selfxyz/common/constants" for better tree shaking',
+      '✅ Use granular imports like "@selfxyz/new-common/constants" for better tree shaking',
     );
   }
   console.log('✅ Avoid namespace import patterns when possible');
@@ -262,17 +261,17 @@ async function main() {
   console.log(`📁 Test directory: ${testDir}`);
 
   try {
-    // Ensure @selfxyz/common is built
-    console.log('\n🔨 Building @selfxyz/common...');
+    // Ensure @selfxyz/new-common is built
+    console.log('\n🔨 Building @selfxyz/new-common...');
     const commonDir = join(__dirname, '..', '..', 'common');
-    execSync('yarn workspace @selfxyz/common build', {
+    execSync('yarn workspace @selfxyz/new-common build', {
       stdio: 'inherit',
       cwd: join(__dirname, '..', '..'),
     });
 
     // Copy the built common package to test directory for file:// reference
     const commonPackagePath = join(testDir, 'common-package');
-    console.log(`📦 Copying @selfxyz/common to test directory...`);
+    console.log(`📦 Copying @selfxyz/new-common to test directory...`);
 
     // Copy package.json, dist folder, and other necessary files
     mkdirSync(commonPackagePath, { recursive: true });

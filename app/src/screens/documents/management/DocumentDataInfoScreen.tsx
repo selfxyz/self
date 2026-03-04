@@ -7,8 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Separator, XStack, YStack } from 'tamagui';
 import { useFocusEffect } from '@react-navigation/native';
 
-import type { PassportMetadata } from '@selfxyz/common/types';
-import type { AadhaarData } from '@selfxyz/common/utils/types';
+import type { AadhaarData, PassportMetadata } from '@selfxyz/new-common';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';

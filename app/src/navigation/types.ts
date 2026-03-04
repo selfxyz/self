@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import type { DocumentCategory } from '@selfxyz/new-common';
 
 import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
 import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';

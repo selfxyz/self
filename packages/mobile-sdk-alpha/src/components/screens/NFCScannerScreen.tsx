@@ -5,7 +5,7 @@
 import { useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
+import { getSKIPEM, initPassportDataParsing } from '@selfxyz/new-common';
 
 import { useSelfClient } from '../../context';
 import type { NFCScanResult } from '../../types/public';

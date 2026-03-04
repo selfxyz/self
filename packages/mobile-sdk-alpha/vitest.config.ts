@@ -14,7 +14,7 @@ export default defineConfig({
     server: {
       deps: {
         // Inline these CommonJS modules to transform them for ESM compatibility
-        inline: ['blakejs', '@zk-kit/eddsa-poseidon', '@selfxyz/common'],
+        inline: ['blakejs', '@zk-kit/eddsa-poseidon', '@selfxyz/new-common'],
       },
     },
   },

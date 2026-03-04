@@ -4,7 +4,7 @@
 
 import type { create } from 'zustand';
 
-import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common';
+import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/new-common';
 
 import type { NFCScanContext, ProofContext } from '../proving/internal/logging';
 import type { ProvingState } from '../proving/provingMachine';

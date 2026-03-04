@@ -6,12 +6,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '../../src/mock/generator';
 
-// Mock the @selfxyz/common module to match the actual import path used in generator.ts
-vi.mock('@selfxyz/common', () => ({
-  generateMockDSC: vi.fn(),
-  genMockIdDoc: vi.fn(),
+// Mock the modules to match the actual import paths used in generator.ts
+vi.mock('@selfxyz/new-common', () => ({
   getSKIPEM: vi.fn(),
   initPassportDataParsing: vi.fn(),
+}));
+
+vi.mock('@selfxyz/new-common/src/testing/genMockIdDoc', () => ({
+  generateMockDSC: vi.fn(),
+  genMockIdDoc: vi.fn(),
 }));
 
 // Import the mocked functions after the mocks are defined
@@ -77,8 +80,9 @@ describe('generateMockDocument', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    // Import the mocked functions from the same path used by the implementation
-    ({ getSKIPEM, generateMockDSC, genMockIdDoc, initPassportDataParsing } = await import('@selfxyz/common'));
+    // Import the mocked functions from the same paths used by the implementation
+    ({ getSKIPEM, initPassportDataParsing } = await import('@selfxyz/new-common'));
+    ({ generateMockDSC, genMockIdDoc } = await import('@selfxyz/new-common/src/testing/genMockIdDoc'));
 
     // Setup default mocks with proper types
     vi.mocked(getSKIPEM).mockResolvedValue({ 'mock-key': 'mock-ski-pem' });
@@ -394,8 +398,9 @@ describe('generateMockDocument integration', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    // Import the mocked functions from the same path used by the implementation
-    ({ getSKIPEM, generateMockDSC, genMockIdDoc, initPassportDataParsing } = await import('@selfxyz/common'));
+    // Import the mocked functions from the same paths used by the implementation
+    ({ getSKIPEM, initPassportDataParsing } = await import('@selfxyz/new-common'));
+    ({ generateMockDSC, genMockIdDoc } = await import('@selfxyz/new-common/src/testing/genMockIdDoc'));
 
     // Setup default mocks with proper types
     vi.mocked(getSKIPEM).mockResolvedValue({ 'mock-key': 'mock-ski-pem' });

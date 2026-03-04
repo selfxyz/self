@@ -22,7 +22,7 @@ import {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog, IDDocument } from '@selfxyz/new-common';
 import type { DocumentMetadata } from '@selfxyz/mobile-sdk-alpha';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {

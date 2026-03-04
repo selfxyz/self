@@ -10,11 +10,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Check, Eraser, HousePlus } from '@tamagui/lucide-icons';
 
-import { deserializeApplicantInfo } from '@selfxyz/common';
-import type {
-  DocumentCatalog,
-  DocumentMetadata,
-} from '@selfxyz/common/utils/types';
+import type { DocumentCatalog, DocumentMetadata } from '@selfxyz/new-common';
+import { deserializeApplicantInfo } from '@selfxyz/new-common';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   ButtonsContainer,

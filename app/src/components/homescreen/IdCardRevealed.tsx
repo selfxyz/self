@@ -7,10 +7,8 @@ import React from 'react';
 import { Dimensions } from 'react-native';
 import { Separator, Text, XStack, YStack } from 'tamagui';
 
-import type { AadhaarData } from '@selfxyz/common';
-import { commonNames } from '@selfxyz/common/constants';
-import type { PassportData } from '@selfxyz/common/types/passport';
-import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
+import type { AadhaarData, PassportData } from '@selfxyz/new-common';
+import { commonNames, isAadhaarDocument, isMRZDocument } from '@selfxyz/new-common';
 import {
   black,
   separatorColor,

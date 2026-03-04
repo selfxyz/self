@@ -4,7 +4,8 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { formatMrz, genAndInitMockPassportData, hash } from '@selfxyz/common';
+import { formatMrz, hash } from '@selfxyz/new-common';
+import { genAndInitMockPassportData } from '@selfxyz/new-common/src/testing/genMockPassportData';
 
 import { isPassportDataValid } from '../../src/validation/document';
 

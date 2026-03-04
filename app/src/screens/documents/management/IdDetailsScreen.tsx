@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack, ZStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
-import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog, IDDocument } from '@selfxyz/new-common';
 import {
   black,
   slate50,

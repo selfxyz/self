@@ -10,10 +10,9 @@ import { ScrollView, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { countryCodes } from '@selfxyz/common/constants';
-import { getCountryISO2 } from '@selfxyz/common/constants/countries';
-import type { IdDocInput } from '@selfxyz/common/utils';
-import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports';
+import { countryCodes, getCountryISO2 } from '@selfxyz/new-common';
+import type { IdDocInput } from '@selfxyz/new-common/src/testing/genMockIdDoc';
+import { genMockIdDocAndInitDataParsing } from '@selfxyz/new-common/src/testing/genMockIdDoc';
 import {
   BodyText,
   ButtonsContainer,

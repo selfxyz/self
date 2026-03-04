@@ -4,8 +4,8 @@
 
 import { useCallback } from 'react';
 
-import { extractQRDataFields, getAadharRegistrationWindow } from '@selfxyz/common/utils';
-import type { AadhaarData } from '@selfxyz/common/utils/types';
+import type { AadhaarData } from '@selfxyz/new-common';
+import { extractQRDataFields, getAadharRegistrationWindow } from '@selfxyz/new-common';
 
 import { AadhaarEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';

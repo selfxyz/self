@@ -2,6 +2,7 @@ import { sha256 } from 'js-sha256';
 
 import type { CertificateData } from '../../foundation/types/certificate.js';
 import type {
+  DeployedCircuits,
   DocumentCategory,
   DocumentType,
   PassportData,
@@ -18,19 +19,21 @@ import {
   type PassportDisclosureSelector,
 } from '../../foundation/constants/disclosure.js';
 import { getCurrentDateYYMMDD } from '../../foundation/date.js';
-import type { DisclosureField, DocumentAttribute, IDocument } from '../interface.js';
+import type { CircuitType, DisclosureField, DocumentAttribute } from '../interface.js';
+import { IDocument } from '../interface.js';
 import {
   generateCommitment as commitmentFn,
   generateNullifier as nullifierFn,
 } from './commitment.js';
 
-export class PassportDocument implements IDocument {
+export class PassportDocument extends IDocument {
   readonly category: DocumentCategory;
   readonly type: DocumentType;
   readonly raw: PassportData;
   readonly isMock: boolean;
 
   constructor(data: PassportData) {
+    super();
     this.raw = data;
     this.category = data.documentCategory;
     this.type = data.documentType;
@@ -110,6 +113,17 @@ export class PassportDocument implements IDocument {
     return this.raw.csca_parsed;
   }
 
+  getDnsMappingKey(circuitType: CircuitType): string {
+    switch (circuitType) {
+      case 'disclose':
+        return this.category === 'id_card' ? 'DISCLOSE_ID' : 'DISCLOSE';
+      case 'register':
+        return this.category === 'id_card' ? 'REGISTER_ID' : 'REGISTER';
+      case 'dsc':
+        return this.category === 'id_card' ? 'DSC_ID' : 'DSC';
+    }
+  }
+
   getRegisterCircuitName(): string {
     const meta = this.raw.passportMetadata;
     if (!meta) throw new Error('Passport data are not parsed');
@@ -183,6 +197,30 @@ export class PassportDocument implements IDocument {
     if (!pos) return '';
     const [start, end] = pos;
     return this.raw.mrz.substring(start, end + 1);
+  }
+
+  isValidRegisterCircuit(deployedCircuits: DeployedCircuits): { isValid: boolean; circuitName: string | null } {
+    try {
+      const circuitName = this.getRegisterCircuitName();
+      const isValid =
+        deployedCircuits.REGISTER.includes(circuitName) ||
+        deployedCircuits.REGISTER_ID.includes(circuitName);
+      return { isValid, circuitName };
+    } catch {
+      return { isValid: false, circuitName: null };
+    }
+  }
+
+  isValidDscCircuit(deployedCircuits: DeployedCircuits): { isValid: boolean; circuitName: string | null } {
+    try {
+      const circuitName = this.getDscCircuitName();
+      const isValid =
+        deployedCircuits.DSC.includes(circuitName) ||
+        deployedCircuits.DSC_ID.includes(circuitName);
+      return { isValid, circuitName };
+    } catch {
+      return { isValid: false, circuitName: null };
+    }
   }
 
   buildDisclosureSelector(fields: DisclosureField[]): PassportDisclosureSelector {

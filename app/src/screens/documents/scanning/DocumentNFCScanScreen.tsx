@@ -31,7 +31,7 @@ import {
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CircleHelp } from '@tamagui/lucide-icons';
 
-import type { PassportData } from '@selfxyz/common/types';
+import type { PassportData } from '@selfxyz/new-common';
 import {
   LottieAnimation,
   sanitizeErrorMessage,

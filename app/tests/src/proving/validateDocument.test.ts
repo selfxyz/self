@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { PassportData } from '@selfxyz/common/types';
+import type { PassportData } from '@selfxyz/new-common';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
@@ -144,11 +144,15 @@ function buildState(params?: {
 
 // Mock the validation utilities
 const mockIsUserRegisteredWithAlternativeCSCA = jest.fn();
-jest.mock('@selfxyz/common/utils/passports/validate', () => ({
-  isUserRegisteredWithAlternativeCSCA: jest.fn((...args: unknown[]) =>
-    mockIsUserRegisteredWithAlternativeCSCA(...args),
-  ),
-}));
+jest.mock('@selfxyz/new-common', () => {
+  const actual = jest.requireActual('@selfxyz/new-common');
+  return {
+    ...actual,
+    isUserRegisteredWithAlternativeCSCA: jest.fn((...args: unknown[]) =>
+      mockIsUserRegisteredWithAlternativeCSCA(...args),
+    ),
+  };
+});
 
 // Get reference to the mocked trackEvent function
 let mockTrackEvent: jest.Mock;

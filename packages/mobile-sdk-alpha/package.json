@@ -168,8 +168,8 @@
   "dependencies": {
     "@babel/runtime": "^7.28.6",
     "@noble/hashes": "^1.5.0",
-    "@selfxyz/common": "workspace:^",
     "@selfxyz/euclid": "^0.6.1",
+    "@selfxyz/new-common": "workspace:^",
     "@xstate/react": "^5.0.5",
     "node-forge": "^1.3.3",
     "react-native-nfc-manager": "^3.17.2",

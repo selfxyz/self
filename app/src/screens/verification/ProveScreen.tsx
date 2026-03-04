@@ -25,8 +25,8 @@ import {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import type { DocumentMetadata } from '@selfxyz/common';
-import { isMRZDocument } from '@selfxyz/common';
+import type { DocumentMetadata } from '@selfxyz/new-common';
+import { isMRZDocument } from '@selfxyz/new-common';
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 

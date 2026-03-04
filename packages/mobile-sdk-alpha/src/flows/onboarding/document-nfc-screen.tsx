@@ -23,7 +23,7 @@ import { SdkEvents } from 'src/types/events';
 import { sanitizeErrorMessage } from 'src/utils/utils';
 import { v4 as uuidv4 } from 'uuid';
 
-import type { PassportData } from '@selfxyz/common';
+import type { PassportData } from '@selfxyz/new-common';
 
 import type { Dotlottie } from '@lottiefiles/dotlottie-react-native';
 

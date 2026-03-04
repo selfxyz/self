@@ -44,7 +44,7 @@ export {
   buildAadhaarSMT,
   buildKycSMT,
   getCountryLeaf,
-  getCountryCode,
+  getCountryCode as getOfacCountryCode,
 } from './ofac.js';
 
 // Backward-compatible aliases for circuit input consumers

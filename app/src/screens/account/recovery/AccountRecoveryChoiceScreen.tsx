@@ -7,7 +7,7 @@ import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
+import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/new-common';
 import {
   markCurrentDocumentAsRegistered,
   useSelfClient,

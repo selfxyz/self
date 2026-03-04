@@ -2,11 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { type AadhaarData, deserializeApplicantInfo, type DocumentMetadata, type IDDocument } from '@selfxyz/common';
-import { attributeToPosition, attributeToPosition_ID } from '@selfxyz/common/constants';
-import type { PassportData } from '@selfxyz/common/types/passport';
-import type { DocumentCatalog, KycData } from '@selfxyz/common/utils/types';
-import { isAadhaarDocument, isKycDocument, isMRZDocument } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/new-common';
+import { createDocument } from '@selfxyz/new-common';
 
 export interface DocumentAttributes {
   nameSlice: string;
@@ -30,12 +27,12 @@ export interface DocumentAttributes {
  */
 export function checkDocumentExpiration(dateOfExpiry: string): boolean {
   if (!dateOfExpiry || dateOfExpiry.length !== 6) {
-    return false; // Invalid format, don't treat as expired
+    return false;
   }
 
   const year = parseInt(dateOfExpiry.slice(0, 2), 10);
   const fullyear = 2000 + year;
-  const month = parseInt(dateOfExpiry.slice(2, 4), 10) - 1; // JS months are 0-indexed
+  const month = parseInt(dateOfExpiry.slice(2, 4), 10) - 1;
   const day = parseInt(dateOfExpiry.slice(4, 6), 10);
 
   const expiryDateUTC = new Date(Date.UTC(fullyear, month, day, 0, 0, 0, 0));
@@ -46,175 +43,31 @@ export function checkDocumentExpiration(dateOfExpiry: string): boolean {
 }
 
 /**
- * Extracts attributes from Aadhaar document data
+ * Extracts document attributes using the IDocument adapter's getAttribute().
+ * For MRZ documents (passport/ID card), nameSlice preserves the raw MRZ format
+ * with << separators. For aadhaar/kyc, nameSlice appends << to the full name.
  */
-function getAadhaarAttributes(document: AadhaarData): DocumentAttributes {
-  const extractedFields = document.extractedFields;
-  // For Aadhaar, we format the name to work with the existing getNameAndSurname function
-  // We'll put the full name in the "surname" position and leave names empty
-  const fullName = extractedFields?.name || '';
-  const nameSliceFormatted = fullName ? `${fullName}<<` : ''; // Format like MRZ
+export function getDocumentAttributes(document: IDDocument): DocumentAttributes {
+  const doc = createDocument(document);
 
-  // Format DOB to YYMMDD for consistency with passport format
-  let dobFormatted = '';
-  if (extractedFields?.dob && extractedFields?.mob && extractedFields?.yob) {
-    const year = extractedFields.yob.length === 4 ? extractedFields.yob.slice(-2) : extractedFields.yob;
-    const month = extractedFields.mob.padStart(2, '0');
-    const day = extractedFields.dob.padStart(2, '0');
-    dobFormatted = `${year}${month}${day}`;
-  }
+  const nameSlice =
+    doc.category === 'passport' || doc.category === 'id_card'
+      ? doc.getDisclosureSlice('name')
+      : (doc.getAttribute('name') || '') + '<<';
 
-  return {
-    nameSlice: nameSliceFormatted,
-    dobSlice: dobFormatted,
-    yobSlice: extractedFields?.yob || '',
-    issuingStateSlice: extractedFields?.state || '',
-    nationalitySlice: 'IND', // Aadhaar is always Indian
-    passNoSlice: extractedFields?.aadhaarLast4Digits || '',
-    sexSlice:
-      extractedFields?.gender === 'M' ? 'M' : extractedFields?.gender === 'F' ? 'F' : extractedFields?.gender || '',
-    expiryDateSlice: '', // Aadhaar doesn't expire
-    isPassportType: false,
-  };
-}
+  const dob = doc.getAttribute('date_of_birth') || '';
 
-/**
- * Extracts attributes from MRZ string (passport or ID card)
- */
-function getPassportAttributes(mrz: string, documentCategory: string): DocumentAttributes {
-  const isPassportType = documentCategory === 'passport';
-  const attributePositions = isPassportType ? attributeToPosition : attributeToPosition_ID;
-
-  const nameSlice = mrz.slice(attributePositions.name[0], attributePositions.name[1]);
-  const dobSlice = mrz.slice(attributePositions.date_of_birth[0], attributePositions.date_of_birth[1] + 1);
-  const yobSlice = mrz.slice(attributePositions.date_of_birth[0], attributePositions.date_of_birth[0] + 2);
-  const issuingStateSlice = mrz.slice(attributePositions.issuing_state[0], attributePositions.issuing_state[1] + 1);
-  const nationalitySlice = mrz.slice(attributePositions.nationality[0], attributePositions.nationality[1] + 1);
-  const passNoSlice = mrz.slice(attributePositions.passport_number[0], attributePositions.passport_number[1] + 1);
-  const sexSlice = mrz.slice(attributePositions.gender[0], attributePositions.gender[1] + 1);
-  const expiryDateSlice = mrz.slice(attributePositions.expiry_date[0], attributePositions.expiry_date[1] + 1);
   return {
     nameSlice,
-    dobSlice,
-    yobSlice,
-    issuingStateSlice,
-    nationalitySlice,
-    passNoSlice,
-    sexSlice,
-    expiryDateSlice,
-    isPassportType,
+    dobSlice: dob,
+    yobSlice: dob.slice(0, 2),
+    issuingStateSlice: doc.getAttribute('issuing_state') || '',
+    nationalitySlice: doc.getAttribute('nationality') || '',
+    passNoSlice: doc.getAttribute('document_number') || '',
+    sexSlice: doc.getAttribute('gender') || '',
+    expiryDateSlice: doc.getAttribute('expiry_date') || '',
+    isPassportType: doc.category === 'passport',
   };
-}
-
-function getKycAttributes(document: KycData): DocumentAttributes {
-  try {
-    const data = deserializeApplicantInfo(document.serializedApplicantInfo);
-
-    // Format name like MRZ: surname<<given names
-    const nameParts = data.fullName.trim().split(/\s+/);
-    const surname = nameParts[nameParts.length - 1] || '';
-    const givenNames = nameParts.slice(0, -1).join(' ') || '';
-    const nameSliceFormatted = surname && givenNames ? `${surname}<<${givenNames}` : surname || givenNames || '';
-
-    // Format DOB to YYMMDD if provided (assuming ISO format YYYY-MM-DD or similar)
-    let dobFormatted = '';
-    let yobSlice = '';
-    if (data.dob) {
-      // Try to parse various date formats
-      const dateMatch = data.dob.match(/(\d{4})-(\d{2})-(\d{2})/); // YYYY-MM-DD
-      if (dateMatch) {
-        const [, year, month, day] = dateMatch;
-        yobSlice = year;
-        dobFormatted = `${year.slice(-2)}${month}${day}`;
-      } else if (data.dob.length === 8 && /^\d{8}$/.test(data.dob)) {
-        // Already in YYYYMMDD format
-        yobSlice = data.dob.slice(0, 4);
-        dobFormatted = `${data.dob.slice(2, 4)}${data.dob.slice(4, 6)}${data.dob.slice(6, 8)}`;
-      } else if (data.dob.length === 6 && /^\d{6}$/.test(data.dob)) {
-        // Already in YYMMDD format - determine century
-        const yy = parseInt(data.dob.slice(0, 2), 10);
-        const currentYear = new Date().getFullYear();
-        const century = Math.floor(currentYear / 100) * 100;
-        let fullYear = century + yy;
-        // For birth: if year is in the future, assume previous century
-        if (fullYear > currentYear) {
-          fullYear -= 100;
-        }
-        yobSlice = fullYear.toString();
-        dobFormatted = data.dob;
-      }
-    }
-
-    // Format expiry date to YYMMDD if provided
-    let expiryDateFormatted = '';
-    if (data.expiryDate) {
-      const expiryMatch = data.expiryDate.match(/(\d{4})-(\d{2})-(\d{2})/); // YYYY-MM-DD
-      if (expiryMatch) {
-        const [, year, month, day] = expiryMatch;
-        expiryDateFormatted = `${year.slice(-2)}${month}${day}`;
-      } else if (data.expiryDate.length === 8 && /^\d{8}$/.test(data.expiryDate)) {
-        // Already in YYYYMMDD format
-        expiryDateFormatted = `${data.expiryDate.slice(2, 4)}${data.expiryDate.slice(4, 6)}${data.expiryDate.slice(6, 8)}`;
-      } else if (data.expiryDate.length === 6 && /^\d{6}$/.test(data.expiryDate)) {
-        // Already in YYMMDD format
-        expiryDateFormatted = data.expiryDate;
-      }
-    }
-
-    return {
-      nameSlice: nameSliceFormatted,
-      dobSlice: dobFormatted,
-      yobSlice,
-      issuingStateSlice: data.country || '',
-      nationalitySlice: data.country || '',
-      passNoSlice: data.idNumber || '',
-      sexSlice: data.gender || '',
-      expiryDateSlice: expiryDateFormatted,
-      isPassportType: false,
-    };
-  } catch {
-    // Return safe defaults if deserialization or processing fails
-    return {
-      nameSlice: '',
-      dobSlice: '',
-      yobSlice: '',
-      issuingStateSlice: '',
-      nationalitySlice: '',
-      passNoSlice: '',
-      sexSlice: '',
-      expiryDateSlice: '',
-      isPassportType: false,
-    };
-  }
-}
-
-/**
- * Extracts document attributes from passport, ID card, or Aadhaar data.
- *
- * @param document - Document data (PassportData, AadhaarData, or IDDocument)
- * @returns Document attributes including name, DOB, expiry date, etc.
- */
-export function getDocumentAttributes(document: PassportData | AadhaarData | KycData): DocumentAttributes {
-  if (isAadhaarDocument(document)) {
-    return getAadhaarAttributes(document);
-  } else if (isMRZDocument(document)) {
-    return getPassportAttributes(document.mrz, document.documentCategory);
-  } else if (isKycDocument(document)) {
-    return getKycAttributes(document);
-  } else {
-    // Fallback for unknown document types
-    return {
-      nameSlice: '',
-      dobSlice: '',
-      yobSlice: '',
-      issuingStateSlice: '',
-      nationalitySlice: '',
-      passNoSlice: '',
-      sexSlice: '',
-      expiryDateSlice: '',
-      isPassportType: false,
-    };
-  }
 }
 
 /**
@@ -227,13 +80,9 @@ export function getDocumentAttributes(document: PassportData | AadhaarData | Kyc
  * @returns true if document can be used for proving
  */
 export function isDocumentValidForProving(metadata: DocumentMetadata, documentData?: IDDocument): boolean {
-  // Check if expired
   if (documentData) {
     try {
-      const attributes = getDocumentAttributes(documentData);
-      if (attributes.expiryDateSlice && checkDocumentExpiration(attributes.expiryDateSlice)) {
-        return false;
-      }
+      return !createDocument(documentData).isExpired();
     } catch {
       // If we can't check expiry, assume valid
     }

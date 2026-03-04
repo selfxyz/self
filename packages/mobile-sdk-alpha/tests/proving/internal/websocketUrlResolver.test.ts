@@ -26,11 +26,35 @@ vitest.mock('xstate', () => {
   };
 });
 
-vitest.mock('@selfxyz/common/utils', async () => {
-  const actual = await vitest.importActual<typeof import('@selfxyz/common/utils')>('@selfxyz/common/utils');
+vitest.mock('@selfxyz/new-common', async () => {
+  const actual = await vitest.importActual<typeof import('@selfxyz/new-common')>('@selfxyz/new-common');
   return {
     ...actual,
-    getCircuitNameFromPassportData: vitest.fn(() => 'mock-circuit'),
+    createDocument: vitest.fn((passportData: any) => {
+      const category = passportData?.documentCategory;
+      const discloseNames: Record<string, string> = {
+        passport: 'disclose',
+        id_card: 'disclose',
+        aadhaar: 'disclose_aadhaar',
+      };
+      const dnsMappingKeys: Record<string, Record<string, string>> = {
+        passport: { disclose: 'DISCLOSE', register: 'REGISTER', dsc: 'DSC' },
+        id_card: { disclose: 'DISCLOSE_ID', register: 'REGISTER_ID', dsc: 'DSC_ID' },
+        aadhaar: { disclose: 'DISCLOSE_AADHAAR', register: 'REGISTER_AADHAAR' },
+      };
+      return {
+        getDiscloseCircuitName: vitest.fn(() => discloseNames[category] ?? 'mock-circuit'),
+        getRegisterCircuitName: vitest.fn(() => 'mock-circuit'),
+        getDscCircuitName: vitest.fn(() => 'mock-circuit'),
+        getDnsMappingKey: vitest.fn((circuitType: string) => {
+          const mapping = dnsMappingKeys[category];
+          if (!mapping || !mapping[circuitType]) {
+            throw new Error(`Unsupported document category for ${circuitType}: ${category}`);
+          }
+          return mapping[circuitType];
+        }),
+      };
+    }),
   };
 });
 
@@ -47,6 +71,7 @@ describe('websocket URL resolution (refactor guardrail via initTeeConnection)', 
     ({
       getPrivateKey: vitest.fn().mockResolvedValue('secret'),
       trackEvent: vitest.fn(),
+      emit: vitest.fn(),
       logProofEvent: vitest.fn(),
       getProvingState: () => useProvingStore.getState(),
       getProtocolState: () => useProtocolStore.getState(),

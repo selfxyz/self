@@ -24,7 +24,7 @@ import type {
   DocumentCatalog,
   DocumentMetadata,
   IDDocument,
-} from '@selfxyz/common/utils/types';
+} from '@selfxyz/new-common';
 import {
   getDocumentAttributes,
   isDocumentValidForProving,

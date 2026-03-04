@@ -203,6 +203,18 @@ export type SignatureAlgorithm =
   | 'rsa_sha256_107903_4096'
   | 'rsa_sha256_56611_4096';
 
+export function isAadhaarDocument(doc: IDDocument): doc is AadhaarData {
+  return doc.documentCategory === 'aadhaar';
+}
+
+export function isKycDocument(doc: IDDocument): doc is KycData {
+  return doc.documentCategory === 'kyc';
+}
+
+export function isMRZDocument(doc: IDDocument): doc is PassportData {
+  return doc.documentCategory === 'passport' || doc.documentCategory === 'id_card';
+}
+
 export enum AttestationIdHex {
   invalid = '0x0000000000000000000000000000000000000000000000000000000000000000',
   passport = '0x0000000000000000000000000000000000000000000000000000000000000001',

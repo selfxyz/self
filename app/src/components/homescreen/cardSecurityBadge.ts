@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { AadhaarData } from '@selfxyz/common';
-import type { PassportData } from '@selfxyz/common/types/passport';
-import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
+import type { AadhaarData, PassportData } from '@selfxyz/new-common';
+import { isAadhaarDocument, isMRZDocument } from '@selfxyz/new-common';
 
 export type SecurityLevel = 'HI-SECURITY' | 'LOW-SECURITY' | 'STANDARD';
 

@@ -6,8 +6,8 @@ import { useCallback, useRef } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { SUMSUB_TEE_URL } from '@env';
 
-import { deserializeApplicantInfo } from '@selfxyz/common';
-import type { DocumentType, KycData } from '@selfxyz/common/utils/types';
+import type { DocumentType, KycData } from '@selfxyz/new-common';
+import { deserializeApplicantInfo } from '@selfxyz/new-common';
 
 import type { SumsubApplicantInfoSerialized } from '@/integrations/sumsub/types';
 import { navigationRef } from '@/navigation';

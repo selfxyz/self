@@ -4,7 +4,7 @@
 
 import { v4 } from 'uuid';
 
-import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
+import { SelfAppBuilder } from '@selfxyz/new-common';
 
 import { selfLogoReverseUrl } from '@/consts/links';
 import { getOrGeneratePointsAddress } from '@/providers/authProvider';

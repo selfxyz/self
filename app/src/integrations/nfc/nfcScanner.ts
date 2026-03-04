@@ -4,7 +4,7 @@
 
 import { Platform } from 'react-native';
 
-import type { PassportData } from '@selfxyz/common/types';
+import type { PassportData } from '@selfxyz/new-common';
 import type { NFCScanContext } from '@selfxyz/mobile-sdk-alpha';
 
 import { logNFCEvent } from '@/config/sentry';

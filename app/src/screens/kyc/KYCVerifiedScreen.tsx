@@ -9,7 +9,7 @@ import { YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 
-import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import type { DocumentCategory } from '@selfxyz/new-common';
 import {
   loadSelectedDocument,
   SdkEvents,

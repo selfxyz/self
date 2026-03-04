@@ -5,7 +5,7 @@
 import { useCallback, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 
-import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import type { DocumentCategory } from '@selfxyz/new-common';
 
 import { PrimaryButton } from '../../components';
 import { LottieAnimation } from '../../components/LottieAnimation';

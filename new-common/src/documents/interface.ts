@@ -1,5 +1,7 @@
 import type { CertificateData } from '../foundation/types/certificate.js';
-import type { DocumentCategory, DocumentType, IDDocument } from '../foundation/types/document.js';
+import type { DeployedCircuits, DocumentCategory, DocumentType, IDDocument } from '../foundation/types/document.js';
+
+export type CircuitType = 'disclose' | 'register' | 'dsc';
 
 export type DocumentAttribute =
   | 'name'
@@ -27,43 +29,65 @@ export type DisclosureField =
   | 'older_than';
 
 /**
- * Polymorphic document interface — wraps PassportData, AadhaarData, or KycData
+ * Polymorphic document base — wraps PassportData, AadhaarData, or KycData
  * in a uniform behavioral API. Raw data stays serializable; this adapter adds
  * accessor methods that eliminate if/else branching across consumers.
+ *
+ * Abstract class instead of interface so shared derived methods (like
+ * getAttestationIdHex) are defined once.
  */
-export interface IDocument {
-  readonly category: DocumentCategory;
-  readonly type: DocumentType;
-  readonly raw: IDDocument;
-  readonly isMock: boolean;
+export abstract class IDocument {
+  abstract readonly category: DocumentCategory;
+  abstract readonly type: DocumentType;
+  abstract readonly raw: IDDocument;
+  abstract readonly isMock: boolean;
 
-  // Generic typed accessor for any standard attribute
-  getAttribute(name: DocumentAttribute): string | null;
+  abstract getAttribute(name: DocumentAttribute): string | null;
 
-  // Behavioral methods that differ meaningfully per doc type
-  isExpired(): boolean;
-  getContentHash(): string;
-  getAttestationId(): string;
+  abstract isExpired(): boolean;
+  abstract getContentHash(): string;
+  abstract getAttestationId(): string;
 
-  // Parsed certificates (MRZ docs only, undefined for aadhaar/kyc)
-  getDscParsed(): CertificateData | undefined;
-  getCscaParsed(): CertificateData | undefined;
+  getAttestationIdHex(): string {
+    return '0x' + BigInt(this.getAttestationId()).toString(16).padStart(64, '0');
+  }
 
-  // Circuit name resolution — each doc type encodes its own naming convention
-  getRegisterCircuitName(): string;
-  getDscCircuitName(): string;
+  abstract getDscParsed(): CertificateData | undefined;
+  abstract getCscaParsed(): CertificateData | undefined;
 
-  // Commitment and nullifier generation
-  generateCommitment(secret: string): string;
-  generateNullifier(): string;
+  abstract getRegisterCircuitName(): string;
+  abstract getDscCircuitName(): string;
 
-  // Disclosure helpers — handle attribute position differences per doc type
-  getAttributePositions(): Record<string, number[]>;
-  getRevealBitmap(disclosures: Record<string, boolean>): number[];
-  getDisclosureSlice(attribute: string): string;
+  getDiscloseCircuitName(): string {
+    const category: DocumentCategory = this.category;
+    switch (category) {
+      case 'passport':
+        return 'vc_and_disclose';
+      case 'id_card':
+        return 'vc_and_disclose_id';
+      case 'aadhaar':
+        return 'vc_and_disclose_aadhaar';
+      case 'kyc':
+        return 'vc_and_disclose_kyc';
+      default: {
+        const _exhaustive: never = category;
+        throw new Error(`Unsupported document category: ${_exhaustive}`);
+      }
+    }
+  }
 
-  // Maps unified DisclosureField names to document-specific selector format.
-  // Passport returns { selectorDg1, selectorOlderThan, selectorOfac }.
-  // Aadhaar returns a formatted selector string.
-  buildDisclosureSelector(fields: DisclosureField[]): unknown;
+  /** Returns the key used to look up this document's circuit in `circuits_dns_mapping`. */
+  abstract getDnsMappingKey(circuitType: CircuitType): string;
+
+  abstract isValidRegisterCircuit(deployedCircuits: DeployedCircuits): { isValid: boolean; circuitName: string | null };
+  abstract isValidDscCircuit(deployedCircuits: DeployedCircuits): { isValid: boolean; circuitName: string | null };
+
+  abstract generateCommitment(secret: string): string;
+  abstract generateNullifier(): string;
+
+  abstract getAttributePositions(): Record<string, number[]>;
+  abstract getRevealBitmap(disclosures: Record<string, boolean>): number[];
+  abstract getDisclosureSlice(attribute: string): string;
+
+  abstract buildDisclosureSelector(fields: DisclosureField[]): unknown;
 }

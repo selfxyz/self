@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { IDDocument } from '@selfxyz/common';
+import type { IDDocument } from '@selfxyz/new-common';
 import {
   deserializeApplicantInfo,
   isAadhaarDocument,
   isKycDocument,
   isMRZDocument,
-} from '@selfxyz/common';
+} from '@selfxyz/new-common';
 
 const BACKGROUND_COUNT = 6;
 

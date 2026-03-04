@@ -6,8 +6,8 @@ import type { Socket } from 'socket.io-client';
 import socketIo from 'socket.io-client';
 import { create } from 'zustand';
 
-import type { SelfApp } from '@selfxyz/common';
-import { WS_DB_RELAYER } from '@selfxyz/common';
+import type { SelfApp } from '@selfxyz/new-common';
+import { WS_DB_RELAYER } from '@selfxyz/new-common';
 
 /**
  * Zustand state backing the in-app handoff between the SDK and the hosted Self

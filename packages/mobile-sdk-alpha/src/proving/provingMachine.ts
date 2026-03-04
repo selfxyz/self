@@ -10,36 +10,30 @@ import type { AnyActorRef, AnyEventObject, StateFrom } from 'xstate';
 import { createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 
-import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
-import type { EndpointType, SelfApp } from '@selfxyz/common/utils';
-import {
-  getCircuitNameFromPassportData,
-  getSKIPEM,
-  getSolidityPackedUserContextData,
-  initPassportDataParsing,
-} from '@selfxyz/common/utils';
-import { checkPCR0Mapping, validatePKIToken } from '@selfxyz/common/utils/attest';
-import {
-  generateTEEInputsDiscloseStateless,
-  generateTEEInputsDSC,
-  generateTEEInputsRegister,
-} from '@selfxyz/common/utils/circuits/registerInputs';
+import type { DocumentCategory, EndpointType, IDDocument, PassportData, SelfApp } from '@selfxyz/new-common';
 import {
   checkDocumentSupported,
   checkIfPassportDscIsInTree,
+  checkPCR0Mapping,
+  clientKey,
+  clientPublicKeyHex,
+  createDocument,
+  ec,
+  encryptAES256GCM,
+  generateTEEInputsDiscloseStateless,
+
+  generateTEEInputsDSC,
+  generateTEEInputsRegister,
+  getPayload,
+  getSKIPEM,
+  getSolidityPackedUserContextData,
+  getWSDbRelayerUrl,
+  initPassportDataParsing,
   isDocumentNullified,
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
-} from '@selfxyz/common/utils/passports/validate';
-import {
-  clientKey,
-  clientPublicKeyHex,
-  ec,
-  encryptAES256GCM,
-  getPayload,
-  getWSDbRelayerUrl,
-} from '@selfxyz/common/utils/proving';
-import type { IDDocument } from '@selfxyz/common/utils/types';
+  validatePKIToken,
+} from '@selfxyz/new-common';
 
 import { PassportEvents, ProofEvents } from '../constants/analytics';
 import {
@@ -57,25 +51,6 @@ import type { ProofContext } from './internal/logging';
 import { handleStatusCode, parseStatusMessage } from './internal/statusHandlers';
 
 // Helper functions for WebSocket URL resolution
-const getMappingKey = (circuitType: 'disclose' | 'register' | 'dsc', documentCategory: DocumentCategory): string => {
-  if (circuitType === 'disclose') {
-    if (documentCategory === 'passport') return 'DISCLOSE';
-    if (documentCategory === 'id_card') return 'DISCLOSE_ID';
-    if (documentCategory === 'aadhaar') return 'DISCLOSE_AADHAAR';
-    if (documentCategory === 'kyc') return 'DISCLOSE_KYC';
-    throw new Error(`Unsupported document category for disclose: ${documentCategory}`);
-  }
-  if (circuitType === 'register') {
-    if (documentCategory === 'passport') return 'REGISTER';
-    if (documentCategory === 'id_card') return 'REGISTER_ID';
-    if (documentCategory === 'aadhaar') return 'REGISTER_AADHAAR';
-    if (documentCategory === 'kyc') return 'REGISTER_KYC';
-    throw new Error(`Unsupported document category for register: ${documentCategory}`);
-  }
-  // circuitType === 'dsc'
-  return documentCategory === 'passport' ? 'DSC' : 'DSC_ID';
-};
-
 const resolveWebSocketUrl = (
   selfClient: SelfClient,
   circuitType: 'disclose' | 'register' | 'dsc',
@@ -84,7 +59,8 @@ const resolveWebSocketUrl = (
 ): string | undefined => {
   const { documentCategory } = passportData;
   const circuitsMapping = selfClient.getProtocolState()[documentCategory].circuits_dns_mapping;
-  const mappingKey = getMappingKey(circuitType, documentCategory);
+  const doc = createDocument(passportData);
+  const mappingKey = doc.getDnsMappingKey(circuitType);
 
   return circuitsMapping?.[mappingKey]?.[circuitName];
 };
@@ -933,14 +909,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       const typedCircuitType = circuitType as 'disclose' | 'register' | 'dsc';
+      const doc = createDocument(passportData);
       const circuitName =
         typedCircuitType === 'disclose'
-          ? passportData.documentCategory === 'aadhaar'
-            ? 'disclose_aadhaar'
-            : passportData.documentCategory === 'kyc'
-              ? 'disclose_kyc'
-              : 'disclose'
-          : getCircuitNameFromPassportData(passportData, typedCircuitType as 'register' | 'dsc');
+          ? doc.getDiscloseCircuitName()
+          : typedCircuitType === 'register'
+            ? doc.getRegisterCircuitName()
+            : doc.getDscCircuitName();
 
       const wsRpcUrl = resolveWebSocketUrl(selfClient, typedCircuitType, passportData as PassportData, circuitName);
       if (!wsRpcUrl) {
@@ -1373,17 +1348,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
       const circuitType = get().circuitType as 'disclose' | 'register' | 'dsc';
 
-      let circuitName;
-      if (circuitType === 'disclose') {
-        circuitName =
-          passportData.documentCategory === 'aadhaar'
-            ? 'disclose_aadhaar'
-            : passportData.documentCategory === 'kyc'
-              ? 'disclose_kyc'
-              : 'disclose';
-      } else {
-        circuitName = getCircuitNameFromPassportData(passportData, circuitType as 'register' | 'dsc');
-      }
+      const doc = createDocument(passportData);
+      const circuitName =
+        circuitType === 'disclose'
+          ? doc.getDiscloseCircuitName()
+          : circuitType === 'register'
+            ? doc.getRegisterCircuitName()
+            : doc.getDscCircuitName();
 
       const wsRpcUrl = resolveWebSocketUrl(selfClient, circuitType, passportData as PassportData, circuitName);
       selfClient.logProofEvent('info', 'Circuit resolution', baseContext, {

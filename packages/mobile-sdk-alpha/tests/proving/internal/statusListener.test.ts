@@ -26,15 +26,6 @@ vi.mock('../../../src/proving/internal/logging', () => ({
   logProofEvent: vi.fn(),
   createProofContext: vi.fn(() => ({})),
 }));
-vi.mock('@selfxyz/common/utils/proving', () => ({
-  getWSDbRelayerUrl: vi.fn(() => 'ws://test-url'),
-  getPayload: vi.fn(),
-  encryptAES256GCM: vi.fn(),
-  clientKey: {},
-  clientPublicKeyHex: 'test-key',
-  ec: {},
-}));
-
 vi.mock('../../../src/documents/utils', () => ({
   loadSelectedDocument: vi.fn(() =>
     Promise.resolve({
@@ -54,27 +45,29 @@ vi.mock('../../../src/types/events', () => ({
   },
 }));
 
-vi.mock('@selfxyz/common/utils', () => ({
+vi.mock('@selfxyz/new-common', () => ({
+  getWSDbRelayerUrl: vi.fn(() => 'ws://test-url'),
+  getPayload: vi.fn(),
+  encryptAES256GCM: vi.fn(),
+  clientKey: {},
+  clientPublicKeyHex: 'test-key',
+  ec: {},
   getCircuitNameFromPassportData: vi.fn(() => 'register'),
   getSolidityPackedUserContextData: vi.fn(() => '0x123'),
-}));
-
-vi.mock('@selfxyz/common/utils/attest', () => ({
   getPublicKey: vi.fn(),
   verifyAttestation: vi.fn(),
-}));
-
-vi.mock('@selfxyz/common/utils/circuits/registerInputs', () => ({
   generateTEEInputsDSC: vi.fn(),
   generateTEEInputsRegister: vi.fn(),
-}));
-
-vi.mock('@selfxyz/common/utils/passports/validate', () => ({
   checkDocumentSupported: vi.fn(() => Promise.resolve(true)),
   checkIfPassportDscIsInTree: vi.fn(() => Promise.resolve(true)),
   isDocumentNullified: vi.fn(() => Promise.resolve(false)),
   isUserRegistered: vi.fn(() => Promise.resolve(false)),
   isUserRegisteredWithAlternativeCSCA: vi.fn(() => Promise.resolve(false)),
+  createDocument: vi.fn(() => ({
+    getDiscloseCircuitName: vi.fn(() => 'mock-circuit'),
+    getRegisterCircuitName: vi.fn(() => 'mock-circuit'),
+    getDscCircuitName: vi.fn(() => 'mock-circuit'),
+  })),
 }));
 
 vi.mock('xstate', () => ({

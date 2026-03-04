@@ -1,5 +1,8 @@
+import { ethers } from 'ethers';
+
 import { initElliptic } from '../certificates/parsing/elliptic.js';
-import { WS_DB_RELAYER, WS_DB_RELAYER_STAGING } from '../foundation/constants/network.js';
+import { IDENTITY_VERIFICATION_HUB_ADDRESS } from '../foundation/constants/identity.js';
+import { RPC_URL, WS_DB_RELAYER, WS_DB_RELAYER_STAGING } from '../foundation/constants/network.js';
 import type { EndpointType } from '../foundation/types/app.js';
 import type {
   DiscloseProofType,
@@ -71,4 +74,21 @@ export function getWSDbRelayerUrl(endpointType: EndpointType) {
   return endpointType === 'celo' || endpointType === 'https'
     ? WS_DB_RELAYER
     : WS_DB_RELAYER_STAGING;
+}
+
+export async function getAadharRegistrationWindow() {
+  try {
+    const provider = new ethers.JsonRpcProvider(RPC_URL);
+    const identityVerificationHub = new ethers.Contract(
+      IDENTITY_VERIFICATION_HUB_ADDRESS,
+      ['function AADHAAR_REGISTRATION_WINDOW() view returns (uint256)'],
+      provider,
+    );
+    const aadharRegistrationWindow =
+      await identityVerificationHub.AADHAAR_REGISTRATION_WINDOW();
+    return aadharRegistrationWindow;
+  } catch (error) {
+    console.warn('Failed to get aadhar registration window:', error);
+    return 120;
+  }
 }

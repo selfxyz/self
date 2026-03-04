@@ -31,8 +31,12 @@ vitest.mock('xstate', () => {
   };
 });
 
-vitest.mock('@selfxyz/common/utils/attest', () => {
+vitest.mock('@selfxyz/new-common', async () => {
+  const actual = await vitest.importActual<typeof import('@selfxyz/new-common')>(
+    '@selfxyz/new-common',
+  );
   return {
+    ...actual,
     validatePKIToken: vitest.fn(() => ({
       userPubkey: Buffer.from('abcd', 'hex'),
       serverPubkey: 'server-key',
@@ -40,15 +44,6 @@ vitest.mock('@selfxyz/common/utils/attest', () => {
       verified: true,
     })),
     checkPCR0Mapping: vitest.fn(async () => true),
-  };
-});
-
-vitest.mock('@selfxyz/common/utils/proving', async () => {
-  const actual = await vitest.importActual<typeof import('@selfxyz/common/utils/proving')>(
-    '@selfxyz/common/utils/proving',
-  );
-  return {
-    ...actual,
     clientPublicKeyHex: 'abcd',
     clientKey: {
       derive: vitest.fn(() => ({
@@ -60,6 +55,11 @@ vitest.mock('@selfxyz/common/utils/proving', async () => {
         getPublic: vitest.fn(() => 'server-public'),
       })),
     },
+    createDocument: vitest.fn(() => ({
+      getDiscloseCircuitName: vitest.fn(() => 'mock-circuit'),
+      getRegisterCircuitName: vitest.fn(() => 'mock-circuit'),
+      getDscCircuitName: vitest.fn(() => 'mock-circuit'),
+    })),
   };
 });
 
@@ -134,8 +134,8 @@ describe('websocket handlers (refactor guardrail via proving store)', () => {
   });
 
   it('handles attestation messages by deriving shared key and emitting CONNECT_SUCCESS', async () => {
-    const { clientPublicKeyHex } = await import('@selfxyz/common/utils/proving');
-    const { validatePKIToken } = await import('@selfxyz/common/utils/attest');
+    const { clientPublicKeyHex } = await import('@selfxyz/new-common');
+    const { validatePKIToken } = await import('@selfxyz/new-common');
 
     await useProvingStore.getState().init(selfClient, 'register');
     useProvingStore.setState({ currentState: 'init_tee_connexion' } as any);

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { IDDocument } from '@selfxyz/common';
-import { serializeKycData } from '@selfxyz/common';
+import type { IDDocument } from '@selfxyz/new-common';
+import { serializeKycData } from '@selfxyz/new-common';
 
 import { getBackgroundIndex } from '@/utils/cardBackgroundSelector';
 

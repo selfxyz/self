@@ -6,7 +6,7 @@ import { useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import type { SelfApp } from '@selfxyz/common';
+import type { SelfApp } from '@selfxyz/new-common';
 
 import type { RootStackParamList } from '@/navigation';
 

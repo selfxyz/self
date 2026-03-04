@@ -4,8 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { DocumentCatalog, DocumentMetadata } from '@selfxyz/common/types';
-import type { PassportData } from '@selfxyz/common/types/passport';
+import type { DocumentCatalog, DocumentMetadata, PassportData } from '@selfxyz/new-common';
 
 import {
   checkDocumentExpiration,

@@ -26,10 +26,8 @@ vitest.mock('xstate', () => {
   };
 });
 
-vitest.mock('@selfxyz/common/utils/proving', async () => {
-  const actual = await vitest.importActual<typeof import('@selfxyz/common/utils/proving')>(
-    '@selfxyz/common/utils/proving',
-  );
+vitest.mock('@selfxyz/new-common', async () => {
+  const actual = (await vitest.importActual('@selfxyz/new-common')) as any;
   return {
     ...actual,
     getPayload: vitest.fn(() => ({ payload: true })),
@@ -38,13 +36,6 @@ vitest.mock('@selfxyz/common/utils/proving', async () => {
       cipher_text: [2],
       auth_tag: [3],
     })),
-  };
-});
-
-vitest.mock('@selfxyz/common/utils/circuits/registerInputs', async () => {
-  const actual = (await vitest.importActual('@selfxyz/common/utils/circuits/registerInputs')) as any;
-  return {
-    ...actual,
     generateTEEInputsRegister: vitest.fn(async () => ({
       inputs: { reg: true },
       circuitName: 'register_circuit',
@@ -62,6 +53,11 @@ vitest.mock('@selfxyz/common/utils/circuits/registerInputs', async () => {
       circuitName: 'disclose_circuit',
       endpointType: 'https',
       endpoint: 'https://disclose',
+    })),
+    createDocument: vitest.fn(() => ({
+      getDiscloseCircuitName: vitest.fn(() => 'mock-circuit'),
+      getRegisterCircuitName: vitest.fn(() => 'mock-circuit'),
+      getDscCircuitName: vitest.fn(() => 'mock-circuit'),
     })),
   };
 });
@@ -173,7 +169,7 @@ describe('payload generator (refactor guardrail via _generatePayload)', () => {
   });
 
   it('uses register_id for id cards', async () => {
-    const { getPayload } = await import('@selfxyz/common/utils/proving');
+    const { getPayload } = await import('@selfxyz/new-common');
 
     useProvingStore.setState({
       circuitType: 'register',
@@ -199,7 +195,7 @@ describe('payload generator (refactor guardrail via _generatePayload)', () => {
   });
 
   it('keeps dsc circuit type for passport documents', async () => {
-    const { getPayload } = await import('@selfxyz/common/utils/proving');
+    const { getPayload } = await import('@selfxyz/new-common');
 
     useProvingStore.setState({
       circuitType: 'dsc',
@@ -225,7 +221,7 @@ describe('payload generator (refactor guardrail via _generatePayload)', () => {
   });
 
   it('always uses disclose for disclosure flows', async () => {
-    const { getPayload } = await import('@selfxyz/common/utils/proving');
+    const { getPayload } = await import('@selfxyz/new-common');
 
     useProvingStore.setState({
       circuitType: 'disclose',

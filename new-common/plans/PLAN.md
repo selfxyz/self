@@ -765,55 +765,34 @@ Decomposed `trees.ts` (860 LOC) into 7 modules using inheritance-based leaf buil
 
 ---
 
-### Task 12: Attestation (GCP only, no DI) [TODO — STUB ONLY]
+### Task 12: Attestation (GCP only, no DI) [DONE]
 
-Currently `attestation/index.ts` exports nothing (`export {}`).
+- `attestation/gcp.ts` — `validatePKIToken`, `checkPCR0Mapping` (184 LOC)
+- `attestation/index.ts` — barrel exporting both functions
 
-**Needs:**
-- `attestation/gcp.ts` — `validatePKIToken`, `checkPCR0Mapping` from `attest.ts` (202 LOC). Direct functions, no interface.
-- `attestation/self.ts` — `parsePublicSignalsDisclose` from `selfAttestation.ts` (52 LOC)
-- Update `attestation/index.ts` barrel
-
-**Source:** `common/src/utils/attest.ts` (202), `common/src/utils/selfAttestation.ts` (52)
+**Source:** `common/src/utils/attest.ts` (202)
 **DI:** None. GCP is the only attestation provider. AWS COSE (`cose.ts`) is unused and dropped.
-**Verify:** `yarn types` passes.
-
-**Note:** This is low priority — attestation code is consumed by the TEE server, not by circuits/ or contracts/ which are the primary consumers migrated so far.
 
 ---
 
-### Task 13: Blockchain Utilities [TODO — STUB ONLY]
+### Task 13: Blockchain Utilities [DONE]
 
-Currently `blockchain/index.ts` exports nothing (`export {}`).
+- `blockchain/proving.ts` — `getPayload`, `getWSDbRelayerUrl`, client key generation (74 LOC)
+- `blockchain/formatCallData.ts` — `formatCallData_disclose`, `formatCallData_dsc`, `formatCallData_register`, `formatProof`, `packForbiddenCountriesList` (99 LOC)
+- `blockchain/ofac.ts` — `fetchOfacTrees` (59 LOC)
+- `blockchain/forbiddenCountries.ts` — `getPackedForbiddenCountries` (49 LOC)
+- `blockchain/index.ts` — barrel exporting all 4 modules
 
-**Needs:**
-- `blockchain/proving.ts` — `getPayload`, `getWSDbRelayerUrl`, `clientKey`, `clientPublicKeyHex` from `proving.ts:1-45,62-124`
-- `blockchain/forbidden-countries.ts` — from `contracts/forbiddenCountries.ts` (54 LOC)
-- `blockchain/format-call-data.ts` — from `contracts/formatCallData.ts` (103 LOC)
-- `blockchain/ofac.ts` — `fetchOfacTrees` from `ofac.ts` (70 LOC)
-- Update `blockchain/index.ts` barrel
-
-**Source:** `common/src/utils/proving.ts` (non-encryption), `common/src/contracts/` (2 files), `common/src/utils/ofac.ts`
-**DI:** None. Thin wrappers around blockchain/network interactions.
-**Verify:** `yarn types` passes.
-
-**Note:** `contracts/` package has its own local `contractUtils.ts` for format-call-data functions. This task is primarily needed for app/ and sdk/ migration.
+**Source:** `common/src/utils/proving.ts`, `common/src/contracts/`, `common/src/utils/ofac.ts`
 
 ---
 
-### Task 14: App Layer (SelfAppBuilder) [TODO — STUB ONLY]
+### Task 14: App Layer (SelfAppBuilder) [DONE]
 
-Currently `app/index.ts` exports nothing (`export {}`).
-
-**Needs:**
-- `app/builder.ts` — `SelfAppBuilder` class + `getUniversalLink` from `appType.ts` (132 LOC)
-- Update `app/index.ts` barrel
+- `app/builder.ts` — `SelfAppBuilder` class with validation + `getUniversalLink` (85 LOC)
+- `app/index.ts` — barrel exporting SelfAppBuilder
 
 **Source:** `common/src/utils/appType.ts` (132 LOC)
-**DI:** None. Builder pattern.
-**Verify:** `yarn types` passes.
-
-**Note:** Consumed by `sdk/core/` and the app — needed for SDK migration.
 
 ---
 
@@ -882,7 +861,7 @@ Tasks 1-4 (foundation) ─── DONE
     ┌─────┼──────┬──────────┐
   Task 10  Task 12  Task 13  Task 14
   (trees)  (attest)  (blockchain)  (app)
-   DONE     TODO      TODO       TODO
+   DONE     DONE      DONE       DONE
     │
   Task 11 (circuits) ─── DONE
     │
@@ -891,8 +870,7 @@ Tasks 1-4 (foundation) ─── DONE
   Task 16 (build + validation) ─── PARTIAL
 ```
 
-**Remaining work:** Tasks 12, 13, 14 (stubs) + Task 16 finalization.
-**Tasks 12, 13, 14 are independent** — can be parallelized.
+**All implementation tasks complete.** Remaining: Task 16 finalization (polyfills/crypto.ts) + consumer migrations (app/, sdk/, packages/).
 
 ---
 

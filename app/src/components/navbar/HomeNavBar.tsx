@@ -9,7 +9,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { Clipboard as ClipboardIcon } from '@tamagui/lucide-icons';
 
-import type { SelfApp } from '@selfxyz/common/utils/appType';
+import type { SelfApp } from '@selfxyz/new-common';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   black,

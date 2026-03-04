@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 
-import type { IdDocInput } from '@selfxyz/common/utils';
+import type { IdDocInput } from '@selfxyz/new-common/src/testing/genMockIdDoc';
 
 interface UserState {
   deepLinkName?: string;

@@ -16,3 +16,11 @@ export {
   parsePassportData,
   initPassportDataParsing,
 } from './parsing.js';
+export type { AlternativeCSCA, PassportSupportStatus } from './validate.js';
+export {
+  checkDocumentSupported,
+  checkIfPassportDscIsInTree,
+  isDocumentNullified,
+  isUserRegistered,
+  isUserRegisteredWithAlternativeCSCA,
+} from './validate.js';

@@ -5,7 +5,7 @@
 import { SUMSUB_TEE_URL } from '@env';
 import SNSMobileSDK from '@sumsub/react-native-mobilesdk-module';
 
-import { alpha2ToAlpha3 } from '@selfxyz/common';
+import { alpha2ToAlpha3 } from '@selfxyz/new-common';
 
 import type {
   AccessTokenResponse,

@@ -8,14 +8,12 @@ import LinearGradient from 'react-native-linear-gradient';
 import { Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
-import type { AadhaarData } from '@selfxyz/common';
-import type { PassportData } from '@selfxyz/common/types/passport';
-import type { KycData } from '@selfxyz/common/utils/types';
+import type { AadhaarData, KycData, PassportData } from '@selfxyz/new-common';
 import {
   isAadhaarDocument,
   isKycDocument,
   isMRZDocument,
-} from '@selfxyz/common/utils/types';
+} from '@selfxyz/new-common';
 import { WarningTriangleIcon } from '@selfxyz/euclid/dist/components/icons/WarningTriangleIcon';
 import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
 import {

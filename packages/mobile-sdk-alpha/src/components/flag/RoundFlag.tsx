@@ -6,7 +6,7 @@ import type React from 'react';
 import { View } from 'react-native';
 import * as CountryFlags from 'react-native-svg-circle-country-flags';
 
-import { alpha3ToAlpha2 } from '@selfxyz/common/constants/countries';
+import { alpha3ToAlpha2 } from '@selfxyz/new-common';
 
 import { slate300 } from '../../constants/colors';
 

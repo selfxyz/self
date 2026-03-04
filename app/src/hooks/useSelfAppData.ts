@@ -4,9 +4,8 @@
 
 import { useMemo } from 'react';
 
-import type { SelfApp } from '@selfxyz/common';
-import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
-import { formatEndpoint } from '@selfxyz/common/utils/scope';
+import type { SelfApp, SelfAppDisclosureConfig } from '@selfxyz/new-common';
+import { formatEndpoint } from '@selfxyz/new-common';
 
 import { getDisclosureItems } from '@/utils/disclosureUtils';
 import { formatUserId } from '@/utils/formatUserId';

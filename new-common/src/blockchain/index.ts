@@ -1,4 +1,11 @@
-export { ec, clientKey, clientPublicKeyHex, getPayload, getWSDbRelayerUrl } from './proving.js';
+export {
+  ec,
+  clientKey,
+  clientPublicKeyHex,
+  getPayload,
+  getWSDbRelayerUrl,
+  getAadharRegistrationWindow,
+} from './proving.js';
 export { getPackedForbiddenCountries } from './forbiddenCountries.js';
 export {
   formatCallData_disclose,

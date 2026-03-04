@@ -5,8 +5,8 @@
 import { useMemo } from 'react';
 import { getCountry } from 'react-native-localize';
 
-import { commonNames } from '@selfxyz/common';
-import { alpha2ToAlpha3 } from '@selfxyz/common/constants/countries';
+import { commonNames } from '@selfxyz/new-common';
+import { alpha2ToAlpha3 } from '@selfxyz/new-common';
 
 import countryDocumentTypesData from '../data/country-document-types.json';
 

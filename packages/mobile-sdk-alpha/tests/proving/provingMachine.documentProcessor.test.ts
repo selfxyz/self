@@ -5,17 +5,16 @@
 import { poseidon2 } from 'poseidon-lite';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { AadhaarData, PassportData } from '@selfxyz/common';
+import type { AadhaarData, PassportData } from '@selfxyz/new-common';
 import {
+  AttestationIdHex,
+  createDocument,
   generateCommitment,
-  genMockIdDoc,
-  getCircuitNameFromPassportData,
   getLeafDscTree,
   isMRZDocument,
-} from '@selfxyz/common/utils';
-import * as commonUtils from '@selfxyz/common/utils';
-import { generateCommitmentInAppAadhaar } from '@selfxyz/common/utils/passports/validate';
-import { AttestationIdHex } from '@selfxyz/common/utils/types';
+} from '@selfxyz/new-common';
+import { genMockIdDoc } from '@selfxyz/new-common/src/testing/genMockIdDoc';
+import * as commonUtils from '@selfxyz/new-common';
 
 import { PassportEvents, ProofEvents } from '../../src/constants/analytics';
 import * as documentUtils from '../../src/documents/utils';
@@ -690,8 +689,8 @@ describe('validatingDocument', () => {
     const commitment = generateCommitment(secret, AttestationIdHex.passport, passportData);
     const commitmentTree = createCommitmentTree([commitment]);
 
-    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
-    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const registerCircuit = createDocument(passportData).getRegisterCircuitName();
+    const dscCircuit = createDocument(passportData).getDscCircuitName();
     const deployedCircuits = {
       REGISTER: [registerCircuit],
       REGISTER_ID: [],
@@ -725,8 +724,8 @@ describe('validatingDocument', () => {
     const passportData = buildPassportFixture();
     const secret = '123456789';
     const commitmentTree = createCommitmentTree([]);
-    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
-    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const registerCircuit = createDocument(passportData).getRegisterCircuitName();
+    const dscCircuit = createDocument(passportData).getDscCircuitName();
     const deployedCircuits = {
       REGISTER: [registerCircuit],
       REGISTER_ID: [],
@@ -758,15 +757,8 @@ describe('validatingDocument', () => {
   it('restores data when aadhaar is already registered with alternative keys', async () => {
     const aadhaarData = genMockIdDoc({ idType: 'mock_aadhaar' }) as AadhaarData;
     const secret = '123456789';
-    const { commitment_list: commitmentList } = generateCommitmentInAppAadhaar(
-      secret,
-      AttestationIdHex.aadhaar,
-      aadhaarData,
-      {
-        public_key_0: aadhaarData.publicKey,
-      },
-    );
-    const commitmentTree = createCommitmentTree([commitmentList[0]]);
+    const commitment = createDocument(aadhaarData).generateCommitment(secret);
+    const commitmentTree = createCommitmentTree([commitment]);
     const deployedCircuits = {
       REGISTER: [],
       REGISTER_ID: [],
@@ -793,7 +785,7 @@ describe('validatingDocument', () => {
 
     await useProvingStore.getState().validatingDocument(selfClient);
 
-    expect(reStorePassportDataWithRightCSCMock).toHaveBeenCalledWith(selfClient, aadhaarData, aadhaarData.publicKey);
+    expect(reStorePassportDataWithRightCSCMock).toHaveBeenCalledWith(selfClient, aadhaarData, null);
     expect(markCurrentDocumentAsRegisteredMock).toHaveBeenCalledWith(selfClient);
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'ALREADY_REGISTERED' });
   });
@@ -801,8 +793,8 @@ describe('validatingDocument', () => {
   it('routes to account recovery when nullifier is on chain', async () => {
     const passportData = buildPassportFixture();
     const secret = '123456789';
-    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
-    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const registerCircuit = createDocument(passportData).getRegisterCircuitName();
+    const dscCircuit = createDocument(passportData).getDscCircuitName();
     const deployedCircuits = {
       REGISTER: [registerCircuit],
       REGISTER_ID: [],
@@ -846,8 +838,8 @@ describe('validatingDocument', () => {
   it('switches to register circuit when DSC is already in the tree', async () => {
     const passportData = buildPassportFixture();
     const secret = '123456789';
-    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
-    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const registerCircuit = createDocument(passportData).getRegisterCircuitName();
+    const dscCircuit = createDocument(passportData).getDscCircuitName();
     const deployedCircuits = {
       REGISTER: [registerCircuit],
       REGISTER_ID: [],

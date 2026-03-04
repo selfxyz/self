@@ -22,8 +22,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 
-import { countryCodes } from '@selfxyz/common/constants';
-import { getCountryISO2 } from '@selfxyz/common/constants/countries';
+import { countryCodes, getCountryISO2 } from '@selfxyz/new-common';
 import {
   dinot,
   generateMockDocument,

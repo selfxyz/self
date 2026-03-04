@@ -17,9 +17,9 @@ vitest.mock('xstate', async importOriginal => {
   };
 });
 
-// Mock the proving utils
-vitest.mock('@selfxyz/common/utils/proving', async () => {
-  const actual = await vitest.importActual('@selfxyz/common/utils/proving');
+// Mock @selfxyz/new-common with all needed overrides
+vitest.mock('@selfxyz/new-common', async () => {
+  const actual = (await vitest.importActual('@selfxyz/new-common')) as any;
   return {
     ...actual,
     getPayload: vitest.fn(() => ({ mocked: true })),
@@ -40,63 +40,26 @@ vitest.mock('@selfxyz/common/utils/proving', async () => {
       endpointType: 'celo',
       endpoint: 'https://dsc',
     })),
-    generateTEEInputsDisclose: vitest.fn(() => ({
-      inputs: { s: 1 },
-      circuitName: 'vc_and_disclose',
-      endpointType: 'https',
-      endpoint: 'https://dis',
-    })),
-  };
-});
-
-// Mock the proving utils
-vitest.mock('@selfxyz/common/utils/circuits/registerInputs', async () => {
-  const actual = (await vitest.importActual('@selfxyz/common/utils/circuits/registerInputs')) as any;
-  return {
-    ...actual,
-    generateTEEInputsRegister: vitest.fn(() => ({
-      inputs: { r: 1 },
-      circuitName: 'reg',
-      endpointType: 'celo',
-      endpoint: 'https://reg',
-    })),
-    generateTEEInputsDSC: vitest.fn(() => ({
-      inputs: { d: 1 },
-      circuitName: 'dsc',
-      endpointType: 'celo',
-      endpoint: 'https://dsc',
-    })),
     generateTEEInputsDiscloseStateless: vitest.fn(() => ({
       inputs: { s: 1 },
       circuitName: 'vc_and_disclose',
       endpointType: 'https',
       endpoint: 'https://dis',
     })),
-  };
-});
-
-// Mock the tree utils to avoid CSCA tree issues
-vitest.mock('@selfxyz/common/utils/trees', async () => {
-  const actual = (await vitest.importActual('@selfxyz/common/utils/trees')) as any;
-  return {
-    ...actual,
     getCscaTreeInclusionProof: vitest.fn(() => [
-      '123', // root as string (BigInt toString)
-      ['0', '1', '0'], // path indices as strings
-      ['10', '20', '30'], // siblings as strings
+      '123',
+      ['0', '1', '0'],
+      ['10', '20', '30'],
     ]),
-  };
-});
-
-// Mock the passport utils to avoid signature processing issues
-vitest.mock('@selfxyz/common/utils/passports/passport', async () => {
-  const actual = (await vitest.importActual('@selfxyz/common/utils/passports/passport')) as any;
-  return {
-    ...actual,
     getPassportSignatureInfos: vitest.fn(() => ({
       pubKey: [1, 2, 3, 4],
       signature: [5, 6, 7, 8],
       signatureAlgorithmFullName: 'rsa_pss_rsae_sha256_65537_2048',
+    })),
+    createDocument: vitest.fn(() => ({
+      getDiscloseCircuitName: vitest.fn(() => 'mock-circuit'),
+      getRegisterCircuitName: vitest.fn(() => 'mock-circuit'),
+      getDscCircuitName: vitest.fn(() => 'mock-circuit'),
     })),
   };
 });

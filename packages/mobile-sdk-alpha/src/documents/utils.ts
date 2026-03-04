@@ -8,15 +8,15 @@ import type {
   IDDocument,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
-} from '@selfxyz/common';
+} from '@selfxyz/new-common';
 import {
-  brutforceSignatureAlgorithmDsc,
+  bruteForceSignatureAlgorithmDsc,
   calculateContentHash,
   inferDocumentCategory,
   isAadhaarDocument,
   isMRZDocument,
   parseCertificateSimple,
-} from '@selfxyz/common';
+} from '@selfxyz/new-common';
 
 import { extractNameFromMRZ } from '../processing/mrz';
 import type { SelfClient } from '../types/public';
@@ -184,7 +184,7 @@ export async function reStorePassportDataWithRightCSCA(selfClient: SelfClient, p
   const cscaInCurrentPassporData = passportData.passportMetadata?.csca;
   if (!(csca === cscaInCurrentPassporData)) {
     const cscaParsed = parseCertificateSimple(csca);
-    const dscCertData = brutforceSignatureAlgorithmDsc(passportData.dsc_parsed!, cscaParsed);
+    const dscCertData = bruteForceSignatureAlgorithmDsc(passportData.dsc_parsed!, cscaParsed);
 
     if (passportData.passportMetadata && dscCertData && cscaParsed.publicKeyDetails) {
       passportData.passportMetadata.csca = csca;

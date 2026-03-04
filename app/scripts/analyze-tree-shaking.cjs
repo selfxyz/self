@@ -80,7 +80,7 @@ function analyzeWebBundle() {
     });
   }
 
-  // Look for @selfxyz/common usage patterns
+  // Look for @selfxyz/new-common usage patterns
   console.log('\n🌳 Tree Shaking Indicators:');
 
   try {
@@ -151,7 +151,7 @@ function analyzeReactNativeBundle(platform) {
     if (existsSync(reportPath)) {
       console.log(`\n📊 Detailed bundle report: ${reportPath}`);
       console.log('💡 Look for:');
-      console.log('   - Unused modules from @selfxyz/common');
+      console.log('   - Unused modules from @selfxyz/new-common');
       console.log('   - Large vendor chunks that could be optimized');
       console.log('   - Multiple copies of the same module');
     }
@@ -234,7 +234,7 @@ function categorizeImports(imports) {
     suggestions.push({
       category: 'constants',
       imports: constantImports,
-      suggestion: `import { ${constantImports.join(', ')} } from '@selfxyz/common/constants';`,
+      suggestion: `import { ${constantImports.join(', ')} } from '@selfxyz/new-common';`,
     });
   }
 
@@ -242,7 +242,7 @@ function categorizeImports(imports) {
     suggestions.push({
       category: 'utils',
       imports: utilImports,
-      suggestion: `import { ${utilImports.join(', ')} } from '@selfxyz/common/utils';`,
+      suggestion: `import { ${utilImports.join(', ')} } from '@selfxyz/new-common';`,
     });
   }
 
@@ -250,7 +250,7 @@ function categorizeImports(imports) {
     suggestions.push({
       category: 'types',
       imports: typeImports,
-      suggestion: `import type { ${typeImports.map(t => t.replace(/^type\s+/, '')).join(', ')} } from '@selfxyz/common/types';`,
+      suggestion: `import type { ${typeImports.map(t => t.replace(/^type\s+/, '')).join(', ')} } from '@selfxyz/new-common';`,
     });
   }
 
@@ -305,8 +305,8 @@ function compareImportPatterns() {
     const content = readFileSync(file, 'utf8');
     totalFiles++;
 
-    // Check for @selfxyz/common imports
-    const commonImportRegex = /import.*from\s+['"]@selfxyz\/common[^'"]*['"]/g;
+    // Check for @selfxyz/new-common imports
+    const commonImportRegex = /import.*from\s+['"]@selfxyz\/new-common[^'"]*['"]/g;
     const matches = content.match(commonImportRegex) || [];
 
     if (matches.length > 0) {
@@ -329,9 +329,7 @@ function compareImportPatterns() {
           fileInfo.imports.push({ type: 'star', import: match.trim() });
           fileInfo.priority += 3; // High priority for star imports
         } else if (
-          match.includes('/constants') ||
-          match.includes('/utils') ||
-          match.includes('/types')
+          match.includes('/src/')
         ) {
           granularImports++;
           importPatterns.granular.push({
@@ -371,7 +369,7 @@ function compareImportPatterns() {
   });
 
   console.log(`📁 Analyzed ${totalFiles} files`);
-  console.log(`📦 Files importing @selfxyz/common: ${filesWithCommonImports}`);
+  console.log(`📦 Files importing @selfxyz/new-common: ${filesWithCommonImports}`);
   console.log(`⭐ Star imports (import *): ${starImports}`);
   console.log(`📝 Named imports: ${namedImports}`);
   console.log(`🎯 Granular imports: ${granularImports}`);
@@ -396,7 +394,7 @@ function compareImportPatterns() {
       `⚠️  More mixed imports (${namedImports}) than granular (${granularImports})`,
     );
     console.log(
-      '   Consider using granular imports like "@selfxyz/common/constants"',
+      '   Consider using sub-path imports like "@selfxyz/new-common/src/foundation/constants/index"',
     );
   }
 

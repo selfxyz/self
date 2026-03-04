@@ -6,7 +6,7 @@ import React, { useEffect, useMemo } from 'react';
 import { XStack, YStack } from 'tamagui';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { countryCodes } from '@selfxyz/common/constants';
+import { countryCodes } from '@selfxyz/new-common';
 import {
   BodyText,
   PrimaryButton,

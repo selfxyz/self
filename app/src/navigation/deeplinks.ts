@@ -5,8 +5,8 @@
 import { parseUrl } from 'query-string';
 import { Linking, Platform } from 'react-native';
 
-import { countries } from '@selfxyz/common/constants/countries';
-import type { IdDocInput } from '@selfxyz/common/utils';
+import { countries } from '@selfxyz/new-common';
+import type { IdDocInput } from '@selfxyz/new-common/src/testing/genMockIdDoc';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import type { RootStackParamList } from '@/navigation';

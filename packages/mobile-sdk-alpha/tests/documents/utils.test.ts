@@ -4,8 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { AadhaarData, DocumentCatalog } from '@selfxyz/common';
-import type { PassportData } from '@selfxyz/common/types/passport';
+import type { AadhaarData, DocumentCatalog, PassportData } from '@selfxyz/new-common';
 
 import type { DocumentsAdapter, SelfClient } from '../../src';
 import { createSelfClient, defaultConfig, loadSelectedDocument } from '../../src';

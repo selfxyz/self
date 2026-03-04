@@ -5,19 +5,20 @@
   "license": "MIT",
   "author": "@Selfxyz Team",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.js",
-  "types": "./dist/esm/index.d.ts",
+  "types": "./dist/esm/src/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/esm/src/index.d.ts",
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.cjs",
-      "types": "./dist/esm/index.d.ts"
+      "require": "./dist/cjs/index.cjs"
     },
     "./src/*": {
+      "types": "./dist/esm/src/*.d.ts",
       "import": "./dist/esm/src/*.js",
-      "require": "./dist/cjs/src/*.cjs",
-      "types": "./dist/esm/src/*.d.ts"
+      "require": "./dist/cjs/src/*.cjs"
     },
     "./src/data/*.json": "./src/data/*.json"
   },

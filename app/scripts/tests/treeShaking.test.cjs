@@ -52,29 +52,34 @@ describe('Tree Shaking Infrastructure Tests', () => {
 });
 
 describe('Package Configuration Validation', () => {
-  it('should validate @selfxyz/common package configuration', () => {
-    const commonPackagePath = join(
+  it('should validate @selfxyz/new-common package configuration', () => {
+    const newCommonPackagePath = join(
       __dirname,
       '..',
       '..',
       '..',
-      'common',
+      'new-common',
       'package.json',
     );
     assert(
-      existsSync(commonPackagePath),
-      '@selfxyz/common package.json should exist',
+      existsSync(newCommonPackagePath),
+      '@selfxyz/new-common package.json should exist',
     );
 
-    const commonPackage = JSON.parse(readFileSync(commonPackagePath, 'utf8'));
+    const newCommonPackage = JSON.parse(readFileSync(newCommonPackagePath, 'utf8'));
 
-    assert(commonPackage.type === 'module', 'Should use ESM modules');
-    assert(commonPackage.exports, 'Should have granular exports defined');
+    assert(newCommonPackage.type === 'module', 'Should use ESM modules');
+    assert(newCommonPackage.sideEffects === false, 'Should have sideEffects: false for tree shaking');
+    assert(newCommonPackage.exports, 'Should have exports defined');
 
-    // Check granular exports
-    const exports = commonPackage.exports;
-    assert(exports['./constants'], 'Should export ./constants');
-    assert(exports['./utils'], 'Should export ./utils');
-    assert(exports['./types'], 'Should export ./types');
+    // Check root and sub-path exports
+    const exports = newCommonPackage.exports;
+    assert(exports['.'], 'Should export root barrel "."');
+    assert(exports['./src/*'], 'Should export sub-path "./src/*"');
+
+    // Verify types condition comes first in root export
+    const rootExport = exports['.'];
+    const rootKeys = Object.keys(rootExport);
+    assert(rootKeys[0] === 'types', 'Root export "types" condition should come first for TypeScript resolution');
   });
 });

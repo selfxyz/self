@@ -5,7 +5,7 @@
 import React from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import type { DocumentCategory } from '@selfxyz/new-common';
 
 import { SystemBars } from '@/components/SystemBars';
 import DeferredLinkingInfoScreen from '@/screens/app/DeferredLinkingInfoScreen';

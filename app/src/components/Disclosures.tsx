@@ -5,7 +5,7 @@
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 
-import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils';
+import type { SelfAppDisclosureConfig } from '@selfxyz/new-common';
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate200, slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 

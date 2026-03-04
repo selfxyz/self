@@ -7,9 +7,8 @@ import React from 'react';
 import { Image } from 'react-native';
 import { YStack } from 'tamagui';
 
-import { deserializeApplicantInfo } from '@selfxyz/common';
-import { commonNames } from '@selfxyz/common/constants/countries';
-import type { KycData } from '@selfxyz/common/utils/types';
+import type { KycData } from '@selfxyz/new-common';
+import { commonNames, deserializeApplicantInfo } from '@selfxyz/new-common';
 import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 

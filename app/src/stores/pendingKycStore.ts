@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {
   PendingKycStatus,
   PendingKycVerification,
-} from '@selfxyz/common/utils/types';
+} from '@selfxyz/new-common';
 
 const VERIFICATION_TIMEOUT_MS = 48 * 60 * 60 * 1000; // 48 hours TODO seshanth
 

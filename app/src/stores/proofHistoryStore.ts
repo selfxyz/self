@@ -5,7 +5,7 @@
 import { io } from 'socket.io-client';
 import { create } from 'zustand';
 
-import { WS_DB_RELAYER } from '@selfxyz/common/constants';
+import { WS_DB_RELAYER } from '@selfxyz/new-common';
 
 import { database } from '@/stores/database';
 import type { ProofHistory } from '@/stores/proofTypes';

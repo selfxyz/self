@@ -84,7 +84,7 @@ const entry = {
   'src/circuits/types': 'src/circuits/types.ts',
   'src/circuits/generator': 'src/circuits/generator.ts',
   'src/circuits/userId': 'src/circuits/userId.ts',
-  'src/circuits/circuitName': 'src/circuits/circuitName.ts',
+  'src/circuits/tee': 'src/circuits/tee.ts',
   'src/circuits/inputs/index': 'src/circuits/inputs/index.ts',
   'src/circuits/inputs/disclose': 'src/circuits/inputs/disclose.ts',
   'src/circuits/inputs/dsc': 'src/circuits/inputs/dsc.ts',

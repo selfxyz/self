@@ -4,7 +4,7 @@
 
 import { act, renderHook } from '@testing-library/react-native';
 
-import type { SelfApp } from '@selfxyz/common';
+import type { SelfApp } from '@selfxyz/new-common';
 
 import { useProofDisclosureStalenessCheck } from '@/hooks/useProofDisclosureStalenessCheck';
 

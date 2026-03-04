@@ -10,7 +10,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
+import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/new-common';
 import {
   markCurrentDocumentAsRegistered,
   useSelfClient,

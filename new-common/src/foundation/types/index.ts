@@ -28,7 +28,7 @@ export type {
   SignatureAlgorithm,
 } from './document.js';
 
-export { AttestationIdHex } from './document.js';
+export { AttestationIdHex, isAadhaarDocument, isKycDocument, isMRZDocument } from './document.js';
 
 export type { Environment, OfacTree } from './environment.js';
 
