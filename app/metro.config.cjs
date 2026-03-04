@@ -28,7 +28,7 @@ const config = {
 
   watchFolders: [
     workspaceRoot, // Watch entire workspace root for changes
-    path.resolve(workspaceRoot, 'common'),
+    path.resolve(workspaceRoot, 'new-common'),
     path.resolve(workspaceRoot, 'packages/mobile-sdk-alpha'),
     path.resolve(projectRoot, 'node_modules'), // Watch app's node_modules for custom resolved modules
   ],
@@ -106,6 +106,9 @@ const config = {
       assert: require.resolve('assert'),
       events: require.resolve('events'),
       process: require.resolve('process'),
+      // Node.js built-ins used by new-common (eddsa.ts) but never called at runtime in RN
+      module: path.resolve(projectRoot, 'src/polyfills/empty.js'),
+      'node:module': path.resolve(projectRoot, 'src/polyfills/empty.js'),
       'react-native-svg': path.resolve(
         projectRoot,
         'node_modules/react-native-svg',
@@ -123,6 +126,14 @@ const config = {
 
     // Custom resolver to handle both .js imports in TypeScript and Node.js modules
     resolveRequest: (context, moduleName, platform) => {
+      // Stub Node.js built-ins not available in React Native (e.g. used by new-common/eddsa.ts)
+      if (moduleName === 'module' || moduleName === 'node:module') {
+        return {
+          type: 'sourceFile',
+          filePath: path.resolve(projectRoot, 'src/polyfills/empty.js'),
+        };
+      }
+
       // Handle React Native gesture handler that needs app-level resolution
       const appLevelModules = {
         'react-native-gesture-handler':
