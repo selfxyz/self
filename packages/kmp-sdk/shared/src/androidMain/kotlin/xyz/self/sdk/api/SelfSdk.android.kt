@@ -120,8 +120,6 @@ actual class SelfSdk private constructor(
                 putExtra(SelfVerificationActivity.EXTRA_CONFIG, serializeConfig(config))
             }
 
-        ensureLauncher(activity)
-
         // Launch the verification activity
         val launcher = activityLauncher
         if (launcher == null) {
@@ -157,6 +155,7 @@ actual class SelfSdk private constructor(
 
     private fun bindActivity(activity: ComponentActivity) {
         boundActivity = WeakReference(activity)
+        ensureLauncher(activity)
     }
 
     private fun resolveActivity(): ComponentActivity? {

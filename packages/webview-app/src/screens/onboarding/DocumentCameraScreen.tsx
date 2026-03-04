@@ -35,11 +35,15 @@ export const DocumentCameraScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const scanGenerationRef = useRef(0);
+  const scanInFlightRef = useRef(false);
 
   const scanPrompt =
     documentType === 'i' ? 'Scan your ID card' : 'Scan your passport';
 
   const startMRZScan = useCallback(async () => {
+    if (scanInFlightRef.current) return;
+    scanInFlightRef.current = true;
+
     const scanGeneration = scanGenerationRef.current + 1;
     scanGenerationRef.current = scanGeneration;
 
@@ -87,6 +91,7 @@ export const DocumentCameraScreen: React.FC = () => {
       setError(GENERIC_SCAN_ERROR_MESSAGE);
       analytics.trackEvent('camera_mrz_scan_failed', { errorCode });
     } finally {
+      scanInFlightRef.current = false;
       if (mountedRef.current && scanGenerationRef.current === scanGeneration) {
         setScanning(false);
       }
