@@ -4,10 +4,10 @@
 
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils';
 
-import type { SelfClient } from '../../../src/types/public';
 import type { ProvingDependencies, ProvingStoreSnapshot } from '../../../src/proving/internal/dependencyFactory';
 import { initTeeConnection } from '../../../src/proving/internal/teeConnectionHandler';
 import { resolveWebSocketUrl } from '../../../src/proving/internal/websocketUrlResolver';
+import type { SelfClient } from '../../../src/types/public';
 import { actorMock, emitState } from '../actorMock';
 
 vi.mock('@selfxyz/common/utils', async () => {
