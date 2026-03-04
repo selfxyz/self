@@ -33,6 +33,7 @@ type SocialUser = {
   id?: string;
   name?: string;
   email?: string;
+  tokensRetrieved?: boolean;
 };
 
 const formatFullName = (fullName?: {
@@ -131,14 +132,14 @@ const SocialLoginDemoScreen: React.FC = () => {
         return;
       }
 
-      await GoogleSignin.getTokens();
-      // Tokens retrieved successfully - available for backend integration
+      const tokens = await GoogleSignin.getTokens();
 
       setUser({
         provider: 'google',
         id: response.data.user.id,
         name: response.data.user.name ?? undefined,
         email: response.data.user.email ?? undefined,
+        tokensRetrieved: Boolean(tokens.accessToken),
       });
     } catch (error: unknown) {
       const code = (error as { code?: string }).code;
@@ -223,6 +224,9 @@ const SocialLoginDemoScreen: React.FC = () => {
   };
 
   const handleSignOut = async () => {
+    if (loading || authInFlightRef.current) {
+      return;
+    }
     setLoading(true);
     setErrorMessage(null);
 
@@ -364,6 +368,11 @@ const SocialLoginDemoScreen: React.FC = () => {
               <Text fontSize="$4" color={slate600}>
                 ID: {user.id ?? 'Not provided'}
               </Text>
+              {user.tokensRetrieved && (
+                <Text fontSize="$4" color={slate600}>
+                  Tokens: Retrieved
+                </Text>
+              )}
             </YStack>
           ) : (
             <Text fontSize="$4" color={slate500}>
