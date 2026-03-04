@@ -59,9 +59,14 @@ const SocialLoginDemoScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
   const appleAvailable = Platform.OS === 'ios' && appleAuth.isSupported;
 
   useEffect(() => {
+    if (!isNative) {
+      return;
+    }
+
     GoogleSignin.configure({
       webClientId: GOOGLE_SIGNIN_WEB_CLIENT_ID,
       iosClientId: GOOGLE_SIGNIN_IOS_CLIENT_ID,
@@ -91,7 +96,7 @@ const SocialLoginDemoScreen: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isNative]);
 
   useEffect(() => {
     if (!appleAvailable) {
