@@ -716,8 +716,56 @@ jest.mock('@sentry/react-native', () => ({
   }),
 }));
 
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: {
+    configure: jest.fn(),
+    hasPlayServices: jest.fn().mockResolvedValue(true),
+    signIn: jest.fn().mockResolvedValue({
+      type: 'success',
+      data: {
+        user: {
+          id: 'mock-google-user-id',
+          name: 'Mock User',
+          email: 'mock@example.com',
+        },
+      },
+    }),
+    signOut: jest.fn().mockResolvedValue(null),
+    getCurrentUser: jest.fn().mockResolvedValue(null),
+    getTokens: jest.fn().mockResolvedValue({ idToken: 'mock-token' }),
+  },
+  GoogleSigninButton: 'GoogleSigninButton',
+  statusCodes: {
+    SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
+  },
+}));
+
+jest.mock('@invertase/react-native-apple-authentication', () => ({
+  __esModule: true,
+  default: {
+    performRequest: jest.fn().mockResolvedValue({
+      user: 'mock-apple-user-id',
+      fullName: { givenName: 'Mock', familyName: 'User' },
+      email: 'mock@example.com',
+    }),
+    getCredentialStateForUser: jest.fn().mockResolvedValue(1),
+    onCredentialRevoked: jest.fn(() => jest.fn()),
+    isSupported: true,
+    State: { AUTHORIZED: 1 },
+    Error: { CANCELED: 1001 },
+  },
+  AppleButton: 'AppleButton',
+  AppleRequestScope: { EMAIL: 0, FULL_NAME: 1 },
+  AppleRequestOperation: { LOGIN: 1 },
+}));
+
 jest.mock('@env', () => ({
   ENABLE_DEBUG_LOGS: 'false',
+  GOOGLE_SIGNIN_ANDROID_CLIENT_ID: 'mock-google-client-id',
+  GOOGLE_SIGNIN_IOS_CLIENT_ID: 'mock-google-ios-client-id',
+  GOOGLE_SIGNIN_WEB_CLIENT_ID: 'mock-google-web-client-id',
   MIXPANEL_NFC_PROJECT_TOKEN: 'test-token',
 }));
 

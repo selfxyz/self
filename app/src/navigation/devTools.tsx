@@ -13,6 +13,7 @@ import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
+import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {
@@ -79,6 +80,13 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'Dev Loading Screen',
+    } as NativeStackNavigationOptions,
+  },
+  SocialLoginDemo: {
+    screen: SocialLoginDemoScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'Social Login Demo',
     } as NativeStackNavigationOptions,
   },
 };
