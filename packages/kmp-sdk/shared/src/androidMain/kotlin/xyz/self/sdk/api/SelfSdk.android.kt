@@ -9,6 +9,8 @@ import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import kotlinx.serialization.json.Json
 import xyz.self.sdk.webview.SelfVerificationActivity
 import java.lang.ref.WeakReference
@@ -156,6 +158,21 @@ actual class SelfSdk private constructor(
     private fun bindActivity(activity: ComponentActivity) {
         boundActivity = WeakReference(activity)
         ensureLauncher(activity)
+        activity.lifecycle.addObserver(
+            object : DefaultLifecycleObserver {
+                override fun onDestroy(owner: LifecycleOwner) {
+                    if (launcherOwner?.get() === activity) {
+                        activityLauncher?.unregister()
+                        activityLauncher = null
+                        launcherOwner = null
+                    }
+                    if (boundActivity?.get() === activity) {
+                        boundActivity = null
+                    }
+                    pendingCallback = null
+                }
+            },
+        )
     }
 
     private fun resolveActivity(): ComponentActivity? {

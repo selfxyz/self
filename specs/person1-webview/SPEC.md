@@ -32,11 +32,11 @@ The Self Wallet is a monolithic React Native app where all logic, NFC, proving, 
 2. Bridges to native only for hardware/OS capabilities (NFC, camera, biometrics, keychain, lifecycle)
 3. Provides web-native fallback adapters for everything the browser can handle (documents via IndexedDB, crypto hashing via Web Crypto, analytics via console/fetch)
 
-| Area                       | Issue                                                                                                                                          |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/webview-bridge/` | Implemented with current protocol/adapters and validated by tests (63 tests passing).                                                          |
-| `packages/webview-app/`    | Screens built, routing works. SelfClientProvider wiring complete (biometrics, camera, and web fallback adapters connected).                     |
-| Web fallback adapters      | IndexedDB documents, Web Crypto hashing, console analytics, navigation, and no-op haptic are wired in webview-app.                             |
+| Area                       | Issue                                                                                                                       |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `packages/webview-bridge/` | Implemented with current protocol/adapters and validated by tests (63 tests passing).                                       |
+| `packages/webview-app/`    | Screens built, routing works. SelfClientProvider wiring complete (biometrics, camera, and web fallback adapters connected). |
+| Web fallback adapters      | IndexedDB documents, Web Crypto hashing, console analytics, navigation, and no-op haptic are wired in webview-app.          |
 
 ## Design Principles
 
@@ -1331,12 +1331,12 @@ Chunk 1F: Bridge Package (no deps — start here)
 
 ## Completion Status
 
-| Chunk | Description              | Size | Status                                                                                                               |
-| ----- | ------------------------ | ---- | -------------------------------------------------------------------------------------------------------------------- |
-| 1F    | Bridge Package           | L    | **Done** — 63 tests pass, bridge package and adapters implemented                                                    |
-| 1B    | Onboarding Screens       | M    | **Done** — all 5 screens render                                                                                      |
-| 1C    | Proving + Result Screens | M    | **Done** — screens render, proving wired                                                                             |
-| 1D    | Remaining Screens        | S    | **Done** — home, settings, coming-soon render                                                                        |
+| Chunk | Description              | Size | Status                                                                                                                               |
+| ----- | ------------------------ | ---- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 1F    | Bridge Package           | L    | **Done** — 63 tests pass, bridge package and adapters implemented                                                                    |
+| 1B    | Onboarding Screens       | M    | **Done** — all 5 screens render                                                                                                      |
+| 1C    | Proving + Result Screens | M    | **Done** — screens render, proving wired                                                                                             |
+| 1D    | Remaining Screens        | S    | **Done** — home, settings, coming-soon render                                                                                        |
 | 1E    | WebView App Shell        | M    | **Done** — providers/router/entry wired, biometrics + camera adapters connected, web fallbacks connected, lifecycle.ready() on mount |
 
 ## Validation Plan

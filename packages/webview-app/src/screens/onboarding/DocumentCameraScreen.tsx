@@ -84,8 +84,16 @@ export const DocumentCameraScreen: React.FC = () => {
         return;
       }
 
+      const bridgeErrorCode =
+        typeof err === 'object' &&
+        err !== null &&
+        'code' in err &&
+        typeof (err as { code?: unknown }).code === 'string'
+          ? (err as { code: string }).code
+          : undefined;
       const errorCode =
-        err instanceof Error && err.message === MRZ_INVALID_DATA_ERROR
+        bridgeErrorCode === MRZ_INVALID_DATA_ERROR ||
+        (err instanceof Error && err.message === MRZ_INVALID_DATA_ERROR)
           ? 'MRZ_INVALID_DATA'
           : 'MRZ_SCAN_FAILED';
       setError(GENERIC_SCAN_ERROR_MESSAGE);
