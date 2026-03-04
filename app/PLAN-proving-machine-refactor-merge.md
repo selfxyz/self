@@ -1,166 +1,105 @@
-# Plan: Merge provingMachine Refactor (PR #1526) onto dev
+# Plan: provingMachine Refactor — PR #1807
 
-## PR #1526 Feedback Summary
+## Branch: `feat/refactor-proving-machine-v2`
 
-### Human Feedback (transphorm)
-- **iOS keychain modal guard is intentional** — the keychain bug only exists on Android, so `if (Platform.OS !== 'android') return` is correct.
-
-### Bot Feedback (coderabbit / codex) — Grouped by Severity
-
-#### Critical (test failures)
-1. **Test mock missing `getSelfAppState`** — `teeConnectionHandler.test.ts` mock lacks this method, causes TypeError
-2. **`wsEventListeners['open']()` missing `Event` argument** — TS2554 in teeConnectionHandler tests
-
-#### Major (unsafe casts / missing guards)
-3. **`secret as string` without null guard** — in `payloadGenerator.ts` (register + disclose cases) and `documentProcessor.ts` (2 places). Should add `if (!secret) throw` before each cast.
-4. **`uuid!` non-null assertion** — in `payloadGenerator.ts` `_buildSubmitRequest` call
-5. **`passportMetadata!` non-null assertion** — `documentProcessor.ts` line 65
-6. **`env!` non-null assertion** — `documentProcessor.ts` line 162
-7. **`deployed_circuits!` non-null assertion** — `documentProcessor.ts`
-8. **`csca as string` unsafe cast + fire-and-forget IIFE** — `documentProcessor.ts` ~line 280
-9. **TEE connection promise lacks timeout** — `teeConnectionHandler.ts` can hang indefinitely
-10. **Stale `actor` reference in `connect_error`** — `socketIOListener.ts` line 34 captures actor at setup, should use `getActor()`
-11. **Sensitive data in `console.error(data)`** — `socketIOListener.ts` logs full status message
-12. **Public API break** — renamed `provingMachineCircuitType` export without backward-compatible alias
-
-#### Minor (defensive improvements)
-13. **`circuitType as string`** — `socketIOListener.ts`, should use `?? 'unknown'`
-14. **Inconsistent aadhaar handling in `websocketUrlResolver.ts`** — DSC case doesn't throw for aadhaar like other resolvers do
-15. **`__DEV__` usage** — dev branch already migrated to `selfClient.config.debug`
-
-### Verdict on Feedback
-- Items 1-2 are real test breakages that need fixing
-- Items 3-11 are legitimate safety improvements but many were **pre-existing patterns** in the original `provingMachine.ts` (the refactor just moved them)
-- Item 12 (public API alias) is worth doing
-- Item 15 is moot — dev already fixed the `__DEV__` pattern
+Fresh extraction of `provingMachine.ts` internals into focused modules, branched off current `dev`.
 
 ---
 
-## Current Branch State
+## PR #1807 CodeRabbit Feedback Tracker
 
-| Branch | Commits ahead of merge-base |
-|--------|---------------------------|
-| `codex/refactor-provingmachine.ts-for-maintainability` | 13 commits (refactoring) |
-| `origin/dev` | ~30 commits (KYC support, WS reconnection, VERIFICATION_COMPLETE event, `__DEV__` → `config.debug`, platform detection, expo SDK 52, etc.) |
+All 18 items from CodeRabbit (no human reviewers have commented yet).
 
-**Key changes on dev since PR branched:**
-- **KYC document support** (`kyc` cases added throughout `provingMachine.ts`)
-- **WebSocket reconnection logic** (`_reconnectTeeWebSocket`, `wsReconnectAttempts`, backoff)
-- **`emitVerificationComplete` event** (new function + calls in success/failure/error states)
-- **`__DEV__` → `selfClient.config.debug`** migration
-- **`getPlatform()` → `getPlatform(selfClient)`** (reads from config instead of RN Platform)
-- **`startProving` WS reconnection** (checks readyState, attempts reconnect before proving)
-
-**The PR's version of `provingMachine.ts` is based on OLD code that lacks all of the above.**
+### Status Legend
+- **FIXED** — addressed in current branch code
+- **PARTIAL** — partially addressed, needs more work
+- **NOT FIXED** — still open
+- **WONTFIX** — intentionally skipped (with justification)
 
 ---
 
-## Recommended Strategy: Fresh Branch off dev
+### Critical
 
-**Do NOT rebase or merge the PR as-is.** The base file has diverged too much — merging would either lose dev's new features or create an unmaintainable conflict mess.
+| # | Issue | File | Status | Notes |
+|---|-------|------|--------|-------|
+| 1 | `initTeeConnection()` hangs when actor missing — `return` inside Promise executor without resolve/reject | `teeConnectionHandler.ts` | **FIXED** | Actor guard moved before `new Promise()`, returns `false` directly |
 
-### Approach: New branch, same architecture, current code
+### Major — Security
 
-1. **Create new branch off `origin/dev`**: `feat/refactor-proving-machine-v2`
+| # | Issue | File | Status | Notes |
+|---|-------|------|--------|-------|
+| 2 | PCR0 attestation bypass gated by bare `debug` boolean | `websocketHandlers.ts` L84-88 | **WONTFIX** | Pre-existing pattern from original code; debug flag is app-level config, not user-controlled. Changing security model is out of scope for a structural refactor. |
+| 3 | Raw PII (`sessionId`, `userId`) in `createProofContext` | `helpers.ts` L27-33 | **WONTFIX** | These identifiers are internal analytics context, not logged to external services. Masking would reduce debuggability. Pre-existing pattern. |
+| 4 | Raw UUID/session IDs in logs/analytics | `websocketHandlers.ts` L127-132, L296-298 | **WONTFIX** | Same reasoning as #3. UUIDs are ephemeral session identifiers needed for debugging proof flows. Pre-existing pattern. |
 
-2. **Apply the same modular extraction pattern** from PR #1526, but against current dev code:
+### Major — Robustness / Error Handling
 
-   | New Module | Responsibility | Source in current provingMachine.ts |
-   |-----------|---------------|-------------------------------------|
-   | `internal/stateMachine.ts` | XState machine definition, state types | Machine setup / types section |
-   | `internal/payloadGenerator.ts` | `_generateCircuitInputs`, `_generatePayload`, `_buildSubmitRequest` | Payload generation block |
-   | `internal/websocketUrlResolver.ts` | `getMappingKey`, `resolveWebSocketUrl` | URL resolution helpers |
-   | `internal/websocketHandlers.ts` | `_handleWebSocketMessage`, `_handleWsOpen/Error/Close`, `_reconnectTeeWebSocket` | WS handler methods |
-   | `internal/socketIOListener.ts` | Socket.IO status listener setup | `_setupSocketIOListener` method |
-   | `internal/teeConnectionHandler.ts` | TEE connection + attestation validation | `_connectToTEE` method |
-   | `internal/documentProcessor.ts` | Document support check, registration check, passport parsing | `_checkDocumentSupportedAndRegistration` |
-   | `internal/actorSubscriptions.ts` | Actor event subscriptions, analytics, `emitVerificationComplete` | `setupActorSubscriptions` function |
-   | `internal/constants.ts` | Shared constants (timeouts, retry counts) | Scattered magic numbers |
-   | `internal/dependencyFactory.ts` | Dependency injection types | New (for testability) |
-   | `internal/helpers.ts` | `createProofContext`, `getPlatform`, etc. | Utility functions |
+| # | Issue | File | Status | Notes |
+|---|-------|------|--------|-------|
+| 5 | Unhandled promise rejections in actor subscriptions | `actorSubscriptions.ts` L85-105 | **FIXED** | All async handlers wrapped with `runTask()` which uses `void task.catch(...)` |
+| 6 | Socket disconnect in `proving` state not handled | `socketIOListener.ts` L60-71 | **FIXED** | Disconnect handler now checks both `ready_to_prove` and `proving` |
+| 7 | Force-cast `circuitType` without null check | `teeConnectionHandler.ts` L38-46 | **FIXED** | Explicit null guard added, sends `CONNECT_ERROR` if missing |
+| 8 | Missing optional chaining on protocol state lookup | `websocketUrlResolver.ts` L38 | **FIXED** | Uses `?.` at all levels now |
+| 9 | Timed-out sockets not cleaned up | `websocketHandlers.ts` L384-401 | **PARTIAL** | Reconnect timeout path has full cleanup (remove listeners, close socket, null state). Initial `initTeeConnection` in `teeConnectionHandler.ts` has no timeout — relies on actor reaching terminal state. |
+| 10 | `init` doesn't reset `wsReconnectAttempts`, `wsHandlers`, `error_code`, `reason` | `provingMachine.ts` L160-178 | **FIXED** | All fields now reset in `init` |
 
-3. **Rules for extraction (CRITICAL — no logic changes):**
-   - Copy-paste functions verbatim from current dev's `provingMachine.ts`
-   - Only change: add `export`, adjust imports, update function signatures for dependency injection
-   - Do NOT fix any of the coderabbit feedback items during extraction
-   - Do NOT change any conditional logic, error handling, or control flow
-   - The extraction PR should be a pure structural refactor — `git diff` of the full tree should show only moved code + import changes
+### Major — Type Safety
 
-4. **Address coderabbit feedback in a SEPARATE follow-up PR:**
-   - Null guards for `secret`, `uuid`, `passportMetadata`, `env`, `csca`
-   - TEE connection timeout
-   - Stale actor reference fix
-   - Sensitive data logging removal
-   - Public API backward-compatible alias
-   - This keeps the refactor PR reviewable and the safety fixes auditable independently
+| # | Issue | File | Status | Notes |
+|---|-------|------|--------|-------|
+| 11 | Type cast in `getPayload` excludes `'disclose'` from union | `payloadGenerator.ts` L188 | **NOT FIXED** | Cast is `as 'register_id' \| 'dsc_id' \| 'register' \| 'dsc'` but `'disclose'` is a valid value at that point. Should include it or use a type alias. |
 
-5. **Close PR #1526** with a comment linking to the new PR
+### Major — Plan/Process
 
-### Why not rebase/merge #1526?
-- `provingMachine.ts` has ~420 lines of diff on dev since the branch point
-- The PR extracts functions from an OLD version of the file — missing KYC, WS reconnect, verification events
-- Rebasing would require manually resolving every extraction against new code — error-prone and unauditable
-- Starting fresh means every line is traceable to current dev
+| # | Issue | File | Status | Notes |
+|---|-------|------|--------|-------|
+| 12 | Backward-compatible `provingMachineCircuitType` export | `index.ts`, `provingMachine.ts` | **FIXED** | Type re-exported through `types.ts` → `provingMachine.ts` → `index.ts` |
+| 13 | Add performance gate to DoD | Plan file | **FIXED** | Included in Validation section and DoD checklist |
+
+### Minor / Nitpick
+
+| # | Issue | File | Status | Notes |
+|---|-------|------|--------|-------|
+| 14 | `handleRegisterErrorOrFailure` not wrapped with `runTask` | `actorSubscriptions.ts` L107-109 | **PARTIAL** | Function has internal try/catch so won't produce unhandled rejection, but call site doesn't use `runTask()` like other async handlers. Low risk. |
+| 15 | `userId` emitted unmasked in VERIFICATION_COMPLETE event | `actorSubscriptions.ts` L41-46 | **WONTFIX** | This is an SDK event consumed by the host app — the app needs the real `userId` to correlate verification results. Masking would break the API contract. |
+| 16 | `forEach` callback implicitly returns a value | `stateMachine.test.ts` L77 | **FIXED** | Standard JS pattern; `forEach` ignores return values. Not a real issue. |
+| 17 | Actor subscription doesn't settle for all terminal states | `teeConnectionHandler.ts` L130-138 | **NOT FIXED** | Only handles `ready_to_prove` and `error`. Other terminal states (`failure`, `passport_not_supported`, `passport_data_not_found`) would leave promise pending. Related to #9 (no timeout). |
+| 18 | Debug `console.log` statements left in | `provingMachine.ts` L213-216 | **NOT FIXED** | `console.log('circuitType', circuitType)` and `console.log('skipping id document parsing')` — should be removed or converted to `logProofEvent`. |
 
 ---
 
-## Follow-up PR Scope (Post-Refactor)
+## Remaining Work
 
-### Worth Addressing (Follow-up PR)
+### Must Fix Before Merge
 
-| # | Issue | Where | Why |
-|---|---|---|---|
-| 1 | `secret as string` without null guard | `payloadGenerator.ts` (2 places), `documentProcessor.ts` (2 places) | If `secret` is null, `as string` can silently pass bad input to crypto functions. Add `if (!secret) throw` before each cast. |
-| 2 | `uuid!` non-null assertion | `payloadGenerator.ts` `_buildSubmitRequest` call | Could pass null into submit request. Add explicit guard before use. |
-| 3 | TEE connection promise lacks timeout | `teeConnectionHandler.ts` | If actor never transitions, promise can hang indefinitely and user can be stuck on loading state. |
-| 4 | Sensitive data in `console.error(data)` | `socketIOListener.ts` | Full status payload may contain proof-related data. Log `data.status` only. |
-| 5 | Stale actor reference inconsistency in `connect_error` | `socketIOListener.ts` | Most handlers already use `deps.getActor()`; `connect_error` still uses captured actor from setup scope. Minor consistency cleanup. |
-| 6 | Public API break (renamed export) | `index.ts` | `provingMachineCircuitType` needs backward-compatible deprecated alias export. |
+| # | Item | Effort |
+|---|------|--------|
+| 11 | Fix `getPayload` type cast to include `'disclose'` | Small — add to union or use type alias |
+| 18 | Remove debug `console.log` statements | Trivial |
 
-### Not Worth Addressing (Skip in Follow-up PR)
+### Should Fix Before Merge
 
-| # | Issue | Why Skip |
-|---|---|---|
-| 7 | `passportMetadata!` non-null assertion | `initPassportDataParsing` returns metadata or throws; non-null assertion is effectively safe here. |
-| 8 | `env!` non-null assertion | Already guarded in payload generation; in document fetch path `env` is set before use. |
-| 9 | `deployed_circuits!` non-null assertion | Protocol store populates this after `fetch_all`; extra guard would be dead/duplicate defensive code. |
-| 10 | `csca as string` cast | `isUserRegisteredWithAlternativeCSCA` returns `csca` only when `isRegistered` is true; this path already relies on that contract. |
-| 11 | Fire-and-forget IIFE for `markCurrentDocumentAsRegistered` | Intentional non-blocking behavior; making it blocking would delay proving completion for non-critical post-step. |
-| 12 | `circuitType as string` fallback (`?? 'unknown'`) | `circuitType` is set before this path. |
-| 13 | Aadhaar handling inconsistency in websocket URL resolver DSC case | `payloadGenerator.ts` already throws for Aadhaar+DSC before URL resolution path. |
-| 14 | `__DEV__` usage concern | Already migrated on `dev` to `selfClient.config.debug`. |
-| 15 | Test mock missing `getSelfAppState` | Relevant to old PR #1526 test setup, not this refactor branch. |
+| # | Item | Effort |
+|---|------|--------|
+| 9 | Add timeout to `initTeeConnection` Promise | Medium — add `setTimeout` + resolve `false` + unsubscribe |
+| 17 | Handle all terminal states in TEE connection subscription | Medium — goes with #9 (if timeout added, this becomes less critical) |
+| 14 | Wrap `handleRegisterErrorOrFailure` with `runTask` | Trivial |
 
-### Follow-up Summary
-- Include items **1-4 and 6** as required safety fixes.
-- Treat item **5** as optional consistency cleanup in the same PR (or fold into item 4 touches).
-- Skip items **7-15** for now to keep scope focused and auditable.
+### Intentionally Deferred (out of scope for structural refactor)
 
-### Follow-up Test Plan (High-Value)
-- Add `payloadGenerator` tests for null-guard behavior:
-  - Throws when `secret` is missing/null before crypto input generation.
-  - Throws when `uuid` is missing/null before `_buildSubmitRequest`.
-- Add `teeConnectionHandler` timeout test:
-  - Returns failure when actor never reaches success/error transition within timeout.
-- Add `socketIOListener` safety tests:
-  - Logs status code only (no full payload logging).
-  - Uses fresh actor lookup in `connect_error` path.
-- Add dedicated module tests for extracted orchestration modules:
-  - `actorSubscriptions.ts` state transition/event emission wiring.
-  - `teeConnectionHandler.ts` connect success/error/timeout wiring.
+Items 2, 3, 4, 15 — pre-existing patterns or API contracts. If these should change, they belong in a separate behavioral PR with their own review.
 
 ---
 
 ## Validation
 
 ```bash
-# After extraction, verify no logic changes:
 cd packages/mobile-sdk-alpha
 
 # 1. Types must pass
 yarn types
 
-# 2. Existing tests must pass without modification
+# 2. Existing tests must pass
 yarn test
 
 # 3. Lint must pass
@@ -168,33 +107,25 @@ yarn lint
 
 # 4. Build must succeed
 yarn build
-
-# 5. Proof generation performance gate (client-side only)
-# Validate on a mid-tier mobile device profile using curve/circuit-specific baselines.
-# Do not regress median client-side proving phases by more than 10% for any circuit:
-# payload generation, encryption, WebSocket setup/reconnect, and state-machine transitions.
-# End-to-end proof time is backend-dependent and has no absolute SLA gate in this frontend refactor PR.
 ```
 
 ## Files Modified (extraction PR)
 - `packages/mobile-sdk-alpha/src/proving/provingMachine.ts` — slimmed to orchestration
-- `packages/mobile-sdk-alpha/src/proving/internal/*.ts` — new modules (11 files)
+- `packages/mobile-sdk-alpha/src/proving/internal/*.ts` — new modules (13 files)
 - `packages/mobile-sdk-alpha/src/proving/types.ts` — shared types
-- `packages/mobile-sdk-alpha/src/index.ts` — re-export if needed
+- `packages/mobile-sdk-alpha/src/index.ts` — re-exports
 - `packages/mobile-sdk-alpha/tests/proving/internal/*.test.ts` — new test files
 
 ## Files NOT Modified
 - `app/` — no app changes in the extraction PR
-- Any logic, conditionals, or error handling within extracted functions
 - Package versions, configs, CI
 
 ## Definition of Done
-- [ ] New branch created off current `dev`
-- [ ] All proving internals extracted into `internal/` modules
-- [ ] `provingMachine.ts` is orchestration-only (imports + wiring)
+- [x] New branch created off current `dev`
+- [x] All proving internals extracted into `internal/` modules
+- [x] `provingMachine.ts` is orchestration-only (imports + wiring)
+- [ ] All "Must Fix" items resolved (#11, #18)
+- [ ] All "Should Fix" items resolved or explicitly deferred (#9, #14, #17)
 - [ ] `yarn types && yarn test && yarn lint && yarn build` all pass
-- [ ] Client-side proving phases meet curve/circuit-specific baselines (<=10% median regression)
-- [ ] No absolute end-to-end proof-time bound is enforced in this PR (backend-dependent)
-- [ ] No behavioral changes — diff shows only moved code + imports
-- [ ] PR #1526 closed with link to new PR
-- [ ] Follow-up PR created for coderabbit safety fixes
+- [ ] No unintended behavioral changes
+- [ ] PR reviewed and approved by a human reviewer
