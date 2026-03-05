@@ -1,8 +1,8 @@
 # Person 1: WebView UI + Bridge — Implementation Spec
 
-> Last updated: 2026-02-17
+> Last updated: 2026-03-05
 > Owner: Person 1 (WebView UI + Bridge)
-> Parent: [Workstream Overview](./OVERVIEW.md)
+> Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
 
 ## North Star
@@ -10,6 +10,58 @@
 - **Goal:** Embed Self's identity verification into any host app with zero duplicated logic across platforms.
 - **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire flow runs inside a shared WebView.
 - **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
+
+## Context
+
+**What you own:**
+
+- **`@selfxyz/webview-bridge`** — Bridge protocol library (public npm). Pure TypeScript, no react-native imports.
+- **`@selfxyz/webview-app`** — Vite-bundled React app (bundled into native SDKs). 10 screens, Tamagui UI, React Router, BridgeProvider, SelfClientProvider.
+- **Web fallback adapters** — IndexedDB for documents, Web Crypto for hashing, console/fetch for analytics, React Router for navigation, no-op for haptic.
+
+**Architecture context:**
+
+```
+┌──────────────────────────────────────────────────┐
+│               NATIVE SHELLS (Person 2 / 5)       │
+│  KMP (Android + iOS)  |  RN (react-native-webview)│
+│  5 native handlers: NFC, Camera, Bio, Key, Life  │
+└──────────────────────┬───────────────────────────┘
+                       │  postMessage (JSON)
+         ┌─────────────▼──────────────┐
+         │  @selfxyz/webview-bridge   │  ◄── YOU BUILD THIS
+         │  Bridge protocol + adapters │
+         └─────────────┬──────────────┘
+                       │
+         ┌─────────────▼──────────────┐
+         │  @selfxyz/webview-app      │  ◄── YOU BUILD THIS
+         │  10 screens, providers,    │
+         │  Vite bundle (dist/)       │
+         └─────────────┬──────────────┘
+                       │  imports adapters + hooks
+         ┌─────────────▼──────────────┐
+         │  @selfxyz/mobile-sdk-alpha │  (Person 4)
+         │  Proving machine, stores,  │
+         │  adapter interfaces        │
+         └────────────────────────────┘
+```
+
+**Dependencies:**
+
+| Direction     | Person / Package              | What                                                             | Status |
+| ------------- | ----------------------------- | ---------------------------------------------------------------- | ------ |
+| **You need**  | Person 4 (`mobile-sdk-alpha`) | Adapter interfaces, `useSelfClient()` hook, color/font constants | Active |
+| **You need**  | Person 2 (KMP / Swift shells) | Native handler implementations on the other side of the bridge   | Done   |
+| **Needs you** | Person 2 (KMP / Swift shells) | Vite bundle (`dist/index.html` + JS) embedded into native SDK    | Ready  |
+| **Needs you** | Person 5 (RN SDK)             | Same Vite bundle loaded via `react-native-webview`               | Ready  |
+
+**Status:**
+
+- [x] Bridge protocol types and `WebViewBridge` class (63 tests pass)
+- [x] All 10 screens built and routing works
+- [x] Biometrics + camera bridge adapters wired in `SelfClientProvider`
+- [x] Hybrid crypto contract signed off
+- [ ] Dynamic proof request items are still hardcoded in `ProvingScreen`
 
 ## Overview
 
@@ -1388,7 +1440,7 @@ ls packages/webview-app/dist/index.html  # file must exist
 
 | Spec                                              | Audience | What it covers                                                  |
 | ------------------------------------------------- | -------- | --------------------------------------------------------------- |
-| [SDK Overview](../../OVERVIEW.md)          | All      | Architecture, bridge protocol, domain catalog, dependency graph |
+| [SDK Overview](../../OVERVIEW.md)                 | All      | Architecture, bridge protocol, domain catalog, dependency graph |
 | [native-shells/SPEC.md](../native-shells/SPEC.md) | Person 2 | Kotlin/Swift native shells, Android/iOS handlers                |
 | [sdk-core/SPEC.md](../sdk-core/SPEC.md)           | Person 4 | SDK core adaptation, RN dep removal, web fallbacks              |
 | [rn-sdk/SPEC.md](../rn-sdk/SPEC.md)               | Person 5 | RN native shell, `SelfVerification` component                   |

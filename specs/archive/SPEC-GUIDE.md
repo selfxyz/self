@@ -91,9 +91,9 @@ A good spec lets a new dev comprehend the system in 60 seconds and lets an AI ag
 
 Every project has three types of specs:
 
-| Tier                    | File                   | Audience                     | Purpose                                                  | Change Frequency |
-| ----------------------- | ---------------------- | ---------------------------- | -------------------------------------------------------- | ---------------- |
-| **Project Overview**    | `OVERVIEW.md`                    | Architect, eng lead, new dev | System-level architecture, ties all workstreams together | Rarely           |
+| Tier                    | File                              | Audience                     | Purpose                                                  | Change Frequency |
+| ----------------------- | --------------------------------- | ---------------------------- | -------------------------------------------------------- | ---------------- |
+| **Project Overview**    | `OVERVIEW.md`                     | Architect, eng lead, new dev | System-level architecture, ties all workstreams together | Rarely           |
 | **Workstream Overview** | `workstreams/<scope>/OVERVIEW.md` | Dev joining a workstream     | What this workstream owns, dependencies, status, context | Occasionally     |
 | **Implementation**      | `workstreams/<scope>/SPEC.md`     | Implementer (human or agent) | Exact scope, code changes, I/O, token-budgeted chunks    | Frequently       |
 

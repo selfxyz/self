@@ -1,8 +1,8 @@
 # Person 2: Native Shells (KMP SDK + Swift Providers) — Implementation Spec
 
-> Last updated: 2026-02-19
+> Last updated: 2026-03-05
 > Owner: Person 2 (Native Shells)
-> Parent: [Workstream Overview](./OVERVIEW.md)
+> Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
 
 ## North Star
@@ -10,6 +10,65 @@
 - **Goal:** Embed Self's identity verification into any host app with zero duplicated logic across platforms.
 - **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire flow runs inside a shared WebView.
 - **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
+
+## Context
+
+**What you own:**
+
+- `packages/kmp-sdk/` — Kotlin Multiplatform SDK (Android + iOS targets)
+- `packages/self-sdk-swift/` — Swift companion package for iOS providers
+- Android native handlers (NFC, Camera, Biometrics, Keychain, Lifecycle)
+- iOS native handlers (via Swift provider pattern — no cinterop)
+- `SelfSdk.launch()` public API for host apps
+
+**Architecture context:**
+
+```
+┌──────────────────────────────────────────────────┐
+│                   HOST APP                        │
+│          (MiniPay / Self Wallet / etc.)           │
+└────────────────────┬─────────────────────────────┘
+                     │
+    ┌────────────────▼────────────────┐
+    │    YOUR LAYER (Person 2)        │
+    │  ┌───────────┐  ┌────────────┐  │
+    │  │  Android   │  │   iOS      │  │
+    │  │  kmp-sdk   │  │  kmp-sdk + │  │
+    │  │  (Kotlin)  │  │  Swift pkg │  │
+    │  └─────┬─────┘  └──────┬─────┘  │
+    │  NFC · Camera · Biometrics      │
+    │  Keychain · Lifecycle           │
+    │  ┌─────▼───────────────▼─────┐  │
+    │  │   WebView Host            │  │
+    │  │   (loads Person 1 bundle) │  │
+    │  └─────────────┬─────────────┘  │
+    └────────────────┼────────────────┘
+                     │ JSON postMessage
+    ┌────────────────▼────────────────┐
+    │    BRIDGE PROTOCOL (Person 1)   │
+    └────────────────┬────────────────┘
+                     │
+    ┌────────────────▼────────────────┐
+    │    WEBVIEW UI (Person 1)        │
+    └─────────────────────────────────┘
+```
+
+**Dependencies:**
+
+| Direction     | Person / Package | What                                              | Status |
+| ------------- | ---------------- | ------------------------------------------------- | ------ |
+| **You need**  | Person 1         | Vite bundle (`dist/`) loaded into your WebView    | Ready  |
+| **You need**  | Person 1         | Bridge protocol types (`@selfxyz/webview-bridge`) | Ready  |
+| **Needs you** | Person 5         | Bridge protocol as reference for RN handler       | Ready  |
+| **Needs you** | Integrations     | `SelfSdk.launch()` API consumed by MiniPay sample | Done   |
+
+**Status:**
+
+- [x] Android: 5 handlers + WebView host + Activity
+- [x] iOS: Swift providers wired (NFC, Biometrics, Lifecycle, WebView host)
+- [x] Platform asymmetry contract documented and signed off
+- [ ] SDK Public API finalize (chunk 2F — partial)
+- [ ] Camera MRZ Handler iOS (chunk 2L — deferred Phase 2)
 
 ## Overview
 
@@ -2101,7 +2160,7 @@ cd packages/self-sdk-swift && swift build
 - **Person 4 (SDK Core):** They own the adapter interfaces in `packages/mobile-sdk-alpha/src/types/public.ts`. The WebView engine calls your native handlers through these adapters. If adapter signatures change, the bridge protocol may need updating.
 - **Person 5 (RN Native Shell):** They build a separate native shell (`packages/rn-sdk/`) using the same bridge protocol. Share handler method contracts and test vectors. Their `SelfVerification` component loads the same Vite bundle you do.
 - **PR #1762:** iOS bridge handlers with Swift provider pattern added `self-sdk-swift` and unblocked the 2G-2K implementation path.
-- **MiniPay Integration:** The [SPEC-MINIPAY-SAMPLE.md](../integrations/SPEC-MINIPAY-SAMPLE.md) depends on this spec for iOS SDK functionality. Android side is already working.
+- **MiniPay Integration:** The [SPEC.md](../integrations/SPEC.md) depends on this spec for iOS SDK functionality. Android side is already working.
 
 ## Key Reference Files
 
@@ -2121,13 +2180,13 @@ cd packages/self-sdk-swift && swift build
 
 ## Related Specs
 
-| Spec                                                                          | Relationship                                                              |
-| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| [SDK Overview](../../OVERVIEW.md)                                      | Parent architecture spec -- north star, decision matrix, shared contracts |
-| [webview/SPEC.md](../webview/SPEC.md)                                         | Sibling -- owns WebView UI, bridge adapters, Vite bundle you consume      |
-| [sdk-core/SPEC.md](../sdk-core/SPEC.md)                                       | Sibling -- owns SDK core, adapter interfaces your handlers implement      |
-| [rn-sdk/SPEC.md](../rn-sdk/SPEC.md)                                           | Sibling -- separate native shell using same bridge protocol               |
-| [integrations/SPEC-MINIPAY-SAMPLE.md](../integrations/SPEC-MINIPAY-SAMPLE.md) | Downstream -- MiniPay sample app depends on this SDK                      |
+| Spec                                            | Relationship                                                              |
+| ----------------------------------------------- | ------------------------------------------------------------------------- |
+| [SDK Overview](../../OVERVIEW.md)               | Parent architecture spec -- north star, decision matrix, shared contracts |
+| [webview/SPEC.md](../webview/SPEC.md)           | Sibling -- owns WebView UI, bridge adapters, Vite bundle you consume      |
+| [sdk-core/SPEC.md](../sdk-core/SPEC.md)         | Sibling -- owns SDK core, adapter interfaces your handlers implement      |
+| [rn-sdk/SPEC.md](../rn-sdk/SPEC.md)             | Sibling -- separate native shell using same bridge protocol               |
+| [integrations/SPEC.md](../integrations/SPEC.md) | Downstream -- MiniPay sample app depends on this SDK                      |
 
 ---
 
@@ -2161,12 +2220,12 @@ cd packages/self-sdk-swift && swift build
 
 ## Follow-Up (Out of Scope)
 
-| Item                                         | Discovered during | Suggested spec                                                                                                                                                                                                                                                                                                                                                                                           |
-| -------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Camera MRZ handler for iOS                   | Chunk 2L scoping  | Phase 2 -- add to this spec when needed                                                                                                                                                                                                                                                                                                                                                                  |
-| SecureStorage handler for iOS                | Design review     | **Decided:** Add `SecureStorageProvider` to factory pattern (see SDK-OVERVIEW canonical rule)                                                                                                                                                                                                                                                                                                            |
-| Crypto signing handler for iOS               | Design review     | Depends on whether secure enclave signing is needed vs. Web Crypto                                                                                                                                                                                                                                                                                                                                       |
-| LifecycleBridgeHandler thin-wrapper refactor | PR #1805 review   | Both Android and iOS `setResult()` have 4-branch business logic (interpreting `type`/`success`/`errorCode` to decide result codes / callback methods). Per PROJECT-RULES.md rule 22 ("no error mapping in native"), TypeScript should send an explicit `resultCode` or `outcome` field, and the handler should pass it through without interpretation. Touches both platform handlers + bridge protocol. |
+| Item                                         | Discovered during | Suggested spec                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Camera MRZ handler for iOS                   | Chunk 2L scoping  | Phase 2 -- add to this spec when needed                                                                                                                                                                                                                                                                                                                                                                                            |
+| SecureStorage handler for iOS                | Design review     | **Decided:** Add `SecureStorageProvider` to factory pattern (see SDK-OVERVIEW canonical rule)                                                                                                                                                                                                                                                                                                                                      |
+| Crypto signing handler for iOS               | Design review     | Depends on whether secure enclave signing is needed vs. Web Crypto                                                                                                                                                                                                                                                                                                                                                                 |
+| LifecycleBridgeHandler thin-wrapper refactor | PR #1805 review   | Both Android and iOS `setResult()` have 4-branch business logic (interpreting `type`/`success`/`errorCode` to decide result codes / callback methods). Per CLAUDE.md rule ("Native handlers are thin wrappers — no error mapping in native"), TypeScript should send an explicit `resultCode` or `outcome` field, and the handler should pass it through without interpretation. Touches both platform handlers + bridge protocol. |
 
 ## Spec Deviations
 

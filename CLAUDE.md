@@ -27,12 +27,21 @@ nvm use && corepack enable && yarn install
 - **Keychain is always native-managed.** No web fallbacks for secure storage. This is a security boundary.
 - **No “slop comments.”** Only add comments when they convey non-obvious intent or constraints. Never add generic or chatty comments.
 - **Signal over praise in docs/reviews.** Remove feel-good or back-patting text that does not change decisions or actions. Keep only actionable content: concrete issues, risks, decisions, owners, next steps, and validation evidence.
-- **Spec naming and structure must be context-first.** Inside `specs/projects/<project>/`, use doc-type file names (for example `OVERVIEW.md`, `PLAN.md`, `STATUS.md`) and do not repeat project prefixes in file names. Use descriptive labels in markdown links — `[SDK Overview](./OVERVIEW.md)` not `[OVERVIEW.md](./OVERVIEW.md)` — so the link text is meaningful without folder context.
+- **Spec naming and structure must be context-first.** Use doc-type file names (for example `OVERVIEW.md`, `SPEC.md`) and do not repeat project prefixes in file names. Use descriptive labels in markdown links — `[SDK Overview](./OVERVIEW.md)` not `[OVERVIEW.md](./OVERVIEW.md)` — so the link text is meaningful without folder context.
 - **No singleton spec folders.** Do not create a folder that exists only to hold one markdown file; keep single docs at the nearest meaningful project/shared root.
-- **Workstream spec names are fixed.** Under `workstreams/<scope>/`, use `OVERVIEW.md` and `SPEC.md`; use `SPEC-<TOPIC>.md` only when multiple implementation specs are needed in that same folder.
+- **Workstream spec names are fixed.** Under `workstreams/<scope>/`, use `SPEC.md` (context + implementation in one file); use `SPEC-<TOPIC>.md` only when multiple implementation specs are needed in that same folder.
 - **Test value over mock wiring.** Prefer tests that validate behavior. Avoid tests that only assert mocks were called unless that is the behavior being validated.
 - **PR size target:** 1k–3k LOC changed. Smaller is fine for focused fixes. If >3k, add a brief justification for why it can’t be split.
 - **No generated artifacts in source PRs.** Do not commit build outputs or generated assets unless the build system requires them for runtime or distribution.
+- **Each chunk = one PR.** Don't bundle chunks into mega PRs. Keeps reviews fast, reverts clean, and progress visible.
+- **TypeScript is the primary surface area.** All core logic (proving machine, state machines, stores, UI) lives in TypeScript in the WebView. Kotlin and Swift exist only for hardware access (NFC, camera, biometrics), OS-level APIs (keychain, lifecycle), and crypto signing/key-gen. Before writing any native code, ask: "Can this run in the WebView?" If yes or maybe, it belongs in TypeScript.
+- **Maximize code reuse through `mobile-sdk-alpha`.** Before adding code to `webview-app`, `kmp-sdk`, or `app/`, check if `mobile-sdk-alpha` already has it or should have it. Types, interfaces, constants, parsing, validation, formatting, state machines, and stores belong in the SDK. Migrate shared code to `mobile-sdk-alpha` before building WebView UI that needs it.
+- **Bridge protocol is the only coupling.** Native shells and the WebView share a JSON contract, not code. New native handlers must follow the bridge protocol exactly — no custom messaging, no side channels, no platform-specific extensions. The WebView must not know which native shell it's running inside.
+- **Adapter interfaces are the coupling layer.** WebView code imports adapter interfaces from SDK core. Native shells implement bridge handlers. Nobody imports code across the bridge boundary.
+- **Fail closed on security-critical boundaries.** Default-deny for protocol compatibility, remote bundle loading, and verification session lifecycle. Reject unknown protocol versions, block remote `devServerUrl` in production.
+- **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self Wallet app.
+- **Specs stay current.** When implementation deviates from the spec, update the spec. A stale spec is worse than no spec.
+- **Constraint tie-breaker.** If rules conflict: correctness and security first, then scope/clarity (small PRs, small files), then reuse. Document the tradeoff in the spec.
 
 ## Specs & Planning
 
@@ -40,28 +49,45 @@ nvm use && corepack enable && yarn install
 
 ### Spec System (`specs/`)
 
-| File                                                    | Purpose                                                                       | When to Read                            |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------- |
-| [Specs README](./specs/README.md)                          | Table of contents, reading order                                              | First. Always.                          |
-| [Spec Guide](./specs/framework/SPEC-GUIDE.md)              | How to write specs (three-tier system, review checklist, AI agent guidelines) | Before writing or reviewing any spec    |
-| [Templates](./specs/framework/TEMPLATES.md)                 | Copy-paste templates for all three tiers                                      | When creating a new spec                |
-| [Project Rules](./specs/framework/PROJECT-RULES.md)         | Project-specific rules and guardrails                                         | Before starting any implementation work |
-| [SDK Overview](./specs/projects/sdk/OVERVIEW.md)             | Architecture, bridge protocol, module table, decision matrix                  | For system-level context                |
+| File                                             | Purpose                                     | When to Read             |
+| ------------------------------------------------ | ------------------------------------------- | ------------------------ |
+| [Specs README](./specs/README.md)                | Table of contents, reading order            | First. Always.           |
+| [Templates](./specs/framework/TEMPLATES.md)      | Copy-paste templates for all three tiers    | When creating a new spec |
+| [SDK Overview](./specs/projects/sdk/OVERVIEW.md) | Architecture, bridge protocol, module table | For system-level context |
 
-Workstream specs live in `specs/projects/sdk/workstreams/*/` with `OVERVIEW.md` (stable orientation) and `SPEC.md` (living implementation details).
+Workstream specs live in `specs/projects/sdk/workstreams/*/` with `SPEC.md` (living implementation details).
+
+### Spec-Reading Protocol (for chunk execution)
+
+To execute a chunk:
+
+1. Read `specs/projects/sdk/INDEX.md` — find your workstream
+2. Read the workstream `SPEC.md` — find your chunk
+3. If you need architecture context, read the project `OVERVIEW.md`
+
+That's it. Do not read framework docs unless you are writing a new spec.
 
 ### Planning Protocol
 
-1. **Read** `specs/framework/PROJECT-RULES.md` and the relevant workstream specs — understand the current state and constraints
+1. **Read** the relevant workstream specs and this file's Key Rules — understand the current state and constraints
 2. **Write a plan to disk** — use the appropriate tier from `specs/framework/TEMPLATES.md`:
-   - **Large features / new workstreams:** Create a full implementation spec (`specs/projects/<project>/workstreams/<scope>/SPEC.md`)
+   - **Large features / new workstreams:** Create a full implementation spec (`specs/projects/sdk/workstreams/<scope>/SPEC.md`)
    - **Medium features / multi-chunk work:** Create a session plan file in the project folder or update the relevant SPEC.md
    - **Small features / single-chunk fixes:** Add a chunk to an existing SPEC.md, or create a minimal plan in the spec folder
 3. **Include in every plan:** scope of work, files modified, I/O examples, validation command, definition of done
 4. **Then implement** — update chunk status as you complete work
-5. **After completion:** Mark chunks done in both SPEC.md and OVERVIEW.md status checklists
+5. **After completion:** Mark chunks done in SPEC.md status tables. Review status checklists at session start — if something is marked "Done" that isn't, or "Pending" that's in progress, fix it first.
 
-Quick-start prompts for creating new specs are in [SPEC-GUIDE.md](./specs/framework/SPEC-GUIDE.md#quick-start).
+### Spec-Writing Guidelines
+
+When writing specs, follow these principles so they work as AI agent prompts:
+
+- **Use second person.** "You are making X portable" not "X should be made portable."
+- **Be explicit about constraints.** "You will NOT modify..." not just "Focus on..."
+- **Provide exact file paths with line numbers.** `src/proving/provingMachine.ts:543` not "the proving machine file."
+- **State the validation command.** Agents will run it. If it's not there, they'll skip validation.
+- **One chunk = one self-contained prompt.** The chunk must include enough context to execute without reading the full spec.
+- **Use `--remote` for M and L chunks.** Medium and large chunks benefit from `claude --remote` so work continues in the background.
 
 ### Why Even Minor Features
 

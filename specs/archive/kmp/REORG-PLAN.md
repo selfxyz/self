@@ -34,7 +34,7 @@ Reorganize KMP specs and developer experience surface areas so contributors and 
 - `specs/projects/kmp/README.md`
 - `specs/projects/kmp/ARCHITECTURE.md`
 - `specs/projects/kmp/INITIATIVE.md`
-- `specs/projects/sdk/STATUS.md` (relocated — SDK-wide status)
+- `specs/projects/sdk/OVERVIEW.md` (SDK-wide status — see "Execution Status" section)
 - `specs/projects/kmp/workstreams/*`
 - `specs/projects/kmp/INDEX.md`
 - `specs/projects/kmp/KMP-DECISIONS.md`

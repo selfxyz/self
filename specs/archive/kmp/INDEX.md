@@ -15,7 +15,7 @@ Status: Active
 - `specs/projects/kmp/INITIATIVE.md`
 - `specs/projects/kmp/ARCHITECTURE.md`
 - `specs/projects/kmp/REORG-PLAN.md`
-- `specs/projects/sdk/STATUS.md` (SDK-wide execution status)
+- `specs/projects/sdk/OVERVIEW.md` (SDK-wide execution status — see "Execution Status" section)
 - `specs/projects/sdk/workstreams/native-shells/` (active KMP execution stream)
 - `specs/projects/sdk/workstreams/integrations/` (cross-SDK integration execution)
 
@@ -31,7 +31,7 @@ Status: Active
 - [x] Reorg plan created
 - [x] Architecture skeleton created
 - [x] Initiative skeleton created
-- [x] Status moved to `specs/projects/sdk/STATUS.md` (relocated — SDK-wide)
+- [x] Status moved to `specs/projects/sdk/OVERVIEW.md` "Execution Status" section (relocated — SDK-wide)
 - [x] KMP execution location clarified under `specs/projects/sdk/workstreams/*`
 - [x] Legacy path mapping added to top-level `specs/README.md`
 

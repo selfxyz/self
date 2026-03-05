@@ -148,9 +148,8 @@ For architecture context, implementation details, and workstream coordination:
 
 - **[SDK Overview](../../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix
 - **[SDK Core Spec](../../specs/projects/sdk/workstreams/sdk-core/SPEC.md)** — Implementation chunks for this package (mobile-sdk-alpha)
-- **[SDK Core Overview](../../specs/projects/sdk/workstreams/sdk-core/OVERVIEW.md)** — What this workstream owns, dependencies, status
 
-Before implementing SDK work, read `specs/framework/PROJECT-RULES.md` and `specs/projects/sdk/workstreams/sdk-core/SPEC.md` for constraints and validation commands.
+Before implementing SDK work, read `CLAUDE.md` Key Rules and `specs/projects/sdk/workstreams/sdk-core/SPEC.md` for constraints and validation commands.
 
 ## Notes
 

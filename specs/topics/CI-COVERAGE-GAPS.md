@@ -4,11 +4,6 @@
 > Owner: SDK/infra maintainers
 > Status: Active
 
-### Required References
-
-- [Project Rules](../../framework/PROJECT-RULES.md)
-- [Spec Guide](../../framework/SPEC-GUIDE.md)
-
 ## North Star
 
 - Every package under `packages/` has CI that catches compilation, type, and test failures before merge

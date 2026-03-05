@@ -430,11 +430,11 @@ Person 5 — RN Native Shell (NEW)        OVERVIEW | SPEC
 
 Links:
 
-- Person 1: [Overview](./workstreams/webview/OVERVIEW.md) | [Spec](./workstreams/webview/SPEC.md)
-- Person 2: [Overview](./workstreams/native-shells/OVERVIEW.md) | [Spec](./workstreams/native-shells/SPEC.md)
-- Person 3: [Overview](./workstreams/integrations/OVERVIEW.md) | [MiniPay Spec](./workstreams/integrations/SPEC-MINIPAY-SAMPLE.md)
-- Person 4: [Overview](./workstreams/sdk-core/OVERVIEW.md) | [Spec](./workstreams/sdk-core/SPEC.md)
-- Person 5: [Overview](./workstreams/rn-sdk/OVERVIEW.md) | [Spec](./workstreams/rn-sdk/SPEC.md)
+- Person 1: [Spec](./workstreams/webview/SPEC.md)
+- Person 2: [Spec](./workstreams/native-shells/SPEC.md)
+- Person 3: [MiniPay Spec](./workstreams/integrations/SPEC.md)
+- Person 4: [Spec](./workstreams/sdk-core/SPEC.md)
+- Person 5: [Spec](./workstreams/rn-sdk/SPEC.md)
 
 ## Input / Output — System Level
 
@@ -626,25 +626,46 @@ cd app && npx react-native run-ios  # integration test
 | `common/src/polyfills/crypto.ts`                              | Cross-platform crypto (noble-hashes)        |
 | `app/src/providers/selfClientProvider.tsx`                    | Self Wallet SDK integration (507 lines)     |
 
-## Related Specs
+## Execution Status
 
-| Spec                                                                                             | Type     | Audience | What it covers                                          |
-| ------------------------------------------------------------------------------------------------ | -------- | -------- | ------------------------------------------------------- |
-| [webview/OVERVIEW.md](./workstreams/webview/OVERVIEW.md)                                 | Overview | Webview       | WebView workstream orientation, scope, dependencies     |
-| [webview/SPEC.md](./workstreams/webview/SPEC.md)                                         | Impl     | Webview       | WebView screens, bridge adapters, SelfClientProvider    |
-| [native-shells/OVERVIEW.md](./workstreams/native-shells/OVERVIEW.md)                     | Overview | Native Shells | Native shells workstream orientation, scope, deps       |
-| [native-shells/SPEC.md](./workstreams/native-shells/SPEC.md)                             | Impl     | Native Shells | KMP native shell, Android/iOS handlers, Swift providers |
-| [integrations/OVERVIEW.md](./workstreams/integrations/OVERVIEW.md)                       | Overview | Integrations  | Integration samples orientation, scope                  |
-| [integrations/SPEC-MINIPAY-SAMPLE.md](./workstreams/integrations/SPEC-MINIPAY-SAMPLE.md) | Impl     | Integrations  | MiniPay integration example                             |
-| [sdk-core/OVERVIEW.md](./workstreams/sdk-core/OVERVIEW.md)                               | Overview | SDK Core      | SDK core workstream orientation, scope, dependencies    |
-| [sdk-core/SPEC.md](./workstreams/sdk-core/SPEC.md)                                       | Impl     | SDK Core      | SDK core adaptation, RN dep removal, web fallbacks      |
-| [rn-sdk/OVERVIEW.md](./workstreams/rn-sdk/OVERVIEW.md)                                   | Overview | RN SDK        | RN SDK workstream orientation, scope, dependencies      |
-| [rn-sdk/SPEC.md](./workstreams/rn-sdk/SPEC.md)                                           | Impl     | RN SDK        | RN native shell, `SelfVerification` component           |
+**Overall: 74% complete** — 23/30 chunks done, 3 partial, 1 skipped, 2 superseded, 1 deferred.
 
-## Spec Deviations
+### Remaining Work
 
-| Suggestion skipped       | Reason                                                                               |
-| ------------------------ | ------------------------------------------------------------------------------------ |
-| Token-budgeted chunks    | This is an overview spec (tier 1). Chunks live in the implementation specs (tier 2). |
-| BEFORE/AFTER code blocks | No code modifications in scope — this is architecture-level.                         |
-| Definition of Done       | Each workstream has its own definition of done in its implementation spec.           |
+| Chunk | Workstream    | Description                       | Status             | Next Step                                                                                                                |
+| ----- | ------------- | --------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| 1E    | WebView       | WebView App Shell (Vite + router) | Partial            | Source dynamic proof request items from `SelfSdk.launch(request)` context instead of hardcoded defaults in ProvingScreen |
+| 2F    | Native Shells | SDK Public API finalize           | Partial            | Finalize `SelfSdk.launch()` public API surface after iOS NFC handler (2K) is complete                                    |
+| 3C    | Integrations  | Polish + Error Handling           | Partial            | Complete error handling polish in MiniPay sample result UX                                                               |
+| 2L    | Native Shells | Camera MRZ Handler (iOS)          | Deferred (Phase 2) | Add iOS camera/MRZ via KMP when Phase 2 planning starts. RN SDK has its own implementation via native modules.           |
+
+### Open Follow-Up Items
+
+**P1 — Validation Gaps:**
+
+| Item                                      | Owner    | Context                                                     |
+| ----------------------------------------- | -------- | ----------------------------------------------------------- |
+| KMP test app validation on both platforms | Person 2 | Compile-verified only; no runtime validation captured       |
+| Integration validation in Self Wallet app | Person 5 | `SelfVerification` component not yet wired into Self Wallet |
+
+**P2 — Correctness / Consistency:**
+
+| Item                                                             | Owner      | Context                                                                                              |
+| ---------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------- |
+| Consolidate duplicated fallback adapters                         | Person 4   | ~150 LOC duplicated across `webview-bridge` and `mobile-sdk-alpha`. `mobile-sdk-alpha` is canonical. |
+| Source dynamic proving request values from request context       | Person 1   | `ProvingScreen` accepts params but defaults are hardcoded                                            |
+| Expose `generateKey()`/`getPublicKey()` in `BridgeCryptoAdapter` | Person 1/4 | Methods exist in native handler and protocol types but unreachable from WebView client               |
+
+**P3 — Publishing / Packaging:**
+
+| Item                                           | Owner    | Context                                                             |
+| ---------------------------------------------- | -------- | ------------------------------------------------------------------- |
+| npm publish `@selfxyz/rn-sdk`                  | Person 5 | Package implemented but not published                               |
+| Production artifact builds (AAR + XCFramework) | Person 2 | KMP SDK packaging for distribution not finalized                    |
+| Self Wallet migration to `SelfVerification`    | Person 5 | Phase 2 — replace native verification screens with SDK WebView flow |
+
+### Suggested Follow-Up Order
+
+1. **Correctness cleanup** — Adapter consolidation, dynamic proving config, crypto adapter interface gap
+2. **Publishing** — npm publish rn-sdk, finalize AAR/XCFramework packaging
+3. **Self Wallet migration** — Wire `SelfVerification` into the main app (Phase 2)

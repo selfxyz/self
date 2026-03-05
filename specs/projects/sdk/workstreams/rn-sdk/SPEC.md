@@ -1,8 +1,8 @@
 # RN Native Shell — Implementation Spec
 
-> Last updated: 2026-03-02
+> Last updated: 2026-03-05
 > Owner: Person 5 (RN SDK)
-> Parent: [Workstream Overview](./OVERVIEW.md)
+> Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
 
 ## North Star
@@ -10,6 +10,57 @@
 - **Goal:** Embed Self's identity verification into any host app with zero duplicated logic across platforms.
 - **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire flow runs inside a shared WebView.
 - **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
+
+## Context
+
+**What you own:**
+
+- **`@selfxyz/rn-sdk`** — the React Native SDK package
+- **`SelfVerification`** component (~200-300 LOC) — the single public API surface
+- **5 native handler bridges** — NFC, Camera, Biometrics, Keychain, Lifecycle (thin wrappers around RN native modules)
+- **Asset bundling** — Vite bundle loaded into `react-native-webview` on iOS + Android
+
+**Architecture context:**
+
+```
+┌─────────────────────────────────────────┐
+│           HOST APP (React Native)       │
+│  <SelfVerification                      │
+│    userId="..." onComplete={...}        │
+│  />                                     │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────▼──────────────────────────┐
+│  ★ YOUR LAYER: @selfxyz/rn-sdk         │
+│  SelfVerification.tsx                   │
+│    └─ react-native-webview              │
+│  MessageRouter.ts                       │
+│    ├─ NfcHandler · CameraHandler        │
+│    ├─ BiometricsHandler · KeychainHandler│
+│    └─ LifecycleHandler                  │
+└──────────────┬──────────────────────────┘
+               │ postMessage (JSON) — same protocol as KMP
+┌──────────────▼──────────────────────────┐
+│  SHARED WEBVIEW (Person 1 + 4)          │
+│  Vite bundle: webview-app + engine      │
+└─────────────────────────────────────────┘
+```
+
+**Dependencies:**
+
+| Direction     | Person / Package            | What                                               | Status      |
+| ------------- | --------------------------- | -------------------------------------------------- | ----------- |
+| **You need**  | Person 1 (`webview-app`)    | Vite bundle (`dist/`)                              | Ready       |
+| **You need**  | Person 1 (`webview-bridge`) | Bridge protocol types                              | Ready       |
+| **Needs you** | Self Wallet app             | `SelfVerification` for verification flow (Phase 2) | Not started |
+
+**Status:**
+
+- [x] Package scaffolded with `SelfVerification` component
+- [x] All 5 native handler bridges implemented (including APDU-capable NFC)
+- [x] Asset loading for iOS + Android implemented
+- [ ] Integration validation in Self Wallet app (follow-up)
+- [ ] npm publish not completed
 
 ## Overview
 
@@ -1112,7 +1163,7 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 | Item                                         | Discovered during | Suggested spec                                                    |
 | -------------------------------------------- | ----------------- | ----------------------------------------------------------------- |
 | Self Wallet migration to `SelfVerification`  | Spec writing      | Separate migration spec after SDK is stable                       |
-| MiniPay RN sample integration                | Spec writing      | `SPEC-MINIPAY-SAMPLE.md` (already exists)                         |
+| MiniPay RN sample integration                | Spec writing      | `integrations/SPEC.md` (already exists)                           |
 | Camera library selection for MRZ scanning    | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter |
 | iOS asset loading strategy (RNFS vs require) | PR #1765 review   | **Decided:** Use RN `require()` + Metro `html` asset support      |
 
@@ -1138,7 +1189,7 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 
 | Spec                                              | Relationship                                                              |
 | ------------------------------------------------- | ------------------------------------------------------------------------- |
-| [SDK Overview](../../OVERVIEW.md)          | Parent architecture spec                                                  |
+| [SDK Overview](../../OVERVIEW.md)                 | Parent architecture spec                                                  |
 | [webview/SPEC.md](../webview/SPEC.md)             | Builds the WebView UI + bridge that this SDK loads                        |
 | [native-shells/SPEC.md](../native-shells/SPEC.md) | Kotlin native shell -- same bridge protocol, reference handlers           |
 | [sdk-core/SPEC.md](../sdk-core/SPEC.md)           | SDK core adaptation -- Chunk 4F (web fallback adapters) is a prerequisite |

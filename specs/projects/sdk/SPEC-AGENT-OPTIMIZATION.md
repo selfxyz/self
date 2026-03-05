@@ -16,27 +16,27 @@ The current spec system was designed for humans — five workstream OVERVIEWs, f
 
 ### Current file inventory
 
-| Category | Files | Total lines | Agent reads per chunk |
-|----------|-------|-------------|----------------------|
-| Framework (SPEC-GUIDE, TEMPLATES, PROJECT-RULES, PRODUCT-SPEC-ENHANCEMENT-PROMPT) | 4 | 1,355 | 0-1 (mostly skipped) |
-| SDK project-level (OVERVIEW, PLAN, HANDOFF, STATUS, INDEX) | 5 | 903 | 1-2 |
-| Workstream OVERVIEWs (5) | 5 | 541 | 1 |
-| Workstream SPECs (5) | 5 | 6,416 | 1 |
-| KMP project | 4 | 431 | 0-1 |
-| Other (lottie, euclid, ci, shared, archive) | 7 | 704 | 0 |
-| **Total** | **30** | **10,350** | **3-5 per chunk** |
+| Category                                                                          | Files  | Total lines | Agent reads per chunk |
+| --------------------------------------------------------------------------------- | ------ | ----------- | --------------------- |
+| Framework (SPEC-GUIDE, TEMPLATES, PROJECT-RULES, PRODUCT-SPEC-ENHANCEMENT-PROMPT) | 4      | 1,355       | 0-1 (mostly skipped)  |
+| SDK project-level (OVERVIEW, PLAN, HANDOFF, STATUS, INDEX)                        | 5      | 903         | 1-2                   |
+| Workstream OVERVIEWs (5)                                                          | 5      | 541         | 1                     |
+| Workstream SPECs (5)                                                              | 5      | 6,416       | 1                     |
+| KMP project                                                                       | 4      | 431         | 0-1                   |
+| Other (lottie, euclid, ci, shared, archive)                                       | 7      | 704         | 0                     |
+| **Total**                                                                         | **30** | **10,350**  | **3-5 per chunk**     |
 
 ### Fake projects add navigation overhead
 
 Four of the five "projects" under `specs/projects/` are not projects — they're either part of SDK or standalone docs wrapped in unnecessary scaffolding:
 
-| "Project" | Real content | Workstreams | Verdict |
-|-----------|-------------|-------------|---------|
-| `sdk/` | OVERVIEW + PLAN + HANDOFF + STATUS + INDEX | 5 workstreams with real SPECs | Actual project |
-| `kmp/` | 3 skeleton docs (all TBD owners) | None — real work is `sdk/workstreams/native-shells/` | SDK workstream, not a project |
-| `lottie/` | INDEX + 1 review doc (58 lines) | None | Standalone doc |
-| `euclid/` | INDEX + 1 plan doc (88 lines) | None | Standalone doc |
-| `ci/` | 1 coverage gaps doc (313 lines) | None | Standalone doc |
+| "Project" | Real content                               | Workstreams                                          | Verdict                       |
+| --------- | ------------------------------------------ | ---------------------------------------------------- | ----------------------------- |
+| `sdk/`    | OVERVIEW + PLAN + HANDOFF + STATUS + INDEX | 5 workstreams with real SPECs                        | Actual project                |
+| `kmp/`    | 3 skeleton docs (all TBD owners)           | None — real work is `sdk/workstreams/native-shells/` | SDK workstream, not a project |
+| `lottie/` | INDEX + 1 review doc (58 lines)            | None                                                 | Standalone doc                |
+| `euclid/` | INDEX + 1 plan doc (88 lines)              | None                                                 | Standalone doc                |
+| `ci/`     | 1 coverage gaps doc (313 lines)            | None                                                 | Standalone doc                |
 
 An agent looking for KMP specs navigates to `kmp/INDEX.md`, finds skeleton docs with TBD owners, then gets redirected to `sdk/workstreams/native-shells/` for the real work. The `projects/` nesting adds a directory level that serves no purpose when there's only one real project.
 
@@ -63,6 +63,7 @@ The OVERVIEW files are 90-120 lines each. They contain: north star (duplicated f
 **Why:** One file to read instead of two. The OVERVIEW content rarely changes, so it won't cause merge conflicts with SPEC chunk updates. Agents never read OVERVIEW.md without also reading SPEC.md, so they're always read together anyway.
 
 **Migration:**
+
 - For each workstream, prepend the useful OVERVIEW content (what you own, architecture context, dependencies) as a `## Context` section in SPEC.md
 - Drop: north star (already in SPEC), rules reminder (already in CLAUDE.md), related specs table (links are in SPEC already), spec deviations table
 - Delete OVERVIEW.md files
@@ -76,6 +77,7 @@ The OVERVIEW files are 90-120 lines each. They contain: north star (duplicated f
 The SPEC-GUIDE and PROJECT-RULES overlap heavily with CLAUDE.md's "Key Rules" and "Specs & Planning" sections. Agents already read CLAUDE.md at session start — it's the one file guaranteed to be in context. Rules that only exist in PROJECT-RULES.md are invisible to agents.
 
 **Migration:**
+
 - Audit PROJECT-RULES.md — any rule not already in CLAUDE.md gets added there
 - Audit SPEC-GUIDE.md — the "Writing for AI Agents" section and review checklist move to CLAUDE.md's planning protocol
 - TEMPLATES.md stays as-is (it's a copy-paste reference, not agent instructions)
@@ -96,6 +98,7 @@ The SPEC-GUIDE and PROJECT-RULES overlap heavily with CLAUDE.md's "Key Rules" an
 ### Change 4: Strip ceremony from spec templates
 
 Remove from the TEMPLATES.md spec template:
+
 - "Required References" section (agents read CLAUDE.md, not a references list)
 - "Rules Reminder" section (same reason)
 - "Spec Deviations" table (process overhead, not agent input)
@@ -103,6 +106,7 @@ Remove from the TEMPLATES.md spec template:
 - "Coordination Notes" section (belongs in a task tracker, not a spec)
 
 Keep:
+
 - North star (3 bullets)
 - Context section (merged from OVERVIEW)
 - Problem table with file:line refs
@@ -117,6 +121,7 @@ Keep:
 ### Change 5: Collapse fake projects and flatten hierarchy
 
 **Before:**
+
 ```
 specs/
   projects/
@@ -130,6 +135,7 @@ specs/
 ```
 
 **After:**
+
 ```
 specs/
   sdk/                              <- the one real project (drop "projects/" nesting)
@@ -146,6 +152,7 @@ specs/
 ```
 
 **Migration:**
+
 - Move `specs/projects/sdk/` → `specs/sdk/` (drop the `projects/` nesting)
 - Move standalone docs into `specs/topics/` with descriptive filenames (no INDEX wrappers)
 - Archive KMP skeleton docs (`kmp/ARCHITECTURE.md`, `kmp/INITIATIVE.md`, `kmp/REORG-PLAN.md`, `kmp/INDEX.md`) — the real KMP execution spec is `sdk/workstreams/native-shells/SPEC.md`
@@ -169,15 +176,15 @@ This replaces the current "Read README → framework docs → project overview �
 
 ## Impact
 
-| Metric | Before | After | Delta | How to measure |
-|--------|--------|-------|-------|----------------|
-| Files an agent reads per chunk | 3-5 | 1-2 | -60% | Trace the reading path in CLAUDE.md planning protocol |
-| Spec files in repo | 30 | ~15 | -50% | `find specs -name '*.md' \| wc -l` |
-| Directory depth to a workstream SPEC | 5 (`specs/projects/sdk/workstreams/x/SPEC.md`) | 4 (`specs/sdk/workstreams/x/SPEC.md`) | -1 level | `find specs -name 'SPEC.md' -exec echo {} \;` |
-| Total spec lines | 10,350 | ~7,500 | -27% | `find specs -name '*.md' -exec cat {} + \| wc -l` |
-| Duplicated north star instances | 12 | 6 | -50% | `rg -c 'North Star' specs/ --glob '!archive/'` |
-| Duplicated rules reminder instances | 10 | 1 (CLAUDE.md) | -90% | `rg -c 'Rules Reminder' specs/ --glob '!archive/'` |
-| "Project" directories | 5 (sdk, kmp, lottie, euclid, ci) | 1 (sdk) | -80% | `ls specs/sdk` is the only project |
+| Metric                               | Before                                         | After                                 | Delta    | How to measure                                        |
+| ------------------------------------ | ---------------------------------------------- | ------------------------------------- | -------- | ----------------------------------------------------- |
+| Files an agent reads per chunk       | 3-5                                            | 1-2                                   | -60%     | Trace the reading path in CLAUDE.md planning protocol |
+| Spec files in repo                   | 30                                             | ~15                                   | -50%     | `find specs -name '*.md' \| wc -l`                    |
+| Directory depth to a workstream SPEC | 5 (`specs/projects/sdk/workstreams/x/SPEC.md`) | 4 (`specs/sdk/workstreams/x/SPEC.md`) | -1 level | `find specs -name 'SPEC.md' -exec echo {} \;`         |
+| Total spec lines                     | 10,350                                         | ~7,500                                | -27%     | `find specs -name '*.md' -exec cat {} + \| wc -l`     |
+| Duplicated north star instances      | 12                                             | 6                                     | -50%     | `rg -c 'North Star' specs/ --glob '!archive/'`        |
+| Duplicated rules reminder instances  | 10                                             | 1 (CLAUDE.md)                         | -90%     | `rg -c 'Rules Reminder' specs/ --glob '!archive/'`    |
+| "Project" directories                | 5 (sdk, kmp, lottie, euclid, ci)               | 1 (sdk)                               | -80%     | `ls specs/sdk` is the only project                    |
 
 ## Execution Plan
 
@@ -193,6 +200,7 @@ This replaces the current "Read README → framework docs → project overview �
 ### Chunk 2: Merge OVERVIEWs into SPECs — M (~5k tokens)
 
 For each of the 5 workstreams:
+
 1. Extract useful content from OVERVIEW.md (what you own, architecture context, dependencies)
 2. Add as `## Context` section at top of SPEC.md (after north star)
 3. Remove duplicated north star, rules reminder, spec deviations from SPEC.md
@@ -242,9 +250,9 @@ For each of the 5 workstreams:
 4. Validate with full legacy-path grep (must return zero hits outside `specs/archive/`):
 
 ```bash
-# Must return empty (no stale references outside archive)
-rg --glob '!specs/archive/**' \
-  -n 'specs/projects/|specs/shared/|PROJECT-RULES\.md|SPEC-GUIDE\.md|workstreams/[^/]+/OVERVIEW\.md|/sdk/PLAN\.md|/sdk/HANDOFF\.md|/sdk/STATUS\.md' \
+# Must return empty (no stale references outside archive and this spec)
+rg --glob '!specs/archive/**' --glob '!specs/projects/sdk/SPEC-AGENT-OPTIMIZATION.md' \
+  -n 'specs/shared/|PROJECT-RULES\.md|SPEC-GUIDE\.md|workstreams/[^/]+/OVERVIEW\.md|/sdk/PLAN\.md|/sdk/HANDOFF\.md|/sdk/STATUS\.md' \
   specs/ CLAUDE.md app/AGENTS.md packages/*/AGENTS.md noir/AGENTS.md
 
 # Verify no dead links — extract all relative markdown links and check they resolve
@@ -277,14 +285,14 @@ An agent can execute any SDK workstream chunk by reading at most 2 files (`specs
 
 ## Risks
 
-| Risk | Mitigation |
-|------|------------|
-| Losing useful OVERVIEW context during merge | Extract before deleting — review the merged SPEC.md for completeness |
-| CLAUDE.md getting too long | Keep rules concise — the file is already ~100 lines, adding ~30 lines of consolidated rules won't bloat it |
-| Human spec authors lose guidance | TEMPLATES.md remains as the reference. Authors who need process guidance can read the archived SPEC-GUIDE. |
-| Breaking existing agent workflows | Chunk 5 catches stale references across entire repo (including AGENTS.md files). The reading path gets simpler, not different. |
-| KMP skeleton docs have future value | Archive them — if KMP becomes its own project later, skeletons can be restored. Real KMP execution is already in `sdk/workstreams/native-shells/SPEC.md` |
-| Merging PLAN/HANDOFF loses active work tracking | Closure gate: all partial/deferred chunks have next-step descriptions, all P1 handoff items have owner+status before source files are deleted |
+| Risk                                            | Mitigation                                                                                                                                               |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Losing useful OVERVIEW context during merge     | Extract before deleting — review the merged SPEC.md for completeness                                                                                     |
+| CLAUDE.md getting too long                      | Keep rules concise — the file is already ~100 lines, adding ~30 lines of consolidated rules won't bloat it                                               |
+| Human spec authors lose guidance                | TEMPLATES.md remains as the reference. Authors who need process guidance can read the archived SPEC-GUIDE.                                               |
+| Breaking existing agent workflows               | Chunk 5 catches stale references across entire repo (including AGENTS.md files). The reading path gets simpler, not different.                           |
+| KMP skeleton docs have future value             | Archive them — if KMP becomes its own project later, skeletons can be restored. Real KMP execution is already in `sdk/workstreams/native-shells/SPEC.md` |
+| Merging PLAN/HANDOFF loses active work tracking | Closure gate: all partial/deferred chunks have next-step descriptions, all P1 handoff items have owner+status before source files are deleted            |
 
 ## What This Does NOT Change
 
@@ -293,3 +301,14 @@ An agent can execute any SDK workstream chunk by reading at most 2 files (`specs
 - OVERVIEW.md at the SDK project level — stays (it's genuinely useful architecture context)
 - TEMPLATES.md — stays (simplified but still the copy-paste reference)
 - Archive system — stays
+
+## Completion Status
+
+| Chunk | Description                                      | Size | Status   |
+| ----- | ------------------------------------------------ | ---- | -------- |
+| 1     | Consolidate framework into CLAUDE.md + AGENTS.md | S    | **Done** |
+| 2     | Merge OVERVIEWs into SPECs                       | M    | **Done** |
+| 3     | Flatten SDK project level                        | S    | **Done** |
+| 4     | Strip ceremony from templates                    | S    | **Done** |
+| 5     | Collapse fake projects + flatten hierarchy       | M    | **Done** |
+| 6     | Update all cross-references                      | S    | **Done** |

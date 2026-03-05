@@ -1,8 +1,7 @@
 # Person 3: MiniPay Integration Sample — Implementation Spec
 
-> Last updated: 2026-03-02
+> Last updated: 2026-03-05
 > Owner: Person 3 (Integrations)
-> Parent: [Workstream Overview](./OVERVIEW.md)
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
 
@@ -11,6 +10,49 @@
 - **Goal:** Embed Self's identity verification into any host app with zero duplicated logic across platforms.
 - **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire flow runs inside a shared WebView.
 - **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
+
+## Context
+
+**What you own:**
+
+- **MiniPay sample app** (`packages/kmp-minipay-sample/`) — Kotlin/Compose Multiplatform reference integration
+- **Future integration samples** — Self Wallet migration sample, other third-party app examples
+
+**Architecture context:**
+
+```
+┌────────────────────────────────────────┐
+│  Sample App (Compose Multiplatform)    │
+│  HomeScreen ──→ SelfSdk.launch() ──→ ResultScreen
+│     (native)       (SDK WebView)       (native)
+└────────────────────┬───────────────────┘
+                     │
+         ┌───────────▼───────────┐
+         │  KMP SDK (kmp-sdk/)   │
+         │  5 native handlers    │
+         │  WebView host         │
+         └───────────┬───────────┘
+                     │
+         ┌───────────▼───────────┐
+         │  WebView (Vite bundle)│
+         │  Full verification    │
+         │  flow: 10 screens     │
+         └───────────────────────┘
+```
+
+**Dependencies:**
+
+| Direction    | Person / Package   | What                                           | Status |
+| ------------ | ------------------ | ---------------------------------------------- | ------ |
+| **You need** | Person 2 (KMP SDK) | `SelfSdk.launch()` API and Kotlin SDK artifact | Done   |
+| **You need** | Person 1 (WebView) | Vite bundle embedded in the SDK                | Ready  |
+
+**Status:**
+
+- [x] MiniPay sample project scaffolded
+- [x] Android + iOS launch path wiring present
+- [x] Error-code to user-message mapping in result UX
+- [ ] Polish + error handling (chunk 3C — partial)
 
 ## Overview
 
