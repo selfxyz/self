@@ -19,7 +19,7 @@ if command -v adb >/dev/null 2>&1; then
     done <<< "${device_serials}"
     echo "Use http://127.0.0.1:${PORT} on Android devices with adb reverse."
   else
-    echo "No adb devices detected. If using emulator, use http://10.0.2.2:${PORT}."
+    echo "No adb devices detected. Run 'adb reverse tcp:${PORT} tcp:${PORT}' once a device is connected."
   fi
 else
   echo "adb not found. Skipping reverse setup."
