@@ -10,7 +10,7 @@ KMP specs and DX entrypoints are currently fragmented across mixed naming and lo
 
 ## Goals
 
-- Standardize KMP naming across packages, commands, and specs.
+- Standardize KMP naming across package folders, commands, and specs.
 - Consolidate KMP specs under one project-intent hierarchy.
 - Establish architecture and initiative docs as canonical entrypoints.
 - Improve agent execution reliability with explicit ownership and validation.
@@ -19,12 +19,13 @@ KMP specs and DX entrypoints are currently fragmented across mixed naming and lo
 
 - Redesigning non-KMP project spec systems in this initiative.
 - Reworking product requirements outside KMP scope.
+- Renaming KMP workspace package names.
 
 ## Deliverables
 
 1. KMP spec tree under `specs/projects/kmp/`
 2. Command taxonomy (`kmp:sdk:*`, `kmp:test-app:*`, `kmp:all:*`)
-3. Package/workspace rename to `kmp-sdk-test-app`
+3. Test app folder rename to `kmp-sdk-test-app` (workspace package name unchanged)
 4. Migration map from legacy paths and command aliases
 5. Agent hygiene fields enforced in KMP workstream specs
 
@@ -43,8 +44,9 @@ KMP specs and DX entrypoints are currently fragmented across mixed naming and lo
 
 3. Naming migration
 
-- Folder/workspace rename for test app
-- Repo-wide reference update
+- Folder rename for test app (`packages/kmp-test-app` -> `packages/kmp-sdk-test-app`)
+- Keep `@selfxyz/kmp-test-app` unchanged
+- Repo-wide path reference update
 
 4. Spec migration
 
@@ -64,7 +66,7 @@ KMP specs and DX entrypoints are currently fragmented across mixed naming and lo
 
 ## Dependencies
 
-- Agreement on final package naming
+- Agreement on final package folder naming
 - Agreement on command namespace policy
 - Coordination with ongoing KMP implementation work
 
@@ -84,10 +86,11 @@ KMP specs and DX entrypoints are currently fragmented across mixed naming and lo
 ## Rollout Plan
 
 1. Land docs and command taxonomy.
-2. Land package/workspace rename.
+2. Land package folder rename.
 3. Land spec migration and mapping.
 4. Remove deprecated aliases after agreed window.
 
 ## Change Log
 
 - 2026-03-05: Initial initiative skeleton created.
+- 2026-03-05: Updated naming plan to folder rename only; workspace package name unchanged.

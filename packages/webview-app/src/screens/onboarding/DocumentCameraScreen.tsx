@@ -18,6 +18,7 @@ import {
 import { useSelfClient } from '../../providers/SelfClientProvider';
 
 const GENERIC_SCAN_ERROR_MESSAGE = 'We could not read your document. Please try again.';
+const CAMERA_UNAVAILABLE_MESSAGE = 'Camera is not available on this device.';
 const MRZ_INVALID_DATA_ERROR = 'MRZ_INVALID_DATA';
 
 export const DocumentCameraScreen: React.FC = () => {
@@ -49,12 +50,23 @@ export const DocumentCameraScreen: React.FC = () => {
 
     setScanning(true);
     setError(null);
-    analytics.trackEvent('camera_mrz_scan_started', {
-      documentType,
-      countryCode,
-    });
 
     try {
+      const available = await camera.isAvailable();
+      if (!mountedRef.current || scanGenerationRef.current !== scanGeneration) {
+        return;
+      }
+      if (!available) {
+        setError(CAMERA_UNAVAILABLE_MESSAGE);
+        analytics.trackEvent('camera_mrz_scan_failed', { errorCode: 'CAMERA_NOT_AVAILABLE' });
+        return;
+      }
+
+      analytics.trackEvent('camera_mrz_scan_started', {
+        documentType,
+        countryCode,
+      });
+
       const result = await camera.scanMRZ({ documentType, countryCode });
       if (!mountedRef.current || scanGenerationRef.current !== scanGeneration) {
         return;

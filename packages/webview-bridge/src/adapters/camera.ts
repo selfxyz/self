@@ -5,9 +5,9 @@
 import type { WebViewBridge } from '../bridge';
 
 export interface MrzScanResult {
-  documentNumber: string;
-  dateOfBirth: string;
-  dateOfExpiry: string;
+  documentNumber?: string;
+  dateOfBirth?: string;
+  dateOfExpiry?: string;
 }
 
 export interface MrzScanParams {

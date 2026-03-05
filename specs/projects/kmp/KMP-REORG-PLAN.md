@@ -11,7 +11,7 @@ Reorganize KMP specs and developer experience surface areas so contributors and 
 ## Success Criteria
 
 - KMP specs are grouped by project intent under a dedicated KMP project tree.
-- KMP package naming is consistent (`kmp-sdk`, `kmp-sdk-test-app`).
+- KMP package naming is consistent (`kmp-sdk`, `kmp-sdk-test-app` folder naming).
 - Root command surface is explicit, discoverable, and backward-compatible during migration.
 - Architecture and initiative docs exist and become the canonical KMP entrypoints.
 - Agents can navigate and execute work with minimal ambiguity.
@@ -21,8 +21,8 @@ Reorganize KMP specs and developer experience surface areas so contributors and 
 1. Package naming standard
 
 - Keep SDK package as `kmp-sdk`.
-- Rename test host app from `kmp-test-app` to `kmp-sdk-test-app`.
-- Rename workspace from `@selfxyz/kmp-test-app` to `@selfxyz/kmp-sdk-test-app`.
+- Rename test host app folder from `kmp-test-app` to `kmp-sdk-test-app`.
+- Keep workspace package name as `@selfxyz/kmp-test-app` (no package rename).
 
 2. Spec naming standard
 
@@ -128,15 +128,16 @@ Exit criteria:
 
 - All existing KMP workflows work through new commands.
 
-### Phase 3: Package and Workspace Rename
+### Phase 3: Package Folder Rename
 
 - Rename folder `packages/kmp-test-app` to `packages/kmp-sdk-test-app`.
-- Rename workspace package to `@selfxyz/kmp-sdk-test-app`.
-- Update all references in scripts, Gradle settings, docs, and specs.
+- Keep workspace package name as `@selfxyz/kmp-test-app`.
+- Update all path references in scripts, Gradle settings, docs, and specs.
 
 Exit criteria:
 
-- No references remain to `@selfxyz/kmp-test-app` or `packages/kmp-test-app`.
+- No path references remain to `packages/kmp-test-app`.
+- Workspace package name remains unchanged.
 
 ### Phase 4: Spec Migration
 
@@ -178,12 +179,12 @@ Exit criteria:
 - `yarn types`
 - `yarn build`
 - `yarn test`
-- `rg -n "kmp-test-app|@selfxyz/kmp-test-app" .`
+- `rg -n "packages/kmp-test-app" .`
 - `rg -n "specs/projects/kmp" specs/README.md`
 
 ## Immediate Next Actions
 
 1. Create architecture and initiative doc skeletons in `specs/projects/kmp/`.
 2. Add new root KMP command taxonomy with alias compatibility.
-3. Prepare and execute package/workspace rename in one focused PR.
+3. Prepare and execute package folder rename in one focused PR.
 4. Migrate KMP specs and add redirect mapping.
