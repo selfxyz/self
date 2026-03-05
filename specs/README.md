@@ -1,62 +1,64 @@
-# Self SDK — Spec System
+# Specs
 
-> Table of contents for the spec folder. Start here.
+> Project-first table of contents for all specs. Start here.
 
-## What This Is
+## How Specs Are Organized
 
-A three-tier spec system designed for parallel AI agent execution:
+Specs are organized by **project** first (`kmp`, `sdk`, `lottie`, `euclid`), not by document intent.
 
-1. **Project Overview** — architecture, contracts, cross-workstream dependencies
-2. **Workstream Overviews** — orientation for each person/scope (what you own, context, status)
-3. **Implementation Specs** — exact code changes, I/O examples, token-budgeted chunks
+- Use `specs/projects/<project>/` for project-owned docs.
+- Use `specs/framework/` for generic spec-writing rules/templates.
+- Use `specs/shared/` for cross-project handoffs.
 
-Specs double as AI agent prompts. Written in second person, sized for single context windows, with validation commands after every chunk.
+## Top-Level Navigation
 
-## Meta-Framework
+- `framework/`
+  - `SPEC-GUIDE.md`
+  - `TEMPLATES.md`
+  - `PROJECT-RULES.md`
+  - `PRODUCT-SPEC-ENHANCEMENT-PROMPT.md`
 
-| File                                   | Purpose                                               | When to Read                            |
-| -------------------------------------- | ----------------------------------------------------- | --------------------------------------- |
-| [SPEC-GUIDE.md](./SPEC-GUIDE.md)       | How to write specs (generic, portable to any project) | Before writing or reviewing any spec    |
-| [TEMPLATES.md](./TEMPLATES.md)         | Copy-paste templates for all three tiers              | When creating a new spec                |
-| [PROJECT-RULES.md](./PROJECT-RULES.md) | Project-specific rules and guardrails                 | Before starting any implementation work |
+- `projects/sdk/`
+  - SDK-wide architecture, wave plan, handoff, and workstreams
 
-## Project-Level Specs
+- `projects/kmp/`
+  - KMP initiative, architecture, status, and KMP-specific planning
 
-| File                                 | Purpose                                                                | When to Read                               |
-| ------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------ |
-| [SDK-OVERVIEW.md](./SDK-OVERVIEW.md) | Architecture, bridge protocol, module table, decision matrix, glossary | First. Always.                             |
-| [WAVE-PLAN.md](./WAVE-PLAN.md)       | Dependency-ordered execution plan for parallel agent work              | When planning which chunks to execute next |
-| [KMP-STATUS.md](./KMP-STATUS.md)     | At-a-glance SDK completion percentages (web + KMP)                     | When you need quick status only            |
+- `projects/lottie/`
+  - Lottie migration/review specs
 
-## Workstream Specs
+- `projects/euclid/`
+  - Euclid consolidation specs
 
-Each workstream has two files: `OVERVIEW.md` (stable orientation) and `SPEC.md` (living implementation details).
+- `shared/handoffs/`
+  - Cross-project security and transition docs
 
-| Workstream                             | Overview                                        | Implementation Spec                                           | Status                                          |
-| -------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------- |
-| Person 1 — WebView UI + Bridge         | [OVERVIEW](./person1-webview/OVERVIEW.md)       | [SPEC](./person1-webview/SPEC.md)                             | 28/29 done, 1 pending (dynamic proving config)  |
-| Person 2 — Native Shells (KMP + Swift) | [OVERVIEW](./person2-native-shells/OVERVIEW.md) | [SPEC](./person2-native-shells/SPEC.md)                       | 27/28 done, 1 pending (KMP test app validation) |
-| Person 3 — Integrations                | [OVERVIEW](./person3-integrations/OVERVIEW.md)  | [MiniPay Spec](./person3-integrations/SPEC-MINIPAY-SAMPLE.md) | 26/26 done                                      |
-| Person 4 — SDK Core                    | [OVERVIEW](./person4-sdk-core/OVERVIEW.md)      | [SPEC](./person4-sdk-core/SPEC.md)                            | 23/25 done, 2 pending (adapter dedup, crypto)   |
-| Person 5 — RN SDK                      | [OVERVIEW](./person5-rn-sdk/OVERVIEW.md)        | [SPEC](./person5-rn-sdk/SPEC.md)                              | 21/23 done, 2 pending (wallet integration, npm) |
+## Current Canonical Entry Points
+
+- SDK: `specs/projects/sdk/INDEX.md` (planned)
+- KMP: `specs/projects/kmp/KMP-SPECS-INDEX.md`
+- Folder migration: `specs/SPECS-REORG-PLAN.md`
+
+## Migration Map (Legacy -> Target)
+
+- `specs/SDK-OVERVIEW.md` -> `specs/projects/sdk/SDK-OVERVIEW.md`
+- `specs/WAVE-PLAN.md` -> `specs/projects/sdk/WAVE-PLAN.md`
+- `specs/HANDOFF.md` -> `specs/projects/sdk/HANDOFF.md`
+
+- `specs/person1-webview/*` -> `specs/projects/sdk/workstreams/webview/*`
+- `specs/person2-native-shells/*` -> `specs/projects/sdk/workstreams/native-shells/*`
+- `specs/person3-integrations/*` -> `specs/projects/sdk/workstreams/integrations/*`
+- `specs/person4-sdk-core/*` -> `specs/projects/sdk/workstreams/sdk-core/*`
+- `specs/person5-rn-sdk/*` -> `specs/projects/sdk/workstreams/rn-sdk/*`
+
+- `specs/KMP-STATUS.md` -> `specs/projects/kmp/status/KMP-STATUS.md`
+- `specs/lottie-dotlottie-migration/REVIEW.md` -> `specs/projects/lottie/REVIEW.md`
+- `specs/EUCLID-WEB-CONSOLIDATION.md` -> `specs/projects/euclid/EUCLID-WEB-CONSOLIDATION.md`
+- `specs/handoff-p1-fixes/*` -> `specs/shared/handoffs/p1-fixes/*`
 
 ## Reading Order
 
-**New to the project?**
-
-1. This README
-2. [SDK-OVERVIEW.md](./SDK-OVERVIEW.md) — understand the architecture
-3. Your workstream's `OVERVIEW.md` — understand what you own
-4. Your workstream's `SPEC.md` — understand what to build
-
-**Starting a work session?**
-
-1. [WAVE-PLAN.md](./WAVE-PLAN.md) — find the next available chunk
-2. Your workstream's `SPEC.md` — read the chunk, check status
-3. [PROJECT-RULES.md](./PROJECT-RULES.md) — refresh on guardrails
-
-**Writing a new spec?**
-
-1. [SPEC-GUIDE.md](./SPEC-GUIDE.md) — how to write specs
-2. [TEMPLATES.md](./TEMPLATES.md) — copy-paste the right template
-3. [PROJECT-RULES.md](./PROJECT-RULES.md) — project-specific constraints
+1. `specs/README.md`
+2. Your project index under `specs/projects/<project>/`
+3. Relevant framework docs in `specs/framework/`
+4. Project workstream specs

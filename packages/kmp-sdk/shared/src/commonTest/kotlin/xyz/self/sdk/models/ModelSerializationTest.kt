@@ -8,6 +8,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import xyz.self.sdk.api.SelfSdkConfig
 import xyz.self.sdk.api.VerificationRequest
+import xyz.self.sdk.api.VerificationResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -120,6 +121,22 @@ class ModelSerializationTest {
         val encoded = json.encodeToString(request)
         val decoded = json.decodeFromString<VerificationRequest>(encoded)
         assertEquals(request, decoded)
+    }
+
+    @Test
+    fun verificationResult_roundtrip() {
+        val result =
+            VerificationResult(
+                success = true,
+                type = "proofGenerated",
+                userId = "user-1",
+                verificationId = "verification-123",
+                proof = "proof-bytes",
+                claims = mapOf("nationality" to "UTO"),
+            )
+        val encoded = json.encodeToString(result)
+        val decoded = json.decodeFromString<VerificationResult>(encoded)
+        assertEquals(result, decoded)
     }
 
     @Test

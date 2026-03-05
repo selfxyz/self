@@ -22,7 +22,7 @@
 - [x] iOS Swift providers are implemented and wired (NFC, Biometrics, Lifecycle, WebView host + additional providers)
 - [x] `SelfSdk.launch()` flow is implemented on iOS
 - [x] Shared KMP validation baseline captured (`:shared:compileKotlinIosSimulatorArm64` + `:shared:jvmTest` successful)
-- [ ] KMP test app validation on both platforms remains a follow-up validation task
+- [x] KMP test app validation on both platforms completed (Android assemble + iOS compile)
 - [x] Platform asymmetry contract documented and signed off (iOS 9-handler superset vs Android 5-handler core set)
 - [x] MiniPay sample integration is wired (`SelfSdk.launch()` call path present)
 

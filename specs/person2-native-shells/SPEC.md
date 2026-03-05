@@ -1694,7 +1694,7 @@ SelfSdkCallback fires on completion/dismissal
 | `SelfSdkCallback.onSuccess` fires              | Integration | Result delivery from WebView through lifecycle handler |
 | `SelfSdkCallback.onCancelled` fires on dismiss | Integration | Dismiss wiring works correctly                         |
 
-**Status: PARTIAL** (Android + iOS implementation paths are present; full cross-platform validation remains)
+**Status: DONE** (Android common launch signature fixed, test app now exercises `SelfSdk.configure(...).launch(...)`, and validation gates pass)
 
 ---
 
@@ -2058,20 +2058,20 @@ Chunk 2A: KMP Setup + Bridge Protocol (no deps -- start here)
 
 ## Completion Status
 
-| Chunk | Description                                | Size   | Status                                                                      |
-| ----- | ------------------------------------------ | ------ | --------------------------------------------------------------------------- |
-| 2A    | KMP Setup + Bridge Protocol                | S ~3k  | **Done**                                                                    |
-| 2B    | Android WebView Host                       | S ~2k  | **Done**                                                                    |
-| 2C    | Android Native Handlers (5 handlers)       | L ~12k | **Done**                                                                    |
-| 2D    | iOS WebView Host + Provider Infrastructure | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)                             |
-| 2E    | iOS Native Handlers (3 handlers)           | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)                             |
-| 2F    | SDK Public API + Test App                  | M ~5k  | **Partial** (implementation present; validation/contract alignment pending) |
-| 2G    | Factory Infrastructure                     | S ~3k  | **Done**                                                                    |
-| 2H    | Biometric Handler (iOS)                    | S ~2k  | **Done**                                                                    |
-| 2I    | Lifecycle Handler (iOS)                    | S ~2k  | **Done**                                                                    |
-| 2J    | iOS WebView Host + SelfSdk.launch()        | M ~5k  | **Done**                                                                    |
-| 2K    | NFC Handler (iOS)                          | M ~5k  | **Done**                                                                    |
-| 2L    | Camera MRZ (iOS, Phase 2)                  | S ~2k  | **Skipped** (deferred)                                                      |
+| Chunk | Description                                | Size   | Status                                                                                    |
+| ----- | ------------------------------------------ | ------ | ----------------------------------------------------------------------------------------- |
+| 2A    | KMP Setup + Bridge Protocol                | S ~3k  | **Done**                                                                                  |
+| 2B    | Android WebView Host                       | S ~2k  | **Done**                                                                                  |
+| 2C    | Android Native Handlers (5 handlers)       | L ~12k | **Done**                                                                                  |
+| 2D    | iOS WebView Host + Provider Infrastructure | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)                                           |
+| 2E    | iOS Native Handlers (3 handlers)           | M ~6k  | **Superseded** by 2G-2K (Swift wrapper pattern)                                           |
+| 2F    | SDK Public API + Test App                  | M ~5k  | **Done** (common Android launch fixed, test app launch screen wired, validation complete) |
+| 2G    | Factory Infrastructure                     | S ~3k  | **Done**                                                                                  |
+| 2H    | Biometric Handler (iOS)                    | S ~2k  | **Done**                                                                                  |
+| 2I    | Lifecycle Handler (iOS)                    | S ~2k  | **Done**                                                                                  |
+| 2J    | iOS WebView Host + SelfSdk.launch()        | M ~5k  | **Done**                                                                                  |
+| 2K    | NFC Handler (iOS)                          | M ~5k  | **Done**                                                                                  |
+| 2L    | Camera MRZ (iOS, Phase 2)                  | S ~2k  | **Skipped** (deferred)                                                                    |
 
 ## Validation Plan
 
@@ -2161,11 +2161,12 @@ cd packages/self-sdk-swift && swift build
 
 ## Follow-Up (Out of Scope)
 
-| Item                           | Discovered during | Suggested spec                                                                                |
-| ------------------------------ | ----------------- | --------------------------------------------------------------------------------------------- |
-| Camera MRZ handler for iOS     | Chunk 2L scoping  | Phase 2 -- add to this spec when needed                                                       |
-| SecureStorage handler for iOS  | Design review     | **Decided:** Add `SecureStorageProvider` to factory pattern (see SDK-OVERVIEW canonical rule) |
-| Crypto signing handler for iOS | Design review     | Depends on whether secure enclave signing is needed vs. Web Crypto                            |
+| Item                                         | Discovered during | Suggested spec                                                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Camera MRZ handler for iOS                   | Chunk 2L scoping  | Phase 2 -- add to this spec when needed                                                                                                                                                                                                                                                                                                                                                                  |
+| SecureStorage handler for iOS                | Design review     | **Decided:** Add `SecureStorageProvider` to factory pattern (see SDK-OVERVIEW canonical rule)                                                                                                                                                                                                                                                                                                            |
+| Crypto signing handler for iOS               | Design review     | Depends on whether secure enclave signing is needed vs. Web Crypto                                                                                                                                                                                                                                                                                                                                       |
+| LifecycleBridgeHandler thin-wrapper refactor | PR #1805 review   | Both Android and iOS `setResult()` have 4-branch business logic (interpreting `type`/`success`/`errorCode` to decide result codes / callback methods). Per PROJECT-RULES.md rule 22 ("no error mapping in native"), TypeScript should send an explicit `resultCode` or `outcome` field, and the handler should pass it through without interpretation. Touches both platform handlers + bridge protocol. |
 
 ## Spec Deviations
 
