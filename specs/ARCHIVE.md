@@ -7,3 +7,4 @@ For full retirement process, see [SPECS-REORG-PLAN.md](./archive/SPECS-REORG-PLA
 | Spec                        | Retired    | Outcome                                 | Key decisions / lessons                                                                             | Final PR(s) |
 | --------------------------- | ---------- | --------------------------------------- | --------------------------------------------------------------------------------------------------- | ----------- |
 | `specs/SPECS-REORG-PLAN.md` | 2026-03-05 | Reorganization completed and stabilized | Project-first structure adopted; singleton status folder removed; project-level naming standardized | N/A         |
+| `specs/projects/sdk/SPEC-AGENT-OPTIMIZATION.md` | 2026-03-05 | Agent-optimization rollout completed | All 6 execution chunks marked done; canonical guidance consolidated and stale scaffold reduced | N/A |
