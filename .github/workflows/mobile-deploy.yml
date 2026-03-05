@@ -690,6 +690,9 @@ jobs:
           CI_IOS_BUILD: ${{ needs.bump-version.outputs.ios_build }}
           CI_ANDROID_BUILD: ${{ needs.bump-version.outputs.android_build }}
           ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
+          GOOGLE_SIGNIN_ANDROID_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_ANDROID_CLIENT_ID }}
+          GOOGLE_SIGNIN_IOS_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_IOS_CLIENT_ID }}
+          GOOGLE_SIGNIN_WEB_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_WEB_CLIENT_ID }}
           GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
           GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
           GRAFANA_LOKI_USERNAME: ${{ secrets.GRAFANA_LOKI_USERNAME }}
@@ -1165,6 +1168,8 @@ jobs:
           ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
           ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
           GOOGLE_SIGNIN_ANDROID_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_ANDROID_CLIENT_ID }}
+          GOOGLE_SIGNIN_IOS_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_IOS_CLIENT_ID }}
+          GOOGLE_SIGNIN_WEB_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_WEB_CLIENT_ID }}
           GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
           GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
           GRAFANA_LOKI_USERNAME: ${{ secrets.GRAFANA_LOKI_USERNAME }}
