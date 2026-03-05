@@ -26,6 +26,8 @@ actual class SelfSdk private constructor(
     private var launcherOwner: WeakReference<ComponentActivity>? = null
     private var boundActivity: WeakReference<ComponentActivity>? = null
     private var pendingCallback: SelfSdkCallback? = null
+    private var lifecycleObserver: DefaultLifecycleObserver? = null
+    private var observerActivity: WeakReference<ComponentActivity>? = null
 
     actual companion object {
         private var instance: SelfSdk? = null
@@ -158,7 +160,18 @@ actual class SelfSdk private constructor(
     private fun bindActivity(activity: ComponentActivity) {
         boundActivity = WeakReference(activity)
         ensureLauncher(activity)
-        activity.lifecycle.addObserver(
+
+        if (observerActivity?.get() === activity) {
+            return
+        }
+
+        val previousActivity = observerActivity?.get()
+        val previousObserver = lifecycleObserver
+        if (previousActivity != null && previousObserver != null) {
+            previousActivity.lifecycle.removeObserver(previousObserver)
+        }
+
+        val observer =
             object : DefaultLifecycleObserver {
                 override fun onDestroy(owner: LifecycleOwner) {
                     if (launcherOwner?.get() === activity) {
@@ -170,9 +183,13 @@ actual class SelfSdk private constructor(
                         boundActivity = null
                     }
                     pendingCallback = null
+                    lifecycleObserver = null
+                    observerActivity = null
                 }
-            },
-        )
+            }
+        lifecycleObserver = observer
+        observerActivity = WeakReference(activity)
+        activity.lifecycle.addObserver(observer)
     }
 
     private fun resolveActivity(): ComponentActivity? {
