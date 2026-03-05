@@ -68,6 +68,11 @@ specs/
     handoffs/
       p1-fixes/
         SECURITY-HARDENING.md
+
+  archive/
+    ARCHIVE.md          # append-only table of retired specs
+    sdk/                # full-text copies of retired SDK specs (optional)
+    kmp/                # full-text copies of retired KMP specs (optional)
 ```
 
 ## Placement Rules
@@ -77,6 +82,7 @@ specs/
 3. Cross-project coordination and follow-ups go in `specs/shared/`.
 4. Every project folder should have an `INDEX.md` as its entrypoint.
 5. New implementation specs should include: `Owner`, `Status`, `Last updated`, `Validation commands`.
+6. When a spec is fully done: add a row to `specs/ARCHIVE.md` with outcome + key decisions. Either delete the source files (if the "What Was Built" appendix was added per SPEC-GUIDE) or move them to `specs/archive/<project>/`. Workstream OVERVIEW.md files stay until the workstream itself is retired.
 
 ## Migration Map (Current -> Target)
 
