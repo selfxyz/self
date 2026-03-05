@@ -31,14 +31,16 @@ actual class SelfSdk private constructor(
 
     actual companion object {
         private var instance: SelfSdk? = null
+        private var configuredWith: SelfSdkConfig? = null
         private var currentActivity: WeakReference<ComponentActivity>? = null
 
         /**
          * Configures and returns a singleton SelfSdk instance.
          */
         actual fun configure(config: SelfSdkConfig): SelfSdk {
-            if (instance == null) {
+            if (instance == null || configuredWith != config) {
                 instance = SelfSdk(config)
+                configuredWith = config
             }
             val activity = currentActivity?.get()
             if (activity != null) {

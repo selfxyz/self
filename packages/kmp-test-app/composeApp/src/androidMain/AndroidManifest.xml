@@ -11,6 +11,7 @@
         android:name=".SelfTestApplication"
         android:allowBackup="true"
         android:label="Self Test"
+        android:usesCleartextTraffic="true"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity
