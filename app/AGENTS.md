@@ -259,4 +259,4 @@ See `.cursor/rules/test-memory-optimization.mdc` for comprehensive guidelines, e
 The Self Wallet app serves as a **test environment** for the SDK refactor. For SDK architecture context:
 
 - **[SDK Specs](../specs/README.md)** — Table of contents and reading order
-- **[SDK Overview](../specs/SDK-OVERVIEW.md)** — System architecture, bridge protocol, decision matrix
+- **[SDK Overview](../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix

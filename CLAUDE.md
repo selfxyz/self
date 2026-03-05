@@ -26,6 +26,10 @@ nvm use && corepack enable && yarn install
 - **Native handlers are thin wrappers.** No business logic in Kotlin or Swift. All logic lives in TypeScript.
 - **Keychain is always native-managed.** No web fallbacks for secure storage. This is a security boundary.
 - **No “slop comments.”** Only add comments when they convey non-obvious intent or constraints. Never add generic or chatty comments.
+- **Signal over praise in docs/reviews.** Remove feel-good or back-patting text that does not change decisions or actions. Keep only actionable content: concrete issues, risks, decisions, owners, next steps, and validation evidence.
+- **Spec naming and structure must be context-first.** Inside `specs/projects/<project>/`, use doc-type file names (for example `OVERVIEW.md`, `PLAN.md`, `STATUS.md`) and do not repeat project prefixes in file names. Use descriptive labels in markdown links — `[SDK Overview](./OVERVIEW.md)` not `[OVERVIEW.md](./OVERVIEW.md)` — so the link text is meaningful without folder context.
+- **No singleton spec folders.** Do not create a folder that exists only to hold one markdown file; keep single docs at the nearest meaningful project/shared root.
+- **Workstream spec names are fixed.** Under `workstreams/<scope>/`, use `OVERVIEW.md` and `SPEC.md`; use `SPEC-<TOPIC>.md` only when multiple implementation specs are needed in that same folder.
 - **Test value over mock wiring.** Prefer tests that validate behavior. Avoid tests that only assert mocks were called unless that is the behavior being validated.
 - **PR size target:** 1k–3k LOC changed. Smaller is fine for focused fixes. If >3k, add a brief justification for why it can’t be split.
 - **No generated artifacts in source PRs.** Do not commit build outputs or generated assets unless the build system requires them for runtime or distribution.
@@ -36,29 +40,28 @@ nvm use && corepack enable && yarn install
 
 ### Spec System (`specs/`)
 
-| File                                         | Purpose                                                                       | When to Read                               |
-| -------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------ |
-| [README.md](./specs/README.md)               | Table of contents, reading order                                              | First. Always.                             |
-| [SPEC-GUIDE.md](./specs/SPEC-GUIDE.md)       | How to write specs (three-tier system, review checklist, AI agent guidelines) | Before writing or reviewing any spec       |
-| [TEMPLATES.md](./specs/TEMPLATES.md)         | Copy-paste templates for all three tiers                                      | When creating a new spec                   |
-| [PROJECT-RULES.md](./specs/PROJECT-RULES.md) | Project-specific rules and guardrails                                         | Before starting any implementation work    |
-| [SDK-OVERVIEW.md](./specs/SDK-OVERVIEW.md)   | Architecture, bridge protocol, module table, decision matrix                  | For system-level context                   |
-| [WAVE-PLAN.md](./specs/WAVE-PLAN.md)         | Dependency-ordered execution plan                                             | When planning which chunks to execute next |
+| File                                                    | Purpose                                                                       | When to Read                            |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------- |
+| [Specs README](./specs/README.md)                          | Table of contents, reading order                                              | First. Always.                          |
+| [Spec Guide](./specs/framework/SPEC-GUIDE.md)              | How to write specs (three-tier system, review checklist, AI agent guidelines) | Before writing or reviewing any spec    |
+| [Templates](./specs/framework/TEMPLATES.md)                 | Copy-paste templates for all three tiers                                      | When creating a new spec                |
+| [Project Rules](./specs/framework/PROJECT-RULES.md)         | Project-specific rules and guardrails                                         | Before starting any implementation work |
+| [SDK Overview](./specs/projects/sdk/OVERVIEW.md)             | Architecture, bridge protocol, module table, decision matrix                  | For system-level context                |
 
-Workstream specs live in `specs/person*-*/` with `OVERVIEW.md` (stable orientation) and `SPEC.md` (living implementation details).
+Workstream specs live in `specs/projects/sdk/workstreams/*/` with `OVERVIEW.md` (stable orientation) and `SPEC.md` (living implementation details).
 
 ### Planning Protocol
 
-1. **Read** `specs/PROJECT-RULES.md` and the relevant workstream specs — understand the current state and constraints
-2. **Write a plan to disk** — use the appropriate tier from `specs/TEMPLATES.md`:
-   - **Large features / new workstreams:** Create a full implementation spec (`specs/person-scope/SPEC.md`)
-   - **Medium features / multi-chunk work:** Create a session plan file in `specs/` or update the relevant SPEC.md
+1. **Read** `specs/framework/PROJECT-RULES.md` and the relevant workstream specs — understand the current state and constraints
+2. **Write a plan to disk** — use the appropriate tier from `specs/framework/TEMPLATES.md`:
+   - **Large features / new workstreams:** Create a full implementation spec (`specs/projects/<project>/workstreams/<scope>/SPEC.md`)
+   - **Medium features / multi-chunk work:** Create a session plan file in the project folder or update the relevant SPEC.md
    - **Small features / single-chunk fixes:** Add a chunk to an existing SPEC.md, or create a minimal plan in the spec folder
 3. **Include in every plan:** scope of work, files modified, I/O examples, validation command, definition of done
 4. **Then implement** — update chunk status as you complete work
 5. **After completion:** Mark chunks done in both SPEC.md and OVERVIEW.md status checklists
 
-Quick-start prompts for creating new specs are in [SPEC-GUIDE.md](./specs/SPEC-GUIDE.md#quick-start).
+Quick-start prompts for creating new specs are in [SPEC-GUIDE.md](./specs/framework/SPEC-GUIDE.md#quick-start).
 
 ### Why Even Minor Features
 
