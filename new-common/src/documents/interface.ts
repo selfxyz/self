@@ -76,6 +76,43 @@ export abstract class IDocument {
     }
   }
 
+  /** Returns the document-type suffix used in circuit/key names (e.g. '' for passport, '_id' for id_card). */
+  getDocumentExtension(): string {
+    const category: DocumentCategory = this.category;
+    switch (category) {
+      case 'passport':
+        return '';
+      case 'id_card':
+        return '_id';
+      case 'aadhaar':
+        return '_aadhaar';
+      case 'kyc':
+        return '_kyc';
+      default: {
+        const _exhaustive: never = category;
+        throw new Error(`Unsupported document category: ${_exhaustive}`);
+      }
+    }
+  }
+
+  getInternalDnsMappingKey(): string {
+    const category: DocumentCategory = this.category;
+    switch (category) {
+      case 'passport':
+        return 'disclose';
+      case 'id_card':
+        return 'disclose';
+      case 'aadhaar':
+        return 'disclose_aadhaar';
+      case 'kyc':
+        return 'disclose_kyc';
+      default: {
+        const _exhaustive: never = category;
+        throw new Error(`Unsupported document category: ${_exhaustive}`);
+      }
+    }
+  }
+
   /** Returns the key used to look up this document's circuit in `circuits_dns_mapping`. */
   abstract getDnsMappingKey(circuitType: CircuitType): string;
 

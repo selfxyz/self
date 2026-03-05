@@ -80,6 +80,7 @@ const _generateCircuitInputs = async (
   // (Removed the early selfApp guard—only the disclosure path now enforces selfApp below)
 
   let inputs, circuitName, endpointType, endpoint, circuitTypeWithDocumentExtension;
+  const doc = createDocument(passportData);
   switch (circuitType) {
     case 'register':
       ({ inputs, circuitName, endpointType, endpoint } = await generateTEEInputsRegister(
@@ -90,7 +91,7 @@ const _generateCircuitInputs = async (
           : protocolStore[document].dsc_tree,
         env,
       ));
-      circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
+      circuitTypeWithDocumentExtension = `${circuitType}${doc.getDocumentExtension()}`;
       break;
     case 'dsc':
       if (document === 'aadhaar') {
@@ -104,7 +105,7 @@ const _generateCircuitInputs = async (
         protocolStore[document].csca_tree as string[][],
         env,
       ));
-      circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
+      circuitTypeWithDocumentExtension = `${circuitType}${doc.getDocumentExtension()}`;
       break;
     case 'disclose': {
       if (!selfApp) {
@@ -912,7 +913,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       const doc = createDocument(passportData);
       const circuitName =
         typedCircuitType === 'disclose'
-          ? doc.getDiscloseCircuitName()
+          ? doc.getInternalDnsMappingKey()
           : typedCircuitType === 'register'
             ? doc.getRegisterCircuitName()
             : doc.getDscCircuitName();
@@ -1351,7 +1352,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       const doc = createDocument(passportData);
       const circuitName =
         circuitType === 'disclose'
-          ? doc.getDiscloseCircuitName()
+          ? doc.getInternalDnsMappingKey()
           : circuitType === 'register'
             ? doc.getRegisterCircuitName()
             : doc.getDscCircuitName();

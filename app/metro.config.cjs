@@ -96,6 +96,8 @@ const config = {
     nodeModulesPaths: [
       path.resolve(projectRoot, 'node_modules'), // App's own node_modules FIRST
       path.resolve(workspaceRoot, 'node_modules'), // Workspace root node_modules SECOND
+      path.resolve(workspaceRoot, 'new-common/node_modules'), // new-common deps (pkijs, asn1js, etc.)
+      path.resolve(workspaceRoot, 'new-common/node_modules/pkijs/node_modules'), // pkijs nested deps (@noble/hashes)
     ],
 
     // Essential polyfills for React Native
@@ -126,8 +128,29 @@ const config = {
 
     // Custom resolver to handle both .js imports in TypeScript and Node.js modules
     resolveRequest: (context, moduleName, platform) => {
+      // Force pkijs and asn1js to use ESM builds (CJS interop fails at runtime in Metro)
+      if (moduleName === 'pkijs' && context.originModulePath?.includes('new-common')) {
+        return {
+          type: 'sourceFile',
+          filePath: path.resolve(workspaceRoot, 'new-common/node_modules/pkijs/build/index.es.js'),
+        };
+      }
+      if (moduleName === 'asn1js' && context.originModulePath?.includes('new-common')) {
+        return {
+          type: 'sourceFile',
+          filePath: path.resolve(workspaceRoot, 'new-common/node_modules/asn1js/build/index.es.js'),
+        };
+      }
+
       // Stub Node.js built-ins not available in React Native (e.g. used by new-common/eddsa.ts)
       if (moduleName === 'module' || moduleName === 'node:module') {
+        return {
+          type: 'sourceFile',
+          filePath: path.resolve(projectRoot, 'src/polyfills/empty.js'),
+        };
+      }
+      if ((moduleName === 'url' || moduleName === 'node:url') &&
+          context.originModulePath?.includes('new-common')) {
         return {
           type: 'sourceFile',
           filePath: path.resolve(projectRoot, 'src/polyfills/empty.js'),

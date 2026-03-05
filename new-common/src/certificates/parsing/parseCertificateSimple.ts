@@ -2,7 +2,6 @@ import * as asn1js from 'asn1js';
 import { Certificate, RSAPublicKey, RSASSAPSSParams } from 'pkijs';
 
 import { circuitNameFromMode } from '../../foundation/constants/circuit.js';
-import type { Mode } from '../../foundation/types/app.js';
 import type {
   CertificateData,
   PublicKeyDetailsECDSA,
