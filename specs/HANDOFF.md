@@ -65,3 +65,7 @@ These decisions were made during this PR cycle. They are now documented in [SDK-
 1. **Correctness cleanup** — Adapter consolidation, dynamic proving config, crypto adapter interface gap
 2. **Publishing** — npm publish rn-sdk, finalize AAR/XCFramework packaging
 3. **Self Wallet migration** — Wire `SelfVerification` into the main app (Phase 2)
+
+## Architecture Notes
+
+- Draft consolidation plan: [EUCLID-WEB-CONSOLIDATION.md](./EUCLID-WEB-CONSOLIDATION.md)
