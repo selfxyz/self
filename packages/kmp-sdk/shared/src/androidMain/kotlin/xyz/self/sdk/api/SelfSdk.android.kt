@@ -39,6 +39,7 @@ actual class SelfSdk private constructor(
          */
         actual fun configure(config: SelfSdkConfig): SelfSdk {
             if (instance == null || configuredWith != config) {
+                instance?.cleanup()
                 instance = SelfSdk(config)
                 configuredWith = config
             }
@@ -184,6 +185,7 @@ actual class SelfSdk private constructor(
                     if (boundActivity?.get() === activity) {
                         boundActivity = null
                     }
+                    pendingCallback?.onCancelled()
                     pendingCallback = null
                     lifecycleObserver = null
                     observerActivity = null
@@ -192,6 +194,24 @@ actual class SelfSdk private constructor(
         lifecycleObserver = observer
         observerActivity = WeakReference(activity)
         activity.lifecycle.addObserver(observer)
+    }
+
+    private fun cleanup() {
+        activityLauncher?.unregister()
+        activityLauncher = null
+        launcherOwner = null
+
+        val activity = observerActivity?.get()
+        val observer = lifecycleObserver
+        if (activity != null && observer != null) {
+            activity.lifecycle.removeObserver(observer)
+        }
+        lifecycleObserver = null
+        observerActivity = null
+        boundActivity = null
+
+        pendingCallback?.onCancelled()
+        pendingCallback = null
     }
 
     private fun resolveActivity(): ComponentActivity? {
