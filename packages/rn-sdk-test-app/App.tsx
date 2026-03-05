@@ -3,15 +3,19 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useMemo, useState } from 'react';
-import { NativeModules, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  NativeModules,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { SelfVerification, type SelfSdkError, type VerificationResult } from '@selfxyz/rn-sdk';
-
-const defaultRequest = {
-  userId: 'rn-test-user',
-  scope: 'rn-sdk-test',
-  disclosures: [],
-};
 
 const fallbackMrzScannerModule = {
   startScanning: async () => ({
@@ -38,8 +42,6 @@ function ensureMrzScannerModule(): void {
     typeof legacyScanner?.startScanning === 'function';
 
   if (!hasScanner) {
-    // Keep camera bridge round-trip testable in this harness when host-native MRZ isn't wired.
-    // Hermes NativeModules host object can reject writes, so this fallback is best-effort.
     try {
       nativeModules.SelfMRZScannerModule = fallbackMrzScannerModule;
     } catch {
@@ -50,24 +52,47 @@ function ensureMrzScannerModule(): void {
 
 ensureMrzScannerModule();
 
+type CallbackState =
+  | { status: 'Idle' }
+  | { status: 'Launching verification...' }
+  | { status: 'Success'; payload: string }
+  | { status: 'Failure'; code: string; message: string }
+  | { status: 'Cancelled' };
+
 function App(): React.JSX.Element {
   const [isVerifying, setIsVerifying] = useState(false);
-  const [status, setStatus] = useState('Ready');
+  const [userId, setUserId] = useState('test-user');
+  const [scope, setScope] = useState('identity');
+  const [callback, setCallback] = useState<CallbackState>({ status: 'Idle' });
 
-  const request = useMemo(() => defaultRequest, []);
+  const request = useMemo(
+    () => ({
+      userId: userId || undefined,
+      scope: scope || undefined,
+      disclosures: ['name', 'nationality', 'date_of_birth'],
+    }),
+    [userId, scope],
+  );
 
   const handleSuccess = (result: VerificationResult) => {
-    setStatus(`Success: ${result.verificationId ?? 'no verificationId'}`);
+    setCallback({
+      status: 'Success',
+      payload: JSON.stringify(result, null, 2),
+    });
     setIsVerifying(false);
   };
 
   const handleFailure = (error: SelfSdkError) => {
-    setStatus(`Failure: ${error.code} - ${error.message}`);
+    setCallback({
+      status: 'Failure',
+      code: error.code,
+      message: error.message,
+    });
     setIsVerifying(false);
   };
 
   const handleCancelled = () => {
-    setStatus('Cancelled');
+    setCallback({ status: 'Cancelled' });
     setIsVerifying(false);
   };
 
@@ -90,13 +115,57 @@ function App(): React.JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <View style={styles.content}>
-        <Text style={styles.title}>RN SDK Test Harness</Text>
-        <Text style={styles.subtitle}>Status: {status}</Text>
-        <TouchableOpacity style={styles.button} onPress={() => setIsVerifying(true)}>
-          <Text style={styles.buttonText}>Launch Verification</Text>
-        </TouchableOpacity>
+      <View style={styles.topBar}>
+        <Text style={styles.topBarTitle}>SDK Public API Test</Text>
       </View>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.description}>
+          This button validates SelfSdk.configure(...).launch(...) end-to-end.
+        </Text>
+
+        <Text style={styles.label}>User ID</Text>
+        <TextInput
+          style={styles.input}
+          value={userId}
+          onChangeText={setUserId}
+          placeholder="test-user"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <Text style={styles.label}>Scope</Text>
+        <TextInput
+          style={styles.input}
+          value={scope}
+          onChangeText={setScope}
+          placeholder="identity"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => {
+            setCallback({ status: 'Launching verification...' });
+            setIsVerifying(true);
+          }}
+        >
+          <Text style={styles.primaryButtonText}>Launch Verification</Text>
+        </TouchableOpacity>
+
+        <View style={styles.callbackCard}>
+          <Text style={styles.callbackLabel}>Callback Status: {callback.status}</Text>
+          {callback.status === 'Failure' && (
+            <>
+              <Text style={styles.callbackDetail}>Error Code: {callback.code}</Text>
+              <Text style={styles.callbackDetail}>Error Message: {callback.message}</Text>
+            </>
+          )}
+          {callback.status === 'Success' && (
+            <Text style={styles.callbackPayload}>{callback.payload}</Text>
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -106,33 +175,73 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f6f7f8',
   },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    gap: 16,
+  topBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: '#f6f7f8',
   },
-  title: {
-    fontSize: 24,
+  topBarTitle: {
+    fontSize: 22,
     fontWeight: '700',
     color: '#111827',
   },
-  subtitle: {
+  content: {
+    paddingHorizontal: 16,
+    paddingBottom: 32,
+    gap: 12,
+  },
+  description: {
     fontSize: 14,
     color: '#374151',
-    textAlign: 'center',
+    lineHeight: 20,
   },
-  button: {
+  label: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6b7280',
+    marginBottom: -8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: '#111827',
+    backgroundColor: '#ffffff',
+  },
+  primaryButton: {
     backgroundColor: '#111827',
     borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
   },
-  buttonText: {
+  primaryButtonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  callbackCard: {
+    backgroundColor: '#e8e5f0',
+    borderRadius: 12,
+    padding: 16,
+    gap: 6,
+  },
+  callbackLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1f2937',
+  },
+  callbackDetail: {
+    fontSize: 13,
+    color: '#374151',
+  },
+  callbackPayload: {
+    fontSize: 12,
+    fontFamily: 'monospace',
+    color: '#374151',
+    lineHeight: 18,
   },
   verificationView: {
     flex: 1,

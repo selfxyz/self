@@ -21,11 +21,13 @@ Use `euclid-web` as the single source of truth for new SDK flow screens and busi
 ## Scope Boundary (Current)
 
 In scope now:
+
 - WebView launch reliability
 - Host-to-web bridge contract
 - Callback plumbing and smoke verification
 
 Out of scope now:
+
 - Full verification journey implementation parity in all hosts
 - Consolidating/removing demo apps
 - Reworking non-bridge native UI beyond what is needed for hosting
