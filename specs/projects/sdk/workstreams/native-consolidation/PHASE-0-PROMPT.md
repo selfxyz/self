@@ -32,11 +32,13 @@ This documents every exposed native method, event, payload key, and error code f
 #### MRZ Scanner
 
 Compare these files side by side:
+
 - `app/ios/MRZScannerModule.swift` (module name: `MRZScannerModule`)
 - `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.swift` (module name: `SelfMRZScannerModule`)
 - `packages/rn-sdk-test-app/ios/SelfRNTestApp/SelfMRZScannerModule.swift` (module name: `SelfMRZScannerModule`)
 
 Document for each:
+
 - Native module name (ObjC `@objc(...)` registration)
 - Exposed methods (`startScanning`, `stopScanning`)
 - Success payload shape and keys
@@ -46,10 +48,12 @@ Document for each:
 #### PassportReader
 
 Compare these files:
+
 - `app/ios/PassportReader.swift` (module name: `PassportReader`, ObjC: `@objc(PassportReader)`)
 - `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.swift` (module name: `SelfPassportReader`, ObjC: `@objc(SelfPassportReader)`)
 
 Document for each:
+
 - Native module name
 - Exposed methods: `scanPassport`, `configure`, `trackEvent`, `flush`
 - `scanPassport` parameter list (all 10 params + resolve/reject)
@@ -60,6 +64,7 @@ Document for each:
 #### ObjC Bridge Shims
 
 Compare:
+
 - `app/ios/MRZScannerModule.m` vs `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.m`
 - `app/ios/PassportReader.m` vs `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.m`
 - `packages/rn-sdk-test-app/ios/SelfRNTestApp/SelfMRZScannerModule.m`
@@ -97,6 +102,7 @@ The existing file tests Segment analytics (`trackEvent`, `trackScreenView`). You
 Source under test: `app/src/services/analytics.ts`
 
 The existing file mocks `@/config/segment`. You will also need to mock:
+
 - `@/integrations/nfc/passportReader` (to mock `PassportReader.configure`, `.trackEvent`, `.flush`)
 - `@env` (to provide `MIXPANEL_NFC_PROJECT_TOKEN`)
 - `@react-native-community/netinfo`
@@ -106,6 +112,7 @@ The existing file mocks `@/config/segment`. You will also need to mock:
 The RN test app has no test infrastructure. You will need to:
 
 1. Add Jest config to `packages/rn-sdk-test-app/package.json`:
+
    ```json
    "scripts": {
      "test": "jest"
@@ -114,6 +121,7 @@ The RN test app has no test infrastructure. You will need to:
      "preset": "react-native"
    }
    ```
+
    Or create a minimal `jest.config.cjs` — check what the app uses and follow a similar pattern.
 
 2. Create `packages/rn-sdk-test-app/__tests__/mrzBridgeContract.test.ts`:
@@ -161,14 +169,14 @@ There is no `.github/PULL_REQUEST_TEMPLATE.md` yet. Create one at `.github/PULL_
 
 ## Files You Will Create or Modify
 
-| Action | File |
-| --- | --- |
-| CREATE | `specs/projects/sdk/workstreams/native-consolidation/CONTRACTS.md` |
+| Action | File                                                                      |
+| ------ | ------------------------------------------------------------------------- |
+| CREATE | `specs/projects/sdk/workstreams/native-consolidation/CONTRACTS.md`        |
 | MODIFY | `app/tests/src/integrations/nfc/nfcScanner.test.ts` (add describe blocks) |
-| MODIFY | `app/tests/src/services/analytics.test.ts` (add describe blocks) |
-| CREATE | `packages/rn-sdk-test-app/__tests__/mrzBridgeContract.test.ts` |
-| MODIFY | `packages/rn-sdk-test-app/package.json` (add test script + jest config) |
-| CREATE | `.github/PULL_REQUEST_TEMPLATE.md` |
+| MODIFY | `app/tests/src/services/analytics.test.ts` (add describe blocks)          |
+| CREATE | `packages/rn-sdk-test-app/__tests__/mrzBridgeContract.test.ts`            |
+| MODIFY | `packages/rn-sdk-test-app/package.json` (add test script + jest config)   |
+| CREATE | `.github/PULL_REQUEST_TEMPLATE.md`                                        |
 
 ## Files You Will NOT Modify
 

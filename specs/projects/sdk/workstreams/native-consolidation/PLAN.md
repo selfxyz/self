@@ -36,16 +36,19 @@ Wrapper-only behavior kept local:
 Create identical files in both locations:
 
 **`app/ios/MrzScanEngine.swift`** and **`packages/mobile-sdk-alpha/ios/SelfSDK/MrzScanEngine.swift`**:
+
 - Standalone `MrzScanEngine.scan(image:roi:completion:)` function
 - Always dispatches completion to main thread
 - Includes `String.matches(pattern:)` extension
 
 **`app/ios/MrzOcrCorrection.swift`** and **`packages/mobile-sdk-alpha/ios/SelfSDK/MrzOcrCorrection.swift`**:
+
 - `MrzOcrCorrection.singleCorrectDocumentNumber(mrzString:docNumber:parser:)`
 - `MrzOcrCorrection.processBelgiumDocument(mrzString:parser:)`
 - `MrzOcrCorrection.isValid(_:)` — check digit validation
 
 **`app/ios/MrzResultMapper.swift`** and **`packages/mobile-sdk-alpha/ios/SelfSDK/MrzResultMapper.swift`**:
+
 - `MrzResultMapper.toDictionary(_:)` — QKMRZResult → [String: Any]
 
 ### 2) Convert app MRZ implementation to thin wrappers
@@ -81,6 +84,7 @@ Do not modify in Phase 1:
 ### 6) Phase 1.5 RFC (future)
 
 Open a follow-up to evaluate migrating the shared helpers into `self-sdk-swift` if a single cross-platform native MRZ stack is desired. This would:
+
 - Add QKMRZParser as a self-sdk-swift dependency
 - Move `MrzScanEngine`, `MrzOcrCorrection`, `MrzResultMapper` into self-sdk-swift
 - Make both RN consumers import from self-sdk-swift instead of local copies
@@ -102,16 +106,16 @@ Open a follow-up to evaluate migrating the shared helpers into `self-sdk-swift` 
 
 ## Status
 
-| Chunk | Status |
-|-------|--------|
-| Create shared helpers — MrzOcrCorrection, MrzResultMapper (app + sdk) | Done |
-| Create shared helpers — MrzScanEngine (app + sdk) | Done |
-| Refactor app LiveMRZScannerView → delegates to shared helpers | Done |
-| Refactor sdk SelfLiveMRZScannerView → delegates to shared helpers | Done |
-| Delete app MRZScanner.swift (replaced by MrzScanEngine.swift) | Done |
-| Delete sdk SelfMRZScanner.swift (replaced by MrzScanEngine.swift) | Done |
-| Update Xcode project references (pbxproj) | Done |
-| Validate builds (iOS Debug for app + sdk) | Pending |
+| Chunk                                                                 | Status  |
+| --------------------------------------------------------------------- | ------- |
+| Create shared helpers — MrzOcrCorrection, MrzResultMapper (app + sdk) | Done    |
+| Create shared helpers — MrzScanEngine (app + sdk)                     | Done    |
+| Refactor app LiveMRZScannerView → delegates to shared helpers         | Done    |
+| Refactor sdk SelfLiveMRZScannerView → delegates to shared helpers     | Done    |
+| Delete app MRZScanner.swift (replaced by MrzScanEngine.swift)         | Done    |
+| Delete sdk SelfMRZScanner.swift (replaced by MrzScanEngine.swift)     | Done    |
+| Update Xcode project references (pbxproj)                             | Done    |
+| Validate builds (iOS Debug for app + sdk)                             | Pending |
 
 ## Exit Criteria
 

@@ -68,12 +68,12 @@ Mock `NativeModules` from react-native. Assert that JS consumers call the correc
 
 **Scope:**
 
-| Test File | What It Validates | Created In | Required In |
-| --- | --- | --- | --- |
-| `app/src/integrations/nfc/__tests__/passportReader.test.ts` | `passportReader.ts` calls `NativeModules.PassportReader` with correct method names, handles expected error codes (`NFC_NOT_SUPPORTED`, `PASSPORT_READ_FAILED`, etc.), returns expected payload shape (`documentNumber`, `dateOfBirth`, `dateOfExpiry`, etc.) | Phase 0 | 0-4 |
-| `app/src/integrations/nfc/__tests__/nfcScanner.test.ts` | `nfcScanner.ts` NFC scanning flow contract — start/stop/cancel lifecycle, error propagation | Phase 0 | 0-4 |
-| `app/src/services/__tests__/analytics.test.ts` | Analytics call sites that reference PassportReader methods (`configure`, `trackEvent`, `flush`) are called with expected arguments | Phase 0 | 0-4 |
-| `packages/rn-sdk-test-app/src/__tests__/mrzBridgeContract.test.ts` | RN test app MRZ bridge contract — error codes (`MRZ_SCAN_CANCELLED`, `MRZ_SCAN_FAILED`, `MRZ_SCAN_IN_PROGRESS`, `CAMERA_PERMISSION_DENIED`, `CAMERA_INIT_FAILED`), success payload keys (`documentNumber`, `dateOfBirth`, `dateOfExpiry`) | Phase 0 | 0-4 |
+| Test File                                                          | What It Validates                                                                                                                                                                                                                                            | Created In | Required In |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- | ----------- |
+| `app/src/integrations/nfc/__tests__/passportReader.test.ts`        | `passportReader.ts` calls `NativeModules.PassportReader` with correct method names, handles expected error codes (`NFC_NOT_SUPPORTED`, `PASSPORT_READ_FAILED`, etc.), returns expected payload shape (`documentNumber`, `dateOfBirth`, `dateOfExpiry`, etc.) | Phase 0    | 0-4         |
+| `app/src/integrations/nfc/__tests__/nfcScanner.test.ts`            | `nfcScanner.ts` NFC scanning flow contract — start/stop/cancel lifecycle, error propagation                                                                                                                                                                  | Phase 0    | 0-4         |
+| `app/src/services/__tests__/analytics.test.ts`                     | Analytics call sites that reference PassportReader methods (`configure`, `trackEvent`, `flush`) are called with expected arguments                                                                                                                           | Phase 0    | 0-4         |
+| `packages/rn-sdk-test-app/src/__tests__/mrzBridgeContract.test.ts` | RN test app MRZ bridge contract — error codes (`MRZ_SCAN_CANCELLED`, `MRZ_SCAN_FAILED`, `MRZ_SCAN_IN_PROGRESS`, `CAMERA_PERMISSION_DENIED`, `CAMERA_INIT_FAILED`), success payload keys (`documentNumber`, `dateOfBirth`, `dateOfExpiry`)                    | Phase 0    | 0-4         |
 
 ### Layer 2 — Native Parity Snapshots (Documentation)
 
@@ -81,37 +81,37 @@ A `CONTRACTS.md` file documents every exposed native method, event, payload key,
 
 **Scope:**
 
-| Section | Files Compared | Created In | Updated In |
-| --- | --- | --- | --- |
-| MRZ Scanner | `app/ios/MRZScannerModule.swift` vs `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.swift` | Phase 0 | Phase 1, 3, 4 |
-| PassportReader | `app/ios/PassportReader.swift` vs `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.swift` | Phase 0 | Phase 2, 3, 4 |
-| ObjC Shims | `app/ios/*.m` vs `packages/mobile-sdk-alpha/ios/SelfSDK/*.m` | Phase 0 | Phase 3, 4 |
+| Section        | Files Compared                                                                                         | Created In | Updated In    |
+| -------------- | ------------------------------------------------------------------------------------------------------ | ---------- | ------------- |
+| MRZ Scanner    | `app/ios/MRZScannerModule.swift` vs `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.swift` | Phase 0    | Phase 1, 3, 4 |
+| PassportReader | `app/ios/PassportReader.swift` vs `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.swift`         | Phase 0    | Phase 2, 3, 4 |
+| ObjC Shims     | `app/ios/*.m` vs `packages/mobile-sdk-alpha/ios/SelfSDK/*.m`                                           | Phase 0    | Phase 3, 4    |
 
 ### Layer 3 — Build Verification (CI)
 
 All affected targets must build. This is already partially in CI but needs to cover the app iOS build too.
 
-| Target | Command | Required In |
-| --- | --- | --- |
-| RN SDK unit tests | `yarn workspace @selfxyz/rn-sdk test` | 0-4 |
-| App contract tests | `cd app && yarn jest:run` | 0-4 |
-| RN test app iOS build | `xcodebuild` (see CI workflow) | 1-4 |
-| RN test app Android build | `./gradlew assembleDebug` | 1-4 |
-| App iOS build | app iOS Debug build | 1-4 |
-| KMP SDK tests | `cd packages/kmp-sdk && ./gradlew :shared:jvmTest` | 1-4 |
+| Target                    | Command                                            | Required In |
+| ------------------------- | -------------------------------------------------- | ----------- |
+| RN SDK unit tests         | `yarn workspace @selfxyz/rn-sdk test`              | 0-4         |
+| App contract tests        | `cd app && yarn jest:run`                          | 0-4         |
+| RN test app iOS build     | `xcodebuild` (see CI workflow)                     | 1-4         |
+| RN test app Android build | `./gradlew assembleDebug`                          | 1-4         |
+| App iOS build             | app iOS Debug build                                | 1-4         |
+| KMP SDK tests             | `cd packages/kmp-sdk && ./gradlew :shared:jvmTest` | 1-4         |
 
 ### Layer 4 — Behavioral Smoke Tests (Manual, On-Device)
 
 MRZ scanning requires a camera. NFC reading requires hardware. These cannot be automated in unit tests. Each consolidation PR must include manual verification sign-off.
 
-| Test | Surfaces | Required In |
-| --- | --- | --- |
-| MRZ scan cancel -> `MRZ_SCAN_CANCELLED` | App, RN test app (iOS + Android) | 1-4 |
-| MRZ scan success -> correct payload keys | App, RN test app (iOS + Android) | 1-4 |
-| MRZ permission denied -> `CAMERA_PERMISSION_DENIED` | App, RN test app (iOS + Android) | 1-4 |
-| MRZ camera init failure -> `CAMERA_INIT_FAILED` | RN test app (iOS) | 1-4 |
-| NFC scan + expected errors | App (iOS) | 2-4 |
-| Analytics events fire during NFC flow | App (iOS) | 2-4 |
+| Test                                                | Surfaces                         | Required In |
+| --------------------------------------------------- | -------------------------------- | ----------- |
+| MRZ scan cancel -> `MRZ_SCAN_CANCELLED`             | App, RN test app (iOS + Android) | 1-4         |
+| MRZ scan success -> correct payload keys            | App, RN test app (iOS + Android) | 1-4         |
+| MRZ permission denied -> `CAMERA_PERMISSION_DENIED` | App, RN test app (iOS + Android) | 1-4         |
+| MRZ camera init failure -> `CAMERA_INIT_FAILED`     | RN test app (iOS)                | 1-4         |
+| NFC scan + expected errors                          | App (iOS)                        | 2-4         |
+| Analytics events fire during NFC flow               | App (iOS)                        | 2-4         |
 
 ### Lesson from MRZ Consolidation (PRs #1817, #1821)
 
