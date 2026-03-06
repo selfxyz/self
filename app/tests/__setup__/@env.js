@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -11,6 +11,8 @@ export const DEFAULT_PNUMBER = undefined;
 export const ENABLE_DEBUG_LOGS = false;
 
 export const GOOGLE_SIGNIN_ANDROID_CLIENT_ID = 'mock-google-client-id';
+
+export const GOOGLE_SIGNIN_IOS_CLIENT_ID = 'mock-google-ios-client-id';
 
 export const GOOGLE_SIGNIN_WEB_CLIENT_ID = 'mock-google-web-client-id';
 

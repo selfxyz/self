@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -7,10 +7,11 @@ import { StyleSheet } from 'react-native';
 
 import AadhaarLogo from '../../../svgs/icons/aadhaar.svg';
 import EPassportLogoRounded from '../../../svgs/icons/epassport_rounded.svg';
+import PassportCameraScanIcon from '../../../svgs/icons/passport_camera_scan.svg';
 import PlusIcon from '../../../svgs/icons/plus.svg';
 import SelfLogo from '../../../svgs/logo.svg';
 import { BodyText, RoundFlag, View, XStack, YStack } from '../../components';
-import { black, slate100, slate300, slate400, white } from '../../constants/colors';
+import { black, blue100, blue600, slate100, slate300, slate400, white } from '../../constants/colors';
 import { advercase, dinot } from '../../constants/fonts';
 import { useSelfClient } from '../../context';
 import { buttonTap } from '../../haptic';
@@ -24,6 +25,8 @@ const getDocumentName = (docType: string): string => {
       return 'ID card';
     case 'a':
       return 'Aadhaar';
+    case 'kyc':
+      return 'Other IDs';
     default:
       return 'Unknown Document';
   }
@@ -37,12 +40,14 @@ const getDocumentNameForEvent = (docType: string): string => {
       return 'id_card';
     case 'a':
       return 'aadhaar';
+    case 'kyc':
+      return 'kyc';
     default:
       return 'unknown_document';
   }
 };
 
-const getDocumentDescription = (docType: string): string => {
+const getDocumentDescription = (docType: string): string | null => {
   switch (docType) {
     case 'p':
       return 'Verified Biometric Passport';
@@ -50,6 +55,8 @@ const getDocumentDescription = (docType: string): string => {
       return 'Verified Biometric ID card';
     case 'a':
       return 'Verified mAadhaar QR code';
+    case 'kyc':
+      return "National ID, Driver's License etc.";
     default:
       return 'Unknown Document';
   }
@@ -63,9 +70,59 @@ const getDocumentLogo = (docType: string): React.ReactNode => {
       return <EPassportLogoRounded />;
     case 'a':
       return <AadhaarLogo />;
+    case 'kyc':
+      // same color as epassport_rounded.svg
+      return <PassportCameraScanIcon color={'#075985'} />;
     default:
       return null;
   }
+};
+
+const getDocumentSecurityBadge = (docType: string): string | null => {
+  switch (docType) {
+    case 'p':
+    case 'i':
+    case 'a':
+      return 'Best security';
+    default:
+      return null;
+  }
+};
+
+type DocumentItemProps = {
+  docType: string;
+  onPress: () => void;
+};
+
+const DocumentItem: React.FC<DocumentItemProps> = ({ docType, onPress }) => {
+  const securityBadge = getDocumentSecurityBadge(docType);
+  const description = getDocumentDescription(docType);
+
+  return (
+    <XStack
+      style={styles.documentItem}
+      backgroundColor={white}
+      borderWidth={1}
+      borderColor={slate300}
+      elevation={4}
+      borderRadius={'$5'}
+      padding={'$3'}
+      pressStyle={{
+        transform: [{ scale: 0.97 }],
+        backgroundColor: slate100,
+      }}
+      onPress={onPress}
+    >
+      <XStack alignItems="center" gap={'$3'} flex={1}>
+        {securityBadge && <BodyText style={styles.securityBadgeText}>{securityBadge}</BodyText>}
+        <View style={styles.documentLogoContainer}>{getDocumentLogo(docType)}</View>
+        <YStack gap={'$1'}>
+          <BodyText style={styles.documentNameText}>{getDocumentName(docType)}</BodyText>
+          {description && <BodyText style={styles.documentDescriptionText}>{description}</BodyText>}
+        </YStack>
+      </XStack>
+    </XStack>
+  );
 };
 
 type IDSelectionScreenProps = {
@@ -112,30 +169,12 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
       </YStack>
       <YStack gap="$3">
         {documentTypes.map((docType: string) => (
-          <XStack
-            key={docType}
-            backgroundColor={white}
-            borderWidth={1}
-            borderColor={slate300}
-            elevation={4}
-            borderRadius={'$5'}
-            padding={'$3'}
-            pressStyle={{
-              transform: [{ scale: 0.97 }],
-              backgroundColor: slate100,
-            }}
-            onPress={() => onSelectDocumentType(docType)}
-          >
-            <XStack alignItems="center" gap={'$3'} flex={1}>
-              {getDocumentLogo(docType)}
-              <YStack gap={'$1'}>
-                <BodyText style={styles.documentNameText}>{getDocumentName(docType)}</BodyText>
-                <BodyText style={styles.documentDescriptionText}>{getDocumentDescription(docType)}</BodyText>
-              </YStack>
-            </XStack>
-          </XStack>
+          <DocumentItem key={docType} docType={docType} onPress={() => onSelectDocumentType(docType)} />
         ))}
         <BodyText style={styles.footerText}>Be sure your document is ready to scan</BodyText>
+        <View style={styles.kycContainer}>
+          <DocumentItem docType="kyc" onPress={() => onSelectDocumentType('kyc')} />
+        </View>
       </YStack>
     </YStack>
   );
@@ -148,6 +187,33 @@ const styles = StyleSheet.create({
     fontFamily: advercase,
     textAlign: 'center',
     color: black,
+  },
+  documentLogoContainer: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  documentItem: {
+    position: 'relative',
+    borderWidth: 1,
+  },
+  securityBadgeText: {
+    fontSize: 12,
+    fontFamily: dinot,
+    color: blue600,
+    backgroundColor: blue100,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: blue600,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    position: 'absolute',
+    top: -20,
+    right: -20,
+  },
+  kycContainer: {
+    marginTop: 36,
   },
   documentNameText: {
     fontSize: 24,

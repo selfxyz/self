@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -154,6 +154,35 @@ describe('proofHistoryStore', () => {
       });
 
       expect(mockDatabase.insertProof).toHaveBeenCalledWith(mockProof);
+      expect(useProofHistoryStore.getState().proofHistory).toHaveLength(0);
+    });
+
+    it('handles duplicate insertion gracefully (rowsAffected = 0)', async () => {
+      const mockProof = {
+        appName: 'TestApp',
+        sessionId: 'session-123',
+        userId: 'user-456',
+        userIdType: 'uuid',
+        endpointType: 'celo',
+        status: ProofStatus.PENDING,
+        disclosures: '{"test": "data"}',
+      } as const;
+
+      // Simulate INSERT OR IGNORE skipping the insertion due to duplicate sessionId
+      const mockInsertResult = {
+        id: '0',
+        timestamp: Date.now(),
+        rowsAffected: 0,
+      };
+
+      mockDatabase.insertProof.mockResolvedValue(mockInsertResult);
+
+      await act(async () => {
+        await useProofHistoryStore.getState().addProofHistory(mockProof);
+      });
+
+      expect(mockDatabase.insertProof).toHaveBeenCalledWith(mockProof);
+      // Should not add to store when rowsAffected is 0
       expect(useProofHistoryStore.getState().proofHistory).toHaveLength(0);
     });
   });

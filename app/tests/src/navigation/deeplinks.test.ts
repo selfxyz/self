@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -36,6 +36,7 @@ jest.mock('@/navigation', () => ({
     navigate: jest.fn(),
     isReady: jest.fn(() => true),
     reset: jest.fn(),
+    getCurrentRoute: jest.fn(),
   },
 }));
 
@@ -66,6 +67,10 @@ describe('deeplinks', () => {
       setDeepLinkUserDetails,
     });
     mockPlatform.OS = 'ios';
+
+    // Setup default getCurrentRoute mock to return Splash (cold launch scenario)
+    const { navigationRef } = require('@/navigation');
+    navigationRef.getCurrentRoute.mockReturnValue({ name: 'Splash' });
   });
 
   describe('handleUrl', () => {
@@ -92,7 +97,7 @@ describe('deeplinks', () => {
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
         index: 1,
-        routes: [{ name: 'Home' }, { name: 'Prove' }],
+        routes: [{ name: 'Home' }, { name: 'ProvingScreenRouter' }],
       });
     });
 
@@ -118,7 +123,7 @@ describe('deeplinks', () => {
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
         index: 1,
-        routes: [{ name: 'Home' }, { name: 'Prove' }],
+        routes: [{ name: 'Home' }, { name: 'ProvingScreenRouter' }],
       });
     });
 
@@ -156,9 +161,10 @@ describe('deeplinks', () => {
 
       const { navigationRef } = require('@/navigation');
       // Should navigate to HomeScreen, which will show confirmation modal
+      // During cold launch (Splash screen), reset is called with full navigation state
       expect(navigationRef.reset).toHaveBeenCalledWith({
-        index: 0,
-        routes: [{ name: 'Home' }],
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'Home' }],
       });
     });
 
@@ -598,7 +604,7 @@ describe('deeplinks', () => {
     mockLinking.getInitialURL.mockResolvedValue(undefined as any);
     mockLinking.addEventListener.mockReturnValue({ remove });
 
-    const cleanup = setupUniversalLinkListenerInNavigation();
+    const cleanup = setupUniversalLinkListenerInNavigation({} as SelfClient);
     expect(mockLinking.addEventListener).toHaveBeenCalled();
     cleanup();
     expect(remove).toHaveBeenCalled();

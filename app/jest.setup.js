@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -100,6 +100,7 @@ jest.mock('react-native', () => {
     get NativeModules() {
       return global.NativeModules || {};
     },
+    useColorScheme: jest.fn(() => 'light'),
     NativeEventEmitter: jest.fn().mockImplementation(nativeModule => {
       return {
         addListener: jest.fn(),
@@ -110,10 +111,15 @@ jest.mock('react-native', () => {
     }),
     PixelRatio: mockPixelRatio,
     Dimensions: {
-      get: jest.fn(() => ({
-        window: { width: 375, height: 667, scale: 2 },
-        screen: { width: 375, height: 667, scale: 2 },
-      })),
+      get: jest.fn(dimension => {
+        const dimensions = {
+          window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+          screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
+        };
+        return dimension ? dimensions[dimension] : dimensions;
+      }),
+      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+      removeEventListener: jest.fn(),
     },
     Linking: {
       getInitialURL: jest.fn().mockResolvedValue(null),
@@ -139,6 +145,7 @@ jest.mock('react-native', () => {
     ScrollView: 'ScrollView',
     TouchableOpacity: 'TouchableOpacity',
     TouchableHighlight: 'TouchableHighlight',
+    Pressable: 'Pressable',
     Image: 'Image',
     ActivityIndicator: 'ActivityIndicator',
     SafeAreaView: 'SafeAreaView',
@@ -273,10 +280,15 @@ jest.mock(
         Version: 14,
       },
       Dimensions: {
-        get: jest.fn(() => ({
-          window: { width: 375, height: 667, scale: 2 },
-          screen: { width: 375, height: 667, scale: 2 },
-        })),
+        get: jest.fn(dimension => {
+          const dimensions = {
+            window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+            screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
+          };
+          return dimension ? dimensions[dimension] : dimensions;
+        }),
+        addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+        removeEventListener: jest.fn(),
       },
       StyleSheet: {
         create: jest.fn(styles => styles),
@@ -359,15 +371,18 @@ jest.mock(
   '../packages/mobile-sdk-alpha/node_modules/react-native/Libraries/Utilities/Dimensions',
   () => ({
     getConstants: jest.fn(() => ({
-      window: { width: 375, height: 667, scale: 2 },
-      screen: { width: 375, height: 667, scale: 2 },
+      window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+      screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
     })),
     set: jest.fn(),
-    get: jest.fn(() => ({
-      window: { width: 375, height: 667, scale: 2 },
-      screen: { width: 375, height: 667, scale: 2 },
-    })),
-    addEventListener: jest.fn(),
+    get: jest.fn(dimension => {
+      const dimensions = {
+        window: { width: 375, height: 667, scale: 2, fontScale: 1 },
+        screen: { width: 375, height: 667, scale: 2, fontScale: 1 },
+      };
+      return dimension ? dimensions[dimension] : dimensions;
+    }),
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
     removeEventListener: jest.fn(),
   }),
   { virtual: true },
@@ -550,8 +565,14 @@ jest.mock(
   { virtual: true },
 );
 
+// Mock the hooks subpath from mobile-sdk-alpha
+jest.mock('@selfxyz/mobile-sdk-alpha/hooks', () => ({
+  useSafeBottomPadding: jest.fn((basePadding = 20) => basePadding + 50),
+}));
+
 // Mock problematic mobile-sdk-alpha components that use React Native StyleSheet
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  // Override only the specific mocks we need
   NFCScannerScreen: jest.fn(() => null),
   SelfClientProvider: jest.fn(({ children }) => children),
   useSelfClient: jest.fn(() => {
@@ -695,8 +716,56 @@ jest.mock('@sentry/react-native', () => ({
   }),
 }));
 
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: {
+    configure: jest.fn(),
+    hasPlayServices: jest.fn().mockResolvedValue(true),
+    signIn: jest.fn().mockResolvedValue({
+      type: 'success',
+      data: {
+        user: {
+          id: 'mock-google-user-id',
+          name: 'Mock User',
+          email: 'mock@example.com',
+        },
+      },
+    }),
+    signOut: jest.fn().mockResolvedValue(null),
+    getCurrentUser: jest.fn().mockResolvedValue(null),
+    getTokens: jest.fn().mockResolvedValue({ idToken: 'mock-token' }),
+  },
+  GoogleSigninButton: 'GoogleSigninButton',
+  statusCodes: {
+    SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
+  },
+}));
+
+jest.mock('@invertase/react-native-apple-authentication', () => ({
+  __esModule: true,
+  default: {
+    performRequest: jest.fn().mockResolvedValue({
+      user: 'mock-apple-user-id',
+      fullName: { givenName: 'Mock', familyName: 'User' },
+      email: 'mock@example.com',
+    }),
+    getCredentialStateForUser: jest.fn().mockResolvedValue(1),
+    onCredentialRevoked: jest.fn(() => jest.fn()),
+    isSupported: true,
+    State: { AUTHORIZED: 1 },
+    Error: { CANCELED: 1001 },
+  },
+  AppleButton: 'AppleButton',
+  AppleRequestScope: { EMAIL: 0, FULL_NAME: 1 },
+  AppleRequestOperation: { LOGIN: 1 },
+}));
+
 jest.mock('@env', () => ({
   ENABLE_DEBUG_LOGS: 'false',
+  GOOGLE_SIGNIN_ANDROID_CLIENT_ID: 'mock-google-client-id',
+  GOOGLE_SIGNIN_IOS_CLIENT_ID: 'mock-google-ios-client-id',
+  GOOGLE_SIGNIN_WEB_CLIENT_ID: 'mock-google-web-client-id',
   MIXPANEL_NFC_PROJECT_TOKEN: 'test-token',
 }));
 
@@ -1031,6 +1100,9 @@ jest.mock('@react-native-clipboard/clipboard', () => ({
   hasString: jest.fn().mockResolvedValue(false),
 }));
 
+// Mock react-native-linear-gradient
+jest.mock('react-native-linear-gradient', () => 'LinearGradient');
+
 // Mock react-native-localize
 jest.mock('react-native-localize', () => ({
   getLocales: jest.fn().mockReturnValue([
@@ -1211,5 +1283,31 @@ jest.mock('react-native/Libraries/AppState/AppState', () => {
         };
       }),
     },
+  };
+});
+
+// Mock @sumsub/react-native-mobilesdk-module
+jest.mock('@sumsub/react-native-mobilesdk-module', () => {
+  const createBuilder = () => ({
+    withHandlers: jest.fn().mockReturnThis(),
+    withDebug: jest.fn().mockReturnThis(),
+    withLocale: jest.fn().mockReturnThis(),
+    withAnalyticsEnabled: jest.fn().mockReturnThis(),
+    build: jest.fn().mockReturnValue({
+      launch: jest.fn().mockResolvedValue({ success: true }),
+    }),
+  });
+
+  const MockSNSMobileSDK = {
+    init: jest
+      .fn()
+      .mockImplementation((accessToken, tokenExpirationHandler) =>
+        createBuilder(),
+      ),
+  };
+
+  return {
+    __esModule: true,
+    default: MockSNSMobileSDK,
   };
 });

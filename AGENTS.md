@@ -42,10 +42,11 @@ Before creating a PR, ensure:
 
 #### AI Review Preparation
 
-- [ ] Clear commit messages following conventional format
+- [ ] Clear, imperative commit messages (e.g. `Fix address validation`)
 - [ ] PR description includes context for AI reviewers
 - [ ] Complex changes have inline comments explaining intent
 - [ ] Security-sensitive changes flagged for special review
+- [ ] Review/spec text is signal-only: remove non-actionable praise, back-patting, and generic commentary; keep concrete issues, risks, decisions, owners, next steps, and validation evidence
 
 #### Follow-up Planning
 
@@ -201,6 +202,32 @@ These workspace-specific files override or extend the root instructions for thei
 
 - Run `yarn types` to see all type errors across workspaces
 - Some packages may need to be built first: `yarn build:deps`
+
+## SDK Specs
+
+The `specs/` folder contains architecture and implementation specs for the Self SDK project (WebView engine + native shells). These specs are designed to serve as both human documentation and AI agent prompts.
+
+### Spec Structure & Naming Rules
+
+- Do not create one-file folders. If a folder would contain only one markdown file, keep that file at the parent project level.
+- File names should describe doc type, not repeat project name when already inside the project folder.
+- Preferred project-level names: `INDEX.md`, `OVERVIEW.md`, `PLAN.md`, `STATUS.md`, `HANDOFF.md`, `REVIEW.md`, `ARCHITECTURE.md`, `INITIATIVE.md`.
+- `INDEX.md` is navigation only (entrypoint/table of contents for that folder).
+- `OVERVIEW.md` is substantive context (architecture/scope/status summary), not just a link list.
+- Do not use `INDEX.md` and `OVERVIEW.md` as synonyms for the same purpose.
+- Workstream docs under `workstreams/<scope>/` use `SPEC.md` (context + implementation in one file).
+- Use suffixed variants (for example `SPEC-<TOPIC>.md`) only when multiple specs of the same type are required in the same folder.
+- When renaming/moving spec files, update all references in `specs/`, `AGENTS.md`, and `CLAUDE.md` in the same change.
+
+**Start here:** [specs/README.md](./specs/README.md) — table of contents and reading order.
+
+Key files:
+
+- `specs/projects/sdk/INDEX.md` — SDK project entry point, workstream links
+- `specs/projects/sdk/OVERVIEW.md` — Architecture, bridge protocol, module table, execution status
+- `specs/projects/sdk/workstreams/*/SPEC.md` — Implementation details (chunks, code changes, I/O examples)
+
+**Before implementing SDK work:** Read `CLAUDE.md` Key Rules and the relevant workstream `SPEC.md` under `specs/projects/sdk/workstreams/`. These specs contain explicit constraints ("You will NOT..."), validation commands, and file ownership boundaries that prevent common mistakes.
 
 ## Scope
 

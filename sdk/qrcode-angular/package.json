@@ -32,13 +32,12 @@
     "lint:fix": "ng lint --fix",
     "nice": "yarn format && yarn lint",
     "prepublishOnly": "yarn build",
-    "publish": "yarn npm publish --access public",
     "test": "ng test"
   },
   "dependencies": {
     "angularx-qrcode": "^20.0.0",
     "lottie-web": "^5.12.2",
-    "socket.io-client": "^4.8.1",
+    "socket.io-client": "^4.8.3",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -68,7 +67,7 @@
     "prettier": "^3.5.3",
     "rxjs": "^7.8.0",
     "tslib": "^2.6.0",
-    "typescript": "~5.9.0",
+    "typescript": "~5.9.3",
     "zone.js": "^0.15.0"
   },
   "peerDependencies": {

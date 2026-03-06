@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -17,7 +17,13 @@ export const useFeedbackAutoHide = () => {
 
       // When screen goes out of focus, hide the feedback button
       return () => {
-        hideFeedbackButton();
+        try {
+          hideFeedbackButton();
+        } catch (error) {
+          if (__DEV__) {
+            console.debug('Failed to hide feedback button:', error);
+          }
+        }
       };
     }, []),
   );

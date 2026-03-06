@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -13,21 +13,19 @@ import { WS_DB_RELAYER } from '@selfxyz/common';
  * Zustand state backing the in-app handoff between the SDK and the hosted Self
  * application. The store tracks the active websocket session, latest
  * {@link SelfApp} payload, and helper callbacks used by the proving machine.
- * Consumers should treat the state as ephemeral and expect it to reset whenever
- * the socket disconnects.
  */
 export interface SelfAppState {
   selfApp: SelfApp | null;
   sessionId: string | null;
   socket: Socket | null;
   /** Establishes (or reuses) a websocket connection for the provided session. */
-  startAppListener: (sessionId: string) => void;
+  startAppListener: (sessionId: string, relayUrl?: string | null) => void;
   /** Tears down any active socket connection and clears cached payloads. */
   cleanSelfApp: () => void;
   /** Directly mutates the cached {@link SelfApp}. Primarily used by socket handlers. */
   setSelfApp: (selfApp: SelfApp | null) => void;
   /** Internal helper that derives the correct websocket endpoint and instantiates the client. */
-  _initSocket: (sessionId: string) => Socket;
+  _initSocket: (sessionId: string, relayUrl: string) => Socket;
   /** Emits proving results to the relayer so the host app can respond. */
   handleProofResult: (proof_verified: boolean, error_code?: string, reason?: string) => void;
 }
@@ -42,8 +40,8 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
   sessionId: null,
   socket: null,
 
-  _initSocket: (sessionId: string): Socket => {
-    const connectionUrl = WS_DB_RELAYER.startsWith('https') ? WS_DB_RELAYER.replace(/^https/, 'wss') : WS_DB_RELAYER;
+  _initSocket: (sessionId: string, relayUrl: string): Socket => {
+    const connectionUrl = relayUrl.replace(/^https/, 'wss').replace(/^http/, 'ws');
     const socketUrl = `${connectionUrl}/websocket`;
 
     // Create a new socket connection using the updated URL.
@@ -63,7 +61,7 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
     set({ selfApp });
   },
 
-  startAppListener: (sessionId: string) => {
+  startAppListener: (sessionId: string, relayUrl?: string | null) => {
     const currentSocket = get().socket;
 
     // If a socket connection exists for a different session, disconnect it.
@@ -75,29 +73,30 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
     }
 
     try {
-      const socket = get()._initSocket(sessionId);
+      const resolvedRelayUrl = relayUrl ?? WS_DB_RELAYER;
+
+      if (!resolvedRelayUrl) {
+        // Embedded/WebView mode can skip the relay listener and rely on host lifecycle payloads.
+        set({ socket: null, sessionId, selfApp: null });
+        return;
+      }
+
+      const socket = get()._initSocket(sessionId, resolvedRelayUrl);
       set({ socket, sessionId });
 
       socket.on('connect', () => {});
 
-      // Listen for the event only once per connection attempt
       socket.once('self_app', (data: unknown) => {
         try {
           const appData: SelfApp = typeof data === 'string' ? JSON.parse(data) : (data as SelfApp);
 
-          // Basic validation
           if (!appData || typeof appData !== 'object' || !appData.sessionId) {
-            console.error('[SelfAppStore] Invalid app data received:', appData);
-            // Optionally clear the app data or handle the error appropriately
+            console.error('[SelfAppStore] Invalid app data received');
             set({ selfApp: null });
             return;
           }
           if (appData.sessionId !== get().sessionId) {
-            console.warn(
-              `[SelfAppStore] Received SelfApp for session ${
-                appData.sessionId
-              }, but current session is ${get().sessionId}. Ignoring.`,
-            );
+            console.warn('[SelfAppStore] Session mismatch, ignoring payload');
             return;
           }
 
@@ -109,20 +108,22 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
       });
 
       socket.on('connect_error', error => {
-        console.error('[SelfAppStore] Mobile WS connection error:', error);
-        // Clean up on connection error
-        get().cleanSelfApp();
+        // Socket.io handles reconnection automatically with exponential backoff.
+        // State is preserved to allow seamless recovery when network returns.
+        console.error('[SelfAppStore] Connection error:', error.message);
       });
 
       socket.on('error', error => {
-        console.error('[SelfAppStore] Mobile WS error:', error);
-        // Consider if cleanup is needed here as well
+        console.error('[SelfAppStore] Socket error:', error);
       });
 
-      socket.on('disconnect', (_reason: string) => {
-        // Prevent cleaning up if disconnect was initiated by cleanSelfApp
-        if (get().socket === socket) {
-          set({ socket: null, sessionId: null, selfApp: null });
+      socket.on('disconnect', (reason: string) => {
+        if (get().socket !== socket) return;
+
+        // Only clear state on intentional disconnects. For transient network issues
+        // (transport close, ping timeout), socket.io reconnects automatically.
+        if (reason === 'io server disconnect' || reason === 'io client disconnect') {
+          set({ socket: null, sessionId: null });
         }
       });
     } catch (error) {

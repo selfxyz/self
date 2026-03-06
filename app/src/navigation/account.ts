@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -16,6 +16,7 @@ import AccountRecoveryScreen from '@/screens/account/recovery/AccountRecoveryScr
 import DocumentDataNotFoundScreen from '@/screens/account/recovery/DocumentDataNotFoundScreen';
 import RecoverWithPhraseScreen from '@/screens/account/recovery/RecoverWithPhraseScreen';
 import CloudBackupScreen from '@/screens/account/settings/CloudBackupScreen';
+import { ProofSettingsScreen } from '@/screens/account/settings/ProofSettingsScreen';
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 import ShowRecoveryPhraseScreen from '@/screens/account/settings/ShowRecoveryPhraseScreen';
 import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
@@ -57,6 +58,18 @@ const accountScreens = {
     screen: CloudBackupScreen,
     options: {
       title: 'Account Backup',
+      headerStyle: {
+        backgroundColor: white,
+      },
+      headerTitleStyle: {
+        color: black,
+      },
+    } as NativeStackNavigationOptions,
+  },
+  ProofSettings: {
+    screen: ProofSettingsScreen,
+    options: {
+      title: 'Proof Settings',
       headerStyle: {
         backgroundColor: white,
       },

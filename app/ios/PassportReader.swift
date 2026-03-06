@@ -11,9 +11,9 @@ import Foundation
 import React
 #if !E2E_TESTING
 import NFCPassportReader
+import Mixpanel
 #endif
 import Security
-import Mixpanel
 import Sentry
 
 #if !E2E_TESTING

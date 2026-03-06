@@ -21,7 +21,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.9.6</string>
+	<string>2.9.16</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -31,6 +31,10 @@
 			<array>
 				<string>proofofpassport</string>
 				<string>com.warroom.proofofpassport</string>
+				<!-- TODO: Replace with reversed iOS client ID from Google Cloud Console -->
+				<!-- Format: com.googleusercontent.apps.YOUR-IOS-CLIENT-ID -->
+				<!-- See: app/.env for instructions on creating the iOS client ID -->
+				<string>com.googleusercontent.apps.YOUR_CLIENT_ID</string>
 			</array>
 		</dict>
 	</array>
@@ -70,7 +74,7 @@
 	<key>NSHumanReadableCopyright</key>
 	<string></string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>We use your location to improve document scanning reliability, as performance can vary by region and document type.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to allow you to choose passport photos or save generated QR codes.</string>
 	<key>UIAppFonts</key>

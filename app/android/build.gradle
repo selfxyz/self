@@ -6,9 +6,10 @@ buildscript {
         minSdkVersion = 24
         compileSdkVersion = 36
         targetSdkVersion = 36
-        // Updated NDK to support 16k page size devices
-        ndkVersion = "27.0.12077973"
-        kotlinVersion = "2.0.0"
+        // Updated NDK to support 16k page size devices (RN 0.77)
+        ndkVersion = "28.0.13004108"
+        // ndkVersion = "27.1.12297006"
+        kotlinVersion = "2.0.21"
         firebaseMessagingVersion = "23.4.0"
         firebaseBomVersion = "32.7.3"
     }
@@ -23,6 +24,7 @@ buildscript {
         classpath('com.android.tools.build:gradle:8.11.2')
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlinVersion"
         classpath 'com.google.gms:google-services:4.4.0'
         // Removed firebase-crashlytics (no usages)—add back 3.x if still applied in modules.
         // Removed rust-android-gradle plugin; keep only if you re-enable Rust integration.
@@ -41,6 +43,7 @@ allprojects {
             url("$rootDir/../../node_modules/jsc-android/dist")
         }
         maven { url 'https://jitpack.io' }
+        maven { url "https://maven.sumsub.com/repository/maven-public/" }
     }
     configurations.configureEach {
         resolutionStrategy.dependencySubstitution {
@@ -58,6 +61,9 @@ allprojects {
 
 subprojects {
     afterEvaluate { project ->
+        if (project.hasProperty('android') && project.android.buildFeatures.compose) {
+            project.apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+        }
         if (project.hasProperty('android')) {
             android {
                 def manifestFile = project.file('src/main/AndroidManifest.xml')

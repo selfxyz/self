@@ -19,6 +19,8 @@ export function getRevealedDataPublicSignalsLength(attestationId: AttestationId)
       return Math.ceil(94 / 31);
     case 3:
       return Math.ceil(119 / 31);
+    case 4:
+      return Math.ceil(298 / 31);
     default:
       throw new ProofError(`Invalid attestation ID: ${attestationId}`);
   }
@@ -28,6 +30,7 @@ export const bytesCount: Record<AttestationId, number[]> = {
   1: [31, 31, 31],
   2: [31, 31, 31, 1],
   3: [31, 31, 31, 26],
+  4: [31, 31, 31, 31, 31, 31, 31, 31, 31, 19],
 };
 
 /**

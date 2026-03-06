@@ -115,6 +115,13 @@ template ExtractAndVerifyJSONField(
 	is_closing_bracket.in[0] <== char_after_quote;
 	is_closing_bracket.in[1] <== 93;  // ']'
 
+    // if it is an array then key_offset - value_offset must be 4 (":[") else 3 (":")
+    signal difference <== 3 + is_bracket.out;
+    component bindKeyWithValue = IsEqual();
+    bindKeyWithValue.in[0] <== difference;
+    bindKeyWithValue.in[1] <== value_offset - (key_offset + key_length);
+    bindKeyWithValue.out === 1;
+
 	component is_comma = IsEqual();
 	is_comma.in[0] <== char_after_quote;
 	is_comma.in[1] <== 44;  // ','

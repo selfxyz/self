@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -8,13 +8,12 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
-  DelayedLottieView,
   hasAnyValidRegisteredDocument,
+  LottieAnimation,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import splashAnimation from '@/assets/animations/splash.json';
 import { impactLight } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import {
@@ -31,6 +30,9 @@ import {
 } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const splashAnimation = require('@/assets/animations/splash.lottie');
 
 const SplashScreen: React.FC = ({}) => {
   const selfClient = useSelfClient();
@@ -104,6 +106,16 @@ const SplashScreen: React.FC = ({}) => {
     }
   }, [checkBiometricsAvailable, setBiometricsAvailable, selfClient]);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsAnimationFinished(prev => {
+        if (!prev) console.warn('SplashScreen: animation timeout, proceeding');
+        return true;
+      });
+    }, 5000);
+    return () => clearTimeout(timeout);
+  }, []);
+
   const handleAnimationFinish = useCallback(() => {
     impactLight();
     setIsAnimationFinished(true);
@@ -124,7 +136,7 @@ const SplashScreen: React.FC = ({}) => {
   }, [isAnimationFinished, nextScreen, queuedDeepLink, navigation, selfClient]);
 
   return (
-    <DelayedLottieView
+    <LottieAnimation
       autoPlay
       loop={false}
       source={splashAnimation}

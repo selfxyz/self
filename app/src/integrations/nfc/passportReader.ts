@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -16,6 +16,7 @@ type ScanOptions = {
   usePacePolling?: boolean;
   sessionId?: string;
   quality?: number;
+  skipReselect?: boolean;
 };
 
 export interface AndroidScanResponse {
@@ -91,6 +92,9 @@ if (Platform.OS === 'android') {
           canNumber = '',
           useCan = false,
           quality = 1,
+          skipReselect = false,
+          skipPACE = false,
+          sessionId,
         } = options;
 
         return androidScan({
@@ -100,6 +104,9 @@ if (Platform.OS === 'android') {
           canNumber,
           useCan,
           quality,
+          skipReselect,
+          skipPACE,
+          sessionId,
         });
       };
     }

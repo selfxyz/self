@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -6,20 +6,19 @@ import type { PropsWithChildren } from 'react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Linking, Platform, Share, View as RNView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Bug, FileText } from '@tamagui/lucide-icons';
+import { Bug, FileText, Settings2 } from '@tamagui/lucide-icons';
 
 import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
 import {
-  amber500,
   black,
   neutral700,
   slate800,
+  warmCream,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
@@ -45,10 +44,10 @@ import {
 } from '@/consts/links';
 import { impactLight } from '@/integrations/haptics';
 import { usePassport } from '@/providers/passportDataProvider';
+import { openSupportForm } from '@/services/support';
 import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';
 
-import { version } from '../../../../package.json';
 // Avoid importing RootStackParamList to prevent type cycles; use minimal typing
 type MinimalRootStackParamList = Record<string, object | undefined>;
 
@@ -61,9 +60,8 @@ interface SocialButtonProps {
   href: string;
 }
 
-const emailFeedback = 'support@self.xyz';
 // Avoid importing RootStackParamList; we only need string route names plus a few literals
-type RouteOption = string | 'share' | 'email_feedback' | 'ManageDocuments';
+type RouteOption = string | 'share' | 'support_form' | 'ManageDocuments';
 
 const storeURL = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 
@@ -78,7 +76,8 @@ const routes =
         [Data, 'View document info', 'DocumentDataInfo'],
         [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
         [Cloud, 'Cloud backup', 'CloudBackupSettings'],
-        [Feedback, 'Send feedback', 'email_feedback'],
+        [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
+        [Feedback, 'Get support', 'support_form'],
         [ShareIcon, 'Share Self app', 'share'],
         [
           FileText as React.FC<SvgProps>,
@@ -88,7 +87,8 @@ const routes =
       ] satisfies [React.FC<SvgProps>, string, RouteOption][])
     : ([
         [Data, 'View document info', 'DocumentDataInfo'],
-        [Feedback, 'Send feeback', 'email_feedback'],
+        [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
+        [Feedback, 'Get support', 'support_form'],
         [
           FileText as React.FC<SvgProps>,
           'Manage ID documents',
@@ -105,10 +105,10 @@ const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption][] = [
 ];
 
 const DOCUMENT_DEPENDENT_ROUTES: RouteOption[] = [
-  'CloudBackupSettings',
   'DocumentDataInfo',
   'ShowRecoveryPhrase',
 ];
+const CLOUD_BACKUP_ROUTE: RouteOption = 'CloudBackupSettings';
 
 const social = [
   [X, xUrl],
@@ -150,7 +150,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
       unstyled
       hitSlop={8}
       onPress={onPress}
-      icon={<Icon height={32} width={32} color={amber500} />}
+      icon={<Icon height={32} width={32} color={warmCream} />}
     />
   );
 };
@@ -185,16 +185,20 @@ const SettingsScreen: React.FC = () => {
 
   const screenRoutes = useMemo(() => {
     const baseRoutes = isDevMode ? [...routes, ...DEBUG_MENU] : routes;
+    const shouldHideCloudBackup = Platform.OS === 'android';
+    const hasConfirmedRealDocument = hasRealDocument === true;
 
-    // Show all routes while loading or if user has a real document
-    if (hasRealDocument === null || hasRealDocument === true) {
-      return baseRoutes;
-    }
+    return baseRoutes.filter(([, , route]) => {
+      if (DOCUMENT_DEPENDENT_ROUTES.includes(route)) {
+        return hasConfirmedRealDocument;
+      }
 
-    // Only filter out document-related routes if we've confirmed user has no real documents
-    return baseRoutes.filter(
-      ([, , route]) => !DOCUMENT_DEPENDENT_ROUTES.includes(route),
-    );
+      if (shouldHideCloudBackup && route === CLOUD_BACKUP_ROUTE) {
+        return hasConfirmedRealDocument;
+      }
+
+      return true;
+    });
   }, [hasRealDocument, isDevMode]);
 
   const devModeTap = Gesture.Tap()
@@ -216,32 +220,17 @@ const SettingsScreen: React.FC = () => {
             );
             break;
 
-          case 'email_feedback':
-            const subject = 'SELF App Feedback';
-            const deviceInfo = [
-              ['device', `${Platform.OS}@${Platform.Version}`],
-              ['app', `v${version}`],
-              [
-                'locales',
-                getLocales()
-                  .map(locale => `${locale.languageCode}-${locale.countryCode}`)
-                  .join(','),
-              ],
-              ['country', getCountry()],
-              ['tz', getTimeZone()],
-              ['ts', new Date()],
-              ['origin', 'settings/feedback'],
-            ] as [string, string][];
-
-            const body = `
----
-${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
----`;
-            await Linking.openURL(
-              `mailto:${emailFeedback}?subject=${encodeURIComponent(
-                subject,
-              )}&body=${encodeURIComponent(body)}`,
-            );
+          case 'support_form':
+            try {
+              await openSupportForm();
+            } catch (error) {
+              console.warn(
+                'SettingsScreen: failed to open support form:',
+                error instanceof Error ? error.message : String(error),
+              );
+              // Error is already handled and displayed to user in openSupportForm,
+              // but we log here for debugging purposes
+            }
             break;
 
           case 'ManageDocuments':
@@ -320,7 +309,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
                   <SocialButton key={i} Icon={Icon} href={href} />
                 ))}
               </XStack>
-              <BodyText style={{ color: amber500, fontSize: 15 }}>
+              <BodyText style={{ color: warmCream, fontSize: 15 }}>
                 SELF
               </BodyText>
               {/* Dont remove if not viewing on ios */}

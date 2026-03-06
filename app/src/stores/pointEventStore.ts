@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -129,12 +129,10 @@ export const usePointEventStore = create<PointEventState>()((set, get) => ({
 
   loadDisclosureEvents: async () => {
     try {
-      const { getDisclosurePointEvents } = await import(
-        '@/services/points/getEvents'
-      );
-      const { useProofHistoryStore } = await import(
-        '@/stores/proofHistoryStore'
-      );
+      const { getDisclosurePointEvents } =
+        await import('@/services/points/getEvents');
+      const { useProofHistoryStore } =
+        await import('@/stores/proofHistoryStore');
       await useProofHistoryStore.getState().initDatabase();
       const disclosureEvents = await getDisclosurePointEvents();
       const existingEvents = get().events.filter(e => e.type !== 'disclosure');

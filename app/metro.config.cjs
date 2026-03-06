@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -34,9 +34,8 @@ const config = {
   ],
 
   transformer: {
-    babelTransformerPath: require.resolve(
-      'react-native-svg-transformer/react-native',
-    ),
+    babelTransformerPath:
+      require.resolve('react-native-svg-transformer/react-native'),
     disableImportExportTransform: true,
     inlineRequires: true,
   },
@@ -44,6 +43,8 @@ const config = {
   resolver: {
     // Prevent Haste module naming collisions from duplicate package.json files
     blockList: [
+      // Ignore Claude Code worktrees to prevent duplicate Haste module entries
+      /\.claude\//,
       // Ignore built package.json files to prevent Haste collisions
       /.*\/dist\/package\.json$/,
       /.*\/dist\/esm\/package\.json$/,
@@ -67,11 +68,14 @@ const config = {
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/|$)'),
       new RegExp(
-        'packages/mobile-sdk-alpha/node_modules/lottie-react-native(/|$)',
+        'packages/mobile-sdk-alpha/node_modules/@lottiefiles/dotlottie-react-native(/|$)',
       ),
       new RegExp('packages/mobile-sdk-alpha/node_modules/scheduler(/|$)'),
       new RegExp(
         'packages/mobile-sdk-alpha/node_modules/react-native-svg(/|$)',
+      ),
+      new RegExp(
+        'packages/mobile-sdk-alpha/node_modules/react-native-webview(/|$)',
       ),
       new RegExp('packages/mobile-sdk-demo/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/|$)'),
@@ -113,8 +117,8 @@ const config = {
     // Support package exports with conditions
     unstable_conditionNames: ['react-native', 'import', 'require'],
 
-    // SVG support
-    assetExts: assetExts.filter(ext => ext !== 'svg'),
+    // SVG support + dotLottie binary assets
+    assetExts: [...assetExts.filter(ext => ext !== 'svg'), 'lottie'],
     sourceExts: [...sourceExts, 'svg'],
 
     // Custom resolver to handle both .js imports in TypeScript and Node.js modules
@@ -128,6 +132,41 @@ const config = {
         workspaceRoot,
         'packages/mobile-sdk-alpha',
       );
+
+      // Deduplicate SDK animation imports — resolve to app's single copy when possible
+      if (
+        /\.(json|lottie)$/.test(moduleName) &&
+        context.originModulePath?.includes('mobile-sdk-alpha')
+      ) {
+        // Extract the animation-relative path from either bare or relative specifiers
+        let animRelPath;
+        if (moduleName.startsWith('src/animations/')) {
+          animRelPath = moduleName.replace('src/animations/', '');
+        } else if (/\/animations\//.test(moduleName)) {
+          animRelPath = moduleName.split('/animations/').pop();
+        }
+
+        if (animRelPath) {
+          // Try app's animations first (deduplication)
+          const appAnimPath = path.resolve(
+            projectRoot,
+            'src/assets/animations',
+            animRelPath,
+          );
+          if (fs.existsSync(appAnimPath)) {
+            return { type: 'assetFiles', filePaths: [appAnimPath] };
+          }
+          // Fall back to SDK's own copy (for SDK-only animations like loading/*)
+          const sdkAnimPath = path.resolve(
+            sdkAlphaPath,
+            'src/animations',
+            animRelPath,
+          );
+          if (fs.existsSync(sdkAnimPath)) {
+            return { type: 'assetFiles', filePaths: [sdkAnimPath] };
+          }
+        }
+      }
 
       // Custom resolver to handle Node.js modules and dynamic flow imports
       if (moduleName.startsWith('@selfxyz/mobile-sdk-alpha/')) {
@@ -410,6 +449,7 @@ const config = {
         'react-native-reanimated',
         '@react-native-masked-view/masked-view',
         '@react-native-firebase/analytics',
+        'react-native-b4a',
       ];
 
       if (optionalPeerDependencies.includes(moduleName)) {

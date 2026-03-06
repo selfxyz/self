@@ -142,6 +142,15 @@ yarn types # Verify type checking
 yarn build # Confirm build still works
 ```
 
+## SDK Architecture Specs
+
+For architecture context, implementation details, and workstream coordination:
+
+- **[SDK Overview](../../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix
+- **[SDK Core Spec](../../specs/projects/sdk/workstreams/sdk-core/SPEC.md)** — Implementation chunks for this package (mobile-sdk-alpha)
+
+Before implementing SDK work, read `CLAUDE.md` Key Rules and `specs/projects/sdk/workstreams/sdk-core/SPEC.md` for constraints and validation commands.
+
 ## Notes
 
 - This package uses TypeScript with strict type checking

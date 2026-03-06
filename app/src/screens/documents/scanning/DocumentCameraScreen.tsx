@@ -1,15 +1,16 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
-  DelayedLottieView,
   dinot,
+  LottieAnimation,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -30,23 +31,49 @@ import {
   useReadMRZ,
 } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
-import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import Scan from '@/assets/icons/passport_camera_scan.svg';
 import { PassportCamera } from '@/components/native/PassportCamera';
+import { useErrorInjection } from '@/hooks/useErrorInjection';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
 import { getDocumentScanPrompt } from '@/utils/documentAttributes';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const passportScanAnimation = require('@/assets/animations/passport_scan.lottie');
 
 const DocumentCameraScreen: React.FC = () => {
   const isFocused = useIsFocused();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
   const selectedDocumentType = selfClient.useMRZStore(
     state => state.documentType,
   );
+  const countryCode = selfClient.useMRZStore(state => state.countryCode);
+  const { shouldInjectError } = useErrorInjection();
 
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
   const { onPassportRead } = useReadMRZ(scanStartTimeRef);
+
+  // Dev-only: Auto-trigger MRZ error after short delay if error injection is enabled
+  useEffect(() => {
+    if (
+      shouldInjectError('mrz_invalid_format') ||
+      shouldInjectError('mrz_unknown_error')
+    ) {
+      const timer = setTimeout(() => {
+        console.log(
+          '[DEV] Injecting MRZ error - navigating to fallback screen',
+        );
+        navigation.navigate('RegistrationFallbackMRZ', {
+          countryCode: countryCode || '',
+        });
+      }, 1500); // 1.5 second delay to show camera briefly
+      return () => clearTimeout(timer);
+    }
+  }, [shouldInjectError, navigation, countryCode]);
 
   const scanPrompt = getDocumentScanPrompt(selectedDocumentType);
 
@@ -62,7 +89,7 @@ const DocumentCameraScreen: React.FC = () => {
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
         <PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
-        <DelayedLottieView
+        <LottieAnimation
           autoPlay
           loop
           source={passportScanAnimation}

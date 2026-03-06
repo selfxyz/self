@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -15,6 +15,7 @@ import Mnemonic from '@/components/Mnemonic';
 import useMnemonic from '@/hooks/useMnemonic';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useSettingStore } from '@/stores/settingStore';
+import { getRecoveryPhraseWarningMessage } from '@/utils/crypto/mnemonic';
 import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
 function useCopyRecoveryPhrase(mnemonic: string[] | undefined) {
@@ -89,10 +90,7 @@ const ShowRecoveryPhraseScreen: React.FC & {
         gap={20}
       >
         <Mnemonic words={mnemonic} onRevealWords={loadMnemonic} />
-        <Description>
-          This phrase is the only way to recover your account. Keep it secret,
-          keep it safe.
-        </Description>
+        <Description>{getRecoveryPhraseWarningMessage()}</Description>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

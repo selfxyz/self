@@ -1,11 +1,9 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useMemo } from 'react';
-import type { TextProps } from 'react-native';
-import type { SystemBarStyle } from 'react-native-edge-to-edge';
-import { SystemBars } from 'react-native-edge-to-edge';
+import type { TextStyle } from 'react-native';
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 
 import type { ViewProps } from '@selfxyz/mobile-sdk-alpha/components';
@@ -15,6 +13,9 @@ import {
   View,
   XStack,
 } from '@selfxyz/mobile-sdk-alpha/components';
+
+import type { SystemBarStyle } from '@/components/SystemBars';
+import { SystemBars } from '@/components/SystemBars';
 
 interface NavBarProps extends ViewProps {
   children: React.ReactNode;
@@ -30,9 +31,8 @@ interface RightActionProps extends ViewProps {
   component?: React.ReactNode;
   onPress?: () => void;
 }
-interface NavBarTitleProps extends TextProps {
-  children?: React.ReactNode;
-  size?: 'large' | undefined;
+interface NavBarTitleProps extends React.ComponentProps<typeof Title> {
+  color?: TextStyle['color'];
 }
 
 export const LeftAction: React.FC<LeftActionProps> = ({
@@ -84,13 +84,27 @@ export const LeftAction: React.FC<LeftActionProps> = ({
   return <View {...props}>{children}</View>;
 };
 
-const NavBarTitle: React.FC<NavBarTitleProps> = ({ children, ...props }) => {
+const NavBarTitle: React.FC<NavBarTitleProps> = ({
+  children,
+  color,
+  style,
+  ...props
+}) => {
   if (!children) {
     return null;
   }
 
+  const titleStyle = color ? [{ color }, style] : style;
+
   return typeof children === 'string' ? (
-    <Title {...props}>{children}</Title>
+    <Title
+      style={
+        titleStyle as unknown as React.ComponentProps<typeof Title>['style']
+      }
+      {...props}
+    >
+      {children}
+    </Title>
   ) : (
     children
   );

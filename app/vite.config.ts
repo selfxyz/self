@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -17,6 +17,7 @@ export default defineConfig({
   root: 'web',
   publicDir: 'web',
   envDir: '..', // This is the directory where Vite will look for .env files relative to the root
+  assetsInclude: ['**/*.lottie'],
   resolve: {
     extensions: [
       '.web.tsx',
@@ -34,7 +35,7 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
       '@/package.json': resolve(__dirname, 'package.json'),
       'react-native-svg': 'react-native-svg-web',
-      'lottie-react-native': 'lottie-react',
+      '@lottiefiles/dotlottie-react-native': '@lottiefiles/dotlottie-react',
       '@react-native-community/blur': resolve(
         __dirname,
         'src/devtools/mocks/react-native-community-blur.ts',
@@ -164,7 +165,10 @@ export default defineConfig({
           'vendor-analytics-sentry': ['@sentry/react', '@sentry/react-native'],
 
           // Animations
-          'vendor-animations-lottie': ['lottie-react-native', 'lottie-react'],
+          'vendor-animations-lottie': [
+            '@lottiefiles/dotlottie-react-native',
+            '@lottiefiles/dotlottie-react',
+          ],
 
           // WebSocket and Socket.IO
           'vendor-websocket': ['socket.io-client'],
@@ -192,7 +196,7 @@ export default defineConfig({
 
           // Large animations - split out heavy Lottie files
           'animations-passport-onboarding': [
-            './src/assets/animations/passport_onboarding.json',
+            './src/assets/animations/passport_onboarding.lottie',
           ],
 
           // Other screens

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -18,8 +18,10 @@ interface HeldPrimaryButtonProveScreenProps {
   onVerify: () => void;
   selectedAppSessionId: string | undefined | null;
   hasScrolledToBottom: boolean;
+  isScrollable: boolean;
   isReadyToProve: boolean;
   isDocumentExpired: boolean;
+  hasCheckedForInactiveDocument: boolean;
 }
 
 interface ButtonContext {
@@ -28,6 +30,7 @@ interface ButtonContext {
   isReadyToProve: boolean;
   onVerify: () => void;
   isDocumentExpired: boolean;
+  hasCheckedForInactiveDocument: boolean;
 }
 
 type ButtonEvent =
@@ -37,6 +40,7 @@ type ButtonEvent =
       hasScrolledToBottom: boolean;
       isReadyToProve: boolean;
       isDocumentExpired: boolean;
+      hasCheckedForInactiveDocument: boolean;
     }
   | { type: 'VERIFY' };
 
@@ -55,6 +59,7 @@ const buttonMachine = createMachine(
       isReadyToProve: false,
       onVerify: input.onVerify,
       isDocumentExpired: false,
+      hasCheckedForInactiveDocument: false,
     }),
     on: {
       PROPS_UPDATED: {
@@ -76,7 +81,11 @@ const buttonMachine = createMachine(
           },
           {
             target: 'preparing',
-            guard: ({ context }) => context.hasScrolledToBottom,
+            guard: ({ context }) => context.hasScrolledToBottom && !context.isReadyToProve,
+          },
+          {
+            target: 'ready',
+            guard: ({ context }) => context.hasScrolledToBottom && context.isReadyToProve && !context.isDocumentExpired,
           },
         ],
       },
@@ -96,7 +105,7 @@ const buttonMachine = createMachine(
           },
         ],
         after: {
-          500: { target: 'preparing2' },
+          100: { target: 'preparing2' },
         },
       },
       preparing2: {
@@ -115,7 +124,7 @@ const buttonMachine = createMachine(
           },
         ],
         after: {
-          500: { target: 'preparing3' },
+          100: { target: 'preparing3' },
         },
       },
       preparing3: {
@@ -172,13 +181,15 @@ const buttonMachine = createMachine(
             context.selectedAppSessionId !== event.selectedAppSessionId ||
             context.hasScrolledToBottom !== event.hasScrolledToBottom ||
             context.isReadyToProve !== event.isReadyToProve ||
-            context.isDocumentExpired !== event.isDocumentExpired
+            context.isDocumentExpired !== event.isDocumentExpired ||
+            context.hasCheckedForInactiveDocument !== event.hasCheckedForInactiveDocument
           ) {
             return {
               selectedAppSessionId: event.selectedAppSessionId,
               hasScrolledToBottom: event.hasScrolledToBottom,
               isReadyToProve: event.isReadyToProve,
               isDocumentExpired: event.isDocumentExpired,
+              hasCheckedForInactiveDocument: event.hasCheckedForInactiveDocument,
             };
           }
         }
@@ -195,8 +206,10 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
   onVerify,
   selectedAppSessionId,
   hasScrolledToBottom,
+  isScrollable,
   isReadyToProve,
   isDocumentExpired,
+  hasCheckedForInactiveDocument,
 }) => {
   const [state, send] = useMachine(buttonMachine, {
     input: { onVerify },
@@ -209,60 +222,53 @@ export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreen
       hasScrolledToBottom,
       isReadyToProve,
       isDocumentExpired,
+      hasCheckedForInactiveDocument,
     });
-  }, [selectedAppSessionId, hasScrolledToBottom, isReadyToProve, isDocumentExpired, send]);
+  }, [
+    selectedAppSessionId,
+    hasScrolledToBottom,
+    isReadyToProve,
+    isDocumentExpired,
+    hasCheckedForInactiveDocument,
+    send,
+  ]);
 
-  const isDisabled = !state.matches('ready');
+  const isDisabled = (!state.matches('ready') && !state.matches('verifying')) || !hasCheckedForInactiveDocument;
+
+  const LoadingContent: React.FC<{ text: string }> = ({ text }) => (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <ActivityIndicator color={black} style={{ marginRight: 8 }} />
+      <Description color={black}>{text}</Description>
+    </View>
+  );
 
   const renderButtonContent = () => {
     if (isDocumentExpired) {
       return 'Document expired';
     }
     if (state.matches('waitingForSession')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Waiting for app...</Description>
-        </View>
-      );
+      return <LoadingContent text="Waiting for app..." />;
     }
     if (state.matches('needsScroll')) {
-      return 'Please read all disclosures';
+      if (isScrollable) {
+        return 'Scroll to read full request';
+      }
+      return <LoadingContent text="Waiting for app..." />;
     }
     if (state.matches('preparing')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Accessing to Keychain data</Description>
-        </View>
-      );
+      return <LoadingContent text="Accessing to Keychain data" />;
     }
     if (state.matches('preparing2')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Parsing passport data</Description>
-        </View>
-      );
+      return <LoadingContent text="Parsing passport data" />;
     }
     if (state.matches('preparing3')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Preparing for verification</Description>
-        </View>
-      );
+      return <LoadingContent text="Preparing for verification" />;
     }
     if (state.matches('ready')) {
-      return 'Hold to verify';
+      return 'Press and hold to verify';
     }
     if (state.matches('verifying')) {
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-          <Description color={black}>Generating proof</Description>
-        </View>
-      );
+      return <LoadingContent text="Generating proof" />;
     }
     return null;
   };

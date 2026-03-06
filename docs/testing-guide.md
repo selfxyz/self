@@ -3,12 +3,15 @@
 ## Jest Configuration
 
 ### Setup Files
+
 The project uses comprehensive Jest configuration with:
+
 - `jest.setup.js` - Contains mocks for all native modules
 - `jest.config.cjs` - Configures transform patterns and module mapping
 - `tsconfig.test.json` - Test-specific TypeScript configuration
 
 ### Module Mapping
+
 ```javascript
 moduleNameMapper: {
   '^@env$': '<rootDir>/tests/__setup__/@env.js',
@@ -19,18 +22,21 @@ moduleNameMapper: {
 ```
 
 ### Transform Patterns
+
 ```javascript
 transformIgnorePatterns: [
   'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase)/)',
-]
+];
 ```
 
 ## Mock Patterns
 
 ### Native Module Mocks
+
 All React Native native modules are mocked in `jest.setup.js`:
 
 #### Firebase Mocks
+
 ```javascript
 jest.mock('@react-native-firebase/messaging', () => {
   return () => ({
@@ -49,6 +55,7 @@ jest.mock('@react-native-firebase/messaging', () => {
 ```
 
 #### Keychain Mocks
+
 ```javascript
 jest.mock('react-native-keychain', () => ({
   SECURITY_LEVEL_ANY: 'MOCK_SECURITY_LEVEL_ANY',
@@ -61,9 +68,11 @@ jest.mock('react-native-keychain', () => ({
     WHEN_UNLOCKED: 'AccessibleWhenUnlocked',
     AFTER_FIRST_UNLOCK: 'AccessibleAfterFirstUnlock',
     ALWAYS: 'AccessibleAlways',
-    WHEN_PASSCODE_SET_THIS_DEVICE_ONLY: 'AccessibleWhenPasscodeSetThisDeviceOnly',
+    WHEN_PASSCODE_SET_THIS_DEVICE_ONLY:
+      'AccessibleWhenPasscodeSetThisDeviceOnly',
     WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'AccessibleWhenUnlockedThisDeviceOnly',
-    AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY: 'AccessibleAfterFirstUnlockThisDeviceOnly',
+    AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY:
+      'AccessibleAfterFirstUnlockThisDeviceOnly',
     ALWAYS_THIS_DEVICE_ONLY: 'AccessibleAlwaysThisDeviceOnly',
   },
   ACCESS_CONTROL: {
@@ -73,12 +82,14 @@ jest.mock('react-native-keychain', () => ({
     DEVICE_PASSCODE: 'DevicePasscode',
     APPLICATION_PASSWORD: 'ApplicationPassword',
     BIOMETRY_ANY_OR_DEVICE_PASSCODE: 'BiometryAnyOrDevicePasscode',
-    BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE: 'BiometryCurrentSetOrDevicePasscode',
+    BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE:
+      'BiometryCurrentSetOrDevicePasscode',
   },
 }));
 ```
 
 #### NFC Mocks
+
 ```javascript
 jest.mock('react-native-nfc-manager', () => ({
   start: jest.fn(),
@@ -105,6 +116,7 @@ jest.mock('react-native-nfc-manager', () => ({
 ```
 
 ### Database Testing
+
 SQLite operations are mocked for testing:
 
 ```javascript
@@ -125,6 +137,7 @@ mockSQLite.openDatabase.mockResolvedValue(mockDb);
 ## Test Organization
 
 ### File Structure
+
 ```
 tests/
 ├── __setup__/           # Global test setup and mocks
@@ -135,6 +148,7 @@ tests/
 ```
 
 ### Test File Naming
+
 - Unit tests: `*.test.ts` or `*.test.tsx`
 - Integration tests: `*.integration.test.ts`
 - E2E tests: Platform-specific YAML files
@@ -142,6 +156,7 @@ tests/
 ## Testing Patterns
 
 ### Hook Testing
+
 Use `renderHook` for testing custom hooks:
 
 ```typescript
@@ -159,6 +174,7 @@ describe('useModal', () => {
 ```
 
 ### Component Testing
+
 Test React Native components with proper mocking:
 
 ```typescript
@@ -176,6 +192,7 @@ describe('Component', () => {
 ```
 
 ### Error Testing
+
 Test error boundaries and error handling:
 
 ```typescript
@@ -198,11 +215,13 @@ describe('Error handling', () => {
 ## E2E Testing
 
 ### Platform-Specific Flows
+
 - Separate test files for iOS and Android
 - Maestro for cross-platform E2E testing
 - Platform-specific build commands before E2E tests
 
 ### Test Commands
+
 ```bash
 # iOS E2E
 yarn test:e2e:ios
@@ -212,6 +231,7 @@ yarn test:e2e:android
 ```
 
 ### Test Data Management
+
 - Mock passport data for testing
 - Test-specific environment variables
 - Cleanup between test runs
@@ -219,6 +239,7 @@ yarn test:e2e:android
 ## Performance Testing
 
 ### Bundle Analysis
+
 ```bash
 # Analyze bundle size
 yarn analyze:bundle:ios
@@ -229,6 +250,7 @@ yarn analyze:tree-shaking
 ```
 
 ### Memory Testing
+
 - Memory leak detection in tests
 - Component lifecycle testing
 - Native module cleanup verification
@@ -236,6 +258,7 @@ yarn analyze:tree-shaking
 ## Coverage Strategy
 
 ### Coverage Commands
+
 ```bash
 # Basic coverage
 yarn test:coverage
@@ -245,6 +268,7 @@ yarn test:coverage:ci
 ```
 
 ### Coverage Configuration
+
 - Jest coverage reporting with multiple formats
 - CI-specific coverage commands
 - Coverage thresholds for critical paths
@@ -252,21 +276,25 @@ yarn test:coverage:ci
 ## Best Practices
 
 ### Test Isolation
+
 - Always clean up mocks between tests
 - Use `beforeEach` and `afterEach` for setup/cleanup
 - Avoid shared state between tests
 
 ### Mock Management
+
 - Mock at the right level (module vs function)
 - Provide realistic mock return values
 - Test error scenarios with mocks
 
 ### Async Testing
+
 - Use `async/await` for async operations
 - Test both success and failure paths
 - Handle promises properly in tests
 
 ### Platform Testing
+
 - Test platform-specific code paths
 - Mock platform-specific modules
 - Test conditional rendering logic

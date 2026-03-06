@@ -8,9 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		05D985FB2BB3344600F58EEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 05D985FA2BB3344600F58EEA /* Assets.xcassets */; };
-		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		1608339F2D5CF89D00056417 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1608339E2D5CF89D00056417 /* AudioToolbox.framework */; };
 		1648EB782CC9564D003BEA7D /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1648EB772CC9564D003BEA7D /* LottieView.swift */; };
 		164FD9672D569A640067E63B /* QRCodeScannerViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164FD9662D569A640067E63B /* QRCodeScannerViewManager.swift */; };
@@ -25,6 +23,7 @@
 		16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */; };
 		16E884A52C5BD764003B7125 /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 16E884A42C5BD764003B7125 /* passport.json */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8FBA8FA051DB77C9C52EDDF3 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78F43717F170EC139960991 /* ExpoModulesProvider.swift */; };
 		905B70052A72767900AFA232 /* PassportReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905B70042A72767900AFA232 /* PassportReader.swift */; };
 		905B70072A72774000AFA232 /* PassportReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 905B70062A72774000AFA232 /* PassportReader.m */; };
 		97E31F23A5A11A2C115FE2BB /* Pods_Self.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0823092D57FC544FD63682A /* Pods_Self.framework */; };
@@ -33,6 +32,7 @@
 		BF1044812DD53540009B3688 /* LiveMRZScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */; };
 		BF1044832DD5354F009B3688 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044822DD5354F009B3688 /* CameraView.swift */; };
 		BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044842DD53570009B3688 /* MRZScanner.swift */; };
+		BF5649262F43B1EB00DE07A1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5649252F43B1E700DE07A1 /* AppDelegate.swift */; };
 		BF6F0D552E38ED81008EA85C /* SelfAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6F0D542E38ED81008EA85C /* SelfAnalytics.swift */; };
 		BFBA0C772E339D2B00E82A52 /* NativeLoggerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBA0C762E339D2B00E82A52 /* NativeLoggerBridge.swift */; };
 		BFBA0C792E33A01F00E82A52 /* NativeLoggerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = BFBA0C782E33A01F00E82A52 /* NativeLoggerBridge.m */; };
@@ -47,11 +47,8 @@
 /* Begin PBXFileReference section */
 		05D985FA2BB3344600F58EEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = OpenPassport/Assets.xcassets; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Self.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Self.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = OpenPassport/AppDelegate.h; sourceTree = "<group>"; };
-		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = OpenPassport/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = OpenPassport/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = OpenPassport/Info.plist; sourceTree = "<group>"; };
-		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = OpenPassport/main.m; sourceTree = "<group>"; };
 		1608339E2D5CF89D00056417 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		1648EB772CC9564D003BEA7D /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
 		164FD9662D569A640067E63B /* QRCodeScannerViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerViewManager.swift; sourceTree = "<group>"; };
@@ -74,11 +71,13 @@
 		905B70082A729CD400AFA232 /* OpenPassport.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = OpenPassport.entitlements; path = OpenPassport/OpenPassport.entitlements; sourceTree = "<group>"; };
 		9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "DINOT-Medium.otf"; path = "../src/assets/fonts/DINOT-Medium.otf"; sourceTree = "<group>"; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* DINOT-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "DINOT-Bold.otf"; path = "../src/assets/fonts/DINOT-Bold.otf"; sourceTree = "<group>"; };
+		A78F43717F170EC139960991 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Self/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		AE6147EB2DC95A8D00445C0F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B49D2B102E28AA7900946F64 /* IBMPlexMono-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "IBMPlexMono-Regular.otf"; path = "../src/assets/fonts/IBMPlexMono-Regular.otf"; sourceTree = SOURCE_ROOT; };
 		BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveMRZScannerView.swift; sourceTree = "<group>"; };
 		BF1044822DD5354F009B3688 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		BF1044842DD53570009B3688 /* MRZScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScanner.swift; sourceTree = "<group>"; };
+		BF5649252F43B1E700DE07A1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BF6F0D542E38ED81008EA85C /* SelfAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfAnalytics.swift; sourceTree = "<group>"; };
 		BFBA0C762E339D2B00E82A52 /* NativeLoggerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeLoggerBridge.swift; sourceTree = "<group>"; };
 		BFBA0C782E33A01F00E82A52 /* NativeLoggerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NativeLoggerBridge.m; sourceTree = "<group>"; };
@@ -106,6 +105,7 @@
 		13B07FAE1A68108700A75B9A /* OpenPassport */ = {
 			isa = PBXGroup;
 			children = (
+				BF5649252F43B1E700DE07A1 /* AppDelegate.swift */,
 				1668A53E2E70A55E0005A522 /* PhotoLibraryQRScannerViewController.swift */,
 				BF6F0D542E38ED81008EA85C /* SelfAnalytics.swift */,
 				BFBA0C782E33A01F00E82A52 /* NativeLoggerBridge.m */,
@@ -120,12 +120,9 @@
 				16E884A42C5BD764003B7125 /* passport.json */,
 				905B70082A729CD400AFA232 /* OpenPassport.entitlements */,
 				05D985FA2BB3344600F58EEA /* Assets.xcassets */,
-				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
-				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
-				13B07FB71A68108700A75B9A /* main.m */,
 				905B70042A72767900AFA232 /* PassportReader.swift */,
 				165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */,
 				905B70062A72774000AFA232 /* PassportReader.m */,
@@ -164,6 +161,14 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
+		68B6F4D5AF0B3AA951CC7B16 /* Self */ = {
+			isa = PBXGroup;
+			children = (
+				A78F43717F170EC139960991 /* ExpoModulesProvider.swift */,
+			);
+			name = Self;
+			sourceTree = "<group>";
+		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
@@ -180,6 +185,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
 				48CFD94B265341A283033375 /* Resources */,
+				A73171A47F6CCF76BD591E42 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -192,6 +198,14 @@
 				13B07F961A680F5B00A75B9A /* Self.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A73171A47F6CCF76BD591E42 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				68B6F4D5AF0B3AA951CC7B16 /* Self */,
+			);
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
@@ -212,6 +226,7 @@
 			buildPhases = (
 				3B4EFEB78A7250232578EEBD /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
+				9B60ED4051335EB38D55EC0A /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
@@ -236,7 +251,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1620;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1430;
@@ -337,6 +352,25 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		9B60ED4051335EB38D55EC0A /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Self/expo-configure-project.sh\"\n";
+		};
 		E88323604DFAAA92032925C9 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -393,19 +427,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				1686F0DE2C500F4F00841CDE /* QRScannerViewController.swift in Sources */,
 				1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */,
 				BFBA0C772E339D2B00E82A52 /* NativeLoggerBridge.swift in Sources */,
 				BF1044832DD5354F009B3688 /* CameraView.swift in Sources */,
 				1686F0DC2C500F3800841CDE /* QRScannerBridge.swift in Sources */,
-				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				905B70072A72774000AFA232 /* PassportReader.m in Sources */,
 				BFBA0C792E33A01F00E82A52 /* NativeLoggerBridge.m in Sources */,
 				16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */,
 				BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */,
 				165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */,
 				905B70052A72767900AFA232 /* PassportReader.swift in Sources */,
+				BF5649262F43B1EB00DE07A1 /* AppDelegate.swift in Sources */,
 				165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */,
 				E9F9A99C2D57FE2900E1362E /* PassportOCRViewManager.m in Sources */,
 				E9F9A99D2D57FE2900E1362E /* PassportOCRViewManager.swift in Sources */,
@@ -416,6 +449,7 @@
 				BF6F0D552E38ED81008EA85C /* SelfAnalytics.swift in Sources */,
 				BF1044812DD53540009B3688 /* LiveMRZScannerView.swift in Sources */,
 				164FD9692D569C1F0067E63B /* QRCodeScannerViewManager.m in Sources */,
+				8FBA8FA051DB77C9C52EDDF3 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -433,8 +467,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 189;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 5B29R5LYHQ;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_BITCODE = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"${PODS_CONFIGURATION_BUILD_DIR}/DoubleConversion\"",
@@ -534,7 +569,7 @@
 				INFOPLIST_FILE = OpenPassport/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenPassport;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Needed only if you want to upload QRcodes";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -546,12 +581,13 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 2.9.6;
+				MARKETING_VERSION = 2.9.16;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport;
 				PRODUCT_NAME = Self;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -574,7 +610,8 @@
 				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassport.entitlements;
 				CURRENT_PROJECT_VERSION = 189;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 5B29R5LYHQ;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"${PODS_CONFIGURATION_BUILD_DIR}/DoubleConversion\"",
@@ -675,7 +712,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = OpenPassport;
 				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Needed only if you want to upload QRcodes";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -686,12 +723,13 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 2.9.6;
+				MARKETING_VERSION = 2.9.16;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport;
 				PRODUCT_NAME = Self;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -736,8 +774,10 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				CXX = "";
+				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -772,7 +812,7 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
 				);
 				INFOPLIST_KEY_NSCameraUsageDescription = "Needed to scan your passport MRZ, you can however enter it manually.";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD = "";
 				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -799,6 +839,7 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				USE_HERMES = true;
 			};
@@ -837,8 +878,10 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				CXX = "";
+				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -866,7 +909,7 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
 				);
 				INFOPLIST_KEY_NSCameraUsageDescription = "Needed to scan your passport MRZ, you can however enter it manually.";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD = "";
 				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -892,6 +935,7 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;

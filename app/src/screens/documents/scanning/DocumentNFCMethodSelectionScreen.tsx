@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useState } from 'react';
 import { Platform, ScrollView } from 'react-native';
-import { Input, YStack } from 'tamagui';
+import { Input, Switch, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -21,6 +21,7 @@ import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
+import { useSettingStore } from '@/stores/settingStore';
 
 type NFCParams = {
   skipPACE?: boolean;
@@ -40,21 +41,18 @@ const NFC_METHODS = [
     params: {},
   },
   {
+    key: 'skipReselect',
+    label: 'Skip Re-select',
+    description: 'Skip the re-select step after the NFC scan.',
+    platform: ['android'],
+    params: { skipReselect: true },
+  },
+  {
     key: 'usePacePolling',
     label: 'Use PACE Polling',
     description: 'To be used with certain ID cards.',
     platform: ['ios'],
     params: { usePacePolling: true },
-  },
-  {
-    // We try PACE first, but if it fails, we try BAC authentication.
-    // Some chips will invalidate the session if PACE fails.
-    key: 'skipPACE',
-    label: 'Skip PACE',
-    description:
-      'Skip PACE protocol during NFC scan. Useful if your passport does not support PACE.',
-    platform: ['ios'],
-    params: { skipPACE: true },
   },
   {
     key: 'can',
@@ -99,10 +97,15 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState('standard');
   const [canValue, setCanValue] = useState('');
   const [error, setError] = useState('');
+  const [skipPACE, setSkipPACE] = useState(false);
 
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { update, passportNumber, dateOfBirth, dateOfExpiry } = useMRZStore();
+
+  const loggingSeverity = useSettingStore(state => state.loggingSeverity);
+  const setLoggingSeverity = useSettingStore(state => state.setLoggingSeverity);
+  const isDebugMode = loggingSeverity === 'debug';
 
   const handleSelect = (key: string) => {
     setSelectedMethod(key);
@@ -135,6 +138,10 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
     if (selectedMethod === 'can') {
       params.canNumber = canValue;
     }
+
+    if (skipPACE) {
+      params.skipPACE = true;
+    }
     // Type assertion needed because static navigation doesn't infer optional params
     navigation.navigate('DocumentNFCScan', params as never);
   };
@@ -145,6 +152,52 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack paddingTop={20} gap={20}>
             <Title>Choose NFC Scan Method</Title>
+
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              paddingVertical="$3"
+              paddingHorizontal="$2"
+              borderWidth={1}
+              borderColor="#ccc"
+              borderRadius={10}
+              backgroundColor="#fff"
+            >
+              <Description>Skip PACE</Description>
+              <Switch
+                size="$4"
+                checked={skipPACE}
+                onCheckedChange={setSkipPACE}
+                backgroundColor={skipPACE ? '$green7Light' : '$gray4'}
+                style={{ minWidth: 48, minHeight: 36 }}
+              >
+                <Switch.Thumb animation="quick" backgroundColor="$white" />
+              </Switch>
+            </XStack>
+
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              paddingVertical="$3"
+              paddingHorizontal="$2"
+              borderWidth={1}
+              borderColor="#ccc"
+              borderRadius={10}
+              backgroundColor="#fff"
+            >
+              <Description>Debug Logging</Description>
+              <Switch
+                size="$4"
+                checked={isDebugMode}
+                onCheckedChange={checked => {
+                  setLoggingSeverity(checked ? 'debug' : 'warn');
+                }}
+                backgroundColor={isDebugMode ? '$green7Light' : '$gray4'}
+                style={{ minWidth: 48, minHeight: 36 }}
+              >
+                <Switch.Thumb animation="quick" backgroundColor="$white" />
+              </Switch>
+            </XStack>
 
             {NFC_METHODS.filter(method =>
               method.platform.includes(Platform.OS),

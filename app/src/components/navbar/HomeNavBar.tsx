@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -56,7 +56,7 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
         try {
           Clipboard.setString('');
         } catch {}
-        props.navigation.navigate('Prove');
+        props.navigation.navigate('ProvingScreenRouter');
       } catch (error) {
         console.error('Error consuming token:', error);
         if (

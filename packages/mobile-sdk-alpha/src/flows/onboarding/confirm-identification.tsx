@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -7,9 +7,8 @@ import { StyleSheet } from 'react-native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
-import successAnimation from '../../animations/loading/success.json';
 import { PrimaryButton } from '../../components';
-import { DelayedLottieView } from '../../components/DelayedLottieView';
+import { LottieAnimation } from '../../components/LottieAnimation';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { PassportEvents, ProofEvents } from '../../constants/analytics';
@@ -21,6 +20,9 @@ import { useSafeBottomPadding } from '../../hooks/useSafeBottomPadding';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { SdkEvents } from '../../types/events';
 import type { SelfClient } from '../../types/public';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const successAnimation = require('../../animations/loading/success.lottie');
 
 /*
   Screen to confirm identification ownership
@@ -46,7 +48,7 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <DelayedLottieView
+        <LottieAnimation
           autoPlay
           loop={false}
           source={successAnimation}
@@ -79,6 +81,10 @@ const getDocumentMetadata = async (selfClient: SelfClient) => {
         documentCategory: 'aadhaar',
         signatureAlgorithm: 'rsa',
         curveOrExponent: '65537',
+      } as const;
+    } else if (selectedDocument?.data?.documentCategory === 'kyc') {
+      metadata = {
+        documentCategory: selectedDocument?.data?.documentCategory,
       } as const;
     } else {
       const passportData = selectedDocument?.data;

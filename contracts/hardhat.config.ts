@@ -26,6 +26,12 @@ const config: HardhatUserConfig = {
       },
     },
   },
+  gasReporter: {
+    enabled: process.env.REPORT_GAS === "true",
+    currency: "USD",
+    outputFile: "gas-report.txt",
+    noColors: true,
+  },
   contractSizer: {
     runOnCompile: true,
   },
@@ -37,6 +43,9 @@ const config: HardhatUserConfig = {
   },
   defaultNetwork: "hardhat",
   networks: {
+    hardhat: {
+      allowUnlimitedContractSize: true,
+    },
     localhost: {
       chainId: 31337,
       url: "http://127.0.0.1:8545",
@@ -67,10 +76,10 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY as string,
-    // apiKey: {
-    //   "celo-sepolia": process.env.ETHERSCAN_API_KEY as string,
-    // },
+    // apiKey: process.env.ETHERSCAN_API_KEY as string,
+    apiKey: {
+      "celo-sepolia": process.env.ETHERSCAN_API_KEY as string,
+    },
     customChains: [
       {
         network: "celo",

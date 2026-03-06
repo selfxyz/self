@@ -15,6 +15,7 @@
 Before creating a PR for the mobile app:
 
 ### Code Quality
+
 - [ ] `yarn nice` passes (fixes linting and formatting)
 - [ ] `yarn types` passes (TypeScript validation)
 - [ ] `yarn test` passes (unit tests)
@@ -22,6 +23,7 @@ Before creating a PR for the mobile app:
 - [ ] App builds successfully on target platforms
 
 ### Mobile-Specific Validation
+
 - [ ] iOS build succeeds: `yarn ios` (simulator)
 - [ ] Android build succeeds: `yarn android` (emulator/device)
 - [ ] Web build succeeds: `yarn web`
@@ -30,6 +32,7 @@ Before creating a PR for the mobile app:
 - [ ] E2E tests run in CI (not required locally - CI will run E2E tests automatically)
 
 ### AI Review Preparation
+
 - [ ] Complex native module changes documented
 - [ ] Platform-specific code paths explained
 - [ ] Security-sensitive operations flagged
@@ -40,12 +43,14 @@ Before creating a PR for the mobile app:
 After PR creation:
 
 ### Automated Checks
+
 - [ ] CI pipeline passes all stages
 - [ ] No new linting/formatting issues
 - [ ] Type checking passes
 - [ ] Build artifacts generated successfully
 
 ### Mobile-Specific Checks
+
 - [ ] App launches without crashes
 - [ ] Core functionality works on target platforms
 - [ ] No memory leaks introduced (including test memory patterns - see Test Memory Optimization section)
@@ -55,6 +60,7 @@ After PR creation:
 - [ ] Platform-specific code paths tested (iOS/Android/Web)
 
 ### Review Integration
+
 - [ ] Address CodeRabbitAI feedback
 - [ ] Resolve any security warnings
 - [ ] Confirm no sensitive data exposed
@@ -78,6 +84,7 @@ yarn test
 ## Workflow Commands
 
 ### Pre-PR Validation
+
 ```bash
 # Run all checks before PR
 yarn nice
@@ -89,6 +96,7 @@ yarn android  # Test Android build
 ```
 
 ### Post-PR Cleanup
+
 ```bash
 # After addressing review feedback
 yarn nice  # Fix any formatting issues
@@ -124,12 +132,14 @@ The app uses Maestro for end-to-end testing. **E2E tests run automatically in CI
 If you need to run E2E tests locally for debugging:
 
 **Prerequisites:**
+
 - Maestro CLI installed: `curl -Ls "https://get.maestro.mobile.dev" | bash`
 - iOS: Simulator running or device connected
 - Android: Emulator running or device connected
 - App built and installed on target device/simulator
 
 **Running Locally:**
+
 ```bash
 # iOS E2E tests
 yarn test:e2e:ios
@@ -143,6 +153,7 @@ yarn test:e2e:android
 ```
 
 **E2E Test Files:**
+
 - iOS: `tests/e2e/launch.ios.flow.yaml`
 - Android: `tests/e2e/launch.android.flow.yaml`
 
@@ -220,7 +231,9 @@ The project has multiple layers of protection:
 3. **CI Fast-Fail**: GitHub Actions checks for nested requires before running tests
 
 ### Quick Check
+
 Before committing, verify no nested requires:
+
 ```bash
 # Automated check (recommended)
 node scripts/check-test-requires.cjs
@@ -231,10 +244,19 @@ grep -r "require('react-native')" app/tests/
 ```
 
 ### Best Practices
+
 - **Always use ES6 `import` statements** - Never use `require('react')` or `require('react-native')` in test files
 - Put all imports at the top of the file - No dynamic imports in hooks
 - Avoid `require()` calls in `beforeEach`/`afterEach` hooks
 - React and React Native are already mocked in `jest.setup.js` - use imports in test files
 
 ### Detailed Guidelines
+
 See `.cursor/rules/test-memory-optimization.mdc` for comprehensive guidelines, examples, and anti-patterns.
+
+## SDK Architecture
+
+The Self Wallet app serves as a **test environment** for the SDK refactor. For SDK architecture context:
+
+- **[SDK Overview](../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix
+- **[SDK Project Index](../specs/projects/sdk/INDEX.md)** — Workstream links and entry point

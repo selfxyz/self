@@ -4,14 +4,16 @@
   "private": true,
   "license": "MIT",
   "author": "self team",
+  "type": "module",
   "scripts": {
+    "build:deps": "yarn workspaces foreach --from @selfxyz/circuits --topological-dev --recursive run build",
     "build-all": "bash scripts/build/build_register_circuits.sh && bash scripts/build/build_register_circuits_id.sh && bash scripts/build/build_register_aadhaar.sh && bash scripts/build/build_dsc_circuits.sh && bash scripts/build/build_disclose_circuits.sh",
     "build-disclose": "bash scripts/build/build_disclose_circuits.sh",
     "build-dsc": "bash scripts/build/build_dsc_circuits.sh",
     "build-gcp-jwt-verifier": "bash scripts/build/build_gcp_jwt_verifier.sh",
     "build-register": "bash scripts/build/build_register_circuits.sh",
     "build-register-id": "bash scripts/build/build_register_circuits_id.sh",
-    "build:deps": "yarn workspaces foreach --from @selfxyz/circuits --topological-dev --recursive run build",
+    "build-register-selfrica": "bash scripts/build/build_register_selfrica.sh",
     "download": "bash scripts/server/download_circuits_from_AWS.sh",
     "format": "prettier --write .",
     "install-circuits": "yarn workspaces focus @selfxyz/circuits",
@@ -23,6 +25,7 @@
     "test-disclose": "yarn test-base 'tests/disclose/vc_and_disclose.test.ts' --exit",
     "test-disclose-aadhaar": "yarn test-base 'tests/disclose/vc_and_disclose_aadhaar.test.ts' --exit",
     "test-disclose-id": "yarn test-base 'tests/disclose/vc_and_disclose_id.test.ts' --exit",
+    "test-disclose-kyc": "yarn test-base 'tests/disclose/vc_and_disclose_kyc.test.ts' --exit",
     "test-dsc": "yarn test-base --max-old-space-size=51200 'tests/dsc/dsc.test.ts' --exit",
     "test-ecdsa": "yarn test-base 'tests/utils/ecdsa.test.ts' --exit",
     "test-gcp-jwt-verifier": "yarn test-base 'tests/gcp_jwt_verifier/gcp_jwt_verifier.test.ts' --exit",
@@ -34,6 +37,7 @@
     "test-register": "yarn test-base --max-old-space-size=40960 'tests/register/register.test.ts' --exit",
     "test-register-aadhaar": "yarn test-base 'tests/register/register_aadhaar.test.ts' --exit",
     "test-register-id": "yarn test-base --max-old-space-size=40960 'tests/register_id/register_id.test.ts' --exit",
+    "test-register-kyc": "yarn test-base 'tests/register/register_kyc.test.ts' --exit",
     "test-rsa": "yarn test-base 'tests/utils/rsaPkcs1v1_5.test.ts' --exit",
     "test-rsa-pss": "yarn test-base 'tests/utils/rsapss.test.ts' --exit"
   },
@@ -44,7 +48,7 @@
     "@openpassport/zk-kit-imt": "^0.0.4",
     "@openpassport/zk-kit-lean-imt": "^0.0.4",
     "@openpassport/zk-kit-smt": "^0.0.1",
-    "@selfxyz/common": "workspace:^",
+    "@selfxyz/new-common": "workspace:^",
     "@zk-email/circuits": "^6.3.2",
     "@zk-email/helpers": "^6.1.1",
     "@zk-email/jwt-tx-builder-circuits": "0.1.0",
@@ -52,7 +56,7 @@
     "@zk-email/zk-regex-circom": "^1.2.1",
     "@zk-kit/binary-merkle-root.circom": "npm:@selfxyz/binary-merkle-root.circom@^0.0.1",
     "@zk-kit/circuits": "^1.0.0-beta",
-    "anon-aadhaar-circuits": "https://github.com/selfxyz/anon-aadhaar.git#commit=1b9efa501cff3cf25dc260b060bf611229e316a4&workspace=@anon-aadhaar/circuits",
+    "anon-aadhaar-circuits": "npm:@selfxyz/aa-circuits@^0.0.1",
     "asn1": "^0.2.6",
     "asn1.js": "^5.4.1",
     "asn1js": "^3.0.5",
@@ -74,6 +78,7 @@
     "snarkjs": "^0.7.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.6",
     "@types/chai": "4.3.11",
     "@types/chai-as-promised": "^7.1.6",
     "@types/circomlibjs": "^0.1.6",
@@ -82,14 +87,16 @@
     "@types/node-forge": "^1.3.5",
     "@yarnpkg/sdks": "^3.2.0",
     "chai": "^4.4.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.31.0",
     "mocha": "^10.7.3",
     "prettier": "^3.5.3",
     "ts-mocha": "^10.0.0",
     "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.20.3",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.2"
   },
-  "packageManager": "yarn@4.6.0",
+  "packageManager": "yarn@4.12.0",
   "engines": {
     "node": ">=22 <23"
   }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -27,9 +27,7 @@ import {
   storePassportData,
   updateDocumentRegistrationState,
 } from '@/providers/passportDataProvider';
-import analytics from '@/services/analytics';
-
-const { trackEvent } = analytics();
+import { trackEvent } from '@/services/analytics';
 
 /**
  * This function checks and updates registration states for all documents and updates the `isRegistered`.
@@ -204,8 +202,8 @@ export function getAlternativeCSCA(
   useProtocolStore: SelfClient['useProtocolStore'],
   docCategory: DocumentCategory,
 ): AlternativeCSCA {
-  if (docCategory === 'aadhaar') {
-    const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
+  if (docCategory === 'aadhaar' || docCategory === 'kyc') {
+    const publicKeys = useProtocolStore.getState()[docCategory].public_keys;
     // Convert string[] to Record<string, string> format expected by AlternativeCSCA
     return publicKeys
       ? Object.fromEntries(

@@ -3,19 +3,20 @@ import path from "path";
 import { poseidon2, poseidon3 } from "poseidon-lite";
 import type { CircuitSignals, Groth16Proof, PublicSignals } from "snarkjs";
 import { groth16 } from "snarkjs";
-import { PassportData } from "@selfxyz/common/utils/types";
+import { PassportData } from "@selfxyz/new-common/src/foundation/types/document";
 import { CircuitArtifacts, DscCircuitProof, RegisterCircuitProof, VcAndDiscloseProof } from "./types.js";
-import { prepareAadhaarDiscloseTestData, prepareAadhaarRegisterTestData } from "@selfxyz/common";
+import { generateMockKycRegisterInputs } from "@selfxyz/new-common/src/circuits/inputs/register-kyc";
+import { generateKycDiscloseInputFromDummy } from "@selfxyz/new-common/src/circuits/inputs/disclose-kyc";
+import { generateAadhaarDiscloseInputs } from "@selfxyz/new-common/src/circuits/inputs/disclose-aadhaar";
+import { generateAadhaarRegisterInputs } from "@selfxyz/new-common/src/circuits/inputs/register-aadhaar";
 
 import { BigNumberish } from "ethers";
-import {
-  generateCircuitInputsDSC,
-  generateCircuitInputsRegister,
-  generateCircuitInputsVCandDisclose,
-} from "@selfxyz/common/utils/circuits/generateInputs";
-import { getCircuitNameFromPassportData } from "@selfxyz/common/utils/circuits/circuitsName";
-import serialized_csca_tree from "../../../common/pubkeys/serialized_csca_tree.json";
-import serialized_dsc_tree from "../../../common/pubkeys/serialized_dsc_tree.json";
+import { generatePassportDscInputs } from "@selfxyz/new-common/src/circuits/inputs/dsc";
+import { generatePassportRegisterInputs } from "@selfxyz/new-common/src/circuits/inputs/register";
+import { generatePassportDiscloseInputs } from "@selfxyz/new-common/src/circuits/inputs/disclose";
+import { getCircuitNameFromPassportData } from "@selfxyz/new-common/src/circuits/circuitName";
+import serialized_csca_tree from "@selfxyz/new-common/src/data/serialized_csca_tree.json";
+import serialized_dsc_tree from "@selfxyz/new-common/src/data/serialized_dsc_tree.json";
 import { GenericProofStructStruct } from "../../typechain-types/contracts/IdentityVerificationHubImplV2.js";
 const { LeanIMT, ChildNodes } = require("@openpassport/zk-kit-lean-imt");
 const { SMT } = require("@openpassport/zk-kit-smt");
@@ -40,6 +41,14 @@ const registerCircuitsAadhaar: CircuitArtifacts = {
     wasm: "../circuits/build/register/register_aadhaar/register_aadhaar_js/register_aadhaar.wasm",
     zkey: "../circuits/build/register/register_aadhaar/register_aadhaar_final.zkey",
     vkey: "../circuits/build/register/register_aadhaar/register_aadhaar_vkey.json",
+  },
+};
+
+const registerCircuitsKyc: CircuitArtifacts = {
+  register_kyc: {
+    wasm: "../circuits/build/register/register_kyc/register_kyc_js/register_kyc.wasm",
+    zkey: "../circuits/build/register/register_kyc/register_kyc_final.zkey",
+    vkey: "../circuits/build/register/register_kyc/register_kyc_vkey.json",
   },
 };
 
@@ -73,9 +82,17 @@ const vcAndDiscloseCircuitsAadhaar: CircuitArtifacts = {
   },
 };
 
+const vcAndDiscloseCircuitsKyc: CircuitArtifacts = {
+  vc_and_disclose_kyc: {
+    wasm: "../circuits/build/disclose/vc_and_disclose_kyc/vc_and_disclose_kyc_js/vc_and_disclose_kyc.wasm",
+    zkey: "../circuits/build/disclose/vc_and_disclose_kyc/vc_and_disclose_kyc_final.zkey",
+    vkey: "../circuits/build/disclose/vc_and_disclose_kyc/vc_and_disclose_kyc_vkey.json",
+  },
+};
+
 export async function generateRegisterProof(secret: string, passportData: PassportData): Promise<RegisterCircuitProof> {
   // Get the circuit inputs
-  const registerCircuitInputs: CircuitSignals = await generateCircuitInputsRegister(
+  const registerCircuitInputs: CircuitSignals = await generatePassportRegisterInputs(
     secret,
     passportData,
     serialized_dsc_tree as string,
@@ -114,7 +131,7 @@ export async function generateRegisterIdProof(
   const circuitName = getCircuitNameFromPassportData(passportData, "register");
 
   // Get the circuit inputs for ID card - passportData should already be parsed from genMockIdDocAndInitDataParsing
-  const registerCircuitInputs: CircuitSignals = await generateCircuitInputsRegister(
+  const registerCircuitInputs: CircuitSignals = await generatePassportRegisterInputs(
     secret,
     passportData,
     serialized_dsc_tree as string,
@@ -160,7 +177,7 @@ export async function generateRegisterIdProof(
 export async function generateRegisterAadhaarProof(
   secret: string,
   //return type of prepareAadhaarTestData
-  inputs: ReturnType<typeof prepareAadhaarRegisterTestData>["inputs"],
+  inputs: ReturnType<typeof generateAadhaarRegisterInputs>["inputs"],
 ): Promise<GenericProofStructStruct> {
   const circuitName = "register_aadhaar";
 
@@ -185,8 +202,36 @@ export async function generateRegisterAadhaarProof(
   return fixedProof;
 }
 
+export async function generateRegisterKycProof(
+  secret: string,
+  //return type of prepareAadhaarTestData
+  inputs: Awaited<ReturnType<typeof generateMockKycRegisterInputs>>,
+): Promise<GenericProofStructStruct> {
+  const circuitName = "register_kyc";
+
+  const circuitArtifacts = registerCircuitsKyc;
+  const artifactKey = circuitName;
+
+  const registerProof = await groth16.fullProve(
+    inputs,
+    circuitArtifacts[artifactKey].wasm,
+    circuitArtifacts[artifactKey].zkey,
+  );
+
+  const vKey = JSON.parse(fs.readFileSync(circuitArtifacts[artifactKey].vkey, "utf8"));
+  const isValid = await groth16.verify(vKey, registerProof.publicSignals, registerProof.proof);
+  if (!isValid) {
+    throw new Error("Generated register-kyc proof verification failed");
+  }
+
+  const rawCallData = await groth16.exportSolidityCallData(registerProof.proof, registerProof.publicSignals);
+  const fixedProof = parseSolidityCalldata(rawCallData, {} as GenericProofStructStruct);
+
+  return fixedProof;
+}
+
 export async function generateDscProof(passportData: PassportData): Promise<DscCircuitProof> {
-  const dscCircuitInputs: CircuitSignals = await generateCircuitInputsDSC(passportData, serialized_csca_tree);
+  const dscCircuitInputs: CircuitSignals = await generatePassportDscInputs(passportData, serialized_csca_tree);
 
   const dscProof = await groth16.fullProve(
     dscCircuitInputs,
@@ -234,7 +279,7 @@ export async function generateVcAndDiscloseRawProof(
     nameAndYob_smt = smts.nameAndYob_smt;
   }
 
-  const vcAndDiscloseCircuitInputs: CircuitSignals = generateCircuitInputsVCandDisclose(
+  const vcAndDiscloseCircuitInputs: CircuitSignals = generatePassportDiscloseInputs(
     secret,
     attestationId,
     passportData,
@@ -418,7 +463,7 @@ export async function generateVcAndDiscloseIdProof(
     documentCategory: "id_card" as const,
   };
 
-  const vcAndDiscloseCircuitInputs: CircuitSignals = generateCircuitInputsVCandDisclose(
+  const vcAndDiscloseCircuitInputs: CircuitSignals = generatePassportDiscloseInputs(
     secret,
     attestationId,
     idCardPassportData,
@@ -455,7 +500,7 @@ export async function generateVcAndDiscloseIdProof(
 }
 
 export async function generateVcAndDiscloseAadhaarProof(
-  inputs: ReturnType<typeof prepareAadhaarDiscloseTestData>["inputs"],
+  inputs: ReturnType<typeof generateAadhaarDiscloseInputs>["inputs"],
 ): Promise<GenericProofStructStruct> {
   const circuitName = "vc_and_disclose_aadhaar";
 
@@ -472,6 +517,31 @@ export async function generateVcAndDiscloseAadhaarProof(
   const isValid = await groth16.verify(vKey, vcAndDiscloseProof.publicSignals, vcAndDiscloseProof.proof);
   if (!isValid) {
     throw new Error("Generated register Aadhaar proof verification failed");
+  }
+
+  const rawCallData = await groth16.exportSolidityCallData(vcAndDiscloseProof.proof, vcAndDiscloseProof.publicSignals);
+  const fixedProof = parseSolidityCalldata(rawCallData, {} as GenericProofStructStruct);
+
+  return fixedProof;
+}
+
+export async function generateVcAndDiscloseKycProof(
+  inputs: ReturnType<typeof generateKycDiscloseInputFromDummy>,
+): Promise<GenericProofStructStruct> {
+  const circuitName = "vc_and_disclose_kyc";
+  const circuitArtifacts = vcAndDiscloseCircuitsKyc;
+  const artifactKey = circuitName;
+
+  const vcAndDiscloseProof = await groth16.fullProve(
+    inputs,
+    circuitArtifacts[artifactKey].wasm,
+    circuitArtifacts[artifactKey].zkey,
+  );
+
+  const vKey = JSON.parse(fs.readFileSync(circuitArtifacts[artifactKey].vkey, "utf8"));
+  const isValid = await groth16.verify(vKey, vcAndDiscloseProof.publicSignals, vcAndDiscloseProof.proof);
+  if (!isValid) {
+    throw new Error("Generated VC and Disclose KYC proof verification failed");
   }
 
   const rawCallData = await groth16.exportSolidityCallData(vcAndDiscloseProof.proof, vcAndDiscloseProof.publicSignals);
@@ -515,6 +585,8 @@ export function getSMTs() {
   ) as typeof SMT;
   const nameAndDob_id_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndDobSMT_ID.json") as typeof SMT;
   const nameAndYob_id_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndYobSMT_ID.json") as typeof SMT;
+  const nameAndDob_kyc_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndDobKycSMT.json") as typeof SMT;
+  const nameAndYob_kyc_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndYobKycSMT.json") as typeof SMT;
 
   return {
     passportNo_smt,
@@ -524,6 +596,8 @@ export function getSMTs() {
     nameAndYob_id_smt,
     nameDobAadhar_smt,
     nameYobAadhar_smt,
+    nameAndDob_kyc_smt,
+    nameAndYob_kyc_smt,
   };
 }
 

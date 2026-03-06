@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -11,10 +11,8 @@ import { apiPingUrl } from '@/consts/links';
 import { useModal } from '@/hooks/useModal';
 import { useNetInfo } from '@/hooks/useNetInfo';
 import { navigationRef } from '@/navigation';
-import analytics from '@/services/analytics';
+import { trackEvent } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
-
-const { trackEvent } = analytics();
 
 const connectionModalParams = {
   titleText: 'Internet connection error',

@@ -1,0 +1,65 @@
+# SwiftLint Configuration for KMP Test App iOS
+# https://github.com/realm/SwiftLint
+
+# Paths to exclude from linting
+excluded:
+  - Pods
+  - DerivedData
+  - build
+  - .build
+  - iosApp/DerivedData
+  - iosApp/build
+  - composeApp/build
+  - "**/GeneratedAssetSymbols.swift"
+
+# Disable rules that conflict with project style
+disabled_rules:
+  - todo
+  - type_name  # Allow iOSApp naming
+
+# Enable optional rules
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - explicit_init
+  - first_where
+  - force_unwrapping
+  - implicit_return
+  - multiline_parameters
+  - sorted_imports
+
+# Configurable rules
+line_length:
+  warning: 120
+  error: 200
+  ignores_comments: true
+  ignores_urls: true
+
+file_length:
+  warning: 500
+  error: 1000
+
+function_body_length:
+  warning: 50
+  error: 100
+
+type_body_length:
+  warning: 250
+  error: 400
+
+identifier_name:
+  min_length:
+    warning: 2
+  max_length:
+    warning: 50
+  excluded:
+    - id
+    - i
+    - j
+    - k
+    - x
+    - y
+    - z
+
+# Reporting
+reporter: "xcode"

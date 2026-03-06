@@ -1,4 +1,20 @@
 source "https://cdn.cocoapods.org/"
+
+# Skip Sumsub configuration for E2E testing
+unless ENV["E2E_TESTING"] == "1"
+  source "https://github.com/SumSubstance/Specs.git"
+
+  # Enable Fisherman (Device Intelligence) module for fraud detection
+  # Privacy: Device ID collection declared in app/ios/PrivacyInfo.xcprivacy
+  ENV["IDENSIC_WITH_FISHERMAN"] = "true"
+
+  # VideoIdent module disabled for current release
+  # This feature provides liveness checks via live video calls with human agents
+  # Disabled to avoid microphone permission requirements on both platforms
+  # TODO: Re-enable for future release when liveness checks are needed
+  # ENV["IDENSIC_WITH_VIDEOIDENT"] = "true"
+end
+
 use_frameworks!
 require "tmpdir"
 
@@ -9,10 +25,12 @@ require Pod::Executable.execute_command("node", ["-p",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+require File.join(File.dirname(`node --print "require.resolve('expo/package.json', {paths: ['#{__dir__}/..']})"`.strip), "scripts/autolinking")
+
 project "Self.xcodeproj"
 
 # Define consistent iOS deployment target
-IOS_DEPLOYMENT_TARGET = "15.1"
+IOS_DEPLOYMENT_TARGET = "15.4"
 
 platform :ios, IOS_DEPLOYMENT_TARGET if !ENV["ACT"]
 prepare_react_native_project!
@@ -39,9 +57,9 @@ def using_https_git_auth?
 end
 
 target "Self" do
+  use_expo_modules!
+  # Native module exclusion for E2E testing is handled in react-native.config.cjs
   config = use_native_modules!
-
-  use_frameworks!
   # Skip NFCPassportReader for e2e testing to avoid build issues
   unless ENV["E2E_TESTING"] == "1"
     # Check if we're running in a selfxyz repo or an external fork
@@ -66,10 +84,13 @@ target "Self" do
     pod "NFCPassportReader", git: nfc_repo_url, commit: "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
   end
 
+  # Explicitly declare Mixpanel to ensure it's available even in E2E builds
+  # (NFCPassportReader also includes Mixpanel, but is skipped during E2E testing)
+  pod "Mixpanel-swift", "~> 5.0.0", :modular_headers => true
+
   pod "QKMRZScanner"
   pod "lottie-ios"
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
-  pod "Mixpanel-swift", "~> 5.0.0"
   # RNReactNativeHapticFeedback is handled by autolinking
 
   use_react_native!(
@@ -80,11 +101,8 @@ target "Self" do
     # Flipper設定は削除
   )
 
-  pod "Firebase", :modular_headers => true
-  pod "FirebaseCore", :modular_headers => true
-  pod "FirebaseCoreInternal", :modular_headers => true
-  pod "GoogleUtilities", :modular_headers => true
-  pod "FirebaseMessaging"
+  # Firebase pods removed - handled automatically by RNFirebase autolinking
+  # This resolves GoogleUtilities 7.x vs 8.x version conflicts
 
   if flipper_enabled
     pod "RCT-Folly", :podspec => "#{config[:reactNativePath]}/third-party-podspecs/RCT-Folly.podspec"

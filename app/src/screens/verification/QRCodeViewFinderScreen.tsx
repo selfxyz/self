@@ -1,8 +1,7 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,7 +13,7 @@ import {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { LottieAnimation, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   Description,
@@ -27,7 +26,6 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import qrScanAnimation from '@/assets/animations/qr_scan.json';
 import QRScan from '@/assets/icons/qr_code.svg';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
@@ -39,6 +37,9 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
+const qrScanAnimation = require('@/assets/animations/qr_scan.lottie');
+
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
@@ -48,7 +49,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
   const isFocused = useIsFocused();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
   const { top: safeAreaTop } = useSafeAreaInsets();
-  const navigateToProve = useHapticNavigation('Prove');
+  const navigateToDocumentSelector = useHapticNavigation('ProvingScreenRouter');
 
   // This resets to the default state when we navigate back to this screen
   useFocusEffect(
@@ -91,7 +92,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
               .startAppListener(selfAppJson.sessionId);
 
             setTimeout(() => {
-              navigateToProve();
+              navigateToDocumentSelector();
             }, 100);
           } catch (parseError) {
             trackEvent(ProofEvents.QR_SCAN_FAILED, {
@@ -115,7 +116,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
           selfClient.getSelfAppState().startAppListener(sessionId);
 
           setTimeout(() => {
-            navigateToProve();
+            navigateToDocumentSelector();
           }, 100);
         } else {
           trackEvent(ProofEvents.QR_SCAN_FAILED, {
@@ -129,7 +130,13 @@ const QRCodeViewFinderScreen: React.FC = () => {
         }
       }
     },
-    [doneScanningQR, navigation, navigateToProve, trackEvent, selfClient],
+    [
+      doneScanningQR,
+      navigation,
+      navigateToDocumentSelector,
+      trackEvent,
+      selfClient,
+    ],
   );
 
   const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;
@@ -158,7 +165,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
           {shouldRenderCamera && (
             <>
               <QRCodeScannerView onQRData={onQRData} isMounted={isFocused} />
-              <LottieView
+              <LottieAnimation
                 autoPlay
                 loop
                 source={qrScanAnimation}
