@@ -83,11 +83,15 @@ jobs:
       - name: Install CocoaPods dependencies
         working-directory: packages/rn-sdk-test-app/ios
         run: pod install
+      - name: Find iOS Simulator
+        id: sim
+        uses: ./.github/actions/find-ios-simulator
       - name: Build iOS app
         working-directory: packages/rn-sdk-test-app/ios
         run: |
           xcodebuild -workspace SelfRNTestApp.xcworkspace \
             -scheme SelfRNTestApp \
             -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination "id=${{ steps.sim.outputs.id }}" \
+            ONLY_ACTIVE_ARCH=YES \
             build

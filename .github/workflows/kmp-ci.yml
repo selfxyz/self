@@ -174,13 +174,17 @@ jobs:
       - name: Install CocoaPods dependencies
         working-directory: packages/kmp-test-app/iosApp
         run: pod install
+      - name: Find iOS Simulator
+        id: sim
+        uses: ./.github/actions/find-ios-simulator
       - name: Build iOS app
         working-directory: packages/kmp-test-app/iosApp
         run: |
           xcodebuild -workspace iosApp.xcworkspace \
             -scheme iosApp \
             -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination "id=${{ steps.sim.outputs.id }}" \
+            ONLY_ACTIVE_ARCH=YES \
             build
 
   # ── KMP Minipay Sample ──────────────────────────────────
@@ -231,11 +235,15 @@ jobs:
       - name: Build KMP framework for iOS
         working-directory: packages/kmp-sdk
         run: ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
+      - name: Find iOS Simulator
+        id: sim
+        uses: ./.github/actions/find-ios-simulator
       - name: Build iOS app
         working-directory: packages/kmp-minipay-sample/iosApp
         run: |
           xcodebuild -project iosApp.xcodeproj \
             -target iosApp \
             -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination "id=${{ steps.sim.outputs.id }}" \
+            ONLY_ACTIVE_ARCH=YES \
             build
