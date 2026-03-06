@@ -1,0 +1,38 @@
+name: Swift SDK CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "packages/self-sdk-swift/**"
+      - ".github/workflows/swift-sdk-ci.yml"
+      - ".github/actions/**"
+  push:
+    branches: [dev, staging, main]
+    paths:
+      - "packages/self-sdk-swift/**"
+      - ".github/workflows/swift-sdk-ci.yml"
+      - ".github/actions/**"
+
+jobs:
+  build:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+    runs-on: namespace-profile-apple-silicon-6cpu
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate token for private dependencies
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
+      - name: Configure git for HTTPS dependency fetch
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+      - name: Build Swift package
+        working-directory: packages/self-sdk-swift
+        run: swift build
