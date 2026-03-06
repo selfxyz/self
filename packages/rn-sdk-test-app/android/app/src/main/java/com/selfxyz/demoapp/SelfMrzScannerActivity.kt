@@ -222,7 +222,10 @@ class SelfMrzScannerActivity : ComponentActivity() {
                     val dateOfExpiry = parsed[EXTRA_DATE_OF_EXPIRY]?.jsonPrimitive?.contentOrNull
 
                     if (documentNumber.isNullOrBlank() || dateOfBirth.isNullOrBlank() || dateOfExpiry.isNullOrBlank()) {
-                        setResult(RESULT_CANCELED)
+                        val data = Intent().apply {
+                            putExtra(EXTRA_ERROR_CODE, "MRZ_SCAN_INVALID_RESULT")
+                        }
+                        setResult(RESULT_CANCELED, data)
                         finish()
                         return@launch
                     }
@@ -238,8 +241,11 @@ class SelfMrzScannerActivity : ComponentActivity() {
                     finish()
                 } catch (_: CancellationException) {
                     // Ignore: activity is closing.
-                } catch (_: Exception) {
-                    setResult(RESULT_CANCELED)
+                } catch (e: Exception) {
+                    val data = Intent().apply {
+                        putExtra(EXTRA_ERROR_CODE, "MRZ_SCAN_FAILED")
+                    }
+                    setResult(RESULT_CANCELED, data)
                     finish()
                 }
             }
