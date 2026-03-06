@@ -1,8 +1,8 @@
 # CI Coverage Gaps — Packages
 
-> Last updated: 2026-03-05
+> Last updated: 2026-03-06
 > Owner: SDK/infra maintainers
-> Status: Active
+> Status: Archived
 
 ## North Star
 
@@ -12,28 +12,28 @@
 
 ## Status Checklist
 
-- [ ] Chunk 1: webview-bridge CI
-- [ ] Chunk 2: webview-app CI
-- [ ] Chunk 3: KMP SDK — Android assemble + iOS framework link
-- [ ] Chunk 4: KMP test app — Android assemble + iOS build
-- [ ] Chunk 5: KMP minipay sample — Android assemble + iOS build
-- [ ] Chunk 6: RN SDK test app — iOS build
-- [ ] Chunk 7: self-sdk-swift — Swift build gate
+- [x] Chunk 1: webview-bridge CI
+- [x] Chunk 2: webview-app CI
+- [x] Chunk 3: KMP SDK — Android assemble + iOS framework link
+- [x] Chunk 4: KMP test app — Android assemble + iOS build
+- [x] Chunk 5: KMP minipay sample — Android assemble + iOS build
+- [x] Chunk 6: RN SDK test app — iOS build
+- [x] Chunk 7: self-sdk-swift — Swift build gate
 
 ## Current Coverage Audit
 
-| Package              | Dedicated CI           | Tests         | Types | Build | Android       | iOS |
-| -------------------- | ---------------------- | ------------- | ----- | ----- | ------------- | --- |
-| `kmp-sdk`            | kmp-ci.yml             | jvmTest       | —     | —     | —             | —   |
-| `kmp-test-app`       | kmp-ci.yml             | debugUnitTest | —     | —     | —             | —   |
-| `kmp-minipay-sample` | —                      | —             | —     | —     | —             | —   |
-| `mobile-sdk-alpha`   | mobile-sdk-ci.yml      | yes           | yes   | yes   | —             | —   |
-| `mobile-sdk-demo`    | mobile-sdk-demo-ci.yml | yes           | —     | yes   | —             | —   |
-| `rn-sdk`             | rn-sdk-test-app-ci.yml | yes           | yes   | tsup  | —             | —   |
-| `rn-sdk-test-app`    | rn-sdk-test-app-ci.yml | —             | yes   | —     | assembleDebug | —   |
-| `self-sdk-swift`     | —                      | —             | —     | —     | —             | —   |
-| `webview-app`        | —                      | —             | —     | —     | n/a           | n/a |
-| `webview-bridge`     | —                      | —             | —     | —     | n/a           | n/a |
+| Package              | Dedicated CI           | Tests         | Types | Build | Android       | iOS              |
+| -------------------- | ---------------------- | ------------- | ----- | ----- | ------------- | ---------------- |
+| `kmp-sdk`            | kmp-ci.yml             | jvmTest, iOS  | —     | —     | assembleDebug | framework, test  |
+| `kmp-test-app`       | kmp-ci.yml             | debugUnitTest | —     | —     | assembleDebug | xcodebuild       |
+| `kmp-minipay-sample` | kmp-ci.yml             | —             | —     | —     | assembleDebug | xcodebuild       |
+| `mobile-sdk-alpha`   | mobile-sdk-ci.yml      | yes           | yes   | yes   | —             | —                |
+| `mobile-sdk-demo`    | mobile-sdk-demo-ci.yml | yes           | —     | yes   | —             | —                |
+| `rn-sdk`             | rn-sdk-test-app-ci.yml | yes           | yes   | tsup  | —             | —                |
+| `rn-sdk-test-app`    | rn-sdk-test-app-ci.yml | —             | yes   | —     | assembleDebug | xcodebuild       |
+| `self-sdk-swift`     | swift-sdk-ci.yml       | —             | —     | yes   | n/a           | xcodebuild (sim) |
+| `webview-app`        | webview-app-ci.yml     | —             | yes   | yes   | n/a           | n/a              |
+| `webview-bridge`     | webview-bridge-ci.yml  | yes           | yes   | yes   | n/a           | n/a              |
 
 Legend: "—" = missing, "n/a" = not applicable (JS-only package).
 
@@ -41,32 +41,6 @@ Legend: "—" = missing, "n/a" = not applicable (JS-only package).
 
 - Ubuntu: `ubuntu-latest`
 - macOS (Apple Silicon): `namespace-profile-apple-silicon-6cpu`
-
-## Overlap / Cleanup Opportunities
-
-### 1. `mobile-ci.yml` build-ios and build-android are dead weight on PRs
-
-Both jobs have `if: github.event_name == 'workflow_dispatch'` — they never run on PRs. The comments say "mostly covered in mobile-e2e.yml." But `mobile-e2e.yml` also only runs on `push` to protected branches + `workflow_dispatch` for the iOS job. Net result: **no iOS or Android build gate runs on PRs for `app/`** unless manually triggered. The `mobile-ci.yml` iOS/Android jobs should either be enabled on PRs or removed to reduce confusion.
-
-**Recommendation:** Either remove the dead `build-ios`/`build-android` jobs from `mobile-ci.yml` (since `mobile-e2e.yml` covers them on push), or re-enable them on PRs if you want PR-level build gates. Don't keep both workflows with disabled jobs.
-
-### 2. `mobile-sdk-demo-e2e.yml` Android E2E is build-only with all E2E steps `if: false`
-
-Every Maestro/emulator step is guarded by `if: false`. It's a 170-line workflow that does `assembleDebug` + verify APK exists. The `mobile-sdk-demo-ci.yml` already does `test + build` for the demo app. The only unique value is the APK artifact verification — marginal.
-
-**Recommendation:** Either re-enable the E2E tests or consolidate the Android build into `mobile-sdk-demo-ci.yml` and remove the dead workflow. The iOS E2E job in this workflow is actually live and useful — keep that.
-
-### 3. `mobile-ci.yml` has debug logging that should be cleaned up
-
-Steps like "Debug Cache Restoration", "Force Build Dependencies If Missing", and comments like "Temporarily always build to debug CI issues" suggest this workflow has accumulated debugging scaffolding that was never removed.
-
-**Recommendation:** Clean up after the current caching issues are resolved. Not blocking but adds noise.
-
-### 4. `mobile-sdk-ci.yml` duplicates build step across every job
-
-Each of `lint`, `format`, `types`, `test` independently restores cache and falls back to a full rebuild. The `build` job saves the cache, but the restore is flaky enough that every job has a fallback build. This means `mobile-sdk-alpha` could be built up to 5 times in one CI run.
-
-**Recommendation:** Low priority, but could use a shared artifact (upload/download) instead of cache if cache misses are frequent.
 
 ## Chunks
 
