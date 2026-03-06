@@ -1181,7 +1181,7 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 | Self Wallet migration to `SelfVerification`  | Spec writing      | Separate migration spec after SDK is stable                                                  |
 | MiniPay RN sample integration                | Spec writing      | `integrations/SPEC.md` (already exists)                                                      |
 | Camera library selection for MRZ scanning    | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter                            |
-| RN test app MRZ DRY consolidation            | Complete          | [MRZ Consolidation Spec (archived)](../../../../specs/archive/sdk/SPEC-MRZ-CONSOLIDATION.md) |
+| RN test app MRZ DRY consolidation            | Complete          | [MRZ Consolidation Spec (archived)](../../../../archive/sdk/SPEC-MRZ-CONSOLIDATION.md) |
 | iOS asset loading strategy (RNFS vs require) | PR #1765 review   | **Decided:** Use RN `require()` + Metro `html` asset support                                 |
 
 ## Spec Deviations

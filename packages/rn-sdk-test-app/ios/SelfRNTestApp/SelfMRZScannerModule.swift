@@ -389,11 +389,15 @@ private final class SelfMrzScannerViewController: UIViewController {
 
   private func handleScanSuccess(_ jsonPayload: String) {
     guard let data = jsonPayload.data(using: .utf8),
-          let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-          let documentNumber = json["documentNumber"] as? String,
+          let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+      failAndDismiss(code: "MRZ_SCAN_FAILED", message: "MRZ scan failed")
+      return
+    }
+
+    guard let documentNumber = json["documentNumber"] as? String,
           let dateOfBirth = json["dateOfBirth"] as? String,
           let dateOfExpiry = json["dateOfExpiry"] as? String else {
-      failAndDismiss(code: "MRZ_SCAN_FAILED", message: "MRZ scan failed")
+      failAndDismiss(code: "MRZ_SCAN_INVALID_RESULT", message: "MRZ result missing required fields")
       return
     }
 
