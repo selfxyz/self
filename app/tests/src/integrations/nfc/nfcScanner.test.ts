@@ -425,6 +425,23 @@ describe('scan', () => {
         'NFC scanning is currently unavailable.',
       );
     });
+
+    it('should reject with unavailable error when android module is unavailable', async () => {
+      jest.resetModules();
+      global.mockPlatformOS = 'android';
+
+      jest.doMock('@/integrations/nfc/passportReader', () => ({
+        PassportReader: {},
+        scan: null,
+        reset: jest.fn(),
+      }));
+
+      const { scan: isolatedScan } = require('@/integrations/nfc/nfcScanner');
+
+      await expect(isolatedScan(mockInputs)).rejects.toThrow(
+        'NFC scanning is currently unavailable.',
+      );
+    });
   });
 
   describe('Platform dispatch', () => {
