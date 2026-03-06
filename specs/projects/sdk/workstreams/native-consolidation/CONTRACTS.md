@@ -30,13 +30,13 @@ Anything not listed here is not yet a hard compatibility gate.
 
 ## Contract: App PassportReader Interface
 
-| Surface              | Required contract                                                   |
-| -------------------- | ------------------------------------------------------------------- |
-| Required methods     | `scanPassport` and `reset` must exist and be callable               |
-| Forbidden method     | `scan` must be absent on iOS-facing `PassportReader` interface      |
-| `scanPassport` arity | `scanPassport.length === 9`                                         |
-| Optional methods     | `configure`, `trackEvent`, `flush` may be `function` or `undefined` |
-| Safe optional access | Existence checks for optional methods must not throw                |
+| Surface              | Required contract                                                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Required methods     | `scanPassport` must exist and be callable on `PassportReader`; `reset` is a standalone export (not a `PassportReader` method) |
+| Forbidden method     | `scan` must be absent on iOS-facing `PassportReader` interface                                                                |
+| `scanPassport` arity | `scanPassport.length === 9`                                                                                                   |
+| Optional methods     | `configure`, `trackEvent`, `flush` may be `function` or `undefined`                                                           |
+| Safe optional access | Existence checks for optional methods must not throw                                                                          |
 
 ## Contract: RN Test App MRZ Bridge
 

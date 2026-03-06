@@ -21,14 +21,16 @@ struct MrzOcrCorrection {
         ]
         let lines = mrzString.components(separatedBy: "\n")
         guard lines.count >= 2 else { return nil }
+        // TD1 (3-line): doc number is on line 0; TD3 (2-line): doc number is on line 1
+        let docNumberLineIndex = lines.count == 3 ? 0 : 1
         for (i, char) in docNumber.enumerated() {
             if let subs = replacements[char] {
                 for sub in subs {
                     var chars = Array(docNumber)
                     chars[i] = sub
                     let candidate = String(chars)
-                    if let range = lines[1].range(of: docNumber) {
-                        var newLine = lines[1]
+                    if let range = lines[docNumberLineIndex].range(of: docNumber) {
+                        var newLine = lines[docNumberLineIndex]
                         let start = newLine.distance(from: newLine.startIndex, to: range.lowerBound)
                         var lineChars = Array(newLine)
                         let docNumChars = Array(candidate)
@@ -37,7 +39,7 @@ struct MrzOcrCorrection {
                         }
                         newLine = String(lineChars)
                         var newLines = lines
-                        newLines[1] = newLine
+                        newLines[docNumberLineIndex] = newLine
                         let correctedMRZ = newLines.joined(separator: "\n")
                         if let correctedResult = parser.parse(mrzString: correctedMRZ) {
                             if correctedResult.isDocumentNumberValid {

@@ -37,8 +37,7 @@ struct MrzScanEngine {
                     let text = candidate.string
 
                     // TD1 format (ID cards): 30 chars, TD3 format (passports): 44 chars
-                    if text.contains("<") ||
-                       text.matches(pattern: "^[A-Z0-9<]{30}$") ||
+                    if text.matches(pattern: "^[A-Z0-9<]{30}$") ||
                        text.matches(pattern: "^[A-Z0-9<]{44}$") {
                         mrzLines.append(text)
                         boxes.append(obs.boundingBox)
