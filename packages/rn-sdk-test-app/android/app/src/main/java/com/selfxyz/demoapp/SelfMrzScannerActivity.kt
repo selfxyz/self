@@ -208,7 +208,14 @@ class SelfMrzScannerActivity : ComponentActivity() {
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
+            val cameraProvider =
+                try {
+                    cameraProviderFuture.get()
+                } catch (e: Exception) {
+                    setResult(RESULT_CANCELED)
+                    finish()
+                    return@addListener
+                }
 
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(previewView.surfaceProvider)
