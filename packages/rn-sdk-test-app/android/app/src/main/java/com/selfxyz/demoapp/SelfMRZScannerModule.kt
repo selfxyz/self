@@ -40,7 +40,12 @@ class SelfMRZScannerModule(
                 }
 
                 if (resultCode != Activity.RESULT_OK || data == null) {
-                    promise.reject("MRZ_SCAN_CANCELLED", "MRZ scanning cancelled")
+                    val errorCode = data?.getStringExtra(SelfMrzScannerActivity.EXTRA_ERROR_CODE)
+                    if (errorCode != null) {
+                        promise.reject(errorCode, "MRZ scanning failed: $errorCode")
+                    } else {
+                        promise.reject("MRZ_SCAN_CANCELLED", "MRZ scanning cancelled")
+                    }
                     return
                 }
 

@@ -355,13 +355,15 @@ private final class SelfMrzScannerViewController: UIViewController, AVCaptureVid
 
     AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
       guard let self = self else { return }
-      DispatchQueue.main.async {
-        if !granted {
+      if !granted {
+        DispatchQueue.main.async {
           self.onError?("CAMERA_PERMISSION_DENIED", "Camera permission denied")
           self.dismiss(animated: true)
-          return
         }
+        return
+      }
 
+      self.recognitionQueue.async {
         self.configureSessionInputs()
       }
     }
@@ -375,8 +377,10 @@ private final class SelfMrzScannerViewController: UIViewController, AVCaptureVid
           let input = try? AVCaptureDeviceInput(device: device),
           captureSession.canAddInput(input) else {
       captureSession.commitConfiguration()
-      onError?("CAMERA_INIT_FAILED", "Failed to initialize camera input")
-      dismiss(animated: true)
+      DispatchQueue.main.async {
+        self.onError?("CAMERA_INIT_FAILED", "Failed to initialize camera input")
+        self.dismiss(animated: true)
+      }
       return
     }
 
@@ -390,19 +394,23 @@ private final class SelfMrzScannerViewController: UIViewController, AVCaptureVid
 
     guard captureSession.canAddOutput(videoOutput) else {
       captureSession.commitConfiguration()
-      onError?("CAMERA_INIT_FAILED", "Failed to initialize camera output")
-      dismiss(animated: true)
+      DispatchQueue.main.async {
+        self.onError?("CAMERA_INIT_FAILED", "Failed to initialize camera output")
+        self.dismiss(animated: true)
+      }
       return
     }
 
     captureSession.addOutput(videoOutput)
     captureSession.commitConfiguration()
 
-    let layer = AVCaptureVideoPreviewLayer(session: captureSession)
-    layer.videoGravity = .resizeAspectFill
-    layer.frame = view.bounds
-    view.layer.insertSublayer(layer, at: 0)
-    previewLayer = layer
+    DispatchQueue.main.async {
+      let layer = AVCaptureVideoPreviewLayer(session: self.captureSession)
+      layer.videoGravity = .resizeAspectFill
+      layer.frame = self.view.bounds
+      self.view.layer.insertSublayer(layer, at: 0)
+      self.previewLayer = layer
+    }
   }
 
   @objc private func cancelTapped() {

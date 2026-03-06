@@ -86,7 +86,10 @@ class SelfMrzScannerActivity : ComponentActivity() {
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             startCamera()
         } else {
-            setResult(RESULT_CANCELED)
+            val data = Intent().apply {
+                putExtra(EXTRA_ERROR_CODE, "CAMERA_PERMISSION_DENIED")
+            }
+            setResult(RESULT_CANCELED, data)
             finish()
         }
     }
@@ -255,7 +258,15 @@ class SelfMrzScannerActivity : ComponentActivity() {
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
             cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(this, cameraSelector, preview, analysis)
+            try {
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview, analysis)
+            } catch (e: Exception) {
+                val data = Intent().apply {
+                    putExtra(EXTRA_ERROR_CODE, "CAMERA_INIT_FAILED")
+                }
+                setResult(RESULT_CANCELED, data)
+                finish()
+            }
         }, ContextCompat.getMainExecutor(this))
     }
 
@@ -263,6 +274,7 @@ class SelfMrzScannerActivity : ComponentActivity() {
         const val EXTRA_DOCUMENT_NUMBER = "documentNumber"
         const val EXTRA_DATE_OF_BIRTH = "dateOfBirth"
         const val EXTRA_DATE_OF_EXPIRY = "dateOfExpiry"
+        const val EXTRA_ERROR_CODE = "errorCode"
 
         private const val REQUEST_CAMERA_PERMISSION = 1101
     }

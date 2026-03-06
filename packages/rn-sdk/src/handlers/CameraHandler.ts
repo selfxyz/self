@@ -106,6 +106,12 @@ export class CameraHandler implements BridgeHandler {
           if (nativeCode === 'MRZ_SCAN_CANCELLED') {
             throw new BridgeHandlerError('MRZ_SCAN_CANCELLED', 'MRZ scan cancelled');
           }
+          if (nativeCode === 'CAMERA_PERMISSION_DENIED') {
+            throw new BridgeHandlerError('CAMERA_PERMISSION_DENIED', 'Camera permission denied');
+          }
+          if (nativeCode === 'CAMERA_INIT_FAILED') {
+            throw new BridgeHandlerError('CAMERA_INIT_FAILED', 'Failed to initialize camera');
+          }
 
           throw new BridgeHandlerError(
             'MRZ_SCAN_FAILED',
