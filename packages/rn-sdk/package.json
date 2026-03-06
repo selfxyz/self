@@ -23,8 +23,8 @@
     "copy-assets": "mkdir -p ./assets/self-wallet && cp -r ../webview-app/dist/. ./assets/self-wallet/",
     "prepublishOnly": "yarn build",
     "test": "yarn copy-assets && tsup && vitest run",
-    "types": "tsup",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "types": "tsup"
   },
   "dependencies": {
     "@selfxyz/webview-bridge": "workspace:^"
@@ -48,7 +48,7 @@
     "react-native": ">=0.72.0",
     "react-native-biometrics": "^3.0.1",
     "react-native-fs": "^2.20.0",
-    "react-native-keychain": "^8.2.0",
+    "react-native-keychain": ">=8.2.0 <11",
     "react-native-nfc-manager": "^3.14.0",
     "react-native-webview": ">=13.0.0"
   },

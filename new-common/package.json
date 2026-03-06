@@ -5,9 +5,6 @@
   "license": "MIT",
   "author": "@Selfxyz Team",
   "type": "module",
-  "main": "./dist/cjs/index.cjs",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/esm/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -21,13 +18,16 @@
     },
     "./src/data/*.json": "./src/data/*.json"
   },
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "scripts": {
     "build": "tsup && yarn build:types",
     "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
-    "types": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
     "format": "npx prettier --write 'src/**/*.ts'",
-    "format:check": "npx prettier --check 'src/**/*.ts'"
+    "format:check": "npx prettier --check 'src/**/*.ts'",
+    "test": "vitest run",
+    "types": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1",

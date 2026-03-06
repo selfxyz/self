@@ -1,0 +1,48 @@
+name: WebView Bridge CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "packages/webview-bridge/**"
+      - ".github/workflows/webview-bridge-ci.yml"
+      - ".github/actions/**"
+  push:
+    branches: [dev, staging, main]
+    paths:
+      - "packages/webview-bridge/**"
+      - ".github/workflows/webview-bridge-ci.yml"
+      - ".github/actions/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build
+        run: yarn workspace @selfxyz/webview-bridge build
+
+  types:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Typecheck
+        run: yarn workspace @selfxyz/webview-bridge typecheck
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Test
+        run: yarn workspace @selfxyz/webview-bridge test

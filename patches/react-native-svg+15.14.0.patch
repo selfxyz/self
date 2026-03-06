@@ -1,0 +1,14 @@
+diff --git a/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp b/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp
+index 0000000..0000001 100644
+--- a/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp
++++ b/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp
+@@ -28,7 +28,7 @@
+   // views in the layout inspector when Yoga attempts to interpret SVG
+   // properties like width when viewBox scale is set.
+   auto style = yogaNode_.style();
+-  style.setDimension(yoga::Dimension::Width, yoga::StyleSizeLength::points(0));
+-  style.setDimension(yoga::Dimension::Height, yoga::StyleSizeLength::points(0));
++  style.setDimension(yoga::Dimension::Width, yoga::StyleLength::points(0));
++  style.setDimension(yoga::Dimension::Height, yoga::StyleLength::points(0));
+   yogaNode_.setStyle(style);
+ }

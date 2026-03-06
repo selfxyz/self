@@ -68,3 +68,32 @@ jobs:
         run: |
           chmod +x packages/rn-sdk-test-app/android/gradlew
           cd packages/rn-sdk-test-app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache
+
+  ios-build:
+    runs-on: namespace-profile-apple-silicon-6cpu
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build webview-bridge
+        run: yarn workspace @selfxyz/webview-bridge build
+      - name: Install CocoaPods dependencies
+        working-directory: packages/rn-sdk-test-app/ios
+        run: pod install
+      - name: Find iOS Simulator
+        id: sim
+        uses: ./.github/actions/find-ios-simulator
+      - name: Build iOS app
+        working-directory: packages/rn-sdk-test-app/ios
+        run: |
+          xcodebuild -workspace SelfRNTestApp.xcworkspace \
+            -scheme SelfRNTestApp \
+            -sdk iphonesimulator \
+            -destination "id=${{ steps.sim.outputs.id }}" \
+            ONLY_ACTIVE_ARCH=YES \
+            build
