@@ -2,7 +2,9 @@
 
 Last updated: March 5, 2026
 Owner: KMP program
-Status: Active
+Status: Archived
+
+This folder is a historical snapshot. Active execution moved to SDK specs.
 
 ## Start Here
 
@@ -10,21 +12,22 @@ Status: Active
 2. [KMP Architecture](./ARCHITECTURE.md) — technical boundaries and runtime model.
 3. [KMP Reorg Plan](./REORG-PLAN.md) — migration phases and execution checklist.
 
-## Canonical Paths
+## Historical Paths (Retired)
 
 - `specs/projects/kmp/INITIATIVE.md`
 - `specs/projects/kmp/ARCHITECTURE.md`
 - `specs/projects/kmp/REORG-PLAN.md`
+
+## Active Paths
+
 - `specs/projects/sdk/OVERVIEW.md` (SDK-wide execution status — see "Execution Status" section)
 - `specs/projects/sdk/workstreams/native-shells/` (active KMP execution stream)
 - `specs/projects/sdk/workstreams/integrations/` (cross-SDK integration execution)
 
-## Working Rules for Agents
+## Notes
 
-- Prefer canonical KMP paths over legacy `person*` docs for KMP planning.
-- Record `Last updated` date on each material change.
-- Include validation commands in implementation-facing specs.
-- Mark unresolved items in `Open Decisions` sections.
+- Keep this folder as immutable historical context.
+- For new KMP work, update SDK specs under `specs/projects/sdk/`.
 
 ## Migration Tracking
 
