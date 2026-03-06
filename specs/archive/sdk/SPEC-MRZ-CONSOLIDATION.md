@@ -132,21 +132,21 @@ yarn workspace @selfxyz/rn-sdk test
 
 ## Tests
 
-| Test                                    | Type   | What it validates                                                                                                                                                | Status              |
-| --------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| `rn-test-app.android-assemble`          | Build  | Android app builds with composite build SDK dependency.                                                                                                          | Pass                |
-| `rn-test-app.android-dep-insight`       | Build  | `dependencyInsight` confirms `project :kmp-sdk:shared (by composite build)`.                                                                                     | Pass                |
-| `rn-test-app.android-runtime-classpath` | Build  | SDK artifact/variant resolution includes expected camera stack.                                                                                                  | Pass                |
-| `kmp-sdk.assembleRelease`               | Build  | KMP SDK builds with AGP 8.11.2.                                                                                                                                  | Pass                |
-| `kmp-sdk.jvmTest`                       | Build  | KMP SDK unit tests pass after AGP bump.                                                                                                                          | Pass                |
-| `kmp-sdk-test-app.assembleDebug`        | Build  | KMP test app builds with AGP 8.11.2.                                                                                                                             | Pass                |
-| `kmp-minipay-sample.assembleDebug`      | Build  | Minipay sample builds with AGP 8.11.2.                                                                                                                           | Pass                |
-| `rn-test-app.ios-build`                 | Build  | Local `self-sdk-swift` SPM package is linked and compiles.                                                                                                       | Pass                |
-| `camera.cancelled.android`              | Manual | Cancellation still maps to `MRZ_SCAN_CANCELLED`.                                                                                                                 | Pass                |
-| `camera.cancelled.ios`                  | Manual | Cancellation still maps to `MRZ_SCAN_CANCELLED`.                                                                                                                 | Pending             |
-| `camera.success.android`                | Manual | Returns required MRZ fields with delegated handler logic.                                                                                                        | Pass                |
-| `camera.success.ios`                    | Manual | Returns required MRZ fields with delegated helper logic.                                                                                                         | Pending             |
-| `camera.error-codes.contract`           | Unit   | Native modules produce exact same error codes before/after rewrite (`MRZ_SCAN_CANCELLED`, `MRZ_SCAN_FAILED`, `MRZ_SCAN_IN_PROGRESS`, `MRZ_SCAN_INVALID_RESULT`). | Pass (Android)      |
+| Test                                    | Type   | What it validates                                                                                                                                                | Status         |
+| --------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| `rn-test-app.android-assemble`          | Build  | Android app builds with composite build SDK dependency.                                                                                                          | Pass           |
+| `rn-test-app.android-dep-insight`       | Build  | `dependencyInsight` confirms `project :kmp-sdk:shared (by composite build)`.                                                                                     | Pass           |
+| `rn-test-app.android-runtime-classpath` | Build  | SDK artifact/variant resolution includes expected camera stack.                                                                                                  | Pass           |
+| `kmp-sdk.assembleRelease`               | Build  | KMP SDK builds with AGP 8.11.2.                                                                                                                                  | Pass           |
+| `kmp-sdk.jvmTest`                       | Build  | KMP SDK unit tests pass after AGP bump.                                                                                                                          | Pass           |
+| `kmp-sdk-test-app.assembleDebug`        | Build  | KMP test app builds with AGP 8.11.2.                                                                                                                             | Pass           |
+| `kmp-minipay-sample.assembleDebug`      | Build  | Minipay sample builds with AGP 8.11.2.                                                                                                                           | Pass           |
+| `rn-test-app.ios-build`                 | Build  | Local `self-sdk-swift` SPM package is linked and compiles.                                                                                                       | Pass           |
+| `camera.cancelled.android`              | Manual | Cancellation still maps to `MRZ_SCAN_CANCELLED`.                                                                                                                 | Pass           |
+| `camera.cancelled.ios`                  | Manual | Cancellation still maps to `MRZ_SCAN_CANCELLED`.                                                                                                                 | Pending        |
+| `camera.success.android`                | Manual | Returns required MRZ fields with delegated handler logic.                                                                                                        | Pass           |
+| `camera.success.ios`                    | Manual | Returns required MRZ fields with delegated helper logic.                                                                                                         | Pending        |
+| `camera.error-codes.contract`           | Unit   | Native modules produce exact same error codes before/after rewrite (`MRZ_SCAN_CANCELLED`, `MRZ_SCAN_FAILED`, `MRZ_SCAN_IN_PROGRESS`, `MRZ_SCAN_INVALID_RESULT`). | Pass (Android) |
 
 ## PR Strategy (final)
 
