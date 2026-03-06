@@ -10962,9 +10962,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/kmp-test-app@workspace:packages/kmp-test-app":
+"@selfxyz/kmp-sdk-test-app@workspace:packages/kmp-sdk-test-app":
   version: 0.0.0-use.local
-  resolution: "@selfxyz/kmp-test-app@workspace:packages/kmp-test-app"
+  resolution: "@selfxyz/kmp-sdk-test-app@workspace:packages/kmp-sdk-test-app"
   languageName: unknown
   linkType: soft
 

@@ -198,7 +198,7 @@ packages/self-sdk-swift/                    # Swift companion package
     Helpers/
       NfcPassportHelper.swift               # Moved from test app (274 lines)
 
-packages/kmp-test-app/
+packages/kmp-sdk-test-app/
   shared/                       # Shared KMP app code
   androidApp/                   # Android test app (Compose)
   iosApp/                       # iOS test app (SwiftUI)
@@ -1500,7 +1500,7 @@ Pure Kotlin, already correct in the prototype. ICAO 9303 check digit computation
 | `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/`          | 3 iOS handlers delegating to providers                                | **Low** -- thin delegation                        |
 | `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/api/SelfSdk.ios.kt` | iOS launch flow using providers                                       | **Med** -- VC presentation logic                  |
 | `packages/self-sdk-swift/`                                                   | Entire Swift companion package (new)                                  | **Med** -- new package, SPM config                |
-| `packages/kmp-test-app/iosApp/iosApp/iOSApp.swift`                           | Replace manual factory registrations with `SelfSdkSwift.configure()`  | **Low** -- one-line change                        |
+| `packages/kmp-sdk-test-app/iosApp/iosApp/iOSApp.swift`                           | Replace manual factory registrations with `SelfSdkSwift.configure()`  | **Low** -- one-line change                        |
 
 ## Files You Will NOT Modify
 
@@ -1704,7 +1704,7 @@ Chunks 2D (iOS WebView Host + Provider Infrastructure) and 2E (iOS Native Handle
 **Steps:**
 
 1. Implement `commonMain/api/SelfSdk.kt` (expect) + platform actuals
-2. Create `packages/kmp-test-app/` with Compose Multiplatform
+2. Create `packages/kmp-sdk-test-app/` with Compose Multiplatform
 3. Android test app: "Launch Verification" button -> `SelfSdk.launch()`
 4. iOS test app: same button via SwiftUI wrapping KMP framework, with `SelfSdkSwift.configure()` at startup
 5. Test on emulator/simulator
@@ -2009,7 +2009,7 @@ Output: callback.onFailure(SelfSdkError("SDK_ALREADY_ACTIVE", "...")) and no sec
 
 **Steps:**
 
-1. Move `NfcPassportHelper.swift` from `packages/kmp-test-app/iosApp/iosApp/` into `packages/self-sdk-swift/Sources/SelfSdkSwift/Helpers/`
+1. Move `NfcPassportHelper.swift` from `packages/kmp-sdk-test-app/iosApp/iosApp/` into `packages/self-sdk-swift/Sources/SelfSdkSwift/Helpers/`
 2. Create `Sources/SelfSdkSwift/Providers/NfcProviderImpl.swift`
 3. Implement `iosMain/handlers/NfcBridgeHandler.kt` delegating to `NfcProvider`
 4. Update test app: replace `NfcScanFactoryImpl.register()` with `SelfSdkSwift.configure()`
@@ -2173,8 +2173,8 @@ cd packages/self-sdk-swift && swift build
 | `packages/webview-bridge/src/types.ts`                                  | Bridge protocol TypeScript types (must match Kotlin exactly)                         |
 | `packages/mobile-sdk-alpha/src/types/public.ts`                         | Adapter interfaces (what the WebView expects the bridge to implement)                |
 | `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/` | Android handlers (reference for iOS method contracts)                                |
-| `packages/kmp-test-app/iosApp/iosApp/NfcPassportHelper.swift`           | Move to Swift companion package                                                      |
-| `packages/kmp-test-app/iosApp/iosApp/NfcScanFactoryImpl.swift`          | Reference pattern, then delete                                                       |
+| `packages/kmp-sdk-test-app/iosApp/iosApp/NfcPassportHelper.swift`           | Move to Swift companion package                                                      |
+| `packages/kmp-sdk-test-app/iosApp/iosApp/NfcScanFactoryImpl.swift`          | Reference pattern, then delete                                                       |
 
 ---
 

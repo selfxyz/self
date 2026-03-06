@@ -5,7 +5,7 @@ This directory contains test applications for the Self KMP SDK on both Android a
 ## Structure
 
 ```
-kmp-test-app/
+kmp-sdk-test-app/
 ├── androidApp/          # Android test app (Jetpack Compose)
 ├── iosApp/              # iOS test app (SwiftUI)
 ├── shared/              # Shared KMP code
@@ -26,7 +26,7 @@ cd ../kmp-sdk
 2. Run the Android app:
 
 ```bash
-cd ../kmp-test-app
+cd ../kmp-sdk-test-app
 ./gradlew :androidApp:installDebug
 ```
 
@@ -86,7 +86,7 @@ cd ../kmp-sdk
 2. Open the iOS project in Xcode:
 
 ```bash
-cd ../kmp-test-app
+cd ../kmp-sdk-test-app
 open iosApp/iosApp.xcodeproj
 ```
 
