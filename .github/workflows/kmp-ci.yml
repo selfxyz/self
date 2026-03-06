@@ -252,4 +252,5 @@ jobs:
             -destination "id=${{ steps.sim.outputs.id }}" \
             ONLY_ACTIVE_ARCH=YES \
             ARCHS=arm64 \
+            SWIFT_ENABLE_EXPLICIT_MODULES=NO \
             build
