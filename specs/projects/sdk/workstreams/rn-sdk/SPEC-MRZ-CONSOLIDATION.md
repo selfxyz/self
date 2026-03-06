@@ -3,7 +3,16 @@
 > Last updated: 2026-03-05
 > Owner: Person 5 (RN SDK)
 > Parent: [SDK Overview](../../OVERVIEW.md)
-> Status: Active (Blocked on infra prerequisites)
+> Status: Active (Android path in progress; composite-build infra still pending)
+
+## Execution Status (2026-03-05)
+
+- Completed: `MRZ-Infra-B` publication fix in `packages/kmp-sdk/shared/build.gradle.kts` by enabling Android MPP publication (`publishLibraryVariants("release")`) and removing broken `components["release"]` publishing wiring.
+- Validated: `./gradlew :shared:publishToMavenLocal` now produces `~/.m2/repository/xyz/self/sdk/shared-android/0.1.0/shared-android-0.1.0.aar`.
+- Completed (Android wiring): RN test app resolves `implementation("xyz.self.sdk:shared:0.1.0")` through `shared-android` with `mavenLocal()` enabled.
+- Completed (Android scanner rewrite): `SelfMrzScannerActivity` now delegates scan/progress to `CameraMrzBridgeHandler.scanMrzWithPreview(...)`; local `SelfMrzParser.kt` removed.
+- Completed (Android dependency cleanup): direct CameraX/ML Kit dependencies removed from RN test app; `camera-view` kept as `compileOnly` for `PreviewView` compile access while runtime deps come from SDK artifact.
+- Still pending: `MRZ-Infra-A` composite-build gate (`includeBuild("../../kmp-sdk")`) and iOS local SPM integration/rewrite.
 
 ## North Star
 

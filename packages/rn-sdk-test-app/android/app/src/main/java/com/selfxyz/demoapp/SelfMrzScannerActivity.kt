@@ -24,24 +24,24 @@ import android.widget.TextView
 import android.graphics.drawable.GradientDrawable
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import xyz.self.sdk.handlers.CameraMrzBridgeHandler
+import xyz.self.sdk.models.MrzDetectionState
 
 class SelfMrzScannerActivity : ComponentActivity() {
     private lateinit var previewView: PreviewView
-    private lateinit var cameraExecutor: ExecutorService
+    private lateinit var cameraMrzHandler: CameraMrzBridgeHandler
     private lateinit var instructionView: TextView
     private lateinit var viewfinderOverlay: MrzViewfinderView
-    private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private var scanJob: Job? = null
 
     @Volatile
     private var hasResult = false
@@ -51,7 +51,7 @@ class SelfMrzScannerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
+        cameraMrzHandler = CameraMrzBridgeHandler(this)
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -70,14 +70,13 @@ class SelfMrzScannerActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        scanJob?.cancel()
         super.onDestroy()
-        recognizer.close()
-        cameraExecutor.shutdown()
     }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
-        permissions: Array<out String>,
+        permissions: Array<String>,
         grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -206,75 +205,44 @@ class SelfMrzScannerActivity : ComponentActivity() {
         ).toInt()
 
     private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-        cameraProviderFuture.addListener({
-            val cameraProvider =
+        scanJob?.cancel()
+        scanJob =
+            lifecycleScope.launch {
                 try {
-                    cameraProviderFuture.get()
-                } catch (e: Exception) {
+                    val result =
+                        cameraMrzHandler.scanMrzWithPreview(
+                            previewView = previewView,
+                            onProgress = ::updateDetectionState,
+                        )
+                    if (hasResult) return@launch
+
+                    val parsed = result.jsonObject
+                    val documentNumber = parsed[EXTRA_DOCUMENT_NUMBER]?.jsonPrimitive?.contentOrNull
+                    val dateOfBirth = parsed[EXTRA_DATE_OF_BIRTH]?.jsonPrimitive?.contentOrNull
+                    val dateOfExpiry = parsed[EXTRA_DATE_OF_EXPIRY]?.jsonPrimitive?.contentOrNull
+
+                    if (documentNumber.isNullOrBlank() || dateOfBirth.isNullOrBlank() || dateOfExpiry.isNullOrBlank()) {
+                        setResult(RESULT_CANCELED)
+                        finish()
+                        return@launch
+                    }
+
+                    hasResult = true
+                    val data =
+                        Intent().apply {
+                            putExtra(EXTRA_DOCUMENT_NUMBER, documentNumber)
+                            putExtra(EXTRA_DATE_OF_BIRTH, dateOfBirth)
+                            putExtra(EXTRA_DATE_OF_EXPIRY, dateOfExpiry)
+                        }
+                    setResult(RESULT_OK, data)
+                    finish()
+                } catch (_: CancellationException) {
+                    // Ignore: activity is closing.
+                } catch (_: Exception) {
                     setResult(RESULT_CANCELED)
                     finish()
-                    return@addListener
                 }
-
-            val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(previewView.surfaceProvider)
             }
-
-            val analysis =
-                ImageAnalysis
-                    .Builder()
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-
-            analysis.setAnalyzer(cameraExecutor) { imageProxy ->
-                val mediaImage = imageProxy.image
-                if (mediaImage == null || hasResult) {
-                    imageProxy.close()
-                    return@setAnalyzer
-                }
-
-                val inputImage =
-                    InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
-                recognizer
-                    .process(inputImage)
-                    .addOnSuccessListener { result ->
-                        if (hasResult) return@addOnSuccessListener
-
-                        val rawText = result.text
-                        val detectionState = SelfMrzParser.detectState(rawText)
-                        updateDetectionState(detectionState)
-
-                        val parsed = SelfMrzParser.parse(rawText)
-                        if (parsed != null) {
-                            hasResult = true
-                            val data = Intent().apply {
-                                putExtra(EXTRA_DOCUMENT_NUMBER, parsed.documentNumber)
-                                putExtra(EXTRA_DATE_OF_BIRTH, parsed.dateOfBirth)
-                                putExtra(EXTRA_DATE_OF_EXPIRY, parsed.dateOfExpiry)
-                            }
-                            setResult(RESULT_OK, data)
-                            cameraProvider.unbindAll()
-                            finish()
-                        }
-                    }.addOnCompleteListener {
-                        imageProxy.close()
-                    }
-            }
-
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-            cameraProvider.unbindAll()
-            try {
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview, analysis)
-            } catch (e: Exception) {
-                val data = Intent().apply {
-                    putExtra(EXTRA_ERROR_CODE, "CAMERA_INIT_FAILED")
-                }
-                setResult(RESULT_CANCELED, data)
-                finish()
-            }
-        }, ContextCompat.getMainExecutor(this))
     }
 
     companion object {
