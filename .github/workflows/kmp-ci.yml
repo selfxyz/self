@@ -238,6 +238,11 @@ jobs:
       - name: Find iOS Simulator
         id: sim
         uses: ./.github/actions/find-ios-simulator
+      - name: Resolve SPM dependencies
+        working-directory: packages/kmp-minipay-sample/iosApp
+        run: |
+          xcodebuild -project iosApp.xcodeproj \
+            -resolvePackageDependencies
       - name: Build iOS app
         working-directory: packages/kmp-minipay-sample/iosApp
         run: |
@@ -246,4 +251,5 @@ jobs:
             -sdk iphonesimulator \
             -destination "id=${{ steps.sim.outputs.id }}" \
             ONLY_ACTIVE_ARCH=YES \
+            ARCHS=arm64 \
             build
