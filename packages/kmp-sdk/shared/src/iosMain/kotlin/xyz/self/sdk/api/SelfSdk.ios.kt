@@ -44,10 +44,12 @@ actual class SelfSdk private constructor(
 
     actual companion object {
         private var instance: SelfSdk? = null
+        private var configuredWith: SelfSdkConfig? = null
 
         actual fun configure(config: SelfSdkConfig): SelfSdk {
-            if (instance == null) {
+            if (instance == null || configuredWith != config) {
                 instance = SelfSdk(config)
+                configuredWith = config
             }
             return instance!!
         }

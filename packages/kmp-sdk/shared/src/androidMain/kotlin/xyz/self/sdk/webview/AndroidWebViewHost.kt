@@ -108,7 +108,7 @@ class AndroidWebViewHost(
                             val url = request?.url?.toString() ?: return true
                             val assetHost = "https://appassets.androidplatform.net/"
                             if (url.startsWith(assetHost)) return false
-                            if (isDebugMode && url.startsWith("http://10.0.2.2:5173")) return false
+                            if (isDebugMode && url.startsWith("http://127.0.0.1:5173")) return false
                             return true // block everything else
                         }
 
@@ -128,8 +128,8 @@ class AndroidWebViewHost(
                 // Load appropriate URL based on mode
                 if (isDebugMode) {
                     // Development mode: connect to Vite dev server
-                    // Android emulator uses 10.0.2.2 to access host machine's localhost
-                    loadUrl("http://10.0.2.2:5173")
+                    // With adb reverse, Android devices can use localhost.
+                    loadUrl("http://127.0.0.1:5173")
                 } else {
                     // Production mode: load via WebViewAssetLoader.
                     // The custom PathHandler prepends self-wallet/ to all paths,
