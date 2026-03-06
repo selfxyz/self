@@ -31,6 +31,11 @@ app/platforms/
 packages/mobile-sdk-alpha/licenses/
 packages/mobile-sdk-alpha/platforms/
 
+# Renamed KMP test app (old folder, build artifacts only)
+packages/kmp-test-app/.gradle/
+packages/kmp-test-app/build/
+packages/kmp-test-app/**/build/
+
 # Private Android modules (cloned at build time)
 app/android/android-passport-nfc-reader/
 

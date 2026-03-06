@@ -159,10 +159,10 @@ cd packages/kmp-sdk && ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
 
 2. `kmp-test-app-ios-build` (namespace-profile-apple-silicon-6cpu):
    - Build the KMP framework first: `cd ../kmp-sdk && ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64`
-   - `cd packages/kmp-test-app/iosApp && pod install`
+   - `cd packages/kmp-sdk-test-app/iosApp && pod install`
    - `xcodebuild -workspace iosApp.xcworkspace -scheme iosApp -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16' build`
 
-**Trigger paths update:** Add `packages/kmp-test-app/**` (already present) and `packages/kmp-sdk/**` (already present).
+**Trigger paths update:** Add `packages/kmp-sdk-test-app/**` (already present) and `packages/kmp-sdk/**` (already present).
 
 **Files modified:**
 
@@ -170,12 +170,12 @@ cd packages/kmp-sdk && ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
 
 **Files NOT modified:**
 
-- `packages/kmp-test-app/` (no source changes)
+- `packages/kmp-sdk-test-app/` (no source changes)
 
 **Validation:**
 
 ```bash
-cd packages/kmp-test-app && ./gradlew :composeApp:assembleDebug
+cd packages/kmp-sdk-test-app && ./gradlew :composeApp:assembleDebug
 ```
 
 ---
