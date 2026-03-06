@@ -5,6 +5,10 @@
 
 set -e  # Exit on any error
 
+# Keep Bundler isolated to app/vendor/bundle so stale global gems do not emit
+# "extensions are not built" noise during pod commands.
+export BUNDLE_DISABLE_SHARED_GEMS=1
+
 echo "🧹 Clearing CocoaPods cache to prevent hermes-engine version conflicts..."
 bundle exec pod cache clean --all > /dev/null 2>&1 || true
 rm -rf ~/Library/Caches/CocoaPods > /dev/null 2>&1 || true
