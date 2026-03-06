@@ -15,8 +15,11 @@
     "nice": "yarn types",
     "setup": "cd ios && bundle install && bundle exec pod install --repo-update && cd .. && yarn clean:xcode-env-local",
     "start": "react-native start",
-    "test": "yarn types",
+    "test": "jest",
     "types": "tsc --noEmit"
+  },
+  "jest": {
+    "preset": "react-native"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",
@@ -36,6 +39,7 @@
     "@react-native/metro-config": "0.76.9",
     "@tsconfig/react-native": "^3.0.6",
     "@types/react": "^18.3.4",
+    "jest": "^30.2.0",
     "typescript": "^5.9.3"
   }
 }
