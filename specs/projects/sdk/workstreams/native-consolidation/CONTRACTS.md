@@ -40,11 +40,11 @@ Anything not listed here is not yet a hard compatibility gate.
 
 ## Contract: RN Test App MRZ Bridge
 
-| Surface                  | Required contract                                                                                                                                                |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Native module name       | `NativeModules.SelfMRZScannerModule`                                                                                                                             |
-| Required method          | `startScanning()` returns a promise                                                                                                                              |
-| Success payload keys     | Resolve payload must include exactly `documentNumber`, `dateOfBirth`, `dateOfExpiry`                                                                             |
+| Surface                  | Required contract                                                                                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Native module name       | `NativeModules.SelfMRZScannerModule`                                                                                                                               |
+| Required method          | `startScanning()` returns a promise                                                                                                                                |
+| Success payload keys     | Resolve payload must include exactly `documentNumber`, `dateOfBirth`, `dateOfExpiry`                                                                               |
 | Required rejection codes | `NO_VIEW_CONTROLLER`, `MRZ_SCAN_CANCELLED`, `MRZ_SCAN_FAILED`, `MRZ_SCAN_INVALID_RESULT`, `MRZ_SCAN_IN_PROGRESS`, `CAMERA_PERMISSION_DENIED`, `CAMERA_INIT_FAILED` |
 
 ## Not Yet Pinned by Tests
