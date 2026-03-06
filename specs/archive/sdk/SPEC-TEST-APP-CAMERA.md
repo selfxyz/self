@@ -12,6 +12,7 @@ Wire real native MRZ scanning into the RN SDK test app so the WebView camera scr
 Primary scope: `packages/rn-sdk-test-app/`
 
 Additional scope (cancellation behavior fix):
+
 - `packages/rn-sdk/src/handlers/CameraHandler.ts` — map native `MRZ_SCAN_CANCELLED` distinctly
 - `packages/rn-sdk/src/__tests__/CameraHandler.test.ts` — cancellation test
 - `packages/webview-app/src/screens/onboarding/DocumentCameraScreen.tsx` — handle cancellation as clean exit

@@ -4,6 +4,13 @@
 
 package com.selfxyz.demoapp
 
+internal enum class MrzDetectionState {
+    NO_TEXT,
+    TEXT_DETECTED,
+    ONE_MRZ_LINE,
+    TWO_MRZ_LINES,
+}
+
 internal data class SelfMrzResult(
     val documentNumber: String,
     val dateOfBirth: String,
@@ -72,6 +79,24 @@ internal object SelfMrzParser {
             dateOfBirth = dateOfBirth,
             dateOfExpiry = dateOfExpiry,
         )
+    }
+
+    fun detectState(rawText: String): MrzDetectionState {
+        val cleanedLines =
+            rawText
+                .lines()
+                .map { it.trim().replace(" ", "").uppercase() }
+                .filter { it.isNotEmpty() }
+
+        if (cleanedLines.isEmpty()) return MrzDetectionState.NO_TEXT
+
+        val td3Count = cleanedLines.count { mrzTd3Line.matches(it) }
+        val td1Count = cleanedLines.count { mrzTd1Line.matches(it) }
+
+        if (td3Count >= 2 || td1Count >= 3) return MrzDetectionState.TWO_MRZ_LINES
+        if (td3Count == 1 || td1Count >= 1) return MrzDetectionState.ONE_MRZ_LINE
+
+        return MrzDetectionState.TEXT_DETECTED
     }
 
     private fun trimFiller(value: String): String = value.replace("<", "").trim()

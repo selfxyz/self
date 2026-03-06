@@ -93,6 +93,144 @@ final class SelfMRZScannerModule: NSObject, RCTBridgeModule {
   }
 }
 
+// MARK: - Detection State
+
+private enum MrzDetectionState {
+  case noText
+  case textDetected
+  case oneMrzLine
+  case twoMrzLines
+
+  var color: UIColor {
+    switch self {
+    case .noText:       return UIColor(red: 0.94, green: 0.33, blue: 0.31, alpha: 1) // Red 400
+    case .textDetected: return UIColor(red: 1.00, green: 0.65, blue: 0.15, alpha: 1) // Orange 400
+    case .oneMrzLine:   return UIColor(red: 1.00, green: 0.93, blue: 0.35, alpha: 1) // Yellow 400
+    case .twoMrzLines:  return UIColor(red: 0.40, green: 0.73, blue: 0.42, alpha: 1) // Green 400
+    }
+  }
+
+  var instructionText: String {
+    switch self {
+    case .noText:
+      return "Position the MRZ (Machine Readable Zone) within the frame.\nThe MRZ is the two-line code at the bottom of your passport."
+    case .textDetected:
+      return "Text detected! Move closer to the MRZ code.\nMake sure the two-line code is clearly visible."
+    case .oneMrzLine:
+      return "One line detected! Almost there…\nHold steady and ensure both MRZ lines are in frame."
+    case .twoMrzLines:
+      return "Both lines detected! Reading passport data…\nKeep the passport steady."
+    }
+  }
+}
+
+// MARK: - Viewfinder Overlay
+
+private final class MrzViewfinderOverlay: UIView {
+  private let frameWidthRatio: CGFloat = 0.85
+  private let frameHeightRatio: CGFloat = 0.25
+  private let cornerRadiusValue: CGFloat = 12
+  private let bracketLength: CGFloat = 40
+  private let bracketThickness: CGFloat = 4
+  private let frameBorderWidth: CGFloat = 3
+
+  private var detectionState: MrzDetectionState = .noText
+  private var pulseAlpha: CGFloat = 1.0
+  private var pulseTimer: CADisplayLink?
+
+  private var pulseDirection: CGFloat = -1
+  private let pulseSpeed: CGFloat = 1.4 // full cycle ~1.4s
+
+  func setDetectionState(_ state: MrzDetectionState) {
+    let changed = detectionState != state
+    detectionState = state
+
+    if state == .twoMrzLines {
+      if pulseTimer == nil { startPulse() }
+    } else {
+      stopPulse()
+      pulseAlpha = 1.0
+    }
+
+    if changed { setNeedsDisplay() }
+  }
+
+  private func startPulse() {
+    let link = CADisplayLink(target: self, selector: #selector(pulseTick))
+    link.add(to: .main, forMode: .common)
+    pulseTimer = link
+  }
+
+  private func stopPulse() {
+    pulseTimer?.invalidate()
+    pulseTimer = nil
+  }
+
+  @objc private func pulseTick() {
+    let dt = pulseTimer?.duration ?? (1.0 / 60.0)
+    pulseAlpha += pulseDirection * CGFloat(dt) * pulseSpeed
+    if pulseAlpha <= 0.3 { pulseAlpha = 0.3; pulseDirection = 1 }
+    if pulseAlpha >= 1.0 { pulseAlpha = 1.0; pulseDirection = -1 }
+    setNeedsDisplay()
+  }
+
+  deinit { stopPulse() }
+
+  override func draw(_ rect: CGRect) {
+    guard let ctx = UIGraphicsGetCurrentContext() else { return }
+
+    let fw = bounds.width * frameWidthRatio
+    let fh = bounds.height * frameHeightRatio
+    let fx = (bounds.width - fw) / 2
+    let fy = (bounds.height - fh) / 2
+    let frameRect = CGRect(x: fx, y: fy, width: fw, height: fh)
+
+    let alpha = detectionState == .twoMrzLines ? pulseAlpha : 1.0
+    let color = detectionState.color.withAlphaComponent(alpha)
+
+    // Frame border
+    ctx.setStrokeColor(color.cgColor)
+    ctx.setLineWidth(frameBorderWidth)
+    let borderPath = UIBezierPath(roundedRect: frameRect, cornerRadius: cornerRadiusValue)
+    ctx.addPath(borderPath.cgPath)
+    ctx.strokePath()
+
+    // Corner brackets
+    ctx.setStrokeColor(color.cgColor)
+    ctx.setLineWidth(bracketThickness)
+    ctx.setLineCap(.round)
+
+    let bl = bracketLength
+    let r = frameRect
+
+    // Top-left
+    ctx.move(to: CGPoint(x: r.minX, y: r.minY + bl))
+    ctx.addLine(to: CGPoint(x: r.minX, y: r.minY))
+    ctx.addLine(to: CGPoint(x: r.minX + bl, y: r.minY))
+    ctx.strokePath()
+
+    // Top-right
+    ctx.move(to: CGPoint(x: r.maxX, y: r.minY + bl))
+    ctx.addLine(to: CGPoint(x: r.maxX, y: r.minY))
+    ctx.addLine(to: CGPoint(x: r.maxX - bl, y: r.minY))
+    ctx.strokePath()
+
+    // Bottom-left
+    ctx.move(to: CGPoint(x: r.minX, y: r.maxY - bl))
+    ctx.addLine(to: CGPoint(x: r.minX, y: r.maxY))
+    ctx.addLine(to: CGPoint(x: r.minX + bl, y: r.maxY))
+    ctx.strokePath()
+
+    // Bottom-right
+    ctx.move(to: CGPoint(x: r.maxX, y: r.maxY - bl))
+    ctx.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+    ctx.addLine(to: CGPoint(x: r.maxX - bl, y: r.maxY))
+    ctx.strokePath()
+  }
+}
+
+// MARK: - Scanner View Controller
+
 private final class SelfMrzScannerViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
   var onSuccess: (([String: String]) -> Void)?
   var onCancel: (() -> Void)?
@@ -105,7 +243,9 @@ private final class SelfMrzScannerViewController: UIViewController, AVCaptureVid
   private var previewLayer: AVCaptureVideoPreviewLayer?
   private var isProcessingFrame = false
   private var hasCompleted = false
-  private let guideFrame = UIView()
+
+  private let viewfinderOverlay = MrzViewfinderOverlay()
+  private let instructionLabel = UILabel()
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -137,27 +277,26 @@ private final class SelfMrzScannerViewController: UIViewController, AVCaptureVid
   private func setupUI() {
     view.backgroundColor = .black
 
-    let instructionLabel = UILabel()
-    instructionLabel.text = "Align the MRZ lines inside the frame"
+    viewfinderOverlay.backgroundColor = .clear
+    viewfinderOverlay.isOpaque = false
+    viewfinderOverlay.translatesAutoresizingMaskIntoConstraints = false
+
+    instructionLabel.text = MrzDetectionState.noText.instructionText
     instructionLabel.textColor = .white
-    instructionLabel.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+    instructionLabel.backgroundColor = UIColor.black.withAlphaComponent(0.75)
     instructionLabel.textAlignment = .center
     instructionLabel.numberOfLines = 0
+    instructionLabel.font = UIFont.systemFont(ofSize: 14)
     instructionLabel.translatesAutoresizingMaskIntoConstraints = false
     instructionLabel.layer.cornerRadius = 10
     instructionLabel.layer.masksToBounds = true
-    instructionLabel.layoutMargins = UIEdgeInsets(top: 10, left: 12, bottom: 10, right: 12)
-
-    guideFrame.translatesAutoresizingMaskIntoConstraints = false
-    guideFrame.layer.borderColor = UIColor.white.cgColor
-    guideFrame.layer.borderWidth = 3
-    guideFrame.layer.cornerRadius = 14
-    guideFrame.backgroundColor = .clear
+    instructionLabel.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
 
     let privacyLabel = UILabel()
     privacyLabel.text = "No photo is captured"
     privacyLabel.textColor = .white
-    privacyLabel.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+    privacyLabel.font = UIFont.systemFont(ofSize: 12)
+    privacyLabel.backgroundColor = UIColor.black.withAlphaComponent(0.75)
     privacyLabel.textAlignment = .center
     privacyLabel.numberOfLines = 1
     privacyLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -173,20 +312,20 @@ private final class SelfMrzScannerViewController: UIViewController, AVCaptureVid
     cancelButton.translatesAutoresizingMaskIntoConstraints = false
     cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
 
+    view.addSubview(viewfinderOverlay)
     view.addSubview(instructionLabel)
-    view.addSubview(guideFrame)
     view.addSubview(privacyLabel)
     view.addSubview(cancelButton)
 
     NSLayoutConstraint.activate([
+      viewfinderOverlay.topAnchor.constraint(equalTo: view.topAnchor),
+      viewfinderOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      viewfinderOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      viewfinderOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
       instructionLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
       instructionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
       instructionLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-
-      guideFrame.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-      guideFrame.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-      guideFrame.widthAnchor.constraint(equalToConstant: 340),
-      guideFrame.heightAnchor.constraint(equalToConstant: 180),
 
       privacyLabel.bottomAnchor.constraint(equalTo: cancelButton.topAnchor, constant: -18),
       privacyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -197,6 +336,14 @@ private final class SelfMrzScannerViewController: UIViewController, AVCaptureVid
       cancelButton.widthAnchor.constraint(equalToConstant: 140),
       cancelButton.heightAnchor.constraint(equalToConstant: 44)
     ])
+  }
+
+  private func updateDetectionState(_ state: MrzDetectionState) {
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      self.instructionLabel.text = state.instructionText
+      self.viewfinderOverlay.setDetectionState(state)
+    }
   }
 
   private func setupCameraSession() {
@@ -293,6 +440,9 @@ private final class SelfMrzScannerViewController: UIViewController, AVCaptureVid
         .sorted { $0.y > $1.y }
         .map { $0.text }
 
+      let detectionState = SelfMrzSwiftParser.detectState(lines: recognizedLines)
+      self.updateDetectionState(detectionState)
+
       let parsed = SelfMrzSwiftParser.parse(lines: recognizedLines)
       guard let result = parsed else { return }
 
@@ -321,6 +471,8 @@ private final class SelfMrzScannerViewController: UIViewController, AVCaptureVid
   }
 }
 
+// MARK: - MRZ Parser
+
 private struct SelfMrzSwiftResult {
   let documentNumber: String
   let dateOfBirth: String
@@ -330,6 +482,22 @@ private struct SelfMrzSwiftResult {
 private enum SelfMrzSwiftParser {
   private static let td3Regex = try! NSRegularExpression(pattern: "^[A-Z0-9<]{44}$")
   private static let td1Regex = try! NSRegularExpression(pattern: "^[A-Z0-9<]{30}$")
+
+  static func detectState(lines: [String]) -> MrzDetectionState {
+    let normalized = lines
+      .map { $0.uppercased().replacingOccurrences(of: " ", with: "") }
+      .filter { !$0.isEmpty }
+
+    if normalized.isEmpty { return .noText }
+
+    let td3Count = normalized.filter { matches(td3Regex, text: $0) }.count
+    let td1Count = normalized.filter { matches(td1Regex, text: $0) }.count
+
+    if td3Count >= 2 || td1Count >= 3 { return .twoMrzLines }
+    if td3Count >= 1 || td1Count >= 1 { return .oneMrzLine }
+
+    return .textDetected
+  }
 
   static func parse(lines: [String]) -> SelfMrzSwiftResult? {
     guard let extracted = extractMrzLines(lines: lines) else {
