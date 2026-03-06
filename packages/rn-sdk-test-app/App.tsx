@@ -4,7 +4,6 @@
 
 import React, { useMemo, useState } from 'react';
 import {
-  NativeModules,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -16,41 +15,6 @@ import {
 } from 'react-native';
 
 import { SelfVerification, type SelfSdkError, type VerificationResult } from '@selfxyz/rn-sdk';
-
-const fallbackMrzScannerModule = {
-  startScanning: async () => ({
-    documentNumber: 'XK0000000',
-    dateOfBirth: '900101',
-    dateOfExpiry: '300101',
-    documentType: 'P',
-    countryCode: 'UTO',
-  }),
-};
-
-function ensureMrzScannerModule(): void {
-  const nativeModules = NativeModules as Record<string, unknown>;
-
-  const selfScanner = nativeModules.SelfMRZScannerModule as
-    | { startScanning?: unknown }
-    | undefined;
-  const legacyScanner = nativeModules.MRZScannerModule as
-    | { startScanning?: unknown }
-    | undefined;
-
-  const hasScanner =
-    typeof selfScanner?.startScanning === 'function' ||
-    typeof legacyScanner?.startScanning === 'function';
-
-  if (!hasScanner) {
-    try {
-      nativeModules.SelfMRZScannerModule = fallbackMrzScannerModule;
-    } catch {
-      // No-op: scanner stays unavailable until a native module is linked.
-    }
-  }
-}
-
-ensureMrzScannerModule();
 
 type CallbackState =
   | { status: 'Idle' }
