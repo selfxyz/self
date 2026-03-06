@@ -8,6 +8,7 @@ on:
     paths:
       - "packages/rn-sdk/**"
       - "packages/rn-sdk-test-app/**"
+      - "packages/kmp-sdk/**"
       - ".github/workflows/rn-sdk-test-app-ci.yml"
       - ".github/actions/**"
   push:
@@ -15,6 +16,7 @@ on:
     paths:
       - "packages/rn-sdk/**"
       - "packages/rn-sdk-test-app/**"
+      - "packages/kmp-sdk/**"
       - ".github/workflows/rn-sdk-test-app-ci.yml"
       - ".github/actions/**"
 
@@ -62,6 +64,9 @@ jobs:
             -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
             -storepass android -keypass android \
             -dname "CN=Android Debug,O=Android,C=US"
+      - name: Publish KMP SDK to mavenLocal
+        run: |
+          cd packages/kmp-sdk && ./gradlew :shared:publishToMavenLocal --quiet
       - name: Build Android debug APK
         run: |
           chmod +x packages/rn-sdk-test-app/android/gradlew
