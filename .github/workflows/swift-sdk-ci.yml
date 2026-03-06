@@ -24,7 +24,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Generate token for private dependencies
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: ./.github/actions/generate-github-token
         id: github-token
         with:
@@ -33,6 +32,14 @@ jobs:
           configure-netrc: "true"
       - name: Configure git for HTTPS dependency fetch
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
-      - name: Build Swift package
+      - name: Resolve Swift package dependencies
         working-directory: packages/self-sdk-swift
-        run: swift build
+        run: swift package resolve
+      - name: Build Swift package for iOS Simulator
+        working-directory: packages/self-sdk-swift
+        run: |
+          xcodebuild build \
+            -scheme SelfSdkSwift \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            ONLY_ACTIVE_ARCH=NO

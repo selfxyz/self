@@ -22,18 +22,18 @@
 
 ## Current Coverage Audit
 
-| Package              | Dedicated CI           | Tests         | Types | Build | Android       | iOS |
-| -------------------- | ---------------------- | ------------- | ----- | ----- | ------------- | --- |
-| `kmp-sdk`            | kmp-ci.yml             | jvmTest       | —     | —     | —             | —   |
-| `kmp-test-app`       | kmp-ci.yml             | debugUnitTest | —     | —     | —             | —   |
-| `kmp-minipay-sample` | —                      | —             | —     | —     | —             | —   |
-| `mobile-sdk-alpha`   | mobile-sdk-ci.yml      | yes           | yes   | yes   | —             | —   |
-| `mobile-sdk-demo`    | mobile-sdk-demo-ci.yml | yes           | —     | yes   | —             | —   |
-| `rn-sdk`             | rn-sdk-test-app-ci.yml | yes           | yes   | tsup  | —             | —   |
-| `rn-sdk-test-app`    | rn-sdk-test-app-ci.yml | —             | yes   | —     | assembleDebug | —   |
-| `self-sdk-swift`     | —                      | —             | —     | —     | —             | —   |
-| `webview-app`        | —                      | —             | —     | —     | n/a           | n/a |
-| `webview-bridge`     | —                      | —             | —     | —     | n/a           | n/a |
+| Package              | Dedicated CI               | Tests         | Types | Build | Android       | iOS                  |
+| -------------------- | -------------------------- | ------------- | ----- | ----- | ------------- | -------------------- |
+| `kmp-sdk`            | kmp-ci.yml                 | jvmTest, iOS  | —     | —     | assembleDebug | framework, test      |
+| `kmp-test-app`       | kmp-ci.yml                 | debugUnitTest | —     | —     | assembleDebug | xcodebuild           |
+| `kmp-minipay-sample` | kmp-ci.yml                 | —             | —     | —     | assembleDebug | xcodebuild           |
+| `mobile-sdk-alpha`   | mobile-sdk-ci.yml          | yes           | yes   | yes   | —             | —                    |
+| `mobile-sdk-demo`    | mobile-sdk-demo-ci.yml     | yes           | —     | yes   | —             | —                    |
+| `rn-sdk`             | rn-sdk-test-app-ci.yml     | yes           | yes   | tsup  | —             | —                    |
+| `rn-sdk-test-app`    | rn-sdk-test-app-ci.yml     | —             | yes   | —     | assembleDebug | xcodebuild           |
+| `self-sdk-swift`     | swift-sdk-ci.yml           | —             | —     | yes   | n/a           | xcodebuild (sim)     |
+| `webview-app`        | webview-app-ci.yml         | —             | yes   | yes   | n/a           | n/a                  |
+| `webview-bridge`     | webview-bridge-ci.yml      | yes           | yes   | yes   | n/a           | n/a                  |
 
 Legend: "—" = missing, "n/a" = not applicable (JS-only package).
 

@@ -151,6 +151,15 @@ jobs:
         working-directory: packages/kmp-test-app
     steps:
       - uses: actions/checkout@v4
+      - name: Generate token for private dependencies
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
+      - name: Configure git for HTTPS dependency fetch
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -202,6 +211,15 @@ jobs:
         working-directory: packages/kmp-minipay-sample
     steps:
       - uses: actions/checkout@v4
+      - name: Generate token for private dependencies
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
+      - name: Configure git for HTTPS dependency fetch
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
