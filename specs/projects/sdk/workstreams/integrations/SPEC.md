@@ -549,7 +549,7 @@ The `nfc_tech_filter.xml` resource (in `res/xml/`) should list `android.nfc.tech
 | `packages/webview-app/src/**`      | WebView UI — owned by Person 1 webview workstream              |
 | `packages/mobile-sdk-alpha/src/**` | SDK core — owned by Person 4 sdk core workstream               |
 | `app/src/**`                       | Self Wallet — out of scope, separate app                       |
-| `packages/kmp-test-app/**`         | Test app — separate from integration sample, different purpose |
+| `packages/kmp-sdk-test-app/**`     | Test app — separate from integration sample, different purpose |
 | `common/src/**`                    | Shared utilities — stable, no changes needed                   |
 
 ---
@@ -840,7 +840,7 @@ rg -n "\\bverified\\s*=|disclosedClaims" packages/kmp-minipay-sample/composeApp/
 | ------------------------------------------------------------- | ------------------------------------------------------- |
 | `packages/kmp-sdk/shared/src/commonMain/.../SelfSdk.kt`       | Public API: `configure()`, `launch()`, callback types   |
 | `packages/kmp-sdk/shared/src/commonMain/.../BridgeMessage.kt` | Bridge message types (for understanding, not modifying) |
-| `packages/kmp-test-app/`                                      | Existing test app — reference for project structure     |
+| `packages/kmp-sdk-test-app/`                                  | Existing test app — reference for project structure     |
 | `packages/webview-app/src/App.tsx`                            | WebView flow screens (what the user sees inside SDK)    |
 
 ## Dependencies

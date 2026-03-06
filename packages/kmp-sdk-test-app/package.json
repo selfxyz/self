@@ -1,5 +1,5 @@
 {
-  "name": "@selfxyz/kmp-test-app",
+  "name": "@selfxyz/kmp-sdk-test-app",
   "version": "0.0.1-alpha",
   "private": true,
   "scripts": {

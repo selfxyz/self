@@ -45,7 +45,7 @@ KMP specs and DX entrypoints are currently fragmented across mixed naming and lo
 3. Naming migration
 
 - Folder rename for test app (`packages/kmp-test-app` -> `packages/kmp-sdk-test-app`)
-- Keep `@selfxyz/kmp-test-app` unchanged
+- Workspace package rename (`@selfxyz/kmp-test-app` -> `@selfxyz/kmp-sdk-test-app`)
 - Repo-wide path reference update
 
 4. Spec migration

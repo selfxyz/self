@@ -22,7 +22,7 @@ Reorganize KMP specs and developer experience surface areas so contributors and 
 
 - Keep SDK package as `kmp-sdk`.
 - Rename test host app folder from `kmp-test-app` to `kmp-sdk-test-app`.
-- Keep workspace package name as `@selfxyz/kmp-test-app` (no package rename).
+- Rename workspace package from `@selfxyz/kmp-test-app` to `@selfxyz/kmp-sdk-test-app`.
 
 2. Spec naming standard
 
@@ -131,13 +131,13 @@ Exit criteria:
 ### Phase 3: Package Folder Rename
 
 - Rename folder `packages/kmp-test-app` to `packages/kmp-sdk-test-app`.
-- Keep workspace package name as `@selfxyz/kmp-test-app`.
+- Rename workspace package from `@selfxyz/kmp-test-app` to `@selfxyz/kmp-sdk-test-app`.
 - Update all path references in scripts, Gradle settings, docs, and specs.
 
 Exit criteria:
 
 - No path references remain to `packages/kmp-test-app`.
-- Workspace package name remains unchanged.
+- No package references remain to `@selfxyz/kmp-test-app`.
 
 ### Phase 4: Spec Migration
 
@@ -179,7 +179,7 @@ Exit criteria:
 - `yarn types`
 - `yarn build`
 - `yarn test`
-- `rg -n "packages/kmp-test-app" .`
+- `rg -n "packages/kmp-test-app|@selfxyz/kmp-test-app" .`
 - `rg -n "specs/projects/kmp" specs/README.md`
 
 ## Immediate Next Actions
