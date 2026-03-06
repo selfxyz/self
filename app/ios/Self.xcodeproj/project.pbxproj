@@ -31,7 +31,7 @@
 		B49D2B112E28AA7900946F64 /* IBMPlexMono-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = B49D2B102E28AA7900946F64 /* IBMPlexMono-Regular.otf */; };
 		BF1044812DD53540009B3688 /* LiveMRZScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */; };
 		BF1044832DD5354F009B3688 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044822DD5354F009B3688 /* CameraView.swift */; };
-		BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044842DD53570009B3688 /* MRZScanner.swift */; };
+		BF1044852DD53570009B3688 /* MrzScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044842DD53570009B3688 /* MrzScanEngine.swift */; };
 		BB000002000000000000001A /* MrzOcrCorrection.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000002000000000000001B /* MrzOcrCorrection.swift */; };
 		BB000003000000000000001A /* MrzResultMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000003000000000000001B /* MrzResultMapper.swift */; };
 		BF5649262F43B1EB00DE07A1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5649252F43B1E700DE07A1 /* AppDelegate.swift */; };
@@ -78,7 +78,7 @@
 		B49D2B102E28AA7900946F64 /* IBMPlexMono-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "IBMPlexMono-Regular.otf"; path = "../src/assets/fonts/IBMPlexMono-Regular.otf"; sourceTree = SOURCE_ROOT; };
 		BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveMRZScannerView.swift; sourceTree = "<group>"; };
 		BF1044822DD5354F009B3688 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
-		BF1044842DD53570009B3688 /* MRZScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScanner.swift; sourceTree = "<group>"; };
+		BF1044842DD53570009B3688 /* MrzScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MrzScanEngine.swift; sourceTree = "<group>"; };
 		BB000002000000000000001B /* MrzOcrCorrection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MrzOcrCorrection.swift; sourceTree = "<group>"; };
 		BB000003000000000000001B /* MrzResultMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MrzResultMapper.swift; sourceTree = "<group>"; };
 		BF5649252F43B1E700DE07A1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -114,7 +114,7 @@
 				BF6F0D542E38ED81008EA85C /* SelfAnalytics.swift */,
 				BFBA0C782E33A01F00E82A52 /* NativeLoggerBridge.m */,
 				BFBA0C762E339D2B00E82A52 /* NativeLoggerBridge.swift */,
-				BF1044842DD53570009B3688 /* MRZScanner.swift */,
+				BF1044842DD53570009B3688 /* MrzScanEngine.swift */,
 				BB000002000000000000001B /* MrzOcrCorrection.swift */,
 				BB000003000000000000001B /* MrzResultMapper.swift */,
 				BF1044822DD5354F009B3688 /* CameraView.swift */,
@@ -441,7 +441,7 @@
 				905B70072A72774000AFA232 /* PassportReader.m in Sources */,
 				BFBA0C792E33A01F00E82A52 /* NativeLoggerBridge.m in Sources */,
 				16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */,
-				BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */,
+				BF1044852DD53570009B3688 /* MrzScanEngine.swift in Sources */,
 				BB000002000000000000001A /* MrzOcrCorrection.swift in Sources */,
 				BB000003000000000000001A /* MrzResultMapper.swift in Sources */,
 				165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */,

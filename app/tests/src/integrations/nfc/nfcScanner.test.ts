@@ -7,9 +7,9 @@
 // This pattern avoids hoisting issues with jest.mock
 import { Buffer } from 'buffer';
 
+import { logNFCEvent } from '@/config/sentry';
 import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
 import { PassportReader } from '@/integrations/nfc/passportReader';
-import { logNFCEvent } from '@/config/sentry';
 
 // Declare global variable for platform OS that can be modified per-test
 declare global {

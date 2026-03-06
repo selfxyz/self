@@ -25,7 +25,7 @@ struct SelfLiveMRZScannerView: View {
                 SelfCameraView(
                     frameHandler: { image, roi in
                         if scanComplete { return }
-                        SelfMRZScanner.scan(image: image, roi: roi) { result, boxes in
+                        MrzScanEngine.scan(image: image, roi: roi) { result, boxes in
                             recognizedText = result
                             lastMRZDetection = Date()
                             let parser = QKMRZParser(ocrCorrection: false)

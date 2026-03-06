@@ -2,13 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-//
-//  SelfMRZScanner.swift
-
 import Vision
 import UIKit
 
-struct SelfMRZScanner {
+struct MrzScanEngine {
     static func scan(image: UIImage, roi: CGRect? = nil, completion: @escaping (String, [CGRect]) -> Void) {
         guard let cgImage = image.cgImage else {
             DispatchQueue.main.async {

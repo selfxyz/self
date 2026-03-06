@@ -16,9 +16,9 @@ Why Option B over Option A (self-sdk-swift):
 2. Faster delivery: remove duplication across app/ios and mobile-sdk-alpha/ios now without touching KMP consumers.
 3. Better rollback posture: scope limited to existing iOS RN surfaces.
 
-Shared helpers extracted (identical files in both locations):
+Shared helpers (identical files in both locations):
 
-- `MrzScanEngine.swift` — Vision OCR scan function, ROI handling, thread dispatch
+- `MrzScanEngine.swift` — Vision OCR scan function, ROI handling, thread dispatch (replaces `MRZScanner.swift` / `SelfMRZScanner.swift`)
 - `MrzOcrCorrection.swift` — single-char OCR correction, Belgium document handling, validation
 - `MrzResultMapper.swift` — QKMRZResult → dictionary mapping
 
@@ -50,19 +50,19 @@ Create identical files in both locations:
 
 ### 2) Convert app MRZ implementation to thin wrappers
 
-Update:
+Done:
 
-- `app/ios/MRZScanner.swift` — delete (replaced by `MrzScanEngine.swift`)
-- `app/ios/LiveMRZScannerView.swift` — remove inline OCR correction / mapping, delegate to shared helpers
-- `app/ios/MRZScannerModule.swift` — preserve module name and flat payload contract (unchanged)
+- `app/ios/MRZScanner.swift` — deleted, replaced by `MrzScanEngine.swift`
+- `app/ios/LiveMRZScannerView.swift` — delegates to `MrzScanEngine`, `MrzOcrCorrection`, `MrzResultMapper`
+- `app/ios/MRZScannerModule.swift` — preserved module name and flat payload contract (unchanged)
 
 ### 3) Convert mobile-sdk-alpha MRZ implementation to thin wrappers
 
-Update:
+Done:
 
-- `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScanner.swift` — delete (replaced by `MrzScanEngine.swift`)
-- `packages/mobile-sdk-alpha/ios/SelfSDK/SelfLiveMRZScannerView.swift` — remove inline OCR correction / mapping, delegate to shared helpers
-- `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.swift` — preserve module name and nested payload contract (unchanged)
+- `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScanner.swift` — deleted, replaced by `MrzScanEngine.swift`
+- `packages/mobile-sdk-alpha/ios/SelfSDK/SelfLiveMRZScannerView.swift` — delegates to `MrzScanEngine`, `MrzOcrCorrection`, `MrzResultMapper`
+- `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.swift` — preserved module name and nested payload contract (unchanged)
 
 ### 4) Keep ObjC shims unchanged
 
@@ -104,13 +104,14 @@ Open a follow-up to evaluate migrating the shared helpers into `self-sdk-swift` 
 
 | Chunk | Status |
 |-------|--------|
-| Create shared helpers (app) | Done |
-| Create shared helpers (sdk) | Done |
-| Refactor app LiveMRZScannerView | Done |
-| Refactor sdk SelfLiveMRZScannerView | Done |
-| Delete app MRZScanner.swift | Done |
-| Delete sdk SelfMRZScanner.swift | Done |
-| Validate builds | Pending |
+| Create shared helpers — MrzOcrCorrection, MrzResultMapper (app + sdk) | Done |
+| Create shared helpers — MrzScanEngine (app + sdk) | Done |
+| Refactor app LiveMRZScannerView → delegates to shared helpers | Done |
+| Refactor sdk SelfLiveMRZScannerView → delegates to shared helpers | Done |
+| Delete app MRZScanner.swift (replaced by MrzScanEngine.swift) | Done |
+| Delete sdk SelfMRZScanner.swift (replaced by MrzScanEngine.swift) | Done |
+| Update Xcode project references (pbxproj) | Done |
+| Validate builds (iOS Debug for app + sdk) | Pending |
 
 ## Exit Criteria
 

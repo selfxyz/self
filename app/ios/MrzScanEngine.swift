@@ -1,12 +1,11 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
-
-//
-//  MRZScanner.swift
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import Vision
 import UIKit
 
-struct MRZScanner {
+struct MrzScanEngine {
     static func scan(image: UIImage, roi: CGRect? = nil, completion: @escaping (String, [CGRect]) -> Void) {
         guard let cgImage = image.cgImage else {
             DispatchQueue.main.async {

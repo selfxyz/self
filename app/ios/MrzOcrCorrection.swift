@@ -89,7 +89,7 @@ struct MrzOcrCorrection {
     private static func correctBelgiumDocumentNumber(mrzString: String) -> String? {
         let line1RegexPattern = "IDBEL(?<doc9>[A-Z0-9]{9})<(?<doc3>[A-Z0-9<]{3})(?<checkDigit>\\d)"
         guard let line1Regex = try? NSRegularExpression(pattern: line1RegexPattern) else { return nil }
-        let line1Matcher = line1Regex.firstMatch(in: mrzString, options: [], range: NSRange(location: 0, length: mrzString.count))
+        let line1Matcher = line1Regex.firstMatch(in: mrzString, options: [], range: NSRange(mrzString.startIndex..., in: mrzString))
 
         if let line1Matcher = line1Matcher {
             let doc9Range = line1Matcher.range(withName: "doc9")
