@@ -9,13 +9,14 @@ Status: Active
 
 ## Workstreams
 
-| Workstream    | Spec                                                      |
-| ------------- | --------------------------------------------------------- |
-| WebView UI    | [WebView Spec](./workstreams/webview/SPEC.md)             |
-| Native Shells | [Native Shells Spec](./workstreams/native-shells/SPEC.md) |
-| Integrations  | [MiniPay Sample Spec](./workstreams/integrations/SPEC.md) |
-| SDK Core      | [SDK Core Spec](./workstreams/sdk-core/SPEC.md)           |
-| RN SDK        | [RN SDK Spec](./workstreams/rn-sdk/SPEC.md)               |
+| Workstream           | Spec                                                                    |
+| -------------------- | ----------------------------------------------------------------------- |
+| WebView UI           | [WebView Spec](./workstreams/webview/SPEC.md)                           |
+| Native Shells        | [Native Shells Spec](./workstreams/native-shells/SPEC.md)               |
+| Integrations         | [MiniPay Sample Spec](./workstreams/integrations/SPEC.md)               |
+| SDK Core             | [SDK Core Spec](./workstreams/sdk-core/SPEC.md)                         |
+| RN SDK               | [RN SDK Spec](./workstreams/rn-sdk/SPEC.md)                             |
+| Native Consolidation | [Native Consolidation Spec](./workstreams/native-consolidation/SPEC.md) |
 
 ## Related
 
