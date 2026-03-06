@@ -1,8 +1,8 @@
 # CI Coverage Gaps — Packages
 
-> Last updated: 2026-03-05
+> Last updated: 2026-03-06
 > Owner: SDK/infra maintainers
-> Status: Active
+> Status: Archived
 
 ## North Star
 
