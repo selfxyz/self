@@ -20,6 +20,7 @@ import { useSelfClient } from '../../providers/SelfClientProvider';
 const GENERIC_SCAN_ERROR_MESSAGE = 'We could not read your document. Please try again.';
 const CAMERA_UNAVAILABLE_MESSAGE = 'Camera is not available on this device.';
 const MRZ_INVALID_DATA_ERROR = 'MRZ_INVALID_DATA';
+const MRZ_SCAN_CANCELLED_ERROR = 'MRZ_SCAN_CANCELLED';
 
 export const DocumentCameraScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -108,6 +109,13 @@ export const DocumentCameraScreen: React.FC = () => {
         (err instanceof Error && err.message === MRZ_INVALID_DATA_ERROR)
           ? 'MRZ_INVALID_DATA'
           : 'MRZ_SCAN_FAILED';
+
+      if (bridgeErrorCode === MRZ_SCAN_CANCELLED_ERROR) {
+        analytics.trackEvent('camera_mrz_scan_cancelled');
+        navigate('/');
+        return;
+      }
+
       setError(GENERIC_SCAN_ERROR_MESSAGE);
       analytics.trackEvent('camera_mrz_scan_failed', { errorCode });
     } finally {

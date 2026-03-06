@@ -68,6 +68,15 @@ function normalizeMrzScanResult(result: unknown): MrzScanData {
   };
 }
 
+function extractNativeErrorCode(err: unknown): string | undefined {
+  if (typeof err !== 'object' || err === null || !('code' in err)) {
+    return undefined;
+  }
+
+  const code = (err as { code?: unknown }).code;
+  return typeof code === 'string' ? code : undefined;
+}
+
 export class CameraHandler implements BridgeHandler {
   readonly domain: BridgeDomain = 'camera';
 
@@ -92,6 +101,12 @@ export class CameraHandler implements BridgeHandler {
           if (err instanceof BridgeHandlerError) {
             throw err;
           }
+
+          const nativeCode = extractNativeErrorCode(err);
+          if (nativeCode === 'MRZ_SCAN_CANCELLED') {
+            throw new BridgeHandlerError('MRZ_SCAN_CANCELLED', 'MRZ scan cancelled');
+          }
+
           throw new BridgeHandlerError(
             'MRZ_SCAN_FAILED',
             'MRZ scan failed',
