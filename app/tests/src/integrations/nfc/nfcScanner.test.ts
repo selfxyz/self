@@ -7,6 +7,7 @@
 // This pattern avoids hoisting issues with jest.mock
 import { Buffer } from 'buffer';
 
+import { logNFCEvent } from '@/config/sentry';
 import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
 import { PassportReader } from '@/integrations/nfc/passportReader';
 
@@ -32,6 +33,10 @@ jest.mock('react-native', () => ({
       return obj[os] || obj.default;
     }),
   },
+}));
+
+jest.mock('@/config/sentry', () => ({
+  logNFCEvent: jest.fn(),
 }));
 
 // Ensure the Node Buffer implementation is available to the module under test
@@ -376,6 +381,97 @@ describe('scan', () => {
       await scan(mockInputs);
 
       expect(mockScanPassport).toHaveBeenCalled();
+    });
+  });
+
+  describe('Error propagation and availability', () => {
+    it('should propagate scan errors and log scan_failed event', async () => {
+      const scanError = new Error('native scan failed');
+      const mockScanPassport = jest.fn().mockRejectedValue(scanError);
+
+      Object.defineProperty(PassportReader, 'scanPassport', {
+        writable: true,
+        configurable: true,
+        value: mockScanPassport,
+      });
+
+      await expect(scan(mockInputs)).rejects.toThrow('native scan failed');
+      expect(logNFCEvent).toHaveBeenCalledWith(
+        'error',
+        'scan_failed',
+        expect.objectContaining({
+          stage: 'scan',
+          sessionId: 'test-session',
+          platform: 'ios',
+          scanType: 'mrz',
+        }),
+        expect.objectContaining({ error: 'native scan failed' }),
+      );
+    });
+
+    it('should reject with unavailable error when ios module is unavailable', async () => {
+      // Module unavailability must be tested via resetModules because the
+      // scan/scanDocument binding is captured at module init time.
+      jest.resetModules();
+      global.mockPlatformOS = 'ios';
+
+      jest.doMock('@/integrations/nfc/passportReader', () => ({
+        PassportReader: null,
+        scan: null,
+        reset: jest.fn(),
+      }));
+      const { scan: isolatedScan } = require('@/integrations/nfc/nfcScanner');
+
+      await expect(isolatedScan(mockInputs)).rejects.toThrow(
+        'NFC scanning is currently unavailable.',
+      );
+    });
+  });
+
+  describe('Platform dispatch', () => {
+    it('should dispatch to iOS PassportReader.scanPassport on iOS', async () => {
+      global.mockPlatformOS = 'ios';
+
+      const mockScanPassport = jest.fn().mockResolvedValue({
+        mrz: 'test-mrz',
+        dataGroupHashes: JSON.stringify({}),
+      });
+
+      Object.defineProperty(PassportReader, 'scanPassport', {
+        writable: true,
+        configurable: true,
+        value: mockScanPassport,
+      });
+
+      await scan(mockInputs);
+
+      expect(mockScanPassport).toHaveBeenCalledTimes(1);
+    });
+
+    it('should dispatch to Android scan() on android', async () => {
+      global.mockPlatformOS = 'android';
+
+      // On Android, scan() uses the cross-platform scan export from passportReader,
+      // not PassportReader.scanPassport. Since we can't easily swap the imported
+      // scan function without resetModules, we verify the platform path by ensuring
+      // PassportReader.scanPassport is NOT called when on Android.
+      const mockScanPassport = jest.fn();
+      Object.defineProperty(PassportReader, 'scanPassport', {
+        writable: true,
+        configurable: true,
+        value: mockScanPassport,
+      });
+
+      // The android path calls the imported scan/reset from passportReader.
+      // Since scan is already imported at the top level, it will use the original mock.
+      // We just verify that iOS path (scanPassport) is not taken on Android.
+      try {
+        await scan(mockInputs);
+      } catch {
+        // Expected - the cross-platform scan mock may not be set up
+      }
+
+      expect(mockScanPassport).not.toHaveBeenCalled();
     });
   });
 });

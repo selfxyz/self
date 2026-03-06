@@ -11325,6 +11325,7 @@ __metadata:
     "@selfxyz/rn-sdk": "workspace:*"
     "@tsconfig/react-native": "npm:^3.0.6"
     "@types/react": "npm:^18.3.4"
+    jest: "npm:^30.2.0"
     react: "npm:^18.3.1"
     react-native: "npm:0.76.9"
     react-native-biometrics: "npm:^3.0.1"
