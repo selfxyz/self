@@ -3,7 +3,7 @@
 > Last updated: 2026-03-06
 > Owner: Person 5 (RN SDK)
 > Parent: [SDK Overview](../../OVERVIEW.md)
-> Status: Complete (pending iOS compile verification on a machine with SSH access to NFCPassportReader)
+> Status: Complete
 
 ## Execution Status (2026-03-06)
 
@@ -91,7 +91,7 @@ Fixed by adding `publishLibraryVariants("release")` to the KMP `androidTarget` b
 - `SelfMRZScannerModule.swift` rewritten to delegate to `MrzCameraHelper` from `SelfSdkSwift`. Local `SelfMrzSwiftParser`, `SelfMrzSwiftResult`, and Vision-based sample-buffer pipeline removed. Local `MrzDetectionState` enum retained as UI-only mapping from SDK's `Int` state indices to colors/instruction copy.
 - RN bridge contract preserved: `MRZ_SCAN_CANCELLED`, `MRZ_SCAN_FAILED`, `MRZ_SCAN_IN_PROGRESS`, `CAMERA_PERMISSION_DENIED`.
 - Scanner UX overlay/copy/colors/pulse/cancel aligned with KMP test app.
-- **Pending:** iOS `xcodebuild` verification requires local machine with SSH access to `git@github.com:selfxyz/NFCPassportReader.git`. Verify after `pod install` that SPM link persists.
+- **Verified:** iOS `xcodebuild` build succeeds. SPM link persists after `pod install`. NFCPassportReader resolves via SSH.
 
 ## Input / Output — Chunk Validation
 
@@ -141,7 +141,7 @@ yarn workspace @selfxyz/rn-sdk test
 | `kmp-sdk.jvmTest`                       | Build  | KMP SDK unit tests pass after AGP bump.                                                                                                                          | Pass                |
 | `kmp-sdk-test-app.assembleDebug`        | Build  | KMP test app builds with AGP 8.11.2.                                                                                                                             | Pass                |
 | `kmp-minipay-sample.assembleDebug`      | Build  | Minipay sample builds with AGP 8.11.2.                                                                                                                           | Pass                |
-| `rn-test-app.ios-build`                 | Build  | Local `self-sdk-swift` SPM package is linked and compiles.                                                                                                       | Pending (needs SSH) |
+| `rn-test-app.ios-build`                 | Build  | Local `self-sdk-swift` SPM package is linked and compiles.                                                                                                       | Pass                |
 | `camera.cancelled.android`              | Manual | Cancellation still maps to `MRZ_SCAN_CANCELLED`.                                                                                                                 | Pass                |
 | `camera.cancelled.ios`                  | Manual | Cancellation still maps to `MRZ_SCAN_CANCELLED`.                                                                                                                 | Pending             |
 | `camera.success.android`                | Manual | Returns required MRZ fields with delegated handler logic.                                                                                                        | Pass                |
@@ -170,5 +170,5 @@ yarn workspace @selfxyz/rn-sdk test
 - [x] Android build passes with composite build SDK dependency.
 - [x] Duplicate MRZ parser logic removed from RN test app iOS (Swift parser/state types).
 - [x] iOS scanner module is a thin wrapper around `MrzCameraHelper`.
-- [ ] iOS build passes with local SPM package linked. _(pending local xcodebuild with SSH access)_
+- [x] iOS build passes with local SPM package linked.
 - [x] `mavenLocal()` replaced with composite build (Infra-A).

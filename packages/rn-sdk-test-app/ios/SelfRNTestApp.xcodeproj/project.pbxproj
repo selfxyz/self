@@ -11,9 +11,9 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		51A5C3E6155F4A1898B657C1 /* SelfMRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C6A0E952D8E4727A5D01C4C /* SelfMRZScannerModule.m */; };
 		61D32E9D9CF14461B379C5D3 /* SelfMRZScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDCA0D6E61EE4D0286778FBF /* SelfMRZScannerModule.swift */; };
-		DF76ACFC36E520F1BDE48DAD /* SelfSdkSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 190485A56864EA3A6D20A3F5 /* SelfSdkSwift */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		DF76ACFC36E520F1BDE48DAD /* SelfSdkSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 190485A56864EA3A6D20A3F5 /* SelfSdkSwift */; };
 		F99B38F1555059F271D690CE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
