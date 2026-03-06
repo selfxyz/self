@@ -359,6 +359,10 @@ private final class SelfMrzScannerViewController: UIViewController {
   }
 
   private func configureScannerCallbacks() {
+    guard helper.isCameraSessionConfigured else {
+      failAndDismiss(code: "CAMERA_INIT_FAILED", message: "Failed to initialize camera session")
+      return
+    }
     scannerConfigured = true
     helper.scanMrzWithCallbacks(
       progress: { [weak self] stateIndex in
