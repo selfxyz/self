@@ -1500,7 +1500,7 @@ Pure Kotlin, already correct in the prototype. ICAO 9303 check digit computation
 | `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/`          | 3 iOS handlers delegating to providers                                | **Low** -- thin delegation                        |
 | `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/api/SelfSdk.ios.kt` | iOS launch flow using providers                                       | **Med** -- VC presentation logic                  |
 | `packages/self-sdk-swift/`                                                   | Entire Swift companion package (new)                                  | **Med** -- new package, SPM config                |
-| `packages/kmp-sdk-test-app/iosApp/iosApp/iOSApp.swift`                           | Replace manual factory registrations with `SelfSdkSwift.configure()`  | **Low** -- one-line change                        |
+| `packages/kmp-sdk-test-app/iosApp/iosApp/iOSApp.swift`                       | Replace manual factory registrations with `SelfSdkSwift.configure()`  | **Low** -- one-line change                        |
 
 ## Files You Will NOT Modify
 
@@ -2173,8 +2173,8 @@ cd packages/self-sdk-swift && swift build
 | `packages/webview-bridge/src/types.ts`                                  | Bridge protocol TypeScript types (must match Kotlin exactly)                         |
 | `packages/mobile-sdk-alpha/src/types/public.ts`                         | Adapter interfaces (what the WebView expects the bridge to implement)                |
 | `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/` | Android handlers (reference for iOS method contracts)                                |
-| `packages/kmp-sdk-test-app/iosApp/iosApp/NfcPassportHelper.swift`           | Move to Swift companion package                                                      |
-| `packages/kmp-sdk-test-app/iosApp/iosApp/NfcScanFactoryImpl.swift`          | Reference pattern, then delete                                                       |
+| `packages/kmp-sdk-test-app/iosApp/iosApp/NfcPassportHelper.swift`       | Move to Swift companion package                                                      |
+| `packages/kmp-sdk-test-app/iosApp/iosApp/NfcScanFactoryImpl.swift`      | Reference pattern, then delete                                                       |
 
 ---
 

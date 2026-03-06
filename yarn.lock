@@ -10956,15 +10956,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@selfxyz/kmp-sdk@workspace:packages/kmp-sdk":
-  version: 0.0.0-use.local
-  resolution: "@selfxyz/kmp-sdk@workspace:packages/kmp-sdk"
-  languageName: unknown
-  linkType: soft
-
 "@selfxyz/kmp-sdk-test-app@workspace:packages/kmp-sdk-test-app":
   version: 0.0.0-use.local
   resolution: "@selfxyz/kmp-sdk-test-app@workspace:packages/kmp-sdk-test-app"
+  languageName: unknown
+  linkType: soft
+
+"@selfxyz/kmp-sdk@workspace:packages/kmp-sdk":
+  version: 0.0.0-use.local
+  resolution: "@selfxyz/kmp-sdk@workspace:packages/kmp-sdk"
   languageName: unknown
   linkType: soft
 
