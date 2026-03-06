@@ -2,7 +2,7 @@
 
 > Rules specific to the Self SDK project. Global rules apply to everyone.
 > Section rules apply to that workstream. Each rule has a one-line rationale.
-> Read with [SDK-OVERVIEW.md](./SDK-OVERVIEW.md) when it exists.
+> Read with [SDK Overview](../projects/sdk/OVERVIEW.md) when it exists.
 
 ## Global Rules
 
@@ -52,7 +52,7 @@
 - UI components shared between flows → `mobile-sdk-alpha`
 - Only screen-level composition and routing belong in `webview-app`
 
-18. **New native handlers MUST follow the bridge protocol exactly.** Every native handler implements the JSON schema defined in SDK-OVERVIEW.md (request/response/event). No custom messaging, no side channels, no platform-specific extensions. The WebView must not know which native shell it's running inside.
+18. **New native handlers MUST follow the bridge protocol exactly.** Every native handler implements the JSON schema defined in OVERVIEW.md (request/response/event). No custom messaging, no side channels, no platform-specific extensions. The WebView must not know which native shell it's running inside.
 
 ### Code
 
@@ -78,7 +78,7 @@
 
 ### Planning
 
-28. **Write plans to disk before executing.** When working on multi-step tasks (multiple chunks, cross-workstream coordination, or anything requiring more than one session), write the plan to a file BEFORE starting implementation. Update WAVE-PLAN.md, the relevant SPEC.md status table, or create a session-specific plan file. A plan that only exists in session memory will be lost to API errors, context overflow, or `/clear`. Writing it to disk enables multiple agents to work from the same plan and creates an audit trail.
+28. **Write plans to disk before executing.** When working on multi-step tasks (multiple chunks, cross-workstream coordination, or anything requiring more than one session), write the plan to a file BEFORE starting implementation. Update the project PLAN.md, the relevant SPEC.md status table, or create a session-specific plan file. A plan that only exists in session memory will be lost to API errors, context overflow, or `/clear`. Writing it to disk enables multiple agents to work from the same plan and creates an audit trail.
 
 29. **Update plan files as you go.** When a chunk is completed, mark it done in the plan file immediately. When scope changes, update the plan file. The plan file is the single source of truth for what's been done and what's next — not the session transcript.
 

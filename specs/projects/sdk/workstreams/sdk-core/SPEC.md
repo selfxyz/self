@@ -1,8 +1,8 @@
 # Person 4: SDK Core Adaptation — Implementation Spec
 
-> Last updated: 2026-03-02
+> Last updated: 2026-03-05
 > Owner: Person 4 (SDK Core)
-> Parent: [OVERVIEW.md](./OVERVIEW.md)
+> Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
 
 ## North Star
@@ -10,6 +10,56 @@
 - **Goal:** Embed Self's identity verification into any host app with zero duplicated logic across platforms.
 - **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire flow runs inside a shared WebView.
 - **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
+
+## Context
+
+**What you own:**
+
+- **`@selfxyz/mobile-sdk-alpha`** — the WebView engine (proving machine, stores, adapters, document management)
+- **Browser entry point** (`src/browser.ts`) — the import path for WebView consumers, with zero `react-native` transitive imports
+- **Web fallback adapter implementations** — IndexedDB for documents, Web Crypto for hashing, console/fetch for analytics
+- **Platform abstraction** for adapter interfaces — making the engine portable across RN and browser/WebView contexts
+
+**Architecture context:**
+
+```
+┌──────────────────────────────────────┐
+│         Person 1: WebView UI         │
+│     (webview-app, screens, router)   │
+│  Consumes: useSelfClient(), stores,  │
+│  proving machine, adapter interfaces │
+└──────────────────┬───────────────────┘
+                   │
+    ╔══════════════╧═══════════════╗
+    ║  Person 4: SDK Engine (YOU)  ║
+    ║   (mobile-sdk-alpha)         ║
+    ║  Proving machine (XState)    ║
+    ║  Document store (Zustand)    ║
+    ║  Adapter interfaces          ║
+    ║  Two entry points:           ║
+    ║  ├─ src/index.ts (RN)        ║
+    ║  └─ src/browser.ts (WebView) ║
+    ╚══════════════╤═══════════════╝
+                   │
+    ┌──────────────┴───────────────┐
+    │     Shared Utilities         │
+    │  (common/)                   │
+    └──────────────────────────────┘
+```
+
+**Dependencies:**
+
+| Direction     | Person / Package | What                                                                        | Status |
+| ------------- | ---------------- | --------------------------------------------------------------------------- | ------ |
+| **You need**  | Nobody           | Independent in Phase 1                                                      | Ready  |
+| **Needs you** | Person 1         | Adapter interfaces, core logic (`useSelfClient()`, stores, proving machine) | Active |
+| **Needs you** | Person 5         | Browser entry point working in RN WebView context                           | Done   |
+
+**Status:**
+
+- [x] All chunks done (4A–4F) — config, browser entry, lifecycle events, conditional store, web fallbacks
+- [ ] Bridge-layer fallback duplicates not yet fully removed
+- [ ] `generateKey()`/`getPublicKey()` not exposed in `BridgeCryptoAdapter` interface
 
 ## Overview
 
@@ -28,7 +78,7 @@ You are NOT building screens or native handlers. You are making the engine porta
 - Familiarity with Zustand (state management for stores)
 - `Adapters` = the adapter interfaces in `src/types/public.ts` that decouple core logic from platform APIs
 - `Browser entry point` = `src/browser.ts`, the import path used by WebView consumers (must have zero `react-native` imports)
-- Read [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) for architecture context
+- Read [SDK Overview](../../OVERVIEW.md) for architecture context
 
 ## The Problem
 
@@ -732,13 +782,13 @@ grep -r "NativeModules\|NativeEventEmitter\|requireNativeComponent" packages/web
 
 ## Related Specs
 
-| Spec                                                                                          | Relationship                                                                                   |
-| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)                                                         | Parent architecture spec                                                                       |
-| [person1-webview/SPEC.md](../person1-webview/SPEC.md)                                         | Sibling — builds WebView UI that consumes your adapter interfaces and browser entry point      |
-| [person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md)                             | Sibling — builds native handlers that implement bridge protocol, consumes your lifecycle types |
-| [person5-rn-sdk/SPEC.md](../person5-rn-sdk/SPEC.md)                                           | Sibling — RN native shell that uses your browser entry point                                   |
-| [person3-integrations/SPEC-MINIPAY-SAMPLE.md](../person3-integrations/SPEC-MINIPAY-SAMPLE.md) | Downstream — MiniPay sample depends on SDK core through KMP SDK                                |
+| Spec                                              | Relationship                                                                                   |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [SDK Overview](../../OVERVIEW.md)                 | Parent architecture spec                                                                       |
+| [webview/SPEC.md](../webview/SPEC.md)             | Sibling — builds WebView UI that consumes your adapter interfaces and browser entry point      |
+| [native-shells/SPEC.md](../native-shells/SPEC.md) | Sibling — builds native handlers that implement bridge protocol, consumes your lifecycle types |
+| [rn-sdk/SPEC.md](../rn-sdk/SPEC.md)               | Sibling — RN native shell that uses your browser entry point                                   |
+| [integrations/SPEC.md](../integrations/SPEC.md)   | Downstream — MiniPay sample depends on SDK core through KMP SDK                                |
 
 ---
 

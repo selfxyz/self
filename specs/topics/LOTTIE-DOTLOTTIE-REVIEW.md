@@ -7,6 +7,8 @@
 
 Migration from `lottie-react-native` (Lottie JSON) to `@lottiefiles/dotlottie-react-native` (dotLottie binary `.lottie` format). Also re-enables the iOS e2e CI job and bumps the iOS deployment target from 15.1 → 15.4.
 
+This review is intentionally issue-first and lists only actionable defects/risks.
+
 ## Scope
 
 - **app/**: All animation imports switched from `.json` → `.lottie` (via `require()`)
@@ -14,15 +16,6 @@ Migration from `lottie-react-native` (Lottie JSON) to `@lottiefiles/dotlottie-re
 - **Metro/Vite config**: `.lottie` registered as asset ext; deduplication resolver added; web alias updated
 - **iOS**: Deployment target 15.1 → 15.4; Podfile.lock updated for `dotlottie-react-native`
 - **CI**: iOS e2e job re-enabled
-
-## What looks good
-
-1. **Conversion script** (`app/scripts/convert-to-dotlottie.mjs`) — clean, minimal, logs compression ratios.
-2. **`DelayedLottieView` rewrite** — `onLoad`-based play is better than the old 100ms `setTimeout` hack. Legacy prop compat (`autoPlay`/`autoplay`, `onAnimationLoaded`/`onAnimationFinish`) is thoughtful.
-3. **Metro deduplication resolver** — resolves SDK animation imports to app's copy to avoid duplicate assets, with fallback to SDK-only animations.
-4. **tsup externalization** — correctly externalizes `.json`/`.lottie` so Metro handles them.
-5. **Package exports** — `.lottie` exports added with correct condition order (`react-native` → `import` → `require`).
-6. **Consistent migration pattern** — every screen follows the same `require()` + eslint-disable pattern.
 
 ## Issues to address
 
@@ -63,9 +56,3 @@ Treat this as a separate feature track, not a blocking defect in this migration 
 ### 8. iOS e2e re-enable is unrelated
 
 Removing `if: false` from the iOS e2e job is a separate concern. Could be its own commit.
-
-## Minor notes
-
-- eslint-disable comments (`-- binary asset loaded by Metro`) are consistent and helpful
-- Test mock change (`() => ({})` → `() => 1`) is correct — Metro `require()` returns numeric asset IDs
-- `Gemfile.lock` and `Podfile.lock` diffs are correct for the dependency swap

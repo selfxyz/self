@@ -2,11 +2,11 @@
 
 Three copy-paste templates. Pick the one that matches what you're writing.
 
-| Template                                             | When to use                                                                 | Output file                  |
-| ---------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------- |
-| [Project Overview](#project-overview-template)       | One per project. System-level architecture. Changes rarely.                 | `specs/SDK-OVERVIEW.md`      |
-| [Workstream Overview](#workstream-overview-template) | One per person/workstream. Orientation for new devs. Changes occasionally.  | `specs/person-*/OVERVIEW.md` |
-| [Implementation Spec](#implementation-spec-template) | One per person/workstream. Detailed build instructions. Changes frequently. | `specs/person-*/SPEC.md`     |
+| Template                                             | When to use                                                                 | Output file                                   |
+| ---------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------- |
+| [Project Overview](#project-overview-template)       | One per project. System-level architecture. Changes rarely.                 | `specs/<project>/OVERVIEW.md`                 |
+| [Workstream Overview](#workstream-overview-template) | Orientation context. Merge as `## Context` section into SPEC.md.            | Merged into `workstreams/<scope>/SPEC.md`     |
+| [Implementation Spec](#implementation-spec-template) | One per person/workstream. Detailed build instructions. Changes frequently. | `specs/<project>/workstreams/<scope>/SPEC.md` |
 
 ---
 
@@ -19,14 +19,6 @@ Three copy-paste templates. Pick the one that matches what you're writing.
 > Last updated: [date]
 > Owner: [name/team]
 > Status: [Draft | Active | Complete]
-
-### Required References
-
-<!-- Keep these links intact so spec authors always read the right context.
-     This IS the project overview, so don't link it to itself.
-     Workstream/impl specs link back here; this links to rules only. -->
-
-- [PROJECT-RULES.md](./PROJECT-RULES.md)
 
 ### North Star
 
@@ -45,10 +37,6 @@ like? Use 2-4 bullets for easy scanning, not a paragraph. -->
 - [ ] [Milestone]
 - [ ] [Milestone]
 - [ ] Integration: [target]
-
-### Rules Reminder
-
-Apply [PROJECT-RULES.md](./PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work, **Architecture** for native/bridge work, and **Quality/Planning** for checklist and plan discipline. Prefer repo validation commands and note that token-sized chunks and LOC-sized PRs are different constraints.
 
 ### Architecture Diagram
 
@@ -102,15 +90,15 @@ This is the single source of truth that all workstreams build against. -->
 
 ### Workstreams
 
-<!-- Who does what. Link to each person's overview and implementation spec. -->
+<!-- Who does what. Link to each person's implementation spec. -->
 
 ```
-Person 1 — [Scope]        -> person1-scope/OVERVIEW.md | person1-scope/SPEC.md
+Person 1 — [Scope]   -> workstreams/<scope>/SPEC.md
 |- [deliverable]
 |- [deliverable]
 '- [deliverable]
 
-Person 2 — [Scope]        -> person2-scope/OVERVIEW.md | person2-scope/SPEC.md
+Person 2 — [Scope]   -> workstreams/<scope>/SPEC.md
 |- [deliverable]
 '- [deliverable]
 ```
@@ -149,24 +137,6 @@ would confuse a new dev or AI agent. -->
 | ------ | ------------ |
 | [term] | [definition] |
 
-### Related Specs
-
-<!-- Link to every workstream overview, implementation spec, and integration spec. -->
-
-| Spec                                                     | Audience    | What it covers |
-| -------------------------------------------------------- | ----------- | -------------- |
-| [person1-scope/OVERVIEW.md](./person1-scope/OVERVIEW.md) | Dev joining | [scope]        |
-| [person1-scope/SPEC.md](./person1-scope/SPEC.md)         | Implementer | [scope]        |
-
-### Spec Deviations
-
-<!-- If this spec intentionally skips strong suggestions from SPEC-GUIDE.md,
-document which ones and why. Remove this section if none. -->
-
-| Suggestion skipped | Reason |
-| ------------------ | ------ |
-| [suggestion]       | [why]  |
-
 ---
 
 # Workstream Overview Template
@@ -177,21 +147,13 @@ document which ones and why. Remove this section if none. -->
 
 > Last updated: [date]
 > Owner: [name]
-> Project: [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
-> Implementation: [SPEC.md](./SPEC.md)
+> Project: `../OVERVIEW.md`
+> Implementation: `./SPEC.md`
 > Status: [Draft | Active | Complete]
-
-### Required References
-
-<!-- Keep these links intact so spec authors always read the right context. -->
-
-- [PROJECT-RULES.md](../PROJECT-RULES.md)
-- [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) (if this project has a project overview, link it here)
 
 ### North Star
 
-<!-- Same project-level north star from the project overview. Repeated so
-the reader has context without navigating up. 2-4 bullets. -->
+<!-- Same project-level north star from the project overview. 2-4 bullets. -->
 
 - [Business/product goal — why this exists]
 - [Success metric — measurable outcome]
@@ -199,17 +161,11 @@ the reader has context without navigating up. 2-4 bullets. -->
 
 ### Status
 
-<!-- High-level milestones for this workstream. Mirrors the chunking
-in SPEC.md but at a summary level. This is the FIRST thing devs check —
-keep it at the top. -->
+<!-- High-level milestones for this workstream. -->
 
 - [x] [milestone]
 - [ ] [milestone]
 - [ ] [milestone]
-
-### Rules Reminder
-
-Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work, **Architecture** for native/bridge work, and **Quality/Planning** for checklist and plan discipline. Prefer repo validation commands and note that token-sized chunks and LOC-sized PRs are different constraints.
 
 ### What You Own
 
@@ -222,8 +178,8 @@ workstream produce? Keep it scannable — details live in SPEC.md. -->
 
 ### Architecture Context
 
-<!-- Focused diagram showing where THIS person's work fits in the larger
-system. Highlight what this person builds vs what they consume from others.
+<!-- Focused diagram showing where THIS workstream's work fits in the larger
+system. Highlight what this workstream builds vs what it consumes from others.
 Keep it simpler than the project-level diagram — just enough context. -->
 
 ```
@@ -235,10 +191,10 @@ Keep it simpler than the project-level diagram — just enough context. -->
 <!-- What you need from other workstreams and what they need from you.
 Update status as work progresses. -->
 
-| Direction     | Person / Package | What                         | Status  |
-| ------------- | ---------------- | ---------------------------- | ------- |
-| **You need**  | Person X         | [what you consume from them] | [state] |
-| **Needs you** | Person Y         | [what they consume from you] | [state] |
+| Direction     | Workstream / Package | What                         | Status  |
+| ------------- | -------------------- | ---------------------------- | ------- |
+| **You need**  | [scope]              | [what you consume from them] | [state] |
+| **Needs you** | [scope]              | [what they consume from you] | [state] |
 
 ### Key Decisions
 
@@ -257,23 +213,6 @@ decision matrix for system-wide decisions. -->
 | -------------------- | --------------- | ------------- |
 | [package / artifact] | [npm / AAR / …] | [who uses it] |
 
-### Related Specs
-
-| Spec                                             | What it covers                                        |
-| ------------------------------------------------ | ----------------------------------------------------- |
-| [SPEC.md](./SPEC.md)                             | Implementation details, chunks, code changes          |
-| [../SDK-OVERVIEW.md](../SDK-OVERVIEW.md)         | Project-level architecture, bridge protocol, glossary |
-| [../personX/OVERVIEW.md](../personX/OVERVIEW.md) | [dependency context]                                  |
-
-### Spec Deviations
-
-<!-- If this spec intentionally skips strong suggestions from SPEC-GUIDE.md,
-document which ones and why. Remove this section if none. -->
-
-| Suggestion skipped | Reason |
-| ------------------ | ------ |
-| [suggestion]       | [why]  |
-
 ---
 
 # Implementation Spec Template
@@ -284,20 +223,8 @@ document which ones and why. Remove this section if none. -->
 
 > Last updated: [date]
 > Owner: [name]
-> Parent: [OVERVIEW.md](./OVERVIEW.md)
+> Parent: `../OVERVIEW.md`
 > Status: [Draft | Active | Complete]
-
-### Required References
-
-<!-- Keep these links intact so spec authors always read the right context. -->
-
-- [PROJECT-RULES.md](../PROJECT-RULES.md)
-- [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) (if this project has a project overview, link it here)
-- [OVERVIEW.md](./OVERVIEW.md)
-
-### Rules Reminder
-
-Apply [PROJECT-RULES.md](../PROJECT-RULES.md) — especially **Reuse & Maintainability** for UI work, **Architecture** for native/bridge work, and **Quality/Planning** for checklist and plan discipline. Include relevant constraints in each chunk's "You will NOT" section, prefer repo validation commands, and note that token-sized chunks and LOC-sized PRs are different constraints.
 
 ### North Star
 
@@ -320,7 +247,7 @@ This matters because [context]." -->
 
 - Familiarity with [pattern/tool/concept]
 - [Term] = [definition]
-- Read [OVERVIEW.md](./OVERVIEW.md) for workstream context
+- Read the `## Context` section in this `SPEC.md` for workstream context
 
 ### The Problem
 
@@ -369,8 +296,8 @@ CREATE for new files. Every task needs I/O with at least one edge case. -->
 
 ##### Input / Output
 
-<!-- Use whichever format matches the interface. See SPEC-GUIDE.md for
-format examples: API, bridge message, function, state machine, config, UI. -->
+<!-- Use whichever format matches the interface:
+API, bridge message, function, state machine, config, UI. -->
 
 **Input:**
 
@@ -544,12 +471,6 @@ Chunk A (no deps)
 [integration check command]
 ```
 
-### Coordination Notes
-
-<!-- Who needs to know what, and when. -->
-
-- **[Person/Team]:** [what they need from you or you from them]
-
 ### Key Reference Files
 
 | File              | What to Look At   |
@@ -593,11 +514,3 @@ Chunk A (no deps)
 | Item    | Discovered during | Suggested spec         |
 | ------- | ----------------- | ---------------------- |
 | [thing] | Chunk [ID]        | [new or existing spec] |
-
-### Spec Deviations
-
-<!-- Strong suggestions from SPEC-GUIDE.md that were intentionally skipped. -->
-
-| Suggestion skipped | Reason |
-| ------------------ | ------ |
-| [suggestion]       | [why]  |

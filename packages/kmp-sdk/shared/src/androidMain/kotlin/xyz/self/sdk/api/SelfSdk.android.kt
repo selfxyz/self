@@ -185,6 +185,9 @@ actual class SelfSdk private constructor(
                     if (boundActivity?.get() === activity) {
                         boundActivity = null
                     }
+                    if (Companion.currentActivity?.get() === activity) {
+                        Companion.currentActivity = null
+                    }
                     pendingCallback?.onCancelled()
                     pendingCallback = null
                     lifecycleObserver = null

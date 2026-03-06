@@ -90,7 +90,7 @@ The NFC scan returns `tagId` (passport chip UID — a unique persistent identifi
 ### Chunk 6: Person 4 Crypto Tracking
 
 **Priority:** Low
-**Files:** `specs/person4-sdk-core/`
+**Files:** `specs/projects/sdk/workstreams/sdk-core/`
 
 The Person 4 workstream has pending crypto work. In a zero-knowledge/passport-verification SDK, partially-wired crypto paths can degrade security guarantees. This needs a tracking issue or explicit deferral decision.
 

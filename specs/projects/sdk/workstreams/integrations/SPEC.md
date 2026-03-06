@@ -1,9 +1,8 @@
 # Person 3: MiniPay Integration Sample — Implementation Spec
 
-> Last updated: 2026-03-02
+> Last updated: 2026-03-05
 > Owner: Person 3 (Integrations)
-> Parent: [OVERVIEW.md](./OVERVIEW.md)
-> Project: [SDK-OVERVIEW.md](../SDK-OVERVIEW.md)
+> Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
 
 ## North Star
@@ -11,6 +10,49 @@
 - **Goal:** Embed Self's identity verification into any host app with zero duplicated logic across platforms.
 - **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire flow runs inside a shared WebView.
 - **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
+
+## Context
+
+**What you own:**
+
+- **MiniPay sample app** (`packages/kmp-minipay-sample/`) — Kotlin/Compose Multiplatform reference integration
+- **Future integration samples** — Self Wallet migration sample, other third-party app examples
+
+**Architecture context:**
+
+```
+┌────────────────────────────────────────┐
+│  Sample App (Compose Multiplatform)    │
+│  HomeScreen ──→ SelfSdk.launch() ──→ ResultScreen
+│     (native)       (SDK WebView)       (native)
+└────────────────────┬───────────────────┘
+                     │
+         ┌───────────▼───────────┐
+         │  KMP SDK (kmp-sdk/)   │
+         │  5 native handlers    │
+         │  WebView host         │
+         └───────────┬───────────┘
+                     │
+         ┌───────────▼───────────┐
+         │  WebView (Vite bundle)│
+         │  Full verification    │
+         │  flow: 10 screens     │
+         └───────────────────────┘
+```
+
+**Dependencies:**
+
+| Direction    | Person / Package   | What                                           | Status |
+| ------------ | ------------------ | ---------------------------------------------- | ------ |
+| **You need** | Person 2 (KMP SDK) | `SelfSdk.launch()` API and Kotlin SDK artifact | Done   |
+| **You need** | Person 1 (WebView) | Vite bundle embedded in the SDK                | Ready  |
+
+**Status:**
+
+- [x] MiniPay sample project scaffolded
+- [x] Android + iOS launch path wiring present
+- [x] Error-code to user-message mapping in result UX
+- [ ] Polish + error handling (chunk 3C — partial)
 
 ## Overview
 
@@ -20,9 +62,9 @@ You are building a Kotlin sample app demonstrating how a host app integrates Sel
 
 - Familiarity with Compose Multiplatform and the KMP project structure (shared/android/ios source sets)
 - Familiarity with the KMP SDK public API: `SelfSdk.configure()`, `SelfSdk.launch()`, `SelfSdkCallback`
-- **Bridge protocol** = JSON messaging over `postMessage` between WebView and native handlers (10 domains, see [SDK-OVERVIEW.md](../SDK-OVERVIEW.md))
+- **Bridge protocol** = JSON messaging over `postMessage` between WebView and native handlers (10 domains, see [SDK Overview](../../OVERVIEW.md))
 - **5 native handlers** = NFC, Camera/MRZ, Biometrics, Keychain, Lifecycle — the only native code the SDK requires
-- Read [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) for architecture context
+- Read [SDK Overview](../../OVERVIEW.md) for architecture context
 
 ## The Problem
 
@@ -803,17 +845,17 @@ rg -n "\\bverified\\s*=|disclosedClaims" packages/kmp-minipay-sample/composeApp/
 
 ## Dependencies
 
-- **[person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md)** — KMP SDK with 5 native handlers (NFC, Camera, Biometrics, Keychain, Lifecycle) and WebView host
-- **[person1-webview/SPEC.md](../person1-webview/SPEC.md)** — Bundled Vite app that runs inside the WebView (all verification screens + proving logic)
+- **[native-shells/SPEC.md](../native-shells/SPEC.md)** — KMP SDK with 5 native handlers (NFC, Camera, Biometrics, Keychain, Lifecycle) and WebView host
+- **[webview/SPEC.md](../webview/SPEC.md)** — Bundled Vite app that runs inside the WebView (all verification screens + proving logic)
 
 ## Related Specs
 
-- **Parent:** [SDK-OVERVIEW.md](../SDK-OVERVIEW.md) — Architecture overview and north star
+- **Parent:** [SDK Overview](../../OVERVIEW.md) — Architecture overview and north star
 - **Sibling specs:**
-  - [person2-native-shells/SPEC.md](../person2-native-shells/SPEC.md) — Kotlin/Swift native shell (Person 2)
-  - [person1-webview/SPEC.md](../person1-webview/SPEC.md) — WebView UI + bridge (Person 1)
-  - [person4-sdk-core/SPEC.md](../person4-sdk-core/SPEC.md) — SDK core adaptation (Person 4)
-  - [person5-rn-sdk/SPEC.md](../person5-rn-sdk/SPEC.md) — React Native SDK (Person 5)
+  - [native-shells/SPEC.md](../native-shells/SPEC.md) — Kotlin/Swift native shell (Person 2)
+  - [webview/SPEC.md](../webview/SPEC.md) — WebView UI + bridge (Person 1)
+  - [sdk-core/SPEC.md](../sdk-core/SPEC.md) — SDK core adaptation (Person 4)
+  - [rn-sdk/SPEC.md](../rn-sdk/SPEC.md) — React Native SDK (Person 5)
 
 ---
 
@@ -850,7 +892,7 @@ rg -n "\\bverified\\s*=|disclosedClaims" packages/kmp-minipay-sample/composeApp/
 | Item                                        | Discovered during | Suggested spec               |
 | ------------------------------------------- | ----------------- | ---------------------------- |
 | Production publishing (AAR + XCFramework)   | —                 | New spec: SPEC-PUBLISHING.md |
-| Self Wallet migration to `SelfVerification` | —                 | person5-rn-sdk/SPEC.md       |
+| Self Wallet migration to `SelfVerification` | —                 | rn-sdk/SPEC.md               |
 
 ## Spec Deviations
 
