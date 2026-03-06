@@ -247,7 +247,7 @@ jobs:
         working-directory: packages/kmp-minipay-sample/iosApp
         run: |
           xcodebuild -project iosApp.xcodeproj \
-            -target iosApp \
+            -scheme iosApp \
             -sdk iphonesimulator \
             -destination "id=${{ steps.sim.outputs.id }}" \
             ONLY_ACTIVE_ARCH=YES \
