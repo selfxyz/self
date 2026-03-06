@@ -56,6 +56,66 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 2. **Keep public native module names stable during migration** (`PassportReader`, `SelfPassportReader`, `MRZScannerModule`, `SelfMRZScannerModule`) via wrappers/adapters.
 3. **No big-bang PR.** Each phase must be mergeable and independently verifiable.
 4. **One source of truth per capability** (MRZ scanner core, Passport reader core).
+5. **Tests before consolidation.** No phase that moves or deletes native code may merge without passing tests from the previous phase. Phase 0 tests are a hard gate for Phase 1+.
+
+## Testing Strategy
+
+Every consolidation phase has testable outputs. Tests are layered by what they can prove:
+
+### Layer 1 — Bridge Contract Tests (TypeScript, Jest)
+
+Mock `NativeModules` from react-native. Assert that JS consumers call the correct native method names with the correct argument shapes and handle the correct error codes. These are cheap, fast, and catch rename/shape regressions immediately.
+
+**Scope:**
+
+| Test File | What It Validates | Created In | Required In |
+| --- | --- | --- | --- |
+| `app/src/integrations/nfc/__tests__/passportReader.test.ts` | `passportReader.ts` calls `NativeModules.PassportReader` with correct method names, handles expected error codes (`NFC_NOT_SUPPORTED`, `PASSPORT_READ_FAILED`, etc.), returns expected payload shape (`documentNumber`, `dateOfBirth`, `dateOfExpiry`, etc.) | Phase 0 | 0-4 |
+| `app/src/integrations/nfc/__tests__/nfcScanner.test.ts` | `nfcScanner.ts` NFC scanning flow contract — start/stop/cancel lifecycle, error propagation | Phase 0 | 0-4 |
+| `app/src/services/__tests__/analytics.test.ts` | Analytics call sites that reference PassportReader methods (`configure`, `trackEvent`, `flush`) are called with expected arguments | Phase 0 | 0-4 |
+| `packages/rn-sdk-test-app/src/__tests__/mrzBridgeContract.test.ts` | RN test app MRZ bridge contract — error codes (`MRZ_SCAN_CANCELLED`, `MRZ_SCAN_FAILED`, `MRZ_SCAN_IN_PROGRESS`, `CAMERA_PERMISSION_DENIED`, `CAMERA_INIT_FAILED`), success payload keys (`documentNumber`, `dateOfBirth`, `dateOfExpiry`) | Phase 0 | 0-4 |
+
+### Layer 2 — Native Parity Snapshots (Documentation)
+
+A `CONTRACTS.md` file documents every exposed native method, event, payload key, and error code for both the app and SDK versions. This is the "before" photo. Each consolidation PR must update it and show the diff is intentional.
+
+**Scope:**
+
+| Section | Files Compared | Created In | Updated In |
+| --- | --- | --- | --- |
+| MRZ Scanner | `app/ios/MRZScannerModule.swift` vs `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.swift` | Phase 0 | Phase 1, 3, 4 |
+| PassportReader | `app/ios/PassportReader.swift` vs `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.swift` | Phase 0 | Phase 2, 3, 4 |
+| ObjC Shims | `app/ios/*.m` vs `packages/mobile-sdk-alpha/ios/SelfSDK/*.m` | Phase 0 | Phase 3, 4 |
+
+### Layer 3 — Build Verification (CI)
+
+All affected targets must build. This is already partially in CI but needs to cover the app iOS build too.
+
+| Target | Command | Required In |
+| --- | --- | --- |
+| RN SDK unit tests | `yarn workspace @selfxyz/rn-sdk test` | 0-4 |
+| App contract tests | `cd app && yarn jest:run` | 0-4 |
+| RN test app iOS build | `xcodebuild` (see CI workflow) | 1-4 |
+| RN test app Android build | `./gradlew assembleDebug` | 1-4 |
+| App iOS build | app iOS Debug build | 1-4 |
+| KMP SDK tests | `cd packages/kmp-sdk && ./gradlew :shared:jvmTest` | 1-4 |
+
+### Layer 4 — Behavioral Smoke Tests (Manual, On-Device)
+
+MRZ scanning requires a camera. NFC reading requires hardware. These cannot be automated in unit tests. Each consolidation PR must include manual verification sign-off.
+
+| Test | Surfaces | Required In |
+| --- | --- | --- |
+| MRZ scan cancel -> `MRZ_SCAN_CANCELLED` | App, RN test app (iOS + Android) | 1-4 |
+| MRZ scan success -> correct payload keys | App, RN test app (iOS + Android) | 1-4 |
+| MRZ permission denied -> `CAMERA_PERMISSION_DENIED` | App, RN test app (iOS + Android) | 1-4 |
+| MRZ camera init failure -> `CAMERA_INIT_FAILED` | RN test app (iOS) | 1-4 |
+| NFC scan + expected errors | App (iOS) | 2-4 |
+| Analytics events fire during NFC flow | App (iOS) | 2-4 |
+
+### Lesson from MRZ Consolidation (PRs #1817, #1821)
+
+The RN test app MRZ consolidation shipped without baseline tests. It relied on build verification and manual Android testing. iOS manual testing is still pending. The risk was acceptable because the RN test app is not production, but this approach does not scale to `app/` and `mobile-sdk-alpha/` consolidation. Phase 0 retroactively covers the RN test app contracts so future regressions are caught.
 
 ## Phased Plan
 
@@ -65,17 +125,35 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 
 **Deliverables:**
 
-- Snapshot current iOS MRZ + NFC bridge contracts (method names, payload keys, error codes).
-- Add/refresh tests around JS consumers that depend on `PassportReader.configure/trackEvent/flush` semantics:
-  - `app/tests/src/integrations/nfc/passportReader.test.ts`
-  - `app/tests/src/integrations/nfc/nfcScanner.test.ts`
-  - analytics integration call sites in `app/src/services/analytics.ts`
-- Add a temporary contract checklist to PR template for this initiative.
+1. **CONTRACTS.md** — snapshot current iOS MRZ + NFC bridge contracts (Layer 2). Diff app vs SDK for every method, payload key, error code, and analytics hook.
+2. **Bridge contract tests** (Layer 1) — all four test files listed in the testing strategy. These mock `NativeModules` and validate:
+   - Method names match what native modules expose
+   - Payload shapes match expected keys
+   - Error codes are the documented canonical set
+   - Analytics integration calls PassportReader methods with correct arguments
+3. **PR template checklist** — append native consolidation checklist to `.github/PULL_REQUEST_TEMPLATE.md`.
+
+**Test deliverables (specific):**
+
+- `app/src/integrations/nfc/__tests__/passportReader.test.ts`:
+  - Calls `NativeModules.PassportReader.scanPassport` with expected args
+  - Handles success payload with `documentNumber`, `dateOfBirth`, `dateOfExpiry`
+  - Handles each known error code
+  - Calls `configure`, `trackEvent`, `flush` if used by the TS layer
+- `app/src/integrations/nfc/__tests__/nfcScanner.test.ts`:
+  - Start/stop/cancel lifecycle calls correct native methods
+  - Error propagation maps native errors to JS error types
+- `app/src/services/__tests__/analytics.test.ts`:
+  - Analytics methods that reference PassportReader are called with expected event names
+- `packages/rn-sdk-test-app/src/__tests__/mrzBridgeContract.test.ts`:
+  - `startScanning` resolves with `{ documentNumber, dateOfBirth, dateOfExpiry }`
+  - `startScanning` rejects with each of: `MRZ_SCAN_CANCELLED`, `MRZ_SCAN_FAILED`, `MRZ_SCAN_IN_PROGRESS`, `CAMERA_PERMISSION_DENIED`, `CAMERA_INIT_FAILED`
 
 **Exit criteria:**
 
-- Contract checklist exists and is used in all follow-up PRs.
-- Baseline tests for `app/src/integrations/nfc/passportReader.ts` and related analytics call sites are green.
+- CONTRACTS.md exists with full parity tables.
+- All Layer 1 tests pass: `cd app && yarn jest:run` and `yarn workspace @selfxyz/rn-sdk-test-app test` (or equivalent).
+- PR template checklist is in place.
 
 ---
 
@@ -100,10 +178,18 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 - `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.swift`
 - optional: shared UI constants file for instruction copy/colors.
 
+**Test deliverables:**
+
+- All Phase 0 Layer 1 tests still pass (no contract regressions).
+- Update CONTRACTS.md: MRZ Scanner section should show "same implementation" instead of divergent columns.
+- Layer 3: App iOS build and RN test app iOS build both pass.
+- Layer 4: Manual MRZ scan cancel/success verified on app and RN test app (iOS + Android).
+
 **Exit criteria:**
 
 - No duplicated OCR/parsing code remains in app/sdk module wrappers.
 - Both module names still function (`MRZScannerModule`, `SelfMRZScannerModule`) where expected.
+- All Layer 1 tests pass. CONTRACTS.md updated. Manual sign-off recorded in PR.
 
 ---
 
@@ -130,10 +216,18 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 - `app/src/services/analytics.ts`
 - `app/src/integrations/nfc/passportReader.ts`
 
+**Test deliverables:**
+
+- All Phase 0 Layer 1 tests still pass.
+- `passportReader.test.ts` and `analytics.test.ts` may need updates if the TS consumer changes — update tests first, then implementation.
+- Update CONTRACTS.md: PassportReader section should show "same implementation" instead of divergent columns.
+- Layer 4: Manual NFC scan + analytics events verified on app (iOS).
+
 **Exit criteria:**
 
 - Feature parity table is fully checked.
 - One internal implementation, two thin wrappers max.
+- All Layer 1 tests pass. CONTRACTS.md updated. Manual sign-off recorded in PR.
 
 ---
 
@@ -146,10 +240,17 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 - Keep only required ObjC bridge files; convert redundant shims to generated/templated or delete where Swift-only exposure is sufficient.
 - Add deprecation notes for legacy module names and migration timeline.
 
+**Test deliverables:**
+
+- All Layer 1 tests still pass (bridge contracts unchanged at JS level).
+- Update CONTRACTS.md: ObjC Shims section should show reduced set.
+- Layer 3: All builds pass.
+
 **Exit criteria:**
 
 - Duplicate ObjC bridge files reduced to minimum required by RN/Xcode linking.
 - No JS/runtime dependency on soon-to-be-removed module names without fallback.
+- All Layer 1 tests pass. CONTRACTS.md updated.
 
 ---
 
@@ -163,11 +264,18 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 - Update docs/spec references and maintenance ownership.
 - Add CI guardrails (simple grep/check) to prevent reintroducing duplicate scanner/parser implementations.
 
+**Test deliverables:**
+
+- All Layer 1 tests still pass.
+- CONTRACTS.md final state: one row per capability, no divergence columns.
+- CI guardrail added: a lint step that fails if duplicate native scanner/parser files reappear (e.g., grep for `class MRZScanner` or `class SelfMrzParser` in more than one package).
+
 **Exit criteria:**
 
 - Dead files removed.
-- CI guardrail in place.
+- CI guardrail in place and tested.
 - Updated docs in SDK index/workstream status.
+- All Layer 1 tests pass. CONTRACTS.md finalized.
 
 ## PR Strategy
 
@@ -179,21 +287,12 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 
 Do not combine PR C with B; PassportReader carries higher regression risk.
 
-## Validation Matrix
-
-| Validation                | Type   | Command / Check                                                                                                                                                        | Required In Phase |
-| ------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| RN SDK unit tests         | Unit   | `yarn workspace @selfxyz/rn-sdk test`                                                                                                                                  | 0-4               |
-| App NFC contract tests    | Unit   | app test suite for `passportReader` integration                                                                                                                        | 0-4               |
-| RN test app iOS build     | Build  | `xcodebuild -workspace SelfRNTestApp.xcworkspace -scheme SelfRNTestApp -configuration Debug -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16'` | 1-4               |
-| App iOS build             | Build  | app iOS Debug build in CI/local                                                                                                                                        | 1-4               |
-| Manual MRZ cancel/success | Manual | Verify `MRZ_SCAN_CANCELLED` and success payload keys                                                                                                                   | 1-4               |
-| Manual NFC flow sanity    | Manual | Verify scan + expected errors + analytics events                                                                                                                       | 2-4               |
+**Hard rule:** PR B cannot merge until PR A's tests are green in CI. PR C cannot merge until PR B's tests are green. Each phase's tests are a gate for the next.
 
 ## Risks and Mitigations
 
 - **Risk:** SSH-based dependency resolution (`NFCPassportReader`) blocks iOS build validation in some CI environments.
-  - **Mitigation:** Ensure CI runner SSH credentials or mirrored HTTPS strategy before Phase 1 merge gates.
+  - **Mitigation:** Fixed in PR #1821 — `rn-sdk-test-app-ci.yml` now uses `generate-github-token` + HTTPS rewrite, matching `kmp-ci.yml` pattern.
 
 - **Risk:** PassportReader analytics methods regress during consolidation.
   - **Mitigation:** Parity table + dedicated tests in Phase 0/2; no deletion before parity proven.
@@ -201,10 +300,15 @@ Do not combine PR C with B; PassportReader carries higher regression risk.
 - **Risk:** CocoaPods + SPM churn rewrites `project.pbxproj` and drops links.
   - **Mitigation:** Re-run `pod install` + build verification in every iOS-touching PR; include package linkage check in review checklist.
 
+- **Risk:** Consolidation ships without proving behavioral equivalence.
+  - **Mitigation:** Layer 1 tests are a merge gate. Layer 4 manual sign-off is required in every consolidation PR. Lesson learned from PRs #1817/#1821 — don't repeat "consolidate first, test later."
+
 ## Definition of Done (Initiative)
 
 - [ ] One canonical MRZ scanner implementation used by app/sdk wrappers.
 - [ ] One canonical PassportReader implementation with parity-preserving wrappers.
 - [ ] Duplicate ObjC shims minimized.
 - [ ] Legacy duplicate files deleted.
-- [ ] Build/test/manual validation matrix green across affected targets.
+- [ ] All Layer 1-3 tests green across affected targets.
+- [ ] CONTRACTS.md shows single implementation per capability.
+- [ ] CI guardrail prevents reintroduction of duplicate native code.
