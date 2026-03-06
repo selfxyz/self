@@ -55,6 +55,7 @@ class SelfMrzScannerActivity : ComponentActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                scanJob?.cancel()
                 setResult(RESULT_CANCELED)
                 finish()
             }
@@ -182,6 +183,7 @@ class SelfMrzScannerActivity : ComponentActivity() {
             cornerRadius = dp(10).toFloat()
         }
         cancelButton.setOnClickListener {
+            scanJob?.cancel()
             setResult(RESULT_CANCELED)
             finish()
         }
@@ -214,7 +216,7 @@ class SelfMrzScannerActivity : ComponentActivity() {
                             previewView = previewView,
                             onProgress = ::updateDetectionState,
                         )
-                    if (hasResult) return@launch
+                    if (hasResult || isFinishing || isDestroyed) return@launch
 
                     val parsed = result.jsonObject
                     val documentNumber = parsed[EXTRA_DOCUMENT_NUMBER]?.jsonPrimitive?.contentOrNull
