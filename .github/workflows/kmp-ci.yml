@@ -5,10 +5,10 @@ permissions:
 
 on:
   pull_request:
-    paths: ["packages/kmp-sdk/**", "packages/kmp-test-app/**"]
+    paths: ["packages/kmp-sdk/**", "packages/kmp-sdk-test-app/**"]
   push:
     branches: [dev, staging, main]
-    paths: ["packages/kmp-sdk/**", "packages/kmp-test-app/**"]
+    paths: ["packages/kmp-sdk/**", "packages/kmp-sdk-test-app/**"]
 
 jobs:
   kmp-sdk-tests:
@@ -39,7 +39,7 @@ jobs:
     timeout-minutes: 60
     defaults:
       run:
-        working-directory: packages/kmp-test-app
+        working-directory: packages/kmp-sdk-test-app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -55,4 +55,4 @@ jobs:
         if: always()
         with:
           name: kmp-test-app-test-results
-          path: packages/kmp-test-app/composeApp/build/reports/tests/
+          path: packages/kmp-sdk-test-app/composeApp/build/reports/tests/
