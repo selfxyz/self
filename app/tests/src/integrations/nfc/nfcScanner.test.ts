@@ -410,6 +410,8 @@ describe('scan', () => {
     });
 
     it('should reject with unavailable error when ios module is unavailable', async () => {
+      // Module unavailability must be tested via resetModules because the
+      // scan/scanDocument binding is captured at module init time.
       jest.resetModules();
       global.mockPlatformOS = 'ios';
 
@@ -427,6 +429,8 @@ describe('scan', () => {
     });
 
     it('should reject with unavailable error when android module is unavailable', async () => {
+      // Module unavailability must be tested via resetModules because the
+      // scan/scanDocument binding is captured at module init time.
       jest.resetModules();
       global.mockPlatformOS = 'android';
 

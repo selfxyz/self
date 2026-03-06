@@ -43,6 +43,7 @@ describe('SelfMRZScannerModule bridge contract', () => {
   });
 
   it.each([
+    ['NO_VIEW_CONTROLLER', 'Unable to find root view controller'],
     ['MRZ_SCAN_CANCELLED', 'MRZ scanning cancelled'],
     ['MRZ_SCAN_FAILED', 'MRZ scan failed'],
     ['MRZ_SCAN_INVALID_RESULT', 'MRZ result missing required fields'],

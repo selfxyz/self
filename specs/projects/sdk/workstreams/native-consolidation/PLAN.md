@@ -115,6 +115,7 @@ Open a follow-up to evaluate migrating the shared helpers into `self-sdk-swift` 
 | Delete app MRZScanner.swift (replaced by MrzScanEngine.swift)         | Done    |
 | Delete sdk SelfMRZScanner.swift (replaced by MrzScanEngine.swift)     | Done    |
 | Update Xcode project references (pbxproj)                             | Done    |
+| Merge dev into branch (resolve conflicts)                             | Done    |
 | Validate builds (iOS Debug for app + sdk)                             | Pending |
 
 ## Exit Criteria
