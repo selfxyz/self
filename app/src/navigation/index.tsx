@@ -46,7 +46,8 @@ export const navigationScreens = {
 
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
-  initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
+  // TODO: revert to 'Splash' after testing lottie animations
+  initialRouteName: Platform.OS === 'web' ? 'Home' : 'DevLottie',
   screenOptions: {
     header: DefaultNavBar,
   },

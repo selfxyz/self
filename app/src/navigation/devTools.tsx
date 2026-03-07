@@ -11,6 +11,7 @@ import CreateMockScreenDeepLink from '@/screens/dev/CreateMockScreenDeepLink';
 import DevFeatureFlagsScreen from '@/screens/dev/DevFeatureFlagsScreen';
 import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
+import DevLottieScreen from '@/screens/dev/DevLottieScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
 import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
@@ -87,6 +88,13 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'Social Login Demo',
+    } as NativeStackNavigationOptions,
+  },
+  DevLottie: {
+    screen: DevLottieScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'Lottie Animations',
     } as NativeStackNavigationOptions,
   },
 };
