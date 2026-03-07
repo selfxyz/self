@@ -193,9 +193,8 @@ android {
 
     packagingOptions {
         jniLibs {
-            // Use legacy packaging (compressed, extracted at install) to ensure
-            // 16 KB page alignment — the OS aligns .so files during extraction.
-            useLegacyPackaging true
+            // Keep non-legacy native library packaging aligned with Android manifest defaults.
+            useLegacyPackaging false
             pickFirsts += ['**/libc++_shared.so']
         }
         resources {
