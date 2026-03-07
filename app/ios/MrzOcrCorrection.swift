@@ -7,7 +7,7 @@ import QKMRZParser
 struct MrzOcrCorrection {
 
     static func isValid(_ result: QKMRZResult) -> Bool {
-        return result.allCheckDigitsValid
+        return result.isDocumentNumberValid && result.isExpiryDateValid && result.isBirthdateValid
     }
 
     static func singleCorrectDocumentNumber(mrzString: String, docNumber: String, parser: QKMRZParser) -> QKMRZResult? {

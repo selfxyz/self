@@ -13,11 +13,7 @@ import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
-import { lazy } from 'react';
-
-const SocialLoginDemoScreen = lazy(
-  () => import('@/screens/dev/SocialLoginDemoScreen'),
-);
+import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {
