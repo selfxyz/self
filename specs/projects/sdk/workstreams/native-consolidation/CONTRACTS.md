@@ -1,86 +1,57 @@
-# Native Consolidation Phase 0 Contract Snapshot
+# Native Consolidation Phase 0 Contract Snapshot (Test-Pinned)
 
-This document captures the current iOS native bridge contracts before consolidation work.
+This document tracks only contracts currently enforced by automated tests.
+Anything not listed here is not yet a hard compatibility gate.
 
-## MRZ Scanner
+## Sources of Truth
 
-### Swift Module Contract Parity
+- `app/tests/src/integrations/nfc/nfcScanner.test.ts`
+- `app/tests/src/integrations/nfc/passportReader.test.ts`
+- `packages/rn-sdk-test-app/__tests__/mrzBridgeContract.test.ts`
 
-| Aspect                                   | app/                                                            | mobile-sdk-alpha                                                                                | rn-sdk-test-app                                              | Divergence?                             |
-| ---------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------- |
-| ObjC module registration                 | `@objc(MRZScannerModule)`                                       | `@objc(SelfMRZScannerModule)`                                                                   | `@objc(SelfMRZScannerModule)`                                | Yes (app module name differs)           |
-| `moduleName()`                           | `MRZScannerModule`                                              | `SelfMRZScannerModule`                                                                          | `SelfMRZScannerModule`                                       | Yes (app module name differs)           |
-| Exposed methods                          | `startScanning(resolve,reject)`, `stopScanning(resolve,reject)` | `startScanning(resolve,reject)`, `stopScanning(resolve,reject)`                                 | `startScanning(resolve,reject)`                              | Yes (RN test app has no `stopScanning`) |
-| Root view controller lookup failure code | `error`                                                         | `error`                                                                                         | `NO_VIEW_CONTROLLER`                                         | Yes                                     |
-| In-progress protection                   | None                                                            | None                                                                                            | Rejects with `MRZ_SCAN_IN_PROGRESS`                          | Yes                                     |
-| Cancellation code                        | None explicit in module                                         | None explicit in module                                                                         | `MRZ_SCAN_CANCELLED`                                         | Yes                                     |
-| Camera permission denied code            | None explicit in module                                         | None explicit in module                                                                         | `CAMERA_PERMISSION_DENIED`                                   | Yes                                     |
-| Camera init failure code                 | None explicit in module                                         | None explicit in module                                                                         | `CAMERA_INIT_FAILED`                                         | Yes                                     |
-| Generic scan failure code                | None explicit in module                                         | None explicit in module                                                                         | `MRZ_SCAN_FAILED`                                            | Yes                                     |
-| Invalid parse/payload code               | None explicit in module                                         | None explicit in module                                                                         | `MRZ_SCAN_INVALID_RESULT`                                    | Yes                                     |
-| Success payload shape                    | Flat object: `{ documentNumber, expiryDate, birthDate }`        | Nested object: `{ data: { documentNumber, expiryDate, birthDate, documentType, countryCode } }` | Flat object: `{ documentNumber, dateOfBirth, dateOfExpiry }` | Yes                                     |
-| Success payload keys (top-level)         | `documentNumber`, `expiryDate`, `birthDate`                     | `data`                                                                                          | `documentNumber`, `dateOfBirth`, `dateOfExpiry`              | Yes                                     |
+## Contract: App NFC Scanner Bridge
 
-### ObjC Bridge Shim Parity
+### Availability Error Messages (hard requirement)
 
-| Aspect                    | app/                                                                                   | mobile-sdk-alpha                                                    | rn-sdk-test-app                                                     | Divergence?                             |
-| ------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------- |
-| Shim file                 | `app/ios/MRZScannerModule.m`                                                           | `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.m`      | `packages/rn-sdk-test-app/ios/SelfRNTestApp/SelfMRZScannerModule.m` | Yes (path + symbol names)               |
-| `RCT_EXTERN_MODULE`       | `MRZScannerModule`                                                                     | `SelfMRZScannerModule`                                              | `SelfMRZScannerModule`                                              | Yes (app module name differs)           |
-| Exposed methods in shim   | `startScanning(resolve,rejecter)`, `stopScanning(resolve,rejecter)`                    | `startScanning(resolve,rejecter)`, `stopScanning(resolve,rejecter)` | `startScanning(resolve,rejecter)`                                   | Yes (RN test app has no `stopScanning`) |
-| `startScanning` signature | `startScanning:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject` | Same signature                                                      | Same signature                                                      | No                                      |
-| `stopScanning` signature  | `stopScanning:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject`  | Same signature                                                      | Not present                                                         | Yes                                     |
+| Platform | Condition                                  | Required error message                                                                |
+| -------- | ------------------------------------------ | ------------------------------------------------------------------------------------- |
+| iOS      | Native scanner unavailable in iOS path     | `NFC scanning is currently unavailable. Please ensure the app is properly installed.` |
+| Android  | Native scanner unavailable in Android path | `NFC scanning is currently unavailable.`                                              |
 
-## PassportReader
+### Dispatch and Invocation Contract
 
-### Swift Module Contract Parity
+| Behavior                   | Required contract                                                                                                               |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| iOS dispatch               | `scan()` must call `PassportReader.scanPassport` when available and must not call the cross-platform `scan` helper in that path |
+| Android dispatch           | `scan()` must call `reset()` then call Android `scan(...)`                                                                      |
+| Android scan input mapping | Android `scan(...)` must receive `documentNumber`, `dateOfBirth`, and `dateOfExpiry` derived from scan inputs                   |
+| Error propagation          | Native scan failures must reject through to JS caller                                                                           |
+| Failure telemetry          | On scan failure, `logNFCEvent('error', 'scan_failed', context, details)` must be emitted                                        |
 
-| Aspect                                     | app/                                                                                                                                                                        | mobile-sdk-alpha                                                                                                                    | rn-sdk-test-app (if applicable) | Divergence?                            |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | -------------------------------------- |
-| ObjC module registration                   | `@objc(PassportReader)`                                                                                                                                                     | `@objc(SelfPassportReader)`                                                                                                         | N/A                             | Yes                                    |
-| Native JS module name                      | `PassportReader`                                                                                                                                                            | `SelfPassportReader`                                                                                                                | N/A                             | Yes                                    |
-| Exposed methods                            | `configure`, `trackEvent`, `flush`, `scanPassport`                                                                                                                          | `configure`, `scanPassport`                                                                                                         | N/A                             | Yes (analytics helpers missing in SDK) |
-| `scanPassport` signature (Swift)           | `scanPassport(passportNumber,dateOfBirth,dateOfExpiry,canNumber,useCan,skipPACE,skipCA,extendedMode,usePacePolling,sessionId,resolve,reject)`                               | `scanPassport(passportNumber,dateOfBirth,dateOfExpiry,canNumber,useCan,skipPACE,skipCA,extendedMode,usePacePolling,resolve,reject)` | N/A                             | Yes (`sessionId` only in app)          |
-| ObjC selector for `scanPassport`           | `scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:sessionId:resolve:reject:`                                              | `scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:resolve:reject:`                | N/A                             | Yes                                    |
-| Success resolve payload                    | JSON string encoded from `ret` map                                                                                                                                          | JSON string encoded from `ret` map                                                                                                  | N/A                             | No (shape largely equivalent)          |
-| Key payload keys returned (non-exhaustive) | `passportMRZ`, `dataGroupHashes`, `eContentBase64`, `signedAttributes`, `signatureBase64`, `dataGroupsPresent`, `documentSigningCertificate`, plus identity/document fields | Same key set produced by same read/serialization flow                                                                               | N/A                             | No (for documented keys)               |
-| Primary reject code                        | `E_PASSPORT_READ`                                                                                                                                                           | `E_PASSPORT_READ`                                                                                                                   | N/A                             | No                                     |
-| E2E stub reject code                       | `E2E_TESTING`                                                                                                                                                               | `E2E_TESTING`                                                                                                                       | N/A                             | No                                     |
-| Analytics integration behavior             | `configure` creates `SelfAnalytics` + reinitializes reader, `trackEvent` delegates to analytics, `flush` delegates to analytics                                             | `configure` reinitializes reader only, no `trackEvent`, no `flush`                                                                  | N/A                             | Yes                                    |
+## Contract: App PassportReader Interface
 
-### PassportReader Success Payload Notes
+| Surface              | Required contract                                                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Required methods     | `scanPassport` must exist and be callable on `PassportReader`; `reset` is a standalone export (not a `PassportReader` method) |
+| Forbidden method     | `scan` must be absent on iOS-facing `PassportReader` interface                                                                |
+| `scanPassport` arity | `scanPassport.length === 9`                                                                                                   |
+| Optional methods     | `configure`, `trackEvent`, `flush` may be `function` or `undefined`                                                           |
+| Safe optional access | Existence checks for optional methods must not throw                                                                          |
 
-`scanPassport` resolves a JSON string that includes (among others):
+## Contract: RN Test App MRZ Bridge
 
-- `passportMRZ`
-- `dataGroupHashes`
-- `eContentBase64`
-- `signedAttributes`
-- `signatureBase64`
-- `dataGroupsPresent`
-- `documentSigningCertificate`
-- `countrySigningCertificate`
-- identity/document fields such as `documentNumber`, `dateOfBirth`, `documentType`
+| Surface                  | Required contract                                                                                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Native module name       | `NativeModules.SelfMRZScannerModule`                                                                                                                               |
+| Required method          | `startScanning()` returns a promise                                                                                                                                |
+| Success payload keys     | Resolve payload must include exactly `documentNumber`, `dateOfBirth`, `dateOfExpiry`                                                                               |
+| Required rejection codes | `NO_VIEW_CONTROLLER`, `MRZ_SCAN_CANCELLED`, `MRZ_SCAN_FAILED`, `MRZ_SCAN_INVALID_RESULT`, `MRZ_SCAN_IN_PROGRESS`, `CAMERA_PERMISSION_DENIED`, `CAMERA_INIT_FAILED` |
 
-These keys are consumed by TypeScript parsers in `app/src/integrations/nfc/nfcScanner.ts`.
+## Not Yet Pinned by Tests
 
-## ObjC Bridge Shims
+The following are intentionally excluded from this file until automated tests enforce them:
 
-### PassportReader Shim Parity
-
-| Aspect                                       | app/                                                                           | mobile-sdk-alpha                                         | rn-sdk-test-app (if applicable) | Divergence?              |
-| -------------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------- | ------------------------------- | ------------------------ |
-| Shim file                                    | `app/ios/PassportReader.m`                                                     | `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.m` | N/A                             | Yes (path + module name) |
-| `RCT_EXTERN_MODULE`                          | `PassportReader`                                                               | `SelfPassportReader`                                     | N/A                             | Yes                      |
-| `configure` in shim                          | Present: `configure:(NSString *)token enableDebugLogs:(BOOL)enableDebugLogs`   | Not exported                                             | N/A                             | Yes                      |
-| `trackEvent` in shim                         | Present: `trackEvent:(NSString *)name properties:(NSDictionary *)properties`   | Not exported                                             | N/A                             | Yes                      |
-| `flush` in shim                              | Present                                                                        | Not exported                                             | N/A                             | Yes                      |
-| `scanPassport` selector includes `sessionId` | Yes                                                                            | No                                                       | N/A                             | Yes                      |
-| Promise args                                 | `resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject` | Same                                                     | N/A                             | No                       |
-
-## Summary of Current Divergences
-
-- MRZ contracts diverge across all three surfaces in module name, payload shape, and error code taxonomy.
-- RN test app already exposes explicit MRZ error codes; app and mobile-sdk-alpha do not.
-- PassportReader bridge differs between app and SDK due to `sessionId` and analytics bridge methods (`configure`/`trackEvent`/`flush`).
-- ObjC shims are duplicated and not in parity for PassportReader.
+- App vs SDK MRZ Swift implementation parity details
+- ObjC shim-level selector parity tables
+- PassportReader native payload key-by-key parity
+- Analytics provider-specific integration behavior

@@ -1,32 +1,6 @@
 {
-  "originHash" : "9e9f8024def4f5539798bdf76ea3c74e3b0feb60a8c213a8a90e176a2c5908db",
+  "originHash" : "84ab935170f2413a848f1d33f0033ee867b2af7b423db4030127ad578784bbfa",
   "pins" : [
-    {
-      "identity" : "mixpanel-swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mixpanel/mixpanel-swift.git",
-      "state" : {
-        "revision" : "e2619282894502f9378abe04c7f7d92fc523484a",
-        "version" : "5.0.0"
-      }
-    },
-    {
-      "identity" : "nfcpassportreader",
-      "kind" : "localSourceControl",
-      "location" : "/Users/seshanth/code/self/self-temp/packages/mobile-sdk-alpha/NFCPassportReader",
-      "state" : {
-        "revision" : "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
-      }
-    },
-    {
-      "identity" : "openssl",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/krzyzanowskim/OpenSSL.git",
-      "state" : {
-        "revision" : "8cb1d641ab5ebce2cd7cf31c93baef07bed672d4",
-        "version" : "1.1.2301"
-      }
-    },
     {
       "identity" : "qkmrzparser",
       "kind" : "remoteSourceControl",

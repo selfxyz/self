@@ -3,7 +3,7 @@
 > Last updated: 2026-03-06
 > Owner: SDK Platform
 > Parent: [SDK Overview](../../OVERVIEW.md)
-> Status: Proposed
+> Status: In Progress (Phase 0 Done, Phase 1 In Progress)
 
 ## North Star
 
