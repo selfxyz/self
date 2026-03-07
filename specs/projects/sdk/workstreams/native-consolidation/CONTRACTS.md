@@ -1,7 +1,8 @@
-# Native Consolidation Phase 0 Contract Snapshot (Test-Pinned)
+# Native Consolidation Contract Gates
 
-This document tracks only contracts currently enforced by automated tests.
-Anything not listed here is not yet a hard compatibility gate.
+This file is intentionally narrow.
+It lists only contract facts that are both true in the current code and pinned by automated tests.
+Anything not listed here is not yet a merge gate for native consolidation work.
 
 ## Sources of Truth
 
@@ -11,7 +12,7 @@ Anything not listed here is not yet a hard compatibility gate.
 
 ## Contract: App NFC Scanner Bridge
 
-### Availability Error Messages (hard requirement)
+### Availability Error Messages
 
 | Platform | Condition                                  | Required error message                                                                |
 | -------- | ------------------------------------------ | ------------------------------------------------------------------------------------- |
@@ -32,9 +33,10 @@ Anything not listed here is not yet a hard compatibility gate.
 
 | Surface              | Required contract                                                                                                             |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Required methods     | `scanPassport` must exist and be callable on `PassportReader`; `reset` is a standalone export (not a `PassportReader` method) |
+| Required exports     | `PassportReader` and standalone `reset` export must both exist                                                                 |
+| Required method      | `scanPassport` must exist and be callable on `PassportReader`                                                                  |
 | Forbidden method     | `scan` must be absent on iOS-facing `PassportReader` interface                                                                |
-| `scanPassport` arity | `scanPassport.length === 9`                                                                                                   |
+| `scanPassport` arity | `scanPassport.length === 10` (includes `sessionId`)                                                                           |
 | Optional methods     | `configure`, `trackEvent`, `flush` may be `function` or `undefined`                                                           |
 | Safe optional access | Existence checks for optional methods must not throw                                                                          |
 
@@ -51,7 +53,8 @@ Anything not listed here is not yet a hard compatibility gate.
 
 The following are intentionally excluded from this file until automated tests enforce them:
 
-- App vs SDK MRZ Swift implementation parity details
+- App vs SDK MRZ Swift implementation parity details beyond RN test-app bridge behavior
+- App vs SDK PassportReader native parity tables
 - ObjC shim-level selector parity tables
 - PassportReader native payload key-by-key parity
 - Analytics provider-specific integration behavior
