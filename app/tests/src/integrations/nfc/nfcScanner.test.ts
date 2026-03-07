@@ -423,9 +423,10 @@ describe('scan', () => {
 
       const { scan: isolatedScan } = require('@/integrations/nfc/nfcScanner');
 
-      await expect(isolatedScan(mockInputs)).rejects.toThrow(
-        'NFC scanning is currently unavailable.',
-      );
+      await expect(isolatedScan(mockInputs)).rejects.toMatchObject({
+        message:
+          'NFC scanning is currently unavailable. Please ensure the app is properly installed.',
+      });
     });
 
     it('should reject with unavailable error when android module is unavailable', async () => {
@@ -442,9 +443,9 @@ describe('scan', () => {
 
       const { scan: isolatedScan } = require('@/integrations/nfc/nfcScanner');
 
-      await expect(isolatedScan(mockInputs)).rejects.toThrow(
-        'NFC scanning is currently unavailable.',
-      );
+      await expect(isolatedScan(mockInputs)).rejects.toMatchObject({
+        message: 'NFC scanning is currently unavailable.',
+      });
     });
   });
 

@@ -30,7 +30,6 @@ const NativeModules = {
     scanPassport: jest.fn(),
     trackEvent: jest.fn(),
     flush: jest.fn(),
-    reset: jest.fn(),
   },
   ReactNativeBiometrics: {
     isSensorAvailable: jest.fn().mockResolvedValue({
@@ -960,8 +959,8 @@ jest.mock('react-native-nfc-manager', () => ({
 // Mock react-native-passport-reader
 jest.mock('react-native-passport-reader', () => {
   const mockScanPassport = jest.fn();
-  // Mock the parameter count for scanPassport (iOS native method takes 9 parameters)
-  Object.defineProperty(mockScanPassport, 'length', { value: 9 });
+  // Mock the parameter count for scanPassport (iOS native method takes 10 parameters)
+  Object.defineProperty(mockScanPassport, 'length', { value: 10 });
 
   const mockPassportReader = {
     configure: jest.fn(),
@@ -987,15 +986,14 @@ jest.mock('react-native-passport-reader', () => {
 // Mock @/integrations/nfc/passportReader to properly expose the interface expected by tests
 jest.mock('./src/integrations/nfc/passportReader', () => {
   const mockScanPassport = jest.fn();
-  // Mock the parameter count for scanPassport (iOS native method takes 9 parameters)
-  Object.defineProperty(mockScanPassport, 'length', { value: 9 });
+  // Mock the parameter count for scanPassport (iOS native method takes 10 parameters)
+  Object.defineProperty(mockScanPassport, 'length', { value: 10 });
 
   const mockPassportReader = {
     configure: jest.fn(),
     scanPassport: mockScanPassport,
     trackEvent: jest.fn(),
     flush: jest.fn(),
-    reset: jest.fn(),
   };
 
   return {
