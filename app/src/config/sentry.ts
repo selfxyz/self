@@ -3,6 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { SENTRY_DSN } from '@env';
+import { Platform } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import {
   addBreadcrumb,
   captureException as sentryCaptureException,
@@ -88,6 +90,20 @@ const sanitizeTagKey = (key: string): string | null => {
   return key;
 };
 
+export const isIosSimulator = () =>
+  Platform.OS === 'ios' && DeviceInfo.isEmulatorSync();
+
+export const getSentryRuntimeFlags = () => {
+  const disableSimulatorHeavyIntegrations = isIosSimulator();
+
+  return {
+    disableSimulatorHeavyIntegrations,
+    enableFeedbackScreenshots: !disableSimulatorHeavyIntegrations,
+    replaysOnErrorSampleRate: disableSimulatorHeavyIntegrations ? 0 : 1.0,
+    replaysSessionSampleRate: disableSimulatorHeavyIntegrations ? 0 : 0.1,
+  };
+};
+
 export const captureException = (
   error: Error,
   context?: Record<string, unknown>,
@@ -146,15 +162,53 @@ export const initSentry = () => {
     return;
   }
 
+  const {
+    disableSimulatorHeavyIntegrations,
+    enableFeedbackScreenshots,
+    replaysOnErrorSampleRate,
+    replaysSessionSampleRate,
+  } = getSentryRuntimeFlags();
+  const integrations = [
+    consoleLoggingIntegration({
+      levels: ['log', 'error', 'warn', 'info', 'debug'],
+    }),
+    feedbackIntegration({
+      buttonOptions: {
+        styles: {
+          triggerButton: {
+            position: 'absolute',
+            top: 20,
+            right: 20,
+            bottom: undefined,
+            marginTop: 100,
+          },
+        },
+      },
+      enableTakeScreenshot: enableFeedbackScreenshots,
+      namePlaceholder: 'Fullname',
+      emailPlaceholder: 'Email',
+    }),
+  ];
+
+  if (!disableSimulatorHeavyIntegrations) {
+    integrations.unshift(
+      mobileReplayIntegration({
+        maskAllText: true,
+        maskAllImages: false,
+        maskAllVectors: false,
+      }),
+    );
+  }
+
   sentryInit({
     dsn: SENTRY_DSN,
     debug: false,
     enableAutoSessionTracking: true,
     // Performance Monitoring
     tracesSampleRate: 1.0,
-    // Session Replay
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
+    // Replay and screenshots are disabled on iOS simulator to reduce cold-start pressure.
+    replaysSessionSampleRate,
+    replaysOnErrorSampleRate,
     // Disable collection of PII data
     beforeSend(event) {
       // Remove PII data
@@ -164,32 +218,7 @@ export const initSentry = () => {
       }
       return event;
     },
-    integrations: [
-      mobileReplayIntegration({
-        maskAllText: true,
-        maskAllImages: false,
-        maskAllVectors: false,
-      }),
-      consoleLoggingIntegration({
-        levels: ['log', 'error', 'warn', 'info', 'debug'],
-      }),
-      feedbackIntegration({
-        buttonOptions: {
-          styles: {
-            triggerButton: {
-              position: 'absolute',
-              top: 20,
-              right: 20,
-              bottom: undefined,
-              marginTop: 100,
-            },
-          },
-        },
-        enableTakeScreenshot: true,
-        namePlaceholder: 'Fullname',
-        emailPlaceholder: 'Email',
-      }),
-    ],
+    integrations,
     _experiments: {
       enableLogs: true,
     },

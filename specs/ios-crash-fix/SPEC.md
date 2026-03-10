@@ -1,6 +1,6 @@
 # iOS Intermittent Crash Fix — Implementation Spec
 
-> Last updated: 2026-02-28
+> Last updated: 2026-03-10
 > Owner: justin
 > Status: Active
 
@@ -184,9 +184,26 @@ yarn ios
 
 ---
 
-## PR 2: Runtime Crash Isolation (future)
+## PR 2: Runtime Crash Isolation
 
-Placeholder — simulator-only toggles for Sentry replay/feedback. Gated on step 0 crash evidence.
+### Outcome
+
+- Implemented as a low-risk simulator-only isolation hedge while local reproduction remained inconclusive.
+- iOS simulator now disables Sentry mobile replay entirely and disables feedback screenshots.
+- Real devices keep the existing replay and feedback screenshot behavior.
+
+### Files Modified
+
+| File | Change |
+|---|---|
+| `app/src/config/sentry.ts` | Disable replay on iOS simulator and disable feedback screenshots on iOS simulator |
+| `app/tests/src/config/sentry.test.ts` | Assert simulator-only Sentry runtime flags |
+
+### Validation
+
+```bash
+yarn --cwd app jest:run tests/src/config/sentry.test.ts --runInBand --watchman=false
+```
 
 ## PR 3: Pod Architecture / Rosetta (future)
 
