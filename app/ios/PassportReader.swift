@@ -110,7 +110,6 @@ class PassportReader: NSObject {
             onStart: { [weak self] in
                 self?.logNfc(level: .info, message: "scan_start", stage: "start", useCANBool: useCANBool, sessionId: sessionId)
                 NativeLoggerBridge.logInfo(category: "NFC", message: "NFC passport scan started", data: [
-                    "passportNumber": passportNumber,
                     "useCAN": useCANBool,
                     "skipPACE": skipPACEBool,
                     "skipCA": skipCABool,
@@ -151,6 +150,14 @@ class PassportReader: NSObject {
 
     @objc(configure:enableDebugLogs:)
     func configure(token: String, enableDebugLogs: Bool) {
+    }
+
+    @objc(trackEvent:properties:)
+    func trackEvent(_ name: String, properties: [String: Any]?) {
+    }
+
+    @objc(flush)
+    func flush() {
     }
 
     @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:sessionId:resolve:reject:)

@@ -1496,6 +1496,7 @@ data class VerificationResult(
     val verificationId: String?,
     val proof: String?,
     val claims: Map<String, Any?>?,
+    val error: SelfSdkError?,
 )
 
 data class SelfSdkError(
