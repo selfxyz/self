@@ -80,11 +80,12 @@
 
 | ID    | Title                                                         | Status   | Priority | Depends On | Plan                                                                                       | PR  |
 | ----- | ------------------------------------------------------------- | -------- | -------- | ---------- | ------------------------------------------------------------------------------------------ | --- |
-| NS-01 | Physical-device validation matrix for Android + iOS NFC flows | Ready    | High     | -          | [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md)   | -   |
+| NS-01 | Physical-device validation matrix for Android + iOS NFC flows | Done     | High     | -          | [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md)   | -   |
 | NS-02 | iOS Camera MRZ Phase 2                                        | Deferred | Medium   | NS-01      | -                                                                                          | -   |
 | NS-03 | Publishing readiness for AAR + XCFramework artifacts          | Ready    | High     | NS-01      | [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md)               | -   |
 | NS-04 | APDU allowlist in KMP NFC bridge handler                      | Ready    | High     | -          | [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md)                           | -   |
 | NS-05 | LifecycleBridgeHandler type/error semantics on iOS            | Ready    | Low      | -          | [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md) | -   |
+| NS-06 | Align KMP callback/result contract with canonical SDK types   | Ready    | Medium   | NS-01      | -                                                                                          | -   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -92,7 +93,7 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 | Plan                                                                                       | IDs   | Status |
 | ------------------------------------------------------------------------------------------ | ----- | ------ |
-| [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md)   | NS-01 | Ready  |
+| [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md)   | NS-01 | Done   |
 | [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md)               | NS-03 | Ready  |
 | [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md)                           | NS-04 | Ready  |
 | [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md) | NS-05 | Ready  |
@@ -103,6 +104,12 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 - [ ] Open PR-sized work has a linked plan file
 - [ ] Deferred work is explicitly marked deferred
 - [ ] Completed work is reflected here and in [SDK Overview](../../OVERVIEW.md) when system status changes
+
+## Status Notes
+
+- `NS-01` completed on 2026-03-10 after operator-assisted real-device NFC validation confirmed Android and iOS success and failure paths in the KMP test app. See [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md) for the validation log.
+- Local validation for `NS-01` also completed the KMP build gates and a callback-contract audit. The remaining contract mismatch stays isolated in `NS-06`.
+- `NS-06` captures a contract mismatch found during the audit: KMP still exposes `VerificationResult.type` and `claims: Map<String, String>?`, which diverges from the canonical SDK contract in [SDK Overview](../../OVERVIEW.md).
 
 ## Overview
 
