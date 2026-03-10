@@ -6,7 +6,7 @@
 
 ## Required References
 
-- [PROJECT-RULES.md](../PROJECT-RULES.md)
+- [PROJECT-RULES.md](../archive/PROJECT-RULES.md)
 
 ## North Star
 
@@ -26,6 +26,12 @@ Work is split into three PRs with decision gates between them.
 | `app/scripts/run-ios-simulator.cjs` | Picks latest runtime + first available iPhone by name. No stale-device cleanup, no explicit boot, no boot-readiness wait. |
 | `app/ios/Podfile:201` | Forces `EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64` on all pods — Rosetta-only simulator builds. May cause instability but cannot change without binary pod audit. |
 | `app/src/config/sentry.ts` | `mobileReplayIntegration` + `feedbackIntegration` with screenshots active on simulator. Memory-intensive; known crash contributor on sim. |
+
+## Current Notes
+
+- Local PR 1 behavior intentionally prefers newer iPhone Pro simulators by default.
+- CI currently prefers `iPhone SE (3rd generation)` first, then falls back to any iPhone in `.github/workflows/mobile-e2e.yml`.
+- The launcher rewrite should align on boot discipline and explicit UDID targeting, not necessarily identical default device preference.
 
 ## PR Plan
 
@@ -147,8 +153,8 @@ Chunk 1 (no deps) → Chunk 2 (after 1, parallel-safe but logically after)
 
 | Chunk | Description | Size | Status |
 |---|---|---|---|
-| 1 | Rewrite run-ios-simulator.cjs | S | **Pending** |
-| 2 | Update AGENTS.md | S | **Pending** |
+| 1 | Rewrite run-ios-simulator.cjs | S | **Completed** |
+| 2 | Update AGENTS.md | S | **Completed** |
 
 ### Validation Plan
 
