@@ -6,8 +6,8 @@ package xyz.self.sdk.models
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import xyz.self.sdk.api.SelfSdkError
 import xyz.self.sdk.api.SelfSdkConfig
+import xyz.self.sdk.api.SelfSdkError
 import xyz.self.sdk.api.VerificationRequest
 import xyz.self.sdk.api.VerificationResult
 import kotlin.test.Test

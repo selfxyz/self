@@ -313,8 +313,7 @@ actual class SelfSdk private constructor(
     /**
      * Serializes SelfSdkConfig to JSON string for passing via Intent.
      */
-    private fun serializeConfig(config: SelfSdkConfig): String =
-        verificationResultJson.encodeToString(SelfSdkConfig.serializer(), config)
+    private fun serializeConfig(config: SelfSdkConfig): String = verificationResultJson.encodeToString(SelfSdkConfig.serializer(), config)
 }
 
 /**

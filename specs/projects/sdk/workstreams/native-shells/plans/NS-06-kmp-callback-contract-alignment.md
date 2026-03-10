@@ -6,7 +6,7 @@
 - Workstream: native-shells
 - Backlog IDs: NS-06
 - Owner: Native Shells
-- Branch: TBD
+- Branch: justin/kmp-ns-06
 - PR: TBD
 
 ## Why
