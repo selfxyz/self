@@ -51,7 +51,7 @@ class LifecycleBridgeHandler(
      */
     private fun dismiss(): JsonElement? {
         activity.runOnUiThread {
-            activity.setResult(Activity.RESULT_CANCELED)
+            activity.setResult(SelfVerificationActivity.RESULT_CODE_CANCELLED)
             activity.finish()
         }
         return null
@@ -74,19 +74,19 @@ class LifecycleBridgeHandler(
             if (type != null) {
                 // Flat lifecycle payload (e.g. { type: "proofRequested" }) — treat as success
                 intent.putExtra(SelfVerificationActivity.EXTRA_RESULT_TYPE, type)
-                activity.setResult(Activity.RESULT_OK, intent)
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_SUCCESS, intent)
             } else if (success && data != null) {
                 // Success result
                 intent.putExtra(SelfVerificationActivity.EXTRA_RESULT_DATA, data)
-                activity.setResult(Activity.RESULT_OK, intent)
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_SUCCESS, intent)
             } else if (!success && errorCode != null) {
                 // Error result
                 intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_CODE, errorCode)
                 intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_MESSAGE, errorMessage ?: "Unknown error")
-                activity.setResult(Activity.RESULT_FIRST_USER, intent)
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_ERROR, intent)
             } else {
                 // Cancelled or invalid result
-                activity.setResult(Activity.RESULT_CANCELED, intent)
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_CANCELLED, intent)
             }
 
             activity.finish()

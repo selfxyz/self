@@ -2,14 +2,14 @@ import { expect } from 'chai';
 import { wasm as wasm_tester } from 'circom_tester';
 import dotenv from 'dotenv';
 import path from 'path';
-import serialized_csca_tree from '../../../common/pubkeys/serialized_csca_tree.json' with { type: 'json' };
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
-import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
-import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/generateInputs';
-import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
-import { parseDscCertificateData } from '@selfxyz/common/utils/passports/passport_parsing/parseDscCertificateData';
-import { getLeafDscTreeFromParsedDsc } from '@selfxyz/common/utils/trees';
-import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
+import serialized_csca_tree from '@selfxyz/new-common/src/data/serialized_csca_tree.json' with { type: 'json' };
+import { parseCertificateSimple } from '@selfxyz/new-common/src/certificates/parsing/parseCertificateSimple.js';
+import { parseDscCertificateData } from '@selfxyz/new-common/src/certificates/parsing/parseDscCertificateData.js';
+import { createCircuitInputGenerator } from '@selfxyz/new-common/src/circuits/generator.js';
+import { PassportDocument } from '@selfxyz/new-common/src/documents/passport/adapter.js';
+import { genAndInitMockPassportData } from '@selfxyz/new-common/src/testing/genMockPassportData.js';
+import { getLeafDscTree } from '@selfxyz/new-common/src/trees/index.js';
+import type { SignatureAlgorithm } from '@selfxyz/new-common/src/foundation/types/document.js';
 import { fullSigAlgs, sigAlgs } from './test_cases.js';
 import { fileURLToPath } from 'url';
 dotenv.config();
@@ -27,7 +27,10 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
     '000101',
     '300101'
   );
+  const doc = new PassportDocument(passportData);
   const passportMetadata = passportData.passportMetadata;
+
+  const generator = createCircuitInputGenerator();
 
   describe(`DSC chain certificate - ${passportMetadata.cscaHashFunction?.toUpperCase()} ${passportMetadata.cscaSignatureAlgorithm?.toUpperCase()} ${passportMetadata.cscaCurveOrExponent?.toUpperCase()} ${
     passportData.csca_parsed.publicKeyDetails.bits
@@ -35,14 +38,11 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
     this.timeout(0); // Disable timeout
     let circuit;
 
-    const inputs = generateCircuitInputsDSC(passportData, serialized_csca_tree);
+    const inputs = generator.generateDscInputs(doc, serialized_csca_tree);
 
     before(async () => {
       circuit = await wasm_tester(
-        path.join(
-          __dirname,
-          `../../circuits/dsc/instances/${getCircuitNameFromPassportData(passportData, 'dsc')}.circom`
-        ),
+        path.join(__dirname, `../../circuits/dsc/instances/${doc.getDscCircuitName()}.circom`),
         {
           include: [
             'node_modules',
@@ -66,7 +66,7 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
       console.log('\x1b[34m%s\x1b[0m', 'circom: dsc_tree_leaf: ', dsc_tree_leaf);
       expect(dsc_tree_leaf).to.be.a('string');
 
-      const dsc_tree_leaf_js = getLeafDscTreeFromParsedDsc(passportData.dsc_parsed);
+      const dsc_tree_leaf_js = getLeafDscTree(passportData.dsc_parsed!, passportData.csca_parsed!);
       console.log('\x1b[34m%s\x1b[0m', 'js: dsc_tree_leaf: ', dsc_tree_leaf_js);
       expect(dsc_tree_leaf).to.be.equal(dsc_tree_leaf_js);
     });

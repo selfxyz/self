@@ -12,6 +12,8 @@ export const ENABLE_DEBUG_LOGS = false;
 
 export const GOOGLE_SIGNIN_ANDROID_CLIENT_ID = 'mock-google-client-id';
 
+export const GOOGLE_SIGNIN_IOS_CLIENT_ID = 'mock-google-ios-client-id';
+
 export const GOOGLE_SIGNIN_WEB_CLIENT_ID = 'mock-google-web-client-id';
 
 export const IS_TEST_BUILD = false;

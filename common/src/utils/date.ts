@@ -1,25 +1,3 @@
-export function getAdjustedTimestampBytes(y: number = 0, m: number = 0, d: number = 0): number[] {
-  // Get the current date/time
-  const currentDate: Date = new Date();
-
-  // Optionally adjust the date
-  if (y !== 0) currentDate.setFullYear(currentDate.getFullYear() + y);
-  if (m !== 0) currentDate.setMonth(currentDate.getMonth() + m);
-  if (d !== 0) currentDate.setDate(currentDate.getDate() + d);
-
-  // Get the Unix timestamp (in seconds)
-  const timestamp: number = Math.floor(currentDate.getTime() / 1000);
-
-  // Convert the timestamp to 4 bytes
-  const bytes: number[] = [
-    (timestamp >> 24) & 0xff,
-    (timestamp >> 16) & 0xff,
-    (timestamp >> 8) & 0xff,
-    timestamp & 0xff,
-  ];
-
-  return bytes;
-}
 export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
   const date = new Date();
   date.setDate(date.getDate() + dayDiff); // Adjust the date by the dayDiff

@@ -1,6 +1,9 @@
 import { expect } from 'chai';
 import { wasm as wasmTester } from 'circom_tester';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('date', async () => {
   let circuit;

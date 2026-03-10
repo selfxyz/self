@@ -3,14 +3,14 @@ import { ethers } from "hardhat";
 import { ATTESTATION_ID } from "../utils/constants";
 import { generateVcAndDiscloseProof, getSMTs } from "../utils/generateProof";
 import { poseidon2 } from "poseidon-lite";
-import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
+import { generateCommitment } from "@selfxyz/new-common/src/documents/passport/commitment";
 import { BigNumberish } from "ethers";
 import { generateRandomFieldElement, getStartOfDayTimestamp } from "../utils/utils";
-import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts";
-import { countries } from "@selfxyz/common/constants/countries";
+import { getPackedForbiddenCountries } from "@selfxyz/new-common/src/blockchain/forbiddenCountries";
+import { countries } from "@selfxyz/new-common/src/data/countries";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
-import { Country3LetterCode } from "@selfxyz/common/constants/countries";
+import { Country3LetterCode } from "@selfxyz/new-common/src/data/countries";
 import { createHash } from "crypto";
 
 // Helper function to format date for passport (YYMMDD format)

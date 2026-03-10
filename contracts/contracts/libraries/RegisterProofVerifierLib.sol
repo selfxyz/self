@@ -11,6 +11,7 @@ import {IIdentityRegistryV1} from "../interfaces/IIdentityRegistryV1.sol";
 import {IIdentityRegistryIdCardV1} from "../interfaces/IIdentityRegistryIdCardV1.sol";
 import {IIdentityRegistryAadhaarV1} from "../interfaces/IIdentityRegistryAadhaarV1.sol";
 import {IIdentityRegistryKycV1} from "../interfaces/IIdentityRegistryKycV1.sol";
+import {console} from "hardhat/console.sol";
 
 /**
  * @title RegisterProofVerifierLib

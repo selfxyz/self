@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { deploySystemFixtures } from "../utils/deployment";
 import { DeployedActors } from "../utils/types";
 import { ethers } from "hardhat";
-import { RegisterVerifierId, DscVerifierId } from "@selfxyz/common/constants/constants";
+import { RegisterVerifierId, DscVerifierId } from "@selfxyz/new-common/src/foundation/constants/identity";
 
 describe("Unit Tests for IdentityVerificationHub", () => {
   let deployedActors: DeployedActors;
