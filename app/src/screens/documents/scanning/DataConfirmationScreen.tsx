@@ -9,7 +9,12 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Button, colors, TopNavigationDialogue, XIcon } from '@selfxyz/euclid';
-import { formatDateToYYMMDD, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  formatDateToYYMMDD,
+  parseMRZBirthDate,
+  parseMRZExpiryDate,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { InputField } from '@/components/InputField';
@@ -20,7 +25,6 @@ import {
   calculateFirstDifference,
   type FirstDifference,
 } from '@/utils/diffCalculator';
-import { parseMRZBirthDate, parseMRZExpiryDate } from '@selfxyz/mobile-sdk-alpha';
 
 const EscapeIcon = ({ size, color }: { size: number; color: string }) => (
   <View testID="escape-button">

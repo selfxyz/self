@@ -5,9 +5,8 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
+import DataConfirmationScreen from '@/screens/documents/scanning/DataConfirmationScreen';
 import * as analytics from '@/services/analytics';
-
-import DataConfirmationScreen from './DataConfirmationScreen';
 
 jest.mock('@/services/analytics', () => ({
   trackEvent: jest.fn(),

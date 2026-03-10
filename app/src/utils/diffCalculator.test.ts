@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { calculateFirstDifference } from './diffCalculator';
+import { calculateFirstDifference } from '@/utils/diffCalculator';
 
 describe('calculateFirstDifference', () => {
   it('returns null when strings are identical', () => {
