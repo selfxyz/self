@@ -1,5 +1,7 @@
 # Native Consolidation Phase 1 Plan (iOS MRZ)
 
+> Historical phase-specific plan. Active PR pickup now lives in [`plans/NC-02-phase-1-mrz-unification.md`](./plans/NC-02-phase-1-mrz-unification.md). Keep this file for implementation detail history and validation notes.
+
 ## Objective
 
 Consolidate duplicated iOS MRZ logic between `app/ios` and `packages/mobile-sdk-alpha/ios/SelfSDK` while preserving bridge contracts and app UX.

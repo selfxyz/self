@@ -61,6 +61,34 @@
 - [ ] Bridge-layer fallback duplicates not yet fully removed
 - [ ] `generateKey()`/`getPublicKey()` not exposed in `BridgeCryptoAdapter` interface
 
+## Execution Model
+
+- This file holds stable SDK core context and the follow-up backlog.
+- PR-sized execution lives in [`plans/`](./plans/).
+- For quick pickup, read the backlog and active plans first.
+
+## Backlog
+
+| ID    | Title                                                                        | Status | Priority | Depends On | Plan                                                                             | PR  |
+| ----- | ---------------------------------------------------------------------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------- | --- |
+| SC-01 | Consolidate bridge-layer fallback duplicates with engine-owned adapters      | Ready  | High     | -          | [plans/SC-01-fallback-adapter-dedup.md](./plans/SC-01-fallback-adapter-dedup.md) | -   |
+| SC-02 | Expose `generateKey()` and `getPublicKey()` in bridge crypto adapter surface | Ready  | Medium   | SC-01      | [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)   | -   |
+
+Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+
+## Active Plans
+
+| Plan                                                                             | IDs   | Status |
+| -------------------------------------------------------------------------------- | ----- | ------ |
+| [plans/SC-01-fallback-adapter-dedup.md](./plans/SC-01-fallback-adapter-dedup.md) | SC-01 | Ready  |
+| [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)   | SC-02 | Ready  |
+
+## Completion Checklist
+
+- [ ] Backlog rows reflect the remaining follow-ups
+- [ ] Each follow-up has a linked plan file
+- [ ] Browser entry and RN compatibility invariants remain explicit
+
 ## Overview
 
 You are making **`@selfxyz/mobile-sdk-alpha`** work cleanly inside a browser/WebView context. This package is the "WebView engine" — it contains all core logic (proving machine, stores, document management, protocol state) that Person 1's screen components consume via `useSelfClient()`.

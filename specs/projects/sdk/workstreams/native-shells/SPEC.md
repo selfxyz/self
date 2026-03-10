@@ -70,6 +70,40 @@
 - [ ] SDK Public API finalize (chunk 2F — partial)
 - [ ] Camera MRZ Handler iOS (chunk 2L — deferred Phase 2)
 
+## Execution Model
+
+- Durable workstream context lives in this file.
+- PR-sized execution handoff lives under [`plans/`](./plans/).
+- If you need to answer "what's next?", read the backlog table and active plans before reading the rest of this spec.
+
+## Backlog
+
+| ID    | Title                                                         | Status   | Priority | Depends On | Plan                                                                                       | PR  |
+| ----- | ------------------------------------------------------------- | -------- | -------- | ---------- | ------------------------------------------------------------------------------------------ | --- |
+| NS-01 | Physical-device validation matrix for Android + iOS NFC flows | Ready    | High     | -          | [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md)   | -   |
+| NS-02 | iOS Camera MRZ Phase 2                                        | Deferred | Medium   | NS-01      | -                                                                                          | -   |
+| NS-03 | Publishing readiness for AAR + XCFramework artifacts          | Ready    | High     | NS-01      | [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md)               | -   |
+| NS-04 | APDU allowlist in KMP NFC bridge handler                      | Ready    | High     | -          | [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md)                           | -   |
+| NS-05 | LifecycleBridgeHandler type/error semantics on iOS            | Ready    | Low      | -          | [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md) | -   |
+
+Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+
+## Active Plans
+
+| Plan                                                                                       | IDs   | Status |
+| ------------------------------------------------------------------------------------------ | ----- | ------ |
+| [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md)   | NS-01 | Ready  |
+| [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md)               | NS-03 | Ready  |
+| [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md)                           | NS-04 | Ready  |
+| [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md) | NS-05 | Ready  |
+
+## Completion Checklist
+
+- [ ] Backlog rows reflect reality
+- [ ] Open PR-sized work has a linked plan file
+- [ ] Deferred work is explicitly marked deferred
+- [ ] Completed work is reflected here and in [SDK Overview](../../OVERVIEW.md) when system status changes
+
 ## Overview
 
 You are building the native side of the Self Mobile SDK — the Kotlin Multiplatform module (`packages/kmp-sdk/`) and the Swift companion package (`packages/self-sdk-swift/`). This means hosting a WebView containing Person 1's Vite bundle, routing bridge messages from the WebView to native handlers, and providing `SelfSdk.launch()` as the public API for host apps. On Android, handlers are written directly in Kotlin. On iOS, handlers delegate to Swift provider implementations via a factory pattern (cinterop is abandoned). This matters because it is the only native code standing between third-party host apps and the verification flow — it must be thin, correct, and easy to integrate.

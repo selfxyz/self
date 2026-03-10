@@ -58,6 +58,41 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 4. **One source of truth per capability** (MRZ scanner core, Passport reader core).
 5. **Tests before consolidation.** No phase that moves or deletes native code may merge without passing tests from the previous phase. Phase 0 tests are a hard gate for Phase 1+.
 
+## Execution Model
+
+- Durable context and phased rationale stay in this file.
+- Each PR-sized execution unit now lives under [`plans/`](./plans/).
+- The backlog below is the source of truth for "what's next?" in this workstream.
+
+## Backlog
+
+| ID    | Title                                              | Status      | Priority | Depends On | Plan                                                                                                 | PR  |
+| ----- | -------------------------------------------------- | ----------- | -------- | ---------- | ---------------------------------------------------------------------------------------------------- | --- |
+| NC-01 | Phase 0 safety rails and bridge contract baselines | Ready       | High     | -          | [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md)                         | -   |
+| NC-02 | Phase 1 MRZ core unification and build validation  | In Progress | High     | NC-01      | [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md)                   | -   |
+| NC-03 | Phase 2 PassportReader parity bridge               | Ready       | High     | NC-02      | [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | -   |
+| NC-04 | Phase 3 ObjC shim cleanup                          | Ready       | Medium   | NC-03      | [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | -   |
+| NC-05 | Phase 4 deletion and CI guardrails                 | Ready       | Medium   | NC-04      | [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | -   |
+
+Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+
+## Active Plans
+
+| Plan                                                                                                 | IDs   | Status      |
+| ---------------------------------------------------------------------------------------------------- | ----- | ----------- |
+| [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md)                         | NC-01 | Ready       |
+| [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md)                   | NC-02 | In Progress |
+| [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | NC-03 | Ready       |
+| [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | NC-04 | Ready       |
+| [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | NC-05 | Ready       |
+
+## Completion Checklist
+
+- [ ] Phase status matches the backlog table
+- [ ] Every open phase has a linked plan file
+- [ ] Conflicting implementation directions are reconciled in this file
+- [ ] CONTRACTS.md stays aligned with the active phase
+
 ## Testing Strategy
 
 Every consolidation phase has testable outputs. Tests are layered by what they can prove:
@@ -165,7 +200,8 @@ The RN test app MRZ consolidation shipped without baseline tests. It relied on b
 
 **Implementation direction:**
 
-- Canonicalize MRZ camera/OCR/parsing in `self-sdk-swift` helper layer.
+- Active path: keep `packages/self-sdk-swift` unchanged in Phase 1 and use identical helper files in `app/ios` and `packages/mobile-sdk-alpha/ios/SelfSDK/`.
+- Historical alternative: canonicalize MRZ camera/OCR/parsing in `self-sdk-swift` helper layer. This remains a future follow-up option, not the current implementation path.
 - `app/ios` and `mobile-sdk-alpha` modules become thin wrappers that:
   - invoke the same helper,
   - map to their expected module names/payload shape,
@@ -173,7 +209,8 @@ The RN test app MRZ consolidation shipped without baseline tests. It relied on b
 
 **Likely touchpoints:**
 
-- `packages/self-sdk-swift/Sources/SelfSdkSwift/Helpers/*Mrz*`
+- `app/ios/*Mrz*`
+- `packages/mobile-sdk-alpha/ios/SelfSDK/*Mrz*`
 - `app/ios/MRZScannerModule.swift`
 - `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.swift`
 - optional: shared UI constants file for instruction copy/colors.
@@ -190,6 +227,7 @@ The RN test app MRZ consolidation shipped without baseline tests. It relied on b
 - No duplicated OCR/parsing code remains in app/sdk module wrappers.
 - Both module names still function (`MRZScannerModule`, `SelfMRZScannerModule`) where expected.
 - All Layer 1 tests pass. CONTRACTS.md updated. Manual sign-off recorded in PR.
+- The active Phase 1 implementation path matches `PLAN.md` and the linked PR plan file.
 
 ---
 
