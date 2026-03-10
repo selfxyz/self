@@ -34,6 +34,9 @@ sealed class Screen {
 class MainViewModel(
     private val sdk: SelfSdk = SelfSdk.configure(SelfSdkConfig(debug = false)),
 ) {
+    private fun stringifyClaims(claims: Map<String, Any?>?): Map<String, String>? =
+        claims?.mapValues { (_, value) -> value?.toString() ?: "null" }
+
     var currentScreen by mutableStateOf<Screen>(Screen.Home)
         private set
 
@@ -72,7 +75,7 @@ class MainViewModel(
                 val newState = HomeState(
                     isVerified = true,
                     lastProofDate = result.verificationId,
-                    verifiedClaims = result.claims,
+                    verifiedClaims = stringifyClaims(result.claims),
                 )
                 homeState = newState
                 AppStorage.save(HOME_STATE_KEY, Json.encodeToString(newState))
@@ -112,7 +115,7 @@ class MainViewModel(
                 HomeState(
                     isVerified = true,
                     lastProofDate = result.verificationId,
-                    verifiedClaims = result.claims,
+                    verifiedClaims = stringifyClaims(result.claims),
                 )
             AppStorage.save(HOME_STATE_KEY, Json.encodeToString(homeState))
         }

@@ -1,6 +1,6 @@
 # Self SDK — Architecture Specification
 
-> Last updated: 2026-02-23
+> Last updated: 2026-03-10
 > Owner: Self Engineering
 > Status: Active
 
@@ -124,7 +124,7 @@
 | **WebView Engine**      | `packages/mobile-sdk-alpha/` | TypeScript             | Proving machine (XState), stores (Zustand), adapter interfaces, 105 source files            | Browser/RN paths and fallback adapters implemented                                                                                                         | **85%** | Consolidate fallback adapter ownership cleanup and finish remaining decoupling from RN peer deps |
 | **WebView UI**          | `packages/webview-app/`      | TypeScript (React)     | 10 screens: home, country, ID, camera, NFC, confirm, proving, result, settings, coming-soon | All screens render, routing works, bridge integration wired                                                                                                | **85%** | Dynamic proof request items are still hardcoded and need request-context sourcing                |
 | **Bridge Protocol**     | `packages/webview-bridge/`   | TypeScript             | JSON messaging, 10 domains, 9 adapters, timeout/error handling, mock transport              | 63+ tests pass, protocol stable                                                                                                                            | **85%** | Complete adapter de-duplication with engine-owned web fallbacks                                  |
-| **Kotlin Native Shell** | `packages/kmp-sdk/`          | Kotlin                 | Android: 5 handlers + WebView host + Activity. iOS: provider-backed handler chain           | Android and iOS implementations present; physical-device NFC validation completed on both platforms                                                        | **90%** | Align callback/result contract with canonical types and finish publishing readiness              |
+| **Kotlin Native Shell** | `packages/kmp-sdk/`          | Kotlin                 | Android: 5 handlers + WebView host + Activity. iOS: provider-backed handler chain           | Android and iOS implementations present; physical-device NFC validation completed on both platforms, and the public callback/result contract now matches the canonical SDK shape | **92%** | Finish publishing readiness                                                                        |
 | **Swift Providers**     | `packages/self-sdk-swift/`   | Swift                  | iOS native implementations: NFC, biometrics, secure storage, WebView hosting                | Implemented in repo and wired through KMP iOS; real-device NFC validation passed, but local `swift build` still fails on NFCPassportReader/OpenSSL headers | **85%** | Restore local build validation and finish packaging readiness                                    |
 | **RN Native Shell**     | `packages/rn-sdk/` — **NEW** | React Native           | `SelfVerification` WebView wrapper, 5 native handler bridges                                | Implemented with tests, asset strategy, and APDU-capable NFC                                                                                               | **85%** | Expand real-device integration validation coverage in host apps                                  |
 | **Shared Utilities**    | `common/`                    | TypeScript             | Poseidon, Merkle trees, passport parsing, certificates, 150+ files, 88+ exports             | Production, 98% browser-compatible                                                                                                                         | **95%** | No changes needed. Only 2 files require Node.js (optional)                                       |
@@ -194,7 +194,7 @@
 
 ### Canonical Types
 
-These types are the **single source of truth**. All workstreams must converge on these shapes. Platform-specific serialization (e.g., Kotlin `Map<String, String>`) is acceptable, but the fields and semantics must match.
+These types are the **single source of truth**. All workstreams must converge on these shapes. Platform-specific serialization is acceptable, but the fields and semantics must match.
 
 ```typescript
 // TypeScript (Person 1, 4, 5)
@@ -220,7 +220,7 @@ data class VerificationResult(
 )
 ```
 
-> **Contract lock (normative):** Legacy result fields (`verified`, `disclosedClaims`, top-level `timestamp`) are not allowed in new code or specs. Use canonical `VerificationResult` only. Person 2's `claims` should be `Map<String, Any?>` to match TypeScript `Record<string, unknown>`.
+> **Contract lock (normative):** Legacy result fields (`verified`, `disclosedClaims`, top-level `timestamp`) are not allowed in new code or specs. Use canonical `VerificationResult` only. Person 2's `claims` should be `Map<String, Any?>` to match TypeScript `Record<string, unknown>`. If a native shell still receives a flat lifecycle compatibility payload such as `{ type: "proofRequested" }`, it must translate that to canonical success semantics internally instead of exposing `type` on the public result object.
 
 All communication between native shells and the WebView uses a versioned JSON protocol over `postMessage`.
 
@@ -628,7 +628,7 @@ cd app && npx react-native run-ios  # integration test
 
 ## Execution Status
 
-**Overall: 74% complete** — 23/30 chunks done, 3 partial, 1 skipped, 2 superseded, 1 deferred.
+**Overall: 77% complete** — 24/30 chunks done, 2 partial, 1 skipped, 2 superseded, 1 deferred.
 
 ### Remaining Work
 
@@ -643,19 +643,17 @@ cd app && npx react-native run-ios  # integration test
 
 **P1 — Validation Gaps:**
 
-| Item                                      | Owner    | Context                                                                                                                           |
-| ----------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| KMP NFC validation on both platforms      | Person 2 | 2026-03-10 audit ran build gates, but no attached Android device was available and the only discovered iOS device was unavailable |
-| Integration validation in Self Wallet app | Person 5 | `SelfVerification` component not yet wired into Self Wallet                                                                       |
+| Item                                      | Owner    | Context                                                     |
+| ----------------------------------------- | -------- | ----------------------------------------------------------- |
+| Integration validation in Self Wallet app | Person 5 | `SelfVerification` component not yet wired into Self Wallet |
 
 **P2 — Correctness / Consistency:**
 
-| Item                                                             | Owner      | Context                                                                                                         |
-| ---------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------- |
-| Align KMP callback/result contract with canonical SDK types      | Person 2   | `VerificationResult.type` and `claims: Map<String, String>?` in KMP diverge from canonical `VerificationResult` |
-| Consolidate duplicated fallback adapters                         | Person 4   | ~150 LOC duplicated across `webview-bridge` and `mobile-sdk-alpha`. `mobile-sdk-alpha` is canonical.            |
-| Source dynamic proving request values from request context       | Person 1   | `ProvingScreen` accepts params but defaults are hardcoded                                                       |
-| Expose `generateKey()`/`getPublicKey()` in `BridgeCryptoAdapter` | Person 1/4 | Methods exist in native handler and protocol types but unreachable from WebView client                          |
+| Item                                                             | Owner      | Context                                                                                              |
+| ---------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------- |
+| Consolidate duplicated fallback adapters                         | Person 4   | ~150 LOC duplicated across `webview-bridge` and `mobile-sdk-alpha`. `mobile-sdk-alpha` is canonical. |
+| Source dynamic proving request values from request context       | Person 1   | `ProvingScreen` accepts params but defaults are hardcoded                                            |
+| Expose `generateKey()`/`getPublicKey()` in `BridgeCryptoAdapter` | Person 1/4 | Methods exist in native handler and protocol types but unreachable from WebView client               |
 
 **P3 — Publishing / Packaging:**
 

@@ -1,6 +1,6 @@
 # Person 2: Native Shells (KMP SDK + Swift Providers) — Implementation Spec
 
-> Last updated: 2026-03-05
+> Last updated: 2026-03-10
 > Owner: Person 2 (Native Shells)
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
@@ -85,7 +85,7 @@
 | NS-03 | Publishing readiness for AAR + XCFramework artifacts          | Ready    | High     | NS-01      | [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md)               | -   |
 | NS-04 | APDU allowlist in KMP NFC bridge handler                      | Ready    | High     | -          | [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md)                           | -   |
 | NS-05 | LifecycleBridgeHandler type/error semantics on iOS            | Ready    | Low      | -          | [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md) | -   |
-| NS-06 | Align KMP callback/result contract with canonical SDK types   | Ready    | Medium   | NS-01      | -                                                                                          | -   |
+| NS-06 | Align KMP callback/result contract with canonical SDK types   | Done     | Medium   | NS-01      | [plans/NS-06-kmp-callback-contract-alignment.md](./plans/NS-06-kmp-callback-contract-alignment.md) | -   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -97,6 +97,7 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 | [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md)               | NS-03 | Ready  |
 | [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md)                           | NS-04 | Ready  |
 | [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md) | NS-05 | Ready  |
+| [plans/NS-06-kmp-callback-contract-alignment.md](./plans/NS-06-kmp-callback-contract-alignment.md) | NS-06 | Done   |
 
 ## Completion Checklist
 
@@ -108,8 +109,8 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 ## Status Notes
 
 - `NS-01` completed on 2026-03-10 after operator-assisted real-device NFC validation confirmed Android and iOS success and failure paths in the KMP test app. See [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md) for the validation log.
-- Local validation for `NS-01` also completed the KMP build gates and a callback-contract audit. The remaining contract mismatch stays isolated in `NS-06`.
-- `NS-06` captures a contract mismatch found during the audit: KMP still exposes `VerificationResult.type` and `claims: Map<String, String>?`, which diverges from the canonical SDK contract in [SDK Overview](../../OVERVIEW.md).
+- `NS-06` completed on 2026-03-10. KMP now exposes the canonical `VerificationResult` shape (`success`, `userId`, `verificationId`, `proof`, `claims`, `error`), and `claims` now carries heterogeneous values via `Map<String, Any?>`.
+- Flat lifecycle `{ type }` payloads remain supported as an internal compatibility shim while the embedded WebView bundle still emits them, but KMP host apps no longer receive a public `VerificationResult.type` field.
 
 ## Overview
 
