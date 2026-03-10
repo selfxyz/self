@@ -107,14 +107,17 @@ You are building the **React Native native shell** (`@selfxyz/rn-sdk`) — a thi
 
 ## The Problem
 
-There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not exist yet. React Native host apps (including the Self Wallet app) have no way to embed the shared WebView verification flow.
+The RN SDK (`packages/rn-sdk/`) exists with the core implementation complete: `SelfVerification` component, all 5 native handler bridges, and asset bundling for iOS + Android. Remaining gaps:
 
-| Gap                                                                   | Current state                                                  |
-| --------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `packages/rn-sdk/`                                                    | Directory does not exist                                       |
-| `SelfVerification` component                                          | Not implemented — RN hosts cannot embed verification           |
-| Native handler bridges (NFC, biometrics, keychain, camera, lifecycle) | Not implemented — WebView has no way to reach RN native APIs   |
-| Asset bundling for iOS + Android                                      | Not implemented — no way to load the Vite bundle in production |
+| Area                          | Status                                                        |
+| ----------------------------- | ------------------------------------------------------------- |
+| `packages/rn-sdk/`            | Exists — core component and handlers implemented              |
+| `SelfVerification` component  | Implemented — wraps `react-native-webview` with bridge wiring |
+| Native handler bridges        | All 5 implemented (NFC, biometrics, keychain, camera, lifecycle) |
+| Asset bundling (iOS + Android)| Implemented for both platforms                                |
+| Self Wallet integration       | Not validated — see RN-01                                     |
+| npm publishing                | Not ready — see RN-02                                         |
+| NFC hardening                 | Not started — see RN-03                                       |
 
 ## Design Principles
 

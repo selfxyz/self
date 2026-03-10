@@ -96,13 +96,14 @@ You are building a Kotlin sample app demonstrating how a host app integrates Sel
 
 ## The Problem
 
-The MiniPay sample app does not exist yet. Third-party integrators have no reference implementation showing how to embed Self verification into a Kotlin Multiplatform app with minimal code.
+The MiniPay sample app exists and demonstrates the core integration path. Remaining work is polish and device validation:
 
-| File / Area                    | Issue                                                                  |
+| Area                           | Status                                                                 |
 | ------------------------------ | ---------------------------------------------------------------------- |
-| `packages/kmp-minipay-sample/` | Directory does not exist — entire project needs to be scaffolded       |
-| KMP SDK public API             | No consumer exists to validate the `SelfSdk.launch()` integration path |
-| Third-party integrator docs    | No working sample to point integrators to                              |
+| `packages/kmp-minipay-sample/` | Scaffolded — builds on Android and iOS                                 |
+| KMP SDK public API             | Validated — `SelfSdk.launch()` integration path works                  |
+| Result display + error handling| Partial — chunk 3C in progress (see IN-01)                             |
+| Physical-device NFC validation | Not started — see IN-02                                                |
 
 ## Design Principles
 
