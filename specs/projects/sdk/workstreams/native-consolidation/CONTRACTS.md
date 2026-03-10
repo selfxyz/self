@@ -1,7 +1,7 @@
 # Native Consolidation Contract Gates
 
 This file is intentionally narrow.
-It lists only contract facts that are both true in the current code and pinned by automated tests.
+It lists only contract facts that are both true in the current code and pinned by automated tests or explicit phase validation commands.
 Anything not listed here is not yet a merge gate for native consolidation work.
 
 ## Sources of Truth
@@ -9,6 +9,7 @@ Anything not listed here is not yet a merge gate for native consolidation work.
 - `app/tests/src/integrations/nfc/nfcScanner.test.ts`
 - `app/tests/src/integrations/nfc/passportReader.test.ts`
 - `packages/rn-sdk-test-app/__tests__/mrzBridgeContract.test.ts`
+- `diff app/ios/PassportReaderCore.swift packages/mobile-sdk-alpha/ios/SelfSDK/PassportReaderCore.swift`
 
 ## Contract: App NFC Scanner Bridge
 
@@ -40,6 +41,17 @@ Anything not listed here is not yet a merge gate for native consolidation work.
 | Optional methods     | `configure`, `trackEvent`, `flush` may be `function` or `undefined` |
 | Safe optional access | Existence checks for optional methods must not throw                |
 
+## Contract: PassportReader Native Parity
+
+| Surface               | Required contract                                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared implementation | `app/ios/PassportReaderCore.swift` and `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReaderCore.swift` must be byte-identical                  |
+| Shared core ownership | MRZ key generation, NFC read flow, and certificate/data-group serialization live in `PassportReaderCore.swift`, not duplicated in wrapper files |
+| App wrapper contract  | `app/ios/PassportReader.swift` keeps `@objc(PassportReader)`, 10-arg `scanPassport(...sessionId...)`, and app-only analytics behavior           |
+| SDK wrapper contract  | `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.swift` keeps `@objc(SelfPassportReader)` and 9-arg `scanPassport(...)`                    |
+| Allowed wrapper drift | Wrappers may differ only where bridge naming/arity or app-only analytics behavior requires it                                                   |
+| Validation gate       | `diff app/ios/PassportReaderCore.swift packages/mobile-sdk-alpha/ios/SelfSDK/PassportReaderCore.swift` must return no differences               |
+
 ## Contract: RN Test App MRZ Bridge
 
 | Surface                  | Required contract                                                                                                                                                  |
@@ -54,7 +66,6 @@ Anything not listed here is not yet a merge gate for native consolidation work.
 The following are intentionally excluded from this file until automated tests enforce them:
 
 - App vs SDK MRZ Swift implementation parity details beyond RN test-app bridge behavior
-- App vs SDK PassportReader native parity tables
 - ObjC shim-level selector parity tables
 - PassportReader native payload key-by-key parity
 - Analytics provider-specific integration behavior

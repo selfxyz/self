@@ -1,9 +1,9 @@
 # Native Duplication Consolidation — Phased Spec
 
-> Last updated: 2026-03-06
+> Last updated: 2026-03-10
 > Owner: SDK Platform
 > Parent: [SDK Overview](../../OVERVIEW.md)
-> Status: In Progress (Phase 0 Done, Phase 1 Done, Phases 2-4 Ready)
+> Status: In Progress (Phase 0 Done, Phase 1 Done, Phase 2 Done, Phases 3-4 Ready)
 
 ## North Star
 
@@ -70,7 +70,7 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 | ----- | -------------------------------------------------- | ------ | -------- | ---------- | ---------------------------------------------------------------------------------------------------- | ----- |
 | NC-01 | Phase 0 safety rails and bridge contract baselines | Done   | High     | -          | [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md)                         | #1822 |
 | NC-02 | Phase 1 MRZ core unification and build validation  | Done   | High     | NC-01      | [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md)                   | #1823 |
-| NC-03 | Phase 2 PassportReader parity bridge               | Ready  | High     | NC-02      | [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | -     |
+| NC-03 | Phase 2 PassportReader parity bridge               | Done   | High     | NC-02      | [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | -     |
 | NC-04 | Phase 3 ObjC shim cleanup                          | Ready  | Medium   | NC-03      | [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | -     |
 | NC-05 | Phase 4 deletion and CI guardrails                 | Ready  | Medium   | NC-04      | [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | -     |
 
@@ -82,7 +82,7 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 | ---------------------------------------------------------------------------------------------------- | ----- | ------ |
 | [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md)                         | NC-01 | Done   |
 | [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md)                   | NC-02 | Done   |
-| [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | NC-03 | Ready  |
+| [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | NC-03 | Done   |
 | [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | NC-04 | Ready  |
 | [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | NC-05 | Ready  |
 

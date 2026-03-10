@@ -10,6 +10,10 @@ import androidx.compose.runtime.setValue
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import xyz.self.sdk.api.SelfSdk
 import xyz.self.sdk.api.SelfSdkCallback
 import xyz.self.sdk.api.SelfSdkConfig
@@ -35,7 +39,34 @@ class MainViewModel(
     private val sdk: SelfSdk = SelfSdk.configure(SelfSdkConfig(debug = false)),
 ) {
     private fun stringifyClaims(claims: Map<String, Any?>?): Map<String, String>? =
-        claims?.mapValues { (_, value) -> value?.toString() ?: "null" }
+        claims?.mapValues { (_, value) -> value.toJsonString() }
+
+    private fun Any?.toJsonString(): String =
+        when (this) {
+            null -> "null"
+            is String -> this
+            is Boolean, is Number -> toString()
+            is Map<*, *> -> JsonObject(
+                entries.filter { it.key is String }
+                    .associate { (k, v) -> k as String to v.toJsonElement() },
+            ).toString()
+            is List<*> -> JsonArray(map { it.toJsonElement() }).toString()
+            else -> toString()
+        }
+
+    private fun Any?.toJsonElement(): kotlinx.serialization.json.JsonElement =
+        when (this) {
+            null -> JsonNull
+            is String -> JsonPrimitive(this)
+            is Boolean -> JsonPrimitive(this)
+            is Number -> JsonPrimitive(this)
+            is Map<*, *> -> JsonObject(
+                entries.filter { it.key is String }
+                    .associate { (k, v) -> k as String to v.toJsonElement() },
+            )
+            is List<*> -> JsonArray(map { it.toJsonElement() })
+            else -> JsonPrimitive(toString())
+        }
 
     var currentScreen by mutableStateOf<Screen>(Screen.Home)
         private set
