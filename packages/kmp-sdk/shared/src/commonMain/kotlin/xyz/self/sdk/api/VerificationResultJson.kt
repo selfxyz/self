@@ -8,6 +8,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -26,14 +27,15 @@ internal fun deserializeVerificationResult(json: String): VerificationResult =
 internal fun verificationResultFromLifecycleParams(params: Map<String, JsonElement>): VerificationResult =
     VerificationResult(
         success = true,
-        userId = params["userId"]?.jsonPrimitive?.contentOrNull,
-        verificationId = params["verificationId"]?.jsonPrimitive?.contentOrNull,
-        proof = params["proof"]?.let(::lifecycleProofString),
+        userId = runCatching { params["userId"]?.jsonPrimitive?.contentOrNull }.getOrNull(),
+        verificationId = runCatching { params["verificationId"]?.jsonPrimitive?.contentOrNull }.getOrNull(),
+        proof = params["proof"]?.takeUnless { it is JsonNull }?.let(::lifecycleProofString),
         claims = (params["claims"] as? JsonObject)?.mapValues { (_, value) -> value.toKotlinValue() },
     )
 
 private fun lifecycleProofString(element: JsonElement): String? =
     when (element) {
+        JsonNull -> null
         is JsonObject -> element.toString()
         else -> runCatching { element.jsonPrimitive.contentOrNull }.getOrNull() ?: element.toString()
     }
