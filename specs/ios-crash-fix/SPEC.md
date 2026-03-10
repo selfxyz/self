@@ -205,9 +205,25 @@ yarn ios
 yarn --cwd app jest:run tests/src/config/sentry.test.ts --runInBand --watchman=false
 ```
 
-## PR 3: Pod Architecture / Rosetta (future)
+## PR 3: Pod Architecture / Rosetta
 
-Placeholder — `EXCLUDED_ARCHS` change gated on binary pod arm64 sim audit.
+### Outcome
+
+- Added an explicit binary-pod arm64 simulator audit in `app/ios/Podfile`.
+- Rosetta simulator fallback is now conditional instead of an unexplained blanket setting.
+- Current install still keeps `EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64` because `SwiftyTesseract/libtesseract.xcframework` only ships `ios-x86_64-simulator`, not an arm64 simulator slice.
+
+### Files Modified
+
+| File | Change |
+|---|---|
+| `app/ios/Podfile` | Audit installed xcframework simulator slices and only keep Rosetta fallback when an audited binary pod lacks arm64 simulator support |
+
+### Validation
+
+```bash
+ruby -c app/ios/Podfile
+```
 
 ---
 
