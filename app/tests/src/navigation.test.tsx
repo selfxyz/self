@@ -60,6 +60,7 @@ describe('navigation', () => {
         'ConfirmBelonging',
         'CountryPicker',
         'CreateMock',
+        'DataConfirmation',
         'DeferredLinkingInfo',
         'DevFeatureFlags',
         'DevHapticFeedback',
