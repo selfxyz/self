@@ -168,7 +168,6 @@ const styles = StyleSheet.create({
     fontFamily: 'DIN OT',
     textAlign: 'right',
     flex: 1,
-    outlineStyle: 'none',
     paddingVertical: 0,
     includeFontPadding: false,
     textAlignVertical: 'center',
