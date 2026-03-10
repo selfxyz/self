@@ -20,13 +20,13 @@ This matches the repo rule that each chunk should be its own PR, while keeping a
 
 ## File Roles
 
-| File | Role | Changes How Often |
-| --- | --- | --- |
-| `specs/README.md` | Global navigation and reading order | Rarely |
-| `projects/<project>/INDEX.md` | Project entrypoint and workstream links | Rarely |
-| `projects/<project>/OVERVIEW.md` | Architecture, shared contracts, global status | Occasionally |
-| `projects/<project>/workstreams/<scope>/SPEC.md` | Durable workstream context, invariants, ownership, backlog, active plan index | Regularly |
-| `projects/<project>/workstreams/<scope>/plans/<BACKLOG-ID>-<slug>.md` | One PR-sized execution plan and status log | Per PR |
+| File                                                                  | Role                                                                          | Changes How Often |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------- |
+| `specs/README.md`                                                     | Global navigation and reading order                                           | Rarely            |
+| `projects/<project>/INDEX.md`                                         | Project entrypoint and workstream links                                       | Rarely            |
+| `projects/<project>/OVERVIEW.md`                                      | Architecture, shared contracts, global status                                 | Occasionally      |
+| `projects/<project>/workstreams/<scope>/SPEC.md`                      | Durable workstream context, invariants, ownership, backlog, active plan index | Regularly         |
+| `projects/<project>/workstreams/<scope>/plans/<BACKLOG-ID>-<slug>.md` | One PR-sized execution plan and status log                                    | Per PR            |
 
 ## Canonical Structure
 
@@ -72,9 +72,9 @@ The rest of the file may hold reference implementation notes, legacy chunk detai
 
 Use stable IDs. Do not renumber them after merge.
 
-| ID | Title | Status | Priority | Depends On | Plan | PR |
-| --- | --- | --- | --- | --- | --- | --- |
-| NS-01 | Physical-device NFC validation | Ready | High | - | `plans/NS-01-physical-device-validation.md` | TBD |
+| ID    | Title                          | Status | Priority | Depends On | Plan                                        | PR  |
+| ----- | ------------------------------ | ------ | -------- | ---------- | ------------------------------------------- | --- |
+| NS-01 | Physical-device NFC validation | Ready  | High     | -          | `plans/NS-01-physical-device-validation.md` | TBD |
 
 Allowed statuses:
 

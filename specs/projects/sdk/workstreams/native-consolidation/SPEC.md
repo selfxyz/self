@@ -66,25 +66,25 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 
 ## Backlog
 
-| ID | Title | Status | Priority | Depends On | Plan | PR |
-| -- | ----- | ------ | -------- | ---------- | ---- | -- |
-| NC-01 | Phase 0 safety rails and bridge contract baselines | Ready | High | - | [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md) | - |
-| NC-02 | Phase 1 MRZ core unification and build validation | In Progress | High | NC-01 | [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md) | - |
-| NC-03 | Phase 2 PassportReader parity bridge | Ready | High | NC-02 | [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md) | - |
-| NC-04 | Phase 3 ObjC shim cleanup | Ready | Medium | NC-03 | [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md) | - |
-| NC-05 | Phase 4 deletion and CI guardrails | Ready | Medium | NC-04 | [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | - |
+| ID    | Title                                              | Status      | Priority | Depends On | Plan                                                                                                 | PR  |
+| ----- | -------------------------------------------------- | ----------- | -------- | ---------- | ---------------------------------------------------------------------------------------------------- | --- |
+| NC-01 | Phase 0 safety rails and bridge contract baselines | Ready       | High     | -          | [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md)                         | -   |
+| NC-02 | Phase 1 MRZ core unification and build validation  | In Progress | High     | NC-01      | [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md)                   | -   |
+| NC-03 | Phase 2 PassportReader parity bridge               | Ready       | High     | NC-02      | [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | -   |
+| NC-04 | Phase 3 ObjC shim cleanup                          | Ready       | Medium   | NC-03      | [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | -   |
+| NC-05 | Phase 4 deletion and CI guardrails                 | Ready       | Medium   | NC-04      | [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | -   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan | IDs | Status |
-| ---- | --- | ------ |
-| [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md) | NC-01 | Ready |
-| [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md) | NC-02 | In Progress |
-| [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md) | NC-03 | Ready |
-| [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md) | NC-04 | Ready |
-| [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | NC-05 | Ready |
+| Plan                                                                                                 | IDs   | Status      |
+| ---------------------------------------------------------------------------------------------------- | ----- | ----------- |
+| [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md)                         | NC-01 | Ready       |
+| [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md)                   | NC-02 | In Progress |
+| [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | NC-03 | Ready       |
+| [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | NC-04 | Ready       |
+| [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | NC-05 | Ready       |
 
 ## Completion Checklist
 

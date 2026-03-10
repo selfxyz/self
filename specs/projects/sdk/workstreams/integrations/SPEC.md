@@ -62,19 +62,19 @@
 
 ## Backlog
 
-| ID | Title | Status | Priority | Depends On | Plan | PR |
-| -- | ----- | ------ | -------- | ---------- | ---- | -- |
-| IN-01 | Polish result display and complete chunk 3C error handling | Ready | Medium | - | [plans/IN-01-sample-polish-and-error-handling.md](./plans/IN-01-sample-polish-and-error-handling.md) | - |
-| IN-02 | Physical-device NFC end-to-end validation for MiniPay sample | Ready | High | IN-01 | [plans/IN-02-sample-physical-device-validation.md](./plans/IN-02-sample-physical-device-validation.md) | - |
+| ID    | Title                                                        | Status | Priority | Depends On | Plan                                                                                                   | PR  |
+| ----- | ------------------------------------------------------------ | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------------------ | --- |
+| IN-01 | Polish result display and complete chunk 3C error handling   | Ready  | Medium   | -          | [plans/IN-01-sample-polish-and-error-handling.md](./plans/IN-01-sample-polish-and-error-handling.md)   | -   |
+| IN-02 | Physical-device NFC end-to-end validation for MiniPay sample | Ready  | High     | IN-01      | [plans/IN-02-sample-physical-device-validation.md](./plans/IN-02-sample-physical-device-validation.md) | -   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan | IDs | Status |
-| ---- | --- | ------ |
-| [plans/IN-01-sample-polish-and-error-handling.md](./plans/IN-01-sample-polish-and-error-handling.md) | IN-01 | Ready |
-| [plans/IN-02-sample-physical-device-validation.md](./plans/IN-02-sample-physical-device-validation.md) | IN-02 | Ready |
+| Plan                                                                                                   | IDs   | Status |
+| ------------------------------------------------------------------------------------------------------ | ----- | ------ |
+| [plans/IN-01-sample-polish-and-error-handling.md](./plans/IN-01-sample-polish-and-error-handling.md)   | IN-01 | Ready  |
+| [plans/IN-02-sample-physical-device-validation.md](./plans/IN-02-sample-physical-device-validation.md) | IN-02 | Ready  |
 
 ## Completion Checklist
 
@@ -98,12 +98,12 @@ You are building a Kotlin sample app demonstrating how a host app integrates Sel
 
 The MiniPay sample app exists and demonstrates the core integration path. Remaining work is polish and device validation:
 
-| Area                           | Status                                                                 |
-| ------------------------------ | ---------------------------------------------------------------------- |
-| `packages/kmp-minipay-sample/` | Scaffolded — builds on Android and iOS                                 |
-| KMP SDK public API             | Validated — `SelfSdk.launch()` integration path works                  |
-| Result display + error handling| Partial — chunk 3C in progress (see IN-01)                             |
-| Physical-device NFC validation | Not started — see IN-02                                                |
+| Area                            | Status                                                |
+| ------------------------------- | ----------------------------------------------------- |
+| `packages/kmp-minipay-sample/`  | Scaffolded — builds on Android and iOS                |
+| KMP SDK public API              | Validated — `SelfSdk.launch()` integration path works |
+| Result display + error handling | Partial — chunk 3C in progress (see IN-01)            |
+| Physical-device NFC validation  | Not started — see IN-02                               |
 
 ## Design Principles
 

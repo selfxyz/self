@@ -78,24 +78,24 @@
 
 ## Backlog
 
-| ID | Title | Status | Priority | Depends On | Plan | PR |
-| -- | ----- | ------ | -------- | ---------- | ---- | -- |
-| NS-01 | Physical-device validation matrix for Android + iOS NFC flows | Ready | High | - | [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md) | - |
-| NS-02 | iOS Camera MRZ Phase 2 | Deferred | Medium | NS-01 | - | - |
-| NS-03 | Publishing readiness for AAR + XCFramework artifacts | Ready | High | NS-01 | [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md) | - |
-| NS-04 | APDU allowlist in KMP NFC bridge handler | Ready | High | - | [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md) | - |
-| NS-05 | LifecycleBridgeHandler type/error semantics on iOS | Ready | Low | - | [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md) | - |
+| ID    | Title                                                         | Status   | Priority | Depends On | Plan                                                                                       | PR  |
+| ----- | ------------------------------------------------------------- | -------- | -------- | ---------- | ------------------------------------------------------------------------------------------ | --- |
+| NS-01 | Physical-device validation matrix for Android + iOS NFC flows | Ready    | High     | -          | [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md)   | -   |
+| NS-02 | iOS Camera MRZ Phase 2                                        | Deferred | Medium   | NS-01      | -                                                                                          | -   |
+| NS-03 | Publishing readiness for AAR + XCFramework artifacts          | Ready    | High     | NS-01      | [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md)               | -   |
+| NS-04 | APDU allowlist in KMP NFC bridge handler                      | Ready    | High     | -          | [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md)                           | -   |
+| NS-05 | LifecycleBridgeHandler type/error semantics on iOS            | Ready    | Low      | -          | [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md) | -   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan | IDs | Status |
-| ---- | --- | ------ |
-| [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md) | NS-01 | Ready |
-| [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md) | NS-03 | Ready |
-| [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md) | NS-04 | Ready |
-| [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md) | NS-05 | Ready |
+| Plan                                                                                       | IDs   | Status |
+| ------------------------------------------------------------------------------------------ | ----- | ------ |
+| [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md)   | NS-01 | Ready  |
+| [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md)               | NS-03 | Ready  |
+| [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md)                           | NS-04 | Ready  |
+| [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md) | NS-05 | Ready  |
 
 ## Completion Checklist
 

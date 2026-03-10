@@ -2,11 +2,11 @@
 
 Three copy-paste templates plus the execution-model rule. Pick the one that matches what you're writing.
 
-| Template                                             | When to use                                                                 | Output file                                   |
-| ---------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------- |
-| [Project Overview](#project-overview-template)       | One per project. System-level architecture. Changes rarely.                 | `specs/<project>/OVERVIEW.md`                 |
-| [Workstream Spec](#workstream-spec-template)         | Durable workstream context, invariants, backlog, active plan index.         | `workstreams/<scope>/SPEC.md`                 |
-| [PR Plan](#pr-plan-template)                         | One PR-sized execution handoff. Self-contained pickup after session loss.   | `workstreams/<scope>/plans/<BACKLOG-ID>-<slug>.md` |
+| Template                                       | When to use                                                               | Output file                                        |
+| ---------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------- |
+| [Project Overview](#project-overview-template) | One per project. System-level architecture. Changes rarely.               | `specs/<project>/OVERVIEW.md`                      |
+| [Workstream Spec](#workstream-spec-template)   | Durable workstream context, invariants, backlog, active plan index.       | `workstreams/<scope>/SPEC.md`                      |
+| [PR Plan](#pr-plan-template)                   | One PR-sized execution handoff. Self-contained pickup after session loss. | `workstreams/<scope>/plans/<BACKLOG-ID>-<slug>.md` |
 
 ---
 
@@ -173,21 +173,21 @@ would confuse a new dev or AI agent. -->
 
 ### Dependencies
 
-| Depends On | Type | Status | Notes |
-| ---------- | ---- | ------ | ----- |
+| Depends On      | Type                  | Status  | Notes  |
+| --------------- | --------------------- | ------- | ------ |
 | [scope/package] | Upstream / Downstream | [state] | [note] |
 
 ### Ownership Boundaries
 
-| Area | Owner | Notes |
-| ---- | ----- | ----- |
+| Area             | Owner         | Notes |
+| ---------------- | ------------- | ----- |
 | `path/or/module` | [team/person] | [why] |
 
 ### Backlog
 
-| ID | Title | Status | Priority | Depends On | Plan | PR |
-| -- | ----- | ------ | -------- | ---------- | ---- | -- |
-| [ID] | [title] | Ready | High | - | - | - |
+| ID   | Title   | Status | Priority | Depends On | Plan | PR  |
+| ---- | ------- | ------ | -------- | ---------- | ---- | --- |
+| [ID] | [title] | Ready  | High     | -          | -    | -   |
 
 Allowed statuses:
 
@@ -199,8 +199,8 @@ Allowed statuses:
 
 ### Active Plans
 
-| Plan | IDs | Status |
-| ---- | --- | ------ |
+| Plan                           | IDs  | Status      |
+| ------------------------------ | ---- | ----------- |
 | `plans/<BACKLOG-ID>-<slug>.md` | [ID] | In Progress |
 
 ### Completion Checklist

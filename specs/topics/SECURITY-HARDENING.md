@@ -16,12 +16,12 @@ Do not treat this topic file as the only tracker for open work.
 
 ## Workstream Mapping
 
-| Topic Item | Owning Backlog / Workstream |
-| ---------- | --------------------------- |
-| APDU command allowlisting (KMP) | `NS-04` in `native-shells/SPEC.md` |
-| APDU command allowlisting + timeout + payload hardening (RN) | `RN-03` in `rn-sdk/SPEC.md` |
-| LifecycleBridgeHandler type+error handling | `NS-05` in `native-shells/SPEC.md` |
-| Person 4 crypto tracking | `SC-02` and follow-up backlog in `sdk-core/SPEC.md` |
+| Topic Item                                                   | Owning Backlog / Workstream                         |
+| ------------------------------------------------------------ | --------------------------------------------------- |
+| APDU command allowlisting (KMP)                              | `NS-04` in `native-shells/SPEC.md`                  |
+| APDU command allowlisting + timeout + payload hardening (RN) | `RN-03` in `rn-sdk/SPEC.md`                         |
+| LifecycleBridgeHandler type+error handling                   | `NS-05` in `native-shells/SPEC.md`                  |
+| Person 4 crypto tracking                                     | `SC-02` and follow-up backlog in `sdk-core/SPEC.md` |
 
 Items without a linked backlog ID yet should be re-homed before any new work starts. Do not update this file as the primary status tracker.
 

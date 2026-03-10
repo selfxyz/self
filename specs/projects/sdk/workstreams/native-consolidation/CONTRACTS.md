@@ -31,14 +31,14 @@ Anything not listed here is not yet a merge gate for native consolidation work.
 
 ## Contract: App PassportReader Interface
 
-| Surface              | Required contract                                                                                                             |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Required exports     | `PassportReader` and standalone `reset` export must both exist                                                                 |
-| Required method      | `scanPassport` must exist and be callable on `PassportReader`                                                                  |
-| Forbidden method     | `scan` must be absent on iOS-facing `PassportReader` interface                                                                |
-| `scanPassport` arity | `scanPassport.length === 10` (includes `sessionId`)                                                                           |
-| Optional methods     | `configure`, `trackEvent`, `flush` may be `function` or `undefined`                                                           |
-| Safe optional access | Existence checks for optional methods must not throw                                                                          |
+| Surface              | Required contract                                                   |
+| -------------------- | ------------------------------------------------------------------- |
+| Required exports     | `PassportReader` and standalone `reset` export must both exist      |
+| Required method      | `scanPassport` must exist and be callable on `PassportReader`       |
+| Forbidden method     | `scan` must be absent on iOS-facing `PassportReader` interface      |
+| `scanPassport` arity | `scanPassport.length === 10` (includes `sessionId`)                 |
+| Optional methods     | `configure`, `trackEvent`, `flush` may be `function` or `undefined` |
+| Safe optional access | Existence checks for optional methods must not throw                |
 
 ## Contract: RN Test App MRZ Bridge
 

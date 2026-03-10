@@ -70,21 +70,21 @@
 
 ## Backlog
 
-| ID | Title | Status | Priority | Depends On | Plan | PR |
-| -- | ----- | ------ | -------- | ---------- | ---- | -- |
-| RN-01 | Self Wallet integration validation for `SelfVerification` | Ready | High | - | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | - |
-| RN-02 | npm publishing readiness and release path | Ready | Medium | RN-01 | [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md) | - |
-| RN-03 | APDU allowlist, timeout, and payload hardening in RN NFC handler | Ready | High | - | [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md) | - |
+| ID    | Title                                                            | Status | Priority | Depends On | Plan                                                                                                     | PR  |
+| ----- | ---------------------------------------------------------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------------------------------- | --- |
+| RN-01 | Self Wallet integration validation for `SelfVerification`        | Ready  | High     | -          | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | -   |
+| RN-02 | npm publishing readiness and release path                        | Ready  | Medium   | RN-01      | [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | -   |
+| RN-03 | APDU allowlist, timeout, and payload hardening in RN NFC handler | Ready  | High     | -          | [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | -   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan | IDs | Status |
-| ---- | --- | ------ |
-| [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | RN-01 | Ready |
-| [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md) | RN-02 | Ready |
-| [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md) | RN-03 | Ready |
+| Plan                                                                                                     | IDs   | Status |
+| -------------------------------------------------------------------------------------------------------- | ----- | ------ |
+| [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | RN-01 | Ready  |
+| [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | RN-02 | Ready  |
+| [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | RN-03 | Ready  |
 
 ## Completion Checklist
 
@@ -109,15 +109,15 @@ You are building the **React Native native shell** (`@selfxyz/rn-sdk`) — a thi
 
 The RN SDK (`packages/rn-sdk/`) exists with the core implementation complete: `SelfVerification` component, all 5 native handler bridges, and asset bundling for iOS + Android. Remaining gaps:
 
-| Area                          | Status                                                        |
-| ----------------------------- | ------------------------------------------------------------- |
-| `packages/rn-sdk/`            | Exists — core component and handlers implemented              |
-| `SelfVerification` component  | Implemented — wraps `react-native-webview` with bridge wiring |
-| Native handler bridges        | All 5 implemented (NFC, biometrics, keychain, camera, lifecycle) |
-| Asset bundling (iOS + Android)| Implemented for both platforms                                |
-| Self Wallet integration       | Not validated — see RN-01                                     |
-| npm publishing                | Not ready — see RN-02                                         |
-| NFC hardening                 | Not started — see RN-03                                       |
+| Area                           | Status                                                           |
+| ------------------------------ | ---------------------------------------------------------------- |
+| `packages/rn-sdk/`             | Exists — core component and handlers implemented                 |
+| `SelfVerification` component   | Implemented — wraps `react-native-webview` with bridge wiring    |
+| Native handler bridges         | All 5 implemented (NFC, biometrics, keychain, camera, lifecycle) |
+| Asset bundling (iOS + Android) | Implemented for both platforms                                   |
+| Self Wallet integration        | Not validated — see RN-01                                        |
+| npm publishing                 | Not ready — see RN-02                                            |
+| NFC hardening                  | Not started — see RN-03                                          |
 
 ## Design Principles
 

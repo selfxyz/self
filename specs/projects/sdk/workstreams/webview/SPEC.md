@@ -71,17 +71,17 @@
 
 ## Backlog
 
-| ID | Title | Status | Priority | Depends On | Plan | PR |
-| -- | ----- | ------ | -------- | ---------- | ---- | -- |
-| WV-01 | Dynamic proof request items sourced from request context | Ready | High | - | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | - |
+| ID    | Title                                                    | Status | Priority | Depends On | Plan                                                                                       | PR  |
+| ----- | -------------------------------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------ | --- |
+| WV-01 | Dynamic proof request items sourced from request context | Ready  | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | -   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan | IDs | Status |
-| ---- | --- | ------ |
-| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | WV-01 | Ready |
+| Plan                                                                                       | IDs   | Status |
+| ------------------------------------------------------------------------------------------ | ----- | ------ |
+| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | WV-01 | Ready  |
 
 ## Completion Checklist
 
@@ -1503,13 +1503,13 @@ ls packages/webview-app/dist/index.html  # file must exist
 
 These items were discovered during initial implementation. Current status:
 
-| Item                                                               | Resolution                                                     |
-| ------------------------------------------------------------------ | -------------------------------------------------------------- |
-| Biometrics bridge adapter implementation                           | Done — wired in `SelfClientProvider`                           |
-| Camera bridge adapter wiring in webview-app                        | Done — wired in `SelfClientProvider`                           |
-| Dynamic proof request items (currently hardcoded in ProvingScreen) | Tracked as WV-01 in backlog above                              |
-| MRZ data confirmation screen (PR #1767)                            | Merged in PR #1767                                             |
-| `createSelfClient(adapters)` integration                           | Tracked in sdk-core backlog (SC-01)                            |
+| Item                                                               | Resolution                           |
+| ------------------------------------------------------------------ | ------------------------------------ |
+| Biometrics bridge adapter implementation                           | Done — wired in `SelfClientProvider` |
+| Camera bridge adapter wiring in webview-app                        | Done — wired in `SelfClientProvider` |
+| Dynamic proof request items (currently hardcoded in ProvingScreen) | Tracked as WV-01 in backlog above    |
+| MRZ data confirmation screen (PR #1767)                            | Merged in PR #1767                   |
+| `createSelfClient(adapters)` integration                           | Tracked in sdk-core backlog (SC-01)  |
 
 ## Spec Deviations
 
