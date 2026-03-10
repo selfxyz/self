@@ -3,16 +3,15 @@ import { describe } from 'mocha';
 import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { generateCircuitInputsRegisterForTests } from '@selfxyz/common/utils/circuits/generateInputs';
-import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
-import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
+import { createCircuitInputGenerator } from '@selfxyz/new-common/src/circuits/generator.js';
+import type { SignatureAlgorithm } from '@selfxyz/new-common/src/foundation/types/document.js';
+import type { hashAlgosTypes } from '@selfxyz/new-common/src/foundation/constants/crypto.js';
+import { PassportDocument } from '@selfxyz/new-common/src/documents/passport/adapter.js';
+import { parseCertificateSimple } from '@selfxyz/new-common/src/certificates/parsing/parseCertificateSimple.js';
 import { sigAlgs, fullSigAlgs } from './test_cases.js';
-import { generateCommitment, generateNullifier } from '@selfxyz/common/utils/passports/passport';
 import { poseidon6 } from 'poseidon-lite';
-import { hashAlgosTypes, ID_CARD_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
-import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json' with { type: 'json' };
-import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
+import serialized_dsc_tree from '@selfxyz/new-common/src/data/serialized_dsc_tree.json' with { type: 'json' };
+import { genMockIdDocAndInitDataParsing } from '@selfxyz/new-common/src/testing/genMockIdDoc.js';
 import { fileURLToPath } from 'url';
 dotenv.config();
 
@@ -43,19 +42,20 @@ testSuite.forEach(
         signatureType:
           `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}${saltLength ? `_${saltLength}` : ''}` as SignatureAlgorithm,
       });
+
+      const doc = new PassportDocument(passportData);
       const secret = poseidon6('SECRET'.split('').map((x) => BigInt(x.charCodeAt(0)))).toString();
 
-      const inputs = generateCircuitInputsRegisterForTests(
-        secret,
-        passportData,
-        serialized_dsc_tree as string
-      );
+      const generator = createCircuitInputGenerator();
+      const inputs = generator.generateRegisterInputs(doc, secret, serialized_dsc_tree as string, {
+        useTestPadding: true,
+      });
 
       before(async () => {
         circuit = await wasm_tester(
           path.join(
             __dirname,
-            `../../circuits/register_id/instances/${getCircuitNameFromPassportData(passportData, 'register')}.circom`
+            `../../circuits/register_id/instances/${doc.getRegisterCircuitName()}.circom`
           ),
           {
             include: [
@@ -75,17 +75,13 @@ testSuite.forEach(
         const w = await circuit.calculateWitness(inputs);
         await circuit.checkConstraints(w);
 
-        const nullifier_js = generateNullifier(passportData);
+        const nullifier_js = doc.generateNullifier();
         console.log('\x1b[35m%s\x1b[0m', 'js: nullifier:', nullifier_js);
         const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
         console.log('\x1b[34m%s\x1b[0m', 'circom: nullifier', nullifier);
         expect(nullifier).to.be.equal(nullifier_js);
 
-        const commitment_js = generateCommitment(
-          secret.toString(),
-          ID_CARD_ATTESTATION_ID,
-          passportData
-        );
+        const commitment_js = doc.generateCommitment(secret.toString());
         console.log('\x1b[35m%s\x1b[0m', 'js: commitment:', commitment_js);
         const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;
         console.log('\x1b[34m%s\x1b[0m', 'circom commitment', commitment);

@@ -54,6 +54,7 @@ function findFiles(
             'Pods',
             '.gradle',
             'vendor',
+            'assets',
           ].includes(item)
         ) {
           traverse(fullPath);
@@ -107,7 +108,7 @@ function shouldRequireHeader(filePath, projectRoot) {
   return (
     relativePath.startsWith('app/') ||
     relativePath.startsWith('packages/mobile-sdk-alpha/') ||
-    relativePath.startsWith('packages/kmp-test-app/') ||
+    relativePath.startsWith('packages/kmp-sdk-test-app/') ||
     relativePath.startsWith('packages/kmp-sdk/')
   );
 }
@@ -246,7 +247,7 @@ function main() {
     const requiredDirs = [
       'app/',
       'packages/mobile-sdk-alpha/',
-      'packages/kmp-test-app/',
+      'packages/kmp-sdk-test-app/',
       'packages/kmp-sdk/',
     ];
     console.log(`📋 License headers required in: ${requiredDirs.join(', ')}`);

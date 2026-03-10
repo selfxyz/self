@@ -245,9 +245,15 @@ vi.mock('react-native-svg-circle-country-flags', () => ({
   default: {},
 }));
 
-// Mock lottie-react-native
+// Mock lottie-react-native (legacy, kept for transitive imports)
 vi.mock('lottie-react-native', () => ({
   default: 'div',
+}));
+
+// Mock @lottiefiles/dotlottie-react-native (native module unavailable in Node)
+vi.mock('@lottiefiles/dotlottie-react-native', () => ({
+  DotLottie: 'div',
+  Mode: { FORWARD: 0, REVERSE: 1, BOUNCE: 2, REVERSE_BOUNCE: 3 },
 }));
 
 // Mock react-native-haptic-feedback

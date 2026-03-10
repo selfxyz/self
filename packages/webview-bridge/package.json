@@ -33,7 +33,8 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "types": "tsup"
   },
   "dependencies": {
     "uuid": "^11.1.0"

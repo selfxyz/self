@@ -225,7 +225,7 @@ dependencies {
         implementation jscFlavor
     }
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    implementation("net.java.dev.jna:jna:5.16.0@aar")
+    implementation("net.java.dev.jna:jna:5.16.0")
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android'
 
     implementation 'com.google.code.gson:gson:2.8.9'

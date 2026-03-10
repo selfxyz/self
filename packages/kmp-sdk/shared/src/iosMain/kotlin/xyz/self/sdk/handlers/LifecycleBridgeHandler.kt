@@ -6,12 +6,12 @@ package xyz.self.sdk.handlers
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonPrimitive
 import xyz.self.sdk.api.SelfSdkCallback
 import xyz.self.sdk.api.SelfSdkError
-import xyz.self.sdk.api.VerificationResult
+import xyz.self.sdk.api.deserializeVerificationResult
+import xyz.self.sdk.api.verificationResultFromLifecycleParams
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
@@ -82,14 +82,10 @@ class LifecycleBridgeHandler : BridgeHandler {
         val errorMessage = params["errorMessage"]?.jsonPrimitive?.content
 
         if (type != null) {
-            // Flat lifecycle payload is a protocol-level success signal.
-            // `type` communicates what completed (e.g. proofRequested).
-            state.callback?.onSuccess(
-                VerificationResult(success = true, type = type),
-            )
+            state.callback?.onSuccess(verificationResultFromLifecycleParams(params))
         } else if (success && data != null) {
             try {
-                val result = Json.decodeFromString(VerificationResult.serializer(), data)
+                val result = deserializeVerificationResult(data)
                 state.callback?.onSuccess(result)
             } catch (e: Exception) {
                 state.callback?.onFailure(

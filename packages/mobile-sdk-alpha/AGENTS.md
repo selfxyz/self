@@ -146,11 +146,10 @@ yarn build # Confirm build still works
 
 For architecture context, implementation details, and workstream coordination:
 
-- **[SDK Overview](../../specs/SDK-OVERVIEW.md)** — System architecture, bridge protocol, decision matrix
-- **[Person 4 (SDK Core) Spec](../../specs/person4-sdk-core/SPEC.md)** — Implementation chunks for this package (mobile-sdk-alpha)
-- **[Person 4 Overview](../../specs/person4-sdk-core/OVERVIEW.md)** — What this workstream owns, dependencies, status
+- **[SDK Overview](../../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix
+- **[SDK Core Spec](../../specs/projects/sdk/workstreams/sdk-core/SPEC.md)** — Implementation chunks for this package (mobile-sdk-alpha)
 
-Before implementing SDK work, read `specs/PROJECT-RULES.md` and `specs/person4-sdk-core/SPEC.md` for constraints and validation commands.
+Before implementing SDK work, read `CLAUDE.md` Key Rules and `specs/projects/sdk/workstreams/sdk-core/SPEC.md` for constraints and validation commands.
 
 ## Notes
 

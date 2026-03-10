@@ -7,7 +7,9 @@ package xyz.self.sdk.models
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import xyz.self.sdk.api.SelfSdkConfig
+import xyz.self.sdk.api.SelfSdkError
 import xyz.self.sdk.api.VerificationRequest
+import xyz.self.sdk.api.VerificationResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -120,6 +122,27 @@ class ModelSerializationTest {
         val encoded = json.encodeToString(request)
         val decoded = json.decodeFromString<VerificationRequest>(encoded)
         assertEquals(request, decoded)
+    }
+
+    @Test
+    fun verificationResult_roundtrip() {
+        val result =
+            VerificationResult(
+                success = true,
+                userId = "user-1",
+                verificationId = "verification-123",
+                proof = "proof-bytes",
+                claims =
+                    mapOf(
+                        "nationality" to "UTO",
+                        "ageOver18" to true,
+                        "document" to mapOf("issuingCountry" to "UTO"),
+                    ),
+                error = SelfSdkError(code = "IGNORED", message = "Only for serialization coverage"),
+            )
+        val encoded = json.encodeToString(result)
+        val decoded = json.decodeFromString<VerificationResult>(encoded)
+        assertEquals(result, decoded)
     }
 
     @Test

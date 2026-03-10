@@ -1,8 +1,8 @@
 import { ethers } from "hardhat";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
-import { KYC_ATTESTATION_ID } from "@selfxyz/common/constants/constants";
-import { generateMockKycRegisterInput } from "@selfxyz/common/utils/kyc/generateInputs";
+import { KYC_ATTESTATION_ID } from "@selfxyz/new-common/src/foundation/constants/identity";
+import { generateMockKycRegisterInputs } from "@selfxyz/new-common/src/circuits/inputs/register-kyc";
 import { generateRegisterKycProof } from "../utils/generateProof";
 import { expect } from "chai";
 
@@ -87,7 +87,7 @@ describe("KYC Registration test", function () {
 
     before(async () => {
       registerSecret = "12345";
-      kycData = await generateMockKycRegisterInput(undefined, true, registerSecret);
+      kycData = await generateMockKycRegisterInputs(undefined, true, registerSecret);
       registerProof = await generateRegisterKycProof(registerSecret, kycData);
 
       // Deploy and set mock GCP JWT verifier

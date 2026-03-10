@@ -31,6 +31,11 @@ app/platforms/
 packages/mobile-sdk-alpha/licenses/
 packages/mobile-sdk-alpha/platforms/
 
+# Renamed KMP test app (old folder, build artifacts only)
+packages/kmp-test-app/.gradle/
+packages/kmp-test-app/build/
+packages/kmp-test-app/**/build/
+
 # Private Android modules (cloned at build time)
 app/android/android-passport-nfc-reader/
 
@@ -43,3 +48,7 @@ app/android/android-passport-nfc-reader/
 contracts/out/
 contracts/cache_forge/
 contracts/broadcast/
+
+# Keep RN test app config files tracked (global gitignore may ignore *.config.*)
+!packages/rn-sdk-test-app/metro.config.cjs
+!packages/rn-sdk-test-app/react-native.config.cjs

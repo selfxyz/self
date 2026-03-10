@@ -8,6 +8,8 @@ import android.app.Activity
 import android.content.Intent
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonPrimitive
+import xyz.self.sdk.api.serializeVerificationResult
+import xyz.self.sdk.api.verificationResultFromLifecycleParams
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
@@ -51,7 +53,7 @@ class LifecycleBridgeHandler(
      */
     private fun dismiss(): JsonElement? {
         activity.runOnUiThread {
-            activity.setResult(Activity.RESULT_CANCELED)
+            activity.setResult(SelfVerificationActivity.RESULT_CODE_CANCELLED)
             activity.finish()
         }
         return null
@@ -72,21 +74,25 @@ class LifecycleBridgeHandler(
             val intent = Intent()
 
             if (type != null) {
-                // Flat lifecycle payload (e.g. { type: "proofRequested" }) — treat as success
-                intent.putExtra(SelfVerificationActivity.EXTRA_RESULT_TYPE, type)
-                activity.setResult(Activity.RESULT_OK, intent)
+                // Flat lifecycle payloads remain transport-compatibility shims only.
+                // Host apps receive the canonical VerificationResult without a public `type` field.
+                intent.putExtra(
+                    SelfVerificationActivity.EXTRA_RESULT_DATA,
+                    serializeVerificationResult(verificationResultFromLifecycleParams(params)),
+                )
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_SUCCESS, intent)
             } else if (success && data != null) {
                 // Success result
                 intent.putExtra(SelfVerificationActivity.EXTRA_RESULT_DATA, data)
-                activity.setResult(Activity.RESULT_OK, intent)
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_SUCCESS, intent)
             } else if (!success && errorCode != null) {
                 // Error result
                 intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_CODE, errorCode)
                 intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_MESSAGE, errorMessage ?: "Unknown error")
-                activity.setResult(Activity.RESULT_FIRST_USER, intent)
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_ERROR, intent)
             } else {
                 // Cancelled or invalid result
-                activity.setResult(Activity.RESULT_CANCELED, intent)
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_CANCELLED, intent)
             }
 
             activity.finish()

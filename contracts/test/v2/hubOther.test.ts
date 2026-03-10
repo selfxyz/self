@@ -2,8 +2,8 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
-import { DscVerifierId, RegisterVerifierId } from "@selfxyz/common/constants/constants";
-import { ID_CARD_ATTESTATION_ID, PASSPORT_ATTESTATION_ID } from "@selfxyz/common/constants/constants";
+import { DscVerifierId, RegisterVerifierId } from "@selfxyz/new-common/src/foundation/constants/identity";
+import { ID_CARD_ATTESTATION_ID, PASSPORT_ATTESTATION_ID } from "@selfxyz/new-common/src/foundation/constants/identity";
 
 describe("Hub Other Functions Test", function () {
   this.timeout(0);
