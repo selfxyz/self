@@ -1,21 +1,38 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DataConfirmationScreen as EuclidDataConfirmationScreen } from '@selfxyz/euclid';
-import type { DocumentData } from '@selfxyz/euclid';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { Button, colors, TopNavigationDialogue, XIcon } from '@selfxyz/euclid';
+import { formatDateToYYMMDD, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
+import { InputField } from '@/components/InputField';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import type { RootStackParamList } from '@/navigation';
 import { trackEvent } from '@/services/analytics';
-import { calculateFirstDifference, type FirstDifference } from '@/utils/diffCalculator';
+import {
+  calculateFirstDifference,
+  type FirstDifference,
+} from '@/utils/diffCalculator';
+import { parseMRZBirthDate, parseMRZExpiryDate } from '@selfxyz/mobile-sdk-alpha';
+
+const EscapeIcon = ({ size, color }: { size: number; color: string }) => (
+  <View testID="escape-button">
+    <XIcon size={size} color={color} />
+  </View>
+);
+
+export interface DocumentData {
+  documentNumber: string;
+  dateOfBirth: string;
+  documentExpiryDate: string;
+}
 
 const DataConfirmationScreen: React.FC & {
   statusBar: { hidden: boolean; style: string };
@@ -25,24 +42,40 @@ const DataConfirmationScreen: React.FC & {
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const insets = useSafeAreaInsets();
-
   const mrzData = useMRZStore();
+  const navigateToHome = useHapticNavigation('Home', {
+    action: 'cancel',
+  });
+
   const {
     passportNumber: originalDocumentNumber,
     dateOfBirth: originalDateOfBirth,
     dateOfExpiry: originalDocumentExpiryDate,
   } = mrzData;
 
-  const navigateToHome = useHapticNavigation('Home', {
-    action: 'cancel',
+  const [fields, setFields] = useState<DocumentData>({
+    documentNumber: originalDocumentNumber,
+    dateOfBirth: originalDateOfBirth,
+    documentExpiryDate: originalDocumentExpiryDate,
   });
 
-  const onClose = () => {
-    navigateToHome();
+  const handleFieldChange = (field: keyof DocumentData, value: string) => {
+    setFields(prev => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
-  const onConfirmationPressed = (data: DocumentData) => {
-    const { documentNumber, dateOfBirth, documentExpiryDate } = data;
+  const handleDateChange = (field: keyof DocumentData, date: Date) => {
+    const mrzFormattedDate = formatDateToYYMMDD(date.toISOString());
+    setFields(prev => ({
+      ...prev,
+      [field]: mrzFormattedDate,
+    }));
+  };
+
+  const handleConfirmPress = () => {
+    const { documentNumber, dateOfBirth, documentExpiryDate } = fields;
 
     const hasChanges =
       documentNumber !== originalDocumentNumber ||
@@ -53,19 +86,28 @@ const DataConfirmationScreen: React.FC & {
       const diffs: Record<string, FirstDifference | null> = {};
 
       if (documentNumber !== originalDocumentNumber) {
-        diffs.document_number = calculateFirstDifference(originalDocumentNumber, documentNumber);
+        diffs.document_number = calculateFirstDifference(
+          originalDocumentNumber,
+          documentNumber,
+        );
       }
 
       if (dateOfBirth !== originalDateOfBirth) {
-        diffs.date_of_birth = calculateFirstDifference(originalDateOfBirth, dateOfBirth);
+        diffs.date_of_birth = calculateFirstDifference(
+          originalDateOfBirth,
+          dateOfBirth,
+        );
       }
 
       if (documentExpiryDate !== originalDocumentExpiryDate) {
-        diffs.document_expiry_date = calculateFirstDifference(originalDocumentExpiryDate, documentExpiryDate);
+        diffs.document_expiry_date = calculateFirstDifference(
+          originalDocumentExpiryDate,
+          documentExpiryDate,
+        );
       }
 
       const filteredDiffs = Object.fromEntries(
-        Object.entries(diffs).filter(([, diff]) => diff !== null)
+        Object.entries(diffs).filter(([, diff]) => diff !== null),
       );
 
       trackEvent(PassportEvents.MRZ_DATA_MODIFIED, {
@@ -90,17 +132,96 @@ const DataConfirmationScreen: React.FC & {
   };
 
   return (
-    <EuclidDataConfirmationScreen
-      insets={insets}
-      documentNumber={originalDocumentNumber}
-      dateOfBirth={originalDateOfBirth}
-      documentExpiryDate={originalDocumentExpiryDate}
-      onConfirmationPressed={onConfirmationPressed}
-      onClose={onClose}
-    />
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        },
+      ]}
+    >
+      <TopNavigationDialogue
+        variant="Primary"
+        label="Data confirmation"
+        escapeIcon={EscapeIcon}
+        onEscape={() => navigateToHome()}
+      />
+      <Text style={styles.instructionText}>
+        Please confirm the following information
+      </Text>
+      <View style={styles.fieldsContainer}>
+        <InputField
+          type="alphanumeric"
+          label="Document number"
+          value={fields.documentNumber}
+          onChangeText={text => handleFieldChange('documentNumber', text)}
+          style={styles.field}
+        />
+
+        <InputField
+          type="date"
+          label="Date of birth"
+          value={parseMRZBirthDate(fields.dateOfBirth).toISOString()}
+          onDateChange={date => handleDateChange('dateOfBirth', date)}
+          style={styles.field}
+        />
+
+        <InputField
+          type="date"
+          label="Document expiration date"
+          value={parseMRZExpiryDate(fields.documentExpiryDate).toISOString()}
+          onDateChange={date => handleDateChange('documentExpiryDate', date)}
+          style={styles.field}
+        />
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <Button
+          variant="primary-no-icon"
+          text="Continue"
+          onPress={handleConfirmPress}
+          fullWidth
+        />
+      </View>
+    </View>
   );
 };
 
-DataConfirmationScreen.statusBar = EuclidDataConfirmationScreen.statusBar;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.slate50,
+    justifyContent: 'space-between',
+  },
+  fieldsContainer: {
+    flex: 1,
+    gap: 16,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  field: {
+    marginBottom: 0,
+  },
+  buttonContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  instructionText: {
+    fontFamily: 'Advercase',
+    fontSize: 28,
+    fontWeight: '400',
+    color: colors.black,
+    letterSpacing: 1,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
+});
+
+DataConfirmationScreen.statusBar = {
+  hidden: false,
+  style: 'dark',
+};
 
 export default DataConfirmationScreen;
