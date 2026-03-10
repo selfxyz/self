@@ -100,12 +100,12 @@ internal object VerificationResultSerializer : KSerializer<VerificationResult> {
 
         return VerificationResult(
             success = payload["success"]?.jsonPrimitive?.booleanOrNull ?: false,
-            userId = payload["userId"]?.jsonPrimitive?.contentOrNull,
-            verificationId = payload["verificationId"]?.jsonPrimitive?.contentOrNull,
-            proof = payload["proof"]?.let(::jsonElementToProofString),
-            claims = payload["claims"]?.jsonObject?.mapValues { (_, value) -> value.toKotlinValue() },
+            userId = payload["userId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.contentOrNull,
+            verificationId = payload["verificationId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.contentOrNull,
+            proof = payload["proof"]?.takeUnless { it is JsonNull }?.let(::jsonElementToProofString),
+            claims = payload["claims"]?.takeUnless { it is JsonNull }?.jsonObject?.mapValues { (_, value) -> value.toKotlinValue() },
             error =
-                payload["error"]?.let { error ->
+                payload["error"]?.takeUnless { it is JsonNull }?.let { error ->
                     decoder.json.decodeFromJsonElement(SelfSdkError.serializer(), error)
                 },
         )
