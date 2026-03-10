@@ -468,29 +468,27 @@ SelfSdk.launch(
 />
 ```
 
-**Output (verification complete):**
+**Output (verification complete) — canonical `VerificationResult`:**
 
 ```json
 {
-  "type": "proofGenerated",
-  "proof": {
-    "success": true,
-    "claims": {
-      "nationality": "NLD",
-      "date_of_birth": "1990-01-15",
-      "document_expiry": "2030-01-15"
-    },
-    "circuitType": "register",
-    "timestamp": 1708200060000
+  "success": true,
+  "userId": "user-uuid",
+  "verificationId": "abc-123",
+  "proof": "...",
+  "claims": {
+    "nationality": "NLD",
+    "date_of_birth": "1990-01-15",
+    "document_expiry": "2030-01-15"
   }
 }
 ```
 
-**Error output:**
+**Error output — canonical `VerificationResult`:**
 
 ```json
 {
-  "type": "error",
+  "success": false,
   "error": {
     "code": "PASSPORT_NOT_SUPPORTED",
     "message": "This passport type is not supported for verification"

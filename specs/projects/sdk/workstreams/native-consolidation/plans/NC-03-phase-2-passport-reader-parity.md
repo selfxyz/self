@@ -1,7 +1,7 @@
 # Phase 2 PassportReader Parity Bridge
 
 > Last updated: 2026-03-10
-> Status: Ready
+> Status: Done
 
 - Workstream: native-consolidation
 - Backlog IDs: NC-03
@@ -55,10 +55,11 @@ cd packages/kmp-sdk && ./gradlew :shared:jvmTest
 
 ## Definition of Done
 
-- [ ] Parity contract table updated
-- [ ] One internal implementation or equivalent parity-preserving structure exists
-- [ ] Backlog row updated
+- [x] Parity contract table updated
+- [x] One internal implementation or equivalent parity-preserving structure exists
+- [x] Backlog row updated
 
 ## Status Log
 
 - 2026-03-10: Created during spec refactor.
+- 2026-03-10: Extracted shared `PassportReaderCore.swift`, kept wrapper selectors/module names stable, and updated parity docs.
