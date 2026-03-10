@@ -4,22 +4,32 @@
 > Source: Bot review feedback on PR #1785 (kmp-wrap-up-evi-handoff-work)
 > Status: Pending
 
-## Status Checklist
+## Ownership Migration
 
-| Chunk | Description                                | Priority | Status      |
-| ----- | ------------------------------------------ | -------- | ----------- |
-| 1     | APDU command allowlisting                  | High     | Not started |
-| 2     | NFC transceive timeout (iOS)               | Medium   | Not started |
-| 3     | Redact sensitive data from error messages  | Medium   | Not started |
-| 4     | LifecycleBridgeHandler type+error handling | Low      | Not started |
-| 5     | NFC return payload — minimize PII surface  | Low      | Not started |
-| 6     | Person 4 crypto tracking                   | Low      | Not started |
+This topic file is now context-only. Actionable work should be tracked in owning workstream backlogs and PR plan files:
+
+- `native-shells/SPEC.md` for KMP-native follow-ups
+- `rn-sdk/SPEC.md` for RN-native follow-ups
+- `sdk-core/SPEC.md` for crypto-surface follow-ups
+
+Do not treat this topic file as the only tracker for open work.
+
+## Workstream Mapping
+
+| Topic Item | Owning Backlog / Workstream |
+| ---------- | --------------------------- |
+| APDU command allowlisting (KMP) | `NS-04` in `native-shells/SPEC.md` |
+| APDU command allowlisting + timeout + payload hardening (RN) | `RN-03` in `rn-sdk/SPEC.md` |
+| LifecycleBridgeHandler type+error handling | `NS-05` in `native-shells/SPEC.md` |
+| Person 4 crypto tracking | `SC-02` and follow-up backlog in `sdk-core/SPEC.md` |
+
+Items without a linked backlog ID yet should be re-homed before any new work starts. Do not update this file as the primary status tracker.
 
 ## Context
 
 PR #1785 wraps up the KMP/EVI handoff work. Automated reviewers (CodeRabbit, Codex) flagged several security hardening items. The quick fixes were already addressed in the PR's feedback commits. This spec tracks the remaining items that need follow-up work.
 
-## Chunks
+## Historical Follow-Ups
 
 ### Chunk 1: APDU Command Allowlisting
 

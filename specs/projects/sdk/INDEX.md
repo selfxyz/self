@@ -6,6 +6,8 @@ Status: Active
 ## Start Here
 
 1. [SDK Overview](./OVERVIEW.md) — architecture, bridge protocol, module table, execution status
+2. Open the relevant workstream `SPEC.md` — read `Backlog` and `Active Plans` first
+3. Open the linked `plans/<BACKLOG-ID>-<slug>.md` file — execute from that file
 
 ## Workstreams
 
@@ -21,4 +23,4 @@ Status: Active
 ## Related
 
 - [Euclid Web Consolidation](../../topics/EUCLID-WEB-CONSOLIDATION.md) — WebView convergence plan
-- [Security Hardening](../../topics/SECURITY-HARDENING.md) — security follow-ups
+- [Security Hardening](../../topics/SECURITY-HARDENING.md) — historical context for follow-ups now tracked in workstream backlogs

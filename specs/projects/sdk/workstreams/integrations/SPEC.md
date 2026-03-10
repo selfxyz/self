@@ -54,6 +54,34 @@
 - [x] Error-code to user-message mapping in result UX
 - [ ] Polish + error handling (chunk 3C — partial)
 
+## Execution Model
+
+- Stable sample-app context stays in this file.
+- PR-sized execution belongs under [`plans/`](./plans/).
+- Read the backlog below to answer "what's next?" for the KMP sample.
+
+## Backlog
+
+| ID | Title | Status | Priority | Depends On | Plan | PR |
+| -- | ----- | ------ | -------- | ---------- | ---- | -- |
+| IN-01 | Polish result display and complete chunk 3C error handling | Ready | Medium | - | [plans/IN-01-sample-polish-and-error-handling.md](./plans/IN-01-sample-polish-and-error-handling.md) | - |
+| IN-02 | Physical-device NFC end-to-end validation for MiniPay sample | Ready | High | IN-01 | [plans/IN-02-sample-physical-device-validation.md](./plans/IN-02-sample-physical-device-validation.md) | - |
+
+Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+
+## Active Plans
+
+| Plan | IDs | Status |
+| ---- | --- | ------ |
+| [plans/IN-01-sample-polish-and-error-handling.md](./plans/IN-01-sample-polish-and-error-handling.md) | IN-01 | Ready |
+| [plans/IN-02-sample-physical-device-validation.md](./plans/IN-02-sample-physical-device-validation.md) | IN-02 | Ready |
+
+## Completion Checklist
+
+- [ ] Chunk 3C remaining work is tracked by backlog row, not prose only
+- [ ] Physical-device validation has a dedicated plan file
+- [ ] Follow-up publishing/migration items remain linked from the owning workstreams
+
 ## Overview
 
 You are building a Kotlin sample app demonstrating how a host app integrates Self identity verification using the KMP SDK's `SelfSdk.launch()` API. The app has a minimal native UI — a home screen with a "Verify Identity" button and a result screen. All verification logic (country selection, document scanning, NFC, proving, result) runs inside the SDK's WebView, launched via a single `SelfSdk.launch()` call. This sample serves as the reference implementation for third-party integrators.

@@ -63,6 +63,32 @@
 - [x] Hybrid crypto contract signed off
 - [ ] Dynamic proof request items are still hardcoded in `ProvingScreen`
 
+## Execution Model
+
+- Stable WebView and bridge context stays in this file.
+- PR-sized execution lives under [`plans/`](./plans/).
+- For quick pickup, read the backlog and active plans first.
+
+## Backlog
+
+| ID | Title | Status | Priority | Depends On | Plan | PR |
+| -- | ----- | ------ | -------- | ---------- | ---- | -- |
+| WV-01 | Dynamic proof request items sourced from request context | Ready | High | - | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | - |
+
+Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+
+## Active Plans
+
+| Plan | IDs | Status |
+| ---- | --- | ------ |
+| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | WV-01 | Ready |
+
+## Completion Checklist
+
+- [ ] Remaining WebView follow-ups are represented in backlog rows
+- [ ] Active plan links are current
+- [ ] Project overview status stays aligned with this file
+
 ## Overview
 
 You are building the **web side** of the Self Mobile SDK: the bridge protocol library (`@selfxyz/webview-bridge`) and the Vite-bundled React app (`@selfxyz/webview-app`) that runs inside a native WebView. This matters because every screen, adapter wire-up, and bridge message you implement becomes the single shared UI that ships to every host app — Kotlin, React Native, or otherwise. The output of `vite build` (a single `index.html` + JS bundle) gets bundled into the native SDK artifact.

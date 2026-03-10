@@ -1,12 +1,12 @@
 # Spec Templates
 
-Three copy-paste templates. Pick the one that matches what you're writing.
+Three copy-paste templates plus the execution-model rule. Pick the one that matches what you're writing.
 
 | Template                                             | When to use                                                                 | Output file                                   |
 | ---------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------- |
 | [Project Overview](#project-overview-template)       | One per project. System-level architecture. Changes rarely.                 | `specs/<project>/OVERVIEW.md`                 |
-| [Workstream Overview](#workstream-overview-template) | Orientation context. Merge as `## Context` section into SPEC.md.            | Merged into `workstreams/<scope>/SPEC.md`     |
-| [Implementation Spec](#implementation-spec-template) | One per person/workstream. Detailed build instructions. Changes frequently. | `specs/<project>/workstreams/<scope>/SPEC.md` |
+| [Workstream Spec](#workstream-spec-template)         | Durable workstream context, invariants, backlog, active plan index.         | `workstreams/<scope>/SPEC.md`                 |
+| [PR Plan](#pr-plan-template)                         | One PR-sized execution handoff. Self-contained pickup after session loss.   | `workstreams/<scope>/plans/<BACKLOG-ID>-<slug>.md` |
 
 ---
 
@@ -139,125 +139,150 @@ would confuse a new dev or AI agent. -->
 
 ---
 
-# Workstream Overview Template
+# Workstream Spec Template
 
 <!-- Copy everything below this line through the next "---" separator. -->
 
-## [Person N]: [Scope] — Workstream Overview
+## [Workstream Name]
 
 > Last updated: [date]
-> Owner: [name]
-> Project: `../OVERVIEW.md`
-> Implementation: `./SPEC.md`
+> Owner: [name/team]
+> Parent: `../../OVERVIEW.md`
 > Status: [Draft | Active | Complete]
 
-### North Star
+### Purpose
 
-<!-- Same project-level north star from the project overview. 2-4 bullets. -->
+- [What this workstream owns]
+- [Why it exists]
+- [High-level definition of done]
 
-- [Business/product goal — why this exists]
-- [Success metric — measurable outcome]
-- [Key constraint — the non-negotiable]
+### Scope
 
-### Status
+- [in scope]
+- [in scope]
 
-<!-- High-level milestones for this workstream. -->
+### Out of Scope
 
-- [x] [milestone]
-- [ ] [milestone]
-- [ ] [milestone]
+- [out of scope]
+- [out of scope]
 
-### What You Own
+### Invariants
 
-<!-- 3-5 bullets. What packages, deliverables, and outputs does this
-workstream produce? Keep it scannable — details live in SPEC.md. -->
-
-- [package or scope item]
-- [package or scope item]
-- [key deliverable or artifact]
-
-### Architecture Context
-
-<!-- Focused diagram showing where THIS workstream's work fits in the larger
-system. Highlight what this workstream builds vs what it consumes from others.
-Keep it simpler than the project-level diagram — just enough context. -->
-
-```
-[focused diagram]
-```
+- [rule that must remain true]
+- [security or contract boundary]
 
 ### Dependencies
 
-<!-- What you need from other workstreams and what they need from you.
-Update status as work progresses. -->
+| Depends On | Type | Status | Notes |
+| ---------- | ---- | ------ | ----- |
+| [scope/package] | Upstream / Downstream | [state] | [note] |
 
-| Direction     | Workstream / Package | What                         | Status  |
-| ------------- | -------------------- | ---------------------------- | ------- |
-| **You need**  | [scope]              | [what you consume from them] | [state] |
-| **Needs you** | [scope]              | [what they consume from you] | [state] |
+### Ownership Boundaries
 
-### Key Decisions
+| Area | Owner | Notes |
+| ---- | ----- | ----- |
+| `path/or/module` | [team/person] | [why] |
 
-<!-- Decisions specific to this workstream. Link to the project overview
-decision matrix for system-wide decisions. -->
+### Backlog
 
-| Decision   | Choice   | Rationale |
-| ---------- | -------- | --------- |
-| [decision] | [choice] | [why]     |
+| ID | Title | Status | Priority | Depends On | Plan | PR |
+| -- | ----- | ------ | -------- | ---------- | ---- | -- |
+| [ID] | [title] | Ready | High | - | - | - |
 
-### Deliverables
+Allowed statuses:
 
-<!-- What this workstream ships. Artifact names, types, consumers. -->
+- `Ready`
+- `In Progress`
+- `Blocked`
+- `Deferred`
+- `Done`
 
-| Deliverable          | Type            | Consumers     |
-| -------------------- | --------------- | ------------- |
-| [package / artifact] | [npm / AAR / …] | [who uses it] |
+### Active Plans
+
+| Plan | IDs | Status |
+| ---- | --- | ------ |
+| `plans/<BACKLOG-ID>-<slug>.md` | [ID] | In Progress |
+
+### Completion Checklist
+
+- [ ] Backlog reflects reality
+- [ ] Active plan links are current
+- [ ] Done items are marked done
+- [ ] Cross-workstream dependencies updated
 
 ---
 
-# Implementation Spec Template
+# PR Plan Template
 
 <!-- Copy everything below this line to the end of the file. -->
 
-## [Component/Scope] — Implementation Spec
+## [Plan Title]
 
 > Last updated: [date]
-> Owner: [name]
-> Parent: `../OVERVIEW.md`
 > Status: [Draft | Active | Complete]
 
-### North Star
+- Workstream: [scope]
+- Backlog IDs: [ID]
+- Owner: [name/team]
+- Branch: [branch or TBD]
+- PR: [url or TBD]
 
-<!-- Bullet-point list of what success looks like. Same project-level north
-star from the overview spec. Repeated here so the implementer never loses
-sight of why this work matters. Use 2-4 bullets, not a paragraph. -->
+### Why
 
-- [Business/product goal — why this exists]
-- [Success metric — measurable outcome]
-- [Key constraint — the non-negotiable]
+- [why now]
+- [user/system impact]
+- [important constraint]
 
-### Overview
+### Scope
 
-<!-- Second person. 2-3 sentences. "You are [doing what] to [which package].
-This matters because [context]." -->
+- [deliverable]
+- [deliverable]
 
-### Prerequisites
+### Out of Scope
 
-<!-- What the reader needs to know before starting. Keep to 5 lines max. -->
+- [not included]
+- [not included]
 
-- Familiarity with [pattern/tool/concept]
-- [Term] = [definition]
-- Read the `## Context` section in this `SPEC.md` for workstream context
+### Files to Modify
 
-### The Problem
+- `path`
+- `path`
 
-<!-- What's broken/missing/wrong today. Be specific — file:line references. -->
+### Files Not to Modify
 
-| File            | Issue          |
-| --------------- | -------------- |
-| `src/foo.ts:42` | [what's wrong] |
+- `path`
+- `path`
 
-### Design Principles
+### Preconditions
+
+- [must already be true]
+- [upstream dependency]
+
+### Implementation Notes
+
+- [critical constraint]
+- [contract note]
+- [edge case]
+
+### Validation
+
+```bash
+[command]
+```
+
+### Definition of Done
+
+- [ ] Code changes complete
+- [ ] Validation passes
+- [ ] Backlog row updated
+- [ ] Plan status updated
+- [ ] PR linked
+
+### Status Log
+
+- [date]: Started.
+- [date]: Scope changed because ...
+- [date]: Completed.
 
 <!-- 3-5 principles specific to THIS workstream. Not the project-level ones
 from the overview — those are already linked. These guide implementation
