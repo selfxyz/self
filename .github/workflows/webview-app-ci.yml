@@ -1,0 +1,44 @@
+name: WebView App CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "packages/webview-app/**"
+      - "packages/webview-bridge/**"
+      - ".github/workflows/webview-app-ci.yml"
+      - ".github/actions/**"
+  push:
+    branches: [dev, staging, main]
+    paths:
+      - "packages/webview-app/**"
+      - "packages/webview-bridge/**"
+      - ".github/workflows/webview-app-ci.yml"
+      - ".github/actions/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build webview-bridge
+        run: yarn workspace @selfxyz/webview-bridge build
+      - name: Build webview-app
+        run: yarn workspace @selfxyz/webview-app build
+
+  types:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build webview-bridge
+        run: yarn workspace @selfxyz/webview-bridge build
+      - name: Typecheck
+        run: yarn workspace @selfxyz/webview-app typecheck

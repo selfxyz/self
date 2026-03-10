@@ -19,7 +19,9 @@
 		BFE3DFD62E4F4EC400195298 /* SelfMRZScannerViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3DFD22E4F4EC400195298 /* SelfMRZScannerViewManager.swift */; };
 		BFE3DFD72E4F4EC400195298 /* SelfMRZScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3DFD02E4F4EC400195298 /* SelfMRZScannerModule.swift */; };
 		BFE3DFD82E4F4EC400195298 /* SelfLiveMRZScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3DFCD2E4F4EC400195298 /* SelfLiveMRZScannerView.swift */; };
-		BFE3DFD92E4F4EC400195298 /* SelfMRZScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3DFCE2E4F4EC400195298 /* SelfMRZScanner.swift */; };
+		BFE3DFD92E4F4EC400195298 /* MrzScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3DFCE2E4F4EC400195298 /* MrzScanEngine.swift */; };
+		AA000002000000000000001A /* MrzOcrCorrection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002000000000000001B /* MrzOcrCorrection.swift */; };
+		AA000003000000000000001A /* MrzResultMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000003000000000000001B /* MrzResultMapper.swift */; };
 		BFE3DFDA2E4F4EC400195298 /* SelfMRZScannerViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BFE3DFD12E4F4EC400195298 /* SelfMRZScannerViewManager.m */; };
 /* End PBXBuildFile section */
 
@@ -35,7 +37,9 @@
 		BFE3DFCA2E4F4E8000195298 /* Vision.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vision.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/System/Library/Frameworks/Vision.framework; sourceTree = DEVELOPER_DIR; };
 		BFE3DFCC2E4F4EC400195298 /* SelfCameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfCameraView.swift; sourceTree = "<group>"; };
 		BFE3DFCD2E4F4EC400195298 /* SelfLiveMRZScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfLiveMRZScannerView.swift; sourceTree = "<group>"; };
-		BFE3DFCE2E4F4EC400195298 /* SelfMRZScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfMRZScanner.swift; sourceTree = "<group>"; };
+		BFE3DFCE2E4F4EC400195298 /* MrzScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MrzScanEngine.swift; sourceTree = "<group>"; };
+		AA000002000000000000001B /* MrzOcrCorrection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MrzOcrCorrection.swift; sourceTree = "<group>"; };
+		AA000003000000000000001B /* MrzResultMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MrzResultMapper.swift; sourceTree = "<group>"; };
 		BFE3DFCF2E4F4EC400195298 /* SelfMRZScannerModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SelfMRZScannerModule.m; sourceTree = "<group>"; };
 		BFE3DFD02E4F4EC400195298 /* SelfMRZScannerModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfMRZScannerModule.swift; sourceTree = "<group>"; };
 		BFE3DFD12E4F4EC400195298 /* SelfMRZScannerViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SelfMRZScannerViewManager.m; sourceTree = "<group>"; };
@@ -75,7 +79,9 @@
 				BF7273CD2E53412C002FE485 /* PassportReader.swift */,
 				BFE3DFCC2E4F4EC400195298 /* SelfCameraView.swift */,
 				BFE3DFCD2E4F4EC400195298 /* SelfLiveMRZScannerView.swift */,
-				BFE3DFCE2E4F4EC400195298 /* SelfMRZScanner.swift */,
+				BFE3DFCE2E4F4EC400195298 /* MrzScanEngine.swift */,
+				AA000002000000000000001B /* MrzOcrCorrection.swift */,
+				AA000003000000000000001B /* MrzResultMapper.swift */,
 				BFE3DFCF2E4F4EC400195298 /* SelfMRZScannerModule.m */,
 				BFE3DFD02E4F4EC400195298 /* SelfMRZScannerModule.swift */,
 				BFE3DFD12E4F4EC400195298 /* SelfMRZScannerViewManager.m */,
@@ -238,7 +244,9 @@
 				BFE3DFD82E4F4EC400195298 /* SelfLiveMRZScannerView.swift in Sources */,
 				BF7273CE2E53412C002FE485 /* PassportReader.m in Sources */,
 				BF7273CF2E53412C002FE485 /* PassportReader.swift in Sources */,
-				BFE3DFD92E4F4EC400195298 /* SelfMRZScanner.swift in Sources */,
+				BFE3DFD92E4F4EC400195298 /* MrzScanEngine.swift in Sources */,
+				AA000002000000000000001A /* MrzOcrCorrection.swift in Sources */,
+				AA000003000000000000001A /* MrzResultMapper.swift in Sources */,
 				BFE3DFDA2E4F4EC400195298 /* SelfMRZScannerViewManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

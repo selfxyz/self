@@ -2,8 +2,10 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
-import { AADHAAR_ATTESTATION_ID } from "@selfxyz/common/constants/constants";
-import { prepareAadhaarRegisterTestData } from "@selfxyz/common";
+import { AADHAAR_ATTESTATION_ID } from "@selfxyz/new-common/src/foundation/constants/identity";
+import { generateAadhaarRegisterInputs } from "@selfxyz/new-common/src/circuits/inputs/register-aadhaar";
+import { generateTestData, testCustomData } from "@selfxyz/new-common/src/testing/genMockAadhaarData";
+import forge from "node-forge";
 import path from "path";
 import { generateRandomFieldElement } from "../utils/utils";
 import { generateRegisterAadhaarProof } from "../utils/generateProof";
@@ -59,16 +61,28 @@ describe("Aadhaar Registration test", function () {
     let registerSecret: string;
 
     before(async () => {
-      aadhaarData = prepareAadhaarRegisterTestData(
-        privateKeyPem,
-        pubkeyPem,
-        "1234",
-        "Sumit Kumar",
-        "01-01-1984",
-        "M",
-        "110051",
-        "WB",
-      );
+      const customQRData = generateTestData({
+        privKeyPem: privateKeyPem,
+        data: testCustomData,
+        name: "Sumit Kumar",
+        dob: "01-01-1984",
+        gender: "M",
+        pincode: "110051",
+        state: "WB",
+      });
+
+      const pubKey = forge.pki.publicKeyFromPem(pubkeyPem);
+      const modulusHex = (pubKey as forge.pki.rsa.PublicKey).n.toString(16);
+      const pubKeyBigInt = BigInt("0x" + modulusHex);
+
+      const qrDataBigInt = BigInt(customQRData.testQRData);
+      const { convertBigIntToByteArray, decompressByteArray } = await import("@anon-aadhaar/core");
+      const qrDataBytes = convertBigIntToByteArray(qrDataBigInt);
+      const decodedData = decompressByteArray(qrDataBytes);
+      const signatureBytes = decodedData.slice(decodedData.length - 256, decodedData.length);
+      const signature = BigInt("0x" + Buffer.from(signatureBytes).toString("hex"));
+
+      aadhaarData = generateAadhaarRegisterInputs(customQRData.testQRData, "1234", { pubKey: pubKeyBigInt, signature });
 
       registerSecret = generateRandomFieldElement();
 
@@ -154,17 +168,32 @@ describe("Aadhaar Registration test", function () {
       const latestBlock = await ethers.provider.getBlock("latest");
       const blockTimestamp = latestBlock!.timestamp;
 
-      const newAadhaarData = prepareAadhaarRegisterTestData(
-        privateKeyPem,
-        pubkeyPem,
-        "1234",
-        "Sumit Kumar",
-        "01-01-1984",
-        "M",
-        "110051",
-        "WB",
-        (blockTimestamp - 10 * 60).toString(),
-      );
+      const customQRData = generateTestData({
+        privKeyPem: privateKeyPem,
+        data: testCustomData,
+        name: "Sumit Kumar",
+        dob: "01-01-1984",
+        gender: "M",
+        pincode: "110051",
+        state: "WB",
+        timestamp: ((blockTimestamp - 10 * 60) * 1000).toString(),
+      });
+
+      const pubKey = forge.pki.publicKeyFromPem(pubkeyPem);
+      const modulusHex = (pubKey as forge.pki.rsa.PublicKey).n.toString(16);
+      const pubKeyBigInt = BigInt("0x" + modulusHex);
+
+      const qrDataBigInt = BigInt(customQRData.testQRData);
+      const { convertBigIntToByteArray, decompressByteArray } = await import("@anon-aadhaar/core");
+      const qrDataBytes = convertBigIntToByteArray(qrDataBigInt);
+      const decodedData = decompressByteArray(qrDataBytes);
+      const signatureBytes = decodedData.slice(decodedData.length - 256, decodedData.length);
+      const signature = BigInt("0x" + Buffer.from(signatureBytes).toString("hex"));
+
+      const newAadhaarData = generateAadhaarRegisterInputs(customQRData.testQRData, "1234", {
+        pubKey: pubKeyBigInt,
+        signature,
+      });
       const newRegisterProof = await generateRegisterAadhaarProof(registerSecret, newAadhaarData.inputs);
 
       await expect(deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, newRegisterProof)).to.not.be
@@ -177,17 +206,32 @@ describe("Aadhaar Registration test", function () {
       const latestBlock = await ethers.provider.getBlock("latest");
       const blockTimestamp = latestBlock!.timestamp;
 
-      const newAadhaarData = prepareAadhaarRegisterTestData(
-        privateKeyPem,
-        pubkeyPem,
-        "1234",
-        "Sumit Kumar",
-        "01-01-1984",
-        "M",
-        "110051",
-        "WB",
-        (blockTimestamp - 30 * 60).toString(),
-      );
+      const customQRData = generateTestData({
+        privKeyPem: privateKeyPem,
+        data: testCustomData,
+        name: "Sumit Kumar",
+        dob: "01-01-1984",
+        gender: "M",
+        pincode: "110051",
+        state: "WB",
+        timestamp: (blockTimestamp - 30 * 60).toString(),
+      });
+
+      const pubKey = forge.pki.publicKeyFromPem(pubkeyPem);
+      const modulusHex = (pubKey as forge.pki.rsa.PublicKey).n.toString(16);
+      const pubKeyBigInt = BigInt("0x" + modulusHex);
+
+      const qrDataBigInt = BigInt(customQRData.testQRData);
+      const { convertBigIntToByteArray, decompressByteArray } = await import("@anon-aadhaar/core");
+      const qrDataBytes = convertBigIntToByteArray(qrDataBigInt);
+      const decodedData = decompressByteArray(qrDataBytes);
+      const signatureBytes = decodedData.slice(decodedData.length - 256, decodedData.length);
+      const signature = BigInt("0x" + Buffer.from(signatureBytes).toString("hex"));
+
+      const newAadhaarData = generateAadhaarRegisterInputs(customQRData.testQRData, "1234", {
+        pubKey: pubKeyBigInt,
+        signature,
+      });
       const newRegisterProof = await generateRegisterAadhaarProof(registerSecret, newAadhaarData.inputs);
 
       await expect(

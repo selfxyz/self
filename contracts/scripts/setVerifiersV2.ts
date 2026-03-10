@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
-import { RegisterVerifierId, DscVerifierId } from "@selfxyz/common";
+import { RegisterVerifierId, DscVerifierId } from "@selfxyz/new-common/src/foundation/constants/identity";
 import {
   getContractAbi,
   getDeployedAddresses,
