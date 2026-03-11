@@ -24,6 +24,8 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
+      - name: Build common
+        run: yarn workspace @selfxyz/common build
       - name: Build mobile-sdk-alpha
         run: yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Build
@@ -36,6 +38,8 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
+      - name: Build common
+        run: yarn workspace @selfxyz/common build
       - name: Build mobile-sdk-alpha
         run: yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Typecheck
