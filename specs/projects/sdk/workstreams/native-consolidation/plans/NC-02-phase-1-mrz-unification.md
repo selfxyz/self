@@ -1,7 +1,7 @@
 # Phase 1 MRZ Core Unification and Validation
 
 > Last updated: 2026-03-10
-> Status: In Progress
+> Status: Done
 
 - Workstream: native-consolidation
 - Backlog IDs: NC-02
@@ -11,14 +11,13 @@
 
 ## Why
 
-- MRZ duplication is the current active phase in this workstream.
+- MRZ duplication was the active local phase in this workstream and shipped in PR #1823.
 - The earlier plan exists, but pickup should no longer require reading a giant phase narrative.
 
 ## Scope
 
-- Finish MRZ wrapper consolidation work already in flight.
-- Complete remaining build validation and status reconciliation.
-- Record the chosen canonicalization approach in one place.
+- Record the merged MRZ wrapper consolidation state in one place.
+- Reconcile status and validation notes after PR #1823.
 
 ## Out of Scope
 
@@ -55,10 +54,11 @@ yarn workspace @selfxyz/rn-sdk-test-app test --watchman=false
 
 ## Definition of Done
 
-- [ ] Remaining iOS build validation completed
-- [ ] `SPEC.md` and plan agree on the canonicalization approach
-- [ ] Backlog row updated
+- [x] Remaining iOS build validation completed or explicitly called out
+- [x] `SPEC.md` and plan agree on the canonicalization approach
+- [x] Backlog row updated
 
 ## Status Log
 
 - 2026-03-10: Created to replace implicit "current phase" pickup.
+- 2026-03-10: Marked done after PR #1823 merged; future cross-repo MRZ follow-up moved to NC-06.
