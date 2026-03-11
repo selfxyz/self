@@ -65,25 +65,27 @@ class LifecycleBridgeHandler(
         activity.runOnUiThread {
             val intent = Intent()
 
-            when (val outcome = resolveLifecycleSetResult(params)) {
-                is LifecycleSetResultOutcome.Success -> {
-                    intent.putExtra(
-                        SelfVerificationActivity.EXTRA_RESULT_DATA,
-                        serializeVerificationResult(outcome.result),
-                    )
-                    activity.setResult(SelfVerificationActivity.RESULT_CODE_SUCCESS, intent)
+            try {
+                when (val outcome = resolveLifecycleSetResult(params)) {
+                    is LifecycleSetResultOutcome.Success -> {
+                        intent.putExtra(
+                            SelfVerificationActivity.EXTRA_RESULT_DATA,
+                            serializeVerificationResult(outcome.result),
+                        )
+                        activity.setResult(SelfVerificationActivity.RESULT_CODE_SUCCESS, intent)
+                    }
+                    is LifecycleSetResultOutcome.Failure -> {
+                        intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_CODE, outcome.error.code)
+                        intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_MESSAGE, outcome.error.message)
+                        activity.setResult(SelfVerificationActivity.RESULT_CODE_ERROR, intent)
+                    }
+                    LifecycleSetResultOutcome.Cancelled -> {
+                        activity.setResult(SelfVerificationActivity.RESULT_CODE_CANCELLED, intent)
+                    }
                 }
-                is LifecycleSetResultOutcome.Failure -> {
-                    intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_CODE, outcome.error.code)
-                    intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_MESSAGE, outcome.error.message)
-                    activity.setResult(SelfVerificationActivity.RESULT_CODE_ERROR, intent)
-                }
-                LifecycleSetResultOutcome.Cancelled -> {
-                    activity.setResult(SelfVerificationActivity.RESULT_CODE_CANCELLED, intent)
-                }
+            } finally {
+                activity.finish()
             }
-
-            activity.finish()
         }
 
         return null

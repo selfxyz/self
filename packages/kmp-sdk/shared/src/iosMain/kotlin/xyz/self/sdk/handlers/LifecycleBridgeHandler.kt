@@ -71,13 +71,15 @@ class LifecycleBridgeHandler : BridgeHandler {
 
     private suspend fun setResult(params: Map<String, JsonElement>): JsonElement? {
         val state = consumeLifecycleState()
-        when (val outcome = resolveLifecycleSetResult(params)) {
-            is LifecycleSetResultOutcome.Success -> state.callback?.onSuccess(outcome.result)
-            is LifecycleSetResultOutcome.Failure -> state.callback?.onFailure(outcome.error)
-            LifecycleSetResultOutcome.Cancelled -> state.callback?.onCancelled()
+        try {
+            when (val outcome = resolveLifecycleSetResult(params)) {
+                is LifecycleSetResultOutcome.Success -> state.callback?.onSuccess(outcome.result)
+                is LifecycleSetResultOutcome.Failure -> state.callback?.onFailure(outcome.error)
+                LifecycleSetResultOutcome.Cancelled -> state.callback?.onCancelled()
+            }
+        } finally {
+            state.dismiss?.invoke()
         }
-
-        state.dismiss?.invoke()
         return null
     }
 }
