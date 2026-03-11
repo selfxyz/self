@@ -87,7 +87,9 @@ function selectDevice(devicesJson) {
     );
 
     if (!selectedDevice) {
-      const availableNames = [...new Set(availableIPhones.map(device => device.name))];
+      const availableNames = [
+        ...new Set(availableIPhones.map(device => device.name)),
+      ];
       throw new Error(
         `No available iPhone matching "${process.env.IOS_SIMULATOR_DEVICE}". Available: ${availableNames.join(', ')}`,
       );
@@ -122,9 +124,13 @@ function sleep(milliseconds) {
 }
 
 function main() {
-  const output = execFileSync('xcrun', ['simctl', 'list', 'devices', 'available', '--json'], {
-    encoding: 'utf8',
-  });
+  const output = execFileSync(
+    'xcrun',
+    ['simctl', 'list', 'devices', 'available', '--json'],
+    {
+      encoding: 'utf8',
+    },
+  );
   const { devices } = JSON.parse(output);
   const simulator = selectDevice(devices);
 
@@ -140,7 +146,14 @@ function main() {
   runCommand('xcrun', ['simctl', 'boot', simulator.udid]);
   runCommand('xcrun', ['simctl', 'bootstatus', simulator.udid, '-b']);
   sleep(5000);
-  runCommand('yarn', ['react-native', 'run-ios', '--scheme', 'OpenPassport', '--udid', simulator.udid]);
+  runCommand('yarn', [
+    'react-native',
+    'run-ios',
+    '--scheme',
+    'OpenPassport',
+    '--udid',
+    simulator.udid,
+  ]);
 }
 
 if (require.main === module) {

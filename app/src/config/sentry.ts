@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { SENTRY_DSN } from '@env';
 import { Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import { SENTRY_DSN } from '@env';
 import {
   addBreadcrumb,
   captureException as sentryCaptureException,
@@ -90,20 +90,6 @@ const sanitizeTagKey = (key: string): string | null => {
   return key;
 };
 
-export const isIosSimulator = () =>
-  Platform.OS === 'ios' && DeviceInfo.isEmulatorSync();
-
-export const getSentryRuntimeFlags = () => {
-  const disableSimulatorHeavyIntegrations = isIosSimulator();
-
-  return {
-    disableSimulatorHeavyIntegrations,
-    enableFeedbackScreenshots: !disableSimulatorHeavyIntegrations,
-    replaysOnErrorSampleRate: disableSimulatorHeavyIntegrations ? 0 : 1.0,
-    replaysSessionSampleRate: disableSimulatorHeavyIntegrations ? 0 : 0.1,
-  };
-};
-
 export const captureException = (
   error: Error,
   context?: Record<string, unknown>,
@@ -155,6 +141,17 @@ export const captureMessage = (
   sentryCaptureMessage(message, {
     extra: context,
   });
+};
+
+export const getSentryRuntimeFlags = () => {
+  const disableSimulatorHeavyIntegrations = isIosSimulator();
+
+  return {
+    disableSimulatorHeavyIntegrations,
+    enableFeedbackScreenshots: !disableSimulatorHeavyIntegrations,
+    replaysOnErrorSampleRate: disableSimulatorHeavyIntegrations ? 0 : 1.0,
+    replaysSessionSampleRate: disableSimulatorHeavyIntegrations ? 0 : 0.1,
+  };
 };
 
 export const initSentry = () => {
@@ -224,6 +221,9 @@ export const initSentry = () => {
     },
   });
 };
+
+export const isIosSimulator = () =>
+  Platform.OS === 'ios' && DeviceInfo.isEmulatorSync();
 
 export const isSentryDisabled = !SENTRY_DSN;
 

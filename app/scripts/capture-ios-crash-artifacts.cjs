@@ -61,7 +61,10 @@ function getLatestLaunchResult() {
   for (const derivedDataEntry of fs.readdirSync(DERIVED_DATA_ROOT, {
     withFileTypes: true,
   })) {
-    if (!derivedDataEntry.isDirectory() || !derivedDataEntry.name.startsWith(`${APP_NAME}-`)) {
+    if (
+      !derivedDataEntry.isDirectory() ||
+      !derivedDataEntry.name.startsWith(`${APP_NAME}-`)
+    ) {
       continue;
     }
 
@@ -76,8 +79,13 @@ function getLatestLaunchResult() {
       continue;
     }
 
-    for (const launchEntry of fs.readdirSync(launchDir, { withFileTypes: true })) {
-      if (!launchEntry.isDirectory() || !launchEntry.name.endsWith('.xcresult')) {
+    for (const launchEntry of fs.readdirSync(launchDir, {
+      withFileTypes: true,
+    })) {
+      if (
+        !launchEntry.isDirectory() ||
+        !launchEntry.name.endsWith('.xcresult')
+      ) {
         continue;
       }
 
@@ -101,7 +109,8 @@ function getRecentDiagnosticReports() {
     return [];
   }
 
-  const cutoffMs = Date.now() - (Number.parseInt(WINDOW_MINUTES, 10) + 10) * 60 * 1000;
+  const cutoffMs =
+    Date.now() - (Number.parseInt(WINDOW_MINUTES, 10) + 10) * 60 * 1000;
 
   return fs
     .readdirSync(DIAGNOSTIC_REPORTS_DIR, { withFileTypes: true })
@@ -163,7 +172,10 @@ function captureLatestLaunchResult(outputDir) {
     return;
   }
 
-  writeFile(path.join(outputDir, 'launch-result-path.txt'), `${xcresultPath}\n`);
+  writeFile(
+    path.join(outputDir, 'launch-result-path.txt'),
+    `${xcresultPath}\n`,
+  );
 
   const xcresultJson = runCommand('xcrun', [
     'xcresulttool',

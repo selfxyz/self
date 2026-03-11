@@ -4,6 +4,8 @@
 
 import { Platform } from 'react-native';
 
+import { getSentryRuntimeFlags, isIosSimulator } from '@/config/sentry';
+
 let mockIsEmulator = false;
 
 jest.mock('react-native-device-info', () => ({
@@ -26,8 +28,6 @@ jest.mock('@sentry/react-native', () => ({
   withScope: jest.fn(),
   wrap: jest.fn(component => component),
 }));
-
-import { getSentryRuntimeFlags, isIosSimulator } from '@/config/sentry';
 
 describe('sentry simulator isolation flags', () => {
   beforeEach(() => {
