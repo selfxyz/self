@@ -34,7 +34,8 @@ Make the fork public unless there's a specific reason it's private. Lowest effor
 
 1. Decide on approach (decision, not code).
 2. Execute the chosen option.
-3. Validate: `self-sdk-swift` resolves from a clean environment without org SSH credentials.
+3. If the fork remains an external dependency, update `packages/self-sdk-swift/Package.swift` from the SSH URL to an HTTPS URL and pin a tag/revision that external consumers can resolve.
+4. Validate: `self-sdk-swift` resolves from a clean environment without org SSH credentials.
 
 ## Definition of Done
 

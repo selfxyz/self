@@ -31,7 +31,7 @@ Make KMP SDK artifacts consumable by MiniPay. Android via Maven repository, iOS 
 ## Files to Modify
 
 - `packages/kmp-sdk/shared/build.gradle.kts` — add publishing repository block
-- `packages/kmp-sdk/build.gradle.kts` — switch `createXCFramework` to release variants
+- `packages/kmp-sdk/shared/build.gradle.kts` — switch `createXCFramework` to release variants
 - `packages/kmp-sdk/Package.swift` — remote binary target URL
 
 ## Out of Scope
