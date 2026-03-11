@@ -25,6 +25,11 @@
       "import": "./dist/esm/browser.js",
       "require": "./dist/cjs/browser.cjs"
     },
+    "./adapters/browser": {
+      "types": "./dist/esm/adapters/browser/index.d.ts",
+      "import": "./dist/esm/adapters/browser/index.js",
+      "require": "./dist/cjs/adapters/browser/index.cjs"
+    },
     "./onboarding/*": {
       "types": "./dist/esm/flows/onboarding/*.d.ts",
       "import": "./dist/esm/flows/onboarding/*.js",

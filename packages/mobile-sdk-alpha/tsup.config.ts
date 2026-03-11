@@ -37,6 +37,7 @@ const flowEntries = findFlowFiles('src/flows');
 const entry = {
   index: 'src/index.ts',
   browser: 'src/browser.ts',
+  'adapters/browser/index': 'src/adapters/browser/index.ts',
   'constants/analytics': 'src/constants/analytics.ts',
   'constants/colors': 'src/constants/colors.ts',
   'constants/fonts': 'src/constants/fonts.ts',
