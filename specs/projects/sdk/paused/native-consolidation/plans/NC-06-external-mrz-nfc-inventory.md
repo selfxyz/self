@@ -31,8 +31,8 @@
 
 ## Files to Modify
 
-- `specs/projects/sdk/workstreams/native-consolidation/SPEC.md`
-- `specs/projects/sdk/workstreams/native-consolidation/CONTRACTS.md`
+- `specs/projects/sdk/paused/native-consolidation/SPEC.md`
+- `specs/projects/sdk/paused/native-consolidation/CONTRACTS.md`
 - optional handoff notes if a follow-up spec is needed
 
 ## Files Not to Modify

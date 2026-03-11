@@ -36,7 +36,7 @@
 - `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/LifecycleBridgeHandler.kt`
 - `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/LifecycleBridgeHandler.kt`
 - `packages/kmp-sdk/shared/src/commonTest/kotlin/xyz/self/sdk/models/ModelSerializationTest.kt`
-- `specs/projects/sdk/workstreams/native-shells/SPEC.md`
+- `specs/projects/sdk/paused/native-shells/SPEC.md`
 - `specs/projects/sdk/OVERVIEW.md`
 
 ## Files Not to Modify

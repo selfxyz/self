@@ -1,7 +1,7 @@
-# Person 4: SDK Core Adaptation — Implementation Spec
+# SDK Core Adaptation — Implementation Spec
 
-> Last updated: 2026-03-05
-> Owner: Person 4 (SDK Core)
+> Last updated: 2026-03-11
+> Owner: SDK Core
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
 
@@ -24,14 +24,14 @@
 
 ```
 ┌──────────────────────────────────────┐
-│         Person 1: WebView UI         │
+│         WebView UI                   │
 │     (webview-app, screens, router)   │
 │  Consumes: useSelfClient(), stores,  │
 │  proving machine, adapter interfaces │
 └──────────────────┬───────────────────┘
                    │
     ╔══════════════╧═══════════════╗
-    ║  Person 4: SDK Engine (YOU)  ║
+    ║  SDK Engine (YOU)            ║
     ║   (mobile-sdk-alpha)         ║
     ║  Proving machine (XState)    ║
     ║  Document store (Zustand)    ║
@@ -49,11 +49,11 @@
 
 **Dependencies:**
 
-| Direction     | Person / Package | What                                                                        | Status |
-| ------------- | ---------------- | --------------------------------------------------------------------------- | ------ |
-| **You need**  | Nobody           | Independent in Phase 1                                                      | Ready  |
-| **Needs you** | Person 1         | Adapter interfaces, core logic (`useSelfClient()`, stores, proving machine) | Active |
-| **Needs you** | Person 5         | Browser entry point working in RN WebView context                           | Done   |
+| Direction     | Role / Package  | What                                                                        | Status |
+| ------------- | --------------- | --------------------------------------------------------------------------- | ------ |
+| **You need**  | Nobody          | Independent in Phase 1                                                      | Ready  |
+| **Needs you** | WebView UI      | Adapter interfaces, core logic (`useSelfClient()`, stores, proving machine) | Active |
+| **Needs you** | Paused RN shell | Browser entry point working in RN WebView context                           | Done   |
 
 **Status:**
 
@@ -91,12 +91,12 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Overview
 
-You are making **`@selfxyz/mobile-sdk-alpha`** work cleanly inside a browser/WebView context. This package is the "WebView engine" — it contains all core logic (proving machine, stores, document management, protocol state) that Person 1's screen components consume via `useSelfClient()`.
+You are making **`@selfxyz/mobile-sdk-alpha`** work cleanly inside a browser/WebView context. This package is the "WebView engine" — it contains all core logic (proving machine, stores, document management, protocol state) that the WebView UI consumes via `useSelfClient()`.
 
 Today the package is entangled with React Native. Your job is to sever those ties so the same core logic runs in both:
 
 - **React Native** (existing Self Wallet app — must not regress)
-- **Browser/WebView** (Person 1's `@selfxyz/webview-app` running inside Person 2's KMP shell)
+- **Browser/WebView** (`@selfxyz/webview-app` running inside a host WebView or browser surface)
 
 You are NOT building screens or native handlers. You are making the engine portable.
 
@@ -270,7 +270,7 @@ export interface SdkInitialConfig {
   debug?: boolean;
 }
 
-/** Placeholder until Person 2 defines concrete SelfApp shape (Chunk 4C sync). */
+/** Placeholder until the active host config contract defines a concrete `selfApp` shape. */
 export type SelfAppConfig = Record<string, unknown>;
 
 export interface VerificationRequest {
@@ -454,15 +454,15 @@ Re-export web fallback adapter factories from `src/browser.ts`.
 
 ## Files You Will NOT Modify
 
-| File                                | Why                                                        |
-| ----------------------------------- | ---------------------------------------------------------- |
-| `src/adapters/react-native/*`       | RN-specific, never imported by WebView                     |
-| `src/components/*`                  | RN UI components, Person 1 builds web equivalents          |
-| `src/flows/*`                       | RN screen flows, replaced by Person 1's webview-app        |
-| `src/bridge/nativeEvents.native.ts` | RN-only, `.native.ts` suffix means bundlers skip it on web |
-| `src/haptic/*`                      | Delegated to adapters in WebView                           |
-| `src/layouts/*`                     | RN layout components                                       |
-| `common/`                           | Out of scope — Person 4 only owns `mobile-sdk-alpha`       |
+| File                                | Why                                                         |
+| ----------------------------------- | ----------------------------------------------------------- |
+| `src/adapters/react-native/*`       | RN-specific, never imported by WebView                      |
+| `src/components/*`                  | RN UI components, WebView UI builds browser equivalents     |
+| `src/flows/*`                       | RN screen flows, replaced by `webview-app`                  |
+| `src/bridge/nativeEvents.native.ts` | RN-only, `.native.ts` suffix means bundlers skip it on web  |
+| `src/haptic/*`                      | Delegated to adapters in WebView                            |
+| `src/layouts/*`                     | RN layout components                                        |
+| `common/`                           | Out of scope — this workstream only owns `mobile-sdk-alpha` |
 
 ## Chunking Guide
 
@@ -571,14 +571,14 @@ tsc: No errors
 1. Add `VERIFICATION_COMPLETE` event to `src/types/events.ts` and `SDKEventMap`
 2. Add `SdkInitialConfig` and `VerificationRequest` types to `src/types/public.ts`
 3. Emit `VERIFICATION_COMPLETE` in the proving machine on `completed` and `failure` states
-4. Document for Person 1 how `SelfClientProvider` subscribes
+4. Document for the WebView UI workstream how `SelfClientProvider` subscribes
 5. Validate: type-check clean, no runtime changes to existing flows
 
 **You Will NOT:**
 
 - Modify bridge protocol types (those are in `webview-bridge`)
 - Build WebView UI components
-- Implement the lifecycle adapter (Person 1's job)
+- Implement the lifecycle adapter in the active WebView UI workstream
 
 #### Input / Output — Chunk Validation
 
@@ -739,8 +739,8 @@ Chunk 4A (config + platform) — no deps, start here
   ├──→ Chunk 4D (WsAdapter refactor) [optional]
   └──→ Chunk 4E (conditional selfAppStore)
 
-Person 1 (screens)  ←── depends on ──→  Person 4 (SDK core)
-Person 2 (KMP)      ←── contract via ──→ Person 4 (lifecycle types)
+WebView UI          ←── depends on ──→  SDK Core
+Paused native shells←── historical contract via ──→ SDK Core (lifecycle/config types)
 ```
 
 ## Completion Status
@@ -790,9 +790,9 @@ grep -r "NativeModules\|NativeEventEmitter\|requireNativeComponent" packages/web
 
 ## Coordination Notes
 
-- **Person 1 (WebView UI):** When `VERIFICATION_COMPLETE` event and `SdkInitialConfig` types are added (Chunk 4C), Person 1 wires them into `SelfClientProvider` and the lifecycle adapter.
-- **Person 2 (Native Shells):** When `VerificationRequest` is defined (Chunk 4C), Person 2 ensures `LifecycleBridgeHandler.getConfig()` returns the matching shape.
-- **Person 1 (WebView UI):** After Chunk 4F, Person 1 can import web fallback adapter factories from `@selfxyz/mobile-sdk-alpha` for `SelfClientProvider` wiring.
+- **WebView UI:** When `VERIFICATION_COMPLETE` event and `SdkInitialConfig` types are added (Chunk 4C), wire them into `SelfClientProvider` and the active host callback surface.
+- **Paused native shells:** Historical KMP/RN handlers may later reuse the same `VerificationRequest` and lifecycle/config shapes, but that coordination is paused and is not a current delivery dependency.
+- **WebView UI:** After Chunk 4F, import web fallback adapter factories from `@selfxyz/mobile-sdk-alpha` for `SelfClientProvider` wiring.
 
 ## Key Reference Files
 
@@ -810,13 +810,13 @@ grep -r "NativeModules\|NativeEventEmitter\|requireNativeComponent" packages/web
 
 ## Related Specs
 
-| Spec                                              | Relationship                                                                                   |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [SDK Overview](../../OVERVIEW.md)                 | Parent architecture spec                                                                       |
-| [webview/SPEC.md](../webview/SPEC.md)             | Sibling — builds WebView UI that consumes your adapter interfaces and browser entry point      |
-| [native-shells/SPEC.md](../native-shells/SPEC.md) | Sibling — builds native handlers that implement bridge protocol, consumes your lifecycle types |
-| [rn-sdk/SPEC.md](../rn-sdk/SPEC.md)               | Sibling — RN native shell that uses your browser entry point                                   |
-| [integrations/SPEC.md](../integrations/SPEC.md)   | Downstream — MiniPay sample depends on SDK core through KMP SDK                                |
+| Spec                                                     | Relationship                                                                              |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| [SDK Overview](../../OVERVIEW.md)                        | Parent architecture spec                                                                  |
+| [WebView UI Spec](../webview/SPEC.md)                    | Sibling — builds WebView UI that consumes your adapter interfaces and browser entry point |
+| [Native Shells Spec](../../paused/native-shells/SPEC.md) | Paused sibling — retained native handlers that may reuse your lifecycle types later       |
+| [RN SDK Spec](../../paused/rn-sdk/SPEC.md)               | Paused sibling — retained RN shell that may reuse your browser entry point later          |
+| [MiniPay Sample Spec](../../paused/integrations/SPEC.md) | Paused downstream — historical KMP sample that depends on SDK core                        |
 
 ---
 

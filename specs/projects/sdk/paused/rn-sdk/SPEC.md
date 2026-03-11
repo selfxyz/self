@@ -3,7 +3,9 @@
 > Last updated: 2026-03-05
 > Owner: Person 5 (RN SDK)
 > Project: [SDK Overview](../../OVERVIEW.md)
-> Status: Active
+> Status: Paused
+
+> Pause note: As of 2026-03-11, the active SDK delivery scope is WebView-only with no custom native modules. This RN shell is retained for future reuse and should not drive current delivery.
 
 ## North Star
 
@@ -72,18 +74,18 @@
 
 | ID    | Title                                                            | Status | Priority | Depends On | Plan                                                                                                     | PR    |
 | ----- | ---------------------------------------------------------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------------------------------- | ----- |
-| RN-01 | Self Wallet integration validation for `SelfVerification`        | Ready  | High     | -          | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | -     |
-| RN-02 | npm publishing readiness and release path                        | Ready  | Medium   | RN-01      | [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | -     |
+| RN-01 | Self Wallet integration validation for `SelfVerification`        | Paused | High     | -          | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | -     |
+| RN-02 | npm publishing readiness and release path                        | Paused | Medium   | RN-01      | [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | -     |
 | RN-03 | APDU allowlist, timeout, and payload hardening in RN NFC handler | Done   | High     | -          | [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | #1797 |
 
-Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Paused`, `Done`
 
 ## Active Plans
 
 | Plan                                                                                                     | IDs   | Status |
 | -------------------------------------------------------------------------------------------------------- | ----- | ------ |
-| [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | RN-01 | Ready  |
-| [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | RN-02 | Ready  |
+| [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | RN-01 | Paused |
+| [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | RN-02 | Paused |
 | [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | RN-03 | Done   |
 
 ## Completion Checklist

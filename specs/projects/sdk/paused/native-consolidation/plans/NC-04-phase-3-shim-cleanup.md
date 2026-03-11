@@ -27,7 +27,7 @@
 
 - `app/ios/*.m`
 - `packages/mobile-sdk-alpha/ios/SelfSDK/*.m`
-- `specs/projects/sdk/workstreams/native-consolidation/SPEC.md`
+- `specs/projects/sdk/paused/native-consolidation/SPEC.md`
 
 ## Files Not to Modify
 

@@ -27,7 +27,7 @@
 ## Files to Modify
 
 - `packages/kmp-minipay-sample/**`
-- `specs/projects/sdk/workstreams/integrations/SPEC.md`
+- `specs/projects/sdk/paused/integrations/SPEC.md`
 
 ## Files Not to Modify
 

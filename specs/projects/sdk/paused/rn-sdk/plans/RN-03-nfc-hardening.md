@@ -31,7 +31,7 @@
 - `packages/rn-sdk/src/handlers/NfcHandler.ts`
 - `packages/rn-sdk/HANDOFF.md`
 - related RN SDK tests
-- `specs/projects/sdk/workstreams/rn-sdk/SPEC.md`
+- `specs/projects/sdk/paused/rn-sdk/SPEC.md`
 
 ## Files Not to Modify
 

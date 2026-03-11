@@ -29,7 +29,7 @@
 
 - `app/**` if host integration fixes are required
 - `packages/rn-sdk/**` if wrapper fixes are required
-- `specs/projects/sdk/workstreams/rn-sdk/SPEC.md`
+- `specs/projects/sdk/paused/rn-sdk/SPEC.md`
 
 ## Files Not to Modify
 

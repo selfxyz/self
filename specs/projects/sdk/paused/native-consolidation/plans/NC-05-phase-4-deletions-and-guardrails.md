@@ -28,7 +28,7 @@
 
 - duplicate native implementation files proven unused
 - CI or lint config
-- `specs/projects/sdk/workstreams/native-consolidation/SPEC.md`
+- `specs/projects/sdk/paused/native-consolidation/SPEC.md`
 
 ## Files Not to Modify
 

@@ -3,7 +3,9 @@
 > Last updated: 2026-03-10
 > Owner: SDK Platform
 > Parent: [SDK Overview](../../OVERVIEW.md)
-> Status: In Progress (Phase 0 Done, Phase 1 Done, Phase 2 Done, external inventory handoff ready, local Phases 3-4 pending)
+> Status: Paused (local Phases 0-2 done; remaining follow-ups parked)
+
+> Pause note: As of 2026-03-11, active SDK delivery is WebView-only with no custom native modules. This workstream is retained for future native reuse and should not drive current delivery.
 
 ## North Star
 
@@ -95,11 +97,11 @@ These repos or checked-out mirrors may still contain source-of-truth logic that 
 | NC-01 | Phase 0 safety rails and bridge contract baselines  | Done   | High     | -            | [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md)                         | #1822 |
 | NC-02 | Phase 1 MRZ core unification and build validation   | Done   | High     | NC-01        | [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md)                   | #1823 |
 | NC-03 | Phase 2 PassportReader parity bridge                | Done   | High     | NC-02        | [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | -     |
-| NC-06 | External MRZ/NFC source inventory and owner handoff | Ready  | High     | NC-03        | [plans/NC-06-external-mrz-nfc-inventory.md](./plans/NC-06-external-mrz-nfc-inventory.md)             | -     |
-| NC-04 | Phase 3 ObjC shim cleanup                           | Ready  | Medium   | NC-03, NC-06 | [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | -     |
-| NC-05 | Phase 4 deletion and CI guardrails                  | Ready  | Medium   | NC-04, NC-06 | [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | -     |
+| NC-06 | External MRZ/NFC source inventory and owner handoff | Paused | High     | NC-03        | [plans/NC-06-external-mrz-nfc-inventory.md](./plans/NC-06-external-mrz-nfc-inventory.md)             | -     |
+| NC-04 | Phase 3 ObjC shim cleanup                           | Paused | Medium   | NC-03, NC-06 | [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | -     |
+| NC-05 | Phase 4 deletion and CI guardrails                  | Paused | Medium   | NC-04, NC-06 | [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | -     |
 
-Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Paused`, `Done`
 
 ## Active Plans
 
@@ -108,9 +110,9 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 | [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md)                         | NC-01 | Done   |
 | [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md)                   | NC-02 | Done   |
 | [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | NC-03 | Done   |
-| [plans/NC-06-external-mrz-nfc-inventory.md](./plans/NC-06-external-mrz-nfc-inventory.md)             | NC-06 | Ready  |
-| [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | NC-04 | Ready  |
-| [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | NC-05 | Ready  |
+| [plans/NC-06-external-mrz-nfc-inventory.md](./plans/NC-06-external-mrz-nfc-inventory.md)             | NC-06 | Paused |
+| [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | NC-04 | Paused |
+| [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | NC-05 | Paused |
 
 ## Completion Checklist
 
@@ -227,7 +229,7 @@ PR #1823 reduced duplication between `app/ios` and `packages/mobile-sdk-alpha/io
 
 **Goal:** Make one canonical MRZ scanning implementation and keep module-name wrappers.
 
-**Scope clarification:** RN test app iOS MRZ consolidation is already tracked in `specs/projects/sdk/workstreams/rn-sdk/SPEC-MRZ-CONSOLIDATION.md`. Phase 1 here targets consolidation between `app/ios` and `mobile-sdk-alpha`/`self-sdk-swift`.
+**Scope clarification:** RN test app iOS MRZ consolidation is already tracked in `specs/archive/sdk/SPEC-MRZ-CONSOLIDATION.md`. Phase 1 here targets consolidation between `app/ios` and `mobile-sdk-alpha`/`self-sdk-swift`.
 
 **Implementation direction:**
 

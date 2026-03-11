@@ -30,7 +30,7 @@
 
 - `packages/kmp-sdk/shared/src/commonMain/kotlin/xyz/self/sdk/handlers/NfcBridgeHandler.kt`
 - related KMP test files
-- `specs/projects/sdk/workstreams/native-shells/SPEC.md`
+- `specs/projects/sdk/paused/native-shells/SPEC.md`
 
 ## Files Not to Modify
 
