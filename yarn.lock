@@ -11411,6 +11411,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/webview-bridge@workspace:packages/webview-bridge"
   dependencies:
+    "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@types/node": "npm:^22.18.3"
     fake-indexeddb: "npm:^6.2.5"
     tsup: "npm:^8.0.1"

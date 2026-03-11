@@ -37,6 +37,7 @@
     "types": "tsup"
   },
   "dependencies": {
+    "@selfxyz/mobile-sdk-alpha": "workspace:^",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
