@@ -70,11 +70,11 @@
 
 ## Backlog
 
-| ID    | Title                                                            | Status | Priority | Depends On | Plan                                                                                                     | PR  |
-| ----- | ---------------------------------------------------------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------------------------------- | --- |
-| RN-01 | Self Wallet integration validation for `SelfVerification`        | Ready  | High     | -          | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | -   |
-| RN-02 | npm publishing readiness and release path                        | Ready  | Medium   | RN-01      | [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | -   |
-| RN-03 | APDU allowlist, timeout, and payload hardening in RN NFC handler | Ready  | High     | -          | [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | -   |
+| ID    | Title                                                            | Status | Priority | Depends On | Plan                                                                                                     | PR    |
+| ----- | ---------------------------------------------------------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------------------------------- | ----- |
+| RN-01 | Self Wallet integration validation for `SelfVerification`        | Ready  | High     | -          | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | -     |
+| RN-02 | npm publishing readiness and release path                        | Ready  | Medium   | RN-01      | [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | -     |
+| RN-03 | APDU allowlist, timeout, and payload hardening in RN NFC handler | Done   | High     | -          | [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | #1797 |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -84,7 +84,7 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 | -------------------------------------------------------------------------------------------------------- | ----- | ------ |
 | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | RN-01 | Ready  |
 | [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | RN-02 | Ready  |
-| [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | RN-03 | Ready  |
+| [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | RN-03 | Done   |
 
 ## Completion Checklist
 
@@ -117,7 +117,7 @@ The RN SDK (`packages/rn-sdk/`) exists with the core implementation complete: `S
 | Asset bundling (iOS + Android) | Implemented for both platforms                                   |
 | Self Wallet integration        | Not validated — see RN-01                                        |
 | npm publishing                 | Not ready — see RN-02                                            |
-| NFC hardening                  | Not started — see RN-03                                          |
+| NFC hardening                  | Completed — see RN-03                                            |
 
 ## Design Principles
 

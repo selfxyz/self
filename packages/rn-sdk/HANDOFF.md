@@ -90,9 +90,7 @@ The NFC handler returns tag metadata plus optional APDU exchange results:
 ```typescript
 {
   connected: true,
-  tagId: string | null,
   techType: string,
-  params: {...},
   apduResponses?: string[]  // hex-encoded responses when apduCommands are provided
 }
 ```
@@ -101,6 +99,63 @@ When `params.apduCommands` (array of hex strings) is provided, the handler
 iterates through each command, calls `NfcManager.transceive()`, and returns
 hex-encoded response bytes in `apduResponses`. Progress events are emitted
 at `apdu_exchange` (70%) and `apdu_complete` (90%).
+
+APDU commands are validated against an eMRTD-focused allowlist before
+transceive, and each APDU transceive has a timeout guard (default: 10s).
+`tagId` was removed from the scan result to avoid exposing the passport chip
+UID through the WebView bridge.
+
+### NFC Data-Handling Guidance
+
+**Protected field:** `apduResponses` (may contain raw MRZ data, face images, or key-derivation material).
+
+- `tagId` is no longer returned by the bridge because the chip UID is persistent PII under GDPR.
+- **Never** send `apduResponses` to analytics, crash-reporting, or external observability services.
+- **Never** persist `apduResponses` to disk, databases, or shared preferences outside of an active verification session.
+- If on-device debugging requires raw APDU payloads, all of the following must be true:
+  1. A named debug flag (e.g., `NFC_APDU_DEBUG`) is enabled explicitly by a developer — not by a generic `debug: true` prop.
+  2. The flag has automatic expiry (e.g., single session, time-limited, or requires re-approval on each launch).
+  3. Output is limited to the local device console — no network transmission.
+  4. Logs are scrubbed or discarded before any build leaves the developer's machine.
+
+### APDU Allowlist Scope
+
+The allowlist covers ISO 7816-4 instructions used in standard eMRTD reading (BAC, PACE,
+data group reads). Intentional constraints:
+
+- **READ BINARY odd-INS (0xB1)** is restricted to the same case-2 shape as 0xB0 (header + Le,
+  no command data). Tagged/data-carrying odd-INS READ BINARY (DO'53'/DO'54' per ISO 7816-4
+  §7.2.3) is not allowed. Broaden only when a concrete interoperability requirement appears
+  from a real passport or WebView flow.
+- **EXTERNAL AUTHENTICATE (0x82)** and **GENERAL AUTHENTICATE (0x86)** accept payloads
+  (Lc + data, with optional Le) for BAC cryptograms and PACE dynamic authentication data.
+- **SELECT (0xA4)** is locked to the eMRTD applet AID (`A0000002471001`) or short file
+  identifiers. No other applet or DF selection is permitted.
+
+### NFC APDU Error Contract
+
+The NFC bridge can return these APDU-related errors:
+
+- `INVALID_PARAMS`: malformed APDU hex input
+- `APDU_REJECTED`: APDU failed allowlist/format checks
+- `NFC_APDU_TIMEOUT`: APDU transceive timed out
+- `NFC_APDU_NOT_SUPPORTED`: native `transceive` unavailable
+
+For APDU parse/validation/timeout failures, `error.details` includes safe
+audit metadata:
+
+```typescript
+{
+  commandIndex: number,
+  totalCommands: number,
+  acceptedCount: number,
+  rejectedCount: number,
+  timedOutCount: number
+}
+```
+
+This metadata is designed for telemetry/debugging and intentionally excludes
+raw APDU command bytes.
 
 ---
 
@@ -127,8 +182,7 @@ The host app must provide a native MRZ scanner module (e.g., via
 ### Unit Tests
 
 ```bash
-cd packages/rn-sdk
-npx vitest run          # 64 tests across 8 files
+yarn workspace @selfxyz/rn-sdk test
 ```
 
 ### Device Testing Checklist

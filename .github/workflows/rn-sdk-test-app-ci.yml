@@ -39,6 +39,8 @@ jobs:
           echo "✅ No nested require() patterns found"
       - name: Build webview-bridge
         run: yarn workspace @selfxyz/webview-bridge build
+      - name: Build webview-app
+        run: yarn workspace @selfxyz/webview-app build
       - name: Typecheck rn-sdk
         run: yarn workspace @selfxyz/rn-sdk typecheck
       - name: Test rn-sdk
@@ -96,6 +98,10 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Build webview-bridge
         run: yarn workspace @selfxyz/webview-bridge build
+      - name: Build webview-app
+        run: yarn workspace @selfxyz/webview-app build
+      - name: Build rn-sdk (includes asset copy)
+        run: yarn workspace @selfxyz/rn-sdk build
       - name: Install CocoaPods dependencies
         working-directory: packages/rn-sdk-test-app/ios
         run: pod install

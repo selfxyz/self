@@ -1,8 +1,8 @@
 # SDK Security Hardening — Follow-up Spec
 
-> Last updated: 2026-02-25
+> Last updated: 2026-03-01
 > Source: Bot review feedback on PR #1785 (kmp-wrap-up-evi-handoff-work)
-> Status: Pending
+> Status: Ready for handoff (follow-ups tracked)
 
 ## Ownership Migration
 
@@ -18,9 +18,9 @@ Do not treat this topic file as the only tracker for open work.
 
 | Topic Item                                                   | Owning Backlog / Workstream                         |
 | ------------------------------------------------------------ | --------------------------------------------------- |
-| APDU command allowlisting (KMP)                              | `NS-04` in `native-shells/SPEC.md`                  |
-| APDU command allowlisting + timeout + payload hardening (RN) | `RN-03` in `rn-sdk/SPEC.md`                         |
-| LifecycleBridgeHandler type+error handling                   | `NS-05` in `native-shells/SPEC.md`                  |
+| APDU command allowlisting (KMP)                              | `NS-04` in `native-shells/SPEC.md` — Done           |
+| APDU command allowlisting + timeout + payload hardening (RN) | `RN-03` in `rn-sdk/SPEC.md` — PR #1797              |
+| LifecycleBridgeHandler type+error handling                   | `NS-05` in `native-shells/SPEC.md` — Done           |
 | Person 4 crypto tracking                                     | `SC-02` and follow-up backlog in `sdk-core/SPEC.md` |
 
 Items without a linked backlog ID yet should be re-homed before any new work starts. Do not update this file as the primary status tracker.

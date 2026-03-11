@@ -1,13 +1,13 @@
 # RN NFC Handler Hardening
 
 > Last updated: 2026-03-10
-> Status: Ready
+> Status: Done
 
 - Workstream: rn-sdk
 - Backlog IDs: RN-03
 - Owner: RN SDK
-- Branch: TBD
-- PR: TBD
+- Branch: justin/continue-kmp-work
+- PR: #1797
 
 ## Why
 
@@ -49,11 +49,12 @@ cd packages/rn-sdk && npx vitest run
 
 ## Definition of Done
 
-- [ ] APDU validation added
-- [ ] Timeout handling added
-- [ ] Sensitive payload/error exposure reviewed and reduced
-- [ ] Backlog row updated
+- [x] APDU validation added
+- [x] Timeout handling added
+- [x] Sensitive payload/error exposure reviewed and reduced
+- [x] Backlog row updated
 
 ## Status Log
 
 - 2026-03-10: Created during spec cleanup.
+- 2026-03-10: Completed APDU allowlisting, timeout hardening, error redaction, tag ID removal, and RN SDK test consolidation for PR #1797.
