@@ -62,6 +62,7 @@ export const DisclosureItem: React.FC<DisclosureItemProps> = ({
           color={proofRequestColors.slate900}
           textTransform="uppercase"
           letterSpacing={0.48}
+          allowFontScaling={false}
           testID={`${testID}-text`}
         >
           {text}
