@@ -1,7 +1,7 @@
 # Phase 0 Safety Rails and Contract Baselines
 
 > Last updated: 2026-03-10
-> Status: Ready
+> Status: Done
 
 - Workstream: native-consolidation
 - Backlog IDs: NC-01
@@ -53,10 +53,11 @@ yarn workspace @selfxyz/rn-sdk-test-app test --watchman=false
 
 ## Definition of Done
 
-- [ ] Layer 1 tests exist and pass
-- [ ] CONTRACTS.md exists and is linked
-- [ ] Backlog row updated
+- [x] Layer 1 tests exist and pass
+- [x] CONTRACTS.md exists and is linked
+- [x] Backlog row updated
 
 ## Status Log
 
 - 2026-03-10: Created during spec refactor.
+- 2026-03-10: Marked done to match merged Phase 0 safety-rail work in PR #1822.

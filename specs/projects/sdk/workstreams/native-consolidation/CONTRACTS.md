@@ -69,3 +69,4 @@ The following are intentionally excluded from this file until automated tests en
 - ObjC shim-level selector parity tables
 - PassportReader native payload key-by-key parity
 - Analytics provider-specific integration behavior
+- Cross-repo ownership between `selfapp`, `selfxyz/NFCPassportReader`, and `selfxyz/android-passport-nfc-reader`

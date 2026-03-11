@@ -3,7 +3,7 @@
 > Last updated: 2026-03-10
 > Owner: SDK Platform
 > Parent: [SDK Overview](../../OVERVIEW.md)
-> Status: In Progress (Phase 0 Done, Phase 1 Done, Phase 2 Done, Phases 3-4 Ready)
+> Status: In Progress (Phase 0 Done, Phase 1 Done, Phase 2 Done, external inventory handoff ready, local Phases 3-4 pending)
 
 ## North Star
 
@@ -13,12 +13,13 @@
 
 ## Why This Exists
 
-Current native code is duplicated across multiple package/app surfaces, especially on iOS:
+Current native code is duplicated across multiple package/app surfaces, especially on iOS, and some of the source material still lives outside this repo:
 
 - MRZ camera stack duplicated between app and SDK variants.
 - Passport reader bridge duplicated with partial behavioral divergence.
 - ObjC bridge shims duplicated with mostly naming-only changes.
 - State/copy mappings duplicated across scanner UIs.
+- Android and Swift dependency repos still contain overlapping MRZ/NFC implementations that can drift from the local wrappers.
 
 This creates drift risk, review overhead, and slow bug-fix propagation.
 
@@ -28,27 +29,50 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 - Rewriting host app business logic in TypeScript as part of this effort.
 - Android architecture rewrites unrelated to MRZ/NFC duplication.
 - Re-doing Android MRZ consolidation already shipped in RN test app (PR #1817).
+- Deciding the final cross-repo MRZ/NFC architecture without the external-repo inventory and owner sign-off.
 
 ## Consolidation Inventory
 
 ### High-value duplicates
 
-| Area                                 | Primary Files                                                                                                                                                                                                                                                                                            | Current Risk                            |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| iOS MRZ scanner module/view pipeline | `app/ios/MRZScannerModule.swift`, `app/ios/LiveMRZScannerView.swift`, `app/ios/MRZScanner.swift`, `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.swift`, `packages/mobile-sdk-alpha/ios/SelfSDK/SelfLiveMRZScannerView.swift`, `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScanner.swift` | High drift risk                         |
-| iOS PassportReader bridge            | `app/ios/PassportReader.swift`, `app/ios/PassportReader.m`, `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.swift`, `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.m`                                                                                                                       | High regression risk if deleted blindly |
-| RN test app MRZ UI mapping constants | `packages/rn-sdk-test-app/ios/SelfRNTestApp/SelfMRZScannerModule.swift`, `packages/kmp-sdk-test-app/composeApp/src/iosMain/kotlin/xyz/self/testapp/screens/MrzScanScreen.ios.kt`                                                                                                                         | Medium (UX drift)                       |
+| Area                                    | Primary Files                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Current Risk                                  |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| iOS MRZ scanner module/view pipeline    | `app/ios/MRZScannerModule.swift`, `app/ios/LiveMRZScannerView.swift`, `app/ios/MrzScanEngine.swift`, `app/ios/MrzOcrCorrection.swift`, `app/ios/MrzResultMapper.swift`, `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.swift`, `packages/mobile-sdk-alpha/ios/SelfSDK/SelfLiveMRZScannerView.swift`, `packages/mobile-sdk-alpha/ios/SelfSDK/MrzScanEngine.swift`, `packages/mobile-sdk-alpha/ios/SelfSDK/MrzOcrCorrection.swift`, `packages/mobile-sdk-alpha/ios/SelfSDK/MrzResultMapper.swift`     | Local drift reduced; cross-repo drift remains |
+| iOS PassportReader bridge               | `app/ios/PassportReader.swift`, `app/ios/PassportReader.m`, `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.swift`, `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.m`                                                                                                                                                                                                                                                                                                                               | High regression risk if deleted blindly       |
+| RN test app MRZ UI mapping constants    | `packages/rn-sdk-test-app/ios/SelfRNTestApp/SelfMRZScannerModule.swift`, `packages/kmp-sdk-test-app/composeApp/src/iosMain/kotlin/xyz/self/testapp/screens/MrzScanScreen.ios.kt`                                                                                                                                                                                                                                                                                                                                 | Medium (UX drift)                             |
+| External Android MRZ + NFC sample stack | `app/android/android-passport-nfc-reader/app/src/main/java/example/jllarraz/com/passportreader/mlkit/OcrMrzDetectorProcessor.kt`, `app/android/android-passport-nfc-reader/app/src/main/java/example/jllarraz/com/passportreader/ui/activities/CameraActivity.kt`, `app/android/android-passport-nfc-reader/app/src/main/java/example/jllarraz/com/passportreader/utils/NFCDocumentTag.kt`, `app/android/android-passport-nfc-reader/app/src/main/java/example/jllarraz/com/passportreader/utils/PassportNFC.kt` | High unknowns until inventoried               |
 
 ### Android status (explicit)
 
 - RN test app Android MRZ consolidation is complete (PR #1817; `SelfMrzParser.kt` removed, scanner delegated to `CameraMrzBridgeHandler`).
-- This initiative is primarily iOS-focused unless new Android duplication is identified.
+- `app/android/android-passport-nfc-reader` is a checked-out clone of `selfxyz/android-passport-nfc-reader` on `main` at `63c846b`; it still contains both ML Kit MRZ OCR and JMRTD-based NFC reading logic.
+- `app/android/react-native-passport-reader` remains a separate Android NFC bridge with BAC/PACE/session logic and analytics hooks.
+- This initiative stays locally iOS-heavy, but final deletion/guardrail work cannot assume Android is already clean.
 
 ### Medium-value duplicates
 
-| Area                         | Primary Files                                                                                                                                                                      | Current Risk                              |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| ObjC bridge shim duplication | `app/ios/MRZScannerModule.m`, `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.m`, `app/ios/PassportReader.m`, `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.m` | Low runtime risk, medium maintenance cost |
+| Area                                 | Primary Files                                                                                                                                                                                                 | Current Risk                              |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| ObjC bridge shim duplication         | `app/ios/MRZScannerModule.m`, `packages/mobile-sdk-alpha/ios/SelfSDK/SelfMRZScannerModule.m`, `app/ios/PassportReader.m`, `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.m`                            | Low runtime risk, medium maintenance cost |
+| Swift helper overlap outside app/sdk | `packages/self-sdk-swift/Sources/SelfSdkSwift/Helpers/MrzCameraHelper.swift`, `packages/self-sdk-swift/Sources/SelfSdkSwift/Helpers/NfcPassportHelper.swift`, external `selfxyz/NFCPassportReader` dependency | Medium; ownership split is unclear        |
+
+## Ownership Split
+
+- Local wrapper consolidation in `selfapp` is complete through PR #1823 for MRZ and through NC-03 for `PassportReaderCore`.
+- Cross-repo MRZ/NFC consolidation is now a separate owner track. Seshanth owns the remaining MRZ/NFC consolidation work that spans `selfapp`, `NFCPassportReader`, and `android-passport-nfc-reader`.
+- This workstream will not implement further MRZ/NFC consolidation beyond documentation, inventory, and parity notes unless ownership changes explicitly.
+- Until Seshanth's consolidation plan lands, this workstream should only perform documentation, parity, and low-risk cleanup. Do not delete local MRZ/NFC code based on repo-local evidence alone.
+
+## External Source Inventory
+
+These repos or checked-out mirrors may still contain source-of-truth logic that affects consolidation decisions:
+
+| Surface                        | Location                                                                                                  | What it currently appears to own                                                                   | Notes                                                                                                                    |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| iOS NFC dependency             | `selfxyz/NFCPassportReader` (referenced by `app/ios/Podfile` and `packages/self-sdk-swift/Package.swift`) | NFC passport reading runtime, display/progress messaging, crypto/auth details                      | Not vendored as editable source in this repo; treat as an external dependency during consolidation planning.             |
+| Android passport reader sample | `selfxyz/android-passport-nfc-reader` (`app/android/android-passport-nfc-reader`)                         | ML Kit MRZ OCR, camera activity flow, JMRTD BAC/PACE/NFC reading, certificate verification helpers | Needs explicit inventory before any "single Android source of truth" claim.                                              |
+| Legacy RN Android NFC bridge   | `app/android/react-native-passport-reader`                                                                | React Native Android NFC bridge, BAC/PACE fallback, analytics/session hooks                        | May share behavior with app Android and should be part of the audit even if it is not the final owner.                   |
+| Swift companion helpers        | `packages/self-sdk-swift/Sources/SelfSdkSwift/Helpers/`                                                   | KMP-oriented MRZ and NFC helper implementations                                                    | Current repo-local source for KMP iOS helpers, but not yet the declared single source for app/mobile-sdk-alpha wrappers. |
 
 ## Design Principles
 
@@ -66,13 +90,14 @@ This creates drift risk, review overhead, and slow bug-fix propagation.
 
 ## Backlog
 
-| ID    | Title                                              | Status | Priority | Depends On | Plan                                                                                                 | PR    |
-| ----- | -------------------------------------------------- | ------ | -------- | ---------- | ---------------------------------------------------------------------------------------------------- | ----- |
-| NC-01 | Phase 0 safety rails and bridge contract baselines | Done   | High     | -          | [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md)                         | #1822 |
-| NC-02 | Phase 1 MRZ core unification and build validation  | Done   | High     | NC-01      | [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md)                   | #1823 |
-| NC-03 | Phase 2 PassportReader parity bridge               | Done   | High     | NC-02      | [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | -     |
-| NC-04 | Phase 3 ObjC shim cleanup                          | Ready  | Medium   | NC-03      | [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | -     |
-| NC-05 | Phase 4 deletion and CI guardrails                 | Ready  | Medium   | NC-04      | [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | -     |
+| ID    | Title                                               | Status | Priority | Depends On   | Plan                                                                                                 | PR    |
+| ----- | --------------------------------------------------- | ------ | -------- | ------------ | ---------------------------------------------------------------------------------------------------- | ----- |
+| NC-01 | Phase 0 safety rails and bridge contract baselines  | Done   | High     | -            | [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md)                         | #1822 |
+| NC-02 | Phase 1 MRZ core unification and build validation   | Done   | High     | NC-01        | [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md)                   | #1823 |
+| NC-03 | Phase 2 PassportReader parity bridge                | Done   | High     | NC-02        | [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | -     |
+| NC-06 | External MRZ/NFC source inventory and owner handoff | Ready  | High     | NC-03        | [plans/NC-06-external-mrz-nfc-inventory.md](./plans/NC-06-external-mrz-nfc-inventory.md)             | -     |
+| NC-04 | Phase 3 ObjC shim cleanup                           | Ready  | Medium   | NC-03, NC-06 | [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | -     |
+| NC-05 | Phase 4 deletion and CI guardrails                  | Ready  | Medium   | NC-04, NC-06 | [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | -     |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -83,6 +108,7 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 | [plans/NC-01-phase-0-safety-rails.md](./plans/NC-01-phase-0-safety-rails.md)                         | NC-01 | Done   |
 | [plans/NC-02-phase-1-mrz-unification.md](./plans/NC-02-phase-1-mrz-unification.md)                   | NC-02 | Done   |
 | [plans/NC-03-phase-2-passport-reader-parity.md](./plans/NC-03-phase-2-passport-reader-parity.md)     | NC-03 | Done   |
+| [plans/NC-06-external-mrz-nfc-inventory.md](./plans/NC-06-external-mrz-nfc-inventory.md)             | NC-06 | Ready  |
 | [plans/NC-04-phase-3-shim-cleanup.md](./plans/NC-04-phase-3-shim-cleanup.md)                         | NC-04 | Ready  |
 | [plans/NC-05-phase-4-deletions-and-guardrails.md](./plans/NC-05-phase-4-deletions-and-guardrails.md) | NC-05 | Ready  |
 
@@ -92,6 +118,7 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 - [ ] Every open phase has a linked plan file
 - [ ] Conflicting implementation directions are reconciled in this file
 - [ ] CONTRACTS.md stays aligned with the active phase
+- [ ] External repo ownership and source-of-truth assumptions are documented before deletion work starts
 
 ## Testing Strategy
 
@@ -151,6 +178,10 @@ MRZ scanning requires a camera. NFC reading requires hardware. These cannot be a
 ### Lesson from MRZ Consolidation (PRs #1817, #1821)
 
 The RN test app MRZ consolidation shipped without baseline tests. It relied on build verification and manual Android testing. iOS manual testing is still pending. The risk was acceptable because the RN test app is not production, but this approach does not scale to `app/` and `mobile-sdk-alpha/` consolidation. Phase 0 retroactively covers the RN test app contracts so future regressions are caught.
+
+### Lesson from Local MRZ Wrapper Consolidation (PR #1823)
+
+PR #1823 reduced duplication between `app/ios` and `packages/mobile-sdk-alpha/ios/SelfSDK/` by extracting identical helper files (`MrzScanEngine.swift`, `MrzOcrCorrection.swift`, `MrzResultMapper.swift`) and keeping wrapper-specific UI/module naming local. That closed the repo-local wrapper gap, but it did not prove that `selfapp` is the global source of truth for MRZ/NFC behavior across external Swift/Android repos.
 
 ## Phased Plan
 
@@ -273,6 +304,9 @@ The RN test app MRZ consolidation shipped without baseline tests. It relied on b
 
 **Goal:** Collapse ObjC shim duplication and prepare deprecations.
 
+**Precondition note:** Do not start Phase 3 until NC-06 records whether any external consumer still relies on legacy names, selectors, or wrapper-local behavior.
+**Scope note:** Phase 3 does not include new MRZ/NFC consolidation work. That track is reserved for Seshanth.
+
 **Implementation direction:**
 
 - Keep only required ObjC bridge files; convert redundant shims to generated/templated or delete where Swift-only exposure is sufficient.
@@ -295,6 +329,9 @@ The RN test app MRZ consolidation shipped without baseline tests. It relied on b
 ### Phase 4 — Deletion + Hardening
 
 **Goal:** Delete deprecated duplicate files and lock consolidation.
+
+**Precondition note:** Deletion is blocked on NC-06. External repos can still be the effective owner of MRZ/NFC behavior even when this repo's wrappers look redundant.
+**Scope note:** Do not use Phase 4 to absorb or replace Seshanth's MRZ/NFC consolidation work. Only clean up code proven redundant after his track resolves ownership.
 
 **Implementation direction:**
 
@@ -320,8 +357,9 @@ The RN test app MRZ consolidation shipped without baseline tests. It relied on b
 1. PR A: Phase 0 safety rails + baseline tests.
 2. PR B: Phase 1 MRZ core unification only.
 3. PR C: Phase 2 PassportReader parity and shared core.
-4. PR D: Phase 3 shim cleanup.
-5. PR E: Phase 4 deletions and CI guardrails.
+4. PR D: NC-06 external MRZ/NFC inventory and ownership handoff.
+5. PR E: Phase 3 shim cleanup.
+6. PR F: Phase 4 deletions and CI guardrails.
 
 Do not combine PR C with B; PassportReader carries higher regression risk.
 
@@ -341,10 +379,17 @@ Do not combine PR C with B; PassportReader carries higher regression risk.
 - **Risk:** Consolidation ships without proving behavioral equivalence.
   - **Mitigation:** Layer 1 tests are a merge gate. Layer 4 manual sign-off is required in every consolidation PR. Lesson learned from PRs #1817/#1821 — don't repeat "consolidate first, test later."
 
+- **Risk:** This repo deletes or freezes code that is still effectively sourced from `NFCPassportReader` or `android-passport-nfc-reader`.
+  - **Mitigation:** NC-06 inventories those repos before Phase 3/4. Any cross-repo behavior ownership decision must be explicit, not inferred from local wrappers.
+
+- **Risk:** The workstream spec causes parallel ownership conflicts by implying local MRZ/NFC implementation work is still up for grabs.
+  - **Mitigation:** Treat MRZ/NFC consolidation implementation as Seshanth-owned. This spec only tracks local parity state, external inventory, and cleanup preconditions.
+
 ## Definition of Done (Initiative)
 
-- [x] One canonical MRZ scanner implementation used by app/sdk wrappers.
+- [x] App/mobile-sdk-alpha MRZ wrappers use the same helper structure merged in PR #1823.
 - [ ] One canonical PassportReader implementation with parity-preserving wrappers.
+- [ ] External MRZ/NFC source inventory is documented and ownership is assigned.
 - [ ] Duplicate ObjC shims minimized.
 - [ ] Legacy duplicate files deleted.
 - [ ] All Layer 1-3 tests green across affected targets.

@@ -1,6 +1,8 @@
 # Native Consolidation Phase 1 Plan (iOS MRZ)
 
 > Historical phase-specific plan. Active PR pickup now lives in [`plans/NC-02-phase-1-mrz-unification.md`](./plans/NC-02-phase-1-mrz-unification.md). Keep this file for implementation detail history and validation notes.
+>
+> This file documents the repo-local `app/ios` and `packages/mobile-sdk-alpha/ios/SelfSDK` MRZ wrapper consolidation that shipped in PR #1823. It is not the current decision record for cross-repo MRZ/NFC ownership; that follow-up now lives under [`plans/NC-06-external-mrz-nfc-inventory.md`](./plans/NC-06-external-mrz-nfc-inventory.md).
 
 ## Objective
 
@@ -90,6 +92,8 @@ Open a follow-up to evaluate migrating the shared helpers into `self-sdk-swift` 
 - Add QKMRZParser as a self-sdk-swift dependency
 - Move `MrzScanEngine`, `MrzOcrCorrection`, `MrzResultMapper` into self-sdk-swift
 - Make both RN consumers import from self-sdk-swift instead of local copies
+
+This future work is now blocked on the external inventory and owner handoff in NC-06.
 
 ## Guardrails
 
