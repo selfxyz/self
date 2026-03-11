@@ -24,6 +24,8 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
+      - name: Build mobile-sdk-alpha
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Build
         run: yarn workspace @selfxyz/webview-bridge build
 
@@ -34,6 +36,8 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
+      - name: Build mobile-sdk-alpha
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Typecheck
         run: yarn workspace @selfxyz/webview-bridge typecheck
 
