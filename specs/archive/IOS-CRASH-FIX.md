@@ -248,9 +248,9 @@ Runtime validation for PR 3 was completed through the normal Xcode simulator boo
 
 ## Follow-Up (Out of Scope)
 
-| Item                                                                              | Discovered during | Suggested action                                        |
-| --------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------- |
-| CI simulator setup could share logic with local script                            | PR 1 planning     | Consider extracting shared config if both diverge again |
+| Item                                                   | Discovered during | Suggested action                                        |
+| ------------------------------------------------------ | ----------------- | ------------------------------------------------------- |
+| CI simulator setup could share logic with local script | PR 1 planning     | Consider extracting shared config if both diverge again |
 
 ## Resolved Notes
 

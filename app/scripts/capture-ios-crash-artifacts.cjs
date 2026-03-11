@@ -132,15 +132,19 @@ function getRecentDiagnosticReports() {
 
 function captureUnifiedLog(outputDir) {
   const predicate = `(process == "${APP_NAME}" OR eventMessage CONTAINS[c] "${APP_NAME}" OR eventMessage CONTAINS[c] "Self.app" OR process == "SpringBoard" OR process == "runningboardd" OR eventMessage CONTAINS[c] "jetsam" OR eventMessage CONTAINS[c] "terminated" OR eventMessage CONTAINS[c] "killed")`;
-  const logOutput = runCommand('log', [
-    'show',
-    '--style',
-    'compact',
-    '--last',
-    `${WINDOW_MINUTES}m`,
-    '--predicate',
-    predicate,
-  ]);
+  const logOutput = runCommand(
+    'log',
+    [
+      'show',
+      '--style',
+      'compact',
+      '--last',
+      `${WINDOW_MINUTES}m`,
+      '--predicate',
+      predicate,
+    ],
+    { maxBuffer: 20 * 1024 * 1024 },
+  );
 
   writeFile(path.join(outputDir, 'unified.log'), logOutput);
 }

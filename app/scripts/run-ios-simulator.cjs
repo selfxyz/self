@@ -55,9 +55,10 @@ function selectDevice(devicesJson) {
 
   if (runtimeFilter) {
     const normalizedRuntime = normalizeRuntimeVersion(runtimeFilter);
+    const expectedSuffix = `SimRuntime.iOS-${normalizedRuntime}`;
 
     runtimeKeys = runtimeKeys.filter(runtime =>
-      runtime.includes(`iOS-${normalizedRuntime}`),
+      runtime.endsWith(expectedSuffix),
     );
 
     if (runtimeKeys.length === 0) {
@@ -82,9 +83,13 @@ function selectDevice(devicesJson) {
   }
 
   if (deviceFilter) {
-    const selectedDevice = availableIPhones.find(device =>
-      device.name.toLowerCase().includes(deviceFilter),
-    );
+    const selectedDevice =
+      availableIPhones.find(
+        device => device.name.toLowerCase() === deviceFilter,
+      ) ??
+      availableIPhones.find(device =>
+        device.name.toLowerCase().includes(deviceFilter),
+      );
 
     if (!selectedDevice) {
       const availableNames = [
