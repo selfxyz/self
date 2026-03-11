@@ -1,7 +1,7 @@
 # LifecycleBridgeHandler Type and Error Semantics
 
 > Last updated: 2026-03-10
-> Status: Ready
+> Status: Done
 
 - Workstream: native-shells
 - Backlog IDs: NS-05
@@ -23,12 +23,14 @@
 ## Out of Scope
 
 - Broader lifecycle redesign
-- Android lifecycle changes
+- Lifecycle payload format redesign beyond preserving existing error/cancel semantics
 
 ## Files to Modify
 
 - `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/LifecycleBridgeHandler.kt`
-- related test files
+- `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/LifecycleBridgeHandler.kt`
+- `packages/kmp-sdk/shared/src/commonMain/kotlin/xyz/self/sdk/handlers/LifecycleSetResultOutcome.kt`
+- `packages/kmp-sdk/shared/src/commonTest/kotlin/xyz/self/sdk/handlers/LifecycleBridgeHandlerTest.kt`
 - `specs/projects/sdk/workstreams/native-shells/SPEC.md`
 
 ## Files Not to Modify
@@ -49,14 +51,18 @@
 
 ```bash
 cd packages/kmp-sdk && ./gradlew :shared:jvmTest
+cd packages/kmp-sdk && ./gradlew :shared:compileDebugKotlinAndroid
+cd packages/kmp-sdk && ./gradlew :shared:compileKotlinIosArm64
 ```
 
 ## Definition of Done
 
-- [ ] Lifecycle type/error contract is explicit
-- [ ] Tests or assertions reflect the chosen behavior
-- [ ] Backlog row updated
+- [x] Lifecycle type/error contract is explicit
+- [x] Tests or assertions reflect the chosen behavior
+- [x] Backlog row updated
+- [x] Android and iOS route flat lifecycle payloads identically
 
 ## Status Log
 
 - 2026-03-10: Created from security hardening follow-up.
+- 2026-03-10: Completed. Extracted shared lifecycle outcome routing, updated Android and iOS handlers to honor flat-payload error/cancel semantics, added common tests for success/failure/cancel branches, and marked NS-05 done in the workstream spec.
