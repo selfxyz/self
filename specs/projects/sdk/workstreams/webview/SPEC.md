@@ -46,7 +46,7 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 
 | ID    | Title                                                                                           | Status | Priority | Depends On | Plan                                                                                       | Notes                                                                                                                             |
 | ----- | ----------------------------------------------------------------------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| WV-01 | Dynamic proof request items sourced from request context                                        | Ready  | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | Existing active follow-up                                                                                                         |
+| WV-01 | Dynamic proof request items sourced from request context                                        | Done   | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | Existing active follow-up                                                                                                         |
 | WV-02 | Define the KYC-provider contract for document capture, MRZ/liveness handoff, and result mapping | Ready  | High     | -          | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)             | Provider-backed path replaces Self-owned native scan flow                                                                         |
 | WV-03 | Remove native NFC and native-scan assumptions from active WebView screens, copy, and docs       | Ready  | High     | WV-02      | -                                                                                          | Active UX/docs should match the WebView-only scope                                                                                |
 | WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Ready  | Medium   | WV-02      | -                                                                                          | Build on existing `SdkInitialConfig` and `VERIFICATION_COMPLETE` work; define only the WebView-host transport and embedding delta |
@@ -57,7 +57,7 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 | Plan                                                                                       | IDs   | Status |
 | ------------------------------------------------------------------------------------------ | ----- | ------ |
-| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | WV-01 | Ready  |
+| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | WV-01 | Done   |
 | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)             | WV-02 | Ready  |
 
 ## Completion Checklist
