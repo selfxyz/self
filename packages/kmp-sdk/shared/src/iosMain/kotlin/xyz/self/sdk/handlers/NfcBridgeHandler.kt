@@ -41,6 +41,7 @@ class NfcBridgeHandler(
         }
 
     private suspend fun scan(params: Map<String, JsonElement>): JsonElement {
+        NfcApduPolicy.requireSupportedParams(params)
         val provider =
             SdkProviderRegistry.nfc
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "NFC provider not configured")

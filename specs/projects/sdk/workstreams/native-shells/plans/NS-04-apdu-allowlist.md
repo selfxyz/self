@@ -1,7 +1,7 @@
 # APDU Allowlist in KMP NFC Bridge Handler
 
 > Last updated: 2026-03-10
-> Status: Ready
+> Status: Done
 
 - Workstream: native-shells
 - Backlog IDs: NS-04
@@ -11,13 +11,13 @@
 
 ## Why
 
-- The NFC bridge currently accepts APDU commands from the WebView without allowlist validation.
+- The React Native SDK exposes raw APDU exchange, but the KMP NFC bridge should not accept caller-supplied APDU commands at all.
 - This is a security boundary issue and should be resolved before broader rollout.
 
 ## Scope
 
-- Add APDU command-prefix allowlisting to the KMP NFC bridge handler.
-- Add tests for rejected commands.
+- Reject caller-supplied `apduCommands` at the KMP NFC bridge boundary on Android and iOS.
+- Add tests for allowed scan params and rejected APDU input.
 - Update security hardening tracking to point at this plan.
 
 ## Out of Scope
@@ -43,22 +43,25 @@
 
 ## Implementation Notes
 
-- Allow only eMRTD command families needed for passport reading.
-- Reject before transceive.
+- KMP does not expose a raw APDU/transceive API; the only allowed NFC path is the built-in passport `scan` flow.
+- Reject `apduCommands` before tag/provider work begins.
 - Avoid leaking raw APDU bytes in error messages.
 
 ## Validation
 
 ```bash
 cd packages/kmp-sdk && ./gradlew :shared:jvmTest
+cd packages/kmp-sdk && ./gradlew :shared:compileDebugKotlinAndroid
+cd packages/kmp-sdk && ./gradlew :shared:compileKotlinIosArm64
 ```
 
 ## Definition of Done
 
-- [ ] KMP APDU allowlist implemented
-- [ ] Reject-path tests added
-- [ ] Spec backlog updated
+- [x] KMP APDU allowlist implemented
+- [x] Reject-path tests added
+- [x] Spec backlog updated
 
 ## Status Log
 
 - 2026-03-10: Created from security hardening follow-up.
+- 2026-03-10: Implemented a bridge-boundary APDU policy for KMP. Caller-supplied `apduCommands` are rejected on both platforms; only the built-in passport scan sequence is allowed.
