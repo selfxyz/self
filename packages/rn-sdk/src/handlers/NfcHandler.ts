@@ -388,7 +388,6 @@ export class NfcHandler implements BridgeHandler {
 
       return {
         connected: true,
-        tagId: tag?.id ?? null,
         techType: nfcTech,
         apduResponses,
       };
