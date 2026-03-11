@@ -47,6 +47,13 @@ internal fun resolveLifecycleSetResult(params: Map<String, JsonElement>): Lifecy
     }
 
     return when {
+        errorCode != null ->
+            LifecycleSetResultOutcome.Failure(
+                SelfSdkError(
+                    code = errorCode,
+                    message = errorMessage ?: "Unknown error",
+                ),
+            )
         success == true && data != null ->
             try {
                 LifecycleSetResultOutcome.Success(deserializeVerificationResult(data))
@@ -58,13 +65,6 @@ internal fun resolveLifecycleSetResult(params: Map<String, JsonElement>): Lifecy
                     ),
                 )
             }
-        errorCode != null ->
-            LifecycleSetResultOutcome.Failure(
-                SelfSdkError(
-                    code = errorCode,
-                    message = errorMessage ?: "Unknown error",
-                ),
-            )
         else -> LifecycleSetResultOutcome.Cancelled
     }
 }
