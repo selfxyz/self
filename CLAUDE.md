@@ -30,6 +30,7 @@ nvm use && corepack enable && yarn install
 - **Spec naming and structure must be context-first.** Use doc-type file names (for example `OVERVIEW.md`, `SPEC.md`) and do not repeat project prefixes in file names. Use descriptive labels in markdown links — `[SDK Overview](./OVERVIEW.md)` not `[OVERVIEW.md](./OVERVIEW.md)` — so the link text is meaningful without folder context.
 - **No singleton spec folders.** Do not create a folder that exists only to hold one markdown file; keep single docs at the nearest meaningful project/shared root.
 - **Workstream spec names are fixed.** Under `workstreams/<scope>/`, use `SPEC.md` (context + implementation in one file); use `SPEC-<TOPIC>.md` only when multiple implementation specs are needed in that same folder.
+- **Use the two-layer spec model.** `INDEX.md` and `OVERVIEW.md` are stable project context. Each workstream `SPEC.md` is durable context plus backlog. PR execution lives in `workstreams/<scope>/plans/<BACKLOG-ID>-<slug>.md`.
 - **Test value over mock wiring.** Prefer tests that validate behavior. Avoid tests that only assert mocks were called unless that is the behavior being validated.
 - **PR size target:** 1k–3k LOC changed. Smaller is fine for focused fixes. If >3k, add a brief justification for why it can’t be split.
 - **No generated artifacts in source PRs.** Do not commit build outputs or generated assets unless the build system requires them for runtime or distribution.
@@ -72,8 +73,8 @@ That's it. Do not read framework docs unless you are writing a new spec.
 1. **Read** the relevant workstream specs and this file's Key Rules — understand the current state and constraints
 2. **Write a plan to disk** — use the appropriate tier from `specs/framework/TEMPLATES.md`:
    - **Large features / new workstreams:** Create a full implementation spec (`specs/projects/sdk/workstreams/<scope>/SPEC.md`)
-   - **Medium features / multi-chunk work:** Create a session plan file in the project folder or update the relevant SPEC.md
-   - **Small features / single-chunk fixes:** Add a chunk to an existing SPEC.md, or create a minimal plan in the spec folder
+   - **Medium features / multi-chunk work:** Create a plan file in `workstreams/<scope>/plans/` named `<BACKLOG-ID>-<slug>.md` and link it from the backlog in the relevant `SPEC.md`
+   - **Small features / single-chunk fixes:** Create a minimal plan file in `workstreams/<scope>/plans/` named `<BACKLOG-ID>-<slug>.md` or add the chunk to an existing active plan
 3. **Include in every plan:** scope of work, files modified, I/O examples, validation command, definition of done
 4. **Then implement** — update chunk status as you complete work
 5. **After completion:** Mark chunks done in SPEC.md status tables. Review status checklists at session start — if something is marked "Done" that isn't, or "Pending" that's in progress, fix it first.
@@ -87,6 +88,7 @@ When writing specs, follow these principles so they work as AI agent prompts:
 - **Provide exact file paths with line numbers.** `src/proving/provingMachine.ts:543` not "the proving machine file."
 - **State the validation command.** Agents will run it. If it's not there, they'll skip validation.
 - **One chunk = one self-contained prompt.** The chunk must include enough context to execute without reading the full spec.
+- **One PR = one plan file.** A plan file is the execution handoff. It must be self-contained enough that a new agent can pick it up after session loss.
 - **Use `--remote` for M and L chunks.** Medium and large chunks benefit from `claude --remote` so work continues in the background.
 
 ### Why Even Minor Features

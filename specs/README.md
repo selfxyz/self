@@ -15,7 +15,7 @@
 
 ## Topics
 
-- [CI Coverage Gaps](./topics/CI-COVERAGE-GAPS.md)
+- [CI Coverage Gaps](./archive/CI-COVERAGE-GAPS.md)
 - [Euclid Web Consolidation](./topics/EUCLID-WEB-CONSOLIDATION.md)
 - [Lottie dotLottie Review](./topics/LOTTIE-DOTLOTTIE-REVIEW.md)
 - [Security Hardening](./topics/SECURITY-HARDENING.md)
@@ -23,6 +23,7 @@
 ## Framework
 
 - [Templates](./framework/TEMPLATES.md) — copy-paste templates for all three tiers
+- [Spec Execution Model](./framework/SPEC-EXECUTION-MODEL.md) — stable context plus one plan file per PR
 - [Product Spec Enhancement Prompt](./framework/PRODUCT-SPEC-ENHANCEMENT-PROMPT.md) — Figma cross-reference agent prompt
 
 Project rules and spec-writing guidelines are consolidated in the root `CLAUDE.md`.
@@ -35,5 +36,6 @@ Project rules and spec-writing guidelines are consolidated in the root `CLAUDE.m
 
 1. This file (`specs/README.md`)
 2. `specs/projects/sdk/INDEX.md` — find your workstream
-3. The workstream `SPEC.md` — find your chunk
-4. `specs/projects/sdk/OVERVIEW.md` — if you need architecture context
+3. The workstream `SPEC.md` — find the backlog row and active plan
+4. The linked `plans/<BACKLOG-ID>-<slug>.md` file — execute from this file
+5. `specs/projects/sdk/OVERVIEW.md` — if you need architecture context

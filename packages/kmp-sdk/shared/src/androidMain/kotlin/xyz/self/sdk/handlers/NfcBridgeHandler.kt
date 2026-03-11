@@ -83,6 +83,7 @@ class NfcBridgeHandler(
     }
 
     private suspend fun scan(params: Map<String, JsonElement>): JsonElement {
+        NfcApduPolicy.requireSupportedParams(params)
         val scanParams = json.decodeFromJsonElement(NfcScanParams.serializer(), JsonObject(params))
 
         pushProgress("waiting_for_tag", 0, "Hold your phone near the passport")

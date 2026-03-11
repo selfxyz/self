@@ -17,7 +17,10 @@ import com.facebook.soloader.SoLoader
 class MainApplication : Application(), ReactApplication {
 
     private val mReactNativeHost: ReactNativeHost = object : DefaultReactNativeHost(this) {
-        override fun getPackages(): List<ReactPackage> = PackageList(this).packages
+        override fun getPackages(): List<ReactPackage> =
+            PackageList(this).packages.apply {
+                add(SelfMRZScannerPackage())
+            }
 
         override fun getJSMainModuleName(): String = "index"
 

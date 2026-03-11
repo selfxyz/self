@@ -27,7 +27,7 @@ cd ../kmp-sdk
 
 ```bash
 cd ../kmp-sdk-test-app
-./gradlew :androidApp:installDebug
+yarn android
 ```
 
 ### Implementation Example
@@ -76,19 +76,20 @@ class MainActivity : ComponentActivity() {
 
 ### Setup
 
-1. Build the iOS framework:
+1. Install Pods:
 
 ```bash
-cd ../kmp-sdk
-./gradlew :shared:linkDebugFrameworkIosArm64
+cd iosApp
+pod install
 ```
 
-2. Open the iOS project in Xcode:
+2. Open the iOS workspace in Xcode:
 
 ```bash
-cd ../kmp-sdk-test-app
-open iosApp/iosApp.xcodeproj
+open iosApp.xcworkspace
 ```
+
+3. Build and run from Xcode on a physical device. The project build invokes `:composeApp:embedAndSignAppleFrameworkForXcode` automatically; do not run that Gradle task directly from the terminal.
 
 ### Implementation Example
 

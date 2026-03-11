@@ -62,6 +62,37 @@
 - [ ] Integration validation in Self Wallet app (follow-up)
 - [ ] npm publish not completed
 
+## Execution Model
+
+- Stable RN SDK context stays in this file.
+- PR-sized execution lives under [`plans/`](./plans/).
+- To answer "what's next?", read the backlog and active plans before reading the rest of this spec.
+
+## Backlog
+
+| ID    | Title                                                            | Status | Priority | Depends On | Plan                                                                                                     | PR  |
+| ----- | ---------------------------------------------------------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------------------------------- | --- |
+| RN-01 | Self Wallet integration validation for `SelfVerification`        | Ready  | High     | -          | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | -   |
+| RN-02 | npm publishing readiness and release path                        | Ready  | Medium   | RN-01      | [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | -   |
+| RN-03 | APDU allowlist, timeout, and payload hardening in RN NFC handler | Ready  | High     | -          | [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | -   |
+
+Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+
+## Active Plans
+
+| Plan                                                                                                     | IDs   | Status |
+| -------------------------------------------------------------------------------------------------------- | ----- | ------ |
+| [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | RN-01 | Ready  |
+| [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | RN-02 | Ready  |
+| [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | RN-03 | Ready  |
+
+## Completion Checklist
+
+- [ ] Open RN follow-ups exist as backlog rows, not only prose
+- [ ] Active plan links are current
+- [ ] Self Wallet integration status is explicit
+- [ ] Publish readiness is tracked independently from feature work
+
 ## Overview
 
 You are building the **React Native native shell** (`@selfxyz/rn-sdk`) — a thin `SelfVerification` component that wraps `react-native-webview` to embed the Self verification flow inside any React Native app. It shares the same WebView engine, bridge protocol, and UI as the Kotlin native shell. The only RN-specific code is ~200-300 LOC of native handler bridges and the component wrapper. This matters because React Native hosts (Self Wallet, third-party apps) need the same verification flow that Kotlin hosts (MiniPay) get, without duplicating any logic.
@@ -76,14 +107,17 @@ You are building the **React Native native shell** (`@selfxyz/rn-sdk`) — a thi
 
 ## The Problem
 
-There is no React Native SDK package. The RN SDK (`packages/rn-sdk/`) does not exist yet. React Native host apps (including the Self Wallet app) have no way to embed the shared WebView verification flow.
+The RN SDK (`packages/rn-sdk/`) exists with the core implementation complete: `SelfVerification` component, all 5 native handler bridges, and asset bundling for iOS + Android. Remaining gaps:
 
-| Gap                                                                   | Current state                                                  |
-| --------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `packages/rn-sdk/`                                                    | Directory does not exist                                       |
-| `SelfVerification` component                                          | Not implemented — RN hosts cannot embed verification           |
-| Native handler bridges (NFC, biometrics, keychain, camera, lifecycle) | Not implemented — WebView has no way to reach RN native APIs   |
-| Asset bundling for iOS + Android                                      | Not implemented — no way to load the Vite bundle in production |
+| Area                           | Status                                                           |
+| ------------------------------ | ---------------------------------------------------------------- |
+| `packages/rn-sdk/`             | Exists — core component and handlers implemented                 |
+| `SelfVerification` component   | Implemented — wraps `react-native-webview` with bridge wiring    |
+| Native handler bridges         | All 5 implemented (NFC, biometrics, keychain, camera, lifecycle) |
+| Asset bundling (iOS + Android) | Implemented for both platforms                                   |
+| Self Wallet integration        | Not validated — see RN-01                                        |
+| npm publishing                 | Not ready — see RN-02                                            |
+| NFC hardening                  | Not started — see RN-03                                          |
 
 ## Design Principles
 
@@ -624,8 +658,12 @@ export class CameraHandler {
 Input:  { domain: "camera", method: "isAvailable", params: {} }
 Output: true
 
-Input:  { domain: "camera", method: "scanMRZ", params: {} }
-Output: (not yet implemented — throws { code: "NOT_IMPLEMENTED", message: "MRZ scan not yet implemented" })
+Input:  { domain: "camera", method: "scanMRZ", params: { documentType: "p", countryCode: "NLD" } }
+Output: { documentNumber: "L898902C3", dateOfBirth: "740812", dateOfExpiry: "120415", documentType: "P", countryCode: "UTO" }
+
+Error (cancelled): { code: "MRZ_SCAN_CANCELLED", message: "MRZ scan cancelled" }
+Error (generic):   { code: "MRZ_SCAN_FAILED", message: "MRZ scan failed" }
+Error (no module): { code: "NOT_AVAILABLE", message: "MRZ scanner module is not installed" }
 ```
 
 #### 6e. LifecycleHandler
@@ -984,16 +1022,18 @@ Typecheck: No errors
 
 #### Tests
 
-| Test                                    | Type        | What it validates                                   |
-| --------------------------------------- | ----------- | --------------------------------------------------- |
-| `NfcHandler.isSupported`                | Unit        | Delegates to NfcManager.isSupported()               |
-| `NfcHandler.cancelScan`                 | Unit        | Calls NfcManager.cancelTechnologyRequest()          |
-| `NfcHandler.scan-progress-events`       | Integration | Progress events stream to WebView during scan       |
-| `NfcHandler.scan-success`               | Device      | Full passport scan returns valid data               |
-| `NfcHandler.scan-nfc-unsupported`       | Unit        | Returns NFC_NOT_SUPPORTED error on incapable device |
-| `NfcHandler.unknown-method`             | Unit        | Throws METHOD_NOT_FOUND                             |
-| `CameraHandler.isAvailable`             | Unit        | Returns true                                        |
-| `CameraHandler.scanMRZ-not-implemented` | Unit        | Throws NOT_IMPLEMENTED                              |
+| Test                              | Type        | What it validates                                   |
+| --------------------------------- | ----------- | --------------------------------------------------- |
+| `NfcHandler.isSupported`          | Unit        | Delegates to NfcManager.isSupported()               |
+| `NfcHandler.cancelScan`           | Unit        | Calls NfcManager.cancelTechnologyRequest()          |
+| `NfcHandler.scan-progress-events` | Integration | Progress events stream to WebView during scan       |
+| `NfcHandler.scan-success`         | Device      | Full passport scan returns valid data               |
+| `NfcHandler.scan-nfc-unsupported` | Unit        | Returns NFC_NOT_SUPPORTED error on incapable device |
+| `NfcHandler.unknown-method`       | Unit        | Throws METHOD_NOT_FOUND                             |
+| `CameraHandler.isAvailable`       | Unit        | Returns true when native module is present          |
+| `CameraHandler.scanMRZ-success`   | Unit        | Returns normalized MRZ data from native module      |
+| `CameraHandler.scanMRZ-cancelled` | Unit        | Maps `MRZ_SCAN_CANCELLED` as distinct error code    |
+| `CameraHandler.scanMRZ-failed`    | Unit        | Maps generic native errors to `MRZ_SCAN_FAILED`     |
 
 ---
 
@@ -1134,38 +1174,49 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 
 ## What Was Built
 
-<!-- Added post-completion. Brief and factual. -->
-
 ### Architecture (brief)
 
-<!-- 3-5 sentences. Pattern used, key decisions made during implementation. -->
+`@selfxyz/rn-sdk` is a thin React Native wrapper (~300 LOC component + ~500 LOC handlers) around `react-native-webview`. `SelfVerification` renders a WebView loading the Vite bundle. `MessageRouter` dispatches bridge JSON messages to domain-specific handlers. Each handler wraps a single RN native module with no business logic. NFC uses APDU-level passport reading via `react-native-nfc-manager`. Camera delegates to a `SelfMRZScannerModule` native module provided by the host app. The bridge protocol is identical to the KMP native shell — the WebView cannot distinguish which shell it runs in.
 
 ### Deviations from Spec
 
-| Spec said | We did | Why |
-| --------- | ------ | --- |
-|           |        |     |
+| Spec said                                        | We did                                                                                               | Why                                                                                             |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| CameraHandler `scanMRZ` throws `NOT_IMPLEMENTED` | Delegates to `NativeModules.SelfMRZScannerModule` with result normalization and cancellation mapping | Real native MRZ scanning was implemented for the RN test app; handler updated to support it     |
+| CameraHandler has no error differentiation       | Added `MRZ_SCAN_CANCELLED` as a distinct error code separate from `MRZ_SCAN_FAILED`                  | Cancellation is a clean UX exit, not a failure; WebView camera screen needs to distinguish them |
+| `createHandlers` signature                       | Added `router` parameter for NfcHandler event streaming                                              | Discovered during Chunk 5A that NFC progress events require router access                       |
 
 ### Key Files (final)
 
-| File | Role |
-| ---- | ---- |
-|      |      |
+| File                                               | Role                                                                     |
+| -------------------------------------------------- | ------------------------------------------------------------------------ |
+| `packages/rn-sdk/src/SelfVerification.tsx`         | Public component — WebView wrapper with platform-aware asset loading     |
+| `packages/rn-sdk/src/bridge/MessageRouter.ts`      | Bridge message dispatcher — routes JSON to handlers by domain            |
+| `packages/rn-sdk/src/handlers/NfcHandler.ts`       | NFC passport reading with APDU + progress events                         |
+| `packages/rn-sdk/src/handlers/CameraHandler.ts`    | MRZ scanning via native module with cancellation support                 |
+| `packages/rn-sdk/src/handlers/BiometricHandler.ts` | Biometric authentication wrapper                                         |
+| `packages/rn-sdk/src/handlers/KeychainHandler.ts`  | Secure storage with `self_sdk_` prefix                                   |
+| `packages/rn-sdk/src/handlers/LifecycleHandler.ts` | Config delivery + result/dismiss callbacks                               |
+| `packages/rn-sdk/src/types.ts`                     | Shared types (breaks circular dependency between component and handlers) |
 
 ### Lessons / Gotchas
 
-- (to be filled post-implementation)
+- `react-native-webview` must be a `peerDependency`, not a direct dependency — having it as direct causes JS/native version mismatch in host apps.
+- `crypto.randomUUID()` is not available in all RN environments. Fallback: `crypto.randomUUID?.() ?? \`${Date.now()}-${Math.random()}\``.
+- iOS asset loading uses RN `require()` + Metro `html` asset support. This avoids adding `react-native-fs` as a peer dependency.
+- CameraHandler normalizes both `data`-wrapped and flat result payloads, plus legacy field names (`passportNumber`/`birthDate`/`expiryDate`), because different native module versions may return different shapes.
 
 ---
 
 ## Follow-Up (Out of Scope)
 
-| Item                                         | Discovered during | Suggested spec                                                    |
-| -------------------------------------------- | ----------------- | ----------------------------------------------------------------- |
-| Self Wallet migration to `SelfVerification`  | Spec writing      | Separate migration spec after SDK is stable                       |
-| MiniPay RN sample integration                | Spec writing      | `integrations/SPEC.md` (already exists)                           |
-| Camera library selection for MRZ scanning    | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter |
-| iOS asset loading strategy (RNFS vs require) | PR #1765 review   | **Decided:** Use RN `require()` + Metro `html` asset support      |
+| Item                                         | Discovered during | Suggested spec                                                                         |
+| -------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------- |
+| Self Wallet migration to `SelfVerification`  | Spec writing      | Separate migration spec after SDK is stable                                            |
+| MiniPay RN sample integration                | Spec writing      | `integrations/SPEC.md` (already exists)                                                |
+| Camera library selection for MRZ scanning    | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter                      |
+| RN test app MRZ DRY consolidation            | Complete          | [MRZ Consolidation Spec (archived)](../../../../archive/sdk/SPEC-MRZ-CONSOLIDATION.md) |
+| iOS asset loading strategy (RNFS vs require) | PR #1765 review   | **Decided:** Use RN `require()` + Metro `html` asset support                           |
 
 ## Spec Deviations
 

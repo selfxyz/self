@@ -8,6 +8,8 @@ on:
     paths:
       - "packages/rn-sdk/**"
       - "packages/rn-sdk-test-app/**"
+      - "packages/kmp-sdk/**"
+      - "packages/self-sdk-swift/**"
       - ".github/workflows/rn-sdk-test-app-ci.yml"
       - ".github/actions/**"
   push:
@@ -15,6 +17,8 @@ on:
     paths:
       - "packages/rn-sdk/**"
       - "packages/rn-sdk-test-app/**"
+      - "packages/kmp-sdk/**"
+      - "packages/self-sdk-swift/**"
       - ".github/workflows/rn-sdk-test-app-ci.yml"
       - ".github/actions/**"
 
@@ -64,6 +68,9 @@ jobs:
             -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
             -storepass android -keypass android \
             -dname "CN=Android Debug,O=Android,C=US"
+      - name: Publish KMP SDK to mavenLocal
+        run: |
+          cd packages/kmp-sdk && ./gradlew :shared:publishToMavenLocal --quiet
       - name: Build Android debug APK
         run: |
           chmod +x packages/rn-sdk-test-app/android/gradlew
@@ -74,6 +81,15 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
+      - name: Generate token for private dependencies
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
+      - name: Configure git for HTTPS dependency fetch
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

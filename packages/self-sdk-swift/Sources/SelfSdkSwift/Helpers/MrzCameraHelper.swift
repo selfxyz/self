@@ -75,6 +75,9 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
         textRecognitionRequest?.usesLanguageCorrection = false
     }
 
+    /// Whether the capture session was successfully configured with camera input/output.
+    @objc public private(set) var isCameraSessionConfigured: Bool = false
+
     /// Creates and returns a UIView with camera preview
     /// This view should be embedded in the Compose UI via UIKitView
     @objc public func createCameraPreviewView(frame: CGRect) -> UIView {
@@ -130,11 +133,15 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
         // Add video input
         guard let videoCaptureDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
             MrzCameraHelper.log.error("Failed to get camera device")
+            captureSession.commitConfiguration()
+            self.captureSession = nil
             return
         }
 
         guard let videoInput = try? AVCaptureDeviceInput(device: videoCaptureDevice) else {
             MrzCameraHelper.log.error("Failed to create video input")
+            captureSession.commitConfiguration()
+            self.captureSession = nil
             return
         }
 
@@ -162,6 +169,7 @@ public typealias MrzCompletionCallback = (Bool, String) -> Void
         }
 
         captureSession.commitConfiguration()
+        isCameraSessionConfigured = true
 
         // Setup preview layer
         DispatchQueue.main.async {

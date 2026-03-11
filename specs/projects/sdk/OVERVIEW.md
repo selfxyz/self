@@ -1,6 +1,6 @@
 # Self SDK — Architecture Specification
 
-> Last updated: 2026-02-23
+> Last updated: 2026-03-10
 > Owner: Self Engineering
 > Status: Active
 
@@ -119,16 +119,16 @@
 
 ## Module Table
 
-| Module                  | Location                     | Language               | What It Does                                                                                | Status                                                       | % Done  | Action Needed                                                                                    |
-| ----------------------- | ---------------------------- | ---------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------ |
-| **WebView Engine**      | `packages/mobile-sdk-alpha/` | TypeScript             | Proving machine (XState), stores (Zustand), adapter interfaces, 105 source files            | Browser/RN paths and fallback adapters implemented           | **85%** | Consolidate fallback adapter ownership cleanup and finish remaining decoupling from RN peer deps |
-| **WebView UI**          | `packages/webview-app/`      | TypeScript (React)     | 10 screens: home, country, ID, camera, NFC, confirm, proving, result, settings, coming-soon | All screens render, routing works, bridge integration wired  | **85%** | Dynamic proof request items are still hardcoded and need request-context sourcing                |
-| **Bridge Protocol**     | `packages/webview-bridge/`   | TypeScript             | JSON messaging, 10 domains, 9 adapters, timeout/error handling, mock transport              | 63+ tests pass, protocol stable                              | **85%** | Complete adapter de-duplication with engine-owned web fallbacks                                  |
-| **Kotlin Native Shell** | `packages/kmp-sdk/`          | Kotlin                 | Android: 5 handlers + WebView host + Activity. iOS: provider-backed handler chain           | Android and iOS implementations present                      | **85%** | Complete physical-device validation matrix (NFC success/failure on both platforms)               |
-| **Swift Providers**     | `packages/self-sdk-swift/`   | Swift                  | iOS native implementations: NFC, biometrics, secure storage, WebView hosting                | Implemented in repo and wired through KMP iOS                | **80%** | Final artifact/packaging readiness and physical-device validation                                |
-| **RN Native Shell**     | `packages/rn-sdk/` — **NEW** | React Native           | `SelfVerification` WebView wrapper, 5 native handler bridges                                | Implemented with tests, asset strategy, and APDU-capable NFC | **85%** | Expand real-device integration validation coverage in host apps                                  |
-| **Shared Utilities**    | `common/`                    | TypeScript             | Poseidon, Merkle trees, passport parsing, certificates, 150+ files, 88+ exports             | Production, 98% browser-compatible                           | **95%** | No changes needed. Only 2 files require Node.js (optional)                                       |
-| **Self Wallet App**     | `app/`                       | React Native (v0.76.9) | Full wallet: documents, NFC, proving, KYC, recovery, settings, Turnkey wallet               | Production (v2.9.16)                                         | **N/A** | Test environment for SDK. Eventually migrates to `SelfVerification`                              |
+| Module                  | Location                     | Language               | What It Does                                                                                | Status                                                                                                                                                                           | % Done  | Action Needed                                                                                    |
+| ----------------------- | ---------------------------- | ---------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------ |
+| **WebView Engine**      | `packages/mobile-sdk-alpha/` | TypeScript             | Proving machine (XState), stores (Zustand), adapter interfaces, 105 source files            | Browser/RN paths and fallback adapters implemented                                                                                                                               | **85%** | Consolidate fallback adapter ownership cleanup and finish remaining decoupling from RN peer deps |
+| **WebView UI**          | `packages/webview-app/`      | TypeScript (React)     | 10 screens: home, country, ID, camera, NFC, confirm, proving, result, settings, coming-soon | All screens render, routing works, bridge integration wired                                                                                                                      | **85%** | Dynamic proof request items are still hardcoded and need request-context sourcing                |
+| **Bridge Protocol**     | `packages/webview-bridge/`   | TypeScript             | JSON messaging, 10 domains, 9 adapters, timeout/error handling, mock transport              | 63+ tests pass, protocol stable                                                                                                                                                  | **85%** | Complete adapter de-duplication with engine-owned web fallbacks                                  |
+| **Kotlin Native Shell** | `packages/kmp-sdk/`          | Kotlin                 | Android: 5 handlers + WebView host + Activity. iOS: provider-backed handler chain           | Android and iOS implementations present; physical-device NFC validation completed on both platforms, and the public callback/result contract now matches the canonical SDK shape | **92%** | Finish publishing readiness                                                                      |
+| **Swift Providers**     | `packages/self-sdk-swift/`   | Swift                  | iOS native implementations: NFC, biometrics, secure storage, WebView hosting                | Implemented in repo and wired through KMP iOS; real-device NFC validation passed, but local `swift build` still fails on NFCPassportReader/OpenSSL headers                       | **85%** | Restore local build validation and finish packaging readiness                                    |
+| **RN Native Shell**     | `packages/rn-sdk/` — **NEW** | React Native           | `SelfVerification` WebView wrapper, 5 native handler bridges                                | Implemented with tests, asset strategy, and APDU-capable NFC                                                                                                                     | **85%** | Expand real-device integration validation coverage in host apps                                  |
+| **Shared Utilities**    | `common/`                    | TypeScript             | Poseidon, Merkle trees, passport parsing, certificates, 150+ files, 88+ exports             | Production, 98% browser-compatible                                                                                                                                               | **95%** | No changes needed. Only 2 files require Node.js (optional)                                       |
+| **Self Wallet App**     | `app/`                       | React Native (v0.76.9) | Full wallet: documents, NFC, proving, KYC, recovery, settings, Turnkey wallet               | Production (v2.9.16)                                                                                                                                                             | **N/A** | Test environment for SDK. Eventually migrates to `SelfVerification`                              |
 
 ## Decision Matrix
 
@@ -194,7 +194,7 @@
 
 ### Canonical Types
 
-These types are the **single source of truth**. All workstreams must converge on these shapes. Platform-specific serialization (e.g., Kotlin `Map<String, String>`) is acceptable, but the fields and semantics must match.
+These types are the **single source of truth**. All workstreams must converge on these shapes. Platform-specific serialization is acceptable, but the fields and semantics must match.
 
 ```typescript
 // TypeScript (Person 1, 4, 5)
@@ -220,7 +220,7 @@ data class VerificationResult(
 )
 ```
 
-> **Contract lock (normative):** Legacy result fields (`verified`, `disclosedClaims`, top-level `timestamp`) are not allowed in new code or specs. Use canonical `VerificationResult` only. Person 2's `claims` should be `Map<String, Any?>` to match TypeScript `Record<string, unknown>`.
+> **Contract lock (normative):** Legacy result fields (`verified`, `disclosedClaims`, top-level `timestamp`) are not allowed in new code or specs. Use canonical `VerificationResult` only. Person 2's `claims` should be `Map<String, Any?>` to match TypeScript `Record<string, unknown>`. If a native shell still receives a flat lifecycle compatibility payload such as `{ type: "proofRequested" }`, it must translate that to canonical success semantics internally instead of exposing `type` on the public result object.
 
 All communication between native shells and the WebView uses a versioned JSON protocol over `postMessage`.
 
@@ -468,29 +468,27 @@ SelfSdk.launch(
 />
 ```
 
-**Output (verification complete):**
+**Output (verification complete) — canonical `VerificationResult`:**
 
 ```json
 {
-  "type": "proofGenerated",
-  "proof": {
-    "success": true,
-    "claims": {
-      "nationality": "NLD",
-      "date_of_birth": "1990-01-15",
-      "document_expiry": "2030-01-15"
-    },
-    "circuitType": "register",
-    "timestamp": 1708200060000
+  "success": true,
+  "userId": "user-uuid",
+  "verificationId": "abc-123",
+  "proof": "...",
+  "claims": {
+    "nationality": "NLD",
+    "date_of_birth": "1990-01-15",
+    "document_expiry": "2030-01-15"
   }
 }
 ```
 
-**Error output:**
+**Error output — canonical `VerificationResult`:**
 
 ```json
 {
-  "type": "error",
+  "success": false,
   "error": {
     "code": "PASSPORT_NOT_SUPPORTED",
     "message": "This passport type is not supported for verification"
@@ -628,7 +626,7 @@ cd app && npx react-native run-ios  # integration test
 
 ## Execution Status
 
-**Overall: 74% complete** — 23/30 chunks done, 3 partial, 1 skipped, 2 superseded, 1 deferred.
+**Overall: 77% complete** — 24/30 chunks done, 2 partial, 1 skipped, 2 superseded, 1 deferred.
 
 ### Remaining Work
 
@@ -645,7 +643,6 @@ cd app && npx react-native run-ios  # integration test
 
 | Item                                      | Owner    | Context                                                     |
 | ----------------------------------------- | -------- | ----------------------------------------------------------- |
-| KMP test app validation on both platforms | Person 2 | Compile-verified only; no runtime validation captured       |
 | Integration validation in Self Wallet app | Person 5 | `SelfVerification` component not yet wired into Self Wallet |
 
 **P2 — Correctness / Consistency:**

@@ -1,6 +1,6 @@
 # Person 2: Native Shells (KMP SDK + Swift Providers) — Implementation Spec
 
-> Last updated: 2026-03-05
+> Last updated: 2026-03-10
 > Owner: Person 2 (Native Shells)
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
@@ -69,6 +69,55 @@
 - [x] Platform asymmetry contract documented and signed off
 - [ ] SDK Public API finalize (chunk 2F — partial)
 - [ ] Camera MRZ Handler iOS (chunk 2L — deferred Phase 2)
+
+## Execution Model
+
+- Durable workstream context lives in this file.
+- PR-sized execution handoff lives under [`plans/`](./plans/).
+- If you need to answer "what's next?", read the backlog table and active plans before reading the rest of this spec.
+
+## Backlog
+
+| ID    | Title                                                         | Status   | Priority | Depends On   | Plan                                                                                               | PR                                                                                                                                                                                                                                                                                                                         |
+| ----- | ------------------------------------------------------------- | -------- | -------- | ------------ | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NS-01 | Physical-device validation matrix for Android + iOS NFC flows | Done     | High     | -            | [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md)           | -                                                                                                                                                                                                                                                                                                                          |
+| NS-02 | iOS Camera MRZ Phase 2                                        | Deferred | Medium   | NS-01        | -                                                                                                  | -                                                                                                                                                                                                                                                                                                                          |
+| NS-03 | Publishing readiness for AAR + XCFramework artifacts          | Done     | High     | NS-01        | [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md)                       | N/A (audit-only)                                                                                                                                                                                                                                                                                                           |
+| NS-04 | APDU allowlist in KMP NFC bridge handler                      | Done     | High     | -            | [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md)                                   | KMP rejects caller-supplied `apduCommands` at the bridge boundary; only the built-in passport scan sequence is allowed.                                                                                                                                                                                                    |
+| NS-05 | LifecycleBridgeHandler type/error semantics on iOS            | Ready    | Low      | -            | [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md)         | -                                                                                                                                                                                                                                                                                                                          |
+| NS-06 | Align KMP callback/result contract with canonical SDK types   | Done     | Medium   | NS-01        | [plans/NS-06-kmp-callback-contract-alignment.md](./plans/NS-06-kmp-callback-contract-alignment.md) | -                                                                                                                                                                                                                                                                                                                          |
+| NS-07 | Remove legacy `{ type }` shim from native lifecycle handlers  | Blocked  | Medium   | -            | -                                                                                                  | Blocked on WebView bundle emitting canonical outcomes instead of flat `{ type }` payloads. Requires coordinated change: update `ConfirmIdentificationScreen.tsx` and `ProvingScreen.tsx` to send canonical `VerificationResult`, then remove the `type != null` branch from both Android and iOS `LifecycleBridgeHandler`. |
+| NS-08 | Ship AAR + XCFramework to MiniPay                             | Blocked  | High     | NS-03, NS-09 | [plans/NS-08-ship-artifacts-to-minipay.md](./plans/NS-08-ship-artifacts-to-minipay.md)             | ~10 LOC Gradle config for Maven repo target, switch XCFramework to release variants, host XCFramework for SPM. iOS handoff blocked until NS-09 resolves the private NFCPassportReader dependency.                                                                                                                          |
+| NS-09 | Make NFCPassportReader fork accessible to external consumers  | Ready    | High     | -            | [plans/NS-09-nfcpassportreader-distribution.md](./plans/NS-09-nfcpassportreader-distribution.md)   | Decision: make fork public or vendor it. Blocks any external iOS consumer.                                                                                                                                                                                                                                                 |
+
+Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+
+## Active Plans
+
+| Plan                                                                                               | IDs   | Status |
+| -------------------------------------------------------------------------------------------------- | ----- | ------ |
+| [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md)           | NS-01 | Done   |
+| [plans/NS-03-publishing-readiness.md](./plans/NS-03-publishing-readiness.md)                       | NS-03 | Done   |
+| [plans/NS-04-apdu-allowlist.md](./plans/NS-04-apdu-allowlist.md)                                   | NS-04 | Done   |
+| [plans/NS-05-lifecycle-handler-semantics.md](./plans/NS-05-lifecycle-handler-semantics.md)         | NS-05 | Ready  |
+| [plans/NS-06-kmp-callback-contract-alignment.md](./plans/NS-06-kmp-callback-contract-alignment.md) | NS-06 | Done   |
+| [plans/NS-08-ship-artifacts-to-minipay.md](./plans/NS-08-ship-artifacts-to-minipay.md)             | NS-08 | Ready  |
+| [plans/NS-09-nfcpassportreader-distribution.md](./plans/NS-09-nfcpassportreader-distribution.md)   | NS-09 | Ready  |
+
+## Completion Checklist
+
+- [ ] Backlog rows reflect reality
+- [ ] Open PR-sized work has a linked plan file
+- [ ] Deferred work is explicitly marked deferred
+- [ ] Completed work is reflected here and in [SDK Overview](../../OVERVIEW.md) when system status changes
+
+## Status Notes
+
+- `NS-01` completed on 2026-03-10 after operator-assisted real-device NFC validation confirmed Android and iOS success and failure paths in the KMP test app. See [plans/NS-01-physical-device-validation.md](./plans/NS-01-physical-device-validation.md) for the validation log.
+- `NS-06` completed on 2026-03-10. KMP now exposes the canonical `VerificationResult` shape (`success`, `userId`, `verificationId`, `proof`, `claims`, `error`), and `claims` now carries heterogeneous values via `Map<String, Any?>`.
+- Flat lifecycle `{ type }` payloads remain supported as an internal compatibility shim while the embedded WebView bundle still emits them, but KMP host apps no longer receive a public `VerificationResult.type` field. Tracked as `NS-07` for removal once the WebView sends canonical outcomes.
+- `NS-03` completed on 2026-03-10. Audit validated AAR and XCFramework generation. Four items block shipping to MiniPay: Maven repo target (~10 LOC config), release XCFramework variants (~3 LOC), hosted XCFramework for SPM, and NFCPassportReader fork accessibility. Tracked as NS-08 and NS-09.
+- `NS-04` completed on 2026-03-10. KMP now rejects caller-supplied `apduCommands` on both Android and iOS before any NFC tag/provider work begins, preserving the existing high-level passport scan contract and preventing raw APDU passthrough.
 
 ## Overview
 
@@ -850,41 +899,85 @@ class CameraMrzBridgeHandler(private val activity: Activity) : BridgeHandler {
 class LifecycleBridgeHandler(private val activity: Activity) : BridgeHandler {
     override val domain = BridgeDomain.LIFECYCLE
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        return when (method) {
-            "ready" -> null  // No-op, WebView is ready
-            "dismiss" -> {
-                activity.finish()
-                null
-            }
-            "setResult" -> {
-                // Set Activity result and finish -- delivers proof/error back to host app
-                val resultJson = Json.encodeToString(params)
-                val intent = Intent().putExtra("self_sdk_result", resultJson)
-                activity.setResult(Activity.RESULT_OK, intent)
-                activity.finish()
-                null
-            }
-            "startRelayListener" -> {
-                // Optional: start listening on a relay for incoming verification requests
-                null
-            }
+    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? =
+        when (method) {
+            "ready" -> null
+            "dismiss" -> dismiss()
+            "setResult" -> setResult(params)
             else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown lifecycle method: $method")
         }
+
+    private fun dismiss(): JsonElement? {
+        activity.runOnUiThread {
+            activity.setResult(SelfVerificationActivity.RESULT_CODE_CANCELLED)
+            activity.finish()
+        }
+        return null
+    }
+
+    private fun setResult(params: Map<String, JsonElement>): JsonElement? {
+        val type = params["type"]?.jsonPrimitive?.content
+        val success = params["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
+        val data = params["data"]?.toString()
+        val errorCode = params["errorCode"]?.jsonPrimitive?.content
+        val errorMessage = params["errorMessage"]?.jsonPrimitive?.content
+
+        activity.runOnUiThread {
+            val intent = Intent()
+
+            if (type != null) {
+                // Legacy flat lifecycle payloads: translate to canonical VerificationResult.
+                // This shim exists while the embedded WebView bundle still emits { type } payloads.
+                intent.putExtra(
+                    SelfVerificationActivity.EXTRA_RESULT_DATA,
+                    serializeVerificationResult(verificationResultFromLifecycleParams(params)),
+                )
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_SUCCESS, intent)
+            } else if (success && data != null) {
+                intent.putExtra(SelfVerificationActivity.EXTRA_RESULT_DATA, data)
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_SUCCESS, intent)
+            } else if (!success && errorCode != null) {
+                intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_CODE, errorCode)
+                intent.putExtra(SelfVerificationActivity.EXTRA_ERROR_MESSAGE, errorMessage ?: "Unknown error")
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_ERROR, intent)
+            } else {
+                activity.setResult(SelfVerificationActivity.RESULT_CODE_CANCELLED, intent)
+            }
+
+            activity.finish()
+        }
+
+        return null
     }
 }
 ```
 
+> **Implementation note:** The `type != null` branch is a transport-compatibility shim. The embedded WebView bundle still emits flat `{ type: "proofRequested" }` lifecycle payloads. Once the WebView sends canonical outcomes directly, this branch can be removed (tracked as follow-up work).
+
 ##### Input / Output — Lifecycle setResult
 
-**Input:**
+**Canonical input (future):**
 
 ```json
 {
   "method": "setResult",
-  "params": { "success": true, "data": { "proof": "..." } }
+  "params": {
+    "success": true,
+    "data": "{\"success\":true,\"userId\":\"...\",\"claims\":{...}}"
+  }
 }
 ```
+
+**Legacy input (current shim):**
+
+```json
+{
+  "method": "setResult",
+  "params": { "type": "proofRequested", "userId": "...", "proof": "...", "claims": {...} }
+}
+```
+
+Both paths deliver a canonical `VerificationResult` to the host app via `EXTRA_RESULT_DATA`.
 
 **Expected Output:**
 
@@ -1027,40 +1120,68 @@ class BiometricBridgeHandler : BridgeHandler {
 
 #### LifecycleBridgeHandler.kt (iOS)
 
-Self-contained in Kotlin -- no Swift provider needed. Uses `SelfSdkCallback` reference and dismiss action set by `SelfSdk.ios.kt`.
+Self-contained in Kotlin — no Swift provider needed. Uses `SelfSdkCallback` reference and dismiss action configured by `SelfSdk.ios.kt`. Callback/dismiss state is guarded by a `Mutex` and consumed exactly once per lifecycle event.
 
 ```kotlin
 class LifecycleBridgeHandler : BridgeHandler {
     override val domain = BridgeDomain.LIFECYCLE
-    var pendingCallback: SelfSdkCallback? = null
-    var dismissAction: (() -> Unit)? = null
 
-    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? {
-        return when (method) {
+    private val mutex = Mutex()
+    private var pendingCallback: SelfSdkCallback? = null
+    private var dismissAction: (() -> Unit)? = null
+
+    internal suspend fun configure(callback: SelfSdkCallback?, dismiss: (() -> Unit)?) {
+        mutex.withLock {
+            pendingCallback = callback
+            dismissAction = dismiss
+        }
+    }
+
+    override suspend fun handle(method: String, params: Map<String, JsonElement>): JsonElement? =
+        when (method) {
             "ready" -> null
-            "dismiss" -> {
-                dismissAction?.invoke()
-                pendingCallback?.onCancelled()
-                null
-            }
-            "setResult" -> {
-                val success = params["success"]?.jsonPrimitive?.boolean ?: false
-                if (success) {
-                    val data = params["data"]
-                    pendingCallback?.onSuccess(parseVerificationResult(data))
-                } else {
-                    val code = params["errorCode"]?.jsonPrimitive?.content ?: "UNKNOWN"
-                    val message = params["errorMessage"]?.jsonPrimitive?.content ?: "Unknown error"
-                    pendingCallback?.onFailure(SelfSdkError(code, message))
-                }
-                dismissAction?.invoke()
-                null
-            }
+            "dismiss" -> dismiss()
+            "setResult" -> setResult(params)
             else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown lifecycle method: $method")
         }
+
+    private suspend fun dismiss(): JsonElement? {
+        val state = consumeLifecycleState()
+        state.callback?.onCancelled()
+        state.dismiss?.invoke()
+        return null
+    }
+
+    private suspend fun setResult(params: Map<String, JsonElement>): JsonElement? {
+        val state = consumeLifecycleState()
+        val type = params["type"]?.jsonPrimitive?.content
+        val success = params["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
+        val data = params["data"]?.toString()
+        val errorCode = params["errorCode"]?.jsonPrimitive?.content
+        val errorMessage = params["errorMessage"]?.jsonPrimitive?.content
+
+        if (type != null) {
+            // Legacy flat lifecycle shim (same as Android)
+            state.callback?.onSuccess(verificationResultFromLifecycleParams(params))
+        } else if (success && data != null) {
+            try {
+                state.callback?.onSuccess(deserializeVerificationResult(data))
+            } catch (e: Exception) {
+                state.callback?.onFailure(SelfSdkError("PARSE_ERROR", "Failed to parse verification result: ${e.message}"))
+            }
+        } else if (!success && errorCode != null) {
+            state.callback?.onFailure(SelfSdkError(errorCode, errorMessage ?: "Unknown error"))
+        } else {
+            state.callback?.onCancelled()
+        }
+
+        state.dismiss?.invoke()
+        return null
     }
 }
 ```
+
+> **Implementation note:** The `type != null` branch is the same transport-compatibility shim as Android. It will be removed when the WebView sends canonical outcomes.
 
 #### NfcBridgeHandler.kt (iOS)
 
@@ -1381,6 +1502,7 @@ data class VerificationResult(
     val verificationId: String?,
     val proof: String?,
     val claims: Map<String, Any?>?,
+    val error: SelfSdkError?,
 )
 
 data class SelfSdkError(

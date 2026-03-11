@@ -216,6 +216,7 @@ The `specs/` folder contains architecture and implementation specs for the Self 
 - `OVERVIEW.md` is substantive context (architecture/scope/status summary), not just a link list.
 - Do not use `INDEX.md` and `OVERVIEW.md` as synonyms for the same purpose.
 - Workstream docs under `workstreams/<scope>/` use `SPEC.md` (context + implementation in one file).
+- PR execution docs belong under `workstreams/<scope>/plans/<BACKLOG-ID>-<slug>.md`; use one plan file per PR.
 - Use suffixed variants (for example `SPEC-<TOPIC>.md`) only when multiple specs of the same type are required in the same folder.
 - When renaming/moving spec files, update all references in `specs/`, `AGENTS.md`, and `CLAUDE.md` in the same change.
 
@@ -225,7 +226,8 @@ Key files:
 
 - `specs/projects/sdk/INDEX.md` — SDK project entry point, workstream links
 - `specs/projects/sdk/OVERVIEW.md` — Architecture, bridge protocol, module table, execution status
-- `specs/projects/sdk/workstreams/*/SPEC.md` — Implementation details (chunks, code changes, I/O examples)
+- `specs/projects/sdk/workstreams/*/SPEC.md` — Durable workstream context, invariants, backlog, active plan links
+- `specs/projects/sdk/workstreams/*/plans/*.md` — PR-sized execution plans
 
 **Before implementing SDK work:** Read `CLAUDE.md` Key Rules and the relevant workstream `SPEC.md` under `specs/projects/sdk/workstreams/`. These specs contain explicit constraints ("You will NOT..."), validation commands, and file ownership boundaries that prevent common mistakes.
 

@@ -14,6 +14,7 @@ kotlin {
     jvm() // For unit tests on host
 
     androidTarget {
+        publishLibraryVariants("release")
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
@@ -140,31 +141,6 @@ tasks.register<Copy>("copyWebViewAssets") {
 // Make preBuild depend on copying assets (so assets are always up-to-date)
 tasks.named("preBuild") {
     dependsOn("copyWebViewAssets")
-}
-
-// Publishing configuration
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                groupId = "xyz.self"
-                artifactId = "sdk"
-                version = project.version.toString()
-
-                // Publish Android AAR if available
-                if (components.findByName("release") != null) {
-                    from(components["release"])
-                }
-            }
-        }
-
-        repositories {
-            maven {
-                name = "LocalMaven"
-                url = uri("${project.rootDir}/build/maven")
-            }
-        }
-    }
 }
 
 // iOS XCFramework task
