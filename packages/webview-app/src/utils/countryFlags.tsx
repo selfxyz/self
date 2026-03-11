@@ -6,7 +6,7 @@ import React from 'react';
 
 /**
  * ISO 3166-1 alpha-3 to alpha-2 mapping.
- * Used to convert 3-letter country codes (used in passport MRZ)
+ * Used to convert 3-letter identity document country codes
  * to 2-letter codes (used for flag emojis and Intl.DisplayNames).
  */
 const alpha3ToAlpha2: Record<string, string> = {

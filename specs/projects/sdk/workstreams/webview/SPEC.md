@@ -44,27 +44,28 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 
 ## Backlog
 
-| ID    | Title                                                                                           | Status | Priority | Depends On | Plan                                                                                       | Notes                                                                                                                             |
-| ----- | ----------------------------------------------------------------------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| WV-01 | Dynamic proof request items sourced from request context                                        | Done   | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | Existing active follow-up                                                                                                         |
-| WV-02 | Define the KYC-provider contract for document capture, MRZ/liveness handoff, and result mapping | Ready  | High     | -          | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)             | Provider-backed path replaces Self-owned native scan flow                                                                         |
-| WV-03 | Remove native NFC and native-scan assumptions from active WebView screens, copy, and docs       | Ready  | High     | WV-02      | -                                                                                          | Active UX/docs should match the WebView-only scope                                                                                |
-| WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Ready  | Medium   | WV-02      | -                                                                                          | Build on existing `SdkInitialConfig` and `VERIFICATION_COMPLETE` work; define only the WebView-host transport and embedding delta |
+| ID    | Title                                                                                           | Status | Priority | Depends On | Plan                                                                                             | Notes                                                                                                                             |
+| ----- | ----------------------------------------------------------------------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| WV-01 | Dynamic proof request items sourced from request context                                        | Done   | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | Existing active follow-up                                                                                                         |
+| WV-02 | Define the KYC-provider contract for document capture, MRZ/liveness handoff, and result mapping | Done   | High     | -          | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | Provider-backed path replaces Self-owned native scan flow; active contract is now documented                                      |
+| WV-03 | Remove native NFC and native-scan assumptions from active WebView screens, copy, and docs       | Done   | High     | WV-02      | [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | Active UX/docs now route to a provider placeholder instead of Self-managed scan screens                                           |
+| WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Ready  | Medium   | WV-02      | -                                                                                                | Build on existing `SdkInitialConfig` and `VERIFICATION_COMPLETE` work; define only the WebView-host transport and embedding delta |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan                                                                                       | IDs   | Status |
-| ------------------------------------------------------------------------------------------ | ----- | ------ |
-| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | WV-01 | Done   |
-| [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)             | WV-02 | Ready  |
+| Plan                                                                                             | IDs   | Status |
+| ------------------------------------------------------------------------------------------------ | ----- | ------ |
+| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | WV-01 | Done   |
+| [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | WV-02 | Done   |
+| [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | WV-03 | Done   |
 
 ## Completion Checklist
 
-- [ ] Active backlog reflects the WebView-only client scope
-- [ ] KYC-provider dependency is explicit wherever scan/KYC UX is described
-- [ ] Active docs do not imply Self-managed NFC or native scanning for the current client path
+- [x] Active backlog reflects the WebView-only client scope
+- [x] KYC-provider dependency is explicit wherever scan/KYC UX is described
+- [x] Active docs do not imply Self-managed NFC or native scanning for the current client path
 - [ ] Host integration contract is clear without assuming custom native modules
 
 ## Problem Statement
@@ -82,6 +83,140 @@ The previous SDK plan assumed a shared WebView plus native shells for hardware-h
 3. **Keep active UX honest.** If a step is provider-owned or paused, the active specs and screens must say so.
 4. **Preserve reusable work without letting it drive scope.** Historical native work lives in [SDK Paused Work](../../paused/INDEX.md).
 5. **Keep the engine portable.** `mobile-sdk-alpha` still needs clean browser-safe behavior because it powers the active WebView flow.
+
+## KYC Provider Contract
+
+For the active client path, Self delegates document capture and KYC to a web-capable provider and treats that provider as interchangeable. Sumsub is one example, not a hard dependency. This contract defines the Self-owned boundary that `WV-03` and `WV-04` build on.
+
+### Boundary Decisions
+
+- The active contract is provider-agnostic. Provider-specific SDK/bootstrap details are implementation concerns, not part of the normative spec.
+- The provider must return control to a Self-owned route or callback inside the same WebView/browser verification session.
+- Self normalizes provider output inside the web flow before any host callback. Providers do not call the host lifecycle adapter directly.
+- `SdkInitialConfig.verificationRequest` remains the host-supplied launch input. `VERIFICATION_COMPLETE` and the bridge lifecycle adapter remain the host-facing terminal surfaces.
+- A provider `success` result is not the same thing as final verification success. It only means Self has enough provider-owned evidence to continue the Self proof path.
+
+### Provider Launch Request
+
+Self derives provider launch parameters from the active verification session plus `SdkInitialConfig.verificationRequest`.
+
+Required launch fields:
+
+- `verificationId`: Self correlation ID for the current verification session. Reuse this value in the final `VERIFICATION_COMPLETE` payload.
+- `returnUrl`: Self-owned URL or callback target that re-enters the same WebView/browser flow after provider completion.
+
+Pass through when present on `VerificationRequest`:
+
+- `userId`: Host/user correlation key.
+- `scope`: Proof scope used by downstream Self flows.
+- `disclosures`: Requested disclosure set when provider policy selection needs it.
+
+Optional Self context:
+
+- `env`: `prod` or `stg` when Self must route to matching provider environments.
+
+Provider auth tokens, SDK bootstrapping handles, and vendor-specific applicant/session IDs are intentionally out of scope for the public Self contract. They may exist in implementation code, but they do not change the launch contract above.
+
+### Normalized Provider Result
+
+Self expects provider output to normalize into this internal shape before any host callback:
+
+```ts
+type KycProviderResult = {
+  status: 'success' | 'partial' | 'cancel' | 'error';
+  verificationId: string;
+  provider: string;
+  providerSessionId?: string;
+  providerApplicantId?: string;
+  /** ISO 8601 UTC timestamp, for example 2026-03-11T18:42:15.000Z */
+  completedAt?: string;
+  attestation?: {
+    serializedApplicantInfo: string;
+    signature: string;
+    pubkey: [string, string];
+  };
+  error?: {
+    code:
+      | 'provider_cancelled'
+      | 'provider_timeout'
+      | 'provider_rejected'
+      | 'provider_missing_attestation'
+      | 'provider_unavailable'
+      | 'provider_protocol_error'
+      | 'provider_unknown_error';
+    message: string;
+    retryable?: boolean;
+    providerCode?: string;
+  };
+};
+```
+
+Status semantics:
+
+- `success`: The provider reached a terminal approved/completed state and returned the full attestation payload required for Self proof work.
+- `partial`: The provider returned a recognized but insufficient outcome, such as manual review, incomplete capture, or an approved session without the required attestation payload. Implementations must preserve whether the partial state is still review-pending or is structurally incomplete.
+- `cancel`: The user or provider explicitly cancelled or abandoned the session.
+- `error`: The provider flow failed because of timeout, transport failure, rejected callback payload, provider unavailability, or another technical/provider-side error.
+
+### Required Downstream Fields For Self Proof Steps
+
+Only a small subset of provider output is required for the Self proof path:
+
+- `attestation.serializedApplicantInfo`
+- `attestation.signature`
+- `attestation.pubkey`
+
+`serializedApplicantInfo` must encode the applicant fields currently consumed by the KYC circuit path in `@selfxyz/common`:
+
+- `country`
+- `idType`
+- `idNumber`
+- `issuanceDate`
+- `expiryDate`
+- `fullName`
+- `dob`
+- `photoHash`
+- `phoneNumber`
+- `gender`
+- `address`
+
+Self stores those fields as a `KycData` document (`documentCategory: 'kyc'`). The circuits consume the attestation blob plus signature/public key; they do not require raw provider capture artifacts.
+
+Correlation fields required outside the circuit path:
+
+- `verificationId`
+- `providerSessionId`
+- `providerApplicantId`
+
+Provider data that is not required downstream for Self proof steps:
+
+- raw MRZ text
+- document images or selfies
+- liveness recordings
+- OCR confidence/debug output
+- provider step-by-step audit logs
+
+Those fields may be retained as provider evidence or for support operations, but they are outside the Self proof contract.
+
+### Cancellation, Timeout, And Error Mapping
+
+Normalize provider outcomes as follows:
+
+- Provider-approved result with complete attestation payload: `status: 'success'`
+- Provider-approved or provider-returned result without complete attestation payload: `status: 'partial'`, `error.code: 'provider_missing_attestation'`, `retryable: false`
+- Provider state such as `pending`, `on_hold`, `manual_review`, or equivalent non-terminal review outcome: `status: 'partial'`, with no terminal host callback until Self decides the session has either resumed, expired, or been explicitly aborted
+- Explicit close, cancel, back-out, or hosted-flow abandonment signalled by the provider: `status: 'cancel'`, `error.code: 'provider_cancelled'`
+- User closes the host WebView/browser tab or Self loses the session before an explicit provider cancellation callback arrives: treat as `error`, `error.code: 'provider_timeout'`, unless the provider later confirms an explicit cancellation
+- Session TTL expiry, callback deadline expiry, or no provider return within the Self-owned timeout window: `status: 'error'`, `error.code: 'provider_timeout'`, `retryable: true`
+- Provider-declared rejection/failure outcome: `status: 'error'`, `error.code: 'provider_rejected'`
+- Network/auth/bootstrap/callback-shape failures: `status: 'error'`, `error.code: 'provider_unavailable'` or `provider_protocol_error`
+
+Host-facing mapping rules:
+
+- Provider results are inputs to the Self flow, not direct host results.
+- Only the full Self verification lifecycle emits `VERIFICATION_COMPLETE` or calls `lifecycle.setResult`.
+- If provider `success` unlocks the KYC proof path and the later Self proof flow completes, Self emits `VERIFICATION_COMPLETE { success: true, verificationId, userId }`.
+- If the verification session terminates after provider `partial`, `cancel`, or `error`, Self emits `VERIFICATION_COMPLETE { success: false, verificationId, userId, error }` using the normalized Self error code rather than the raw provider payload.
 
 ## In Scope
 

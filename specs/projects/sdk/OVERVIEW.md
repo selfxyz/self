@@ -27,9 +27,9 @@ On **March 11, 2026**, the active SDK delivery target changed:
 - [x] WebView UI workstream remains the primary delivery surface
 - [x] `mobile-sdk-alpha` browser/WebView portability work remains active
 - [x] Shared WebView architecture remains the source of truth for product flow
-- [ ] `WV-01` still needs request-context sourcing for dynamic proof request items
-- [ ] `WV-02` still needs to formalize the KYC-provider capture and handoff contract
-- [ ] `WV-03` still needs to remove native-scan and NFC assumptions from active WebView flow/docs
+- [x] `WV-01` completed request-context sourcing for dynamic proof request items
+- [x] `WV-02` formalized the provider-agnostic KYC capture and handoff contract
+- [x] `WV-03` removed native-scan and NFC assumptions from the active WebView flow/docs
 
 ### Paused
 
@@ -50,7 +50,8 @@ On **March 11, 2026**, the active SDK delivery target changed:
 ┌──────────────────────────────────────────────────────┐
 │              WEBVIEW EXPERIENCE (ACTIVE)            │
 │               packages/webview-app                  │
-│  React + routing + verification UX + provider flow │
+│ React + routing + verification UX + provider return │
+│ normalization + final host result mapping           │
 └──────────────────────────┬───────────────────────────┘
                            │
                            ▼
@@ -64,23 +65,25 @@ On **March 11, 2026**, the active SDK delivery target changed:
             ▼                             ▼
 ┌───────────────────────────┐   ┌───────────────────────────┐
 │ Host callback contract    │   │ Third-party KYC provider  │
-│ postMessage / URL / JS API│   │ web capture + KYC flow    │
-│ minimal host integration  │   │ e.g. Sumsub               │
+│ postMessage / URL / JS API│   │ web capture + attestation │
+│ receives final Self result│   │ e.g. Sumsub               │
 └───────────────────────────┘   └───────────────────────────┘
 ```
 
+Provider result flow returns into the Self-owned WebView session first. The host only receives the normalized terminal Self result through the lifecycle contract after the broader verification flow completes or fails.
+
 ## Module Table
 
-| Module               | Location                                                          | Status                | Current Role                                                                                 | Action Needed                                                  |
-| -------------------- | ----------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| WebView UI           | `packages/webview-app/`                                           | Active                | Primary product surface and orchestration layer                                              | Remove native-scan assumptions and formalize KYC-provider flow |
-| SDK Core             | `packages/mobile-sdk-alpha/`                                      | Active                | Shared engine for WebView/browser delivery                                                   | Keep browser entry clean and request-driven                    |
-| WebView Bridge       | `packages/webview-bridge/`                                        | Active, reduced scope | Optional host messaging / compatibility layer; not a justification for custom native modules | Keep minimal and aligned with WebView-first scope              |
-| KMP Native Shell     | `packages/kmp-sdk/`                                               | Paused                | Retained for possible future mobile-native reuse                                             | Do not advance unless scope reopens                            |
-| Swift Providers      | `packages/self-sdk-swift/`                                        | Paused                | Retained with KMP path for future reuse                                                      | Do not advance unless scope reopens                            |
-| RN SDK               | `packages/rn-sdk/`                                                | Paused                | Retained React Native shell work                                                             | Do not advance unless scope reopens                            |
-| Native Consolidation | `app/ios/`, `packages/mobile-sdk-alpha/ios/`, related native code | Paused                | Historical native cleanup and parity track                                                   | Keep as reference only for now                                 |
-| MiniPay Sample       | `packages/kmp-minipay-sample/`                                    | Paused                | Historical KMP integration example                                                           | Resume only if KMP path returns                                |
+| Module               | Location                                                          | Status                | Current Role                                                                                 | Action Needed                                                                         |
+| -------------------- | ----------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| WebView UI           | `packages/webview-app/`                                           | Active                | Primary product surface and orchestration layer                                              | Consume the documented provider contract and remove remaining native-scan assumptions |
+| SDK Core             | `packages/mobile-sdk-alpha/`                                      | Active                | Shared engine for WebView/browser delivery                                                   | Keep browser entry clean and request-driven                                           |
+| WebView Bridge       | `packages/webview-bridge/`                                        | Active, reduced scope | Optional host messaging / compatibility layer; not a justification for custom native modules | Keep minimal and aligned with WebView-first scope                                     |
+| KMP Native Shell     | `packages/kmp-sdk/`                                               | Paused                | Retained for possible future mobile-native reuse                                             | Do not advance unless scope reopens                                                   |
+| Swift Providers      | `packages/self-sdk-swift/`                                        | Paused                | Retained with KMP path for future reuse                                                      | Do not advance unless scope reopens                                                   |
+| RN SDK               | `packages/rn-sdk/`                                                | Paused                | Retained React Native shell work                                                             | Do not advance unless scope reopens                                                   |
+| Native Consolidation | `app/ios/`, `packages/mobile-sdk-alpha/ios/`, related native code | Paused                | Historical native cleanup and parity track                                                   | Keep as reference only for now                                                        |
+| MiniPay Sample       | `packages/kmp-minipay-sample/`                                    | Paused                | Historical KMP integration example                                                           | Resume only if KMP path returns                                                       |
 
 ## Scope Rules
 
