@@ -67,6 +67,7 @@ export default defineConfig([
       // Externalize all React Native sub-modules and internals
       /^react-native\/.*/,
       '@selfxyz/common',
+      /^@selfxyz\/common\/.*/,
       // Common crypto dependencies (already in main app)
       'elliptic',
       'js-sha256',
@@ -126,6 +127,7 @@ export default defineConfig([
       // Externalize all React Native sub-modules and internals
       /^react-native\/.*/,
       '@selfxyz/common',
+      /^@selfxyz\/common\/.*/,
       // Common crypto dependencies (already in main app)
       'elliptic',
       'js-sha256',
