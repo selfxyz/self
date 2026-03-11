@@ -5,6 +5,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { SelfClientProvider } from './providers/SelfClientProvider';
+import { VerificationRequestProvider } from './providers/VerificationRequestProvider';
 import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
 import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
 import { DocumentCameraScreen } from './screens/onboarding/DocumentCameraScreen';
@@ -18,6 +19,7 @@ import { ComingSoonScreen } from './screens/ComingSoonScreen';
 
 export const App: React.FC = () => (
   <BrowserRouter>
+    <VerificationRequestProvider>
     <SelfClientProvider>
       <Routes>
         <Route path="/" element={<HomeScreen />} />
@@ -40,5 +42,6 @@ export const App: React.FC = () => (
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </SelfClientProvider>
+    </VerificationRequestProvider>
   </BrowserRouter>
 );
