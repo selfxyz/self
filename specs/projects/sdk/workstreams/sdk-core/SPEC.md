@@ -813,7 +813,7 @@ grep -r "NativeModules\|NativeEventEmitter\|requireNativeComponent" packages/web
 | Spec                                                     | Relationship                                                                              |
 | -------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | [SDK Overview](../../OVERVIEW.md)                        | Parent architecture spec                                                                  |
-| [webview/SPEC.md](../webview/SPEC.md)                    | Sibling — builds WebView UI that consumes your adapter interfaces and browser entry point |
+| [WebView UI Spec](../webview/SPEC.md)                    | Sibling — builds WebView UI that consumes your adapter interfaces and browser entry point |
 | [Native Shells Spec](../../paused/native-shells/SPEC.md) | Paused sibling — retained native handlers that may reuse your lifecycle types later       |
 | [RN SDK Spec](../../paused/rn-sdk/SPEC.md)               | Paused sibling — retained RN shell that may reuse your browser entry point later          |
 | [MiniPay Sample Spec](../../paused/integrations/SPEC.md) | Paused downstream — historical KMP sample that depends on SDK core                        |

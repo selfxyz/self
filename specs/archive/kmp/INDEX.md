@@ -35,10 +35,11 @@ This folder is a historical snapshot. Active execution moved to SDK specs.
 - [x] Architecture skeleton created
 - [x] Initiative skeleton created
 - [x] Status moved to `specs/projects/sdk/OVERVIEW.md` "Execution Status" section (relocated — SDK-wide)
-- [x] KMP execution location clarified under `specs/projects/sdk/workstreams/*`
+- [x] KMP execution location clarified — active work under `specs/projects/sdk/workstreams/*`, paused native tracks under `specs/projects/sdk/paused/*`
 - [x] Legacy path mapping added to top-level `specs/README.md`
 
 ## Change Log
 
 - 2026-03-05: Initial KMP spec index skeleton created.
 - 2026-03-05: Removed stale planned `specs/projects/kmp/workstreams/` target; confirmed active execution remains under `specs/projects/sdk/workstreams/*`.
+- 2026-03-11: KMP-retained native tracks moved to `specs/projects/sdk/paused/*`.

@@ -2305,13 +2305,13 @@ cd packages/self-sdk-swift && swift build
 
 ## Related Specs
 
-| Spec                                            | Relationship                                                              |
-| ----------------------------------------------- | ------------------------------------------------------------------------- |
-| [SDK Overview](../../OVERVIEW.md)               | Parent architecture spec -- north star, decision matrix, shared contracts |
-| [webview/SPEC.md](../webview/SPEC.md)           | Sibling -- owns WebView UI, bridge adapters, Vite bundle you consume      |
-| [sdk-core/SPEC.md](../sdk-core/SPEC.md)         | Sibling -- owns SDK core, adapter interfaces your handlers implement      |
-| [rn-sdk/SPEC.md](../rn-sdk/SPEC.md)             | Sibling -- separate native shell using same bridge protocol               |
-| [integrations/SPEC.md](../integrations/SPEC.md) | Downstream -- MiniPay sample app depends on this SDK                      |
+| Spec                                                 | Relationship                                                              |
+| ---------------------------------------------------- | ------------------------------------------------------------------------- |
+| [SDK Overview](../../OVERVIEW.md)                    | Parent architecture spec -- north star, decision matrix, shared contracts |
+| [WebView UI Spec](../../workstreams/webview/SPEC.md) | Sibling -- owns WebView UI, bridge adapters, Vite bundle you consume      |
+| [SDK Core Spec](../../workstreams/sdk-core/SPEC.md)  | Sibling -- owns SDK core, adapter interfaces your handlers implement      |
+| [rn-sdk/SPEC.md](../rn-sdk/SPEC.md)                  | Sibling -- separate native shell using same bridge protocol               |
+| [integrations/SPEC.md](../integrations/SPEC.md)      | Downstream -- MiniPay sample app depends on this SDK                      |
 
 ---
 
