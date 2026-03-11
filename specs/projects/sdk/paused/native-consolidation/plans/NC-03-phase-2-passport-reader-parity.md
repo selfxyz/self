@@ -30,7 +30,7 @@
 - `app/ios/PassportReader.swift`
 - `packages/mobile-sdk-alpha/ios/SelfSDK/PassportReader.swift`
 - related TS integration and analytics call sites if required
-- `specs/projects/sdk/workstreams/native-consolidation/SPEC.md`
+- `specs/projects/sdk/paused/native-consolidation/SPEC.md`
 
 ## Files Not to Modify
 

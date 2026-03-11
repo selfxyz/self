@@ -28,8 +28,8 @@
 ## Files to Modify
 
 - test files listed in `SPEC.md`
-- `specs/projects/sdk/workstreams/native-consolidation/CONTRACTS.md`
-- `specs/projects/sdk/workstreams/native-consolidation/SPEC.md`
+- `specs/projects/sdk/paused/native-consolidation/CONTRACTS.md`
+- `specs/projects/sdk/paused/native-consolidation/SPEC.md`
 
 ## Files Not to Modify
 

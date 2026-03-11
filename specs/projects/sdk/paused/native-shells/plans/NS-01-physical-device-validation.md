@@ -29,7 +29,7 @@
 
 ## Files to Modify
 
-- `specs/projects/sdk/workstreams/native-shells/SPEC.md`
+- `specs/projects/sdk/paused/native-shells/SPEC.md`
 - `specs/projects/sdk/OVERVIEW.md`
 - any validation log or handoff doc created by this PR
 

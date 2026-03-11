@@ -28,7 +28,7 @@
 
 - `packages/rn-sdk/package.json`
 - release docs/specs as needed
-- `specs/projects/sdk/workstreams/rn-sdk/SPEC.md`
+- `specs/projects/sdk/paused/rn-sdk/SPEC.md`
 
 ## Files Not to Modify
 

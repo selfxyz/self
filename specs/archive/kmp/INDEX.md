@@ -21,8 +21,8 @@ This folder is a historical snapshot. Active execution moved to SDK specs.
 ## Active Paths
 
 - `specs/projects/sdk/OVERVIEW.md` (SDK-wide execution status — see "Execution Status" section)
-- `specs/projects/sdk/workstreams/native-shells/` (active KMP execution stream)
-- `specs/projects/sdk/workstreams/integrations/` (cross-SDK integration execution)
+- `specs/projects/sdk/paused/native-shells/` (paused KMP execution stream retained for reuse)
+- `specs/projects/sdk/paused/integrations/` (paused cross-SDK integration execution)
 
 ## Notes
 

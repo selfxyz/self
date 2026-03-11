@@ -3,7 +3,9 @@
 > Last updated: 2026-03-05
 > Owner: Person 3 (Integrations)
 > Project: [SDK Overview](../../OVERVIEW.md)
-> Status: Active
+> Status: Paused
+
+> Pause note: As of 2026-03-11, the active SDK delivery scope is WebView-only with no custom native modules. This KMP integration sample is retained for future reuse and should not drive current delivery.
 
 ## North Star
 
@@ -64,17 +66,17 @@
 
 | ID    | Title                                                        | Status | Priority | Depends On | Plan                                                                                                   | PR  |
 | ----- | ------------------------------------------------------------ | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------------------ | --- |
-| IN-01 | Polish result display and complete chunk 3C error handling   | Ready  | Medium   | -          | [plans/IN-01-sample-polish-and-error-handling.md](./plans/IN-01-sample-polish-and-error-handling.md)   | -   |
-| IN-02 | Physical-device NFC end-to-end validation for MiniPay sample | Ready  | High     | IN-01      | [plans/IN-02-sample-physical-device-validation.md](./plans/IN-02-sample-physical-device-validation.md) | -   |
+| IN-01 | Polish result display and complete chunk 3C error handling   | Paused | Medium   | -          | [plans/IN-01-sample-polish-and-error-handling.md](./plans/IN-01-sample-polish-and-error-handling.md)   | -   |
+| IN-02 | Physical-device NFC end-to-end validation for MiniPay sample | Paused | High     | IN-01      | [plans/IN-02-sample-physical-device-validation.md](./plans/IN-02-sample-physical-device-validation.md) | -   |
 
-Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Paused`, `Done`
 
 ## Active Plans
 
 | Plan                                                                                                   | IDs   | Status |
 | ------------------------------------------------------------------------------------------------------ | ----- | ------ |
-| [plans/IN-01-sample-polish-and-error-handling.md](./plans/IN-01-sample-polish-and-error-handling.md)   | IN-01 | Ready  |
-| [plans/IN-02-sample-physical-device-validation.md](./plans/IN-02-sample-physical-device-validation.md) | IN-02 | Ready  |
+| [plans/IN-01-sample-polish-and-error-handling.md](./plans/IN-01-sample-polish-and-error-handling.md)   | IN-01 | Paused |
+| [plans/IN-02-sample-physical-device-validation.md](./plans/IN-02-sample-physical-device-validation.md) | IN-02 | Paused |
 
 ## Completion Checklist
 

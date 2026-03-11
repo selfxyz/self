@@ -39,7 +39,7 @@ You are consolidating MRZ camera logic in `packages/rn-sdk-test-app/` to use exi
 
 - Familiarity with RN Android Gradle setup (`settings.gradle`, `app/build.gradle`) and local composite builds.
 - Familiarity with iOS local SPM linking in `project.pbxproj`.
-- Read [RN SDK Spec](./SPEC.md) and [Native Shells Spec](../native-shells/SPEC.md) for handler contracts.
+- Read [RN SDK Spec](../../projects/sdk/paused/rn-sdk/SPEC.md) and [Native Shells Spec](../../projects/sdk/paused/native-shells/SPEC.md) for handler contracts.
 - Kotlin version mismatch: RN test app uses Kotlin 2.0.0 (required by RN 0.76.9), KMP SDK uses 2.1.0. Bumping the test app to 2.1.0 fails with `Found interface KotlinTopLevelExtension, but class was expected` — KGP 2.1.0 has a binary-incompatible API change that breaks the React Native Gradle plugin. This is an infra blocker alongside AGP for composite builds.
 
 ## The Problem

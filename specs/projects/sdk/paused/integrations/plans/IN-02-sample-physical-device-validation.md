@@ -26,7 +26,7 @@
 
 ## Files to Modify
 
-- `specs/projects/sdk/workstreams/integrations/SPEC.md`
+- `specs/projects/sdk/paused/integrations/SPEC.md`
 - validation notes as needed
 
 ## Files Not to Modify

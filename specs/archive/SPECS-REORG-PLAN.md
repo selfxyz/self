@@ -99,10 +99,10 @@ SDK project:
 - `specs/WAVE-PLAN.md` -> `specs/projects/sdk/PLAN.md`
 - `specs/HANDOFF.md` -> `specs/projects/sdk/HANDOFF.md`
 - `specs/person1-webview/*` -> `specs/projects/sdk/workstreams/webview/*`
-- `specs/person2-native-shells/*` -> `specs/projects/sdk/workstreams/native-shells/*`
-- `specs/person3-integrations/*` -> `specs/projects/sdk/workstreams/integrations/*`
+- `specs/person2-native-shells/*` -> `specs/projects/sdk/paused/native-shells/*`
+- `specs/person3-integrations/*` -> `specs/projects/sdk/paused/integrations/*`
 - `specs/person4-sdk-core/*` -> `specs/projects/sdk/workstreams/sdk-core/*`
-- `specs/person5-rn-sdk/*` -> `specs/projects/sdk/workstreams/rn-sdk/*`
+- `specs/person5-rn-sdk/*` -> `specs/projects/sdk/paused/rn-sdk/*`
 
 KMP project:
 
