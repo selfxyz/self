@@ -77,7 +77,11 @@ export const ProviderLaunchScreen: React.FC = () => {
             fullWidth
             onPress={() => {
               haptic.trigger('selection');
-              navigate(-1);
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate('/');
+              }
             }}
           />
         </div>
