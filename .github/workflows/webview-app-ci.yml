@@ -6,6 +6,8 @@ permissions:
 on:
   pull_request:
     paths:
+      - "common/**"
+      - "packages/mobile-sdk-alpha/**"
       - "packages/webview-app/**"
       - "packages/webview-bridge/**"
       - ".github/workflows/webview-app-ci.yml"
@@ -13,6 +15,8 @@ on:
   push:
     branches: [dev, staging, main]
     paths:
+      - "common/**"
+      - "packages/mobile-sdk-alpha/**"
       - "packages/webview-app/**"
       - "packages/webview-bridge/**"
       - ".github/workflows/webview-app-ci.yml"
