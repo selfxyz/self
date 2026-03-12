@@ -59,7 +59,7 @@
 
 - [x] All chunks done (4A–4F) — config, browser entry, lifecycle events, conditional store, web fallbacks
 - [x] Bridge-layer fallback duplicates removed
-- [ ] `generateKey()`/`getPublicKey()` not exposed in `BridgeCryptoAdapter` interface
+- [x] `generateKey()`/`getPublicKey()` exposed in `CryptoAdapter` and `BridgeCryptoAdapter` interfaces
 
 ## Execution Model
 
@@ -72,7 +72,7 @@
 | ID    | Title                                                                        | Status | Priority | Depends On | Plan                                                                             | PR  |
 | ----- | ---------------------------------------------------------------------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------- | --- |
 | SC-01 | Consolidate bridge-layer fallback duplicates with engine-owned adapters      | Done   | High     | -          | [plans/SC-01-fallback-adapter-dedup.md](./plans/SC-01-fallback-adapter-dedup.md) | -   |
-| SC-02 | Expose `generateKey()` and `getPublicKey()` in bridge crypto adapter surface | Ready  | Medium   | SC-01      | [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)   | -   |
+| SC-02 | Expose `generateKey()` and `getPublicKey()` in bridge crypto adapter surface | Done   | Medium   | SC-01      | [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)   | -   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -81,7 +81,7 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 | Plan                                                                             | IDs   | Status |
 | -------------------------------------------------------------------------------- | ----- | ------ |
 | [plans/SC-01-fallback-adapter-dedup.md](./plans/SC-01-fallback-adapter-dedup.md) | SC-01 | Done   |
-| [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)   | SC-02 | Ready  |
+| [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)   | SC-02 | Done   |
 
 ## Completion Checklist
 

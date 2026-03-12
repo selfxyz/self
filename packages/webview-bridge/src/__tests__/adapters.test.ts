@@ -47,6 +47,8 @@ describe('Adapter integration tests', () => {
     engineBrowserMocks.createWebCryptoAdapter.mockReturnValue({
       hash: hashSpy,
       sign: vi.fn(),
+      generateKey: vi.fn(),
+      getPublicKey: vi.fn(),
     });
     engineBrowserMocks.createNoOpHapticAdapter.mockReset();
     engineBrowserMocks.createNoOpHapticAdapter.mockReturnValue(noOpTriggerSpy);
@@ -179,6 +181,52 @@ describe('Adapter integration tests', () => {
 
       expect(result).toEqual(new Uint8Array([1, 2, 3, 4]));
       expect(mock.messagesFor('crypto')).toHaveLength(1);
+    });
+
+    it('should generate key via bridge', async () => {
+      mock.handleWith('crypto', 'generateKey', {
+        keyRef: 'my-key',
+        success: true,
+      });
+
+      const adapter = bridgeCryptoAdapter(bridge);
+      const result = await adapter.generateKey('my-key');
+
+      expect(result).toEqual({ keyRef: 'my-key' });
+      const messages = mock.messagesFor('crypto');
+      expect(messages).toHaveLength(1);
+      expect(messages[0].method).toBe('generateKey');
+      expect(messages[0].params).toEqual({ keyRef: 'my-key' });
+    });
+
+    it('should reject key generation when native reports failure', async () => {
+      mock.handleWith('crypto', 'generateKey', {
+        keyRef: 'my-key',
+        success: false,
+      });
+
+      const adapter = bridgeCryptoAdapter(bridge);
+
+      await expect(adapter.generateKey('my-key')).rejects.toThrow('Native key generation failed');
+    });
+
+    it('should get public key via bridge and decode base64', async () => {
+      const pubKeyBytes = new Uint8Array([4, 10, 20, 30, 40]);
+      const pubKeyBase64 = btoa(
+        String.fromCharCode(...pubKeyBytes),
+      );
+      mock.handleWith('crypto', 'getPublicKey', {
+        publicKey: pubKeyBase64,
+      });
+
+      const adapter = bridgeCryptoAdapter(bridge);
+      const result = await adapter.getPublicKey('my-key');
+
+      expect(result).toEqual(pubKeyBytes);
+      const messages = mock.messagesFor('crypto');
+      expect(messages).toHaveLength(1);
+      expect(messages[0].method).toBe('getPublicKey');
+      expect(messages[0].params).toEqual({ keyRef: 'my-key' });
     });
   });
 
