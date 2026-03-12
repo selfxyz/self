@@ -113,10 +113,16 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
               fontSize={18}
               fontWeight="500"
               color={textColor}
+              allowFontScaling={false}
             >
               {documentName}
             </Text>
-            <Text fontFamily={dinot} fontSize={14} color={subtitleColor}>
+            <Text
+              fontFamily={dinot}
+              fontSize={14}
+              color={subtitleColor}
+              allowFontScaling={false}
+            >
               {subtitleText}
             </Text>
           </YStack>

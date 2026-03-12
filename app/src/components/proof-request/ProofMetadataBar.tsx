@@ -41,6 +41,7 @@ export const ProofMetadataBar: React.FC<ProofMetadataBarProps> = ({
             fontWeight="500"
             color={proofRequestColors.slate400}
             textTransform="uppercase"
+            allowFontScaling={false}
           >
             Proofs Requested
           </Text>
@@ -52,6 +53,7 @@ export const ProofMetadataBar: React.FC<ProofMetadataBarProps> = ({
           fontSize={12}
           fontWeight="500"
           color={proofRequestColors.slate400}
+          allowFontScaling={false}
         >
           •
         </Text>
@@ -62,6 +64,7 @@ export const ProofMetadataBar: React.FC<ProofMetadataBarProps> = ({
           fontSize={12}
           fontWeight="500"
           color={proofRequestColors.slate400}
+          allowFontScaling={false}
           testID={`${testID}-timestamp`}
         >
           {timestamp}

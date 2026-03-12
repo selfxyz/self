@@ -92,6 +92,7 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
               fontSize={18}
               color={proofRequestColors.slate900}
               numberOfLines={1}
+              allowFontScaling={false}
             >
               {selectedDocumentName}
             </Text>
@@ -135,6 +136,7 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
                 fontSize={18}
                 color={proofRequestColors.white}
                 textAlign="center"
+                allowFontScaling={false}
               >
                 Select
               </Text>
