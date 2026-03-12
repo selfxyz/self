@@ -18,7 +18,7 @@ interface DelayedLottieViewWebProps {
  * Forwards style and testID to preserve layout and testability on web.
  */
 export const DelayedLottieView = (props: DelayedLottieViewWebProps) => {
-  const { onAnimationFinish, style, testID, ...rest } = props;
+  const { onAnimationFinish, style, testID } = props;
 
   useEffect(() => {
     onAnimationFinish?.();
