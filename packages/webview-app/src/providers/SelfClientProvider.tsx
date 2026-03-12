@@ -77,18 +77,26 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [bridge, navigate]);
 
-  const hasCalledReady = useRef(false);
+  const lastReadyRef = useRef<{
+    lifecycle: BridgeLifecycleAdapter;
+    verificationId?: string;
+  } | null>(null);
   useEffect(() => {
-    if (hasCalledReady.current) return;
-    hasCalledReady.current = true;
+    if (
+      lastReadyRef.current?.lifecycle === adapters.lifecycle &&
+      lastReadyRef.current?.verificationId === verificationId
+    ) {
+      return;
+    }
     adapters.lifecycle.ready(
       verificationId ? { verificationId } : {},
     );
+    lastReadyRef.current = { lifecycle: adapters.lifecycle, verificationId };
   }, [adapters.lifecycle, verificationId]);
 
   useEffect(() => {
     return bridge.on('lifecycle', 'cancel', () => {
-      navigate('/');
+      navigate('/', { replace: true });
     });
   }, [bridge, navigate]);
 

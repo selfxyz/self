@@ -65,7 +65,7 @@ internal fun resolveLifecycleSetResult(params: Map<String, JsonElement>): Lifecy
                     ),
                 )
             }
-        success == true ->
+        success == true && (params.containsKey("userId") || params.containsKey("verificationId")) ->
             LifecycleSetResultOutcome.Success(verificationResultFromLifecycleParams(params))
         else -> LifecycleSetResultOutcome.Cancelled
     }
