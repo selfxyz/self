@@ -13,7 +13,7 @@ import {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { LottieAnimation, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   Description,
@@ -26,6 +26,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import qrScanAnimation from '@/assets/animations/qr_scan.json';
 import QRScan from '@/assets/icons/qr_code.svg';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
@@ -36,9 +37,6 @@ import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
-const qrScanAnimation = require('@/assets/animations/qr_scan.lottie');
 
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -165,7 +163,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
           {shouldRenderCamera && (
             <>
               <QRCodeScannerView onQRData={onQRData} isMounted={isFocused} />
-              <LottieAnimation
+              <DelayedLottieView
                 autoPlay
                 loop
                 source={qrScanAnimation}

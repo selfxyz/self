@@ -2,22 +2,22 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type LottieView from 'lottie-react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
-import type {
-  DotLottieSource,
-  ProvingStateType,
-} from '@selfxyz/mobile-sdk-alpha';
+import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha';
 import {
   advercase,
   dinot,
   loadSelectedDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
+import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
 import {
   black,
   slate400,
@@ -31,11 +31,6 @@ import { getLoadingScreenText } from '@/proving/loadingScreenStateText';
 import { setupNotifications } from '@/services/notifications/notificationService';
 import { useSettingStore } from '@/stores/settingStore';
 
-/* eslint-disable @typescript-eslint/no-require-imports -- binary assets loaded by Metro */
-const failAnimation = require('@selfxyz/mobile-sdk-alpha/animations/loading/fail.lottie');
-const proveLoadingAnimation = require('@selfxyz/mobile-sdk-alpha/animations/loading/prove.lottie');
-/* eslint-enable @typescript-eslint/no-require-imports */
-
 type LoadingScreenParams = {
   documentCategory?: DocumentCategory;
   signatureAlgorithm?: string;
@@ -43,6 +38,7 @@ type LoadingScreenParams = {
 };
 
 type LoadingScreenProps = StaticScreenProps<LoadingScreenParams>;
+
 // Define all terminal states that should stop animations and haptics
 const terminalStates: ProvingStateType[] = [
   'completed',
@@ -59,9 +55,9 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const [isInitializing, setIsInitializing] = useState(false);
 
   // Animation states
-  const [animationSource, setAnimationSource] = useState<DotLottieSource>(
-    proveLoadingAnimation,
-  );
+  const [animationSource, setAnimationSource] = useState<
+    LottieView['props']['source']
+  >(proveLoadingAnimation);
 
   // Loading text state
   const [loadingText, setLoadingText] = useState<{

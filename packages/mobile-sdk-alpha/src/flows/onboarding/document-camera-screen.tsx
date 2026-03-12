@@ -7,8 +7,9 @@ import { StyleSheet } from 'react-native';
 import type { MRZInfo } from 'src/types/public';
 
 import Scan from '../../../svgs/icons/passport_camera_scan.svg';
+import passportScanAnimation from '../../animations/passport_scan.json';
 import { Additional, Description, SecondaryButton, Title, View, XStack, YStack } from '../../components';
-import { LottieAnimation } from '../../components/LottieAnimation';
+import { DelayedLottieView } from '../../components/DelayedLottieView';
 import { MRZScannerView } from '../../components/MRZScannerView';
 import { PassportEvents } from '../../constants/analytics';
 import { black, slate400, slate800, white } from '../../constants/colors';
@@ -18,9 +19,6 @@ import { mrzReadInstructions, useReadMRZ } from '../../flows/onboarding/read-mrz
 import type { SafeAreaInsets } from '../../layouts/ExpandableBottomLayout';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { SdkEvents } from '../../types/events';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
-const passportScanAnimation = require('../../animations/passport_scan.lottie');
 
 type Props = {
   onBack?: () => void;
@@ -57,7 +55,7 @@ export const DocumentCameraScreen = ({ onBack, onSuccess, safeAreaInsets }: Prop
     >
       <ExpandableBottomLayout.TopSection backgroundColor={black} safeAreaTop={safeAreaInsets?.top}>
         <MRZScannerView onMRZDetected={handleMRZDetected} onError={handleScannerError} />
-        <LottieAnimation
+        <DelayedLottieView
           autoPlay
           loop
           source={passportScanAnimation}

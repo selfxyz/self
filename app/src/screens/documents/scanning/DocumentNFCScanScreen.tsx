@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
   useEffect,
@@ -21,7 +22,6 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
 import { Button, Image, XStack } from 'tamagui';
 import { v4 as uuidv4 } from 'uuid';
-import type { Dotlottie } from '@lottiefiles/dotlottie-react-native';
 import type { RouteProp } from '@react-navigation/native';
 import {
   useFocusEffect,
@@ -32,11 +32,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
-import {
-  LottieAnimation,
-  sanitizeErrorMessage,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { sanitizeErrorMessage, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
   ButtonsContainer,
@@ -55,6 +51,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
+import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
 import NFC_IMAGE from '@/assets/images/nfc.png';
 import { logNFCEvent } from '@/config/sentry';
 import { useErrorInjection } from '@/hooks/useErrorInjection';
@@ -103,9 +100,6 @@ type DocumentNFCScanRoute = RouteProp<
   string
 >;
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
-const passportVerifyAnimation = require('@/assets/animations/passport_verify.lottie');
-
 const DocumentNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent, useMRZStore } = selfClient;
@@ -142,10 +136,14 @@ const DocumentNFCScanScreen: React.FC = () => {
     [route.params?.useCan],
   );
 
-  const animationRef = useRef<Dotlottie | null>(null);
+  const animationRef = useRef<LottieView>(null);
 
   useEffect(() => {
-    animationRef.current?.play();
+    const timer = setTimeout(() => {
+      animationRef.current?.play();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -547,7 +545,7 @@ const DocumentNFCScanScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={slate100}>
-        <LottieAnimation
+        <LottieView
           ref={animationRef}
           autoPlay={false}
           loop={false}
