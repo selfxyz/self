@@ -210,6 +210,7 @@ describe('Adapter integration tests', () => {
       await expect(adapter.generateKey('my-key')).rejects.toThrow('Native key generation failed');
     });
 
+
     it('should get public key via bridge and decode base64', async () => {
       const pubKeyBytes = new Uint8Array([4, 10, 20, 30, 40]);
       const pubKeyBase64 = btoa(

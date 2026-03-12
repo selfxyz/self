@@ -1,6 +1,6 @@
 # SDK Core Adaptation — Implementation Spec
 
-> Last updated: 2026-03-11
+> Last updated: 2026-03-12
 > Owner: SDK Core
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
@@ -60,6 +60,7 @@
 - [x] All chunks done (4A–4F) — config, browser entry, lifecycle events, conditional store, web fallbacks
 - [x] Bridge-layer fallback duplicates removed
 - [x] `generateKey()`/`getPublicKey()` exposed in `CryptoAdapter` and `BridgeCryptoAdapter` interfaces
+- [ ] Reusable adapter assembly factories extracted from app provider
 
 ## Execution Model
 
@@ -69,19 +70,21 @@
 
 ## Backlog
 
-| ID    | Title                                                                        | Status | Priority | Depends On | Plan                                                                             | PR  |
-| ----- | ---------------------------------------------------------------------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------- | --- |
-| SC-01 | Consolidate bridge-layer fallback duplicates with engine-owned adapters      | Done   | High     | -          | [plans/SC-01-fallback-adapter-dedup.md](./plans/SC-01-fallback-adapter-dedup.md) | -   |
-| SC-02 | Expose `generateKey()` and `getPublicKey()` in bridge crypto adapter surface | Done   | Medium   | SC-01      | [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)   | -   |
+| ID    | Title                                                                        | Status | Priority | Depends On | Plan                                                                                       | PR  |
+| ----- | ---------------------------------------------------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------ | --- |
+| SC-01 | Consolidate bridge-layer fallback duplicates with engine-owned adapters      | Done   | High     | -          | [plans/SC-01-fallback-adapter-dedup.md](./plans/SC-01-fallback-adapter-dedup.md)           | -   |
+| SC-02 | Expose `generateKey()` and `getPublicKey()` in bridge crypto adapter surface | Done   | Medium   | SC-01      | [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)             | -   |
+| SC-03 | Extract reusable app adapter factories for SelfClient assembly               | Ready  | Medium   | SC-02      | [plans/SC-03-selfclient-adapter-assembly.md](./plans/SC-03-selfclient-adapter-assembly.md) | -   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan                                                                             | IDs   | Status |
-| -------------------------------------------------------------------------------- | ----- | ------ |
-| [plans/SC-01-fallback-adapter-dedup.md](./plans/SC-01-fallback-adapter-dedup.md) | SC-01 | Done   |
-| [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)   | SC-02 | Done   |
+| Plan                                                                                       | IDs   | Status |
+| ------------------------------------------------------------------------------------------ | ----- | ------ |
+| [plans/SC-01-fallback-adapter-dedup.md](./plans/SC-01-fallback-adapter-dedup.md)           | SC-01 | Done   |
+| [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)             | SC-02 | Done   |
+| [plans/SC-03-selfclient-adapter-assembly.md](./plans/SC-03-selfclient-adapter-assembly.md) | SC-03 | Ready  |
 
 ## Completion Checklist
 

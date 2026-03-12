@@ -1,6 +1,6 @@
 # SDK Project
 
-Last updated: March 11, 2026
+Last updated: March 12, 2026
 Status: Active (WebView-first)
 
 ## Start Here
@@ -29,5 +29,3 @@ Status: Active (WebView-first)
 ## Related
 
 - [Paused Work Index](./paused/INDEX.md) — retained native/KMP/RN tracks for future reuse
-- [Euclid Web Consolidation](../../topics/EUCLID-WEB-CONSOLIDATION.md) — background on shared WebView convergence
-- [Security Hardening](../../topics/SECURITY-HARDENING.md) — historical native hardening context, now mostly parked with paused workstreams
