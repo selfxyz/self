@@ -15,10 +15,7 @@
 
 ## Topics
 
-- [CI Coverage Gaps](./archive/CI-COVERAGE-GAPS.md)
-- [Euclid Web Consolidation](./topics/EUCLID-WEB-CONSOLIDATION.md)
-- [Lottie dotLottie Review](./topics/LOTTIE-DOTLOTTIE-REVIEW.md)
-- [Security Hardening](./topics/SECURITY-HARDENING.md)
+No active topic docs. See [Spec Archive](./ARCHIVE.md) for retired topics.
 
 ## Framework
 

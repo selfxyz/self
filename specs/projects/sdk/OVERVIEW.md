@@ -31,6 +31,8 @@ On **March 11, 2026**, the active SDK delivery target changed:
 - [x] `WV-02` formalized the provider-agnostic KYC capture and handoff contract
 - [x] `WV-03` removed native-scan and NFC assumptions from the active WebView flow/docs
 - [x] `WV-04` added the browser/native host callback contract for ready, result, dismiss, and cancel handling
+- [x] `SC-01` consolidated bridge-layer fallback duplicates with engine-owned adapters
+- [x] `SC-02` exposed `generateKey()`/`getPublicKey()` in the crypto adapter surface
 
 ### Paused
 
