@@ -44,12 +44,12 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 
 ## Backlog
 
-| ID    | Title                                                                                           | Status | Priority | Depends On | Plan                                                                                             | Notes                                                                                                                             |
-| ----- | ----------------------------------------------------------------------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| WV-01 | Dynamic proof request items sourced from request context                                        | Done   | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | Existing active follow-up                                                                                                         |
-| WV-02 | Define the KYC-provider contract for document capture, MRZ/liveness handoff, and result mapping | Done   | High     | -          | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | Provider-backed path replaces Self-owned native scan flow; active contract is now documented                                      |
-| WV-03 | Remove native NFC and native-scan assumptions from active WebView screens, copy, and docs       | Done   | High     | WV-02      | [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | Active UX/docs now route to a provider placeholder instead of Self-managed scan screens                                           |
-| WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Done   | Medium   | WV-02      | [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)               | Browser host fallback now uses `postMessage` for iframe/popup embedding while native transports keep their current behavior        |
+| ID    | Title                                                                                           | Status | Priority | Depends On | Plan                                                                                             | Notes                                                                                                                       |
+| ----- | ----------------------------------------------------------------------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| WV-01 | Dynamic proof request items sourced from request context                                        | Done   | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | Existing active follow-up                                                                                                   |
+| WV-02 | Define the KYC-provider contract for document capture, MRZ/liveness handoff, and result mapping | Done   | High     | -          | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | Provider-backed path replaces Self-owned native scan flow; active contract is now documented                                |
+| WV-03 | Remove native NFC and native-scan assumptions from active WebView screens, copy, and docs       | Done   | High     | WV-02      | [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | Active UX/docs now route to a provider placeholder instead of Self-managed scan screens                                     |
+| WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Done   | Medium   | WV-02      | [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | Browser host fallback now uses `postMessage` for iframe/popup embedding while native transports keep their current behavior |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -247,7 +247,7 @@ Message semantics:
 
 - `self:ready`: sent once the Self client mounts. Payload is `{}` or `{ verificationId }`.
 - `self:result`: sent on the terminal verification outcome. Payload is `VerificationResult` with `success`, optional `userId`, optional `verificationId`, and optional `error`.
-- `self:dismiss`: sent when the user abandons or closes the flow. Payload is `{ reason: 'user_cancel' | 'back' | 'timeout' }`.
+- `self:dismiss`: sent when the user abandons or closes the flow. Payload is `{}` for generic teardown or `{ reason: 'user_cancel' | 'back' | 'timeout' }` when Self can classify the exit path.
 
 ### Request Context
 

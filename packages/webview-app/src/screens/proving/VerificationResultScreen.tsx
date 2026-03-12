@@ -40,7 +40,7 @@ export const VerificationResultScreen: React.FC = () => {
         });
       }
     } else {
-      lifecycle.dismiss({ reason: 'back' });
+      lifecycle.dismiss();
     }
     navigate('/');
   }, [analytics, haptic, lifecycle, navigate, result, resultSent]);
