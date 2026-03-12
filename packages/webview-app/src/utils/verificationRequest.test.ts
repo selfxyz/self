@@ -10,8 +10,16 @@ import {
 
 describe('verificationRequest utils', () => {
   describe('parseBrowserHostTargetOrigin', () => {
-    it('should allow wildcard target origin', () => {
-      expect(parseBrowserHostTargetOrigin('?targetOrigin=*')).toBe('*');
+    it('should reject wildcard target origin by default', () => {
+      expect(parseBrowserHostTargetOrigin('?targetOrigin=*')).toBeUndefined();
+    });
+
+    it('should allow wildcard target origin only when explicitly enabled', () => {
+      expect(
+        parseBrowserHostTargetOrigin('?targetOrigin=*', {
+          allowWildcard: true,
+        }),
+      ).toBe('*');
     });
 
     it('should normalize an https target origin', () => {

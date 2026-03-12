@@ -96,3 +96,4 @@ rg -n "lifecycle\\.(setResult|dismiss|ready)" packages/webview-app/src/
 
 - 2026-03-11: Started plan for WebView/browser host callbacks and terminal lifecycle wiring.
 - 2026-03-11: Implemented browser host fallback transport, typed lifecycle payloads, screen wiring, and spec updates. Validation passed for `webview-bridge`, `webview-app`, and `mobile-sdk-alpha`.
+- 2026-03-12: Tightened `targetOrigin` parsing so URL-supplied `*` is rejected outside development, closing a production browser-host origin bypass.

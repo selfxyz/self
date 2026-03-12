@@ -20,6 +20,10 @@ const ALLOWED_REQUEST_TYPES = new Set([
 ]);
 const DEFAULT_REQUEST_TYPE = 'proofRequested';
 
+interface TargetOriginOptions {
+  allowWildcard?: boolean;
+}
+
 export function parseVerificationRequestContext(
   search: string,
 ): ParsedVerificationRequestContext {
@@ -46,9 +50,10 @@ export function parseVerificationRequestContext(
 
 export function parseBrowserHostTargetOrigin(
   search: string,
+  options: TargetOriginOptions = {},
 ): string | undefined {
   const params = new URLSearchParams(search);
-  return normalizeTargetOrigin(params.get('targetOrigin'));
+  return normalizeTargetOrigin(params.get('targetOrigin'), options);
 }
 
 function normalizeRequestType(value: string | null | undefined): string {
@@ -71,9 +76,14 @@ function normalizeAppEndpoint(value: string | null | undefined): string {
   }
 }
 
-function normalizeTargetOrigin(value: string | null | undefined): string | undefined {
+function normalizeTargetOrigin(
+  value: string | null | undefined,
+  options: TargetOriginOptions = {},
+): string | undefined {
   if (!value) return undefined;
-  if (value === '*') return '*';
+  if (value === '*') {
+    return options.allowWildcard ? '*' : undefined;
+  }
 
   try {
     const origin = new URL(value);

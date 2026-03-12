@@ -229,7 +229,7 @@ Host-facing mapping rules:
 - When no native transport is available, `packages/webview-bridge` falls back to a browser host transport.
 - The browser transport posts to `window.parent` when the flow is embedded in an iframe.
 - If there is no parent frame but the flow was opened as a popup, the browser transport posts to `window.opener`.
-- Browser host transport requires a `targetOrigin`. In development, the app may default to `*`. In production, the host must supply an explicit `targetOrigin` value in the launch URL or equivalent configuration.
+- Browser host transport requires a `targetOrigin`. In development, the app may default to `*`. In production, the host must supply an explicit `targetOrigin` value in the launch URL or equivalent configuration, and URL-supplied `*` is rejected.
 
 ### Host Message Envelope
 
