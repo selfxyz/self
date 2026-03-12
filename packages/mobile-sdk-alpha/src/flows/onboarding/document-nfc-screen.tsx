@@ -68,7 +68,11 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
   const animationRef = useRef<LottieView>(null);
 
   useEffect(() => {
-    animationRef.current?.play();
+    const timer = setTimeout(() => {
+      animationRef.current?.play();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
