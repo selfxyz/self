@@ -1,7 +1,7 @@
 # SC-02: Expose `generateKey()` and `getPublicKey()` in Crypto Adapter Surface
 
 > Last updated: 2026-03-12
-> Status: Ready
+> Status: Done
 > Priority: Medium
 > Depends on: SC-01 (Done)
 
@@ -196,10 +196,10 @@ yarn lint
 
 ## Definition of Done
 
-- [ ] `CryptoAdapter` interface in `public.ts` exposes `generateKey(keyRef)` and `getPublicKey(keyRef)`
-- [ ] Bridge crypto adapter delegates both methods through `bridge.request()`
-- [ ] Browser crypto adapter has throwing stubs for both methods
-- [ ] RN crypto adapter has throwing stubs for both methods
-- [ ] `yarn types` clean in both `mobile-sdk-alpha` and `webview-bridge`
-- [ ] `yarn test` passes in both packages
-- [ ] Backlog row updated in SPEC.md
+- [x] `CryptoAdapter` interface in `public.ts` exposes `generateKey(keyRef)` and `getPublicKey(keyRef)`
+- [x] Bridge crypto adapter delegates both methods through `bridge.request()`
+- [x] Browser crypto adapter has throwing stubs for both methods
+- [x] RN crypto adapter has throwing stubs for both methods
+- [x] `yarn types` clean in both `mobile-sdk-alpha` and `webview-bridge`
+- [x] `yarn test` passes in both packages
+- [x] Backlog row updated in SPEC.md
