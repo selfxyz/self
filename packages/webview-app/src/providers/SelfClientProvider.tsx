@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { createContext, useContext, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   bridgeCryptoAdapter,
@@ -77,7 +77,10 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [bridge, navigate]);
 
+  const hasCalledReady = useRef(false);
   useEffect(() => {
+    if (hasCalledReady.current) return;
+    hasCalledReady.current = true;
     adapters.lifecycle.ready(
       verificationId ? { verificationId } : {},
     );

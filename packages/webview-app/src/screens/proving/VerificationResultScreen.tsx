@@ -39,7 +39,7 @@ export const VerificationResultScreen: React.FC = () => {
           error: message,
         });
       }
-    } else {
+    } else if (!resultSent) {
       lifecycle.dismiss();
     }
     navigate('/');

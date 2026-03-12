@@ -65,6 +65,8 @@ internal fun resolveLifecycleSetResult(params: Map<String, JsonElement>): Lifecy
                     ),
                 )
             }
+        success == true ->
+            LifecycleSetResultOutcome.Success(verificationResultFromLifecycleParams(params))
         else -> LifecycleSetResultOutcome.Cancelled
     }
 }
