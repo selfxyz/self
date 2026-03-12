@@ -6,8 +6,8 @@ import {
   createIndexedDBDocumentsAdapter,
   createNoOpHapticAdapter,
   createWebAnalyticsAdapter,
-} from '@selfxyz/mobile-sdk-alpha/adapters/browser';
-import type { WebAnalyticsOptions } from '@selfxyz/mobile-sdk-alpha/adapters/browser';
+} from '@selfxyz/mobile-sdk-alpha/browser';
+import type { WebAnalyticsOptions } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import type { BridgeAnalyticsAdapter } from './analytics';
 import type { BridgeDocumentsAdapter } from './documents';

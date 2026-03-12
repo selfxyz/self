@@ -11,7 +11,7 @@ const engineBrowserMocks = vi.hoisted(() => ({
   createWebCryptoAdapter: vi.fn(),
 }));
 
-vi.mock('@selfxyz/mobile-sdk-alpha/adapters/browser', () => engineBrowserMocks);
+vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => engineBrowserMocks);
 
 import { WebViewBridge } from '../bridge';
 import { MockNativeBridge } from '../mock';
