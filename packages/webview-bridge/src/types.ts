@@ -115,14 +115,38 @@ export interface VerificationResult {
   error?: BridgeError;
 }
 
+export type VerificationDismissReason = 'user_cancel' | 'back' | 'timeout';
+
+export interface VerificationDismissPayload {
+  reason?: VerificationDismissReason;
+}
+
+export type SelfHostMessageType =
+  | 'self:ready'
+  | 'self:result'
+  | 'self:dismiss'
+  | 'self:cancel';
+
+export interface SelfHostMessage<TPayload extends object = Record<string, unknown>> {
+  type: SelfHostMessageType;
+  version: 1;
+  payload: TPayload;
+}
+
 // Transport interface
 export interface NativeTransport {
   postMessage(json: string): void;
+  kind?: 'native' | 'browser-host';
+}
+
+export interface BrowserHostOptions {
+  targetOrigin?: string;
 }
 
 export interface WebViewBridgeOptions {
   debug?: boolean;
   transport?: NativeTransport;
+  browserHost?: BrowserHostOptions;
 }
 
 // Pending request tracker

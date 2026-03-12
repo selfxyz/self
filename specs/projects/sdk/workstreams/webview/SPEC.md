@@ -49,7 +49,7 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 | WV-01 | Dynamic proof request items sourced from request context                                        | Done   | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | Existing active follow-up                                                                                                         |
 | WV-02 | Define the KYC-provider contract for document capture, MRZ/liveness handoff, and result mapping | Done   | High     | -          | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | Provider-backed path replaces Self-owned native scan flow; active contract is now documented                                      |
 | WV-03 | Remove native NFC and native-scan assumptions from active WebView screens, copy, and docs       | Done   | High     | WV-02      | [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | Active UX/docs now route to a provider placeholder instead of Self-managed scan screens                                           |
-| WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Ready  | Medium   | WV-02      | -                                                                                                | Build on existing `SdkInitialConfig` and `VERIFICATION_COMPLETE` work; define only the WebView-host transport and embedding delta |
+| WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Done   | Medium   | WV-02      | [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)               | Browser host fallback now uses `postMessage` for iframe/popup embedding while native transports keep their current behavior        |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -60,13 +60,14 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | WV-01 | Done   |
 | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | WV-02 | Done   |
 | [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | WV-03 | Done   |
+| [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | WV-04 | Done   |
 
 ## Completion Checklist
 
 - [x] Active backlog reflects the WebView-only client scope
 - [x] KYC-provider dependency is explicit wherever scan/KYC UX is described
 - [x] Active docs do not imply Self-managed NFC or native scanning for the current client path
-- [ ] Host integration contract is clear without assuming custom native modules
+- [x] Host integration contract is clear without assuming custom native modules
 
 ## Problem Statement
 
@@ -217,6 +218,59 @@ Host-facing mapping rules:
 - Only the full Self verification lifecycle emits `VERIFICATION_COMPLETE` or calls `lifecycle.setResult`.
 - If provider `success` unlocks the KYC proof path and the later Self proof flow completes, Self emits `VERIFICATION_COMPLETE { success: true, verificationId, userId }`.
 - If the verification session terminates after provider `partial`, `cancel`, or `error`, Self emits `VERIFICATION_COMPLETE { success: false, verificationId, userId, error }` using the normalized Self error code rather than the raw provider payload.
+
+## Host Callback Contract
+
+`WV-04` defines the lightweight host contract for the active WebView/browser path. The goal is to let a parent page, popup opener, or mobile WebView wrapper launch the flow and receive lifecycle callbacks without any custom native module.
+
+### Transport Selection
+
+- Android KMP, iOS KMP, and RN WebView transports remain the first-choice bridge path and are unchanged.
+- When no native transport is available, `packages/webview-bridge` falls back to a browser host transport.
+- The browser transport posts to `window.parent` when the flow is embedded in an iframe.
+- If there is no parent frame but the flow was opened as a popup, the browser transport posts to `window.opener`.
+- Browser host transport requires a `targetOrigin`. In development, the app may default to `*`. In production, the host must supply an explicit `targetOrigin` value in the launch URL or equivalent configuration.
+
+### Host Message Envelope
+
+All browser-host lifecycle callbacks use this envelope:
+
+```ts
+type SelfHostMessage = {
+  type: 'self:ready' | 'self:result' | 'self:dismiss';
+  version: 1;
+  payload: Record<string, unknown>;
+};
+```
+
+Message semantics:
+
+- `self:ready`: sent once the Self client mounts. Payload is `{}` or `{ verificationId }`.
+- `self:result`: sent on the terminal verification outcome. Payload is `VerificationResult` with `success`, optional `userId`, optional `verificationId`, and optional `error`.
+- `self:dismiss`: sent when the user abandons or closes the flow. Payload is `{ reason: 'user_cancel' | 'back' | 'timeout' }`.
+
+### Request Context
+
+Hosts may supply these browser-host fields in the launch URL:
+
+- `verificationId`: optional correlation key echoed in `self:ready` and terminal result payloads.
+- `targetOrigin`: optional in development, required for production browser embedding. The app normalizes it to an origin string before using `postMessage`.
+
+The existing request fields (`userId`, `scope`, `disclosures`, `appName`, `appEndpoint`, `timestamp`) remain unchanged.
+
+### Lifecycle Wiring Rules
+
+- `lifecycle.ready()` fires from `SelfClientProvider` as soon as the flow mounts, including `verificationId` when present.
+- `lifecycle.setResult()` must receive the full `VerificationResult` payload from terminal screens, not `{ type }`.
+- In browser-host mode, `lifecycle.setResult()` is fire-and-forget and must not wait for a native response or hit the 30-second bridge timeout.
+- Explicit cancel and back-out actions must call `lifecycle.dismiss()` so the host can tear down the iframe, popup, or WebView shell.
+- Result screens use `dismiss` for teardown when the terminal result was already sent. If a terminal screen failed before sending the result, it may retry `setResult()` instead.
+
+### Host-Initiated Cancellation
+
+- Hosts may post `self:cancel` with `version: 1` to the embedded flow.
+- The browser bridge normalizes that into a `lifecycle:cancel` event inside the app.
+- The active WebView app handles that event by returning to the home route without emitting another host callback.
 
 ## In Scope
 

@@ -11,7 +11,7 @@ import { useSelfClient } from '../../providers/SelfClientProvider';
 export const ProviderLaunchScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { analytics, haptic } = useSelfClient();
+  const { analytics, haptic, lifecycle } = useSelfClient();
 
   const { countryCode = '', documentType = '' } =
     (location.state as {
@@ -24,7 +24,6 @@ export const ProviderLaunchScreen: React.FC = () => {
       countryCode,
       documentType,
     });
-    // TODO(WV-04): replace this placeholder with the actual provider launch and return handling flow.
   }, [analytics, countryCode, documentType]);
 
   return (
@@ -77,7 +76,16 @@ export const ProviderLaunchScreen: React.FC = () => {
             fullWidth
             onPress={() => {
               haptic.trigger('selection');
-              navigate(-1);
+              analytics.trackEvent('provider_launch_back_pressed', {
+                countryCode,
+                documentType,
+              });
+              lifecycle.dismiss({ reason: 'back' });
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate('/');
+              }
             }}
           />
         </div>

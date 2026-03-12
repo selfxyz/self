@@ -5,6 +5,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid-web';
+import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
@@ -20,8 +21,15 @@ function titleCaseDisclosure(disclosure: string): string {
 export const ProvingScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic, lifecycle } = useSelfClient();
-  const { request, displayLabels, requestType, appName, appEndpoint, timestamp } =
-    useVerificationRequest();
+  const {
+    request,
+    displayLabels,
+    requestType,
+    appName,
+    appEndpoint,
+    timestamp,
+    verificationId,
+  } = useVerificationRequest();
   const [proving, setProving] = useState(false);
 
   const proofItems = useMemo(() => {
@@ -34,31 +42,50 @@ export const ProvingScreen: React.FC = () => {
   }, [displayLabels, request.disclosures]);
 
   const onVerify = useCallback(async () => {
+    const result: VerificationResult = {
+      success: true,
+      userId: request.userId,
+      verificationId,
+      claims: {
+        resultType: requestType,
+      },
+    };
+
     haptic.trigger('selection');
     analytics.trackEvent('prove_verify_pressed');
     setProving(true);
 
     try {
-      await lifecycle.setResult({
-        type: requestType,
-      });
+      await lifecycle.setResult(result);
 
-      navigate('/proving/result', { state: { success: true } });
+      navigate('/proving/result', {
+        state: { success: true, result, resultSent: true },
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Proving failed';
       analytics.trackEvent('prove_verify_failed', { error: message });
       navigate('/proving/result', {
-        state: { success: false, error: message },
+        state: { success: false, error: message, result, resultSent: false },
       });
     } finally {
       setProving(false);
     }
-  }, [navigate, analytics, haptic, lifecycle, requestType]);
+  }, [
+    analytics,
+    haptic,
+    lifecycle,
+    navigate,
+    request.userId,
+    requestType,
+    verificationId,
+  ]);
 
   const onCancel = useCallback(() => {
     haptic.trigger('selection');
+    analytics.trackEvent('prove_verify_cancelled');
+    lifecycle.dismiss({ reason: 'user_cancel' });
     navigate('/');
-  }, [navigate, haptic]);
+  }, [analytics, haptic, lifecycle, navigate]);
 
   return (
     <ProofRequestScreen

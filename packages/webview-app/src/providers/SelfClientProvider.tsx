@@ -27,6 +27,7 @@ import type {
   BridgeBiometricsAdapter,
 } from '@selfxyz/webview-bridge/adapters';
 import { useBridge } from './BridgeProvider';
+import { useVerificationRequest } from './VerificationRequestProvider';
 
 export interface SelfClientAdapters {
   crypto: BridgeCryptoAdapter;
@@ -55,6 +56,7 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const bridge = useBridge();
   const navigate = useNavigate();
+  const { verificationId } = useVerificationRequest();
 
   const adapters = useMemo<SelfClientAdapters>(() => {
     const lifecycle = bridgeLifecycleAdapter(bridge);
@@ -76,8 +78,16 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [bridge, navigate]);
 
   useEffect(() => {
-    adapters.lifecycle.ready();
-  }, [adapters.lifecycle]);
+    adapters.lifecycle.ready(
+      verificationId ? { verificationId } : {},
+    );
+  }, [adapters.lifecycle, verificationId]);
+
+  useEffect(() => {
+    return bridge.on('lifecycle', 'cancel', () => {
+      navigate('/');
+    });
+  }, [bridge, navigate]);
 
   return (
     <SelfClientContext.Provider value={adapters}>

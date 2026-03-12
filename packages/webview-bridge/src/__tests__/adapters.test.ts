@@ -31,6 +31,10 @@ import {
   noOpHapticAdapter,
 } from '../adapters';
 
+type MockWindowWithListeners = Window & {
+  __dispatchMessage(event: MessageEvent): void;
+};
+
 describe('Adapter integration tests', () => {
   let mock: MockNativeBridge;
   let bridge: WebViewBridge;
@@ -56,6 +60,7 @@ describe('Adapter integration tests', () => {
 
   afterEach(() => {
     bridge.destroy();
+    vi.unstubAllGlobals();
   });
 
   describe('NFC Scanner Adapter', () => {
@@ -303,6 +308,43 @@ describe('Adapter integration tests', () => {
 
       expect(mock.messagesFor('lifecycle')[0].method).toBe('setResult');
     });
+
+    it('should send browser-host results without creating a pending request', async () => {
+      bridge.destroy();
+
+      const hostTarget = {
+        postMessage: vi.fn(),
+      } as unknown as Window;
+
+      vi.stubGlobal(
+        'window',
+        createMockWindow({
+          parent: hostTarget,
+        }),
+      );
+
+      bridge = new WebViewBridge({
+        browserHost: {
+          targetOrigin: 'https://host.example',
+        },
+      });
+
+      const lifecycle = bridgeLifecycleAdapter(bridge);
+      await lifecycle.setResult({ success: true, verificationId: 'v-1' });
+
+      expect(bridge.pendingCount).toBe(0);
+      expect(hostTarget.postMessage).toHaveBeenCalledWith(
+        {
+          type: 'self:result',
+          version: 1,
+          payload: {
+            success: true,
+            verificationId: 'v-1',
+          },
+        },
+        'https://host.example',
+      );
+    });
   });
 
   describe('Navigation Adapter', () => {
@@ -412,3 +454,31 @@ describe('Adapter integration tests', () => {
     });
   });
 });
+
+function createMockWindow({
+  parent,
+  opener = null,
+}: {
+  parent: Window;
+  opener?: Window | null;
+}): MockWindowWithListeners {
+  let messageListener: ((event: MessageEvent) => void) | undefined;
+
+  return {
+    parent,
+    opener,
+    addEventListener: vi.fn((type: string, listener: EventListenerOrEventListenerObject) => {
+      if (type === 'message' && typeof listener === 'function') {
+        messageListener = listener as (event: MessageEvent) => void;
+      }
+    }),
+    removeEventListener: vi.fn((type: string, listener: EventListenerOrEventListenerObject) => {
+      if (type === 'message' && listener === messageListener) {
+        messageListener = undefined;
+      }
+    }),
+    __dispatchMessage(event: MessageEvent) {
+      messageListener?.(event);
+    },
+  } as unknown as MockWindowWithListeners;
+}
