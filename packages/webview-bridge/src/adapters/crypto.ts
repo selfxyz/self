@@ -36,6 +36,9 @@ export function bridgeCryptoAdapter(
           keyRef,
         },
       );
+      if (typeof result?.signature !== 'string' || result.signature.length === 0) {
+        throw new Error('Invalid or empty signature from bridge');
+      }
       return base64ToUint8Array(result.signature);
     },
 
@@ -57,6 +60,9 @@ export function bridgeCryptoAdapter(
         'getPublicKey',
         { keyRef },
       );
+      if (typeof result?.publicKey !== 'string' || result.publicKey.length === 0) {
+        throw new Error('Invalid or empty publicKey from bridge');
+      }
       return base64ToUint8Array(result.publicKey);
     },
   };
