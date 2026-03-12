@@ -9,6 +9,8 @@ import type { WebViewBridge } from '../bridge';
 export interface BridgeCryptoAdapter {
   hash(input: Uint8Array, algo?: 'sha256'): Promise<Uint8Array>;
   sign(data: Uint8Array, keyRef: string): Promise<Uint8Array>;
+  generateKey(keyRef: string): Promise<{ keyRef: string }>;
+  getPublicKey(keyRef: string): Promise<Uint8Array>;
 }
 
 export function bridgeCryptoAdapter(
@@ -35,6 +37,24 @@ export function bridgeCryptoAdapter(
         },
       );
       return base64ToUint8Array(result.signature);
+    },
+
+    async generateKey(keyRef: string): Promise<{ keyRef: string }> {
+      const result = await bridge.request<{ keyRef: string; success: boolean }>(
+        'crypto',
+        'generateKey',
+        { keyRef },
+      );
+      return { keyRef: result.keyRef };
+    },
+
+    async getPublicKey(keyRef: string): Promise<Uint8Array> {
+      const result = await bridge.request<{ publicKey: string }>(
+        'crypto',
+        'getPublicKey',
+        { keyRef },
+      );
+      return base64ToUint8Array(result.publicKey);
     },
   };
 }

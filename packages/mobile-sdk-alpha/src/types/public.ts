@@ -97,6 +97,16 @@ export interface CryptoAdapter {
    * `AbortError`.
    */
   sign(data: Uint8Array, keyRef: string): Promise<Uint8Array>;
+  /**
+   * Generates a new key pair in native secure storage and returns the opaque
+   * reference used to locate it. The key material never leaves the keychain.
+   */
+  generateKey(keyRef: string): Promise<{ keyRef: string }>;
+  /**
+   * Retrieves the raw public key bytes for the key referenced by `keyRef`.
+   * The adapter is responsible for decoding any transport encoding (e.g. base64).
+   */
+  getPublicKey(keyRef: string): Promise<Uint8Array>;
 }
 
 /**

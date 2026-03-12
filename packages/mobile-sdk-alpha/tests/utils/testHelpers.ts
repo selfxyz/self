@@ -48,6 +48,8 @@ export const mockNetwork: NetworkAdapter = {
 export const mockCrypto: CryptoAdapter = {
   hash: async () => new Uint8Array(),
   sign: async () => new Uint8Array(),
+  generateKey: async (keyRef: string) => ({ keyRef }),
+  getPublicKey: async () => new Uint8Array(),
 };
 
 export const mockDocuments: DocumentsAdapter = {
