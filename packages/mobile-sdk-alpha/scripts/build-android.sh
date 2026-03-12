@@ -24,6 +24,17 @@ echo "🔍 Checking for Android build options..."
 if [ -d "$MOBILE_SDK_NATIVE" ]; then
     echo "✅ Native modules source submodule found, building from source..."
 
+    # Check if Java is available (required for Gradle build)
+    if ! command -v java &> /dev/null; then
+        echo "⚠️  Java not found — skipping Android AAR build"
+        if [ -f "dist/android/mobile-sdk-alpha-release.aar" ]; then
+            echo "📦 Using existing prebuilt AAR: dist/android/mobile-sdk-alpha-release.aar"
+        else
+            echo "⚠️  No prebuilt AAR available. Android native modules will not be included."
+        fi
+        exit 0
+    fi
+
     # Check if we already have a valid AAR file
     if [ -f "dist/android/mobile-sdk-alpha-release.aar" ]; then
         echo "🔍 AAR file found, validating contents..."
