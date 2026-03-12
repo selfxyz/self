@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type { LottieViewProps } from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-import type { LottieViewProps } from 'lottie-react-native';
 
 import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import loadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
