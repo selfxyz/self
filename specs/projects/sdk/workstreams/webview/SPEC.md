@@ -272,7 +272,6 @@ The existing request fields (`userId`, `scope`, `disclosures`, `appName`, `appEn
 - The browser bridge normalizes that into a `lifecycle:cancel` event inside the app.
 - The active WebView app handles that event by returning to the home route without emitting another host callback.
 
-
 ## In Scope
 
 - WebView/browser UX for the active verification flow
