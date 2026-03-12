@@ -30,6 +30,7 @@ On **March 11, 2026**, the active SDK delivery target changed:
 - [x] `WV-01` completed request-context sourcing for dynamic proof request items
 - [x] `WV-02` formalized the provider-agnostic KYC capture and handoff contract
 - [x] `WV-03` removed native-scan and NFC assumptions from the active WebView flow/docs
+- [x] `WV-04` added the browser/native host callback contract for ready, result, dismiss, and cancel handling
 
 ### Paused
 
@@ -65,8 +66,9 @@ On **March 11, 2026**, the active SDK delivery target changed:
             ▼                             ▼
 ┌───────────────────────────┐   ┌───────────────────────────┐
 │ Host callback contract    │   │ Third-party KYC provider  │
-│ postMessage / URL / JS API│   │ web capture + attestation │
-│ receives final Self result│   │ e.g. Sumsub               │
+│ native bridge or browser  │   │ web capture + attestation │
+│ postMessage receives Self │   │ e.g. Sumsub               │
+│ lifecycle/result messages │   │                           │
 └───────────────────────────┘   └───────────────────────────┘
 ```
 

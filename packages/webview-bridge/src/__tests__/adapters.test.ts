@@ -11,7 +11,7 @@ const engineBrowserMocks = vi.hoisted(() => ({
   createWebCryptoAdapter: vi.fn(),
 }));
 
-vi.mock('@selfxyz/mobile-sdk-alpha/adapters/browser', () => engineBrowserMocks);
+vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => engineBrowserMocks);
 
 import { WebViewBridge } from '../bridge';
 import { MockNativeBridge } from '../mock';
@@ -30,6 +30,8 @@ import {
   bridgeCameraAdapter,
   noOpHapticAdapter,
 } from '../adapters';
+
+import { createMockWindow } from './helpers/mockWindow';
 
 describe('Adapter integration tests', () => {
   let mock: MockNativeBridge;
@@ -56,6 +58,7 @@ describe('Adapter integration tests', () => {
 
   afterEach(() => {
     bridge.destroy();
+    vi.unstubAllGlobals();
   });
 
   describe('NFC Scanner Adapter', () => {
@@ -302,6 +305,43 @@ describe('Adapter integration tests', () => {
       await lifecycle.setResult({ success: true, verificationId: 'v-1' });
 
       expect(mock.messagesFor('lifecycle')[0].method).toBe('setResult');
+    });
+
+    it('should send browser-host results without creating a pending request', async () => {
+      bridge.destroy();
+
+      const hostTarget = {
+        postMessage: vi.fn(),
+      } as unknown as Window;
+
+      vi.stubGlobal(
+        'window',
+        createMockWindow({
+          parent: hostTarget,
+        }),
+      );
+
+      bridge = new WebViewBridge({
+        browserHost: {
+          targetOrigin: 'https://host.example',
+        },
+      });
+
+      const lifecycle = bridgeLifecycleAdapter(bridge);
+      await lifecycle.setResult({ success: true, verificationId: 'v-1' });
+
+      expect(bridge.pendingCount).toBe(0);
+      expect(hostTarget.postMessage).toHaveBeenCalledWith(
+        {
+          type: 'self:result',
+          version: 1,
+          payload: {
+            success: true,
+            verificationId: 'v-1',
+          },
+        },
+        'https://host.example',
+      );
     });
   });
 
