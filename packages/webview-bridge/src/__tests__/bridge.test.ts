@@ -6,10 +6,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { WebViewBridge } from '../bridge';
 import { MockNativeBridge } from '../mock';
 import type { SelfHostMessage } from '../types';
-
-type MockWindowWithListeners = Window & {
-  __dispatchMessage(event: MessageEvent): void;
-};
+import type { MockWindowWithListeners } from './helpers/mockWindow';
+import { createMockWindow } from './helpers/mockWindow';
 
 describe('WebViewBridge', () => {
   let mock: MockNativeBridge;
@@ -209,7 +207,7 @@ describe('WebViewBridge', () => {
       const handler = vi.fn();
       bridge.on('lifecycle', 'cancel', handler);
 
-      window.__dispatchMessage({
+      (window as unknown as MockWindowWithListeners).__dispatchMessage({
         origin: 'https://host.example',
         source: window.parent,
         data: {
@@ -235,31 +233,3 @@ describe('WebViewBridge', () => {
     });
   });
 });
-
-function createMockWindow({
-  parent,
-  opener = null,
-}: {
-  parent: Window;
-  opener?: Window | null;
-}): MockWindowWithListeners {
-  let messageListener: ((event: MessageEvent) => void) | undefined;
-
-  return {
-    parent,
-    opener,
-    addEventListener: vi.fn((type: string, listener: EventListenerOrEventListenerObject) => {
-      if (type === 'message' && typeof listener === 'function') {
-        messageListener = listener as (event: MessageEvent) => void;
-      }
-    }),
-    removeEventListener: vi.fn((type: string, listener: EventListenerOrEventListenerObject) => {
-      if (type === 'message' && listener === messageListener) {
-        messageListener = undefined;
-      }
-    }),
-    __dispatchMessage(event: MessageEvent) {
-      messageListener?.(event);
-    },
-  } as unknown as MockWindowWithListeners;
-}

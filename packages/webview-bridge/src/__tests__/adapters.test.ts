@@ -31,9 +31,7 @@ import {
   noOpHapticAdapter,
 } from '../adapters';
 
-type MockWindowWithListeners = Window & {
-  __dispatchMessage(event: MessageEvent): void;
-};
+import { createMockWindow } from './helpers/mockWindow';
 
 describe('Adapter integration tests', () => {
   let mock: MockNativeBridge;
@@ -454,31 +452,3 @@ describe('Adapter integration tests', () => {
     });
   });
 });
-
-function createMockWindow({
-  parent,
-  opener = null,
-}: {
-  parent: Window;
-  opener?: Window | null;
-}): MockWindowWithListeners {
-  let messageListener: ((event: MessageEvent) => void) | undefined;
-
-  return {
-    parent,
-    opener,
-    addEventListener: vi.fn((type: string, listener: EventListenerOrEventListenerObject) => {
-      if (type === 'message' && typeof listener === 'function') {
-        messageListener = listener as (event: MessageEvent) => void;
-      }
-    }),
-    removeEventListener: vi.fn((type: string, listener: EventListenerOrEventListenerObject) => {
-      if (type === 'message' && listener === messageListener) {
-        messageListener = undefined;
-      }
-    }),
-    __dispatchMessage(event: MessageEvent) {
-      messageListener?.(event);
-    },
-  } as unknown as MockWindowWithListeners;
-}

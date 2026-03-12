@@ -427,19 +427,19 @@ function mapLifecycleRequestToHostMessage(
     case 'ready':
       return {
         type: 'self:ready',
-        version: 1,
+        version: BRIDGE_PROTOCOL_VERSION,
         payload: request.params,
       };
     case 'setResult':
       return {
         type: 'self:result',
-        version: 1,
+        version: BRIDGE_PROTOCOL_VERSION,
         payload: request.params,
       };
     case 'dismiss':
       return {
         type: 'self:dismiss',
-        version: 1,
+        version: BRIDGE_PROTOCOL_VERSION,
         payload: request.params,
       };
     default:
@@ -475,7 +475,7 @@ function parseHostMessage(data: unknown): SelfHostMessage | null {
 
   return {
     type: message.type,
-    version: 1,
+    version: BRIDGE_PROTOCOL_VERSION,
     payload:
       typeof message.payload === 'object' && message.payload !== null
         ? message.payload
