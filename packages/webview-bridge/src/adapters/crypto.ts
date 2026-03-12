@@ -45,6 +45,9 @@ export function bridgeCryptoAdapter(
         'generateKey',
         { keyRef },
       );
+      if (!result?.success || typeof result.keyRef !== 'string' || result.keyRef.length === 0) {
+        throw new Error('Native key generation failed');
+      }
       return { keyRef: result.keyRef };
     },
 

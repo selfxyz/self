@@ -199,6 +199,17 @@ describe('Adapter integration tests', () => {
       expect(messages[0].params).toEqual({ keyRef: 'my-key' });
     });
 
+    it('should reject key generation when native reports failure', async () => {
+      mock.handleWith('crypto', 'generateKey', {
+        keyRef: 'my-key',
+        success: false,
+      });
+
+      const adapter = bridgeCryptoAdapter(bridge);
+
+      await expect(adapter.generateKey('my-key')).rejects.toThrow('Native key generation failed');
+    });
+
     it('should get public key via bridge and decode base64', async () => {
       const pubKeyBytes = new Uint8Array([4, 10, 20, 30, 40]);
       const pubKeyBase64 = btoa(
