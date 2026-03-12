@@ -24,9 +24,10 @@ echo "🔍 Checking for Android build options..."
 if [ -d "$MOBILE_SDK_NATIVE" ]; then
     echo "✅ Native modules source submodule found, building from source..."
 
-    # Check if Java is available (required for Gradle build)
-    if ! command -v java &> /dev/null; then
-        echo "⚠️  Java not found — skipping Android AAR build"
+    # Check if Java is actually available (required for Gradle build)
+    # Note: macOS has a /usr/bin/java stub that passes `command -v` but fails at runtime
+    if ! java -version 2>/dev/null 1>/dev/null; then
+        echo "⚠️  Java not available — skipping Android AAR build"
         if [ -f "dist/android/mobile-sdk-alpha-release.aar" ]; then
             echo "📦 Using existing prebuilt AAR: dist/android/mobile-sdk-alpha-release.aar"
         else

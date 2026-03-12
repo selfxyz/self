@@ -102,8 +102,10 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Build common
         run: yarn workspace @selfxyz/common build
-      - name: Build mobile-sdk-alpha
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+      - name: Build mobile-sdk-alpha iOS artifacts
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build:ios
+      - name: Build mobile-sdk-alpha TypeScript bundle
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build:ts-only
       - name: Build webview-bridge
         run: yarn workspace @selfxyz/webview-bridge build
       - name: Build webview-app
