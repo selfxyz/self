@@ -48,8 +48,6 @@ export type { DocumentAttributes } from './documents/validation';
 
 export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
 
-export type { DotLottieSource } from './components/LottieAnimation';
-
 export type { HapticOptions, HapticType } from './haptic/shared';
 
 export type { MRZScanOptions } from './mrz';
@@ -63,6 +61,8 @@ export type { SDKEvent, SDKEventMap } from './types/events';
 export type { SdkErrorCategory } from './errors';
 
 export type { provingMachineCircuitType } from './proving/provingMachine';
+
+export { DelayedLottieView } from './components/DelayedLottieView';
 
 export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
 
@@ -78,8 +78,6 @@ export {
 } from './errors';
 
 export { default as LogoConfirmationScreen } from './flows/onboarding/logo-confirmation-screen';
-
-export { LottieAnimation } from './components/LottieAnimation';
 
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 

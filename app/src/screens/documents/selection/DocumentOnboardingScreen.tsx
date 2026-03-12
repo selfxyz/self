@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
-import type { Dotlottie } from '@lottiefiles/dotlottie-react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import { LottieAnimation, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   ButtonsContainer,
@@ -24,13 +24,11 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { getDocumentScanPrompt } from '@/utils/documentAttributes';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
-const passportOnboardingAnimation = require('@/assets/animations/passport_onboarding.lottie');
 
 const DocumentOnboardingScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -39,7 +37,7 @@ const DocumentOnboardingScreen: React.FC = () => {
     state => state.documentType,
   );
   const handleCameraPress = useHapticNavigation('DocumentCamera');
-  const animationRef = useRef<Dotlottie | null>(null);
+  const animationRef = useRef<LottieView>(null);
 
   const scanPrompt = getDocumentScanPrompt(selectedDocumentType);
 
@@ -60,7 +58,7 @@ const DocumentOnboardingScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
-        <LottieAnimation
+        <LottieView
           ref={animationRef}
           autoPlay={false}
           loop={false}

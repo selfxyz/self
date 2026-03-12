@@ -30,7 +30,7 @@ require File.join(File.dirname(`node --print "require.resolve('expo/package.json
 project "Self.xcodeproj"
 
 # Define consistent iOS deployment target
-IOS_DEPLOYMENT_TARGET = "15.4"
+IOS_DEPLOYMENT_TARGET = "15.1"
 
 platform :ios, IOS_DEPLOYMENT_TARGET if !ENV["ACT"]
 prepare_react_native_project!

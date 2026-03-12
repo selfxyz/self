@@ -8,7 +8,7 @@ import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { LottieAnimation } from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import {
   Caution,
   PrimaryButton,
@@ -17,13 +17,11 @@ import {
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import warningAnimation from '@/assets/animations/warning.json';
 import { confirmTap, notificationWarning } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useSettingStore } from '@/stores/settingStore';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
-const warningAnimation = require('@/assets/animations/warning.lottie');
 
 const DisclaimerScreen: React.FC = () => {
   const navigation =
@@ -37,7 +35,7 @@ const DisclaimerScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <LottieAnimation
+        <DelayedLottieView
           autoPlay
           loop={false}
           source={warningAnimation}
