@@ -7,8 +7,9 @@ import { StyleSheet } from 'react-native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
+import successAnimation from '../../animations/loading/success.json';
 import { PrimaryButton } from '../../components';
-import { LottieAnimation } from '../../components/LottieAnimation';
+import { DelayedLottieView } from '../../components/DelayedLottieView';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { PassportEvents, ProofEvents } from '../../constants/analytics';
@@ -20,9 +21,6 @@ import { useSafeBottomPadding } from '../../hooks/useSafeBottomPadding';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { SdkEvents } from '../../types/events';
 import type { SelfClient } from '../../types/public';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
-const successAnimation = require('../../animations/loading/success.lottie');
 
 /*
   Screen to confirm identification ownership
@@ -48,7 +46,7 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <LottieAnimation
+        <DelayedLottieView
           autoPlay
           loop={false}
           source={successAnimation}

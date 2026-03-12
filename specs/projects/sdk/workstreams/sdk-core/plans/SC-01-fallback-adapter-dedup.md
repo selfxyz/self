@@ -1,7 +1,7 @@
 # Bridge Fallback Adapter De-duplication
 
-> Last updated: 2026-03-10
-> Status: Ready
+> Last updated: 2026-03-11
+> Status: Done
 
 - Workstream: sdk-core
 - Backlog IDs: SC-01
@@ -56,10 +56,12 @@ cd packages/webview-app && npx vite build
 
 ## Definition of Done
 
-- [ ] Fallback ownership is unambiguous
-- [ ] Consuming imports are updated
-- [ ] Backlog row updated
+- [x] Fallback ownership is unambiguous
+- [x] Consuming imports are updated
+- [x] Backlog row updated
 
 ## Status Log
 
 - 2026-03-10: Created from remaining follow-up list.
+- 2026-03-11: Started consolidating bridge fallback adapters onto the engine-owned browser implementations.
+- 2026-03-11: Completed adapter dedup, preserved bridge import paths, and passed package and repo validation.

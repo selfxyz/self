@@ -107,5 +107,46 @@ class LifecycleBridgeHandlerTest {
         assertEquals("Proof generation failed", failure.error.message)
     }
 
+    @Test
+    fun resolveLifecycleSetResult_flatPayloadWithoutTypeOrDataRoutesToSuccess() {
+        val outcome =
+            resolveLifecycleSetResult(
+                params(
+                    """
+                    {
+                      "success": true,
+                      "userId": "user-1",
+                      "verificationId": "verif-1",
+                      "claims": {
+                        "resultType": "proofRequested"
+                      }
+                    }
+                    """.trimIndent(),
+                ),
+            )
+
+        val success = assertIs<LifecycleSetResultOutcome.Success>(outcome)
+        assertEquals(true, success.result.success)
+        assertEquals("user-1", success.result.userId)
+        assertEquals("verif-1", success.result.verificationId)
+        assertEquals("proofRequested", success.result.claims?.get("resultType"))
+    }
+
+    @Test
+    fun resolveLifecycleSetResult_bareSuccessTrueWithoutIdentifiersRoutesToCancelled() {
+        val outcome =
+            resolveLifecycleSetResult(
+                params(
+                    """
+                    {
+                      "success": true
+                    }
+                    """.trimIndent(),
+                ),
+            )
+
+        assertIs<LifecycleSetResultOutcome.Cancelled>(outcome)
+    }
+
     private fun params(rawJson: String) = json.parseToJsonElement(rawJson).jsonObject
 }

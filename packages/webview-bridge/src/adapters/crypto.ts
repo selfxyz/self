@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { createWebCryptoAdapter } from '@selfxyz/mobile-sdk-alpha/browser';
+
 import type { WebViewBridge } from '../bridge';
 
 export interface BridgeCryptoAdapter {
@@ -12,19 +14,14 @@ export interface BridgeCryptoAdapter {
 export function bridgeCryptoAdapter(
   bridge: WebViewBridge,
 ): BridgeCryptoAdapter {
+  const webCryptoAdapter = createWebCryptoAdapter();
+
   return {
     async hash(
       input: Uint8Array,
       algo: 'sha256' = 'sha256',
     ): Promise<Uint8Array> {
-      const algoMap: Record<string, string> = { sha256: 'SHA-256' };
-      const webCryptoAlgo = algoMap[algo];
-      if (!webCryptoAlgo) {
-        throw new Error(`Unsupported hash algorithm: ${algo}`);
-      }
-      const buffer = new Uint8Array(input).buffer as ArrayBuffer;
-      const digest = await crypto.subtle.digest(webCryptoAlgo, buffer);
-      return new Uint8Array(digest);
+      return webCryptoAdapter.hash(input, algo);
     },
 
     async sign(data: Uint8Array, keyRef: string): Promise<Uint8Array> {

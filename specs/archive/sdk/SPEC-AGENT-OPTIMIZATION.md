@@ -30,15 +30,15 @@ The current spec system was designed for humans — five workstream OVERVIEWs, f
 
 Four of the five "projects" under `specs/projects/` are not projects — they're either part of SDK or standalone docs wrapped in unnecessary scaffolding:
 
-| "Project" | Real content                               | Workstreams                                          | Verdict                       |
-| --------- | ------------------------------------------ | ---------------------------------------------------- | ----------------------------- |
-| `sdk/`    | OVERVIEW + PLAN + HANDOFF + STATUS + INDEX | 5 workstreams with real SPECs                        | Actual project                |
-| `kmp/`    | 3 skeleton docs (all TBD owners)           | None — real work is `sdk/workstreams/native-shells/` | SDK workstream, not a project |
-| `lottie/` | INDEX + 1 review doc (58 lines)            | None                                                 | Standalone doc                |
-| `euclid/` | INDEX + 1 plan doc (88 lines)              | None                                                 | Standalone doc                |
-| `ci/`     | 1 coverage gaps doc (313 lines)            | None                                                 | Standalone doc                |
+| "Project" | Real content                               | Workstreams                                         | Verdict                       |
+| --------- | ------------------------------------------ | --------------------------------------------------- | ----------------------------- |
+| `sdk/`    | OVERVIEW + PLAN + HANDOFF + STATUS + INDEX | 5 workstreams with real SPECs                       | Actual project                |
+| `kmp/`    | 3 skeleton docs (all TBD owners)           | None — retained work is `sdk/paused/native-shells/` | SDK workstream, not a project |
+| `lottie/` | INDEX + 1 review doc (58 lines)            | None                                                | Standalone doc                |
+| `euclid/` | INDEX + 1 plan doc (88 lines)              | None                                                | Standalone doc                |
+| `ci/`     | 1 coverage gaps doc (313 lines)            | None                                                | Standalone doc                |
 
-An agent looking for KMP specs navigates to `kmp/INDEX.md`, finds skeleton docs with TBD owners, then gets redirected to `sdk/workstreams/native-shells/` for the real work. The `projects/` nesting adds a directory level that serves no purpose when there's only one real project.
+An agent looking for KMP specs navigates to `kmp/INDEX.md`, finds skeleton docs with TBD owners, then gets redirected to `sdk/paused/native-shells/` for the retained work. The `projects/` nesting adds a directory level that serves no purpose when there's only one real project.
 
 ### What an agent actually needs
 
@@ -155,7 +155,7 @@ specs/
 
 - Move `specs/projects/sdk/` → `specs/sdk/` (drop the `projects/` nesting)
 - Move standalone docs into `specs/topics/` with descriptive filenames (no INDEX wrappers)
-- Archive KMP skeleton docs (`kmp/ARCHITECTURE.md`, `kmp/INITIATIVE.md`, `kmp/REORG-PLAN.md`, `kmp/INDEX.md`) — the real KMP execution spec is `sdk/workstreams/native-shells/SPEC.md`
+- Archive KMP skeleton docs (`kmp/ARCHITECTURE.md`, `kmp/INITIATIVE.md`, `kmp/REORG-PLAN.md`, `kmp/INDEX.md`) — the retained KMP execution spec now lives at `sdk/paused/native-shells/SPEC.md`
 - Delete `specs/shared/` (only had one file, now in `topics/`)
 - Delete empty `specs/projects/` directory
 - Update README.md to flat structure
@@ -285,14 +285,14 @@ An agent can execute any SDK workstream chunk by reading at most 2 files (`specs
 
 ## Risks
 
-| Risk                                            | Mitigation                                                                                                                                               |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Losing useful OVERVIEW context during merge     | Extract before deleting — review the merged SPEC.md for completeness                                                                                     |
-| CLAUDE.md getting too long                      | Keep rules concise — the file is already ~100 lines, adding ~30 lines of consolidated rules won't bloat it                                               |
-| Human spec authors lose guidance                | TEMPLATES.md remains as the reference. Authors who need process guidance can read the archived SPEC-GUIDE.                                               |
-| Breaking existing agent workflows               | Chunk 5 catches stale references across entire repo (including AGENTS.md files). The reading path gets simpler, not different.                           |
-| KMP skeleton docs have future value             | Archive them — if KMP becomes its own project later, skeletons can be restored. Real KMP execution is already in `sdk/workstreams/native-shells/SPEC.md` |
-| Merging PLAN/HANDOFF loses active work tracking | Closure gate: all partial/deferred chunks have next-step descriptions, all P1 handoff items have owner+status before source files are deleted            |
+| Risk                                            | Mitigation                                                                                                                                             |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Losing useful OVERVIEW context during merge     | Extract before deleting — review the merged SPEC.md for completeness                                                                                   |
+| CLAUDE.md getting too long                      | Keep rules concise — the file is already ~100 lines, adding ~30 lines of consolidated rules won't bloat it                                             |
+| Human spec authors lose guidance                | TEMPLATES.md remains as the reference. Authors who need process guidance can read the archived SPEC-GUIDE.                                             |
+| Breaking existing agent workflows               | Chunk 5 catches stale references across entire repo (including AGENTS.md files). The reading path gets simpler, not different.                         |
+| KMP skeleton docs have future value             | Archive them — if KMP becomes its own project later, skeletons can be restored. Retained KMP execution now lives in `sdk/paused/native-shells/SPEC.md` |
+| Merging PLAN/HANDOFF loses active work tracking | Closure gate: all partial/deferred chunks have next-step descriptions, all P1 handoff items have owner+status before source files are deleted          |
 
 ## What This Does NOT Change
 

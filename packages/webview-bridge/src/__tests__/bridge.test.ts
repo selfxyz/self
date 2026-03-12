@@ -5,6 +5,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { WebViewBridge } from '../bridge';
 import { MockNativeBridge } from '../mock';
+import type { SelfHostMessage } from '../types';
+import type { MockWindowWithListeners } from './helpers/mockWindow';
+import { createMockWindow } from './helpers/mockWindow';
 
 describe('WebViewBridge', () => {
   let mock: MockNativeBridge;
@@ -18,6 +21,7 @@ describe('WebViewBridge', () => {
 
   afterEach(() => {
     bridge.destroy();
+    vi.unstubAllGlobals();
   });
 
   describe('request/response', () => {
@@ -149,6 +153,71 @@ describe('WebViewBridge', () => {
       expect(globalThis.SelfNativeBridge).toBe(bridge);
       bridge.destroy();
       expect(globalThis.SelfNativeBridge).toBeUndefined();
+    });
+  });
+
+  describe('browser host transport', () => {
+    beforeEach(() => {
+      bridge.destroy();
+      const hostTarget = {
+        postMessage: vi.fn(),
+      } as unknown as Window;
+
+      vi.stubGlobal(
+        'window',
+        createMockWindow({
+          parent: hostTarget,
+        }),
+      );
+
+      bridge = new WebViewBridge({
+        browserHost: {
+          targetOrigin: 'https://host.example',
+        },
+      });
+    });
+
+    it('should post lifecycle messages to the host', () => {
+      bridge.fire('lifecycle', 'ready', { verificationId: 'verif-1' });
+      bridge.fire('lifecycle', 'dismiss', { reason: 'back' });
+
+      const hostTarget = window.parent;
+      expect(hostTarget.postMessage).toHaveBeenCalledTimes(2);
+      expect(hostTarget.postMessage).toHaveBeenNthCalledWith(
+        1,
+        {
+          type: 'self:ready',
+          version: 1,
+          payload: { verificationId: 'verif-1' },
+        } satisfies SelfHostMessage,
+        'https://host.example',
+      );
+      expect(hostTarget.postMessage).toHaveBeenNthCalledWith(
+        2,
+        {
+          type: 'self:dismiss',
+          version: 1,
+          payload: { reason: 'back' },
+        } satisfies SelfHostMessage,
+        'https://host.example',
+      );
+    });
+
+    it('should emit lifecycle cancel events from the host', () => {
+      const handler = vi.fn();
+      bridge.on('lifecycle', 'cancel', handler);
+
+      (window as unknown as MockWindowWithListeners).__dispatchMessage({
+        origin: 'https://host.example',
+        source: window.parent,
+        data: {
+          type: 'self:cancel',
+          version: 1,
+          payload: { reason: 'user_cancel' },
+        },
+      } as MessageEvent);
+
+      expect(handler).toHaveBeenCalledWith({ reason: 'user_cancel' });
     });
   });
 

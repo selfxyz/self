@@ -1,7 +1,7 @@
 # Dynamic Proof Request Items
 
 > Last updated: 2026-03-10
-> Status: Ready
+> Status: Done
 
 - Workstream: webview
 - Backlog IDs: WV-01
@@ -48,10 +48,11 @@ cd packages/mobile-sdk-alpha && npx vitest run
 
 ## Definition of Done
 
-- [ ] Proof request items are no longer hardcoded
-- [ ] Request-context rendering is validated
-- [ ] Backlog row updated
+- [x] Proof request items are no longer hardcoded
+- [x] Request-context rendering is validated
+- [x] Backlog row updated
 
 ## Status Log
 
 - 2026-03-10: Created during spec cleanup.
+- 2026-03-11: Implemented. Created `VerificationRequestProvider` to parse URL params into a typed `VerificationRequest` context. Refactored `ProvingScreen` to consume the context instead of hardcoding `DEFAULT_PROOF_ITEMS`. Both validation commands pass.

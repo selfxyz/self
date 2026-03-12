@@ -17,7 +17,6 @@ export default defineConfig({
   root: 'web',
   publicDir: 'web',
   envDir: '..', // This is the directory where Vite will look for .env files relative to the root
-  assetsInclude: ['**/*.lottie'],
   resolve: {
     extensions: [
       '.web.tsx',
@@ -35,7 +34,7 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
       '@/package.json': resolve(__dirname, 'package.json'),
       'react-native-svg': 'react-native-svg-web',
-      '@lottiefiles/dotlottie-react-native': '@lottiefiles/dotlottie-react',
+      'lottie-react-native': 'lottie-react',
       '@react-native-community/blur': resolve(
         __dirname,
         'src/devtools/mocks/react-native-community-blur.ts',
@@ -165,10 +164,7 @@ export default defineConfig({
           'vendor-analytics-sentry': ['@sentry/react', '@sentry/react-native'],
 
           // Animations
-          'vendor-animations-lottie': [
-            '@lottiefiles/dotlottie-react-native',
-            '@lottiefiles/dotlottie-react',
-          ],
+          'vendor-animations-lottie': ['lottie-react-native', 'lottie-react'],
 
           // WebSocket and Socket.IO
           'vendor-websocket': ['socket.io-client'],
@@ -196,7 +192,7 @@ export default defineConfig({
 
           // Large animations - split out heavy Lottie files
           'animations-passport-onboarding': [
-            './src/assets/animations/passport_onboarding.lottie',
+            './src/assets/animations/passport_onboarding.json',
           ],
 
           // Other screens

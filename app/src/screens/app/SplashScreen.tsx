@@ -8,12 +8,13 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
+  DelayedLottieView,
   hasAnyValidRegisteredDocument,
-  LottieAnimation,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import splashAnimation from '@/assets/animations/splash.json';
 import { impactLight } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import {
@@ -30,9 +31,6 @@ import {
 } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
-const splashAnimation = require('@/assets/animations/splash.lottie');
 
 const SplashScreen: React.FC = ({}) => {
   const selfClient = useSelfClient();
@@ -109,10 +107,13 @@ const SplashScreen: React.FC = ({}) => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setIsAnimationFinished(prev => {
-        if (!prev) console.warn('SplashScreen: animation timeout, proceeding');
+        if (!prev) {
+          console.warn('SplashScreen: animation timeout, proceeding');
+        }
         return true;
       });
     }, 5000);
+
     return () => clearTimeout(timeout);
   }, []);
 
@@ -136,7 +137,7 @@ const SplashScreen: React.FC = ({}) => {
   }, [isAnimationFinished, nextScreen, queuedDeepLink, navigation, selfClient]);
 
   return (
-    <LottieAnimation
+    <DelayedLottieView
       autoPlay
       loop={false}
       source={splashAnimation}

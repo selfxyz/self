@@ -2,6 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import {
+  createIndexedDBDocumentsAdapter,
+  createNoOpHapticAdapter,
+  createWebAnalyticsAdapter,
+} from '@selfxyz/mobile-sdk-alpha/browser';
+import type { WebAnalyticsOptions } from '@selfxyz/mobile-sdk-alpha/browser';
+
+import type { BridgeAnalyticsAdapter } from './analytics';
+import type { BridgeDocumentsAdapter } from './documents';
+import type { BridgeHapticAdapter } from './haptic';
+
 export { bridgeNFCScannerAdapter, onNfcProgress } from './nfc-scanner';
 export type { BridgeNFCScannerAdapter } from './nfc-scanner';
 
@@ -13,17 +24,15 @@ export type { BridgeAuthAdapter } from './auth';
 
 export { bridgeDocumentsAdapter } from './documents';
 export type { BridgeDocumentsAdapter } from './documents';
-export { indexedDBDocumentsAdapter } from './documents-web';
 
 export { bridgeStorageAdapter } from './storage';
 export type { BridgeStorageAdapter } from './storage';
 
 export { bridgeAnalyticsAdapter } from './analytics';
 export type { BridgeAnalyticsAdapter } from './analytics';
-export { consoleAnalyticsAdapter } from './analytics-web';
-export type { ConsoleAnalyticsOptions } from './analytics-web';
+export type ConsoleAnalyticsOptions = WebAnalyticsOptions;
 
-export { bridgeHapticAdapter, noOpHapticAdapter } from './haptic';
+export { bridgeHapticAdapter } from './haptic';
 export type { BridgeHapticAdapter } from './haptic';
 
 export { webNavigationAdapter } from './navigation';
@@ -37,3 +46,23 @@ export type { BridgeBiometricsAdapter } from './biometrics';
 
 export { bridgeCameraAdapter } from './camera';
 export type { BridgeCameraAdapter, MrzScanParams, MrzScanResult } from './camera';
+
+export function indexedDBDocumentsAdapter(): BridgeDocumentsAdapter {
+  return createIndexedDBDocumentsAdapter() as BridgeDocumentsAdapter;
+}
+
+export function consoleAnalyticsAdapter(
+  options?: ConsoleAnalyticsOptions,
+): BridgeAnalyticsAdapter {
+  return createWebAnalyticsAdapter(options) as BridgeAnalyticsAdapter;
+}
+
+export function noOpHapticAdapter(): BridgeHapticAdapter {
+  const trigger = createNoOpHapticAdapter();
+
+  return {
+    trigger(type: string): void {
+      trigger(type as never);
+    },
+  };
+}

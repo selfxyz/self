@@ -228,6 +228,7 @@ Key files:
 - `specs/projects/sdk/OVERVIEW.md` — Architecture, bridge protocol, module table, execution status
 - `specs/projects/sdk/workstreams/*/SPEC.md` — Durable workstream context, invariants, backlog, active plan links
 - `specs/projects/sdk/workstreams/*/plans/*.md` — PR-sized execution plans
+- `specs/projects/sdk/paused/*/SPEC.md` — Paused workstreams retained for future reuse (native-shells, integrations, rn-sdk, native-consolidation)
 
 **Before implementing SDK work:** Read `CLAUDE.md` Key Rules and the relevant workstream `SPEC.md` under `specs/projects/sdk/workstreams/`. These specs contain explicit constraints ("You will NOT..."), validation commands, and file ownership boundaries that prevent common mistakes.
 

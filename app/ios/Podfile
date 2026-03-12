@@ -61,10 +61,6 @@ def simulator_arm64_audit_entries
       path: "Pods/IdensicMobileSDK/IdensicMobileSDK_Fisherman.xcframework",
     },
     {
-      name: "DotLottiePlayer",
-      path: "Pods/LottieFiles-dotLottie-iOS/Sources/DotLottieCore/DotLottiePlayer.xcframework",
-    },
-    {
       name: "OpenSSL",
       path: "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework",
     },

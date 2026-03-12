@@ -5,32 +5,42 @@
 import React, { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StatusState, CheckCircleIcon, colors } from '@selfxyz/euclid-web';
+import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 
 export const ConfirmIdentificationScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic, lifecycle } = useSelfClient();
+  const { request, verificationId } = useVerificationRequest();
 
   useEffect(() => {
     haptic.trigger('success');
   }, [haptic]);
 
   const onConfirm = useCallback(async () => {
+    const result: VerificationResult = {
+      success: true,
+      userId: request.userId,
+      verificationId,
+      claims: {
+        resultType: 'documentOwnershipConfirmed',
+      },
+    };
+
     haptic.trigger('selection');
     analytics.trackEvent('ownership_confirmed');
 
     try {
-      await lifecycle.setResult({
-        type: 'documentOwnershipConfirmed',
-      });
+      await lifecycle.setResult(result);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       analytics.trackEvent('proving_process_error', { error: message });
     }
 
     navigate('/');
-  }, [navigate, analytics, haptic, lifecycle]);
+  }, [analytics, haptic, lifecycle, navigate, request.userId, verificationId]);
 
   return (
     <StatusState

@@ -11,7 +11,7 @@
 
 ## Projects
 
-- **[SDK](./projects/sdk/INDEX.md)** — architecture, bridge protocol, workstreams, execution status
+- **[SDK](./projects/sdk/INDEX.md)** — active WebView-first scope, paused native tracks, execution status
 
 ## Topics
 
@@ -35,7 +35,7 @@ Project rules and spec-writing guidelines are consolidated in the root `CLAUDE.m
 ## Reading Order
 
 1. This file (`specs/README.md`)
-2. `specs/projects/sdk/INDEX.md` — find your workstream
+2. `specs/projects/sdk/INDEX.md` — find your active workstream or paused native track
 3. The workstream `SPEC.md` — find the backlog row and active plan
 4. The linked `plans/<BACKLOG-ID>-<slug>.md` file — execute from this file
 5. `specs/projects/sdk/OVERVIEW.md` — if you need architecture context

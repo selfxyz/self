@@ -2,7 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const engineBrowserMocks = vi.hoisted(() => ({
+  createIndexedDBDocumentsAdapter: vi.fn(),
+  createNoOpHapticAdapter: vi.fn(),
+  createWebAnalyticsAdapter: vi.fn(),
+  createWebCryptoAdapter: vi.fn(),
+}));
+
+vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => engineBrowserMocks);
+
 import { WebViewBridge } from '../bridge';
 import { MockNativeBridge } from '../mock';
 import {
@@ -18,13 +28,29 @@ import {
   webNavigationAdapter,
   bridgeBiometricsAdapter,
   bridgeCameraAdapter,
+  noOpHapticAdapter,
 } from '../adapters';
+
+import { createMockWindow } from './helpers/mockWindow';
 
 describe('Adapter integration tests', () => {
   let mock: MockNativeBridge;
   let bridge: WebViewBridge;
+  let hashSpy: ReturnType<typeof vi.fn>;
+  let noOpTriggerSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    hashSpy = vi.fn();
+    noOpTriggerSpy = vi.fn();
+
+    engineBrowserMocks.createWebCryptoAdapter.mockReset();
+    engineBrowserMocks.createWebCryptoAdapter.mockReturnValue({
+      hash: hashSpy,
+      sign: vi.fn(),
+    });
+    engineBrowserMocks.createNoOpHapticAdapter.mockReset();
+    engineBrowserMocks.createNoOpHapticAdapter.mockReturnValue(noOpTriggerSpy);
+
     mock = new MockNativeBridge();
     bridge = new WebViewBridge({ transport: mock });
     mock.connect(bridge);
@@ -32,6 +58,7 @@ describe('Adapter integration tests', () => {
 
   afterEach(() => {
     bridge.destroy();
+    vi.unstubAllGlobals();
   });
 
   describe('NFC Scanner Adapter', () => {
@@ -113,12 +140,32 @@ describe('Adapter integration tests', () => {
     it('should hash using Web Crypto API (no bridge call)', async () => {
       const adapter = bridgeCryptoAdapter(bridge);
       const input = new TextEncoder().encode('hello');
+      const expectedHash = new Uint8Array(32);
+      hashSpy.mockResolvedValue(expectedHash);
+
       const hash = await adapter.hash(input, 'sha256');
 
-      // SHA-256 of "hello" is known
-      expect(hash).toBeInstanceOf(Uint8Array);
-      expect(hash.length).toBe(32);
+      expect(hash).toBe(expectedHash);
+      expect(hashSpy).toHaveBeenCalledWith(input, 'sha256');
       expect(mock.messages).toHaveLength(0); // No bridge calls
+    });
+
+    it('should normalize supported SHA-256 aliases through the shared browser adapter', async () => {
+      const adapter = bridgeCryptoAdapter(bridge);
+      const input = new TextEncoder().encode('hello');
+      const normalizedHash = new Uint8Array(32);
+      hashSpy.mockResolvedValue(normalizedHash);
+
+      const normalized = await adapter.hash(input, 'sha256');
+      const hyphenated = await adapter.hash(input, 'sha-256' as any);
+      const uppercase = await adapter.hash(input, 'SHA256' as any);
+
+      expect(hyphenated).toEqual(normalized);
+      expect(uppercase).toEqual(normalized);
+      expect(hashSpy).toHaveBeenNthCalledWith(1, input, 'sha256');
+      expect(hashSpy).toHaveBeenNthCalledWith(2, input, 'sha-256');
+      expect(hashSpy).toHaveBeenNthCalledWith(3, input, 'SHA256');
+      expect(mock.messages).toHaveLength(0);
     });
 
     it('should sign via bridge', async () => {
@@ -228,6 +275,14 @@ describe('Adapter integration tests', () => {
       expect(mock.messagesFor('haptic')).toHaveLength(1);
       expect(bridge.pendingCount).toBe(0);
     });
+
+    it('should expose a no-op wrapper without touching the bridge', () => {
+      const haptic = noOpHapticAdapter();
+
+      expect(() => haptic.trigger('impact')).not.toThrow();
+      expect(noOpTriggerSpy).toHaveBeenCalledWith('impact');
+      expect(mock.messagesFor('haptic')).toHaveLength(0);
+    });
   });
 
   describe('Lifecycle Adapter', () => {
@@ -250,6 +305,43 @@ describe('Adapter integration tests', () => {
       await lifecycle.setResult({ success: true, verificationId: 'v-1' });
 
       expect(mock.messagesFor('lifecycle')[0].method).toBe('setResult');
+    });
+
+    it('should send browser-host results without creating a pending request', async () => {
+      bridge.destroy();
+
+      const hostTarget = {
+        postMessage: vi.fn(),
+      } as unknown as Window;
+
+      vi.stubGlobal(
+        'window',
+        createMockWindow({
+          parent: hostTarget,
+        }),
+      );
+
+      bridge = new WebViewBridge({
+        browserHost: {
+          targetOrigin: 'https://host.example',
+        },
+      });
+
+      const lifecycle = bridgeLifecycleAdapter(bridge);
+      await lifecycle.setResult({ success: true, verificationId: 'v-1' });
+
+      expect(bridge.pendingCount).toBe(0);
+      expect(hostTarget.postMessage).toHaveBeenCalledWith(
+        {
+          type: 'self:result',
+          version: 1,
+          payload: {
+            success: true,
+            verificationId: 'v-1',
+          },
+        },
+        'https://host.example',
+      );
     });
   });
 

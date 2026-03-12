@@ -3,29 +3,12 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid-web';
+import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
-
-const DEFAULT_REQUEST_TYPE = 'proofRequested';
-const ALLOWED_REQUEST_TYPES = new Set([
-  'proofRequested',
-  'documentOwnershipConfirmed',
-]);
-const DEFAULT_PROOF_ITEMS = [
-  'Age verification',
-  'Nationality',
-  'Document validity',
-];
-
-interface ProvingScreenLocationState {
-  requestType?: string;
-  proofItems?: string[];
-  appName?: string;
-  appEndpoint?: string;
-  timestamp?: number;
-}
+import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 
 function titleCaseDisclosure(disclosure: string): string {
   return disclosure
@@ -35,121 +18,74 @@ function titleCaseDisclosure(disclosure: string): string {
     .replace(/\b\w/g, (match) => match.toUpperCase());
 }
 
-function normalizeRequestType(value: string | null | undefined): string {
-  if (!value) return DEFAULT_REQUEST_TYPE;
-  return ALLOWED_REQUEST_TYPES.has(value) ? value : DEFAULT_REQUEST_TYPE;
-}
-
-function normalizeAppEndpoint(value: string | null | undefined): string {
-  if (!value) return '';
-
-  try {
-    const endpoint = new URL(value);
-    const isHttps = endpoint.protocol === 'https:';
-    const isLocalHttp =
-      endpoint.protocol === 'http:' &&
-      (endpoint.hostname === 'localhost' || endpoint.hostname === '127.0.0.1');
-
-    if (!isHttps && !isLocalHttp) {
-      return '';
-    }
-
-    return endpoint.host;
-  } catch {
-    return '';
-  }
-}
-
-function parseProofItems(search: string): string[] | null {
-  const params = new URLSearchParams(search);
-  const proofItems = params.get('proofItems');
-  if (proofItems) {
-    const items = proofItems
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean);
-    if (items.length > 0) return items;
-  }
-
-  const disclosures = params.get('disclosures');
-  if (disclosures) {
-    const items = disclosures
-      .split(',')
-      .map((item) => titleCaseDisclosure(item))
-      .filter(Boolean);
-    if (items.length > 0) return items;
-  }
-
-  return null;
-}
-
 export const ProvingScreen: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const locationState = (location.state ?? {}) as ProvingScreenLocationState;
   const { analytics, haptic, lifecycle } = useSelfClient();
+  const {
+    request,
+    displayLabels,
+    requestType,
+    appName,
+    appEndpoint,
+    timestamp,
+    verificationId,
+  } = useVerificationRequest();
   const [proving, setProving] = useState(false);
 
-  const requestType = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    return normalizeRequestType(
-      locationState.requestType ??
-        params.get('resultType'),
-    );
-  }, [location.search, locationState.requestType]);
-
   const proofItems = useMemo(() => {
-    if (Array.isArray(locationState.proofItems) && locationState.proofItems.length > 0) {
-      return locationState.proofItems;
+    if (displayLabels && displayLabels.length > 0) {
+      return displayLabels.map((label) => ({ label }));
     }
-    return parseProofItems(location.search) ?? DEFAULT_PROOF_ITEMS;
-  }, [location.search, locationState.proofItems]);
-
-  const appName = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    return locationState.appName ?? params.get('appName') ?? 'Verification';
-  }, [location.search, locationState.appName]);
-
-  const appEndpoint = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    return normalizeAppEndpoint(
-      locationState.appEndpoint ?? params.get('appEndpoint'),
-    );
-  }, [location.search, locationState.appEndpoint]);
-
-  const timestamp = useMemo(() => {
-    if (typeof locationState.timestamp === 'number') return locationState.timestamp;
-    const queryTimestamp = new URLSearchParams(location.search).get('timestamp');
-    const parsed = queryTimestamp ? Number(queryTimestamp) : Number.NaN;
-    return Number.isFinite(parsed) ? parsed : Date.now();
-  }, [location.search, locationState.timestamp]);
+    return (request.disclosures ?? []).map((key) => ({
+      label: titleCaseDisclosure(key),
+    }));
+  }, [displayLabels, request.disclosures]);
 
   const onVerify = useCallback(async () => {
+    const result: VerificationResult = {
+      success: true,
+      userId: request.userId,
+      verificationId,
+      claims: {
+        resultType: requestType,
+      },
+    };
+
     haptic.trigger('selection');
     analytics.trackEvent('prove_verify_pressed');
     setProving(true);
 
     try {
-      await lifecycle.setResult({
-        type: requestType,
-      });
+      await lifecycle.setResult(result);
 
-      navigate('/proving/result', { state: { success: true } });
+      navigate('/proving/result', {
+        state: { success: true, result, resultSent: true },
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Proving failed';
       analytics.trackEvent('prove_verify_failed', { error: message });
       navigate('/proving/result', {
-        state: { success: false, error: message },
+        state: { success: false, error: message, result, resultSent: false },
       });
     } finally {
       setProving(false);
     }
-  }, [navigate, analytics, haptic, lifecycle, requestType]);
+  }, [
+    analytics,
+    haptic,
+    lifecycle,
+    navigate,
+    request.userId,
+    requestType,
+    verificationId,
+  ]);
 
   const onCancel = useCallback(() => {
     haptic.trigger('selection');
+    analytics.trackEvent('prove_verify_cancelled');
+    lifecycle.dismiss({ reason: 'user_cancel' });
     navigate('/');
-  }, [navigate, haptic]);
+  }, [analytics, haptic, lifecycle, navigate]);
 
   return (
     <ProofRequestScreen
@@ -161,7 +97,7 @@ export const ProvingScreen: React.FC = () => {
       appName={appName}
       appEndpoint={appEndpoint}
       timestamp={timestamp}
-      items={proofItems.map((label) => ({ label }))}
+      items={proofItems}
     />
   );
 };

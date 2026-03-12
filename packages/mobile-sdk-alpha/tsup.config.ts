@@ -37,6 +37,7 @@ const flowEntries = findFlowFiles('src/flows');
 const entry = {
   index: 'src/index.ts',
   browser: 'src/browser.ts',
+  'adapters/browser/index': 'src/adapters/browser/index.ts',
   'constants/analytics': 'src/constants/analytics.ts',
   'constants/colors': 'src/constants/colors.ts',
   'constants/fonts': 'src/constants/fonts.ts',
@@ -66,6 +67,7 @@ export default defineConfig([
       // Externalize all React Native sub-modules and internals
       /^react-native\/.*/,
       '@selfxyz/common',
+      /^@selfxyz\/common\/.*/,
       // Common crypto dependencies (already in main app)
       'elliptic',
       'js-sha256',
@@ -76,7 +78,7 @@ export default defineConfig([
       'ethers',
       // React Native dependencies
       'react-native-svg-circle-country-flags',
-      '@lottiefiles/dotlottie-react-native',
+      'lottie-react-native',
       'react-native-haptic-feedback',
       'react-native-localize',
       // Optional RN adapter peer dependencies
@@ -87,8 +89,6 @@ export default defineConfig([
       /^@noble\/hashes\/.*/,
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
-      // Externalize animation files so Metro can deduplicate them
-      /\/animations\/.*\.(json|lottie)$/,
     ],
     esbuildOptions(options) {
       options.supported = {
@@ -125,6 +125,7 @@ export default defineConfig([
       // Externalize all React Native sub-modules and internals
       /^react-native\/.*/,
       '@selfxyz/common',
+      /^@selfxyz\/common\/.*/,
       // Common crypto dependencies (already in main app)
       'elliptic',
       'js-sha256',
@@ -135,7 +136,7 @@ export default defineConfig([
       'ethers',
       // React Native dependencies
       'react-native-svg-circle-country-flags',
-      '@lottiefiles/dotlottie-react-native',
+      'lottie-react-native',
       'react-native-haptic-feedback',
       'react-native-localize',
       // Optional RN adapter peer dependencies
@@ -146,8 +147,6 @@ export default defineConfig([
       /^@noble\/hashes\/.*/,
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
-      // Externalize animation files so Metro can deduplicate them
-      /\/animations\/.*\.(json|lottie)$/,
     ],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
     esbuildOptions(options) {

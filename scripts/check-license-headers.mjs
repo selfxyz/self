@@ -9,7 +9,13 @@
  * Ensures there's a newline after license headers
  */
 
-import { readdirSync, statSync, readFileSync, writeFileSync } from 'fs';
+import {
+  existsSync,
+  readdirSync,
+  statSync,
+  readFileSync,
+  writeFileSync,
+} from 'fs';
 import path from 'path';
 
 // Legacy composite format (being phased out)
@@ -29,6 +35,10 @@ function findFiles(
 ) {
   const files = [];
 
+  function isNestedGitRepo(currentDir) {
+    return existsSync(path.join(currentDir, '.git'));
+  }
+
   function traverse(currentDir) {
     const items = readdirSync(currentDir);
 
@@ -37,6 +47,12 @@ function findFiles(
       const stat = statSync(fullPath);
 
       if (stat.isDirectory()) {
+        // Skip nested git repos/submodules. The parent repo should not rewrite or
+        // lint files owned by another repository.
+        if (isNestedGitRepo(fullPath)) {
+          continue;
+        }
+
         // Skip node_modules, .git, and other common directories
         if (
           ![
