@@ -5,7 +5,6 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  bridgeNFCScannerAdapter,
   bridgeCryptoAdapter,
   bridgeAuthAdapter,
   indexedDBDocumentsAdapter,
@@ -15,10 +14,8 @@ import {
   webNavigationAdapter,
   noOpHapticAdapter,
   bridgeBiometricsAdapter,
-  bridgeCameraAdapter,
 } from '@selfxyz/webview-bridge/adapters';
 import type {
-  BridgeNFCScannerAdapter,
   BridgeCryptoAdapter,
   BridgeAuthAdapter,
   BridgeDocumentsAdapter,
@@ -28,12 +25,10 @@ import type {
   BridgeNavigationAdapter,
   BridgeHapticAdapter,
   BridgeBiometricsAdapter,
-  BridgeCameraAdapter,
 } from '@selfxyz/webview-bridge/adapters';
 import { useBridge } from './BridgeProvider';
 
 export interface SelfClientAdapters {
-  scanner: BridgeNFCScannerAdapter;
   crypto: BridgeCryptoAdapter;
   auth: BridgeAuthAdapter;
   documents: BridgeDocumentsAdapter;
@@ -43,7 +38,6 @@ export interface SelfClientAdapters {
   navigation: BridgeNavigationAdapter;
   haptic: BridgeHapticAdapter;
   biometrics: BridgeBiometricsAdapter;
-  camera: BridgeCameraAdapter;
 }
 
 const SelfClientContext = createContext<SelfClientAdapters | null>(null);
@@ -66,7 +60,6 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
     const lifecycle = bridgeLifecycleAdapter(bridge);
 
     return {
-      scanner: bridgeNFCScannerAdapter(bridge),
       crypto: bridgeCryptoAdapter(bridge),
       auth: bridgeAuthAdapter(bridge),
       documents: indexedDBDocumentsAdapter(),
@@ -79,7 +72,6 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
       ),
       haptic: noOpHapticAdapter(),
       biometrics: bridgeBiometricsAdapter(bridge),
-      camera: bridgeCameraAdapter(bridge),
     };
   }, [bridge, navigate]);
 
