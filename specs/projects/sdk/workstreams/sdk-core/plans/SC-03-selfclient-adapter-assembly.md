@@ -1,7 +1,7 @@
 # SC-03: Extract Reusable App Adapter Factories for SelfClient Assembly
 
 > Last updated: 2026-03-12
-> Status: Ready
+> Status: Done
 > Priority: Medium
 > Depends on: SC-02 (Done)
 

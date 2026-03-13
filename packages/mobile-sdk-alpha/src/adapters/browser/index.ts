@@ -7,3 +7,4 @@ export { createIndexedDBDocumentsAdapter } from './documents';
 export { createNoOpHapticAdapter } from './haptic';
 export { createWebAnalyticsAdapter } from './analytics';
 export { createWebCryptoAdapter } from './crypto';
+export { createWebNetworkAdapter } from './network';

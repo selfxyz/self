@@ -22,8 +22,14 @@ function normalizeAlgo(algo: string): string {
 export function createWebCryptoAdapter(): CryptoAdapter {
   return {
     async hash(input: Uint8Array, algo: 'sha256' = 'sha256'): Promise<Uint8Array> {
+      const subtle = globalThis.crypto?.subtle;
+      if (!subtle?.digest) {
+        throw new Error(
+          'WebCrypto subtle.digest is not available; provide a crypto adapter/polyfill for this runtime.',
+        );
+      }
       const webCryptoAlgo = normalizeAlgo(algo);
-      const digest = await crypto.subtle.digest(webCryptoAlgo, input as Uint8Array<ArrayBuffer>);
+      const digest = await subtle.digest(webCryptoAlgo, input as Uint8Array<ArrayBuffer>);
       return new Uint8Array(digest);
     },
 

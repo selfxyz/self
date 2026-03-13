@@ -76,6 +76,7 @@ export {
   createNoOpHapticAdapter,
   createWebAnalyticsAdapter,
   createWebCryptoAdapter,
+  createWebNetworkAdapter,
 } from './adapters/browser';
 
 export { createListenersMap, createSelfClient } from './client';
