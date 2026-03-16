@@ -1,1520 +1,311 @@
-# Person 1: WebView UI + Bridge — Implementation Spec
+# WebView-Only Verification Experience — Implementation Spec
 
-> Last updated: 2026-03-05
-> Owner: Person 1 (WebView UI + Bridge)
+> Last updated: 2026-03-11
+> Owner: WebView / Product Platform
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
 
+## Scope Reset
+
+On **March 11, 2026**, the active SDK scope changed to **WebView only, with no custom native modules**.
+
+- The current client path should ship as a browser/WebView experience.
+- Self-owned NFC, native MRZ/camera handlers, biometrics, keychain bridging, KMP shells, and RN native-shell packaging are out of scope for this workstream.
+- End-to-end document capture and verification should route through a **web-capable KYC provider** such as Sumsub.
+- The paused native specs are preserved under [SDK Paused Work](../../paused/INDEX.md) for possible future reuse in Self Wallet or other mobile-native projects.
+
 ## North Star
 
-- **Goal:** Embed Self's identity verification into any host app with zero duplicated logic across platforms.
-- **Success metric:** A host app calls `SelfSdk.launch(request)`, gets back a verified proof, and the entire flow runs inside a shared WebView.
-- **Constraint:** NFC, camera, biometrics, and keychain are the ONLY things that touch native code. Everything else runs in the WebView.
+- **Goal:** Deliver the Self verification flow as a WebView/browser-native experience that does not depend on custom native modules.
+- **Success metric:** A host launches the web flow, the user completes provider-backed capture/KYC and Self proof steps, and the host receives a consistent result using a web-friendly integration contract.
+- **Constraint:** If a feature requires custom native modules for the current client path, it belongs in paused work unless product scope changes.
 
 ## Context
 
-**What you own:**
+**What you own now:**
 
-- **`@selfxyz/webview-bridge`** — Bridge protocol library (public npm). Pure TypeScript, no react-native imports.
-- **`@selfxyz/webview-app`** — Vite-bundled React app (bundled into native SDKs). 10 screens, Tamagui UI, React Router, BridgeProvider, SelfClientProvider.
-- **Web fallback adapters** — IndexedDB for documents, Web Crypto for hashing, console/fetch for analytics, React Router for navigation, no-op for haptic.
+- `packages/webview-app/` — primary UI and orchestration surface
+- Web-native host integration patterns — URL params, postMessage, or equivalent minimal host callback contract
+- KYC-provider handoff points and result mapping inside the web flow
+- Active coordination with `packages/mobile-sdk-alpha/` for browser-safe engine behavior
 
-**Architecture context:**
+**What is no longer in this workstream's active scope:**
 
-```
-┌──────────────────────────────────────────────────┐
-│               NATIVE SHELLS (Person 2 / 5)       │
-│  KMP (Android + iOS)  |  RN (react-native-webview)│
-│  5 native handlers: NFC, Camera, Bio, Key, Life  │
-└──────────────────────┬───────────────────────────┘
-                       │  postMessage (JSON)
-         ┌─────────────▼──────────────┐
-         │  @selfxyz/webview-bridge   │  ◄── YOU BUILD THIS
-         │  Bridge protocol + adapters │
-         └─────────────┬──────────────┘
-                       │
-         ┌─────────────▼──────────────┐
-         │  @selfxyz/webview-app      │  ◄── YOU BUILD THIS
-         │  10 screens, providers,    │
-         │  Vite bundle (dist/)       │
-         └─────────────┬──────────────┘
-                       │  imports adapters + hooks
-         ┌─────────────▼──────────────┐
-         │  @selfxyz/mobile-sdk-alpha │  (Person 4)
-         │  Proving machine, stores,  │
-         │  adapter interfaces        │
-         └────────────────────────────┘
-```
-
-**Dependencies:**
-
-| Direction     | Person / Package              | What                                                             | Status |
-| ------------- | ----------------------------- | ---------------------------------------------------------------- | ------ |
-| **You need**  | Person 4 (`mobile-sdk-alpha`) | Adapter interfaces, `useSelfClient()` hook, color/font constants | Active |
-| **You need**  | Person 2 (KMP / Swift shells) | Native handler implementations on the other side of the bridge   | Done   |
-| **Needs you** | Person 2 (KMP / Swift shells) | Vite bundle (`dist/index.html` + JS) embedded into native SDK    | Ready  |
-| **Needs you** | Person 5 (RN SDK)             | Same Vite bundle loaded via `react-native-webview`               | Ready  |
-
-**Status:**
-
-- [x] Bridge protocol types and `WebViewBridge` class (63 tests pass)
-- [x] All 10 screens built and routing works
-- [x] Biometrics + camera bridge adapters wired in `SelfClientProvider`
-- [x] Hybrid crypto contract signed off
-- [ ] Dynamic proof request items are still hardcoded in `ProvingScreen`
+- Custom native bridge handlers for NFC, camera/MRZ, biometrics, secure storage, or lifecycle
+- KMP shell delivery
+- RN native-shell delivery
+- Native MRZ/NFC consolidation
 
 ## Execution Model
 
-- Stable WebView and bridge context stays in this file.
+- Stable WebView-first context lives in this file.
 - PR-sized execution lives under [`plans/`](./plans/).
-- For quick pickup, read the backlog and active plans first.
+- If work touches native-module delivery, stop and check [SDK Paused Work](../../paused/INDEX.md).
 
 ## Backlog
 
-| ID    | Title                                                    | Status | Priority | Depends On | Plan                                                                                       | PR  |
-| ----- | -------------------------------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------ | --- |
-| WV-01 | Dynamic proof request items sourced from request context | Ready  | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | -   |
+| ID    | Title                                                                                           | Status | Priority | Depends On | Plan                                                                                             | Notes                                                                                                                       |
+| ----- | ----------------------------------------------------------------------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| WV-01 | Dynamic proof request items sourced from request context                                        | Done   | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | Existing active follow-up                                                                                                   |
+| WV-02 | Define the KYC-provider contract for document capture, MRZ/liveness handoff, and result mapping | Done   | High     | -          | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | Provider-backed path replaces Self-owned native scan flow; active contract is now documented                                |
+| WV-03 | Remove native NFC and native-scan assumptions from active WebView screens, copy, and docs       | Done   | High     | WV-02      | [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | Active UX/docs now route to a provider placeholder instead of Self-managed scan screens                                     |
+| WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Done   | Medium   | WV-02      | [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | Browser host fallback now uses `postMessage` for iframe/popup embedding while native transports keep their current behavior |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan                                                                                       | IDs   | Status |
-| ------------------------------------------------------------------------------------------ | ----- | ------ |
-| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md) | WV-01 | Ready  |
+| Plan                                                                                             | IDs   | Status |
+| ------------------------------------------------------------------------------------------------ | ----- | ------ |
+| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | WV-01 | Done   |
+| [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | WV-02 | Done   |
+| [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | WV-03 | Done   |
+| [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | WV-04 | Done   |
 
 ## Completion Checklist
 
-- [ ] Remaining WebView follow-ups are represented in backlog rows
-- [ ] Active plan links are current
-- [ ] Project overview status stays aligned with this file
+- [x] Active backlog reflects the WebView-only client scope
+- [x] KYC-provider dependency is explicit wherever scan/KYC UX is described
+- [x] Active docs do not imply Self-managed NFC or native scanning for the current client path
+- [x] Host integration contract is clear without assuming custom native modules
 
-## Overview
+## Problem Statement
 
-You are building the **web side** of the Self Mobile SDK: the bridge protocol library (`@selfxyz/webview-bridge`) and the Vite-bundled React app (`@selfxyz/webview-app`) that runs inside a native WebView. This matters because every screen, adapter wire-up, and bridge message you implement becomes the single shared UI that ships to every host app — Kotlin, React Native, or otherwise. The output of `vite build` (a single `index.html` + JS bundle) gets bundled into the native SDK artifact.
+The previous SDK plan assumed a shared WebView plus native shells for hardware-heavy features. That is no longer the active delivery target. The current client wants the WebView experience without custom native modules, which changes the implementation boundary:
 
-## Prerequisites
-
-- Familiarity with **Vite** (build tool, `vite.config.ts`, dev server, production builds)
-- Familiarity with **Tamagui** (cross-platform UI kit, `createTamagui`, font config, `YStack`/`XStack`/`Text`/`View`)
-- Familiarity with **React Router** (`BrowserRouter`, `Routes`, `Route`, `useNavigate`)
-- Familiarity with the **bridge protocol** (JSON over `postMessage`, request/response/event lifecycle) — see [SDK Overview](../../OVERVIEW.md) "Shared Contracts / Protocols"
-- **Adapter interfaces** are defined in `packages/mobile-sdk-alpha/src/types/public.ts` — read that file before implementing any adapter
-- Read [SDK Overview](../../OVERVIEW.md) for architecture context
-
-## The Problem
-
-The Self Wallet is a monolithic React Native app where all logic, NFC, proving, and UI are tangled together. There is no way for third-party host apps (MiniPay, etc.) to embed the verification flow. We need a self-contained WebView bundle that:
-
-1. Renders the full 10-screen verification flow
-2. Bridges to native only for hardware/OS capabilities (NFC, camera, biometrics, keychain, lifecycle)
-3. Provides web-native fallback adapters for everything the browser can handle (documents via IndexedDB, crypto hashing via Web Crypto, analytics via console/fetch)
-
-| Area                       | Issue                                                                                                                       |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `packages/webview-bridge/` | Implemented with current protocol/adapters and validated by tests (63 tests passing).                                       |
-| `packages/webview-app/`    | Screens built, routing works. SelfClientProvider wiring complete (biometrics, camera, and web fallback adapters connected). |
-| Web fallback adapters      | IndexedDB documents, Web Crypto hashing, console analytics, navigation, and no-op haptic are wired in webview-app.          |
+- Web UI, proof orchestration, and result handling stay in Self-owned code.
+- Capture-heavy verification steps should be delegated to a web-capable KYC provider.
+- Host integration should stay lightweight and browser/WebView-native.
 
 ## Design Principles
 
-1. **No react-native imports in the bridge package.** `@selfxyz/webview-bridge` is pure TypeScript — it works in any browser environment. The `react-native-web` alias lives only in `webview-app`'s Vite config.
-2. **Native handlers are dumb pipes.** Bridge adapters serialize/deserialize and call `bridge.request()`. Zero business logic lives in the native handler layer — that belongs in `mobile-sdk-alpha`.
-3. **Web-first, bridge only when forced.** If the browser can do it (IndexedDB, Web Crypto, fetch, console), use the web API directly. Only NFC, camera, biometrics, keychain, and lifecycle cross the bridge.
-4. **Single bundle, zero external fetches.** The Vite build inlines fonts and assets under 100KB. The output `dist/` folder is entirely self-contained — no CDN, no external scripts.
-5. **Screen parity with the RN app.** Every WebView screen must match the corresponding RN app screen in layout, colors, fonts, and interaction patterns. Use the RN screens as pixel-level references.
+1. **WebView-first means web-native first.** Prefer browser/WebView integration patterns over any platform-specific bridge.
+2. **Do not rebuild KYC infrastructure in native code.** If end-to-end scanning or liveness is needed, use the provider flow instead of reviving Self-managed native modules.
+3. **Keep active UX honest.** If a step is provider-owned or paused, the active specs and screens must say so.
+4. **Preserve reusable work without letting it drive scope.** Historical native work lives in [SDK Paused Work](../../paused/INDEX.md).
+5. **Keep the engine portable.** `mobile-sdk-alpha` still needs clean browser-safe behavior because it powers the active WebView flow.
+
+## KYC Provider Contract
+
+For the active client path, Self delegates document capture and KYC to a web-capable provider and treats that provider as interchangeable. Sumsub is one example, not a hard dependency. This contract defines the Self-owned boundary that `WV-03` and `WV-04` build on.
+
+### Boundary Decisions
+
+- The active contract is provider-agnostic. Provider-specific SDK/bootstrap details are implementation concerns, not part of the normative spec.
+- The provider must return control to a Self-owned route or callback inside the same WebView/browser verification session.
+- Self normalizes provider output inside the web flow before any host callback. Providers do not call the host lifecycle adapter directly.
+- `SdkInitialConfig.verificationRequest` remains the host-supplied launch input. `VERIFICATION_COMPLETE` and the bridge lifecycle adapter remain the host-facing terminal surfaces.
+- A provider `success` result is not the same thing as final verification success. It only means Self has enough provider-owned evidence to continue the Self proof path.
+
+### Provider Launch Request
+
+Self derives provider launch parameters from the active verification session plus `SdkInitialConfig.verificationRequest`.
+
+Required launch fields:
+
+- `verificationId`: Self correlation ID for the current verification session. Reuse this value in the final `VERIFICATION_COMPLETE` payload.
+- `returnUrl`: Self-owned URL or callback target that re-enters the same WebView/browser flow after provider completion.
+
+Pass through when present on `VerificationRequest`:
+
+- `userId`: Host/user correlation key.
+- `scope`: Proof scope used by downstream Self flows.
+- `disclosures`: Requested disclosure set when provider policy selection needs it.
+
+Optional Self context:
+
+- `env`: `prod` or `stg` when Self must route to matching provider environments.
+
+Provider auth tokens, SDK bootstrapping handles, and vendor-specific applicant/session IDs are intentionally out of scope for the public Self contract. They may exist in implementation code, but they do not change the launch contract above.
+
+### Normalized Provider Result
+
+Self expects provider output to normalize into this internal shape before any host callback:
+
+```ts
+type KycProviderResult = {
+  status: 'success' | 'partial' | 'cancel' | 'error';
+  verificationId: string;
+  provider: string;
+  providerSessionId?: string;
+  providerApplicantId?: string;
+  /** ISO 8601 UTC timestamp, for example 2026-03-11T18:42:15.000Z */
+  completedAt?: string;
+  attestation?: {
+    serializedApplicantInfo: string;
+    signature: string;
+    pubkey: [string, string];
+  };
+  error?: {
+    code:
+      | 'provider_cancelled'
+      | 'provider_timeout'
+      | 'provider_rejected'
+      | 'provider_missing_attestation'
+      | 'provider_unavailable'
+      | 'provider_protocol_error'
+      | 'provider_unknown_error';
+    message: string;
+    retryable?: boolean;
+    providerCode?: string;
+  };
+};
+```
+
+Status semantics:
+
+- `success`: The provider reached a terminal approved/completed state and returned the full attestation payload required for Self proof work.
+- `partial`: The provider returned a recognized but insufficient outcome, such as manual review, incomplete capture, or an approved session without the required attestation payload. Implementations must preserve whether the partial state is still review-pending or is structurally incomplete.
+- `cancel`: The user or provider explicitly cancelled or abandoned the session.
+- `error`: The provider flow failed because of timeout, transport failure, rejected callback payload, provider unavailability, or another technical/provider-side error.
+
+### Required Downstream Fields For Self Proof Steps
+
+Only a small subset of provider output is required for the Self proof path:
+
+- `attestation.serializedApplicantInfo`
+- `attestation.signature`
+- `attestation.pubkey`
+
+`serializedApplicantInfo` must encode the applicant fields currently consumed by the KYC circuit path in `@selfxyz/common`:
+
+- `country`
+- `idType`
+- `idNumber`
+- `issuanceDate`
+- `expiryDate`
+- `fullName`
+- `dob`
+- `photoHash`
+- `phoneNumber`
+- `gender`
+- `address`
+
+Self stores those fields as a `KycData` document (`documentCategory: 'kyc'`). The circuits consume the attestation blob plus signature/public key; they do not require raw provider capture artifacts.
+
+Correlation fields required outside the circuit path:
+
+- `verificationId`
+- `providerSessionId`
+- `providerApplicantId`
+
+Provider data that is not required downstream for Self proof steps:
+
+- raw MRZ text
+- document images or selfies
+- liveness recordings
+- OCR confidence/debug output
+- provider step-by-step audit logs
+
+Those fields may be retained as provider evidence or for support operations, but they are outside the Self proof contract.
+
+### Cancellation, Timeout, And Error Mapping
+
+Normalize provider outcomes as follows:
+
+- Provider-approved result with complete attestation payload: `status: 'success'`
+- Provider-approved or provider-returned result without complete attestation payload: `status: 'partial'`, `error.code: 'provider_missing_attestation'`, `retryable: false`
+- Provider state such as `pending`, `on_hold`, `manual_review`, or equivalent non-terminal review outcome: `status: 'partial'`, with no terminal host callback until Self decides the session has either resumed, expired, or been explicitly aborted
+- Explicit close, cancel, back-out, or hosted-flow abandonment signalled by the provider: `status: 'cancel'`, `error.code: 'provider_cancelled'`
+- User closes the host WebView/browser tab or Self loses the session before an explicit provider cancellation callback arrives: treat as `error`, `error.code: 'provider_timeout'`, unless the provider later confirms an explicit cancellation
+- Session TTL expiry, callback deadline expiry, or no provider return within the Self-owned timeout window: `status: 'error'`, `error.code: 'provider_timeout'`, `retryable: true`
+- Provider-declared rejection/failure outcome: `status: 'error'`, `error.code: 'provider_rejected'`
+- Network/auth/bootstrap/callback-shape failures: `status: 'error'`, `error.code: 'provider_unavailable'` or `provider_protocol_error`
+
+Host-facing mapping rules:
+
+- Provider results are inputs to the Self flow, not direct host results.
+- Only the full Self verification lifecycle emits `VERIFICATION_COMPLETE` or calls `lifecycle.setResult`.
+- If provider `success` unlocks the KYC proof path and the later Self proof flow completes, Self emits `VERIFICATION_COMPLETE { success: true, verificationId, userId }`.
+- If the verification session terminates after provider `partial`, `cancel`, or `error`, Self emits `VERIFICATION_COMPLETE { success: false, verificationId, userId, error }` using the normalized Self error code rather than the raw provider payload.
+
+## Host Callback Contract
+
+`WV-04` defines the lightweight host contract for the active WebView/browser path. The goal is to let a parent page, popup opener, or mobile WebView wrapper launch the flow and receive lifecycle callbacks without any custom native module.
+
+### Transport Selection
+
+- Android KMP, iOS KMP, and RN WebView transports remain the first-choice bridge path and are unchanged.
+- When no native transport is available, `packages/webview-bridge` falls back to a browser host transport.
+- The browser transport posts to `window.parent` when the flow is embedded in an iframe.
+- If there is no parent frame but the flow was opened as a popup, the browser transport posts to `window.opener`.
+- Browser host transport requires a `targetOrigin`. In development, the app may default to `*`. In production, the host must supply an explicit `targetOrigin` value in the launch URL or equivalent configuration, and URL-supplied `*` is rejected.
+
+### Host Message Envelope
+
+All browser-host lifecycle callbacks use this envelope:
+
+```ts
+type SelfHostMessage = {
+  type: 'self:ready' | 'self:result' | 'self:dismiss';
+  version: 1;
+  payload: Record<string, unknown>;
+};
+```
+
+Message semantics:
+
+- `self:ready`: sent once the Self client mounts. Payload is `{}` or `{ verificationId }`.
+- `self:result`: sent on the terminal verification outcome. Payload is `VerificationResult` with `success`, optional `userId`, optional `verificationId`, and optional `error`.
+- `self:dismiss`: sent when the user abandons or closes the flow. Payload is `{}` for generic teardown or `{ reason: 'user_cancel' | 'back' | 'timeout' }` when Self can classify the exit path.
+
+### Request Context
+
+Hosts may supply these browser-host fields in the launch URL:
+
+- `verificationId`: optional correlation key echoed in `self:ready` and terminal result payloads.
+- `targetOrigin`: optional in development, required for production browser embedding. The app normalizes it to an origin string before using `postMessage`.
+
+The existing request fields (`userId`, `scope`, `disclosures`, `appName`, `appEndpoint`, `timestamp`) remain unchanged.
+
+### Lifecycle Wiring Rules
+
+- `lifecycle.ready()` fires from `SelfClientProvider` as soon as the flow mounts, including `verificationId` when present.
+- `lifecycle.setResult()` must receive the full `VerificationResult` payload from terminal screens, not `{ type }`.
+- In browser-host mode, `lifecycle.setResult()` is fire-and-forget and must not wait for a native response or hit the 30-second bridge timeout.
+- Explicit cancel and back-out actions must call `lifecycle.dismiss()` so the host can tear down the iframe, popup, or WebView shell.
+- Result screens use `dismiss` for teardown when the terminal result was already sent. If a terminal screen failed before sending the result, it may retry `setResult()` instead.
+
+### Host-Initiated Cancellation
+
+- Hosts may post `self:cancel` with `version: 1` to the embedded flow.
+- The browser bridge normalizes that into a `lifecycle:cancel` event inside the app.
+- The active WebView app handles that event by returning to the home route without emitting another host callback.
+
+## In Scope
+
+- WebView/browser UX for the active verification flow
+- Request-driven proof configuration and request-item rendering
+- Provider handoff, loading, return, and result-mapping states
+- Minimal host integration contract for launch/result/dismiss
+- Documentation cleanup so the active spec set matches the new scope
+
+## Out of Scope
+
+- Self-managed NFC flows
+- Self-managed native MRZ/camera scanning
+- New native bridge handlers or bridge-protocol expansion to support the current client path
+- KMP packaging, XCFramework/AAR publishing, or RN native-shell publishing
+- Native consolidation cleanup work
 
 ## Definition of Done
 
-> **Done when:** the `webview-app` Vite build produces a working `index.html` + bundle that renders all 10 screens, bridges to native for NFC/biometrics/keychain/lifecycle, and uses web fallback adapters for documents/crypto/analytics. The bridge package passes all tests (`vitest run`), the app type-checks (`tsc --noEmit`), and `vite build` succeeds with no errors.
+> **Done when:** the active verification flow works as a WebView/browser-native experience, provider-backed capture/KYC is clearly integrated into the flow, hosts can launch and receive results without custom native modules, and the active SDK specs no longer depend on paused native assumptions.
 
-## Scope of Work
+## Validation
 
-This spec covers **two packages**:
-
-| Package                    | npm Name                  | Type                              | Purpose                                                                                     |
-| -------------------------- | ------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------- |
-| `packages/webview-bridge/` | `@selfxyz/webview-bridge` | Public npm package                | Bridge protocol library: `WebViewBridge` class, adapters, mock transport, schema validation |
-| `packages/webview-app/`    | `@selfxyz/webview-app`    | Private (bundled into native SDK) | Vite React app: 10 screens, providers, Tamagui UI, router, adapter wiring                   |
-
----
-
-### 1. Bridge Protocol Types
-
-**`packages/webview-bridge/src/types.ts`**
-
-All protocol types for the bridge messaging layer. These are the canonical TypeScript definitions matching the JSON protocol in [SDK Overview](../../OVERVIEW.md).
-
-```typescript
-// SKELETON
-export const BRIDGE_PROTOCOL_VERSION = 1;
-export const DEFAULT_TIMEOUT_MS = 30_000;
-
-export type BridgeDomain =
-  | 'nfc'
-  | 'biometrics'
-  | 'secureStorage'
-  | 'camera'
-  | 'crypto'
-  | 'haptic'
-  | 'analytics'
-  | 'lifecycle'
-  | 'documents'
-  | 'navigation';
-
-export type BridgeMessageType = 'request' | 'response' | 'event';
-
-export interface BridgeError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
-
-export interface BridgeRequest {
-  type: 'request';
-  version: number;
-  id: string;
-  domain: BridgeDomain;
-  method: string;
-  params: Record<string, unknown>;
-  timestamp: number;
-}
-
-export interface BridgeResponse {
-  type: 'response';
-  version: number;
-  id: string;
-  domain: BridgeDomain;
-  requestId: string;
-  success: boolean;
-  data?: unknown;
-  error?: BridgeError;
-  timestamp: number;
-}
-
-export interface BridgeEvent {
-  type: 'event';
-  version: number;
-  id: string;
-  domain: BridgeDomain;
-  event: string;
-  data: unknown;
-  timestamp: number;
-}
-
-// Domain-specific method types
-export type NfcMethod = 'scan' | 'cancelScan' | 'isSupported';
-export type NfcEvent = 'scanProgress' | 'tagDiscovered' | 'scanError';
-export type BiometricsMethod =
-  | 'authenticate'
-  | 'isAvailable'
-  | 'getBiometryType';
-export type SecureStorageMethod = 'get' | 'set' | 'remove';
-export type CameraMethod = 'scanMRZ' | 'isAvailable';
-export type CryptoMethod = 'sign' | 'generateKey' | 'getPublicKey';
-export type HapticMethod = 'trigger';
-export type AnalyticsMethod = 'trackEvent' | 'trackNfcEvent' | 'logNfcEvent';
-export type LifecycleMethod = 'ready' | 'dismiss' | 'setResult';
-export type DocumentsMethod =
-  | 'loadCatalog'
-  | 'saveCatalog'
-  | 'loadById'
-  | 'save'
-  | 'delete';
-export type NavigationMethod = 'goBack' | 'goTo';
-
-// NFC-specific param/result types
-export interface NfcScanParams {
-  passportNumber: string;
-  dateOfBirth: string;
-  dateOfExpiry: string;
-  canNumber?: string;
-  skipPACE?: boolean;
-  skipCA?: boolean;
-  extendedMode?: boolean;
-  usePacePolling?: boolean;
-  sessionId: string;
-  useCan?: boolean;
-  userId?: string;
-}
-
-export interface NfcScanProgress {
-  step: string;
-  percent: number;
-  message?: string;
-}
-
-export interface BiometricAuthParams {
-  reason: string;
-  fallbackLabel?: string;
-}
-
-export interface VerificationResult {
-  success: boolean;
-  userId?: string;
-  verificationId?: string;
-  proof?: unknown;
-  claims?: Record<string, unknown>;
-  error?: BridgeError;
-}
-```
-
-#### Input / Output
-
-**Input (constructing a BridgeRequest):**
-
-```typescript
-const req: BridgeRequest = {
-  type: 'request',
-  version: 1,
-  id: 'a1b2c3d4-...',
-  domain: 'nfc',
-  method: 'scan',
-  params: {
-    passportNumber: 'AB1234567',
-    dateOfBirth: '900115',
-    dateOfExpiry: '300115',
-    sessionId: 'sess-uuid',
-  },
-  timestamp: Date.now(),
-};
-```
-
-**Expected Output (JSON serialized):**
-
-```json
-{
-  "type": "request",
-  "version": 1,
-  "id": "a1b2c3d4-...",
-  "domain": "nfc",
-  "method": "scan",
-  "params": {
-    "passportNumber": "AB1234567",
-    "dateOfBirth": "900115",
-    "dateOfExpiry": "300115",
-    "sessionId": "sess-uuid"
-  },
-  "timestamp": 1708200000000
-}
-```
-
-**Edge case — unknown domain:**
-
-```
-Input:  { domain: 'bluetooth' } as BridgeRequest
-Output: Schema validation rejects — domain not in BridgeDomain union
-```
-
----
-
-### 2. WebViewBridge Class
-
-**`packages/webview-bridge/src/bridge.ts`**
-
-Core class managing the request/response lifecycle, event subscriptions, and transport auto-detection.
-
-```typescript
-// SKELETON
-export class WebViewBridge {
-  constructor(options?: { debug?: boolean });
-
-  // Send request, await response (with timeout)
-  request(
-    domain: BridgeDomain,
-    method: string,
-    params: Record<string, unknown>,
-    timeout?: number,
-  ): Promise<unknown>;
-
-  // Fire-and-forget (no pending promise)
-  fire(
-    domain: BridgeDomain,
-    method: string,
-    params: Record<string, unknown>,
-  ): void;
-
-  // Subscribe to native events, returns unsubscribe function
-  on(
-    domain: BridgeDomain,
-    event: string,
-    handler: (data: unknown) => void,
-  ): () => void;
-
-  // Called by native via window.SelfNativeBridge._handleResponse / _handleEvent
-  handleMessage(json: string): void;
-
-  // Reject all pending, clear listeners, remove global
-  destroy(): void;
-}
-```
-
-**Transport detection order:**
-
-| Platform     | Check                                                            | Send method                                                     |
-| ------------ | ---------------------------------------------------------------- | --------------------------------------------------------------- |
-| Android      | `globalThis.SelfNativeAndroid?.postMessage`                      | `window.SelfNativeAndroid.postMessage(json)`                    |
-| iOS          | `globalThis.webkit?.messageHandlers?.SelfNativeIOS?.postMessage` | `window.webkit.messageHandlers.SelfNativeIOS.postMessage(json)` |
-| React Native | `globalThis.ReactNativeWebView?.postMessage`                     | `window.ReactNativeWebView.postMessage(json)`                   |
-
-**Native to WebView callback:** All platforms call `window.SelfNativeBridge._handleResponse(json)` or `window.SelfNativeBridge._handleEvent(json)`.
-
-#### Input / Output
-
-**Input (bridge request for secure storage):**
-
-```typescript
-const value = await bridge.request('secureStorage', 'get', {
-  key: 'self_private_key',
-});
-```
-
-**Expected Output (bridge serializes, native responds):**
-
-```json
-{
-  "type": "response",
-  "version": 1,
-  "id": "resp-uuid",
-  "domain": "secureStorage",
-  "requestId": "req-uuid",
-  "success": true,
-  "data": { "value": "base64-encoded-key-data" },
-  "timestamp": 1708200001000
-}
-```
-
-**Edge case — timeout (no native response within 30s):**
-
-```
-Input:  bridge.request('secureStorage', 'get', { key: 'missing' }, 5000)
-Output: Promise rejects with Error("Bridge request timed out after 5000ms")
-```
-
-**Edge case — native returns error:**
-
-```json
-{
-  "type": "response",
-  "requestId": "req-uuid",
-  "success": false,
-  "error": { "code": "KEY_NOT_FOUND", "message": "No value for key 'missing'" }
-}
-```
-
----
-
-### 3. Bridge Adapters (Native-Bound)
-
-Each adapter factory takes a `WebViewBridge` instance and returns an object conforming to the corresponding `mobile-sdk-alpha` adapter interface. These adapters bridge to native because they require hardware/OS APIs.
-
-#### 3a. NFC Scanner Adapter — `packages/webview-bridge/src/adapters/nfc-scanner.ts`
-
-```typescript
-// SKELETON
-export function bridgeNFCScannerAdapter(bridge: WebViewBridge): NFCScannerAdapter {
-  return {
-    scan(opts: NfcScanParams & { signal?: AbortSignal }): Promise<PassportData>;
-  };
-}
-export function onNfcProgress(bridge: WebViewBridge, handler: (progress: NfcScanProgress) => void): () => void;
-```
-
-- `scan(opts)`: Calls `bridge.request('nfc', 'scan', params, 120_000)` with 120s timeout
-- Handles `AbortSignal` — if aborted, fires `nfc.cancelScan` and rejects
-- Helper `onNfcProgress(bridge, handler)` subscribes to `nfc:scanProgress` events
-
-#### Input / Output
-
-**Input:**
-
-```typescript
-const data = await scanner.scan({
-  passportNumber: 'AB1234567',
-  dateOfBirth: '900115',
-  dateOfExpiry: '300115',
-  sessionId: 'sess-uuid',
-});
-```
-
-**Expected Output:**
-
-```json
-{
-  "passportData": {
-    "mrz": "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<",
-    "dsc": "-----BEGIN CERTIFICATE-----\nMIIC...",
-    "dg1Hash": [72, 101, 108],
-    "documentType": "passport",
-    "parsed": true,
-    "mock": false
-  }
-}
-```
-
-**Edge case — abort signal fired mid-scan:**
-
-```
-Input:  const ctrl = new AbortController(); scanner.scan({ ...opts, signal: ctrl.signal }); ctrl.abort();
-Output: bridge.fire('nfc', 'cancelScan', {}) is called, promise rejects with AbortError
-```
-
-#### 3b. Auth Adapter — `packages/webview-bridge/src/adapters/auth.ts`
-
-```typescript
-export function bridgeAuthAdapter(bridge: WebViewBridge): AuthAdapter {
-  return {
-    getPrivateKey(): Promise<string | null>;
-  };
-}
-```
-
-- `getPrivateKey()`: Calls `bridge.request('secureStorage', 'get', { key: 'self_private_key', requireBiometric: true })`, returns `null` on error
-
-#### 3c. Storage Adapter — `packages/webview-bridge/src/adapters/storage.ts`
-
-```typescript
-export function bridgeStorageAdapter(bridge: WebViewBridge): StorageAdapter {
-  return {
-    get(key: string): Promise<string | null>;
-    set(key: string, value: string): Promise<void>;
-    remove(key: string): Promise<void>;
-  };
-}
-```
-
-Storage bridges to native because keychain access is managed by the host app. Some host apps (like MiniPay) have policies about WebView keychain access.
-
-#### 3d. Biometrics Adapter — `packages/webview-bridge/src/adapters/biometrics.ts`
-
-```typescript
-export function bridgeBiometricsAdapter(bridge: WebViewBridge): BiometricsAdapter {
-  return {
-    authenticate(params: BiometricAuthParams): Promise<boolean>;
-    isAvailable(): Promise<boolean>;
-    getBiometryType(): Promise<string>;
-  };
-}
-```
-
-- `authenticate(params)`: Calls `bridge.request('biometrics', 'authenticate', { reason: params.reason })`, returns `true` on success
-- `isAvailable()`: Calls `bridge.request('biometrics', 'isAvailable', {})`, returns boolean
-- `getBiometryType()`: Calls `bridge.request('biometrics', 'getBiometryType', {})`, returns `"faceId"`, `"touchId"`, or `"none"`
-
-##### Input / Output
-
-**Input:**
-
-```typescript
-const result = await biometrics.authenticate({
-  reason: 'Confirm your identity',
-});
-```
-
-**Expected Output:**
-
-```
-true
-```
-
-**Edge case — user cancels biometric prompt:**
-
-```
-Input:  biometrics.authenticate({ reason: 'Confirm' })
-Output: Promise rejects with BridgeHandlerException("BIOMETRIC_ERROR", "User cancelled")
-```
-
-**Edge case — biometrics not available (e.g., simulator):**
-
-```
-Input:  biometrics.isAvailable()
-Output: false
-```
-
-#### 3e. Lifecycle Adapter — `packages/webview-bridge/src/adapters/lifecycle.ts`
-
-```typescript
-export function bridgeLifecycleAdapter(bridge: WebViewBridge): LifecycleAdapter {
-  return {
-    ready(): void;     // bridge.fire('lifecycle', 'ready', {})
-    dismiss(): void;   // bridge.fire('lifecycle', 'dismiss', {})
-    setResult(result: VerificationResult): Promise<void>; // bridge.request('lifecycle', 'setResult', result)
-  };
-}
-```
-
-- `ready()` and `dismiss()` are fire-and-forget
-- `setResult(result)` awaits acknowledgement from native
-
----
-
-### 4. Hybrid Adapters (Web APIs + Bridge Where Needed)
-
-These adapters use standard web APIs where possible. `webCryptoAdapter` implements `hash()` via `crypto.subtle.digest` (no bridge) and `sign()` via `bridge.request('crypto', 'sign', ...)` (native keychain).
-
-#### 4a. IndexedDB Documents Adapter — `packages/webview-bridge/src/adapters/documents.ts`
-
-```typescript
-export function indexedDBDocumentsAdapter(): DocumentsAdapter {
-  const DB_NAME = 'self-documents';
-  const STORE_NAME = 'documents';
-
-  const openDB = () => new Promise<IDBDatabase>((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-
-  return {
-    loadDocumentCatalog(): Promise<DocumentCatalog | null>;
-    saveDocumentCatalog(catalog: DocumentCatalog): Promise<void>;
-    loadDocumentById(id: string): Promise<Document | null>;
-    saveDocument(id: string, data: Document): Promise<void>;
-    deleteDocument(id: string): Promise<void>;
-  };
-}
-```
-
-#### Input / Output
-
-**Input:**
-
-```typescript
-await docs.saveDocument('passport-123', { mrz: '...', scannedAt: 1708200000 });
-const doc = await docs.loadDocumentById('passport-123');
-```
-
-**Expected Output:**
-
-```json
-{ "mrz": "...", "scannedAt": 1708200000 }
-```
-
-**Edge case — load non-existent document:**
-
-```
-Input:  await docs.loadDocumentById('does-not-exist')
-Output: null
-```
-
-#### 4b. Web Crypto Adapter — `packages/webview-bridge/src/adapters/crypto.ts`
-
-```typescript
-export function webCryptoAdapter(bridge: WebViewBridge): CryptoAdapter {
-  return {
-    hash(input: Uint8Array, algo: string): Promise<Uint8Array>;  // crypto.subtle.digest — pure web, no bridge
-    sign(data: Uint8Array, keyRef: string): Promise<Uint8Array>; // bridge.request('crypto', 'sign', ...) — native keychain
-  };
-}
-```
-
-- `hash()` uses Web Crypto API (`crypto.subtle.digest`) — no bridge round-trip
-- `sign()` encodes data as base64, calls `bridge.request('crypto', 'sign', { data, keyRef })`, decodes base64 result (key lives in native keychain)
-
-#### 4c. Console Analytics Adapter — `packages/webview-bridge/src/adapters/analytics.ts`
-
-```typescript
-export function consoleAnalyticsAdapter(options?: { endpoint?: string }): AnalyticsAdapter {
-  return {
-    trackEvent(event: string, payload?: unknown): void;
-    trackNfcEvent(name: string, properties?: Record<string, unknown>): void;
-    logNFCEvent(level: string, message: string, context?: string, details?: unknown): void;
-  };
-}
-```
-
-- In dev mode (`import.meta.env.DEV`): logs to `console.log`
-- In production with `endpoint`: fires `fetch(endpoint, ...)` — fire-and-forget
-- Never blocks, never throws
-
-#### 4d. Navigation Adapter — `packages/webview-bridge/src/adapters/navigation.ts`
-
-```typescript
-export function webNavigationAdapter(
-  navigate: (path: string) => void,
-  goBack: () => void,
-): NavigationAdapter {
-  return {
-    goBack(): void;
-    goTo(routeName: RouteName, params?: Record<string, unknown>): void;
-  };
-}
-```
-
-Route map:
-
-```typescript
-const routeMap: Record<RouteName, string> = {
-  DocumentCamera: '/onboarding/camera',
-  DocumentOnboarding: '/onboarding',
-  CountryPicker: '/onboarding/country',
-  IDPicker: '/onboarding/id-type',
-  DocumentNFCScan: '/onboarding/nfc',
-  ManageDocuments: '/documents',
-  Home: '/',
-  AccountVerifiedSuccess: '/account/verified',
-  AccountRecoveryChoice: '/account/recovery',
-  SaveRecoveryPhrase: '/account/recovery/phrase',
-  ComingSoon: '/coming-soon',
-  DocumentDataNotFound: '/error/no-data',
-  Settings: '/settings',
-};
-```
-
-#### 4e. Haptic Adapter — `packages/webview-bridge/src/adapters/haptic.ts`
-
-```typescript
-export function hapticAdapter(): HapticAdapter {
-  return {
-    trigger(type: string): void; // No-op in WebView
-  };
-}
-```
-
----
-
-### 5. MockNativeBridge
-
-**`packages/webview-bridge/src/mock.ts`**
-
-Test utility that implements `NativeTransport`. Intercepts outgoing messages, routes to registered mock handlers, and sends responses back.
-
-```typescript
-// SKELETON
-export class MockNativeBridge {
-  handle(
-    domain: BridgeDomain,
-    method: string,
-    handler: (params: unknown) => unknown,
-  ): void;
-  handleWith(domain: BridgeDomain, method: string, data: unknown): void;
-  handleWithError(
-    domain: BridgeDomain,
-    method: string,
-    error: BridgeError,
-  ): void;
-  pushEvent(domain: BridgeDomain, event: string, data: unknown): void;
-  get messages(): BridgeRequest[];
-  messagesFor(domain: BridgeDomain): BridgeRequest[];
-}
-```
-
-#### Input / Output
-
-**Input:**
-
-```typescript
-const mock = new MockNativeBridge();
-mock.handleWith('secureStorage', 'get', { value: 'test-key-data' });
-const bridge = new WebViewBridge({ transport: mock });
-const result = await bridge.request('secureStorage', 'get', { key: 'test' });
-```
-
-**Expected Output:**
-
-```
-result === { value: 'test-key-data' }
-mock.messages.length === 1
-mock.messagesFor('secureStorage').length === 1
-```
-
----
-
-### 6. Schema Validation
-
-**`packages/webview-bridge/src/schema.ts`**
-
-Validates incoming/outgoing bridge messages against the protocol.
-
-```typescript
-export function validateBridgeMessage(
-  msg: unknown,
-): msg is BridgeRequest | BridgeResponse | BridgeEvent;
-export function validateRequest(msg: unknown): msg is BridgeRequest;
-export function validateResponse(msg: unknown): msg is BridgeResponse;
-export function validateEvent(msg: unknown): msg is BridgeEvent;
-```
-
----
-
-### 7. WebView App Shell
-
-**`packages/webview-app/`** — Vite-bundled React app.
-
-#### 7a. Vite Config — `packages/webview-app/vite.config.ts`
-
-```typescript
-import { resolve } from 'path';
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { tamaguiPlugin } from '@tamagui/vite-plugin';
-
-export default defineConfig({
-  resolve: {
-    extensions: ['.web.tsx', '.web.ts', '.web.js', '.tsx', '.ts', '.js'],
-    alias: {
-      'react-native': 'react-native-web',
-      'lottie-react-native': 'lottie-react',
-    },
-  },
-  plugins: [
-    react(),
-    tamaguiPlugin({
-      config: resolve(__dirname, 'tamagui.config.ts'),
-      components: ['tamagui'],
-      enableDynamicEvaluation: true,
-      excludeReactNativeWebExports: [
-        'Switch',
-        'ProgressBar',
-        'Picker',
-        'CheckBox',
-        'Touchable',
-      ],
-      platform: 'web',
-      optimize: true,
-    }),
-  ],
-  define: { global: 'globalThis' },
-  build: {
-    target: ['chrome90', 'safari15'],
-    rollupOptions: { output: { manualChunks: undefined } },
-    assetsInlineLimit: 102400,
-    outDir: 'dist',
-    emptyOutDir: true,
-    sourcemap: true,
-  },
-  server: { host: '0.0.0.0', port: 5173 },
-});
-```
-
-#### 7b. Tamagui Config — `packages/webview-app/tamagui.config.ts`
-
-```typescript
-import { createFont, createTamagui } from 'tamagui';
-import { config } from '@tamagui/config/v3';
-
-// Custom fonts: advercase, dinot, plexMono
-// Custom sizes, lineHeights, letterSpacing scales
-const appConfig = createTamagui({
-  ...config,
-  fonts: {
-    ...config.fonts,
-    advercase: advercaseFont,
-    dinot: dinotFont,
-    plexMono: plexMonoFont,
-  },
-});
-
-export default appConfig;
-```
-
-Same config as `app/tamagui.config.ts`.
-
-#### 7c. Font Setup
-
-Copy `app/web/fonts/*.otf` into `packages/webview-app/public/fonts/`:
-
-- `Advercase-Regular.otf`
-- `DINOT-Medium.otf`
-- `DINOT-Bold.otf`
-- `IBMPlexMono-Regular.otf`
-
-**`packages/webview-app/src/fonts.css`:**
-
-```css
-@font-face {
-  font-family: 'Advercase-Regular';
-  src: url('/fonts/Advercase-Regular.otf') format('opentype');
-  font-display: swap;
-}
-@font-face {
-  font-family: 'DINOT-Bold';
-  src: url('/fonts/DINOT-Bold.otf') format('opentype');
-  font-display: swap;
-}
-@font-face {
-  font-family: 'DINOT-Medium';
-  src: url('/fonts/DINOT-Medium.otf') format('opentype');
-  font-display: swap;
-}
-@font-face {
-  font-family: 'IBMPlexMono-Regular';
-  src: url('/fonts/IBMPlexMono-Regular.otf') format('opentype');
-  font-display: swap;
-}
-```
-
-#### 7d. Entry Point — `packages/webview-app/src/main.tsx`
-
-```tsx
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { TamaguiProvider, View } from 'tamagui';
-import tamaguiConfig from '../tamagui.config';
-import { App } from './App';
-import { BridgeProvider } from './providers/BridgeProvider';
-import { SelfClientProvider } from './providers/SelfClientProvider';
-import './fonts.css';
-import './reset.css';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <TamaguiProvider config={tamaguiConfig}>
-      <View flex={1} height="100vh" width="100%">
-        <BridgeProvider>
-          <SelfClientProvider>
-            <App />
-          </SelfClientProvider>
-        </BridgeProvider>
-      </View>
-    </TamaguiProvider>
-  </React.StrictMode>,
-);
-```
-
-#### 7e. Router — `packages/webview-app/src/App.tsx`
-
-```tsx
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-
-export const App: React.FC = () => (
-  <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<HomeScreen />} />
-      <Route path="/onboarding/country" element={<CountryPickerScreen />} />
-      <Route path="/onboarding/id-type" element={<IDSelectionScreen />} />
-      <Route path="/onboarding/camera" element={<DocumentCameraScreen />} />
-      <Route path="/onboarding/nfc" element={<DocumentNFCScreen />} />
-      <Route
-        path="/onboarding/confirm"
-        element={<ConfirmIdentificationScreen />}
-      />
-      <Route path="/proving" element={<ProvingScreen />} />
-      <Route path="/proving/result" element={<VerificationResultScreen />} />
-      <Route path="/settings" element={<SettingsScreen />} />
-      <Route path="/account/verified" element={<VerificationResultScreen />} />
-      <Route path="/coming-soon" element={<ComingSoonScreen />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  </BrowserRouter>
-);
-```
-
-#### 7f. BridgeProvider — `packages/webview-app/src/providers/BridgeProvider.tsx`
-
-Creates a singleton `WebViewBridge` instance with debug logging in dev mode. Provides it via React context.
-
-```tsx
-const bridge = useMemo(
-  () => new WebViewBridge({ debug: import.meta.env.DEV }),
-  [],
-);
-```
-
-#### 7g. SelfClientProvider — `packages/webview-app/src/providers/SelfClientProvider.tsx`
-
-Creates all bridge adapters (mix of native-bound and web fallbacks), wires navigation to React Router, and signals `lifecycle.ready()` on mount.
-
-```tsx
-const adapters = {
-  scanner: bridgeNFCScannerAdapter(bridge), // Bridge -> native NFC hardware
-  crypto: webCryptoAdapter(bridge), // Hash: Web Crypto API, Sign: bridge -> native keychain
-  auth: bridgeAuthAdapter(bridge), // Bridge -> native biometrics
-  documents: indexedDBDocumentsAdapter(), // Web fallback: IndexedDB (no bridge)
-  storage: bridgeStorageAdapter(bridge), // Bridge -> native keychain
-  analytics: consoleAnalyticsAdapter(), // Web fallback: console.log / fetch (no bridge)
-  navigation: webNavigationAdapter(navigate, goBack), // React Router (no bridge)
-};
-const lifecycle = bridgeLifecycleAdapter(bridge);
-
-useEffect(() => {
-  lifecycle.ready();
-}, []);
-```
-
----
-
-### 8. Screens
-
-All 10 screens use Tamagui components, import colors/fonts from `@selfxyz/mobile-sdk-alpha/constants`, and access SDK via `useSelfClient()` hook.
-
-**Consistent patterns across all screens:**
-
-```tsx
-import {
-  Text,
-  View,
-  YStack,
-  XStack,
-  ScrollView,
-  Button,
-  Spinner,
-} from 'tamagui';
-import { useNavigate } from 'react-router-dom';
-import {
-  black,
-  white,
-  slate300,
-  slate500,
-  amber50,
-} from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
-import { useSelfClient } from '../../providers/SelfClientProvider';
-```
-
-- Header with back button (left arrow) and title
-- `YStack flex={1} backgroundColor={white}` as page wrapper
-- `fontFamily={dinot}` for all text
-- `pressStyle={{ opacity: 0.7 }}` for tap feedback
-- Bottom fixed action buttons
-- `Spinner` from Tamagui for loading states
-
-**Screen reference table:**
-
-| WebView Screen              | RN App Reference                                                 | Key Elements                             |
-| --------------------------- | ---------------------------------------------------------------- | ---------------------------------------- |
-| CountryPickerScreen         | `app/src/screens/documents/selection/CountryPickerScreen.tsx`    | Search input, country list with flags    |
-| IDSelectionScreen           | `app/src/screens/documents/selection/IDPickerScreen.tsx`         | Grid of ID document types                |
-| DocumentCameraScreen        | `app/src/screens/documents/scanning/DocumentCameraScreen.tsx`    | MRZ camera view (calls `camera.scanMRZ`) |
-| DocumentNFCScreen           | `app/src/screens/documents/scanning/DocumentNFCScanScreen.tsx`   | NFC scan progress, Lottie animation      |
-| ConfirmIdentificationScreen | `app/src/screens/documents/selection/ConfirmBelongingScreen.tsx` | Document preview, confirm/retry          |
-| ProvingScreen               | `app/src/screens/verification/ProveScreen.tsx`                   | Disclosure items list, verify button     |
-| VerificationResultScreen    | `app/src/screens/onboarding/AccountVerifiedSuccessScreen.tsx`    | Success/failure with Lottie              |
-| HomeScreen                  | `app/src/screens/home/HomeScreen.tsx`                            | Document cards, points section           |
-| SettingsScreen              | `app/src/screens/account/settings/SettingsScreen.tsx`            | Settings list                            |
-| ComingSoonScreen            | `app/src/screens/shared/ComingSoonScreen.tsx`                    | Placeholder                              |
-
----
-
-### 9. Package Configs
-
-#### Bridge package — `packages/webview-bridge/package.json`
-
-```json
-{
-  "name": "@selfxyz/webview-bridge",
-  "version": "0.0.1-alpha.1",
-  "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./mock": {
-      "types": "./dist/mock.d.ts",
-      "import": "./dist/mock.js",
-      "require": "./dist/mock.cjs"
-    },
-    "./schema": {
-      "types": "./dist/schema.d.ts",
-      "import": "./dist/schema.js",
-      "require": "./dist/schema.cjs"
-    },
-    "./adapters": {
-      "types": "./dist/adapters.d.ts",
-      "import": "./dist/adapters.js",
-      "require": "./dist/adapters.cjs"
-    }
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": ["dist"],
-  "scripts": {
-    "build": "tsup",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": { "uuid": "^11.1.0" },
-  "devDependencies": {
-    "@types/node": "^22.18.3",
-    "tsup": "^8.0.1",
-    "typescript": "^5.9.3",
-    "vitest": "^2.1.8"
-  },
-  "packageManager": "yarn@4.12.0"
-}
-```
-
-#### Bridge package — `packages/webview-bridge/tsup.config.ts`
-
-```typescript
-import { defineConfig } from 'tsup';
-
-export default defineConfig({
-  entry: {
-    index: 'src/index.ts',
-    mock: 'src/mock.ts',
-    schema: 'src/schema.ts',
-    adapters: 'src/adapters/index.ts',
-  },
-  format: ['esm', 'cjs'],
-  dts: true,
-  clean: true,
-  splitting: false,
-  sourcemap: true,
-});
-```
-
-#### WebView app — `packages/webview-app/package.json`
-
-```json
-{
-  "name": "@selfxyz/webview-app",
-  "version": "0.0.1-alpha.1",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@selfxyz/mobile-sdk-alpha": "workspace:^",
-    "@selfxyz/webview-bridge": "workspace:^",
-    "@tamagui/config": "1.126.14",
-    "lottie-react": "^2.4.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-native-web": "^0.19.13",
-    "react-router-dom": "^6.28.0",
-    "tamagui": "1.126.14",
-    "zustand": "^4.5.2"
-  },
-  "devDependencies": {
-    "@tamagui/vite-plugin": "1.126.14",
-    "@testing-library/react": "^14.1.2",
-    "@types/react": "^18.3.4",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "^5.9.3",
-    "vite": "^6.1.0",
-    "vitest": "^2.1.8"
-  },
-  "packageManager": "yarn@4.12.0"
-}
-```
-
----
-
-## Files You Will Modify
-
-| File                                                        | Change                                 | Risk                                                     |
-| ----------------------------------------------------------- | -------------------------------------- | -------------------------------------------------------- |
-| `packages/webview-bridge/src/types.ts`                      | Add/update protocol types              | **Low** — pure type definitions                          |
-| `packages/webview-bridge/src/bridge.ts`                     | Implement/maintain WebViewBridge class | **Med** — core transport logic, timeout handling         |
-| `packages/webview-bridge/src/schema.ts`                     | Message validation                     | **Low** — validation helpers                             |
-| `packages/webview-bridge/src/mock.ts`                       | MockNativeBridge for testing           | **Low** — test utility                                   |
-| `packages/webview-bridge/src/adapters/*.ts`                 | All adapter factory implementations    | **Med** — must match mobile-sdk-alpha interfaces exactly |
-| `packages/webview-bridge/src/__tests__/*.ts`                | Unit and integration tests             | **Low** — test files                                     |
-| `packages/webview-bridge/package.json`                      | Package config, dependencies           | **Low** — config only                                    |
-| `packages/webview-bridge/tsup.config.ts`                    | Build config                           | **Low** — config only                                    |
-| `packages/webview-app/src/main.tsx`                         | Entry point wiring                     | **Med** — provider order matters                         |
-| `packages/webview-app/src/App.tsx`                          | Route definitions                      | **Low** — route mapping                                  |
-| `packages/webview-app/src/providers/BridgeProvider.tsx`     | Bridge singleton creation              | **Med** — lifecycle management                           |
-| `packages/webview-app/src/providers/SelfClientProvider.tsx` | Adapter wiring, lifecycle.ready()      | **High** — must wire all adapters correctly              |
-| `packages/webview-app/src/screens/**/*.tsx`                 | All 10 screen components               | **Med** — UI fidelity to RN app                          |
-| `packages/webview-app/vite.config.ts`                       | Vite build config, aliases             | **Med** — wrong aliases break the build                  |
-| `packages/webview-app/tamagui.config.ts`                    | Tamagui font/theme config              | **Low** — config only                                    |
-| `packages/webview-app/src/fonts.css`                        | Font-face declarations                 | **Low** — CSS config                                     |
-| `packages/webview-app/package.json`                         | Package config, dependencies           | **Low** — config only                                    |
-
-## Files You Will NOT Modify
-
-| File                               | Why                                                                                                             |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `packages/mobile-sdk-alpha/src/**` | Owned by Person 4 (SDK Core Adaptation). You consume its adapter interfaces and constants, never modify them.   |
-| `packages/kmp-sdk/**`              | Owned by Person 2 (Kotlin/Swift Native Shells). You define the bridge protocol; they implement native handlers. |
-| `packages/self-sdk-swift/**`       | Owned by Person 2. iOS Swift providers are their responsibility.                                                |
-| `packages/rn-sdk/**`               | Owned by Person 5 (RN Native Shell). Does not exist yet.                                                        |
-| `app/src/**`                       | Self Wallet app. Reference only for screen UI fidelity — never modify.                                          |
-| `common/**`                        | Shared utilities. Production-stable, no changes needed.                                                         |
-
-## Chunking Guide
-
-### Chunk 1F: Bridge Package — L (~12k tokens)
-
-**Goal:** Build the complete `@selfxyz/webview-bridge` package from scratch with all types, bridge class, adapters, mock, schema, and tests.
-
-**You Will NOT:**
-
-- Import anything from `react-native`
-- Put business logic in adapter factories (they serialize/deserialize and call `bridge.request()`)
-- Duplicate type definitions from `mobile-sdk-alpha` — import them
-
-**Steps:**
-
-1. Delete `packages/webview-bridge/` if it exists (prototype cleanup)
-2. Create package structure: `package.json`, `tsconfig.json`, `tsup.config.ts`
-3. Implement `src/types.ts` — all protocol types (BridgeDomain, BridgeRequest, BridgeResponse, BridgeEvent, domain-specific types)
-4. Implement `src/bridge.ts` — WebViewBridge class (transport detection, request/response lifecycle, event subscriptions, timeout, destroy)
-5. Implement `src/schema.ts` — message validation functions
-6. Implement `src/mock.ts` — MockNativeBridge test utility
-7. Implement all adapters in `src/adapters/`:
-   - `nfc-scanner.ts` (bridge to native)
-   - `auth.ts` (bridge to native)
-   - `storage.ts` (bridge to native)
-   - `lifecycle.ts` (bridge to native)
-   - `documents.ts` (IndexedDB web fallback)
-   - `crypto.ts` (hash: Web Crypto, sign: bridge)
-   - `analytics.ts` (console/fetch web fallback)
-   - `navigation.ts` (React Router, no bridge)
-   - `haptic.ts` (no-op)
-   - `index.ts` (re-exports)
-8. Write tests in `src/__tests__/`: `bridge.test.ts`, `schema.test.ts`, `adapters.test.ts`
-9. Validate: `cd packages/webview-bridge && yarn build && yarn vitest run && npx tsc --noEmit`
-
-#### Input / Output — Chunk Validation
-
-**Input:**
+Use Yarn-based validation for active packages:
 
 ```bash
-cd packages/webview-bridge && yarn build && yarn vitest run
+yarn workspace @selfxyz/mobile-sdk-alpha test
+yarn workspace @selfxyz/mobile-sdk-alpha types
+yarn workspace @selfxyz/webview-app build
 ```
-
-**Expected Output:**
-
-```
-tsup: Build successful
- Tests  62 passed
-```
-
-```bash
-npx tsc --noEmit
-# Exit code 0, no errors
-```
-
-#### Tests
-
-| Test                                  | Type        | What it validates                                         |
-| ------------------------------------- | ----------- | --------------------------------------------------------- |
-| `bridge.request() sends and resolves` | Unit        | Request/response lifecycle with mock transport            |
-| `bridge.request() times out`          | Unit        | Timeout rejects pending promise after N ms                |
-| `bridge.on() receives events`         | Unit        | Event subscription and dispatch                           |
-| `bridge.destroy() rejects pending`    | Unit        | Cleanup rejects all in-flight requests                    |
-| `schema.validateRequest()`            | Unit        | Rejects malformed messages                                |
-| `adapters.nfc.scan()` with mock       | Integration | NFC adapter serializes params correctly, handles response |
-| `adapters.nfc.scan()` abort           | Integration | AbortSignal fires cancelScan and rejects                  |
-| `adapters.crypto.hash()`              | Unit        | Web Crypto API call produces correct digest               |
-| `adapters.crypto.sign()`              | Integration | Sign bridges to native, base64 encode/decode              |
-| `adapters.documents IndexedDB`        | Integration | CRUD operations with IndexedDB (requires jsdom/happy-dom) |
-| `adapters.storage get/set/remove`     | Integration | Keychain bridge calls with mock                           |
-| `adapters.lifecycle.ready()`          | Unit        | Fire-and-forget sends correct message                     |
-| `adapters.analytics console`          | Unit        | Console logging in dev mode                               |
-
----
-
-### Chunk 1B: Onboarding Screens — M (~8k tokens)
-
-**Depends on:** Chunk 1F (bridge package must exist for type imports)
-
-**Goal:** Build the 5 onboarding screens: CountryPicker, IDSelection, DocumentCamera, DocumentNFC, ConfirmIdentification.
-
-**You Will NOT:**
-
-- Import from `react-native` directly — use Tamagui components and the Vite `react-native-web` alias
-- Duplicate state management logic from `mobile-sdk-alpha` — use `useSelfClient()` hook
-- Hardcode colors/fonts — import from `@selfxyz/mobile-sdk-alpha/constants`
-
-**Steps:**
-
-1. Create `packages/webview-app/src/screens/onboarding/` directory
-2. Implement `CountryPickerScreen.tsx` — search input, scrollable country list with flags
-3. Implement `IDSelectionScreen.tsx` — grid of document types (passport, ID card, etc.)
-4. Implement `DocumentCameraScreen.tsx` — MRZ camera view (calls `camera.scanMRZ` bridge)
-5. Implement `DocumentNFCScreen.tsx` — NFC scan progress with Lottie animation, progress events
-6. Implement `ConfirmIdentificationScreen.tsx` — document preview, confirm/retry buttons
-7. Validate: all screens render without errors in `vite dev`
-
-#### Input / Output — Chunk Validation
-
-**Input:**
-
-```bash
-cd packages/webview-app && npx tsc --noEmit
-```
-
-**Expected Output:**
-
-```
-# Exit code 0, no type errors
-```
-
-**Input (manual):** Navigate to `http://localhost:5173/onboarding/country`
-
-**Expected Output:** Country picker screen renders with search bar and scrollable country list.
-
-#### Tests
-
-| Test                                      | Type       | What it validates                      |
-| ----------------------------------------- | ---------- | -------------------------------------- |
-| CountryPickerScreen renders               | Unit (RTL) | Screen mounts, search input visible    |
-| IDSelectionScreen renders                 | Unit (RTL) | Document type grid renders             |
-| DocumentNFCScreen shows progress          | Unit (RTL) | Progress bar updates on bridge events  |
-| ConfirmIdentificationScreen confirm/retry | Unit (RTL) | Button handlers fire correct callbacks |
-
----
-
-### Chunk 1C: Proving + Result Screens — M (~6k tokens)
-
-**Depends on:** Chunk 1F (bridge package)
-
-**Goal:** Build the proving flow screens: ProvingScreen, VerificationResultScreen.
-
-**You Will NOT:**
-
-- Hardcode disclosure items — they should come from the SDK request (currently hardcoded, needs dynamic support later)
-- Put proving logic in the screen — the proving machine lives in `mobile-sdk-alpha`
-
-**Steps:**
-
-1. Create `packages/webview-app/src/screens/proving/` directory
-2. Implement `ProvingScreen.tsx` — disclosure items list, verify button, loading state
-3. Implement `VerificationResultScreen.tsx` — success/failure state with Lottie, lifecycle.setResult()
-4. Validate: screens render, verify button triggers proving flow
-
-#### Input / Output — Chunk Validation
-
-**Input (manual):** Navigate to `http://localhost:5173/proving`
-
-**Expected Output:** Proving screen renders with disclosure items and verify button.
-
-#### Tests
-
-| Test                                        | Type       | What it validates                  |
-| ------------------------------------------- | ---------- | ---------------------------------- |
-| ProvingScreen renders disclosures           | Unit (RTL) | Disclosure items list is visible   |
-| ProvingScreen verify button triggers action | Unit (RTL) | Click fires proving machine action |
-| VerificationResultScreen success state      | Unit (RTL) | Shows success UI + Lottie          |
-| VerificationResultScreen error state        | Unit (RTL) | Shows error message                |
-
----
-
-### Chunk 1D: Remaining Screens — S (~4k tokens)
-
-**Depends on:** Chunk 1F (bridge package)
-
-**Goal:** Build HomeScreen, SettingsScreen, ComingSoonScreen.
-
-**You Will NOT:**
-
-- Build complex business logic for home screen — it shows document cards and a points section
-- Build settings persistence — just render the settings list
-
-**Steps:**
-
-1. Create `packages/webview-app/src/screens/home/HomeScreen.tsx` — document cards, points section
-2. Create `packages/webview-app/src/screens/account/SettingsScreen.tsx` — settings list
-3. Create `packages/webview-app/src/screens/ComingSoonScreen.tsx` — placeholder
-4. Validate: all three screens render
-
-#### Input / Output — Chunk Validation
-
-**Input (manual):** Navigate to `http://localhost:5173/`
-
-**Expected Output:** Home screen renders with document cards section.
-
-#### Tests
-
-| Test                     | Type       | What it validates           |
-| ------------------------ | ---------- | --------------------------- |
-| HomeScreen renders       | Unit (RTL) | Document cards area visible |
-| SettingsScreen renders   | Unit (RTL) | Settings list items visible |
-| ComingSoonScreen renders | Unit (RTL) | Placeholder text visible    |
-
----
-
-### Chunk 1E: WebView App Shell — M (~8k tokens)
-
-**Depends on:** Chunk 1F (bridge), Chunks 1B-1D (screens)
-
-**Goal:** Wire everything together: Vite config, Tamagui config, providers, router, fonts, entry point. `vite build` produces `dist/`.
-
-**You Will NOT:**
-
-- Install `react-native` as a direct dependency — use `react-native-web` with Vite alias
-- Skip the `lifecycle.ready()` call on mount — native shells depend on it
-- Import from `@selfxyz/webview-bridge` internals — use the public exports only
-
-**Steps:**
-
-1. Delete `packages/webview-app/` if it exists (prototype cleanup)
-2. Create package structure: `package.json`, `vite.config.ts`, `tamagui.config.ts`, `tsconfig.json`, `index.html`
-3. Copy fonts into `public/fonts/`
-4. Create `src/fonts.css` and `src/reset.css`
-5. Create `src/providers/BridgeProvider.tsx` — singleton bridge with debug mode
-6. Create `src/providers/SelfClientProvider.tsx` — wire all adapters (bridge + web fallbacks), signal `lifecycle.ready()`
-7. Create `src/main.tsx` — TamaguiProvider > BridgeProvider > SelfClientProvider > App
-8. Create `src/App.tsx` — BrowserRouter with all routes
-9. Validate: `npx vite dev` serves the app, `npx vite build` produces `dist/`
-
-#### Input / Output — Chunk Validation
-
-**Input:**
-
-```bash
-cd packages/webview-app && npx tsc --noEmit && npx vite build
-```
-
-**Expected Output:**
-
-```
-# tsc: exit code 0
-vite v6.x.x building for production...
-dist/index.html    X.XX kB
-dist/assets/index-XXXXX.js    XXX.XX kB
-```
-
-**Input:**
-
-```bash
-ls packages/webview-app/dist/
-```
-
-**Expected Output:**
-
-```
-index.html  assets/
-```
-
-#### Tests
-
-| Test                                       | Type       | What it validates                       |
-| ------------------------------------------ | ---------- | --------------------------------------- |
-| `vite build` succeeds                      | Build gate | Bundle compiles without errors          |
-| `tsc --noEmit` passes                      | Build gate | No type errors across all files         |
-| `dist/index.html` exists                   | Build gate | Output file is produced                 |
-| BridgeProvider creates bridge              | Unit       | Context provides WebViewBridge instance |
-| SelfClientProvider wires adapters          | Unit       | All 7 adapters created and provided     |
-| SelfClientProvider calls lifecycle.ready() | Unit       | ready() fires on mount                  |
-
----
-
-## Dependency Graph
-
-```
-Chunk 1F: Bridge Package (no deps — start here)
-  |---> Chunk 1B: Onboarding Screens (after 1F)
-  |---> Chunk 1C: Proving + Result Screens (after 1F)
-  |---> Chunk 1D: Remaining Screens (after 1F)
-  |
-  '-------+------+------+
-          |      |      |
-          v      v      v
-    Chunk 1E: WebView App Shell (after 1F + 1B + 1C + 1D)
-```
-
-## Completion Status
-
-| Chunk | Description              | Size | Status                                                                                                                               |
-| ----- | ------------------------ | ---- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| 1F    | Bridge Package           | L    | **Done** — 63 tests pass, bridge package and adapters implemented                                                                    |
-| 1B    | Onboarding Screens       | M    | **Done** — all 5 screens render                                                                                                      |
-| 1C    | Proving + Result Screens | M    | **Done** — screens render, proving wired                                                                                             |
-| 1D    | Remaining Screens        | S    | **Done** — home, settings, coming-soon render                                                                                        |
-| 1E    | WebView App Shell        | M    | **Done** — providers/router/entry wired, biometrics + camera adapters connected, web fallbacks connected, lifecycle.ready() on mount |
-
-## Validation Plan
-
-```bash
-# After every chunk (must pass):
-cd packages/webview-bridge && yarn build && yarn vitest run && npx tsc --noEmit
-cd packages/webview-app && npx tsc --noEmit
-
-# After Chunk 1E (must pass):
-cd packages/webview-app && npx vite build
-ls packages/webview-app/dist/index.html  # file must exist
-
-# After all chunks:
-# 1. vite dev serves all 10 routes without console errors
-# 2. vite build produces dist/ with index.html + bundle
-# 3. Bridge package: 63+ tests pass
-# 4. Manual: load dist/index.html in a WebView host (Android/iOS test app)
-#    and confirm lifecycle.ready() fires, screens navigate, NFC scan starts
-```
-
-## Coordination Notes
-
-- **Person 2 (Kotlin/Swift Native Shells):** They implement the native handlers that respond to your bridge requests. Coordinate on:
-  - The iOS handler name is `SelfNativeIOS` (WKScriptMessageHandler). Confirm this matches their implementation.
-  - Bridge domain methods must match exactly (e.g., `secureStorage.get` not `keychain.get`).
-  - They will delete 4 handlers (documents, crypto, analytics, haptic) — those now run as web fallback adapters in your code.
-- **Person 4 (SDK Core Adaptation):** They own `mobile-sdk-alpha`. You import adapter interfaces and constants from their package. If an adapter interface changes, your adapter factories must update. They are also building web fallback adapter implementations in `mobile-sdk-alpha` — coordinate to avoid duplication.
-- **Person 5 (RN Native Shell):** They will wrap your Vite bundle in a `SelfVerification` React Native component. The same bridge protocol applies. Your React Native transport detection (`window.ReactNativeWebView.postMessage`) must work with their setup.
-- **All:** The Vite build output (`dist/index.html` + bundle) is the artifact that Person 2 bundles into the KMP SDK and Person 5 loads via `react-native-webview`. Any breaking change to the build output affects everyone.
-
-## Key Reference Files
-
-| File                                                        | What to Look At                                                                             |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `packages/mobile-sdk-alpha/src/types/public.ts`             | All adapter interfaces (NFCScannerAdapter, CryptoAdapter, StorageAdapter, etc.) — 457 lines |
-| `packages/mobile-sdk-alpha/src/constants/colors.ts`         | Color constants used by all screens                                                         |
-| `packages/mobile-sdk-alpha/src/constants/fonts.ts`          | Font constants (imports `Platform` from RN — needs web alias)                               |
-| `packages/webview-bridge/src/bridge.ts`                     | Bridge core: request/response/event/destroy                                                 |
-| `packages/webview-bridge/src/types.ts`                      | All bridge message types + domain enum                                                      |
-| `packages/webview-app/src/providers/SelfClientProvider.tsx` | Where all 9 adapters are wired together                                                     |
-| `app/src/providers/selfClientProvider.tsx`                  | Self Wallet's adapter wiring — reference for what yours should look like (507 lines)        |
-| `app/tamagui.config.ts`                                     | Font config to replicate in webview-app                                                     |
-| `app/web/fonts/`                                            | Source font files to copy into webview-app/public/fonts/                                    |
-
----
 
 ## Related Specs
 
-| Spec                                              | Audience | What it covers                                                  |
-| ------------------------------------------------- | -------- | --------------------------------------------------------------- |
-| [SDK Overview](../../OVERVIEW.md)                 | All      | Architecture, bridge protocol, domain catalog, dependency graph |
-| [native-shells/SPEC.md](../native-shells/SPEC.md) | Person 2 | Kotlin/Swift native shells, Android/iOS handlers                |
-| [sdk-core/SPEC.md](../sdk-core/SPEC.md)           | Person 4 | SDK core adaptation, RN dep removal, web fallbacks              |
-| [rn-sdk/SPEC.md](../rn-sdk/SPEC.md)               | Person 5 | RN native shell, `SelfVerification` component                   |
-
----
-
-<!-- Everything below this line is filled in AFTER implementation. -->
-
-## What Was Built
-
-### Architecture (brief)
-
-<!-- Added post-completion. Brief and factual. -->
-
-### Deviations from Spec
-
-| Spec said | We did | Why |
-| --------- | ------ | --- |
-|           |        |     |
-
-### Key Files (final)
-
-| File | Role |
-| ---- | ---- |
-|      |      |
-
-### Lessons / Gotchas
-
-- <!-- One-liner that would help the next person -->
-
----
-
-## Follow-Up (Out of Scope) — Resolved
-
-These items were discovered during initial implementation. Current status:
-
-| Item                                                               | Resolution                           |
-| ------------------------------------------------------------------ | ------------------------------------ |
-| Biometrics bridge adapter implementation                           | Done — wired in `SelfClientProvider` |
-| Camera bridge adapter wiring in webview-app                        | Done — wired in `SelfClientProvider` |
-| Dynamic proof request items (currently hardcoded in ProvingScreen) | Tracked as WV-01 in backlog above    |
-| MRZ data confirmation screen (PR #1767)                            | Merged in PR #1767                   |
-| `createSelfClient(adapters)` integration                           | Tracked in sdk-core backlog (SC-01)  |
-
-## Spec Deviations
-
-| Suggestion skipped                                    | Reason                                                                                                                     |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| BEFORE/AFTER code blocks for every task               | This spec covers new file creation, not modifications to existing code. Skeleton + I/O format is more appropriate.         |
-| Exact line-number references in "The Problem" section | The problem is architectural (monolithic RN app), not a specific line-of-code bug. Area-level references provided instead. |
-| Per-screen BEFORE/AFTER diffs                         | Screens are new creations referencing RN app screens for fidelity. Screen reference table with RN paths provided instead.  |
+| Spec                                     | Relationship                                               |
+| ---------------------------------------- | ---------------------------------------------------------- |
+| [SDK Core Spec](../sdk-core/SPEC.md)     | Active dependency for browser/WebView-safe engine behavior |
+| [SDK Overview](../../OVERVIEW.md)        | Current project scope and module status                    |
+| [SDK Paused Work](../../paused/INDEX.md) | Historical native/KMP/RN work retained for future reuse    |

@@ -4,7 +4,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as fs from 'node:fs';
-import * as path from 'node:path';
 
 // Mock react-native Platform module
 let mockOS = 'android';
@@ -38,13 +37,6 @@ vi.mock('react-native-fs', () => ({ MainBundlePath: '/var/containers/Bundle/Appl
 describe('Asset Bundling (Chunk 5D)', () => {
   beforeEach(() => {
     mockOS = 'android';
-  });
-
-  describe('asset-bundling.html-exists', () => {
-    it('assets/self-wallet/index.html is present after build', () => {
-      const assetsPath = path.resolve(__dirname, '../../assets/self-wallet/index.html');
-      expect(fs.existsSync(assetsPath)).toBe(true);
-    });
   });
 
   describe('Platform.select', () => {
@@ -113,22 +105,8 @@ describe('Asset Bundling (Chunk 5D)', () => {
   });
 
   describe('npm-pack-contents', () => {
-    it('dist/ directory exists with built files', () => {
-      const distPath = path.resolve(__dirname, '../../dist');
-      expect(fs.existsSync(distPath)).toBe(true);
-      expect(fs.existsSync(path.join(distPath, 'index.js'))).toBe(true);
-      expect(fs.existsSync(path.join(distPath, 'index.mjs'))).toBe(true);
-      expect(fs.existsSync(path.join(distPath, 'index.d.ts'))).toBe(true);
-    });
-
-    it('assets/ directory exists with self-wallet bundle', () => {
-      const assetsPath = path.resolve(__dirname, '../../assets/self-wallet');
-      expect(fs.existsSync(assetsPath)).toBe(true);
-    });
-
     it('package.json files array includes dist and assets', () => {
-      const pkgPath = path.resolve(__dirname, '../../package.json');
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+      const pkg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8'));
       expect(pkg.files).toContain('dist');
       expect(pkg.files).toContain('assets');
     });

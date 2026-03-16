@@ -7,6 +7,7 @@ package xyz.self.sdk.models
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import xyz.self.sdk.api.SelfSdkConfig
+import xyz.self.sdk.api.SelfSdkError
 import xyz.self.sdk.api.VerificationRequest
 import xyz.self.sdk.api.VerificationResult
 import kotlin.test.Test
@@ -128,11 +129,16 @@ class ModelSerializationTest {
         val result =
             VerificationResult(
                 success = true,
-                type = "proofGenerated",
                 userId = "user-1",
                 verificationId = "verification-123",
                 proof = "proof-bytes",
-                claims = mapOf("nationality" to "UTO"),
+                claims =
+                    mapOf(
+                        "nationality" to "UTO",
+                        "ageOver18" to true,
+                        "document" to mapOf("issuingCountry" to "UTO"),
+                    ),
+                error = SelfSdkError(code = "IGNORED", message = "Only for serialization coverage"),
             )
         val encoded = json.encodeToString(result)
         val decoded = json.decodeFromString<VerificationResult>(encoded)

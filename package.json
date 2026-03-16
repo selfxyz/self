@@ -23,7 +23,7 @@
     "docstrings": "yarn docstrings:app && yarn docstrings:sdk",
     "docstrings:app": "yarn tsx scripts/docstring-report.ts \"app/src/**/*.{ts,tsx}\" --label \"Mobile App\" --write-report docs/coverage/app.json",
     "docstrings:sdk": "yarn tsx scripts/docstring-report.ts \"packages/mobile-sdk-alpha/src/**/*.{ts,tsx}\" --label \"Mobile SDK Alpha\" --write-report docs/coverage/sdk.json",
-    "format": "SKIP_BUILD_DEPS=1 yarn format:root && yarn format:github && SKIP_BUILD_DEPS=1 yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
+    "format": "SKIP_BUILD_DEPS=1 yarn format:root && yarn format:github && GRADLE_USER_HOME=/tmp/self-gradle-format yarn workspace @selfxyz/kmp-sdk format && GRADLE_USER_HOME=/tmp/self-gradle-format yarn workspace @selfxyz/kmp-sdk-test-app format && SKIP_BUILD_DEPS=1 yarn workspaces foreach --parallel -i --all --exclude self-workspace-root --exclude @selfxyz/kmp-sdk --exclude @selfxyz/kmp-sdk-test-app run format",
     "format:github": "yarn prettier --parser yaml --write .github/**/*.yml --single-quote false",
     "format:root": "echo 'format markdown' && yarn prettier --parser markdown --write '*.md' 'docs/**/*.md' 'specs/**/*.md' && echo 'format yaml' && yarn prettier --parser yaml --write .*.{yml,yaml} --single-quote false && yarn prettier --write scripts/**/*.{js,mjs,ts} && yarn prettier --parser json --write scripts/**/*.json",
     "gitleaks": "gitleaks protect --staged --redact --config=gitleaks-override.toml",

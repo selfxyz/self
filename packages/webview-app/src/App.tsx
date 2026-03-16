@@ -5,11 +5,11 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { SelfClientProvider } from './providers/SelfClientProvider';
+import { VerificationRequestProvider } from './providers/VerificationRequestProvider';
 import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
 import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
-import { DocumentCameraScreen } from './screens/onboarding/DocumentCameraScreen';
-import { DocumentNFCScreen } from './screens/onboarding/DocumentNFCScreen';
 import { ConfirmIdentificationScreen } from './screens/onboarding/ConfirmIdentificationScreen';
+import { ProviderLaunchScreen } from './screens/onboarding/ProviderLaunchScreen';
 import { HomeScreen } from './screens/home/HomeScreen';
 import { ProvingScreen } from './screens/proving/ProvingScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
@@ -18,27 +18,31 @@ import { ComingSoonScreen } from './screens/ComingSoonScreen';
 
 export const App: React.FC = () => (
   <BrowserRouter>
-    <SelfClientProvider>
-      <Routes>
-        <Route path="/" element={<HomeScreen />} />
-        <Route path="/onboarding/country" element={<CountryPickerScreen />} />
-        <Route path="/onboarding/id-type" element={<IDSelectionScreen />} />
-        <Route path="/onboarding/camera" element={<DocumentCameraScreen />} />
-        <Route path="/onboarding/nfc" element={<DocumentNFCScreen />} />
-        <Route
-          path="/onboarding/confirm"
-          element={<ConfirmIdentificationScreen />}
-        />
-        <Route path="/proving" element={<ProvingScreen />} />
-        <Route path="/proving/result" element={<VerificationResultScreen />} />
-        <Route path="/settings" element={<SettingsScreen />} />
-        <Route
-          path="/account/verified"
-          element={<VerificationResultScreen />}
-        />
-        <Route path="/coming-soon" element={<ComingSoonScreen />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </SelfClientProvider>
+    <VerificationRequestProvider>
+      <SelfClientProvider>
+        <Routes>
+          <Route path="/" element={<HomeScreen />} />
+          <Route path="/onboarding/country" element={<CountryPickerScreen />} />
+          <Route path="/onboarding/id-type" element={<IDSelectionScreen />} />
+          <Route
+            path="/onboarding/provider"
+            element={<ProviderLaunchScreen />}
+          />
+          <Route
+            path="/onboarding/confirm"
+            element={<ConfirmIdentificationScreen />}
+          />
+          <Route path="/proving" element={<ProvingScreen />} />
+          <Route path="/proving/result" element={<VerificationResultScreen />} />
+          <Route path="/settings" element={<SettingsScreen />} />
+          <Route
+            path="/account/verified"
+            element={<VerificationResultScreen />}
+          />
+          <Route path="/coming-soon" element={<ComingSoonScreen />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </SelfClientProvider>
+    </VerificationRequestProvider>
   </BrowserRouter>
 );

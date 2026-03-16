@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { createContext, useContext, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  bridgeNFCScannerAdapter,
   bridgeCryptoAdapter,
   bridgeAuthAdapter,
   indexedDBDocumentsAdapter,
@@ -15,10 +14,8 @@ import {
   webNavigationAdapter,
   noOpHapticAdapter,
   bridgeBiometricsAdapter,
-  bridgeCameraAdapter,
 } from '@selfxyz/webview-bridge/adapters';
 import type {
-  BridgeNFCScannerAdapter,
   BridgeCryptoAdapter,
   BridgeAuthAdapter,
   BridgeDocumentsAdapter,
@@ -28,12 +25,11 @@ import type {
   BridgeNavigationAdapter,
   BridgeHapticAdapter,
   BridgeBiometricsAdapter,
-  BridgeCameraAdapter,
 } from '@selfxyz/webview-bridge/adapters';
 import { useBridge } from './BridgeProvider';
+import { useVerificationRequest } from './VerificationRequestProvider';
 
 export interface SelfClientAdapters {
-  scanner: BridgeNFCScannerAdapter;
   crypto: BridgeCryptoAdapter;
   auth: BridgeAuthAdapter;
   documents: BridgeDocumentsAdapter;
@@ -43,7 +39,6 @@ export interface SelfClientAdapters {
   navigation: BridgeNavigationAdapter;
   haptic: BridgeHapticAdapter;
   biometrics: BridgeBiometricsAdapter;
-  camera: BridgeCameraAdapter;
 }
 
 const SelfClientContext = createContext<SelfClientAdapters | null>(null);
@@ -61,12 +56,12 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const bridge = useBridge();
   const navigate = useNavigate();
+  const { verificationId } = useVerificationRequest();
 
   const adapters = useMemo<SelfClientAdapters>(() => {
     const lifecycle = bridgeLifecycleAdapter(bridge);
 
     return {
-      scanner: bridgeNFCScannerAdapter(bridge),
       crypto: bridgeCryptoAdapter(bridge),
       auth: bridgeAuthAdapter(bridge),
       documents: indexedDBDocumentsAdapter(),
@@ -79,13 +74,31 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
       ),
       haptic: noOpHapticAdapter(),
       biometrics: bridgeBiometricsAdapter(bridge),
-      camera: bridgeCameraAdapter(bridge),
     };
   }, [bridge, navigate]);
 
+  const lastReadyRef = useRef<{
+    lifecycle: BridgeLifecycleAdapter;
+    verificationId?: string;
+  } | null>(null);
   useEffect(() => {
-    adapters.lifecycle.ready();
-  }, [adapters.lifecycle]);
+    if (
+      lastReadyRef.current?.lifecycle === adapters.lifecycle &&
+      lastReadyRef.current?.verificationId === verificationId
+    ) {
+      return;
+    }
+    adapters.lifecycle.ready(
+      verificationId ? { verificationId } : {},
+    );
+    lastReadyRef.current = { lifecycle: adapters.lifecycle, verificationId };
+  }, [adapters.lifecycle, verificationId]);
+
+  useEffect(() => {
+    return bridge.on('lifecycle', 'cancel', () => {
+      navigate('/', { replace: true });
+    });
+  }, [bridge, navigate]);
 
   return (
     <SelfClientContext.Provider value={adapters}>

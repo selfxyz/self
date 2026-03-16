@@ -23,5 +23,19 @@ export function createCryptoAdapter(): CryptoAdapter {
           'Provide a custom CryptoAdapter with a sign implementation for your platform.',
       );
     },
+
+    async generateKey(_keyRef: string): Promise<{ keyRef: string }> {
+      throw new Error(
+        'Key generation is not implemented in the default crypto adapter. ' +
+          'Provide a custom CryptoAdapter with a generateKey implementation for your platform.',
+      );
+    },
+
+    async getPublicKey(_keyRef: string): Promise<Uint8Array> {
+      throw new Error(
+        'Public key retrieval is not implemented in the default crypto adapter. ' +
+          'Provide a custom CryptoAdapter with a getPublicKey implementation for your platform.',
+      );
+    },
   };
 }

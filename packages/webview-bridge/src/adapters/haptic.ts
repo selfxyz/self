@@ -17,9 +17,3 @@ export function bridgeHapticAdapter(
     },
   };
 }
-
-export function noOpHapticAdapter(): BridgeHapticAdapter {
-  return {
-    trigger(): void {},
-  };
-}

@@ -14,7 +14,12 @@ type DescriptionProps = TextProps & {
 
 const Description = ({ children, style, color, ...props }: DescriptionProps) => {
   return (
-    <Text {...props} textBreakStrategy="balanced" style={[styles.description, color ? { color } : {}, style]}>
+    <Text
+      {...props}
+      allowFontScaling={false}
+      textBreakStrategy="balanced"
+      style={[styles.description, color ? { color } : {}, style]}
+    >
       {children}
     </Text>
   );

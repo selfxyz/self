@@ -56,6 +56,7 @@ export const ConnectedWalletBadge: React.FC<ConnectedWalletBadgeProps> = ({
           fontSize={12}
           color={proofRequestColors.white}
           textTransform="uppercase"
+          allowFontScaling={false}
         >
           {label}
         </Text>
@@ -68,6 +69,7 @@ export const ConnectedWalletBadge: React.FC<ConnectedWalletBadgeProps> = ({
           fontSize={12}
           color={proofRequestColors.white}
           textAlign="right"
+          allowFontScaling={false}
           testID={`${testID}-address`}
         >
           {truncateAddress(address)}

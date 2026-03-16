@@ -58,7 +58,7 @@ elevation={8}          // Android shadow equivalent
 | Lottie (`lottie-react-native`) | Complex animations, loading states |
 | Tamagui animations (`@tamagui/animations-react-native`) | Transitions, micro-interactions |
 
-Use the SDK's `LottieAnimation` wrapper for Lottie animations.
+Use the SDK's `DelayedLottieView` wrapper for Lottie animations.
 
 ## DOs
 
@@ -67,7 +67,7 @@ Use the SDK's `LottieAnimation` wrapper for Lottie animations.
 - DO use Tamagui inline props for simple atomic styles (padding, gap, flex)
 - DO use `styled()` for components reused in multiple places
 - DO use `StyleSheet.create` only when Tamagui can't express the style (complex shadows, platform quirks)
-- DO use Lottie via `LottieAnimation` for loading and success animations
+- DO use Lottie via `DelayedLottieView` for loading and success animations
 
 ## DON'Ts
 

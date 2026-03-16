@@ -111,7 +111,9 @@ export default function AbstractButton({
       ]}
     >
       {animatedComponent}
-      <Text style={[styles.text, { color, fontSize: fontSize ?? 18 }]}>{children}</Text>
+      <Text allowFontScaling={false} style={[styles.text, { color, fontSize: fontSize ?? 18 }]}>
+        {children}
+      </Text>
     </Pressable>
   );
 }

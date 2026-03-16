@@ -6,12 +6,8 @@ package xyz.self.sdk.handlers
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonPrimitive
 import xyz.self.sdk.api.SelfSdkCallback
-import xyz.self.sdk.api.SelfSdkError
-import xyz.self.sdk.api.VerificationResult
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
@@ -75,42 +71,15 @@ class LifecycleBridgeHandler : BridgeHandler {
 
     private suspend fun setResult(params: Map<String, JsonElement>): JsonElement? {
         val state = consumeLifecycleState()
-        val type = params["type"]?.jsonPrimitive?.content
-        val success = params["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
-        val data = params["data"]?.toString()
-        val errorCode = params["errorCode"]?.jsonPrimitive?.content
-        val errorMessage = params["errorMessage"]?.jsonPrimitive?.content
-
-        if (type != null) {
-            // Flat lifecycle payload is a protocol-level success signal.
-            // `type` communicates what completed (e.g. proofRequested).
-            state.callback?.onSuccess(
-                VerificationResult(success = true, type = type),
-            )
-        } else if (success && data != null) {
-            try {
-                val result = Json.decodeFromString(VerificationResult.serializer(), data)
-                state.callback?.onSuccess(result)
-            } catch (e: Exception) {
-                state.callback?.onFailure(
-                    SelfSdkError(
-                        code = "PARSE_ERROR",
-                        message = "Failed to parse verification result: ${e.message}",
-                    ),
-                )
+        try {
+            when (val outcome = resolveLifecycleSetResult(params)) {
+                is LifecycleSetResultOutcome.Success -> state.callback?.onSuccess(outcome.result)
+                is LifecycleSetResultOutcome.Failure -> state.callback?.onFailure(outcome.error)
+                LifecycleSetResultOutcome.Cancelled -> state.callback?.onCancelled()
             }
-        } else if (!success && errorCode != null) {
-            state.callback?.onFailure(
-                SelfSdkError(
-                    code = errorCode,
-                    message = errorMessage ?: "Unknown error",
-                ),
-            )
-        } else {
-            state.callback?.onCancelled()
+        } finally {
+            state.dismiss?.invoke()
         }
-
-        state.dismiss?.invoke()
         return null
     }
 }

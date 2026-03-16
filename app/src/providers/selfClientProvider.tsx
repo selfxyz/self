@@ -160,6 +160,16 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
             `crypto.sign adapter not implemented for keyRef: ${_keyRef}`,
           );
         },
+        async generateKey(_keyRef: string): Promise<{ keyRef: string }> {
+          throw new Error(
+            'Key generation is not implemented in the app crypto adapter.',
+          );
+        },
+        async getPublicKey(_keyRef: string): Promise<Uint8Array> {
+          throw new Error(
+            'Public key retrieval is not implemented in the app crypto adapter.',
+          );
+        },
       },
       analytics: {
         trackEvent: (event: string, data?: TrackEventParams) => {

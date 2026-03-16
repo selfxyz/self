@@ -45,4 +45,12 @@ describe('createWebCryptoAdapter', () => {
   it('should throw on sign (not implemented)', async () => {
     await expect(adapter.sign(new Uint8Array([1, 2, 3]), 'key-ref')).rejects.toThrow('Signing is not implemented');
   });
+
+  it('should throw on generateKey (not implemented)', async () => {
+    await expect(adapter.generateKey('key-ref')).rejects.toThrow('Key generation is not implemented');
+  });
+
+  it('should throw on getPublicKey (not implemented)', async () => {
+    await expect(adapter.getPublicKey('key-ref')).rejects.toThrow('Public key retrieval is not implemented');
+  });
 });

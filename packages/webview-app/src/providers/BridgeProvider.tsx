@@ -4,6 +4,7 @@
 
 import React, { createContext, useContext, useMemo } from 'react';
 import { WebViewBridge } from '@selfxyz/webview-bridge';
+import { parseBrowserHostTargetOrigin } from '../utils/verificationRequest';
 
 const BridgeContext = createContext<WebViewBridge | null>(null);
 
@@ -19,7 +20,19 @@ export const BridgeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const bridge = useMemo(
-    () => new WebViewBridge({ debug: import.meta.env.DEV }),
+    () => {
+      const isDev = import.meta.env.DEV;
+
+      return new WebViewBridge({
+        debug: isDev,
+        browserHost: {
+          targetOrigin:
+            parseBrowserHostTargetOrigin(window.location.search, {
+              allowWildcard: isDev,
+            }) ?? (isDev ? '*' : undefined),
+        },
+      });
+    },
     [],
   );
 
