@@ -58,14 +58,7 @@ export const IDSelectionScreen: React.FC = () => {
         countryCode,
       });
 
-      if (idType.id === 'kyc') {
-        navigate('/coming-soon', {
-          state: { countryCode, documentCategory: 'kyc' },
-        });
-        return;
-      }
-
-      navigate('/onboarding/camera', {
+      navigate('/onboarding/provider', {
         state: { countryCode, documentType: idType.id },
       });
     },

@@ -29,7 +29,7 @@ export const SettingsScreen: React.FC = () => {
   const onDismiss = useCallback(async () => {
     haptic.trigger('selection');
     analytics.trackEvent('settings_dismiss_pressed');
-    lifecycle.dismiss();
+    lifecycle.dismiss({ reason: 'user_cancel' });
   }, [haptic, analytics, lifecycle]);
 
   return (

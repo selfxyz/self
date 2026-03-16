@@ -11,7 +11,8 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { LottieAnimation, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import loadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
 import {
   AbstractButton,
   Description,
@@ -30,9 +31,6 @@ import {
   SELF_UUID_NAMESPACE,
 } from '@/services/notifications/notificationService';
 import { useSettingStore } from '@/stores/settingStore';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports -- binary asset loaded by Metro
-const loadingAnimation = require('@selfxyz/mobile-sdk-alpha/animations/loading/misc.lottie');
 
 type KycSuccessRouteParams = StaticScreenProps<
   | {
@@ -114,7 +112,7 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       <View style={styles.centerSection}>
         <View style={styles.animationContainer}>
-          <LottieAnimation
+          <DelayedLottieView
             autoPlay
             loop={true}
             source={loadingAnimation}

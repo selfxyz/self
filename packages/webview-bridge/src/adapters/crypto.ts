@@ -2,29 +2,28 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { createWebCryptoAdapter } from '@selfxyz/mobile-sdk-alpha/browser';
+
 import type { WebViewBridge } from '../bridge';
 
 export interface BridgeCryptoAdapter {
   hash(input: Uint8Array, algo?: 'sha256'): Promise<Uint8Array>;
   sign(data: Uint8Array, keyRef: string): Promise<Uint8Array>;
+  generateKey(keyRef: string): Promise<{ keyRef: string }>;
+  getPublicKey(keyRef: string): Promise<Uint8Array>;
 }
 
 export function bridgeCryptoAdapter(
   bridge: WebViewBridge,
 ): BridgeCryptoAdapter {
+  const webCryptoAdapter = createWebCryptoAdapter();
+
   return {
     async hash(
       input: Uint8Array,
       algo: 'sha256' = 'sha256',
     ): Promise<Uint8Array> {
-      const algoMap: Record<string, string> = { sha256: 'SHA-256' };
-      const webCryptoAlgo = algoMap[algo];
-      if (!webCryptoAlgo) {
-        throw new Error(`Unsupported hash algorithm: ${algo}`);
-      }
-      const buffer = new Uint8Array(input).buffer as ArrayBuffer;
-      const digest = await crypto.subtle.digest(webCryptoAlgo, buffer);
-      return new Uint8Array(digest);
+      return webCryptoAdapter.hash(input, algo);
     },
 
     async sign(data: Uint8Array, keyRef: string): Promise<Uint8Array> {
@@ -37,7 +36,34 @@ export function bridgeCryptoAdapter(
           keyRef,
         },
       );
+      if (typeof result?.signature !== 'string' || result.signature.length === 0) {
+        throw new Error('Invalid or empty signature from bridge');
+      }
       return base64ToUint8Array(result.signature);
+    },
+
+    async generateKey(keyRef: string): Promise<{ keyRef: string }> {
+      const result = await bridge.request<{ keyRef: string; success: boolean }>(
+        'crypto',
+        'generateKey',
+        { keyRef },
+      );
+      if (!result?.success || typeof result.keyRef !== 'string' || result.keyRef.length === 0) {
+        throw new Error('Native key generation failed');
+      }
+      return { keyRef: result.keyRef };
+    },
+
+    async getPublicKey(keyRef: string): Promise<Uint8Array> {
+      const result = await bridge.request<{ publicKey: string }>(
+        'crypto',
+        'getPublicKey',
+        { keyRef },
+      );
+      if (typeof result?.publicKey !== 'string' || result.publicKey.length === 0) {
+        throw new Error('Invalid or empty publicKey from bridge');
+      }
+      return base64ToUint8Array(result.publicKey);
     },
   };
 }

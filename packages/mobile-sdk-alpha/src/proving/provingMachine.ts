@@ -1045,17 +1045,30 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       set({ passportData, secret, env });
       set({ circuitType });
-      // Skip parsing for disclosure if passport is already parsed
+      // Only skip parsing when the document has already been parsed for non-DSC circuits.
       // Re-parsing would overwrite the alternative CSCA used during registration and is unnecessary
-      // skip also the register circuit as the passport already got parsed in during the dsc step
-      console.log('circuitType', circuitType);
-      if (circuitType !== 'dsc') {
-        console.log('skipping id document parsing');
-        actor.send({ type: 'FETCH_DATA' });
-        selfClient.trackEvent(ProofEvents.FETCH_DATA_STARTED);
-      } else {
+      // for already parsed passports or ID cards.
+      // Aadhaar and KYC documents do not require DSC parsing at all.
+      const needsDscParsing =
+        passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card';
+      const hasParsedDsc = needsDscParsing && Boolean(passportData.dsc_parsed?.authorityKeyIdentifier);
+
+      if (circuitType === 'dsc' && !needsDscParsing) {
+        console.error(`DSC circuit is not supported for ${passportData.documentCategory} documents`);
+        selfClient.trackEvent(ProofEvents.PROOF_FAILED, {
+          message: `DSC circuit not supported for ${passportData.documentCategory}`,
+        });
+        actor.send({ type: 'ERROR' });
+        return;
+      }
+
+      const shouldParseDocument = circuitType === 'dsc' || (needsDscParsing && !hasParsedDsc);
+
+      if (shouldParseDocument) {
         actor.send({ type: 'PARSE_ID_DOCUMENT' });
         selfClient.trackEvent(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
+      } else {
+        actor.send({ type: 'FETCH_DATA' });
       }
     },
 
@@ -1158,14 +1171,15 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         switch (passportData.documentCategory) {
           case 'passport':
           case 'id_card':
-            if (!passportData?.dsc_parsed) {
-              selfClient.logProofEvent('error', 'Missing parsed DSC', context, {
+            if (!passportData?.dsc_parsed?.authorityKeyIdentifier) {
+              const docType = passportData.documentCategory;
+              selfClient.logProofEvent('error', `Missing parsed DSC in ${docType} data`, context, {
                 failure: 'PROOF_FAILED_DATA_FETCH',
                 duration_ms: Date.now() - startTime,
               });
-              console.error('Missing parsed DSC in passport data');
+              console.error(`Missing parsed DSC in ${docType} data`);
               selfClient.trackEvent(ProofEvents.FETCH_DATA_FAILED, {
-                message: 'Missing parsed DSC in passport data',
+                message: `Missing parsed DSC in ${docType} data`,
               });
               actor!.send({ type: 'FETCH_ERROR' });
               return;

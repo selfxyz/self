@@ -11,7 +11,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import kotlinx.serialization.json.Json
 import xyz.self.sdk.webview.SelfVerificationActivity
 import java.lang.ref.WeakReference
 
@@ -260,7 +259,7 @@ actual class SelfSdk private constructor(
                 val resultType = data?.getStringExtra(SelfVerificationActivity.EXTRA_RESULT_TYPE)
                 if (resultDataJson != null) {
                     try {
-                        val result = deserializeResult(resultDataJson)
+                        val result = deserializeVerificationResult(resultDataJson)
                         callback.onSuccess(result)
                     } catch (e: Exception) {
                         callback.onFailure(
@@ -271,9 +270,7 @@ actual class SelfSdk private constructor(
                         )
                     }
                 } else if (resultType != null) {
-                    callback.onSuccess(
-                        VerificationResult(success = true, type = resultType),
-                    )
+                    callback.onSuccess(VerificationResult(success = true))
                 } else {
                     callback.onFailure(
                         SelfSdkError(
@@ -310,17 +307,13 @@ actual class SelfSdk private constructor(
     /**
      * Serializes VerificationRequest to JSON string for passing via Intent.
      */
-    private fun serializeRequest(request: VerificationRequest): String = Json.encodeToString(VerificationRequest.serializer(), request)
+    private fun serializeRequest(request: VerificationRequest): String =
+        verificationResultJson.encodeToString(VerificationRequest.serializer(), request)
 
     /**
      * Serializes SelfSdkConfig to JSON string for passing via Intent.
      */
-    private fun serializeConfig(config: SelfSdkConfig): String = Json.encodeToString(SelfSdkConfig.serializer(), config)
-
-    /**
-     * Deserializes VerificationResult from JSON string.
-     */
-    private fun deserializeResult(json: String): VerificationResult = Json.decodeFromString(VerificationResult.serializer(), json)
+    private fun serializeConfig(config: SelfSdkConfig): String = verificationResultJson.encodeToString(SelfSdkConfig.serializer(), config)
 }
 
 /**

@@ -2,25 +2,22 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type LottieView from 'lottie-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 import { Check, ChevronDown } from '@tamagui/lucide-icons';
 
 import type {
-  DotLottieSource,
   provingMachineCircuitType,
   ProvingStateType,
 } from '@selfxyz/mobile-sdk-alpha';
+import failAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/fail.json';
+import proveLoadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/prove.json';
 import { slate200, slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import LoadingUI from '@/components/LoadingUI';
 import { getLoadingScreenText } from '@/proving/loadingScreenStateText';
-
-/* eslint-disable @typescript-eslint/no-require-imports -- binary assets loaded by Metro */
-const failAnimation = require('@selfxyz/mobile-sdk-alpha/animations/loading/fail.lottie');
-const proveLoadingAnimation = require('@selfxyz/mobile-sdk-alpha/animations/loading/prove.lottie');
-/* eslint-enable @typescript-eslint/no-require-imports */
 
 const allProvingStates = [
   'idle',
@@ -44,9 +41,9 @@ const DevLoadingScreen: React.FC = () => {
   const [currentState, setCurrentState] = useState<ProvingStateType>('idle');
   const [documentType, setDocumentType] =
     useState<provingMachineCircuitType>('dsc');
-  const [animationSource, setAnimationSource] = useState<DotLottieSource>(
-    proveLoadingAnimation,
-  );
+  const [animationSource, setAnimationSource] = useState<
+    LottieView['props']['source']
+  >(proveLoadingAnimation);
   const [loadingText, setLoadingText] = useState<{
     actionText: string;
     actionSubText: string;

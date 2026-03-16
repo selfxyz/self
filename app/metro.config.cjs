@@ -68,7 +68,7 @@ const config = {
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/|$)'),
       new RegExp(
-        'packages/mobile-sdk-alpha/node_modules/@lottiefiles/dotlottie-react-native(/|$)',
+        'packages/mobile-sdk-alpha/node_modules/lottie-react-native(/|$)',
       ),
       new RegExp('packages/mobile-sdk-alpha/node_modules/scheduler(/|$)'),
       new RegExp(
@@ -117,8 +117,8 @@ const config = {
     // Support package exports with conditions
     unstable_conditionNames: ['react-native', 'import', 'require'],
 
-    // SVG support + dotLottie binary assets
-    assetExts: [...assetExts.filter(ext => ext !== 'svg'), 'lottie'],
+    // SVG support
+    assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg'],
 
     // Custom resolver to handle both .js imports in TypeScript and Node.js modules
@@ -132,41 +132,6 @@ const config = {
         workspaceRoot,
         'packages/mobile-sdk-alpha',
       );
-
-      // Deduplicate SDK animation imports — resolve to app's single copy when possible
-      if (
-        /\.(json|lottie)$/.test(moduleName) &&
-        context.originModulePath?.includes('mobile-sdk-alpha')
-      ) {
-        // Extract the animation-relative path from either bare or relative specifiers
-        let animRelPath;
-        if (moduleName.startsWith('src/animations/')) {
-          animRelPath = moduleName.replace('src/animations/', '');
-        } else if (/\/animations\//.test(moduleName)) {
-          animRelPath = moduleName.split('/animations/').pop();
-        }
-
-        if (animRelPath) {
-          // Try app's animations first (deduplication)
-          const appAnimPath = path.resolve(
-            projectRoot,
-            'src/assets/animations',
-            animRelPath,
-          );
-          if (fs.existsSync(appAnimPath)) {
-            return { type: 'assetFiles', filePaths: [appAnimPath] };
-          }
-          // Fall back to SDK's own copy (for SDK-only animations like loading/*)
-          const sdkAnimPath = path.resolve(
-            sdkAlphaPath,
-            'src/animations',
-            animRelPath,
-          );
-          if (fs.existsSync(sdkAnimPath)) {
-            return { type: 'assetFiles', filePaths: [sdkAnimPath] };
-          }
-        }
-      }
 
       // Custom resolver to handle Node.js modules and dynamic flow imports
       if (moduleName.startsWith('@selfxyz/mobile-sdk-alpha/')) {

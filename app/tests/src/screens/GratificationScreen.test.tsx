@@ -82,7 +82,7 @@ jest.mock('tamagui', () => {
 });
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
-  LottieAnimation: ({ onAnimationFinish }: any) => {
+  DelayedLottieView: ({ onAnimationFinish }: any) => {
     // Simulate animation finishing immediately
     setTimeout(() => {
       onAnimationFinish?.();
