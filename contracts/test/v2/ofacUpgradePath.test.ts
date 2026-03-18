@@ -142,10 +142,20 @@ describe("OFAC Upgrade Path Test", function () {
       );
     await proofTx.wait();
 
-    // --- Phase 6: Verify new roots ---
+    // --- Phase 6: Verify new current roots ---
     expect(await actors.registryKyc.getNameAndDobOfacRoot()).to.equal(800n);
     expect(await actors.registryKyc.getNameAndYobOfacRoot()).to.equal(900n);
     console.log(`  Proof-based update succeeded: DOB=800, YOB=900`);
+
+    // --- Phase 6b: Verify prev* slots were rotated correctly ---
+    expect(await actors.registryKyc.getPrevNameAndDobOfacRoot()).to.equal(initialDobRoot);
+    expect(await actors.registryKyc.getPrevNameAndYobOfacRoot()).to.equal(initialYobRoot);
+    console.log(`  Rolling window: prev DOB=${initialDobRoot}, prev YOB=${initialYobRoot}`);
+
+    // --- Phase 6c: Verify checkOfacRoots accepts current and previous snapshots (not mixed) ---
+    expect(await actors.registryKyc.checkOfacRoots(800n, 900n)).to.equal(true);
+    expect(await actors.registryKyc.checkOfacRoots(initialDobRoot, initialYobRoot)).to.equal(true);
+    expect(await actors.registryKyc.checkOfacRoots(800n, initialYobRoot)).to.equal(false, 'mixed pair must be rejected');
 
     // --- Phase 7: Verify old setter functions still work after upgrade ---
     await actors.registryKyc.updateNameAndDobOfacRoot(11111n);

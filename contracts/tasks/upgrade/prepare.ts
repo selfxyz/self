@@ -202,7 +202,8 @@ task("upgrade:prepare", "Validate and deploy a new implementation contract")
       } else if (
         contractName === "IdentityRegistryImplV1" ||
         contractName === "IdentityRegistryIdCardImplV1" ||
-        contractName === "IdentityRegistryAadhaarImplV1"
+        contractName === "IdentityRegistryAadhaarImplV1" ||
+        contractName === "IdentityRegistryKycImplV1"
       ) {
         const PoseidonT3 = await hre.ethers.getContractFactory("PoseidonT3");
         const poseidonT3 = await PoseidonT3.deploy();

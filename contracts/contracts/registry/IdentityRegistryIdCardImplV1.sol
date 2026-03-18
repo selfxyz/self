@@ -286,7 +286,7 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
         address pcr0Manager_,
         uint256 gcpRootCAPubkeyHash_,
         address teeAddress_
-    ) external reinitializer(3) {
+    ) external onlyProxy onlyRole(DEFAULT_ADMIN_ROLE) reinitializer(3) {
         _gcpJwtVerifier = gcpJwtVerifier_;
         _pcr0Manager = pcr0Manager_;
         _gcpRootCAPubkeyHash = gcpRootCAPubkeyHash_;
@@ -406,11 +406,12 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
      * @return True if all provided roots match the stored values, false otherwise.
      */
     function checkOfacRoots(uint256 nameAndDobRoot, uint256 nameAndYobRoot) external view onlyProxy returns (bool) {
-        bool dobMatch = (_nameAndDobOfacRoot == nameAndDobRoot) ||
-            (_prevNameAndDobOfacRoot != 0 && _prevNameAndDobOfacRoot == nameAndDobRoot);
-        bool yobMatch = (_nameAndYobOfacRoot == nameAndYobRoot) ||
-            (_prevNameAndYobOfacRoot != 0 && _prevNameAndYobOfacRoot == nameAndYobRoot);
-        return dobMatch && yobMatch;
+        bool currentMatch = (_nameAndDobOfacRoot == nameAndDobRoot) &&
+            (_nameAndYobOfacRoot == nameAndYobRoot);
+        bool prevMatch = (_prevNameAndDobOfacRoot != 0) &&
+            (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
+            (_prevNameAndYobOfacRoot == nameAndYobRoot);
+        return currentMatch || prevMatch;
     }
 
     /**

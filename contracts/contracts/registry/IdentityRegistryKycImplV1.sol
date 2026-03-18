@@ -370,11 +370,12 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
      * @return True if both provided roots match the stored values, false otherwise.
      */
     function checkOfacRoots(uint256 nameAndDobRoot, uint256 nameAndYobRoot) external view onlyProxy returns (bool) {
-        bool dobMatch = (_nameAndDobOfacRoot == nameAndDobRoot) ||
-            (_prevNameAndDobOfacRoot != 0 && _prevNameAndDobOfacRoot == nameAndDobRoot);
-        bool yobMatch = (_nameAndYobOfacRoot == nameAndYobRoot) ||
-            (_prevNameAndYobOfacRoot != 0 && _prevNameAndYobOfacRoot == nameAndYobRoot);
-        return dobMatch && yobMatch;
+        bool currentMatch = (_nameAndDobOfacRoot == nameAndDobRoot) &&
+            (_nameAndYobOfacRoot == nameAndYobRoot);
+        bool prevMatch = (_prevNameAndDobOfacRoot != 0) &&
+            (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
+            (_prevNameAndYobOfacRoot == nameAndYobRoot);
+        return currentMatch || prevMatch;
     }
 
     /**

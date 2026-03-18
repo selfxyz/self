@@ -296,7 +296,7 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
         address pcr0Manager_,
         uint256 gcpRootCAPubkeyHash_,
         address teeAddress_
-    ) external reinitializer(3) {
+    ) external onlyProxy onlyRole(DEFAULT_ADMIN_ROLE) reinitializer(3) {
         _gcpJwtVerifier = gcpJwtVerifier_;
         _pcr0Manager = pcr0Manager_;
         _gcpRootCAPubkeyHash = gcpRootCAPubkeyHash_;
@@ -437,13 +437,14 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
         uint256 nameAndDobRoot,
         uint256 nameAndYobRoot
     ) external view onlyProxy returns (bool) {
-        bool passportNoMatch = (_passportNoOfacRoot == passportNoRoot) ||
-            (_prevPassportNoOfacRoot != 0 && _prevPassportNoOfacRoot == passportNoRoot);
-        bool dobMatch = (_nameAndDobOfacRoot == nameAndDobRoot) ||
-            (_prevNameAndDobOfacRoot != 0 && _prevNameAndDobOfacRoot == nameAndDobRoot);
-        bool yobMatch = (_nameAndYobOfacRoot == nameAndYobRoot) ||
-            (_prevNameAndYobOfacRoot != 0 && _prevNameAndYobOfacRoot == nameAndYobRoot);
-        return passportNoMatch && dobMatch && yobMatch;
+        bool currentMatch = (_passportNoOfacRoot == passportNoRoot) &&
+            (_nameAndDobOfacRoot == nameAndDobRoot) &&
+            (_nameAndYobOfacRoot == nameAndYobRoot);
+        bool prevMatch = (_prevPassportNoOfacRoot != 0) &&
+            (_prevPassportNoOfacRoot == passportNoRoot) &&
+            (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
+            (_prevNameAndYobOfacRoot == nameAndYobRoot);
+        return currentMatch || prevMatch;
     }
 
     /**

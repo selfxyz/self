@@ -273,7 +273,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
         address pcr0Manager_,
         uint256 gcpRootCAPubkeyHash_,
         address teeAddress_
-    ) external reinitializer(3) {
+    ) external onlyProxy onlyRole(DEFAULT_ADMIN_ROLE) reinitializer(3) {
         _gcpJwtVerifier = gcpJwtVerifier_;
         _pcr0Manager = pcr0Manager_;
         _gcpRootCAPubkeyHash = gcpRootCAPubkeyHash_;
@@ -373,11 +373,12 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
         uint256 nameAndDobRoot,
         uint256 nameAndYobRoot
     ) external view virtual onlyProxy returns (bool) {
-        bool dobMatch = (_nameAndDobOfacRoot == nameAndDobRoot) ||
-            (_prevNameAndDobOfacRoot != 0 && _prevNameAndDobOfacRoot == nameAndDobRoot);
-        bool yobMatch = (_nameAndYobOfacRoot == nameAndYobRoot) ||
-            (_prevNameAndYobOfacRoot != 0 && _prevNameAndYobOfacRoot == nameAndYobRoot);
-        return dobMatch && yobMatch;
+        bool currentMatch = (_nameAndDobOfacRoot == nameAndDobRoot) &&
+            (_nameAndYobOfacRoot == nameAndYobRoot);
+        bool prevMatch = (_prevNameAndDobOfacRoot != 0) &&
+            (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
+            (_prevNameAndYobOfacRoot == nameAndYobRoot);
+        return currentMatch || prevMatch;
     }
 
     /// @notice Checks if the provided UIDAI pubkey is stored in the registry and also if it's not expired.
