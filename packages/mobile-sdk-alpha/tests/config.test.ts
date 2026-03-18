@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -16,6 +16,8 @@ describe('mergeConfig', () => {
       nfc: true,
       mrz: true,
     },
+    platform: 'web',
+    debug: false,
   };
 
   // Freeze base config to catch accidental mutations inside mergeConfig

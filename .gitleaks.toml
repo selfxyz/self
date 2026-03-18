@@ -23,6 +23,8 @@ minVersion = "v8.25.0"
 description = "global allow lists"
 paths = [
     '''gitleaks\.toml''',
+    '''new-common/src/data/mockCertificates\.ts$''',
+    '''new-common/src/testing/mockAadhaarCert\.ts$''',
     '''(?i)\.(?:bmp|gif|jpe?g|png|svg|tiff?)$''',
     '''(?i)\.(?:eot|[ot]tf|woff2?)$''',
     '''(?i)\.(?:docx?|xlsx?|pdf|bin|socket|vsidx|v2|suo|wsuo|.dll|pdb|exe|gltf)$''',
@@ -34,7 +36,7 @@ paths = [
     '''(?:^|/)mvnw(?:\.cmd)?$''',
     '''(?:^|/)\.mvn/wrapper/MavenWrapperDownloader\.java$''',
     '''(?:^|/)node_modules(?:/.*)?$''',
-    '''(?:^|/)(?:deno\.lock|npm-shrinkwrap\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock)$''',
+    '''(?:^|/)(?:deno\.lock|npm-shrinkwrap\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock|Podfile\.lock)$''',
     '''(?:^|/)bower_components(?:/.*)?$''',
     '''(?:^|/)(?:angular|bootstrap|jquery(?:-?ui)?|plotly|swagger-?ui)[a-zA-Z0-9.-]*(?:\.min)?\.js(?:\.map)?$''',
     '''(?:^|/)javascript\.json$''',

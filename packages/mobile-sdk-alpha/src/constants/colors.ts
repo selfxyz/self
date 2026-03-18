@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -22,6 +22,7 @@ export const cyan300 = '#67E8F9';
 
 export const emerald500 = '#10B981';
 
+export const gray200 = '#E5E7EB';
 export const gray400 = '#9CA3AF';
 
 export const green500 = '#22C55E';

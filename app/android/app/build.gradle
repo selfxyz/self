@@ -14,16 +14,20 @@ react {
     //   The root of your project, i.e. where "package.json" lives. Default is '../..'
     root = file("../..")
     //   The folder where the react-native NPM package is. Default is ../../node_modules/react-native
-    reactNativeDir = file("../../../node_modules/react-native")
+    reactNativeDir = file("../../node_modules/react-native")
     //   The folder where the react-native Codegen package is. Default is ../../node_modules/@react-native/codegen
-    codegenDir = file("../../../node_modules/@react-native/codegen")
+    codegenDir = file("../../node_modules/@react-native/codegen")
     //   The cli.js file which is the React Native CLI entrypoint. Default is ../../node_modules/react-native/cli.js
-    cliFile = file("../../../node_modules/react-native/cli.js")
+    cliFile = file("../../node_modules/react-native/cli.js")
 
     /* Variants */
     //   The list of variants to that are debuggable. For those we're going to
     //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
     //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
+    if (System.env.E2E_BUILD == "true") {
+        // For E2E/CI builds: bundle JS into the debug APK (no Metro server available)
+        debuggableVariants = []
+    }
     // debuggableVariants = ["liteDebug", "prodDebug"]
 
     /* Bundling */
@@ -142,6 +146,8 @@ android {
                 cppFlags += "-fexceptions -frtti -std=c++11"
                 arguments += "-DANDROID_STL=c++_shared"
                 arguments += "-Wl,-z,max-page-size=16384"
+                arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+
             }
             ndk {
                 if (System.env.E2E_BUILD == "true") {
@@ -187,8 +193,9 @@ android {
 
     packagingOptions {
         jniLibs {
-            // Use modern packaging so AGP can 16 KB-align uncompressed .so files
-            useLegacyPackaging false
+            // Use legacy packaging (compressed, extracted at install) to ensure
+            // 16 KB page alignment — the OS aligns .so files during extraction.
+            useLegacyPackaging true
             pickFirsts += ['**/libc++_shared.so']
         }
         resources {
@@ -218,7 +225,7 @@ dependencies {
         implementation jscFlavor
     }
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    implementation("net.java.dev.jna:jna:5.13.0@aar")
+    implementation("net.java.dev.jna:jna:5.16.0@aar")
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android'
 
     implementation 'com.google.code.gson:gson:2.8.9'

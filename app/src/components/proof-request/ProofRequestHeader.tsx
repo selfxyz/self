@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -61,12 +61,13 @@ export const ProofRequestHeader: React.FC<ProofRequestHeaderProps> = ({
             />
           </View>
         )}
-        <YStack>
+        <YStack flexShrink={1}>
           <Text
             fontFamily={advercase}
             fontSize={28}
             color={proofRequestColors.white}
             letterSpacing={1}
+            allowFontScaling={false}
             testID={`${testID}-app-name`}
           >
             {appName}
@@ -77,6 +78,7 @@ export const ProofRequestHeader: React.FC<ProofRequestHeaderProps> = ({
                 fontFamily={plexMono}
                 fontSize={12}
                 color={proofRequestColors.zinc500}
+                allowFontScaling={false}
                 testID={`${testID}-app-url`}
                 numberOfLines={1}
                 ellipsizeMode="middle"
@@ -95,6 +97,7 @@ export const ProofRequestHeader: React.FC<ProofRequestHeaderProps> = ({
         color={proofRequestColors.slate400}
         lineHeight={24}
         minHeight={75}
+        allowFontScaling={false}
         testID={`${testID}-request-message`}
       >
         {requestMessage}

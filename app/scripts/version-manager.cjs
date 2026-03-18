@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -28,8 +28,29 @@ const fs = require('fs');
 const path = require('path');
 
 const APP_DIR = path.resolve(__dirname, '..');
-const PACKAGE_JSON_PATH = path.join(APP_DIR, 'package.json');
-const VERSION_JSON_PATH = path.join(APP_DIR, 'version.json');
+const VERSION_MANAGED_RELATIVE_PATHS = [
+  'package.json',
+  'version.json',
+  path.join('android', 'app', 'build.gradle'),
+  path.join('ios', 'Self.xcodeproj', 'project.pbxproj'),
+];
+const [
+  PACKAGE_JSON_REL_PATH,
+  VERSION_JSON_REL_PATH,
+  ANDROID_GRADLE_REL_PATH,
+  IOS_PBXPROJ_REL_PATH,
+] = VERSION_MANAGED_RELATIVE_PATHS;
+const PACKAGE_JSON_PATH = path.join(APP_DIR, PACKAGE_JSON_REL_PATH);
+const VERSION_JSON_PATH = path.join(APP_DIR, VERSION_JSON_REL_PATH);
+const ANDROID_GRADLE_PATH = path.join(APP_DIR, ANDROID_GRADLE_REL_PATH);
+const IOS_PBXPROJ_PATH = path.join(APP_DIR, IOS_PBXPROJ_REL_PATH);
+
+/**
+ * Get the list of files managed by applyVersions()
+ */
+function getVersionManagedFiles() {
+  return [...VERSION_MANAGED_RELATIVE_PATHS];
+}
 
 /**
  * Read package.json
@@ -81,6 +102,30 @@ function writeVersionJson(data) {
   } catch (error) {
     throw new Error(`Failed to write version.json: ${error.message}`);
   }
+}
+
+/**
+ * Update a file with a regex replacement, ensuring at least one match.
+ */
+function updateFileWithRegex(filePath, regex, replacement) {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`File not found at ${filePath}`);
+  }
+
+  const contents = fs.readFileSync(filePath, 'utf8');
+  const matches = contents.match(regex);
+
+  if (!matches) {
+    throw new Error(`No matches for ${regex} in ${filePath}`);
+  }
+
+  const updated = contents.replace(regex, replacement);
+
+  if (updated !== contents) {
+    fs.writeFileSync(filePath, updated);
+  }
+
+  return matches.length;
 }
 
 /**
@@ -202,8 +247,20 @@ function bumpVersion(bumpType, platform = 'both') {
 
 /**
  * Apply version changes to files
+ *
+ * @param {string} version - Semantic version (X.Y.Z)
+ * @param {number|string} iosBuild - iOS build number
+ * @param {number|string} androidBuild - Android build number
+ * @param {object} [options] - Optional settings
+ * @param {boolean} [options.iosSuccess=true] - Whether the iOS build succeeded
+ * @param {boolean} [options.androidSuccess=true] - Whether the Android build succeeded
  */
-function applyVersions(version, iosBuild, androidBuild) {
+function applyVersions(
+  version,
+  iosBuild,
+  androidBuild,
+  { iosSuccess = true, androidSuccess = true } = {},
+) {
   // Validate version format (semver X.Y.Z)
   if (
     !version ||
@@ -229,8 +286,12 @@ function applyVersions(version, iosBuild, androidBuild) {
 
   console.log(`📝 Applying versions to files...`);
   console.log(`   Version: ${version}`);
-  console.log(`   iOS Build: ${iosNum}`);
-  console.log(`   Android Build: ${androidNum}`);
+  console.log(
+    `   iOS Build: ${iosNum} (${iosSuccess ? 'succeeded' : 'skipped'})`,
+  );
+  console.log(
+    `   Android Build: ${androidNum} (${androidSuccess ? 'succeeded' : 'skipped'})`,
+  );
 
   // Update package.json
   const pkg = readPackageJson();
@@ -238,12 +299,81 @@ function applyVersions(version, iosBuild, androidBuild) {
   writePackageJson(pkg);
   console.log(`✅ Updated package.json`);
 
-  // Update version.json
+  // Update version.json (conditionally per platform)
   const versionData = readVersionJson();
-  versionData.ios.build = iosNum;
-  versionData.android.build = androidNum;
+  const timestamp = new Date().toISOString();
+
+  if (iosSuccess) {
+    versionData.ios.build = iosNum;
+    versionData.ios.lastDeployed = timestamp;
+    console.log(
+      `✅ Updated iOS build number to ${iosNum} and lastDeployed timestamp`,
+    );
+  } else {
+    console.log(`⏭️  Skipped iOS version.json update (build did not succeed)`);
+  }
+
+  if (androidSuccess) {
+    versionData.android.build = androidNum;
+    versionData.android.lastDeployed = timestamp;
+    console.log(
+      `✅ Updated Android build number to ${androidNum} and lastDeployed timestamp`,
+    );
+  } else {
+    console.log(
+      `⏭️  Skipped Android version.json update (build did not succeed)`,
+    );
+  }
+
   writeVersionJson(versionData);
-  console.log(`✅ Updated version.json`);
+
+  // Update Android build.gradle versionCode
+  if (androidSuccess) {
+    const androidMatches = updateFileWithRegex(
+      ANDROID_GRADLE_PATH,
+      /versionCode\s+\d+/g,
+      `versionCode ${androidNum}`,
+    );
+    console.log(
+      `✅ Updated Android versionCode (${androidMatches} occurrence${
+        androidMatches === 1 ? '' : 's'
+      })`,
+    );
+  } else {
+    console.log(
+      `⏭️  Skipped Android build.gradle update (build did not succeed)`,
+    );
+  }
+
+  // Update iOS project version and marketing version
+  if (iosSuccess) {
+    const iosBuildMatches = updateFileWithRegex(
+      IOS_PBXPROJ_PATH,
+      /CURRENT_PROJECT_VERSION = \d+;/g,
+      `CURRENT_PROJECT_VERSION = ${iosNum};`,
+    );
+    console.log(
+      `✅ Updated iOS CURRENT_PROJECT_VERSION (${iosBuildMatches} occurrence${
+        iosBuildMatches === 1 ? '' : 's'
+      })`,
+    );
+  } else {
+    console.log(
+      `⏭️  Skipped iOS CURRENT_PROJECT_VERSION update (build did not succeed)`,
+    );
+  }
+
+  // Always update MARKETING_VERSION to keep it in sync with package.json
+  const iosMarketingMatches = updateFileWithRegex(
+    IOS_PBXPROJ_PATH,
+    /MARKETING_VERSION = \d+\.\d+\.\d+;/g,
+    `MARKETING_VERSION = ${version};`,
+  );
+  console.log(
+    `✅ Updated iOS MARKETING_VERSION (${iosMarketingMatches} occurrence${
+      iosMarketingMatches === 1 ? '' : 's'
+    })`,
+  );
 }
 
 /**
@@ -295,17 +425,54 @@ function main() {
       }
 
       case 'apply': {
-        // Apply version: apply <version> <iosBuild> <androidBuild>
+        // Apply version: apply <version> <iosBuild> <androidBuild> [iosResult] [androidResult]
         const version = args[1];
         const iosBuild = parseInt(args[2], 10);
         const androidBuild = parseInt(args[3], 10);
 
         if (!version || isNaN(iosBuild) || isNaN(androidBuild)) {
-          throw new Error('Usage: apply <version> <iosBuild> <androidBuild>');
+          throw new Error(
+            'Usage: apply <version> <iosBuild> <androidBuild> [iosResult] [androidResult]',
+          );
         }
 
-        applyVersions(version, iosBuild, androidBuild);
+        // Optional platform result args: "success" means succeeded, anything else means skipped
+        const iosSuccess = args[4] ? args[4] === 'success' : true;
+        const androidSuccess = args[5] ? args[5] === 'success' : true;
+
+        applyVersions(version, iosBuild, androidBuild, {
+          iosSuccess,
+          androidSuccess,
+        });
         console.log(`\n✅ Versions applied successfully`);
+        break;
+      }
+
+      case 'files': {
+        // List files managed by applyVersions()
+        const format = args[1];
+
+        if (format && !['--shell', '--json'].includes(format)) {
+          throw new Error('Usage: files [--shell|--json]');
+        }
+
+        const files = getVersionManagedFiles();
+
+        if (format === '--shell') {
+          console.log(files.join(' '));
+        } else if (format === '--json') {
+          console.log(JSON.stringify(files));
+        } else {
+          console.log(files.join('\n'));
+        }
+
+        if (process.env.GITHUB_OUTPUT) {
+          fs.appendFileSync(
+            process.env.GITHUB_OUTPUT,
+            `version_managed_files=${files.join(' ')}\n`,
+          );
+        }
+
         break;
       }
 
@@ -321,13 +488,22 @@ Commands:
   bump <type> <platform>        Bump version and calculate new build numbers
                                 type: major|minor|patch|build (default: build)
                                 platform: ios|android|both (default: both)
-  apply <version> <ios> <android>  Apply specific version and build numbers
+  apply <version> <ios> <android> [iosResult] [androidResult]
+                                  Apply specific version and build numbers
+                                  iosResult/androidResult: "success" to update,
+                                  any other value to skip (default: "success")
+  files [--shell|--json]        List files managed by applyVersions()
+                                default output: one path per line
+                                --shell: space-separated paths
+                                --json: JSON array
 
 Examples:
   node version-manager.cjs get
   node version-manager.cjs bump build both
   node version-manager.cjs bump patch ios
   node version-manager.cjs apply 2.7.0 180 109
+  node version-manager.cjs apply 2.7.0 180 109 success failure
+  node version-manager.cjs files --shell
         `);
         process.exit(command ? 1 : 0);
     }
@@ -346,6 +522,7 @@ if (require.main === module) {
 module.exports = {
   applyVersions,
   bumpVersion,
+  getVersionManagedFiles,
   getVersionInfo,
   readPackageJson,
   readVersionJson,

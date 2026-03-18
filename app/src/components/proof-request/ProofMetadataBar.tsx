@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -41,6 +41,7 @@ export const ProofMetadataBar: React.FC<ProofMetadataBarProps> = ({
             fontWeight="500"
             color={proofRequestColors.slate400}
             textTransform="uppercase"
+            allowFontScaling={false}
           >
             Proofs Requested
           </Text>
@@ -52,6 +53,7 @@ export const ProofMetadataBar: React.FC<ProofMetadataBarProps> = ({
           fontSize={12}
           fontWeight="500"
           color={proofRequestColors.slate400}
+          allowFontScaling={false}
         >
           •
         </Text>
@@ -62,6 +64,7 @@ export const ProofMetadataBar: React.FC<ProofMetadataBarProps> = ({
           fontSize={12}
           fontWeight="500"
           color={proofRequestColors.slate400}
+          allowFontScaling={false}
           testID={`${testID}-timestamp`}
         >
           {timestamp}

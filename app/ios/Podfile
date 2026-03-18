@@ -25,16 +25,64 @@ require Pod::Executable.execute_command("node", ["-p",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+require File.join(File.dirname(`node --print "require.resolve('expo/package.json', {paths: ['#{__dir__}/..']})"`.strip), "scripts/autolinking")
+
 project "Self.xcodeproj"
 
 # Define consistent iOS deployment target
-IOS_DEPLOYMENT_TARGET = "15.1"
+IOS_DEPLOYMENT_TARGET = "15.4"
 
 platform :ios, IOS_DEPLOYMENT_TARGET if !ENV["ACT"]
 prepare_react_native_project!
 
 flipper_enabled = ENV["NO_FLIPPER"] != "1"
 flipper_config = { "Flipper" => flipper_enabled ? "~> 0.125.0" : nil }
+
+def ios_simulator_arm64_supported?(xcframework_path)
+  return false unless Dir.exist?(xcframework_path)
+
+  Dir.children(xcframework_path).any? do |slice_name|
+    slice_name.include?("simulator") && slice_name.include?("arm64")
+  end
+end
+
+def simulator_arm64_audit_entries
+  [
+    {
+      name: "FingerprintPro",
+      path: "Pods/FingerprintPro/FingerprintPro.xcframework",
+    },
+    {
+      name: "IdensicMobileSDK",
+      path: "Pods/IdensicMobileSDK/IdensicMobileSDK.xcframework",
+    },
+    {
+      name: "IdensicMobileSDK_Fisherman",
+      path: "Pods/IdensicMobileSDK/IdensicMobileSDK_Fisherman.xcframework",
+    },
+    {
+      name: "OpenSSL",
+      path: "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework",
+    },
+    {
+      name: "libtesseract",
+      path: "Pods/SwiftyTesseract/SwiftyTesseract/libtesseract.xcframework",
+    },
+    {
+      name: "Hermes",
+      path: "Pods/hermes-engine/destroot/Library/Frameworks/universal/hermes.xcframework",
+    },
+  ]
+end
+
+def simulator_arm64_blockers
+  simulator_arm64_audit_entries.filter_map do |entry|
+    full_path = File.join(Dir.pwd, entry[:path])
+    next if ios_simulator_arm64_supported?(full_path)
+
+    "#{entry[:name]} (#{entry[:path]})"
+  end
+end
 
 linkage = ENV["USE_FRAMEWORKS"]
 if linkage != nil
@@ -55,6 +103,7 @@ def using_https_git_auth?
 end
 
 target "Self" do
+  use_expo_modules!
   # Native module exclusion for E2E testing is handled in react-native.config.cjs
   config = use_native_modules!
   # Skip NFCPassportReader for e2e testing to avoid build issues
@@ -83,7 +132,7 @@ target "Self" do
 
   # Explicitly declare Mixpanel to ensure it's available even in E2E builds
   # (NFCPassportReader also includes Mixpanel, but is skipped during E2E testing)
-  pod "Mixpanel-swift", :modular_headers => true
+  pod "Mixpanel-swift", "~> 5.0.0", :modular_headers => true
 
   pod "QKMRZScanner"
   pod "lottie-ios"
@@ -98,17 +147,23 @@ target "Self" do
     # Flipper設定は削除
   )
 
-  pod "Firebase", :modular_headers => true
-  pod "FirebaseCore", :modular_headers => true
-  pod "FirebaseCoreInternal", :modular_headers => true
-  pod "GoogleUtilities", :modular_headers => true
-  pod "FirebaseMessaging"
+  # Firebase pods removed - handled automatically by RNFirebase autolinking
+  # This resolves GoogleUtilities 7.x vs 8.x version conflicts
 
   if flipper_enabled
     pod "RCT-Folly", :podspec => "#{config[:reactNativePath]}/third-party-podspecs/RCT-Folly.podspec"
   end
 
   post_install do |installer|
+    simulator_arm64_blocking_pods = simulator_arm64_blockers
+    use_rosetta_simulator_builds = simulator_arm64_blocking_pods.any?
+
+    if use_rosetta_simulator_builds
+      Pod::UI.puts "Using Rosetta iOS simulator builds; arm64 simulator slices missing for: #{simulator_arm64_blocking_pods.join(', ')}".yellow
+    else
+      Pod::UI.puts "All audited binary pods include arm64 simulator slices; enabling native arm64 iOS simulator builds.".green
+    end
+
     installer.generated_projects.each do |project|
       project.targets.each do |target|
         if target.name == "RNZipArchive"
@@ -194,8 +249,8 @@ target "Self" do
       target.build_configurations.each do |config|
         config.build_settings["CODE_SIGNING_ALLOWED"] = "NO"
 
-        # Fix for Rosetta emulator builds - exclude arm64 for simulator
-        config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+        # Keep the current simulator flow stable until every audited binary pod ships arm64 simulator slices.
+        config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = use_rosetta_simulator_builds ? "arm64" : ""
       end
     end
 

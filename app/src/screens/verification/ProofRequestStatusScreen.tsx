@@ -1,16 +1,15 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { LottieViewProps } from 'lottie-react-native';
-import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import loadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
 import {
   BodyText,
@@ -214,7 +213,7 @@ const SuccessScreen: React.FC = () => {
         marginTop={20}
         backgroundColor={black}
       >
-        <LottieView
+        <DelayedLottieView
           autoPlay
           loop={animationSource === loadingAnimation}
           source={animationSource}

@@ -46,10 +46,10 @@ Versions are controlled by PR labels:
 
 ### Deployment Tracks
 
-| Branch | Track | iOS Target | Android Target |
-|--------|-------|------------|----------------|
-| dev | internal | TestFlight Internal | Play Store Internal |
-| main | production | App Store | Play Store Production |
+| Branch | Track      | iOS Target          | Android Target        |
+| ------ | ---------- | ------------------- | --------------------- |
+| dev    | internal   | TestFlight Internal | Play Store Internal   |
+| main   | production | App Store           | Play Store Production |
 
 ## 🏗️ Architecture
 
@@ -74,6 +74,7 @@ Versions are controlled by PR labels:
 ### Caching Strategy
 
 Build times are optimized with caching:
+
 - Yarn dependencies
 - Ruby gems
 - CocoaPods (iOS)
@@ -87,6 +88,7 @@ Average build times with cache: iOS ~15min, Android ~10min
 ### Required Secrets
 
 #### iOS
+
 - `IOS_APP_IDENTIFIER` - Bundle ID
 - `IOS_TEAM_ID` - Apple Team ID
 - `IOS_CONNECT_KEY_ID` - App Store Connect API Key ID
@@ -97,6 +99,7 @@ Average build times with cache: iOS ~15min, Android ~10min
 - `IOS_P12_PASSWORD` - Certificate password
 
 #### Android
+
 - `ANDROID_PACKAGE_NAME` - Package name
 - `ANDROID_KEYSTORE` - Keystore file (base64)
 - `ANDROID_KEYSTORE_PASSWORD` - Keystore password
@@ -105,25 +108,30 @@ Average build times with cache: iOS ~15min, Android ~10min
 - `ANDROID_PLAY_STORE_JSON_KEY` - Service account key
 
 #### Notifications
+
 - `SLACK_API_TOKEN` - For deployment notifications
 - `SLACK_CHANNEL_ID` - Channel for build uploads
 
 ### Environment Variables
 
 Set in workflow files:
+
 ```yaml
-NODE_VERSION: 18
+NODE_VERSION: 22
 RUBY_VERSION: 3.2
 JAVA_VERSION: 17
 ANDROID_API_LEVEL: 35
 ANDROID_NDK_VERSION: 27.0.12077973
 ```
 
+The authoritative Node version is in `.nvmrc`; workflows may read it from there instead of a static env var.
+
 ## 🏷️ Git Tags & Releases
 
 ### Automatic Tags (Production Only)
 
 When deploying to production, creates:
+
 - `v2.5.5` - Main version tag
 - `v2.5.5-ios-148` - iOS with build number
 - `v2.5.5-android-82` - Android with build number
@@ -131,6 +139,7 @@ When deploying to production, creates:
 ### GitHub Releases
 
 Automatically created for production deployments with:
+
 - Changelog from commits
 - Build information
 - Links to app stores
@@ -140,19 +149,23 @@ Automatically created for production deployments with:
 ### Common Issues
 
 #### "Play Store upload failed: Insufficient permissions"
+
 The service account needs permissions in Google Play Console. The build file is saved locally and can be uploaded manually.
 
 #### Cache not working
+
 - Check if lock files changed (`yarn.lock`, `Gemfile.lock`)
 - Cache keys include version numbers that can be bumped
 - First build on new branch may be slower
 
 #### iOS build fails with provisioning profile error
+
 - Ensure secrets are up to date
 - Check certificate expiration
 - Verify bundle ID matches
 
 #### Version conflicts
+
 - `version.json` tracks the source of truth
 - Always higher than store versions
 - Automatically incremented each build
@@ -171,6 +184,7 @@ The service account needs permissions in Google Play Console. The build file is 
 ### Slack Notifications
 
 Successful deployments post to Slack with:
+
 - Platform and version info
 - Download links for the builds
 - Deployment track (internal/production)
@@ -178,6 +192,7 @@ Successful deployments post to Slack with:
 ### Deployment History
 
 View all deployments:
+
 1. Go to [Actions](../../../actions)
 2. Filter by workflow: "Mobile App Deployments"
 3. Check run history and logs
@@ -200,18 +215,20 @@ View all deployments:
 ### Cache Busting
 
 If builds are failing due to cache issues:
+
 1. Increment cache version in workflow:
    ```yaml
-   GH_CACHE_VERSION: v2  # Increment this
+   GH_CACHE_VERSION: v2 # Increment this
    ```
 
 ### Certificate Renewal
 
 Before certificates expire:
+
 1. Generate new certificates/profiles
 2. Update GitHub Secrets
 3. Test with manual deployment first
 
 ---
 
-For local development and manual release processes, see [`app/README.md`](../app/README.md)
+For local development and manual release processes, see [`app/README.md`](../README.md)

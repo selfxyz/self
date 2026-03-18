@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -7,7 +7,7 @@
  * These tests verify critical interface requirements without conditional expects
  */
 
-import { PassportReader } from '@/integrations/nfc/passportReader';
+import { PassportReader, reset } from '@/integrations/nfc/passportReader';
 
 describe('PassportReader Simple Contract Tests', () => {
   describe('Critical Interface Requirements', () => {
@@ -22,15 +22,14 @@ describe('PassportReader Simple Contract Tests', () => {
       expect((PassportReader as any).scan).toBeUndefined();
     });
 
-    it('should have reset method', () => {
-      // This should always exist
-      expect(PassportReader.reset).toBeDefined();
-      expect(typeof PassportReader.reset).toBe('function');
+    it('should export reset as a standalone function', () => {
+      expect(reset).toBeDefined();
+      expect(typeof reset).toBe('function');
     });
 
     it('should have scanPassport with correct parameter count', () => {
-      // scanPassport should take exactly 9 parameters
-      expect(PassportReader.scanPassport.length).toBe(9);
+      // scanPassport should take exactly 10 parameters including sessionId
+      expect(PassportReader.scanPassport.length).toBe(10);
     });
 
     it('should allow configure to be optional', () => {
@@ -92,14 +91,14 @@ describe('PassportReader Simple Contract Tests', () => {
           false,
           false,
           false,
+          'session-id',
         );
       }).not.toThrow(TypeError);
     });
 
-    it('should not crash when calling reset', () => {
-      // Should be callable
+    it('should not crash when calling reset export', () => {
       expect(() => {
-        PassportReader.reset();
+        reset();
       }).not.toThrow(TypeError);
     });
   });
@@ -113,7 +112,7 @@ describe('PassportReader Simple Contract Tests', () => {
 
     it('should have proper method types', () => {
       // All defined methods should be functions
-      expect(typeof PassportReader.reset).toBe('function');
+      expect(typeof reset).toBe('function');
       expect(typeof PassportReader.scanPassport).toBe('function');
 
       // Optional methods should be function or undefined

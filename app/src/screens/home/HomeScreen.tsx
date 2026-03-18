@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -241,7 +241,12 @@ const HomeScreen: React.FC = () => {
   }
 
   return (
-    <YStack backgroundColor={'#F8FAFC'} flex={1} alignItems="center">
+    <YStack
+      backgroundColor={'#F8FAFC'}
+      flex={1}
+      alignItems="center"
+      testID="home-screen-root"
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
         flex={1}

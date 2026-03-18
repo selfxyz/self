@@ -1,0 +1,129 @@
+name: RN SDK Test App CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "packages/rn-sdk/**"
+      - "packages/rn-sdk-test-app/**"
+      - "packages/kmp-sdk/**"
+      - "packages/self-sdk-swift/**"
+      - ".github/workflows/rn-sdk-test-app-ci.yml"
+      - ".github/actions/**"
+  push:
+    branches: [dev, staging, main]
+    paths:
+      - "packages/rn-sdk/**"
+      - "packages/rn-sdk-test-app/**"
+      - "packages/kmp-sdk/**"
+      - "packages/self-sdk-swift/**"
+      - ".github/workflows/rn-sdk-test-app-ci.yml"
+      - ".github/actions/**"
+
+jobs:
+  types:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Check for nested require() in tests
+        run: |
+          if grep -rE "require\(['\"]react(-native)?['\"])" packages/rn-sdk/src/__tests__/ 2>/dev/null; then
+            echo "❌ Found nested require() patterns that cause OOM in CI"
+            exit 1
+          fi
+          echo "✅ No nested require() patterns found"
+      - name: Build common
+        run: yarn workspace @selfxyz/common build
+      - name: Build mobile-sdk-alpha
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+      - name: Build webview-bridge
+        run: yarn workspace @selfxyz/webview-bridge build
+      - name: Build webview-app
+        run: yarn workspace @selfxyz/webview-app build
+      - name: Typecheck rn-sdk
+        run: yarn workspace @selfxyz/rn-sdk typecheck
+      - name: Test rn-sdk
+        run: yarn workspace @selfxyz/rn-sdk test
+      - name: Build rn-sdk types
+        run: yarn workspace @selfxyz/rn-sdk tsup
+      - name: Typecheck rn-sdk-test-app
+        run: yarn workspace @selfxyz/rn-sdk-test-app types
+
+  android-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Generate debug keystore
+        run: |
+          keytool -genkeypair -v -keystore packages/rn-sdk-test-app/android/app/debug.keystore \
+            -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
+      - name: Publish KMP SDK to mavenLocal
+        run: |
+          cd packages/kmp-sdk && ./gradlew :shared:publishToMavenLocal --quiet
+      - name: Build Android debug APK
+        run: |
+          chmod +x packages/rn-sdk-test-app/android/gradlew
+          cd packages/rn-sdk-test-app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache
+
+  ios-build:
+    runs-on: namespace-profile-apple-silicon-6cpu
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - name: Generate token for private dependencies
+        uses: ./.github/actions/generate-github-token
+        id: github-token
+        with:
+          app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
+          private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
+          configure-netrc: "true"
+      - name: Configure git for HTTPS dependency fetch
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build common
+        run: yarn workspace @selfxyz/common build
+      - name: Build mobile-sdk-alpha iOS artifacts
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build:ios
+      - name: Build mobile-sdk-alpha TypeScript bundle
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build:ts-only
+      - name: Build webview-bridge
+        run: yarn workspace @selfxyz/webview-bridge build
+      - name: Build webview-app
+        run: yarn workspace @selfxyz/webview-app build
+      - name: Build rn-sdk (includes asset copy)
+        run: yarn workspace @selfxyz/rn-sdk build
+      - name: Install CocoaPods dependencies
+        working-directory: packages/rn-sdk-test-app/ios
+        run: pod install
+      - name: Find iOS Simulator
+        id: sim
+        uses: ./.github/actions/find-ios-simulator
+      - name: Build iOS app
+        working-directory: packages/rn-sdk-test-app/ios
+        run: |
+          xcodebuild -workspace SelfRNTestApp.xcworkspace \
+            -scheme SelfRNTestApp \
+            -sdk iphonesimulator \
+            -destination "id=${{ steps.sim.outputs.id }}" \
+            ONLY_ACTIVE_ARCH=YES \
+            build

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -68,18 +68,34 @@ export const ProofRequestCard: React.FC<ProofRequestCardProps> = ({
   // Build request message with highlighted app name and document type
   const requestMessage = (
     <>
-      <Text color={proofRequestColors.white} fontFamily={dinot}>
+      <Text
+        color={proofRequestColors.white}
+        fontFamily={dinot}
+        allowFontScaling={false}
+      >
         {appName}
       </Text>
-      <Text color={proofRequestColors.slate400} fontFamily={dinot}>
+      <Text
+        color={proofRequestColors.slate400}
+        fontFamily={dinot}
+        allowFontScaling={false}
+      >
         {
           ' is requesting access to the following information from your verified '
         }
       </Text>
-      <Text color={proofRequestColors.white} fontFamily={dinot}>
+      <Text
+        color={proofRequestColors.white}
+        fontFamily={dinot}
+        allowFontScaling={false}
+      >
         {documentType}
       </Text>
-      <Text color={proofRequestColors.slate400} fontFamily={dinot}>
+      <Text
+        color={proofRequestColors.slate400}
+        fontFamily={dinot}
+        allowFontScaling={false}
+      >
         .
       </Text>
     </>

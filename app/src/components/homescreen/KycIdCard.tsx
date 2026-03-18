@@ -1,24 +1,25 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { FC } from 'react';
 import React from 'react';
-import { Image, View } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import { Text, XStack, YStack } from 'tamagui';
+import { Image } from 'react-native';
+import { YStack } from 'tamagui';
 
 import { deserializeApplicantInfo } from '@selfxyz/common';
 import { commonNames } from '@selfxyz/common/constants/countries';
 import type { KycData } from '@selfxyz/common/utils/types';
 import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
-import { white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import CardBackgroundId1 from '@/assets/images/card_background_id1.png';
 import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
+import CardBottomContent from '@/components/homescreen/CardBottomContent';
+import CardHeader from '@/components/homescreen/CardHeader';
 import { cardStyles } from '@/components/homescreen/cardStyles';
 import { useCardDimensions } from '@/hooks/useCardDimensions';
+import { getCountryAdjective } from '@/utils/countryDemonyms';
 
 interface KycIdCardProps {
   idDocument: KycData;
@@ -40,64 +41,6 @@ function getKycDocTitle(idType: string): string {
   if (normalized.includes('national')) return 'NATIONAL ID';
   if (normalized.includes('residence')) return 'RESIDENCE PERMIT';
   return 'ID CARD';
-}
-
-/**
- * Derives a demonym-like adjective from the country code.
- * Falls back to the country code if no mapping found.
- */
-function getCountryAdjective(countryCode: string): string {
-  const name = commonNames[countryCode as keyof typeof commonNames];
-  if (!name) return countryCode;
-
-  const demonyms: Record<string, string> = {
-    USA: 'US',
-    GBR: 'UK',
-    CAN: 'CANADIAN',
-    AUS: 'AUSTRALIAN',
-    IND: 'INDIAN',
-    DEU: 'GERMAN',
-    FRA: 'FRENCH',
-    JPN: 'JAPANESE',
-    KOR: 'KOREAN',
-    BRA: 'BRAZILIAN',
-    MEX: 'MEXICAN',
-    ITA: 'ITALIAN',
-    ESP: 'SPANISH',
-    NLD: 'DUTCH',
-    PRT: 'PORTUGUESE',
-    CHN: 'CHINESE',
-    RUS: 'RUSSIAN',
-    KEN: 'KENYAN',
-    NGA: 'NIGERIAN',
-    ZAF: 'SOUTH AFRICAN',
-    SGP: 'SINGAPOREAN',
-    MYS: 'MALAYSIAN',
-    PHL: 'PHILIPPINE',
-    IDN: 'INDONESIAN',
-    THA: 'THAI',
-    VNM: 'VIETNAMESE',
-    ARE: 'UAE',
-    SAU: 'SAUDI',
-    EGY: 'EGYPTIAN',
-    TUR: 'TURKISH',
-    POL: 'POLISH',
-    SWE: 'SWEDISH',
-    NOR: 'NORWEGIAN',
-    DNK: 'DANISH',
-    FIN: 'FINNISH',
-    CHE: 'SWISS',
-    AUT: 'AUSTRIAN',
-    BEL: 'BELGIAN',
-    IRL: 'IRISH',
-    NZL: 'NEW ZEALAND',
-    ARG: 'ARGENTINE',
-    COL: 'COLOMBIAN',
-    PER: 'PERUVIAN',
-    CHL: 'CHILEAN',
-  };
-
-  return demonyms[countryCode] || name.toUpperCase();
 }
 
 /**
@@ -130,7 +73,7 @@ const KycIdCard: FC<KycIdCardProps> = ({
   }
 
   const docTitle = getKycDocTitle(idType);
-  const countryAdj = getCountryAdjective(country);
+  const countryAdj = getCountryAdjective(country, commonNames);
 
   const {
     cardWidth,
@@ -170,8 +113,8 @@ const KycIdCard: FC<KycIdCardProps> = ({
         height={cardHeight}
         borderRadius={borderRadius}
         overflow="hidden"
-        backgroundColor="#000000"
-        shadowColor="#000"
+        backgroundColor={black}
+        shadowColor={black}
         shadowOffset={{ width: 0, height: 4 }}
         shadowOpacity={0.25}
         shadowRadius={14}
@@ -180,52 +123,17 @@ const KycIdCard: FC<KycIdCardProps> = ({
         alignItems="stretch"
       >
         {/* Header Section - Dark gradient (same as IdCard) */}
-        <View style={{ width: cardWidth * 1.05, height: headerHeight }}>
-          <LinearGradient
-            colors={['#000000', '#343434']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              flex: 1,
-              paddingHorizontal: figmaPadding,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            {/* Logo + Text */}
-            <XStack alignItems="center" gap={headerGap}>
-              {/* Country flag */}
-              <RoundFlag countryCode={country} size={logoSize} />
-
-              {/* Text container */}
-              <YStack gap={2}>
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.header}
-                  fontWeight="500"
-                  color={white}
-                  textTransform="uppercase"
-                  lineHeight={fontSize.header * 1.1}
-                >
-                  {headerTitle}
-                </Text>
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.subtitle}
-                  color="#9193A2"
-                  letterSpacing={0.7}
-                  textTransform="uppercase"
-                >
-                  {subtitleText}
-                </Text>
-              </YStack>
-            </XStack>
-
-            {/* Self logo on right */}
-            <SelfLogoPending width={logoSize * 0.56 * 5} height={logoSize} />
-          </LinearGradient>
-        </View>
+        <CardHeader
+          variant="gradient"
+          title={headerTitle}
+          subtitle={subtitleText}
+          headerHeight={headerHeight}
+          figmaPadding={figmaPadding}
+          headerGap={headerGap}
+          fontSize={fontSize}
+          logo={<RoundFlag countryCode={country} size={logoSize} />}
+          rightElement={<SelfLogoPending width={logoSize} height={logoSize} />}
+        />
 
         {/* Body Section - Colorful wave pattern (same as IdCard real documents) */}
         {selected && (
@@ -238,56 +146,19 @@ const KycIdCard: FC<KycIdCardProps> = ({
             />
 
             {/* Bottom content: Left text + Right badge */}
-            <XStack
-              position="absolute"
-              bottom={padding}
-              left={padding}
-              right={padding}
-              justifyContent="space-between"
-              alignItems="flex-end"
-            >
-              {/* Bottom Left: ID + Document Label */}
-              <YStack gap={4}>
-                {truncatedId ? (
-                  <Text
-                    fontFamily={plexMono}
-                    fontSize={fontSize.bottomId}
-                    color={white}
-                  >
-                    {truncatedId}
-                  </Text>
-                ) : null}
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.bottomLabel}
-                  fontWeight="500"
-                  color={white}
-                  textTransform="uppercase"
-                  letterSpacing={0.6}
-                >
-                  {bottomLabel}
-                </Text>
-              </YStack>
-
-              {/* STANDARD Badge - KYC documents always show STANDARD */}
-              <YStack
-                backgroundColor="rgba(0, 0, 0, 0.5)"
-                borderRadius={30}
-                paddingHorizontal={padding * 0.6}
-                paddingVertical={padding * 0.3}
-              >
-                <Text
-                  fontFamily={dinot}
-                  fontSize={fontSize.badge}
-                  fontWeight="500"
-                  color={white}
-                  textTransform="uppercase"
-                  letterSpacing={0.6}
-                >
-                  STANDARD
-                </Text>
-              </YStack>
-            </XStack>
+            <CardBottomContent
+              truncatedId={truncatedId}
+              bottomLabel={bottomLabel}
+              badges={[
+                {
+                  text: 'STANDARD',
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  textColor: white,
+                },
+              ]}
+              padding={padding}
+              fontSize={fontSize}
+            />
           </YStack>
         )}
       </YStack>

@@ -1,9 +1,8 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import forge from 'node-forge';
-import { Platform } from 'react-native';
 import type { Socket } from 'socket.io-client';
 import socketIo from 'socket.io-client';
 import { v4 } from 'uuid';
@@ -211,7 +210,7 @@ const _buildSubmitRequest = (uuid: string | null, encryptedPayload: EncryptedPay
   };
 };
 
-const getPlatform = (): 'ios' | 'android' => (Platform.OS === 'ios' ? 'ios' : 'android');
+const getPlatform = (selfClient: SelfClient): string => selfClient?.config?.platform ?? 'unknown';
 
 export interface ProvingState {
   currentState: ProvingStateType;
@@ -396,6 +395,19 @@ export const useProvingStore = create<ProvingState>((set, get) => {
   function setupActorSubscriptions(newActor: AnyActorRef, selfClient: SelfClient) {
     let lastTransition = Date.now();
     let lastEvent: AnyEventObject = { type: 'init' };
+
+    const emitVerificationComplete = (success: boolean, error?: { code: string; message: string }) => {
+      const selfApp = selfClient.getSelfAppState().selfApp;
+      const provingState = get();
+
+      selfClient.emit(SdkEvents.VERIFICATION_COMPLETE, {
+        success,
+        userId: selfApp?.userId,
+        verificationId: provingState.uuid ?? undefined,
+        error,
+      });
+    };
+
     newActor.on('*', (event: AnyEventObject) => {
       lastEvent = event;
     });
@@ -470,6 +482,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient.getSelfAppState().handleProofResult(true);
         }
 
+        emitVerificationComplete(true);
+
         // Disable keychain error modal when proving flow ends
         selfClient.navigation?.disableKeychainErrorModal?.();
       }
@@ -487,15 +501,27 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       if (state.value === 'failure') {
+        const { error_code, reason } = get();
+
         if (get().circuitType === 'disclose') {
-          const { error_code, reason } = get();
           selfClient.getSelfAppState().handleProofResult(false, error_code ?? undefined, reason ?? undefined);
         }
+
+        emitVerificationComplete(false, {
+          code: error_code ?? 'proof_failure',
+          message: reason ?? 'Proof verification failed',
+        });
       }
       if (state.value === 'error') {
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, 'error', 'error');
         }
+
+        emitVerificationComplete(false, {
+          code: get().error_code ?? 'error',
+          message: get().reason ?? 'Unexpected proving error',
+        });
+
         // Disable keychain error modal when proving flow ends
         selfClient.navigation?.disableKeychainErrorModal?.();
       }
@@ -540,11 +566,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           set({ attestation: attestationData });
           const attestationToken = Buffer.from(attestationData).toString('utf-8');
 
-          const { userPubkey, serverPubkey, imageHash, verified } = validatePKIToken(attestationToken, __DEV__);
+          const { userPubkey, serverPubkey, imageHash, verified } = validatePKIToken(
+            attestationToken,
+            selfClient?.config?.debug ?? false,
+          );
 
           const pcr0Mapping = await checkPCR0Mapping(imageHash);
 
-          if (!__DEV__ && !pcr0Mapping) {
+          if (!(selfClient?.config?.debug ?? false) && !pcr0Mapping) {
             console.error('PCR0 mapping not found');
             actor!.send({ type: 'CONNECT_ERROR' });
             return;
@@ -1016,17 +1045,30 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       set({ passportData, secret, env });
       set({ circuitType });
-      // Skip parsing for disclosure if passport is already parsed
+      // Only skip parsing when the document has already been parsed for non-DSC circuits.
       // Re-parsing would overwrite the alternative CSCA used during registration and is unnecessary
-      // skip also the register circuit as the passport already got parsed in during the dsc step
-      console.log('circuitType', circuitType);
-      if (circuitType !== 'dsc') {
-        console.log('skipping id document parsing');
-        actor.send({ type: 'FETCH_DATA' });
-        selfClient.trackEvent(ProofEvents.FETCH_DATA_STARTED);
-      } else {
+      // for already parsed passports or ID cards.
+      // Aadhaar and KYC documents do not require DSC parsing at all.
+      const needsDscParsing =
+        passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card';
+      const hasParsedDsc = needsDscParsing && Boolean(passportData.dsc_parsed?.authorityKeyIdentifier);
+
+      if (circuitType === 'dsc' && !needsDscParsing) {
+        console.error(`DSC circuit is not supported for ${passportData.documentCategory} documents`);
+        selfClient.trackEvent(ProofEvents.PROOF_FAILED, {
+          message: `DSC circuit not supported for ${passportData.documentCategory}`,
+        });
+        actor.send({ type: 'ERROR' });
+        return;
+      }
+
+      const shouldParseDocument = circuitType === 'dsc' || (needsDscParsing && !hasParsedDsc);
+
+      if (shouldParseDocument) {
         actor.send({ type: 'PARSE_ID_DOCUMENT' });
         selfClient.trackEvent(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
+      } else {
+        actor.send({ type: 'FETCH_DATA' });
       }
     },
 
@@ -1129,14 +1171,15 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         switch (passportData.documentCategory) {
           case 'passport':
           case 'id_card':
-            if (!passportData?.dsc_parsed) {
-              selfClient.logProofEvent('error', 'Missing parsed DSC', context, {
+            if (!passportData?.dsc_parsed?.authorityKeyIdentifier) {
+              const docType = passportData.documentCategory;
+              selfClient.logProofEvent('error', `Missing parsed DSC in ${docType} data`, context, {
                 failure: 'PROOF_FAILED_DATA_FETCH',
                 duration_ms: Date.now() - startTime,
               });
-              console.error('Missing parsed DSC in passport data');
+              console.error(`Missing parsed DSC in ${docType} data`);
               selfClient.trackEvent(ProofEvents.FETCH_DATA_FAILED, {
-                message: 'Missing parsed DSC in passport data',
+                message: `Missing parsed DSC in ${docType} data`,
               });
               actor!.send({ type: 'FETCH_ERROR' });
               return;
@@ -1710,7 +1753,7 @@ const createProofContext = (
     circuitType: provingState.circuitType || null,
     currentState: provingState.currentState || 'unknown-state',
     stage,
-    platform: getPlatform(),
+    platform: getPlatform(selfClient),
     ...overrides,
   };
 };

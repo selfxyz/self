@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -146,7 +146,7 @@ function usingHTTPSGitAuth() {
   }
 }
 
-function clonePrivateRepo(repoName, localPath) {
+function clonePrivateRepo(repoName, localPath, commit) {
   log(`Setting up ${repoName}...`, 'info');
 
   let cloneUrl;
@@ -181,7 +181,16 @@ function clonePrivateRepo(repoName, localPath) {
   const isCredentialedUrl = isCI && (appToken || repoToken);
   const quietFlag = isCredentialedUrl ? '--quiet' : '';
   const targetDir = path.basename(localPath);
-  const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" "${targetDir}"`;
+
+  // If commit is specified, clone without branch restriction and checkout commit
+  // Otherwise, clone the branch as before
+  let cloneCommand;
+  if (commit) {
+    log(`Using specific commit: ${commit}`, 'info');
+    cloneCommand = `git clone ${quietFlag} "${cloneUrl}" "${targetDir}"`;
+  } else {
+    cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" "${targetDir}"`;
+  }
 
   try {
     if (isCredentialedUrl) {
@@ -190,6 +199,18 @@ function clonePrivateRepo(repoName, localPath) {
     } else {
       runCommand(cloneCommand);
     }
+
+    // If commit is specified, checkout that commit
+    if (commit) {
+      const checkoutCommand = `cd "${targetDir}" && git checkout ${commit}`;
+      if (isCredentialedUrl) {
+        runCommand(checkoutCommand, { stdio: 'pipe' });
+      } else {
+        runCommand(checkoutCommand);
+      }
+      log(`Checked out commit ${commit}`, 'success');
+    }
+
     log(`Successfully cloned ${repoName}`, 'success');
     return true; // Return true to indicate successful clone
   } catch (error) {
@@ -220,14 +241,14 @@ function validateSetup(modulePath, validationFiles, repoName) {
 }
 
 function setupPrivateModule(module) {
-  const { repoName, localPath, validationFiles } = module;
+  const { repoName, localPath, validationFiles, commit } = module;
   log(`Starting setup of ${repoName}...`, 'info');
 
   // Remove existing module
   removeExistingModule(localPath, repoName);
 
   // Clone the private repository
-  const cloneSuccessful = clonePrivateRepo(repoName, localPath);
+  const cloneSuccessful = clonePrivateRepo(repoName, localPath, commit);
 
   // If clone was skipped (e.g., in forked PRs), exit gracefully
   if (cloneSuccessful === false) {
