@@ -103,24 +103,18 @@ describe("OFAC Upgrade Path Test", function () {
     expect(await actors.registryKyc.getNameAndYobOfacRoot()).to.equal(initialYobRoot);
     console.log(`  State preserved: DOB=${initialDobRoot}, YOB=${initialYobRoot}`);
 
-    // --- Phase 4: Configure mock verifier for proof-based updates ---
+    // --- Phase 4: Configure mock verifier and TEE address for proof-based updates ---
+    const [deployer] = await ethers.getSigners();
     await actors.registryKyc.updateGCPJWTVerifier(mockVerifier.target);
     await actors.registryKyc.updateGCPRootCAPubkeyHash(GCP_ROOT_CA_PUBKEY_HASH);
+    await actors.registryKyc.updateTEE(deployer.address);
 
     // --- Phase 5: Call updateOfacRootsWithProof ---
-    const passportRoots = [100n, 200n, 300n];
-    const aadhaarRoots = [400n, 500n];
-    const idCardRoots = [600n, 700n];
     const kycRoots = [800n, 900n];
 
-    const passportHash = ethers.sha256(ethers.solidityPacked(["uint256", "uint256", "uint256"], passportRoots));
-    const aadhaarHash = ethers.sha256(ethers.solidityPacked(["uint256", "uint256"], aadhaarRoots));
-    const idCardHash = ethers.sha256(ethers.solidityPacked(["uint256", "uint256"], idCardRoots));
-    const kycHash = ethers.sha256(ethers.solidityPacked(["uint256", "uint256"], kycRoots));
-    const registryHashes: [string, string, string, string] = [passportHash, aadhaarHash, idCardHash, kycHash];
-
-    const globalHash = ethers.sha256(ethers.solidityPacked(["bytes32", "bytes32", "bytes32", "bytes32"], registryHashes));
-    const [p0, p1, p2] = packUint256ToHexFields(BigInt(globalHash));
+    // Compute roots hash (nonce for the proof)
+    const rootsHash = ethers.sha256(ethers.solidityPacked(["uint256", "uint256"], kycRoots));
+    const [p0, p1, p2] = packUint256ToHexFields(BigInt(rootsHash));
 
     const pubSignals: bigint[] = [
       GCP_ROOT_CA_PUBKEY_HASH,
@@ -136,16 +130,15 @@ describe("OFAC Upgrade Path Test", function () {
       c: [1n, 2n] as [bigint, bigint],
     };
 
-    // Call from non-owner (proof IS authorization)
+    // Call from TEE address (deployer)
     const proofTx = await actors.registryKyc
-      .connect(actors.user1)
+      .connect(deployer)
       .updateOfacRootsWithProof(
         mockProof.a,
         mockProof.b,
         mockProof.c,
         pubSignals,
         kycRoots,
-        registryHashes,
       );
     await proofTx.wait();
 

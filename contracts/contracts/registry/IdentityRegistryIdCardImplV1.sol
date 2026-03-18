@@ -585,22 +585,19 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
 
     /// @notice Updates OFAC roots via proof-verified TEE attestation.
     /// @dev Verifies the Groth16 proof, validates TEE attestation claims, checks
-    /// this registry's roots hash against registryHashes[2], and verifies the
-    /// global rootsHash commitment. Restricted to the TEE address. The proof provides
+    /// this registry's roots hash against the eat_nonce from the proof. Restricted to the TEE address. The proof provides
     /// cryptographic verification, and onlyTEE provides access control.
     /// @param pA Groth16 proof element A.
     /// @param pB Groth16 proof element B.
     /// @param pC Groth16 proof element C.
     /// @param pubSignals Circuit public signals [rootCA, eatNonce[0-2], unused, imageHash[0-2], date[0-11]].
     /// @param roots This registry's roots: [nameAndDob, nameAndYob].
-    /// @param registryHashes All 4 registry hashes ordered alphabetically by registry key.
     function updateOfacRootsWithProof(
         uint256[2] calldata pA,
         uint256[2][2] calldata pB,
         uint256[2] calldata pC,
         uint256[20] calldata pubSignals,
-        uint256[] calldata roots,
-        bytes32[4] calldata registryHashes
+        uint256[] calldata roots
     ) external onlyProxy onlyTEE {
         if (roots.length != 2) revert InvalidRootsCount();
 
@@ -626,18 +623,12 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
         if (currentTimestamp + 1 hours < block.timestamp) revert INVALID_TIMESTAMP();
         if (currentTimestamp > block.timestamp + 1 hours) revert INVALID_TIMESTAMP();
 
-        // Verify this registry's roots hash matches registryHashes[2] (IdentityRegistryIdCard)
+        // Verify roots hash matches eat_nonce from proof
         bytes32 myHash = sha256(abi.encodePacked(roots[0], roots[1]));
-        if (myHash != registryHashes[2]) revert InvalidRootsHash();
-
-        // Verify global rootsHash matches eat_nonce from proof
         uint256 rootsHashFromProof = GCPJWTHelper.unpackAndDecodeHexPubkey(
             pubSignals[1], pubSignals[2], pubSignals[3]
         );
-        uint256 globalHash = uint256(sha256(abi.encodePacked(
-            registryHashes[0], registryHashes[1], registryHashes[2], registryHashes[3]
-        )));
-        if (globalHash != rootsHashFromProof) revert InvalidRootsHash();
+        if (uint256(myHash) != rootsHashFromProof) revert InvalidRootsHash();
 
         // Update this registry's roots with rolling window: [nameAndDob, nameAndYob]
         _prevNameAndDobOfacRoot = _nameAndDobOfacRoot;

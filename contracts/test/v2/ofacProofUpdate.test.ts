@@ -44,29 +44,12 @@ function packUint256ToHexFields(value: bigint): [bigint, bigint, bigint] {
 }
 
 /**
- * Computes per-registry sha256 hashes matching on-chain sha256(abi.encodePacked(...)).
- * Returns [passportHash, aadhaarHash, idCardHash, kycHash] — alphabetical by registry key.
+ * Computes sha256(abi.encodePacked(roots...)) for a set of roots.
+ * This is the nonce used in the proof for each registry.
  */
-function computeRegistryHashes(
-  passportRoots: bigint[],
-  aadhaarRoots: bigint[],
-  idCardRoots: bigint[],
-  kycRoots: bigint[],
-): [string, string, string, string] {
-  const passportHash = ethers.sha256(
-    ethers.solidityPacked(["uint256", "uint256", "uint256"], passportRoots),
-  );
-  const aadhaarHash = ethers.sha256(ethers.solidityPacked(["uint256", "uint256"], aadhaarRoots));
-  const idCardHash = ethers.sha256(ethers.solidityPacked(["uint256", "uint256"], idCardRoots));
-  const kycHash = ethers.sha256(ethers.solidityPacked(["uint256", "uint256"], kycRoots));
-  return [passportHash, aadhaarHash, idCardHash, kycHash];
-}
-
-/**
- * Computes the global rootsHash = sha256(abi.encodePacked(registryHashes[0..3])).
- */
-function computeGlobalHash(registryHashes: [string, string, string, string]): string {
-  return ethers.sha256(ethers.solidityPacked(["bytes32", "bytes32", "bytes32", "bytes32"], registryHashes));
+function computeRootsHash(roots: bigint[]): string {
+  const types = roots.map(() => "uint256");
+  return ethers.sha256(ethers.solidityPacked(types, roots));
 }
 
 describe("OFAC Proof Update test", function () {
@@ -95,11 +78,6 @@ describe("OFAC Proof Update test", function () {
   };
 
   // Test OFAC roots (arbitrary non-zero values)
-  // Per-registry root ordering (alphabetical by registry key):
-  //   [0] IdentityRegistry (Passport): [nameAndDob, nameAndYob, passportNo]
-  //   [1] IdentityRegistryAadhaar:     [nameAndDob, nameAndYob]
-  //   [2] IdentityRegistryIdCard:      [nameAndDob, nameAndYob]
-  //   [3] IdentityRegistryKyc:         [nameAndDob, nameAndYob]
   const passportRoots = [100n, 200n, 300n];
   const aadhaarRoots = [400n, 500n];
   const idCardRoots = [600n, 700n];
@@ -107,6 +85,7 @@ describe("OFAC Proof Update test", function () {
 
   before(async () => {
     deployedActors = await deploySystemFixturesV2();
+    const [deployer] = await ethers.getSigners();
 
     // Deploy fresh MockGCPJWTVerifier
     const MockVerifierFactory = await ethers.getContractFactory("MockGCPJWTVerifier");
@@ -122,31 +101,35 @@ describe("OFAC Proof Update test", function () {
       mockVerifier.target,
       deployedActors.pcr0Manager.target,
       GCP_ROOT_CA_PUBKEY_HASH,
+      deployer.address,
     );
     await deployedActors.registryId.initializeOfacProof(
       mockVerifier.target,
       deployedActors.pcr0Manager.target,
       GCP_ROOT_CA_PUBKEY_HASH,
+      deployer.address,
     );
     await deployedActors.registryAadhaar.initializeOfacProof(
       mockVerifier.target,
       deployedActors.pcr0Manager.target,
       GCP_ROOT_CA_PUBKEY_HASH,
+      deployer.address,
     );
 
     // Configure KYC registry (already has pcr0Manager from init)
     await deployedActors.registryKyc.updateGCPJWTVerifier(mockVerifier.target);
     await deployedActors.registryKyc.updateGCPRootCAPubkeyHash(GCP_ROOT_CA_PUBKEY_HASH);
+    await deployedActors.registryKyc.updateTEE(deployer.address);
 
     console.log("OFAC proof test setup completed");
   });
 
   /**
-   * Builds pubSignals for a given set of roots and registryHashes.
+   * Builds pubSignals for a given set of roots (nonce = sha256 of the roots).
    */
-  function buildPubSignals(registryHashes: [string, string, string, string], hoursOffset = 0): bigint[] {
-    const globalHash = computeGlobalHash(registryHashes);
-    const [p0, p1, p2] = packUint256ToHexFields(BigInt(globalHash));
+  function buildPubSignals(roots: bigint[], hoursOffset = 0): bigint[] {
+    const rootsHash = computeRootsHash(roots);
+    const [p0, p1, p2] = packUint256ToHexFields(BigInt(rootsHash));
     return [
       GCP_ROOT_CA_PUBKEY_HASH,
       p0,
@@ -172,54 +155,47 @@ describe("OFAC Proof Update test", function () {
     });
 
     it("should update all 4 registries with valid proof", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const pubSignals = buildPubSignals(registryHashes);
-
-      // Update Passport (index 0, 3 roots)
+      // Update Passport (3 roots)
       await expect(
         deployedActors.registry.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
+          buildPubSignals(passportRoots),
           passportRoots,
-          registryHashes,
         ),
       ).to.emit(deployedActors.registry, "OfacRootsUpdatedWithProof");
 
-      // Update Aadhaar (index 1, 2 roots)
+      // Update Aadhaar (2 roots)
       await expect(
         deployedActors.registryAadhaar.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
+          buildPubSignals(aadhaarRoots),
           aadhaarRoots,
-          registryHashes,
         ),
       ).to.emit(deployedActors.registryAadhaar, "OfacRootsUpdatedWithProof");
 
-      // Update ID Card (index 2, 2 roots)
+      // Update ID Card (2 roots)
       await expect(
         deployedActors.registryId.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
+          buildPubSignals(idCardRoots),
           idCardRoots,
-          registryHashes,
         ),
       ).to.emit(deployedActors.registryId, "OfacRootsUpdatedWithProof");
 
-      // Update KYC (index 3, 2 roots)
+      // Update KYC (2 roots)
       await expect(
         deployedActors.registryKyc.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
+          buildPubSignals(kycRoots),
           kycRoots,
-          registryHashes,
         ),
       ).to.emit(deployedActors.registryKyc, "OfacRootsUpdatedWithProof");
 
@@ -241,32 +217,22 @@ describe("OFAC Proof Update test", function () {
       expect(await deployedActors.registryKyc.getNameAndYobOfacRoot()).to.equal(kycRoots[1]);
     });
 
-    it("should allow non-owner to call with valid proof (proof IS authorization)", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const pubSignals = buildPubSignals(registryHashes);
-
-      // user1 (non-owner) should be able to update with valid proof
-      await deployedActors.registry
-        .connect(deployedActors.user1)
-        .updateOfacRootsWithProof(mockProof.a, mockProof.b, mockProof.c, pubSignals, passportRoots, registryHashes);
-
-      expect(await deployedActors.registry.getNameAndDobOfacRoot()).to.equal(passportRoots[0]);
-      expect(await deployedActors.registry.getNameAndYobOfacRoot()).to.equal(passportRoots[1]);
-      expect(await deployedActors.registry.getPassportNoOfacRoot()).to.equal(passportRoots[2]);
+    it("should reject non-TEE caller even with valid proof", async () => {
+      await expect(
+        deployedActors.registry
+          .connect(deployedActors.user1)
+          .updateOfacRootsWithProof(mockProof.a, mockProof.b, mockProof.c, buildPubSignals(passportRoots), passportRoots),
+      ).to.be.revertedWithCustomError(deployedActors.registry, "ONLY_TEE_CAN_ACCESS");
     });
 
     it("should emit individual root update events", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const pubSignals = buildPubSignals(registryHashes);
-
       await expect(
         deployedActors.registry.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
+          buildPubSignals(passportRoots),
           passportRoots,
-          registryHashes,
         ),
       )
         .to.emit(deployedActors.registry, "NameAndDobOfacRootUpdated")
@@ -290,35 +256,29 @@ describe("OFAC Proof Update test", function () {
     });
 
     it("should revert with InvalidRootsCount when wrong number of roots for Passport", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const pubSignals = buildPubSignals(registryHashes);
-
+      const wrongRoots = [100n, 200n];
       // Passport expects 3 roots, pass 2
       await expect(
         deployedActors.registry.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
-          [100n, 200n],
-          registryHashes,
+          buildPubSignals(wrongRoots),
+          wrongRoots,
         ),
       ).to.be.revertedWithCustomError(deployedActors.registry, "InvalidRootsCount");
     });
 
     it("should revert with InvalidRootsCount when wrong number of roots for KYC", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const pubSignals = buildPubSignals(registryHashes);
-
+      const wrongRoots = [800n, 900n, 1000n];
       // KYC expects 2 roots, pass 3
       await expect(
         deployedActors.registryKyc.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
-          [800n, 900n, 1000n],
-          registryHashes,
+          buildPubSignals(wrongRoots),
+          wrongRoots,
         ),
       ).to.be.revertedWithCustomError(deployedActors.registryKyc, "InvalidRootsCount");
     });
@@ -326,17 +286,13 @@ describe("OFAC Proof Update test", function () {
     it("should revert with INVALID_PROOF when verifier rejects proof", async () => {
       await mockVerifier.setShouldVerify(false);
 
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const pubSignals = buildPubSignals(registryHashes);
-
       await expect(
         deployedActors.registry.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
+          buildPubSignals(passportRoots),
           passportRoots,
-          registryHashes,
         ),
       ).to.be.revertedWithCustomError(deployedActors.registry, "INVALID_PROOF");
 
@@ -345,9 +301,8 @@ describe("OFAC Proof Update test", function () {
     });
 
     it("should revert with INVALID_ROOT_CA when rootCA hash does not match", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const globalHash = computeGlobalHash(registryHashes);
-      const [p0, p1, p2] = packUint256ToHexFields(BigInt(globalHash));
+      const rootsHash = computeRootsHash(passportRoots);
+      const [p0, p1, p2] = packUint256ToHexFields(BigInt(rootsHash));
 
       // Use wrong rootCA hash in pubSignals[0]
       const badPubSignals: bigint[] = [
@@ -369,15 +324,13 @@ describe("OFAC Proof Update test", function () {
           mockProof.c,
           badPubSignals,
           passportRoots,
-          registryHashes,
         ),
       ).to.be.revertedWithCustomError(deployedActors.registry, "INVALID_ROOT_CA");
     });
 
     it("should revert with INVALID_IMAGE when image hash not in PCR0Manager", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const globalHash = computeGlobalHash(registryHashes);
-      const [p0, p1, p2] = packUint256ToHexFields(BigInt(globalHash));
+      const rootsHash = computeRootsHash(passportRoots);
+      const [p0, p1, p2] = packUint256ToHexFields(BigInt(rootsHash));
 
       // Use unknown image hash in pubSignals[5-7]
       const badPubSignals: bigint[] = [
@@ -399,48 +352,36 @@ describe("OFAC Proof Update test", function () {
           mockProof.c,
           badPubSignals,
           passportRoots,
-          registryHashes,
         ),
       ).to.be.revertedWithCustomError(deployedActors.registry, "INVALID_IMAGE");
     });
 
     it("should revert with INVALID_TIMESTAMP when timestamp is stale (2h past)", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const pubSignals = buildPubSignals(registryHashes, -2); // 2 hours ago
-
       await expect(
         deployedActors.registry.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
+          buildPubSignals(passportRoots, -2),
           passportRoots,
-          registryHashes,
         ),
       ).to.be.revertedWithCustomError(deployedActors.registry, "INVALID_TIMESTAMP");
     });
 
     it("should revert with INVALID_TIMESTAMP when timestamp is too far in future (2h)", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const pubSignals = buildPubSignals(registryHashes, 2); // 2 hours in the future
-
       await expect(
         deployedActors.registry.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
+          buildPubSignals(passportRoots, 2),
           passportRoots,
-          registryHashes,
         ),
       ).to.be.revertedWithCustomError(deployedActors.registry, "INVALID_TIMESTAMP");
     });
 
-    it("should revert with InvalidRootsHash when per-registry hash is tampered", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const pubSignals = buildPubSignals(registryHashes);
-
-      // Pass wrong roots that don't match registryHashes[0]
+    it("should revert with InvalidRootsHash when roots don't match proof nonce", async () => {
+      // Build pubSignals with correct roots, but pass different roots to the contract
       const tamperedRoots = [999n, 888n, 777n];
 
       await expect(
@@ -448,63 +389,34 @@ describe("OFAC Proof Update test", function () {
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
+          buildPubSignals(passportRoots),
           tamperedRoots,
-          registryHashes,
         ),
       ).to.be.revertedWithCustomError(deployedActors.registry, "InvalidRootsHash");
     });
 
-    it("should revert with InvalidRootsHash when global hash is tampered", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-
-      // Tamper one registry hash so global hash won't match pubSignals
-      const tamperedHashes: [string, string, string, string] = [...registryHashes];
-      tamperedHashes[2] = ethers.sha256(ethers.solidityPacked(["uint256", "uint256"], [999n, 888n]));
-
-      // Build pubSignals with the ORIGINAL global hash
-      const pubSignals = buildPubSignals(registryHashes);
-
-      // Pass tampered registryHashes — per-registry hash matches roots, but global hash won't match proof
-      const idCardTamperedRoots = [999n, 888n]; // matches tamperedHashes[2]
-
-      await expect(
-        deployedActors.registryId.updateOfacRootsWithProof(
-          mockProof.a,
-          mockProof.b,
-          mockProof.c,
-          pubSignals,
-          idCardTamperedRoots,
-          tamperedHashes,
-        ),
-      ).to.be.revertedWithCustomError(deployedActors.registryId, "InvalidRootsHash");
-    });
-
     it("should revert on each registry type with InvalidRootsCount", async () => {
-      const registryHashes = computeRegistryHashes(passportRoots, aadhaarRoots, idCardRoots, kycRoots);
-      const pubSignals = buildPubSignals(registryHashes);
-
       // Aadhaar expects 2 roots, pass 1
+      const oneRoot = [400n];
       await expect(
         deployedActors.registryAadhaar.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
-          [400n],
-          registryHashes,
+          buildPubSignals(oneRoot),
+          oneRoot,
         ),
       ).to.be.revertedWithCustomError(deployedActors.registryAadhaar, "InvalidRootsCount");
 
       // ID Card expects 2 roots, pass 3
+      const threeRoots = [600n, 700n, 800n];
       await expect(
         deployedActors.registryId.updateOfacRootsWithProof(
           mockProof.a,
           mockProof.b,
           mockProof.c,
-          pubSignals,
-          [600n, 700n, 800n],
-          registryHashes,
+          buildPubSignals(threeRoots),
+          threeRoots,
         ),
       ).to.be.revertedWithCustomError(deployedActors.registryId, "InvalidRootsCount");
     });
