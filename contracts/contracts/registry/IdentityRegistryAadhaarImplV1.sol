@@ -6,6 +6,29 @@ import {InternalLeanIMT, LeanIMTData} from "@zk-kit/imt.sol/internal/InternalLea
 import {IIdentityRegistryAadhaarV1} from "../interfaces/IIdentityRegistryAadhaarV1.sol";
 import {ImplRoot} from "../upgradeable/ImplRoot.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
+import {GCPJWTHelper} from "../libraries/GCPJWTHelper.sol";
+import {Formatter} from "../libraries/Formatter.sol";
+
+/**
+ * @title IGCPJWTVerifier
+ * @notice Interface for the GCP JWT verifier contract.
+ */
+interface IGCPJWTVerifier {
+    function verifyProof(
+        uint256[2] calldata pA,
+        uint256[2][2] calldata pB,
+        uint256[2] calldata pC,
+        uint256[20] calldata pubSignals
+    ) external view returns (bool);
+}
+
+/**
+ * @title IPCR0Manager
+ * @notice Interface for the PCR0 (TEE image hash) manager contract.
+ */
+interface IPCR0Manager {
+    function isPCR0Set(bytes calldata pcr0) external view returns (bool);
+}
 
 /**
  * @notice ⚠️ CRITICAL STORAGE LAYOUT WARNING ⚠️
@@ -70,6 +93,18 @@ abstract contract IdentityRegistryAadhaarStorageV1 is ImplRoot {
 
     /// @notice Previous name and year of birth OFAC root (rolling window).
     uint256 internal _prevNameAndYobOfacRoot;
+
+    /// @notice Address of the GCP JWT verifier contract for OFAC proof updates.
+    address internal _gcpJwtVerifier;
+
+    /// @notice Address of the PCR0Manager for OFAC proof updates.
+    address internal _pcr0Manager;
+
+    /// @notice Expected hash of the GCP root CA public key for OFAC proof verification.
+    uint256 internal _gcpRootCAPubkeyHash;
+
+    /// @notice Address of the TEE authorized to call updateOfacRootsWithProof.
+    address internal _tee;
 }
 
 /**
@@ -77,7 +112,7 @@ abstract contract IdentityRegistryAadhaarStorageV1 is ImplRoot {
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
  * @dev Inherits from IdentityRegistryAadhaarStorageV1 and implements IIdentityRegistryAadhaarV1.
  *
- * @custom:version 1.2.0
+ * @custom:version 1.3.0
  */
 contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIdentityRegistryAadhaarV1 {
     using InternalLeanIMT for LeanIMTData;
@@ -129,6 +164,16 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     event DevCommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
     /// @notice Emitted when a identity commitment is removed by dev team.
     event DevCommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot, uint256 timestamp);
+    /// @notice Emitted when OFAC roots are updated via proof.
+    event OfacRootsUpdatedWithProof(bytes32 rootsHash, uint256 timestamp);
+    /// @notice Emitted when the GCP JWT verifier address is updated.
+    event GCPJWTVerifierUpdated(address gcpJwtVerifier);
+    /// @notice Emitted when the PCR0Manager address is updated.
+    event PCR0ManagerUpdated(address pcr0Manager);
+    /// @notice Emitted when the GCP root CA pubkey hash is updated.
+    event GCPRootCAPubkeyHashUpdated(uint256 gcpRootCAPubkeyHash);
+    /// @notice Emitted when the TEE address is updated.
+    event TEEUpdated(address tee);
 
     // ====================================================
     // Errors
@@ -142,6 +187,22 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     error REGISTERED_COMMITMENT();
     /// @notice Thrown when the hub address is set to the zero address.
     error HUB_ADDRESS_ZERO();
+    /// @notice Thrown when the GCP JWT proof verification fails.
+    error INVALID_PROOF();
+    /// @notice Thrown when the GCP root CA public key hash does not match the expected value.
+    error INVALID_ROOT_CA();
+    /// @notice Thrown when the TEE image hash is not registered in the PCR0Manager.
+    error INVALID_IMAGE();
+    /// @notice Thrown when the timestamp is invalid.
+    error INVALID_TIMESTAMP();
+    /// @notice Thrown when the roots hash does not match the proof.
+    error InvalidRootsHash();
+    /// @notice Thrown when the wrong number of roots is provided.
+    error InvalidRootsCount();
+    /// @notice Thrown when the TEE address is not set.
+    error TEE_NOT_SET();
+    /// @notice Thrown when a function is accessed by an address other than the designated TEE.
+    error ONLY_TEE_CAN_ACCESS();
 
     // ====================================================
     // Modifiers
@@ -151,6 +212,16 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     modifier onlyHub() {
         if (address(_hub) == address(0)) revert HUB_NOT_SET();
         if (msg.sender != address(_hub)) revert ONLY_HUB_CAN_ACCESS();
+        _;
+    }
+
+    /**
+     * @notice Modifier to restrict access to functions to only the TEE.
+     * @dev Reverts if the TEE is not set or if the caller is not the TEE.
+     */
+    modifier onlyTEE() {
+        if (address(_tee) == address(0)) revert TEE_NOT_SET();
+        if (msg.sender != address(_tee)) revert ONLY_TEE_CAN_ACCESS();
         _;
     }
 
@@ -188,6 +259,25 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
      */
     function initializeGovernance() external reinitializer(2) {
         __ImplRoot_init();
+    }
+
+    /**
+     * @notice Initializes OFAC proof verification infrastructure.
+     * @dev Sets GCP JWT verifier, PCR0Manager, and root CA pubkey hash.
+     * @param gcpJwtVerifier_ The GCP JWT Groth16 verifier address.
+     * @param pcr0Manager_ The PCR0Manager address for TEE image validation.
+     * @param gcpRootCAPubkeyHash_ The expected Poseidon hash of the GCP root CA public key.
+     */
+    function initializeOfacProof(
+        address gcpJwtVerifier_,
+        address pcr0Manager_,
+        uint256 gcpRootCAPubkeyHash_,
+        address teeAddress_
+    ) external reinitializer(3) {
+        _gcpJwtVerifier = gcpJwtVerifier_;
+        _pcr0Manager = pcr0Manager_;
+        _gcpRootCAPubkeyHash = gcpRootCAPubkeyHash_;
+        _tee = teeAddress_;
     }
 
     // ====================================================
@@ -368,6 +458,107 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     function updateUidaiPubkeyCommitment(uint256 commitment) external onlyProxy onlyRole(SECURITY_ROLE) {
         _uidaiPubkeyCommitments[commitment] = true;
         emit UidaiPubkeyCommitmentUpdated(commitment, block.timestamp);
+    }
+
+    /// @notice Updates the GCP JWT verifier contract address.
+    /// @param verifier The new GCP JWT verifier address.
+    function updateGCPJWTVerifier(address verifier) external onlyProxy onlyRole(SECURITY_ROLE) {
+        _gcpJwtVerifier = verifier;
+        emit GCPJWTVerifierUpdated(verifier);
+    }
+
+    /// @notice Updates the PCR0Manager address.
+    /// @param newPCR0Manager The new PCR0Manager address.
+    function updatePCR0Manager(address newPCR0Manager) external onlyProxy onlyRole(SECURITY_ROLE) {
+        _pcr0Manager = newPCR0Manager;
+        emit PCR0ManagerUpdated(newPCR0Manager);
+    }
+
+    /// @notice Updates the GCP root CA pubkey hash.
+    /// @param newHash The new GCP root CA pubkey hash value.
+    function updateGCPRootCAPubkeyHash(uint256 newHash) external onlyProxy onlyRole(SECURITY_ROLE) {
+        _gcpRootCAPubkeyHash = newHash;
+        emit GCPRootCAPubkeyHashUpdated(newHash);
+    }
+
+    /// @notice Updates the TEE address.
+    /// @param teeAddress The new TEE address.
+    function updateTEE(address teeAddress) external onlyProxy onlyRole(SECURITY_ROLE) {
+        _tee = teeAddress;
+        emit TEEUpdated(teeAddress);
+    }
+
+    /// @notice Retrieves the TEE address.
+    /// @return The current TEE address.
+    function tee() external view onlyProxy returns (address) {
+        return _tee;
+    }
+
+    /// @notice Updates OFAC roots via proof-verified TEE attestation.
+    /// @dev Verifies the Groth16 proof, validates TEE attestation claims, checks
+    /// this registry's roots hash against registryHashes[1], and verifies the
+    /// global rootsHash commitment. Restricted to the TEE address. The proof provides
+    /// cryptographic verification, and onlyTEE provides access control.
+    /// @param pA Groth16 proof element A.
+    /// @param pB Groth16 proof element B.
+    /// @param pC Groth16 proof element C.
+    /// @param pubSignals Circuit public signals [rootCA, eatNonce[0-2], unused, imageHash[0-2], date[0-11]].
+    /// @param roots This registry's roots: [nameAndDob, nameAndYob].
+    /// @param registryHashes All 4 registry hashes ordered alphabetically by registry key.
+    function updateOfacRootsWithProof(
+        uint256[2] calldata pA,
+        uint256[2][2] calldata pB,
+        uint256[2] calldata pC,
+        uint256[20] calldata pubSignals,
+        uint256[] calldata roots,
+        bytes32[4] calldata registryHashes
+    ) external onlyProxy onlyTEE {
+        if (roots.length != 2) revert InvalidRootsCount();
+
+        // Verify Groth16 proof
+        if (!IGCPJWTVerifier(_gcpJwtVerifier).verifyProof(pA, pB, pC, pubSignals)) revert INVALID_PROOF();
+
+        // Verify root CA pubkey hash
+        if (pubSignals[0] != _gcpRootCAPubkeyHash) revert INVALID_ROOT_CA();
+
+        // Verify TEE image hash
+        bytes memory imageHash = GCPJWTHelper.unpackAndConvertImageHash(pubSignals[5], pubSignals[6], pubSignals[7]);
+        if (!IPCR0Manager(_pcr0Manager).isPCR0Set(imageHash)) revert INVALID_IMAGE();
+
+        // Verify timestamp (±1 hour)
+        uint256 currentTimestamp = Formatter.toTimeStampWithSeconds(
+            2000 + pubSignals[8] * 10 + pubSignals[9],
+            pubSignals[10] * 10 + pubSignals[11],
+            pubSignals[12] * 10 + pubSignals[13],
+            pubSignals[14] * 10 + pubSignals[15],
+            pubSignals[16] * 10 + pubSignals[17],
+            pubSignals[18] * 10 + pubSignals[19]
+        );
+        if (currentTimestamp + 1 hours < block.timestamp) revert INVALID_TIMESTAMP();
+        if (currentTimestamp > block.timestamp + 1 hours) revert INVALID_TIMESTAMP();
+
+        // Verify this registry's roots hash matches registryHashes[1] (IdentityRegistryAadhaar)
+        bytes32 myHash = sha256(abi.encodePacked(roots[0], roots[1]));
+        if (myHash != registryHashes[1]) revert InvalidRootsHash();
+
+        // Verify global rootsHash matches eat_nonce from proof
+        uint256 rootsHashFromProof = GCPJWTHelper.unpackAndDecodeHexPubkey(
+            pubSignals[1], pubSignals[2], pubSignals[3]
+        );
+        uint256 globalHash = uint256(sha256(abi.encodePacked(
+            registryHashes[0], registryHashes[1], registryHashes[2], registryHashes[3]
+        )));
+        if (globalHash != rootsHashFromProof) revert InvalidRootsHash();
+
+        // Update this registry's roots: [nameAndDob, nameAndYob] (with rolling window)
+        _prevNameAndDobOfacRoot = _nameAndDobOfacRoot;
+        _nameAndDobOfacRoot = roots[0];
+        _prevNameAndYobOfacRoot = _nameAndYobOfacRoot;
+        _nameAndYobOfacRoot = roots[1];
+
+        emit NameAndDobOfacRootUpdated(roots[0]);
+        emit NameAndYobOfacRootUpdated(roots[1]);
+        emit OfacRootsUpdatedWithProof(myHash, block.timestamp);
     }
 
     /// @notice (DEV) Force-adds an identity commitment.
