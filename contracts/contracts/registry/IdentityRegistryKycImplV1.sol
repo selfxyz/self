@@ -120,7 +120,7 @@ interface IPCR0Manager {
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
  * @dev Inherits from IdentityRegistryKycStorageV1 and implements IIdentityRegistryKycV1.
  *
- * @custom:version 1.2.0
+ * @custom:version 1.2.1
  */
 contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityRegistryKycV1 {
     using InternalLeanIMT for LeanIMTData;
@@ -361,6 +361,16 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
      */
     function getPrevNameAndYobOfacRoot() external view onlyProxy returns (uint256) {
         return _prevNameAndYobOfacRoot;
+    }
+
+    /// @notice Returns the address of the GCP JWT verifier contract.
+    function getGcpJwtVerifier() external view onlyProxy returns (address) {
+        return _gcpJwtVerifier;
+    }
+
+    /// @notice Returns the address of the PCR0 Manager contract.
+    function getPcr0Manager() external view onlyProxy returns (address) {
+        return _PCR0Manager;
     }
 
     /**

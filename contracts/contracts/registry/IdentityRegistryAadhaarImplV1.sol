@@ -112,7 +112,7 @@ abstract contract IdentityRegistryAadhaarStorageV1 is ImplRoot {
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
  * @dev Inherits from IdentityRegistryAadhaarStorageV1 and implements IIdentityRegistryAadhaarV1.
  *
- * @custom:version 1.3.0
+ * @custom:version 1.3.1
  */
 contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIdentityRegistryAadhaarV1 {
     using InternalLeanIMT for LeanIMTData;
@@ -273,7 +273,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
         address pcr0Manager_,
         uint256 gcpRootCAPubkeyHash_,
         address teeAddress_
-    ) external onlyProxy onlyRole(DEFAULT_ADMIN_ROLE) reinitializer(3) {
+    ) external onlyProxy onlyRole(SECURITY_ROLE) reinitializer(3) {
         _gcpJwtVerifier = gcpJwtVerifier_;
         _pcr0Manager = pcr0Manager_;
         _gcpRootCAPubkeyHash = gcpRootCAPubkeyHash_;
@@ -363,6 +363,16 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
      */
     function getPrevNameAndYobOfacRoot() external view onlyProxy returns (uint256) {
         return _prevNameAndYobOfacRoot;
+    }
+
+    /// @notice Returns the address of the GCP JWT verifier contract.
+    function getGcpJwtVerifier() external view onlyProxy returns (address) {
+        return _gcpJwtVerifier;
+    }
+
+    /// @notice Returns the address of the PCR0 Manager contract.
+    function getPcr0Manager() external view onlyProxy returns (address) {
+        return _pcr0Manager;
     }
 
     /// @notice Validates whether the provided OFAC roots match the stored values.

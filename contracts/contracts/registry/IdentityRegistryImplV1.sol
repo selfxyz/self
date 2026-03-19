@@ -296,7 +296,7 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
         address pcr0Manager_,
         uint256 gcpRootCAPubkeyHash_,
         address teeAddress_
-    ) external onlyProxy onlyRole(DEFAULT_ADMIN_ROLE) reinitializer(3) {
+    ) external onlyProxy onlyRole(SECURITY_ROLE) reinitializer(3) {
         _gcpJwtVerifier = gcpJwtVerifier_;
         _pcr0Manager = pcr0Manager_;
         _gcpRootCAPubkeyHash = gcpRootCAPubkeyHash_;
