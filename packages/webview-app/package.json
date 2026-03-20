@@ -14,6 +14,7 @@
     "@selfxyz/euclid-web": "^1.0.2",
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
     "@selfxyz/webview-bridge": "workspace:^",
+    "@sumsub/websdk": "^2.0.0",
     "lottie-react": "^2.4.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
