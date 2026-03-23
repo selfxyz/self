@@ -111,5 +111,11 @@
   "UpdateAllRegistries#a3": "0x90e907E4AaB6e9bcFB94997Af4A097e8CAadBdf3",
   "UpgradeAadhaarRegistryModule#AadhaarRegistryProxy": "0x52A18C19a35Ac6Ef1673B8Fa5b7BD01dBfA2D389",
   "UpgradeAadhaarRegistryModule#PoseidonT3": "0x424Ada67de0DBEFC1Bb6dEfeACF64E3Ae81B2411",
-  "UpgradeAadhaarRegistryModule#IdentityRegistryAadhaarImplV1": "0xf66fdaC87159d0362b1E26CD7739C92f4AB4f9b4"
+  "UpgradeAadhaarRegistryModule#IdentityRegistryAadhaarImplV1": "0xf66fdaC87159d0362b1E26CD7739C92f4AB4f9b4",
+  "UpgradeIdCardRegistryModule#IdCardRegistryProxy": "0x6B39222c3b98003010695cE0A31C9b1a61e07DdC",
+  "UpgradeIdCardRegistryModule#PoseidonT3": "0xFd6B7b646B91298ca106c390F9f1b61D92C694F7",
+  "UpgradeIdCardRegistryModule#IdentityRegistryIdCardImplV1": "0x620358cb15773400F4d84217606172540f425156",
+  "UpgradeRegistryModule#RegistryProxy": "0x1651ec77c3dC5997eC05f3EE6C2B0b904b516d1d",
+  "UpgradeRegistryModule#PoseidonT3": "0x873B8F582A6EE01c4741349c99f69051B8eF1315",
+  "UpgradeRegistryModule#IdentityRegistryImplV1": "0x663D0C2548F14faF440FdF8118FCc811657B5A9C"
 }

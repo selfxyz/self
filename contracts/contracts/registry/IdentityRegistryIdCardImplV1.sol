@@ -119,7 +119,7 @@ abstract contract IdentityRegistryIdCardStorageV1 is ImplRoot {
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
  * @dev Inherits from IdentityRegistryStorageV1 and implements IIdentityRegistryV1.
  *
- * @custom:version 1.3.0
+ * @custom:version 1.3.1
  */
 contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdentityRegistryIdCardV1 {
     using InternalLeanIMT for LeanIMTData;
@@ -397,6 +397,16 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
      */
     function getPrevNameAndYobOfacRoot() external view onlyProxy returns (uint256) {
         return _prevNameAndYobOfacRoot;
+    }
+
+    /// @notice Returns the address of the GCP JWT verifier contract.
+    function getGcpJwtVerifier() external view onlyProxy returns (address) {
+        return _gcpJwtVerifier;
+    }
+
+    /// @notice Returns the address of the PCR0 Manager contract.
+    function getPcr0Manager() external view onlyProxy returns (address) {
+        return _pcr0Manager;
     }
 
     /**
