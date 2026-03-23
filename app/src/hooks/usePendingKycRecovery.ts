@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-import { useSumsubWebSocket } from '@/hooks/useSumsubWebSocket';
+import { useDiditWebSocket } from '@/hooks/useDiditWebSocket';
 import { navigationRef } from '@/navigation';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
 
@@ -14,9 +14,9 @@ import { usePendingKycStore } from '@/stores/pendingKycStore';
  * This hook runs on app startup and:
  * 1. Checks for any pending verifications in the store
  * 2. For each non-expired pending/processing verification, reconnects to websocket
- * 3. Subscribes to the userId to receive any cached results
+ * 3. Subscribes to the sessionId to receive any cached results
  * 4. Updates verification status based on server response
- * 5. Initiates proving machine after document storage (handled in useSumsubWebSocket)
+ * 5. Initiates proving machine after document storage (handled in useDiditWebSocket)
  *
  * NOTE: This requires the TEE server to cache completed verification results
  * so they can be retrieved when the app reopens.
@@ -39,7 +39,7 @@ export function usePendingKycRecovery() {
     console.log('[PendingKycRecovery] Verification failed:', reason);
   }, []);
 
-  const { subscribe, unsubscribeAll } = useSumsubWebSocket({
+  const { subscribe, unsubscribeAll } = useDiditWebSocket({
     skipAddPending: true,
     onSuccess: handleSuccess,
     onError: handleError,
@@ -56,7 +56,7 @@ export function usePendingKycRecovery() {
 
   useEffect(() => {
     console.log(
-      '[PendingKycRecovery] Already attempted userIds:',
+      '[PendingKycRecovery] Already attempted sessionIds:',
       Array.from(hasAttemptedRecoveryRef.current),
     );
 
@@ -65,39 +65,39 @@ export function usePendingKycRecovery() {
         v.status === 'processing' &&
         v.documentId &&
         v.timeoutAt > Date.now() &&
-        !hasAttemptedRecoveryRef.current.has(v.userId),
+        !hasAttemptedRecoveryRef.current.has(v.sessionId),
     );
 
     if (processingWithDocument) {
       console.log(
         '[PendingKycRecovery] Resuming processing verification, navigating to KYCVerified:',
-        processingWithDocument.userId,
+        processingWithDocument.sessionId,
       );
       if (navigationRef.isReady()) {
         navigationRef.navigate('KYCVerified', {
           documentId: processingWithDocument.documentId,
         });
         // Only mark as attempted after successful navigation
-        hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
+        hasAttemptedRecoveryRef.current.add(processingWithDocument.sessionId);
         return;
       }
 
       // Navigation not ready yet - poll until ready
       console.log(
         '[PendingKycRecovery] Navigation not ready, polling for readiness:',
-        processingWithDocument.userId,
+        processingWithDocument.sessionId,
       );
 
       const pollInterval = setInterval(() => {
         if (navigationRef.isReady()) {
           console.log(
             '[PendingKycRecovery] Navigation ready, navigating for:',
-            processingWithDocument.userId,
+            processingWithDocument.sessionId,
           );
           navigationRef.navigate('KYCVerified', {
             documentId: processingWithDocument.documentId,
           });
-          hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
+          hasAttemptedRecoveryRef.current.add(processingWithDocument.sessionId);
           clearInterval(pollInterval);
         }
       }, 100); // Poll every 100ms
@@ -112,16 +112,16 @@ export function usePendingKycRecovery() {
       v =>
         v.status === 'pending' &&
         v.timeoutAt > Date.now() &&
-        !hasAttemptedRecoveryRef.current.has(v.userId),
+        !hasAttemptedRecoveryRef.current.has(v.sessionId),
     );
 
     if (firstPending) {
-      hasAttemptedRecoveryRef.current.add(firstPending.userId);
+      hasAttemptedRecoveryRef.current.add(firstPending.sessionId);
       console.log(
         '[PendingKycRecovery] Recovering pending verification:',
-        firstPending.userId,
+        firstPending.sessionId,
       );
-      subscribe(firstPending.userId);
+      subscribe(firstPending.sessionId);
     }
   }, [pendingVerifications, subscribe, unsubscribeAll]);
 }

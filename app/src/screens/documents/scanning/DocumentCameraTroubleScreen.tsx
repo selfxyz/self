@@ -17,7 +17,7 @@ import Star from '@/assets/icons/star.svg';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
+import { useDiditLauncher } from '@/hooks/useDiditLauncher';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flush as flushAnalytics } from '@/services/analytics';
 
@@ -54,7 +54,7 @@ const DocumentCameraTroubleScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { countryCode } = useMRZStore();
-  const { launchSumsubVerification, isLoading } = useSumsubLauncher({
+  const { launchDiditVerification, isLoading } = useDiditLauncher({
     countryCode,
     errorSource: 'mrz_scan_failed',
   });
@@ -88,7 +88,7 @@ const DocumentCameraTroubleScreen: React.FC = () => {
           </Caption>
 
           <SecondaryButton
-            onPress={launchSumsubVerification}
+            onPress={launchDiditVerification}
             disabled={isLoading}
             textColor={slate700}
             style={{ marginBottom: 0 }}

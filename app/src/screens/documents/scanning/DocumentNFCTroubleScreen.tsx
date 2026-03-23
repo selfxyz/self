@@ -16,7 +16,7 @@ import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
+import { useDiditLauncher } from '@/hooks/useDiditLauncher';
 import { selectionChange } from '@/integrations/haptics';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
@@ -61,7 +61,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { countryCode } = useMRZStore();
-  const { launchSumsubVerification, isLoading } = useSumsubLauncher({
+  const { launchDiditVerification, isLoading } = useDiditLauncher({
     countryCode,
     errorSource: 'nfc_scan_failed',
   });
@@ -96,7 +96,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
           </SecondaryButton>
 
           <SecondaryButton
-            onPress={launchSumsubVerification}
+            onPress={launchDiditVerification}
             disabled={isLoading}
             textColor={slate700}
             style={{ marginBottom: 0 }}

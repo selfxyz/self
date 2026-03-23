@@ -23,7 +23,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
-import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
+import { createSession, launchDidit } from '@/integrations/didit';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import {
@@ -316,7 +316,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         documentTypes: string[];
       }) => {
         currentCountryCode = countryCode;
-        // Store country code early so it's available for Sumsub fallback flows
+        // Store country code early so it's available for Didit fallback flows
         useMRZStore.getState().update({ countryCode });
         navigateIfReady('IDPicker', { countryCode, documentTypes });
       },
@@ -346,33 +346,23 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                   if (
                     useErrorInjectionStore
                       .getState()
-                      .shouldTrigger('sumsub_initialization')
+                      .shouldTrigger('didit_initialization')
                   ) {
-                    console.log('[DEV] Injecting Sumsub initialization error');
+                    console.log('[DEV] Injecting Didit initialization error');
                     throw new Error(
-                      'Injected Sumsub initialization error for testing',
+                      'Injected Didit initialization error for testing',
                     );
                   }
 
-                  const accessToken = await fetchAccessToken();
-                  const result = await launchSumsub({
-                    accessToken: accessToken.token,
-                  });
+                  const session = await createSession();
+                  const result = await launchDidit(session.sessionToken);
 
-                  console.log('[Sumsub] Result:', JSON.stringify(result));
+                  console.log('[Didit] Result:', JSON.stringify(result));
 
                   // User cancelled/dismissed without completing verification
-                  // Status values: 'Initial' (never started), 'Incomplete' (started but not finished),
-                  // 'Interrupted' (explicitly cancelled)
-                  const cancelledStatuses = [
-                    'Initial',
-                    'Incomplete',
-                    'Interrupted',
-                  ];
-                  if (cancelledStatuses.includes(result.status)) {
+                  if (result.type === 'cancelled') {
                     console.log(
-                      '[Sumsub] User cancelled or closed without completing, status:',
-                      result.status,
+                      '[Didit] User cancelled or closed without completing',
                     );
                     return;
                   }
@@ -380,15 +370,15 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                   // Dev-only: Check for injected verification error
                   const shouldInjectVerificationError = useErrorInjectionStore
                     .getState()
-                    .shouldTrigger('sumsub_verification');
+                    .shouldTrigger('didit_verification');
 
                   // Actual error from provider
-                  if (!result.success || shouldInjectVerificationError) {
+                  if (result.type === 'failed' || shouldInjectVerificationError) {
                     if (shouldInjectVerificationError) {
-                      console.log('[DEV] Injecting Sumsub verification error');
+                      console.log('[DEV] Injecting Didit verification error');
                     } else {
                       const safeError = sanitizeErrorMessage(
-                        result.errorMsg || result.errorType || 'unknown_error',
+                        result.error?.message || result.error?.type || 'unknown_error',
                       );
                       console.error('KYC provider failed:', safeError);
                     }
@@ -402,15 +392,15 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     return;
                   }
 
-                  // User completed verification (status: 'Pending', 'Approved', etc.)
+                  // User completed verification
                   // Navigate to KYC success screen
                   console.log(
-                    '[Sumsub] Verification submitted, status:',
-                    result.status,
+                    '[Didit] Verification submitted, status:',
+                    result.session?.status,
                   );
                   if (navigationRef.isReady()) {
                     navigationRef.navigate('KycSuccess', {
-                      userId: accessToken.userId,
+                      sessionId: session.sessionId,
                     });
                   }
                 } catch (error) {

@@ -27,7 +27,7 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
 import { NavBar } from '@/components/navbar/BaseNavBar';
-import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
+import { useDiditLauncher } from '@/hooks/useDiditLauncher';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
@@ -70,7 +70,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
   const errorType = route.params?.errorType || 'general';
   const { title, description } = getErrorMessages(errorType);
 
-  const { launchSumsubVerification, isLoading: isRetrying } = useSumsubLauncher(
+  const { launchDiditVerification, isLoading: isRetrying } = useDiditLauncher(
     {
       countryCode: 'IND',
       errorSource: 'mrz_scan_failed', // Use a compatible error source
@@ -95,8 +95,8 @@ const AadhaarUploadErrorScreen: React.FC = () => {
 
   const handleTryAlternative = useCallback(async () => {
     trackEvent(AadhaarEvents.HELP_BUTTON_PRESSED, { errorType });
-    await launchSumsubVerification();
-  }, [errorType, launchSumsubVerification, trackEvent]);
+    await launchDiditVerification();
+  }, [errorType, launchDiditVerification, trackEvent]);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>
