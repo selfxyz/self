@@ -4,6 +4,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
 }
 
+group = "xyz.self.sdk"
+
 android {
     namespace = "xyz.self.sdk.nativeshell"
     compileSdk = 34
@@ -32,6 +34,23 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+}
+
+tasks.register("validateWebViewBundle") {
+    doLast {
+        val bundleDir = file("src/main/assets/self-wallet")
+        val indexFile = file("src/main/assets/self-wallet/index.html")
+        if (!bundleDir.exists() || !indexFile.exists()) {
+            throw GradleException(
+                "WebView bundle not found at src/main/assets/self-wallet/index.html. " +
+                "Run ./scripts/build-webview-bundle.sh from the repo root first."
+            )
+        }
+    }
+}
+
+tasks.named("preBuild") {
+    dependsOn("validateWebViewBundle")
 }
 
 dependencies {
