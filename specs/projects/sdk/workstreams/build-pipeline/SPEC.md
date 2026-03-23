@@ -43,8 +43,21 @@
 | ID | Title | Status | Priority | Depends On | Plan | PR |
 |----|-------|--------|----------|------------|------|----|
 | BP-01 | WebView bundle build + copy script | Done | Medium | NSL-01, NSL-02 | [plans/BP-01-build-script.md](./plans/BP-01-build-script.md) | Complete on `feat/webview-sdk` |
+| BP-02 | Runtime bundle integrity for CDN loading | Deferred | High | — | — | — |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+
+### BP-02 Context (Deferred)
+
+When the SDK moves to CDN-hosted bundles in production, runtime integrity verification becomes a security boundary. Scope:
+
+- Build step: generate a signed manifest (SHA-256 checksums of all bundle files) during `build-webview-bundle.sh`
+- Android: Kotlin runtime check — verify downloaded bundle against manifest before loading into WebView
+- iOS: Swift runtime check — same verification before `WKWebView.loadFileURL`
+- Fail closed: refuse to load on any mismatch (missing file, checksum diff, missing manifest)
+- The existing Gradle `validateWebViewBundle` task remains a dev-time guard; this is the prod-time counterpart
+
+Trigger: when remote/CDN bundle loading is implemented.
 
 ## Active Plans
 
