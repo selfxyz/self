@@ -4,7 +4,7 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CountryPickerScreen as EuclidCountryPickerScreen } from '@selfxyz/euclid-web';
+import { CountryPickerScreen as EuclidCountryPickerScreen } from '@selfxyz/euclid';
 
 import countryDocumentTypes from '../../data/country-document-types.json';
 import { useSelfClient } from '../../providers/SelfClientProvider';

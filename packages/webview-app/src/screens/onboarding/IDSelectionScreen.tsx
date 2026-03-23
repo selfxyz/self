@@ -4,8 +4,8 @@
 
 import React, { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { IDTypeScreen } from '@selfxyz/euclid-web';
-import type { IDType } from '@selfxyz/euclid-web';
+import { IDTypeScreen } from '@selfxyz/euclid';
+import type { IDType } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../../utils/countryFlags';

@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   DevModeScreen as EuclidDevModeScreen,
   LeftArrowIcon,
-} from '@selfxyz/euclid-web';
-import type { IDCardProps } from '@selfxyz/euclid-web';
+} from '@selfxyz/euclid';
+import type { IDCardProps } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 
