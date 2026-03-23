@@ -96,6 +96,12 @@ export const SettingsScreen: React.FC = () => {
               description: 'Manage mock IDs, simulate proofs',
               onPress: () => navigate('/settings/dev-mode'),
             },
+            {
+              icon: CodeIcon,
+              label: 'Tunnel flow',
+              description: 'Demo: register + disclose in one flow',
+              onPress: () => navigate('/tunnel/tour/1'),
+            },
           ],
         },
       ]}
