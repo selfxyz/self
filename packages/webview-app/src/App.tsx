@@ -10,6 +10,7 @@ import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
 import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
 import { ConfirmIdentificationScreen } from './screens/onboarding/ConfirmIdentificationScreen';
 import { ProviderLaunchScreen } from './screens/onboarding/ProviderLaunchScreen';
+import { ProviderResultScreen } from './screens/onboarding/ProviderResultScreen';
 import { HomeScreen } from './screens/home/HomeScreen';
 import { ProvingScreen } from './screens/proving/ProvingScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
@@ -27,6 +28,10 @@ export const App: React.FC = () => (
           <Route
             path="/onboarding/provider"
             element={<ProviderLaunchScreen />}
+          />
+          <Route
+            path="/onboarding/provider-result"
+            element={<ProviderResultScreen />}
           />
           <Route
             path="/onboarding/confirm"

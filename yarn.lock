@@ -11100,6 +11100,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@selfxyz/sdk-test-app@workspace:packages/sdk-test-app":
+  version: 0.0.0-use.local
+  resolution: "@selfxyz/sdk-test-app@workspace:packages/sdk-test-app"
+  languageName: unknown
+  linkType: soft
+
 "@selfxyz/webview-app@workspace:^, @selfxyz/webview-app@workspace:packages/webview-app":
   version: 0.0.0-use.local
   resolution: "@selfxyz/webview-app@workspace:packages/webview-app"
@@ -11108,6 +11114,7 @@ __metadata:
     "@selfxyz/euclid-web": "npm:^1.0.2"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@selfxyz/webview-bridge": "workspace:^"
+    "@sumsub/websdk": "npm:^2.0.0"
     "@testing-library/react": "npm:^14.1.2"
     "@types/react": "npm:^18.3.4"
     "@types/react-dom": "npm:^18.3.0"
@@ -13535,6 +13542,13 @@ __metadata:
   peerDependencies:
     react-native: ">=0.60.0-rc.0 <1.0.x"
   checksum: 10c0/fc5f368d3afdffdb27496ab3b152b38bb0ee8b52f8592b2b48e0a3941197de33fd445502123eeca676d0ee1ecaeaa2e7c6573601e06c4eea79dfa2aec64ed75b
+  languageName: node
+  linkType: hard
+
+"@sumsub/websdk@npm:^2.0.0":
+  version: 2.6.1
+  resolution: "@sumsub/websdk@npm:2.6.1"
+  checksum: 10c0/02c31ca25d1ec3ce0e90f7874a40f2c0996f45d173e237147c9fcf59668651cc33ed61871013ab6b95b5ad10dc38abd4ac40a8043cb287442aa278924b93b9ee
   languageName: node
   linkType: hard
 

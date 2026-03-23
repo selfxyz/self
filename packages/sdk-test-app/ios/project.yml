@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: BUSL-1.1
+# Generate Xcode project: cd ios && xcodegen generate
+
+name: SelfTestApp
+options:
+  bundleIdPrefix: xyz.self.testapp
+  deploymentTarget:
+    iOS: "15.0"
+
+packages:
+  SelfNativeShell:
+    path: ../../native-shell-ios
+
+targets:
+  SelfTestApp:
+    type: application
+    platform: iOS
+    sources:
+      - SelfTestApp
+    dependencies:
+      - package: SelfNativeShell
+    settings:
+      SWIFT_VERSION: "5.9"
+      DEVELOPMENT_TEAM: ""
