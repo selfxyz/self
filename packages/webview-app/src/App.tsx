@@ -15,6 +15,9 @@ import { HomeScreen } from './screens/home/HomeScreen';
 import { ProvingScreen } from './screens/proving/ProvingScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
 import { SettingsScreen } from './screens/account/SettingsScreen';
+import { SecurityScreen } from './screens/account/SecurityScreen';
+import { NotificationPreferencesScreen } from './screens/account/NotificationPreferencesScreen';
+import { DevModeScreen } from './screens/account/DevModeScreen';
 import { ComingSoonScreen } from './screens/ComingSoonScreen';
 
 export const App: React.FC = () => (
@@ -40,6 +43,9 @@ export const App: React.FC = () => (
           <Route path="/proving" element={<ProvingScreen />} />
           <Route path="/proving/result" element={<VerificationResultScreen />} />
           <Route path="/settings" element={<SettingsScreen />} />
+          <Route path="/settings/security" element={<SecurityScreen />} />
+          <Route path="/settings/notifications" element={<NotificationPreferencesScreen />} />
+          <Route path="/settings/dev-mode" element={<DevModeScreen />} />
           <Route
             path="/account/verified"
             element={<VerificationResultScreen />}
