@@ -5,6 +5,7 @@ package xyz.self.sdk.handlers
 import android.app.Activity
 import android.content.Intent
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import xyz.self.sdk.bridge.BridgeDomain
@@ -39,7 +40,9 @@ class LifecycleHandler(private val activity: Activity) : BridgeHandler {
             val result = params["result"]
             if (result != null) {
                 intent.putExtra(SelfVerificationActivity.EXTRA_RESULT_DATA, result.toString())
-                activity.setResult(Activity.RESULT_OK, intent)
+                val isSuccess = result.jsonObject["success"]?.jsonPrimitive?.booleanOrNull != false
+                val resultCode = if (isSuccess) Activity.RESULT_OK else Activity.RESULT_FIRST_USER
+                activity.setResult(resultCode, intent)
             } else {
                 activity.setResult(Activity.RESULT_CANCELED)
             }

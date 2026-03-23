@@ -19,6 +19,7 @@ class SecureStorageHandler(context: Context) : BridgeHandler {
 
     private val prefs: SharedPreferences
 
+    // requireBiometric is intentionally ignored — device lock provides sufficient security per spec
     init {
         val masterKey = MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)

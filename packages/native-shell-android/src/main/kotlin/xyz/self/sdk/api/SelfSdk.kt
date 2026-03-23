@@ -17,19 +17,29 @@ object SelfSdk {
         activity.startActivityForResult(intent, requestCode)
     }
 
-    fun handleResult(requestCode: Int, resultCode: Int, data: Intent?, callback: SelfSdkCallback) {
-        if (requestCode != REQUEST_CODE_VERIFICATION) return
+    fun handleResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+        callback: SelfSdkCallback,
+        expectedRequestCode: Int = REQUEST_CODE_VERIFICATION,
+    ) {
+        if (requestCode != expectedRequestCode) return
 
         when (resultCode) {
             Activity.RESULT_OK -> {
-                val resultData = data?.getStringExtra(SelfVerificationActivity.EXTRA_RESULT_DATA)
-                callback.onSuccess(mapOf("data" to resultData))
+                val resultData = data?.getStringExtra(SelfVerificationActivity.EXTRA_RESULT_DATA) ?: "{}"
+                callback.onSuccess(resultData)
             }
             Activity.RESULT_CANCELED -> {
                 callback.onCancelled()
             }
+            Activity.RESULT_FIRST_USER -> {
+                val resultData = data?.getStringExtra(SelfVerificationActivity.EXTRA_RESULT_DATA)
+                callback.onFailure(SelfSdkException(resultData ?: "Verification failed"))
+            }
             else -> {
-                callback.onFailure(Exception("Verification failed"))
+                callback.onFailure(SelfSdkException("Verification failed with result code: $resultCode"))
             }
         }
     }

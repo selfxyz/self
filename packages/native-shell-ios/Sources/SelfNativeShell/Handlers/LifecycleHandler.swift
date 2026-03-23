@@ -9,6 +9,7 @@ final class LifecycleHandler: BridgeHandler {
     private weak var viewController: UIViewController?
     private let onResult: ((Any?) -> Void)?
     private let onDismiss: (() -> Void)?
+    private var hasEmittedResult = false
 
     init(viewController: UIViewController?, onResult: ((Any?) -> Void)?, onDismiss: (() -> Void)?) {
         self.viewController = viewController
@@ -32,6 +33,7 @@ final class LifecycleHandler: BridgeHandler {
         case "setResult":
             let result = params?["result"]
             await MainActor.run {
+                hasEmittedResult = true
                 onResult?(result)
                 dismiss()
             }
@@ -46,9 +48,11 @@ final class LifecycleHandler: BridgeHandler {
     private func dismiss() {
         if let vc = viewController {
             vc.dismiss(animated: true) { [weak self] in
-                self?.onDismiss?()
+                guard let self = self, !self.hasEmittedResult else { return }
+                self.onDismiss?()
             }
         } else {
+            guard !hasEmittedResult else { return }
             onDismiss?()
         }
     }

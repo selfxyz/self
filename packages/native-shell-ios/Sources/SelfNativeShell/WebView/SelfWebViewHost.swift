@@ -47,10 +47,16 @@ final class SelfWebViewHost: NSObject {
             guard let bundlePath = Bundle.main.path(forResource: "self-sdk-web", ofType: nil) else {
                 return
             }
-            webView.loadFileURL(
-                URL(fileURLWithPath: "\(bundlePath)/index.html"),
-                allowingReadAccessTo: URL(fileURLWithPath: bundlePath)
-            )
+            let fileURL = URL(fileURLWithPath: "\(bundlePath)/index.html")
+            let bundleURL = URL(fileURLWithPath: bundlePath)
+
+            var components = URLComponents(url: fileURL, resolvingAgainstBaseURL: false)
+            if !queryParams.isEmpty {
+                components?.query = queryParams
+            }
+            let targetURL = components?.url ?? fileURL
+
+            webView.loadFileURL(targetURL, allowingReadAccessTo: bundleURL)
         }
     }
 

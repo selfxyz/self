@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import xyz.self.sdk.api.SelfSdk
 import xyz.self.sdk.api.SelfSdkCallback
 import xyz.self.sdk.api.SelfSdkConfig
+import xyz.self.sdk.api.SelfSdkException
 
 class MainActivity : ComponentActivity() {
 
@@ -46,11 +47,11 @@ class MainActivity : ComponentActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         SelfSdk.handleResult(requestCode, resultCode, data, object : SelfSdkCallback {
-            override fun onSuccess(result: Map<String, Any?>) {
-                resultText = "SUCCESS\n${result}"
+            override fun onSuccess(resultJson: String) {
+                resultText = "SUCCESS\n${resultJson}"
             }
 
-            override fun onFailure(error: Exception) {
+            override fun onFailure(error: SelfSdkException) {
                 resultText = "FAILURE\n${error.message}"
             }
 

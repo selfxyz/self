@@ -9,8 +9,10 @@ data class SelfSdkConfig(
     val isDebugMode: Boolean = false,
 )
 
+class SelfSdkException(message: String) : Exception(message)
+
 interface SelfSdkCallback {
-    fun onSuccess(result: Map<String, Any?>)
-    fun onFailure(error: Exception)
+    fun onSuccess(resultJson: String)
+    fun onFailure(error: SelfSdkException)
     fun onCancelled()
 }

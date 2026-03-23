@@ -6,6 +6,7 @@ import Security
 final class SecureStorageHandler: BridgeHandler {
     let domain: BridgeDomain = .secureStorage
 
+    // requireBiometric is intentionally ignored — device lock provides sufficient security per spec
     private let service = "xyz.self.sdk"
 
     func handle(method: String, params: [String: Any]?) async throws -> Any? {
