@@ -35,6 +35,11 @@ if [ ! -d "$WEBVIEW_DIST" ]; then
   exit 1
 fi
 
+if [ ! -f "$WEBVIEW_DIST/index.html" ]; then
+  echo "ERROR: Build output incomplete — index.html not found at ${WEBVIEW_DIST}/index.html"
+  exit 1
+fi
+
 # Step 2: Clean target directories
 echo "Cleaning target directories..."
 rm -rf "$ANDROID_ASSETS"

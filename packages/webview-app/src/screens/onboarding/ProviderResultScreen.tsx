@@ -52,7 +52,8 @@ export const ProviderResultScreen: React.FC = () => {
     (location.state as { providerResult?: KycProviderResult }) || {};
 
   const status = providerResult?.status ?? 'error';
-  const config = STATUS_CONFIG[status];
+  const config =
+    STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.error;
   const isSuccess = status === 'success' || status === 'partial';
 
   const description =

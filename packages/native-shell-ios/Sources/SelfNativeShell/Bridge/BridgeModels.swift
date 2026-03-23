@@ -30,7 +30,9 @@ struct BridgeResponse: Codable {
     let version: Int
     let id: String
     let domain: BridgeDomain
-    let result: AnyCodable?
+    let requestId: String
+    let success: Bool
+    let data: AnyCodable?
     let error: BridgeError?
     let timestamp: Double
 
@@ -38,9 +40,11 @@ struct BridgeResponse: Codable {
         BridgeResponse(
             type: "response",
             version: 1,
-            id: request.id,
+            id: UUID().uuidString,
             domain: request.domain,
-            result: result.map { AnyCodable($0) },
+            requestId: request.id,
+            success: true,
+            data: result.map { AnyCodable($0) },
             error: nil,
             timestamp: Date().timeIntervalSince1970 * 1000
         )
@@ -50,9 +54,11 @@ struct BridgeResponse: Codable {
         BridgeResponse(
             type: "response",
             version: 1,
-            id: request.id,
+            id: UUID().uuidString,
             domain: request.domain,
-            result: nil,
+            requestId: request.id,
+            success: false,
+            data: nil,
             error: BridgeError(code: code, message: message),
             timestamp: Date().timeIntervalSince1970 * 1000
         )

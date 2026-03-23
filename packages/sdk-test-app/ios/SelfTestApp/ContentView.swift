@@ -89,10 +89,15 @@ struct VerificationView: UIViewControllerRepresentable {
     let config: SelfSdkConfig
     let onResult: (String) -> Void
 
-    func makeUIViewController(context: Context) -> UIViewController {
+    class Coordinator {
         let callback = VerificationCallback()
-        callback.onResult = onResult
-        return SelfSdk.createViewController(config: config, callback: callback)
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        context.coordinator.callback.onResult = onResult
+        return SelfSdk.createViewController(config: config, callback: context.coordinator.callback)
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}

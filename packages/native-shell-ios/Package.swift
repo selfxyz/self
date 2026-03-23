@@ -17,8 +17,10 @@ let package = Package(
     targets: [
         .target(
             name: "SelfNativeShell",
+            path: ".",
+            sources: ["Sources/SelfNativeShell"],
             resources: [
-                .copy("../../Resources/self-sdk-web")
+                .copy("Resources/self-sdk-web")
             ]
         )
     ]

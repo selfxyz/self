@@ -30,10 +30,13 @@ export const ProviderLaunchScreen: React.FC = () => {
       documentType?: string;
     }) || {};
 
-  const verificationId = ctxVerificationId ?? 'unknown';
+  const verificationId = ctxVerificationId;
 
-  const [phase, setPhase] = useState<Phase>('loading');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [phase, setPhase] = useState<Phase>(!verificationId ? 'error' : 'loading');
+  const [errorMessage, setErrorMessage] = useState(
+    !verificationId ? 'Missing verification context' : '',
+  );
+  const [retryCount, setRetryCount] = useState(0);
   const destroyRef = useRef<(() => void) | null>(null);
   const mountedRef = useRef(true);
 
@@ -67,6 +70,12 @@ export const ProviderLaunchScreen: React.FC = () => {
   );
 
   useEffect(() => {
+    if (!verificationId) {
+      setPhase('error');
+      setErrorMessage('Missing verification context');
+      return;
+    }
+
     mountedRef.current = true;
 
     analytics.trackEvent('provider_launch_started', {
@@ -127,6 +136,7 @@ export const ProviderLaunchScreen: React.FC = () => {
     handleComplete,
     handleError,
     verificationId,
+    retryCount,
   ]);
 
   const handleBack = useCallback(() => {
@@ -148,11 +158,8 @@ export const ProviderLaunchScreen: React.FC = () => {
     analytics.trackEvent('provider_launch_retry_pressed');
     setPhase('loading');
     setErrorMessage('');
-    navigate('/onboarding/provider', {
-      state: { countryCode, documentType },
-      replace: true,
-    });
-  }, [countryCode, documentType, haptic, analytics, navigate]);
+    setRetryCount((c) => c + 1);
+  }, [haptic, analytics]);
 
   if (phase === 'error') {
     return (
