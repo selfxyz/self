@@ -44,8 +44,8 @@ jest.mock('react-native-edge-to-edge', () => ({
   SystemBars: () => null,
 }));
 
-jest.mock('@/hooks/useSumsubWebSocket', () => ({
-  useSumsubWebSocket: jest.fn(() => ({
+jest.mock('@/hooks/useDiditWebSocket', () => ({
+  useDiditWebSocket: jest.fn(() => ({
     subscribe: jest.fn(),
     unsubscribe: jest.fn(),
     unsubscribeAll: jest.fn(),
@@ -148,11 +148,11 @@ describe('KycSuccessScreen', () => {
   const mockNavigate = jest.fn();
   const mockTrackEvent = jest.fn();
   const mockSetFcmToken = jest.fn();
-  const mockUserId = '19f21362-856a-4606-88e1-fa306036978f';
+  const mockSessionId = '19f21362-856a-4606-88e1-fa306036978f';
   const mockFcmToken = 'mock-fcm-token';
   const mockRoute = {
     params: {
-      userId: mockUserId,
+      sessionId: mockSessionId,
     },
   };
 
@@ -227,7 +227,7 @@ describe('KycSuccessScreen', () => {
     await waitFor(() => {
       // Verify device token was registered with deterministic session ID
       expect(notificationService.registerDeviceToken).toHaveBeenCalledWith(
-        uuidv5(mockUserId, notificationService.SELF_UUID_NAMESPACE),
+        uuidv5(mockSessionId, notificationService.SELF_UUID_NAMESPACE),
         mockFcmToken,
       );
     });
@@ -290,7 +290,7 @@ describe('KycSuccessScreen', () => {
     expect(notificationService.registerDeviceToken).not.toHaveBeenCalled();
   });
 
-  it('should handle missing userId gracefully', async () => {
+  it('should handle missing sessionId gracefully', async () => {
     const routeWithoutUserId = {
       params: {},
     };
@@ -312,7 +312,7 @@ describe('KycSuccessScreen', () => {
       ).toHaveBeenCalledTimes(1);
     });
 
-    // Verify FCM token was NOT fetched (no userId)
+    // Verify FCM token was NOT fetched (no sessionId)
     expect(notificationService.getFCMToken).not.toHaveBeenCalled();
 
     await waitFor(() => {
