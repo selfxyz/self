@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   NotificationPreferencesScreen as EuclidNotificationPreferencesScreen,
   LeftArrowIcon,
-} from '@selfxyz/euclid-web';
+} from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 

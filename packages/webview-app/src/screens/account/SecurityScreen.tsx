@@ -10,7 +10,7 @@ import {
   CloudKeyIcon,
   LockIcon,
   ZapShieldIcon,
-} from '@selfxyz/euclid-web';
+} from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 

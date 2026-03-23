@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@selfxyz/euclid-core": "^1.0.1",
-    "@selfxyz/euclid-web": "^1.0.2",
+    "@selfxyz/euclid": "^1.2.0",
+    "@selfxyz/euclid-core": "^1.2.0",
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
     "@selfxyz/webview-bridge": "workspace:^",
     "lottie-react": "^2.4.0",

@@ -4,7 +4,7 @@
 
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BodyText, Button, Description, Title, colors, spacing } from '@selfxyz/euclid-web';
+import { BodyText, Button, Description, Title, colors, spacing } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 

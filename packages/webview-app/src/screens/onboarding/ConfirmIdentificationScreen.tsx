@@ -4,7 +4,7 @@
 
 import React, { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { StatusState, CheckCircleIcon, colors } from '@selfxyz/euclid-web';
+import { StatusState, CheckCircleIcon, colors } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';

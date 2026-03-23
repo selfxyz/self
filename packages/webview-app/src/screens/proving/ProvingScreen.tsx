@@ -4,7 +4,7 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid-web';
+import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
@@ -98,6 +98,8 @@ export const ProvingScreen: React.FC = () => {
       appEndpoint={appEndpoint}
       timestamp={timestamp}
       items={proofItems}
+      // TODO: hardcoding for now, fetch real value
+      documentType='passport'
     />
   );
 };
