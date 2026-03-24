@@ -2,8 +2,8 @@
 
 # run from root
 # first argument should register | dsc | disclose
-if [[  $1 != "register" && $1 != "dsc" && $1 != "disclose" && $1 != "register_id" ]]; then
-    echo "first argument should be register | dsc | disclose | register_id"
+if [[  $1 != "register" && $1 != "dsc" && $1 != "disclose" && $1 != "register_id" && $1 != "register_kyc" ]]; then
+    echo "first argument should be register | dsc | disclose | register_id | register_kyc"
     exit 1
 fi
 
@@ -67,6 +67,10 @@ REGISTER_ID_CIRCUITS=(
     "register_id_sha512_sha512_sha512_rsapss_65537_64_2048:true"
 )
 
+REGISTER_KYC_CIRCUITS=(
+    "register_kyc:true"
+)
+
 DISCLOSE_CIRCUITS=(
     "vc_and_disclose:true"
     "vc_and_disclose_id:true"
@@ -105,6 +109,11 @@ elif [[ $1 == "register_id" ]]; then
     output="output/register"
     mkdir -p $output
     basepath="./circuits/circuits/register_id/instances"
+elif [[ $1 == "register_kyc" ]]; then
+    allowed_circuits=("${REGISTER_KYC_CIRCUITS[@]}")
+    output="output/register"
+    mkdir -p $output
+    basepath="./circuits/circuits/register/instances"
 elif [[ $1 == "dsc" ]]; then
     allowed_circuits=("${DSC_CIRCUITS[@]}")
     output="output/dsc"
