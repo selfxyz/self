@@ -147,7 +147,7 @@ yarn build # Confirm build still works
 For architecture context:
 
 - **[SDK Overview](../../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix (read-only reference)
-- **Implementation specs** — Live in Linear as documents attached to issues. Check the relevant Linear issue for the current spec. Do not create spec files in `specs/` — that folder is deprecated.
+- **Implementation specs** — Canonical source is `specs/projects/sdk/workstreams/<scope>/plans/` (version-controlled). Linear documents attached to issues are mirrored copies for tracking/discovery. When in doubt, trust the repo spec.
 
 Before implementing SDK work, read `CLAUDE.md` Key Rules for constraints and validation commands.
 

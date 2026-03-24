@@ -20,13 +20,13 @@ from the browser entry point.
 
 ### What the SDK provides
 
-| Adapter            | Factory                       | Location                                               | Consumer      |
-| ------------------ | ----------------------------- | ------------------------------------------------------ | ------------- |
-| Crypto (browser)   | `createWebCryptoAdapter()`    | `mobile-sdk-alpha/src/adapters/browser/crypto.ts`      | webview-app   |
-| Crypto (RN)        | `createCryptoAdapter()`       | `mobile-sdk-alpha/src/adapters/react-native/crypto.ts` | RN app        |
-| Network (browser)  | `createWebNetworkAdapter()`   | `mobile-sdk-alpha/src/adapters/browser/network.ts`     | webview-app   |
-| Network (RN)       | `createNetworkAdapter()`      | `mobile-sdk-alpha/src/adapters/react-native/network.ts`| RN app        |
-| Analytics          | `createWebAnalyticsAdapter()` | `mobile-sdk-alpha/src/adapters/browser/analytics.ts`   | webview-app   |
+| Adapter           | Factory                       | Location                                                | Consumer    |
+| ----------------- | ----------------------------- | ------------------------------------------------------- | ----------- |
+| Crypto (browser)  | `createWebCryptoAdapter()`    | `mobile-sdk-alpha/src/adapters/browser/crypto.ts`       | webview-app |
+| Crypto (RN)       | `createCryptoAdapter()`       | `mobile-sdk-alpha/src/adapters/react-native/crypto.ts`  | RN app      |
+| Network (browser) | `createWebNetworkAdapter()`   | `mobile-sdk-alpha/src/adapters/browser/network.ts`      | webview-app |
+| Network (RN)      | `createNetworkAdapter()`      | `mobile-sdk-alpha/src/adapters/react-native/network.ts` | RN app      |
+| Analytics         | `createWebAnalyticsAdapter()` | `mobile-sdk-alpha/src/adapters/browser/analytics.ts`    | webview-app |
 
 ## What Was Done
 
@@ -52,20 +52,20 @@ consumers can import it.
 
 ## Files Modified
 
-| File                                                        | Change                                   | Risk     |
-| ----------------------------------------------------------- | ---------------------------------------- | -------- |
-| `packages/mobile-sdk-alpha/src/adapters/browser/network.ts` | **Created** — browser network factory   | **Low**  |
-| `packages/mobile-sdk-alpha/src/adapters/browser/index.ts`   | Added barrel export                      | **Low**  |
-| `packages/mobile-sdk-alpha/src/browser.ts`                  | Added re-export                          | **Low**  |
+| File                                                        | Change                                | Risk    |
+| ----------------------------------------------------------- | ------------------------------------- | ------- |
+| `packages/mobile-sdk-alpha/src/adapters/browser/network.ts` | **Created** — browser network factory | **Low** |
+| `packages/mobile-sdk-alpha/src/adapters/browser/index.ts`   | Added barrel export                   | **Low** |
+| `packages/mobile-sdk-alpha/src/browser.ts`                  | Added re-export                       | **Low** |
 
 ## Files NOT Modified
 
-| File                                                        | Why                                                                                |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| File                                                        | Why                                                                                 |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `app/src/providers/selfClientProvider.tsx`                  | RN app keeps its own inline adapters — avoids accidental breakage in production app |
-| `packages/webview-app/src/providers/SelfClientProvider.tsx` | webview-app wiring is WV-07 scope                                                  |
-| `packages/mobile-sdk-alpha/src/client.ts`                   | `createSelfClient()` factory is correct as-is                                      |
-| `packages/webview-bridge/**`                                | Bridge adapters are a separate assembly path                                       |
+| `packages/webview-app/src/providers/SelfClientProvider.tsx` | webview-app wiring is WV-07 scope                                                   |
+| `packages/mobile-sdk-alpha/src/client.ts`                   | `createSelfClient()` factory is correct as-is                                       |
+| `packages/webview-bridge/**`                                | Bridge adapters are a separate assembly path                                        |
 
 ## Design Decision: Separate RN and Browser Adapter Paths
 
