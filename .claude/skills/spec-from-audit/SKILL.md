@@ -1,0 +1,123 @@
+---
+name: spec-from-audit
+description: Generate one Linear spec document per issue — agent-executable implementation plans with file paths, validation commands, and acceptance criteria.
+disable-model-invocation: false
+user-invocable: true
+argument-hint: '[issue IDs or path-to-audit-doc]'
+---
+
+# Spec from Audit
+
+You take Linear issues (created by `/gaps-to-issues`) and generate one spec per issue as a Linear document. Each spec is an agent-executable implementation plan — a new Claude Code session with no prior context should be able to pick up the spec and produce a correct PR.
+
+## Input
+
+`$ARGUMENTS` — Either:
+- A list of Linear issue IDs (e.g., `SELF-2357 SELF-2358 SELF-2359`)
+- A path to an audit doc that has a "Follow-up Issues" section
+
+If not provided, look for the most recently modified audit doc in `docs/reviews/` and extract issue IDs from it.
+
+## Workflow
+
+### Step 1: Gather Issue Context
+
+For each issue ID, fetch the issue details:
+
+- Use `mcp__linear-server__get_issue` to read the title, description, and acceptance criteria
+- If an audit doc path is available, read the full audit doc for additional context on findings
+
+### Step 2: Read the Codebase
+
+For each issue, read the files referenced in its description/scope. You need to understand the **current state** of the code to write accurate specs with line numbers.
+
+Do not guess file contents — read them. Specs with wrong line numbers or stale code references are worse than no spec.
+
+### Step 3: Generate Specs
+
+For each issue, create a spec as a Linear document using `mcp__linear-server__create_document`.
+
+Link the document to the **issue** (not the project).
+
+**Title format:** `SPEC: <issue title>`
+
+**Spec structure:**
+
+```markdown
+## Overview
+
+You are [doing what] in [which area]. [1-2 sentences on why this matters.]
+
+## Preconditions
+
+- [What must be true before starting — dependencies on other PRs, packages published, etc.]
+
+## [Problem 1 / Area 1]: [descriptive name]
+
+**File:** `path/to/file.ts`
+
+[Description of the current problem with exact line numbers.]
+
+### Fix
+
+[Step-by-step instructions. Be explicit about what to change and why.]
+
+## [Problem 2 / Area 2]: [descriptive name]
+
+...
+
+## Files to modify
+
+- `path/to/file.ts` — [what changes]
+- `path/to/other.ts` — [what changes]
+
+## Files NOT to modify
+
+- `path/to/untouched/` — [why]
+
+## Dependencies
+
+- [Other issues/PRs that must land first, if any]
+
+## Validation
+
+```bash
+[relevant validation commands from the repo]
+```
+
+## Definition of Done
+
+- [ ] [acceptance criterion from the issue]
+- [ ] [acceptance criterion]
+- [ ] All validation commands pass
+```
+
+### Spec-Writing Rules
+
+Follow these strictly:
+
+1. **Second person** — "You are fixing...", "You will modify..."
+2. **Exact file paths with line numbers** — `src/utils/sumsubProvider.ts:118`, not "the provider file"
+3. **Current code, not stale references** — you read the files in Step 2, use what you actually saw
+4. **Explicit constraints** — "You will NOT modify..." sections prevent scope creep
+5. **Validation command** — agents will run it. If it's not there, they'll skip validation.
+6. **One spec = one PR ≤2k LOC** — if a spec feels like it would produce >2k LOC, flag it and suggest splitting
+7. **Self-contained** — the spec must include enough context to execute without reading other specs or the full audit doc
+
+### Step 4: Present Results
+
+Show the user:
+
+1. Table of created specs with issue IDs and document URLs
+2. Any issues that were too complex and need manual spec-writing
+3. Any issues where codebase reading revealed the problem is already fixed or different than described
+
+**Stop here.**
+
+## Important Notes
+
+- Never run `git commit` or `git push`.
+- Always read the actual files before writing specs — stale line numbers are actively harmful.
+- If an issue references files that don't exist, flag it rather than guessing.
+- If you discover the issue description is wrong (e.g., the code was already fixed), note this and ask the user whether to still create the spec or update the issue.
+- Specs are for agents, not humans. Write them as precise instructions, not explanatory documents.

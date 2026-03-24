@@ -37,39 +37,39 @@
 
 ## Dependencies
 
-| Depends On | Type | Status | Notes |
-|------------|------|--------|-------|
-| `packages/webview-bridge/` | Upstream (bridge protocol) | Done | Defines message shapes and transport names |
-| `packages/webview-app/` | Upstream (WebView bundle) | Active | Native shells load this bundle |
-| Build pipeline | Downstream | Ready | Copies webview-app dist into native assets |
+| Depends On                 | Type                       | Status | Notes                                      |
+| -------------------------- | -------------------------- | ------ | ------------------------------------------ |
+| `packages/webview-bridge/` | Upstream (bridge protocol) | Done   | Defines message shapes and transport names |
+| `packages/webview-app/`    | Upstream (WebView bundle)  | Active | Native shells load this bundle             |
+| Build pipeline             | Downstream                 | Ready  | Copies webview-app dist into native assets |
 
 ## Ownership Boundaries
 
-| Area | Owner | Notes |
-|------|-------|-------|
-| `packages/native-shell-android/` | Native Shells (Lite) | New package |
-| `packages/native-shell-ios/` | Native Shells (Lite) | New package |
-| `packages/sdk-test-app/` | Native Shells (Lite) | Adapted from kmp-sdk-test-app |
-| `packages/kmp-sdk/` | Paused | Reference only, do not modify |
-| `packages/self-sdk-swift/` | Paused | Reference only, do not modify |
+| Area                             | Owner                | Notes                         |
+| -------------------------------- | -------------------- | ----------------------------- |
+| `packages/native-shell-android/` | Native Shells (Lite) | New package                   |
+| `packages/native-shell-ios/`     | Native Shells (Lite) | New package                   |
+| `packages/sdk-test-app/`         | Native Shells (Lite) | Adapted from kmp-sdk-test-app |
+| `packages/kmp-sdk/`              | Paused               | Reference only, do not modify |
+| `packages/self-sdk-swift/`       | Paused               | Reference only, do not modify |
 
 ## Backlog
 
-| ID | Title | Status | Priority | Depends On | Plan | PR |
-|----|-------|--------|----------|------------|------|----|
-| NSL-01 | Android native shell (plain Kotlin) | In Progress | High | - | [plans/NSL-01-android-shell.md](./plans/NSL-01-android-shell.md) | Code complete on `feat/webview-sdk`, needs testing |
-| NSL-02 | iOS native shell (plain Swift) | In Progress | High | - | [plans/NSL-02-ios-shell.md](./plans/NSL-02-ios-shell.md) | Code complete on `feat/webview-sdk`, needs testing |
-| NSL-03 | Test apps (adapt from kmp-sdk-test-app) | In Progress | Medium | NSL-01, NSL-02 | [plans/NSL-03-test-apps.md](./plans/NSL-03-test-apps.md) | Code complete on `feat/webview-sdk`, needs build verification |
+| ID     | Title                                   | Status      | Priority | Depends On     | Plan                                                             | PR                                                            |
+| ------ | --------------------------------------- | ----------- | -------- | -------------- | ---------------------------------------------------------------- | ------------------------------------------------------------- |
+| NSL-01 | Android native shell (plain Kotlin)     | In Progress | High     | -              | [plans/NSL-01-android-shell.md](./plans/NSL-01-android-shell.md) | Code complete on `feat/webview-sdk`, needs testing            |
+| NSL-02 | iOS native shell (plain Swift)          | In Progress | High     | -              | [plans/NSL-02-ios-shell.md](./plans/NSL-02-ios-shell.md)         | Code complete on `feat/webview-sdk`, needs testing            |
+| NSL-03 | Test apps (adapt from kmp-sdk-test-app) | In Progress | Medium   | NSL-01, NSL-02 | [plans/NSL-03-test-apps.md](./plans/NSL-03-test-apps.md)         | Code complete on `feat/webview-sdk`, needs build verification |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan | IDs | Status |
-|------|-----|--------|
-| [plans/NSL-01-android-shell.md](./plans/NSL-01-android-shell.md) | NSL-01 | In Progress (code complete, needs testing) |
-| [plans/NSL-02-ios-shell.md](./plans/NSL-02-ios-shell.md) | NSL-02 | In Progress (code complete, needs testing) |
-| [plans/NSL-03-test-apps.md](./plans/NSL-03-test-apps.md) | NSL-03 | In Progress (code complete, needs build verification) |
+| Plan                                                             | IDs    | Status                                                |
+| ---------------------------------------------------------------- | ------ | ----------------------------------------------------- |
+| [plans/NSL-01-android-shell.md](./plans/NSL-01-android-shell.md) | NSL-01 | In Progress (code complete, needs testing)            |
+| [plans/NSL-02-ios-shell.md](./plans/NSL-02-ios-shell.md)         | NSL-02 | In Progress (code complete, needs testing)            |
+| [plans/NSL-03-test-apps.md](./plans/NSL-03-test-apps.md)         | NSL-03 | In Progress (code complete, needs build verification) |
 
 ## Completion Checklist
 
@@ -82,19 +82,19 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 These existing files define the contract and patterns to port:
 
-| What | Source | Notes |
-|------|--------|-------|
-| Bridge protocol (message shapes) | `packages/webview-bridge/src/types.ts` | Canonical — native must match |
-| Bridge transport detection | `packages/webview-bridge/src/bridge.ts` | Android: `SelfNativeAndroid`, iOS: `SelfNativeIOS` |
-| Crypto adapter expectations | `packages/webview-bridge/src/adapters/crypto.ts` | Defines request params and response shapes |
-| Storage adapter expectations | `packages/webview-bridge/src/adapters/storage.ts` | Defines request params and response shapes |
-| KMP MessageRouter | `packages/kmp-sdk/.../commonMain/.../MessageRouter.kt` | Port routing logic |
-| Android SecureStorage | `packages/kmp-sdk/.../androidMain/.../SecureStorageBridgeHandler.kt` | Port EncryptedSharedPreferences pattern |
-| Android WebView host | `packages/kmp-sdk/.../androidMain/.../AndroidWebViewHost.kt` | Port WebViewAssetLoader + JS interface |
-| Android Activity | `packages/kmp-sdk/.../androidMain/.../SelfVerificationActivity.kt` | Port entry point, simplify permissions |
-| iOS CryptoProvider | `packages/self-sdk-swift/.../CryptoProviderImpl.swift` | Port EC P-256 signing |
-| iOS SecureStorage | `packages/self-sdk-swift/.../SecureStorageProviderImpl.swift` | Port Keychain Services |
-| iOS WebView host | `packages/self-sdk-swift/.../WebViewProviderImpl.swift` | Port WKWebView + script message handler |
+| What                             | Source                                                               | Notes                                              |
+| -------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
+| Bridge protocol (message shapes) | `packages/webview-bridge/src/types.ts`                               | Canonical — native must match                      |
+| Bridge transport detection       | `packages/webview-bridge/src/bridge.ts`                              | Android: `SelfNativeAndroid`, iOS: `SelfNativeIOS` |
+| Crypto adapter expectations      | `packages/webview-bridge/src/adapters/crypto.ts`                     | Defines request params and response shapes         |
+| Storage adapter expectations     | `packages/webview-bridge/src/adapters/storage.ts`                    | Defines request params and response shapes         |
+| KMP MessageRouter                | `packages/kmp-sdk/.../commonMain/.../MessageRouter.kt`               | Port routing logic                                 |
+| Android SecureStorage            | `packages/kmp-sdk/.../androidMain/.../SecureStorageBridgeHandler.kt` | Port EncryptedSharedPreferences pattern            |
+| Android WebView host             | `packages/kmp-sdk/.../androidMain/.../AndroidWebViewHost.kt`         | Port WebViewAssetLoader + JS interface             |
+| Android Activity                 | `packages/kmp-sdk/.../androidMain/.../SelfVerificationActivity.kt`   | Port entry point, simplify permissions             |
+| iOS CryptoProvider               | `packages/self-sdk-swift/.../CryptoProviderImpl.swift`               | Port EC P-256 signing                              |
+| iOS SecureStorage                | `packages/self-sdk-swift/.../SecureStorageProviderImpl.swift`        | Port Keychain Services                             |
+| iOS WebView host                 | `packages/self-sdk-swift/.../WebViewProviderImpl.swift`              | Port WKWebView + script message handler            |
 
 ## Bridge Domain Contract
 
@@ -102,27 +102,27 @@ Only 3 domains are implemented by the native shells:
 
 ### `secureStorage`
 
-| Method | Params | Response |
-|--------|--------|----------|
-| `get` | `{ key: string }` | `{ value: string \| null }` |
-| `set` | `{ key: string, value: string }` | `null` |
-| `remove` | `{ key: string }` | `null` |
+| Method   | Params                           | Response                    |
+| -------- | -------------------------------- | --------------------------- |
+| `get`    | `{ key: string }`                | `{ value: string \| null }` |
+| `set`    | `{ key: string, value: string }` | `null`                      |
+| `remove` | `{ key: string }`                | `null`                      |
 
 ### `crypto`
 
-| Method | Params | Response |
-|--------|--------|----------|
-| `generateKey` | `{ keyRef: string }` | `{ keyRef: string, success: true }` |
-| `getPublicKey` | `{ keyRef: string }` | `{ publicKey: string }` (base64) |
-| `sign` | `{ data: string, keyRef: string }` (data is base64) | `{ signature: string }` (base64) |
+| Method         | Params                                              | Response                            |
+| -------------- | --------------------------------------------------- | ----------------------------------- |
+| `generateKey`  | `{ keyRef: string }`                                | `{ keyRef: string, success: true }` |
+| `getPublicKey` | `{ keyRef: string }`                                | `{ publicKey: string }` (base64)    |
+| `sign`         | `{ data: string, keyRef: string }` (data is base64) | `{ signature: string }` (base64)    |
 
 ### `lifecycle`
 
-| Method | Params | Response |
-|--------|--------|----------|
-| `ready` | `{}` | `null` (no-op) |
-| `dismiss` | `{ reason?: string }` | `null` (finishes Activity / dismisses VC) |
-| `setResult` | `{ success: bool, userId?, verificationId?, error? }` | `null` (forwards to host, then finishes) |
+| Method      | Params                                                | Response                                  |
+| ----------- | ----------------------------------------------------- | ----------------------------------------- |
+| `ready`     | `{}`                                                  | `null` (no-op)                            |
+| `dismiss`   | `{ reason?: string }`                                 | `null` (finishes Activity / dismisses VC) |
+| `setResult` | `{ success: bool, userId?, verificationId?, error? }` | `null` (forwards to host, then finishes)  |
 
 Any other domain request returns a `DOMAIN_NOT_FOUND` error response.
 
@@ -144,6 +144,7 @@ When the WebView calls `lifecycle.setResult()`, the native shell forwards the re
 ### Android → Host
 
 `LifecycleHandler` calls `Activity.setResult()` with:
+
 - `RESULT_OK` when `success: true`
 - `RESULT_CANCELED` when user dismisses
 - `RESULT_FIRST_USER` on error
@@ -153,6 +154,7 @@ Result JSON is included as Intent extra (`xyz.self.sdk.RESULT_DATA`). Host reads
 ### iOS → Host
 
 `LifecycleHandler` invokes the `SelfSdkCallback` protocol:
+
 - `onSuccess(result:)` when `success: true`
 - `onCancelled()` when user dismisses
 - `onFailure(error:)` on error
@@ -165,10 +167,10 @@ The host never sees raw KYC provider output. The WebView normalizes provider res
 
 ## Related Specs
 
-| Spec | Relationship |
-|------|-------------|
-| [SDK Overview](../../OVERVIEW.md) | Parent architecture |
-| [WebView Spec](../webview/SPEC.md) | Sibling — owns Sumsub integration and WebView UX |
-| [SDK Core Spec](../sdk-core/SPEC.md) | Sibling — owns mobile-sdk-alpha engine |
-| [Build Pipeline Spec](../build-pipeline/SPEC.md) | Downstream — bundles webview-app into native shells |
-| [Paused Native Shells](../../paused/native-shells/SPEC.md) | Predecessor — KMP-based, now deprecated |
+| Spec                                                       | Relationship                                        |
+| ---------------------------------------------------------- | --------------------------------------------------- |
+| [SDK Overview](../../OVERVIEW.md)                          | Parent architecture                                 |
+| [WebView Spec](../webview/SPEC.md)                         | Sibling — owns Sumsub integration and WebView UX    |
+| [SDK Core Spec](../sdk-core/SPEC.md)                       | Sibling — owns mobile-sdk-alpha engine              |
+| [Build Pipeline Spec](../build-pipeline/SPEC.md)           | Downstream — bundles webview-app into native shells |
+| [Paused Native Shells](../../paused/native-shells/SPEC.md) | Predecessor — KMP-based, now deprecated             |

@@ -9,6 +9,7 @@
 **Tech Stack:** React, React Router, `@selfxyz/euclid-web` (Euclid 3.0 component library), `@selfxyz/webview-bridge` (bridge adapters)
 
 **Existing pattern to follow:**
+
 ```
 // webview-app wrapper screen pattern:
 import { EuclidScreen } from '@selfxyz/euclid-web';
@@ -27,13 +28,13 @@ export const WrapperScreen: React.FC = () => {
 
 ## File Map
 
-| Action | File | Responsibility |
-|--------|------|----------------|
-| Modify | `packages/webview-app/src/App.tsx` | Add 3 new routes |
-| Modify | `packages/webview-app/src/screens/account/SettingsScreen.tsx` | Replace `/coming-soon` navigations with real routes + bridge actions |
-| Create | `packages/webview-app/src/screens/account/SecurityScreen.tsx` | Wrapper for Euclid `SecurityScreen` |
-| Create | `packages/webview-app/src/screens/account/NotificationPreferencesScreen.tsx` | Wrapper for Euclid `NotificationPreferencesScreen` |
-| Create | `packages/webview-app/src/screens/account/DevModeScreen.tsx` | Wrapper for Euclid `DevModeScreen` |
+| Action | File                                                                         | Responsibility                                                       |
+| ------ | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Modify | `packages/webview-app/src/App.tsx`                                           | Add 3 new routes                                                     |
+| Modify | `packages/webview-app/src/screens/account/SettingsScreen.tsx`                | Replace `/coming-soon` navigations with real routes + bridge actions |
+| Create | `packages/webview-app/src/screens/account/SecurityScreen.tsx`                | Wrapper for Euclid `SecurityScreen`                                  |
+| Create | `packages/webview-app/src/screens/account/NotificationPreferencesScreen.tsx` | Wrapper for Euclid `NotificationPreferencesScreen`                   |
+| Create | `packages/webview-app/src/screens/account/DevModeScreen.tsx`                 | Wrapper for Euclid `DevModeScreen`                                   |
 
 ---
 
@@ -42,6 +43,7 @@ export const WrapperScreen: React.FC = () => {
 The most important sub-screen. Wires backup state, recovery phrase, and restore actions through the bridge.
 
 **Files:**
+
 - Create: `packages/webview-app/src/screens/account/SecurityScreen.tsx`
 
 - [ ] **Step 1: Create SecurityScreen wrapper**
@@ -155,6 +157,7 @@ git commit -m "feat(webview-app): add SecurityScreen wrapper for Euclid 3.0"
 Manages toggle state locally (persisted via bridge storage in future).
 
 **Files:**
+
 - Create: `packages/webview-app/src/screens/account/NotificationPreferencesScreen.tsx`
 
 - [ ] **Step 1: Create NotificationPreferencesScreen wrapper**
@@ -174,10 +177,26 @@ import {
 import { useSelfClient } from '../../providers/SelfClientProvider';
 
 const defaultToggles = [
-  { key: 'self', label: 'Allow Self notifications', description: 'App updates and more' },
-  { key: 'nova', label: 'Allow Nova notifications', description: 'Never miss a mission' },
-  { key: 'points', label: 'Allow Self Points notifications', description: 'Points and rewards' },
-  { key: 'id_status', label: 'Allow ID status notifications', description: 'Document verification updates' },
+  {
+    key: 'self',
+    label: 'Allow Self notifications',
+    description: 'App updates and more',
+  },
+  {
+    key: 'nova',
+    label: 'Allow Nova notifications',
+    description: 'Never miss a mission',
+  },
+  {
+    key: 'points',
+    label: 'Allow Self Points notifications',
+    description: 'Points and rewards',
+  },
+  {
+    key: 'id_status',
+    label: 'Allow ID status notifications',
+    description: 'Document verification updates',
+  },
 ];
 
 export const NotificationPreferencesScreen: React.FC = () => {
@@ -201,7 +220,10 @@ export const NotificationPreferencesScreen: React.FC = () => {
     value: toggleValues[t.key] ?? false,
     onToggleChange: (value: boolean) => {
       haptic.trigger('selection');
-      analytics.trackEvent('notification_toggle_changed', { key: t.key, value });
+      analytics.trackEvent('notification_toggle_changed', {
+        key: t.key,
+        value,
+      });
       setToggleValues(prev => ({ ...prev, [t.key]: value }));
     },
   }));
@@ -238,6 +260,7 @@ git commit -m "feat(webview-app): add NotificationPreferencesScreen wrapper for 
 Manages mock document generation state. More complex — has steppers, dropdowns, toggle, and IDCard display.
 
 **Files:**
+
 - Create: `packages/webview-app/src/screens/account/DevModeScreen.tsx`
 
 - [ ] **Step 1: Create DevModeScreen wrapper**
@@ -301,7 +324,16 @@ export const DevModeScreen: React.FC = () => {
       ofacCheck,
     });
     navigate('/');
-  }, [navigate, haptic, analytics, documentType, nationality, ageIndex, expiryIndex, ofacCheck]);
+  }, [
+    navigate,
+    haptic,
+    analytics,
+    documentType,
+    nationality,
+    ageIndex,
+    expiryIndex,
+    ofacCheck,
+  ]);
 
   return (
     <EuclidDevModeScreen
@@ -318,17 +350,23 @@ export const DevModeScreen: React.FC = () => {
       nationality={nationality}
       onNationalityPress={() => {
         setNationality(prev =>
-          prev === 'united states of america' ? 'germany' : 'united states of america',
+          prev === 'united states of america'
+            ? 'germany'
+            : 'united states of america',
         );
       }}
       age={ageOptions[ageIndex]}
-      onAgeIncrement={() => setAgeIndex(prev => Math.min(prev + 1, ageOptions.length - 1))}
+      onAgeIncrement={() =>
+        setAgeIndex(prev => Math.min(prev + 1, ageOptions.length - 1))
+      }
       onAgeDecrement={() => setAgeIndex(prev => Math.max(prev - 1, 0))}
       documentExpiresIn={expiryOptions[expiryIndex]}
       onDocumentExpiresIncrement={() =>
         setExpiryIndex(prev => Math.min(prev + 1, expiryOptions.length - 1))
       }
-      onDocumentExpiresDecrement={() => setExpiryIndex(prev => Math.max(prev - 1, 0))}
+      onDocumentExpiresDecrement={() =>
+        setExpiryIndex(prev => Math.max(prev - 1, 0))
+      }
       ofacCheck={ofacCheck}
       onOfacCheckChange={value => {
         haptic.trigger('selection');
@@ -360,6 +398,7 @@ git commit -m "feat(webview-app): add DevModeScreen wrapper for Euclid 3.0"
 Add the three new routes under `/settings/*`.
 
 **Files:**
+
 - Modify: `packages/webview-app/src/App.tsx`
 
 - [ ] **Step 1: Add imports and routes**
@@ -399,11 +438,13 @@ git commit -m "feat(webview-app): add settings sub-screen routes"
 Replace the five `/coming-soon` navigations with real routes and bridge actions.
 
 **Files:**
+
 - Modify: `packages/webview-app/src/screens/account/SettingsScreen.tsx`
 
 - [ ] **Step 1: Update SettingsScreen menu items**
 
 Replace the full component with updated navigation wiring. Key changes:
+
 - "View document info" → `navigate('/coming-soon')` (no Euclid screen for this yet — keep as-is)
 - "Recovery phrase" → `navigate('/settings/security')` (Security screen handles this)
 - "Cloud backup" → `navigate('/settings/security')` (Security screen handles this)
@@ -411,6 +452,7 @@ Replace the full component with updated navigation wiring. Key changes:
 - "Share Self" → call `lifecycle.dismiss()` with share intent (or keep `/coming-soon`)
 
 Additionally, add the Settings sub-sections that match the Euclid Storybook stories:
+
 - **App settings section**: Manage Documents, Security, Notifications
 - **Support section**: Support, Send feedback
 - **Developer tools section** (conditional): Dev mode

@@ -7,11 +7,11 @@
 
 Three new wrapper screens were added to `packages/webview-app/src/screens/account/`:
 
-| File | Euclid Component | Route |
-|------|-----------------|-------|
-| `SecurityScreen.tsx` | `SecurityScreen` | `/settings/security` |
+| File                                | Euclid Component                | Route                     |
+| ----------------------------------- | ------------------------------- | ------------------------- |
+| `SecurityScreen.tsx`                | `SecurityScreen`                | `/settings/security`      |
 | `NotificationPreferencesScreen.tsx` | `NotificationPreferencesScreen` | `/settings/notifications` |
-| `DevModeScreen.tsx` | `DevModeScreen` | `/settings/dev-mode` |
+| `DevModeScreen.tsx`                 | `DevModeScreen`                 | `/settings/dev-mode`      |
 
 Routes added to `App.tsx`. `SettingsScreen.tsx` updated with three sections (App settings, Support & feedback, Developer tools) — "Security", "Notifications", and "Dev mode" now navigate to real screens instead of `/coming-soon`.
 
@@ -24,6 +24,7 @@ The installed `@selfxyz/euclid-web@1.0.2` does **not** export `SecurityScreen`, 
 **To unblock, you need to publish a new version of `@selfxyz/euclid`** (note: package was renamed from `euclid-web` to `euclid` on euclid's `origin/main`).
 
 Steps:
+
 1. In the euclid repo, check out `origin/main` and verify the screens export: `git show origin/main:packages/euclid/src/screens/index.ts`
 2. Bump the version and publish (the euclid repo has automated publishing via PR merge of version bump PRs)
 3. In the self repo, update `packages/webview-app/package.json` to use the new version (and rename dependency from `@selfxyz/euclid-web` to `@selfxyz/euclid` if the package name changed)
