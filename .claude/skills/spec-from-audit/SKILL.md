@@ -37,7 +37,7 @@ Do not guess file contents — read them. Specs with wrong line numbers or stale
 
 For each issue, write the spec to **both** locations:
 
-1. **Repo file** — Write to `specs/projects/sdk/workstreams/<scope>/plans/<ID>-<slug>.md` using the Write tool. Determine `<scope>` from the workstream the issue belongs to (e.g., `webview`, `sdk-core`, `build-pipeline`). Add a backlog row in the workstream's `SPEC.md` if one exists.
+1. **Repo file** — Write to `specs/projects/sdk/workstreams/<scope>/plans/<ID>-<slug>.md` using the Write tool. Determine `<scope>` from the workstream the issue belongs to (e.g., `webview`, `sdk-core`, `build-pipeline`). Always create or update the backlog row in the workstream's `SPEC.md` — if `SPEC.md` doesn't exist yet, create it.
 2. **Linear document** — Create using `mcp__linear-server__create_document`, linked to the **issue** (not the project). This is the cross-tool access copy.
 
 **Title format:** `SPEC: <issue title>`

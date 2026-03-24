@@ -34,11 +34,17 @@ exports alongside the existing type-only exports:
 
 ```typescript
 // Existing (keep):
-export type { ProvingStateType, provingMachineCircuitType } from './proving/provingMachine';
+export type {
+  ProvingStateType,
+  provingMachineCircuitType,
+} from './proving/provingMachine';
 
 // Add:
 export type { ProvingState } from './proving/provingMachine';
-export { useProvingStore, getPostVerificationRoute } from './proving/provingMachine';
+export {
+  useProvingStore,
+  getPostVerificationRoute,
+} from './proving/provingMachine';
 ```
 
 Additive-only — no RN regression risk.
@@ -53,15 +59,23 @@ boundary), not IndexedDB. Use the existing `secureStorage` bridge domain.
 
 ```typescript
 import type { WebViewBridge } from '../bridge';
-import type { DocumentsAdapter, DocumentCatalog, IDDocument } from '@selfxyz/mobile-sdk-alpha';
+import type {
+  DocumentsAdapter,
+  DocumentCatalog,
+  IDDocument,
+} from '@selfxyz/mobile-sdk-alpha';
 
 const CATALOG_KEY = 'self_document_catalog';
 const DOC_PREFIX = 'self_doc_';
 
-export function createKeychainDocumentsAdapter(bridge: WebViewBridge): DocumentsAdapter {
+export function createKeychainDocumentsAdapter(
+  bridge: WebViewBridge,
+): DocumentsAdapter {
   async function storageGet(key: string): Promise<string | null> {
     const result = await bridge.request<{ value: string | null }>(
-      'secureStorage', 'get', { key },
+      'secureStorage',
+      'get',
+      { key },
     );
     return result?.value ?? null;
   }
@@ -121,7 +135,7 @@ import { bridgeAuthAdapter } from './auth';
 import { createKeychainDocumentsAdapter } from './keychain-documents';
 import {
   createWebAnalyticsAdapter,
-  createWebNetworkAdapter,   // from SC-03
+  createWebNetworkAdapter, // from SC-03
   webNFCScannerShim,
 } from '@selfxyz/mobile-sdk-alpha/browser';
 
@@ -150,7 +164,9 @@ export function createSdkAdapters(opts: CreateSdkAdaptersOpts): Adapters {
   const navigation: NavigationAdapter = {
     goBack,
     goTo: (routeName, params) => {
-      const query = params ? `?${new URLSearchParams(params as Record<string, string>)}` : '';
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>)}`
+        : '';
       navigate(`/${routeName}${query}`);
     },
   };
@@ -177,7 +193,10 @@ Replace the current `SelfClientAdapters` bag-of-adapters with a real
 `SelfClient` instance created via `createSelfClient()`.
 
 ```typescript
-import { createSelfClient, createListenersMap } from '@selfxyz/mobile-sdk-alpha/browser';
+import {
+  createSelfClient,
+  createListenersMap,
+} from '@selfxyz/mobile-sdk-alpha/browser';
 import { createSdkAdapters } from '@selfxyz/webview-bridge/adapters';
 
 // Replace SelfClientAdapters type with SelfClient from SDK
@@ -185,7 +204,7 @@ import { createSdkAdapters } from '@selfxyz/webview-bridge/adapters';
 // (they are WebView-specific and not part of SDK Adapters interface)
 
 export interface WebViewAdapters {
-  client: SelfClient;              // real SDK client with provingMachine access
+  client: SelfClient; // real SDK client with provingMachine access
   lifecycle: BridgeLifecycleAdapter;
   haptic: BridgeHapticAdapter;
   biometrics: BridgeBiometricsAdapter;
@@ -193,6 +212,7 @@ export interface WebViewAdapters {
 ```
 
 The `SelfClient` instance gives webview-app access to:
+
 - `client.useProvingStore` — Zustand hook for proving state
 - `client.getProvingState()` — snapshot accessor
 - `client.emit()` / `client.on()` — event system
@@ -204,13 +224,13 @@ The `SelfClient` instance gives webview-app access to:
 
 Add packages externalized by the SDK's tsup build:
 
-| Package            | Version | Why                              |
-|--------------------|---------|----------------------------------|
-| `socket.io-client` | ^4.8.3  | TEE status WebSocket listener    |
-| `xstate`           | ^5.20.2 | Internal state machine           |
-| `node-forge`       | ^1.3.3  | AES-256-GCM encryption           |
-| `buffer`           | ^6.0.3  | Node.js Buffer polyfill          |
-| `elliptic`         | ^6.5.4  | Crypto ops via @selfxyz/common   |
+| Package            | Version | Why                            |
+| ------------------ | ------- | ------------------------------ |
+| `socket.io-client` | ^4.8.3  | TEE status WebSocket listener  |
+| `xstate`           | ^5.20.2 | Internal state machine         |
+| `node-forge`       | ^1.3.3  | AES-256-GCM encryption         |
+| `buffer`           | ^6.0.3  | Node.js Buffer polyfill        |
+| `elliptic`         | ^6.5.4  | Crypto ops via @selfxyz/common |
 
 `zustand` and `@selfxyz/common` are already deps.
 
@@ -233,7 +253,11 @@ Pass required config fields to `createSelfClient()`:
 
 ```typescript
 const client = useMemo(() => {
-  const adapters = createSdkAdapters({ bridge, navigate, goBack: () => navigate(-1) });
+  const adapters = createSdkAdapters({
+    bridge,
+    navigate,
+    goBack: () => navigate(-1),
+  });
   const listeners = createListenersMap();
   return createSelfClient({
     config: {
@@ -249,31 +273,31 @@ const client = useMemo(() => {
 
 ## Files You Will Create
 
-| File                                                      | What                                              | Risk     |
-|-----------------------------------------------------------|---------------------------------------------------|----------|
-| `packages/webview-bridge/src/adapters/keychain-documents.ts` | Keychain-backed DocumentsAdapter via secureStorage | **Low**  |
-| `packages/webview-bridge/src/adapters/sdk-adapter-map.ts`    | Bridge→SDK adapter mapping + factory              | **Low**  |
+| File                                                         | What                                               | Risk    |
+| ------------------------------------------------------------ | -------------------------------------------------- | ------- |
+| `packages/webview-bridge/src/adapters/keychain-documents.ts` | Keychain-backed DocumentsAdapter via secureStorage | **Low** |
+| `packages/webview-bridge/src/adapters/sdk-adapter-map.ts`    | Bridge→SDK adapter mapping + factory               | **Low** |
 
 ## Files You Will Modify
 
-| File                                                         | Change                                               | Risk       |
-|--------------------------------------------------------------|------------------------------------------------------|------------|
-| `packages/mobile-sdk-alpha/src/browser.ts`                   | Add `useProvingStore`, `ProvingState` exports        | **Low**    |
-| `packages/webview-bridge/src/adapters/index.ts`              | Add barrel exports for new adapters                  | **Low**    |
-| `packages/webview-app/src/providers/SelfClientProvider.tsx`  | Replace adapter bag with real SelfClient             | **Medium** |
-| `packages/webview-app/package.json`                          | Add 5 dependencies                                  | **Low**    |
-| `packages/webview-app/src/main.tsx`                          | Add Buffer polyfill (2 lines)                        | **Low**    |
-| `specs/projects/sdk/workstreams/webview/SPEC.md`             | Add WV-07 to backlog                                 | **None**   |
+| File                                                        | Change                                        | Risk       |
+| ----------------------------------------------------------- | --------------------------------------------- | ---------- |
+| `packages/mobile-sdk-alpha/src/browser.ts`                  | Add `useProvingStore`, `ProvingState` exports | **Low**    |
+| `packages/webview-bridge/src/adapters/index.ts`             | Add barrel exports for new adapters           | **Low**    |
+| `packages/webview-app/src/providers/SelfClientProvider.tsx` | Replace adapter bag with real SelfClient      | **Medium** |
+| `packages/webview-app/package.json`                         | Add 5 dependencies                            | **Low**    |
+| `packages/webview-app/src/main.tsx`                         | Add Buffer polyfill (2 lines)                 | **Low**    |
+| `specs/projects/sdk/workstreams/webview/SPEC.md`            | Add WV-07 to backlog                          | **None**   |
 
 ## Files You Will NOT Modify
 
-| File                                                          | Why                                                          |
-|---------------------------------------------------------------|--------------------------------------------------------------|
-| `packages/mobile-sdk-alpha/src/proving/provingMachine.ts`     | Engine is already browser-compatible; no changes needed       |
-| `packages/mobile-sdk-alpha/src/client.ts`                     | `createSelfClient()` factory is correct as-is                |
-| `packages/native-shell-android/**`                            | secureStorage handler already exists and handles JSON values  |
-| `packages/native-shell-ios/**`                                | secureStorage handler already exists and handles JSON values  |
-| `packages/webview-app/src/screens/**`                         | Screen wiring is WV-08 scope                                 |
+| File                                                      | Why                                                          |
+| --------------------------------------------------------- | ------------------------------------------------------------ |
+| `packages/mobile-sdk-alpha/src/proving/provingMachine.ts` | Engine is already browser-compatible; no changes needed      |
+| `packages/mobile-sdk-alpha/src/client.ts`                 | `createSelfClient()` factory is correct as-is                |
+| `packages/native-shell-android/**`                        | secureStorage handler already exists and handles JSON values |
+| `packages/native-shell-ios/**`                            | secureStorage handler already exists and handles JSON values |
+| `packages/webview-app/src/screens/**`                     | Screen wiring is WV-08 scope                                 |
 
 ## Constraints
 

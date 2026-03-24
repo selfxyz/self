@@ -62,7 +62,7 @@ nvm use && corepack enable && yarn install
 2. **Create a Linear issue** if one doesn't exist — include scope, files modified, acceptance criteria
 3. **Write the spec** in `specs/` following the two-layer model (backlog row in `SPEC.md`, execution plan in `plans/`)
 4. **Create a Linear document** attached to the issue with the spec content (so non-GitHub users can review)
-5. **Then implement** — one spec = one PR ≤2k LOC
+5. **Then implement** — one spec = one PR (see PR size target in Key Rules)
 6. **After completion:** Update the Linear issue status. Close when done.
 
 ### Spec-Writing Guidelines
@@ -74,7 +74,7 @@ Specs are agent-executable prompts. A new Claude Code session with no prior cont
 - **Be explicit about constraints.** "You will NOT modify..." not just "Focus on..."
 - **Provide exact file paths with line numbers.** `src/utils/sumsubProvider.ts:118` not "the provider file."
 - **State the validation command.** Agents will run it. If it's not there, they'll skip validation.
-- **One spec = one PR ≤2k LOC.** If a spec would produce >2k LOC, split it.
+- **One spec = one PR.** Target the PR size from Key Rules (1k–3k LOC). If a spec would exceed that, split it.
 - **Mark items as required vs optional.** Don't let agents infer priority.
 - **Include out-of-scope sections.** These are as important as in-scope sections for preventing drift.
 - **Use `--remote` for medium+ work.** Medium and large specs benefit from `claude --remote` so work continues in the background.

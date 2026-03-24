@@ -76,20 +76,20 @@ export const TunnelProvingScreen: React.FC = () => {
 
 **State → UI mapping:**
 
-| provingMachine state     | UI shown                                        |
-|--------------------------|--------------------------------------------------|
-| `idle`                   | Loading spinner                                  |
-| `parsing_id_document`    | "Preparing document..."                          |
-| `fetching_data`          | "Fetching verification data..."                  |
-| `validating_document`    | "Validating document..."                         |
-| `init_tee_connexion`     | "Connecting to prover..."                        |
-| `ready_to_prove`         | "Ready" (auto-confirm or user confirms)          |
-| `proving`                | "Generating proof..." (with Euclid animation)    |
-| `post_proving`           | "Finalizing..."                                  |
-| `completed`              | Navigate to result screen (success)              |
-| `error` / `failure`      | Navigate to result screen (error with code)      |
-| `passport_not_supported` | Show unsupported document error                  |
-| `passport_data_not_found`| Show missing document error                      |
+| provingMachine state      | UI shown                                      |
+| ------------------------- | --------------------------------------------- |
+| `idle`                    | Loading spinner                               |
+| `parsing_id_document`     | "Preparing document..."                       |
+| `fetching_data`           | "Fetching verification data..."               |
+| `validating_document`     | "Validating document..."                      |
+| `init_tee_connexion`      | "Connecting to prover..."                     |
+| `ready_to_prove`          | "Ready" (auto-confirm or user confirms)       |
+| `proving`                 | "Generating proof..." (with Euclid animation) |
+| `post_proving`            | "Finalizing..."                               |
+| `completed`               | Navigate to result screen (success)           |
+| `error` / `failure`       | Navigate to result screen (error with code)   |
+| `passport_not_supported`  | Show unsupported document error               |
+| `passport_data_not_found` | Show missing document error                   |
 
 ### 3. Wire disclose flow after register
 
@@ -163,31 +163,31 @@ tunnel flow.
 
 ## Files You Will Modify
 
-| File                                                                       | Change                                          | Risk       |
-|----------------------------------------------------------------------------|-------------------------------------------------|------------|
-| `packages/webview-app/src/screens/tunnel/TunnelProvingScreen.tsx`          | Replace mock with real provingMachine            | **Medium** |
-| `packages/webview-app/src/screens/tunnel/TunnelResultScreen.tsx`           | Wire real result from proving state              | **Low**    |
-| `packages/webview-app/src/screens/tunnel/TunnelProofReceiptScreen.tsx`     | Wire user confirmation to provingMachine         | **Low**    |
-| `packages/webview-app/src/App.tsx`                                         | Update tunnel routes if needed                   | **Low**    |
-| `specs/projects/sdk/workstreams/webview/SPEC.md`                           | Add WV-08 to backlog                             | **None**   |
+| File                                                                   | Change                                   | Risk       |
+| ---------------------------------------------------------------------- | ---------------------------------------- | ---------- |
+| `packages/webview-app/src/screens/tunnel/TunnelProvingScreen.tsx`      | Replace mock with real provingMachine    | **Medium** |
+| `packages/webview-app/src/screens/tunnel/TunnelResultScreen.tsx`       | Wire real result from proving state      | **Low**    |
+| `packages/webview-app/src/screens/tunnel/TunnelProofReceiptScreen.tsx` | Wire user confirmation to provingMachine | **Low**    |
+| `packages/webview-app/src/App.tsx`                                     | Update tunnel routes if needed           | **Low**    |
+| `specs/projects/sdk/workstreams/webview/SPEC.md`                       | Add WV-08 to backlog                     | **None**   |
 
 ## Files You Will NOT Modify
 
-| File                                                          | Why                                                    |
-|---------------------------------------------------------------|--------------------------------------------------------|
-| `packages/mobile-sdk-alpha/src/proving/provingMachine.ts`     | Engine unchanged — consumed as-is                      |
-| `packages/webview-bridge/**`                                  | Bridge layer unchanged — WV-07 already handled mapping |
-| `packages/native-shell-android/**`                            | No new native handlers needed                          |
-| `packages/native-shell-ios/**`                                | No new native handlers needed                          |
-| `packages/webview-app/src/screens/proving/ProvingScreen.tsx`  | Non-tunnel proving screen — separate concern           |
-| `packages/webview-app/src/providers/SelfClientProvider.tsx`   | Already wired in WV-07                                 |
+| File                                                         | Why                                                    |
+| ------------------------------------------------------------ | ------------------------------------------------------ |
+| `packages/mobile-sdk-alpha/src/proving/provingMachine.ts`    | Engine unchanged — consumed as-is                      |
+| `packages/webview-bridge/**`                                 | Bridge layer unchanged — WV-07 already handled mapping |
+| `packages/native-shell-android/**`                           | No new native handlers needed                          |
+| `packages/native-shell-ios/**`                               | No new native handlers needed                          |
+| `packages/webview-app/src/screens/proving/ProvingScreen.tsx` | Non-tunnel proving screen — separate concern           |
+| `packages/webview-app/src/providers/SelfClientProvider.tsx`  | Already wired in WV-07                                 |
 
 ## Files You May Create
 
-| File                                                                  | What                                              |
-|-----------------------------------------------------------------------|---------------------------------------------------|
-| `packages/webview-app/src/hooks/useProvingFlow.ts`                    | Optional: shared hook for register→disclose chain |
-| `packages/webview-app/src/screens/tunnel/TunnelProviderScreen.tsx`    | If tunnel needs its own Sumsub launch screen      |
+| File                                                               | What                                              |
+| ------------------------------------------------------------------ | ------------------------------------------------- |
+| `packages/webview-app/src/hooks/useProvingFlow.ts`                 | Optional: shared hook for register→disclose chain |
+| `packages/webview-app/src/screens/tunnel/TunnelProviderScreen.tsx` | If tunnel needs its own Sumsub launch screen      |
 
 ## Constraints
 
@@ -211,7 +211,8 @@ tunnel flow.
    Construct it directly from Sumsub's attestation:
    ```typescript
    const kycData: KycData = {
-     documentType: deserializeApplicantInfo(attestation.serializedApplicantInfo).idType,
+     documentType: deserializeApplicantInfo(attestation.serializedApplicantInfo)
+       .idType,
      documentCategory: 'kyc',
      mock: false,
      signature: attestation.signature,
