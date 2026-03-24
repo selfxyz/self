@@ -91,14 +91,26 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
               await disableBackup();
               toggleCloudBackupEnabled();
               trackEvent(BackupEvents.CLOUD_BACKUP_DISABLED_DONE);
+            } catch (error) {
+              console.error('Failed to disable cloud backup', error);
+              Alert.alert(
+                'Error',
+                'Failed to disable cloud backups. Please try again.',
+              );
             } finally {
               setICloudPending(false);
             }
           },
         },
       ],
+      { cancelable: false },
     );
-  }, [loginWithBiometrics, disableBackup, toggleCloudBackupEnabled, trackEvent]);
+  }, [
+    loginWithBiometrics,
+    disableBackup,
+    toggleCloudBackupEnabled,
+    trackEvent,
+  ]);
 
   const { showModal: showNoRegisteredAccountModal } = useModal(
     useMemo(
