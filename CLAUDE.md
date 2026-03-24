@@ -46,22 +46,24 @@ nvm use && corepack enable && yarn install
 
 ## Specs & Planning
 
-**Every feature — even minor ones — needs a spec.** Specs live in **Linear** as documents attached to issues. Do not create spec files in the `specs/` folder — that folder is deprecated and being migrated to Linear.
+**Every feature — even minor ones — needs a spec.** For SDK work (`packages/`, `webview-app`, `webview-bridge`), specs live in **both** the repo (`specs/`) and Linear. The repo spec is the canonical, version-controlled execution plan. The Linear issue is the tracking and discovery layer. For app-only or non-SDK work, a Linear issue with inline scope is sufficient — no repo spec required.
 
 ### Where Specs Live
 
-- **Specs → Linear documents**, attached to the relevant Linear issue (not the project)
-- **Architecture context → `specs/projects/sdk/OVERVIEW.md`** (read-only reference, still in repo)
-- **Audit docs → `docs/reviews/`** (PR audit findings, kept in repo for git history)
-- **`specs/` folder** — deprecated. Existing specs are being migrated to Linear. Do not create new files here.
+- **Execution specs → `specs/projects/sdk/workstreams/<scope>/plans/<ID>-<slug>.md`** — version-controlled, agent-executable plans
+- **Backlog → `specs/projects/sdk/workstreams/<scope>/SPEC.md`** — durable context plus backlog table per workstream
+- **Architecture context → `specs/projects/sdk/OVERVIEW.md`** — system architecture, bridge protocol, decision matrix
+- **Audit docs → `docs/reviews/`** — PR audit findings, kept in repo for git history
+- **Linear issues** — tracking, discovery, status. Link to the repo spec. Attach a Linear document copy for cross-tool access.
 
 ### Planning Protocol
 
-1. **Read** this file's Key Rules and any relevant Linear issue/spec — understand the current state and constraints
+1. **Read** this file's Key Rules and any relevant specs — understand the current state and constraints
 2. **Create a Linear issue** if one doesn't exist — include scope, files modified, acceptance criteria
-3. **Create a spec as a Linear document** attached to the issue — this is the execution plan
-4. **Then implement** — one spec = one PR ≤2k LOC
-5. **After completion:** Update the Linear issue status. Close when done.
+3. **Write the spec** in `specs/` following the two-layer model (backlog row in `SPEC.md`, execution plan in `plans/`)
+4. **Create a Linear document** attached to the issue with the spec content (so non-GitHub users can review)
+5. **Then implement** — one spec = one PR (see PR size target in Key Rules)
+6. **After completion:** Update the Linear issue status. Close when done.
 
 ### Spec-Writing Guidelines
 
@@ -72,7 +74,7 @@ Specs are agent-executable prompts. A new Claude Code session with no prior cont
 - **Be explicit about constraints.** "You will NOT modify..." not just "Focus on..."
 - **Provide exact file paths with line numbers.** `src/utils/sumsubProvider.ts:118` not "the provider file."
 - **State the validation command.** Agents will run it. If it's not there, they'll skip validation.
-- **One spec = one PR ≤2k LOC.** If a spec would produce >2k LOC, split it.
+- **One spec = one PR.** Target the PR size from Key Rules (1k–3k LOC). If a spec would exceed that, split it.
 - **Mark items as required vs optional.** Don't let agents infer priority.
 - **Include out-of-scope sections.** These are as important as in-scope sections for preventing drift.
 - **Use `--remote` for medium+ work.** Medium and large specs benefit from `claude --remote` so work continues in the background.
@@ -83,17 +85,17 @@ Three Claude Code skills automate the review-to-implementation pipeline:
 
 1. **`/pr-audit`** — Multi-agent review (component + integration + routing), produces audit doc in `docs/reviews/`
 2. **`/gaps-to-issues`** — Creates Linear issues from audit PR buckets
-3. **`/spec-from-audit`** — Generates agent-executable specs as Linear documents, one per issue
+3. **`/spec-from-audit`** — Generates agent-executable specs (repo file + Linear document), one per issue
 
 Run them in sequence with review pauses between each step.
 
 ### Why Specs
 
 - Prevents scope creep — writing "files NOT modified" forces focus
-- Survives session loss — specs live in Linear, not session memory
+- Survives session loss — specs live in the repo and Linear, not session memory
 - Enables parallel work — multiple agents can pick up specs from the same project
-- Creates audit trail — what was planned vs what was built
-- Enables cross-tool review — anyone with Linear access can review specs, not just GitHub users
+- Creates audit trail — what was planned vs what was built (version-controlled in git)
+- Enables cross-tool review — Linear documents let non-GitHub users review specs
 
 ## Validation Commands
 
