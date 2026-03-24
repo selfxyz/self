@@ -28,7 +28,10 @@ export interface UseDiditLauncherOptions {
    * Receives the Didit result and the sessionId from the session.
    * If not provided, defaults to navigating to KycSuccess with the sessionId.
    */
-  onSuccess?: (result: DiditVerificationResult, sessionId: string) => void | Promise<void>;
+  onSuccess?: (
+    result: DiditVerificationResult,
+    sessionId: string,
+  ) => void | Promise<void>;
   /**
    * Optional callback to handle user cancellation
    */
@@ -36,7 +39,10 @@ export interface UseDiditLauncherOptions {
   /**
    * Optional callback to handle verification failure
    */
-  onError?: (error: unknown, result?: DiditVerificationResult) => void | Promise<void>;
+  onError?: (
+    error: unknown,
+    result?: DiditVerificationResult,
+  ) => void | Promise<void>;
 }
 
 /**
@@ -80,7 +86,8 @@ export const useDiditLauncher = (options: UseDiditLauncherOptions) => {
 
       // Handle verification failure
       if (result.type === 'failed') {
-        const error = result.error?.message || result.error?.type || 'Unknown error';
+        const error =
+          result.error?.message || result.error?.type || 'Unknown error';
         const safeError = sanitizeErrorMessage(error);
         console.error('Didit verification failed:', safeError);
 

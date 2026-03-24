@@ -373,12 +373,17 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     .shouldTrigger('didit_verification');
 
                   // Actual error from provider
-                  if (result.type === 'failed' || shouldInjectVerificationError) {
+                  if (
+                    result.type === 'failed' ||
+                    shouldInjectVerificationError
+                  ) {
                     if (shouldInjectVerificationError) {
                       console.log('[DEV] Injecting Didit verification error');
                     } else {
                       const safeError = sanitizeErrorMessage(
-                        result.error?.message || result.error?.type || 'unknown_error',
+                        result.error?.message ||
+                          result.error?.type ||
+                          'unknown_error',
                       );
                       console.error('KYC provider failed:', safeError);
                     }

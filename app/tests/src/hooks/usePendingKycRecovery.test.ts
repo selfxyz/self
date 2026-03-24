@@ -39,9 +39,7 @@ describe('usePendingKycRecovery', () => {
     jest.useFakeTimers();
 
     // Setup default mocks
-    const { useDiditWebSocket } = jest.requireMock(
-      '@/hooks/useDiditWebSocket',
-    );
+    const { useDiditWebSocket } = jest.requireMock('@/hooks/useDiditWebSocket');
     useDiditWebSocket.mockReturnValue({
       subscribe: mockSubscribe,
       unsubscribeAll: mockUnsubscribeAll,

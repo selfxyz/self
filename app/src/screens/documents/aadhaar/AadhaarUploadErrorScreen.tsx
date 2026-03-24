@@ -70,18 +70,16 @@ const AadhaarUploadErrorScreen: React.FC = () => {
   const errorType = route.params?.errorType || 'general';
   const { title, description } = getErrorMessages(errorType);
 
-  const { launchDiditVerification, isLoading: isRetrying } = useDiditLauncher(
-    {
-      countryCode: 'IND',
-      errorSource: 'mrz_scan_failed', // Use a compatible error source
-      onCancel: () => {
-        navigation.goBack();
-      },
-      onError: () => {
-        // Stay on this screen - user can try again
-      },
+  const { launchDiditVerification, isLoading: isRetrying } = useDiditLauncher({
+    countryCode: 'IND',
+    errorSource: 'mrz_scan_failed', // Use a compatible error source
+    onCancel: () => {
+      navigation.goBack();
     },
-  );
+    onError: () => {
+      // Stay on this screen - user can try again
+    },
+  });
 
   const handleClose = useCallback(() => {
     buttonTap();

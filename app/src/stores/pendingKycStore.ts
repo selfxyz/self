@@ -42,7 +42,9 @@ export const usePendingKycStore = create<PendingKycState>()(
         set(state => ({
           pendingVerifications: [
             // Remove any existing entry for this sessionId
-            ...state.pendingVerifications.filter(v => v.sessionId !== sessionId),
+            ...state.pendingVerifications.filter(
+              v => v.sessionId !== sessionId,
+            ),
             {
               sessionId,
               createdAt: now,

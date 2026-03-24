@@ -16,8 +16,8 @@ import QrScan from '@/assets/icons/qr_scan.svg';
 import Star from '@/assets/icons/star.svg';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
-import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useDiditLauncher } from '@/hooks/useDiditLauncher';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flush as flushAnalytics } from '@/services/analytics';
 

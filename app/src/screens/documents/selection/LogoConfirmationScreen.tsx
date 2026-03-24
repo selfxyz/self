@@ -25,8 +25,8 @@ import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import EPassportLogo from '@/assets/icons/epassport_logo.svg';
 import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import { buttonTap } from '@/integrations/haptics';
 import { createSession, launchDidit } from '@/integrations/didit';
+import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
@@ -38,7 +38,7 @@ type LogoConfirmationScreenRouteProp = RouteProp<
 
 const LogoConfirmationScreen: React.FC = () => {
   const route = useRoute<LogoConfirmationScreenRouteProp>();
-  const { documentType, countryCode } = route.params;
+  const { countryCode } = route.params;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showModal } = useFeedback();
@@ -92,7 +92,7 @@ const LogoConfirmationScreen: React.FC = () => {
         }
       },
     });
-  }, [documentType, countryCode, navigation, showModal]);
+  }, [countryCode, navigation, showModal]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={slate100}>

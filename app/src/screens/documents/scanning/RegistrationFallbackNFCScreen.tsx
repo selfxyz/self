@@ -67,19 +67,17 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
 
   const headerTitle = getHeaderTitle(documentType);
 
-  const { launchDiditVerification, isLoading: isRetrying } = useDiditLauncher(
-    {
-      countryCode,
-      errorSource: 'nfc_scan_failed',
-      onCancel: () => {
-        navigation.goBack();
-      },
-      onError: (_error, _result) => {
-        // Stay on this screen - user can try again
-        // Error is already logged in the hook
-      },
+  const { launchDiditVerification, isLoading: isRetrying } = useDiditLauncher({
+    countryCode,
+    errorSource: 'nfc_scan_failed',
+    onCancel: () => {
+      navigation.goBack();
     },
-  );
+    onError: (_error, _result) => {
+      // Stay on this screen - user can try again
+      // Error is already logged in the hook
+    },
+  });
 
   const handleClose = useCallback(() => {
     buttonTap();

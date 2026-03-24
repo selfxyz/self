@@ -27,10 +27,7 @@ export const ERROR_GROUPS = {
     'nfc_parse_failure',
   ] as InjectedErrorType[],
   API: ['api_network_error', 'api_timeout'] as InjectedErrorType[],
-  Didit: [
-    'didit_initialization',
-    'didit_verification',
-  ] as InjectedErrorType[],
+  Didit: ['didit_initialization', 'didit_verification'] as InjectedErrorType[],
 };
 
 export const ERROR_LABELS: Record<InjectedErrorType, string> = {

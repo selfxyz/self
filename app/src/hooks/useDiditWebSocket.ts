@@ -50,7 +50,10 @@ export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
   const subscribe = useCallback(
     (sessionId: string) => {
       if (subscribedSessionIdsRef.current.has(sessionId)) {
-        console.log('[DiditWebSocket] Already subscribed to sessionId:', sessionId);
+        console.log(
+          '[DiditWebSocket] Already subscribed to sessionId:',
+          sessionId,
+        );
         return;
       }
 
@@ -114,7 +117,12 @@ export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
             documentId,
           );
 
-          updateVerificationStatus(sessionId, 'processing', undefined, documentId);
+          updateVerificationStatus(
+            sessionId,
+            'processing',
+            undefined,
+            documentId,
+          );
 
           if (navigationRef.isReady()) {
             navigationRef.navigate('KYCVerified', { documentId });

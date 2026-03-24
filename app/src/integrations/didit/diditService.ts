@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { DIDIT_TEE_URL } from '@env';
 import { startVerification } from '@didit-protocol/sdk-react-native';
+import { DIDIT_TEE_URL } from '@env';
 
-import type { DiditVerificationResult, SessionResponse } from '@/integrations/didit/types';
+import type {
+  DiditVerificationResult,
+  SessionResponse,
+} from '@/integrations/didit/types';
 
 export interface DiditConfig {
   locale?: string;
@@ -16,6 +19,7 @@ const FETCH_TIMEOUT_MS = 30000;
 
 export const createSession = async (): Promise<SessionResponse> => {
   const apiUrl = DIDIT_TEE_URL;
+  console.log('[Didit] createSession URL:', apiUrl);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
@@ -25,6 +29,7 @@ export const createSession = async (): Promise<SessionResponse> => {
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({}),
       signal: controller.signal,
     });
 
