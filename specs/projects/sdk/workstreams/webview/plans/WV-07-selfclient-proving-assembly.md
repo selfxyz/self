@@ -1,7 +1,7 @@
 # WV-07: SelfClient Assembly & Proving Machine Export for WebView
 
 > Last updated: 2026-03-24
-> Status: Ready
+> Status: Done
 > Priority: High
 > Depends on: SC-03 (Ready — creates `createWebNetworkAdapter()`)
 
@@ -303,15 +303,16 @@ cd packages/webview-app && yarn build
 
 ## Definition of Done
 
-- [ ] `useProvingStore` and `ProvingState` exported from `browser.ts`
-- [ ] `createKeychainDocumentsAdapter()` persists documents via secureStorage bridge
-- [ ] `createSdkAdapters()` maps bridge adapters to SDK Adapters interface
-- [ ] `SelfClientProvider` creates a real `SelfClient` via `createSelfClient()`
-- [ ] Buffer polyfill added to webview-app entry point
-- [ ] `yarn types` clean in mobile-sdk-alpha
-- [ ] `yarn build` clean in webview-bridge and webview-app
-- [ ] Backlog row added in SPEC.md
+- [x] `useProvingStore` and `ProvingState` exported from `browser.ts`
+- [x] `createKeychainDocumentsAdapter()` persists documents via secureStorage bridge
+- [x] `createSdkAdapters()` maps bridge adapters to SDK Adapters interface
+- [x] `SelfClientProvider` creates a real `SelfClient` via `createSelfClient()`
+- [x] Buffer polyfill added to webview-app entry point
+- [x] `yarn types` clean in mobile-sdk-alpha
+- [x] `yarn build` clean in webview-bridge and webview-app
+- [x] Backlog row added in SPEC.md
 
 ## Status Log
 
 - 2026-03-24: Plan created.
+- 2026-03-25: Implementation complete. All validation passes. Branch: feat/proving-machine-export-wv-07

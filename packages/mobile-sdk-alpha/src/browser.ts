@@ -12,8 +12,10 @@ export type {
   ClockAdapter,
   Config,
   CryptoAdapter,
+  DocumentCatalog,
   DocumentsAdapter,
   HttpAdapter,
+  IDDocument,
   LogLevel,
   LoggerAdapter,
   MRZInfo,
@@ -37,7 +39,8 @@ export type {
 export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
 export type { DG1, DG2, ParsedNFCResponse } from './nfc';
 export type { PassportValidationCallbacks } from './validation/document';
-export type { ProvingStateType, provingMachineCircuitType } from './proving/provingMachine';
+export type { ProvingState, ProvingStateType, provingMachineCircuitType } from './proving/provingMachine';
+export { useProvingStore, getPostVerificationRoute } from './proving/provingMachine';
 export type { SDKEvent, SDKEventMap } from './types/events';
 export type { SdkErrorCategory } from './errors';
 
