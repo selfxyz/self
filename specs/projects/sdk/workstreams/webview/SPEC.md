@@ -52,6 +52,8 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 | WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Done        | Medium   | WV-02      | [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | Browser host fallback now uses `postMessage` for iframe/popup embedding while native transports keep their current behavior |
 | WV-05 | Integrate KYC provider Web SDK into ProviderLaunchScreen (Sumsub as default)                    | In Progress | High     | WV-02      | [plans/WV-05-sumsub-web-sdk.md](./plans/WV-05-sumsub-web-sdk.md)                                 | Code complete on `feat/webview-sdk`, needs testing                                                                          |
 | WV-06 | Wire KYC result through verification pipeline to host lifecycle callback                        | Ready       | High     | WV-05      | [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | Sumsub result → kycResultStore → ConfirmIdentificationScreen → lifecycle.setResult()                                        |
+| WV-07 | SelfClient assembly and proving machine export for WebView                                      | Ready       | High     | SC-03      | [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | Export useProvingStore, map bridge→SDK adapters, keychain-backed documents, create real SelfClient                           |
+| WV-08 | Wire tunnel flow with real proving machine (register → disclose)                                | Ready       | High     | WV-07      | [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | Replace mock tunnel proving with real provingMachine: Sumsub → store doc → prove → disclose → result                        |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -65,6 +67,8 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 | [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | WV-04 | Done                                       |
 | [plans/WV-05-sumsub-web-sdk.md](./plans/WV-05-sumsub-web-sdk.md)                                 | WV-05 | In Progress (code complete, needs testing) |
 | [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | WV-06 | Ready                                      |
+| [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | WV-07 | Ready                                      |
+| [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | WV-08 | Ready                                      |
 
 ## Completion Checklist
 
