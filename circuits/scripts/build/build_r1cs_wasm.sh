@@ -155,9 +155,9 @@ for item in "${allowed_circuits[@]}"; do
     circuit_name="${filename%.*}"
     (
         circom $filepath \
-        -l "node_modules" \
-        -l "node_modules/@zk-kit/binary-merkle-root.circom/src" \
-        -l "node_modules/circomlib/circuits" \
+        -l "circuits/node_modules" \
+        -l "circuits/node_modules/@zk-kit/binary-merkle-root.circom/src" \
+        -l "circuits/node_modules/circomlib/circuits" \
         --O1 --r1cs --wasm --output $output
     ) &
     pids+=($!)
