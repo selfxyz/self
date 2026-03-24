@@ -1,6 +1,6 @@
 ---
 name: spec-from-audit
-description: Generate one Linear spec document per issue — agent-executable implementation plans with file paths, validation commands, and acceptance criteria.
+description: Generate one spec per issue — repo file (canonical) + Linear document (mirror). Agent-executable implementation plans with file paths, validation commands, and acceptance criteria.
 disable-model-invocation: false
 user-invocable: true
 argument-hint: '[issue IDs or path-to-audit-doc]'
@@ -8,7 +8,7 @@ argument-hint: '[issue IDs or path-to-audit-doc]'
 
 # Spec from Audit
 
-You take Linear issues (created by `/gaps-to-issues`) and generate one spec per issue as a Linear document. Each spec is an agent-executable implementation plan — a new Claude Code session with no prior context should be able to pick up the spec and produce a correct PR.
+You take Linear issues (created by `/gaps-to-issues`) and generate one spec per issue. Each spec is written to the repo (`specs/`) as the canonical version, then mirrored to a Linear document for cross-tool access. A new Claude Code session with no prior context should be able to pick up the repo spec and produce a correct PR.
 
 ## Input
 
@@ -35,9 +35,10 @@ Do not guess file contents — read them. Specs with wrong line numbers or stale
 
 ### Step 3: Generate Specs
 
-For each issue, create a spec as a Linear document using `mcp__linear-server__create_document`.
+For each issue, write the spec to **both** locations:
 
-Link the document to the **issue** (not the project).
+1. **Repo file** — Write to `specs/projects/sdk/workstreams/<scope>/plans/<ID>-<slug>.md` using the Write tool. Determine `<scope>` from the workstream the issue belongs to (e.g., `webview`, `sdk-core`, `build-pipeline`). Add a backlog row in the workstream's `SPEC.md` if one exists.
+2. **Linear document** — Create using `mcp__linear-server__create_document`, linked to the **issue** (not the project). This is the cross-tool access copy.
 
 **Title format:** `SPEC: <issue title>`
 
@@ -133,4 +134,5 @@ Show the user:
 - If you discover the issue description is wrong (e.g., the code was already fixed), note this and ask the user whether to still create the spec or update the issue.
 - Specs are for agents, not humans. Write them as precise instructions, not explanatory documents.
 - The spec is the source of truth, not the issue body. Issue bodies are lightweight pointers — the spec must be fully self-contained. Do not assume the agent has read the issue description.
-- Link specs to issues (not projects). Use `mcp__linear-server__create_document` with the `issue` parameter.
+- The repo file (`specs/`) is the canonical version. The Linear document is a copy for cross-tool access. Both should have identical content.
+- Link Linear documents to issues (not projects). Use `mcp__linear-server__create_document` with the `issue` parameter.
