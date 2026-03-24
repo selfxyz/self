@@ -13,7 +13,10 @@ output/*
 *.tsbuildinfo
 .yarnrc.yml
 package-lock.json
-.claude
+.claude/*
+!.claude/skills/
+**/.claude/settings.json
+**/.claude/settings.local.json
 
 # CI-generated tarballs (don't commit these!)
 mobile-sdk-alpha-ci.tgz
