@@ -128,6 +128,7 @@ export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
             navigationRef.navigate('KYCVerified', { documentId });
           }
 
+          socket.emit('ack_success', sessionId);
           onSuccess?.();
         } catch (err) {
           console.error('[DiditWebSocket] Failed to store KYC data:', err);
