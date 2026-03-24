@@ -94,15 +94,26 @@ You are [doing what] in [which area]. [1-2 sentences on why this matters.]
 
 ### Spec-Writing Rules
 
+The cardinal rule: **if two reasonable engineers could implement different solutions from the same spec, the spec is too open.** Specs must contain decisions, not options.
+
 Follow these strictly:
 
-1. **Second person** — "You are fixing...", "You will modify..."
-2. **Exact file paths with line numbers** — `src/utils/sumsubProvider.ts:118`, not "the provider file"
-3. **Current code, not stale references** — you read the files in Step 2, use what you actually saw
-4. **Explicit constraints** — "You will NOT modify..." sections prevent scope creep
-5. **Validation command** — agents will run it. If it's not there, they'll skip validation.
-6. **One spec = one PR ≤2k LOC** — if a spec feels like it would produce >2k LOC, flag it and suggest splitting
-7. **Self-contained** — the spec must include enough context to execute without reading other specs or the full audit doc
+1. **Decisions, not options** — "Use local wrappers" not "Consider adding to Euclid or using local wrappers." Every ambiguous implementation choice must be resolved in the spec. If you genuinely can't decide, flag it as a blocker and ask the user — don't embed it as an option.
+2. **Second person** — "You are fixing...", "You will modify..."
+3. **Exact file paths with line numbers** — `src/utils/sumsubProvider.ts:118`, not "the provider file"
+4. **Current code, not stale references** — you read the files in Step 2, use what you actually saw
+5. **Explicit constraints** — "You will NOT modify..." sections prevent scope creep
+6. **Required vs optional** — mark every item. Don't let agents infer priority.
+7. **Validation command** — agents will run it. If it's not there, they'll skip validation.
+8. **One spec = one PR ≤2k LOC** — if a spec feels like it would produce >2k LOC, flag it and suggest splitting
+9. **Self-contained** — the spec must include enough context to execute without reading other specs or the full audit doc
+
+Every spec should follow this structure:
+1. State the goal in one sentence
+2. List decisions already made
+3. Define scope and out-of-scope
+4. Name the files to modify
+5. Define done criteria in behavior terms
 
 ### Step 4: Present Results
 
@@ -121,3 +132,5 @@ Show the user:
 - If an issue references files that don't exist, flag it rather than guessing.
 - If you discover the issue description is wrong (e.g., the code was already fixed), note this and ask the user whether to still create the spec or update the issue.
 - Specs are for agents, not humans. Write them as precise instructions, not explanatory documents.
+- The spec is the source of truth, not the issue body. Issue bodies are lightweight pointers — the spec must be fully self-contained. Do not assume the agent has read the issue description.
+- Link specs to issues (not projects). Use `mcp__linear-server__create_document` with the `issue` parameter.

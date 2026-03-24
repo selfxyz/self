@@ -50,13 +50,15 @@ For each bucket, create a Linear issue using `mcp__linear-server__save_issue`:
   - Contains High findings → High (2)
   - Contains Medium findings → Medium (3)
   - Contains only Low findings → Low (4)
-- **Description:** Markdown with:
-  - Context section referencing the audit doc and PR
-  - Scope section listing all findings in the bucket with file paths
-  - Acceptance criteria from the bucket
+- **Description:** Keep it lightweight — the spec (created later by `/spec-from-audit`) is the source of truth. The issue body should contain:
+  - One-sentence goal
+  - List of finding IDs from the audit (e.g., "Covers findings #1, #3, #7")
+  - Dependencies on other issues if any
+  - A note: "See attached spec document for full implementation plan."
+  - Do NOT duplicate scope, file lists, or acceptance criteria — that belongs in the spec
 - **Links:** Add the PR URL if one exists
 
-If the user asked to consolidate buckets, merge the relevant findings and acceptance criteria.
+If the user asked to consolidate buckets, merge the relevant findings.
 
 ### Step 4: Update the Audit Document
 

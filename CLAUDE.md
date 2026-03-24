@@ -46,57 +46,54 @@ nvm use && corepack enable && yarn install
 
 ## Specs & Planning
 
-**Every feature — even minor ones — uses the spec system.** Before implementing, read the relevant specs, write a plan to disk, then execute. No exceptions. A plan that only exists in session memory is a plan that will be lost.
+**Every feature — even minor ones — needs a spec.** Specs live in **Linear** as documents attached to issues. Do not create spec files in the `specs/` folder — that folder is deprecated and being migrated to Linear.
 
-### Spec System (`specs/`)
+### Where Specs Live
 
-| File                                             | Purpose                                     | When to Read             |
-| ------------------------------------------------ | ------------------------------------------- | ------------------------ |
-| [Specs README](./specs/README.md)                | Table of contents, reading order            | First. Always.           |
-| [Templates](./specs/framework/TEMPLATES.md)      | Copy-paste templates for all three tiers    | When creating a new spec |
-| [SDK Overview](./specs/projects/sdk/OVERVIEW.md) | Architecture, bridge protocol, module table | For system-level context |
-
-Workstream specs live in `specs/projects/sdk/workstreams/*/` with `SPEC.md` (living implementation details).
-
-### Spec-Reading Protocol (for chunk execution)
-
-To execute a chunk:
-
-1. Read `specs/projects/sdk/INDEX.md` — find your workstream
-2. Read the workstream `SPEC.md` — find your chunk
-3. If you need architecture context, read the project `OVERVIEW.md`
-
-That's it. Do not read framework docs unless you are writing a new spec.
+- **Specs → Linear documents**, attached to the relevant Linear issue (not the project)
+- **Architecture context → `specs/projects/sdk/OVERVIEW.md`** (read-only reference, still in repo)
+- **Audit docs → `docs/reviews/`** (PR audit findings, kept in repo for git history)
+- **`specs/` folder** — deprecated. Existing specs are being migrated to Linear. Do not create new files here.
 
 ### Planning Protocol
 
-1. **Read** the relevant workstream specs and this file's Key Rules — understand the current state and constraints
-2. **Write a plan to disk** — use the appropriate tier from `specs/framework/TEMPLATES.md`:
-   - **Large features / new workstreams:** Create a full implementation spec (`specs/projects/sdk/workstreams/<scope>/SPEC.md`)
-   - **Medium features / multi-chunk work:** Create a plan file in `workstreams/<scope>/plans/` named `<BACKLOG-ID>-<slug>.md` and link it from the backlog in the relevant `SPEC.md`
-   - **Small features / single-chunk fixes:** Create a minimal plan file in `workstreams/<scope>/plans/` named `<BACKLOG-ID>-<slug>.md` or add the chunk to an existing active plan
-3. **Include in every plan:** scope of work, files modified, I/O examples, validation command, definition of done
-4. **Then implement** — update chunk status as you complete work
-5. **After completion:** Mark chunks done in SPEC.md status tables. Review status checklists at session start — if something is marked "Done" that isn't, or "Pending" that's in progress, fix it first.
+1. **Read** this file's Key Rules and any relevant Linear issue/spec — understand the current state and constraints
+2. **Create a Linear issue** if one doesn't exist — include scope, files modified, acceptance criteria
+3. **Create a spec as a Linear document** attached to the issue — this is the execution plan
+4. **Then implement** — one spec = one PR ≤2k LOC
+5. **After completion:** Update the Linear issue status. Close when done.
 
 ### Spec-Writing Guidelines
 
-When writing specs, follow these principles so they work as AI agent prompts:
+Specs are agent-executable prompts. A new Claude Code session with no prior context must be able to pick up the spec and produce a correct PR.
 
-- **Use second person.** "You are making X portable" not "X should be made portable."
+- **Make decisions, not options.** "Use local wrappers" not "Consider adding to Euclid or using local wrappers." Agents can't choose between approaches — tell them which one.
+- **Use second person.** "You are fixing X" not "X should be fixed."
 - **Be explicit about constraints.** "You will NOT modify..." not just "Focus on..."
-- **Provide exact file paths with line numbers.** `src/proving/provingMachine.ts:543` not "the proving machine file."
+- **Provide exact file paths with line numbers.** `src/utils/sumsubProvider.ts:118` not "the provider file."
 - **State the validation command.** Agents will run it. If it's not there, they'll skip validation.
-- **One chunk = one self-contained prompt.** The chunk must include enough context to execute without reading the full spec.
-- **One PR = one plan file.** A plan file is the execution handoff. It must be self-contained enough that a new agent can pick it up after session loss.
-- **Use `--remote` for M and L chunks.** Medium and large chunks benefit from `claude --remote` so work continues in the background.
+- **One spec = one PR ≤2k LOC.** If a spec would produce >2k LOC, split it.
+- **Mark items as required vs optional.** Don't let agents infer priority.
+- **Include out-of-scope sections.** These are as important as in-scope sections for preventing drift.
+- **Use `--remote` for medium+ work.** Medium and large specs benefit from `claude --remote` so work continues in the background.
 
-### Why Even Minor Features
+### Audit Pipeline Skills
+
+Three Claude Code skills automate the review-to-implementation pipeline:
+
+1. **`/pr-audit`** — Multi-agent review (component + integration + routing), produces audit doc in `docs/reviews/`
+2. **`/gaps-to-issues`** — Creates Linear issues from audit PR buckets
+3. **`/spec-from-audit`** — Generates agent-executable specs as Linear documents, one per issue
+
+Run them in sequence with review pauses between each step.
+
+### Why Specs
 
 - Prevents scope creep — writing "files NOT modified" forces focus
-- Survives session loss — API errors, context overflow, `/clear` won't destroy the plan
-- Enables parallel work — multiple agents can pick up chunks from the same plan
+- Survives session loss — specs live in Linear, not session memory
+- Enables parallel work — multiple agents can pick up specs from the same project
 - Creates audit trail — what was planned vs what was built
+- Enables cross-tool review — anyone with Linear access can review specs, not just GitHub users
 
 ## Validation Commands
 
