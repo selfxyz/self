@@ -156,6 +156,18 @@ Output the complete PR body using this format:
 Omit the "Linear Issues" section if none were found.
 Omit the "Figma" section if no Figma links were found.
 
+If the diff touches native paths (`app/`, `packages/native-shell-*`, `packages/kmp-sdk/`, iOS/Android project files), append this checklist to the Test Plan section:
+
+```markdown
+### Native Consolidation Checklist
+
+- [ ] CONTRACTS.md reviewed - no unintended contract changes
+- [ ] Layer 1 bridge contract tests pass (`cd app && yarn jest:run` / `yarn workspace @selfxyz/rn-sdk-test-app test`)
+- [ ] Layer 3 builds pass (app iOS, RN test app iOS, RN test app Android)
+- [ ] Layer 4 manual smoke test signed off (if consolidation PR)
+- [ ] No new native business logic added (logic belongs in TypeScript)
+```
+
 ### Step 8: Check for Existing PR
 
 Check if a PR already exists for the current branch:
@@ -172,21 +184,17 @@ First, fetch the current PR title and body:
 gh pr view --json number,title,body,url
 ```
 
-**Auto-update without asking** if any of these are true:
+If the PR body is empty/whitespace, the title matches the branch name, or the title is a generic default (slug-style text with slashes/hyphens, auto-generated patterns), note that it appears auto-generated.
 
-- The PR body is empty or contains only whitespace
-- The PR title matches the branch name (e.g. `feat/some-feature-branch`)
-- The PR title is a generic default (starts with the author name, contains only slug-style text with slashes/hyphens, or matches common auto-generated patterns)
+Show the generated title and body, then ask: "PR #NNN appears to have a template/auto-generated description. Update it?"
 
-In these cases, show the generated title and body, then immediately run:
+If the PR has a meaningful hand-written title and body, show both the current and newly generated versions, then ask: "PR #NNN already has a custom title/description. Replace it?"
+
+If the user confirms, run:
 
 ```bash
 gh pr edit <number> --title "<title>" --body "<body>"
 ```
-
-**Otherwise** (the PR has a meaningful hand-written title and body), show both the current and newly generated versions, then ask: "PR #NNN already has a custom title/description. Replace it?"
-
-If the user confirms, run the edit command.
 
 **If no PR exists:**
 
