@@ -32,18 +32,18 @@
 
 ## Dependencies
 
-| Depends On | Type | Status | Notes |
-|------------|------|--------|-------|
-| `packages/webview-app/` | Upstream | Active | Source of the WebView bundle |
-| `packages/native-shell-android/` | Downstream | Ready | Receives assets at `src/main/assets/self-wallet/` |
-| `packages/native-shell-ios/` | Downstream | Ready | Receives assets at `Resources/self-sdk-web/` |
+| Depends On                       | Type       | Status | Notes                                             |
+| -------------------------------- | ---------- | ------ | ------------------------------------------------- |
+| `packages/webview-app/`          | Upstream   | Active | Source of the WebView bundle                      |
+| `packages/native-shell-android/` | Downstream | Ready  | Receives assets at `src/main/assets/self-wallet/` |
+| `packages/native-shell-ios/`     | Downstream | Ready  | Receives assets at `Resources/self-sdk-web/`      |
 
 ## Backlog
 
-| ID | Title | Status | Priority | Depends On | Plan | PR |
-|----|-------|--------|----------|------------|------|----|
-| BP-01 | WebView bundle build + copy script | Done | Medium | NSL-01, NSL-02 | [plans/BP-01-build-script.md](./plans/BP-01-build-script.md) | Complete on `feat/webview-sdk` |
-| BP-02 | Runtime bundle integrity for CDN loading | Deferred | High | — | — | — |
+| ID    | Title                                    | Status   | Priority | Depends On     | Plan                                                         | PR                             |
+| ----- | ---------------------------------------- | -------- | -------- | -------------- | ------------------------------------------------------------ | ------------------------------ |
+| BP-01 | WebView bundle build + copy script       | Done     | Medium   | NSL-01, NSL-02 | [plans/BP-01-build-script.md](./plans/BP-01-build-script.md) | Complete on `feat/webview-sdk` |
+| BP-02 | Runtime bundle integrity for CDN loading | Deferred | High     | —              | —                                                            | —                              |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -61,9 +61,9 @@ Trigger: when remote/CDN bundle loading is implemented.
 
 ## Active Plans
 
-| Plan | IDs | Status |
-|------|-----|--------|
-| [plans/BP-01-build-script.md](./plans/BP-01-build-script.md) | BP-01 | Done |
+| Plan                                                         | IDs   | Status |
+| ------------------------------------------------------------ | ----- | ------ |
+| [plans/BP-01-build-script.md](./plans/BP-01-build-script.md) | BP-01 | Done   |
 
 ## Completion Checklist
 
@@ -73,8 +73,8 @@ Trigger: when remote/CDN bundle loading is implemented.
 
 ## Related Specs
 
-| Spec | Relationship |
-|------|-------------|
-| [SDK Overview](../../OVERVIEW.md) | Parent architecture |
-| [WebView Spec](../webview/SPEC.md) | Upstream — produces the bundle |
+| Spec                                                | Relationship                     |
+| --------------------------------------------------- | -------------------------------- |
+| [SDK Overview](../../OVERVIEW.md)                   | Parent architecture              |
+| [WebView Spec](../webview/SPEC.md)                  | Upstream — produces the bundle   |
 | [Native Shells Lite](../native-shells-lite/SPEC.md) | Downstream — consumes the bundle |

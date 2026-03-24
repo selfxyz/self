@@ -290,5 +290,5 @@ See `.cursor/rules/test-memory-optimization.mdc` for comprehensive guidelines, e
 
 The Self Wallet app serves as a **test environment** for the SDK refactor. For SDK architecture context:
 
-- **[SDK Overview](../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix
-- **[SDK Project Index](../specs/projects/sdk/INDEX.md)** — Workstream links and entry point
+- **[SDK Overview](../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix (read-only reference)
+- **Implementation specs** — Live in Linear as documents attached to issues. Check the relevant Linear issue for the current spec. Do not create spec files in `specs/` — that folder is deprecated.

@@ -9,7 +9,7 @@ import {
   CheckCircleIcon,
   WarningOctagonIcon,
   colors,
-} from '@selfxyz/euclid-web';
+} from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import type { KycProviderResult } from '../../types/kycProvider';

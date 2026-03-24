@@ -10,10 +10,11 @@ import {
   QuestionCircleStrokeIcon,
   DocumentDetailsIcon,
   LockIcon,
-  CloudKeyIcon,
+  NotificationIcon,
   ChatStrokeIcon,
   ShareIcon,
-} from '@selfxyz/euclid-web';
+  CodeIcon,
+} from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 
@@ -47,35 +48,35 @@ export const SettingsScreen: React.FC = () => {
       CTAs={[]}
       sections={[
         {
-          title: 'Account',
+          title: 'App settings',
           items: [
             {
               icon: DocumentDetailsIcon,
-              label: 'View document info',
-              description: 'View your stored document details',
+              label: 'Manage Documents',
+              description: 'Recovery phrase, passport data',
               onPress: () => navigate('/coming-soon'),
             },
             {
               icon: LockIcon,
-              label: 'Recovery phrase',
-              description: 'View your recovery phrase',
-              onPress: () => navigate('/coming-soon'),
+              label: 'Security',
+              description: 'Recovery phrase, passport data',
+              onPress: () => navigate('/settings/security'),
             },
             {
-              icon: CloudKeyIcon,
-              label: 'Cloud backup',
-              description: 'Manage your cloud backup',
-              onPress: () => navigate('/coming-soon'),
+              icon: NotificationIcon,
+              label: 'Notifications',
+              description: 'Preferences, notification types',
+              onPress: () => navigate('/settings/notifications'),
             },
           ],
         },
         {
-          title: 'Support',
+          title: 'Support & feedback',
           items: [
             {
               icon: ChatStrokeIcon,
               label: 'Get support',
-              description: 'Contact us for help',
+              description: 'Help center & support',
               onPress: () => navigate('/coming-soon'),
             },
             {
@@ -83,6 +84,23 @@ export const SettingsScreen: React.FC = () => {
               label: 'Share Self',
               description: 'Share Self with friends',
               onPress: () => navigate('/coming-soon'),
+            },
+          ],
+        },
+        {
+          title: 'Developer tools',
+          items: [
+            {
+              icon: CodeIcon,
+              label: 'Dev mode',
+              description: 'Manage mock IDs, simulate proofs',
+              onPress: () => navigate('/settings/dev-mode'),
+            },
+            {
+              icon: CodeIcon,
+              label: 'Tunnel flow',
+              description: 'Demo: register + disclose in one flow',
+              onPress: () => navigate('/tunnel/tour/1'),
             },
           ],
         },

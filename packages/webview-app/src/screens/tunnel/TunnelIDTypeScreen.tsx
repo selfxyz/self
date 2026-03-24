@@ -7,7 +7,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { IDTypeScreen } from '@selfxyz/euclid';
 import type { IDType } from '@selfxyz/euclid';
 
-import { useSelfClient } from '../../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
 
 const docTypeToIDType = (docType: string): IDType => {
@@ -16,53 +15,30 @@ const docTypeToIDType = (docType: string): IDType => {
       return { id: 'p', title: 'Passport', subtitle: 'Verified Biometric Passport' };
     case 'i':
       return { id: 'i', title: 'ID Card', subtitle: 'Verified Biometric ID card' };
-    case 'a':
-      return { id: 'a', title: 'Aadhaar', subtitle: 'Verified mAadhaar QR code' };
-    case 'kyc':
-      return { id: 'kyc', title: 'Other IDs', subtitle: "National ID, Driver's License etc." };
     default:
       return { id: docType, title: 'Unknown Document', subtitle: '' };
   }
 };
 
 const renderIDTypeIcon = (idType: IDType): React.ReactNode => {
-  const emoji =
-    idType.id === 'p'
-      ? '🛂'
-      : idType.id === 'i'
-        ? '🪪'
-        : idType.id === 'a'
-          ? '🆔'
-          : '📄';
+  const emoji = idType.id === 'p' ? '🛂' : '🪪';
   return <span style={{ fontSize: 24 }}>{emoji}</span>;
 };
 
-export const IDSelectionScreen: React.FC = () => {
+export const TunnelIDTypeScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { analytics, haptic } = useSelfClient();
 
-  const { countryCode = '', documentTypes = [] } =
-    (location.state as {
-      countryCode?: string;
-      documentTypes?: string[];
-    }) || {};
+  const { countryCode = 'US', documentTypes = ['p'] } =
+    (location.state as { countryCode?: string; documentTypes?: string[] }) || {};
 
   const idTypes = documentTypes.map(docTypeToIDType);
 
-  const onSelect = useCallback(
-    (idType: IDType) => {
-      haptic.trigger('selection');
-      analytics.trackEvent('document_type_selected', {
-        documentType: idType.id,
-        countryCode,
-      });
-
-      navigate('/onboarding/provider', {
-        state: { countryCode, documentType: idType.id },
-      });
+  const onIDTypeSelect = useCallback(
+    (_idType: IDType) => {
+      navigate('/tunnel/proof/receipt');
     },
-    [navigate, analytics, haptic, countryCode],
+    [navigate],
   );
 
   return (
@@ -71,7 +47,7 @@ export const IDSelectionScreen: React.FC = () => {
       countryCode={countryCode}
       countryName={getCountryName(countryCode)}
       idTypes={idTypes}
-      onIDTypeSelect={onSelect}
+      onIDTypeSelect={onIDTypeSelect}
       onBack={() => navigate(-1)}
       renderFlag={renderFlag}
       renderIDTypeIcon={renderIDTypeIcon}
