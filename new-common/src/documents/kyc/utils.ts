@@ -30,7 +30,6 @@ export const generateKycNullifier = (kycData: KycDocumentData) => {
     KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH,
   );
   const nullifierInputs = [
-    ...'sumsub'.split('').map(x => x.charCodeAt(0)),
     ...idNumber,
     ...dataPadded.slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH),
   ];
