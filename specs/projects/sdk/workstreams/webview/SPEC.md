@@ -54,6 +54,7 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 | WV-06 | Wire KYC result through verification pipeline to host lifecycle callback                        | Ready       | High     | WV-05      | [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | Sumsub result → kycResultStore → ConfirmIdentificationScreen → lifecycle.setResult()                                        |
 | WV-07 | SelfClient assembly and proving machine export for WebView                                      | Ready       | High     | SC-03      | [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | Export useProvingStore, map bridge→SDK adapters, keychain-backed documents, create real SelfClient                          |
 | WV-08 | Wire tunnel flow with real proving machine (register → disclose)                                | Ready       | High     | WV-07      | [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | Replace mock tunnel proving with real provingMachine: Sumsub → store doc → prove → disclose → result                        |
+| WV-09 | Registration spine migration (tour, outcomes, social sign-on, prompts)                          | Ready       | High     | WV-05, WV-06 | [plans/WV-09-registration-spine.md](./plans/WV-09-registration-spine.md)                       | 11 Euclid wrapper screens, 4 PRs: tour → outcomes → social/prompts → integration                                            |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -69,6 +70,7 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 | [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | WV-06 | Ready                                      |
 | [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | WV-07 | Ready                                      |
 | [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | WV-08 | Ready                                      |
+| [plans/WV-09-registration-spine.md](./plans/WV-09-registration-spine.md)                         | WV-09 | Ready                                      |
 
 ## Completion Checklist
 
@@ -224,7 +226,8 @@ Host-facing mapping rules:
 
 - Provider results are inputs to the Self flow, not direct host results.
 - Only the full Self verification lifecycle emits `VERIFICATION_COMPLETE` or calls `lifecycle.setResult`.
-- If provider `success` unlocks the KYC proof path and the later Self proof flow completes, Self emits `VERIFICATION_COMPLETE { success: true, verificationId, userId }`.
+- For the registration path, the terminal lifecycle event occurs when Self has stored the attested KYC document and the user confirms ownership. That registration session may emit `VERIFICATION_COMPLETE { success: true, verificationId, userId }` without running a ZK proof.
+- For a disclose / proving path, provider-backed or previously stored identity data may unlock the later Self proof flow, and that separate session emits `VERIFICATION_COMPLETE { success: true, verificationId, userId }` when proving completes.
 - If the verification session terminates after provider `partial`, `cancel`, or `error`, Self emits `VERIFICATION_COMPLETE { success: false, verificationId, userId, error }` using the normalized Self error code rather than the raw provider payload.
 
 ## Host Callback Contract
