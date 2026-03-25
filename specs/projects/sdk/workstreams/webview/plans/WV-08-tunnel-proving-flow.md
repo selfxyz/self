@@ -3,7 +3,7 @@
 > Last updated: 2026-03-24
 > Status: Ready
 > Priority: High
-> Depends on: WV-07 (Ready — SelfClient assembly + proving machine export)
+> Depends on: WV-05 (In Progress), WV-06 (Ready), WV-07 (Ready)
 
 - Workstream: webview
 - Backlog ID: WV-08

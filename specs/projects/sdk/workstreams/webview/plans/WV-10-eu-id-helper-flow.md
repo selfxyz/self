@@ -183,6 +183,7 @@ None.
 - **Future EU ID work requires a new spec.** If product approves a separate
   Self-owned EU ID flow later, write a new implementation spec for that flow
   rather than expanding this defer record.
+  rather than expanding this defer record.
 
 ## Resolved Questions
 

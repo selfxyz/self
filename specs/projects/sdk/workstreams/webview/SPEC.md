@@ -234,7 +234,8 @@ Host-facing mapping rules:
 
 - Provider results are inputs to the Self flow, not direct host results.
 - Only the full Self verification lifecycle emits `VERIFICATION_COMPLETE` or calls `lifecycle.setResult`.
-- If provider `success` unlocks the KYC proof path and the later Self proof flow completes, Self emits `VERIFICATION_COMPLETE { success: true, verificationId, userId }`.
+- For the registration path, the terminal lifecycle event occurs when Self has stored the attested KYC document and the user confirms ownership. That registration session may emit `VERIFICATION_COMPLETE { success: true, verificationId, userId }` without running a ZK proof.
+- For a disclose / proving path, provider-backed or previously stored identity data may unlock the later Self proof flow, and that separate session emits `VERIFICATION_COMPLETE { success: true, verificationId, userId }` when proving completes.
 - If the verification session terminates after provider `partial`, `cancel`, or `error`, Self emits `VERIFICATION_COMPLETE { success: false, verificationId, userId, error }` using the normalized Self error code rather than the raw provider payload.
 
 ## Host Callback Contract

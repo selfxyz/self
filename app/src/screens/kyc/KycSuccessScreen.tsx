@@ -21,7 +21,7 @@ import {
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { useSumsubWebSocket } from '@/hooks/useSumsubWebSocket';
+import { useDiditWebSocket } from '@/hooks/useDiditWebSocket';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import {
@@ -34,7 +34,7 @@ import { useSettingStore } from '@/stores/settingStore';
 
 type KycSuccessRouteParams = StaticScreenProps<
   | {
-      userId?: string;
+      sessionId?: string;
     }
   | undefined
 >;
@@ -44,7 +44,7 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
 }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const userId = params?.userId;
+  const sessionId = params?.sessionId;
   const insets = useSafeAreaInsets();
   const setFcmToken = useSettingStore(state => state.setFcmToken);
   const selfClient = useSelfClient();
@@ -66,42 +66,42 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
     console.log('[KycSuccessScreen] Verification failed:', reason);
   }, []);
 
-  const { subscribe, unsubscribeAll } = useSumsubWebSocket({
+  const { subscribe, unsubscribeAll } = useDiditWebSocket({
     onSuccess: handleWebSocketSuccess,
     onError: handleWebSocketError,
     onVerificationFailed: handleVerificationFailed,
   });
 
   useEffect(() => {
-    if (userId && !hasSubscribedRef.current) {
+    if (sessionId && !hasSubscribedRef.current) {
       hasSubscribedRef.current = true;
-      console.log('[KycSuccessScreen] Subscribing to userId:', userId);
-      subscribe(userId);
+      console.log('[KycSuccessScreen] Subscribing to sessionId:', sessionId);
+      subscribe(sessionId);
     }
 
     return () => {
       hasSubscribedRef.current = false;
       unsubscribeAll();
     };
-  }, [userId, subscribe, unsubscribeAll]);
+  }, [sessionId, subscribe, unsubscribeAll]);
 
   const handleReceiveUpdates = useCallback(async () => {
     buttonTap();
 
-    if ((await requestNotificationPermission()) && userId) {
+    if ((await requestNotificationPermission()) && sessionId) {
       const token = await getFCMToken();
       if (token) {
         setFcmToken(token);
         trackEvent(ProofEvents.FCM_TOKEN_STORED);
 
-        const sessionId = uuidv5(userId, SELF_UUID_NAMESPACE);
-        await registerDeviceToken(sessionId, token);
+        const notificationId = uuidv5(sessionId, SELF_UUID_NAMESPACE);
+        await registerDeviceToken(notificationId, token);
       }
     }
 
     // Navigate to Home regardless of permission result
     navigation.navigate('Home', {});
-  }, [navigation, setFcmToken, trackEvent, userId]);
+  }, [navigation, setFcmToken, trackEvent, sessionId]);
 
   const handleCheckLater = () => {
     buttonTap();

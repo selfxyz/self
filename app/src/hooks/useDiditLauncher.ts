@@ -8,27 +8,30 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { sanitizeErrorMessage } from '@selfxyz/mobile-sdk-alpha';
 
-import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
-import type { SumsubResult } from '@/integrations/sumsub/types';
+import { createSession, launchDidit } from '@/integrations/didit';
+import type { DiditVerificationResult } from '@/integrations/didit/types';
 import type { RootStackParamList } from '@/navigation';
 
 export type FallbackErrorSource = 'mrz_scan_failed' | 'nfc_scan_failed';
 
-export interface UseSumsubLauncherOptions {
+export interface UseDiditLauncherOptions {
   /**
    * Country code for the user's document
    */
   countryCode: string;
   /**
-   * Error source to track where the Sumsub launch was initiated from
+   * Error source to track where the Didit launch was initiated from
    */
   errorSource: FallbackErrorSource;
   /**
    * Optional callback to handle successful verification.
-   * Receives the Sumsub result and the userId from the access token.
-   * If not provided, defaults to navigating to KycSuccess with the userId.
+   * Receives the Didit result and the sessionId from the session.
+   * If not provided, defaults to navigating to KycSuccess with the sessionId.
    */
-  onSuccess?: (result: SumsubResult, userId: string) => void | Promise<void>;
+  onSuccess?: (
+    result: DiditVerificationResult,
+    sessionId: string,
+  ) => void | Promise<void>;
   /**
    * Optional callback to handle user cancellation
    */
@@ -36,53 +39,57 @@ export interface UseSumsubLauncherOptions {
   /**
    * Optional callback to handle verification failure
    */
-  onError?: (error: unknown, result?: SumsubResult) => void | Promise<void>;
+  onError?: (
+    error: unknown,
+    result?: DiditVerificationResult,
+  ) => void | Promise<void>;
 }
 
 /**
- * Custom hook for launching Sumsub verification with consistent error handling.
+ * Custom hook for launching Didit verification with consistent error handling.
  *
  * Abstracts the common pattern of:
- * 1. Fetching access token
- * 2. Launching Sumsub SDK
+ * 1. Creating a session
+ * 2. Launching Didit SDK
  * 3. Handling errors by navigating to fallback screen
  * 4. Managing loading state
  *
  * @example
  * ```tsx
- * const { launchSumsubVerification, isLoading } = useSumsubLauncher({
+ * const { launchDiditVerification, isLoading } = useDiditLauncher({
  *   countryCode: 'US',
  *   errorSource: 'nfc_scan_failed',
  * });
  *
- * <Button onPress={launchSumsubVerification} disabled={isLoading}>
+ * <Button onPress={launchDiditVerification} disabled={isLoading}>
  *   {isLoading ? 'Loading...' : 'Try Alternative Verification'}
  * </Button>
  * ```
  */
-export const useSumsubLauncher = (options: UseSumsubLauncherOptions) => {
+export const useDiditLauncher = (options: UseDiditLauncherOptions) => {
   const { countryCode, errorSource, onSuccess, onCancel, onError } = options;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isLoading, setIsLoading] = useState(false);
 
-  const launchSumsubVerification = useCallback(async () => {
+  const launchDiditVerification = useCallback(async () => {
     setIsLoading(true);
     try {
-      const accessToken = await fetchAccessToken();
-      const result = await launchSumsub({ accessToken: accessToken.token });
+      const session = await createSession();
+      const result = await launchDidit(session.sessionToken);
 
       // Handle user cancellation
-      if (!result.success && result.status === 'Interrupted') {
+      if (result.type === 'cancelled') {
         await onCancel?.();
         return;
       }
 
       // Handle verification failure
-      if (!result.success) {
-        const error = result.errorMsg || result.errorType || 'Unknown error';
+      if (result.type === 'failed') {
+        const error =
+          result.error?.message || result.error?.type || 'Unknown error';
         const safeError = sanitizeErrorMessage(error);
-        console.error('Sumsub verification failed:', safeError);
+        console.error('Didit verification failed:', safeError);
 
         // Call custom error handler if provided, otherwise navigate to fallback screen
         if (onError) {
@@ -100,9 +107,9 @@ export const useSumsubLauncher = (options: UseSumsubLauncherOptions) => {
 
       // Handle success - navigate to KycSuccess by default
       if (onSuccess) {
-        await onSuccess(result, accessToken.userId);
+        await onSuccess(result, session.sessionId);
       } else {
-        navigation.navigate('KycSuccess', { userId: accessToken.userId });
+        navigation.navigate('KycSuccess', { sessionId: session.sessionId });
       }
     } catch (error) {
       const errorMessage =
@@ -127,7 +134,7 @@ export const useSumsubLauncher = (options: UseSumsubLauncherOptions) => {
   }, [navigation, countryCode, errorSource, onSuccess, onCancel, onError]);
 
   return {
-    launchSumsubVerification,
+    launchDiditVerification,
     isLoading,
   };
 };
