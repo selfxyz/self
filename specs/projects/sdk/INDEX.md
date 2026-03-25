@@ -12,12 +12,12 @@ Status: Active (WebView-first + native keychain/crypto)
 
 ## Active Workstreams
 
-| Workstream           | Entry                                                                 | Focus                                         |
-| -------------------- | --------------------------------------------------------------------- | --------------------------------------------- |
-| WebView UI           | [WebView Index](./workstreams/webview/INDEX.md)                       | Sumsub Web SDK integration, KYC result flow   |
-| SDK Core             | [SDK Core Spec](./workstreams/sdk-core/SPEC.md)                       | Browser-portable engine                       |
-| Native Shells (Lite) | [Native Shells Lite Spec](./workstreams/native-shells-lite/SPEC.md)   | Plain Kotlin + Swift for keychain/crypto only |
-| Build Pipeline       | [Build Pipeline Spec](./workstreams/build-pipeline/SPEC.md)           | Bundle webview-app into native shells         |
+| Workstream           | Entry                                                               | Focus                                         |
+| -------------------- | ------------------------------------------------------------------- | --------------------------------------------- |
+| WebView UI           | [WebView Index](./workstreams/webview/INDEX.md)                     | Sumsub Web SDK integration, KYC result flow   |
+| SDK Core             | [SDK Core Spec](./workstreams/sdk-core/SPEC.md)                     | Browser-portable engine                       |
+| Native Shells (Lite) | [Native Shells Lite Spec](./workstreams/native-shells-lite/SPEC.md) | Plain Kotlin + Swift for keychain/crypto only |
+| Build Pipeline       | [Build Pipeline Spec](./workstreams/build-pipeline/SPEC.md)         | Bundle webview-app into native shells         |
 
 ## Paused Workstreams
 

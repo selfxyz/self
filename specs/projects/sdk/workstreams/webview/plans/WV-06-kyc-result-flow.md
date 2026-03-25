@@ -278,29 +278,29 @@ already in the context value, no modification needed.
 
 ## Files You Will Create
 
-| File | What | Risk |
-|------|------|------|
-| `packages/webview-app/src/stores/kycResultStore.ts` | Module-scoped KYC result holder | **Low** |
+| File                                                 | What                                   | Risk    |
+| ---------------------------------------------------- | -------------------------------------- | ------- |
+| `packages/webview-app/src/stores/kycResultStore.ts`  | Module-scoped KYC result holder        | **Low** |
 | `packages/webview-app/src/utils/buildKycDocument.ts` | Attestation → KycData document builder | **Low** |
 
 ## Files You Will Modify
 
-| File | Change | Risk |
-|------|--------|------|
-| `packages/webview-app/src/screens/onboarding/ProviderResultScreen.tsx` | Store result, route to confirm instead of proving | **Medium** |
-| `packages/webview-app/src/screens/onboarding/ConfirmIdentificationScreen.tsx` | Persist document on confirm, read from store | **Medium** |
-| `packages/webview-app/src/providers/SelfClientProvider.tsx` | Verify documents adapter is exposed (may be no-op) | **Low** |
-| `specs/projects/sdk/workstreams/webview/SPEC.md` | Update WV-06 status to In Progress | **None** |
+| File                                                                          | Change                                             | Risk       |
+| ----------------------------------------------------------------------------- | -------------------------------------------------- | ---------- |
+| `packages/webview-app/src/screens/onboarding/ProviderResultScreen.tsx`        | Store result, route to confirm instead of proving  | **Medium** |
+| `packages/webview-app/src/screens/onboarding/ConfirmIdentificationScreen.tsx` | Persist document on confirm, read from store       | **Medium** |
+| `packages/webview-app/src/providers/SelfClientProvider.tsx`                   | Verify documents adapter is exposed (may be no-op) | **Low**    |
+| `specs/projects/sdk/workstreams/webview/SPEC.md`                              | Update WV-06 status to In Progress                 | **None**   |
 
 ## Files You Will NOT Modify
 
-| File | Why |
-|------|-----|
+| File                                                                   | Why                                                                  |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | `packages/webview-app/src/screens/onboarding/ProviderLaunchScreen.tsx` | Upstream of this spec — already produces KycProviderResult correctly |
-| `packages/webview-app/src/screens/proving/ProvingScreen.tsx` | Downstream — WV-08 wires proving to stored documents |
-| `packages/webview-app/src/utils/sumsubProvider.ts` | Provider-specific code unchanged — WV-05 scope |
-| `packages/webview-bridge/**` | Bridge layer unchanged |
-| `packages/mobile-sdk-alpha/**` | SDK unchanged |
+| `packages/webview-app/src/screens/proving/ProvingScreen.tsx`           | Downstream — WV-08 wires proving to stored documents                 |
+| `packages/webview-app/src/utils/sumsubProvider.ts`                     | Provider-specific code unchanged — WV-05 scope                       |
+| `packages/webview-bridge/**`                                           | Bridge layer unchanged                                               |
+| `packages/mobile-sdk-alpha/**`                                         | SDK unchanged                                                        |
 
 ## Constraints
 
@@ -336,14 +336,14 @@ already in the context value, no modification needed.
 
 ## Terminal State Mapping
 
-| Provider status | Attestation present? | ProviderResultScreen action | Next screen |
-|----------------|---------------------|---------------------------|-------------|
-| `success` | Yes | Store result | `/onboarding/confirm` |
-| `success` | No | Show error (contract violation) | Stay |
-| `partial` | — | Show "verification in progress" | Stay (dismiss available) |
-| `cancel` | — | `lifecycle.dismiss({ reason: 'back' })` | `/` |
-| `error` (retryable) | — | Show error with retry | Back one step |
-| `error` (non-retryable) | — | `lifecycle.dismiss()` | `/` |
+| Provider status         | Attestation present? | ProviderResultScreen action             | Next screen              |
+| ----------------------- | -------------------- | --------------------------------------- | ------------------------ |
+| `success`               | Yes                  | Store result                            | `/onboarding/confirm`    |
+| `success`               | No                   | Show error (contract violation)         | Stay                     |
+| `partial`               | —                    | Show "verification in progress"         | Stay (dismiss available) |
+| `cancel`                | —                    | `lifecycle.dismiss({ reason: 'back' })` | `/`                      |
+| `error` (retryable)     | —                    | Show error with retry                   | Back one step            |
+| `error` (non-retryable) | —                    | `lifecycle.dismiss()`                   | `/`                      |
 
 ## Validation
 
