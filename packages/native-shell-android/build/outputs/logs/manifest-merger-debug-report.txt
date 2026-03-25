@@ -1,0 +1,28 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml:2:1-12:12
+INJECTED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml:2:1-12:12
+	package
+		INJECTED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml:2:11-69
+application
+ADDED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml:4:5-10:19
+activity#xyz.self.sdk.webview.SelfVerificationActivity
+ADDED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml:5:9-9:77
+	android:exported
+		ADDED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml:7:13-37
+	android:configChanges
+		ADDED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml:9:13-74
+	android:theme
+		ADDED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml:8:13-63
+	android:name
+		ADDED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml:6:13-73
+uses-sdk
+INJECTED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml
+INJECTED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/ayman/self/self/packages/native-shell-android/src/main/AndroidManifest.xml
