@@ -1,6 +1,6 @@
 # WebView-Only Verification Experience — Implementation Spec
 
-> Last updated: 2026-03-11
+> Last updated: 2026-03-21
 > Owner: WebView / Product Platform
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
@@ -44,23 +44,31 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 
 ## Backlog
 
-| ID    | Title                                                                                           | Status | Priority | Depends On | Plan                                                                                             | Notes                                                                                                                       |
-| ----- | ----------------------------------------------------------------------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| WV-01 | Dynamic proof request items sourced from request context                                        | Done   | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | Existing active follow-up                                                                                                   |
-| WV-02 | Define the KYC-provider contract for document capture, MRZ/liveness handoff, and result mapping | Done   | High     | -          | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | Provider-backed path replaces Self-owned native scan flow; active contract is now documented                                |
-| WV-03 | Remove native NFC and native-scan assumptions from active WebView screens, copy, and docs       | Done   | High     | WV-02      | [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | Active UX/docs now route to a provider placeholder instead of Self-managed scan screens                                     |
-| WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Done   | Medium   | WV-02      | [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | Browser host fallback now uses `postMessage` for iframe/popup embedding while native transports keep their current behavior |
+| ID    | Title                                                                                           | Status      | Priority | Depends On | Plan                                                                                             | Notes                                                                                                                       |
+| ----- | ----------------------------------------------------------------------------------------------- | ----------- | -------- | ---------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| WV-01 | Dynamic proof request items sourced from request context                                        | Done        | High     | -          | [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | Existing active follow-up                                                                                                   |
+| WV-02 | Define the KYC-provider contract for document capture, MRZ/liveness handoff, and result mapping | Done        | High     | -          | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | Provider-backed path replaces Self-owned native scan flow; active contract is now documented                                |
+| WV-03 | Remove native NFC and native-scan assumptions from active WebView screens, copy, and docs       | Done        | High     | WV-02      | [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | Active UX/docs now route to a provider placeholder instead of Self-managed scan screens                                     |
+| WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Done        | Medium   | WV-02      | [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | Browser host fallback now uses `postMessage` for iframe/popup embedding while native transports keep their current behavior |
+| WV-05 | Integrate KYC provider Web SDK into ProviderLaunchScreen (Sumsub as default)                    | In Progress | High     | WV-02      | [plans/WV-05-sumsub-web-sdk.md](./plans/WV-05-sumsub-web-sdk.md)                                 | Code complete on `feat/webview-sdk`, needs testing                                                                          |
+| WV-06 | Wire KYC result through verification pipeline to host lifecycle callback                        | Ready       | High     | WV-05      | [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | Sumsub result → kycResultStore → ConfirmIdentificationScreen → lifecycle.setResult()                                        |
+| WV-07 | SelfClient assembly and proving machine export for WebView                                      | Done        | High     | SC-03      | [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | Export useProvingStore, map bridge→SDK adapters, keychain-backed documents, create real SelfClient                           |
+| WV-08 | Wire tunnel flow with real proving machine (register → disclose)                                | Ready       | High     | WV-07      | [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | Replace mock tunnel proving with real provingMachine: Sumsub → store doc → prove → disclose → result                        |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan                                                                                             | IDs   | Status |
-| ------------------------------------------------------------------------------------------------ | ----- | ------ |
-| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | WV-01 | Done   |
-| [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | WV-02 | Done   |
-| [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | WV-03 | Done   |
-| [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | WV-04 | Done   |
+| Plan                                                                                             | IDs   | Status                                     |
+| ------------------------------------------------------------------------------------------------ | ----- | ------------------------------------------ |
+| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | WV-01 | Done                                       |
+| [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | WV-02 | Done                                       |
+| [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | WV-03 | Done                                       |
+| [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | WV-04 | Done                                       |
+| [plans/WV-05-sumsub-web-sdk.md](./plans/WV-05-sumsub-web-sdk.md)                                 | WV-05 | In Progress (code complete, needs testing) |
+| [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | WV-06 | Ready                                      |
+| [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | WV-07 | Done                                       |
+| [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | WV-08 | Ready                                      |
 
 ## Completion Checklist
 

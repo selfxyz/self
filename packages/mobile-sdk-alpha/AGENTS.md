@@ -142,14 +142,14 @@ yarn types # Verify type checking
 yarn build # Confirm build still works
 ```
 
-## SDK Architecture Specs
+## SDK Architecture
 
-For architecture context, implementation details, and workstream coordination:
+For architecture context:
 
-- **[SDK Overview](../../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix
-- **[SDK Core Spec](../../specs/projects/sdk/workstreams/sdk-core/SPEC.md)** — Implementation chunks for this package (mobile-sdk-alpha)
+- **[SDK Overview](../../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix (read-only reference)
+- **Implementation specs** — Canonical source is `specs/projects/sdk/workstreams/<scope>/plans/` (version-controlled). Linear documents attached to issues are mirrored copies for tracking/discovery. When in doubt, trust the repo spec.
 
-Before implementing SDK work, read `CLAUDE.md` Key Rules and `specs/projects/sdk/workstreams/sdk-core/SPEC.md` for constraints and validation commands.
+Before implementing SDK work, read `CLAUDE.md` Key Rules for constraints and validation commands.
 
 ## Notes
 

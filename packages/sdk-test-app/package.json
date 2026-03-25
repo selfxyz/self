@@ -1,0 +1,11 @@
+{
+  "name": "@selfxyz/sdk-test-app",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android:build": "cd android && ./gradlew :app:assembleDebug",
+    "android:install": "cd android && ./gradlew :app:installDebug",
+    "ios:generate": "cd ios && xcodegen generate",
+    "ios:build": "cd ios && xcodebuild -project SelfTestApp.xcodeproj -scheme SelfTestApp -sdk iphonesimulator build"
+  }
+}

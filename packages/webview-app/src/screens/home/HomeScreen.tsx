@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   HomeScreen as EuclidHomeScreen,
   GearIcon,
-} from '@selfxyz/euclid-web';
-import type { IDCardVariant } from '@selfxyz/euclid-web';
+} from '@selfxyz/euclid';
+import type { IDCardVariant } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 

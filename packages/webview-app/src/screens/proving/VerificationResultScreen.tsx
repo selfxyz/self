@@ -9,7 +9,7 @@ import {
   CheckCircleIcon,
   WarningOctagonIcon,
   colors,
-} from '@selfxyz/euclid-web';
+} from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';

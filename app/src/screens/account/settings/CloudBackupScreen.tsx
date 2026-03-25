@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
@@ -71,36 +71,46 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   // DISABLED FOR NOW: Turnkey functionality
   // const [turnkeyPending, setTurnkeyPending] = useState(false);
 
-  const { showModal: showDisableModal } = useModal(
-    useMemo(
-      () => ({
-        titleText: 'Disable cloud backups',
-        bodyText:
-          'Are you sure you want to disable cloud backups, you may lose your recovery phrase.',
-        buttonText: 'I understand the risks',
-        onButtonPress: async () => {
-          try {
-            trackEvent(BackupEvents.CLOUD_BACKUP_DISABLE_STARTED);
-            await loginWithBiometrics();
-            await disableBackup();
-            toggleCloudBackupEnabled();
-            trackEvent(BackupEvents.CLOUD_BACKUP_DISABLED_DONE);
-          } finally {
-            setICloudPending(false);
-          }
-        },
-        onModalDismiss: () => {
-          setICloudPending(false);
-        },
-      }),
+  const showDisableModal = useCallback(() => {
+    Alert.alert(
+      'Disable cloud backups',
+      'Are you sure you want to disable cloud backups? You may lose your recovery phrase.',
       [
-        loginWithBiometrics,
-        disableBackup,
-        toggleCloudBackupEnabled,
-        trackEvent,
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => setICloudPending(false),
+        },
+        {
+          text: 'Disable',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              trackEvent(BackupEvents.CLOUD_BACKUP_DISABLE_STARTED);
+              await loginWithBiometrics();
+              await disableBackup();
+              toggleCloudBackupEnabled();
+              trackEvent(BackupEvents.CLOUD_BACKUP_DISABLED_DONE);
+            } catch (error) {
+              console.error('Failed to disable cloud backup', error);
+              Alert.alert(
+                'Error',
+                'Failed to disable cloud backups. Please try again.',
+              );
+            } finally {
+              setICloudPending(false);
+            }
+          },
+        },
       ],
-    ),
-  );
+      { cancelable: false },
+    );
+  }, [
+    loginWithBiometrics,
+    disableBackup,
+    toggleCloudBackupEnabled,
+    trackEvent,
+  ]);
 
   const { showModal: showNoRegisteredAccountModal } = useModal(
     useMemo(

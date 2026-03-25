@@ -1,7 +1,7 @@
 # SDK Project
 
-Last updated: March 12, 2026
-Status: Active (WebView-first)
+Last updated: March 20, 2026
+Status: Active (WebView-first + native keychain/crypto)
 
 ## Start Here
 
@@ -12,10 +12,12 @@ Status: Active (WebView-first)
 
 ## Active Workstreams
 
-| Workstream | Spec                                            |
-| ---------- | ----------------------------------------------- |
-| WebView UI | [WebView Spec](./workstreams/webview/SPEC.md)   |
-| SDK Core   | [SDK Core Spec](./workstreams/sdk-core/SPEC.md) |
+| Workstream           | Spec                                                                | Focus                                         |
+| -------------------- | ------------------------------------------------------------------- | --------------------------------------------- |
+| WebView UI           | [WebView Spec](./workstreams/webview/SPEC.md)                       | Sumsub Web SDK integration, KYC result flow   |
+| SDK Core             | [SDK Core Spec](./workstreams/sdk-core/SPEC.md)                     | Browser-portable engine                       |
+| Native Shells (Lite) | [Native Shells Lite Spec](./workstreams/native-shells-lite/SPEC.md) | Plain Kotlin + Swift for keychain/crypto only |
+| Build Pipeline       | [Build Pipeline Spec](./workstreams/build-pipeline/SPEC.md)         | Bundle webview-app into native shells         |
 
 ## Paused Workstreams
 

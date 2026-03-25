@@ -4,7 +4,7 @@
 
 import React, { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ComingSoonScreen as EuclidComingSoonScreen } from '@selfxyz/euclid-web';
+import { ComingSoonScreen as EuclidComingSoonScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../utils/countryFlags';
@@ -50,7 +50,7 @@ export const ComingSoonScreen: React.FC = () => {
           : "We're working to roll out support for this feature."
       }
       description="If you'd like to be notified when this becomes available, let us know."
-      onSignUpPress={onNotifyMe}
+      onNotifyPress={onNotifyMe}
       onBack={onDismiss}
       renderFlag={renderFlag}
     />
