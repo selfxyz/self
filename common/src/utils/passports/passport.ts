@@ -36,7 +36,6 @@ import {
   KYC_ID_TYPE_INDEX,
   KYC_ID_TYPE_LENGTH,
 } from '../kyc/constants.js';
-import { serializeKycData } from '../kyc/types.js';
 import { sha384_512Pad, shaPad } from '../shaPad.js';
 import { getLeafDscTree } from '../trees.js';
 import type { DocumentCategory, IDDocument, PassportData, SignatureAlgorithm } from '../types.js';
@@ -209,10 +208,8 @@ export function generateNullifier(passportData: IDDocument) {
     return nullifierHash(passportData.extractedFields);
   }
   if (isKycDocument(passportData)) {
-    const applicantInfo = deserializeApplicantInfo(passportData.serializedApplicantInfo);
-    const serializedData = serializeKycData(applicantInfo);
-    const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
-    const dataPadded = msgPadded.map((x) => Number(x));
+    const raw = Buffer.from(passportData.serializedApplicantInfo, 'base64');
+    const dataPadded = Array.from(raw, (b) => Number(b));
     const idNumber = dataPadded.slice(
       KYC_ID_NUMBER_INDEX,
       KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH
