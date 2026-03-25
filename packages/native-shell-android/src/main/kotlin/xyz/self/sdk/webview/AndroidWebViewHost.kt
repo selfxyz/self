@@ -2,10 +2,12 @@
 
 package xyz.self.sdk.webview
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.http.SslError
 import android.webkit.JavascriptInterface
@@ -17,6 +19,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewAssetLoader
 import xyz.self.sdk.bridge.MessageRouter
 
@@ -27,6 +31,7 @@ class AndroidWebViewHost(
 ) {
     private lateinit var webView: WebView
     var fileUploadCallback: ValueCallback<Array<Uri>>? = null
+    var pendingPermissionRequest: PermissionRequest? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     fun createWebView(queryParams: String): WebView {
@@ -100,7 +105,19 @@ class AndroidWebViewHost(
 
             webChromeClient = object : WebChromeClient() {
                 override fun onPermissionRequest(request: PermissionRequest?) {
-                    request?.grant(request.resources)
+                    request ?: return
+                    val activity = context as? Activity ?: run {
+                        request.grant(request.resources)
+                        return
+                    }
+                    // Check if camera permission is needed and not yet granted
+                    val needsCamera = request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)
+                    if (needsCamera && ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                        pendingPermissionRequest = request
+                        ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_REQUEST_CODE)
+                        return
+                    }
+                    request.grant(request.resources)
                 }
 
                 override fun onShowFileChooser(
@@ -152,5 +169,6 @@ class AndroidWebViewHost(
 
     companion object {
         const val FILE_CHOOSER_REQUEST_CODE = 1001
+        const val CAMERA_PERMISSION_REQUEST_CODE = 1002
     }
 }
