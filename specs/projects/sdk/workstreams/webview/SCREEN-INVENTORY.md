@@ -206,7 +206,7 @@ Related: SELF-2358 covers Sumsub contract compliance.
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
 | **Passport Registration** (6 screens) | `PassportInstructionsScreen`, `PassportCodeScanInstructionsScreen`, `PassportCodeScanViewfinderScreen`, `PassportNfcInstructionsScreen`, `PassportNfcErrorScreen`, `PassportNfcSuccessScreen` | Deferred to 3.1 (SELF-2145) |
 | **Aadhaar Registration** (3 screens)  | `AadhaarAppInstructionsScreen`, `AadhaarUploadSuccessScreen`, `AadhaarUploadErrorScreen`                                                                                                      | Deferred to 3.1 (SELF-2235) |
-| **EU ID Registration** (6 screens)    | `EuIdInstructionsScreen`, `EuIdBackInstructionsScreen`, `EuIdViewfinderScreen`, `EuIdCanInstructionsScreen`, `EuIdNfcInstructionsScreen`, `EuIdNfcSuccessScreen`                           | Deferred to 3.1 (`WV-10`)   |
+| **EU ID Registration** (6 screens)    | `EuIdInstructionsScreen`, `EuIdBackInstructionsScreen`, `EuIdViewfinderScreen`, `EuIdCanInstructionsScreen`, `EuIdNfcInstructionsScreen`, `EuIdNfcSuccessScreen`                              | Deferred to 3.1 (`WV-10`)   |
 | **Points** (2 screens)                | `PointsScreen`, `InviteScreen`                                                                                                                                                                | Deferred to 3.1 (SELF-2249) |
 
 ---
