@@ -63,7 +63,7 @@ Use this checklist to track planning readiness before creating Linear issues.
 
 - [x] EU ID helper-flow role decided
 - [ ] `ConfirmIdentificationScreen` step ownership decided
-- [ ] primary proving surface decided (`tunnel` vs main proving route)
+- [x] primary proving surface decided (main `/proving` route per WV-11; tunnel stays as reference/demo)
 - [ ] `SumsubPendingScreen` / `SumsubVerificationSuccessScreen` product status decided
 
 ---

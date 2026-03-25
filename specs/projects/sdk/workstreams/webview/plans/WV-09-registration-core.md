@@ -165,7 +165,7 @@ cd packages/webview-app && yarn build
 
 - [ ] Production `TourScreen` renders LaunchTour1–4 at `/onboarding/tour/:step`
 - [ ] Tour step 4 `onNext` navigates to `/onboarding/country`
-- [ ] Tour `onRestore` navigates to `/recovery` (placeholder — recovery flow is WV-14)
+- [ ] Tour `onRestore` navigates to `/recovery` (falls through to `/` until WV-14 adds the route)
 - [ ] Tour `onSkip` navigates to `/onboarding/country`
 - [ ] HomeScreen CTA routes to `/onboarding/tour/1` when no document exists
 - [ ] `yarn build` passes
