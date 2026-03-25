@@ -1,1 +1,0 @@
-xyz.self.sdk.nativeshell
