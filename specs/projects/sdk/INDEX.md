@@ -6,15 +6,15 @@ Status: Active (WebView-first + native keychain/crypto)
 ## Start Here
 
 1. [SDK Overview](./OVERVIEW.md) — current scope, active architecture, paused-work policy
-2. Open the relevant active workstream `SPEC.md` — read `Backlog` and `Active Plans` first
+2. Open the relevant active workstream `INDEX.md` or `SPEC.md`
 3. Open the linked `plans/<BACKLOG-ID>-<slug>.md` file — execute from that file
 4. If you are reviving native/KMP/RN work, open [Paused Work](./paused/INDEX.md) before touching any native spec
 
 ## Active Workstreams
 
-| Workstream           | Spec                                                                | Focus                                         |
+| Workstream           | Entry                                                               | Focus                                         |
 | -------------------- | ------------------------------------------------------------------- | --------------------------------------------- |
-| WebView UI           | [WebView Spec](./workstreams/webview/SPEC.md)                       | Sumsub Web SDK integration, KYC result flow   |
+| WebView UI           | [WebView Index](./workstreams/webview/INDEX.md)                     | Sumsub Web SDK integration, KYC result flow   |
 | SDK Core             | [SDK Core Spec](./workstreams/sdk-core/SPEC.md)                     | Browser-portable engine                       |
 | Native Shells (Lite) | [Native Shells Lite Spec](./workstreams/native-shells-lite/SPEC.md) | Plain Kotlin + Swift for keychain/crypto only |
 | Build Pipeline       | [Build Pipeline Spec](./workstreams/build-pipeline/SPEC.md)         | Bundle webview-app into native shells         |
