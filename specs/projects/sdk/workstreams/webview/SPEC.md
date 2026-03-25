@@ -1,6 +1,6 @@
 # WebView-Only Verification Experience — Implementation Spec
 
-> Last updated: 2026-03-21
+> Last updated: 2026-03-25
 > Owner: WebView / Product Platform
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
@@ -52,8 +52,15 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 | WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Done        | Medium   | WV-02      | [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | Browser host fallback now uses `postMessage` for iframe/popup embedding while native transports keep their current behavior |
 | WV-05 | Integrate KYC provider Web SDK into ProviderLaunchScreen (Sumsub as default)                    | In Progress | High     | WV-02      | [plans/WV-05-sumsub-web-sdk.md](./plans/WV-05-sumsub-web-sdk.md)                                 | Code complete on `feat/webview-sdk`, needs testing                                                                          |
 | WV-06 | Wire KYC result through verification pipeline to host lifecycle callback                        | Ready       | High     | WV-05      | [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | Sumsub result → kycResultStore → ConfirmIdentificationScreen → lifecycle.setResult()                                        |
-| WV-07 | SelfClient assembly and proving machine export for WebView                                      | Done        | High     | SC-03      | [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | Export useProvingStore, map bridge→SDK adapters, keychain-backed documents, create real SelfClient                           |
-| WV-08 | Wire tunnel flow with real proving machine (register → disclose)                                | Ready       | High     | WV-07      | [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | Replace mock tunnel proving with real provingMachine: Sumsub → store doc → prove → disclose → result                        |
+| WV-07 | SelfClient assembly and proving machine export for WebView                                      | Done        | High     | SC-03               | [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | Export useProvingStore, map bridge→SDK adapters, keychain-backed documents, create real SelfClient                          |
+| WV-08 | Wire tunnel flow with real proving machine (register → disclose)                                | Ready       | High     | WV-05, WV-06, WV-07 | [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | Replace mock tunnel proving with real provingMachine: Sumsub → store doc → prove → disclose → result                        |
+| WV-09 | Registration core (tour, outcomes, social sign-on, prompts)                                     | Ready       | High     | WV-05, WV-06        | [plans/WV-09-registration-core.md](./plans/WV-09-registration-core.md)                           | 11 Euclid wrapper screens, 4 PRs: tour → outcomes → social/prompts → integration                                            |
+| WV-10 | EU ID defer record                                                                              | Deferred    | Low      | WV-09               | [plans/WV-10-eu-id-helper-flow.md](./plans/WV-10-eu-id-helper-flow.md)                           | EU ID is out of the initial webview release; defer the 6 EU ID screens to mobile app 3.1 / a later dedicated flow          |
+| WV-11 | Disclose core                                                                                   | Ready       | High     | WV-07, WV-08        | [plans/WV-11-disclose-core.md](./plans/WV-11-disclose-core.md)                                   | Request-context entry → proof request → generation → result                                                                 |
+| WV-12 | Proof overlays, history, and post-proof support                                                 | Blocked     | Medium   | WV-11               | —                                                                                                | Spec needed; receipt, history, dialogues, success/backup prompts, Sumsub pending/success, Nova splash                       |
+| WV-13 | Home, document management, and ID data                                                          | Blocked     | Medium   | WV-11               | —                                                                                                | Spec needed; IDDataScreen, ManageDocumentsScreen, HomeScreen follow-through                                                 |
+| WV-14 | Recovery and backup surfaces                                                                    | Blocked     | Low      | WV-13               | —                                                                                                | Spec needed; recovery method picker, phrase display/input, recovery success                                                 |
+| WV-15 | Settings follow-through and support routes                                                      | Blocked     | Low      | WV-13               | —                                                                                                | Spec needed; settings persistence, security/notification actions, dev-mode completion                                       |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -69,6 +76,9 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 | [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | WV-06 | Ready                                      |
 | [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | WV-07 | Done                                       |
 | [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | WV-08 | Ready                                      |
+| [plans/WV-09-registration-core.md](./plans/WV-09-registration-core.md)                           | WV-09 | Ready                                      |
+| [plans/WV-10-eu-id-helper-flow.md](./plans/WV-10-eu-id-helper-flow.md)                           | WV-10 | Deferred (out of initial webview release)  |
+| [plans/WV-11-disclose-core.md](./plans/WV-11-disclose-core.md)                                   | WV-11 | Ready                                      |
 
 ## Completion Checklist
 
