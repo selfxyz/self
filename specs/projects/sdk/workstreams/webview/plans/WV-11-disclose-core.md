@@ -252,7 +252,8 @@ Required behavior:
 On terminal CTA:
 
 - if result has not been sent yet, call `lifecycle.setResult(result)`
-- after terminal result handling, call `lifecycle.dismiss()`
+- on success, after terminal result handling, call `lifecycle.dismiss()`
+- on failure or retry, do not call `lifecycle.dismiss()` before the retry path runs
 - do not navigate home first and leave the host session hanging
 
 This fixes the current bug where `/proving` sends the result before proof
@@ -270,9 +271,11 @@ Do not reuse "ID Verified" registration language here.
 #### 3c. Add retry behavior
 
 On failure, the primary action should retry the disclose flow by navigating
-back to `/proving`.
+back to `/proving` after ensuring `lifecycle.setResult(result)` has been called
+if needed. Keep the host session open for that retry path.
 
-On success, the terminal action should close the session after result delivery.
+On success, the terminal action should close the session after result delivery
+by calling `lifecycle.dismiss()`.
 
 If the Euclid component only supports a single button, prefer:
 

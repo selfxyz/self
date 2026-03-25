@@ -297,12 +297,12 @@ The existing WV specs already cover foundational platform work. The remaining ti
 
 ### Existing foundation specs
 
-| Spec    | Purpose                                        | Status                                |
-| ------- | ---------------------------------------------- | ------------------------------------- |
-| `WV-05` | Sumsub Web SDK launch integration              | In progress                           |
-| `WV-06` | KYC result flow and terminal mapping           | Ready, plan file still needed in repo |
-| `WV-07` | SelfClient assembly and proving machine export | Ready                                 |
-| `WV-08` | Tunnel proving integration                     | Ready                                 |
+| Spec    | Purpose                                        | Status      |
+| ------- | ---------------------------------------------- | ----------- |
+| `WV-05` | Sumsub Web SDK launch integration              | In progress |
+| `WV-06` | KYC result flow and terminal mapping           | Ready       |
+| `WV-07` | SelfClient assembly and proving machine export | Ready       |
+| `WV-08` | Tunnel proving integration                     | Ready       |
 
 ### Proposed new migration specs
 

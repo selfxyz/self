@@ -65,7 +65,7 @@ The tunnel route wrapper `TourScreen` renders the real Euclid `LaunchTour1Screen
 | SELF-2359 | Tunnel + proving flow data propagation fixes           | High     |
 | SELF-2360 | Settings persistence, test coverage, doc cleanup       | Medium   |
 
-Note: SELF-2358 references "WV-05" in its title but no WV-05 spec has been written yet (WV-01 through WV-04 are complete). WV-05 is shorthand in the issue title, not a published spec. A spec should be created before implementation begins.
+Note: SELF-2358 references WV-05 contract compliance. WV-05 is now documented in `plans/WV-05-sumsub-web-sdk.md`; keep issue execution aligned with that spec.
 
 ---
 

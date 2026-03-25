@@ -796,7 +796,7 @@ cd packages/webview-app && yarn build
 # 5. Success → backup prompt → notification prompt → home
 # 6. Provider error → failure screen with retry/dismiss
 # 7. Direct navigation to /onboarding/success → renders (no guard crash)
-# 8. Direct navigation to /onboarding/failure without state → redirects to /
+# 8. Direct navigation to /onboarding/failure without state → renders generic fallback copy
 ```
 
 **Definition of Done for PR 4:**
@@ -933,7 +933,7 @@ cd packages/webview-app && yarn build
 
 ## Definition of Done
 
-- [ ] 8 new Euclid wrapper screens created in `packages/webview-app/src/screens/onboarding/`
+- [ ] 11 new Euclid wrapper screens created in `packages/webview-app/src/screens/onboarding/`
 - [ ] 9 new routes added to App.tsx
 - [ ] HomeScreen CTA routes to tour when no document exists
 - [ ] Tour steps 1–4 navigate correctly, step 4 exits to country picker
