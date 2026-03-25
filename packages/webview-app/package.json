@@ -10,11 +10,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@didit-protocol/sdk-web": "^0.1.8",
     "@selfxyz/euclid": "^1.2.0",
     "@selfxyz/euclid-core": "^1.2.0",
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
     "@selfxyz/webview-bridge": "workspace:^",
-    "@sumsub/websdk": "^2.0.0",
     "buffer": "^6.0.3",
     "elliptic": "^6.5.4",
     "lottie-react": "^2.4.0",

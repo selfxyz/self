@@ -3740,6 +3740,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@didit-protocol/sdk-web@npm:^0.1.8":
+  version: 0.1.8
+  resolution: "@didit-protocol/sdk-web@npm:0.1.8"
+  checksum: 10c0/c8fc35b8a8f73e678f4d868676bf70fe3095c62725f9b6ebc242310f93db70e3b17d298fc5d7df844d1ec18c445aac5a4dde329dac2ecef3fff03973265fed17
+  languageName: node
+  linkType: hard
+
 "@discoveryjs/json-ext@npm:0.6.3":
   version: 0.6.3
   resolution: "@discoveryjs/json-ext@npm:0.6.3"
@@ -11146,11 +11153,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/webview-app@workspace:packages/webview-app"
   dependencies:
+    "@didit-protocol/sdk-web": "npm:^0.1.8"
     "@selfxyz/euclid": "npm:^1.2.0"
     "@selfxyz/euclid-core": "npm:^1.2.0"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@selfxyz/webview-bridge": "workspace:^"
-    "@sumsub/websdk": "npm:^2.0.0"
     "@testing-library/react": "npm:^14.1.2"
     "@types/react": "npm:^18.3.4"
     "@types/react-dom": "npm:^18.3.0"
@@ -13574,13 +13581,6 @@ __metadata:
     "@stdlib/utils-global": "npm:^0.0.x"
   checksum: 10c0/fa73f1ed19d1ba999487870cb2cd7eb68a0891cbbaab0785aa41c5e1cef5ae430f459c94fc5181d6f5d26e6e2fbb2ae6873a596ff48142b5de51de1d435723eb
   conditions: (os=aix | os=darwin | os=freebsd | os=linux | os=macos | os=openbsd | os=sunos | os=win32 | os=windows)
-  languageName: node
-  linkType: hard
-
-"@sumsub/websdk@npm:^2.0.0":
-  version: 2.6.1
-  resolution: "@sumsub/websdk@npm:2.6.1"
-  checksum: 10c0/02c31ca25d1ec3ce0e90f7874a40f2c0996f45d173e237147c9fcf59668651cc33ed61871013ab6b95b5ad10dc38abd4ac40a8043cb287442aa278924b93b9ee
   languageName: node
   linkType: hard
 

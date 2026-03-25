@@ -10,11 +10,11 @@ import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
 import {
-  fetchSumsubAccessToken,
-  launchSumsubWebSdk,
-} from '../../utils/sumsubProvider';
+  createDiditSession,
+  launchDiditWebSdk,
+} from '../../utils/diditProvider';
 
-const CONTAINER_ID = 'sumsub-websdk-container';
+const CONTAINER_ID = 'didit-sdk-container';
 
 type Phase = 'loading' | 'active' | 'error';
 
@@ -88,16 +88,16 @@ export const ProviderLaunchScreen: React.FC = () => {
 
     (async () => {
       try {
-        const { token } = await fetchSumsubAccessToken(controller.signal);
+        const session = await createDiditSession(controller.signal);
         if (cancelled) return;
 
-        const destroy = await launchSumsubWebSdk({
-          accessToken: token,
+        const destroy = await launchDiditWebSdk({
+          url: session.url,
           containerId: CONTAINER_ID,
           verificationId,
           onComplete: handleComplete,
           onError: handleError,
-          onMessage: (type, payload) => {
+          onEvent: (type: string, payload: unknown) => {
             analytics.trackEvent('provider_message', {
               messageType: type,
               hasPayload: payload != null,
