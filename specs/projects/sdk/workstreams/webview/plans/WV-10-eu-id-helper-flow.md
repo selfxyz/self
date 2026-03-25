@@ -26,23 +26,21 @@ The remaining unmigrated EU ID screens were originally grouped as a possible
 
 That framing is no longer correct for the active webview migration.
 
-The current registration spine is provider-first. `WV-05` and `WV-06` define a
-KYC provider launch/result contract where the provider owns document capture,
-scan guidance, and verification onboarding. Sumsub, Didit, and similar
-providers already supply their own guided UX for camera capture and document
-verification.
+The current registration migration is mock-first and provider-agnostic. Future
+logic work may use a provider-backed KYC contract, but that is not the
+implementation boundary for this pass.
 
-EU ID is **not** part of that provider-backed path. If Self supports EU ID in
-the future, it will be a **separate Self-owned flow**, not a provider helper
-layer inside Sumsub/Didit registration.
+EU ID is **not** part of the active registration screen-migration pass. If Self
+supports EU ID in the future, it will be a **separate Self-owned flow**, not a
+helper layer inside the current mocked KYC registration flow.
 
 This spec records that decision so the webview backlog does not accidentally
-re-introduce native-scan assumptions into the provider flow or treat EU ID as
-part of the initial webview release.
+pull EU ID back into the active registration migration or treat it as part of
+the current mocked-flow work.
 
 ## Decision
 
-### 1. EU ID is not part of provider-backed registration
+### 1. EU ID is not part of the active registration migration
 
 Do **not** insert the EU ID screens into the active registration chain:
 
@@ -56,17 +54,16 @@ Do **not** insert the EU ID screens into the active registration chain:
   → registration outcomes / prompts
 ```
 
-Provider-owned onboarding stays inside the provider SDK or hosted provider
-experience. Self does not wrap or duplicate that onboarding with Euclid
-instruction screens.
+The active migration should stay focused on the core registration/onboarding
+screens and temporary mocked states. EU ID is a separate follow-up.
 
 ### 2. EU ID is deferred beyond the initial webview release
 
 The six EU ID screens are **not approved for route integration** in the active
 webview app and are **not part of the initial webview release**.
 
-Current planning assumption: EU ID, if still wanted, is a **mobile app 3.1**
-follow-up rather than part of the first webview-app ship.
+Current planning assumption: EU ID, if still wanted, is a **3.1 follow-up**
+alongside Aadhaar and Points rather than part of the active webview pass.
 
 If product later decides to support EU ID in webview, that work must be scoped
 as a separate Self-owned flow with its own:
@@ -97,7 +94,7 @@ This is a **decision spec**. It does not migrate or integrate the six screens.
 
 ### In scope
 
-- Record that EU ID is outside provider-backed registration
+- Record that EU ID is outside the active registration migration
 - Remove ambiguity from the webview backlog and planning docs
 - Define the correct ownership boundary for future EU ID work
 - Mark the six EU ID screens as deferred from the active webview route spine and initial release
@@ -174,8 +171,8 @@ None.
 
 ## Constraints
 
-- **Provider-owned onboarding stays provider-owned.** Do not duplicate Sumsub,
-  Didit, or similar onboarding guidance in Self-owned Euclid wrappers.
+- **Do not expand the active pass.** EU ID stays outside the current
+  registration migration and outside the current mocked-flow work.
 - **No native scan assumptions.** `WV-03` removed camera/NFC-native ownership
   from the active webview migration path. `WV-10` must not reverse that.
 - **Inventory is not commitment.** Keeping the six EU ID screens in
@@ -191,11 +188,11 @@ None.
    The RN app still contains native camera/NFC scanning and fallback behavior,
    which is not the contract for the provider-first webview flow.
 
-2. **Should EU ID be inserted before or after provider launch?** No. EU ID is
-   not part of provider-backed registration.
+2. **Should EU ID be inserted before or after the mocked KYC/provider screens?**
+   No. EU ID is not part of the active registration migration.
 
-3. **Should the six screens become provider helper/prep screens?** No.
-   Providers own their own onboarding guides and capture UX.
+3. **Should the six screens become helper/prep screens for the mocked KYC flow?**
+   No. They remain deferred follow-up work.
 
 4. **Do the six screens need to be deleted from planning docs?** No. Keep them
    inventoried, but mark them as deferred from the active migration path.
@@ -207,7 +204,8 @@ This spec is complete when:
 - `WV-10` is described consistently as a deferred follow-up across planning docs
 - no planning doc implies the six EU ID screens belong in the provider-backed route chain
 - the active implementation order continues from `WV-09` to `WV-11` without EU ID integration work
-- planning docs state that EU ID is out of the initial webview release and targeted no earlier than mobile app 3.1
+- planning docs state that EU ID is out of the active pass and targeted no
+  earlier than 3.1 with Aadhaar and Points
 
 ## Definition of Done
 

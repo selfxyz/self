@@ -23,7 +23,7 @@
 
 - KMP shared code or expect/actual patterns
 - NFC, camera, biometrics, haptic, analytics, documents, navigation bridge handlers
-- Sumsub integration (owned by WebView workstream)
+- KYC provider integration (owned by WebView workstream)
 - WebView app build/bundle (owned by build-pipeline workstream)
 - Changes to `packages/webview-bridge/` or `packages/mobile-sdk-alpha/`
 
@@ -170,7 +170,7 @@ The host never sees raw KYC provider output. The WebView normalizes provider res
 | Spec                                                       | Relationship                                        |
 | ---------------------------------------------------------- | --------------------------------------------------- |
 | [SDK Overview](../../OVERVIEW.md)                          | Parent architecture                                 |
-| [WebView Spec](../webview/SPEC.md)                         | Sibling — owns Sumsub integration and WebView UX    |
+| [WebView Spec](../webview/SPEC.md)                         | Sibling — owns KYC provider integration and WebView UX |
 | [SDK Core Spec](../sdk-core/SPEC.md)                       | Sibling — owns mobile-sdk-alpha engine              |
 | [Build Pipeline Spec](../build-pipeline/SPEC.md)           | Downstream — bundles webview-app into native shells |
 | [Paused Native Shells](../../paused/native-shells/SPEC.md) | Predecessor — KMP-based, now deprecated             |

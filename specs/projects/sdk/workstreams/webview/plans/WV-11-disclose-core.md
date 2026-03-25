@@ -12,6 +12,13 @@
 - Branch: TBD
 - PR: TBD
 
+## Current Pass Note
+
+This spec is **not active** in the current design-migration pass. The disclose
+flow depends on a real proving machine (WV-07, done) and real tunnel integration
+(WV-08, blocked on WV-05/WV-06). This spec is preserved as future
+implementation context.
+
 ## Why
 
 The webview app already has a partial disclose surface:
@@ -74,7 +81,7 @@ This spec covers the **main disclose route chain** in `packages/webview-app`.
 - proof receipt/history screens
 - proof dialogue overlays
 - post-proof backup prompts
-- Sumsub pending/success support screens
+- KYC pending/success support screens
 - Nova splash or unrelated support routes
 
 `QRViewfinderScreen` remains inventoried, but **QR capture is not the active

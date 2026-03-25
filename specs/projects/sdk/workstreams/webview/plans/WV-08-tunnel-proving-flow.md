@@ -3,13 +3,20 @@
 > Last updated: 2026-03-24
 > Status: Ready
 > Priority: High
-> Depends on: WV-05 (In Progress), WV-06 (Ready), WV-07 (Ready)
+> Depends on: WV-05 (In Progress), WV-06 (Ready), WV-07 (Done)
 
 - Workstream: webview
 - Backlog ID: WV-08
 - Owner: TBD
 - Branch: TBD
 - PR: TBD
+
+## Current Pass Note
+
+This spec is **not active** in the current design-migration pass. The tunnel
+flow will remain a UI mockup until real KYC provider integration (WV-05) and
+KYC result persistence (WV-06) land. This spec is preserved as future
+implementation context.
 
 ## Why
 
@@ -18,24 +25,25 @@ timer for "proving," and no real backend interaction. With WV-07 landing
 `SelfClient` and `useProvingStore` in webview-app, the tunnel flow can drive
 real ZK proof generation.
 
-The tunnel flow is the first end-to-end integration: **Sumsub → store document
-in keychain → provingMachine (register) → disclose → lifecycle.setResult()**.
-Getting this working validates the entire WebView proving pipeline.
+The tunnel flow is the first end-to-end integration: **KYC provider → store
+document in keychain → provingMachine (register) → disclose →
+lifecycle.setResult()**. Getting this working validates the entire WebView
+proving pipeline.
 
 ## Prerequisites
 
 - **WV-07 done** — `SelfClient` available in webview-app, `useProvingStore`
   accessible, keychain-backed documents adapter working
-- **WV-05 done** — Sumsub Web SDK integrated in `ProviderLaunchScreen`
+- **WV-05 done** — KYC provider SDK integrated in `ProviderLaunchScreen`
 - **WV-06 done** — KYC result normalization into `KycProviderResult`
 
 ## What You Will Do
 
-### 1. Wire Sumsub result → document storage
+### 1. Wire KYC provider result → document storage
 
 **File:** `packages/webview-app/src/screens/tunnel/` (new or modified screen)
 
-After Sumsub returns a successful `KycProviderResult`:
+After the KYC provider returns a successful `KycProviderResult`:
 
 1. Extract attestation data (`serializedApplicantInfo`, `signature`, `pubkey`)
 2. Transform into an `IDDocument` (using `@selfxyz/common` parsing utilities)
@@ -143,7 +151,7 @@ Update tunnel routes if needed. The flow becomes:
   → /tunnel/kyc
   → /tunnel/registration/country
   → /tunnel/registration/id-type
-  → /tunnel/provider (Sumsub — from WV-05)
+  → /tunnel/provider (KYC provider — from WV-05)
   → /tunnel/provider-result (normalize KYC result — from WV-06)
   → /tunnel/proof/generating (real provingMachine — this spec)
   → /tunnel/proof/result (real result — this spec)
@@ -187,7 +195,7 @@ tunnel flow.
 | File                                                               | What                                              |
 | ------------------------------------------------------------------ | ------------------------------------------------- |
 | `packages/webview-app/src/hooks/useProvingFlow.ts`                 | Optional: shared hook for register→disclose chain |
-| `packages/webview-app/src/screens/tunnel/TunnelProviderScreen.tsx` | If tunnel needs its own Sumsub launch screen      |
+| `packages/webview-app/src/screens/tunnel/TunnelProviderScreen.tsx` | If tunnel needs its own KYC provider launch screen |
 
 ## Constraints
 
@@ -200,15 +208,15 @@ tunnel flow.
 - **Register then disclose.** The tunnel flow always runs both circuits in
   sequence. Register creates the on-chain identity, disclose proves specific
   attributes to the requesting party.
-- **Sumsub provides the document.** NFC scanning is not part of this flow.
-  The `IDDocument` is constructed from Sumsub's KYC attestation, not from
-  passport chip data.
+- **The KYC provider provides the document.** NFC scanning is not part of this
+  flow. The `IDDocument` is constructed from the provider's KYC attestation, not
+  from passport chip data.
 
 ## Resolved Questions
 
-1. **IDDocument shape from Sumsub attestation** — `KycData` (from
+1. **IDDocument shape from KYC attestation** — `KycData` (from
    `@selfxyz/common/utils/types`) is already a subtype of `IDDocument`.
-   Construct it directly from Sumsub's attestation:
+   Construct it directly from the provider's attestation:
    ```typescript
    const kycData: KycData = {
      documentType: deserializeApplicantInfo(attestation.serializedApplicantInfo)
@@ -222,8 +230,9 @@ tunnel flow.
    ```
    `deserializeApplicantInfo()` from `@selfxyz/common/utils/kyc/api` parses
    the base64 blob into structured fields. The proving machine calls this
-   internally when it needs circuit inputs. This is the same pattern the RN
-   app uses (`app/src/hooks/useSumsubWebSocket.ts`).
+   internally when it needs circuit inputs. The RN app has a reference
+   implementation in `app/src/hooks/useSumsubWebSocket.ts` (note: that file
+   still uses prior Sumsub naming).
 2. **DSC circuit** — Not needed for KYC documents. The tunnel flow runs
    `register → disclose` only. DSC is only relevant for NFC-scanned
    passports where the Document Signer Certificate needs updating.
@@ -239,7 +248,7 @@ tunnel flow.
 cd packages/webview-app && yarn build
 
 # Manual: launch tunnel flow in test app, verify:
-# 1. Sumsub completes → document stored in keychain
+# 1. KYC provider completes → document stored in keychain
 # 2. Proving machine transitions through states
 # 3. Proof generated successfully (or meaningful error)
 # 4. Result screen shows real outcome
@@ -249,7 +258,7 @@ cd packages/webview-app && yarn build
 ## Definition of Done
 
 - [ ] TunnelProvingScreen drives real provingMachine (no 3-second mock)
-- [ ] Sumsub result stored as IDDocument in native keychain via secureStorage
+- [ ] KYC provider result stored as IDDocument in native keychain via secureStorage
 - [ ] Register circuit runs to completion (or meaningful error state)
 - [ ] Disclose circuit runs after register completes
 - [ ] TunnelResultScreen shows real success/failure from proving state

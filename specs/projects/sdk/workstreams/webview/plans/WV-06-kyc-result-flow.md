@@ -3,7 +3,7 @@
 > Last updated: 2026-03-25
 > Status: Ready
 > Priority: High
-> Depends on: WV-05 (In Progress — Sumsub Web SDK integration)
+> Depends on: WV-05 (In Progress — KYC provider SDK integration)
 
 - Workstream: webview
 - Backlog ID: WV-06
@@ -11,6 +11,12 @@
 - Owner: TBD
 - Branch: TBD
 - PR: TBD
+
+## Current Pass Note
+
+This spec is **not active** in the current design-migration pass. The current
+pass mocks the KYC result flow. This spec is preserved as future implementation
+context for when real KYC result persistence is picked up.
 
 ## Why
 
@@ -27,10 +33,13 @@ This means the proving flow has no document to prove against.
 `ConfirmIdentificationScreen` exists but is bypassed — the route from
 provider result skips it entirely.
 
-The RN app solves this in `app/src/hooks/useSumsubWebSocket.ts:93-137`:
-receive attestation → `deserializeApplicantInfo()` → construct `KycData` →
+The RN app has a reference implementation of this pipeline in
+`app/src/hooks/useSumsubWebSocket.ts:93-137` (note: that file still uses the
+prior Sumsub naming). The pattern is: receive attestation →
+`deserializeApplicantInfo()` → construct `KycData` →
 `storeDocumentWithDeduplication()` → navigate. This spec implements the
-equivalent pipeline for the webview app.
+equivalent pipeline for the webview app using the provider-agnostic
+`KycProviderResult` contract.
 
 ## What You Will Do
 
@@ -68,7 +77,8 @@ export function clearKycResult(): void {
 
 Extract attestation fields from `KycProviderResult` and construct a `KycData`
 document matching the shape the proving machine expects. Follow the same
-pattern as `app/src/hooks/useSumsubWebSocket.ts:104-118`.
+pattern as `app/src/hooks/useSumsubWebSocket.ts:104-118` (note: RN file still
+uses prior Sumsub naming).
 
 The return type separates the `KycData` payload (what gets stored via
 `saveDocument()`) from the `DocumentMetadata` (what goes in the catalog).
@@ -298,7 +308,7 @@ already in the context value, no modification needed.
 | ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | `packages/webview-app/src/screens/onboarding/ProviderLaunchScreen.tsx` | Upstream of this spec — already produces KycProviderResult correctly |
 | `packages/webview-app/src/screens/proving/ProvingScreen.tsx`           | Downstream — WV-08 wires proving to stored documents                 |
-| `packages/webview-app/src/utils/sumsubProvider.ts`                     | Provider-specific code unchanged — WV-05 scope                       |
+| `packages/webview-app/src/utils/sumsubProvider.ts`                     | Provider-specific code unchanged — WV-05 scope (file may be renamed) |
 | `packages/webview-bridge/**`                                           | Bridge layer unchanged                                               |
 | `packages/mobile-sdk-alpha/**`                                         | SDK unchanged                                                        |
 
@@ -352,7 +362,7 @@ already in the context value, no modification needed.
 cd packages/webview-app && yarn build
 
 # Manual validation:
-# 1. Complete Sumsub flow → ProviderResultScreen shows success
+# 1. Complete KYC provider flow → ProviderResultScreen shows success
 # 2. Button navigates to ConfirmIdentificationScreen (not /proving)
 # 3. Confirm button persists document and calls lifecycle.setResult()
 # 4. Cancel/error at ProviderResultScreen calls lifecycle.dismiss()
