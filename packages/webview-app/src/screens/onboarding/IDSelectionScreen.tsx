@@ -71,6 +71,17 @@ export const IDSelectionScreen: React.FC = () => {
     [navigate, analytics, haptic, countryCode],
   );
 
+  const onNotListed = useCallback(() => {
+    haptic.trigger('selection');
+    analytics.trackEvent('document_type_selected', {
+      documentType: 'kyc',
+      countryCode,
+    });
+    navigate('/onboarding/provider', {
+      state: { countryCode, documentType: 'kyc' },
+    });
+  }, [navigate, analytics, haptic, countryCode]);
+
   return (
     <IDTypeScreen
       insets={{ top: 0, bottom: 0 }}
@@ -78,6 +89,7 @@ export const IDSelectionScreen: React.FC = () => {
       countryName={getCountryName(countryCode)}
       idTypes={idTypes}
       onIDTypeSelect={onSelect}
+      onNotListedPress={onNotListed}
       onBack={() => navigate(-1)}
       renderFlag={renderFlag}
       renderIDTypeIcon={renderIDTypeIcon}

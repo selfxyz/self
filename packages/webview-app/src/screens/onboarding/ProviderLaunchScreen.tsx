@@ -31,12 +31,10 @@ export const ProviderLaunchScreen: React.FC = () => {
       documentType?: string;
     }) || {};
 
-  const verificationId = ctxVerificationId;
+  const verificationId = ctxVerificationId ?? `didit-${Date.now()}`;
 
-  const [phase, setPhase] = useState<Phase>(!verificationId ? 'error' : 'loading');
-  const [errorMessage, setErrorMessage] = useState(
-    !verificationId ? 'Missing verification context' : '',
-  );
+  const [phase, setPhase] = useState<Phase>('loading');
+  const [errorMessage, setErrorMessage] = useState('');
   const [retryCount, setRetryCount] = useState(0);
   const destroyRef = useRef<(() => void) | null>(null);
   const mountedRef = useRef(true);
@@ -111,12 +109,6 @@ export const ProviderLaunchScreen: React.FC = () => {
   );
 
   useEffect(() => {
-    if (!verificationId) {
-      setPhase('error');
-      setErrorMessage('Missing verification context');
-      return;
-    }
-
     mountedRef.current = true;
 
     analytics.trackEvent('provider_launch_started', {
@@ -302,12 +294,31 @@ export const ProviderLaunchScreen: React.FC = () => {
           </div>
         </div>
       )}
+      <style>{`
+        /* Force Didit SDK modal to fill the viewport on mobile */
+        .shadow-card {
+          width: 100% !important;
+          max-width: 100% !important;
+          height: 100% !important;
+          max-height: 100% !important;
+          border-radius: 0 !important;
+        }
+        iframe[class*="in-iframe"] {
+          width: 100% !important;
+          height: 100% !important;
+        }
+        /* Override the modal backdrop to fill screen */
+        div[class*="size-full"] {
+          width: 100vw !important;
+          max-width: 100vw !important;
+        }
+      `}</style>
       <div
         id={CONTAINER_ID}
         style={{
           flex: 1,
-          display: phase === 'active' ? 'flex' : 'none',
-          flexDirection: 'column',
+          display: phase === 'active' ? 'block' : 'none',
+          width: '100%',
           minHeight: '100vh',
         }}
       />
