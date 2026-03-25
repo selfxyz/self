@@ -47,6 +47,10 @@ export type { BridgeBiometricsAdapter } from './biometrics';
 export { bridgeCameraAdapter } from './camera';
 export type { BridgeCameraAdapter, MrzScanParams, MrzScanResult } from './camera';
 
+export { createKeychainDocumentsAdapter } from './keychain-documents';
+export { createSdkAdapters } from './sdk-adapter-map';
+export type { CreateSdkAdaptersOpts } from './sdk-adapter-map';
+
 export function indexedDBDocumentsAdapter(): BridgeDocumentsAdapter {
   return createIndexedDBDocumentsAdapter() as BridgeDocumentsAdapter;
 }

@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { Buffer } from 'buffer';
+globalThis.Buffer = Buffer;
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App';
