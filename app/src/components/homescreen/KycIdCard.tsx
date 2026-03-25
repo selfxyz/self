@@ -29,7 +29,7 @@ interface KycIdCardProps {
 
 /**
  * Maps KYC idType to display title.
- * idType values from Sumsub: "drivers_licence", "passport", "NATIONAL ID", etc.
+ * idType values: "drivers_licence", "passport", "NATIONAL ID", etc.
  */
 function getKycDocTitle(idType: string): string {
   const normalized = idType
@@ -45,7 +45,7 @@ function getKycDocTitle(idType: string): string {
 
 /**
  * KYC document card - matches IdCard design exactly but shows "STANDARD" badge.
- * Used for documents verified through Sumsub KYC flow (drivers license, etc.).
+ * Used for documents verified through KYC flow (drivers license, etc.).
  */
 const KycIdCard: FC<KycIdCardProps> = ({
   idDocument,

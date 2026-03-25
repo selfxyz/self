@@ -3726,6 +3726,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@didit-protocol/sdk-react-native@npm:^3.2.6":
+  version: 3.2.6
+  resolution: "@didit-protocol/sdk-react-native@npm:3.2.6"
+  peerDependencies:
+    "@expo/config-plugins": ">=7.0.0"
+    react: "*"
+    react-native: "*"
+  peerDependenciesMeta:
+    "@expo/config-plugins":
+      optional: true
+  checksum: 10c0/6b14bca91b9b5ddaa111bc8548ffeac97082229e1355590391f83e3d0da844e9281ff646a23e3a43694f6e15fbad21ae7ac86eb73e5fb54751aa8747e5a95232
+  languageName: node
+  linkType: hard
+
 "@discoveryjs/json-ext@npm:0.6.3":
   version: 0.6.3
   resolution: "@discoveryjs/json-ext@npm:0.6.3"
@@ -10717,6 +10731,7 @@ __metadata:
     "@babel/preset-env": "npm:^7.28.6"
     "@babel/preset-react": "npm:^7.28.5"
     "@babel/runtime": "npm:^7.28.6"
+    "@didit-protocol/sdk-react-native": "npm:^3.2.6"
     "@ethersproject/shims": "npm:^5.8.0"
     "@invertase/react-native-apple-authentication": "npm:^2.5.1"
     "@noble/hashes": "npm:^1.5.0"
@@ -10747,7 +10762,6 @@ __metadata:
     "@sentry/react": "npm:^9.32.0"
     "@sentry/react-native": "npm:7.0.0"
     "@stablelib/cbor": "npm:^2.0.1"
-    "@sumsub/react-native-mobilesdk-module": "npm:1.40.2"
     "@tamagui/animations-css": "npm:1.126.14"
     "@tamagui/animations-react-native": "npm:1.126.14"
     "@tamagui/config": "npm:1.126.14"
@@ -13560,15 +13574,6 @@ __metadata:
     "@stdlib/utils-global": "npm:^0.0.x"
   checksum: 10c0/fa73f1ed19d1ba999487870cb2cd7eb68a0891cbbaab0785aa41c5e1cef5ae430f459c94fc5181d6f5d26e6e2fbb2ae6873a596ff48142b5de51de1d435723eb
   conditions: (os=aix | os=darwin | os=freebsd | os=linux | os=macos | os=openbsd | os=sunos | os=win32 | os=windows)
-  languageName: node
-  linkType: hard
-
-"@sumsub/react-native-mobilesdk-module@npm:1.40.2":
-  version: 1.40.2
-  resolution: "@sumsub/react-native-mobilesdk-module@npm:1.40.2"
-  peerDependencies:
-    react-native: ">=0.60.0-rc.0 <1.0.x"
-  checksum: 10c0/fc5f368d3afdffdb27496ab3b152b38bb0ee8b52f8592b2b48e0a3941197de33fd445502123eeca676d0ee1ecaeaa2e7c6573601e06c4eea79dfa2aec64ed75b
   languageName: node
   linkType: hard
 

@@ -16,8 +16,8 @@ export type InjectedErrorType =
   | 'nfc_parse_failure'
   | 'api_network_error'
   | 'api_timeout'
-  | 'sumsub_initialization'
-  | 'sumsub_verification';
+  | 'didit_initialization'
+  | 'didit_verification';
 
 export const ERROR_GROUPS = {
   MRZ: ['mrz_invalid_format', 'mrz_unknown_error'] as InjectedErrorType[],
@@ -27,10 +27,7 @@ export const ERROR_GROUPS = {
     'nfc_parse_failure',
   ] as InjectedErrorType[],
   API: ['api_network_error', 'api_timeout'] as InjectedErrorType[],
-  Sumsub: [
-    'sumsub_initialization',
-    'sumsub_verification',
-  ] as InjectedErrorType[],
+  Didit: ['didit_initialization', 'didit_verification'] as InjectedErrorType[],
 };
 
 export const ERROR_LABELS: Record<InjectedErrorType, string> = {
@@ -41,8 +38,8 @@ export const ERROR_LABELS: Record<InjectedErrorType, string> = {
   nfc_parse_failure: 'NFC: Parse failure',
   api_network_error: 'API: Network error',
   api_timeout: 'API: Timeout',
-  sumsub_initialization: 'Sumsub: Initialization',
-  sumsub_verification: 'Sumsub: Verification',
+  didit_initialization: 'Didit: Initialization',
+  didit_verification: 'Didit: Verification',
 };
 
 interface ErrorInjectionState {

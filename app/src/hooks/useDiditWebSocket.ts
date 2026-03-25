@@ -4,17 +4,17 @@
 
 import { useCallback, useRef } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import { SUMSUB_TEE_URL } from '@env';
+import { DIDIT_TEE_URL } from '@env';
 
 import { deserializeApplicantInfo } from '@selfxyz/common';
 import type { DocumentType, KycData } from '@selfxyz/common/utils/types';
 
-import type { SumsubApplicantInfoSerialized } from '@/integrations/sumsub/types';
+import type { ApplicantInfoSerialized } from '@/integrations/didit/types';
 import { navigationRef } from '@/navigation';
 import { storeDocumentWithDeduplication } from '@/providers/passportDataProvider';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
 
-interface UseSumsubWebSocketOptions {
+interface UseDiditWebSocketOptions {
   onSuccess?: () => void;
   onError?: (error: string) => void;
   onVerificationFailed?: (reason: string) => void;
@@ -22,11 +22,11 @@ interface UseSumsubWebSocketOptions {
 }
 
 /**
- * Shared hook for Sumsub websocket subscription logic.
- * Handles connecting to the TEE service, subscribing to a userId,
+ * Shared hook for Didit websocket subscription logic.
+ * Handles connecting to the TEE service, subscribing to a sessionId,
  * and processing verification results.
  */
-export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
+export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
   const {
     onSuccess,
     onError,
@@ -45,55 +45,58 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
   );
 
   const socketsRef = useRef<Map<string, Socket>>(new Map());
-  const subscribedUserIdsRef = useRef<Set<string>>(new Set());
+  const subscribedSessionIdsRef = useRef<Set<string>>(new Set());
 
   const subscribe = useCallback(
-    (userId: string) => {
-      if (subscribedUserIdsRef.current.has(userId)) {
-        console.log('[SumsubWebSocket] Already subscribed to userId:', userId);
+    (sessionId: string) => {
+      if (subscribedSessionIdsRef.current.has(sessionId)) {
+        console.log(
+          '[DiditWebSocket] Already subscribed to sessionId:',
+          sessionId,
+        );
         return;
       }
 
-      const existingVerification = getPendingVerification(userId);
+      const existingVerification = getPendingVerification(sessionId);
       const isProcessing = existingVerification?.status === 'processing';
 
       // Don't retry 'processing' verifications as the proving machine is reading to be triggered.
       if (isProcessing) {
         console.log(
-          '[SumsubWebSocket] Verification in processing state, skipping for userId:',
-          userId,
+          '[DiditWebSocket] Verification in processing state, skipping for sessionId:',
+          sessionId,
         );
         return;
       }
 
       if (!skipAddPending) {
         console.log(
-          '[SumsubWebSocket] Adding pending verification for userId:',
-          userId,
+          '[DiditWebSocket] Adding pending verification for sessionId:',
+          sessionId,
         );
-        addPendingVerification(userId);
+        addPendingVerification(sessionId);
       }
-      subscribedUserIdsRef.current.add(userId);
+      subscribedSessionIdsRef.current.add(sessionId);
 
-      console.log('[SumsubWebSocket] Connecting to WebSocket:', SUMSUB_TEE_URL);
-      const socket = io(SUMSUB_TEE_URL, {
+      console.log('[DiditWebSocket] Connecting to WebSocket:', DIDIT_TEE_URL);
+      const socket = io(DIDIT_TEE_URL, {
         transports: ['websocket', 'polling'],
       });
 
-      socketsRef.current.set(userId, socket);
+      socketsRef.current.set(sessionId, socket);
 
       socket.on('connect', () => {
         console.log(
-          '[SumsubWebSocket] Connected, subscribing to user:',
-          userId,
+          '[DiditWebSocket] Connected, subscribing to user:',
+          sessionId,
         );
-        socket.emit('subscribe', userId);
+        socket.emit('subscribe', sessionId);
       });
 
-      socket.on('success', async (data: SumsubApplicantInfoSerialized) => {
+      socket.on('success', async (data: ApplicantInfoSerialized) => {
         console.log(
-          '[SumsubWebSocket] Received applicant info for userId:',
-          userId,
+          '[DiditWebSocket] Received applicant info for sessionId:',
+          sessionId,
         );
 
         try {
@@ -110,21 +113,27 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
           };
           const documentId = await storeDocumentWithDeduplication(kycData);
           console.log(
-            '[SumsubWebSocket] KYC data stored successfully, documentId:',
+            '[DiditWebSocket] KYC data stored successfully, documentId:',
             documentId,
           );
 
-          updateVerificationStatus(userId, 'processing', undefined, documentId);
+          updateVerificationStatus(
+            sessionId,
+            'processing',
+            undefined,
+            documentId,
+          );
 
           if (navigationRef.isReady()) {
             navigationRef.navigate('KYCVerified', { documentId });
           }
 
+          socket.emit('ack_success', sessionId);
           onSuccess?.();
         } catch (err) {
-          console.error('[SumsubWebSocket] Failed to store KYC data:', err);
+          console.error('[DiditWebSocket] Failed to store KYC data:', err);
           updateVerificationStatus(
-            userId,
+            sessionId,
             'failed',
             'Failed to store KYC data',
           );
@@ -132,32 +141,32 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
         }
 
         socket.disconnect();
-        socketsRef.current.delete(userId);
-        subscribedUserIdsRef.current.delete(userId);
+        socketsRef.current.delete(sessionId);
+        subscribedSessionIdsRef.current.delete(sessionId);
       });
 
       socket.on('verification_failed', (reason: string) => {
-        console.log('[SumsubWebSocket] Verification failed:', reason);
-        updateVerificationStatus(userId, 'failed', reason);
+        console.log('[DiditWebSocket] Verification failed:', reason);
+        updateVerificationStatus(sessionId, 'failed', reason);
         onVerificationFailed?.(reason);
 
         socket.disconnect();
-        socketsRef.current.delete(userId);
-        subscribedUserIdsRef.current.delete(userId);
+        socketsRef.current.delete(sessionId);
+        subscribedSessionIdsRef.current.delete(sessionId);
       });
 
       socket.on('error', (errorMessage: string) => {
-        console.error('[SumsubWebSocket] Socket error:', errorMessage);
-        updateVerificationStatus(userId, 'failed', errorMessage);
+        console.error('[DiditWebSocket] Socket error:', errorMessage);
+        updateVerificationStatus(sessionId, 'failed', errorMessage);
         onError?.(errorMessage);
 
         socket.disconnect();
-        socketsRef.current.delete(userId);
-        subscribedUserIdsRef.current.delete(userId);
+        socketsRef.current.delete(sessionId);
+        subscribedSessionIdsRef.current.delete(sessionId);
       });
 
       socket.on('disconnect', () => {
-        console.log('[SumsubWebSocket] Disconnected for userId:', userId);
+        console.log('[DiditWebSocket] Disconnected for sessionId:', sessionId);
       });
     },
     [
@@ -171,13 +180,13 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
     ],
   );
 
-  const unsubscribe = useCallback((userId: string) => {
-    const socket = socketsRef.current.get(userId);
+  const unsubscribe = useCallback((sessionId: string) => {
+    const socket = socketsRef.current.get(sessionId);
     if (socket) {
       socket.disconnect();
-      socketsRef.current.delete(userId);
+      socketsRef.current.delete(sessionId);
     }
-    subscribedUserIdsRef.current.delete(userId);
+    subscribedSessionIdsRef.current.delete(sessionId);
   }, []);
 
   const unsubscribeAll = useCallback(() => {
@@ -185,11 +194,11 @@ export function useSumsubWebSocket(options: UseSumsubWebSocketOptions = {}) {
       socket.disconnect();
     });
     socketsRef.current.clear();
-    subscribedUserIdsRef.current.clear();
+    subscribedSessionIdsRef.current.clear();
   }, []);
 
-  const isSubscribed = useCallback((userId: string) => {
-    return subscribedUserIdsRef.current.has(userId);
+  const isSubscribed = useCallback((sessionId: string) => {
+    return subscribedSessionIdsRef.current.has(sessionId);
   }, []);
 
   return {

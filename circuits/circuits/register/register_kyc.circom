@@ -52,21 +52,15 @@ template REGISTER_KYC() {
         id_num[i] <== data_padded[idNumberIdx + i];
     }
 
-    signal nullifier_inputs[6 + id_number_length + id_type_length];
+    signal nullifier_inputs[id_number_length + id_type_length];
 
-    nullifier_inputs[0] <== 115; //s
-    nullifier_inputs[1] <== 117; //u
-    nullifier_inputs[2] <== 109; //m
-    nullifier_inputs[3] <== 115; //s
-    nullifier_inputs[4] <== 117; //u
-    nullifier_inputs[5] <== 98;  //b
     for (var i = 0; i < id_number_length; i++) {
-        nullifier_inputs[i + 6] <== id_num[i];
+        nullifier_inputs[i] <== id_num[i];
     }
     for (var i = 0; i < id_type_length; i++) {
-        nullifier_inputs[i + 6 + id_number_length] <== data_padded[id_type_index + i];
+        nullifier_inputs[i + id_number_length] <== data_padded[id_type_index + i];
     }
-    signal output nullifier <== PackBytesAndPoseidon(6 + id_number_length + id_type_length)(nullifier_inputs);
+    signal output nullifier <== PackBytesAndPoseidon(id_number_length + id_type_length)(nullifier_inputs);
     signal output commitment <== Poseidon(2)([secret, msg_hasher.out]);
 
     signal output pubkey_hash <== Poseidon(2)([verifyIdCommSig.Ax, verifyIdCommSig.Ay]);
