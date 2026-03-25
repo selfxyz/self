@@ -58,9 +58,15 @@ export const IDSelectionScreen: React.FC = () => {
         countryCode,
       });
 
-      navigate('/onboarding/provider', {
-        state: { countryCode, documentType: idType.id },
-      });
+      if (idType.id === 'kyc') {
+        navigate('/onboarding/provider', {
+          state: { countryCode, documentType: idType.id },
+        });
+      } else {
+        navigate('/coming-soon', {
+          state: { countryCode, documentType: idType.id },
+        });
+      }
     },
     [navigate, analytics, haptic, countryCode],
   );
