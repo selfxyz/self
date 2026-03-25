@@ -9,6 +9,7 @@ import { Button, Title, Description, colors, spacing } from '@selfxyz/euclid';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
+import { waitForAttestation } from '../../utils/diditAttestation';
 import {
   createDiditSession,
   launchDiditWebSdk,
@@ -16,7 +17,7 @@ import {
 
 const CONTAINER_ID = 'didit-sdk-container';
 
-type Phase = 'loading' | 'active' | 'error';
+type Phase = 'loading' | 'active' | 'waiting' | 'error';
 
 export const ProviderLaunchScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -39,14 +40,54 @@ export const ProviderLaunchScreen: React.FC = () => {
   const [retryCount, setRetryCount] = useState(0);
   const destroyRef = useRef<(() => void) | null>(null);
   const mountedRef = useRef(true);
+  const sessionIdRef = useRef<string | null>(null);
 
   const handleComplete = useCallback(
-    (result: KycProviderResult) => {
+    async (result: KycProviderResult) => {
       if (!mountedRef.current) return;
       analytics.trackEvent('provider_complete', {
         status: result.status,
         provider: result.provider,
       });
+
+      // For success/partial, wait for signed attestation via Socket.IO
+      if (
+        (result.status === 'success' || result.status === 'partial') &&
+        sessionIdRef.current
+      ) {
+        setPhase('waiting');
+        const attestationResult = await waitForAttestation(sessionIdRef.current);
+
+        if (!mountedRef.current) return;
+
+        if (attestationResult.status === 'success' && attestationResult.attestation) {
+          navigate('/onboarding/provider-result', {
+            state: {
+              providerResult: {
+                ...result,
+                status: 'success' as const,
+                attestation: attestationResult.attestation,
+              },
+            },
+          });
+        } else {
+          navigate('/onboarding/provider-result', {
+            state: {
+              providerResult: {
+                ...result,
+                status: 'error' as const,
+                error: {
+                  code: 'provider_missing_attestation' as const,
+                  message: attestationResult.error ?? 'Failed to get signed verification data',
+                  retryable: true,
+                },
+              },
+            },
+          });
+        }
+        return;
+      }
+
       navigate('/onboarding/provider-result', {
         state: { providerResult: result },
       });
@@ -90,6 +131,8 @@ export const ProviderLaunchScreen: React.FC = () => {
       try {
         const session = await createDiditSession(controller.signal);
         if (cancelled) return;
+
+        sessionIdRef.current = session.sessionId;
 
         const destroy = await launchDiditWebSdk({
           url: session.url,
@@ -224,7 +267,7 @@ export const ProviderLaunchScreen: React.FC = () => {
         backgroundColor: colors.white,
       }}
     >
-      {phase === 'loading' && (
+      {(phase === 'loading' || phase === 'waiting') && (
         <div
           style={{
             display: 'flex',
@@ -246,7 +289,16 @@ export const ProviderLaunchScreen: React.FC = () => {
             }}
           />
           <div style={{ marginTop: spacing.md }}>
-            <Title textAlign="center">Loading verification...</Title>
+            <Title textAlign="center">
+              {phase === 'waiting'
+                ? 'Processing verification...'
+                : 'Loading verification...'}
+            </Title>
+            {phase === 'waiting' && (
+              <Description style={{ marginTop: 8 }}>
+                Your documents are being verified. This may take a moment.
+              </Description>
+            )}
           </div>
         </div>
       )}
