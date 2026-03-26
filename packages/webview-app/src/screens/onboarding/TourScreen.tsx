@@ -8,7 +8,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import { LaunchTour1Screen, LaunchTour2Screen, LaunchTour3Screen, LaunchTour4Screen } from '@selfxyz/euclid';
 
-import { WEB_INSETS as insets } from '../../utils/insets';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const TourScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -25,13 +25,13 @@ export const TourScreen: React.FC = () => {
 
   switch (step) {
     case '1':
-      return <LaunchTour1Screen insets={insets} onNext={onNext} onRestore={onRestore} />;
+      return <LaunchTour1Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
     case '2':
-      return <LaunchTour2Screen insets={insets} onNext={onNext} onRestore={onRestore} />;
+      return <LaunchTour2Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
     case '3':
-      return <LaunchTour3Screen insets={insets} onNext={onNext} onRestore={onRestore} />;
+      return <LaunchTour3Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
     case '4':
-      return <LaunchTour4Screen insets={insets} onNext={onNext} onSkip={onNext} onRestore={onRestore} />;
+      return <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onSkip={onNext} onRestore={onRestore} />;
     default:
       return <Navigate to="/onboarding/tour/1" replace />;
   }

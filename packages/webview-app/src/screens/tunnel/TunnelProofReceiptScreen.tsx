@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid';
 
-import { WEB_INSETS } from '../../utils/insets';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const MOCK_ITEMS = [
   { label: 'Full Name' },
@@ -30,7 +30,7 @@ export const TunnelProofReceiptScreen: React.FC = () => {
 
   return (
     <ProofRequestScreen
-      insets={WEB_INSETS}
+      {...WEB_SAFE_AREA}
       variant="default"
       onClose={onClose}
       onConfirm={onConfirm}

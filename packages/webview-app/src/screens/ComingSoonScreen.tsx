@@ -10,7 +10,7 @@ import { ComingSoonScreen as EuclidComingSoonScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../utils/countryFlags';
-import { WEB_INSETS } from '../utils/insets';
+import { WEB_SAFE_AREA } from '../utils/insets';
 
 export const ComingSoonScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ export const ComingSoonScreen: React.FC = () => {
 
   return (
     <EuclidComingSoonScreen
-      insets={WEB_INSETS}
+      {...WEB_SAFE_AREA}
       countryCode={countryCode}
       countryName={getCountryName(countryCode)}
       subtitle={

@@ -11,7 +11,7 @@ import { CountryPickerScreen as EuclidCountryPickerScreen } from '@selfxyz/eucli
 import countryDocumentTypes from '../../data/country-document-types.json';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
-import { WEB_INSETS } from '../../utils/insets';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 type CountryData = Record<string, string[]>;
 const countryData = countryDocumentTypes as CountryData;
@@ -41,7 +41,7 @@ export const CountryPickerScreen: React.FC = () => {
 
   return (
     <EuclidCountryPickerScreen
-      insets={WEB_INSETS}
+      {...WEB_SAFE_AREA}
       countries={countries}
       isLoading={false}
       onCountrySelect={onSelect}

@@ -15,7 +15,7 @@ import {
 } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
-import { WEB_INSETS } from '../../utils/insets';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const SecurityScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -65,7 +65,7 @@ export const SecurityScreen: React.FC = () => {
 
   return (
     <EuclidSecurityScreen
-      insets={WEB_INSETS}
+      {...WEB_SAFE_AREA}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       cloudKeyIcon={CloudKeyIcon}
       lockIcon={LockIcon}

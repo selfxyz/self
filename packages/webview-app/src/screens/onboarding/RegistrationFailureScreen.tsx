@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { RegistrationFailureScreen as EuclidRegistrationFailureScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
-import { WEB_INSETS } from '../../utils/insets';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const RegistrationFailureScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ export const RegistrationFailureScreen: React.FC = () => {
 
   return (
     <EuclidRegistrationFailureScreen
-      insets={WEB_INSETS}
+      {...WEB_SAFE_AREA}
       onDismiss={handleDismiss}
       onTryDifferentMethod={handleTryDifferentMethod}
     />

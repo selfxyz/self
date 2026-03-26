@@ -10,7 +10,7 @@ import type { IDType } from '@selfxyz/euclid';
 import { IDTypeScreen } from '@selfxyz/euclid';
 
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
-import { WEB_INSETS } from '../../utils/insets';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const docTypeToIDType = (docType: string): IDType => {
   switch (docType) {
@@ -46,7 +46,7 @@ export const TunnelIDTypeScreen: React.FC = () => {
 
   return (
     <IDTypeScreen
-      insets={WEB_INSETS}
+      {...WEB_SAFE_AREA}
       countryCode={countryCode}
       countryName={getCountryName(countryCode)}
       idTypes={idTypes}

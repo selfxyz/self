@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { CountryPickerScreen as EuclidCountryPickerScreen } from '@selfxyz/euclid';
 
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
-import { WEB_INSETS } from '../../utils/insets';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const MOCK_COUNTRIES = [
   { countryCode: 'US' },
@@ -42,7 +42,7 @@ export const TunnelCountryPickerScreen: React.FC = () => {
 
   return (
     <EuclidCountryPickerScreen
-      insets={WEB_INSETS}
+      {...WEB_SAFE_AREA}
       countries={MOCK_COUNTRIES}
       isLoading={false}
       onCountrySelect={onCountrySelect}
