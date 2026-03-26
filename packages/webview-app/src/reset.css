@@ -23,14 +23,14 @@ body {
   user-select: none;
 }
 
-.tour4-lottie-constrain {
+.tour4-lottie-scale {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.tour4-lottie-constrain svg {
-  transform: scale(0.9);
+.tour4-lottie-scale svg {
+  transform: scale(1.35) !important;
 }
 
 @keyframes spin {

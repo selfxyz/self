@@ -48,7 +48,7 @@ export const TourScreen: React.FC = () => {
       );
     case '4':
       return (
-        <div className="tour4-lottie-constrain">
+        <div className="tour4-lottie-scale">
           <MockRegistrationFailureButton />
           <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onSkip={onNext} onRestore={onRestore} />
         </div>
