@@ -4,6 +4,9 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { indexedDBDocumentsAdapter } from '../adapters';
+import type { BridgeDocumentsAdapter } from '../adapters/documents';
+
 const engineBrowserMocks = vi.hoisted(() => ({
   createIndexedDBDocumentsAdapter: vi.fn(),
   createNoOpHapticAdapter: vi.fn(),
@@ -12,9 +15,6 @@ const engineBrowserMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => engineBrowserMocks);
-
-import { indexedDBDocumentsAdapter } from '../adapters';
-import type { BridgeDocumentsAdapter } from '../adapters/documents';
 
 describe('indexedDBDocumentsAdapter', () => {
   let adapter: BridgeDocumentsAdapter;

@@ -2,14 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  StatusState,
-  CheckCircleIcon,
-  WarningOctagonIcon,
-  colors,
-} from '@selfxyz/euclid';
+
+import { CheckCircleIcon, colors, StatusState, WarningOctagonIcon } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
@@ -25,8 +22,7 @@ const STATUS_CONFIG = {
   partial: {
     variant: 'success' as const,
     title: 'Verification In Progress',
-    description:
-      'Your documents have been submitted and are under review. This may take a few minutes.',
+    description: 'Your documents have been submitted and are under review. This may take a few minutes.',
     buttonText: 'Continue',
   },
   cancel: {
@@ -48,18 +44,14 @@ export const ProviderResultScreen: React.FC = () => {
   const location = useLocation();
   const { analytics, haptic, lifecycle } = useSelfClient();
 
-  const { providerResult } =
-    (location.state as { providerResult?: KycProviderResult }) || {};
+  const { providerResult } = (location.state as { providerResult?: KycProviderResult }) || {};
 
   const status = providerResult?.status ?? 'error';
-  const config =
-    STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.error;
+  const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.error;
   const isSuccess = status === 'success' || status === 'partial';
 
   const description =
-    status === 'error' && providerResult?.error?.message
-      ? providerResult.error.message
-      : config.description;
+    status === 'error' && providerResult?.error?.message ? providerResult.error.message : config.description;
 
   const onButtonPress = useCallback(() => {
     haptic.trigger('selection');

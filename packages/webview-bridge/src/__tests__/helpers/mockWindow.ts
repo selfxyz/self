@@ -20,20 +20,16 @@ export function createMockWindow({
   return {
     parent,
     opener,
-    addEventListener: vi.fn(
-      (type: string, listener: EventListenerOrEventListenerObject) => {
-        if (type === 'message' && typeof listener === 'function') {
-          messageListener = listener as (event: MessageEvent) => void;
-        }
-      },
-    ),
-    removeEventListener: vi.fn(
-      (type: string, listener: EventListenerOrEventListenerObject) => {
-        if (type === 'message' && listener === messageListener) {
-          messageListener = undefined;
-        }
-      },
-    ),
+    addEventListener: vi.fn((type: string, listener: EventListenerOrEventListenerObject) => {
+      if (type === 'message' && typeof listener === 'function') {
+        messageListener = listener as (event: MessageEvent) => void;
+      }
+    }),
+    removeEventListener: vi.fn((type: string, listener: EventListenerOrEventListenerObject) => {
+      if (type === 'message' && listener === messageListener) {
+        messageListener = undefined;
+      }
+    }),
     __dispatchMessage(event: MessageEvent) {
       messageListener?.(event);
     },

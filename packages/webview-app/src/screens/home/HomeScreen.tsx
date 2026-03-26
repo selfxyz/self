@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  HomeScreen as EuclidHomeScreen,
-  GearIcon,
-} from '@selfxyz/euclid';
+
 import type { IDCardVariant } from '@selfxyz/euclid';
+import { GearIcon, HomeScreen as EuclidHomeScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 
@@ -120,9 +119,7 @@ export const HomeScreen: React.FC = () => {
           ? {
               variant: docCategoryToVariant(firstDoc.documentCategory),
               title: docCategoryToTitle(firstDoc.documentCategory),
-              subtitle: firstDoc.isRegistered
-                ? 'Registered'
-                : 'Pending registration',
+              subtitle: firstDoc.isRegistered ? 'Registered' : 'Pending registration',
             }
           : undefined
       }

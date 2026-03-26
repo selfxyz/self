@@ -2,18 +2,20 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import {
-  SettingsViewScreen,
-  LeftArrowIcon,
-  QuestionCircleStrokeIcon,
+  ChatStrokeIcon,
+  CodeIcon,
   DocumentDetailsIcon,
+  LeftArrowIcon,
   LockIcon,
   NotificationIcon,
-  ChatStrokeIcon,
+  QuestionCircleStrokeIcon,
+  SettingsViewScreen,
   ShareIcon,
-  CodeIcon,
 } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
@@ -36,12 +38,8 @@ export const SettingsScreen: React.FC = () => {
   return (
     <SettingsViewScreen
       insets={{ top: 0, bottom: 0 }}
-      escapeIcon={({ size, color }) => (
-        <LeftArrowIcon size={size} color={color} />
-      )}
-      infoIcon={({ size, color }) => (
-        <QuestionCircleStrokeIcon size={size} color={color} />
-      )}
+      escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
+      infoIcon={({ size, color }) => <QuestionCircleStrokeIcon size={size} color={color} />}
       onClose={onBack}
       showBackupInfoBox={false}
       isBackupEnabled={false}

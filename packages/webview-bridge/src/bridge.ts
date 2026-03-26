@@ -3,20 +3,21 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { v4 as uuidv4 } from 'uuid';
+
+import { isEvent, isResponse, parseMessage } from './schema';
 import type {
   BridgeDomain,
+  BridgeEvent,
   BridgeRequest,
   BridgeResponse,
-  BridgeEvent,
-  NativeTransport,
-  WebViewBridgeOptions,
-  PendingRequest,
-  EventHandler,
   BrowserHostOptions,
+  EventHandler,
+  NativeTransport,
+  PendingRequest,
   SelfHostMessage,
+  WebViewBridgeOptions,
 } from './types';
 import { BRIDGE_PROTOCOL_VERSION, DEFAULT_TIMEOUT_MS } from './types';
-import { parseMessage, isResponse, isEvent } from './schema';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -67,8 +68,7 @@ export class WebViewBridge {
 
   constructor(options: WebViewBridgeOptions = {}) {
     this.debug = options.debug ?? false;
-    this.transport =
-      options.transport ?? this.detectTransport(options.browserHost);
+    this.transport = options.transport ?? this.detectTransport(options.browserHost);
 
     // Register global bridge for native callbacks
     globalThis.SelfNativeBridge = this;
@@ -85,10 +85,7 @@ export class WebViewBridge {
       return globalThis.SelfNativeAndroid;
     }
     // iOS (KMP)
-    if (
-      typeof window !== 'undefined' &&
-      window.webkit?.messageHandlers?.SelfNativeIOS?.postMessage
-    ) {
+    if (typeof window !== 'undefined' && window.webkit?.messageHandlers?.SelfNativeIOS?.postMessage) {
       return window.webkit.messageHandlers.SelfNativeIOS;
     }
     // React Native WebView
@@ -99,28 +96,20 @@ export class WebViewBridge {
     return this.detectBrowserHostTransport(browserHost);
   }
 
-  private detectBrowserHostTransport(
-    browserHost?: BrowserHostOptions,
-  ): NativeTransport | null {
+  private detectBrowserHostTransport(browserHost?: BrowserHostOptions): NativeTransport | null {
     if (typeof window === 'undefined') {
       return null;
     }
 
     const hostTarget =
-      window.parent !== window
-        ? window.parent
-        : window.opener && !window.opener.closed
-          ? window.opener
-          : null;
+      window.parent !== window ? window.parent : window.opener && !window.opener.closed ? window.opener : null;
 
     if (!hostTarget) {
       return null;
     }
 
     if (!browserHost?.targetOrigin) {
-      this.log(
-        'Browser host detected but no targetOrigin was configured; transport disabled',
-      );
+      this.log('Browser host detected but no targetOrigin was configured; transport disabled');
       return null;
     }
 
@@ -149,14 +138,9 @@ export class WebViewBridge {
     this.transport.postMessage(json);
   }
 
-  private createHostMessageListener(
-    transport: BrowserHostTransport,
-  ): (event: MessageEvent) => void {
+  private createHostMessageListener(transport: BrowserHostTransport): (event: MessageEvent) => void {
     return (event: MessageEvent) => {
-      if (
-        transport.targetOrigin !== '*' &&
-        event.origin !== transport.targetOrigin
-      ) {
+      if (transport.targetOrigin !== '*' && event.origin !== transport.targetOrigin) {
         return;
       }
 
@@ -208,11 +192,7 @@ export class WebViewBridge {
     return new Promise<T>((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.pending.delete(id);
-        reject(
-          new Error(
-            `Bridge request timed out: ${domain}.${method} (${timeoutMs}ms)`,
-          ),
-        );
+        reject(new Error(`Bridge request timed out: ${domain}.${method} (${timeoutMs}ms)`));
       }, timeoutMs);
 
       this.pending.set(id, {
@@ -228,11 +208,7 @@ export class WebViewBridge {
   /**
    * Fire-and-forget: send a request without waiting for a response.
    */
-  fire(
-    domain: BridgeDomain,
-    method: string,
-    params: object = {},
-  ): void {
+  fire(domain: BridgeDomain, method: string, params: object = {}): void {
     const id = uuidv4();
     const message: BridgeRequest = {
       type: 'request',
@@ -322,12 +298,9 @@ export class WebViewBridge {
         message: 'Unknown error',
       };
       const err = new Error(error.message);
-      (
-        err as Error & { code: string; details?: Record<string, unknown> }
-      ).code = error.code;
+      (err as Error & { code: string; details?: Record<string, unknown> }).code = error.code;
       if (error.details) {
-        (err as Error & { details: Record<string, unknown> }).details =
-          error.details;
+        (err as Error & { details: Record<string, unknown> }).details = error.details;
       }
       pending.reject(err);
     }
@@ -374,10 +347,7 @@ export class WebViewBridge {
   destroy(): void {
     this.destroyed = true;
 
-    if (
-      this.hostMessageListener &&
-      typeof window !== 'undefined'
-    ) {
+    if (this.hostMessageListener && typeof window !== 'undefined') {
       window.removeEventListener('message', this.hostMessageListener);
     }
 
@@ -420,9 +390,7 @@ function parseOutgoingRequest(json: string): BridgeRequest | null {
   }
 }
 
-function mapLifecycleRequestToHostMessage(
-  request: BridgeRequest,
-): SelfHostMessage | null {
+function mapLifecycleRequestToHostMessage(request: BridgeRequest): SelfHostMessage | null {
   switch (request.method) {
     case 'ready':
       return {
@@ -476,9 +444,6 @@ function parseHostMessage(data: unknown): SelfHostMessage | null {
   return {
     type: message.type,
     version: BRIDGE_PROTOCOL_VERSION,
-    payload:
-      typeof message.payload === 'object' && message.payload !== null
-        ? message.payload
-        : {},
+    payload: typeof message.payload === 'object' && message.payload !== null ? message.payload : {},
   };
 }

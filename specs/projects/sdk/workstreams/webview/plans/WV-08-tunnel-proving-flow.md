@@ -191,9 +191,9 @@ tunnel flow.
 
 ## Files You May Create
 
-| File                                                               | What                                              |
-| ------------------------------------------------------------------ | ------------------------------------------------- |
-| `packages/webview-app/src/hooks/useProvingFlow.ts`                 | Optional: shared hook for register→disclose chain |
+| File                                                               | What                                               |
+| ------------------------------------------------------------------ | -------------------------------------------------- |
+| `packages/webview-app/src/hooks/useProvingFlow.ts`                 | Optional: shared hook for register→disclose chain  |
 | `packages/webview-app/src/screens/tunnel/TunnelProviderScreen.tsx` | If tunnel needs its own KYC provider launch screen |
 
 ## Constraints

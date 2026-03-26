@@ -31,10 +31,7 @@ declare module '@sumsub/websdk' {
   }
 
   interface SnsWebSdk {
-    init(
-      accessToken: string,
-      tokenRefreshCallback: () => Promise<string>,
-    ): SnsWebSdkBuilder;
+    init(accessToken: string, tokenRefreshCallback: () => Promise<string>): SnsWebSdkBuilder;
   }
 
   const snsWebSdk: SnsWebSdk;

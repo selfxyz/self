@@ -3,14 +3,16 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { Buffer } from 'buffer';
-globalThis.Buffer = Buffer;
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+
 import { App } from './App';
 import { BridgeProvider } from './providers/BridgeProvider';
+
 import './fonts.css';
 import './reset.css';
+
+globalThis.Buffer = Buffer;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -99,14 +99,14 @@ Example route shapes:
 
 ## Files Expected In This Pass
 
-| File                                                                                     | Role                        |
-| ---------------------------------------------------------------------------------------- | --------------------------- |
-| `packages/webview-app/src/screens/onboarding/SocialSignOnMethodPickerScreen.tsx`         | Backup method prompt        |
-| `packages/webview-app/src/screens/onboarding/SocialSignOnPickerScreen.tsx`               | Sign-in prompt              |
-| `packages/webview-app/src/screens/onboarding/ConflictDetectedScreen.tsx`                 | Conflict prompt             |
-| `packages/webview-app/src/screens/onboarding/PushNotificationPromptScreen.tsx`           | Notification prompt         |
-| `packages/webview-app/src/screens/onboarding/ScanSuccessScreen.tsx`                     | Modify WV-09's success CTA to advance to `/onboarding/backup` instead of home |
-| `packages/webview-app/src/App.tsx`                                                       | Prompt routes               |
+| File                                                                             | Role                                                                          |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `packages/webview-app/src/screens/onboarding/SocialSignOnMethodPickerScreen.tsx` | Backup method prompt                                                          |
+| `packages/webview-app/src/screens/onboarding/SocialSignOnPickerScreen.tsx`       | Sign-in prompt                                                                |
+| `packages/webview-app/src/screens/onboarding/ConflictDetectedScreen.tsx`         | Conflict prompt                                                               |
+| `packages/webview-app/src/screens/onboarding/PushNotificationPromptScreen.tsx`   | Notification prompt                                                           |
+| `packages/webview-app/src/screens/onboarding/ScanSuccessScreen.tsx`              | Modify WV-09's success CTA to advance to `/onboarding/backup` instead of home |
+| `packages/webview-app/src/App.tsx`                                               | Prompt routes                                                                 |
 
 ## Validation
 
