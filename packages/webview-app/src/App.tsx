@@ -14,6 +14,8 @@ import { SettingsScreen } from './screens/account/SettingsScreen';
 import { ComingSoonScreen } from './screens/ComingSoonScreen';
 import { KeychainDebugScreen } from './screens/debug/KeychainDebugScreen';
 import { HomeScreen } from './screens/home/HomeScreen';
+import { IDDataScreen } from './screens/home/IDDataScreen';
+import { ManageDocumentsScreen } from './screens/home/ManageDocumentsScreen';
 import { ConfirmIdentificationScreen } from './screens/onboarding/ConfirmIdentificationScreen';
 import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
 import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
@@ -56,6 +58,8 @@ export const App: React.FC = () => (
           <Route path="/settings/dev-mode" element={<DevModeScreen />} />
           {import.meta.env.DEV && <Route path="/debug/keychain" element={<KeychainDebugScreen />} />}
           <Route path="/account/verified" element={<VerificationResultScreen />} />
+          <Route path="/id-data" element={<IDDataScreen />} />
+          <Route path="/manage-documents" element={<ManageDocumentsScreen />} />
           <Route path="/coming-soon" element={<ComingSoonScreen />} />
           <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
           <Route path="/tunnel/kyc" element={<KycMockScreen />} />

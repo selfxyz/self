@@ -53,7 +53,7 @@ export const SettingsScreen: React.FC = () => {
               icon: DocumentDetailsIcon,
               label: 'Manage Documents',
               description: 'Recovery phrase, passport data',
-              onPress: () => navigate('/coming-soon'),
+              onPress: () => navigate('/manage-documents'),
             },
             {
               icon: LockIcon,
