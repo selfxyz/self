@@ -12,6 +12,10 @@ Use the inventory as the source of truth for scope and counts. Use the ticket
 plan to stage spec work, candidate tickets, and PR slices before creating
 Linear issues.
 
-Logic-pass specs (WV-05, WV-06, WV-08, WV-11) are preserved for future
-implementation detail but are **not active work** in the current design-
-migration pass.
+## Execution order
+
+1. **Screen migration** (current) — WV-09, WV-12, then WV-13–WV-16
+2. **Tunnel flow** (next) — WV-05, WV-06, WV-08 (real Didit + KYC + proving)
+3. **Disclose** — WV-11 (real proving on the main disclose route)
+4. **Social login** — not yet spec'd in this workstream
+5. **Launch readiness** — not yet spec'd in this workstream

@@ -11,12 +11,11 @@
 - Branch: TBD
 - PR: TBD
 
-## Current Pass Note
+## Phase Note
 
-This spec is **not active** in the current design-migration pass. The tunnel
-flow will remain a UI mockup until real KYC provider integration (WV-05) and
-KYC result persistence (WV-06) land. This spec is preserved as future
-implementation context.
+This spec is **next phase** work — blocked on provider integration (WV-05)
+and KYC result persistence (WV-06) landing first. The tunnel flow currently
+uses mocked proving; this spec replaces it with the real pipeline.
 
 ## Why
 

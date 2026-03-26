@@ -9,11 +9,11 @@
 - Branch: TBD (prior Sumsub branch `feat/webview-sdk` is stale)
 - PR: TBD
 
-### Current Pass Note
+### Phase Note
 
-This spec is **not active** in the current design-migration pass. The current
-pass mocks the provider handoff. This spec is preserved as future implementation
-context for when real KYC provider integration is picked up.
+This spec is **next phase** work — blocked on screen migration (WV-09) landing
+first. The current pass mocks the provider handoff; this spec replaces those
+mocks with real Didit integration.
 
 The prior implementation targeted Sumsub (`@sumsub/websdk`). The project has
 since migrated to Didit as the KYC provider (see PR #1860). This spec needs

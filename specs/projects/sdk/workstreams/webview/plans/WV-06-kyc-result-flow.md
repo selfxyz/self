@@ -12,11 +12,11 @@
 - Branch: TBD
 - PR: TBD
 
-## Current Pass Note
+## Phase Note
 
-This spec is **not active** in the current design-migration pass. The current
-pass mocks the KYC result flow. This spec is preserved as future implementation
-context for when real KYC result persistence is picked up.
+This spec is **next phase** work — blocked on screen migration (WV-09) and
+provider integration (WV-05) landing first. The current pass mocks outcome
+routing; this spec replaces those mocks with real KYC result persistence.
 
 ## Why
 

@@ -12,12 +12,11 @@
 - Branch: TBD
 - PR: TBD
 
-## Current Pass Note
+## Phase Note
 
-This spec is **not active** in the current design-migration pass. The disclose
-flow depends on a real proving machine (WV-07, done) and real tunnel integration
-(WV-08, blocked on WV-05/WV-06). This spec is preserved as future
-implementation context.
+This spec is **next phase** work — blocked on tunnel integration (WV-08)
+landing first. The proving machine (WV-07) is done; this spec wires the main
+disclose route chain with real proving.
 
 ## Why
 
