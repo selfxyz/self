@@ -4,7 +4,7 @@
 
 import { Buffer } from 'buffer';
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 
 import { App } from './App';
 import { BridgeProvider } from './providers/BridgeProvider';
@@ -14,7 +14,7 @@ import './reset.css';
 
 globalThis.Buffer = Buffer;
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <div style={{ display: 'flex', flex: 1, height: '100vh', width: '100%' }}>
       <BridgeProvider>

@@ -79,4 +79,4 @@ jobs:
       - name: Build webview-bridge
         run: yarn workspace @selfxyz/webview-bridge build
       - name: Typecheck
-        run: yarn workspace @selfxyz/webview-app typecheck
+        run: yarn workspace @selfxyz/webview-app types

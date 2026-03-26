@@ -35,12 +35,12 @@
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "format": "yarn nice",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix --max-warnings=0",
     "nice": "prettier --write . && eslint . --fix && tsc --noEmit",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "types": "tsup"
+    "types": "tsc --noEmit"
   },
   "dependencies": {
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
