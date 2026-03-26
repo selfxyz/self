@@ -1,7 +1,26 @@
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 export interface BridgeNavigationAdapter {
   goBack(): void;
   goTo(routeName: RouteName, params?: Record<string, unknown>): void;
 }
+
+export type RouteName =
+  | 'DocumentCamera'
+  | 'DocumentOnboarding'
+  | 'CountryPicker'
+  | 'IDPicker'
+  | 'DocumentNFCScan'
+  | 'ManageDocuments'
+  | 'Home'
+  | 'AccountVerifiedSuccess'
+  | 'AccountRecoveryChoice'
+  | 'SaveRecoveryPhrase'
+  | 'ComingSoon'
+  | 'DocumentDataNotFound'
+  | 'Settings';
 
 const routeMap: Record<RouteName, string> = {
   DocumentCamera: '/onboarding/camera',
@@ -18,24 +37,6 @@ const routeMap: Record<RouteName, string> = {
   DocumentDataNotFound: '/error/no-data',
   Settings: '/settings',
 };
-
-// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
-// SPDX-License-Identifier: BUSL-1.1
-// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
-export type RouteName =
-  | 'DocumentCamera'
-  | 'DocumentOnboarding'
-  | 'CountryPicker'
-  | 'IDPicker'
-  | 'DocumentNFCScan'
-  | 'ManageDocuments'
-  | 'Home'
-  | 'AccountVerifiedSuccess'
-  | 'AccountRecoveryChoice'
-  | 'SaveRecoveryPhrase'
-  | 'ComingSoon'
-  | 'DocumentDataNotFound'
-  | 'Settings';
 
 export function webNavigationAdapter(navigate: (path: string) => void, goBack: () => void): BridgeNavigationAdapter {
   return {

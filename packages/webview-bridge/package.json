@@ -40,7 +40,7 @@
     "nice": "prettier --write . && eslint . --fix && tsc --noEmit",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "types": "tsc --noEmit"
+    "types": "tsup"
   },
   "dependencies": {
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
