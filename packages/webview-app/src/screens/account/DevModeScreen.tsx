@@ -59,38 +59,59 @@ export const DevModeScreen: React.FC = () => {
   }, [navigate, haptic, analytics, documentType, nationality, ageIndex, expiryIndex, ofacCheck]);
 
   return (
-    <EuclidDevModeScreen
-      insets={{ top: 0, bottom: 0 }}
-      escapeIcon={({ size, color }) => (
-        <LeftArrowIcon size={size} color={color} />
-      )}
-      onBack={onBack}
-      idCard={idCard}
-      documentType={documentType}
-      onDocumentTypePress={() => {
-        setDocumentType(prev => (prev === 'passport' ? 'id_card' : 'passport'));
-      }}
-      nationality={nationality}
-      onNationalityPress={() => {
-        setNationality(prev =>
-          prev === 'united states of america' ? 'germany' : 'united states of america',
-        );
-      }}
-      age={ageOptions[ageIndex]}
-      onAgeIncrement={() => setAgeIndex(prev => Math.min(prev + 1, ageOptions.length - 1))}
-      onAgeDecrement={() => setAgeIndex(prev => Math.max(prev - 1, 0))}
-      documentExpiresIn={expiryOptions[expiryIndex]}
-      onDocumentExpiresIncrement={() =>
-        setExpiryIndex(prev => Math.min(prev + 1, expiryOptions.length - 1))
-      }
-      onDocumentExpiresDecrement={() => setExpiryIndex(prev => Math.max(prev - 1, 0))}
-      ofacCheck={ofacCheck}
-      onOfacCheckChange={value => {
-        haptic.trigger('selection');
-        setOfacCheck(value);
-      }}
-      onResetAllValues={onResetAllValues}
-      onGenerateMockDocument={onGenerateMockDocument}
-    />
+    <>
+      <EuclidDevModeScreen
+        insets={{ top: 0, bottom: 0 }}
+        escapeIcon={({ size, color }) => (
+          <LeftArrowIcon size={size} color={color} />
+        )}
+        onBack={onBack}
+        idCard={idCard}
+        documentType={documentType}
+        onDocumentTypePress={() => {
+          setDocumentType(prev => (prev === 'passport' ? 'id_card' : 'passport'));
+        }}
+        nationality={nationality}
+        onNationalityPress={() => {
+          setNationality(prev =>
+            prev === 'united states of america' ? 'germany' : 'united states of america',
+          );
+        }}
+        age={ageOptions[ageIndex]}
+        onAgeIncrement={() => setAgeIndex(prev => Math.min(prev + 1, ageOptions.length - 1))}
+        onAgeDecrement={() => setAgeIndex(prev => Math.max(prev - 1, 0))}
+        documentExpiresIn={expiryOptions[expiryIndex]}
+        onDocumentExpiresIncrement={() =>
+          setExpiryIndex(prev => Math.min(prev + 1, expiryOptions.length - 1))
+        }
+        onDocumentExpiresDecrement={() => setExpiryIndex(prev => Math.max(prev - 1, 0))}
+        ofacCheck={ofacCheck}
+        onOfacCheckChange={value => {
+          haptic.trigger('selection');
+          setOfacCheck(value);
+        }}
+        onResetAllValues={onResetAllValues}
+        onGenerateMockDocument={onGenerateMockDocument}
+      />
+      <button
+        onClick={() => navigate('/debug/keychain')}
+        style={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          padding: '10px 18px',
+          borderRadius: 8,
+          border: 'none',
+          backgroundColor: '#7c8aff',
+          color: '#fff',
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: 'pointer',
+          zIndex: 100,
+        }}
+      >
+        Keychain Debug
+      </button>
+    </>
   );
 };

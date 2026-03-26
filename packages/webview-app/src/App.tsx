@@ -20,6 +20,7 @@ import { NotificationPreferencesScreen } from './screens/account/NotificationPre
 import { DevModeScreen } from './screens/account/DevModeScreen';
 import { ComingSoonScreen } from './screens/ComingSoonScreen';
 import { TourScreen } from './screens/tunnel/TourScreen';
+import { KeychainDebugScreen } from './screens/debug/KeychainDebugScreen';
 import { KycMockScreen } from './screens/tunnel/KycMockScreen';
 import { TunnelCountryPickerScreen } from './screens/tunnel/TunnelCountryPickerScreen';
 import { TunnelIDTypeScreen } from './screens/tunnel/TunnelIDTypeScreen';
@@ -53,6 +54,7 @@ export const App: React.FC = () => (
           <Route path="/settings/security" element={<SecurityScreen />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesScreen />} />
           <Route path="/settings/dev-mode" element={<DevModeScreen />} />
+          <Route path="/debug/keychain" element={<KeychainDebugScreen />} />
           <Route
             path="/account/verified"
             element={<VerificationResultScreen />}
