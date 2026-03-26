@@ -61,9 +61,7 @@ export const DevModeScreen: React.FC = () => {
     <>
       <EuclidDevModeScreen
         insets={{ top: 0, bottom: 0 }}
-        escapeIcon={({ size, color }) => (
-          <LeftArrowIcon size={size} color={color} />
-        )}
+        escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
         onBack={onBack}
         idCard={idCard}
         documentType={documentType}
@@ -72,17 +70,13 @@ export const DevModeScreen: React.FC = () => {
         }}
         nationality={nationality}
         onNationalityPress={() => {
-          setNationality(prev =>
-            prev === 'united states of america' ? 'germany' : 'united states of america',
-          );
+          setNationality(prev => (prev === 'united states of america' ? 'germany' : 'united states of america'));
         }}
         age={ageOptions[ageIndex]}
         onAgeIncrement={() => setAgeIndex(prev => Math.min(prev + 1, ageOptions.length - 1))}
         onAgeDecrement={() => setAgeIndex(prev => Math.max(prev - 1, 0))}
         documentExpiresIn={expiryOptions[expiryIndex]}
-        onDocumentExpiresIncrement={() =>
-          setExpiryIndex(prev => Math.min(prev + 1, expiryOptions.length - 1))
-        }
+        onDocumentExpiresIncrement={() => setExpiryIndex(prev => Math.min(prev + 1, expiryOptions.length - 1))}
         onDocumentExpiresDecrement={() => setExpiryIndex(prev => Math.max(prev - 1, 0))}
         ofacCheck={ofacCheck}
         onOfacCheckChange={value => {
@@ -92,7 +86,6 @@ export const DevModeScreen: React.FC = () => {
         onResetAllValues={onResetAllValues}
         onGenerateMockDocument={onGenerateMockDocument}
       />
-      
     </>
   );
 };

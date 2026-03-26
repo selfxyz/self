@@ -161,23 +161,19 @@ export const KeychainDebugScreen: React.FC = () => {
       <div style={styles.section}>
         <h3 style={styles.sectionTitle}>Raw Secure Storage</h3>
         <div style={styles.row}>
-          <input
-            style={styles.input}
-            placeholder="Key"
-            value={key}
-            onChange={e => setKey(e.target.value)}
-          />
-          <input
-            style={styles.input}
-            placeholder="Value"
-            value={value}
-            onChange={e => setValue(e.target.value)}
-          />
+          <input style={styles.input} placeholder="Key" value={key} onChange={e => setKey(e.target.value)} />
+          <input style={styles.input} placeholder="Value" value={value} onChange={e => setValue(e.target.value)} />
         </div>
         <div style={styles.row}>
-          <button style={styles.button} onClick={handleSet}>Set</button>
-          <button style={styles.button} onClick={handleGet}>Get</button>
-          <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleRemove}>Remove</button>
+          <button style={styles.button} onClick={handleSet}>
+            Set
+          </button>
+          <button style={styles.button} onClick={handleGet}>
+            Get
+          </button>
+          <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleRemove}>
+            Remove
+          </button>
         </div>
       </div>
 
@@ -192,19 +188,29 @@ export const KeychainDebugScreen: React.FC = () => {
           />
         </div>
         <div style={styles.row}>
-          <button style={styles.button} onClick={handleSaveDoc}>Save Mock</button>
-          <button style={styles.button} onClick={handleLoadDoc}>Load</button>
-          <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleDeleteDoc}>Delete</button>
+          <button style={styles.button} onClick={handleSaveDoc}>
+            Save Mock
+          </button>
+          <button style={styles.button} onClick={handleLoadDoc}>
+            Load
+          </button>
+          <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleDeleteDoc}>
+            Delete
+          </button>
         </div>
         <div style={styles.row}>
-          <button style={styles.button} onClick={handleLoadCatalog}>Load Catalog</button>
+          <button style={styles.button} onClick={handleLoadCatalog}>
+            Load Catalog
+          </button>
         </div>
       </div>
 
       <div style={styles.logSection}>
         <div style={styles.logHeader}>
           <h3 style={styles.sectionTitle}>Log</h3>
-          <button style={styles.clearButton} onClick={() => setLog([])}>Clear</button>
+          <button style={styles.clearButton} onClick={() => setLog([])}>
+            Clear
+          </button>
         </div>
         <div style={styles.logArea}>
           {log.length === 0 && <span style={styles.placeholder}>No operations yet</span>}
