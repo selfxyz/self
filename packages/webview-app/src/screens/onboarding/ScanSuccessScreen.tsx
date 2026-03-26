@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { ScanSuccessScreen as EuclidScanSuccessScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { WEB_INSETS } from '../../utils/insets';
 
 export const ScanSuccessScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export const ScanSuccessScreen: React.FC = () => {
 
   return (
     <EuclidScanSuccessScreen
-      insets={{ top: 0, bottom: 0 }}
+      insets={WEB_INSETS}
       navLabel="Registration"
       totalSteps={4}
       currentStep={4}

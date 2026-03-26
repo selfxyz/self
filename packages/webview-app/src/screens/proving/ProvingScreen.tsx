@@ -11,6 +11,7 @@ import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
+import { WEB_INSETS } from '../../utils/insets';
 
 function titleCaseDisclosure(disclosure: string): string {
   return disclosure
@@ -76,7 +77,7 @@ export const ProvingScreen: React.FC = () => {
 
   return (
     <ProofRequestScreen
-      insets={{ top: 0, bottom: 0 }}
+      insets={WEB_INSETS}
       variant={proving ? 'loading' : 'default'}
       onClose={onCancel}
       onConfirm={onVerify}

@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { KycFailureScreen as EuclidKycFailureScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { WEB_INSETS } from '../../utils/insets';
 import type { MockOnboardingNavigationState } from '../../utils/mockOnboardingFlow';
 import { getProviderPath } from '../../utils/mockOnboardingFlow';
 
@@ -35,7 +36,5 @@ export const KycFailureScreen: React.FC = () => {
     });
   }, [analytics, haptic, navigate, state?.countryCode, state?.documentType, state?.retryMockOutcome]);
 
-  return (
-    <EuclidKycFailureScreen insets={{ top: 0, bottom: 0 }} onDismiss={handleDismiss} onTryAgain={handleTryAgain} />
-  );
+  return <EuclidKycFailureScreen insets={WEB_INSETS} onDismiss={handleDismiss} onTryAgain={handleTryAgain} />;
 };

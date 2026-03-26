@@ -10,6 +10,7 @@ import type { IDCardVariant } from '@selfxyz/euclid';
 import { GearIcon, HomeScreen as EuclidHomeScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { WEB_INSETS } from '../../utils/insets';
 
 interface DocumentEntry {
   id: string;
@@ -123,7 +124,7 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <EuclidHomeScreen
-      insets={{ top: 0, bottom: 0 }}
+      insets={WEB_INSETS}
       idCard={
         firstDoc
           ? {

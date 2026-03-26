@@ -1,25 +1,27 @@
 @font-face {
-  font-family: 'Advercase-Regular';
+  font-family: 'Advercase';
   src: url('/fonts/Advercase-Regular.otf') format('opentype');
+  font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'DINOT-Bold';
-  src: url('/fonts/DINOT-Bold.otf') format('opentype');
-  font-weight: 700;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'DINOT-Medium';
+  font-family: 'DIN OT';
   src: url('/fonts/DINOT-Medium.otf') format('opentype');
   font-weight: 500;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'IBMPlexMono-Regular';
+  font-family: 'DIN OT';
+  src: url('/fonts/DINOT-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
   src: url('/fonts/IBMPlexMono-Regular.otf') format('opentype');
+  font-weight: 400;
   font-display: swap;
 }

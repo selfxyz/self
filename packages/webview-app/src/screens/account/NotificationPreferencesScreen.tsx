@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { LeftArrowIcon, NotificationPreferencesScreen as EuclidNotificationPreferencesScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { WEB_INSETS } from '../../utils/insets';
 
 const defaultToggles = [
   { key: 'self', label: 'Allow Self notifications', description: 'App updates and more' },
@@ -45,7 +46,7 @@ export const NotificationPreferencesScreen: React.FC = () => {
 
   return (
     <EuclidNotificationPreferencesScreen
-      insets={{ top: 0, bottom: 0 }}
+      insets={WEB_INSETS}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       onBack={onBack}
       toggles={toggles}

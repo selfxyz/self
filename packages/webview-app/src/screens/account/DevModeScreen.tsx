@@ -10,6 +10,7 @@ import type { IDCardProps } from '@selfxyz/euclid';
 import { DevModeScreen as EuclidDevModeScreen, LeftArrowIcon } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { WEB_INSETS } from '../../utils/insets';
 
 const ageOptions = ['18 or older', '21 or older', '25 or older', '30 or older'];
 const expiryOptions = ['1 year', '2 years', '5 years', '10 years'];
@@ -59,7 +60,7 @@ export const DevModeScreen: React.FC = () => {
 
   return (
     <EuclidDevModeScreen
-      insets={{ top: 0, bottom: 0 }}
+      insets={WEB_INSETS}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       onBack={onBack}
       idCard={idCard}

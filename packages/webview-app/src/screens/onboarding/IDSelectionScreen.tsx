@@ -11,6 +11,7 @@ import { IDTypeScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
+import { WEB_INSETS } from '../../utils/insets';
 
 const docTypeToIDType = (docType: string): IDType => {
   switch (docType) {
@@ -72,7 +73,7 @@ export const IDSelectionScreen: React.FC = () => {
 
   return (
     <IDTypeScreen
-      insets={{ top: 0, bottom: 0 }}
+      insets={WEB_INSETS}
       countryCode={countryCode}
       countryName={getCountryName(countryCode)}
       idTypes={idTypes}

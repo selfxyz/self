@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { ProofGenerationScreen } from '@selfxyz/euclid';
 
+import { WEB_INSETS } from '../../utils/insets';
+
 const MOCK_ID_CARD = {
   variant: 'passport' as const,
   title: 'Passport',
@@ -24,5 +26,5 @@ export const TunnelProvingScreen: React.FC = () => {
     return () => clearTimeout(timer);
   }, [navigate]);
 
-  return <ProofGenerationScreen insets={{ top: 0, bottom: 0 }} step="generatingProof" idCardProps={MOCK_ID_CARD} />;
+  return <ProofGenerationScreen insets={WEB_INSETS} step="generatingProof" idCardProps={MOCK_ID_CARD} />;
 };

@@ -8,7 +8,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import { LaunchTour1Screen, LaunchTour2Screen, LaunchTour3Screen, LaunchTour4Screen } from '@selfxyz/euclid';
 
-const insets = { top: 0, bottom: 0 };
+import { WEB_INSETS as insets } from '../../utils/insets';
 
 export const TourScreen: React.FC = () => {
   const navigate = useNavigate();
