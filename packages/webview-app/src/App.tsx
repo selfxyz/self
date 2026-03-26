@@ -25,6 +25,11 @@ import { ScanSuccessScreen } from './screens/onboarding/ScanSuccessScreen';
 import { TourScreen } from './screens/onboarding/TourScreen';
 import { ProvingScreen } from './screens/proving/ProvingScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
+import { BackupMethodPickerScreen } from './screens/recovery/BackupMethodPickerScreen';
+import { LaunchRecoveryScreen } from './screens/recovery/LaunchRecoveryScreen';
+import { RecoveryPhraseScreen } from './screens/recovery/RecoveryPhraseScreen';
+import { RecoverySuccessScreen } from './screens/recovery/RecoverySuccessScreen';
+import { SecretPhraseInputScreen } from './screens/recovery/SecretPhraseInputScreen';
 import { KycMockScreen } from './screens/tunnel/KycMockScreen';
 import { TourScreen as TunnelTourScreen } from './screens/tunnel/TourScreen';
 import { TunnelCountryPickerScreen } from './screens/tunnel/TunnelCountryPickerScreen';
@@ -55,6 +60,11 @@ export const App: React.FC = () => (
           <Route path="/settings/notifications" element={<NotificationPreferencesScreen />} />
           <Route path="/settings/dev-mode" element={<DevModeScreen />} />
           {import.meta.env.DEV && <Route path="/debug/keychain" element={<KeychainDebugScreen />} />}
+          <Route path="/settings/backup" element={<BackupMethodPickerScreen />} />
+          <Route path="/settings/recovery-phrase" element={<RecoveryPhraseScreen />} />
+          <Route path="/recovery" element={<LaunchRecoveryScreen />} />
+          <Route path="/recovery/phrase-input" element={<SecretPhraseInputScreen />} />
+          <Route path="/recovery/success" element={<RecoverySuccessScreen />} />
           <Route path="/account/verified" element={<VerificationResultScreen />} />
           <Route path="/coming-soon" element={<ComingSoonScreen />} />
           <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
