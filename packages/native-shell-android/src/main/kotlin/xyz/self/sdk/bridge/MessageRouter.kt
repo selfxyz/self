@@ -16,7 +16,7 @@ class MessageRouter(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     private val handlers = mutableMapOf<BridgeDomain, BridgeHandler>()
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 
     fun register(handler: BridgeHandler) {
         handlers[handler.domain] = handler
@@ -26,8 +26,10 @@ class MessageRouter(
         val request = try {
             json.decodeFromString<BridgeRequest>(rawJson)
         } catch (e: Exception) {
+            android.util.Log.e("BridgeRouter", "Failed to decode request: ${e::class.simpleName}")
             return
         }
+        android.util.Log.d("BridgeRouter", "Received: domain=${request.domain} method=${request.method}")
 
         if (request.version != BRIDGE_PROTOCOL_VERSION) {
             sendResponse(
@@ -118,6 +120,7 @@ class MessageRouter(
 
     private fun sendResponse(response: BridgeResponse) {
         val responseJson = json.encodeToString(response)
+        android.util.Log.d("BridgeRouter", "Sending response: domain=${response.domain} success=${response.success}")
         sendToWebView("window.SelfNativeBridge._handleResponse(${escapeForJs(responseJson)})")
     }
 

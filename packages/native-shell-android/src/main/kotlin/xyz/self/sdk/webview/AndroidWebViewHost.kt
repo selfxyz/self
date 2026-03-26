@@ -103,7 +103,10 @@ class AndroidWebViewHost(
     }
 
     fun evaluateJs(js: String) {
-        if (!::webView.isInitialized) return
+        if (!::webView.isInitialized) {
+            android.util.Log.e("WebViewHost", "evaluateJs called but webView not initialized")
+            return
+        }
         webView.evaluateJavascript(js, null)
     }
 

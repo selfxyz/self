@@ -9,6 +9,7 @@ import androidx.security.crypto.MasterKey
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
@@ -48,7 +49,9 @@ class SecureStorageHandler(context: Context) : BridgeHandler {
         val key = params["key"]?.jsonPrimitive?.content
             ?: throw BridgeHandlerException("MISSING_KEY", "Key parameter required")
         val value = prefs.getString(key, null)
-        return if (value != null) JsonPrimitive(value) else JsonNull
+        return buildJsonObject {
+            put("value", if (value != null) JsonPrimitive(value) else JsonNull)
+        }
     }
 
     private fun set(params: Map<String, JsonElement>): JsonElement? {
