@@ -47,7 +47,6 @@ export const VerificationResultScreen: React.FC = () => {
 
   return (
     <>
-      {/* TODO: Animation is 160x160 (hardcoded in StatusState). Needs animationSize prop from Euclid to render larger. */}
       <StatusState
         variant={success ? 'success' : 'fail'}
         title={success ? 'ID Verified' : 'Verification Failed'}
@@ -57,6 +56,7 @@ export const VerificationResultScreen: React.FC = () => {
             : (error ?? 'Something went wrong during verification. Please try again.')
         }
         animationSource={success ? '/animations/proof-success.json' : undefined}
+        animationSize={240}
         loopAnimation={false}
         buttonText="Continue"
         onButtonPress={onContinue}

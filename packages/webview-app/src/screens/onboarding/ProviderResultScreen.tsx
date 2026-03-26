@@ -63,7 +63,7 @@ export const ProviderResultScreen: React.FC = () => {
           state: {
             countryCode: state?.countryCode,
             documentType: state?.documentType,
-            retryMockOutcome: 'success',
+            retryMockOutcome: mockOutcome,
           },
         });
         return;

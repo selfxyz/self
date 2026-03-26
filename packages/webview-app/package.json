@@ -17,8 +17,8 @@
     "types": "tsc --noEmit"
   },
   "dependencies": {
-    "@selfxyz/euclid": "1.2.4",
-    "@selfxyz/euclid-core": "1.2.4",
+    "@selfxyz/euclid": "1.2.5",
+    "@selfxyz/euclid-core": "1.2.5",
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
     "@selfxyz/webview-bridge": "workspace:^",
     "@sumsub/websdk": "^2.0.0",

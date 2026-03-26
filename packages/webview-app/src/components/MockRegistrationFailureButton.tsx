@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-// MOCK: Dev-only button to trigger registration failure flow. Remove once real provider errors are wired (WV-05 / WV-06).
-
 import type React from 'react';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';

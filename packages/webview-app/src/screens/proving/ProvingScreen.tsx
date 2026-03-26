@@ -86,7 +86,6 @@ export const ProvingScreen: React.FC = () => {
       appEndpoint={appEndpoint}
       timestamp={timestamp}
       items={proofItems}
-      // TODO: hardcoding for now, fetch real value
       documentType="passport"
     />
   );

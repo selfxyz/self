@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-// MOCK: This module provides mock provider results for the onboarding flow.
-// Remove once real KYC provider integration is wired (WV-05 / WV-06).
-
 import type { KycProviderResult } from '../types/kycProvider';
 
 export interface MockOnboardingNavigationState {

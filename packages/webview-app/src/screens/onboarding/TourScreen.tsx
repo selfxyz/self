@@ -48,10 +48,10 @@ export const TourScreen: React.FC = () => {
       );
     case '4':
       return (
-        <>
+        <div className="tour4-lottie-constrain">
           <MockRegistrationFailureButton />
           <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onSkip={onNext} onRestore={onRestore} />
-        </>
+        </div>
       );
     default:
       return <Navigate to="/onboarding/tour/1" replace />;

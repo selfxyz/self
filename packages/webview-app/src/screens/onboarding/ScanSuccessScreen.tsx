@@ -11,7 +11,6 @@ import { ScanSuccessScreen as EuclidScanSuccessScreen } from '@selfxyz/euclid';
 import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-// MOCK: Remove mockDocumentStore import once real document persistence is wired (WV-06).
 import { mockDocumentStore } from '../../utils/mockDocumentStore';
 
 export const ScanSuccessScreen: React.FC = () => {
@@ -21,7 +20,6 @@ export const ScanSuccessScreen: React.FC = () => {
   const { countryCode, documentType } =
     (location.state as { countryCode?: string; documentType?: string } | null) ?? {};
 
-  // MOCK: Persist a fake document so HomeScreen shows a card. Remove once real registration writes through keychain (WV-06).
   const persisted = useRef(false);
   useEffect(() => {
     if (!persisted.current && countryCode && documentType) {

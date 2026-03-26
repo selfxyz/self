@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-// MOCK: This entire module is a temporary mock document store using sessionStorage.
-// Remove once real document persistence is wired through the bridge (WV-06 / keychain adapter).
-
 interface MockDocument {
   id: string;
   documentType: string;

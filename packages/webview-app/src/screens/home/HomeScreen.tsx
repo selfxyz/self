@@ -11,7 +11,6 @@ import { GearIcon, HomeScreen as EuclidHomeScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-// MOCK: Remove mockDocumentStore import once real document persistence is wired (WV-06).
 import { mockDocumentStore } from '../../utils/mockDocumentStore';
 
 interface DocumentEntry {
@@ -60,7 +59,6 @@ export const HomeScreen: React.FC = () => {
   const { documents, analytics, haptic } = useSelfClient();
   const [catalog, setCatalog] = useState<DocumentCatalog | null>(null);
   const [loading, setLoading] = useState(true);
-  // MOCK: Remove once real document persistence is wired (WV-06).
   const mockCatalog = useSyncExternalStore(mockDocumentStore.subscribe, () => mockDocumentStore.getCatalog());
 
   const loadCatalog = useCallback(async () => {
@@ -102,7 +100,6 @@ export const HomeScreen: React.FC = () => {
     navigate('/settings');
   }, [navigate, haptic]);
 
-  // MOCK: Remove once real document persistence is wired (WV-06).
   const onRestartOnboarding = useCallback(() => {
     haptic.trigger('selection');
     mockDocumentStore.clear();

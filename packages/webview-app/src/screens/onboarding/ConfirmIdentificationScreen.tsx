@@ -58,12 +58,12 @@ export const ConfirmIdentificationScreen: React.FC = () => {
   return (
     <>
       <MockRegistrationFailureButton />
-      {/* TODO: Animation is 160x160 (hardcoded in StatusState). Needs animationSize prop from Euclid to render larger. */}
       <StatusState
         variant="success"
         title="Confirm your identity"
         description="By continuing, you certify that this passport, biometric ID or Aadhaar card belongs to you and is not stolen or forged. Once registered with Self, this document will be permanently linked to your identity and can't be linked to another one."
         animationSource="/animations/proof-success.json"
+        animationSize={240}
         loopAnimation={false}
         buttonText="Confirm"
         onButtonPress={onConfirm}
