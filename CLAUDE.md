@@ -43,6 +43,7 @@ nvm use && corepack enable && yarn install
 - **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self Wallet app.
 - **Specs stay current.** When implementation deviates from the spec, update the spec. A stale spec is worse than no spec.
 - **Constraint tie-breaker.** If rules conflict: correctness and security first, then scope/clarity (small PRs, small files), then reuse. Document the tradeoff in the spec.
+- **Linear issue descriptions are immutable after creation.** Never overwrite an issue description with `save_issue` to add updates, status notes, or context. Issue descriptions are the original scope set at creation time. All subsequent updates — status changes, progress notes, discovered context, blockers, decision records — go in **comments** via `save_comment`. The only valid use of `save_issue` on an existing issue is to change structured fields (status, priority, assignee, labels). If you need to correct a factual error in the description, add a comment explaining the correction rather than silently rewriting history.
 
 ## Specs & Planning
 
@@ -63,7 +64,7 @@ nvm use && corepack enable && yarn install
 3. **Write the spec** in `specs/` following the two-layer model (backlog row in `SPEC.md`, execution plan in `plans/`)
 4. **Create a Linear document** attached to the issue with the spec content (so non-GitHub users can review)
 5. **Then implement** — one spec = one PR (see PR size target in Key Rules)
-6. **After completion:** Update the Linear issue status. Close when done.
+6. **After completion:** Update the Linear issue status via `save_issue` (status field only). Add a **comment** via `save_comment` summarizing what was done, linking the PR. Close when done.
 
 ### Spec-Writing Guidelines
 

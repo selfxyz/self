@@ -1,526 +1,242 @@
 # Webview Migration — Ticket Planning
 
-Plan for creating specs, candidate tickets, and PR slices for the remaining webview screen migration work. This document is for planning only. It does not create Linear tickets.
+Plan for creating specs, candidate tickets, and PR slices for the remaining
+webview screen migration work. This document is for planning only. It does not
+create Linear tickets.
 
-Last updated: 2026-03-24
+Last updated: 2026-03-25
 
 Related docs:
 
 - [Screen Inventory](./SCREEN-INVENTORY.md)
 - [WebView Spec](./SPEC.md)
+- [WV-09 Registration Core](./plans/WV-09-registration-core.md)
+- [WV-10 EU ID Defer Record](./plans/WV-10-eu-id-helper-flow.md)
 
 ---
 
 ## Purpose
 
-The next planning step is not "create one ticket per screen." That would produce the wrong execution order and too much coordination overhead.
+The current migration pass is **not** a production-logic pass.
 
-Instead, we should:
+The goal is to move the relevant Euclid registration and onboarding screens
+into `packages/webview-app` as **faithful 1:1 design representations** with
+temporary mocked states and route triggers. Those mocked routes may ship
+temporarily in prod until a follow-up team replaces them with real flow logic.
 
-- group work by **flow boundary**
-- align groups to **spec-sized contracts**
-- split implementation into **PR-sized slices**
-- order the work so each merged PR unlocks the next user-visible section of the flow
+This planning doc therefore optimizes for:
 
-The ticket candidates below are intentionally larger than a single screen but smaller than a whole product area.
+- screen parity first
+- mocked flow coverage second
+- production logic follow-up notes third
 
----
-
-## Planning Checklist
-
-Use this checklist to track planning readiness before creating Linear issues.
-
-### Foundation specs
-
-- [x] `WV-05` spec exists
-- [x] `WV-05` issue created (SELF-2414)
-- [ ] `WV-05` status wording updated to reflect contract/testing gap
-- [x] `WV-06` spec exists in repo
-- [x] `WV-06` issue created (SELF-2415)
-- [x] `WV-07` spec exists
-- [x] `WV-07` issue created (SELF-2416)
-- [x] `WV-08` spec exists
-- [x] `WV-08` issue created (SELF-2417)
-
-### Proposed migration specs
-
-- [x] `WV-09` spec created
-- [x] `WV-09` issue group created (SELF-2418)
-- [x] `WV-10` spec created
-- [x] `WV-10` issue group created (SELF-2419)
-- [x] `WV-11` spec created
-- [x] `WV-11` issue group created (SELF-2420)
-- [ ] `WV-12` spec created
-- [x] `WV-12` issue group created (SELF-2421)
-- [ ] `WV-13` spec created
-- [x] `WV-13` issue group created (SELF-2422)
-- [ ] `WV-14` spec created
-- [x] `WV-14` issue group created (SELF-2423)
-- [ ] `WV-15` spec created
-- [x] `WV-15` issue group created (SELF-2424)
-
-### Pre-ticket decisions
-
-- [x] EU ID helper-flow role decided
-- [ ] `ConfirmIdentificationScreen` step ownership decided
-- [x] primary proving surface decided (main `/proving` route per WV-11; tunnel stays as reference/demo)
-- [ ] `SumsubPendingScreen` / `SumsubVerificationSuccessScreen` product status decided
+It does **not** treat WV-05, WV-06, WV-07, WV-08, or WV-11 as blockers for the
+screen-migration work in this pass.
 
 ---
 
-## Planning Principles
+## Planning Assumptions
 
-### 1. Sequence by user journey, not by component family
+### 1. Design parity is the deliverable
 
-The real product path is:
+The work in scope now is:
 
-1. launch and intro
-2. registration entry
-3. provider handoff and provider result normalization
-4. registration success or failure
-5. stored-document home state
-6. disclose request and proof generation
-7. proof result and history
-8. recovery, settings, and lower-priority support surfaces
+- port the relevant Euclid screens 1:1
+- preserve layout, copy, illustration, CTA structure, and screen sequencing
+- expose enough temporary mocked states to exercise the designs
 
-If we implement screens outside that order, we will create UI islands that are hard to validate end to end.
+The work out of scope now is:
 
-### 2. Separate contract work from screen migration work
-
-WV-05, WV-06, WV-07, and WV-08 are not just visual migrations. They define the runtime boundary:
-
-- provider launch and normalization
+- provider SDK integration
 - KYC result persistence
-- SelfClient / proving machine assembly
-- register-to-disclose tunnel integration
+- document storage
+- lifecycle completion callbacks
+- proving-machine wiring
+- production navigation guards based on real data
 
-Ticket planning should treat those as foundation specs, not "screen tickets."
+### 2. Temporary mocked states are allowed in prod
 
-### 3. Prefer PRs that close a usable branch of the flow
+We do not need a separate dev-only harness for this pass.
 
-A good PR should leave the app in a more complete and testable state. The ideal unit is:
+Temporary mocked routes and states may live in the shipped webview app until
+the future production-logic pass replaces them. The spec should say that
+clearly so there is no ambiguity about why mocked flows exist in a prod build.
 
-- one coherent route chain
-- one backing contract
-- one or two validation paths
+### 3. Mock triggers must cover distinct flow branches
 
-Avoid PRs that only add scattered screens with no route completion.
+The migration needs a reliable way to trigger unique happy-path and error-path
+screens so product, design, QA, and engineering can validate the flows.
 
-### 4. Keep ticket shape close to ownership boundaries
+Preferred trigger shapes:
 
-The natural boundaries are:
+- route params
+- query params
+- lightweight mock-state objects attached to route navigation
 
-- onboarding / registration
-- provider contract and KYC normalization
-- proving / disclose
-- home / settings / recovery
+Examples:
 
-These boundaries match the current route layout in `packages/webview-app/src/App.tsx` and the active webview specs.
+- `/onboarding/tour/1`
+- `/onboarding/provider?mock=success`
+- `/onboarding/provider-result?mock=kyc-failure`
+- `/onboarding/success?mock=default`
+- `/onboarding/conflict?mock=existing-account`
+- `/proving/result?mock=success`
+
+The exact trigger API can evolve. The important part is that each screen and
+branch is directly reachable without real backend or provider behavior.
+
+### 4. Logic notes should stay in the specs
+
+Future production wiring notes are still useful. Keep them in the specs, but
+label them clearly as follow-up work for the later logic pass.
+
+### 5. 3.1 deprioritized work stays out of the active migration
+
+The current 3.1 bucket is:
+
+- EU ID
+- Aadhaar
+- Points
+
+Those flows should stay inventoried and ordered correctly, but they are not the
+active work for this pass.
 
 ---
 
 ## Recommended Order
 
-### Priority tiers
+### Tier 0: Registration critical path (WV-09)
 
-The intended planning priority is:
+The minimum viable registration spine — the highest-priority work.
 
-1. **Tier 0: Foundation contracts**
-   `WV-05`, `WV-06`, `WV-07`, `WV-08`
-2. **Tier 1: Registration**
-   Tour, provider handoff, provider result, registration outcomes, and registration-adjacent social sign-on / prompt screens
-3. **Tier 2: Disclose**
-   QR entry, proof request, generation, result, receipt/history, dialogues, and disclose support states
-4. **Tier 3: Support surfaces**
-   Home follow-through, document management, settings completion, and recovery / backup
+Order:
 
-This means ticket creation should prioritize **registration first, disclose second, related support screens third**.
+1. Tour screens (onboarding intro)
+2. Existing country and ID screens (already done)
+3. Mocked provider handoff via existing scaffold screens
+4. Registration outcome screens (success, failure, KYC failure)
+5. Home entry/exit points that connect the spine
 
-There are **4 total tiers** in the planning model:
+### Tier 0.5: Registration prompts (WV-12)
 
-- `Tier 0` foundation
-- `Tier 1` registration
-- `Tier 2` disclose
-- `Tier 3` support surfaces
+Post-registration prompt screens, split from WV-09:
 
-### Phase 0: Foundation corrections before new migration tickets
+1. Backup method picker
+2. Social sign-on picker
+3. Account conflict resolution
+4. Push notification prompt
 
-Do not open the main migration ticket set until the existing foundation work is explicitly restated and de-risked.
+### Tier 1: Disclose mock spine
 
-Candidate planning items:
+After registration, migrate the disclose/proving screens as visual shells with
+mocked request, generation, success, failure, pending, and receipt states.
 
-- restate WV-05 as "implementation present, contract validation incomplete"
-- define WV-06 explicitly in a repo plan file before ticket creation
-- confirm WV-07 and WV-08 remain the proving integration path
-- keep screen-migration tickets dependent on those foundation specs where applicable
+### Tier 2: Support surfaces
 
-Why first:
-
-- registration outcome screens depend on normalized provider terminal states
-- proof flow screens depend on the proving machine and stored-document pipeline
-- otherwise ticket sequencing will drift into mock-only UI
-
-### Phase 1: Registration spine
-
-This is the first user-visible product narrative and should be planned as a single ordered chain:
-
-1. launch tour
-2. country picker
-3. ID type
-4. provider launch
-5. provider result
-6. confirm identification
-7. outcome screens
-8. social sign-on conflict and backup prompts
-
-The country and ID screens already exist, and provider launch/result already exist as webview-only screens. That means the first new migration effort should focus on the missing parts around them rather than reopening the whole onboarding surface.
-
-Recommended planning order inside registration:
-
-- Tour first, because it is the earliest missing user-facing entry point
-- Registration outcomes second, because they define terminal states for real provider flows
-- EU ID is explicitly out of the provider-backed registration spine and should be tracked as a separate decision/defer item, not a provider helper layer
-- Social sign-on and push prompt last within WV-09, because they are registration-adjacent but not on the critical proof path
-
-### Phase 2: Disclose spine
-
-After registration spine planning, move to the proof request and result experience in this order:
-
-1. QR entry
-2. proof request review
-3. proof generation
-4. proof result
-5. proof receipt and history
-6. proof dialogues
-7. sumsub pending / success and Nova splash where still needed
-
-Why this order:
-
-- QR and request review are the start of the disclose flow
-- generation and result are the critical happy path
-- receipt/history are post-completion support surfaces
-- dialogue screens are mostly overlays and can be attached after the main route chain is stable
-
-### Phase 3: Post-core support surfaces
-
-These are valuable but not the shortest path to a usable 3.0 verification flow:
+Migrate the remaining support surfaces after the two main spines are visually
+testable:
 
 - ID data
 - manage documents
 - recovery and backup
+- remaining settings follow-through
 
-These should be ticketed after the registration and disclose spines are planned.
+### Tier 3: Future logic follow-ups
 
----
+Keep the existing logic-oriented specs in the backlog, but treat them as later
+implementation work rather than blockers for the visual migration:
 
-## Screen Ordering Notes
-
-### Registration flow ordering
-
-The registration screens should not be planned as four unrelated buckets. The correct narrative is:
-
-1. `LaunchTour1Screen`
-2. `LaunchTour2Screen`
-3. `LaunchTour3Screen`
-4. `LaunchTour4Screen`
-5. `CountryPickerScreen`
-6. `IDSelectionScreen`
-7. `ConfirmIdentificationScreen`
-8. `ProviderLaunchScreen`
-9. `ProviderResultScreen`
-10. `ScanSuccessScreen` or `RegistrationFailureScreen` or `SumsubFailureScreen`
-11. `SocialSignOnMethodPickerScreen` or `SocialSignOnPickerScreen`
-12. `ConflictDetectedScreen` when the account path is ambiguous
-13. `PushNotificationPromptScreen`
-14. `HomeScreen`
-
-Special note on EU ID screens:
-
-- `EuIdInstructionsScreen`
-- `EuIdBackInstructionsScreen`
-- `EuIdViewfinderScreen`
-- `EuIdCanInstructionsScreen`
-- `EuIdNfcInstructionsScreen`
-- `EuIdNfcSuccessScreen`
-
-These sit inside the legacy registration journey, but the active webview scope no longer assumes Self-owned camera or NFC capture. Per WV-10, EU ID is not part of provider-backed registration and the six screens are deferred from the active webview migration path unless a separate Self-owned flow is approved in a future spec.
-
-### Disclose flow ordering
-
-The proof flow should be planned as:
-
-1. `QRViewfinderScreen`
-2. `ProofRequestScreen`
-3. `ProofGenerationScreen`
-4. `ProofGenerationDialogueScreen`
-5. `ProofGenerationSuccessScreen`
-6. `ProofResultScreen`
-7. `ProofRequestReceiptScreen`
-8. `ProofHistoryScreen`
-9. `ProofSuccessBackupScreen`
-
-Supporting overlays:
-
-- `SimpleDialogueScreen`
-- `DialogueWithCtaScreen`
-
-Supporting status screens:
-
-- `SumsubPendingScreen`
-- `SumsubVerificationSuccessScreen`
-- `NovaSplashScreen`
-
-This ordering keeps the main proof path stable before adding support surfaces.
-
-### Recovery and settings ordering
-
-These should be planned after document persistence and home state are stable:
-
-1. `ManageDocumentsScreen`
-2. `IDDataScreen`
-3. `LaunchRecoveryScreen`
-4. `BackupMethodPickerScreen`
-5. `RecoveryPhraseScreen`
-6. `SecretPhraseInputScreen`
-7. `RecoverySuccessScreen`
-
-Reason:
-
-- document management and ID data depend on stored document shape
-- recovery UX should follow the same storage and account state assumptions
+- `WV-05` provider SDK integration
+- `WV-06` KYC result flow
+- `WV-07` SelfClient assembly
+- `WV-08` tunnel proving wiring
+- `WV-11` disclose production wiring
 
 ---
 
-## Proposed Specs
+## Ticket Shape
 
-The existing WV specs already cover foundational platform work. The remaining ticket planning should be grouped into a small set of migration specs rather than one spec per screen.
+The right unit is not "one ticket per screen." The right unit is one coherent
+mocked branch of the product narrative.
 
-### Existing foundation specs
+Recommended ticket groupings:
 
-| Spec    | Purpose                                        | Status      |
-| ------- | ---------------------------------------------- | ----------- |
-| `WV-05` | Sumsub Web SDK launch integration              | In progress |
-| `WV-06` | KYC result flow and terminal mapping           | Ready       |
-| `WV-07` | SelfClient assembly and proving machine export | Ready       |
-| `WV-08` | Tunnel proving integration                     | Ready       |
+### WV-09 registration critical path
 
-### Proposed new migration specs
+- PR 1: tour wrappers and entry routing
+- PR 2: outcome wrappers + mocked provider handoff transitions
 
-| Proposed Spec | Scope                                                                   | Depends On   |
-| ------------- | ----------------------------------------------------------------------- | ------------ |
-| `WV-09`       | Registration core — tour, outcomes, social sign-on, and prompt surfaces | WV-05, WV-06 |
-| `WV-10`       | EU ID separation decision and defer record                              | WV-09        |
-| `WV-11`       | Disclose spine migration                                                | WV-07, WV-08 |
-| `WV-12`       | Proof overlays, history, and post-proof support                         | WV-11        |
-| `WV-13`       | Home, document management, and ID data                                  | WV-11        |
-| `WV-14`       | Recovery and backup surfaces                                            | WV-13        |
-| `WV-15`       | Settings follow-through and support routes                              | WV-13        |
+### WV-12 registration prompts
 
-Notes:
+- PR 1: social sign-on, conflict, and notification prompt wrappers + prompt
+  chain wiring
 
-- `WV-09` should cover the route spine from tour through provider outcome and the remaining registration-adjacent social sign-on / prompt screens, not just the four tour screens.
-- `WV-10` is intentionally separate because EU ID is not part of provider-backed registration; the six screens are deferred unless a separate Self-owned flow is approved.
-- `WV-11` should establish the core disclose route chain before ticketing dialogue variants.
+### WV-11 disclose mock migration
 
----
+- request, generation, result, receipt, history, dialogue, and KYC support
+  screens as visual mocks
+- route-level trigger coverage for success, failure, pending, and empty states
 
-## Candidate Tickets By Spec
+### WV-13 through WV-16 support migrations
 
-These are draft ticket groups only. Do not create them yet.
+- proof overlays/history/post-proof support (WV-13)
+- home/document management/ID data (WV-14)
+- recovery and backup surfaces (WV-15)
+- settings follow-through and support routes (WV-16)
 
-### WV-09: Registration core
+### WV-10 defer record
 
-Candidate tickets:
-
-- `Registration intro and launch tour`
-- `Registration terminal states and outcome screens`
-- `Registration social sign-on, conflict, and prompt surfaces`
-- `Registration route integration from tour to provider result`
-
-Screens primarily affected:
-
-- `LaunchTour1Screen`
-- `LaunchTour2Screen`
-- `LaunchTour3Screen`
-- `LaunchTour4Screen`
-- `ScanSuccessScreen`
-- `RegistrationFailureScreen`
-- `SumsubFailureScreen`
-- `SocialSignOnMethodPickerScreen`
-- `SocialSignOnPickerScreen`
-- `ConflictDetectedScreen`
-- `PushNotificationPromptScreen`
-- integration around `CountryPickerScreen`, `IDSelectionScreen`, `ConfirmIdentificationScreen`, `ProviderLaunchScreen`, `ProviderResultScreen`
-
-Suggested PR slices:
-
-- PR1: Launch tour route and navigation
-- PR2: Registration outcome states and route wiring
-- PR3: Social sign-on, conflict, and prompt surfaces
-- PR4: End-to-end registration spine integration and tests
-
-### WV-10: EU ID separation decision
-
-Candidate tickets:
-
-- `Record EU ID separation from provider-backed registration`
-- `Clean up backlog wording for deferred EU ID flow`
-
-Screens primarily affected:
-
-- `EuIdInstructionsScreen`
-- `EuIdBackInstructionsScreen`
-- `EuIdViewfinderScreen`
-- `EuIdCanInstructionsScreen`
-- `EuIdNfcInstructionsScreen`
-- `EuIdNfcSuccessScreen`
-
-Suggested PR slices:
-
-- PR1: Product decision and spec
-- PR2: Planning/backlog cleanup only if needed
-
-### WV-11: Disclose spine migration
-
-Candidate tickets:
-
-- `QR entry and proof request review`
-- `Proof generation and result route chain`
-- `Disclose route integration with real proving pipeline`
-
-Screens primarily affected:
-
-- `QRViewfinderScreen`
-- `ProofRequestScreen`
-- `ProofGenerationScreen`
-- `ProofResultScreen`
-
-Suggested PR slices:
-
-- PR1: QR and request review
-- PR2: Generation and result
-- PR3: Wire to proving pipeline and route guards
-
-### WV-12: Proof overlays and post-proof surfaces
-
-Candidate tickets:
-
-- `Proof receipt and history`
-- `Proof dialogue and CTA overlays`
-- `Post-proof success and support surfaces`
-
-Screens primarily affected:
-
-- `ProofRequestReceiptScreen`
-- `ProofHistoryScreen`
-- `SimpleDialogueScreen`
-- `DialogueWithCtaScreen`
-- `ProofGenerationDialogueScreen`
-- `ProofGenerationSuccessScreen`
-- `ProofSuccessBackupScreen`
-- `SumsubPendingScreen`
-- `SumsubVerificationSuccessScreen`
-- `NovaSplashScreen`
-
-Suggested PR slices:
-
-- PR1: Receipt and history
-- PR2: Overlay dialogues
-- PR3: Pending / success support states
-
-### WV-13: Home and document surfaces
-
-Candidate tickets:
-
-- `ID data view`
-- `Manage documents`
-- `Home follow-through for registered document state`
-
-Screens primarily affected:
-
-- `IDDataScreen`
-- `ManageDocumentsScreen`
-- `HomeScreen` integration follow-up
-
-Suggested PR slices:
-
-- PR1: Manage documents
-- PR2: ID data and home integration
-
-### WV-14: Recovery and backup
-
-Candidate tickets:
-
-- `Recovery method selection and phrase display`
-- `Phrase input and recovery success`
-
-Screens primarily affected:
-
-- `LaunchRecoveryScreen`
-- `BackupMethodPickerScreen`
-- `RecoveryPhraseScreen`
-- `SecretPhraseInputScreen`
-- `RecoverySuccessScreen`
-
-Suggested PR slices:
-
-- PR1: Method picker and phrase view
-- PR2: Phrase input and success
-
-### WV-15: Settings support routes
-
-Candidate tickets:
-
-- `Settings support and placeholder route completion`
-- `Persisted settings follow-through`
-- `Security, notifications, and dev-mode action completion`
-
-Screens primarily affected:
-
-- `SettingsScreen`
-- `SecurityScreen`
-- `NotificationPreferencesScreen`
-- `DevModeScreen`
-
-Suggested PR slices:
-
-- PR1: Support and placeholder route completion
-- PR2: Persistence and non-placeholder actions
+- no screen implementation tickets
+- documentation and backlog ordering only
 
 ---
 
-## Proposed Ticket Creation Order
+## Naming Guidance
 
-When we are ready to create Linear tickets, the recommended order is:
+This migration should target `@selfxyz/euclid` `1.2.3`.
 
-1. Foundation follow-up for `WV-05` and `WV-06`
-2. `WV-09` registration spine
-3. `WV-10` EU ID separation decision
-4. `WV-07` and `WV-08` implementation tickets if still not created
-5. `WV-11` disclose spine
-6. `WV-12` proof overlays and post-proof surfaces
-7. `WV-13` home and document surfaces
-8. `WV-15` settings support routes
-9. `WV-14` recovery and backup
+Use the newer generic `Kyc` naming in the planning docs instead of older
+provider-specific naming. For example:
 
-This ordering keeps the shortest path to an end-to-end verification journey ahead of secondary account-management work.
+- `SumsubFailureScreen` → `KycFailureScreen`
+- `SumsubPendingScreen` → `KycPendingScreen`
+- `SumsubVerificationSuccessScreen` → `KycSuccessScreen`
 
-Short version:
-
-- Registration before disclose
-- Disclose before support surfaces
-- Support surfaces before long-tail polish or optional flows
+The current KYC provider is Didit, but screen naming should stay
+provider-agnostic so it does not need to change again if the provider changes.
 
 ---
 
-## Open Questions Before Ticket Creation
+## Open Decisions
 
-These questions should be answered in docs before generating tickets:
+Resolved:
 
-1. Resolved: EU ID is not part of the provider-backed registration flow. Providers own their own onboarding guides.
-2. Should `ConfirmIdentificationScreen` remain a distinct step before provider launch, or should it be folded into provider result / review?
-3. Resolved: The main `/proving` route is the core disclose path (WV-11). Tunnel stays as the reference/demo flow from WV-08.
-4. Are `SumsubPendingScreen` and `SumsubVerificationSuccessScreen` part of the end-user 3.0 flow, or are they implementation support states?
-5. Should recovery and backup stay in the first migration wave, or explicitly move behind document-management completion?
+1. The current pass is design-only, not production-logic integration.
+2. Temporary mocked states may ship until a later team replaces them.
+3. EU ID is deprioritized to 3.1 and is not part of the active registration
+   migration.
+4. Aadhaar and Points remain in the 3.1 bucket as well.
+5. The migration should follow Euclid `1.2.3` naming and use generic `Kyc`
+   screen labels.
 
-Until those are resolved, we should plan tickets but avoid opening them.
+Still open for implementation detail, not scope:
+
+1. Whether the temporary mock driver is query-param based, route-state based, or
+   a small shared mock store.
+2. Whether a lightweight in-app screen chooser is useful in addition to direct
+   route triggers.
+
+---
+
+## Validation Expectations
+
+The planning set is ready when:
+
+- registration screens can be migrated and reviewed without real provider logic
+- specs consistently describe the work as 1:1 design migration with mocked
+  states
+- no doc implies that production KYC/persistence logic should be implemented in
+  this pass
+- EU ID, Aadhaar, and Points remain clearly deprioritized to 3.1
+- generic `Kyc` naming replaces old Sumsub-specific screen naming where the UI
+  is provider-agnostic

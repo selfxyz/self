@@ -1,14 +1,20 @@
 # Webview Migration — Screen Inventory
 
-Master list of 3.0 production-scope screens grouped by flow, for migrating euclid to the webview app (`selfxyz/self/packages/webview-app`).
+Master list of 3.0 screen-migration scope grouped by flow, for migrating
+Euclid screens to the webview app (`selfxyz/self/packages/webview-app`).
 
 Scope notes:
 
 - Summary totals count **Euclid source screens** from `@selfxyz/euclid`, not webview wrapper files.
-- Webview-only production screens are tracked separately and are **not** included in the Euclid totals.
-- Tunnel/demo screens are listed for context but are **not** counted in 3.0 production totals.
+- Webview-only scaffold screens are tracked separately and are **not** included
+  in the Euclid totals.
+- This pass is for **faithful 1:1 design migration with temporary mocked
+  states**.
+- Logic and functionality are intentionally deferred to a later pass.
+- Tunnel/demo screens are listed for context but are **not** counted in 3.0
+  totals.
 
-Last updated: 2026-03-24
+Last updated: 2026-03-25
 
 ---
 
@@ -33,13 +39,14 @@ These screens already exist in `selfxyz/self/packages/webview-app/src/screens/`.
 | `VerificationResultScreen`      | `ProofSuccessScreen` / `ProofFailureScreen` | `proving/`    |
 | `ComingSoonScreen`              | `ComingSoonScreen`                          | (root)        |
 
-**Webview-only production screens** (3 screens — no euclid equivalent, created for the webview app):
+**Webview-only scaffold screens** (3 screens — no Euclid equivalent, created
+for the webview app):
 
 | Webview Screen                | Purpose                                                                    | Folder        |
 | ----------------------------- | -------------------------------------------------------------------------- | ------------- |
-| `ConfirmIdentificationScreen` | Confirm ID details before provider handoff                                 | `onboarding/` |
-| `ProviderLaunchScreen`        | Provider placeholder (replaces native camera/NFC screens removed in WV-03) | `onboarding/` |
-| `ProviderResultScreen`        | Provider result handoff and routing after Sumsub / KYC completion          | `onboarding/` |
+| `ConfirmIdentificationScreen` | Confirm ID details before temporary mocked KYC handoff                     | `onboarding/` |
+| `ProviderLaunchScreen`        | Temporary mocked provider/KYC launch placeholder                           | `onboarding/` |
+| `ProviderResultScreen`        | Temporary mocked provider/KYC result handoff                               | `onboarding/` |
 
 **Tunnel flow screens** (PoC / demo flow from PR #1858 — not 3.0 production scope):
 
@@ -61,11 +68,14 @@ The tunnel route wrapper `TourScreen` renders the real Euclid `LaunchTour1Screen
 | Issue     | Title                                                  | Priority |
 | --------- | ------------------------------------------------------ | -------- |
 | SELF-2357 | Euclid migration: validate exports + API compatibility | Urgent   |
-| SELF-2358 | Sumsub / WV-05 contract compliance                     | High     |
+| SELF-2358 | KYC provider / WV-05 contract compliance               | High     |
 | SELF-2359 | Tunnel + proving flow data propagation fixes           | High     |
 | SELF-2360 | Settings persistence, test coverage, doc cleanup       | Medium   |
 
-Note: SELF-2358 references WV-05 contract compliance. WV-05 is now documented in `plans/WV-05-sumsub-web-sdk.md`; keep issue execution aligned with that spec.
+Note: SELF-2358 (canceled) referenced prior Sumsub-specific contract work.
+WV-05 is now documented in `plans/WV-05-kyc-provider-sdk.md` and has been
+reframed for Didit. Both are **future logic pass** work, not part of the
+current design-migration pass.
 
 ---
 
@@ -88,7 +98,7 @@ Note: `@selfxyz/euclid` currently exports both the 4-step `LaunchTour1Screen`–
 
 `CountryPickerScreen`, `IDTypeScreen` (as `IDSelectionScreen`), `ComingSoonScreen` are done.
 
-#### EU ID Screens (6 screens) — DEFERRED FROM ACTIVE WEBVIEW MIGRATION
+#### EU ID Screens (6 screens) — DEFERRED TO 3.1 / NOT IN ACTIVE PASS
 
 | Screen                       | Key Components                         | Purpose                                 | Status |
 | ---------------------------- | -------------------------------------- | --------------------------------------- | ------ |
@@ -99,19 +109,23 @@ Note: `@selfxyz/euclid` currently exports both the 4-step `LaunchTour1Screen`–
 | `EuIdNfcInstructionsScreen`  | InstructionFlowScaffold                | Step 6/7 — NFC chip scan instructions   | Todo   |
 | `EuIdNfcSuccessScreen`       | Success UI                             | Step 7/7 — NFC read confirmation        | Todo   |
 
-Note: Camera/NFC native screens were removed in WV-03. These six screens are not part of the provider-backed registration flow. Providers own their own onboarding/capture guidance. Keep these screens inventoried only; they are deferred unless a separate Self-owned EU ID flow is approved in a future spec.
+Note: Camera/NFC native screens were removed in WV-03. These six screens are
+not part of the active registration mock-migration pass. Keep them inventoried
+only; they are deferred to 3.1 alongside Aadhaar and Points unless a separate
+Self-owned EU ID flow is approved in a future spec.
 
 #### Registration Outcome (3 screens) — NOT YET MIGRATED
 
 | Screen                      | Key Components   | Purpose                     | Status |
 | --------------------------- | ---------------- | --------------------------- | ------ |
-| `ScanSuccessScreen`         | Success UI       | Document scan succeeded     | Todo   |
-| `RegistrationFailureScreen` | Error UI, Button | Registration failed — retry | Todo   |
-| `SumsubFailureScreen`       | Error UI         | Sumsub verification failed  | Todo   |
+| `ScanSuccessScreen`         | Success UI       | Registration completed mock success | Todo   |
+| `RegistrationFailureScreen` | Error UI, Button | Registration mock failure          | Todo   |
+| `KycFailureScreen`          | Error UI         | Generic KYC/provider mock failure  | Todo   |
 
-Note: `SumsubFailureScreen` migration may overlap with SELF-2358 (Sumsub / WV-05 contract compliance). Coordinate with that issue to avoid duplicate work.
+Note: Screen naming for this migration should follow the generic KYC naming in
+Euclid `1.2.3`, not older provider-specific labels.
 
-#### Social Sign-On / Onboarding (4 screens) — NOT YET MIGRATED
+#### Social Sign-On / Onboarding (4 screens) — WV-12, NOT YET MIGRATED
 
 | Screen                           | Key Components          | Purpose                                  | Status |
 | -------------------------------- | ----------------------- | ---------------------------------------- | ------ |
@@ -149,14 +163,15 @@ Note: `SumsubFailureScreen` migration may overlap with SELF-2358 (Sumsub / WV-05
 | `ProofGenerationSuccessScreen`  | Success animation               | Generation success confirmation    | Todo   |
 | `ProofSuccessBackupScreen`      | Success UI, Button              | Post-proof backup prompt           | Todo   |
 
-#### Sumsub Verification (2 screens) — NOT YET MIGRATED
+#### KYC Verification (2 screens) — NOT YET MIGRATED
 
 | Screen                            | Key Components | Purpose                         | Status |
 | --------------------------------- | -------------- | ------------------------------- | ------ |
-| `SumsubPendingScreen`             | Loading UI     | Waiting for Sumsub verification | Todo   |
-| `SumsubVerificationSuccessScreen` | Success UI     | Sumsub verification passed      | Todo   |
+| `KycPendingScreen` | Loading UI | Waiting for KYC verification | Todo   |
+| `KycSuccessScreen` | Success UI | KYC verification passed      | Todo   |
 
-Related: SELF-2358 covers Sumsub contract compliance.
+Related: provider contract work remains in `WV-05` and `WV-06`, but the current
+screen-migration pass should use provider-agnostic `Kyc` naming.
 
 #### Other (1 screen)
 
@@ -206,6 +221,7 @@ Related: SELF-2358 covers Sumsub contract compliance.
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
 | **Passport Registration** (6 screens) | `PassportInstructionsScreen`, `PassportCodeScanInstructionsScreen`, `PassportCodeScanViewfinderScreen`, `PassportNfcInstructionsScreen`, `PassportNfcErrorScreen`, `PassportNfcSuccessScreen` | Deferred to 3.1 (SELF-2145) |
 | **Aadhaar Registration** (3 screens)  | `AadhaarAppInstructionsScreen`, `AadhaarUploadSuccessScreen`, `AadhaarUploadErrorScreen`                                                                                                      | Deferred to 3.1 (SELF-2235) |
+| **EU ID Registration** (6 screens)    | `EuIdInstructionsScreen`, `EuIdBackInstructionsScreen`, `EuIdViewfinderScreen`, `EuIdCanInstructionsScreen`, `EuIdNfcInstructionsScreen`, `EuIdNfcSuccessScreen`                              | Deferred to 3.1 (`WV-10`)   |
 | **Points** (2 screens)                | `PointsScreen`, `InviteScreen`                                                                                                                                                                | Deferred to 3.1 (SELF-2249) |
 
 ---
@@ -216,38 +232,58 @@ Related: SELF-2358 covers Sumsub contract compliance.
 | ---------------------------- | ------------- | ------------ | --------- |
 | Registration: Tour           | 4             | 0            | 4         |
 | Registration: Country/ID     | 3             | 3            | 0         |
-| Registration: EU ID Scan     | 6             | 0            | 6         |
+| Registration: EU ID Scan     | 6             | 0            | 0\*\*     |
 | Registration: Outcome        | 3             | 0            | 3         |
 | Registration: Social Sign-On | 4             | 0            | 4         |
 | Disclose: Core Proof         | 9             | 3\*          | 6         |
 | Disclose: Proof Dialogues    | 5             | 0            | 5         |
-| Disclose: Sumsub             | 2             | 0            | 2         |
+| Disclose: KYC                | 2             | 0            | 2         |
 | Disclose: Other              | 1             | 0            | 1         |
 | Home + ID Data               | 2             | 1            | 1         |
 | Recovery & Backup            | 5             | 0            | 5         |
 | Settings                     | 5             | 4            | 1         |
-| **Total (3.0 scope)**        | **49**        | **11**       | **38**    |
+| **Total (active 3.0 scope)** | **37**        | **11**       | **26**    |
 
-"Already Done" counts Euclid source-screen coverage, not wrapper file count. The webview app currently has 10 Euclid-backed wrapper screens plus 3 webview-only production screens (`ConfirmIdentificationScreen`, `ProviderLaunchScreen`, `ProviderResultScreen`), which are not included in the totals above.
+"Already Done" counts Euclid source-screen coverage, not wrapper file count.
+The webview app currently has 10 Euclid-backed wrapper screens plus 3
+webview-only scaffold screens (`ConfirmIdentificationScreen`,
+`ProviderLaunchScreen`, `ProviderResultScreen`), which are not included in the
+totals above.
 
-\*`ProvingScreen` covers `ProofProgressScreen`. `VerificationResultScreen` covers both `ProofSuccessScreen` and `ProofFailureScreen`, so this row has 3 Euclid source screens already covered.
+\*`ProvingScreen` covers `ProofProgressScreen`. `VerificationResultScreen`
+covers both `ProofSuccessScreen` and `ProofFailureScreen`, so this row has 3
+Euclid source screens already covered.
 
-Counting basis for the 49-screen total:
+\*\*EU ID is deferred to 3.1 alongside Aadhaar, Passport, and Points. The 6
+screens are listed in this table for inventory completeness but are **not**
+counted in the active 3.0 remaining total. They also appear in the
+"Deprioritized (3.1 / Skip)" table below.
 
-- `@selfxyz/euclid` v1.2.0 currently exports 61 screen components.
-- 11 screens are explicitly deprioritized for 3.1 (`Passport*`, `Aadhaar*`, `Points*`).
-- 1 legacy marketing screen (`TourScreen`) is excluded from 3.0 tracking because the current scope uses `LaunchTour1Screen`–`LaunchTour4Screen` instead.
+Counting basis for the 37-screen active total:
+
+- The migration target is `@selfxyz/euclid` `1.2.3`.
+- 17 screens are explicitly deprioritized for 3.1 (`Passport*`, `Aadhaar*`,
+  `EuId*`, `Points*`) and excluded from the active total.
+- 1 legacy marketing screen (`TourScreen`) is excluded from 3.0 tracking
+  because the current scope uses `LaunchTour1Screen`–`LaunchTour4Screen`
+  instead.
 
 ---
 
 ## Coverage Status
 
-All current `@selfxyz/euclid` screen components are accounted for in one of these buckets:
+All current `@selfxyz/euclid` screen components are accounted for in one of
+these buckets:
 
-- **Done in webview app**: 11 Euclid source screens are already covered by current webview wrappers
-- **Remaining in 3.0 scope**: 38 Euclid source screens remain planned for migration
-- **Deferred to 3.1**: 11 Euclid source screens are intentionally deprioritized
-- **Excluded from 3.0 count**: 1 legacy Euclid screen (`TourScreen`) is tracked as out of active 3.0 scope because the launch-tour sequence uses `LaunchTour1Screen`–`LaunchTour4Screen`
+- **Done in webview app**: 11 Euclid source screens are already covered by
+  current webview wrappers
+- **Remaining in active 3.0 scope**: 26 Euclid source screens remain planned
+  for migration in the current pass
+- **Deferred to 3.1**: 17 Euclid source screens are intentionally deprioritized
+  (EU ID, Passport, Aadhaar, Points)
+- **Excluded from count**: 1 legacy Euclid screen (`TourScreen`) is tracked as
+  out of active 3.0 scope because the launch-tour sequence uses
+  `LaunchTour1Screen`–`LaunchTour4Screen`
 
 That means every current Euclid screen is accounted for in the inventory.
 
@@ -256,12 +292,20 @@ Flow-level status is slightly different:
 - All screen families are accounted for
 - A small number of flow decisions still need explicit product/spec confirmation before ticket creation
 
-Resolved flow decisions:
-
-- EU ID helper screens are deferred from the active webview migration (WV-10); not part of provider-backed registration
-- Main `/proving` route is the core disclose path (WV-11); tunnel stays as the reference/demo flow from WV-08
-
 Open flow decisions:
 
-- whether `ConfirmIdentificationScreen` remains a separate registration step
-- whether `SumsubPendingScreen` and `SumsubVerificationSuccessScreen` are end-user product screens or support-state screens
+- whether the remaining disclose/support screens should be specified as one
+  large batch (`WV-13` through `WV-16`) or split further for execution
+
+Resolved flow decisions:
+
+- EU ID screens are deferred from the active webview migration (WV-10) and sit
+  in the 3.1 bucket with Aadhaar and Points
+- Main `/proving` route is the core disclose path (WV-11); tunnel stays as the
+  reference/demo flow from WV-08
+- `ConfirmIdentificationScreen` remains a separate registration step in the
+  product flow. It is an existing webview-owned scaffold screen, not a Euclid
+  migration target, and it remains outside the 37-screen Euclid count.
+- `KycPendingScreen` and `KycSuccessScreen` should be treated as support-state
+  screens, not registration-core blockers. They remain inventoried under the
+  disclose/support family for later migration.
