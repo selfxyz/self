@@ -12,6 +12,12 @@
 - Branch: TBD
 - PR: TBD
 
+## Phase Note
+
+This spec is **next phase** work — blocked on tunnel integration (WV-08)
+landing first. The proving machine (WV-07) is done; this spec wires the main
+disclose route chain with real proving.
+
 ## Why
 
 The webview app already has a partial disclose surface:
@@ -74,7 +80,7 @@ This spec covers the **main disclose route chain** in `packages/webview-app`.
 - proof receipt/history screens
 - proof dialogue overlays
 - post-proof backup prompts
-- Sumsub pending/success support screens
+- KYC pending/success support screens
 - Nova splash or unrelated support routes
 
 `QRViewfinderScreen` remains inventoried, but **QR capture is not the active

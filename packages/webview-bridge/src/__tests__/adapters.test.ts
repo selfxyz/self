@@ -4,6 +4,25 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+  bridgeAnalyticsAdapter,
+  bridgeAuthAdapter,
+  bridgeBiometricsAdapter,
+  bridgeCameraAdapter,
+  bridgeCryptoAdapter,
+  bridgeDocumentsAdapter,
+  bridgeHapticAdapter,
+  bridgeLifecycleAdapter,
+  bridgeNFCScannerAdapter,
+  bridgeStorageAdapter,
+  noOpHapticAdapter,
+  onNfcProgress,
+  webNavigationAdapter,
+} from '../adapters';
+import { WebViewBridge } from '../bridge';
+import { MockNativeBridge } from '../mock';
+import { createMockWindow } from './helpers/mockWindow';
+
 const engineBrowserMocks = vi.hoisted(() => ({
   createIndexedDBDocumentsAdapter: vi.fn(),
   createNoOpHapticAdapter: vi.fn(),
@@ -12,26 +31,6 @@ const engineBrowserMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => engineBrowserMocks);
-
-import { WebViewBridge } from '../bridge';
-import { MockNativeBridge } from '../mock';
-import {
-  bridgeNFCScannerAdapter,
-  onNfcProgress,
-  bridgeCryptoAdapter,
-  bridgeAuthAdapter,
-  bridgeDocumentsAdapter,
-  bridgeStorageAdapter,
-  bridgeAnalyticsAdapter,
-  bridgeHapticAdapter,
-  bridgeLifecycleAdapter,
-  webNavigationAdapter,
-  bridgeBiometricsAdapter,
-  bridgeCameraAdapter,
-  noOpHapticAdapter,
-} from '../adapters';
-
-import { createMockWindow } from './helpers/mockWindow';
 
 describe('Adapter integration tests', () => {
   let mock: MockNativeBridge;
@@ -111,9 +110,7 @@ describe('Adapter integration tests', () => {
       controller.abort();
 
       // The cancel message should be fired
-      const cancelMessages = mock
-        .messagesFor('nfc')
-        .filter(m => m.method === 'cancelScan');
+      const cancelMessages = mock.messagesFor('nfc').filter(m => m.method === 'cancelScan');
       expect(cancelMessages).toHaveLength(1);
 
       // The scan request was resolved, so promise should settle
@@ -171,9 +168,7 @@ describe('Adapter integration tests', () => {
     });
 
     it('should sign via bridge', async () => {
-      const mockSignature = btoa(
-        String.fromCharCode(...new Uint8Array([1, 2, 3, 4])),
-      );
+      const mockSignature = btoa(String.fromCharCode(...new Uint8Array([1, 2, 3, 4])));
       mock.handleWith('crypto', 'sign', { signature: mockSignature });
 
       const adapter = bridgeCryptoAdapter(bridge);
@@ -210,12 +205,9 @@ describe('Adapter integration tests', () => {
       await expect(adapter.generateKey('my-key')).rejects.toThrow('Native key generation failed');
     });
 
-
     it('should get public key via bridge and decode base64', async () => {
       const pubKeyBytes = new Uint8Array([4, 10, 20, 30, 40]);
-      const pubKeyBase64 = btoa(
-        String.fromCharCode(...pubKeyBytes),
-      );
+      const pubKeyBase64 = btoa(String.fromCharCode(...pubKeyBytes));
       mock.handleWith('crypto', 'getPublicKey', {
         publicKey: pubKeyBase64,
       });
@@ -447,9 +439,7 @@ describe('Adapter integration tests', () => {
       });
 
       const biometrics = bridgeBiometricsAdapter(bridge);
-      await expect(
-        biometrics.authenticate({ reason: 'Verify identity' }),
-      ).rejects.toThrow('User cancelled biometric');
+      await expect(biometrics.authenticate({ reason: 'Verify identity' })).rejects.toThrow('User cancelled biometric');
     });
 
     it('should check availability', async () => {

@@ -27,7 +27,7 @@
 ### Out of Scope
 
 - NFC, camera, biometrics handlers
-- Sumsub integration (WebView workstream)
+- KYC provider integration (WebView workstream)
 - WebView app bundle (build-pipeline workstream)
 - Test app (NSL-03)
 - Android shell (NSL-01)

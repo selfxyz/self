@@ -2,22 +2,23 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { WebViewBridge } from '../bridge';
 import type {
   Adapters,
-  CryptoAdapter,
   AuthAdapter,
+  CryptoAdapter,
   NavigationAdapter,
   RouteName,
 } from '@selfxyz/mobile-sdk-alpha/browser';
-import { bridgeCryptoAdapter } from './crypto';
-import { bridgeAuthAdapter } from './auth';
-import { createKeychainDocumentsAdapter } from './keychain-documents';
 import {
   createWebAnalyticsAdapter,
   createWebNetworkAdapter,
   webNFCScannerShim,
 } from '@selfxyz/mobile-sdk-alpha/browser';
+
+import type { WebViewBridge } from '../bridge';
+import { bridgeAuthAdapter } from './auth';
+import { bridgeCryptoAdapter } from './crypto';
+import { createKeychainDocumentsAdapter } from './keychain-documents';
 
 export interface CreateSdkAdaptersOpts {
   bridge: WebViewBridge;

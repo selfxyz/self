@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useMemo, useState } from 'react';
+import type React from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { CountryPickerScreen as EuclidCountryPickerScreen } from '@selfxyz/euclid';
 
 import countryDocumentTypes from '../../data/country-document-types.json';
@@ -18,10 +20,7 @@ export const CountryPickerScreen: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const [search, setSearch] = useState('');
 
-  const countries = useMemo(
-    () => Object.keys(countryData).map(code => ({ countryCode: code })),
-    [],
-  );
+  const countries = useMemo(() => Object.keys(countryData).map(code => ({ countryCode: code })), []);
 
   const onSelect = useCallback(
     (countryCode: string) => {

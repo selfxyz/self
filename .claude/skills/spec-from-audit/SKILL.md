@@ -131,8 +131,9 @@ Show the user:
 - Never run `git commit` or `git push`.
 - Always read the actual files before writing specs — stale line numbers are actively harmful.
 - If an issue references files that don't exist, flag it rather than guessing.
-- If you discover the issue description is wrong (e.g., the code was already fixed), note this and ask the user whether to still create the spec or update the issue.
+- If you discover the issue description is wrong (e.g., the code was already fixed), note this and ask the user whether to still create the spec. If the user wants the issue updated, add a **comment** via `save_comment` explaining what changed — never overwrite the issue description.
 - Specs are for agents, not humans. Write them as precise instructions, not explanatory documents.
 - The spec is the source of truth, not the issue body. Issue bodies are lightweight pointers — the spec must be fully self-contained. Do not assume the agent has read the issue description.
 - The repo file (`specs/`) is the canonical version. The Linear document is a copy for cross-tool access. Both should have identical content.
 - Link Linear documents to issues (not projects). Use `mcp__linear-server__create_document` with the `issue` parameter.
+- **Never overwrite issue descriptions.** Use `save_comment` for all updates, corrections, and status notes. Use `save_issue` only to change structured fields (status, priority, assignee).

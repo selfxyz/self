@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useState } from 'react';
+import type React from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  DevModeScreen as EuclidDevModeScreen,
-  LeftArrowIcon,
-} from '@selfxyz/euclid';
+
 import type { IDCardProps } from '@selfxyz/euclid';
+import { DevModeScreen as EuclidDevModeScreen, LeftArrowIcon } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 
@@ -93,25 +92,7 @@ export const DevModeScreen: React.FC = () => {
         onResetAllValues={onResetAllValues}
         onGenerateMockDocument={onGenerateMockDocument}
       />
-      <button
-        onClick={() => navigate('/debug/keychain')}
-        style={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          padding: '10px 18px',
-          borderRadius: 8,
-          border: 'none',
-          backgroundColor: '#7c8aff',
-          color: '#fff',
-          fontSize: 14,
-          fontWeight: 600,
-          cursor: 'pointer',
-          zIndex: 100,
-        }}
-      >
-        Keychain Debug
-      </button>
+      
     </>
   );
 };

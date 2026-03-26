@@ -10,7 +10,7 @@
 import Foundation
 import React
 #if !E2E_TESTING
-import NFCPassportReader
+import SelfNFCPassportReader
 import Mixpanel
 #endif
 import Sentry
@@ -19,11 +19,11 @@ import Sentry
 @available(iOS 15, *)
 @objc(PassportReader)
 class PassportReader: NSObject {
-    private var passportReader: NFCPassportReader.PassportReader
+    private var passportReader: SelfNFCPassportReader.PassportReader
     private var analytics: SelfAnalytics?
 
     override init() {
-        self.passportReader = NFCPassportReader.PassportReader()
+        self.passportReader = SelfNFCPassportReader.PassportReader()
         super.init()
     }
 
@@ -58,7 +58,7 @@ class PassportReader: NSObject {
     func configure(token: String, enableDebugLogs: Bool) {
         let analytics = SelfAnalytics(token: token, enableDebugLogs: enableDebugLogs)
         self.analytics = analytics
-        self.passportReader = NFCPassportReader.PassportReader(analytics: analytics)
+        self.passportReader = SelfNFCPassportReader.PassportReader(analytics: analytics)
     }
 
     @objc(trackEvent:properties:)
