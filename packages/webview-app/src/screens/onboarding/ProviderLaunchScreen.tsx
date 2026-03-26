@@ -25,14 +25,9 @@ export const ProviderLaunchScreen: React.FC = () => {
   const { verificationId } = useVerificationRequest();
   const mockOutcome = getMockOutcomeFromSearch(location.search);
 
-  const { countryCode = '', documentType = '' } = (location.state as MockOnboardingNavigationState | null) ?? {};
+  const { countryCode, documentType } = (location.state as MockOnboardingNavigationState | null) ?? {};
 
   useEffect(() => {
-    if (!countryCode || !documentType) {
-      navigate('/onboarding/country', { replace: true });
-      return;
-    }
-
     analytics.trackEvent('provider_launch_started', {
       countryCode,
       documentType,

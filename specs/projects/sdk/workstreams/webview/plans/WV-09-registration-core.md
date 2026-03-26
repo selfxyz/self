@@ -93,13 +93,13 @@ into `packages/webview-app/public/`.
 
 For tour screens specifically:
 
-| Asset path                              | Source                                      |
-| --------------------------------------- | ------------------------------------------- |
-| `/animations/app-tour-welcome.json`     | `storybook/public/animations/`              |
-| `/animations/app-tour-generate.json`    | `storybook/public/animations/`              |
-| `/animations/app-tour-proof.json`       | `storybook/public/animations/`              |
-| `/animations/app-tour-get-started.json` | `storybook/public/animations/`              |
-| `/backgrounds/dialogue-background.jpg`  | `storybook/public/backgrounds/`             |
+| Asset path                              | Source                          |
+| --------------------------------------- | ------------------------------- |
+| `/animations/app-tour-welcome.json`     | `storybook/public/animations/`  |
+| `/animations/app-tour-generate.json`    | `storybook/public/animations/`  |
+| `/animations/app-tour-proof.json`       | `storybook/public/animations/`  |
+| `/animations/app-tour-get-started.json` | `storybook/public/animations/`  |
+| `/backgrounds/dialogue-background.jpg`  | `storybook/public/backgrounds/` |
 
 See the **Euclid Screen Migration Checklist** in `CLAUDE.md` for the full
 asset, inset, and validation protocol.

@@ -24,8 +24,8 @@ export const RegistrationFailureScreen: React.FC = () => {
 
   const handleTryDifferentMethod = useCallback(() => {
     haptic.trigger('selection');
-    analytics.trackEvent('registration_failure_try_different_method');
-    navigate('/onboarding/country');
+    analytics.trackEvent('registration_failure_try_again');
+    navigate('/onboarding/tour/1');
   }, [analytics, haptic, navigate]);
 
   return (
@@ -35,6 +35,7 @@ export const RegistrationFailureScreen: React.FC = () => {
         {...WEB_SAFE_AREA}
         onDismiss={handleDismiss}
         onTryDifferentMethod={handleTryDifferentMethod}
+        copy={{ tryDifferentMethod: 'Try again' }}
       />
     </>
   );

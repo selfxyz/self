@@ -12,7 +12,7 @@ export const KycMockScreen: React.FC = () => {
   const navigate = useNavigate();
 
   const onContinue = useCallback(() => {
-    navigate('/tunnel/registration/country');
+    navigate('/tunnel/proof/receipt');
   }, [navigate]);
 
   return (

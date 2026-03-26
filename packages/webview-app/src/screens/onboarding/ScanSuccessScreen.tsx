@@ -33,7 +33,7 @@ export const ScanSuccessScreen: React.FC = () => {
   const goHome = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('registration_success_finished');
-    navigate('/');
+    navigate('/', { state: { skipOnboardingRedirect: true } });
   }, [analytics, haptic, navigate]);
 
   return (

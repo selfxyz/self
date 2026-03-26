@@ -17,7 +17,7 @@ export const TourScreen: React.FC = () => {
   const stepNumber = Number.parseInt(step ?? '1', 10);
 
   const onNext = useCallback(() => {
-    navigate(stepNumber < 4 ? `/onboarding/tour/${stepNumber + 1}` : '/onboarding/country');
+    navigate(stepNumber < 4 ? `/onboarding/tour/${stepNumber + 1}` : '/onboarding/provider');
   }, [navigate, stepNumber]);
 
   const onRestore = useCallback(() => {
