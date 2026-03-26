@@ -13,29 +13,20 @@ export interface BridgeCryptoAdapter {
   getPublicKey(keyRef: string): Promise<Uint8Array>;
 }
 
-export function bridgeCryptoAdapter(
-  bridge: WebViewBridge,
-): BridgeCryptoAdapter {
+export function bridgeCryptoAdapter(bridge: WebViewBridge): BridgeCryptoAdapter {
   const webCryptoAdapter = createWebCryptoAdapter();
 
   return {
-    async hash(
-      input: Uint8Array,
-      algo: 'sha256' = 'sha256',
-    ): Promise<Uint8Array> {
+    async hash(input: Uint8Array, algo: 'sha256' = 'sha256'): Promise<Uint8Array> {
       return webCryptoAdapter.hash(input, algo);
     },
 
     async sign(data: Uint8Array, keyRef: string): Promise<Uint8Array> {
       const base64Data = uint8ArrayToBase64(data);
-      const result = await bridge.request<{ signature: string }>(
-        'crypto',
-        'sign',
-        {
-          data: base64Data,
-          keyRef,
-        },
-      );
+      const result = await bridge.request<{ signature: string }>('crypto', 'sign', {
+        data: base64Data,
+        keyRef,
+      });
       if (typeof result?.signature !== 'string' || result.signature.length === 0) {
         throw new Error('Invalid or empty signature from bridge');
       }
@@ -43,11 +34,7 @@ export function bridgeCryptoAdapter(
     },
 
     async generateKey(keyRef: string): Promise<{ keyRef: string }> {
-      const result = await bridge.request<{ keyRef: string; success: boolean }>(
-        'crypto',
-        'generateKey',
-        { keyRef },
-      );
+      const result = await bridge.request<{ keyRef: string; success: boolean }>('crypto', 'generateKey', { keyRef });
       if (!result?.success || typeof result.keyRef !== 'string' || result.keyRef.length === 0) {
         throw new Error('Native key generation failed');
       }
@@ -55,11 +42,7 @@ export function bridgeCryptoAdapter(
     },
 
     async getPublicKey(keyRef: string): Promise<Uint8Array> {
-      const result = await bridge.request<{ publicKey: string }>(
-        'crypto',
-        'getPublicKey',
-        { keyRef },
-      );
+      const result = await bridge.request<{ publicKey: string }>('crypto', 'getPublicKey', { keyRef });
       if (typeof result?.publicKey !== 'string' || result.publicKey.length === 0) {
         throw new Error('Invalid or empty publicKey from bridge');
       }

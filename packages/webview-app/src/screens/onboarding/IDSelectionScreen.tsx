@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect } from 'react';
+import type React from 'react';
+import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { IDTypeScreen } from '@selfxyz/euclid';
+
 import type { IDType } from '@selfxyz/euclid';
+import { IDTypeScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
@@ -26,14 +28,7 @@ const docTypeToIDType = (docType: string): IDType => {
 };
 
 const renderIDTypeIcon = (idType: IDType): React.ReactNode => {
-  const emoji =
-    idType.id === 'p'
-      ? '🛂'
-      : idType.id === 'i'
-        ? '🪪'
-        : idType.id === 'a'
-          ? '🆔'
-          : '📄';
+  const emoji = idType.id === 'p' ? '🛂' : idType.id === 'i' ? '🪪' : idType.id === 'a' ? '🆔' : '📄';
   return <span style={{ fontSize: 24 }}>{emoji}</span>;
 };
 

@@ -11,18 +11,12 @@ export interface BridgeBiometricsAdapter {
   getBiometryType(): Promise<string>;
 }
 
-export function bridgeBiometricsAdapter(
-  bridge: WebViewBridge,
-): BridgeBiometricsAdapter {
+export function bridgeBiometricsAdapter(bridge: WebViewBridge): BridgeBiometricsAdapter {
   return {
     async authenticate(params: BiometricAuthParams): Promise<boolean> {
       // Native handler returns JsonPrimitive(true) on success,
       // throws BridgeHandlerException on failure.
-      return bridge.request<boolean>(
-        'biometrics',
-        'authenticate',
-        params as unknown as Record<string, unknown>,
-      );
+      return bridge.request<boolean>('biometrics', 'authenticate', params as unknown as Record<string, unknown>);
     },
 
     async isAvailable(): Promise<boolean> {

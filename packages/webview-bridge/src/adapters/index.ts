@@ -2,63 +2,59 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type { WebAnalyticsOptions } from '@selfxyz/mobile-sdk-alpha/browser';
 import {
   createIndexedDBDocumentsAdapter,
   createNoOpHapticAdapter,
   createWebAnalyticsAdapter,
 } from '@selfxyz/mobile-sdk-alpha/browser';
-import type { WebAnalyticsOptions } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import type { BridgeAnalyticsAdapter } from './analytics';
 import type { BridgeDocumentsAdapter } from './documents';
 import type { BridgeHapticAdapter } from './haptic';
 
-export { bridgeNFCScannerAdapter, onNfcProgress } from './nfc-scanner';
-export type { BridgeNFCScannerAdapter } from './nfc-scanner';
-
-export { bridgeCryptoAdapter } from './crypto';
-export type { BridgeCryptoAdapter } from './crypto';
-
-export { bridgeAuthAdapter } from './auth';
+export type { BridgeAnalyticsAdapter } from './analytics';
 export type { BridgeAuthAdapter } from './auth';
 
-export { bridgeDocumentsAdapter } from './documents';
-export type { BridgeDocumentsAdapter } from './documents';
-
-export { bridgeStorageAdapter } from './storage';
-export type { BridgeStorageAdapter } from './storage';
-
-export { bridgeAnalyticsAdapter } from './analytics';
-export type { BridgeAnalyticsAdapter } from './analytics';
-export type ConsoleAnalyticsOptions = WebAnalyticsOptions;
-
-export { bridgeHapticAdapter } from './haptic';
-export type { BridgeHapticAdapter } from './haptic';
-
-export { webNavigationAdapter } from './navigation';
-export type { BridgeNavigationAdapter, RouteName } from './navigation';
-
-export { bridgeLifecycleAdapter } from './lifecycle';
-export type { BridgeLifecycleAdapter } from './lifecycle';
-
-export { bridgeBiometricsAdapter } from './biometrics';
 export type { BridgeBiometricsAdapter } from './biometrics';
-
-export { bridgeCameraAdapter } from './camera';
 export type { BridgeCameraAdapter, MrzScanParams, MrzScanResult } from './camera';
 
+export type { BridgeCryptoAdapter } from './crypto';
+export type { BridgeDocumentsAdapter } from './documents';
+
+export type { BridgeHapticAdapter } from './haptic';
+export type { BridgeLifecycleAdapter } from './lifecycle';
+
+export type { BridgeNFCScannerAdapter } from './nfc-scanner';
+export type { BridgeNavigationAdapter, RouteName } from './navigation';
+
+export type { BridgeStorageAdapter } from './storage';
+export type ConsoleAnalyticsOptions = WebAnalyticsOptions;
+export type { CreateSdkAdaptersOpts } from './sdk-adapter-map';
+
+export { bridgeAnalyticsAdapter } from './analytics';
+export { bridgeAuthAdapter } from './auth';
+
+export { bridgeBiometricsAdapter } from './biometrics';
+export { bridgeCameraAdapter } from './camera';
+
+export { bridgeCryptoAdapter } from './crypto';
+export { bridgeDocumentsAdapter } from './documents';
+
+export { bridgeHapticAdapter } from './haptic';
+export { bridgeLifecycleAdapter } from './lifecycle';
+
+export { bridgeNFCScannerAdapter, onNfcProgress } from './nfc-scanner';
+export { bridgeStorageAdapter } from './storage';
+
+export function consoleAnalyticsAdapter(options?: ConsoleAnalyticsOptions): BridgeAnalyticsAdapter {
+  return createWebAnalyticsAdapter(options) as BridgeAnalyticsAdapter;
+}
 export { createKeychainDocumentsAdapter } from './keychain-documents';
 export { createSdkAdapters } from './sdk-adapter-map';
-export type { CreateSdkAdaptersOpts } from './sdk-adapter-map';
 
 export function indexedDBDocumentsAdapter(): BridgeDocumentsAdapter {
   return createIndexedDBDocumentsAdapter() as BridgeDocumentsAdapter;
-}
-
-export function consoleAnalyticsAdapter(
-  options?: ConsoleAnalyticsOptions,
-): BridgeAnalyticsAdapter {
-  return createWebAnalyticsAdapter(options) as BridgeAnalyticsAdapter;
 }
 
 export function noOpHapticAdapter(): BridgeHapticAdapter {
@@ -70,3 +66,5 @@ export function noOpHapticAdapter(): BridgeHapticAdapter {
     },
   };
 }
+
+export { webNavigationAdapter } from './navigation';

@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { ScanSuccessScreen as EuclidScanSuccessScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';

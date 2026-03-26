@@ -2,17 +2,16 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Description, Title, colors, spacing } from '@selfxyz/euclid';
+
+import { colors, Description, spacing, Title } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
 import type { MockOnboardingNavigationState } from '../../utils/mockOnboardingFlow';
-import {
-  createMockProviderResult,
-  getMockOutcomeFromSearch,
-} from '../../utils/mockOnboardingFlow';
+import { createMockProviderResult, getMockOutcomeFromSearch } from '../../utils/mockOnboardingFlow';
 
 export const ProviderResultScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -20,13 +19,9 @@ export const ProviderResultScreen: React.FC = () => {
   const { analytics, haptic, lifecycle } = useSelfClient();
   const mockOutcome = getMockOutcomeFromSearch(location.search);
   const state =
-    (location.state as
-      | ({ providerResult?: KycProviderResult } & MockOnboardingNavigationState)
-      | null) ?? null;
+    (location.state as ({ providerResult?: KycProviderResult } & MockOnboardingNavigationState) | null) ?? null;
 
-  const providerResult =
-    state?.providerResult ??
-    createMockProviderResult({ outcome: mockOutcome });
+  const providerResult = state?.providerResult ?? createMockProviderResult({ outcome: mockOutcome });
 
   useEffect(() => {
     haptic.trigger('selection');

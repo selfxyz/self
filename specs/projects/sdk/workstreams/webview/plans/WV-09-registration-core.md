@@ -31,10 +31,10 @@ prompts are split into [WV-12](./WV-12-registration-prompts.md).
 
 **7 Euclid-backed screens** plus mocked provider handoff wiring:
 
-| Group                 | Screens                                                                   | Count |
-| --------------------- | ------------------------------------------------------------------------- | ----- |
-| Tour                  | `LaunchTour1Screen`, `LaunchTour2Screen`, `LaunchTour3Screen`, `LaunchTour4Screen` | 4 |
-| Registration outcomes | `ScanSuccessScreen`, `RegistrationFailureScreen`, `KycFailureScreen`      | 3     |
+| Group                 | Screens                                                                            | Count |
+| --------------------- | ---------------------------------------------------------------------------------- | ----- |
+| Tour                  | `LaunchTour1Screen`, `LaunchTour2Screen`, `LaunchTour3Screen`, `LaunchTour4Screen` | 4     |
+| Registration outcomes | `ScanSuccessScreen`, `RegistrationFailureScreen`, `KycFailureScreen`               | 3     |
 
 Plus the temporary mocked route wiring needed to make the full registration
 spine navigable end-to-end.
@@ -145,13 +145,13 @@ replaces them.
 
 ## Files Expected In This Pass
 
-| File                                                                         | Role                                   |
-| ---------------------------------------------------------------------------- | -------------------------------------- |
-| `packages/webview-app/src/screens/onboarding/TourScreen.tsx`                 | Production wrapper for launch tour     |
-| `packages/webview-app/src/screens/onboarding/ScanSuccessScreen.tsx`          | Registration success visual wrapper    |
-| `packages/webview-app/src/screens/onboarding/RegistrationFailureScreen.tsx`  | Registration failure visual wrapper    |
-| `packages/webview-app/src/screens/onboarding/KycFailureScreen.tsx`           | Generic KYC failure visual wrapper     |
-| `packages/webview-app/src/App.tsx`                                           | Tour routes + mocked outcome routes    |
+| File                                                                        | Role                                |
+| --------------------------------------------------------------------------- | ----------------------------------- |
+| `packages/webview-app/src/screens/onboarding/TourScreen.tsx`                | Production wrapper for launch tour  |
+| `packages/webview-app/src/screens/onboarding/ScanSuccessScreen.tsx`         | Registration success visual wrapper |
+| `packages/webview-app/src/screens/onboarding/RegistrationFailureScreen.tsx` | Registration failure visual wrapper |
+| `packages/webview-app/src/screens/onboarding/KycFailureScreen.tsx`          | Generic KYC failure visual wrapper  |
+| `packages/webview-app/src/App.tsx`                                          | Tour routes + mocked outcome routes |
 
 ## Files Explicitly Not Required In This Pass
 

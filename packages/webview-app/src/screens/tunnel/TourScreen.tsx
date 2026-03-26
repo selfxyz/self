@@ -2,14 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
-import { useNavigate, useParams, Navigate } from 'react-router-dom';
-import {
-  LaunchTour1Screen,
-  LaunchTour2Screen,
-  LaunchTour3Screen,
-  LaunchTour4Screen,
-} from '@selfxyz/euclid';
+import type React from 'react';
+import { useCallback } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
+
+import { LaunchTour1Screen, LaunchTour2Screen, LaunchTour3Screen, LaunchTour4Screen } from '@selfxyz/euclid';
 
 const insets = { top: 0, bottom: 0 };
 

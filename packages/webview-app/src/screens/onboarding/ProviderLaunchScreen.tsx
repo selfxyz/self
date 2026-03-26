@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect } from 'react';
+import type React from 'react';
+import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Button, Description, Title, colors, spacing } from '@selfxyz/euclid';
+
+import { Button, colors, Description, spacing, Title } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
@@ -22,8 +24,7 @@ export const ProviderLaunchScreen: React.FC = () => {
   const { verificationId } = useVerificationRequest();
   const mockOutcome = getMockOutcomeFromSearch(location.search);
 
-  const { countryCode = '', documentType = '' } =
-    (location.state as MockOnboardingNavigationState | null) ?? {};
+  const { countryCode = '', documentType = '' } = (location.state as MockOnboardingNavigationState | null) ?? {};
 
   useEffect(() => {
     if (!countryCode || !documentType) {
@@ -60,14 +61,7 @@ export const ProviderLaunchScreen: React.FC = () => {
     }, 700);
 
     return () => window.clearTimeout(timer);
-  }, [
-    analytics,
-    countryCode,
-    documentType,
-    mockOutcome,
-    navigate,
-    verificationId,
-  ]);
+  }, [analytics, countryCode, documentType, mockOutcome, navigate, verificationId]);
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');
@@ -115,15 +109,8 @@ export const ProviderLaunchScreen: React.FC = () => {
           }}
         />
         <Title textAlign="center">Launching verification</Title>
-        <Description textAlign="center">
-          Preparing the mocked provider handoff for your registration flow.
-        </Description>
-        <Button
-          variant="secondary-label"
-          text="Back"
-          fullWidth
-          onPress={handleBack}
-        />
+        <Description textAlign="center">Preparing the mocked provider handoff for your registration flow.</Description>
+        <Button variant="secondary-label" text="Back" fullWidth onPress={handleBack} />
       </div>
     </div>
   );

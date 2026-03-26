@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+
 import { KycFailureScreen as EuclidKycFailureScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
@@ -31,20 +33,9 @@ export const KycFailureScreen: React.FC = () => {
         documentType: state?.documentType,
       },
     });
-  }, [
-    analytics,
-    haptic,
-    navigate,
-    state?.countryCode,
-    state?.documentType,
-    state?.retryMockOutcome,
-  ]);
+  }, [analytics, haptic, navigate, state?.countryCode, state?.documentType, state?.retryMockOutcome]);
 
   return (
-    <EuclidKycFailureScreen
-      insets={{ top: 0, bottom: 0 }}
-      onDismiss={handleDismiss}
-      onTryAgain={handleTryAgain}
-    />
+    <EuclidKycFailureScreen insets={{ top: 0, bottom: 0 }} onDismiss={handleDismiss} onTryAgain={handleTryAgain} />
   );
 };

@@ -108,19 +108,19 @@ On **March 25, 2026**, the active SDK execution changed again:
 
 ## Module Table
 
-| Module               | Location                                                          | Status     | Current Role                                                             | Action Needed                                                    |
-| -------------------- | ----------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| WebView UI           | `packages/webview-app/`                                           | Active     | Primary product surface, route orchestration, mock-first screen migration | Finish remaining UI migration specs/routes                         |
-| SDK Core             | `packages/mobile-sdk-alpha/`                                      | Active     | Shared engine for WebView/browser delivery                               | Keep browser entry clean and request-driven                      |
-| WebView Bridge       | `packages/webview-bridge/`                                        | Active     | Host callback surface for future lifecycle wiring                        | Stable for current UI pass                                       |
-| Android Shell        | `packages/native-shell-android/`                                  | Deferred   | Future thin Kotlin shell: keychain/crypto + WebView host                 | Not required for current UI migration                            |
-| iOS Shell            | `packages/native-shell-ios/`                                      | Deferred   | Future thin Swift shell: keychain/crypto + WebView host                  | Not required for current UI migration                            |
-| Test App             | `packages/sdk-test-app/`                                          | Deferred   | Future native E2E harness                                                | Not required for current UI migration                            |
-| KMP Native Shell     | `packages/kmp-sdk/`                                               | Deprecated | Reference for native shell porting, replaced by native-shell-android/ios | Do not advance; use as port reference only                       |
-| Swift Providers      | `packages/self-sdk-swift/`                                        | Deprecated | Reference for iOS keychain/crypto porting, replaced by native-shell-ios  | Do not advance; use as port reference only                       |
-| RN SDK               | `packages/rn-sdk/`                                                | Paused     | Retained React Native shell work                                         | Do not advance unless scope reopens                              |
-| Native Consolidation | `app/ios/`, `packages/mobile-sdk-alpha/ios/`, related native code | Paused     | Historical native cleanup and parity track                               | Keep as reference only for now                                   |
-| MiniPay Sample       | `packages/kmp-minipay-sample/`                                    | Paused     | Historical KMP integration example                                       | Resume only if KMP path returns                                  |
+| Module               | Location                                                          | Status     | Current Role                                                              | Action Needed                               |
+| -------------------- | ----------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------- | ------------------------------------------- |
+| WebView UI           | `packages/webview-app/`                                           | Active     | Primary product surface, route orchestration, mock-first screen migration | Finish remaining UI migration specs/routes  |
+| SDK Core             | `packages/mobile-sdk-alpha/`                                      | Active     | Shared engine for WebView/browser delivery                                | Keep browser entry clean and request-driven |
+| WebView Bridge       | `packages/webview-bridge/`                                        | Active     | Host callback surface for future lifecycle wiring                         | Stable for current UI pass                  |
+| Android Shell        | `packages/native-shell-android/`                                  | Deferred   | Future thin Kotlin shell: keychain/crypto + WebView host                  | Not required for current UI migration       |
+| iOS Shell            | `packages/native-shell-ios/`                                      | Deferred   | Future thin Swift shell: keychain/crypto + WebView host                   | Not required for current UI migration       |
+| Test App             | `packages/sdk-test-app/`                                          | Deferred   | Future native E2E harness                                                 | Not required for current UI migration       |
+| KMP Native Shell     | `packages/kmp-sdk/`                                               | Deprecated | Reference for native shell porting, replaced by native-shell-android/ios  | Do not advance; use as port reference only  |
+| Swift Providers      | `packages/self-sdk-swift/`                                        | Deprecated | Reference for iOS keychain/crypto porting, replaced by native-shell-ios   | Do not advance; use as port reference only  |
+| RN SDK               | `packages/rn-sdk/`                                                | Paused     | Retained React Native shell work                                          | Do not advance unless scope reopens         |
+| Native Consolidation | `app/ios/`, `packages/mobile-sdk-alpha/ios/`, related native code | Paused     | Historical native cleanup and parity track                                | Keep as reference only for now              |
+| MiniPay Sample       | `packages/kmp-minipay-sample/`                                    | Paused     | Historical KMP integration example                                        | Resume only if KMP path returns             |
 
 ## Scope Rules
 

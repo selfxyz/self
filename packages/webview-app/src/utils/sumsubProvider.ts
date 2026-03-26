@@ -6,56 +6,21 @@ import type { KycProviderResult } from '../types/kycProvider';
 
 const FETCH_TIMEOUT_MS = 30_000;
 
-const SUMSUB_TEE_URL =
-  import.meta.env.VITE_SUMSUB_TEE_URL ?? 'https://sumsub-tee.self.xyz';
+const SUMSUB_TEE_URL = import.meta.env.VITE_SUMSUB_TEE_URL ?? 'https://sumsub-tee.self.xyz';
 
 export interface SumsubAccessToken {
   token: string;
   userId: string;
 }
 
-export async function fetchSumsubAccessToken(
-  signal?: AbortSignal,
-): Promise<SumsubAccessToken> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-
-  const combinedSignal = signal
-    ? AbortSignal.any([signal, controller.signal])
-    : controller.signal;
-
-  try {
-    const response = await fetch(`${SUMSUB_TEE_URL}/access-token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: combinedSignal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to get Sumsub access token (HTTP ${response.status})`,
-      );
-    }
-
-    const body: unknown = await response.json();
-    if (typeof body === 'string') {
-      return JSON.parse(body) as SumsubAccessToken;
-    }
-    return body as SumsubAccessToken;
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err instanceof Error && err.name === 'AbortError') {
-      throw new Error(
-        `Sumsub access token request timed out after ${FETCH_TIMEOUT_MS / 1000}s`,
-      );
-    }
-    if (err instanceof Error) {
-      throw new Error(`Failed to get Sumsub access token: ${err.message}`);
-    }
-    throw new Error('Failed to get Sumsub access token: Unknown error');
-  }
+export interface SumsubLaunchConfig {
+  accessToken: string;
+  containerId: string;
+  verificationId: string;
+  locale?: string;
+  onComplete: (result: KycProviderResult) => void;
+  onError: (result: KycProviderResult) => void;
+  onMessage?: (type: SumsubMessageType, payload: unknown) => void;
 }
 
 type SumsubMessageType =
@@ -85,26 +50,119 @@ interface SumsubApplicantStatus {
   };
 }
 
-export interface SumsubLaunchConfig {
-  accessToken: string;
-  containerId: string;
-  verificationId: string;
-  locale?: string;
-  onComplete: (result: KycProviderResult) => void;
-  onError: (result: KycProviderResult) => void;
-  onMessage?: (type: SumsubMessageType, payload: unknown) => void;
+export async function fetchSumsubAccessToken(signal?: AbortSignal): Promise<SumsubAccessToken> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  const combinedSignal = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal;
+
+  try {
+    const response = await fetch(`${SUMSUB_TEE_URL}/access-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: combinedSignal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Failed to get Sumsub access token (HTTP ${response.status})`);
+    }
+
+    const body: unknown = await response.json();
+    if (typeof body === 'string') {
+      return JSON.parse(body) as SumsubAccessToken;
+    }
+    return body as SumsubAccessToken;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error(`Sumsub access token request timed out after ${FETCH_TIMEOUT_MS / 1000}s`);
+    }
+    if (err instanceof Error) {
+      throw new Error(`Failed to get Sumsub access token: ${err.message}`);
+    }
+    throw new Error('Failed to get Sumsub access token: Unknown error');
+  }
 }
 
-function buildProviderResult(
-  verificationId: string,
-  overrides: Partial<KycProviderResult>,
-): KycProviderResult {
+function buildProviderResult(verificationId: string, overrides: Partial<KycProviderResult>): KycProviderResult {
   return {
     status: 'error',
     verificationId,
     provider: 'sumsub',
     completedAt: new Date().toISOString(),
     ...overrides,
+  };
+}
+
+export async function launchSumsubWebSdk(config: SumsubLaunchConfig): Promise<() => void> {
+  const { default: snsWebSdk } = await import('@sumsub/websdk');
+
+  const container = document.getElementById(config.containerId);
+  if (!container) {
+    throw new Error(`Container element #${config.containerId} not found`);
+  }
+
+  let hasCompleted = false;
+
+  const emitOnce = (result: KycProviderResult, isError: boolean) => {
+    if (hasCompleted) return;
+    hasCompleted = true;
+    if (isError) {
+      config.onError(result);
+    } else {
+      config.onComplete(result);
+    }
+  };
+
+  const snsWebSdkInstance = snsWebSdk
+    .init(config.accessToken, () => fetchSumsubAccessToken().then(t => t.token))
+    .withConf({ lang: config.locale ?? 'en' })
+    .withOptions({ addViewportTag: false, adaptIframeHeight: true })
+    .on('idCheck.onReady', () => {
+      config.onMessage?.('idCheck.onReady', {});
+    })
+    .on('idCheck.onError', (error: unknown) => {
+      config.onMessage?.('idCheck.onError', error);
+      const message = error instanceof Error ? error.message : typeof error === 'string' ? error : 'Provider error';
+      emitOnce(
+        buildProviderResult(config.verificationId, {
+          status: 'error',
+          error: {
+            code: 'provider_unknown_error',
+            message,
+            retryable: true,
+          },
+        }),
+        true,
+      );
+    })
+    .on('idCheck.applicantStatus', (status: SumsubApplicantStatus) => {
+      config.onMessage?.('idCheck.applicantStatus', status);
+    })
+    .on('idCheck.onApplicantSubmitted', () => {
+      config.onMessage?.('idCheck.onApplicantSubmitted', {});
+      emitOnce(buildProviderResult(config.verificationId, { status: 'partial' }), false);
+    })
+    .on('idCheck.applicantReviewComplete', (status: SumsubApplicantStatus) => {
+      config.onMessage?.('idCheck.applicantReviewComplete', status);
+      const result = normalizeSumsubStatus(config.verificationId, status);
+      const isError = result.status === 'error';
+      emitOnce(result, isError);
+    })
+    .on('idCheck.moduleResultPresented', (payload: SumsubMessage) => {
+      config.onMessage?.('idCheck.moduleResultPresented', payload);
+    })
+    .onMessage((type: SumsubMessageType, payload: unknown) => {
+      config.onMessage?.(type, payload);
+    })
+    .build();
+
+  snsWebSdkInstance.launch(container);
+
+  return () => {
+    snsWebSdkInstance.destroy();
   };
 }
 
@@ -130,102 +188,9 @@ export function normalizeSumsubStatus(
     });
   }
 
-  if (
-    reviewStatus === 'pending' ||
-    reviewStatus === 'onHold' ||
-    reviewStatus === 'queued'
-  ) {
+  if (reviewStatus === 'pending' || reviewStatus === 'onHold' || reviewStatus === 'queued') {
     return buildProviderResult(verificationId, { status: 'partial' });
   }
 
   return buildProviderResult(verificationId, { status: 'partial' });
-}
-
-export async function launchSumsubWebSdk(
-  config: SumsubLaunchConfig,
-): Promise<() => void> {
-  const { default: snsWebSdk } = await import('@sumsub/websdk');
-
-  const container = document.getElementById(config.containerId);
-  if (!container) {
-    throw new Error(`Container element #${config.containerId} not found`);
-  }
-
-  let hasCompleted = false;
-
-  const emitOnce = (result: KycProviderResult, isError: boolean) => {
-    if (hasCompleted) return;
-    hasCompleted = true;
-    if (isError) {
-      config.onError(result);
-    } else {
-      config.onComplete(result);
-    }
-  };
-
-  const snsWebSdkInstance = snsWebSdk
-    .init(config.accessToken, () => fetchSumsubAccessToken().then((t) => t.token))
-    .withConf({ lang: config.locale ?? 'en' })
-    .withOptions({ addViewportTag: false, adaptIframeHeight: true })
-    .on('idCheck.onReady', () => {
-      config.onMessage?.('idCheck.onReady', {});
-    })
-    .on('idCheck.onError', (error: unknown) => {
-      config.onMessage?.('idCheck.onError', error);
-      const message =
-        error instanceof Error
-          ? error.message
-          : typeof error === 'string'
-            ? error
-            : 'Provider error';
-      emitOnce(
-        buildProviderResult(config.verificationId, {
-          status: 'error',
-          error: {
-            code: 'provider_unknown_error',
-            message,
-            retryable: true,
-          },
-        }),
-        true,
-      );
-    })
-    .on(
-      'idCheck.applicantStatus',
-      (status: SumsubApplicantStatus) => {
-        config.onMessage?.('idCheck.applicantStatus', status);
-      },
-    )
-    .on('idCheck.onApplicantSubmitted', () => {
-      config.onMessage?.('idCheck.onApplicantSubmitted', {});
-      emitOnce(
-        buildProviderResult(config.verificationId, { status: 'partial' }),
-        false,
-      );
-    })
-    .on(
-      'idCheck.applicantReviewComplete',
-      (status: SumsubApplicantStatus) => {
-        config.onMessage?.('idCheck.applicantReviewComplete', status);
-        const result = normalizeSumsubStatus(config.verificationId, status);
-        const isError = result.status === 'error';
-        emitOnce(result, isError);
-      },
-    )
-    .on(
-      'idCheck.moduleResultPresented',
-      (payload: SumsubMessage) => {
-        config.onMessage?.('idCheck.moduleResultPresented', payload);
-      },
-    )
-    .onMessage((type: SumsubMessageType, payload: unknown) => {
-      config.onMessage?.(type, payload);
-    })
-    .build();
-
-  snsWebSdkInstance.launch(container);
-
-  return () => {
-    snsWebSdkInstance.destroy();
-  };
 }

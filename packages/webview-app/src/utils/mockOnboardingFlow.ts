@@ -4,12 +4,6 @@
 
 import type { KycProviderResult } from '../types/kycProvider';
 
-export type MockRegistrationOutcome =
-  | 'success'
-  | 'kyc-failure'
-  | 'registration-failure'
-  | 'cancel';
-
 export interface MockOnboardingNavigationState {
   countryCode?: string;
   documentType?: string;
@@ -17,30 +11,9 @@ export interface MockOnboardingNavigationState {
   nextPath?: string;
 }
 
+export type MockRegistrationOutcome = 'success' | 'kyc-failure' | 'registration-failure' | 'cancel';
+
 const DEFAULT_OUTCOME: MockRegistrationOutcome = 'success';
-
-export const getMockOutcomeFromSearch = (
-  search: string,
-): MockRegistrationOutcome => {
-  const value = new URLSearchParams(search).get('mock');
-
-  switch (value) {
-    case 'success':
-    case 'kyc-failure':
-    case 'registration-failure':
-    case 'cancel':
-      return value;
-    default:
-      return DEFAULT_OUTCOME;
-  }
-};
-
-export const getMockOutcomeSearch = (
-  outcome: MockRegistrationOutcome = DEFAULT_OUTCOME,
-): string => `?mock=${outcome}`;
-
-export const getProviderPath = (outcome: MockRegistrationOutcome): string =>
-  `/onboarding/provider${getMockOutcomeSearch(outcome)}`;
 
 export const createMockProviderResult = ({
   outcome,
@@ -97,3 +70,22 @@ export const createMockProviderResult = ({
       };
   }
 };
+
+export const getMockOutcomeFromSearch = (search: string): MockRegistrationOutcome => {
+  const value = new URLSearchParams(search).get('mock');
+
+  switch (value) {
+    case 'success':
+    case 'kyc-failure':
+    case 'registration-failure':
+    case 'cancel':
+      return value;
+    default:
+      return DEFAULT_OUTCOME;
+  }
+};
+
+export const getMockOutcomeSearch = (outcome: MockRegistrationOutcome = DEFAULT_OUTCOME): string => `?mock=${outcome}`;
+
+export const getProviderPath = (outcome: MockRegistrationOutcome): string =>
+  `/onboarding/provider${getMockOutcomeSearch(outcome)}`;
