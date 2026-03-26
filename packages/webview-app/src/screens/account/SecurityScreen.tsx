@@ -31,19 +31,19 @@ export const SecurityScreen: React.FC = () => {
   const onBackupAccount = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('security_backup_account_pressed');
-    navigate('/coming-soon');
+    navigate('/settings/backup');
   }, [navigate, haptic, analytics]);
 
   const onRevealRecoveryPhrase = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('security_reveal_phrase_pressed');
-    navigate('/coming-soon');
+    navigate('/settings/recovery-phrase');
   }, [navigate, haptic, analytics]);
 
   const onRestoreAccount = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('security_restore_account_pressed');
-    navigate('/coming-soon');
+    navigate('/recovery');
   }, [navigate, haptic, analytics]);
 
   const onDisableBackups = useCallback(() => {
