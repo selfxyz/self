@@ -15,13 +15,17 @@ import { ComingSoonScreen } from './screens/ComingSoonScreen';
 import { KeychainDebugScreen } from './screens/debug/KeychainDebugScreen';
 import { HomeScreen } from './screens/home/HomeScreen';
 import { ConfirmIdentificationScreen } from './screens/onboarding/ConfirmIdentificationScreen';
+import { ConflictDetectedScreen } from './screens/onboarding/ConflictDetectedScreen';
 import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
 import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
 import { KycFailureScreen } from './screens/onboarding/KycFailureScreen';
 import { ProviderLaunchScreen } from './screens/onboarding/ProviderLaunchScreen';
 import { ProviderResultScreen } from './screens/onboarding/ProviderResultScreen';
+import { PushNotificationPromptScreen } from './screens/onboarding/PushNotificationPromptScreen';
 import { RegistrationFailureScreen } from './screens/onboarding/RegistrationFailureScreen';
 import { ScanSuccessScreen } from './screens/onboarding/ScanSuccessScreen';
+import { SocialSignOnMethodPickerScreen } from './screens/onboarding/SocialSignOnMethodPickerScreen';
+import { SocialSignOnPickerScreen } from './screens/onboarding/SocialSignOnPickerScreen';
 import { TourScreen } from './screens/onboarding/TourScreen';
 import { ProvingScreen } from './screens/proving/ProvingScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
@@ -55,6 +59,10 @@ export const App: React.FC = () => (
           <Route path="/settings/notifications" element={<NotificationPreferencesScreen />} />
           <Route path="/settings/dev-mode" element={<DevModeScreen />} />
           {import.meta.env.DEV && <Route path="/debug/keychain" element={<KeychainDebugScreen />} />}
+          <Route path="/onboarding/backup" element={<SocialSignOnMethodPickerScreen />} />
+          <Route path="/onboarding/signin" element={<SocialSignOnPickerScreen />} />
+          <Route path="/onboarding/conflict" element={<ConflictDetectedScreen />} />
+          <Route path="/onboarding/notifications" element={<PushNotificationPromptScreen />} />
           <Route path="/account/verified" element={<VerificationResultScreen />} />
           <Route path="/coming-soon" element={<ComingSoonScreen />} />
           <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
