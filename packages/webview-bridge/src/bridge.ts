@@ -178,6 +178,10 @@ export class WebViewBridge {
       return Promise.reject(new Error('Bridge has been destroyed'));
     }
 
+    if (!this.transport) {
+      return Promise.reject(new Error(`No transport available for bridge request: ${domain}.${method}`));
+    }
+
     const id = uuidv4();
     const message: BridgeRequest = {
       type: 'request',

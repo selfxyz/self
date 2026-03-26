@@ -6,7 +6,7 @@ import type React from 'react';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { CheckCircleIcon, colors, StatusState } from '@selfxyz/euclid';
+import { StatusState } from '@selfxyz/euclid';
 
 export const TunnelResultScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -20,9 +20,10 @@ export const TunnelResultScreen: React.FC = () => {
       variant="success"
       title="Identity Verified"
       description="Your identity has been verified. You can now use Self ID to prove your identity to participating partners."
+      animationSource="/animations/proof-success-check.json"
+      loopAnimation={false}
       buttonText="Continue"
       onButtonPress={onContinue}
-      icon={<CheckCircleIcon size={64} color={colors.green500} />}
     />
   );
 };

@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { ScanSuccessScreen as EuclidScanSuccessScreen } from '@selfxyz/euclid';
 
+import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
@@ -22,14 +23,17 @@ export const ScanSuccessScreen: React.FC = () => {
   }, [analytics, haptic, navigate]);
 
   return (
-    <EuclidScanSuccessScreen
-      {...WEB_SAFE_AREA}
-      navLabel="Registration"
-      totalSteps={4}
-      currentStep={4}
-      title="Your ID is now registered"
-      onClose={goHome}
-      onFinish={goHome}
-    />
+    <>
+      <MockRegistrationFailureButton />
+      <EuclidScanSuccessScreen
+        {...WEB_SAFE_AREA}
+        navLabel="Registration"
+        totalSteps={4}
+        currentStep={4}
+        title="Your ID is now registered"
+        onClose={goHome}
+        onFinish={goHome}
+      />
+    </>
   );
 };

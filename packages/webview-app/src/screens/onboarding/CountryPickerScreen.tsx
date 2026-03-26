@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { CountryPickerScreen as EuclidCountryPickerScreen } from '@selfxyz/euclid';
 
+import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import countryDocumentTypes from '../../data/country-document-types.json';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
@@ -40,16 +41,19 @@ export const CountryPickerScreen: React.FC = () => {
   );
 
   return (
-    <EuclidCountryPickerScreen
-      {...WEB_SAFE_AREA}
-      countries={countries}
-      isLoading={false}
-      onCountrySelect={onSelect}
-      onClose={() => navigate('/')}
-      renderFlag={renderFlag}
-      getCountryName={getCountryName}
-      searchValue={search}
-      onSearchChange={setSearch}
-    />
+    <>
+      <MockRegistrationFailureButton />
+      <EuclidCountryPickerScreen
+        {...WEB_SAFE_AREA}
+        countries={countries}
+        isLoading={false}
+        onCountrySelect={onSelect}
+        onClose={() => navigate('/')}
+        renderFlag={renderFlag}
+        getCountryName={getCountryName}
+        searchValue={search}
+        onSearchChange={setSearch}
+      />
+    </>
   );
 };

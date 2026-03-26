@@ -137,6 +137,12 @@ On **March 25, 2026**, the active SDK execution changed again:
 5. **Keep active specs aligned with the current pass.** If a top-level doc
    makes production provider or native work sound like a prerequisite for the
    current migration, it is stale and should be corrected.
+6. **Euclid screens require asset and inset verification.** Every screen
+   imported from `@selfxyz/euclid` must be checked for URL-path asset
+   references (Lottie animations, background images) and safe-area inset
+   props. Missing assets cause silent failures (blank animations, black
+   backgrounds). See the **Euclid Screen Migration Checklist** in
+   `CLAUDE.md` for the full protocol.
 
 ## Where To Work
 

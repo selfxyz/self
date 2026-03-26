@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { IDType } from '@selfxyz/euclid';
 import { IDTypeScreen } from '@selfxyz/euclid';
 
+import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -72,15 +73,18 @@ export const IDSelectionScreen: React.FC = () => {
   );
 
   return (
-    <IDTypeScreen
-      {...WEB_SAFE_AREA}
-      countryCode={countryCode}
-      countryName={getCountryName(countryCode)}
-      idTypes={idTypes}
-      onIDTypeSelect={onSelect}
-      onBack={() => navigate(-1)}
-      renderFlag={renderFlag}
-      renderIDTypeIcon={renderIDTypeIcon}
-    />
+    <>
+      <MockRegistrationFailureButton />
+      <IDTypeScreen
+        {...WEB_SAFE_AREA}
+        countryCode={countryCode}
+        countryName={getCountryName(countryCode)}
+        idTypes={idTypes}
+        onIDTypeSelect={onSelect}
+        onBack={() => navigate(-1)}
+        renderFlag={renderFlag}
+        renderIDTypeIcon={renderIDTypeIcon}
+      />
+    </>
   );
 };

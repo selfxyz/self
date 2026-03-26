@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button, colors, Description, spacing, Title } from '@selfxyz/euclid';
 
+import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { MockOnboardingNavigationState } from '../../utils/mockOnboardingFlow';
@@ -87,6 +88,7 @@ export const ProviderLaunchScreen: React.FC = () => {
         backgroundColor: colors.white,
       }}
     >
+      <MockRegistrationFailureButton />
       <div
         style={{
           display: 'flex',

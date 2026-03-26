@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { colors, Description, spacing, Title } from '@selfxyz/euclid';
 
+import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
 import type { MockOnboardingNavigationState } from '../../utils/mockOnboardingFlow';
@@ -91,6 +92,7 @@ export const ProviderResultScreen: React.FC = () => {
         padding: spacing.lg,
       }}
     >
+      <MockRegistrationFailureButton />
       <div
         style={{
           display: 'flex',

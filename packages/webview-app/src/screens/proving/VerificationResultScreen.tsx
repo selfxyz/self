@@ -6,7 +6,7 @@ import type React from 'react';
 import { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { CheckCircleIcon, colors, StatusState, WarningOctagonIcon } from '@selfxyz/euclid';
+import { colors, StatusState, WarningOctagonIcon } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
@@ -54,15 +54,11 @@ export const VerificationResultScreen: React.FC = () => {
           ? "Your document's information is now protected by Self ID. Just scan a participating partner's QR code to prove your identity."
           : (error ?? 'Something went wrong during verification. Please try again.')
       }
+      animationSource={success ? '/animations/proof-success-check.json' : undefined}
+      loopAnimation={false}
       buttonText="Continue"
       onButtonPress={onContinue}
-      icon={
-        success ? (
-          <CheckCircleIcon size={64} color={colors.green500} />
-        ) : (
-          <WarningOctagonIcon size={64} color={colors.red500} />
-        )
-      }
+      icon={success ? undefined : <WarningOctagonIcon size={64} color={colors.red500} />}
     />
   );
 };

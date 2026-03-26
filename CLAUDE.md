@@ -45,6 +45,62 @@ nvm use && corepack enable && yarn install
 - **Constraint tie-breaker.** If rules conflict: correctness and security first, then scope/clarity (small PRs, small files), then reuse. Document the tradeoff in the spec.
 - **Linear issue descriptions are immutable after creation.** Never overwrite an issue description with `save_issue` to add updates, status notes, or context. Issue descriptions are the original scope set at creation time. All subsequent updates — status changes, progress notes, discovered context, blockers, decision records — go in **comments** via `save_comment`. The only valid use of `save_issue` on an existing issue is to change structured fields (status, priority, assignee, labels). If you need to correct a factual error in the description, add a comment explaining the correction rather than silently rewriting history.
 
+## Euclid Screen Migration Checklist
+
+When importing or wrapping a screen from `@selfxyz/euclid` in `packages/webview-app/`, complete **every** item before considering the screen done. Missing any of these causes silent runtime failures (blank animations, broken layouts, missing fonts).
+
+### 1. Assets — public directory
+
+Euclid screens reference assets by URL path (e.g., `/animations/app-tour-welcome.json`, `/backgrounds/dialogue-background.jpg`). These are **not** bundled by the package — the consuming app must serve them from its `public/` directory.
+
+- **Animations:** Check the Euclid screen source for Lottie URI constants or default props pointing to `/animations/*.json`. Copy the corresponding files from `selfxyz/euclid → packages/storybook/public/animations/` into `packages/webview-app/public/animations/`.
+- **Backgrounds:** Check for `/backgrounds/*` references. Copy from `selfxyz/euclid → packages/storybook/public/backgrounds/`.
+- **Fonts:** Verify `packages/webview-app/public/fonts/` has all typefaces used by the screen's Euclid components. Current set: Advercase-Regular, DINOT-Bold, DINOT-Medium, IBMPlexMono-Regular.
+- **Images:** Euclid components that import images from `../../assets/images/` are bundled via the build — no action needed. Only URL-path references (string literals starting with `/`) require `public/` copies.
+
+Run a quick grep to catch URL-path asset references you might miss:
+
+```bash
+grep -rE "'/[a-z].*\.(json|jpg|png|svg)'" packages/webview-app/node_modules/@selfxyz/euclid/src/screens/<screen-path>/
+```
+
+**Downloading assets from the euclid repo:** The `selfxyz/euclid` repo is private. Use `gh api` to download files. The GitHub contents API silently returns empty content for files >1 MB. For any asset that may be large (Lottie animations, images), always use the **git blob API**:
+
+```bash
+# Step 1: get the file's SHA
+sha=$(gh api repos/selfxyz/euclid/contents/<path> --jq '.sha')
+
+# Step 2: download via blob (handles files up to 100 MB)
+gh api repos/selfxyz/euclid/git/blobs/$sha --jq '.content' | base64 -d > <filename>
+```
+
+After downloading, always verify file sizes are non-zero (`wc -c <file>`). A 0-byte or 14-byte file means the download silently failed.
+
+**Asset locations:**
+
+| Asset type  | Euclid source                                             | Local destination                          |
+| ----------- | --------------------------------------------------------- | ------------------------------------------ |
+| Animations  | `selfxyz/euclid → packages/storybook/public/animations/`  | `packages/webview-app/public/animations/`  |
+| Backgrounds | `selfxyz/euclid → packages/storybook/public/backgrounds/` | `packages/webview-app/public/backgrounds/` |
+| Fonts       | Already in place                                          | `packages/webview-app/public/fonts/`       |
+| Images      | Bundled via imports (no action needed)                    | N/A                                        |
+
+### 2. Safe area insets
+
+Every Euclid screen that accepts a `SafeArea` / `insets` prop **must** receive `WEB_SAFE_AREA` (from `src/utils/insets.ts`). Missing insets cause content to render under notches or flush against edges.
+
+- Full-screen Euclid components (e.g., `LaunchTour*Screen`, `IDTypeScreen`, `CountryPickerScreen`): spread `{...WEB_SAFE_AREA}` as a prop.
+- Composite Euclid components used inside custom layouts (e.g., `StatusState`, `ProofRequestScreen`): check whether the parent layout already handles padding. If the Euclid component accepts `insets`, pass them.
+
+### 3. Validation
+
+After wiring the screen, visually verify in the browser dev server (`yarn dev` in `packages/webview-app/`):
+
+- Lottie animations play (not blank/black or a static dot).
+- Background images load (not a solid color fallback).
+- Text renders in the correct typeface (not system fallback).
+- Content respects safe area padding (not clipped or flush).
+
 ## Specs & Planning
 
 **Every feature — even minor ones — needs a spec.** For SDK work (`packages/`, `webview-app`, `webview-bridge`), specs live in **both** the repo (`specs/`) and Linear. The repo spec is the canonical, version-controlled execution plan. The Linear issue is the tracking and discovery layer. For app-only or non-SDK work, a Linear issue with inline scope is sufficient — no repo spec required.

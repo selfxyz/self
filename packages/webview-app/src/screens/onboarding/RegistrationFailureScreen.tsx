@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { RegistrationFailureScreen as EuclidRegistrationFailureScreen } from '@selfxyz/euclid';
 
+import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
@@ -28,10 +29,13 @@ export const RegistrationFailureScreen: React.FC = () => {
   }, [analytics, haptic, navigate]);
 
   return (
-    <EuclidRegistrationFailureScreen
-      {...WEB_SAFE_AREA}
-      onDismiss={handleDismiss}
-      onTryDifferentMethod={handleTryDifferentMethod}
-    />
+    <>
+      <MockRegistrationFailureButton />
+      <EuclidRegistrationFailureScreen
+        {...WEB_SAFE_AREA}
+        onDismiss={handleDismiss}
+        onTryDifferentMethod={handleTryDifferentMethod}
+      />
+    </>
   );
 };

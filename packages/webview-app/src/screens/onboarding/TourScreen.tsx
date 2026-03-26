@@ -8,6 +8,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import { LaunchTour1Screen, LaunchTour2Screen, LaunchTour3Screen, LaunchTour4Screen } from '@selfxyz/euclid';
 
+import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const TourScreen: React.FC = () => {
@@ -25,13 +26,33 @@ export const TourScreen: React.FC = () => {
 
   switch (step) {
     case '1':
-      return <LaunchTour1Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
+      return (
+        <>
+          <MockRegistrationFailureButton />
+          <LaunchTour1Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />
+        </>
+      );
     case '2':
-      return <LaunchTour2Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
+      return (
+        <>
+          <MockRegistrationFailureButton />
+          <LaunchTour2Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />
+        </>
+      );
     case '3':
-      return <LaunchTour3Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
+      return (
+        <>
+          <MockRegistrationFailureButton />
+          <LaunchTour3Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />
+        </>
+      );
     case '4':
-      return <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onSkip={onNext} onRestore={onRestore} />;
+      return (
+        <>
+          <MockRegistrationFailureButton />
+          <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onSkip={onNext} onRestore={onRestore} />
+        </>
+      );
     default:
       return <Navigate to="/onboarding/tour/1" replace />;
   }
