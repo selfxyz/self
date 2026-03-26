@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { createContext, useContext, useMemo } from 'react';
+import type React from 'react';
+import { createContext, useContext, useMemo } from 'react';
+
 import type { ParsedVerificationRequestContext } from '../utils/verificationRequest';
 import { parseVerificationRequestContext } from '../utils/verificationRequest';
 
@@ -10,23 +12,18 @@ export type VerificationRequestContext = ParsedVerificationRequestContext;
 
 const Ctx = createContext<VerificationRequestContext | null>(null);
 
-export function useVerificationRequest(): VerificationRequestContext {
-  const ctx = useContext(Ctx);
-  if (!ctx) {
-    throw new Error(
-      'useVerificationRequest must be used within a VerificationRequestProvider',
-    );
-  }
-  return ctx;
-}
-
 export const VerificationRequestProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const value = useMemo(
-    () => parseVerificationRequestContext(window.location.search),
-    [],
-  );
+  const value = useMemo(() => parseVerificationRequestContext(window.location.search), []);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };
+
+export function useVerificationRequest(): VerificationRequestContext {
+  const ctx = useContext(Ctx);
+  if (!ctx) {
+    throw new Error('useVerificationRequest must be used within a VerificationRequestProvider');
+  }
+  return ctx;
+}

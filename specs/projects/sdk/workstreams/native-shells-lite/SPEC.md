@@ -167,10 +167,10 @@ The host never sees raw KYC provider output. The WebView normalizes provider res
 
 ## Related Specs
 
-| Spec                                                       | Relationship                                        |
-| ---------------------------------------------------------- | --------------------------------------------------- |
-| [SDK Overview](../../OVERVIEW.md)                          | Parent architecture                                 |
+| Spec                                                       | Relationship                                           |
+| ---------------------------------------------------------- | ------------------------------------------------------ |
+| [SDK Overview](../../OVERVIEW.md)                          | Parent architecture                                    |
 | [WebView Spec](../webview/SPEC.md)                         | Sibling — owns KYC provider integration and WebView UX |
-| [SDK Core Spec](../sdk-core/SPEC.md)                       | Sibling — owns mobile-sdk-alpha engine              |
-| [Build Pipeline Spec](../build-pipeline/SPEC.md)           | Downstream — bundles webview-app into native shells |
-| [Paused Native Shells](../../paused/native-shells/SPEC.md) | Predecessor — KMP-based, now deprecated             |
+| [SDK Core Spec](../sdk-core/SPEC.md)                       | Sibling — owns mobile-sdk-alpha engine                 |
+| [Build Pipeline Spec](../build-pipeline/SPEC.md)           | Downstream — bundles webview-app into native shells    |
+| [Paused Native Shells](../../paused/native-shells/SPEC.md) | Predecessor — KMP-based, now deprecated                |

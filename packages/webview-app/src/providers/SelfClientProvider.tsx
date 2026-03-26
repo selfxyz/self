@@ -2,25 +2,27 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
+import type React from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { SelfClient } from '@selfxyz/mobile-sdk-alpha/browser';
-import { createSelfClient, createListenersMap } from '@selfxyz/mobile-sdk-alpha/browser';
-import {
-  createSdkAdapters,
-  createKeychainDocumentsAdapter,
-  bridgeLifecycleAdapter,
-  bridgeHapticAdapter,
-  bridgeBiometricsAdapter,
-  consoleAnalyticsAdapter,
-} from '@selfxyz/webview-bridge/adapters';
+
+import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha/browser';
+import { createListenersMap, createSelfClient } from '@selfxyz/mobile-sdk-alpha/browser';
 import type {
-  BridgeLifecycleAdapter,
-  BridgeHapticAdapter,
-  BridgeBiometricsAdapter,
   BridgeAnalyticsAdapter,
+  BridgeBiometricsAdapter,
+  BridgeHapticAdapter,
+  BridgeLifecycleAdapter,
 } from '@selfxyz/webview-bridge/adapters';
-import type { DocumentsAdapter } from '@selfxyz/mobile-sdk-alpha/browser';
+import {
+  bridgeBiometricsAdapter,
+  bridgeHapticAdapter,
+  bridgeLifecycleAdapter,
+  consoleAnalyticsAdapter,
+  createKeychainDocumentsAdapter,
+  createSdkAdapters,
+} from '@selfxyz/webview-bridge/adapters';
+
 import { useBridge } from './BridgeProvider';
 import { useVerificationRequest } from './VerificationRequestProvider';
 
@@ -35,23 +37,15 @@ export interface WebViewAdapters {
 
 const SelfClientContext = createContext<WebViewAdapters | null>(null);
 
-export function useSelfClient(): WebViewAdapters {
-  const adapters = useContext(SelfClientContext);
-  if (!adapters) {
-    throw new Error('useSelfClient must be used within a SelfClientProvider');
-  }
-  return adapters;
-}
-
-export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const bridge = useBridge();
   const navigate = useNavigate();
   const { verificationId } = useVerificationRequest();
 
   const navigateRef = useRef(navigate);
-  useEffect(() => { navigateRef.current = navigate; }, [navigate]);
+  useEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
 
   const stableNavigate = useCallback((path: string) => navigateRef.current(path), []);
   const stableGoBack = useCallback(() => navigateRef.current(-1), []);
@@ -96,9 +90,7 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
     ) {
       return;
     }
-    webViewAdapters.lifecycle.ready(
-      verificationId ? { verificationId } : {},
-    );
+    webViewAdapters.lifecycle.ready(verificationId ? { verificationId } : {});
     lastReadyRef.current = { lifecycle: webViewAdapters.lifecycle, verificationId };
   }, [webViewAdapters.lifecycle, verificationId]);
 
@@ -108,9 +100,13 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, [bridge, navigate]);
 
-  return (
-    <SelfClientContext.Provider value={webViewAdapters}>
-      {children}
-    </SelfClientContext.Provider>
-  );
+  return <SelfClientContext.Provider value={webViewAdapters}>{children}</SelfClientContext.Provider>;
 };
+
+export function useSelfClient(): WebViewAdapters {
+  const adapters = useContext(SelfClientContext);
+  if (!adapters) {
+    throw new Error('useSelfClient must be used within a SelfClientProvider');
+  }
+  return adapters;
+}

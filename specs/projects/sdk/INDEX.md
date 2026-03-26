@@ -12,12 +12,12 @@ Status: Active (WebView-first, current pass is mock-first UI migration)
 
 ## Active Workstreams
 
-| Workstream           | Entry                                                               | Focus                                         |
-| -------------------- | ------------------------------------------------------------------- | --------------------------------------------- |
+| Workstream           | Entry                                                               | Focus                                                 |
+| -------------------- | ------------------------------------------------------------------- | ----------------------------------------------------- |
 | WebView UI           | [WebView Index](./workstreams/webview/INDEX.md)                     | Euclid screen migration, mocked flows, route coverage |
-| SDK Core             | [SDK Core Spec](./workstreams/sdk-core/SPEC.md)                     | Browser-portable engine                       |
-| Native Shells (Lite) | [Native Shells Lite Spec](./workstreams/native-shells-lite/SPEC.md) | Future Kotlin + Swift shell follow-up         |
-| Build Pipeline       | [Build Pipeline Spec](./workstreams/build-pipeline/SPEC.md)         | Bundle webview-app into native shells         |
+| SDK Core             | [SDK Core Spec](./workstreams/sdk-core/SPEC.md)                     | Browser-portable engine                               |
+| Native Shells (Lite) | [Native Shells Lite Spec](./workstreams/native-shells-lite/SPEC.md) | Future Kotlin + Swift shell follow-up                 |
+| Build Pipeline       | [Build Pipeline Spec](./workstreams/build-pipeline/SPEC.md)         | Bundle webview-app into native shells                 |
 
 ## Paused Workstreams
 

@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type { DocumentCatalog, DocumentsAdapter, IDDocument } from '@selfxyz/mobile-sdk-alpha/browser';
+
 import type { WebViewBridge } from '../bridge';
-import type { DocumentsAdapter, DocumentCatalog, IDDocument } from '@selfxyz/mobile-sdk-alpha/browser';
 
 const CATALOG_KEY = 'self_document_catalog';
 const DOC_PREFIX = 'self_doc_';
@@ -19,9 +20,7 @@ function safeParse<T>(raw: string, fallback: T): T {
 
 export function createKeychainDocumentsAdapter(bridge: WebViewBridge): DocumentsAdapter {
   async function storageGet(key: string): Promise<string | null> {
-    const result = await bridge.request<{ value: string | null }>(
-      'secureStorage', 'get', { key },
-    );
+    const result = await bridge.request<{ value: string | null }>('secureStorage', 'get', { key });
     return result?.value ?? null;
   }
 

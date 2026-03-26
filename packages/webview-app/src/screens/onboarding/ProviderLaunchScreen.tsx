@@ -2,17 +2,16 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Button, Title, Description, colors, spacing } from '@selfxyz/euclid';
+
+import { Button, colors, Description, spacing, Title } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
-import {
-  fetchSumsubAccessToken,
-  launchSumsubWebSdk,
-} from '../../utils/sumsubProvider';
+import { fetchSumsubAccessToken, launchSumsubWebSdk } from '../../utils/sumsubProvider';
 
 const CONTAINER_ID = 'sumsub-websdk-container';
 
@@ -33,9 +32,7 @@ export const ProviderLaunchScreen: React.FC = () => {
   const verificationId = ctxVerificationId;
 
   const [phase, setPhase] = useState<Phase>(!verificationId ? 'error' : 'loading');
-  const [errorMessage, setErrorMessage] = useState(
-    !verificationId ? 'Missing verification context' : '',
-  );
+  const [errorMessage, setErrorMessage] = useState(!verificationId ? 'Missing verification context' : '');
   const [retryCount, setRetryCount] = useState(0);
   const destroyRef = useRef<(() => void) | null>(null);
   const mountedRef = useRef(true);
@@ -114,8 +111,7 @@ export const ProviderLaunchScreen: React.FC = () => {
         setPhase('active');
       } catch (err) {
         if (cancelled) return;
-        const message =
-          err instanceof Error ? err.message : 'Failed to launch provider';
+        const message = err instanceof Error ? err.message : 'Failed to launch provider';
         analytics.trackEvent('provider_launch_failed', { error: message });
         setPhase('error');
         setErrorMessage(message);
@@ -129,15 +125,7 @@ export const ProviderLaunchScreen: React.FC = () => {
       destroyRef.current?.();
       destroyRef.current = null;
     };
-  }, [
-    analytics,
-    countryCode,
-    documentType,
-    handleComplete,
-    handleError,
-    verificationId,
-    retryCount,
-  ]);
+  }, [analytics, countryCode, documentType, handleComplete, handleError, verificationId, retryCount]);
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');
@@ -158,7 +146,7 @@ export const ProviderLaunchScreen: React.FC = () => {
     analytics.trackEvent('provider_launch_retry_pressed');
     setPhase('loading');
     setErrorMessage('');
-    setRetryCount((c) => c + 1);
+    setRetryCount(c => c + 1);
   }, [haptic, analytics]);
 
   if (phase === 'error') {
@@ -197,18 +185,8 @@ export const ProviderLaunchScreen: React.FC = () => {
               gap: spacing.sm,
             }}
           >
-            <Button
-              variant="secondary-label"
-              text="Try Again"
-              fullWidth
-              onPress={handleRetry}
-            />
-            <Button
-              variant="secondary-label"
-              text="Back"
-              fullWidth
-              onPress={handleBack}
-            />
+            <Button variant="secondary-label" text="Try Again" fullWidth onPress={handleRetry} />
+            <Button variant="secondary-label" text="Back" fullWidth onPress={handleBack} />
           </div>
         </div>
       </div>

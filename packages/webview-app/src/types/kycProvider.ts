@@ -2,14 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-export type KycProviderErrorCode =
-  | 'provider_cancelled'
-  | 'provider_timeout'
-  | 'provider_rejected'
-  | 'provider_missing_attestation'
-  | 'provider_unavailable'
-  | 'provider_protocol_error'
-  | 'provider_unknown_error';
+export interface KycProviderAttestation {
+  serializedApplicantInfo: string;
+  signature: string;
+  pubkey: [string, string];
+}
 
 export interface KycProviderError {
   code: KycProviderErrorCode;
@@ -18,13 +15,14 @@ export interface KycProviderError {
   providerCode?: string;
 }
 
-export interface KycProviderAttestation {
-  serializedApplicantInfo: string;
-  signature: string;
-  pubkey: [string, string];
-}
-
-export type KycProviderStatus = 'success' | 'partial' | 'cancel' | 'error';
+export type KycProviderErrorCode =
+  | 'provider_cancelled'
+  | 'provider_timeout'
+  | 'provider_rejected'
+  | 'provider_missing_attestation'
+  | 'provider_unavailable'
+  | 'provider_protocol_error'
+  | 'provider_unknown_error';
 
 export interface KycProviderResult {
   status: KycProviderStatus;
@@ -36,3 +34,5 @@ export interface KycProviderResult {
   attestation?: KycProviderAttestation;
   error?: KycProviderError;
 }
+
+export type KycProviderStatus = 'success' | 'partial' | 'cancel' | 'error';

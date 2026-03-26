@@ -42,11 +42,11 @@ These screens already exist in `selfxyz/self/packages/webview-app/src/screens/`.
 **Webview-only scaffold screens** (3 screens — no Euclid equivalent, created
 for the webview app):
 
-| Webview Screen                | Purpose                                                                    | Folder        |
-| ----------------------------- | -------------------------------------------------------------------------- | ------------- |
-| `ConfirmIdentificationScreen` | Confirm ID details before temporary mocked KYC handoff                     | `onboarding/` |
-| `ProviderLaunchScreen`        | Temporary mocked provider/KYC launch placeholder                           | `onboarding/` |
-| `ProviderResultScreen`        | Temporary mocked provider/KYC result handoff                               | `onboarding/` |
+| Webview Screen                | Purpose                                                | Folder        |
+| ----------------------------- | ------------------------------------------------------ | ------------- |
+| `ConfirmIdentificationScreen` | Confirm ID details before temporary mocked KYC handoff | `onboarding/` |
+| `ProviderLaunchScreen`        | Temporary mocked provider/KYC launch placeholder       | `onboarding/` |
+| `ProviderResultScreen`        | Temporary mocked provider/KYC result handoff           | `onboarding/` |
 
 **Tunnel flow screens** (PoC / demo flow from PR #1858 — not 3.0 production scope):
 
@@ -116,11 +116,11 @@ Self-owned EU ID flow is approved in a future spec.
 
 #### Registration Outcome (3 screens) — NOT YET MIGRATED
 
-| Screen                      | Key Components   | Purpose                     | Status |
-| --------------------------- | ---------------- | --------------------------- | ------ |
+| Screen                      | Key Components   | Purpose                             | Status |
+| --------------------------- | ---------------- | ----------------------------------- | ------ |
 | `ScanSuccessScreen`         | Success UI       | Registration completed mock success | Todo   |
-| `RegistrationFailureScreen` | Error UI, Button | Registration mock failure          | Todo   |
-| `KycFailureScreen`          | Error UI         | Generic KYC/provider mock failure  | Todo   |
+| `RegistrationFailureScreen` | Error UI, Button | Registration mock failure           | Todo   |
+| `KycFailureScreen`          | Error UI         | Generic KYC/provider mock failure   | Todo   |
 
 Note: Screen naming for this migration should follow the generic KYC naming in
 Euclid `1.2.3`, not older provider-specific labels.
@@ -165,10 +165,10 @@ Euclid `1.2.3`, not older provider-specific labels.
 
 #### KYC Verification (2 screens) — NOT YET MIGRATED
 
-| Screen                            | Key Components | Purpose                         | Status |
-| --------------------------------- | -------------- | ------------------------------- | ------ |
-| `KycPendingScreen` | Loading UI | Waiting for KYC verification | Todo   |
-| `KycSuccessScreen` | Success UI | KYC verification passed      | Todo   |
+| Screen             | Key Components | Purpose                      | Status |
+| ------------------ | -------------- | ---------------------------- | ------ |
+| `KycPendingScreen` | Loading UI     | Waiting for KYC verification | Todo   |
+| `KycSuccessScreen` | Success UI     | KYC verification passed      | Todo   |
 
 Related: provider contract work remains in `WV-05` and `WV-06`, but the current
 screen-migration pass should use provider-agnostic `Kyc` naming.
