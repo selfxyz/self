@@ -9,8 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { LeftArrowIcon, RecoverySuccessScreen as EuclidRecoverySuccessScreen, SelfLogo } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
-
-const insets = { top: 0, bottom: 0 };
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const RecoverySuccessScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -24,7 +23,7 @@ export const RecoverySuccessScreen: React.FC = () => {
 
   return (
     <EuclidRecoverySuccessScreen
-      insets={insets}
+      insets={WEB_SAFE_AREA.insets}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       logo={<SelfLogo size={64} />}
       onClose={onClose}

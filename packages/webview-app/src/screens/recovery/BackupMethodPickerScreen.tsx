@@ -15,8 +15,7 @@ import {
 } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
-
-const insets = { top: 0, bottom: 0 };
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const BackupMethodPickerScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -41,7 +40,7 @@ export const BackupMethodPickerScreen: React.FC = () => {
 
   return (
     <EuclidBackupMethodPickerScreen
-      insets={insets}
+      insets={WEB_SAFE_AREA.insets}
       title="Back up your account"
       description="Choose how you'd like to secure your identity data. You can always change this later."
       subtitle="Backup"

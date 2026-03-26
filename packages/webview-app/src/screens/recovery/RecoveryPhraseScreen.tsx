@@ -10,8 +10,7 @@ import type { RecoveryPhraseVariant } from '@selfxyz/euclid';
 import { RecoveryPhraseScreen as EuclidRecoveryPhraseScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
-
-const insets = { top: 0, bottom: 0 };
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const MOCK_WORDS = [
   'abandon',
@@ -63,7 +62,7 @@ export const RecoveryPhraseScreen: React.FC = () => {
 
   return (
     <EuclidRecoveryPhraseScreen
-      insets={insets}
+      insets={WEB_SAFE_AREA.insets}
       words={MOCK_WORDS}
       variant={variant}
       onBack={onBack}

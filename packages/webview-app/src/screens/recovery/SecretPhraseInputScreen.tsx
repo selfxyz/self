@@ -9,8 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { LeftArrowIcon, SecretPhraseInputScreen as EuclidSecretPhraseInputScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
-
-const insets = { top: 0, bottom: 0 };
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 // BIP-39 word list subset for validation (mock — real list would come from SDK)
 const VALID_WORDS = new Set([
@@ -60,7 +59,7 @@ export const SecretPhraseInputScreen: React.FC = () => {
 
   return (
     <EuclidSecretPhraseInputScreen
-      insets={insets}
+      insets={WEB_SAFE_AREA.insets}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       onBack={onBack}
       onSubmit={onSubmit}

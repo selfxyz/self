@@ -9,8 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { LaunchRecoveryScreen as EuclidLaunchRecoveryScreen, LeftArrowIcon } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
-
-const insets = { top: 0, bottom: 0 };
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const LaunchRecoveryScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -29,12 +28,13 @@ export const LaunchRecoveryScreen: React.FC = () => {
 
   return (
     <EuclidLaunchRecoveryScreen
-      insets={insets}
+      insets={WEB_SAFE_AREA.insets}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       onClose={onClose}
       onAppleBackup={() => navigate('/coming-soon')}
       onGoogleBackup={() => navigate('/coming-soon')}
       onEnterRecoveryPhrase={onEnterRecoveryPhrase}
+      backgroundImage="/backgrounds/dialogue-background.jpg"
     />
   );
 };
