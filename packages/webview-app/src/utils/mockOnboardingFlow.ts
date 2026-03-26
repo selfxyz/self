@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+// MOCK: This module provides mock provider results for the onboarding flow.
+// Remove once real KYC provider integration is wired (WV-05 / WV-06).
+
 import type { KycProviderResult } from '../types/kycProvider';
 
 export interface MockOnboardingNavigationState {
@@ -14,6 +17,7 @@ export interface MockOnboardingNavigationState {
 export type MockRegistrationOutcome = 'success' | 'kyc-failure' | 'registration-failure' | 'cancel';
 
 const DEFAULT_OUTCOME: MockRegistrationOutcome = 'success';
+const MOCKS_ENABLED = import.meta.env.DEV;
 
 export const createMockProviderResult = ({
   outcome,
@@ -72,6 +76,10 @@ export const createMockProviderResult = ({
 };
 
 export const getMockOutcomeFromSearch = (search: string): MockRegistrationOutcome => {
+  if (!MOCKS_ENABLED) {
+    return DEFAULT_OUTCOME;
+  }
+
   const value = new URLSearchParams(search).get('mock');
 
   switch (value) {
@@ -85,7 +93,8 @@ export const getMockOutcomeFromSearch = (search: string): MockRegistrationOutcom
   }
 };
 
-export const getMockOutcomeSearch = (outcome: MockRegistrationOutcome = DEFAULT_OUTCOME): string => `?mock=${outcome}`;
+export const getMockOutcomeSearch = (outcome: MockRegistrationOutcome = DEFAULT_OUTCOME): string =>
+  MOCKS_ENABLED ? `?mock=${outcome}` : '';
 
 export const getProviderPath = (outcome: MockRegistrationOutcome): string =>
   `/onboarding/provider${getMockOutcomeSearch(outcome)}`;

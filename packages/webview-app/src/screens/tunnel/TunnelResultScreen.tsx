@@ -16,11 +16,12 @@ export const TunnelResultScreen: React.FC = () => {
   }, [navigate]);
 
   return (
+    /* TODO: Animation is 160x160 (hardcoded in StatusState). Needs animationSize prop from Euclid to render larger. */
     <StatusState
       variant="success"
       title="Identity Verified"
       description="Your identity has been verified. You can now use Self ID to prove your identity to participating partners."
-      animationSource="/animations/proof-success-check.json"
+      animationSource="/animations/proof-success.json"
       loopAnimation={false}
       buttonText="Continue"
       onButtonPress={onContinue}

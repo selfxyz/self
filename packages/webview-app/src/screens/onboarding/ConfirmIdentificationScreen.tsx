@@ -18,7 +18,8 @@ export const ConfirmIdentificationScreen: React.FC = () => {
   const location = useLocation();
   const { analytics, haptic, lifecycle } = useSelfClient();
   const { request, verificationId } = useVerificationRequest();
-  const { nextPath } = (location.state as { nextPath?: string } | null) ?? {};
+  const { nextPath, countryCode, documentType } =
+    (location.state as { nextPath?: string; countryCode?: string; documentType?: string } | null) ?? {};
 
   useEffect(() => {
     haptic.trigger('success');
@@ -28,7 +29,7 @@ export const ConfirmIdentificationScreen: React.FC = () => {
     if (nextPath) {
       haptic.trigger('selection');
       analytics.trackEvent('ownership_confirmed', { nextPath });
-      navigate(nextPath, { replace: true });
+      navigate(nextPath, { replace: true, state: { countryCode, documentType } });
       return;
     }
 
@@ -52,16 +53,17 @@ export const ConfirmIdentificationScreen: React.FC = () => {
     }
 
     navigate('/');
-  }, [analytics, haptic, lifecycle, navigate, nextPath, request.userId, verificationId]);
+  }, [analytics, countryCode, documentType, haptic, lifecycle, navigate, nextPath, request.userId, verificationId]);
 
   return (
     <>
       <MockRegistrationFailureButton />
+      {/* TODO: Animation is 160x160 (hardcoded in StatusState). Needs animationSize prop from Euclid to render larger. */}
       <StatusState
         variant="success"
         title="Confirm your identity"
         description="By continuing, you certify that this passport, biometric ID or Aadhaar card belongs to you and is not stolen or forged. Once registered with Self, this document will be permanently linked to your identity and can't be linked to another one."
-        animationSource="/animations/proof-success-check.json"
+        animationSource="/animations/proof-success.json"
         loopAnimation={false}
         buttonText="Confirm"
         onButtonPress={onConfirm}

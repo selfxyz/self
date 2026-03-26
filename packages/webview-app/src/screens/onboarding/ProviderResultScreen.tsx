@@ -35,7 +35,11 @@ export const ProviderResultScreen: React.FC = () => {
       if (providerResult.status === 'success' || providerResult.status === 'partial') {
         navigate('/onboarding/confirm', {
           replace: true,
-          state: { nextPath: '/onboarding/success' },
+          state: {
+            nextPath: '/onboarding/success',
+            countryCode: state?.countryCode,
+            documentType: state?.documentType,
+          },
         });
         return;
       }

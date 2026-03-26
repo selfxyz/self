@@ -48,7 +48,7 @@ export const CountryPickerScreen: React.FC = () => {
         countries={countries}
         isLoading={false}
         onCountrySelect={onSelect}
-        onClose={() => navigate('/')}
+        onClose={() => navigate('/', { state: { skipOnboardingRedirect: true } })}
         renderFlag={renderFlag}
         getCountryName={getCountryName}
         searchValue={search}

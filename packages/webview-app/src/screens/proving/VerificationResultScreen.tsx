@@ -46,19 +46,22 @@ export const VerificationResultScreen: React.FC = () => {
   }, [analytics, haptic, lifecycle, navigate, result, resultSent]);
 
   return (
-    <StatusState
-      variant={success ? 'success' : 'fail'}
-      title={success ? 'ID Verified' : 'Verification Failed'}
-      description={
-        success
-          ? "Your document's information is now protected by Self ID. Just scan a participating partner's QR code to prove your identity."
-          : (error ?? 'Something went wrong during verification. Please try again.')
-      }
-      animationSource={success ? '/animations/proof-success-check.json' : undefined}
-      loopAnimation={false}
-      buttonText="Continue"
-      onButtonPress={onContinue}
-      icon={success ? undefined : <WarningOctagonIcon size={64} color={colors.red500} />}
-    />
+    <>
+      {/* TODO: Animation is 160x160 (hardcoded in StatusState). Needs animationSize prop from Euclid to render larger. */}
+      <StatusState
+        variant={success ? 'success' : 'fail'}
+        title={success ? 'ID Verified' : 'Verification Failed'}
+        description={
+          success
+            ? "Your document's information is now protected by Self ID. Just scan a participating partner's QR code to prove your identity."
+            : (error ?? 'Something went wrong during verification. Please try again.')
+        }
+        animationSource={success ? '/animations/proof-success.json' : undefined}
+        loopAnimation={false}
+        buttonText="Continue"
+        onButtonPress={onContinue}
+        icon={success ? undefined : <WarningOctagonIcon size={64} color={colors.red500} />}
+      />
+    </>
   );
 };

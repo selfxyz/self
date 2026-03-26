@@ -11,6 +11,8 @@ import { DevModeScreen as EuclidDevModeScreen, LeftArrowIcon } from '@selfxyz/eu
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+// MOCK: Remove mockDocumentStore import once real document persistence is wired (WV-06).
+import { mockDocumentStore } from '../../utils/mockDocumentStore';
 
 const ageOptions = ['18 or older', '21 or older', '25 or older', '30 or older'];
 const expiryOptions = ['1 year', '2 years', '5 years', '10 years'];
@@ -39,6 +41,7 @@ export const DevModeScreen: React.FC = () => {
   const onResetAllValues = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('dev_mode_reset');
+    mockDocumentStore.clear();
     setDocumentType('passport');
     setNationality('united states of america');
     setAgeIndex(1);
