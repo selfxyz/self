@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   HomeScreen as EuclidHomeScreen,
   GearIcon,
@@ -54,6 +54,7 @@ const docCategoryToTitle = (category: string): string => {
 
 export const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { documents, analytics, haptic } = useSelfClient();
   const [catalog, setCatalog] = useState<DocumentCatalog | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,11 +76,22 @@ export const HomeScreen: React.FC = () => {
 
   const hasDocuments = catalog && catalog.documents.length > 0;
   const firstDoc = hasDocuments ? catalog.documents[0] : undefined;
+  const skipOnboardingRedirect = Boolean(
+    (
+      location.state as { skipOnboardingRedirect?: boolean } | null
+    )?.skipOnboardingRedirect,
+  );
+
+  useEffect(() => {
+    if (!loading && !hasDocuments && !skipOnboardingRedirect) {
+      navigate('/onboarding/tour/1', { replace: true });
+    }
+  }, [hasDocuments, loading, navigate, skipOnboardingRedirect]);
 
   const onAddDocument = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('home_add_document_pressed');
-    navigate('/onboarding/country');
+    navigate('/onboarding/tour/1');
   }, [navigate, haptic, analytics]);
 
   const onSettings = useCallback(() => {
@@ -87,7 +99,7 @@ export const HomeScreen: React.FC = () => {
     navigate('/settings');
   }, [navigate, haptic]);
 
-  if (loading) {
+  if (loading || (!hasDocuments && !skipOnboardingRedirect)) {
     return (
       <div
         style={{

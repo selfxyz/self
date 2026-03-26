@@ -2,103 +2,124 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  StatusState,
-  CheckCircleIcon,
-  WarningOctagonIcon,
-  colors,
-} from '@selfxyz/euclid';
+import { Description, Title, colors, spacing } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
-
-const STATUS_CONFIG = {
-  success: {
-    variant: 'success' as const,
-    title: 'Verification Submitted',
-    description:
-      'Your identity documents have been submitted for verification. You can continue once the review is complete.',
-    buttonText: 'Continue',
-  },
-  partial: {
-    variant: 'success' as const,
-    title: 'Verification In Progress',
-    description:
-      'Your documents have been submitted and are under review. This may take a few minutes.',
-    buttonText: 'Continue',
-  },
-  cancel: {
-    variant: 'fail' as const,
-    title: 'Verification Cancelled',
-    description: 'You cancelled the verification process. You can try again when ready.',
-    buttonText: 'Go Back',
-  },
-  error: {
-    variant: 'fail' as const,
-    title: 'Verification Failed',
-    description: 'Something went wrong during verification. Please try again.',
-    buttonText: 'Try Again',
-  },
-};
+import type { MockOnboardingNavigationState } from '../../utils/mockOnboardingFlow';
+import {
+  createMockProviderResult,
+  getMockOutcomeFromSearch,
+} from '../../utils/mockOnboardingFlow';
 
 export const ProviderResultScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, haptic, lifecycle } = useSelfClient();
+  const mockOutcome = getMockOutcomeFromSearch(location.search);
+  const state =
+    (location.state as
+      | ({ providerResult?: KycProviderResult } & MockOnboardingNavigationState)
+      | null) ?? null;
 
-  const { providerResult } =
-    (location.state as { providerResult?: KycProviderResult }) || {};
+  const providerResult =
+    state?.providerResult ??
+    createMockProviderResult({ outcome: mockOutcome });
 
-  const status = providerResult?.status ?? 'error';
-  const config =
-    STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.error;
-  const isSuccess = status === 'success' || status === 'partial';
-
-  const description =
-    status === 'error' && providerResult?.error?.message
-      ? providerResult.error.message
-      : config.description;
-
-  const onButtonPress = useCallback(() => {
+  useEffect(() => {
     haptic.trigger('selection');
-    analytics.trackEvent('provider_result_action_pressed', { status });
+    analytics.trackEvent('provider_result_received', {
+      status: providerResult.status,
+      mockOutcome,
+    });
 
-    if (status === 'cancel') {
-      lifecycle.dismiss({ reason: 'back' });
-      navigate('/');
-      return;
-    }
-
-    if (status === 'error') {
-      const retryable = providerResult?.error?.retryable !== false;
-      if (retryable) {
-        navigate(-1);
-      } else {
-        lifecycle.dismiss({ reason: 'back' });
-        navigate('/');
+    const timer = window.setTimeout(() => {
+      if (providerResult.status === 'success' || providerResult.status === 'partial') {
+        navigate('/onboarding/confirm', {
+          replace: true,
+          state: { nextPath: '/onboarding/success' },
+        });
+        return;
       }
-      return;
-    }
 
-    navigate('/proving');
-  }, [analytics, haptic, lifecycle, navigate, providerResult, status]);
+      if (providerResult.status === 'cancel') {
+        lifecycle.dismiss({ reason: 'back' });
+        if (window.history.length > 1) {
+          navigate(-1);
+        } else {
+          navigate('/', {
+            replace: true,
+            state: { skipOnboardingRedirect: true },
+          });
+        }
+        return;
+      }
+
+      if (providerResult.error?.retryable !== false) {
+        navigate('/onboarding/kyc-failure', {
+          replace: true,
+          state: {
+            countryCode: state?.countryCode,
+            documentType: state?.documentType,
+            retryMockOutcome: 'success',
+          },
+        });
+        return;
+      }
+
+      navigate('/onboarding/failure', { replace: true });
+    }, 450);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    analytics,
+    haptic,
+    lifecycle,
+    mockOutcome,
+    navigate,
+    providerResult.error?.retryable,
+    providerResult.status,
+    state?.countryCode,
+    state?.documentType,
+  ]);
 
   return (
-    <StatusState
-      variant={config.variant}
-      title={config.title}
-      description={description}
-      buttonText={config.buttonText}
-      onButtonPress={onButtonPress}
-      icon={
-        isSuccess ? (
-          <CheckCircleIcon size={64} color={colors.green500} />
-        ) : (
-          <WarningOctagonIcon size={64} color={colors.red500} />
-        )
-      }
-    />
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.white,
+        padding: spacing.lg,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: spacing.md,
+          maxWidth: 420,
+        }}
+      >
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            border: `3px solid ${colors.slate300}`,
+            borderTopColor: colors.black,
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+          }}
+        />
+        <Title textAlign="center">Processing verification result</Title>
+        <Description textAlign="center">
+          Routing your mocked provider outcome to the next registration step.
+        </Description>
+      </div>
+    </div>
   );
 };

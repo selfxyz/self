@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@selfxyz/euclid": "^1.2.0",
-    "@selfxyz/euclid-core": "^1.2.0",
+    "@selfxyz/euclid": "1.2.3",
+    "@selfxyz/euclid-core": "1.2.3",
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
     "@selfxyz/webview-bridge": "workspace:^",
     "@sumsub/websdk": "^2.0.0",

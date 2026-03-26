@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { StatusState, CheckCircleIcon, colors } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
@@ -12,14 +12,24 @@ import { useVerificationRequest } from '../../providers/VerificationRequestProvi
 
 export const ConfirmIdentificationScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { analytics, haptic, lifecycle } = useSelfClient();
   const { request, verificationId } = useVerificationRequest();
+  const { nextPath } =
+    (location.state as { nextPath?: string } | null) ?? {};
 
   useEffect(() => {
     haptic.trigger('success');
   }, [haptic]);
 
   const onConfirm = useCallback(async () => {
+    if (nextPath) {
+      haptic.trigger('selection');
+      analytics.trackEvent('ownership_confirmed', { nextPath });
+      navigate(nextPath, { replace: true });
+      return;
+    }
+
     const result: VerificationResult = {
       success: true,
       userId: request.userId,
@@ -40,7 +50,7 @@ export const ConfirmIdentificationScreen: React.FC = () => {
     }
 
     navigate('/');
-  }, [analytics, haptic, lifecycle, navigate, request.userId, verificationId]);
+  }, [analytics, haptic, lifecycle, navigate, nextPath, request.userId, verificationId]);
 
   return (
     <StatusState

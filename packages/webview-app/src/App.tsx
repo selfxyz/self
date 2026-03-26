@@ -6,11 +6,15 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { SelfClientProvider } from './providers/SelfClientProvider';
 import { VerificationRequestProvider } from './providers/VerificationRequestProvider';
+import { TourScreen } from './screens/onboarding/TourScreen';
 import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
 import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
 import { ConfirmIdentificationScreen } from './screens/onboarding/ConfirmIdentificationScreen';
 import { ProviderLaunchScreen } from './screens/onboarding/ProviderLaunchScreen';
 import { ProviderResultScreen } from './screens/onboarding/ProviderResultScreen';
+import { ScanSuccessScreen } from './screens/onboarding/ScanSuccessScreen';
+import { RegistrationFailureScreen } from './screens/onboarding/RegistrationFailureScreen';
+import { KycFailureScreen } from './screens/onboarding/KycFailureScreen';
 import { HomeScreen } from './screens/home/HomeScreen';
 import { ProvingScreen } from './screens/proving/ProvingScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
@@ -19,7 +23,7 @@ import { SecurityScreen } from './screens/account/SecurityScreen';
 import { NotificationPreferencesScreen } from './screens/account/NotificationPreferencesScreen';
 import { DevModeScreen } from './screens/account/DevModeScreen';
 import { ComingSoonScreen } from './screens/ComingSoonScreen';
-import { TourScreen } from './screens/tunnel/TourScreen';
+import { TourScreen as TunnelTourScreen } from './screens/tunnel/TourScreen';
 import { KycMockScreen } from './screens/tunnel/KycMockScreen';
 import { TunnelCountryPickerScreen } from './screens/tunnel/TunnelCountryPickerScreen';
 import { TunnelIDTypeScreen } from './screens/tunnel/TunnelIDTypeScreen';
@@ -33,6 +37,7 @@ export const App: React.FC = () => (
       <SelfClientProvider>
         <Routes>
           <Route path="/" element={<HomeScreen />} />
+          <Route path="/onboarding/tour/:step" element={<TourScreen />} />
           <Route path="/onboarding/country" element={<CountryPickerScreen />} />
           <Route path="/onboarding/id-type" element={<IDSelectionScreen />} />
           <Route
@@ -47,6 +52,15 @@ export const App: React.FC = () => (
             path="/onboarding/confirm"
             element={<ConfirmIdentificationScreen />}
           />
+          <Route path="/onboarding/success" element={<ScanSuccessScreen />} />
+          <Route
+            path="/onboarding/failure"
+            element={<RegistrationFailureScreen />}
+          />
+          <Route
+            path="/onboarding/kyc-failure"
+            element={<KycFailureScreen />}
+          />
           <Route path="/proving" element={<ProvingScreen />} />
           <Route path="/proving/result" element={<VerificationResultScreen />} />
           <Route path="/settings" element={<SettingsScreen />} />
@@ -58,7 +72,7 @@ export const App: React.FC = () => (
             element={<VerificationResultScreen />}
           />
           <Route path="/coming-soon" element={<ComingSoonScreen />} />
-          <Route path="/tunnel/tour/:step" element={<TourScreen />} />
+          <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
           <Route path="/tunnel/kyc" element={<KycMockScreen />} />
           <Route path="/tunnel/registration/country" element={<TunnelCountryPickerScreen />} />
           <Route path="/tunnel/registration/id-type" element={<TunnelIDTypeScreen />} />

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IDTypeScreen } from '@selfxyz/euclid';
 import type { IDType } from '@selfxyz/euclid';
@@ -47,6 +47,16 @@ export const IDSelectionScreen: React.FC = () => {
       countryCode?: string;
       documentTypes?: string[];
     }) || {};
+
+  useEffect(() => {
+    if (!countryCode || documentTypes.length === 0) {
+      navigate('/onboarding/country', { replace: true });
+    }
+  }, [countryCode, documentTypes.length, navigate]);
+
+  if (!countryCode || documentTypes.length === 0) {
+    return null;
+  }
 
   const idTypes = documentTypes.map(docTypeToIDType);
 
