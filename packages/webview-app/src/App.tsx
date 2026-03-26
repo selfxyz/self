@@ -46,7 +46,9 @@ export const App: React.FC = () => (
           <Route path="/settings/security" element={<SecurityScreen />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesScreen />} />
           <Route path="/settings/dev-mode" element={<DevModeScreen />} />
-          <Route path="/debug/keychain" element={<KeychainDebugScreen />} />
+          {import.meta.env.DEV && (
+            <Route path="/debug/keychain" element={<KeychainDebugScreen />} />
+          )}
           <Route path="/account/verified" element={<VerificationResultScreen />} />
           <Route path="/coming-soon" element={<ComingSoonScreen />} />
           <Route path="/tunnel/tour/:step" element={<TourScreen />} />

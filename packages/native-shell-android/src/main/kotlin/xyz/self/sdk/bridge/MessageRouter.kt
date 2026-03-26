@@ -26,7 +26,7 @@ class MessageRouter(
         val request = try {
             json.decodeFromString<BridgeRequest>(rawJson)
         } catch (e: Exception) {
-            android.util.Log.e("BridgeRouter", "Failed to decode request: ${e.message}")
+            android.util.Log.e("BridgeRouter", "Failed to decode request: ${e::class.simpleName}")
             return
         }
         android.util.Log.d("BridgeRouter", "Received: domain=${request.domain} method=${request.method}")

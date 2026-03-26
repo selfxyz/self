@@ -86,6 +86,27 @@ export const DevModeScreen: React.FC = () => {
         onResetAllValues={onResetAllValues}
         onGenerateMockDocument={onGenerateMockDocument}
       />
+      {import.meta.env.DEV && (
+        <button
+          onClick={() => navigate('/debug/keychain')}
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            padding: '10px 18px',
+            borderRadius: 8,
+            border: 'none',
+            backgroundColor: '#7c8aff',
+            color: '#fff',
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: 'pointer',
+            zIndex: 100,
+          }}
+        >
+          Keychain Debug
+        </button>
+      )}
     </>
   );
 };
