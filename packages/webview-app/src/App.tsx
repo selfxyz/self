@@ -12,6 +12,7 @@ import { NotificationPreferencesScreen } from './screens/account/NotificationPre
 import { SecurityScreen } from './screens/account/SecurityScreen';
 import { SettingsScreen } from './screens/account/SettingsScreen';
 import { ComingSoonScreen } from './screens/ComingSoonScreen';
+import { KeychainDebugScreen } from './screens/debug/KeychainDebugScreen';
 import { HomeScreen } from './screens/home/HomeScreen';
 import { ConfirmIdentificationScreen } from './screens/onboarding/ConfirmIdentificationScreen';
 import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
@@ -53,6 +54,7 @@ export const App: React.FC = () => (
           <Route path="/settings/security" element={<SecurityScreen />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesScreen />} />
           <Route path="/settings/dev-mode" element={<DevModeScreen />} />
+          {import.meta.env.DEV && <Route path="/debug/keychain" element={<KeychainDebugScreen />} />}
           <Route path="/account/verified" element={<VerificationResultScreen />} />
           <Route path="/coming-soon" element={<ComingSoonScreen />} />
           <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
