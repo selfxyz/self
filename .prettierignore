@@ -10,5 +10,6 @@ circuits/build/**
 contracts/artifacts/**
 contracts/cache/**
 contracts/typechain-types/**
+packages/webview-app/public/animations/**
 .nvmrc
 .watchmanconfig

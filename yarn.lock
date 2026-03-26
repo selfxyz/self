@@ -10670,12 +10670,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/euclid-core@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@selfxyz/euclid-core@npm:1.2.0"
+"@selfxyz/euclid-core@npm:1.2.6, @selfxyz/euclid-core@npm:^1.2.6":
+  version: 1.2.6
+  resolution: "@selfxyz/euclid-core@npm:1.2.6"
   peerDependencies:
     react: ">=18.2.0"
-  checksum: 10c0/198bcbd21e674a67ac801eb2b5f6a56cb08ae9fd09904deda78f07999540d3a7ccbfffa56599ab4ced2d8204732d2d7576d63eb14983a076223b546cef31e4b0
+  checksum: 10c0/0496da70a4eb5e3b7bbae51f2379f8080ed21950eac6e09c3ad9a39020399ef0a7065798d626e86ac187a34ee40c04e0bac1d8186aa1507900c83b667ac6816a
+  languageName: node
+  linkType: hard
+
+"@selfxyz/euclid@npm:1.2.6":
+  version: 1.2.6
+  resolution: "@selfxyz/euclid@npm:1.2.6"
+  dependencies:
+    "@lottiefiles/dotlottie-react": "npm:^0.18.4"
+    "@selfxyz/euclid-core": "npm:^1.2.6"
+    lottie-react: "npm:^2.4.1"
+  peerDependencies:
+    react: ">=18.2.0"
+    react-dom: ">=18.2.0"
+  checksum: 10c0/af56ea1abc20645dbe58f29d062ab4e2686f626de92fb5626cfbe7971b4ec31926edf8e0d598dd173a4f1b9749e6ccf690e3189e7694178e2653a2ddff195f4d
   languageName: node
   linkType: hard
 
@@ -10689,20 +10703,6 @@ __metadata:
     react-native-svg: ">=15.14.0"
     react-native-webview: ^13.16.0
   checksum: 10c0/8e62c3c01a439f82de5327af45bd55acb741fbc99c9c87ec6726a37b8bccd6ce0a6bef507aaa906be242c8df22e424dc8e32b93a8e9365bbd07e10ecfe65427b
-  languageName: node
-  linkType: hard
-
-"@selfxyz/euclid@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@selfxyz/euclid@npm:1.2.0"
-  dependencies:
-    "@lottiefiles/dotlottie-react": "npm:^0.18.4"
-    "@selfxyz/euclid-core": "npm:^1.2.0"
-    lottie-react: "npm:^2.4.1"
-  peerDependencies:
-    react: ">=18.2.0"
-    react-dom: ">=18.2.0"
-  checksum: 10c0/73e50bcf8540c0f2d91e3b232016c90f1019587acf24a79d9fd0e1d07cfb977aae5336972769bc824eade8ea02e02b3e583906cffa11853b389a7e2b20a34e58
   languageName: node
   linkType: hard
 
@@ -11146,8 +11146,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/webview-app@workspace:packages/webview-app"
   dependencies:
-    "@selfxyz/euclid": "npm:^1.2.0"
-    "@selfxyz/euclid-core": "npm:^1.2.0"
+    "@selfxyz/euclid": "npm:1.2.6"
+    "@selfxyz/euclid-core": "npm:1.2.6"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@selfxyz/webview-bridge": "workspace:^"
     "@sumsub/websdk": "npm:^2.0.0"

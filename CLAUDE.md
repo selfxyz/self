@@ -120,5 +120,6 @@ yarn lint && yarn types && yarn build
 ## Workspace-Specific Instructions
 
 - `app/AGENTS.md` — Mobile app development, E2E testing, deployment
+- `packages/webview-app/AGENTS.md` — WebView app development, Euclid screen migration, asset management
 - `packages/mobile-sdk-alpha/AGENTS.md` — SDK development, testing guidelines
 - `noir/AGENTS.md` — Noir circuit development

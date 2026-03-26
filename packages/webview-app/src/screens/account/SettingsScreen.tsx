@@ -19,6 +19,7 @@ import {
 } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const SettingsScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export const SettingsScreen: React.FC = () => {
 
   return (
     <SettingsViewScreen
-      insets={{ top: 0, bottom: 0 }}
+      {...WEB_SAFE_AREA}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       infoIcon={({ size, color }) => <QuestionCircleStrokeIcon size={size} color={color} />}
       onClose={onBack}

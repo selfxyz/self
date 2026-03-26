@@ -3,14 +3,16 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { IDType } from '@selfxyz/euclid';
 import { IDTypeScreen } from '@selfxyz/euclid';
 
+import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const docTypeToIDType = (docType: string): IDType => {
   switch (docType) {
@@ -43,6 +45,16 @@ export const IDSelectionScreen: React.FC = () => {
       documentTypes?: string[];
     }) || {};
 
+  useEffect(() => {
+    if (!countryCode || documentTypes.length === 0) {
+      navigate('/onboarding/country', { replace: true });
+    }
+  }, [countryCode, documentTypes.length, navigate]);
+
+  if (!countryCode || documentTypes.length === 0) {
+    return null;
+  }
+
   const idTypes = documentTypes.map(docTypeToIDType);
 
   const onSelect = useCallback(
@@ -61,15 +73,18 @@ export const IDSelectionScreen: React.FC = () => {
   );
 
   return (
-    <IDTypeScreen
-      insets={{ top: 0, bottom: 0 }}
-      countryCode={countryCode}
-      countryName={getCountryName(countryCode)}
-      idTypes={idTypes}
-      onIDTypeSelect={onSelect}
-      onBack={() => navigate(-1)}
-      renderFlag={renderFlag}
-      renderIDTypeIcon={renderIDTypeIcon}
-    />
+    <>
+      <MockRegistrationFailureButton />
+      <IDTypeScreen
+        {...WEB_SAFE_AREA}
+        countryCode={countryCode}
+        countryName={getCountryName(countryCode)}
+        idTypes={idTypes}
+        onIDTypeSelect={onSelect}
+        onBack={() => navigate(-1)}
+        renderFlag={renderFlag}
+        renderIDTypeIcon={renderIDTypeIcon}
+      />
+    </>
   );
 };

@@ -17,12 +17,16 @@ import { HomeScreen } from './screens/home/HomeScreen';
 import { ConfirmIdentificationScreen } from './screens/onboarding/ConfirmIdentificationScreen';
 import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
 import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
+import { KycFailureScreen } from './screens/onboarding/KycFailureScreen';
 import { ProviderLaunchScreen } from './screens/onboarding/ProviderLaunchScreen';
 import { ProviderResultScreen } from './screens/onboarding/ProviderResultScreen';
+import { RegistrationFailureScreen } from './screens/onboarding/RegistrationFailureScreen';
+import { ScanSuccessScreen } from './screens/onboarding/ScanSuccessScreen';
+import { TourScreen } from './screens/onboarding/TourScreen';
 import { ProvingScreen } from './screens/proving/ProvingScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
 import { KycMockScreen } from './screens/tunnel/KycMockScreen';
-import { TourScreen } from './screens/tunnel/TourScreen';
+import { TourScreen as TunnelTourScreen } from './screens/tunnel/TourScreen';
 import { TunnelCountryPickerScreen } from './screens/tunnel/TunnelCountryPickerScreen';
 import { TunnelIDTypeScreen } from './screens/tunnel/TunnelIDTypeScreen';
 import { TunnelProofReceiptScreen } from './screens/tunnel/TunnelProofReceiptScreen';
@@ -35,11 +39,15 @@ export const App: React.FC = () => (
       <SelfClientProvider>
         <Routes>
           <Route path="/" element={<HomeScreen />} />
+          <Route path="/onboarding/tour/:step" element={<TourScreen />} />
           <Route path="/onboarding/country" element={<CountryPickerScreen />} />
           <Route path="/onboarding/id-type" element={<IDSelectionScreen />} />
           <Route path="/onboarding/provider" element={<ProviderLaunchScreen />} />
           <Route path="/onboarding/provider-result" element={<ProviderResultScreen />} />
           <Route path="/onboarding/confirm" element={<ConfirmIdentificationScreen />} />
+          <Route path="/onboarding/success" element={<ScanSuccessScreen />} />
+          <Route path="/onboarding/failure" element={<RegistrationFailureScreen />} />
+          <Route path="/onboarding/kyc-failure" element={<KycFailureScreen />} />
           <Route path="/proving" element={<ProvingScreen />} />
           <Route path="/proving/result" element={<VerificationResultScreen />} />
           <Route path="/settings" element={<SettingsScreen />} />
@@ -49,7 +57,7 @@ export const App: React.FC = () => (
           {import.meta.env.DEV && <Route path="/debug/keychain" element={<KeychainDebugScreen />} />}
           <Route path="/account/verified" element={<VerificationResultScreen />} />
           <Route path="/coming-soon" element={<ComingSoonScreen />} />
-          <Route path="/tunnel/tour/:step" element={<TourScreen />} />
+          <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
           <Route path="/tunnel/kyc" element={<KycMockScreen />} />
           <Route path="/tunnel/registration/country" element={<TunnelCountryPickerScreen />} />
           <Route path="/tunnel/registration/id-type" element={<TunnelIDTypeScreen />} />
