@@ -286,6 +286,16 @@ grep -r "require('react-native')" app/tests/
 
 See `.cursor/rules/test-memory-optimization.mdc` for comprehensive guidelines, examples, and anti-patterns.
 
+## Linear Issue Interaction
+
+When working with Linear issues during development:
+
+- **`save_comment`** for: status updates, progress notes, blockers, linking PRs, corrections, decision records
+- **`save_issue`** for: changing status, priority, assignee, labels (structured fields only)
+- **`create_document`** for: attaching specs as Linear documents
+
+**Never overwrite an issue description.** Descriptions are the original scope set at creation time. All subsequent context goes in comments. If the description has a factual error, add a comment explaining the correction — do not silently rewrite it.
+
 ## SDK Architecture
 
 The Self Wallet app serves as a **test environment** for the SDK refactor. For SDK architecture context:

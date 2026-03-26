@@ -57,6 +57,14 @@ webview backlog.
 - Deprioritized 3.1 work currently includes **EU ID**, **Aadhaar**, and
   **Points**.
 
+### Execution order
+
+1. **Screen migration** (current) — WV-09, WV-12, then WV-13–WV-16
+2. **Tunnel flow** (next) — WV-05, WV-06, WV-08 (real Didit + KYC + proving)
+3. **Disclose** — WV-11 (real proving on the main disclose route)
+4. **Social login** — not yet spec'd in this workstream
+5. **Launch readiness** — not yet spec'd in this workstream
+
 ## Backlog
 
 | ID    | Title                                                                                           | Status      | Priority | Depends On          | Plan                                                                                             | Notes                                                                                                                       |

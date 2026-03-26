@@ -66,7 +66,7 @@ during migration.
 
 The mocked prompt chain after a successful registration:
 
-1. `ScanSuccessScreen` (WV-09) advances to `/onboarding/backup`
+1. `ScanSuccessScreen` (created by WV-09, modified here) — change its primary CTA from navigating to home to navigating to `/onboarding/backup`
 2. `SocialSignOnMethodPickerScreen` — dismiss advances to notifications
 3. `PushNotificationPromptScreen` — dismiss advances to home
 
@@ -105,6 +105,7 @@ Example route shapes:
 | `packages/webview-app/src/screens/onboarding/SocialSignOnPickerScreen.tsx`               | Sign-in prompt              |
 | `packages/webview-app/src/screens/onboarding/ConflictDetectedScreen.tsx`                 | Conflict prompt             |
 | `packages/webview-app/src/screens/onboarding/PushNotificationPromptScreen.tsx`           | Notification prompt         |
+| `packages/webview-app/src/screens/onboarding/ScanSuccessScreen.tsx`                     | Modify WV-09's success CTA to advance to `/onboarding/backup` instead of home |
 | `packages/webview-app/src/App.tsx`                                                       | Prompt routes               |
 
 ## Validation
