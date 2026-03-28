@@ -2,53 +2,97 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BodyText, Button, Description, Title, colors, spacing } from '@selfxyz/euclid-web';
 
+import { Button, colors, Description, spacing, Title } from '@selfxyz/euclid';
+
+import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
+import type { MockOnboardingNavigationState } from '../../utils/mockOnboardingFlow';
+import {
+  createMockProviderResult,
+  getMockOutcomeFromSearch,
+  getMockOutcomeSearch,
+} from '../../utils/mockOnboardingFlow';
 
 export const ProviderLaunchScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, haptic, lifecycle } = useSelfClient();
+  const { verificationId } = useVerificationRequest();
+  const mockOutcome = getMockOutcomeFromSearch(location.search);
 
-  const { countryCode = '', documentType = '' } =
-    (location.state as {
-      countryCode?: string;
-      documentType?: string;
-    }) || {};
+  const { countryCode, documentType } = (location.state as MockOnboardingNavigationState | null) ?? {};
 
   useEffect(() => {
-    analytics.trackEvent('provider_launch_placeholder_viewed', {
+    analytics.trackEvent('provider_launch_started', {
       countryCode,
       documentType,
+      mockOutcome,
     });
-  }, [analytics, countryCode, documentType]);
+
+    const timer = window.setTimeout(() => {
+      const providerResult = createMockProviderResult({
+        outcome: mockOutcome,
+        verificationId,
+      });
+
+      analytics.trackEvent('provider_mock_completed', {
+        status: providerResult.status,
+        mockOutcome,
+      });
+
+      navigate(`/onboarding/provider-result${getMockOutcomeSearch(mockOutcome)}`, {
+        replace: true,
+        state: {
+          providerResult,
+          countryCode,
+          documentType,
+          retryMockOutcome: mockOutcome,
+        },
+      });
+    }, 700);
+
+    return () => window.clearTimeout(timer);
+  }, [analytics, countryCode, documentType, mockOutcome, navigate, verificationId]);
+
+  const handleBack = useCallback(() => {
+    haptic.trigger('selection');
+    analytics.trackEvent('provider_launch_back_pressed', {
+      countryCode,
+      documentType,
+      mockOutcome,
+    });
+    lifecycle.dismiss({ reason: 'back' });
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/', { state: { skipOnboardingRedirect: true } });
+    }
+  }, [analytics, countryCode, documentType, haptic, lifecycle, mockOutcome, navigate]);
 
   return (
     <div
       style={{
         minHeight: '100vh',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: spacing.lg,
-        backgroundColor: colors.slate50,
+        flexDirection: 'column',
+        backgroundColor: colors.white,
       }}
     >
+      <MockRegistrationFailureButton />
       <div
         style={{
-          width: '100%',
-          maxWidth: 420,
-          backgroundColor: colors.white,
-          borderRadius: 24,
-          padding: spacing.xl,
           display: 'flex',
           flexDirection: 'column',
-          gap: spacing.md,
           alignItems: 'center',
-          textAlign: 'center',
+          justifyContent: 'center',
+          padding: spacing.lg,
+          flex: 1,
+          gap: spacing.md,
         }}
       >
         <div
@@ -61,34 +105,9 @@ export const ProviderLaunchScreen: React.FC = () => {
             animation: 'spin 0.8s linear infinite',
           }}
         />
-        <Title textAlign="center">Launching provider...</Title>
-        <Description>
-          Self will hand off document capture and verification to a provider-owned
-          web flow for this verification session.
-        </Description>
-        <BodyText color={colors.slate500}>
-          Provider integration is still a placeholder in the active WebView app.
-        </BodyText>
-        <div style={{ width: '100%' }}>
-          <Button
-            variant="secondary-label"
-            text="Back"
-            fullWidth
-            onPress={() => {
-              haptic.trigger('selection');
-              analytics.trackEvent('provider_launch_back_pressed', {
-                countryCode,
-                documentType,
-              });
-              lifecycle.dismiss({ reason: 'back' });
-              if (window.history.length > 1) {
-                navigate(-1);
-              } else {
-                navigate('/');
-              }
-            }}
-          />
-        </div>
+        <Title textAlign="center">Launching verification</Title>
+        <Description textAlign="center">Preparing the mocked provider handoff for your registration flow.</Description>
+        <Button variant="secondary-label" text="Back" fullWidth onPress={handleBack} />
       </div>
     </div>
   );

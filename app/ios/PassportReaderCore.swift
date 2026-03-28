@@ -5,7 +5,7 @@
 import Foundation
 import React
 #if !E2E_TESTING
-import NFCPassportReader
+import SelfNFCPassportReader
 import Security
 
 @available(iOS 13, macOS 10.15, *)
@@ -77,7 +77,7 @@ enum PassportReaderCore {
     }
 
     static func scanPassport(
-        reader: NFCPassportReader.PassportReader,
+        reader: SelfNFCPassportReader.PassportReader,
         passportNumber: String,
         dateOfBirth: String,
         dateOfExpiry: String,

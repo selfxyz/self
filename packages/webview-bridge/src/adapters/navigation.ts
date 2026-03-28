@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+export interface BridgeNavigationAdapter {
+  goBack(): void;
+  goTo(routeName: RouteName, params?: Record<string, unknown>): void;
+}
+
 export type RouteName =
   | 'DocumentCamera'
   | 'DocumentOnboarding'
@@ -33,15 +38,7 @@ const routeMap: Record<RouteName, string> = {
   Settings: '/settings',
 };
 
-export interface BridgeNavigationAdapter {
-  goBack(): void;
-  goTo(routeName: RouteName, params?: Record<string, unknown>): void;
-}
-
-export function webNavigationAdapter(
-  navigate: (path: string) => void,
-  goBack: () => void,
-): BridgeNavigationAdapter {
+export function webNavigationAdapter(navigate: (path: string) => void, goBack: () => void): BridgeNavigationAdapter {
   return {
     goBack,
     goTo(routeName: RouteName, _params?: Record<string, unknown>): void {

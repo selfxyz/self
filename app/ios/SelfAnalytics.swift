@@ -4,7 +4,7 @@ import Foundation
 
 #if !E2E_TESTING
 import Mixpanel
-import NFCPassportReader
+import SelfNFCPassportReader
 
 public class SelfAnalytics: Analytics {
     private let enableDebugLogs: Bool

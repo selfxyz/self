@@ -25,11 +25,8 @@ import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import EPassportLogo from '@/assets/icons/epassport_logo.svg';
 import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { createSession, launchDidit } from '@/integrations/didit';
 import { buttonTap } from '@/integrations/haptics';
-import {
-  fetchAccessToken,
-  launchSumsub,
-} from '@/integrations/sumsub/sumsubService';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
@@ -41,7 +38,7 @@ type LogoConfirmationScreenRouteProp = RouteProp<
 
 const LogoConfirmationScreen: React.FC = () => {
   const route = useRoute<LogoConfirmationScreenRouteProp>();
-  const { documentType, countryCode } = route.params;
+  const { countryCode } = route.params;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showModal } = useFeedback();
@@ -61,27 +58,19 @@ const LogoConfirmationScreen: React.FC = () => {
       buttonText: 'Proceed with an external verifier',
       onButtonPress: async () => {
         try {
-          const accessToken = await fetchAccessToken();
-          const result = await launchSumsub({
-            accessToken: accessToken.token,
-            // Pre-select document type and country based on user's earlier selection
-            documentType: documentType as 'p' | 'i',
-            countryCode,
-          });
+          const session = await createSession();
+          const result = await launchDidit(session.sessionToken);
 
           // User cancelled/dismissed without completing verification
-          if (
-            !result.success &&
-            ['Initial', 'Incomplete', 'Interrupted'].includes(result.status)
-          ) {
+          if (result.type === 'cancelled') {
             return;
           }
 
           // Verification failed (provider error/rejection)
-          if (!result.success) {
+          if (result.type === 'failed') {
             console.error(
-              'Sumsub verification failed:',
-              result.errorType ?? result.status,
+              'Didit verification failed:',
+              result.error?.type ?? 'unknown',
             );
             navigation.navigate('KycFailure', {
               countryCode,
@@ -91,9 +80,9 @@ const LogoConfirmationScreen: React.FC = () => {
           }
 
           // Verification succeeded - navigate to KycSuccessScreen
-          navigation.navigate('KycSuccess', { userId: accessToken.userId });
+          navigation.navigate('KycSuccess', { sessionId: session.sessionId });
         } catch {
-          console.error('Error launching Sumsub verification');
+          console.error('Error launching Didit verification');
           showModal({
             titleText: 'Error',
             bodyText: 'Unable to start verification. Please try again.',
@@ -103,7 +92,7 @@ const LogoConfirmationScreen: React.FC = () => {
         }
       },
     });
-  }, [documentType, countryCode, navigation, showModal]);
+  }, [countryCode, navigation, showModal]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={slate100}>

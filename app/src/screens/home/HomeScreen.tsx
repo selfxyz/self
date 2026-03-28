@@ -260,7 +260,7 @@ const HomeScreen: React.FC = () => {
         {/* Show pending KYC cards at the top */}
         {activePendingVerifications.map(verification => (
           <PendingIdCard
-            key={verification.userId}
+            key={verification.sessionId}
             onClick={() => {
               if (
                 verification.status === 'processing' &&

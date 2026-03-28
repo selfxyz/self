@@ -36,9 +36,12 @@ export function deserializeApplicantInfo(
   const country = applicantInfo
     .slice(KYC_COUNTRY_INDEX, KYC_COUNTRY_INDEX + KYC_COUNTRY_LENGTH)
     .replace(/\x00/g, '');
-  const idType = applicantInfo
-    .slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH)
-    .replace(/\x00/g, '');
+  const idTypeRaw = applicantInfo.slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH);
+  const nsLen = idTypeRaw.charCodeAt(0);
+  const idType =
+    nsLen > 0 && nsLen < KYC_ID_TYPE_LENGTH
+      ? idTypeRaw.slice(1 + nsLen).replace(/\x00/g, '')
+      : idTypeRaw.replace(/\x00/g, '');
   const idNumber = applicantInfo
     .slice(KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH)
     .replace(/\x00/g, '');

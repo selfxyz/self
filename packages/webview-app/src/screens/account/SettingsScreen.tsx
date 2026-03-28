@@ -2,20 +2,24 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import {
-  SettingsViewScreen,
-  LeftArrowIcon,
-  QuestionCircleStrokeIcon,
-  DocumentDetailsIcon,
-  LockIcon,
-  CloudKeyIcon,
   ChatStrokeIcon,
+  CodeIcon,
+  DocumentDetailsIcon,
+  LeftArrowIcon,
+  LockIcon,
+  NotificationIcon,
+  QuestionCircleStrokeIcon,
+  SettingsViewScreen,
   ShareIcon,
-} from '@selfxyz/euclid-web';
+} from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const SettingsScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -34,48 +38,44 @@ export const SettingsScreen: React.FC = () => {
 
   return (
     <SettingsViewScreen
-      insets={{ top: 0, bottom: 0 }}
-      escapeIcon={({ size, color }) => (
-        <LeftArrowIcon size={size} color={color} />
-      )}
-      infoIcon={({ size, color }) => (
-        <QuestionCircleStrokeIcon size={size} color={color} />
-      )}
+      {...WEB_SAFE_AREA}
+      escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
+      infoIcon={({ size, color }) => <QuestionCircleStrokeIcon size={size} color={color} />}
       onClose={onBack}
       showBackupInfoBox={false}
       isBackupEnabled={false}
       CTAs={[]}
       sections={[
         {
-          title: 'Account',
+          title: 'App settings',
           items: [
             {
               icon: DocumentDetailsIcon,
-              label: 'View document info',
-              description: 'View your stored document details',
+              label: 'Manage Documents',
+              description: 'Recovery phrase, passport data',
               onPress: () => navigate('/coming-soon'),
             },
             {
               icon: LockIcon,
-              label: 'Recovery phrase',
-              description: 'View your recovery phrase',
-              onPress: () => navigate('/coming-soon'),
+              label: 'Security',
+              description: 'Recovery phrase, passport data',
+              onPress: () => navigate('/settings/security'),
             },
             {
-              icon: CloudKeyIcon,
-              label: 'Cloud backup',
-              description: 'Manage your cloud backup',
-              onPress: () => navigate('/coming-soon'),
+              icon: NotificationIcon,
+              label: 'Notifications',
+              description: 'Preferences, notification types',
+              onPress: () => navigate('/settings/notifications'),
             },
           ],
         },
         {
-          title: 'Support',
+          title: 'Support & feedback',
           items: [
             {
               icon: ChatStrokeIcon,
               label: 'Get support',
-              description: 'Contact us for help',
+              description: 'Help center & support',
               onPress: () => navigate('/coming-soon'),
             },
             {
@@ -83,6 +83,23 @@ export const SettingsScreen: React.FC = () => {
               label: 'Share Self',
               description: 'Share Self with friends',
               onPress: () => navigate('/coming-soon'),
+            },
+          ],
+        },
+        {
+          title: 'Developer tools',
+          items: [
+            {
+              icon: CodeIcon,
+              label: 'Dev mode',
+              description: 'Manage mock IDs, simulate proofs',
+              onPress: () => navigate('/settings/dev-mode'),
+            },
+            {
+              icon: CodeIcon,
+              label: 'Tunnel flow',
+              description: 'Demo: register + disclose in one flow',
+              onPress: () => navigate('/tunnel/tour/1'),
             },
           ],
         },

@@ -14,19 +14,19 @@ export interface ParsedVerificationRequestContext {
   verificationId?: string;
 }
 
-const ALLOWED_REQUEST_TYPES = new Set([
-  'proofRequested',
-  'documentOwnershipConfirmed',
-]);
+const ALLOWED_REQUEST_TYPES = new Set(['proofRequested', 'documentOwnershipConfirmed']);
 const DEFAULT_REQUEST_TYPE = 'proofRequested';
 
 interface TargetOriginOptions {
   allowWildcard?: boolean;
 }
 
-export function parseVerificationRequestContext(
-  search: string,
-): ParsedVerificationRequestContext {
+export function parseBrowserHostTargetOrigin(search: string, options: TargetOriginOptions = {}): string | undefined {
+  const params = new URLSearchParams(search);
+  return normalizeTargetOrigin(params.get('targetOrigin'), options);
+}
+
+export function parseVerificationRequestContext(search: string): ParsedVerificationRequestContext {
   const params = new URLSearchParams(search);
   const request: VerificationRequest = {
     userId: params.get('userId') ?? undefined,
@@ -48,14 +48,6 @@ export function parseVerificationRequestContext(
   };
 }
 
-export function parseBrowserHostTargetOrigin(
-  search: string,
-  options: TargetOriginOptions = {},
-): string | undefined {
-  const params = new URLSearchParams(search);
-  return normalizeTargetOrigin(params.get('targetOrigin'), options);
-}
-
 function normalizeRequestType(value: string | null | undefined): string {
   if (!value) return DEFAULT_REQUEST_TYPE;
   return ALLOWED_REQUEST_TYPES.has(value) ? value : DEFAULT_REQUEST_TYPE;
@@ -67,8 +59,7 @@ function normalizeAppEndpoint(value: string | null | undefined): string {
     const endpoint = new URL(value);
     const isHttps = endpoint.protocol === 'https:';
     const isLocalHttp =
-      endpoint.protocol === 'http:' &&
-      (endpoint.hostname === 'localhost' || endpoint.hostname === '127.0.0.1');
+      endpoint.protocol === 'http:' && (endpoint.hostname === 'localhost' || endpoint.hostname === '127.0.0.1');
     if (!isHttps && !isLocalHttp) return '';
     return endpoint.host;
   } catch {
@@ -89,8 +80,7 @@ function normalizeTargetOrigin(
     const origin = new URL(value);
     const isHttps = origin.protocol === 'https:';
     const isLocalHttp =
-      origin.protocol === 'http:' &&
-      (origin.hostname === 'localhost' || origin.hostname === '127.0.0.1');
+      origin.protocol === 'http:' && (origin.hostname === 'localhost' || origin.hostname === '127.0.0.1');
     if (!isHttps && !isLocalHttp) {
       return undefined;
     }
@@ -101,7 +91,10 @@ function normalizeTargetOrigin(
 }
 
 function splitCSV(value: string): string[] {
-  return value.split(',').map((s) => s.trim()).filter(Boolean);
+  return value
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
 }
 
 function parseDisclosures(params: URLSearchParams): string[] | undefined {
