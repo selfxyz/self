@@ -176,6 +176,24 @@ describe('usePendingKycRecovery', () => {
     expect(mockSubscribe).toHaveBeenCalledWith('session-789');
   });
 
+  it('should recover legacy pending verification entries that only store userId', () => {
+    const { usePendingKycStore } = jest.requireMock('@/stores/pendingKycStore');
+    usePendingKycStore.mockReturnValue({
+      pendingVerifications: [
+        {
+          userId: 'legacy-session-123',
+          status: 'pending',
+          timeoutAt: Date.now() + 10000,
+        },
+      ],
+      removeExpiredVerifications: mockRemoveExpiredVerifications,
+    });
+
+    renderHook(() => usePendingKycRecovery());
+
+    expect(mockSubscribe).toHaveBeenCalledWith('legacy-session-123');
+  });
+
   it('should skip expired verifications', () => {
     const { usePendingKycStore } = jest.requireMock('@/stores/pendingKycStore');
     usePendingKycStore.mockReturnValue({

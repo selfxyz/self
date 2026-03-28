@@ -9,8 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   LeftArrowIcon,
   ProofHistoryScreen as EuclidProofHistoryScreen,
-  QuestionCircleStrokeIcon,
   SelfLogo,
+  ShieldLockIcon,
 } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
@@ -19,7 +19,7 @@ import { WEB_SAFE_AREA } from '../../utils/insets';
 const MOCK_PROOF_HISTORY = [
   {
     id: '1',
-    appName: 'Worldcoin',
+    appName: 'Aave',
     timestamp: 'Yesterday',
     icon: <SelfLogo size={32} />,
     onPress: () => {},
@@ -57,7 +57,7 @@ export const ProofHistoryScreen: React.FC = () => {
   const onViewIdData = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('proof_history_view_id_pressed');
-    navigate('/id-data');
+    navigate('/coming-soon');
   }, [navigate, haptic, analytics]);
 
   return (
@@ -73,7 +73,7 @@ export const ProofHistoryScreen: React.FC = () => {
         subtitle: 'Registered',
       }}
       closeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-      infoIcon={({ size, color }) => <QuestionCircleStrokeIcon size={size} color={color} />}
+      infoIcon={({ size, color }) => <ShieldLockIcon size={size} color={color} />}
     />
   );
 };

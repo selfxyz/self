@@ -5,6 +5,7 @@
 import type React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
+import { DevRouteMenu } from './components/DevRouteMenu';
 import { SelfClientProvider } from './providers/SelfClientProvider';
 import { VerificationRequestProvider } from './providers/VerificationRequestProvider';
 import { DevModeScreen } from './screens/account/DevModeScreen';
@@ -30,7 +31,6 @@ import { TourScreen } from './screens/onboarding/TourScreen';
 import { DialogueWithCtaScreen } from './screens/proving/DialogueWithCtaScreen';
 import { KycPendingScreen } from './screens/proving/KycPendingScreen';
 import { KycVerificationSuccessScreen } from './screens/proving/KycVerificationSuccessScreen';
-import { NovaSplashScreen } from './screens/proving/NovaSplashScreen';
 import { ProofGenerationDialogueScreen } from './screens/proving/ProofGenerationDialogueScreen';
 import { ProofGenerationSuccessScreen } from './screens/proving/ProofGenerationSuccessScreen';
 import { ProofHistoryScreen } from './screens/proving/ProofHistoryScreen';
@@ -80,7 +80,6 @@ export const App: React.FC = () => (
           <Route path="/proving/generation-dialogue" element={<ProofGenerationDialogueScreen />} />
           <Route path="/proving/generation-success" element={<ProofGenerationSuccessScreen />} />
           <Route path="/proving/backup-prompt" element={<ProofSuccessBackupScreen />} />
-          <Route path="/proving/nova" element={<NovaSplashScreen />} />
           <Route path="/proving/kyc-pending" element={<KycPendingScreen />} />
           <Route path="/proving/kyc-success" element={<KycVerificationSuccessScreen />} />
           <Route path="/account/verified" element={<VerificationResultScreen />} />
@@ -94,6 +93,7 @@ export const App: React.FC = () => (
           <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        {import.meta.env.DEV && <DevRouteMenu />}
       </SelfClientProvider>
     </VerificationRequestProvider>
   </BrowserRouter>

@@ -48,6 +48,7 @@ export const ProofRequestReceiptScreen: React.FC = () => {
       appEndpoint={appEndpoint}
       documentType={documentType}
       timestamp={Date.now()}
+      walletAddress="0x15a2...2P72"
       isCloudBackupEnabled={false}
       items={MOCK_ITEMS}
     />

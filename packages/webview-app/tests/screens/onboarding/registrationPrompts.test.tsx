@@ -36,7 +36,7 @@ vi.mock('../../../src/utils/mockDocumentStore', () => ({
   },
 }));
 
-vi.mock('../../../src/utils/mockOnboardingFlow', async (importOriginal) => {
+vi.mock('../../../src/utils/mockOnboardingFlow', async importOriginal => {
   const actual = await importOriginal<typeof import('../../../src/utils/mockOnboardingFlow')>();
   return { ...actual, shouldUseHistoryBack: vi.fn(() => false) };
 });
