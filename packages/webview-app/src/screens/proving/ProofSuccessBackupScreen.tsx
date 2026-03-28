@@ -32,14 +32,10 @@ export const ProofSuccessBackupScreen: React.FC = () => {
       insets={WEB_SAFE_AREA.insets}
       idCard={{
         variant: 'passport',
-        title: 'PASSPORT',
-        subtitle: 'Verified US Passport',
         walletAddress: '0xd9..b94',
-        footerTitle: 'US PASSPORT',
+        footerTitle: 'US Passport',
         securityLevel: 'hi',
       }}
-      title="Back up your account"
-      description="Protect your identity data by setting up a backup. You can always do this later in Settings."
       onRemindLater={onRemindLater}
       onBackupAccount={onBackupAccount}
     />

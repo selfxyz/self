@@ -21,13 +21,5 @@ export const ProofGenerationSuccessScreen: React.FC = () => {
     navigate('/');
   }, [navigate, haptic, analytics]);
 
-  return (
-    <EuclidProofGenerationSuccessScreen
-      insets={WEB_SAFE_AREA.insets}
-      title="Proof Generated"
-      description="Your zero-knowledge proof has been successfully generated and verified."
-      buttonLabel="Shield Identity"
-      onShieldIdentity={onShieldIdentity}
-    />
-  );
+  return <EuclidProofGenerationSuccessScreen insets={WEB_SAFE_AREA.insets} onShieldIdentity={onShieldIdentity} />;
 };

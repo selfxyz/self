@@ -43,7 +43,23 @@ export const DialogueWithCtaScreen: React.FC = () => {
       primaryButtonText="Begin liveliness check"
       primaryButtonIcon={({ size }) => <HeartFillIcon size={size} color="#E53935" />}
       secondaryButtonText="Skip for now"
-      helperContent={<span style={{ fontFamily: 'DIN OT, DIN, sans-serif', color: '#fff', fontSize: 14, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center', width: '100%', display: 'block' }}>What is a liveliness check?</span>}
+      helperContent={
+        <span
+          style={{
+            fontFamily: 'DIN OT, DIN, sans-serif',
+            color: '#fff',
+            fontSize: 14,
+            fontWeight: 600,
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+            textAlign: 'center',
+            width: '100%',
+            display: 'block',
+          }}
+        >
+          What is a liveliness check?
+        </span>
+      }
       showHelperContent
       onPrimaryButtonPress={onPrimaryPress}
       onSecondaryButtonPress={onSecondaryPress}
