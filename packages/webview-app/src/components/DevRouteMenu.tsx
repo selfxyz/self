@@ -8,6 +8,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 const mockScreenLinks = [
   { href: '/settings/dev-mode', label: 'Dev Mode' },
+  { href: '/manage-documents', label: 'Manage Documents' },
+  { href: '/id-data', label: 'ID Data' },
   { href: '/proving/receipt', label: 'Proof Receipt' },
   { href: '/proving/history', label: 'Proof History' },
   { href: '/proving/dialogue', label: 'Simple Dialogue' },
@@ -67,7 +69,7 @@ export const DevRouteMenu: React.FC = () => {
               textTransform: 'uppercase',
             }}
           >
-            WV-13 Mock Screens
+            Mock Screens
           </div>
           {mockScreenLinks.map(link => {
             const isActive = location.pathname === link.href;
