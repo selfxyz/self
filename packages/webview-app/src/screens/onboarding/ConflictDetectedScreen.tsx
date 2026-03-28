@@ -4,22 +4,25 @@
 
 import type React from 'react';
 import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ConflictDetectedScreen as EuclidConflictDetectedScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { getPromptMockFromSearch, getPromptMockSearch, shouldUseHistoryBack } from '../../utils/mockOnboardingFlow';
 
 export const ConflictDetectedScreen: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
+  const mock = getPromptMockFromSearch(location.search);
 
   const onPrimaryAction = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('conflict_use_existing_pressed');
-    navigate('/');
-  }, [navigate, haptic, analytics]);
+    navigate(`/onboarding/signin${getPromptMockSearch(mock === 'existing-account' ? mock : 'default')}`);
+  }, [mock, navigate, haptic, analytics]);
 
   const onSecondaryAction = useCallback(() => {
     haptic.trigger('selection');
@@ -29,8 +32,13 @@ export const ConflictDetectedScreen: React.FC = () => {
 
   const onClose = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/');
-  }, [navigate, haptic]);
+    if (shouldUseHistoryBack()) {
+      navigate(-1);
+      return;
+    }
+
+    navigate(`/onboarding/signin${getPromptMockSearch(mock === 'existing-account' ? mock : 'default')}`);
+  }, [mock, navigate, haptic]);
 
   return (
     <EuclidConflictDetectedScreen

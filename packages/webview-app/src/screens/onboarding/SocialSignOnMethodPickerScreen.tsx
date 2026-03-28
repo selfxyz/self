@@ -4,16 +4,19 @@
 
 import type React from 'react';
 import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { SocialSignOnMethodPickerScreen as EuclidSocialSignOnMethodPickerScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { getPromptMockFromSearch, getPromptMockSearch } from '../../utils/mockOnboardingFlow';
 
 export const SocialSignOnMethodPickerScreen: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
+  const mock = getPromptMockFromSearch(location.search);
 
   const onApple = useCallback(() => {
     haptic.trigger('selection');
@@ -35,8 +38,8 @@ export const SocialSignOnMethodPickerScreen: React.FC = () => {
 
   const onDismiss = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/onboarding/notifications');
-  }, [navigate, haptic]);
+    navigate(`/onboarding/notifications${getPromptMockSearch(mock)}`);
+  }, [mock, navigate, haptic]);
 
   return (
     <EuclidSocialSignOnMethodPickerScreen

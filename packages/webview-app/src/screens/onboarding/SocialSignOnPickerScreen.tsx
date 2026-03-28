@@ -4,16 +4,19 @@
 
 import type React from 'react';
 import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { SocialSignOnPickerScreen as EuclidSocialSignOnPickerScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { getPromptMockFromSearch, getPromptMockSearch } from '../../utils/mockOnboardingFlow';
 
 export const SocialSignOnPickerScreen: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
+  const mock = getPromptMockFromSearch(location.search);
 
   const onApple = useCallback(() => {
     haptic.trigger('selection');
@@ -47,8 +50,9 @@ export const SocialSignOnPickerScreen: React.FC = () => {
 
   const onDismiss = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/');
-  }, [navigate, haptic]);
+    // TODO(WV-12): Replace this placeholder dismiss route when the real conflict/sign-in branch behavior is defined.
+    navigate(`/onboarding/conflict${getPromptMockSearch(mock === 'existing-account' ? mock : 'default')}`);
+  }, [mock, navigate, haptic]);
 
   return (
     <EuclidSocialSignOnPickerScreen
