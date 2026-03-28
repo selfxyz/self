@@ -26,7 +26,7 @@ export const SimpleDialogueScreen: React.FC = () => {
       showTopNavigation
       onClose={onClose}
       closeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-      backgroundImage="/backgrounds/dialogue-background.jpg"
+      backgroundImage="/backgrounds/dialogue-background-simple.jpg"
       headerText="Information"
       descriptionText="This is a simple dialogue screen used for displaying informational messages to the user."
     />

@@ -6,7 +6,7 @@ import type React from 'react';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { DialogueWithCtaScreen as EuclidDialogueWithCtaScreen, LeftArrowIcon } from '@selfxyz/euclid';
+import { DialogueWithCtaScreen as EuclidDialogueWithCtaScreen, HeartFillIcon } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -37,12 +37,14 @@ export const DialogueWithCtaScreen: React.FC = () => {
       insets={WEB_SAFE_AREA.insets}
       showTopNavigation
       onClose={onClose}
-      closeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       backgroundImage="/backgrounds/dialogue-background.jpg"
-      headerText="Action Required"
-      descriptionText="Please review the information below and choose how you'd like to proceed."
-      primaryButtonText="Continue"
-      secondaryButtonText="Cancel"
+      headerText="This is placeholder header text"
+      descriptionText="When friends install Self and use your referral link you'll both receive exclusive points. Learn more"
+      primaryButtonText="Begin liveliness check"
+      primaryButtonIcon={({ size }) => <HeartFillIcon size={size} color="#E53935" />}
+      secondaryButtonText="Skip for now"
+      helperContent={<span style={{ fontFamily: 'DIN OT, DIN, sans-serif', color: '#fff', fontSize: 14, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center', width: '100%', display: 'block' }}>What is a liveliness check?</span>}
+      showHelperContent
       onPrimaryButtonPress={onPrimaryPress}
       onSecondaryButtonPress={onSecondaryPress}
     />
