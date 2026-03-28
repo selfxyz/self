@@ -12,6 +12,7 @@ import { ConflictDetectedScreen } from '../../../src/screens/onboarding/Conflict
 import { PushNotificationPromptScreen } from '../../../src/screens/onboarding/PushNotificationPromptScreen';
 import { ScanSuccessScreen } from '../../../src/screens/onboarding/ScanSuccessScreen';
 import { SocialSignOnMethodPickerScreen } from '../../../src/screens/onboarding/SocialSignOnMethodPickerScreen';
+import { shouldUseHistoryBack } from '../../../src/utils/mockOnboardingFlow';
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 
@@ -34,6 +35,11 @@ vi.mock('../../../src/utils/mockDocumentStore', () => ({
     addDocument: vi.fn(),
   },
 }));
+
+vi.mock('../../../src/utils/mockOnboardingFlow', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../../src/utils/mockOnboardingFlow')>();
+  return { ...actual, shouldUseHistoryBack: vi.fn(() => false) };
+});
 
 vi.mock('@selfxyz/euclid', () => ({
   createSafeAreaProps: ({ top, bottom }: { top: number; bottom: number }) => ({
@@ -157,6 +163,7 @@ describe('registration prompt screens', () => {
   });
 
   it('uses header back on conflict to return to the prior prompt screen', () => {
+    vi.mocked(shouldUseHistoryBack).mockReturnValue(true);
     renderWithRoutes(
       ['/onboarding/signin?mock=existing-account', '/onboarding/conflict?mock=existing-account'],
       '/onboarding/conflict',
@@ -181,6 +188,7 @@ describe('registration prompt screens', () => {
   });
 
   it('uses header back on notifications to return to the backup screen', () => {
+    vi.mocked(shouldUseHistoryBack).mockReturnValue(true);
     renderWithRoutes(
       ['/onboarding/backup?mock=default', '/onboarding/notifications?mock=default'],
       '/onboarding/notifications',
