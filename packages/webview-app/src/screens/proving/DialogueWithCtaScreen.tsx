@@ -40,7 +40,7 @@ export const DialogueWithCtaScreen: React.FC = () => {
       backgroundImage="/backgrounds/dialogue-background.jpg"
       headerText="This is placeholder header text"
       descriptionText="When friends install Self and use your referral link you'll both receive exclusive points. Learn more"
-      primaryButtonText="Begin liveliness check"
+      primaryButtonText="Begin liveness check"
       primaryButtonIcon={({ size }) => <HeartFillIcon size={size} color="#E53935" />}
       secondaryButtonText="Skip for now"
       helperContent={
@@ -57,7 +57,7 @@ export const DialogueWithCtaScreen: React.FC = () => {
             display: 'block',
           }}
         >
-          What is a liveliness check?
+          What is a liveness check?
         </span>
       }
       showHelperContent

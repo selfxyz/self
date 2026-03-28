@@ -17,6 +17,7 @@ const MOCK_ITEMS = [
   { label: 'Nationality' },
   { label: 'Age above 18' },
 ];
+const MOCK_WALLET_ADDRESS = '0x15a2...2P72';
 
 export const ProofRequestReceiptScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -48,7 +49,8 @@ export const ProofRequestReceiptScreen: React.FC = () => {
       appEndpoint={appEndpoint}
       documentType={documentType}
       timestamp={Date.now()}
-      walletAddress="0x15a2...2P72"
+      // Placeholder-only mock data until this preview route is wired to real proof receipt state.
+      walletAddress={MOCK_WALLET_ADDRESS}
       isCloudBackupEnabled={false}
       items={MOCK_ITEMS}
     />
