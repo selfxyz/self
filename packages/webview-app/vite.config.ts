@@ -8,7 +8,23 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   base: './',
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'serve-public-files',
+      configureServer(server) {
+        // Serve static files from public/ before SPA fallback rewrites them
+        server.middlewares.use((req, _res, next) => {
+          if (req.url?.match(/\.(json|html)(\?|$)/) && req.url !== '/index.html') {
+            // Let Vite's static file serving handle it by removing accept header
+            // that triggers the history fallback
+            delete req.headers.accept;
+          }
+          next();
+        });
+      },
+    },
+  ],
   define: { global: 'globalThis' },
   build: {
     target: ['chrome90', 'safari15.4'],
