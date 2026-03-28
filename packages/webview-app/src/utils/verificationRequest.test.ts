@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { getPromptMockFromSearch, getPromptMockSearch } from './mockOnboardingFlow';
 import { parseBrowserHostTargetOrigin, parseVerificationRequestContext } from './verificationRequest';
 
 describe('verificationRequest utils', () => {
@@ -66,6 +67,18 @@ describe('verificationRequest utils', () => {
       expect(context.requestType).toBe('proofRequested');
       expect(context.appEndpoint).toBe('');
       expect(context.verificationId).toBeUndefined();
+    });
+  });
+
+  describe('prompt mock utils', () => {
+    it('should parse supported prompt mock states', () => {
+      expect(getPromptMockFromSearch('?mock=default')).toBe('default');
+      expect(getPromptMockFromSearch('?mock=existing-account')).toBe('existing-account');
+    });
+
+    it('should fall back to the default prompt mock state', () => {
+      expect(getPromptMockFromSearch('?mock=unexpected')).toBe('default');
+      expect(getPromptMockSearch()).toBe('?mock=default');
     });
   });
 });
