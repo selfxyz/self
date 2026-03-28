@@ -11,7 +11,7 @@ import { KycVerificationSuccessScreen as EuclidKycVerificationSuccessScreen } fr
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
-export const KycVerificationSuccessScreen: React.FC = () => {
+export const KycSuccessScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
 

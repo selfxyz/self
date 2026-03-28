@@ -30,7 +30,7 @@ import { SocialSignOnPickerScreen } from './screens/onboarding/SocialSignOnPicke
 import { TourScreen } from './screens/onboarding/TourScreen';
 import { DialogueWithCtaScreen } from './screens/proving/DialogueWithCtaScreen';
 import { KycPendingScreen } from './screens/proving/KycPendingScreen';
-import { KycVerificationSuccessScreen } from './screens/proving/KycVerificationSuccessScreen';
+import { KycSuccessScreen } from './screens/proving/KycSuccessScreen';
 import { ProofGenerationDialogueScreen } from './screens/proving/ProofGenerationDialogueScreen';
 import { ProofGenerationSuccessScreen } from './screens/proving/ProofGenerationSuccessScreen';
 import { ProofHistoryScreen } from './screens/proving/ProofHistoryScreen';
@@ -81,7 +81,7 @@ export const App: React.FC = () => (
           <Route path="/proving/generation-success" element={<ProofGenerationSuccessScreen />} />
           <Route path="/proving/backup-prompt" element={<ProofSuccessBackupScreen />} />
           <Route path="/proving/kyc-pending" element={<KycPendingScreen />} />
-          <Route path="/proving/kyc-success" element={<KycVerificationSuccessScreen />} />
+          <Route path="/proving/kyc-success" element={<KycSuccessScreen />} />
           <Route path="/account/verified" element={<VerificationResultScreen />} />
           <Route path="/coming-soon" element={<ComingSoonScreen />} />
           <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
