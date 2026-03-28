@@ -12,6 +12,7 @@ import { MockRegistrationFailureButton } from '../../components/MockRegistration
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 import { mockDocumentStore } from '../../utils/mockDocumentStore';
+import { getPromptMockSearch } from '../../utils/mockOnboardingFlow';
 
 export const ScanSuccessScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -28,10 +29,12 @@ export const ScanSuccessScreen: React.FC = () => {
     }
   }, [countryCode, documentType]);
 
-  const goHome = useCallback(() => {
+  const advanceToBackupPrompt = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('registration_success_finished');
-    navigate('/', { state: { skipOnboardingRedirect: true } });
+    navigate(`/onboarding/backup${getPromptMockSearch()}`, {
+      state: { skipOnboardingRedirect: true },
+    });
   }, [analytics, haptic, navigate]);
 
   return (
@@ -43,8 +46,8 @@ export const ScanSuccessScreen: React.FC = () => {
         totalSteps={4}
         currentStep={4}
         title="Your ID is now registered"
-        onClose={goHome}
-        onFinish={goHome}
+        onClose={advanceToBackupPrompt}
+        onFinish={advanceToBackupPrompt}
       />
     </>
   );
