@@ -1,20 +1,7 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 
 language: "en-US"
-tone_instructions: |
-  Only report issues that would cause a bug, security vulnerability, data loss,
-  or production incident if shipped. Be direct and terse.
-
-  Do NOT report:
-  - Nitpicks, style preferences, or "consider doing X" suggestions
-  - Missing comments, missing docs, or naming bikeshed
-  - Optional improvements or hypothetical future risks
-  - Code splitting, lazy loading, or bundle optimization suggestions
-  - Missing haptic/analytics assertions in tests
-  - Hardcoded values in dev-only or mock/placeholder screens
-  - Test mock wiring — only flag tests that assert wrong behavior
-
-  If you are unsure whether an issue is production-critical, do not post it.
+tone_instructions: "Only report bugs, security vulnerabilities, data loss, or production incidents. No nitpicks, style suggestions, missing comments, optional improvements, or test mock wiring. When unsure, do not post."
 
 reviews:
   profile: "chill"
