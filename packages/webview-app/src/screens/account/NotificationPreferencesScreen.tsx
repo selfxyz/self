@@ -45,13 +45,11 @@ export const NotificationPreferencesScreen: React.FC = () => {
   }));
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <EuclidNotificationPreferencesScreen
-        {...WEB_SAFE_AREA}
-        escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-        onBack={onBack}
-        toggles={toggles}
-      />
-    </div>
+    <EuclidNotificationPreferencesScreen
+      {...WEB_SAFE_AREA}
+      escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
+      onBack={onBack}
+      toggles={toggles}
+    />
   );
 };
