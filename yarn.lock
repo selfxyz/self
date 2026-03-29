@@ -10784,26 +10784,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/euclid-core@npm:1.2.6, @selfxyz/euclid-core@npm:^1.2.6":
-  version: 1.2.6
-  resolution: "@selfxyz/euclid-core@npm:1.2.6"
+"@selfxyz/euclid-core@npm:1.3.0, @selfxyz/euclid-core@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@selfxyz/euclid-core@npm:1.3.0"
   peerDependencies:
     react: ">=18.2.0"
-  checksum: 10c0/0496da70a4eb5e3b7bbae51f2379f8080ed21950eac6e09c3ad9a39020399ef0a7065798d626e86ac187a34ee40c04e0bac1d8186aa1507900c83b667ac6816a
+  checksum: 10c0/346831b2e2128014a1143f2af079229c40bfe64a622ef54600f0d927a8b8f78e8ad624fd4805488e03fbc2504171313fcc62c4123970afa30597c7380c817c3b
   languageName: node
   linkType: hard
 
-"@selfxyz/euclid@npm:1.2.6":
-  version: 1.2.6
-  resolution: "@selfxyz/euclid@npm:1.2.6"
+"@selfxyz/euclid@npm:1.3.0":
+  version: 1.3.0
+  resolution: "@selfxyz/euclid@npm:1.3.0"
   dependencies:
     "@lottiefiles/dotlottie-react": "npm:^0.18.4"
-    "@selfxyz/euclid-core": "npm:^1.2.6"
+    "@selfxyz/euclid-core": "npm:^1.3.0"
     lottie-react: "npm:^2.4.1"
   peerDependencies:
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
-  checksum: 10c0/af56ea1abc20645dbe58f29d062ab4e2686f626de92fb5626cfbe7971b4ec31926edf8e0d598dd173a4f1b9749e6ccf690e3189e7694178e2653a2ddff195f4d
+  checksum: 10c0/056e53cfa6566056fc107fb553157de586dcdd384eedf101316b11b08d39d5800226321d53e119e38160977ef346632f6db16c27ad67f003d0bf085aed8a0f48
   languageName: node
   linkType: hard
 
@@ -11261,8 +11261,8 @@ __metadata:
   resolution: "@selfxyz/webview-app@workspace:packages/webview-app"
   dependencies:
     "@scure/bip39": "npm:^1.6.0"
-    "@selfxyz/euclid": "npm:1.2.6"
-    "@selfxyz/euclid-core": "npm:1.2.6"
+    "@selfxyz/euclid": "npm:1.3.0"
+    "@selfxyz/euclid-core": "npm:1.3.0"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@selfxyz/webview-bridge": "workspace:^"
     "@sumsub/websdk": "npm:^2.0.0"
