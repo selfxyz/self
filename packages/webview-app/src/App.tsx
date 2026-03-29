@@ -5,6 +5,7 @@
 import type React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
+import { DevRouteMenu } from './components/DevRouteMenu';
 import { SelfClientProvider } from './providers/SelfClientProvider';
 import { VerificationRequestProvider } from './providers/VerificationRequestProvider';
 import { DevModeScreen } from './screens/account/DevModeScreen';
@@ -14,16 +15,31 @@ import { SettingsScreen } from './screens/account/SettingsScreen';
 import { ComingSoonScreen } from './screens/ComingSoonScreen';
 import { KeychainDebugScreen } from './screens/debug/KeychainDebugScreen';
 import { HomeScreen } from './screens/home/HomeScreen';
+import { IDDataScreen } from './screens/home/IDDataScreen';
+import { ManageDocumentsScreen } from './screens/home/ManageDocumentsScreen';
 import { ConfirmIdentificationScreen } from './screens/onboarding/ConfirmIdentificationScreen';
+import { ConflictDetectedScreen } from './screens/onboarding/ConflictDetectedScreen';
 import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
 import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
 import { KycFailureScreen } from './screens/onboarding/KycFailureScreen';
 import { ProviderLaunchScreen } from './screens/onboarding/ProviderLaunchScreen';
 import { ProviderResultScreen } from './screens/onboarding/ProviderResultScreen';
+import { PushNotificationPromptScreen } from './screens/onboarding/PushNotificationPromptScreen';
 import { RegistrationFailureScreen } from './screens/onboarding/RegistrationFailureScreen';
 import { ScanSuccessScreen } from './screens/onboarding/ScanSuccessScreen';
+import { SocialSignOnMethodPickerScreen } from './screens/onboarding/SocialSignOnMethodPickerScreen';
+import { SocialSignOnPickerScreen } from './screens/onboarding/SocialSignOnPickerScreen';
 import { TourScreen } from './screens/onboarding/TourScreen';
+import { DialogueWithCtaScreen } from './screens/proving/DialogueWithCtaScreen';
+import { KycPendingScreen } from './screens/proving/KycPendingScreen';
+import { KycSuccessScreen } from './screens/proving/KycSuccessScreen';
+import { ProofGenerationDialogueScreen } from './screens/proving/ProofGenerationDialogueScreen';
+import { ProofGenerationSuccessScreen } from './screens/proving/ProofGenerationSuccessScreen';
+import { ProofHistoryScreen } from './screens/proving/ProofHistoryScreen';
+import { ProofRequestReceiptScreen } from './screens/proving/ProofRequestReceiptScreen';
+import { ProofSuccessBackupScreen } from './screens/proving/ProofSuccessBackupScreen';
 import { ProvingScreen } from './screens/proving/ProvingScreen';
+import { SimpleDialogueScreen } from './screens/proving/SimpleDialogueScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
 import { BackupMethodPickerScreen } from './screens/recovery/BackupMethodPickerScreen';
 import { LaunchRecoveryScreen } from './screens/recovery/LaunchRecoveryScreen';
@@ -65,7 +81,22 @@ export const App: React.FC = () => (
           <Route path="/recovery" element={<LaunchRecoveryScreen />} />
           <Route path="/recovery/phrase-input" element={<SecretPhraseInputScreen />} />
           <Route path="/recovery/success" element={<RecoverySuccessScreen />} />
+          <Route path="/onboarding/backup" element={<SocialSignOnMethodPickerScreen />} />
+          <Route path="/onboarding/signin" element={<SocialSignOnPickerScreen />} />
+          <Route path="/onboarding/conflict" element={<ConflictDetectedScreen />} />
+          <Route path="/onboarding/notifications" element={<PushNotificationPromptScreen />} />
+          <Route path="/proving/receipt" element={<ProofRequestReceiptScreen />} />
+          <Route path="/proving/history" element={<ProofHistoryScreen />} />
+          <Route path="/proving/dialogue" element={<SimpleDialogueScreen />} />
+          <Route path="/proving/dialogue-cta" element={<DialogueWithCtaScreen />} />
+          <Route path="/proving/generation-dialogue" element={<ProofGenerationDialogueScreen />} />
+          <Route path="/proving/generation-success" element={<ProofGenerationSuccessScreen />} />
+          <Route path="/proving/backup-prompt" element={<ProofSuccessBackupScreen />} />
+          <Route path="/proving/kyc-pending" element={<KycPendingScreen />} />
+          <Route path="/proving/kyc-success" element={<KycSuccessScreen />} />
           <Route path="/account/verified" element={<VerificationResultScreen />} />
+          <Route path="/id-data" element={<IDDataScreen />} />
+          <Route path="/manage-documents" element={<ManageDocumentsScreen />} />
           <Route path="/coming-soon" element={<ComingSoonScreen />} />
           <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
           <Route path="/tunnel/kyc" element={<KycMockScreen />} />
@@ -76,6 +107,7 @@ export const App: React.FC = () => (
           <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        {import.meta.env.DEV && <DevRouteMenu />}
       </SelfClientProvider>
     </VerificationRequestProvider>
   </BrowserRouter>

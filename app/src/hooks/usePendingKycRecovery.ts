@@ -8,6 +8,18 @@ import { useDiditWebSocket } from '@/hooks/useDiditWebSocket';
 import { navigationRef } from '@/navigation';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
 
+type RecoveryVerification = {
+  sessionId?: string;
+  userId?: string;
+  status: 'pending' | 'processing' | 'failed';
+  timeoutAt: number;
+  documentId?: string;
+};
+
+function getRecoveryIdentifier(verification: RecoveryVerification) {
+  return verification.sessionId ?? verification.userId;
+}
+
 /**
  * Hook to recover pending KYC verifications on app restart.
  *
@@ -65,39 +77,46 @@ export function usePendingKycRecovery() {
         v.status === 'processing' &&
         v.documentId &&
         v.timeoutAt > Date.now() &&
-        !hasAttemptedRecoveryRef.current.has(v.sessionId),
+        !!getRecoveryIdentifier(v) &&
+        !hasAttemptedRecoveryRef.current.has(getRecoveryIdentifier(v)!),
     );
 
     if (processingWithDocument) {
+      const recoveryId = getRecoveryIdentifier(processingWithDocument);
+
+      if (!recoveryId) {
+        return;
+      }
+
       console.log(
         '[PendingKycRecovery] Resuming processing verification, navigating to KYCVerified:',
-        processingWithDocument.sessionId,
+        recoveryId,
       );
       if (navigationRef.isReady()) {
         navigationRef.navigate('KYCVerified', {
           documentId: processingWithDocument.documentId,
         });
         // Only mark as attempted after successful navigation
-        hasAttemptedRecoveryRef.current.add(processingWithDocument.sessionId);
+        hasAttemptedRecoveryRef.current.add(recoveryId);
         return;
       }
 
       // Navigation not ready yet - poll until ready
       console.log(
         '[PendingKycRecovery] Navigation not ready, polling for readiness:',
-        processingWithDocument.sessionId,
+        recoveryId,
       );
 
       const pollInterval = setInterval(() => {
         if (navigationRef.isReady()) {
           console.log(
             '[PendingKycRecovery] Navigation ready, navigating for:',
-            processingWithDocument.sessionId,
+            recoveryId,
           );
           navigationRef.navigate('KYCVerified', {
             documentId: processingWithDocument.documentId,
           });
-          hasAttemptedRecoveryRef.current.add(processingWithDocument.sessionId);
+          hasAttemptedRecoveryRef.current.add(recoveryId);
           clearInterval(pollInterval);
         }
       }, 100); // Poll every 100ms
@@ -112,16 +131,23 @@ export function usePendingKycRecovery() {
       v =>
         v.status === 'pending' &&
         v.timeoutAt > Date.now() &&
-        !hasAttemptedRecoveryRef.current.has(v.sessionId),
+        !!getRecoveryIdentifier(v) &&
+        !hasAttemptedRecoveryRef.current.has(getRecoveryIdentifier(v)!),
     );
 
     if (firstPending) {
-      hasAttemptedRecoveryRef.current.add(firstPending.sessionId);
+      const recoveryId = getRecoveryIdentifier(firstPending);
+
+      if (!recoveryId) {
+        return;
+      }
+
+      hasAttemptedRecoveryRef.current.add(recoveryId);
       console.log(
         '[PendingKycRecovery] Recovering pending verification:',
-        firstPending.sessionId,
+        recoveryId,
       );
-      subscribe(firstPending.sessionId);
+      subscribe(recoveryId);
     }
   }, [pendingVerifications, subscribe, unsubscribeAll]);
 }
