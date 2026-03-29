@@ -11260,6 +11260,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/webview-app@workspace:packages/webview-app"
   dependencies:
+    "@scure/bip39": "npm:^1.6.0"
     "@selfxyz/euclid": "npm:1.2.6"
     "@selfxyz/euclid-core": "npm:1.2.6"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"

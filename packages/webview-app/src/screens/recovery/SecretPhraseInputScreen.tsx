@@ -11,33 +11,9 @@ import { LeftArrowIcon, SecretPhraseInputScreen as EuclidSecretPhraseInputScreen
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
-// BIP-39 word list subset for validation (mock — real list would come from SDK)
-const VALID_WORDS = new Set([
-  'abandon',
-  'ability',
-  'able',
-  'about',
-  'above',
-  'absent',
-  'absorb',
-  'abstract',
-  'absurd',
-  'abuse',
-  'access',
-  'accident',
-  'account',
-  'accuse',
-  'achieve',
-  'acid',
-  'acoustic',
-  'acquire',
-  'across',
-  'act',
-  'action',
-  'actor',
-  'actress',
-  'actual',
-]);
+import { wordlist as bip39EnglishWordlist } from '@scure/bip39/wordlists/english';
+
+const VALID_WORDS = new Set(bip39EnglishWordlist);
 
 export const SecretPhraseInputScreen: React.FC = () => {
   const navigate = useNavigate();

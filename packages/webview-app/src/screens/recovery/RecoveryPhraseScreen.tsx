@@ -12,33 +12,6 @@ import { RecoveryPhraseScreen as EuclidRecoveryPhraseScreen } from '@selfxyz/euc
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
-const MOCK_WORDS = [
-  'abandon',
-  'ability',
-  'able',
-  'about',
-  'above',
-  'absent',
-  'absorb',
-  'abstract',
-  'absurd',
-  'abuse',
-  'access',
-  'accident',
-  'account',
-  'accuse',
-  'achieve',
-  'acid',
-  'acoustic',
-  'acquire',
-  'across',
-  'act',
-  'action',
-  'actor',
-  'actress',
-  'actual',
-];
-
 export const RecoveryPhraseScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
@@ -63,7 +36,7 @@ export const RecoveryPhraseScreen: React.FC = () => {
   return (
     <EuclidRecoveryPhraseScreen
       insets={WEB_SAFE_AREA.insets}
-      words={MOCK_WORDS}
+      words={undefined}
       variant={variant}
       onBack={onBack}
       onReveal={onReveal}
