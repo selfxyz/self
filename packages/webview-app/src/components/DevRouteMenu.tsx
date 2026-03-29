@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface DevScreenLink {
@@ -82,6 +82,13 @@ export const DevRouteMenu: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const activeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isOpen && activeRef.current) {
+      activeRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [isOpen]);
 
   const currentLabel = useMemo(
     () => allLinks.find(link => link.href === location.pathname)?.label ?? 'Dev Screens',
@@ -136,6 +143,7 @@ export const DevRouteMenu: React.FC = () => {
                 return (
                   <button
                     key={link.href}
+                    ref={isActive ? activeRef : undefined}
                     onClick={() => {
                       navigate(link.href);
                       setIsOpen(false);
