@@ -68,12 +68,12 @@ export const mockDocumentStore = {
     return snapshot;
   },
 
-  addDocument(countryCode: string, documentType: string): MockDocument {
+  addDocument(countryCode: string, documentType: string, isInOfacList = false): MockDocument {
     const doc: MockDocument = {
       id: `mock-${Date.now()}`,
       documentType,
       documentCategory: docTypeToCategory(documentType),
-      data: JSON.stringify({ countryCode, documentType, mock: true }),
+      data: JSON.stringify({ countryCode, documentType, mock: true, isInOfacList }),
       mock: true,
       isRegistered: true,
     };
