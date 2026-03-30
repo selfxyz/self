@@ -7,10 +7,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button, colors, Description, spacing, Title } from '@selfxyz/euclid';
+import { storePassportData } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
+import { buildKycDocument } from '../../utils/buildKycDocument';
 import { waitForAttestation } from '../../utils/diditAttestation';
 import { createDiditSession, launchDiditWebSdk } from '../../utils/diditProvider';
 
@@ -21,7 +23,7 @@ type Phase = 'loading' | 'active' | 'waiting' | 'error';
 export const ProviderLaunchScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { analytics, haptic, lifecycle } = useSelfClient();
+  const { analytics, haptic, lifecycle, client } = useSelfClient();
   const { verificationId: ctxVerificationId } = useVerificationRequest();
 
   const { countryCode = '', documentType = '' } =
@@ -54,6 +56,9 @@ export const ProviderLaunchScreen: React.FC = () => {
         if (!mountedRef.current) return;
 
         if (attestationResult.status === 'success' && attestationResult.attestation) {
+          const kycDoc = buildKycDocument(attestationResult.attestation);
+          await storePassportData(client, kycDoc as any);
+
           navigate('/onboarding/provider-result', {
             state: {
               providerResult: {
@@ -85,7 +90,7 @@ export const ProviderLaunchScreen: React.FC = () => {
         state: { providerResult: result },
       });
     },
-    [analytics, navigate],
+    [analytics, client, navigate],
   );
 
   const handleError = useCallback(
