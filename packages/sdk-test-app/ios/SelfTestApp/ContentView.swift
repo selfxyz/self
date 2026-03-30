@@ -20,10 +20,15 @@ class VerificationCallback: SelfSdkCallback {
 }
 
 struct ContentView: View {
-    @State private var teeUrl = "https://kyc.self.xyz"
+    @State private var environment = "staging"
     @State private var verificationId = "test-verification-123"
     @State private var userId = "test-user-456"
     @State private var debugMode = false
+    @State private var scope = ""
+    @State private var disclosures = "full_name,dob"
+    @State private var appName = "Self Test App"
+    @State private var appEndpoint = ""
+    @State private var resultType = ""
     @State private var resultText = "No result yet"
     @State private var showVerification = false
 
@@ -32,9 +37,9 @@ struct ContentView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     Group {
-                        Text("TEE URL")
+                        Text("Environment (prod / staging)")
                             .font(.caption)
-                        TextField("TEE URL", text: $teeUrl)
+                        TextField("Environment", text: $environment)
                             .textFieldStyle(.roundedBorder)
 
                         Text("Verification ID")
@@ -49,6 +54,36 @@ struct ContentView: View {
                     }
 
                     Toggle("Debug mode (localhost:5173)", isOn: $debugMode)
+
+                    Group {
+                        Text("Verification Config")
+                            .font(.headline)
+
+                        Text("Scope")
+                            .font(.caption)
+                        TextField("Scope", text: $scope)
+                            .textFieldStyle(.roundedBorder)
+
+                        Text("Disclosures (comma-separated)")
+                            .font(.caption)
+                        TextField("Disclosures", text: $disclosures)
+                            .textFieldStyle(.roundedBorder)
+
+                        Text("App Name")
+                            .font(.caption)
+                        TextField("App Name", text: $appName)
+                            .textFieldStyle(.roundedBorder)
+
+                        Text("App Endpoint")
+                            .font(.caption)
+                        TextField("App Endpoint", text: $appEndpoint)
+                            .textFieldStyle(.roundedBorder)
+
+                        Text("Result Type")
+                            .font(.caption)
+                        TextField("Result Type", text: $resultType)
+                            .textFieldStyle(.roundedBorder)
+                    }
 
                     Button(action: { showVerification = true }) {
                         Text("Launch Verification")
@@ -70,10 +105,15 @@ struct ContentView: View {
             .sheet(isPresented: $showVerification) {
                 VerificationView(
                     config: SelfSdkConfig(
-                        teeUrl: teeUrl,
                         verificationId: verificationId,
                         userId: userId,
-                        isDebugMode: debugMode
+                        environment: environment,
+                        isDebugMode: debugMode,
+                        scope: scope.isEmpty ? nil : scope,
+                        disclosures: disclosures.isEmpty ? nil : disclosures.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) },
+                        appName: appName.isEmpty ? nil : appName,
+                        appEndpoint: appEndpoint.isEmpty ? nil : appEndpoint,
+                        resultType: resultType.isEmpty ? nil : resultType
                     ),
                     onResult: { result in
                         resultText = result
