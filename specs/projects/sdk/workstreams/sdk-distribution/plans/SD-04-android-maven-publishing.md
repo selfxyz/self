@@ -47,6 +47,7 @@
 ### Implementation Details
 
 1. **Add `maven-publish` plugin**:
+
    ```kotlin
    plugins {
        // existing plugins...
@@ -55,6 +56,7 @@
    ```
 
 2. **Configure publication**:
+
    ```kotlin
    afterEvaluate {
        publishing {

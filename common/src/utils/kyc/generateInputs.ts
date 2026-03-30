@@ -257,7 +257,10 @@ export const generateKycRegisterInput = async (
   // Use raw bytes directly — deserialize→reserialize strips the namespace prefix
   // from id_type, producing different bytes than the TEE signed.
   const raw = Buffer.from(applicantInfoBase64, 'base64');
-  const dataPadded = [...Array.from(raw, (b) => Number(b)), ...new Array(Math.max(0, KYC_MAX_LENGTH - raw.length)).fill(0)];
+  const dataPadded = [
+    ...Array.from(raw, (b) => Number(b)),
+    ...new Array(Math.max(0, KYC_MAX_LENGTH - raw.length)).fill(0),
+  ];
 
   const kycRegisterInput: KycRegisterInput = {
     data_padded: dataPadded,
