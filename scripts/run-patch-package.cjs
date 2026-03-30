@@ -14,7 +14,8 @@ const isCI = process.env.CI === 'true' ||
              process.env.TRAVIS === 'true' ||
              process.env.BUILDKITE === 'true' ||
              process.env.GITLAB_CI === 'true' ||
-             process.env.JENKINS_URL !== undefined;
+             process.env.JENKINS_URL !== undefined ||
+             process.env.VERCEL === '1';
 
 function directoryContainsPatchFiles(directoryPath) {
   try {

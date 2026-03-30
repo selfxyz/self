@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "build": "tsc --noEmit && vite build",
-    "build:vercel": "yarn workspace @selfxyz/common build && yarn workspace @selfxyz/mobile-sdk-alpha build:ts-only && yarn workspace @selfxyz/webview-bridge build && yarn build",
     "dev": "vite",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
