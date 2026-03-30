@@ -7,9 +7,6 @@ import type { KycProviderAttestation } from '../types/kycProvider';
 // KYC byte layout constants (matches didit-tee 295-byte format)
 const KYC_ID_TYPE_INDEX = 3;
 const KYC_ID_TYPE_LENGTH = 27;
-const KYC_ID_NUMBER_INDEX = 30;
-const KYC_ID_NUMBER_LENGTH = 32;
-
 function readField(bytes: Uint8Array, offset: number, length: number): string {
   const slice = bytes.slice(offset, offset + length);
   let end = slice.length;
@@ -33,12 +30,11 @@ function parseIdType(bytes: Uint8Array): string {
 export function buildKycDocument(attestation: KycProviderAttestation) {
   const raw = Uint8Array.from(atob(attestation.serializedApplicantInfo), c => c.charCodeAt(0));
   const idType = parseIdType(raw);
-  const idNumber = readField(raw, KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_LENGTH);
 
   return {
     documentType: idType,
     documentCategory: 'kyc' as const,
-    mock: idNumber.startsWith('Mock'),
+    mock: false,
     signature: attestation.signature,
     pubkey: attestation.pubkey,
     serializedApplicantInfo: attestation.serializedApplicantInfo,
