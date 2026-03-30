@@ -15,8 +15,6 @@ import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const MNEMONIC_KEY = 'secret';
-const MOCK_MNEMONIC =
-  'abandon ability able about above absent absorb abstract absurd abuse access accident account accuse achieve acid acoustic acquire across act action actor actress actual';
 
 function parseMnemonicWords(raw: string | null): string[] | undefined {
   if (!raw) {
@@ -52,27 +50,27 @@ export const RecoveryPhraseScreen: React.FC = () => {
     try {
       resolvedWords = parseMnemonicWords(await storage.get(MNEMONIC_KEY));
     } catch {
-      // Ignore storage parsing errors and fall through to mock/dev fallback.
-    }
-
-    if (!resolvedWords && import.meta.env.DEV) {
-      resolvedWords = MOCK_MNEMONIC.split(' ');
+      // Storage or parsing failed — words stay undefined, Euclid shows placeholders.
     }
 
     setWords(resolvedWords);
     setVariant('revealed');
   }, [haptic, analytics, storage]);
 
-  const onCopy = useCallback(() => {
-    haptic.trigger('success');
+  const onCopy = useCallback(async () => {
     analytics.trackEvent('recovery_phrase_copied');
 
     if (!words?.length || !navigator.clipboard) {
       return;
     }
 
-    void navigator.clipboard.writeText(words.join(' '));
-    setVariant('copied');
+    try {
+      await navigator.clipboard.writeText(words.join(' '));
+      haptic.trigger('success');
+      setVariant('copied');
+    } catch {
+      haptic.trigger('error');
+    }
   }, [haptic, analytics, words]);
 
   return (

@@ -11,9 +11,11 @@ import { LeftArrowIcon, SecretPhraseInputScreen as EuclidSecretPhraseInputScreen
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
+import { validateMnemonic } from '@scure/bip39';
 import { wordlist as bip39EnglishWordlist } from '@scure/bip39/wordlists/english';
 
 const VALID_WORDS = new Set(bip39EnglishWordlist);
+const VALID_LENGTHS = new Set([12, 15, 18, 21, 24]);
 
 export const SecretPhraseInputScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -26,6 +28,12 @@ export const SecretPhraseInputScreen: React.FC = () => {
 
   const onSubmit = useCallback(
     (words: string[]) => {
+      if (!VALID_LENGTHS.has(words.length) || !validateMnemonic(words.join(' '), bip39EnglishWordlist)) {
+        haptic.trigger('error');
+        analytics.trackEvent('recovery_phrase_rejected', { wordCount: words.length });
+        return;
+      }
+
       haptic.trigger('success');
       analytics.trackEvent('recovery_phrase_submitted', { wordCount: words.length });
       navigate('/recovery/success');

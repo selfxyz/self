@@ -79,7 +79,7 @@ describe('RecoveryPhraseScreen', () => {
     cleanup();
   });
 
-  it('shows a dev fallback mnemonic when secure storage is empty', async () => {
+  it('reveals placeholders when secure storage is empty', async () => {
     render(
       <MemoryRouter>
         <RecoveryPhraseScreen />
@@ -90,7 +90,7 @@ describe('RecoveryPhraseScreen', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('variant').textContent).toBe('revealed');
-      expect(screen.getByTestId('words').textContent).toContain('abandon ability able');
+      expect(screen.getByTestId('words').textContent).toBe('');
     });
   });
 
@@ -114,6 +114,35 @@ describe('RecoveryPhraseScreen', () => {
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith('alpha beta gamma');
       expect(screen.getByTestId('variant').textContent).toBe('copied');
+    });
+  });
+
+  it('does not switch to copied when clipboard write fails', async () => {
+    storageGet.mockResolvedValue(JSON.stringify({ phrase: 'alpha beta gamma' }));
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockRejectedValue(new Error('denied')),
+      },
+    });
+
+    render(
+      <MemoryRouter>
+        <RecoveryPhraseScreen />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /reveal phrase/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('words').textContent).toBe('alpha beta gamma');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /copy phrase/i }));
+
+    await waitFor(() => {
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith('alpha beta gamma');
+      expect(screen.getByTestId('variant').textContent).toBe('revealed');
+      expect(haptic.trigger).toHaveBeenCalledWith('error');
     });
   });
 });

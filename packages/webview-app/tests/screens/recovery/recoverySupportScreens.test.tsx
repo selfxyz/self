@@ -109,15 +109,34 @@ vi.mock('@selfxyz/euclid', () => ({
       </button>
     </div>
   ),
-  LaunchRecoveryScreen: ({ onEnterRecoveryPhrase }: { onEnterRecoveryPhrase: () => void }) => (
-    <button onClick={onEnterRecoveryPhrase} type="button">
-      Enter recovery phrase
-    </button>
+  LaunchRecoveryScreen: ({
+    onEnterRecoveryPhrase,
+    onClose,
+  }: {
+    onEnterRecoveryPhrase: () => void;
+    onClose: () => void;
+  }) => (
+    <div>
+      <button onClick={onEnterRecoveryPhrase} type="button">
+        Enter recovery phrase
+      </button>
+      <button onClick={onClose} type="button">
+        Close recovery
+      </button>
+    </div>
   ),
   SecretPhraseInputScreen: ({ onSubmit }: { onSubmit: (words: string[]) => void }) => (
-    <button onClick={() => onSubmit(['abandon', 'ability', 'able'])} type="button">
-      Submit phrase
-    </button>
+    <div>
+      <button
+        onClick={() => onSubmit('bacon rubber extend tonight rocket race ill wash flame expect oval street'.split(' '))}
+        type="button"
+      >
+        Submit valid phrase
+      </button>
+      <button onClick={() => onSubmit(['abandon', 'ability', 'able'])} type="button">
+        Submit invalid phrase
+      </button>
+    </div>
   ),
   RecoverySuccessScreen: ({ onClose }: { onClose: () => void }) => (
     <button onClick={onClose} type="button">
@@ -187,7 +206,26 @@ describe('recovery support screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /enter recovery phrase/i }));
     expectLocation('/recovery/phrase-input');
 
-    fireEvent.click(screen.getByRole('button', { name: /submit phrase/i }));
+    fireEvent.click(screen.getByRole('button', { name: /submit valid phrase/i }));
     expectLocation('/recovery/success');
+  });
+
+  it('rejects an invalid mnemonic and stays on phrase input', () => {
+    renderRoutes(['/recovery/phrase-input']);
+    expectLocation('/recovery/phrase-input');
+
+    fireEvent.click(screen.getByRole('button', { name: /submit invalid phrase/i }));
+    expectLocation('/recovery/phrase-input');
+
+    expect(haptic.trigger).toHaveBeenCalledWith('error');
+    expect(analytics.trackEvent).toHaveBeenCalledWith('recovery_phrase_rejected', { wordCount: 3 });
+  });
+
+  it('launch recovery close returns to previous screen', () => {
+    renderRoutes(['/settings/security', '/recovery']);
+    expectLocation('/recovery');
+
+    fireEvent.click(screen.getByRole('button', { name: /close recovery/i }));
+    expectLocation('/settings/security');
   });
 });
