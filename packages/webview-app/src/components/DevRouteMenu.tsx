@@ -65,9 +65,22 @@ const screenGroups: DevScreenGroup[] = [
   {
     title: 'Settings',
     links: [
+      { href: '/settings', label: 'Settings' },
       { href: '/settings/dev-mode', label: 'Dev Mode' },
       { href: '/settings/security', label: 'Security' },
       { href: '/settings/notifications', label: 'Notification Preferences' },
+    ],
+  },
+  {
+    title: 'Tunnel',
+    links: [
+      { href: '/tunnel/tour/1', label: 'Tour' },
+      { href: '/tunnel/kyc', label: 'KYC Mock' },
+      { href: '/tunnel/registration/country', label: 'Country Picker' },
+      { href: '/tunnel/registration/id-type', label: 'ID Type' },
+      { href: '/tunnel/proof/receipt', label: 'Proof Receipt' },
+      { href: '/tunnel/proof/generating', label: 'Proving' },
+      { href: '/tunnel/proof/result', label: 'Result' },
     ],
   },
   {
