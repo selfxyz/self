@@ -21,8 +21,6 @@ import {
   consoleAnalyticsAdapter,
   createKeychainDocumentsAdapter,
   createSdkAdapters,
-  indexedDBDocumentsAdapter,
-  noOpHapticAdapter,
 } from '@selfxyz/webview-bridge/adapters';
 
 import { useBridge } from './BridgeProvider';
@@ -53,15 +51,11 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const stableGoBack = useCallback(() => navigateRef.current(-1), []);
 
   const webViewAdapters = useMemo<WebViewAdapters>(() => {
-    const useBrowserFallbacks = !bridge.isConnected || bridge.usesBrowserHostTransport;
     const sdkAdapters = createSdkAdapters({
       bridge,
       navigate: stableNavigate,
       goBack: stableGoBack,
     });
-    const documents: DocumentsAdapter = useBrowserFallbacks
-      ? (indexedDBDocumentsAdapter() as DocumentsAdapter)
-      : createKeychainDocumentsAdapter(bridge);
 
     const { map: listeners } = createListenersMap();
     const client = createSelfClient({
@@ -69,17 +63,16 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         platform: 'webview',
         debug: import.meta.env.DEV,
       },
-      adapters: {
-        ...sdkAdapters,
-        documents,
-      },
+      adapters: sdkAdapters,
       listeners,
     });
+
+    const documents = createKeychainDocumentsAdapter(bridge);
 
     return {
       client,
       lifecycle: bridgeLifecycleAdapter(bridge),
-      haptic: useBrowserFallbacks ? noOpHapticAdapter() : bridgeHapticAdapter(bridge),
+      haptic: bridgeHapticAdapter(bridge),
       biometrics: bridgeBiometricsAdapter(bridge),
       analytics: consoleAnalyticsAdapter(),
       documents,
