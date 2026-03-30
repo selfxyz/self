@@ -6,7 +6,7 @@ import type React from 'react';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { LeftArrowIcon, RecoverySuccessScreen as EuclidRecoverySuccessScreen, SelfLogo } from '@selfxyz/euclid';
+import { LeftArrowIcon, RecoverySuccessScreen as EuclidRecoverySuccessScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -25,7 +25,7 @@ export const RecoverySuccessScreen: React.FC = () => {
     <EuclidRecoverySuccessScreen
       insets={WEB_SAFE_AREA.insets}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-      logo={<SelfLogo size={64} color="white" accentColor="white" withoutBackground />}
+      logo={<img src="/logos/self.svg" alt="" width={64} height={64} aria-hidden="true" />}
       onClose={onClose}
       onAppleBackup={() => navigate('/coming-soon')}
       onGoogleBackup={() => navigate('/coming-soon')}

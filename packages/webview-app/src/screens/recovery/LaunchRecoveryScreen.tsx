@@ -17,7 +17,7 @@ export const LaunchRecoveryScreen: React.FC = () => {
 
   const onClose = useCallback(() => {
     haptic.trigger('selection');
-    navigate(-1);
+    navigate('/settings/security');
   }, [navigate, haptic]);
 
   const onEnterRecoveryPhrase = useCallback(() => {
