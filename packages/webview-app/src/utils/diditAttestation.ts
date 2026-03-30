@@ -7,7 +7,7 @@ import { io } from 'socket.io-client';
 import type { KycProviderAttestation } from '../types/kycProvider';
 
 const DIDIT_TEE_URL =
-  import.meta.env.VITE_DIDIT_TEE_URL ?? 'https://58a0-49-204-25-56.ngrok-free.app';
+  import.meta.env.VITE_DIDIT_TEE_URL ?? 'https://kyc.self.xyz';
 
 const ATTESTATION_TIMEOUT_MS = 120_000; // 2 minutes
 

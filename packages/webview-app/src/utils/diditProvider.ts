@@ -7,7 +7,7 @@ import type { KycProviderResult } from '../types/kycProvider';
 const FETCH_TIMEOUT_MS = 30_000;
 
 const DIDIT_TEE_URL =
-  import.meta.env.VITE_DIDIT_TEE_URL ?? 'https://58a0-49-204-25-56.ngrok-free.app';
+  import.meta.env.VITE_DIDIT_TEE_URL ?? 'https://kyc.self.xyz';
 
 export interface DiditSession {
   sessionId: string;
