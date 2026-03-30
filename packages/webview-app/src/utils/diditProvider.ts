@@ -155,6 +155,9 @@ export async function launchDiditWebSdk(
 
   DiditSdk.shared.startVerification({
     url: config.url,
+    configuration: {
+      loggingEnabled: false,
+    },
   });
 
   return () => {
