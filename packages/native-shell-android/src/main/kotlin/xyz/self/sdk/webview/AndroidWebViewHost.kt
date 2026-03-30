@@ -81,7 +81,9 @@ class AndroidWebViewHost(
                     request: WebResourceRequest?,
                 ): WebResourceResponse? {
                     request ?: return null
-                    return assetLoader.shouldInterceptRequest(request.url)
+                    val url = request.url
+                    if (isDebugMode && url.host != "appassets.androidplatform.net") return null
+                    return assetLoader.shouldInterceptRequest(url)
                 }
 
                 override fun shouldOverrideUrlLoading(
@@ -111,7 +113,8 @@ class AndroidWebViewHost(
                     val origin = request.origin?.toString() ?: ""
                     val isTrusted = origin.startsWith("https://appassets.androidplatform.net") ||
                         origin.startsWith("https://verify.didit.me") ||
-                        (isDebugMode && origin.startsWith("http://127.0.0.1"))
+                        (isDebugMode && origin.startsWith("http://127.0.0.1")) ||
+                        (isDebugMode && origin.startsWith("https://uncoagulable-irredeemable-kathyrn.ngrok-free.dev"))
                     if (!isTrusted) {
                         request.deny()
                         return
@@ -171,7 +174,7 @@ class AndroidWebViewHost(
             addJavascriptInterface(BridgeJsInterface(), "SelfNativeAndroid")
 
             if (isDebugMode) {
-                loadUrl("http://127.0.0.1:5173?$queryParams")
+                loadUrl("http://127.0.0.1:5173/tunnel/tour/1?$queryParams")
             } else {
                 loadUrl("https://appassets.androidplatform.net/index.html?$queryParams")
             }

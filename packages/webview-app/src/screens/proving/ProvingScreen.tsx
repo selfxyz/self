@@ -12,14 +12,7 @@ import type { VerificationResult } from '@selfxyz/webview-bridge';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-
-function titleCaseDisclosure(disclosure: string): string {
-  return disclosure
-    .replace(/[_-]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, match => match.toUpperCase());
-}
+import { titleCaseDisclosure } from '../../utils/verificationRequest';
 
 export const ProvingScreen: React.FC = () => {
   const navigate = useNavigate();
