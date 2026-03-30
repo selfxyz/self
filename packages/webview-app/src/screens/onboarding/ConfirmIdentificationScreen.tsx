@@ -3,57 +3,112 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { StatusState } from '@selfxyz/euclid';
-import type { VerificationResult } from '@selfxyz/webview-bridge';
+import { storeDocumentWithDeduplication } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
+import { clearKycResult, getKycResult } from '../../stores/kycResultStore';
+import { buildKycDocument } from '../../utils/buildKycDocument';
 
 export const ConfirmIdentificationScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { analytics, haptic, lifecycle } = useSelfClient();
+  const { analytics, client, haptic, lifecycle } = useSelfClient();
   const { request, verificationId } = useVerificationRequest();
+  const [error, setError] = useState<string | null>(null);
+  const submittingRef = useRef(false);
+
+  // Mock flow (dev only) passes nextPath via location state; real flow uses kycResultStore
   const { nextPath, countryCode, documentType } =
     (location.state as { nextPath?: string; countryCode?: string; documentType?: string } | null) ?? {};
 
-  useEffect(() => {
-    haptic.trigger('success');
-  }, [haptic]);
+  const kycResult = getKycResult();
+  const isRealFlow = !!kycResult?.attestation;
+  const isMockFlow = !isRealFlow && !!nextPath && import.meta.env.DEV;
 
-  const onConfirm = useCallback(async () => {
-    if (nextPath) {
-      haptic.trigger('selection');
-      analytics.trackEvent('ownership_confirmed', { nextPath });
-      navigate(nextPath, { replace: true, state: { countryCode, documentType } });
+  useEffect(() => {
+    if (!isRealFlow && !isMockFlow) {
+      navigate('/onboarding/id-type', { replace: true });
       return;
     }
+    haptic.trigger('success');
+  }, [haptic, isRealFlow, isMockFlow, navigate]);
 
-    const result: VerificationResult = {
-      success: true,
-      userId: request.userId,
-      verificationId,
-      claims: {
-        resultType: 'documentOwnershipConfirmed',
-      },
-    };
-
-    haptic.trigger('selection');
-    analytics.trackEvent('ownership_confirmed');
+  const onConfirm = useCallback(async () => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
 
     try {
-      await lifecycle.setResult(result);
+      // Mock flow (dev only): navigate to next path without persistence
+      if (isMockFlow && nextPath) {
+        haptic.trigger('selection');
+        analytics.trackEvent('ownership_confirmed', { nextPath });
+        navigate(nextPath, { replace: true, state: { countryCode, documentType } });
+        return;
+      }
+
+      if (!kycResult?.attestation) return;
+
+      haptic.trigger('selection');
+      analytics.trackEvent('ownership_confirmed');
+      setError(null);
+
+      const kycData = buildKycDocument(kycResult);
+      const documentId = await storeDocumentWithDeduplication(client, kycData);
+
+      await lifecycle.setResult({
+        success: true,
+        userId: request.userId,
+        verificationId,
+        claims: {
+          resultType: 'documentOwnershipConfirmed',
+          documentId,
+        },
+      });
+
+      analytics.trackEvent('kyc_document_stored', { documentId });
+      clearKycResult();
+      navigate('/', { replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
-      analytics.trackEvent('proving_process_error', { error: message });
+      analytics.trackEvent('kyc_document_store_error', { error: message });
+      setError(message);
+    } finally {
+      submittingRef.current = false;
     }
+  }, [
+    analytics,
+    client,
+    countryCode,
+    documentType,
+    haptic,
+    isMockFlow,
+    kycResult,
+    lifecycle,
+    navigate,
+    nextPath,
+    request.userId,
+    verificationId,
+  ]);
 
-    navigate('/');
-  }, [analytics, countryCode, documentType, haptic, lifecycle, navigate, nextPath, request.userId, verificationId]);
+  if (!isRealFlow && !isMockFlow) return null;
+
+  if (error) {
+    return (
+      <StatusState
+        variant="fail"
+        title="Something went wrong"
+        description="We couldn't save your identity document. Please try again."
+        buttonText="Retry"
+        onButtonPress={onConfirm}
+      />
+    );
+  }
 
   return (
     <>

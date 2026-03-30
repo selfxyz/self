@@ -4,6 +4,8 @@
 
 // Browser-safe exports with explicit tree-shaking friendly imports.
 
+import type { IDDocument } from './types/public';
+
 // Types
 export type {
   Adapters,
@@ -38,6 +40,9 @@ export type {
 
 export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
 export type { DG1, DG2, ParsedNFCResponse } from './nfc';
+export type { DocumentMetadata } from '@selfxyz/common';
+/** Persisted KYC document format (subset of IDDocument union with documentCategory: 'kyc'). */
+export type KycData = Extract<IDDocument, { documentCategory: 'kyc' }>;
 export type { PassportValidationCallbacks } from './validation/document';
 export type { ProvingState, ProvingStateType, provingMachineCircuitType } from './proving/provingMachine';
 export type { SDKEvent, SDKEventMap } from './types/events';
@@ -61,6 +66,8 @@ export { SelfClientContext, SelfClientProvider, useSelfClient } from './context'
 
 export { advercase, dinot, dinotBold, plexMono } from './constants/fonts';
 
+export { calculateContentHash } from '@selfxyz/common';
+
 // Browser-native adapter factories (no React Native dependencies)
 export {
   clearPassportData,
@@ -69,9 +76,9 @@ export {
   loadSelectedDocument,
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
+  storeDocumentWithDeduplication,
   storePassportData,
 } from './documents/utils';
-
 export {
   createIndexedDBDocumentsAdapter,
   createNoOpHapticAdapter,
@@ -84,6 +91,8 @@ export { createListenersMap, createSelfClient } from './client';
 
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { defaultConfig } from './config/defaults';
+
+export { deserializeApplicantInfo } from '@selfxyz/common';
 
 export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 

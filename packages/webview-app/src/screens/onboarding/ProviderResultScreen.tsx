@@ -3,13 +3,14 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { colors, Description, spacing, Title } from '@selfxyz/euclid';
 
 import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { setKycResult } from '../../stores/kycResultStore';
 import type { KycProviderResult } from '../../types/kycProvider';
 import type { MockOnboardingNavigationState } from '../../utils/mockOnboardingFlow';
 import { createMockProviderResult, getMockOutcomeFromSearch } from '../../utils/mockOnboardingFlow';
@@ -22,24 +23,58 @@ export const ProviderResultScreen: React.FC = () => {
   const state =
     (location.state as ({ providerResult?: KycProviderResult } & MockOnboardingNavigationState) | null) ?? null;
 
-  const providerResult = state?.providerResult ?? createMockProviderResult({ outcome: mockOutcome });
+  // Use real provider result if available, otherwise fall back to mock for dev testing
+  const providerResult = useMemo(
+    () => state?.providerResult ?? createMockProviderResult({ outcome: mockOutcome }),
+    [state?.providerResult, mockOutcome],
+  );
+  const isRealResult = !!state?.providerResult;
 
   useEffect(() => {
     haptic.trigger('selection');
     analytics.trackEvent('provider_result_received', {
       status: providerResult.status,
+      hasAttestation: !!providerResult.attestation,
+      isRealResult,
       mockOutcome,
     });
 
     const timer = window.setTimeout(() => {
-      if (providerResult.status === 'success' || providerResult.status === 'partial') {
-        navigate('/onboarding/confirm', {
+      // Real result with attestation: store and route to confirm
+      if (providerResult.status === 'success' && providerResult.attestation) {
+        setKycResult(providerResult);
+        navigate('/onboarding/confirm', { replace: true });
+        return;
+      }
+
+      // Contract violation per WV-02: success requires attestation
+      if (providerResult.status === 'success' && !providerResult.attestation) {
+        analytics.trackEvent('provider_result_missing_attestation');
+        // Mock flow: route through confirm for dev testing only
+        if (!isRealResult && import.meta.env.DEV) {
+          navigate('/onboarding/confirm', {
+            replace: true,
+            state: {
+              nextPath: '/onboarding/success',
+              countryCode: state?.countryCode,
+              documentType: state?.documentType,
+            },
+          });
+          return;
+        }
+        navigate('/onboarding/kyc-failure', {
           replace: true,
-          state: {
-            nextPath: '/onboarding/success',
-            countryCode: state?.countryCode,
-            documentType: state?.documentType,
-          },
+          state: { retryable: true },
+        });
+        return;
+      }
+
+      // Partial results cannot advance into proving per WV-02 contract
+      if (providerResult.status === 'partial') {
+        analytics.trackEvent('provider_result_partial');
+        navigate('/onboarding/kyc-failure', {
+          replace: true,
+          state: { retryable: true },
         });
         return;
       }
@@ -49,14 +84,12 @@ export const ProviderResultScreen: React.FC = () => {
         if (window.history.length > 1) {
           navigate(-1);
         } else {
-          navigate('/', {
-            replace: true,
-            state: { skipOnboardingRedirect: true },
-          });
+          navigate('/', { replace: true, state: { skipOnboardingRedirect: true } });
         }
         return;
       }
 
+      // Error states
       if (providerResult.error?.retryable !== false) {
         navigate('/onboarding/kyc-failure', {
           replace: true,
@@ -76,11 +109,11 @@ export const ProviderResultScreen: React.FC = () => {
   }, [
     analytics,
     haptic,
+    isRealResult,
     lifecycle,
     mockOutcome,
     navigate,
-    providerResult.error?.retryable,
-    providerResult.status,
+    providerResult,
     state?.countryCode,
     state?.documentType,
   ]);
@@ -117,9 +150,7 @@ export const ProviderResultScreen: React.FC = () => {
           }}
         />
         <Title textAlign="center">Processing verification result</Title>
-        <Description textAlign="center">
-          Routing your mocked provider outcome to the next registration step.
-        </Description>
+        <Description textAlign="center">Verifying your identity documents...</Description>
       </div>
     </div>
   );
