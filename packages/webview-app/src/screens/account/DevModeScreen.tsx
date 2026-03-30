@@ -49,6 +49,9 @@ export const DevModeScreen: React.FC = () => {
   }, [haptic, analytics]);
 
   const onGenerateMockDocument = useCallback(() => {
+    const countryCode = nationality === 'united states of america' ? 'US' : 'DE';
+    const docTypeCode = documentType === 'passport' ? 'p' : 'i';
+    mockDocumentStore.addDocument(countryCode, docTypeCode);
     haptic.trigger('success');
     analytics.trackEvent('dev_mode_generate_mock', {
       documentType,
