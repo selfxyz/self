@@ -1,6 +1,6 @@
 import { Base8, inCurve, mulPointEscalar, subOrder } from '@zk-kit/baby-jubjub';
 
-import { deserializeApplicantInfo, deserializeSignature } from '../../documents/kyc/api.js';
+import { deserializeSignature } from '../../documents/kyc/api.js';
 import { KYC_MAX_LENGTH } from '../../documents/kyc/constants.js';
 import type { KycRegisterInput } from '../../documents/kyc/types.js';
 import { serializeKycData } from '../../documents/kyc/types.js';
@@ -13,15 +13,16 @@ export function generateKycRegisterInputs(
   pubkeyStr: [string, string],
   secret: string,
 ): KycRegisterInput {
-  const applicantInfo = deserializeApplicantInfo(applicantInfoBase64);
   const signature = deserializeSignature(signatureBase64);
   const pubkey = [BigInt(pubkeyStr[0]), BigInt(pubkeyStr[1])] as [bigint, bigint];
 
-  const serializedData = serializeKycData(applicantInfo).padEnd(KYC_MAX_LENGTH, '\0');
-  const msgPadded = Array.from(serializedData, x => x.charCodeAt(0));
+  // Use raw bytes directly — deserialize→reserialize strips the namespace prefix
+  // from id_type, producing different bytes than the TEE signed.
+  const raw = Buffer.from(applicantInfoBase64, 'base64');
+  const dataPadded = [...Array.from(raw, b => Number(b)), ...new Array(Math.max(0, KYC_MAX_LENGTH - raw.length)).fill(0)];
 
   return {
-    data_padded: msgPadded,
+    data_padded: dataPadded,
     s: signature.s,
     R: signature.R,
     pubKey: pubkey,

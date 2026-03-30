@@ -5,10 +5,10 @@ Minimal test apps for exercising the Self SDK native shells (Android + iOS) end-
 ## Architecture
 
 ```
-Host test app → Native shell (keychain/crypto/lifecycle) → WebView (webview-app bundle) → Sumsub KYC
+Host test app → Native shell (keychain/crypto/lifecycle) → WebView (webview-app bundle) → Didit KYC
 ```
 
-The test app launches the native shell, which hosts a WebView running the bundled `webview-app`. The WebView handles the full verification flow (Sumsub KYC → Self proof pipeline) and returns a terminal result to the test app via the bridge.
+The test app launches the native shell, which hosts a WebView running the bundled `webview-app`. The WebView handles the full verification flow (Didit KYC via JS SDK → Socket.IO attestation → Self proof pipeline) and returns a terminal result to the test app via the bridge.
 
 ## Structure
 
@@ -100,11 +100,11 @@ The test app has three config fields:
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| TEE URL | `https://tee.staging.self.xyz` | Trusted execution environment endpoint |
+| TEE URL | `https://kyc.self.xyz` | Didit TEE backend endpoint for session creation and signed data delivery |
 | Verification ID | `test-verification-123` | Session correlation ID (use a real one for end-to-end testing) |
 | User ID | `test-user-456` | User correlation key |
 
-For end-to-end testing with Sumsub, you need real `verificationId` and `teeUrl` values from the Self backend.
+For end-to-end testing, you need a real `teeUrl` pointing to a running didit-tee instance with valid Didit API credentials.
 
 ## How It Works
 
@@ -123,6 +123,17 @@ For end-to-end testing with Sumsub, you need real `verificationId` and `teeUrl` 
 3. WebView communicates with native code via the bridge (`SelfNativeIOS` message handler)
 4. On completion, the `SelfSdkCallback` protocol methods are invoked
 5. The view controller is dismissed
+
+## KYC Flow
+
+The WebView app uses the Didit JS SDK (`@didit-protocol/sdk-web`) for identity verification:
+
+1. WebView calls `POST /session` on the TEE to create a Didit session
+2. Didit JS SDK launches in embedded mode (iframe) for document capture + liveness
+3. After SDK completes, WebView connects Socket.IO to the TEE
+4. TEE delivers signed KYC data (EdDSA signature + 295-byte applicant info)
+5. WebView emits `ack_success` to trigger session deletion
+6. Document is stored and proving machine generates the ZK proof
 
 ## Full Build Pipeline
 

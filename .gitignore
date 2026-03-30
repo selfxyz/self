@@ -55,3 +55,5 @@ contracts/broadcast/
 # Keep RN test app config files tracked (global gitignore may ignore *.config.*)
 !packages/rn-sdk-test-app/metro.config.cjs
 !packages/rn-sdk-test-app/react-native.config.cjs
+packages/native-shell-android/.gradle/
+packages/native-shell-android/build/

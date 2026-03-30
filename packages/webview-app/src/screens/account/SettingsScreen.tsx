@@ -52,20 +52,29 @@ export const SettingsScreen: React.FC = () => {
             {
               icon: DocumentDetailsIcon,
               label: 'Manage Documents',
-              description: 'Recovery phrase, passport data',
-              onPress: () => navigate('/manage-documents'),
+              description: 'Your registered passports and IDs',
+              onPress: () => {
+                haptic.trigger('selection');
+                navigate('/manage-documents');
+              },
             },
             {
               icon: LockIcon,
               label: 'Security',
               description: 'Recovery phrase, passport data',
-              onPress: () => navigate('/settings/security'),
+              onPress: () => {
+                haptic.trigger('selection');
+                navigate('/settings/security');
+              },
             },
             {
               icon: NotificationIcon,
               label: 'Notifications',
               description: 'Preferences, notification types',
-              onPress: () => navigate('/settings/notifications'),
+              onPress: () => {
+                haptic.trigger('selection');
+                navigate('/settings/notifications');
+              },
             },
           ],
         },
@@ -76,13 +85,19 @@ export const SettingsScreen: React.FC = () => {
               icon: ChatStrokeIcon,
               label: 'Get support',
               description: 'Help center & support',
-              onPress: () => navigate('/coming-soon'),
+              onPress: () => {
+                haptic.trigger('selection');
+                navigate('/coming-soon');
+              },
             },
             {
               icon: ShareIcon,
               label: 'Share Self',
               description: 'Share Self with friends',
-              onPress: () => navigate('/coming-soon'),
+              onPress: () => {
+                haptic.trigger('selection');
+                navigate('/coming-soon');
+              },
             },
           ],
         },
@@ -93,13 +108,19 @@ export const SettingsScreen: React.FC = () => {
               icon: CodeIcon,
               label: 'Dev mode',
               description: 'Manage mock IDs, simulate proofs',
-              onPress: () => navigate('/settings/dev-mode'),
+              onPress: () => {
+                haptic.trigger('selection');
+                navigate('/settings/dev-mode');
+              },
             },
             {
               icon: CodeIcon,
               label: 'Tunnel flow',
               description: 'Demo: register + disclose in one flow',
-              onPress: () => navigate('/tunnel/tour/1'),
+              onPress: () => {
+                haptic.trigger('selection');
+                navigate('/tunnel/tour/1');
+              },
             },
           ],
         },

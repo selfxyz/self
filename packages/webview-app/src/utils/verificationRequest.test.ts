@@ -58,7 +58,29 @@ describe('verificationRequest utils', () => {
         timestamp: 123456789,
         requestType: 'documentOwnershipConfirmed',
         verificationId: 'verif-1',
+        environment: 'prod',
+        version: 1,
       });
+    });
+
+    it('should parse environment and version from query params', () => {
+      const staging = parseVerificationRequestContext('?environment=staging&version=2');
+      expect(staging.environment).toBe('stg');
+      expect(staging.version).toBe(2);
+
+      const stg = parseVerificationRequestContext('?environment=stg');
+      expect(stg.environment).toBe('stg');
+
+      const prod = parseVerificationRequestContext('?environment=prod');
+      expect(prod.environment).toBe('prod');
+
+      const invalid = parseVerificationRequestContext('?environment=unknown&version=abc');
+      expect(invalid.environment).toBe('prod');
+      expect(invalid.version).toBe(1);
+
+      const missing = parseVerificationRequestContext('');
+      expect(missing.environment).toBe('prod');
+      expect(missing.version).toBe(1);
     });
 
     it('should fall back when request type or endpoint are invalid', () => {

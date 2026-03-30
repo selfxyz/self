@@ -174,7 +174,6 @@ describe('WV-14 support screens', () => {
     expect(screen.getByTestId('location').textContent).toBe('/manage-documents');
 
     fireEvent.click(screen.getByRole('button', { name: /passport/i }));
-    fireEvent.click(screen.getByRole('button', { name: /view details/i }));
     expect(screen.getByTestId('location').textContent).toBe('/id-data');
 
     fireEvent.click(screen.getByRole('button', { name: /manage id/i }));
@@ -188,7 +187,7 @@ describe('WV-14 support screens', () => {
       expect(screen.getByRole('button', { name: /open settings/i })).toBeTruthy();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /mock screens/i }));
+    fireEvent.click(screen.getByRole('button', { name: /dev screens/i }));
 
     expect(screen.getByRole('button', { name: 'Manage Documents' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'ID Data' })).toBeTruthy();

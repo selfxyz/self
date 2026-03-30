@@ -10,13 +10,18 @@ final class SecureStorageHandler: BridgeHandler {
     private let service = "xyz.self.sdk"
 
     func handle(method: String, params: [String: Any]?) async throws -> Any? {
+        let result: Any?
+
         switch method {
         case "get":
             guard let key = params?["key"] as? String else {
                 throw BridgeHandlerError.missingParam("key")
             }
-            let value = get(key: key)
-            return ["value": value as Any]
+            if let value = get(key: key) {
+                result = ["value": value]
+            } else {
+                result = ["value": NSNull()]
+            }
 
         case "set":
             guard let key = params?["key"] as? String else {
@@ -26,18 +31,19 @@ final class SecureStorageHandler: BridgeHandler {
                 throw BridgeHandlerError.missingParam("value")
             }
             try set(key: key, value: value)
-            return nil
+            result = nil
 
         case "remove":
             guard let key = params?["key"] as? String else {
                 throw BridgeHandlerError.missingParam("key")
             }
             remove(key: key)
-            return nil
+            result = nil
 
         default:
             throw BridgeHandlerError.unknownMethod(method)
         }
+        return result
     }
 
     private func get(key: String) -> String? {

@@ -3,32 +3,108 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const mockScreenLinks = [
-  { href: '/settings/dev-mode', label: 'Dev Mode' },
-  { href: '/manage-documents', label: 'Manage Documents' },
-  { href: '/id-data', label: 'ID Data' },
-  { href: '/proving/receipt', label: 'Proof Receipt' },
-  { href: '/proving/history', label: 'Proof History' },
-  { href: '/proving/dialogue', label: 'Simple Dialogue' },
-  { href: '/proving/dialogue-cta', label: 'Dialogue With CTA' },
-  { href: '/proving/generation-dialogue', label: 'Generation Dialogue' },
-  { href: '/proving/generation-success', label: 'Generation Success' },
-  { href: '/proving/backup-prompt', label: 'Backup Prompt' },
-  { href: '/proving/kyc-pending', label: 'KYC Pending' },
-  { href: '/proving/kyc-success', label: 'KYC Success' },
-  { href: '/debug/keychain', label: 'Keychain Debug' },
+interface DevScreenLink {
+  href: string;
+  label: string;
+}
+
+interface DevScreenGroup {
+  title: string;
+  links: DevScreenLink[];
+}
+
+const screenGroups: DevScreenGroup[] = [
+  {
+    title: 'Home & Documents',
+    links: [
+      { href: '/manage-documents', label: 'Manage Documents' },
+      { href: '/id-data', label: 'ID Data' },
+    ],
+  },
+  {
+    title: 'Onboarding',
+    links: [
+      { href: '/onboarding/tour/1', label: 'Tour' },
+      { href: '/onboarding/country', label: 'Country Picker' },
+      { href: '/onboarding/confirm', label: 'Confirm ID' },
+      { href: '/onboarding/success', label: 'Scan Success' },
+      { href: '/onboarding/failure', label: 'Registration Failure' },
+      { href: '/onboarding/backup', label: 'Social Sign-On Method' },
+      { href: '/onboarding/signin', label: 'Social Sign-On' },
+      { href: '/onboarding/conflict', label: 'Conflict Detected' },
+      { href: '/onboarding/notifications', label: 'Push Notification Prompt' },
+    ],
+  },
+  {
+    title: 'Proving',
+    links: [
+      { href: '/proving/receipt', label: 'Proof Receipt' },
+      { href: '/proving/history', label: 'Proof History' },
+      { href: '/proving/dialogue', label: 'Simple Dialogue' },
+      { href: '/proving/dialogue-cta', label: 'Dialogue With CTA' },
+      { href: '/proving/generation-dialogue', label: 'Generation Dialogue' },
+      { href: '/proving/generation-success', label: 'Generation Success' },
+      { href: '/proving/backup-prompt', label: 'Backup Prompt' },
+      { href: '/proving/kyc-pending', label: 'KYC Pending' },
+      { href: '/proving/kyc-success', label: 'KYC Success' },
+    ],
+  },
+  {
+    title: 'Recovery',
+    links: [
+      { href: '/settings/backup', label: 'Backup Method Picker' },
+      { href: '/settings/recovery-phrase', label: 'Recovery Phrase' },
+      { href: '/recovery', label: 'Launch Recovery' },
+      { href: '/recovery/phrase-input', label: 'Secret Phrase Input' },
+      { href: '/recovery/success', label: 'Recovery Success' },
+    ],
+  },
+  {
+    title: 'Settings',
+    links: [
+      { href: '/settings', label: 'Settings' },
+      { href: '/settings/dev-mode', label: 'Dev Mode' },
+      { href: '/settings/security', label: 'Security' },
+      { href: '/settings/notifications', label: 'Notification Preferences' },
+    ],
+  },
+  {
+    title: 'Tunnel',
+    links: [
+      { href: '/tunnel/tour/1', label: 'Tour' },
+      { href: '/tunnel/kyc', label: 'KYC Mock' },
+      { href: '/tunnel/registration/country', label: 'Country Picker' },
+      { href: '/tunnel/registration/id-type', label: 'ID Type' },
+      { href: '/tunnel/proof/receipt', label: 'Proof Receipt' },
+      { href: '/tunnel/proof/generating', label: 'Proving' },
+      { href: '/tunnel/proof/result', label: 'Result' },
+    ],
+  },
+  {
+    title: 'Debug',
+    links: [{ href: '/debug/keychain', label: 'Keychain Debug' }],
+  },
 ];
+
+const allLinks = screenGroups.flatMap(g => g.links);
 
 export const DevRouteMenu: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const activeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isOpen && activeRef.current) {
+      activeRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [isOpen]);
 
   const currentLabel = useMemo(
-    () => mockScreenLinks.find(link => link.href === location.pathname)?.label ?? 'Mock Screens',
+    () => allLinks.find(link => link.href === location.pathname)?.label ?? 'Dev Screens',
     [location.pathname],
   );
 
@@ -53,51 +129,57 @@ export const DevRouteMenu: React.FC = () => {
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: 8,
+            gap: 4,
             padding: 14,
             borderRadius: 14,
             backgroundColor: 'rgba(17, 24, 39, 0.95)',
             boxShadow: '0 12px 32px rgba(0, 0, 0, 0.3)',
           }}
         >
-          <div
-            style={{
-              color: '#fff',
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Mock Screens
-          </div>
-          {mockScreenLinks.map(link => {
-            const isActive = location.pathname === link.href;
-
-            return (
-              <button
-                key={link.href}
-                onClick={() => {
-                  navigate(link.href);
-                  setIsOpen(false);
-                }}
+          {screenGroups.map(group => (
+            <div key={group.title} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div
                 style={{
-                  padding: '9px 10px',
-                  borderRadius: 8,
-                  border: isActive ? '1px solid #7c8aff' : '1px solid rgba(255, 255, 255, 0.12)',
-                  backgroundColor: isActive ? 'rgba(124, 138, 255, 0.22)' : 'rgba(255, 255, 255, 0.08)',
-                  color: '#fff',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  textAlign: 'left',
-                  cursor: 'pointer',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  padding: '8px 2px 2px',
                 }}
-                type="button"
               >
-                {link.label}
-              </button>
-            );
-          })}
+                {group.title}
+              </div>
+              {group.links.map(link => {
+                const isActive = location.pathname === link.href;
+
+                return (
+                  <button
+                    key={link.href}
+                    ref={isActive ? activeRef : undefined}
+                    onClick={() => {
+                      navigate(link.href);
+                      setIsOpen(false);
+                    }}
+                    style={{
+                      padding: '7px 10px',
+                      borderRadius: 8,
+                      border: isActive ? '1px solid #7c8aff' : '1px solid rgba(255, 255, 255, 0.08)',
+                      backgroundColor: isActive ? 'rgba(124, 138, 255, 0.22)' : 'rgba(255, 255, 255, 0.05)',
+                      color: '#fff',
+                      fontSize: 12,
+                      fontWeight: 500,
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                    }}
+                    type="button"
+                  >
+                    {link.label}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
       )}
       <button
@@ -116,7 +198,7 @@ export const DevRouteMenu: React.FC = () => {
         }}
         type="button"
       >
-        {isOpen ? 'Close Mock Screens' : currentLabel}
+        {isOpen ? 'Close' : currentLabel}
       </button>
     </div>
   );
