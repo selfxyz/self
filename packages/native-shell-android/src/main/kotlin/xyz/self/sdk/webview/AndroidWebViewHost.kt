@@ -106,17 +106,42 @@ class AndroidWebViewHost(
             webChromeClient = object : WebChromeClient() {
                 override fun onPermissionRequest(request: PermissionRequest?) {
                     request ?: return
+
+                    // Only allow permissions from trusted origins
+                    val origin = request.origin?.toString() ?: ""
+                    val isTrusted = origin.startsWith("https://appassets.androidplatform.net") ||
+                        origin.startsWith("https://verify.didit.me") ||
+                        (isDebugMode && origin.startsWith("http://127.0.0.1"))
+                    if (!isTrusted) {
+                        request.deny()
+                        return
+                    }
+
                     val activity = context as? Activity ?: run {
-                        request.grant(request.resources)
+                        request.deny()
                         return
                     }
-                    // Check if camera permission is needed and not yet granted
-                    val needsCamera = request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)
-                    if (needsCamera && ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+
+                    // Collect required Android permissions
+                    val neededPermissions = mutableListOf<String>()
+                    if (request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+                        neededPermissions.add(Manifest.permission.CAMERA)
+                    }
+                    if (request.resources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
+                        neededPermissions.add(Manifest.permission.RECORD_AUDIO)
+                    }
+
+                    // Check if any runtime permissions are missing
+                    val missingPermissions = neededPermissions.filter {
+                        ContextCompat.checkSelfPermission(activity, it) != PackageManager.PERMISSION_GRANTED
+                    }
+
+                    if (missingPermissions.isNotEmpty()) {
                         pendingPermissionRequest = request
-                        ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_REQUEST_CODE)
+                        ActivityCompat.requestPermissions(activity, missingPermissions.toTypedArray(), CAMERA_PERMISSION_REQUEST_CODE)
                         return
                     }
+
                     request.grant(request.resources)
                 }
 
