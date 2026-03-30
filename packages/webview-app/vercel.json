@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "yarn workspace @selfxyz/common build && yarn workspace @selfxyz/mobile-sdk-alpha build:ts-only && yarn workspace @selfxyz/webview-bridge build && yarn workspace @selfxyz/webview-app run build",
   "rewrites": [
     {
       "source": "/(.*)",
