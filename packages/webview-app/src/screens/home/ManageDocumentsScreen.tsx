@@ -29,11 +29,9 @@ export const ManageDocumentsScreen: React.FC = () => {
 
   const onDocumentPress = useCallback(() => {
     haptic.trigger('selection');
-    setDialogue({
-      title: 'Manage Document',
-      description: 'View details or remove this document from your Self ID.',
-    });
-  }, [haptic]);
+    analytics.trackEvent('manage_docs_document_pressed');
+    navigate('/id-data');
+  }, [haptic, analytics, navigate]);
 
   const onViewIdDetails = useCallback(() => {
     haptic.trigger('selection');

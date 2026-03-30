@@ -10,6 +10,7 @@ import { App } from './App';
 import { BridgeProvider } from './providers/BridgeProvider';
 
 import './fonts.css';
+import './recovery.css';
 import './reset.css';
 
 globalThis.Buffer = Buffer;
