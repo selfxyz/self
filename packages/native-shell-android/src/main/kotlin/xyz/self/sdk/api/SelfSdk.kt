@@ -9,10 +9,16 @@ import xyz.self.sdk.webview.SelfVerificationActivity
 object SelfSdk {
     fun launch(activity: Activity, config: SelfSdkConfig, requestCode: Int = REQUEST_CODE_VERIFICATION) {
         val intent = Intent(activity, SelfVerificationActivity::class.java).apply {
-            putExtra(SelfVerificationActivity.EXTRA_TEE_URL, config.teeUrl)
+            putExtra(SelfVerificationActivity.EXTRA_ENVIRONMENT, config.environment)
             putExtra(SelfVerificationActivity.EXTRA_VERIFICATION_ID, config.verificationId)
             putExtra(SelfVerificationActivity.EXTRA_USER_ID, config.userId)
             putExtra(SelfVerificationActivity.EXTRA_DEBUG_MODE, config.isDebugMode)
+            putExtra(SelfVerificationActivity.EXTRA_VERSION, config.version)
+            config.scope?.let { putExtra(SelfVerificationActivity.EXTRA_SCOPE, it) }
+            config.disclosures?.let { putStringArrayListExtra(SelfVerificationActivity.EXTRA_DISCLOSURES, ArrayList(it)) }
+            config.appName?.let { putExtra(SelfVerificationActivity.EXTRA_APP_NAME, it) }
+            config.appEndpoint?.let { putExtra(SelfVerificationActivity.EXTRA_APP_ENDPOINT, it) }
+            config.resultType?.let { putExtra(SelfVerificationActivity.EXTRA_RESULT_TYPE, it) }
         }
         activity.startActivityForResult(intent, requestCode)
     }

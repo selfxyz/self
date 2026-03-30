@@ -12,8 +12,10 @@ export interface MockOnboardingNavigationState {
 }
 
 export type MockRegistrationOutcome = 'success' | 'kyc-failure' | 'registration-failure' | 'cancel';
+export type PromptMockState = 'default' | 'existing-account';
 
 const DEFAULT_OUTCOME: MockRegistrationOutcome = 'success';
+const DEFAULT_PROMPT_MOCK: PromptMockState = 'default';
 const MOCKS_ENABLED = import.meta.env.DEV;
 
 export const createMockProviderResult = ({
@@ -93,5 +95,26 @@ export const getMockOutcomeFromSearch = (search: string): MockRegistrationOutcom
 export const getMockOutcomeSearch = (outcome: MockRegistrationOutcome = DEFAULT_OUTCOME): string =>
   MOCKS_ENABLED ? `?mock=${outcome}` : '';
 
+export const getPromptMockFromSearch = (search: string): PromptMockState => {
+  if (!MOCKS_ENABLED) {
+    return DEFAULT_PROMPT_MOCK;
+  }
+
+  const value = new URLSearchParams(search).get('mock');
+
+  switch (value) {
+    case 'default':
+    case 'existing-account':
+      return value;
+    default:
+      return DEFAULT_PROMPT_MOCK;
+  }
+};
+
+export const getPromptMockSearch = (mock: PromptMockState = DEFAULT_PROMPT_MOCK): string =>
+  MOCKS_ENABLED ? `?mock=${mock}` : '';
+
 export const getProviderPath = (outcome: MockRegistrationOutcome): string =>
   `/onboarding/provider${getMockOutcomeSearch(outcome)}`;
+
+export const shouldUseHistoryBack = (): boolean => window.history.length > 1;

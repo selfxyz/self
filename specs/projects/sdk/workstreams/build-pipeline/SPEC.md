@@ -49,15 +49,17 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ### BP-02 Context (Deferred)
 
-When the SDK moves to CDN-hosted bundles in production, runtime integrity verification becomes a security boundary. Scope:
+The SDK Distribution workstream ([SDK Distribution Spec](../sdk-distribution/SPEC.md)) supersedes the CDN bundle approach with hosted URL loading. Native shells will load `https://verify.self.xyz/v1/` directly instead of downloading and verifying CDN bundles.
 
-- Build step: generate a signed manifest (SHA-256 checksums of all bundle files) during `build-webview-bundle.sh`
-- Android: Kotlin runtime check — verify downloaded bundle against manifest before loading into WebView
-- iOS: Swift runtime check — same verification before `WKWebView.loadFileURL`
-- Fail closed: refuse to load on any mismatch (missing file, checksum diff, missing manifest)
-- The existing Gradle `validateWebViewBundle` task remains a dev-time guard; this is the prod-time counterpart
+With hosted URL loading:
 
-Trigger: when remote/CDN bundle loading is implemented.
+- Runtime bundle integrity verification is no longer needed — the browser handles HTTPS/TLS verification
+- The `validateWebViewBundle` Gradle task will be removed as part of SD-01
+- The build script (`build-webview-bundle.sh`) remains useful for **local development only** — developers can bundle locally and use `devServerUrl` for offline work
+
+If a future requirement emerges for offline/bundled mode alongside hosted mode, BP-02 would be revisited. Until then, this item remains deferred.
+
+Trigger: only if offline/bundled mode is required alongside hosted mode.
 
 ## Active Plans
 

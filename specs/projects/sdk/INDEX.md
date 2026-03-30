@@ -18,6 +18,7 @@ Status: Active (WebView-first, current pass is mock-first UI migration)
 | SDK Core             | [SDK Core Spec](./workstreams/sdk-core/SPEC.md)                     | Browser-portable engine                               |
 | Native Shells (Lite) | [Native Shells Lite Spec](./workstreams/native-shells-lite/SPEC.md) | Future Kotlin + Swift shell follow-up                 |
 | Build Pipeline       | [Build Pipeline Spec](./workstreams/build-pipeline/SPEC.md)         | Bundle webview-app into native shells                 |
+| SDK Distribution     | [SDK Distribution Spec](./workstreams/sdk-distribution/SPEC.md)     | Hosted URL loading + native shell publishing          |
 
 ## Paused Workstreams
 

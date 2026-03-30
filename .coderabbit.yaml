@@ -1,16 +1,19 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 
 language: "en-US"
-tone_instructions: |
-  You are an expert reviewer for a React Native and TypeScript mobile app with smart contract integration.
-  Focus on security, performance, and best practices.
-  Only highlight issues of medium or higher priority.
+tone_instructions: "Only report bugs, security vulnerabilities, data loss, or production incidents. No nitpicks, style suggestions, missing comments, optional improvements, or test mock wiring. When unsure, do not post."
 
 reviews:
   profile: "chill"
   request_changes_workflow: false
   high_level_summary: true
-  poem: true
+  poem: false
+  sequence_diagrams: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  suggested_reviewers: false
+  enable_prompt_for_ai_agents: false
   review_status: true
   auto_review:
     enabled: true
@@ -20,77 +23,22 @@ reviews:
     github-checks:
       timeout_ms: 300000
   path_instructions:
-    - path: "app/src/**/*.{ts,tsx,js,jsx}"
-      instructions: |
-        Review React Native TypeScript code for:
-        - Component architecture and reusability
-        - State management patterns
-        - Performance optimizations
-        - TypeScript type safety
-        - React hooks usage and dependencies
-        - Navigation patterns
     - path: "contracts/**/*.sol"
       instructions: |
-        Review Solidity smart contracts for:
-        - Security vulnerabilities (reentrancy, overflow, etc.)
-        - Gas optimization opportunities
-        - Access control patterns
-        - Event emission for important state changes
-        - Code documentation and NatSpec comments
+        Focus exclusively on security vulnerabilities (reentrancy, overflow, access control)
+        and correctness bugs. Ignore style, gas optimization suggestions, and missing NatSpec.
     - path: "circuits/**/*.circom"
       instructions: |
-        Review ZK circuit code for:
-        - Circuit correctness and completeness
-        - Constraint efficiency
-        - Input validation
-        - Security considerations for zero-knowledge proofs
+        Focus on circuit correctness, constraint soundness, and input validation bugs only.
     - path: "noir/**/*.nr"
       instructions: |
-        Review Noir circuits for:
-        - Constraint and witness correctness
-        - Efficient proof generation and verification
-        - Soundness and security assumptions
-        - Clear separation of public and private inputs
-    - path: "**/*.{test,spec}.{ts,js,tsx,jsx}"
-      instructions: |
-        Review test files for:
-        - Test coverage completeness
-        - Test case quality and edge cases
-        - Mock usage appropriateness
-        - Test readability and maintainability
-    - path: "common/src/**/*.{ts,tsx,js,jsx}"
-      instructions: |
-        Review shared utilities for:
-        - Reusability and modular design
-        - Type safety and error handling
-        - Side-effect management
-        - Documentation and naming clarity
-    - path: "sdk/**/*.{ts,tsx,js,jsx}"
-      instructions: |
-        Review SDK packages for:
-        - Public API design and stability
-        - Asynchronous flows and error handling
-        - Security and input validation
-        - Compatibility across environments
-    - path: "packages/mobile-sdk-alpha/**/*.{ts,tsx,js,jsx}"
-      instructions: |
-        Review alpha mobile SDK code for:
-        - API consistency with core SDK
-        - Platform-neutral abstractions
-        - Performance considerations
-        - Clear experimental notes or TODOs
-    - path: "app/android/**/*"
-      instructions: |
-        Review Android-specific code for:
-        - Platform-specific implementations
-        - Performance considerations
-        - Security best practices for mobile
+        Focus on constraint correctness, soundness bugs, and public/private input misuse only.
     - path: "app/ios/**/*"
       instructions: |
-        Review iOS-specific code for:
-        - Platform-specific implementations
-        - Performance considerations
-        - Security best practices for mobile
+        Focus on security issues (keychain misuse, insecure storage) and crash-causing bugs only.
+    - path: "app/android/**/*"
+      instructions: |
+        Focus on security issues and crash-causing bugs only.
 
 chat:
   auto_reply: true
