@@ -52,6 +52,7 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 The SDK Distribution workstream ([SDK Distribution Spec](../sdk-distribution/SPEC.md)) supersedes the CDN bundle approach with hosted URL loading. Native shells will load `https://verify.self.xyz/v1/` directly instead of downloading and verifying CDN bundles.
 
 With hosted URL loading:
+
 - Runtime bundle integrity verification is no longer needed — the browser handles HTTPS/TLS verification
 - The `validateWebViewBundle` Gradle task will be removed as part of SD-01
 - The build script (`build-webview-bundle.sh`) remains useful for **local development only** — developers can bundle locally and use `devServerUrl` for offline work
