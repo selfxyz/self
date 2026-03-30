@@ -25,7 +25,7 @@ export const RecoverySuccessScreen: React.FC = () => {
     <EuclidRecoverySuccessScreen
       insets={WEB_SAFE_AREA.insets}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-      logo={<SelfLogo size={64} />}
+      logo={<SelfLogo size={64} color="white" accentColor="white" withoutBackground />}
       onClose={onClose}
       onAppleBackup={() => navigate('/coming-soon')}
       onGoogleBackup={() => navigate('/coming-soon')}
