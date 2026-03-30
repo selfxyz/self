@@ -1,0 +1,12 @@
+.launch-recovery-screen {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.launch-recovery-screen img[src$="/backgrounds/restore.png"],
+.launch-recovery-screen img[src$="restore.png"] {
+  height: auto !important;
+  object-fit: contain !important;
+  object-position: top center !important;
+}

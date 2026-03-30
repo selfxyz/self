@@ -27,14 +27,16 @@ export const LaunchRecoveryScreen: React.FC = () => {
   }, [navigate, haptic, analytics]);
 
   return (
-    <EuclidLaunchRecoveryScreen
-      insets={WEB_SAFE_AREA.insets}
-      escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-      onClose={onClose}
-      onAppleBackup={() => navigate('/coming-soon')}
-      onGoogleBackup={() => navigate('/coming-soon')}
-      onEnterRecoveryPhrase={onEnterRecoveryPhrase}
-      backgroundImage="/backgrounds/dialogue-background.jpg"
-    />
+    <div className="launch-recovery-screen">
+      <EuclidLaunchRecoveryScreen
+        insets={WEB_SAFE_AREA.insets}
+        escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
+        onClose={onClose}
+        onAppleBackup={() => navigate('/coming-soon')}
+        onGoogleBackup={() => navigate('/coming-soon')}
+        onEnterRecoveryPhrase={onEnterRecoveryPhrase}
+        backgroundImage="/backgrounds/restore.png"
+      />
+    </div>
   );
 };
