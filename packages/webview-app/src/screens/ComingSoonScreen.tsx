@@ -2,12 +2,16 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+
 import { ComingSoonScreen as EuclidComingSoonScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../utils/countryFlags';
+import { WEB_SAFE_AREA } from '../utils/insets';
+import { shouldUseHistoryBack } from '../utils/mockOnboardingFlow';
 
 export const ComingSoonScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -20,16 +24,16 @@ export const ComingSoonScreen: React.FC = () => {
       documentType?: string;
     }) || {};
 
-  const documentTypeText =
-    documentType === 'i'
-      ? 'ID Cards'
-      : documentType === 'p'
-        ? 'Passports'
-        : '';
+  const documentTypeText = documentType === 'i' ? 'ID Cards' : documentType === 'p' ? 'Passports' : '';
 
   const onDismiss = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('coming_soon_dismissed');
+    if (shouldUseHistoryBack()) {
+      navigate(-1);
+      return;
+    }
+
     navigate('/');
   }, [navigate, haptic, analytics]);
 
@@ -41,7 +45,7 @@ export const ComingSoonScreen: React.FC = () => {
 
   return (
     <EuclidComingSoonScreen
-      insets={{ top: 0, bottom: 0 }}
+      {...WEB_SAFE_AREA}
       countryCode={countryCode}
       countryName={getCountryName(countryCode)}
       subtitle={

@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useState } from 'react';
+import type React from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  NotificationPreferencesScreen as EuclidNotificationPreferencesScreen,
-  LeftArrowIcon,
-} from '@selfxyz/euclid';
+
+import { LeftArrowIcon, NotificationPreferencesScreen as EuclidNotificationPreferencesScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const defaultToggles = [
   { key: 'self', label: 'Allow Self notifications', description: 'App updates and more' },
@@ -46,10 +46,8 @@ export const NotificationPreferencesScreen: React.FC = () => {
 
   return (
     <EuclidNotificationPreferencesScreen
-      insets={{ top: 0, bottom: 0 }}
-      escapeIcon={({ size, color }) => (
-        <LeftArrowIcon size={size} color={color} />
-      )}
+      {...WEB_SAFE_AREA}
+      escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       onBack={onBack}
       toggles={toggles}
     />

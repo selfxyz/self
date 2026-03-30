@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { IDTypeScreen } from '@selfxyz/euclid';
+
 import type { IDType } from '@selfxyz/euclid';
+import { IDTypeScreen } from '@selfxyz/euclid';
 
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const docTypeToIDType = (docType: string): IDType => {
   switch (docType) {
@@ -43,7 +46,7 @@ export const TunnelIDTypeScreen: React.FC = () => {
 
   return (
     <IDTypeScreen
-      insets={{ top: 0, bottom: 0 }}
+      {...WEB_SAFE_AREA}
       countryCode={countryCode}
       countryName={getCountryName(countryCode)}
       idTypes={idTypes}

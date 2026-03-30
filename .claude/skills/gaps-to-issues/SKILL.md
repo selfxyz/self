@@ -91,3 +91,4 @@ Show the user:
 - Ask before creating — never create issues without user confirmation on team/project/priority.
 - If a bucket seems too large (>2k LOC estimate), suggest splitting before creating.
 - If buckets have dependencies between them, note this in the issue descriptions and use Linear's `blockedBy` field.
+- **Issue descriptions are set once at creation.** After creating an issue, never use `save_issue` to overwrite its description. All follow-up context, corrections, or status updates go in **comments** via `save_comment`. Use `save_issue` only to change structured fields (status, priority, assignee, labels).

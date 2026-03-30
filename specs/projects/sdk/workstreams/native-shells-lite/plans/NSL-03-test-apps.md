@@ -23,7 +23,7 @@
 ### Out of Scope
 
 - Native shell implementation (NSL-01, NSL-02)
-- Sumsub integration
+- KYC provider integration
 - Automated E2E tests (manual testing only for now)
 - NFC, camera, MRZ, biometrics
 

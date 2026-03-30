@@ -2,41 +2,37 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useMemo, useState } from 'react';
+import type React from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 function titleCaseDisclosure(disclosure: string): string {
   return disclosure
     .replace(/[_-]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
-    .replace(/\b\w/g, (match) => match.toUpperCase());
+    .replace(/\b\w/g, match => match.toUpperCase());
 }
 
 export const ProvingScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic, lifecycle } = useSelfClient();
-  const {
-    request,
-    displayLabels,
-    requestType,
-    appName,
-    appEndpoint,
-    timestamp,
-    verificationId,
-  } = useVerificationRequest();
+  const { request, displayLabels, requestType, appName, appEndpoint, timestamp, verificationId } =
+    useVerificationRequest();
   const [proving, setProving] = useState(false);
 
   const proofItems = useMemo(() => {
     if (displayLabels && displayLabels.length > 0) {
-      return displayLabels.map((label) => ({ label }));
+      return displayLabels.map(label => ({ label }));
     }
-    return (request.disclosures ?? []).map((key) => ({
+    return (request.disclosures ?? []).map(key => ({
       label: titleCaseDisclosure(key),
     }));
   }, [displayLabels, request.disclosures]);
@@ -70,15 +66,7 @@ export const ProvingScreen: React.FC = () => {
     } finally {
       setProving(false);
     }
-  }, [
-    analytics,
-    haptic,
-    lifecycle,
-    navigate,
-    request.userId,
-    requestType,
-    verificationId,
-  ]);
+  }, [analytics, haptic, lifecycle, navigate, request.userId, requestType, verificationId]);
 
   const onCancel = useCallback(() => {
     haptic.trigger('selection');
@@ -89,7 +77,7 @@ export const ProvingScreen: React.FC = () => {
 
   return (
     <ProofRequestScreen
-      insets={{ top: 0, bottom: 0 }}
+      {...WEB_SAFE_AREA}
       variant={proving ? 'loading' : 'default'}
       onClose={onCancel}
       onConfirm={onVerify}
@@ -98,8 +86,7 @@ export const ProvingScreen: React.FC = () => {
       appEndpoint={appEndpoint}
       timestamp={timestamp}
       items={proofItems}
-      // TODO: hardcoding for now, fetch real value
-      documentType='passport'
+      documentType="passport"
     />
   );
 };

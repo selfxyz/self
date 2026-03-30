@@ -2,16 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
-import { useNavigate, useParams, Navigate } from 'react-router-dom';
-import {
-  LaunchTour1Screen,
-  LaunchTour2Screen,
-  LaunchTour3Screen,
-  LaunchTour4Screen,
-} from '@selfxyz/euclid';
+import type React from 'react';
+import { useCallback } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
-const insets = { top: 0, bottom: 0 };
+import { LaunchTour1Screen, LaunchTour2Screen, LaunchTour3Screen, LaunchTour4Screen } from '@selfxyz/euclid';
+
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const TourScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -24,13 +21,13 @@ export const TourScreen: React.FC = () => {
 
   switch (step) {
     case '1':
-      return <LaunchTour1Screen insets={insets} onNext={onNext} />;
+      return <LaunchTour1Screen {...WEB_SAFE_AREA} onNext={onNext} />;
     case '2':
-      return <LaunchTour2Screen insets={insets} onNext={onNext} />;
+      return <LaunchTour2Screen {...WEB_SAFE_AREA} onNext={onNext} />;
     case '3':
-      return <LaunchTour3Screen insets={insets} onNext={onNext} />;
+      return <LaunchTour3Screen {...WEB_SAFE_AREA} onNext={onNext} />;
     case '4':
-      return <LaunchTour4Screen insets={insets} onNext={onNext} />;
+      return <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} />;
     default:
       return <Navigate to="/tunnel/tour/1" replace />;
   }

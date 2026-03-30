@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Button, Title, Description, colors, spacing } from '@selfxyz/euclid';
+
+import { Button, colors, Description, spacing, Title } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
@@ -48,7 +50,6 @@ export const ProviderLaunchScreen: React.FC = () => {
         provider: result.provider,
       });
 
-      // For success/partial, wait for signed attestation via Socket.IO
       if (
         (result.status === 'success' || result.status === 'partial') &&
         sessionIdRef.current
@@ -184,7 +185,7 @@ export const ProviderLaunchScreen: React.FC = () => {
     if (window.history.length > 1) {
       navigate(-1);
     } else {
-      navigate('/');
+      navigate('/', { state: { skipOnboardingRedirect: true } });
     }
   }, [analytics, countryCode, documentType, haptic, lifecycle, navigate]);
 
@@ -295,7 +296,6 @@ export const ProviderLaunchScreen: React.FC = () => {
         </div>
       )}
       <style>{`
-        /* Force Didit SDK modal to fill the viewport on mobile */
         .shadow-card {
           width: 100% !important;
           max-width: 100% !important;
@@ -307,7 +307,6 @@ export const ProviderLaunchScreen: React.FC = () => {
           width: 100% !important;
           height: 100% !important;
         }
-        /* Override the modal backdrop to fill screen */
         div[class*="size-full"] {
           width: 100vw !important;
           max-width: 100vw !important;

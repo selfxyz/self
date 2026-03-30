@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { StatusState, CheckCircleIcon, colors } from '@selfxyz/euclid';
+
+import { StatusState } from '@selfxyz/euclid';
 
 export const TunnelResultScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -18,9 +20,11 @@ export const TunnelResultScreen: React.FC = () => {
       variant="success"
       title="Identity Verified"
       description="Your identity has been verified. You can now use Self ID to prove your identity to participating partners."
+      animationSource="/animations/proof-success.json"
+      animationSize={240}
+      loopAnimation={false}
       buttonText="Continue"
       onButtonPress={onContinue}
-      icon={<CheckCircleIcon size={64} color={colors.green500} />}
     />
   );
 };

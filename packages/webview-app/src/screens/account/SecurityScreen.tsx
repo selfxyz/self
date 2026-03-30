@@ -2,17 +2,20 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useState } from 'react';
+import type React from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import {
-  SecurityScreen as EuclidSecurityScreen,
-  LeftArrowIcon,
   CloudKeyIcon,
+  LeftArrowIcon,
   LockIcon,
+  SecurityScreen as EuclidSecurityScreen,
   ZapShieldIcon,
 } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const SecurityScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -28,19 +31,19 @@ export const SecurityScreen: React.FC = () => {
   const onBackupAccount = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('security_backup_account_pressed');
-    navigate('/coming-soon');
+    navigate('/settings/backup');
   }, [navigate, haptic, analytics]);
 
   const onRevealRecoveryPhrase = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('security_reveal_phrase_pressed');
-    navigate('/coming-soon');
+    navigate('/settings/recovery-phrase');
   }, [navigate, haptic, analytics]);
 
   const onRestoreAccount = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('security_restore_account_pressed');
-    navigate('/coming-soon');
+    navigate('/recovery');
   }, [navigate, haptic, analytics]);
 
   const onDisableBackups = useCallback(() => {
@@ -62,10 +65,8 @@ export const SecurityScreen: React.FC = () => {
 
   return (
     <EuclidSecurityScreen
-      insets={{ top: 0, bottom: 0 }}
-      escapeIcon={({ size, color }) => (
-        <LeftArrowIcon size={size} color={color} />
-      )}
+      {...WEB_SAFE_AREA}
+      escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       cloudKeyIcon={CloudKeyIcon}
       lockIcon={LockIcon}
       zapShieldIcon={ZapShieldIcon}

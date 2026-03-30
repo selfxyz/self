@@ -3,10 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { describe, expect, it } from 'vitest';
-import {
-  parseBrowserHostTargetOrigin,
-  parseVerificationRequestContext,
-} from './verificationRequest';
+
+import { getPromptMockFromSearch, getPromptMockSearch } from './mockOnboardingFlow';
+import { parseBrowserHostTargetOrigin, parseVerificationRequestContext } from './verificationRequest';
 
 describe('verificationRequest utils', () => {
   describe('parseBrowserHostTargetOrigin', () => {
@@ -23,29 +22,21 @@ describe('verificationRequest utils', () => {
     });
 
     it('should normalize an https target origin', () => {
-      expect(
-        parseBrowserHostTargetOrigin(
-          '?targetOrigin=https://host.example/path?foo=bar',
-        ),
-      ).toBe('https://host.example');
+      expect(parseBrowserHostTargetOrigin('?targetOrigin=https://host.example/path?foo=bar')).toBe(
+        'https://host.example',
+      );
     });
 
     it('should allow localhost http target origins', () => {
-      expect(
-        parseBrowserHostTargetOrigin('?targetOrigin=http://localhost:3000/embed'),
-      ).toBe('http://localhost:3000');
+      expect(parseBrowserHostTargetOrigin('?targetOrigin=http://localhost:3000/embed')).toBe('http://localhost:3000');
     });
 
     it('should reject non-local http target origins', () => {
-      expect(
-        parseBrowserHostTargetOrigin('?targetOrigin=http://host.example/embed'),
-      ).toBeUndefined();
+      expect(parseBrowserHostTargetOrigin('?targetOrigin=http://host.example/embed')).toBeUndefined();
     });
 
     it('should reject invalid target origins', () => {
-      expect(
-        parseBrowserHostTargetOrigin('?targetOrigin=not-a-valid-url'),
-      ).toBeUndefined();
+      expect(parseBrowserHostTargetOrigin('?targetOrigin=not-a-valid-url')).toBeUndefined();
     });
   });
 
@@ -71,13 +62,23 @@ describe('verificationRequest utils', () => {
     });
 
     it('should fall back when request type or endpoint are invalid', () => {
-      const context = parseVerificationRequestContext(
-        '?appEndpoint=http://evil.example/path&resultType=unexpected',
-      );
+      const context = parseVerificationRequestContext('?appEndpoint=http://evil.example/path&resultType=unexpected');
 
       expect(context.requestType).toBe('proofRequested');
       expect(context.appEndpoint).toBe('');
       expect(context.verificationId).toBeUndefined();
+    });
+  });
+
+  describe('prompt mock utils', () => {
+    it('should parse supported prompt mock states', () => {
+      expect(getPromptMockFromSearch('?mock=default')).toBe('default');
+      expect(getPromptMockFromSearch('?mock=existing-account')).toBe('existing-account');
+    });
+
+    it('should fall back to the default prompt mock state', () => {
+      expect(getPromptMockFromSearch('?mock=unexpected')).toBe('default');
+      expect(getPromptMockSearch()).toBe('?mock=default');
     });
   });
 });

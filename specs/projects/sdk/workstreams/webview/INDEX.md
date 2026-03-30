@@ -1,7 +1,5 @@
 # WebView Workstream
 
-- [Workstream Spec](./SPEC.md)
-- [Screen Inventory](./SCREEN-INVENTORY.md)
-- [Ticket Plan](./TICKET-PLAN.md)
-
-Use the inventory as the source of truth for scope and counts. Use the ticket plan to stage spec work, candidate tickets, and PR slices before creating Linear issues.
+- [Workstream Spec](./SPEC.md) — scope, backlog, execution notes
+- [Screen Inventory](./SCREEN-INVENTORY.md) — source of truth for screen scope and counts
+- [Ticket Plan](./TICKET-PLAN.md) — staging for spec work, candidate tickets, and PR slices

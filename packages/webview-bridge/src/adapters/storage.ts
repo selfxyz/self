@@ -10,16 +10,10 @@ export interface BridgeStorageAdapter {
   remove(key: string): Promise<void>;
 }
 
-export function bridgeStorageAdapter(
-  bridge: WebViewBridge,
-): BridgeStorageAdapter {
+export function bridgeStorageAdapter(bridge: WebViewBridge): BridgeStorageAdapter {
   return {
     async get(key: string): Promise<string | null> {
-      const result = await bridge.request<{ value: string | null }>(
-        'secureStorage',
-        'get',
-        { key },
-      );
+      const result = await bridge.request<{ value: string | null }>('secureStorage', 'get', { key });
       return result?.value ?? null;
     },
 

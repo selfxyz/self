@@ -11,7 +11,7 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 
 - The current client path should ship as a browser/WebView experience.
 - Self-owned NFC, native MRZ/camera handlers, biometrics, keychain bridging, KMP shells, and RN native-shell packaging are out of scope for this workstream.
-- End-to-end document capture and verification should route through a **web-capable KYC provider** such as Sumsub.
+- End-to-end document capture and verification should route through a **web-capable KYC provider** (currently Didit).
 - The paused native specs are preserved under [SDK Paused Work](../../paused/INDEX.md) for possible future reuse in Self Wallet or other mobile-native projects.
 
 ## North Star
@@ -42,6 +42,29 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 - PR-sized execution lives under [`plans/`](./plans/).
 - If work touches native-module delivery, stop and check [SDK Paused Work](../../paused/INDEX.md).
 
+## Current Execution Note
+
+The active screen-migration pass is intentionally narrower than the long-term
+webview backlog.
+
+- Registration and onboarding migration work should be treated as **faithful
+  1:1 Euclid design ports with temporary mocked states**.
+- Those mocked states may ship temporarily in prod until a later team replaces
+  them with production flow logic.
+- Logic and integration notes still belong in the specs, but they should be
+  labeled as future follow-up work and should not drive implementation in the
+  current design pass.
+- Deprioritized 3.1 work currently includes **EU ID**, **Aadhaar**, and
+  **Points**.
+
+### Execution order
+
+1. **Screen migration** (current) — WV-09, WV-12, then WV-13–WV-16
+2. **Tunnel flow** (next) — WV-05, WV-06, WV-08 (real Didit + KYC + proving)
+3. **Disclose** — WV-11 (real proving on the main disclose route)
+4. **Social login** — not yet spec'd in this workstream
+5. **Launch readiness** — not yet spec'd in this workstream
+
 ## Backlog
 
 | ID    | Title                                                                                           | Status      | Priority | Depends On          | Plan                                                                                             | Notes                                                                                                                       |
@@ -50,35 +73,37 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 | WV-02 | Define the KYC-provider contract for document capture, MRZ/liveness handoff, and result mapping | Done        | High     | -                   | [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | Provider-backed path replaces Self-owned native scan flow; active contract is now documented                                |
 | WV-03 | Remove native NFC and native-scan assumptions from active WebView screens, copy, and docs       | Done        | High     | WV-02               | [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | Active UX/docs now route to a provider placeholder instead of Self-managed scan screens                                     |
 | WV-04 | Define the host callback contract for launch, dismiss, and final result without native modules  | Done        | Medium   | WV-02               | [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | Browser host fallback now uses `postMessage` for iframe/popup embedding while native transports keep their current behavior |
-| WV-05 | Integrate KYC provider Web SDK into ProviderLaunchScreen (Sumsub as default)                    | In Progress | High     | WV-02               | [plans/WV-05-sumsub-web-sdk.md](./plans/WV-05-sumsub-web-sdk.md)                                 | Code complete on `feat/webview-sdk`, needs testing                                                                          |
-| WV-06 | Wire KYC result through verification pipeline to host lifecycle callback                        | Ready       | High     | WV-05               | [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | Sumsub result → kycResultStore → ConfirmIdentificationScreen → lifecycle.setResult()                                        |
+| WV-05 | Integrate KYC provider Web SDK into ProviderLaunchScreen                                        | In Progress | High     | WV-02               | [plans/WV-05-kyc-provider-sdk.md](./plans/WV-05-kyc-provider-sdk.md)                             | **Next phase.** Needs rework for Didit (prior Sumsub branch is stale)                                                       |
+| WV-06 | Wire KYC result through verification pipeline to host lifecycle callback                        | Ready       | High     | WV-05               | [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | **Next phase.** KYC result → kycResultStore → ConfirmIdentificationScreen → lifecycle.setResult()                           |
 | WV-07 | SelfClient assembly and proving machine export for WebView                                      | Done        | High     | SC-03               | [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | Export useProvingStore, map bridge→SDK adapters, keychain-backed documents, create real SelfClient                          |
-| WV-08 | Wire tunnel flow with real proving machine (register → disclose)                                | Ready       | High     | WV-05, WV-06, WV-07 | [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | Replace mock tunnel proving with real provingMachine: Sumsub → store doc → prove → disclose → result                        |
-| WV-09 | Registration core (tour, outcomes, social sign-on, prompts)                                     | Ready       | High     | WV-05, WV-06        | [plans/WV-09-registration-core.md](./plans/WV-09-registration-core.md)                           | 11 Euclid wrapper screens, 4 PRs: tour → outcomes → social/prompts → integration                                            |
-| WV-10 | EU ID separation decision                                                                       | Ready       | Medium   | WV-09               | [plans/WV-10-eu-id-helper-flow.md](./plans/WV-10-eu-id-helper-flow.md)                           | Record that EU ID is outside provider-backed registration and defer the 6 EU ID screens from the active webview route spine |
-| WV-11 | Disclose core                                                                                   | Ready       | High     | WV-07, WV-08        | [plans/WV-11-disclose-core.md](./plans/WV-11-disclose-core.md)                                   | Request-context entry → proof request → generation → result                                                                 |
-| WV-12 | Proof overlays, history, and post-proof support                                                 | Blocked     | Medium   | WV-11               | —                                                                                                | Spec needed; receipt, history, dialogues, success/backup prompts, Sumsub pending/success, Nova splash                       |
-| WV-13 | Home, document management, and ID data                                                          | Blocked     | Medium   | WV-11               | —                                                                                                | Spec needed; IDDataScreen, ManageDocumentsScreen, HomeScreen follow-through                                                 |
-| WV-14 | Recovery and backup surfaces                                                                    | Blocked     | Low      | WV-13               | —                                                                                                | Spec needed; recovery method picker, phrase display/input, recovery success                                                 |
-| WV-15 | Settings follow-through and support routes                                                      | Blocked     | Low      | WV-13               | —                                                                                                | Spec needed; settings persistence, security/notification actions, dev-mode completion                                       |
+| WV-08 | Wire tunnel flow with real proving machine (register → disclose)                                | Ready       | High     | WV-05, WV-06, WV-07 | [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | **Next phase.** Replace mock tunnel proving with real provingMachine: KYC → store doc → prove → disclose → result           |
+| WV-09 | Registration core (tour, outcomes, mocked provider handoff)                                     | Ready       | High     | -                   | [plans/WV-09-registration-core.md](./plans/WV-09-registration-core.md)                           | Critical path: 7 Euclid wrappers (tour + outcomes) plus mocked provider transitions; minimum viable registration spine      |
+| WV-10 | EU ID defer record                                                                              | Deferred    | Low      | -                   | [plans/WV-10-eu-id-helper-flow.md](./plans/WV-10-eu-id-helper-flow.md)                           | EU ID is a 3.1 follow-up alongside Aadhaar and Points; not part of the active registration mock-migration pass              |
+| WV-11 | Disclose core                                                                                   | Ready       | High     | WV-07, WV-08        | [plans/WV-11-disclose-core.md](./plans/WV-11-disclose-core.md)                                   | **Next phase.** Request-context entry → proof request → generation → result                                                 |
+| WV-12 | Registration prompts (social sign-on, conflict, notifications)                                  | Ready       | Medium   | WV-09               | [plans/WV-12-registration-prompts.md](./plans/WV-12-registration-prompts.md)                     | 4 Euclid wrappers split from WV-09; not required for minimum registration spine                                             |
+| WV-13 | Proof overlays, history, and post-proof support                                                 | Blocked     | Medium   | WV-11               | —                                                                                                | Spec needed; receipt, history, dialogues, success/backup prompts, KYC pending/success, Nova splash                          |
+| WV-14 | Home, document management, and ID data                                                          | Blocked     | Medium   | WV-11               | —                                                                                                | Spec needed; IDDataScreen, ManageDocumentsScreen, HomeScreen follow-through                                                 |
+| WV-15 | Recovery and backup surfaces                                                                    | Blocked     | Low      | WV-14               | —                                                                                                | Spec needed; recovery method picker, phrase display/input, recovery success                                                 |
+| WV-16 | Settings follow-through and support routes                                                      | Blocked     | Low      | WV-14               | —                                                                                                | Spec needed; settings persistence, security/notification actions, dev-mode completion                                       |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan                                                                                             | IDs   | Status                                     |
-| ------------------------------------------------------------------------------------------------ | ----- | ------------------------------------------ |
-| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | WV-01 | Done                                       |
-| [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | WV-02 | Done                                       |
-| [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | WV-03 | Done                                       |
-| [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | WV-04 | Done                                       |
-| [plans/WV-05-sumsub-web-sdk.md](./plans/WV-05-sumsub-web-sdk.md)                                 | WV-05 | In Progress (code complete, needs testing) |
-| [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | WV-06 | Ready                                      |
-| [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | WV-07 | Done                                       |
-| [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | WV-08 | Ready                                      |
-| [plans/WV-09-registration-core.md](./plans/WV-09-registration-core.md)                           | WV-09 | Ready                                      |
-| [plans/WV-10-eu-id-helper-flow.md](./plans/WV-10-eu-id-helper-flow.md)                           | WV-10 | Ready                                      |
-| [plans/WV-11-disclose-core.md](./plans/WV-11-disclose-core.md)                                   | WV-11 | Ready                                      |
+| Plan                                                                                             | IDs   | Status                                    |
+| ------------------------------------------------------------------------------------------------ | ----- | ----------------------------------------- |
+| [plans/WV-01-dynamic-proof-request-items.md](./plans/WV-01-dynamic-proof-request-items.md)       | WV-01 | Done                                      |
+| [plans/WV-02-kyc-provider-contract.md](./plans/WV-02-kyc-provider-contract.md)                   | WV-02 | Done                                      |
+| [plans/WV-03-remove-native-scan-assumptions.md](./plans/WV-03-remove-native-scan-assumptions.md) | WV-03 | Done                                      |
+| [plans/WV-04-host-callback-contract.md](./plans/WV-04-host-callback-contract.md)                 | WV-04 | Done                                      |
+| [plans/WV-05-kyc-provider-sdk.md](./plans/WV-05-kyc-provider-sdk.md)                             | WV-05 | In Progress (needs rework for Didit)      |
+| [plans/WV-06-kyc-result-flow.md](./plans/WV-06-kyc-result-flow.md)                               | WV-06 | Ready                                     |
+| [plans/WV-07-selfclient-proving-assembly.md](./plans/WV-07-selfclient-proving-assembly.md)       | WV-07 | Done                                      |
+| [plans/WV-08-tunnel-proving-flow.md](./plans/WV-08-tunnel-proving-flow.md)                       | WV-08 | Ready                                     |
+| [plans/WV-09-registration-core.md](./plans/WV-09-registration-core.md)                           | WV-09 | Ready                                     |
+| [plans/WV-10-eu-id-helper-flow.md](./plans/WV-10-eu-id-helper-flow.md)                           | WV-10 | Deferred (out of initial webview release) |
+| [plans/WV-11-disclose-core.md](./plans/WV-11-disclose-core.md)                                   | WV-11 | Ready                                     |
+| [plans/WV-12-registration-prompts.md](./plans/WV-12-registration-prompts.md)                     | WV-12 | Ready                                     |
 
 ## Completion Checklist
 
@@ -105,7 +130,7 @@ The previous SDK plan assumed a shared WebView plus native shells for hardware-h
 
 ## KYC Provider Contract
 
-For the active client path, Self delegates document capture and KYC to a web-capable provider and treats that provider as interchangeable. Sumsub is one example, not a hard dependency. This contract defines the Self-owned boundary that `WV-03` and `WV-04` build on.
+For the active client path, Self delegates document capture and KYC to a web-capable provider (currently Didit) and treats that provider as interchangeable. The contract is provider-agnostic. This defines the Self-owned boundary that `WV-03` and `WV-04` build on.
 
 ### Boundary Decisions
 

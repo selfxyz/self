@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { ProofGenerationScreen } from '@selfxyz/euclid';
+
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const MOCK_ID_CARD = {
   variant: 'passport' as const,
@@ -22,11 +26,5 @@ export const TunnelProvingScreen: React.FC = () => {
     return () => clearTimeout(timer);
   }, [navigate]);
 
-  return (
-    <ProofGenerationScreen
-      insets={{ top: 0, bottom: 0 }}
-      step="generatingProof"
-      idCardProps={MOCK_ID_CARD}
-    />
-  );
+  return <ProofGenerationScreen {...WEB_SAFE_AREA} step="generatingProof" idCardProps={MOCK_ID_CARD} />;
 };

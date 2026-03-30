@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid';
+
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const MOCK_ITEMS = [
   { label: 'Full Name' },
@@ -26,7 +30,7 @@ export const TunnelProofReceiptScreen: React.FC = () => {
 
   return (
     <ProofRequestScreen
-      insets={{ top: 0, bottom: 0 }}
+      {...WEB_SAFE_AREA}
       variant="default"
       onClose={onClose}
       onConfirm={onConfirm}

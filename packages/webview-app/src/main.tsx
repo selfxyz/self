@@ -3,18 +3,21 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { Buffer } from 'buffer';
-globalThis.Buffer = Buffer;
-
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
+
 import { App } from './App';
 import { BridgeProvider } from './providers/BridgeProvider';
+
 import './fonts.css';
+import './recovery.css';
 import './reset.css';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+globalThis.Buffer = Buffer;
+
+createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <div style={{ display: 'flex', flex: 1, height: '100vh', width: '100%' }}>
+    <div style={{ display: 'flex', flex: 1, height: '100vh', width: '100%', maxWidth: 430, margin: '0 auto' }}>
       <BridgeProvider>
         <App />
       </BridgeProvider>

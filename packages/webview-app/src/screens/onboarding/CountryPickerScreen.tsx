@@ -2,13 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useMemo, useState } from 'react';
+import type React from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { CountryPickerScreen as EuclidCountryPickerScreen } from '@selfxyz/euclid';
 
+import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import countryDocumentTypes from '../../data/country-document-types.json';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 type CountryData = Record<string, string[]>;
 const countryData = countryDocumentTypes as CountryData;
@@ -18,10 +22,7 @@ export const CountryPickerScreen: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const [search, setSearch] = useState('');
 
-  const countries = useMemo(
-    () => Object.keys(countryData).map(code => ({ countryCode: code })),
-    [],
-  );
+  const countries = useMemo(() => Object.keys(countryData).map(code => ({ countryCode: code })), []);
 
   const onSelect = useCallback(
     (countryCode: string) => {
@@ -40,16 +41,19 @@ export const CountryPickerScreen: React.FC = () => {
   );
 
   return (
-    <EuclidCountryPickerScreen
-      insets={{ top: 0, bottom: 0 }}
-      countries={countries}
-      isLoading={false}
-      onCountrySelect={onSelect}
-      onClose={() => navigate('/')}
-      renderFlag={renderFlag}
-      getCountryName={getCountryName}
-      searchValue={search}
-      onSearchChange={setSearch}
-    />
+    <>
+      <MockRegistrationFailureButton />
+      <EuclidCountryPickerScreen
+        {...WEB_SAFE_AREA}
+        countries={countries}
+        isLoading={false}
+        onCountrySelect={onSelect}
+        onClose={() => navigate('/', { state: { skipOnboardingRedirect: true } })}
+        renderFlag={renderFlag}
+        getCountryName={getCountryName}
+        searchValue={search}
+        onSearchChange={setSearch}
+      />
+    </>
   );
 };
