@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "corepack enable && corepack prepare yarn@4.12.0 --activate && yarn install",
+  "buildCommand": "yarn workspace @selfxyz/webview-app build:vercel",
+  "outputDirectory": "packages/webview-app/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
