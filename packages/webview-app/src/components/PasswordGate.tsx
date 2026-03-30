@@ -10,9 +10,7 @@ const STORAGE_KEY = 'self-preview-auth';
 export const PasswordGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const password = import.meta.env.VITE_WEBVIEW_APP_PREVIEW_PASSWORD;
 
-  const [authenticated, setAuthenticated] = useState(
-    () => !password || sessionStorage.getItem(STORAGE_KEY) === 'true',
-  );
+  const [authenticated, setAuthenticated] = useState(() => !password || sessionStorage.getItem(STORAGE_KEY) === 'true');
   const [value, setValue] = useState('');
   const [error, setError] = useState(false);
 

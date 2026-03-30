@@ -60,56 +60,56 @@ export const App: React.FC = () => (
     <BrowserRouter>
       <VerificationRequestProvider>
         <SelfClientProvider>
-        <Routes>
-          <Route path="/" element={<HomeScreen />} />
-          <Route path="/onboarding/tour/:step" element={<TourScreen />} />
-          <Route path="/onboarding/country" element={<CountryPickerScreen />} />
-          <Route path="/onboarding/id-type" element={<IDSelectionScreen />} />
-          <Route path="/onboarding/provider" element={<ProviderLaunchScreen />} />
-          <Route path="/onboarding/provider-result" element={<ProviderResultScreen />} />
-          <Route path="/onboarding/confirm" element={<ConfirmIdentificationScreen />} />
-          <Route path="/onboarding/success" element={<ScanSuccessScreen />} />
-          <Route path="/onboarding/failure" element={<RegistrationFailureScreen />} />
-          <Route path="/onboarding/kyc-failure" element={<KycFailureScreen />} />
-          <Route path="/proving" element={<ProvingScreen />} />
-          <Route path="/proving/result" element={<VerificationResultScreen />} />
-          <Route path="/settings" element={<SettingsScreen />} />
-          <Route path="/settings/security" element={<SecurityScreen />} />
-          <Route path="/settings/notifications" element={<NotificationPreferencesScreen />} />
-          <Route path="/settings/dev-mode" element={<DevModeScreen />} />
-          {import.meta.env.DEV && <Route path="/debug/keychain" element={<KeychainDebugScreen />} />}
-          <Route path="/settings/backup" element={<BackupMethodPickerScreen />} />
-          <Route path="/settings/recovery-phrase" element={<RecoveryPhraseScreen />} />
-          <Route path="/recovery" element={<LaunchRecoveryScreen />} />
-          <Route path="/recovery/phrase-input" element={<SecretPhraseInputScreen />} />
-          <Route path="/recovery/success" element={<RecoverySuccessScreen />} />
-          <Route path="/onboarding/backup" element={<SocialSignOnMethodPickerScreen />} />
-          <Route path="/onboarding/signin" element={<SocialSignOnPickerScreen />} />
-          <Route path="/onboarding/conflict" element={<ConflictDetectedScreen />} />
-          <Route path="/onboarding/notifications" element={<PushNotificationPromptScreen />} />
-          <Route path="/proving/receipt" element={<ProofRequestReceiptScreen />} />
-          <Route path="/proving/history" element={<ProofHistoryScreen />} />
-          <Route path="/proving/dialogue" element={<SimpleDialogueScreen />} />
-          <Route path="/proving/dialogue-cta" element={<DialogueWithCtaScreen />} />
-          <Route path="/proving/generation-dialogue" element={<ProofGenerationDialogueScreen />} />
-          <Route path="/proving/generation-success" element={<ProofGenerationSuccessScreen />} />
-          <Route path="/proving/backup-prompt" element={<ProofSuccessBackupScreen />} />
-          <Route path="/proving/kyc-pending" element={<KycPendingScreen />} />
-          <Route path="/proving/kyc-success" element={<KycSuccessScreen />} />
-          <Route path="/account/verified" element={<VerificationResultScreen />} />
-          <Route path="/id-data" element={<IDDataScreen />} />
-          <Route path="/manage-documents" element={<ManageDocumentsScreen />} />
-          <Route path="/coming-soon" element={<ComingSoonScreen />} />
-          <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
-          <Route path="/tunnel/kyc" element={<KycMockScreen />} />
-          <Route path="/tunnel/registration/country" element={<TunnelCountryPickerScreen />} />
-          <Route path="/tunnel/registration/id-type" element={<TunnelIDTypeScreen />} />
-          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
-          <Route path="/tunnel/proof/generating" element={<TunnelProvingScreen />} />
-          <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        {import.meta.env.DEV && <DevRouteMenu />}
+          <Routes>
+            <Route path="/" element={<HomeScreen />} />
+            <Route path="/onboarding/tour/:step" element={<TourScreen />} />
+            <Route path="/onboarding/country" element={<CountryPickerScreen />} />
+            <Route path="/onboarding/id-type" element={<IDSelectionScreen />} />
+            <Route path="/onboarding/provider" element={<ProviderLaunchScreen />} />
+            <Route path="/onboarding/provider-result" element={<ProviderResultScreen />} />
+            <Route path="/onboarding/confirm" element={<ConfirmIdentificationScreen />} />
+            <Route path="/onboarding/success" element={<ScanSuccessScreen />} />
+            <Route path="/onboarding/failure" element={<RegistrationFailureScreen />} />
+            <Route path="/onboarding/kyc-failure" element={<KycFailureScreen />} />
+            <Route path="/proving" element={<ProvingScreen />} />
+            <Route path="/proving/result" element={<VerificationResultScreen />} />
+            <Route path="/settings" element={<SettingsScreen />} />
+            <Route path="/settings/security" element={<SecurityScreen />} />
+            <Route path="/settings/notifications" element={<NotificationPreferencesScreen />} />
+            <Route path="/settings/dev-mode" element={<DevModeScreen />} />
+            {import.meta.env.DEV && <Route path="/debug/keychain" element={<KeychainDebugScreen />} />}
+            <Route path="/settings/backup" element={<BackupMethodPickerScreen />} />
+            <Route path="/settings/recovery-phrase" element={<RecoveryPhraseScreen />} />
+            <Route path="/recovery" element={<LaunchRecoveryScreen />} />
+            <Route path="/recovery/phrase-input" element={<SecretPhraseInputScreen />} />
+            <Route path="/recovery/success" element={<RecoverySuccessScreen />} />
+            <Route path="/onboarding/backup" element={<SocialSignOnMethodPickerScreen />} />
+            <Route path="/onboarding/signin" element={<SocialSignOnPickerScreen />} />
+            <Route path="/onboarding/conflict" element={<ConflictDetectedScreen />} />
+            <Route path="/onboarding/notifications" element={<PushNotificationPromptScreen />} />
+            <Route path="/proving/receipt" element={<ProofRequestReceiptScreen />} />
+            <Route path="/proving/history" element={<ProofHistoryScreen />} />
+            <Route path="/proving/dialogue" element={<SimpleDialogueScreen />} />
+            <Route path="/proving/dialogue-cta" element={<DialogueWithCtaScreen />} />
+            <Route path="/proving/generation-dialogue" element={<ProofGenerationDialogueScreen />} />
+            <Route path="/proving/generation-success" element={<ProofGenerationSuccessScreen />} />
+            <Route path="/proving/backup-prompt" element={<ProofSuccessBackupScreen />} />
+            <Route path="/proving/kyc-pending" element={<KycPendingScreen />} />
+            <Route path="/proving/kyc-success" element={<KycSuccessScreen />} />
+            <Route path="/account/verified" element={<VerificationResultScreen />} />
+            <Route path="/id-data" element={<IDDataScreen />} />
+            <Route path="/manage-documents" element={<ManageDocumentsScreen />} />
+            <Route path="/coming-soon" element={<ComingSoonScreen />} />
+            <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
+            <Route path="/tunnel/kyc" element={<KycMockScreen />} />
+            <Route path="/tunnel/registration/country" element={<TunnelCountryPickerScreen />} />
+            <Route path="/tunnel/registration/id-type" element={<TunnelIDTypeScreen />} />
+            <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+            <Route path="/tunnel/proof/generating" element={<TunnelProvingScreen />} />
+            <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          {import.meta.env.DEV && <DevRouteMenu />}
         </SelfClientProvider>
       </VerificationRequestProvider>
     </BrowserRouter>

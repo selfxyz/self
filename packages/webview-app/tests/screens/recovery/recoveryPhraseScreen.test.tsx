@@ -4,13 +4,12 @@
 
 // @vitest-environment jsdom
 
-import type React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-
 import { RecoveryPhraseScreen } from '../../../src/screens/recovery/RecoveryPhraseScreen';
+
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const analytics = { trackEvent: vi.fn() };
 const haptic = { trigger: vi.fn() };
