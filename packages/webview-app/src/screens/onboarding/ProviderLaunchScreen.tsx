@@ -12,10 +12,7 @@ import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
 import { waitForAttestation } from '../../utils/diditAttestation';
-import {
-  createDiditSession,
-  launchDiditWebSdk,
-} from '../../utils/diditProvider';
+import { createDiditSession, launchDiditWebSdk } from '../../utils/diditProvider';
 
 const CONTAINER_ID = 'didit-sdk-container';
 
@@ -50,10 +47,7 @@ export const ProviderLaunchScreen: React.FC = () => {
         provider: result.provider,
       });
 
-      if (
-        (result.status === 'success' || result.status === 'partial') &&
-        sessionIdRef.current
-      ) {
+      if ((result.status === 'success' || result.status === 'partial') && sessionIdRef.current) {
         setPhase('waiting');
         const attestationResult = await waitForAttestation(sessionIdRef.current);
 
@@ -150,8 +144,7 @@ export const ProviderLaunchScreen: React.FC = () => {
         setPhase('active');
       } catch (err) {
         if (cancelled) return;
-        const message =
-          err instanceof Error ? err.message : 'Failed to launch provider';
+        const message = err instanceof Error ? err.message : 'Failed to launch provider';
         analytics.trackEvent('provider_launch_failed', { error: message });
         setPhase('error');
         setErrorMessage(message);
@@ -165,15 +158,7 @@ export const ProviderLaunchScreen: React.FC = () => {
       destroyRef.current?.();
       destroyRef.current = null;
     };
-  }, [
-    analytics,
-    countryCode,
-    documentType,
-    handleComplete,
-    handleError,
-    verificationId,
-    retryCount,
-  ]);
+  }, [analytics, countryCode, documentType, handleComplete, handleError, verificationId, retryCount]);
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');
@@ -194,7 +179,7 @@ export const ProviderLaunchScreen: React.FC = () => {
     analytics.trackEvent('provider_launch_retry_pressed');
     setPhase('loading');
     setErrorMessage('');
-    setRetryCount((c) => c + 1);
+    setRetryCount(c => c + 1);
   }, [haptic, analytics]);
 
   if (phase === 'error') {
@@ -233,18 +218,8 @@ export const ProviderLaunchScreen: React.FC = () => {
               gap: spacing.sm,
             }}
           >
-            <Button
-              variant="secondary-label"
-              text="Try Again"
-              fullWidth
-              onPress={handleRetry}
-            />
-            <Button
-              variant="secondary-label"
-              text="Back"
-              fullWidth
-              onPress={handleBack}
-            />
+            <Button variant="secondary-label" text="Try Again" fullWidth onPress={handleRetry} />
+            <Button variant="secondary-label" text="Back" fullWidth onPress={handleBack} />
           </div>
         </div>
       </div>
@@ -283,9 +258,7 @@ export const ProviderLaunchScreen: React.FC = () => {
           />
           <div style={{ marginTop: spacing.md }}>
             <Title textAlign="center">
-              {phase === 'waiting'
-                ? 'Processing verification...'
-                : 'Loading verification...'}
+              {phase === 'waiting' ? 'Processing verification...' : 'Loading verification...'}
             </Title>
             {phase === 'waiting' && (
               <Description style={{ marginTop: 8 }}>

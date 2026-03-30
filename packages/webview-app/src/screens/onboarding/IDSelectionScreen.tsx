@@ -78,16 +78,16 @@ export const IDSelectionScreen: React.FC = () => {
     [navigate, analytics, haptic, countryCode],
   );
 
-  const onNotListed = useCallback(() => {
-    haptic.trigger('selection');
-    analytics.trackEvent('document_type_selected', {
-      documentType: 'kyc',
-      countryCode,
-    });
-    navigate('/onboarding/provider', {
-      state: { countryCode, documentType: 'kyc' },
-    });
-  }, [navigate, analytics, haptic, countryCode]);
+  // const onNotListed = useCallback(() => {
+  //   haptic.trigger('selection');
+  //   analytics.trackEvent('document_type_selected', {
+  //     documentType: 'kyc',
+  //     countryCode,
+  //   });
+  //   navigate('/onboarding/provider', {
+  //     state: { countryCode, documentType: 'kyc' },
+  //   });
+  // }, [navigate, analytics, haptic, countryCode]);
 
   return (
     <>

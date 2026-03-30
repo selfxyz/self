@@ -6,8 +6,16 @@ import type { KycProviderResult } from '../types/kycProvider';
 
 const FETCH_TIMEOUT_MS = 30_000;
 
-const DIDIT_TEE_URL =
-  import.meta.env.VITE_DIDIT_TEE_URL ?? 'https://kyc.self.xyz';
+const DIDIT_TEE_URL = import.meta.env.VITE_DIDIT_TEE_URL ?? 'https://kyc.self.xyz';
+
+export interface DiditLaunchConfig {
+  url: string;
+  containerId: string;
+  verificationId: string;
+  onComplete: (result: KycProviderResult) => void;
+  onError: (result: KycProviderResult) => void;
+  onEvent?: (event: string, payload: unknown) => void;
+}
 
 export interface DiditSession {
   sessionId: string;
@@ -15,15 +23,21 @@ export interface DiditSession {
   url: string;
 }
 
-export async function createDiditSession(
-  signal?: AbortSignal,
-): Promise<DiditSession> {
+function buildProviderResult(verificationId: string, overrides: Partial<KycProviderResult>): KycProviderResult {
+  return {
+    status: 'error',
+    verificationId,
+    provider: 'didit',
+    completedAt: new Date().toISOString(),
+    ...overrides,
+  };
+}
+
+export async function createDiditSession(signal?: AbortSignal): Promise<DiditSession> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-  const combinedSignal = signal
-    ? AbortSignal.any([signal, controller.signal])
-    : controller.signal;
+  const combinedSignal = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal;
 
   try {
     const response = await fetch(`${DIDIT_TEE_URL}/session`, {
@@ -36,9 +50,7 @@ export async function createDiditSession(
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(
-        `Failed to create Didit session (HTTP ${response.status})`,
-      );
+      throw new Error(`Failed to create Didit session (HTTP ${response.status})`);
     }
 
     const body: unknown = await response.json();
@@ -49,9 +61,7 @@ export async function createDiditSession(
   } catch (err) {
     clearTimeout(timeoutId);
     if (err instanceof Error && err.name === 'AbortError') {
-      throw new Error(
-        `Didit session request timed out after ${FETCH_TIMEOUT_MS / 1000}s`,
-      );
+      throw new Error(`Didit session request timed out after ${FETCH_TIMEOUT_MS / 1000}s`);
     }
     if (err instanceof Error) {
       throw new Error(`Failed to create Didit session: ${err.message}`);
@@ -60,31 +70,7 @@ export async function createDiditSession(
   }
 }
 
-function buildProviderResult(
-  verificationId: string,
-  overrides: Partial<KycProviderResult>,
-): KycProviderResult {
-  return {
-    status: 'error',
-    verificationId,
-    provider: 'didit',
-    completedAt: new Date().toISOString(),
-    ...overrides,
-  };
-}
-
-export interface DiditLaunchConfig {
-  url: string;
-  containerId: string;
-  verificationId: string;
-  onComplete: (result: KycProviderResult) => void;
-  onError: (result: KycProviderResult) => void;
-  onEvent?: (event: string, payload: unknown) => void;
-}
-
-export async function launchDiditWebSdk(
-  config: DiditLaunchConfig,
-): Promise<() => void> {
+export async function launchDiditWebSdk(config: DiditLaunchConfig): Promise<() => void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { DiditSdk } = (await import('@didit-protocol/sdk-web')) as any;
 
@@ -130,10 +116,7 @@ export async function launchDiditWebSdk(
         );
       }
     } else if (sdkResult.type === 'cancelled') {
-      emitOnce(
-        buildProviderResult(config.verificationId, { status: 'cancel' }),
-        false,
-      );
+      emitOnce(buildProviderResult(config.verificationId, { status: 'cancel' }), false);
     } else if (sdkResult.type === 'failed') {
       emitOnce(
         buildProviderResult(config.verificationId, {
