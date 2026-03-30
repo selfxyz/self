@@ -2,15 +2,25 @@
 
 package xyz.self.sdk.webview
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.net.http.SslError
 import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
 import android.webkit.SslErrorHandler
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewAssetLoader
 import xyz.self.sdk.bridge.MessageRouter
 
@@ -20,6 +30,8 @@ class AndroidWebViewHost(
     private val isDebugMode: Boolean = false,
 ) {
     private lateinit var webView: WebView
+    var fileUploadCallback: ValueCallback<Array<Uri>>? = null
+    var pendingPermissionRequest: PermissionRequest? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     fun createWebView(queryParams: String): WebView {
@@ -91,6 +103,71 @@ class AndroidWebViewHost(
                 }
             }
 
+            webChromeClient = object : WebChromeClient() {
+                override fun onPermissionRequest(request: PermissionRequest?) {
+                    request ?: return
+
+                    // Only allow permissions from trusted origins
+                    val origin = request.origin?.toString() ?: ""
+                    val isTrusted = origin.startsWith("https://appassets.androidplatform.net") ||
+                        origin.startsWith("https://verify.didit.me") ||
+                        (isDebugMode && origin.startsWith("http://127.0.0.1"))
+                    if (!isTrusted) {
+                        request.deny()
+                        return
+                    }
+
+                    val activity = context as? Activity ?: run {
+                        request.deny()
+                        return
+                    }
+
+                    // Collect required Android permissions
+                    val neededPermissions = mutableListOf<String>()
+                    if (request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+                        neededPermissions.add(Manifest.permission.CAMERA)
+                    }
+                    if (request.resources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
+                        neededPermissions.add(Manifest.permission.RECORD_AUDIO)
+                    }
+
+                    // Check if any runtime permissions are missing
+                    val missingPermissions = neededPermissions.filter {
+                        ContextCompat.checkSelfPermission(activity, it) != PackageManager.PERMISSION_GRANTED
+                    }
+
+                    if (missingPermissions.isNotEmpty()) {
+                        pendingPermissionRequest = request
+                        ActivityCompat.requestPermissions(activity, missingPermissions.toTypedArray(), CAMERA_PERMISSION_REQUEST_CODE)
+                        return
+                    }
+
+                    request.grant(request.resources)
+                }
+
+                override fun onShowFileChooser(
+                    webView: WebView?,
+                    filePathCallback: ValueCallback<Array<Uri>>?,
+                    fileChooserParams: FileChooserParams?,
+                ): Boolean {
+                    fileUploadCallback?.onReceiveValue(null)
+                    fileUploadCallback = filePathCallback
+
+                    val intent = fileChooserParams?.createIntent() ?: return false
+                    val activity = context as? Activity ?: run {
+                        fileUploadCallback = null
+                        return false
+                    }
+                    try {
+                        activity.startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
+                    } catch (e: Exception) {
+                        fileUploadCallback = null
+                        return false
+                    }
+                    return true
+                }
+            }
+
             addJavascriptInterface(BridgeJsInterface(), "SelfNativeAndroid")
 
             if (isDebugMode) {
@@ -120,5 +197,10 @@ class AndroidWebViewHost(
         fun postMessage(json: String) {
             router.onMessageReceived(json)
         }
+    }
+
+    companion object {
+        const val FILE_CHOOSER_REQUEST_CODE = 1001
+        const val CAMERA_PERMISSION_REQUEST_CODE = 1002
     }
 }

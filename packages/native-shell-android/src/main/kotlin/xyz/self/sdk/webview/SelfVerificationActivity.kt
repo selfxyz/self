@@ -2,7 +2,9 @@
 
 package xyz.self.sdk.webview
 
+import android.content.Intent
 import android.os.Bundle
+import android.webkit.WebChromeClient
 import androidx.appcompat.app.AppCompatActivity
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.CryptoHandler
@@ -41,6 +43,35 @@ class SelfVerificationActivity : AppCompatActivity() {
 
         val webView = webViewHost.createWebView(queryParams)
         setContentView(webView)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == AndroidWebViewHost.CAMERA_PERMISSION_REQUEST_CODE) {
+            val pending = webViewHost.pendingPermissionRequest
+            if (pending != null) {
+                if (grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    pending.grant(pending.resources)
+                } else {
+                    pending.deny()
+                }
+                webViewHost.pendingPermissionRequest = null
+            }
+        }
+    }
+
+    @Deprecated("Use Activity Result API")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == AndroidWebViewHost.FILE_CHOOSER_REQUEST_CODE) {
+            val results = if (resultCode == RESULT_OK && data != null) {
+                WebChromeClient.FileChooserParams.parseResult(resultCode, data)
+            } else {
+                null
+            }
+            webViewHost.fileUploadCallback?.onReceiveValue(results)
+            webViewHost.fileUploadCallback = null
+        }
     }
 
     override fun onDestroy() {

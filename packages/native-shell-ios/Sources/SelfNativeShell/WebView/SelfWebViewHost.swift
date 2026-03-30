@@ -21,6 +21,8 @@ final class SelfWebViewHost: NSObject {
         contentController.add(WeakScriptMessageProxy(handler: self), name: "SelfNativeIOS")
         config.userContentController = contentController
         config.preferences.javaScriptCanOpenWindowsAutomatically = false
+        config.allowsInlineMediaPlayback = true
+        config.mediaTypesRequiringUserActionForPlayback = []
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.scrollView.bounces = false
@@ -44,7 +46,7 @@ final class SelfWebViewHost: NSObject {
                 webView.load(URLRequest(url: url))
             }
         } else {
-            guard let bundlePath = Bundle.main.path(forResource: "self-sdk-web", ofType: nil) else {
+            guard let bundlePath = Bundle.module.path(forResource: "self-sdk-web", ofType: nil) else {
                 return
             }
             let fileURL = URL(fileURLWithPath: "\(bundlePath)/index.html")
