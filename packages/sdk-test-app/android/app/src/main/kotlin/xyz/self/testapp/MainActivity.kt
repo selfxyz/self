@@ -68,7 +68,7 @@ fun TestAppScreen(
     resultText: String,
     onLaunch: (SelfSdkConfig) -> Unit
 ) {
-    var teeUrl by remember { mutableStateOf("https://58a0-49-204-25-56.ngrok-free.app") }
+    var teeUrl by remember { mutableStateOf("https://kyc.self.xyz") }
     var verificationId by remember { mutableStateOf("test-verification-123") }
     var userId by remember { mutableStateOf("test-user-456") }
     var debugMode by remember { mutableStateOf(false) }

@@ -20,7 +20,7 @@ class VerificationCallback: SelfSdkCallback {
 }
 
 struct ContentView: View {
-    @State private var teeUrl = "https://58a0-49-204-25-56.ngrok-free.app"
+    @State private var teeUrl = "https://kyc.self.xyz"
     @State private var verificationId = "test-verification-123"
     @State private var userId = "test-user-456"
     @State private var debugMode = false

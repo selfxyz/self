@@ -23,6 +23,7 @@ targets:
       properties:
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
+        NSCameraUsageDescription: "Camera access is required for identity document capture and liveness verification."
     settings:
       SWIFT_VERSION: "5.9"
       DEVELOPMENT_TEAM: ""

@@ -129,8 +129,12 @@ class AndroidWebViewHost(
                     fileUploadCallback = filePathCallback
 
                     val intent = fileChooserParams?.createIntent() ?: return false
+                    val activity = context as? Activity ?: run {
+                        fileUploadCallback = null
+                        return false
+                    }
                     try {
-                        (context as? Activity)?.startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
+                        activity.startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
                     } catch (e: Exception) {
                         fileUploadCallback = null
                         return false
