@@ -30,6 +30,18 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
   }),
 }));
 
+vi.mock('../../../src/providers/BridgeProvider', () => ({
+  useBridge: () => ({}),
+}));
+
+vi.mock('@selfxyz/webview-bridge/adapters', () => ({
+  bridgeStorageAdapter: () => ({
+    get: vi.fn().mockResolvedValue(null),
+    set: vi.fn().mockResolvedValue(undefined),
+    remove: vi.fn().mockResolvedValue(undefined),
+  }),
+}));
+
 vi.mock('@selfxyz/euclid', () => ({
   createSafeAreaProps: ({ top, bottom }: { top: number; bottom: number }) => ({
     insets: { top, bottom, left: 0, right: 0 },
