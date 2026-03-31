@@ -61,8 +61,7 @@ export function parseVerificationRequestContext(search: string): ParsedVerificat
   const endpointType = params.get('endpointType') ?? undefined;
   const userIdType = params.get('userIdType') ?? undefined;
   const rawChainID = params.get('chainID');
-  const parsedChainID = rawChainID ? parseInt(rawChainID, 10) : Number.NaN;
-  const chainID = Number.isFinite(parsedChainID) ? parsedChainID : undefined;
+  const chainID = rawChainID === '42220' || rawChainID === '11142220' ? Number(rawChainID) : undefined;
   const userDefinedData = params.get('userDefinedData') ?? undefined;
   const selfDefinedData = params.get('selfDefinedData') ?? undefined;
 
@@ -93,7 +92,10 @@ function normalizeRequestType(value: string | null | undefined): string {
 function normalizeEndpoint(value: string | null | undefined, endpointType?: string): string {
   if (!value) return '';
 
-  if (endpointType === 'celo' || endpointType === 'staging_celo') {
+  const isContractType = endpointType === 'celo' || endpointType === 'staging_celo';
+  const isHttpType = endpointType === 'https' || endpointType === 'staging_https';
+
+  if (isContractType) {
     return value.startsWith('0x') ? value : '';
   }
 
@@ -106,8 +108,7 @@ function normalizeEndpoint(value: string | null | undefined, endpointType?: stri
     const pathname = endpoint.pathname === '/' ? '' : endpoint.pathname;
     return endpoint.origin + pathname;
   } catch {
-    // Not a valid URL — could be a contract address without explicit endpointType
-    return value.startsWith('0x') ? value : '';
+    return !isHttpType && value.startsWith('0x') ? value : '';
   }
 }
 

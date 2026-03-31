@@ -131,6 +131,22 @@ describe('verificationRequest utils', () => {
       expect(context.appEndpoint).toBe('0xAbC123');
     });
 
+    it('should reject 0x endpoint when endpointType is explicitly https', () => {
+      const context = parseVerificationRequestContext('?appEndpoint=0xAbC123&endpointType=https');
+
+      expect(context.appEndpoint).toBe('');
+    });
+
+    it('should reject unsupported chainID values', () => {
+      expect(parseVerificationRequestContext('?chainID=999').chainID).toBeUndefined();
+      expect(parseVerificationRequestContext('?chainID=42220abc').chainID).toBeUndefined();
+      expect(parseVerificationRequestContext('?chainID=').chainID).toBeUndefined();
+    });
+
+    it('should accept staging chainID', () => {
+      expect(parseVerificationRequestContext('?chainID=11142220').chainID).toBe(11142220);
+    });
+
     it('should default new fields to undefined when absent', () => {
       const context = parseVerificationRequestContext('?userId=user-1');
 
