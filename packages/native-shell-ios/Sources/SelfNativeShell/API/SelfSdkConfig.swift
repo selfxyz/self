@@ -19,6 +19,7 @@ public struct SelfSdkConfig {
     public let chainID: Int?
     public let userDefinedData: String?
     public let selfDefinedData: String?
+    public let secureStorageProvider: SecureStorageProvider
 
     public init(
         verificationId: String,
@@ -37,6 +38,7 @@ public struct SelfSdkConfig {
         chainID: Int? = nil,
         userDefinedData: String? = nil,
         selfDefinedData: String? = nil
+        secureStorageProvider: SecureStorageProvider
     ) {
         self.verificationId = verificationId
         self.userId = userId
@@ -54,6 +56,7 @@ public struct SelfSdkConfig {
         self.chainID = chainID
         self.userDefinedData = userDefinedData
         self.selfDefinedData = selfDefinedData
+        self.secureStorageProvider = secureStorageProvider
     }
 
     func toQueryParams() -> String {
