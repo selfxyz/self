@@ -29,7 +29,10 @@ export function derivePrivateKey(mnemonic: string, path = DEFAULT_DERIVATION_PAT
 let ensureSecretInFlight: Promise<void> | null = null;
 
 export async function ensureSecret(storage: BridgeStorageAdapter): Promise<void> {
-  if (ensureSecretInFlight) return ensureSecretInFlight;
+  if (ensureSecretInFlight) {
+    await ensureSecretInFlight;
+    return ensureSecret(storage);
+  }
 
   ensureSecretInFlight = (async () => {
     const existing = await storage.get(PRIVATE_KEY_KEY);
