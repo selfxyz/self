@@ -162,6 +162,7 @@ const renderRoutes = (initialEntries: string[]) =>
         <Route path="/recovery" element={<LaunchRecoveryScreen />} />
         <Route path="/recovery/phrase-input" element={<SecretPhraseInputScreen />} />
         <Route path="/recovery/success" element={<RecoverySuccessScreen />} />
+        <Route path="/tunnel/proof/generating" element={<LocationDisplay />} />
         <Route path="/coming-soon" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
@@ -178,7 +179,8 @@ describe('recovery support screens', () => {
   });
 
   const expectLocation = (expected: string) => {
-    expect(screen.getByTestId('location').textContent).toBe(expected);
+    const locations = screen.getAllByTestId('location');
+    expect(locations.at(-1)?.textContent).toBe(expected);
   };
 
   it('stitches settings through security to recovery phrase backup flow', () => {
@@ -208,6 +210,16 @@ describe('recovery support screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /submit valid phrase/i }));
     expectLocation('/recovery/success');
+  });
+
+  it('carries returnTo through recovery success and resumes the caller route', () => {
+    renderRoutes(['/recovery/phrase-input?returnTo=%2Ftunnel%2Fproof%2Fgenerating']);
+
+    fireEvent.click(screen.getByRole('button', { name: /submit valid phrase/i }));
+    expectLocation('/recovery/success');
+
+    fireEvent.click(screen.getByRole('button', { name: /finish recovery/i }));
+    expectLocation('/tunnel/proof/generating');
   });
 
   it('rejects an invalid mnemonic and stays on phrase input', () => {
