@@ -175,10 +175,9 @@ export const generateKycDiscloseInputFromData = (
   forbiddenCountriesList?: string[],
   minimumAge?: number
 ): KycDiscloseInput => {
-  // Decode base64 applicant info to get raw padded bytes for the circuit
-  const rawData = Buffer.from(serializedApplicantInfo, 'base64').toString('utf-8');
-  const serializedData = rawData.padEnd(KYC_MAX_LENGTH, '\0');
-  const msgPadded = Array.from(serializedData, (x) => x.charCodeAt(0));
+  // Use raw bytes directly — .toString('utf-8') corrupts bytes >= 128
+  const raw = Buffer.from(serializedApplicantInfo, 'base64');
+  const msgPadded = [...Array.from(raw, (b) => Number(b)), ...new Array(Math.max(0, KYC_MAX_LENGTH - raw.length)).fill(0)];
 
   // Compute commitment
   const commitment = poseidon2([secret, packBytesAndPoseidon(msgPadded)]);
