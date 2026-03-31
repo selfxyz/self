@@ -29,6 +29,12 @@ interface TargetOriginOptions {
   allowWildcard?: boolean;
 }
 
+export function hasDiscloseRequestContext(
+  context: Pick<ParsedVerificationRequestContext, 'request' | 'displayLabels'>,
+) {
+  return Boolean((context.displayLabels && context.displayLabels.length > 0) || context.request.disclosures?.length);
+}
+
 export function parseBrowserHostTargetOrigin(search: string, options: TargetOriginOptions = {}): string | undefined {
   const params = new URLSearchParams(search);
   return normalizeTargetOrigin(params.get('targetOrigin'), options);
@@ -148,13 +154,6 @@ function parseExcludedCountries(params: URLSearchParams): string[] {
   return splitCSV(raw);
 }
 
-export function titleCaseDisclosure(disclosure: string): string {
-  return disclosure
-    .replace(/[_-]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, match => match.toUpperCase());
-}
 
 function parseDisplayLabels(params: URLSearchParams): string[] | null {
   const raw = params.get('proofItems');

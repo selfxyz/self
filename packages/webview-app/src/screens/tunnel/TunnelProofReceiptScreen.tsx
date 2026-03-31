@@ -11,7 +11,7 @@ import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-import { titleCaseDisclosure } from '../../utils/verificationRequest';
+import { titleCaseDisclosure } from '../../utils/provingUtils';
 
 export const TunnelProofReceiptScreen: React.FC = () => {
   const navigate = useNavigate();

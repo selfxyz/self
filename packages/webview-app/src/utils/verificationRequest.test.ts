@@ -5,7 +5,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { getPromptMockFromSearch, getPromptMockSearch } from './mockOnboardingFlow';
-import { parseBrowserHostTargetOrigin, parseVerificationRequestContext } from './verificationRequest';
+import {
+  hasDiscloseRequestContext,
+  parseBrowserHostTargetOrigin,
+  parseVerificationRequestContext,
+} from './verificationRequest';
 
 describe('verificationRequest utils', () => {
   describe('parseBrowserHostTargetOrigin', () => {
@@ -135,6 +139,17 @@ describe('verificationRequest utils', () => {
       expect(context.chainID).toBeUndefined();
       expect(context.userDefinedData).toBeUndefined();
       expect(context.selfDefinedData).toBeUndefined();
+    });
+
+    it('should require disclose items for the disclose route', () => {
+      const withDisclosures = parseVerificationRequestContext('?disclosures=full_name');
+      expect(hasDiscloseRequestContext(withDisclosures)).toBe(true);
+
+      const withLabels = parseVerificationRequestContext('?proofItems=Full%20Name');
+      expect(hasDiscloseRequestContext(withLabels)).toBe(true);
+
+      const empty = parseVerificationRequestContext('?userId=user-1');
+      expect(hasDiscloseRequestContext(empty)).toBe(false);
     });
   });
 
