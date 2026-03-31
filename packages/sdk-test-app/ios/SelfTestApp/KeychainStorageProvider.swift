@@ -7,7 +7,7 @@ import SelfNativeShell
 final class KeychainStorageProvider: SecureStorageProvider {
     private let service = "xyz.self.sdk"
 
-    func get(key: String) -> String? {
+    func get(key: String) throws -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -19,8 +19,9 @@ final class KeychainStorageProvider: SecureStorageProvider {
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
 
+        if status == errSecItemNotFound { return nil }
         guard status == errSecSuccess, let data = result as? Data else {
-            return nil
+            throw NSError(domain: "KeychainStorageProvider", code: Int(status), userInfo: [NSLocalizedDescriptionKey: "Keychain get failed: \(status)"])
         }
         return String(data: data, encoding: .utf8)
     }
@@ -30,19 +31,29 @@ final class KeychainStorageProvider: SecureStorageProvider {
             throw NSError(domain: "KeychainStorageProvider", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to encode value"])
         }
 
-        try remove(key: key)
-
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
+            kSecAttrAccount as String: key
+        ]
+
+        let attributes: [String: Any] = [
             kSecValueData as String: data,
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         ]
 
-        let status = SecItemAdd(query as CFDictionary, nil)
-        guard status == errSecSuccess else {
-            throw NSError(domain: "KeychainStorageProvider", code: Int(status), userInfo: [NSLocalizedDescriptionKey: "Keychain set failed: \(status)"])
+        let updateStatus = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+
+        if updateStatus == errSecItemNotFound {
+            var addQuery = query
+            addQuery[kSecValueData as String] = data
+            addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
+            guard addStatus == errSecSuccess else {
+                throw NSError(domain: "KeychainStorageProvider", code: Int(addStatus), userInfo: [NSLocalizedDescriptionKey: "Keychain set failed: \(addStatus)"])
+            }
+        } else if updateStatus != errSecSuccess {
+            throw NSError(domain: "KeychainStorageProvider", code: Int(updateStatus), userInfo: [NSLocalizedDescriptionKey: "Keychain update failed: \(updateStatus)"])
         }
     }
 
