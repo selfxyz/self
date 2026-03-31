@@ -529,4 +529,5 @@ contract IdentityRegistryKycImplV1 is IdentityRegistryKycStorageV1, IIdentityReg
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);
     }
+
 }
