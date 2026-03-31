@@ -86,6 +86,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",
+    "@didit-protocol/sdk-react-native": "^3.2.7",
     "@ethersproject/shims": "^5.8.0",
     "@invertase/react-native-apple-authentication": "^2.5.1",
     "@noble/hashes": "^1.5.0",
@@ -110,7 +111,6 @@
     "@sentry/react": "^9.32.0",
     "@sentry/react-native": "7.0.0",
     "@stablelib/cbor": "^2.0.1",
-    "@sumsub/react-native-mobilesdk-module": "1.40.2",
     "@tamagui/animations-css": "1.126.14",
     "@tamagui/animations-react-native": "1.126.14",
     "@tamagui/config": "1.126.14",

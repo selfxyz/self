@@ -1,0 +1,73 @@
+// SPDX-License-Identifier: BUSL-1.1
+
+import Foundation
+
+public struct SelfSdkConfig {
+    public let verificationId: String
+    public let userId: String
+    public let environment: String
+    public let isDebugMode: Bool
+    public let version: Int
+    public let scope: String?
+    public let disclosures: [String]?
+    public let appName: String?
+    public let appEndpoint: String?
+    public let resultType: String?
+
+    public init(
+        verificationId: String,
+        userId: String,
+        environment: String = "prod",
+        isDebugMode: Bool = false,
+        version: Int = 1,
+        scope: String? = nil,
+        disclosures: [String]? = nil,
+        appName: String? = nil,
+        appEndpoint: String? = nil,
+        resultType: String? = nil
+    ) {
+        self.verificationId = verificationId
+        self.userId = userId
+        self.environment = environment
+        self.isDebugMode = isDebugMode
+        self.version = version
+        self.scope = scope
+        self.disclosures = disclosures
+        self.appName = appName
+        self.appEndpoint = appEndpoint
+        self.resultType = resultType
+    }
+
+    func toQueryParams() -> String {
+        var components = URLComponents()
+        var items = [
+            URLQueryItem(name: "environment", value: environment),
+            URLQueryItem(name: "verificationId", value: verificationId),
+            URLQueryItem(name: "userId", value: userId),
+            URLQueryItem(name: "version", value: String(version)),
+        ]
+        if let scope = scope {
+            items.append(URLQueryItem(name: "scope", value: scope))
+        }
+        if let disclosures = disclosures, !disclosures.isEmpty {
+            items.append(URLQueryItem(name: "disclosures", value: disclosures.joined(separator: ",")))
+        }
+        if let appName = appName {
+            items.append(URLQueryItem(name: "appName", value: appName))
+        }
+        if let appEndpoint = appEndpoint {
+            items.append(URLQueryItem(name: "appEndpoint", value: appEndpoint))
+        }
+        if let resultType = resultType {
+            items.append(URLQueryItem(name: "resultType", value: resultType))
+        }
+        components.queryItems = items
+        return components.percentEncodedQuery ?? ""
+    }
+}
+
+public protocol SelfSdkCallback: AnyObject {
+    func onSuccess(result: [String: Any])
+    func onFailure(error: Error)
+    func onCancelled()
+}

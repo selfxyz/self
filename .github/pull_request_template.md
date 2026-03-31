@@ -1,11 +1,19 @@
-### Description
+## Summary
 
-_A brief description of the changes, what and how is being changed._
+<!-- Brief description of changes -->
 
-### Tested
+## Test plan
 
-_Explain how the change has been tested (for example by manual testing, unit tests etc) or why it's not necessary (for example version bump)._
+<!-- How was this tested? -->
 
-### How to QA
+---
 
-_How can the change be tested in a repeatable manner?_
+### Native Consolidation Checklist
+
+<!-- Check items that apply to this PR. Delete section if not touching native code. -->
+
+- [ ] CONTRACTS.md reviewed - no unintended contract changes
+- [ ] Layer 1 bridge contract tests pass (`cd app && yarn jest:run` / `yarn workspace @selfxyz/rn-sdk-test-app test`)
+- [ ] Layer 3 builds pass (app iOS, RN test app iOS, RN test app Android)
+- [ ] Layer 4 manual smoke test signed off (if consolidation PR)
+- [ ] No new native business logic added (logic belongs in TypeScript)

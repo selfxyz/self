@@ -12,21 +12,23 @@ export interface ParsedVerificationRequestContext {
   timestamp: number;
   requestType: string;
   verificationId?: string;
+  environment: 'prod' | 'stg';
+  version: number;
 }
 
-const ALLOWED_REQUEST_TYPES = new Set([
-  'proofRequested',
-  'documentOwnershipConfirmed',
-]);
+const ALLOWED_REQUEST_TYPES = new Set(['proofRequested', 'documentOwnershipConfirmed']);
 const DEFAULT_REQUEST_TYPE = 'proofRequested';
 
 interface TargetOriginOptions {
   allowWildcard?: boolean;
 }
 
-export function parseVerificationRequestContext(
-  search: string,
-): ParsedVerificationRequestContext {
+export function parseBrowserHostTargetOrigin(search: string, options: TargetOriginOptions = {}): string | undefined {
+  const params = new URLSearchParams(search);
+  return normalizeTargetOrigin(params.get('targetOrigin'), options);
+}
+
+export function parseVerificationRequestContext(search: string): ParsedVerificationRequestContext {
   const params = new URLSearchParams(search);
   const request: VerificationRequest = {
     userId: params.get('userId') ?? undefined,
@@ -37,6 +39,13 @@ export function parseVerificationRequestContext(
   const queryTimestamp = params.get('timestamp');
   const parsedTimestamp = queryTimestamp ? Number(queryTimestamp) : Number.NaN;
 
+  const rawEnv = params.get('environment');
+  const environment: 'prod' | 'stg' = rawEnv === 'staging' || rawEnv === 'stg' ? 'stg' : 'prod';
+
+  const rawVersion = params.get('version');
+  const parsedVersion = rawVersion ? Number(rawVersion) : Number.NaN;
+  const version = Number.isFinite(parsedVersion) ? parsedVersion : 1;
+
   return {
     request,
     displayLabels: parseDisplayLabels(params),
@@ -45,15 +54,9 @@ export function parseVerificationRequestContext(
     timestamp: Number.isFinite(parsedTimestamp) ? parsedTimestamp : Date.now(),
     requestType: normalizeRequestType(params.get('resultType')),
     verificationId: params.get('verificationId') ?? undefined,
+    environment,
+    version,
   };
-}
-
-export function parseBrowserHostTargetOrigin(
-  search: string,
-  options: TargetOriginOptions = {},
-): string | undefined {
-  const params = new URLSearchParams(search);
-  return normalizeTargetOrigin(params.get('targetOrigin'), options);
 }
 
 function normalizeRequestType(value: string | null | undefined): string {
@@ -67,8 +70,7 @@ function normalizeAppEndpoint(value: string | null | undefined): string {
     const endpoint = new URL(value);
     const isHttps = endpoint.protocol === 'https:';
     const isLocalHttp =
-      endpoint.protocol === 'http:' &&
-      (endpoint.hostname === 'localhost' || endpoint.hostname === '127.0.0.1');
+      endpoint.protocol === 'http:' && (endpoint.hostname === 'localhost' || endpoint.hostname === '127.0.0.1');
     if (!isHttps && !isLocalHttp) return '';
     return endpoint.host;
   } catch {
@@ -89,8 +91,7 @@ function normalizeTargetOrigin(
     const origin = new URL(value);
     const isHttps = origin.protocol === 'https:';
     const isLocalHttp =
-      origin.protocol === 'http:' &&
-      (origin.hostname === 'localhost' || origin.hostname === '127.0.0.1');
+      origin.protocol === 'http:' && (origin.hostname === 'localhost' || origin.hostname === '127.0.0.1');
     if (!isHttps && !isLocalHttp) {
       return undefined;
     }
@@ -101,7 +102,10 @@ function normalizeTargetOrigin(
 }
 
 function splitCSV(value: string): string[] {
-  return value.split(',').map((s) => s.trim()).filter(Boolean);
+  return value
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
 }
 
 function parseDisclosures(params: URLSearchParams): string[] | undefined {

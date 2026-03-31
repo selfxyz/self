@@ -4,6 +4,8 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { consoleAnalyticsAdapter } from '../adapters';
+
 const engineBrowserMocks = vi.hoisted(() => ({
   createIndexedDBDocumentsAdapter: vi.fn(),
   createNoOpHapticAdapter: vi.fn(),
@@ -12,8 +14,6 @@ const engineBrowserMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => engineBrowserMocks);
-
-import { consoleAnalyticsAdapter } from '../adapters';
 
 describe('consoleAnalyticsAdapter', () => {
   const trackEvent = vi.fn();
@@ -59,9 +59,7 @@ describe('consoleAnalyticsAdapter', () => {
   it('should call logNFCEvent without throwing', () => {
     const adapter = consoleAnalyticsAdapter();
 
-    expect(() =>
-      adapter.logNFCEvent('info', 'Scan begun', { sessionId: 's1' }),
-    ).not.toThrow();
+    expect(() => adapter.logNFCEvent('info', 'Scan begun', { sessionId: 's1' })).not.toThrow();
     expect(logNFCEvent).toHaveBeenCalledWith('info', 'Scan begun', { sessionId: 's1' });
   });
 });

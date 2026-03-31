@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { WebViewBridge } from '../bridge';
 import { MockNativeBridge } from '../mock';
 import type { SelfHostMessage } from '../types';
@@ -28,11 +29,7 @@ describe('WebViewBridge', () => {
     it('should send a request and receive a response', async () => {
       mock.handleWith('secureStorage', 'get', { value: 'test-value' });
 
-      const result = await bridge.request<{ value: string }>(
-        'secureStorage',
-        'get',
-        { key: 'test' },
-      );
+      const result = await bridge.request<{ value: string }>('secureStorage', 'get', { key: 'test' });
       expect(result).toEqual({ value: 'test-value' });
     });
 
@@ -42,24 +39,20 @@ describe('WebViewBridge', () => {
         message: 'Key not found',
       });
 
-      await expect(
-        bridge.request('secureStorage', 'get', { key: 'missing' }),
-      ).rejects.toThrow('Key not found');
+      await expect(bridge.request('secureStorage', 'get', { key: 'missing' })).rejects.toThrow('Key not found');
     });
 
     it('should reject when no handler is registered', async () => {
-      await expect(
-        bridge.request('secureStorage', 'get', { key: 'test' }),
-      ).rejects.toThrow('No mock handler registered');
+      await expect(bridge.request('secureStorage', 'get', { key: 'test' })).rejects.toThrow(
+        'No mock handler registered',
+      );
     });
 
     it('should timeout when no response arrives', async () => {
       // Register a handler that never resolves
       mock.handle('nfc', 'scan', () => new Promise(() => {}));
 
-      await expect(bridge.request('nfc', 'scan', {}, 50)).rejects.toThrow(
-        'timed out',
-      );
+      await expect(bridge.request('nfc', 'scan', {}, 50)).rejects.toThrow('timed out');
     });
 
     it('should track pending count', async () => {
@@ -144,9 +137,7 @@ describe('WebViewBridge', () => {
 
     it('should prevent new requests', async () => {
       bridge.destroy();
-      await expect(bridge.request('nfc', 'scan', {})).rejects.toThrow(
-        'destroyed',
-      );
+      await expect(bridge.request('nfc', 'scan', {})).rejects.toThrow('destroyed');
     });
 
     it('should clear global reference', () => {

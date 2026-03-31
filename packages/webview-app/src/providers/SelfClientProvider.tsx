@@ -2,80 +2,82 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { createContext, useContext, useEffect, useMemo, useRef } from 'react';
+import type React from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  bridgeCryptoAdapter,
-  bridgeAuthAdapter,
-  indexedDBDocumentsAdapter,
-  bridgeStorageAdapter,
-  consoleAnalyticsAdapter,
-  bridgeLifecycleAdapter,
-  webNavigationAdapter,
-  noOpHapticAdapter,
-  bridgeBiometricsAdapter,
-} from '@selfxyz/webview-bridge/adapters';
+
+import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha/browser';
+import { createListenersMap, createSelfClient } from '@selfxyz/mobile-sdk-alpha/browser';
 import type {
-  BridgeCryptoAdapter,
-  BridgeAuthAdapter,
-  BridgeDocumentsAdapter,
-  BridgeStorageAdapter,
   BridgeAnalyticsAdapter,
-  BridgeLifecycleAdapter,
-  BridgeNavigationAdapter,
-  BridgeHapticAdapter,
   BridgeBiometricsAdapter,
+  BridgeHapticAdapter,
+  BridgeLifecycleAdapter,
 } from '@selfxyz/webview-bridge/adapters';
+import {
+  bridgeBiometricsAdapter,
+  bridgeHapticAdapter,
+  bridgeLifecycleAdapter,
+  consoleAnalyticsAdapter,
+  createKeychainDocumentsAdapter,
+  createSdkAdapters,
+} from '@selfxyz/webview-bridge/adapters';
+
 import { useBridge } from './BridgeProvider';
 import { useVerificationRequest } from './VerificationRequestProvider';
 
-export interface SelfClientAdapters {
-  crypto: BridgeCryptoAdapter;
-  auth: BridgeAuthAdapter;
-  documents: BridgeDocumentsAdapter;
-  storage: BridgeStorageAdapter;
-  analytics: BridgeAnalyticsAdapter;
+export interface WebViewAdapters {
+  client: SelfClient;
   lifecycle: BridgeLifecycleAdapter;
-  navigation: BridgeNavigationAdapter;
   haptic: BridgeHapticAdapter;
   biometrics: BridgeBiometricsAdapter;
+  analytics: BridgeAnalyticsAdapter;
+  documents: DocumentsAdapter;
 }
 
-const SelfClientContext = createContext<SelfClientAdapters | null>(null);
+const SelfClientContext = createContext<WebViewAdapters | null>(null);
 
-export function useSelfClient(): SelfClientAdapters {
-  const adapters = useContext(SelfClientContext);
-  if (!adapters) {
-    throw new Error('useSelfClient must be used within a SelfClientProvider');
-  }
-  return adapters;
-}
-
-export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const bridge = useBridge();
   const navigate = useNavigate();
   const { verificationId } = useVerificationRequest();
 
-  const adapters = useMemo<SelfClientAdapters>(() => {
-    const lifecycle = bridgeLifecycleAdapter(bridge);
+  const navigateRef = useRef(navigate);
+  useEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
+
+  const stableNavigate = useCallback((path: string) => navigateRef.current(path), []);
+  const stableGoBack = useCallback(() => navigateRef.current(-1), []);
+
+  const webViewAdapters = useMemo<WebViewAdapters>(() => {
+    const sdkAdapters = createSdkAdapters({
+      bridge,
+      navigate: stableNavigate,
+      goBack: stableGoBack,
+    });
+
+    const { map: listeners } = createListenersMap();
+    const client = createSelfClient({
+      config: {
+        platform: 'webview',
+        debug: import.meta.env.DEV,
+      },
+      adapters: sdkAdapters,
+      listeners,
+    });
+
+    const documents = createKeychainDocumentsAdapter(bridge);
 
     return {
-      crypto: bridgeCryptoAdapter(bridge),
-      auth: bridgeAuthAdapter(bridge),
-      documents: indexedDBDocumentsAdapter(),
-      storage: bridgeStorageAdapter(bridge),
-      analytics: consoleAnalyticsAdapter(),
-      lifecycle,
-      navigation: webNavigationAdapter(
-        (path: string) => navigate(path),
-        () => navigate(-1),
-      ),
-      haptic: noOpHapticAdapter(),
+      client,
+      lifecycle: bridgeLifecycleAdapter(bridge),
+      haptic: bridgeHapticAdapter(bridge),
       biometrics: bridgeBiometricsAdapter(bridge),
+      analytics: consoleAnalyticsAdapter(),
+      documents,
     };
-  }, [bridge, navigate]);
+  }, [bridge, stableNavigate, stableGoBack]);
 
   const lastReadyRef = useRef<{
     lifecycle: BridgeLifecycleAdapter;
@@ -83,16 +85,14 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
   } | null>(null);
   useEffect(() => {
     if (
-      lastReadyRef.current?.lifecycle === adapters.lifecycle &&
+      lastReadyRef.current?.lifecycle === webViewAdapters.lifecycle &&
       lastReadyRef.current?.verificationId === verificationId
     ) {
       return;
     }
-    adapters.lifecycle.ready(
-      verificationId ? { verificationId } : {},
-    );
-    lastReadyRef.current = { lifecycle: adapters.lifecycle, verificationId };
-  }, [adapters.lifecycle, verificationId]);
+    webViewAdapters.lifecycle.ready(verificationId ? { verificationId } : {});
+    lastReadyRef.current = { lifecycle: webViewAdapters.lifecycle, verificationId };
+  }, [webViewAdapters.lifecycle, verificationId]);
 
   useEffect(() => {
     return bridge.on('lifecycle', 'cancel', () => {
@@ -100,9 +100,13 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, [bridge, navigate]);
 
-  return (
-    <SelfClientContext.Provider value={adapters}>
-      {children}
-    </SelfClientContext.Provider>
-  );
+  return <SelfClientContext.Provider value={webViewAdapters}>{children}</SelfClientContext.Provider>;
 };
+
+export function useSelfClient(): WebViewAdapters {
+  const adapters = useContext(SelfClientContext);
+  if (!adapters) {
+    throw new Error('useSelfClient must be used within a SelfClientProvider');
+  }
+  return adapters;
+}

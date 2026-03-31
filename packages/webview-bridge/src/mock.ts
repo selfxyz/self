@@ -3,20 +3,12 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { v4 as uuidv4 } from 'uuid';
-import type {
-  BridgeDomain,
-  BridgeRequest,
-  BridgeResponse,
-  BridgeEvent,
-  BridgeError,
-  NativeTransport,
-} from './types';
-import { BRIDGE_PROTOCOL_VERSION } from './types';
-import { parseMessage, isRequest } from './schema';
 
-export type MockHandler = (
-  params: Record<string, unknown>,
-) => Promise<unknown> | unknown;
+import { isRequest, parseMessage } from './schema';
+import type { BridgeDomain, BridgeError, BridgeEvent, BridgeRequest, BridgeResponse, NativeTransport } from './types';
+import { BRIDGE_PROTOCOL_VERSION } from './types';
+
+export type MockHandler = (params: Record<string, unknown>) => Promise<unknown> | unknown;
 
 /**
  * Test utility that implements NativeTransport. Intercepts outgoing messages,
@@ -35,10 +27,7 @@ export class MockNativeBridge implements NativeTransport {
    * Connect this mock to a bridge instance. Call this after creating the bridge
    * with this mock as the transport.
    */
-  connect(bridge: {
-    _handleResponse(json: string): void;
-    _handleEvent(json: string): void;
-  }): void {
+  connect(bridge: { _handleResponse(json: string): void; _handleEvent(json: string): void }): void {
     this.bridge = bridge;
   }
 
@@ -59,11 +48,7 @@ export class MockNativeBridge implements NativeTransport {
   /**
    * Register a handler that returns an error.
    */
-  handleWithError(
-    domain: BridgeDomain,
-    method: string,
-    error: BridgeError,
-  ): void {
+  handleWithError(domain: BridgeDomain, method: string, error: BridgeError): void {
     this.handle(domain, method, () => {
       throw error;
     });
@@ -146,12 +131,7 @@ export class MockNativeBridge implements NativeTransport {
       });
   }
 
-  private sendResponse(
-    request: BridgeRequest,
-    success: boolean,
-    data?: unknown,
-    error?: BridgeError,
-  ): void {
+  private sendResponse(request: BridgeRequest, success: boolean, data?: unknown, error?: BridgeError): void {
     const response: BridgeResponse = {
       type: 'response',
       version: BRIDGE_PROTOCOL_VERSION,
