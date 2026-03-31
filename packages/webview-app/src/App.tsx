@@ -35,6 +35,7 @@ import { DialogueWithCtaScreen } from './screens/proving/DialogueWithCtaScreen';
 import { KycPendingScreen } from './screens/proving/KycPendingScreen';
 import { KycSuccessScreen } from './screens/proving/KycSuccessScreen';
 import { ProofGenerationDialogueScreen } from './screens/proving/ProofGenerationDialogueScreen';
+import { ProofGenerationRouteScreen } from './screens/proving/ProofGenerationRouteScreen';
 import { ProofGenerationSuccessScreen } from './screens/proving/ProofGenerationSuccessScreen';
 import { ProofHistoryScreen } from './screens/proving/ProofHistoryScreen';
 import { ProofRequestReceiptScreen } from './screens/proving/ProofRequestReceiptScreen';
@@ -72,6 +73,7 @@ export const App: React.FC = () => (
             <Route path="/onboarding/failure" element={<RegistrationFailureScreen />} />
             <Route path="/onboarding/kyc-failure" element={<KycFailureScreen />} />
             <Route path="/proving" element={<ProvingScreen />} />
+            <Route path="/proving/generating" element={<ProofGenerationRouteScreen />} />
             <Route path="/proving/result" element={<VerificationResultScreen />} />
             <Route path="/settings" element={<SettingsScreen />} />
             <Route path="/settings/security" element={<SecurityScreen />} />
