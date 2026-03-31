@@ -154,7 +154,6 @@ function parseExcludedCountries(params: URLSearchParams): string[] {
   return splitCSV(raw);
 }
 
-
 function parseDisplayLabels(params: URLSearchParams): string[] | null {
   const raw = params.get('proofItems');
   if (!raw) return null;
