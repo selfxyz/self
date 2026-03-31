@@ -13,6 +13,12 @@ data class SelfSdkConfig(
     val appName: String? = null,
     val appEndpoint: String? = null,
     val resultType: String? = null,
+    val excludedCountries: List<String>? = null,
+    val endpointType: String? = null,
+    val userIdType: String? = null,
+    val chainID: Int? = null,
+    val userDefinedData: String? = null,
+    val selfDefinedData: String? = null,
 )
 
 class SelfSdkException(message: String) : Exception(message)

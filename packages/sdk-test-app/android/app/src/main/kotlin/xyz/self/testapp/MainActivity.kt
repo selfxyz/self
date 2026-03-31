@@ -75,7 +75,7 @@ fun TestAppScreen(
 ) {
     var environment by remember { mutableStateOf("staging") }
     var verificationId by remember { mutableStateOf("test-verification-123") }
-    var userId by remember { mutableStateOf("test-user-456") }
+    var userId by remember { mutableStateOf("0x0000000000000000000000000000000000000001") }
     var debugMode by remember { mutableStateOf(false) }
     var scope by remember { mutableStateOf("") }
     var disclosures by remember { mutableStateOf("full_name,dob") }

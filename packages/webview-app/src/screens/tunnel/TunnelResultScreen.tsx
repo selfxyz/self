@@ -3,42 +3,87 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useCallback, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import { colors, StatusState, WarningOctagonIcon } from '@selfxyz/euclid';
+import { StatusState } from '@selfxyz/euclid';
+import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
+
+interface TunnelResultState {
+  success?: boolean;
+  error?: string;
+}
 
 export const TunnelResultScreen: React.FC = () => {
+  const navigate = useNavigate();
   const location = useLocation();
-  const { lifecycle } = useSelfClient();
+  const { analytics, lifecycle } = useSelfClient();
+  const { verificationId, request } = useVerificationRequest();
 
-  const { success = true, errorMessage } = (location.state as { success?: boolean; errorMessage?: string }) || {};
+  const { success = false, error } = (location.state as TunnelResultState) ?? {};
+
+  useEffect(() => {
+    if (success || !error) return;
+    analytics.trackEvent('tunnel_result_failure', { error });
+  }, [success, error, analytics]);
 
   const onContinue = useCallback(async () => {
-    await lifecycle.setResult(
-      success
-        ? { success: true }
-        : { success: false, error: { code: 'DISCLOSURE_FAILED', message: errorMessage ?? 'Disclosure failed' } },
+    try {
+      const result: VerificationResult = {
+        success: true,
+        userId: request.userId,
+        verificationId,
+        claims: { resultType: 'proofRequested' },
+      };
+      await lifecycle.setResult(result);
+      analytics.trackEvent('tunnel_result_success');
+      lifecycle.dismiss();
+    } catch (err) {
+      analytics.trackEvent('tunnel_result_failure', {
+        error: err instanceof Error ? err.message : 'Failed to send result',
+      });
+    }
+  }, [request.userId, verificationId, lifecycle, analytics]);
+
+  const onRetry = useCallback(() => {
+    navigate('/tunnel/proof/generating');
+  }, [navigate]);
+
+  const onCancel = useCallback(() => {
+    lifecycle.dismiss({ reason: 'back' });
+    navigate('/');
+  }, [lifecycle, navigate]);
+
+  if (success) {
+    return (
+      <StatusState
+        variant="success"
+        title="Identity Verified"
+        description="Your identity has been verified. You can now use Self ID to prove your identity to participating partners."
+        animationSource="/animations/proof-success.json"
+        animationSize={240}
+        loopAnimation={false}
+        buttonText="Continue"
+        onButtonPress={onContinue}
+      />
     );
-  }, [errorMessage, lifecycle, success]);
+  }
 
   return (
     <StatusState
-      variant={success ? 'success' : 'fail'}
-      title={success ? 'Identity Verified' : 'Verification Failed'}
-      description={
-        success
-          ? 'Your identity has been verified. You can now use Self ID to prove your identity to participating partners.'
-          : (errorMessage ?? 'Something went wrong during verification. Please try again.')
-      }
-      animationSource={success ? '/animations/proof-success.json' : undefined}
+      variant="fail"
+      title="Verification Failed"
+      description={error ?? 'Something went wrong during verification. Please try again.'}
+      animationSource="/animations/proof-success.json"
       animationSize={240}
       loopAnimation={false}
-      buttonText="Continue"
-      onButtonPress={onContinue}
-      icon={success ? undefined : <WarningOctagonIcon size={64} color={colors.red500} />}
+      buttonText="Try Again"
+      onButtonPress={onRetry}
+      secondaryButtonText="Cancel"
+      onSecondaryPress={onCancel}
     />
   );
 };

@@ -30,6 +30,12 @@ class SelfVerificationActivity : AppCompatActivity() {
         val appName = intent.getStringExtra(EXTRA_APP_NAME)
         val appEndpoint = intent.getStringExtra(EXTRA_APP_ENDPOINT)
         val resultType = intent.getStringExtra(EXTRA_RESULT_TYPE)
+        val excludedCountries = intent.getStringArrayListExtra(EXTRA_EXCLUDED_COUNTRIES)
+        val endpointType = intent.getStringExtra(EXTRA_ENDPOINT_TYPE)
+        val userIdType = intent.getStringExtra(EXTRA_USER_ID_TYPE)
+        val chainID = if (intent.hasExtra(EXTRA_CHAIN_ID)) intent.getIntExtra(EXTRA_CHAIN_ID, 0) else null
+        val userDefinedData = intent.getStringExtra(EXTRA_USER_DEFINED_DATA)
+        val selfDefinedData = intent.getStringExtra(EXTRA_SELF_DEFINED_DATA)
 
         router = MessageRouter(
             sendToWebView = { js ->
@@ -67,6 +73,14 @@ class SelfVerificationActivity : AppCompatActivity() {
             appName?.let { append("&appName=").append(Uri.encode(it)) }
             appEndpoint?.let { append("&appEndpoint=").append(Uri.encode(it)) }
             resultType?.let { append("&resultType=").append(Uri.encode(it)) }
+            excludedCountries?.takeIf { it.isNotEmpty() }?.let {
+                append("&excludedCountries=").append(Uri.encode(it.joinToString(",")))
+            }
+            endpointType?.let { append("&endpointType=").append(Uri.encode(it)) }
+            userIdType?.let { append("&userIdType=").append(Uri.encode(it)) }
+            chainID?.let { append("&chainID=").append(it) }
+            userDefinedData?.let { append("&userDefinedData=").append(Uri.encode(it)) }
+            selfDefinedData?.let { append("&selfDefinedData=").append(Uri.encode(it)) }
         }
 
         val webView = webViewHost.createWebView(queryParams)
@@ -120,6 +134,12 @@ class SelfVerificationActivity : AppCompatActivity() {
         const val EXTRA_APP_NAME = "xyz.self.sdk.APP_NAME"
         const val EXTRA_APP_ENDPOINT = "xyz.self.sdk.APP_ENDPOINT"
         const val EXTRA_RESULT_TYPE = "xyz.self.sdk.RESULT_TYPE"
+        const val EXTRA_EXCLUDED_COUNTRIES = "xyz.self.sdk.EXCLUDED_COUNTRIES"
+        const val EXTRA_ENDPOINT_TYPE = "xyz.self.sdk.ENDPOINT_TYPE"
+        const val EXTRA_USER_ID_TYPE = "xyz.self.sdk.USER_ID_TYPE"
+        const val EXTRA_CHAIN_ID = "xyz.self.sdk.CHAIN_ID"
+        const val EXTRA_USER_DEFINED_DATA = "xyz.self.sdk.USER_DEFINED_DATA"
+        const val EXTRA_SELF_DEFINED_DATA = "xyz.self.sdk.SELF_DEFINED_DATA"
         const val EXTRA_RESULT_DATA = "xyz.self.sdk.RESULT_DATA"
     }
 }

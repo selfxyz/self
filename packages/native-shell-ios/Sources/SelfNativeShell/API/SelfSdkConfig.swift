@@ -13,6 +13,12 @@ public struct SelfSdkConfig {
     public let appName: String?
     public let appEndpoint: String?
     public let resultType: String?
+    public let excludedCountries: [String]?
+    public let endpointType: String?
+    public let userIdType: String?
+    public let chainID: Int?
+    public let userDefinedData: String?
+    public let selfDefinedData: String?
     public let secureStorageProvider: SecureStorageProvider
 
     public init(
@@ -26,6 +32,12 @@ public struct SelfSdkConfig {
         appName: String? = nil,
         appEndpoint: String? = nil,
         resultType: String? = nil,
+        excludedCountries: [String]? = nil,
+        endpointType: String? = nil,
+        userIdType: String? = nil,
+        chainID: Int? = nil,
+        userDefinedData: String? = nil,
+        selfDefinedData: String? = nil
         secureStorageProvider: SecureStorageProvider
     ) {
         self.verificationId = verificationId
@@ -38,6 +50,12 @@ public struct SelfSdkConfig {
         self.appName = appName
         self.appEndpoint = appEndpoint
         self.resultType = resultType
+        self.excludedCountries = excludedCountries
+        self.endpointType = endpointType
+        self.userIdType = userIdType
+        self.chainID = chainID
+        self.userDefinedData = userDefinedData
+        self.selfDefinedData = selfDefinedData
         self.secureStorageProvider = secureStorageProvider
     }
 
@@ -63,6 +81,24 @@ public struct SelfSdkConfig {
         }
         if let resultType = resultType {
             items.append(URLQueryItem(name: "resultType", value: resultType))
+        }
+        if let excludedCountries = excludedCountries, !excludedCountries.isEmpty {
+            items.append(URLQueryItem(name: "excludedCountries", value: excludedCountries.joined(separator: ",")))
+        }
+        if let endpointType = endpointType {
+            items.append(URLQueryItem(name: "endpointType", value: endpointType))
+        }
+        if let userIdType = userIdType {
+            items.append(URLQueryItem(name: "userIdType", value: userIdType))
+        }
+        if let chainID = chainID {
+            items.append(URLQueryItem(name: "chainID", value: String(chainID)))
+        }
+        if let userDefinedData = userDefinedData {
+            items.append(URLQueryItem(name: "userDefinedData", value: userDefinedData))
+        }
+        if let selfDefinedData = selfDefinedData {
+            items.append(URLQueryItem(name: "selfDefinedData", value: selfDefinedData))
         }
         components.queryItems = items
         return components.percentEncodedQuery ?? ""

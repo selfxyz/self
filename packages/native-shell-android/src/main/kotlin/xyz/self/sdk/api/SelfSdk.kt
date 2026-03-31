@@ -24,6 +24,12 @@ object SelfSdk {
             config.appName?.let { putExtra(SelfVerificationActivity.EXTRA_APP_NAME, it) }
             config.appEndpoint?.let { putExtra(SelfVerificationActivity.EXTRA_APP_ENDPOINT, it) }
             config.resultType?.let { putExtra(SelfVerificationActivity.EXTRA_RESULT_TYPE, it) }
+            config.excludedCountries?.let { putStringArrayListExtra(SelfVerificationActivity.EXTRA_EXCLUDED_COUNTRIES, ArrayList(it)) }
+            config.endpointType?.let { putExtra(SelfVerificationActivity.EXTRA_ENDPOINT_TYPE, it) }
+            config.userIdType?.let { putExtra(SelfVerificationActivity.EXTRA_USER_ID_TYPE, it) }
+            config.chainID?.let { putExtra(SelfVerificationActivity.EXTRA_CHAIN_ID, it) }
+            config.userDefinedData?.let { putExtra(SelfVerificationActivity.EXTRA_USER_DEFINED_DATA, it) }
+            config.selfDefinedData?.let { putExtra(SelfVerificationActivity.EXTRA_SELF_DEFINED_DATA, it) }
         }
         activity.startActivityForResult(intent, requestCode)
     }

@@ -18,11 +18,13 @@ import {
   bridgeBiometricsAdapter,
   bridgeHapticAdapter,
   bridgeLifecycleAdapter,
+  bridgeStorageAdapter,
   consoleAnalyticsAdapter,
   createKeychainDocumentsAdapter,
   createSdkAdapters,
 } from '@selfxyz/webview-bridge/adapters';
 
+import { ensureSecret } from '../utils/secretManager';
 import { useBridge } from './BridgeProvider';
 import { useVerificationRequest } from './VerificationRequestProvider';
 
@@ -78,6 +80,13 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       documents,
     };
   }, [bridge, stableNavigate, stableGoBack]);
+
+  useEffect(() => {
+    const storage = bridgeStorageAdapter(bridge);
+    ensureSecret(storage).catch(() => {
+      console.error('Failed to ensure secret');
+    });
+  }, [bridge]);
 
   const lastReadyRef = useRef<{
     lifecycle: BridgeLifecycleAdapter;

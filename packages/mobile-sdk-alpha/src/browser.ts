@@ -41,7 +41,12 @@ export type { DG1, DG2, ParsedNFCResponse } from './nfc';
 export type { PassportValidationCallbacks } from './validation/document';
 export type { ProvingState, ProvingStateType, provingMachineCircuitType } from './proving/provingMachine';
 export type { SDKEvent, SDKEventMap } from './types/events';
+
 export type { SdkErrorCategory } from './errors';
+
+// Re-export common types needed for SelfApp context construction
+export type { SelfApp, SelfAppDisclosureConfig } from '@selfxyz/common';
+export type { SelfAppState } from './stores/selfAppStore';
 export type { WebAnalyticsOptions } from './adapters/browser';
 
 export {

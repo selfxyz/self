@@ -58,12 +58,18 @@ describe('verificationRequest utils', () => {
         },
         displayLabels: ['Full Name', 'Date of Birth'],
         appName: 'Partner',
-        appEndpoint: 'partner.example',
+        appEndpoint: 'https://partner.example/request',
         timestamp: 123456789,
         requestType: 'documentOwnershipConfirmed',
         verificationId: 'verif-1',
         environment: 'prod',
         version: 1,
+        excludedCountries: [],
+        endpointType: undefined,
+        userIdType: undefined,
+        chainID: undefined,
+        userDefinedData: undefined,
+        selfDefinedData: undefined,
       });
     });
 
@@ -93,6 +99,62 @@ describe('verificationRequest utils', () => {
       expect(context.requestType).toBe('proofRequested');
       expect(context.appEndpoint).toBe('');
       expect(context.verificationId).toBeUndefined();
+    });
+
+    it('should parse new fields (endpointType, userIdType, chainID, userDefinedData, selfDefinedData)', () => {
+      const context = parseVerificationRequestContext(
+        '?endpointType=celo&userIdType=hex&chainID=42220&userDefinedData=custom&selfDefinedData=extra',
+      );
+
+      expect(context.endpointType).toBe('celo');
+      expect(context.userIdType).toBe('hex');
+      expect(context.chainID).toBe(42220);
+      expect(context.userDefinedData).toBe('custom');
+      expect(context.selfDefinedData).toBe('extra');
+    });
+
+    it('should pass through celo contract address endpoint', () => {
+      const context = parseVerificationRequestContext('?appEndpoint=0xAbC123&endpointType=celo');
+
+      expect(context.appEndpoint).toBe('0xAbC123');
+    });
+
+    it('should reject non-0x endpoint for celo endpointType', () => {
+      const context = parseVerificationRequestContext('?appEndpoint=not-a-contract&endpointType=celo');
+
+      expect(context.appEndpoint).toBe('');
+    });
+
+    it('should pass through 0x endpoint even without explicit endpointType', () => {
+      const context = parseVerificationRequestContext('?appEndpoint=0xAbC123');
+
+      expect(context.appEndpoint).toBe('0xAbC123');
+    });
+
+    it('should reject 0x endpoint when endpointType is explicitly https', () => {
+      const context = parseVerificationRequestContext('?appEndpoint=0xAbC123&endpointType=https');
+
+      expect(context.appEndpoint).toBe('');
+    });
+
+    it('should reject unsupported chainID values', () => {
+      expect(parseVerificationRequestContext('?chainID=999').chainID).toBeUndefined();
+      expect(parseVerificationRequestContext('?chainID=42220abc').chainID).toBeUndefined();
+      expect(parseVerificationRequestContext('?chainID=').chainID).toBeUndefined();
+    });
+
+    it('should accept staging chainID', () => {
+      expect(parseVerificationRequestContext('?chainID=11142220').chainID).toBe(11142220);
+    });
+
+    it('should default new fields to undefined when absent', () => {
+      const context = parseVerificationRequestContext('?userId=user-1');
+
+      expect(context.endpointType).toBeUndefined();
+      expect(context.userIdType).toBeUndefined();
+      expect(context.chainID).toBeUndefined();
+      expect(context.userDefinedData).toBeUndefined();
+      expect(context.selfDefinedData).toBeUndefined();
     });
 
     it('should require disclose items for the disclose route', () => {

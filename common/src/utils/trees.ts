@@ -4,13 +4,13 @@ import en from 'i18n-iso-countries/langs/en.json' with { type: 'json' };
 import {
   poseidon2,
   poseidon3,
+  poseidon4,
   poseidon5,
   poseidon6,
+  poseidon8,
   poseidon10,
   poseidon12,
   poseidon13,
-  poseidon4,
-  poseidon8,
 } from 'poseidon-lite';
 
 import {
@@ -311,8 +311,50 @@ export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
   }
 }
 
-export function getLeafCscaTree(csca_parsed: CertificateData): string {
-  return getLeaf(csca_parsed, 'csca');
+export function buildKycSMT(field: any[], treetype: string): [number, number, SMT] {
+  let count = 0;
+  let startTime = performance.now();
+  const providerName = 'KYC';
+
+  const hash2 = (childNodes: ChildNodes) =>
+    childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes);
+  const tree = new SMT(hash2, true);
+
+  for (let i = 0; i < field.length; i++) {
+    const entry = field[i];
+
+    if (i !== 0) {
+      console.log(`Processing ${providerName}`, treetype, 'number', i, 'out of', field.length);
+    }
+
+    let leafs = [BigInt(0), BigInt(0)];
+    if (treetype == 'name_and_dob') {
+      leafs[0] = processNameAndDobKyc(entry, i, false);
+      leafs[1] = processNameAndDobKyc(entry, i, true);
+    } else if (treetype == 'name_and_yob') {
+      leafs[0] = processNameAndYobKyc(entry, i, false);
+      leafs[1] = processNameAndYobKyc(entry, i, true);
+    }
+
+    if (leafs[0] == BigInt(0) || tree.createProof(leafs[0]).membership) {
+      console.log('This entry already exists in the tree, skipping...');
+      continue;
+    } else if (leafs[1] == BigInt(0) || tree.createProof(leafs[1]).membership) {
+      console.log('This entry already exists in the tree, skipping...');
+      continue;
+    }
+
+    tree.add(leafs[0], BigInt(1));
+    count += 1;
+    if (leafs[0] != leafs[1]) {
+      tree.add(leafs[1], BigInt(1));
+      count += 1;
+    }
+  }
+
+  console.log(`Total ${providerName}`, treetype, 'parsed are : ', count, ' over ', field.length);
+  console.log(`${providerName}`, treetype, 'tree built in', performance.now() - startTime, 'ms');
+  return [count, performance.now() - startTime, tree];
 }
 
 function processPassportNoAndNationality(
@@ -523,6 +565,10 @@ function processCountry(country1: string, country2: string, i: number) {
   return leaf;
 }
 
+export function getLeafCscaTree(csca_parsed: CertificateData): string {
+  return getLeaf(csca_parsed, 'csca');
+}
+
 export function getLeafDscTree(dsc_parsed: CertificateData, csca_parsed: CertificateData): string {
   const dscLeaf = getLeaf(dsc_parsed, 'dsc');
   const cscaLeaf = getLeaf(csca_parsed, 'csca');
@@ -562,48 +608,16 @@ export const getNameDobLeafAadhaar = (name: string, year: string, month: string,
   );
 };
 
-export function getNameLeaf(nameMrz: (bigint | number)[], i?: number): bigint {
-  const middleChunks: bigint[] = [];
-  const chunks: (number | bigint)[][] = [];
-  try {
-    // Add try-catch block
-    if (nameMrz.length == 39) {
-      // passport
-      chunks.push(nameMrz.slice(0, 13), nameMrz.slice(13, 26), nameMrz.slice(26, 39));
-      for (const chunk of chunks) {
-        if (chunk.length !== 13)
-          throw new Error(`Invalid chunk length for Poseidon13: ${chunk.length}`);
-        middleChunks.push(poseidon13(chunk));
-      }
-    } else if (nameMrz.length == 30) {
-      // id_card
-      chunks.push(nameMrz.slice(0, 10), nameMrz.slice(10, 20), nameMrz.slice(20, 30)); // Corrected comment: 30/3 for poseidon10
-      for (const chunk of chunks) {
-        if (chunk.length !== 10)
-          throw new Error(`Invalid chunk length for Poseidon10: ${chunk.length}`);
-        middleChunks.push(poseidon10(chunk));
-      }
-    } else {
-      throw new Error(`Unsupported name MRZ length: ${nameMrz.length}`); // Handle unexpected lengths
-    }
-
-    if (middleChunks.length !== 3)
-      throw new Error(`Invalid number of middle chunks: ${middleChunks.length}`);
-    return poseidon3(middleChunks);
-  } catch (err) {
-    console.error('Error in getNameLeaf:', err, 'Index:', i, 'MRZ Length:', nameMrz.length); // Use console.error for errors
-    // console.log('MRZ data:', nameMrz); // Optional: log failing data
-    return BigInt(0); // Return 0 on error
-  }
-}
-
-export function getNameYobLeaf(
-  nameMrz: (bigint | number)[],
-  yobMrz: (bigint | number)[],
-  i?: number
-): bigint {
-  return generateSmallKey(poseidon2([getYearLeaf(yobMrz), getNameLeaf(nameMrz)]));
-}
+export const getNameDobLeafKyc = (name: string, dob: string) => {
+  const namePaddingLength = 64;
+  const paddedName = name
+    .padEnd(namePaddingLength, '\0')
+    .split('')
+    .map((char) => char.charCodeAt(0));
+  const nameHash = BigInt(packBytesAndPoseidon(paddedName));
+  const dobHash = BigInt(poseidon8(stringToAsciiBigIntArray(dob)));
+  return generateSmallKey(poseidon2([dobHash, nameHash]));
+};
 
 const processNameAndDobAadhaar = (entry: any, i: number, reverse: boolean = false): bigint => {
   let firstName = entry.First_Name;
@@ -675,6 +689,49 @@ const processDobAadhaar = (year: string, month: string, day: string): bigint[] =
   return [year, month, day].map(BigInt);
 };
 
+export function getNameLeaf(nameMrz: (bigint | number)[], i?: number): bigint {
+  const middleChunks: bigint[] = [];
+  const chunks: (number | bigint)[][] = [];
+  try {
+    // Add try-catch block
+    if (nameMrz.length == 39) {
+      // passport
+      chunks.push(nameMrz.slice(0, 13), nameMrz.slice(13, 26), nameMrz.slice(26, 39));
+      for (const chunk of chunks) {
+        if (chunk.length !== 13)
+          throw new Error(`Invalid chunk length for Poseidon13: ${chunk.length}`);
+        middleChunks.push(poseidon13(chunk));
+      }
+    } else if (nameMrz.length == 30) {
+      // id_card
+      chunks.push(nameMrz.slice(0, 10), nameMrz.slice(10, 20), nameMrz.slice(20, 30)); // Corrected comment: 30/3 for poseidon10
+      for (const chunk of chunks) {
+        if (chunk.length !== 10)
+          throw new Error(`Invalid chunk length for Poseidon10: ${chunk.length}`);
+        middleChunks.push(poseidon10(chunk));
+      }
+    } else {
+      throw new Error(`Unsupported name MRZ length: ${nameMrz.length}`); // Handle unexpected lengths
+    }
+
+    if (middleChunks.length !== 3)
+      throw new Error(`Invalid number of middle chunks: ${middleChunks.length}`);
+    return poseidon3(middleChunks);
+  } catch (err) {
+    console.error('Error in getNameLeaf:', err, 'Index:', i, 'MRZ Length:', nameMrz.length); // Use console.error for errors
+    // console.log('MRZ data:', nameMrz); // Optional: log failing data
+    return BigInt(0); // Return 0 on error
+  }
+}
+
+export function getNameYobLeaf(
+  nameMrz: (bigint | number)[],
+  yobMrz: (bigint | number)[],
+  i?: number
+): bigint {
+  return generateSmallKey(poseidon2([getYearLeaf(yobMrz), getNameLeaf(nameMrz)]));
+}
+
 export const getNameYobLeafAahaar = (name: string, year: string) => {
   const paddedName = name
     .toUpperCase()
@@ -685,73 +742,6 @@ export const getNameYobLeafAahaar = (name: string, year: string) => {
 
   return generateSmallKey(poseidon3([namePacked[0], namePacked[1], BigInt(year)]));
 };
-
-export function getPassportNumberAndNationalityLeaf(
-  passport: (bigint | number)[],
-  nationality: (bigint | number)[],
-  i?: number
-): bigint {
-  if (passport.length !== 9) {
-    console.log('parsed passport length is not 9:', i, passport);
-    return;
-  }
-  if (nationality.length !== 3) {
-    console.log('parsed nationality length is not 3:', i, nationality);
-    return;
-  }
-  try {
-    const fullHash = poseidon12(passport.concat(nationality));
-    return generateSmallKey(fullHash);
-  } catch (err) {
-    console.log('err : passport', err, i, passport);
-  }
-}
-
-export function buildKycSMT(field: any[], treetype: string): [number, number, SMT] {
-  let count = 0;
-  let startTime = performance.now();
-  const providerName = 'KYC';
-
-  const hash2 = (childNodes: ChildNodes) =>
-    childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes);
-  const tree = new SMT(hash2, true);
-
-  for (let i = 0; i < field.length; i++) {
-    const entry = field[i];
-
-    if (i !== 0) {
-      console.log(`Processing ${providerName}`, treetype, 'number', i, 'out of', field.length);
-    }
-
-    let leafs = [BigInt(0), BigInt(0)];
-    if (treetype == 'name_and_dob') {
-      leafs[0] = processNameAndDobKyc(entry, i, false);
-      leafs[1] = processNameAndDobKyc(entry, i, true);
-    } else if (treetype == 'name_and_yob') {
-      leafs[0] = processNameAndYobKyc(entry, i, false);
-      leafs[1] = processNameAndYobKyc(entry, i, true);
-    }
-
-    if (leafs[0] == BigInt(0) || tree.createProof(leafs[0]).membership) {
-      console.log('This entry already exists in the tree, skipping...');
-      continue;
-    } else if (leafs[1] == BigInt(0) || tree.createProof(leafs[1]).membership) {
-      console.log('This entry already exists in the tree, skipping...');
-      continue;
-    }
-
-    tree.add(leafs[0], BigInt(1));
-    count += 1;
-    if (leafs[0] != leafs[1]) {
-      tree.add(leafs[1], BigInt(1));
-      count += 1;
-    }
-  }
-
-  console.log(`Total ${providerName}`, treetype, 'parsed are : ', count, ' over ', field.length);
-  console.log(`${providerName}`, treetype, 'tree built in', performance.now() - startTime, 'ms');
-  return [count, performance.now() - startTime, tree];
-}
 
 const processNameAndDobKyc = (entry: any, i: number, reverse: boolean): bigint => {
   const firstName = entry.First_Name;
@@ -771,15 +761,16 @@ const processNameAndDobKyc = (entry: any, i: number, reverse: boolean): bigint =
   return generateSmallKey(poseidon2([dobHash, nameHash]));
 };
 
-export const getNameDobLeafKyc = (name: string, dob: string) => {
+export const getNameYobLeafKyc = (name: string, yob: string) => {
   const namePaddingLength = 64;
   const paddedName = name
     .padEnd(namePaddingLength, '\0')
     .split('')
     .map((char) => char.charCodeAt(0));
   const nameHash = BigInt(packBytesAndPoseidon(paddedName));
-  const dobHash = BigInt(poseidon8(stringToAsciiBigIntArray(dob)));
-  return generateSmallKey(poseidon2([dobHash, nameHash]));
+
+  const yearHash = processYearKyc(yob, 0);
+  return generateSmallKey(poseidon2([yearHash, nameHash]));
 };
 
 const processNameKyc = (
@@ -827,17 +818,26 @@ const processDobKyc = (day: string, month: string, year: string, i: number): big
   return BigInt(poseidon8(arr));
 };
 
-export const getNameYobLeafKyc = (name: string, yob: string) => {
-  const namePaddingLength = 64;
-  const paddedName = name
-    .padEnd(namePaddingLength, '\0')
-    .split('')
-    .map((char) => char.charCodeAt(0));
-  const nameHash = BigInt(packBytesAndPoseidon(paddedName));
-
-  const yearHash = processYearKyc(yob, 0);
-  return generateSmallKey(poseidon2([yearHash, nameHash]));
-};
+export function getPassportNumberAndNationalityLeaf(
+  passport: (bigint | number)[],
+  nationality: (bigint | number)[],
+  i?: number
+): bigint {
+  if (passport.length !== 9) {
+    console.log('parsed passport length is not 9:', i, passport);
+    return;
+  }
+  if (nationality.length !== 3) {
+    console.log('parsed nationality length is not 3:', i, nationality);
+    return;
+  }
+  try {
+    const fullHash = poseidon12(passport.concat(nationality));
+    return generateSmallKey(fullHash);
+  } catch (err) {
+    console.log('err : passport', err, i, passport);
+  }
+}
 
 const processNameAndYobKyc = (entry: any, i: number, reverse: boolean): bigint => {
   const firstName = entry.First_Name;
