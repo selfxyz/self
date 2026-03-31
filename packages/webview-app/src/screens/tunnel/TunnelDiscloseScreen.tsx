@@ -61,7 +61,10 @@ export const TunnelDiscloseScreen: React.FC = () => {
   const navigateToError = useCallback(
     (error: string) => {
       haptic.trigger('error');
-      navigate('/tunnel/proof/result', { state: { success: false, error } });
+      navigate('/tunnel/proof/result', {
+        replace: true,
+        state: { success: false, error, source: 'disclose' as const },
+      });
     },
     [haptic, navigate],
   );
@@ -95,7 +98,7 @@ export const TunnelDiscloseScreen: React.FC = () => {
       setHasCompleted(true);
       analytics.trackEvent('tunnel_proving_disclose_complete');
       haptic.trigger('success');
-      navigate('/tunnel/proof/result', { state: { success: true } });
+      navigate('/tunnel/proof/result', { replace: true, state: { success: true } });
     }
 
     return () => {

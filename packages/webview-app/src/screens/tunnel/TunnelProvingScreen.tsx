@@ -54,11 +54,12 @@ export const TunnelProvingScreen: React.FC = () => {
   const passportData = useProvingStore(s => s.passportData);
   const [phase, setPhase] = useState<Phase>('dsc');
   const startedRef = useRef(false);
+  const [initDone, setInitDone] = useState(false);
 
   const navigateToError = useCallback(
     (error: string) => {
       haptic.trigger('error');
-      navigate('/tunnel/proof/result', { state: { success: false, error } });
+      navigate('/tunnel/proof/result', { replace: true, state: { success: false, error, source: 'proving' as const } });
     },
     [haptic, navigate],
   );
@@ -75,12 +76,13 @@ export const TunnelProvingScreen: React.FC = () => {
       setPhase(initialPhase);
       analytics.trackEvent('tunnel_proving_started', { phase: initialPhase });
       init(client, initialPhase, true);
+      setInitDone(true);
     };
     start();
   }, [client, init, analytics, verificationCtx]);
 
   useEffect(() => {
-    if (!currentState) return;
+    if (!currentState || !initDone) return;
 
     const isError = ERROR_STATES.includes(currentState);
 
@@ -100,7 +102,7 @@ export const TunnelProvingScreen: React.FC = () => {
       analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'register' });
       navigate('/tunnel/proof/receipt', { replace: true });
     }
-  }, [currentState, phase, client, init, analytics, haptic, navigate, errorCode, reason, navigateToError]);
+  }, [currentState, initDone, phase, client, init, analytics, haptic, navigate, errorCode, reason, navigateToError]);
 
   return (
     <ProofGenerationScreen
