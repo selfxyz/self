@@ -26,16 +26,26 @@ export function derivePrivateKey(mnemonic: string, path = DEFAULT_DERIVATION_PAT
   return '0x' + bytesToHex(derived.privateKey);
 }
 
+let ensureSecretInFlight: Promise<void> | null = null;
+
 export async function ensureSecret(storage: BridgeStorageAdapter): Promise<void> {
-  const existing = await storage.get(PRIVATE_KEY_KEY);
-  if (existing) return;
+  if (ensureSecretInFlight) return ensureSecretInFlight;
 
-  let mnemonic = await storage.get(MNEMONIC_KEY);
-  if (!mnemonic) {
-    mnemonic = generateMnemonic(wordlist, 256);
-    await storage.set(MNEMONIC_KEY, mnemonic);
-  }
+  ensureSecretInFlight = (async () => {
+    const existing = await storage.get(PRIVATE_KEY_KEY);
+    if (existing) return;
 
-  const privateKey = derivePrivateKey(mnemonic);
-  await storage.set(PRIVATE_KEY_KEY, privateKey);
+    let mnemonic = await storage.get(MNEMONIC_KEY);
+    if (!mnemonic) {
+      mnemonic = generateMnemonic(wordlist, 256);
+      await storage.set(MNEMONIC_KEY, mnemonic);
+    }
+
+    const privateKey = derivePrivateKey(mnemonic);
+    await storage.set(PRIVATE_KEY_KEY, privateKey);
+  })().finally(() => {
+    ensureSecretInFlight = null;
+  });
+
+  return ensureSecretInFlight;
 }

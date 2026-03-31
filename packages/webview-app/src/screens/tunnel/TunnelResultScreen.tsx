@@ -36,8 +36,16 @@ export const TunnelResultScreen: React.FC = () => {
       verificationId,
       claims: { resultType: 'proofRequested' },
     };
-    lifecycle.setResult(result);
-    analytics.trackEvent('tunnel_result_success');
+    lifecycle
+      .setResult(result)
+      .then(() => {
+        analytics.trackEvent('tunnel_result_success');
+      })
+      .catch(err => {
+        analytics.trackEvent('tunnel_result_failure', {
+          error: err instanceof Error ? err.message : 'Failed to send result',
+        });
+      });
   }, [success, request.userId, verificationId, lifecycle, analytics]);
 
   useEffect(() => {

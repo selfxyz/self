@@ -62,6 +62,7 @@ export const TunnelProvingScreen: React.FC = () => {
   const [phase, setPhase] = useState<Phase>('dsc');
   const startedRef = useRef(false);
   const retryCountRef = useRef(0);
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const navigateToError = useCallback(
     (error: string) => {
@@ -93,7 +94,7 @@ export const TunnelProvingScreen: React.FC = () => {
       ) {
         retryCountRef.current += 1;
         analytics.trackEvent('tunnel_disclose_retry', { attempt: retryCountRef.current });
-        setTimeout(() => init(client, 'disclose', true), DISCLOSE_RETRY_DELAY_MS);
+        retryTimeoutRef.current = setTimeout(() => init(client, 'disclose', true), DISCLOSE_RETRY_DELAY_MS);
         return;
       }
 
@@ -117,6 +118,12 @@ export const TunnelProvingScreen: React.FC = () => {
       haptic.trigger('success');
       navigate('/tunnel/proof/result', { state: { success: true } });
     }
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
+    };
   }, [currentState, phase, client, init, analytics, haptic, navigate, errorCode, reason, navigateToError]);
 
   return (
