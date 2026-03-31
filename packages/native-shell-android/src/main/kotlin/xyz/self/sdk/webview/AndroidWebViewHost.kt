@@ -113,8 +113,7 @@ class AndroidWebViewHost(
                     val origin = request.origin?.toString() ?: ""
                     val isTrusted = origin.startsWith("https://appassets.androidplatform.net") ||
                         origin.startsWith("https://verify.didit.me") ||
-                        (isDebugMode && origin.startsWith("http://127.0.0.1")) ||
-                        (isDebugMode && origin.startsWith("https://uncoagulable-irredeemable-kathyrn.ngrok-free.dev"))
+                        (isDebugMode && origin.startsWith("http://127.0.0.1"))
                     if (!isTrusted) {
                         request.deny()
                         return

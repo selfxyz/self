@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { StatusState } from '@selfxyz/euclid';
@@ -24,29 +24,6 @@ export const TunnelResultScreen: React.FC = () => {
   const { verificationId, request } = useVerificationRequest();
 
   const { success = false, error } = (location.state as TunnelResultState) ?? {};
-  const resultSentRef = useRef(false);
-
-  useEffect(() => {
-    if (!success || resultSentRef.current) return;
-    resultSentRef.current = true;
-
-    const result: VerificationResult = {
-      success: true,
-      userId: request.userId,
-      verificationId,
-      claims: { resultType: 'proofRequested' },
-    };
-    lifecycle
-      .setResult(result)
-      .then(() => {
-        analytics.trackEvent('tunnel_result_success');
-      })
-      .catch(err => {
-        analytics.trackEvent('tunnel_result_failure', {
-          error: err instanceof Error ? err.message : 'Failed to send result',
-        });
-      });
-  }, [success, request.userId, verificationId, lifecycle, analytics]);
 
   useEffect(() => {
     if (success || !error) return;
@@ -54,11 +31,22 @@ export const TunnelResultScreen: React.FC = () => {
   }, [success, error, analytics]);
 
   const onContinue = useCallback(async () => {
-    const result: VerificationResult = success
-      ? { success: true, userId: request.userId, verificationId, claims: { resultType: 'proofRequested' } }
-      : { success: false, error: { code: 'DISCLOSURE_FAILED', message: error ?? 'Disclosure failed' } };
-    await lifecycle.setResult(result);
-  }, [error, lifecycle, request.userId, success, verificationId]);
+    try {
+      const result: VerificationResult = {
+        success: true,
+        userId: request.userId,
+        verificationId,
+        claims: { resultType: 'proofRequested' },
+      };
+      await lifecycle.setResult(result);
+      analytics.trackEvent('tunnel_result_success');
+      lifecycle.dismiss();
+    } catch (err) {
+      analytics.trackEvent('tunnel_result_failure', {
+        error: err instanceof Error ? err.message : 'Failed to send result',
+      });
+    }
+  }, [request.userId, verificationId, lifecycle, analytics]);
 
   const onRetry = useCallback(() => {
     navigate('/tunnel/proof/generating');

@@ -89,19 +89,16 @@ export const TunnelProvingScreen: React.FC = () => {
 
     const isError = ERROR_STATES.includes(currentState);
 
-    if (isError) {
-      // Retry disclose when the commitment tree hasn't updated yet
-      if (
-        currentState === 'passport_data_not_found' &&
-        phase === 'disclose' &&
-        retryCountRef.current < MAX_DISCLOSE_RETRIES
-      ) {
-        retryCountRef.current += 1;
-        analytics.trackEvent('tunnel_disclose_retry', { attempt: retryCountRef.current });
-        retryTimeoutRef.current = setTimeout(() => init(client, 'disclose', true), DISCLOSE_RETRY_DELAY_MS);
-        return;
-      }
-
+    if (
+      isError &&
+      currentState === 'passport_data_not_found' &&
+      phase === 'disclose' &&
+      retryCountRef.current < MAX_DISCLOSE_RETRIES
+    ) {
+      retryCountRef.current += 1;
+      analytics.trackEvent('tunnel_disclose_retry', { attempt: retryCountRef.current });
+      retryTimeoutRef.current = setTimeout(() => init(client, 'disclose', true), DISCLOSE_RETRY_DELAY_MS);
+    } else if (isError) {
       analytics.trackEvent('tunnel_proving_failed', {
         phase,
         errorCode,
@@ -109,14 +106,7 @@ export const TunnelProvingScreen: React.FC = () => {
         state: currentState,
       });
       navigateToError(reason ?? errorCode ?? currentState);
-      return;
-    }
-
-    if (currentState === 'completed' && phase !== 'disclose') {
-      // For passports: provingmachine auto-chains dsc → register internally,
-      // then emits completed after register finishes.
-      // For kyc/aadhaar: register completes directly.
-      // In both cases, move to disclose.
+    } else if (currentState === 'completed' && phase !== 'disclose') {
       setPhase('disclose');
       retryCountRef.current = 0;
       analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: phase });
@@ -126,6 +116,7 @@ export const TunnelProvingScreen: React.FC = () => {
       haptic.trigger('success');
       navigate('/tunnel/proof/result', { state: { success: true } });
     }
+
     return () => {
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current);
