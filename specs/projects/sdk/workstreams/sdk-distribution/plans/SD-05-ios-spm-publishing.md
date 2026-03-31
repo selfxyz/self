@@ -62,6 +62,7 @@
    - No committed build artifacts in the package directory
 
 3. **Add `SelfSDK.podspec`**:
+
    ```ruby
    Pod::Spec.new do |s|
      s.name         = 'SelfSDK'
@@ -76,6 +77,7 @@
      s.source_files = 'packages/native-shell-ios/Sources/**/*.swift'
    end
    ```
+
    Adjust `source`, `source_files`, and module name to match the actual repo structure and naming.
 
 4. **Tag and test SPM consumption**:

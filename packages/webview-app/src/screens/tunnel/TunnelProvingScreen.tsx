@@ -19,9 +19,10 @@ const MOCK_ID_CARD = {
 export const TunnelProvingScreen: React.FC = () => {
   const navigate = useNavigate();
 
+  // TODO: replace with actual logic
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate('/tunnel/proof/result');
+      navigate('/tunnel/proof/result', { state: { success: true } });
     }, 3000);
     return () => clearTimeout(timer);
   }, [navigate]);
