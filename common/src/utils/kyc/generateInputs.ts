@@ -177,7 +177,10 @@ export const generateKycDiscloseInputFromData = (
 ): KycDiscloseInput => {
   // Use raw bytes directly — .toString('utf-8') corrupts bytes >= 128
   const raw = Buffer.from(serializedApplicantInfo, 'base64');
-  const msgPadded = [...Array.from(raw, (b) => Number(b)), ...new Array(Math.max(0, KYC_MAX_LENGTH - raw.length)).fill(0)];
+  const msgPadded = [
+    ...Array.from(raw, (b) => Number(b)),
+    ...new Array(Math.max(0, KYC_MAX_LENGTH - raw.length)).fill(0),
+  ];
 
   // Compute commitment
   const commitment = poseidon2([secret, packBytesAndPoseidon(msgPadded)]);

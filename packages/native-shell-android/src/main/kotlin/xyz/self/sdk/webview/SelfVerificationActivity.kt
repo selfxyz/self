@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.webkit.WebChromeClient
 import androidx.appcompat.app.AppCompatActivity
+import xyz.self.sdk.api.SelfSdk
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.CryptoHandler
 import xyz.self.sdk.handlers.LifecycleHandler
@@ -36,7 +37,19 @@ class SelfVerificationActivity : AppCompatActivity() {
             },
         )
 
-        router.register(SecureStorageHandler(this))
+        val storageProvider = SelfSdk.secureStorageProvider
+        if (storageProvider == null) {
+            setResult(
+                RESULT_FIRST_USER,
+                Intent().putExtra(
+                    EXTRA_RESULT_DATA,
+                    """{"error":{"code":"INIT_ERROR","message":"SecureStorageProvider not set"}}""",
+                ),
+            )
+            finish()
+            return
+        }
+        router.register(SecureStorageHandler(storageProvider))
         router.register(CryptoHandler())
         router.register(LifecycleHandler(this))
 

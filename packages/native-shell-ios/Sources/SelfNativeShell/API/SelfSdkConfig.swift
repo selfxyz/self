@@ -13,6 +13,7 @@ public struct SelfSdkConfig {
     public let appName: String?
     public let appEndpoint: String?
     public let resultType: String?
+    public let secureStorageProvider: SecureStorageProvider
 
     public init(
         verificationId: String,
@@ -24,7 +25,8 @@ public struct SelfSdkConfig {
         disclosures: [String]? = nil,
         appName: String? = nil,
         appEndpoint: String? = nil,
-        resultType: String? = nil
+        resultType: String? = nil,
+        secureStorageProvider: SecureStorageProvider
     ) {
         self.verificationId = verificationId
         self.userId = userId
@@ -36,6 +38,7 @@ public struct SelfSdkConfig {
         self.appName = appName
         self.appEndpoint = appEndpoint
         self.resultType = resultType
+        self.secureStorageProvider = secureStorageProvider
     }
 
     func toQueryParams() -> String {

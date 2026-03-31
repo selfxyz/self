@@ -19,6 +19,7 @@ import xyz.self.sdk.api.SelfSdk
 import xyz.self.sdk.api.SelfSdkCallback
 import xyz.self.sdk.api.SelfSdkConfig
 import xyz.self.sdk.api.SelfSdkException
+import xyz.self.sdk.api.SelfSdkLaunchConfig
 
 class MainActivity : ComponentActivity() {
 
@@ -40,7 +41,11 @@ class MainActivity : ComponentActivity() {
 
     private fun launchVerification(config: SelfSdkConfig) {
         resultText = "Launching..."
-        SelfSdk.launch(this, config)
+        val launchConfig = SelfSdkLaunchConfig(
+            config = config,
+            secureStorageProvider = EncryptedPrefsStorageProvider(this),
+        )
+        SelfSdk.launch(this, launchConfig)
     }
 
     @Deprecated("Use Activity Result API for newer apps")
