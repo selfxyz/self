@@ -2,38 +2,18 @@
 
 package xyz.self.sdk.handlers
 
-import android.content.Context
-import android.content.SharedPreferences
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import xyz.self.sdk.api.SecureStorageProvider
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
 
-class SecureStorageHandler(context: Context) : BridgeHandler {
+class SecureStorageHandler(private val provider: SecureStorageProvider) : BridgeHandler {
     override val domain = BridgeDomain.SECURE_STORAGE
-
-    private val prefs: SharedPreferences
-
-    // requireBiometric is intentionally ignored — device lock provides sufficient security per spec
-    init {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-
-        prefs = EncryptedSharedPreferences.create(
-            context,
-            "self_sdk_secure_prefs",
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-        )
-    }
 
     override suspend fun handle(
         method: String,
@@ -48,7 +28,7 @@ class SecureStorageHandler(context: Context) : BridgeHandler {
     private fun get(params: Map<String, JsonElement>): JsonElement {
         val key = params["key"]?.jsonPrimitive?.content
             ?: throw BridgeHandlerException("MISSING_KEY", "Key parameter required")
-        val value = prefs.getString(key, null)
+        val value = provider.get(key)
         return buildJsonObject {
             put("value", if (value != null) JsonPrimitive(value) else JsonNull)
         }
@@ -59,14 +39,14 @@ class SecureStorageHandler(context: Context) : BridgeHandler {
             ?: throw BridgeHandlerException("MISSING_KEY", "Key parameter required")
         val value = params["value"]?.jsonPrimitive?.content
             ?: throw BridgeHandlerException("MISSING_VALUE", "Value parameter required")
-        prefs.edit().putString(key, value).apply()
+        provider.set(key, value)
         return null
     }
 
     private fun remove(params: Map<String, JsonElement>): JsonElement? {
         val key = params["key"]?.jsonPrimitive?.content
             ?: throw BridgeHandlerException("MISSING_KEY", "Key parameter required")
-        prefs.edit().remove(key).apply()
+        provider.remove(key)
         return null
     }
 }
