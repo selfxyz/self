@@ -19,7 +19,7 @@ final class SecureStorageHandler: BridgeHandler {
             guard let key = params?["key"] as? String else {
                 throw BridgeHandlerError.missingParam("key")
             }
-            if let value = provider.get(key: key) {
+            if let value = try provider.get(key: key) {
                 result = ["value": value]
             } else {
                 result = ["value": NSNull()]

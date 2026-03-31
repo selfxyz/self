@@ -38,7 +38,17 @@ class SelfVerificationActivity : AppCompatActivity() {
         )
 
         val storageProvider = SelfSdk.secureStorageProvider
-            ?: throw IllegalStateException("SecureStorageProvider not set. Use SelfSdkLaunchConfig to provide one.")
+        if (storageProvider == null) {
+            setResult(
+                RESULT_FIRST_USER,
+                Intent().putExtra(
+                    EXTRA_RESULT_DATA,
+                    """{"error":{"code":"INIT_ERROR","message":"SecureStorageProvider not set"}}""",
+                ),
+            )
+            finish()
+            return
+        }
         router.register(SecureStorageHandler(storageProvider))
         router.register(CryptoHandler())
         router.register(LifecycleHandler(this))
