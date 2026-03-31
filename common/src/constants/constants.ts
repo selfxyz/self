@@ -3,8 +3,6 @@ export type document_type = 'passport' | 'id_card';
 export type hashAlgosTypes = 'sha512' | 'sha384' | 'sha256' | 'sha224' | 'sha1';
 export const AADHAAR_ATTESTATION_ID = '3';
 export const API_URL = 'https://api.self.xyz';
-export const KYC_ATTESTATION_ID = '4';
-
 export const API_URL_STAGING = 'https://api.staging.self.xyz';
 
 export const CHAIN_NAME = 'celo';
@@ -31,6 +29,7 @@ export const CIRCUIT_CONSTANTS = {
   VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX: 20,
 };
 
+
 export const CIRCUIT_TYPES = ['dsc', 'register', 'vc_and_disclose'];
 
 export const COMMITMENT_TREE_DEPTH = 33;
@@ -44,6 +43,8 @@ export const CSCA_TREE_URL_ID_CARD = 'https://tree.self.xyz/csca-id';
 export const CSCA_TREE_URL_STAGING = 'https://tree.staging.self.xyz/csca';
 
 export const CSCA_TREE_URL_STAGING_ID_CARD = 'https://tree.staging.self.xyz/csca-id';
+
+export const KYC_ATTESTATION_ID = '4';
 
 // we make it global here because passing it to generateCircuitInputsRegister caused trouble
 export const DEFAULT_MAJORITY = '18';

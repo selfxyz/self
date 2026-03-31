@@ -1,37 +1,33 @@
 export const KYC_COUNTRY_INDEX = 0;
 export const KYC_COUNTRY_LENGTH = 3;
 
-export const KYC_ID_TYPE_INDEX = KYC_COUNTRY_INDEX + KYC_COUNTRY_LENGTH;
-export const KYC_ID_TYPE_LENGTH = 27;
-
-export const KYC_ID_NUMBER_INDEX = KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH;
-export const KYC_ID_NUMBER_LENGTH = 32;
-
-export const KYC_ISSUANCE_DATE_INDEX = KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH;
-export const KYC_ISSUANCE_DATE_LENGTH = 8;
+// Updated: max(40, 64) = 64
+export const KYC_DOB_INDEX = KYC_FULL_NAME_INDEX + KYC_FULL_NAME_LENGTH;
 
 export const KYC_EXPIRY_DATE_INDEX = KYC_ISSUANCE_DATE_INDEX + KYC_ISSUANCE_DATE_LENGTH;
-export const KYC_EXPIRY_DATE_LENGTH = 8;
 
-export const KYC_FULL_NAME_INDEX = KYC_EXPIRY_DATE_INDEX + KYC_EXPIRY_DATE_LENGTH;
-export const KYC_FULL_NAME_LENGTH = 64; // Updated: max(40, 64) = 64
 
-export const KYC_DOB_INDEX = KYC_FULL_NAME_INDEX + KYC_FULL_NAME_LENGTH;
 export const KYC_DOB_LENGTH = 8;
 
-export const KYC_PHOTO_HASH_INDEX = KYC_DOB_INDEX + KYC_DOB_LENGTH;
-export const KYC_PHOTO_HASH_LENGTH = 32;
+export const KYC_EXPIRY_DATE_LENGTH = 8;
 
-export const KYC_PHONE_NUMBER_INDEX = KYC_PHOTO_HASH_INDEX + KYC_PHOTO_HASH_LENGTH;
-export const KYC_PHONE_NUMBER_LENGTH = 12;
 
-export const KYC_GENDER_INDEX = KYC_PHONE_NUMBER_INDEX + KYC_PHONE_NUMBER_LENGTH;
-export const KYC_GENDER_LENGTH = 1;
+export const KYC_FULL_NAME_INDEX = KYC_EXPIRY_DATE_INDEX + KYC_EXPIRY_DATE_LENGTH;
+
+export const KYC_ID_NUMBER_INDEX = KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH;
+
+
+export const KYC_FULL_NAME_LENGTH = 64;
+
+export const KYC_ID_NUMBER_LENGTH = 32;
+
 
 export const KYC_ADDRESS_INDEX = KYC_GENDER_INDEX + KYC_GENDER_LENGTH;
-export const KYC_ADDRESS_LENGTH = 100;
 
-export const KYC_MAX_LENGTH = KYC_ADDRESS_INDEX + KYC_ADDRESS_LENGTH;
+export const KYC_ID_TYPE_INDEX = KYC_COUNTRY_INDEX + KYC_COUNTRY_LENGTH; 
+
+export const KYC_ADDRESS_LENGTH = 100;
+export const KYC_ID_TYPE_LENGTH = 27;
 
 // ------------------------------
 // Field lengths for selector bits
@@ -50,8 +46,114 @@ export const KYC_FIELD_LENGTHS = {
   ADDRESS: KYC_ADDRESS_LENGTH, // 100
 } as const;
 
+
+
+export const KYC_ISSUANCE_DATE_INDEX = KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH;
+
+
+
+
+export type KycField = keyof typeof KYC_FIELD_LENGTHS;
+
+
+
+export const KYC_ISSUANCE_DATE_LENGTH = 8;
+
+
+
+
+export const KYC_GENDER_INDEX = KYC_PHONE_NUMBER_INDEX + KYC_PHONE_NUMBER_LENGTH;
+
+
+
+export const KYC_GENDER_LENGTH = 1;
+
+
+
+
 // ------------------------------
 // Reveal data indices for selector bits
+// ------------------------------
+export const KYC_MAX_LENGTH = KYC_ADDRESS_INDEX + KYC_ADDRESS_LENGTH;
+
+
+
+
+
+
+export const KYC_PHONE_NUMBER_INDEX = KYC_PHOTO_HASH_INDEX + KYC_PHOTO_HASH_LENGTH;
+
+
+
+
+
+
+
+export const KYC_PHONE_NUMBER_LENGTH = 12;
+
+
+
+
+
+
+
+export const KYC_PHOTO_HASH_INDEX = KYC_DOB_INDEX + KYC_DOB_LENGTH;
+
+
+
+
+export const KYC_PHOTO_HASH_LENGTH = 32;
+
+
+
+
+// ------------------------------
+// Public Signals Indices
+// ------------------------------
+export const KYC_PUBLIC_SIGNALS_ATTESTATION_ID = 0;
+
+
+
+
+
+
+
+export const KYC_PUBLIC_SIGNALS_CURRENT_DATE = 17;
+
+
+
+
+
+
+
+
+export const KYC_PUBLIC_SIGNALS_FORBIDDEN_COUNTRIES_PACKED = 10;
+
+
+
+
+export const KYC_PUBLIC_SIGNALS_CURRENT_DATE_LENGTH = 8;
+
+
+
+export const KYC_PUBLIC_SIGNALS_FORBIDDEN_COUNTRIES_PACKED_LENGTH = 4;
+
+
+
+
+export const KYC_PUBLIC_SIGNALS_NULLIFIER = 14;
+
+
+
+export const KYC_PUBLIC_SIGNALS_OFAC_NAME_DOB_SMT_ROOT = 25;
+
+
+
+
+export const KYC_PUBLIC_SIGNALS_OFAC_NAME_YOB_SMT_ROOT = 26;
+
+// ------------------------------
+// Selector bit positions for each field
 // ------------------------------
 export const KYC_REVEAL_DATA_INDICES = {
   COUNTRY: 0,
@@ -66,10 +168,8 @@ export const KYC_REVEAL_DATA_INDICES = {
   GENDER: KYC_PHONE_NUMBER_INDEX + KYC_PHONE_NUMBER_LENGTH, // 194 (updated)
   ADDRESS: KYC_GENDER_INDEX + KYC_GENDER_LENGTH, // 232 (updated)
 } as const;
+export const KYC_PUBLIC_SIGNALS_REVEALED_DATA_PACKED = 1;
 
-// ------------------------------
-// Selector bit positions for each field
-// ------------------------------
 export const KYC_SELECTOR_BITS = {
   COUNTRY: Array.from({ length: KYC_COUNTRY_LENGTH }, (_, i) => i) as number[], // 0-2
   ID_TYPE: Array.from({ length: KYC_ID_TYPE_LENGTH }, (_, i) => i + KYC_COUNTRY_LENGTH) as number[], // 3-29
@@ -110,31 +210,10 @@ export const KYC_SELECTOR_BITS = {
     (_, i) => i + KYC_GENDER_INDEX + KYC_GENDER_LENGTH
   ) as number[], // 232-331 (updated)
 } as const;
-
-export type KycField = keyof typeof KYC_FIELD_LENGTHS;
-
-// ------------------------------
-// Public Signals Indices
-// ------------------------------
-
-export const KYC_PUBLIC_SIGNALS_ATTESTATION_ID = 0;
-
-export const KYC_PUBLIC_SIGNALS_REVEALED_DATA_PACKED = 1;
 export const KYC_PUBLIC_SIGNALS_REVEALED_DATA_PACKED_LENGTH = 9;
-
-export const KYC_PUBLIC_SIGNALS_FORBIDDEN_COUNTRIES_PACKED = 10;
-export const KYC_PUBLIC_SIGNALS_FORBIDDEN_COUNTRIES_PACKED_LENGTH = 4;
-
-export const KYC_PUBLIC_SIGNALS_NULLIFIER = 14;
 
 export const KYC_PUBLIC_SIGNALS_SCOPE = 15;
 export const KYC_PUBLIC_SIGNALS_USER_IDENTIFIER = 16;
-
-export const KYC_PUBLIC_SIGNALS_CURRENT_DATE = 17;
-export const KYC_PUBLIC_SIGNALS_CURRENT_DATE_LENGTH = 8;
-
-export const KYC_PUBLIC_SIGNALS_OFAC_NAME_DOB_SMT_ROOT = 25;
-export const KYC_PUBLIC_SIGNALS_OFAC_NAME_YOB_SMT_ROOT = 26;
 
 // ------------------------------
 // Helper functions for selector bits
