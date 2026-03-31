@@ -70,7 +70,16 @@ export const ProofGenerationRouteScreen: React.FC = () => {
 
     if (currentState === 'passport_data_not_found') {
       hasNavigatedRef.current = true;
-      navigate('/', { replace: true });
+      navigate('/proving/result', {
+        replace: true,
+        state: {
+          success: false,
+          error: {
+            code: 'passport_data_not_found',
+            message: 'No document found. Please register a document first.',
+          },
+        },
+      });
       return;
     }
 

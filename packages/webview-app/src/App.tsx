@@ -32,6 +32,7 @@ import { SocialSignOnMethodPickerScreen } from './screens/onboarding/SocialSignO
 import { SocialSignOnPickerScreen } from './screens/onboarding/SocialSignOnPickerScreen';
 import { TourScreen } from './screens/onboarding/TourScreen';
 import { DialogueWithCtaScreen } from './screens/proving/DialogueWithCtaScreen';
+import { DiscloseResultScreen } from './screens/proving/DiscloseResultScreen';
 import { KycPendingScreen } from './screens/proving/KycPendingScreen';
 import { KycSuccessScreen } from './screens/proving/KycSuccessScreen';
 import { ProofGenerationDialogueScreen } from './screens/proving/ProofGenerationDialogueScreen';
@@ -74,7 +75,7 @@ export const App: React.FC = () => (
             <Route path="/onboarding/kyc-failure" element={<KycFailureScreen />} />
             <Route path="/proving" element={<ProvingScreen />} />
             <Route path="/proving/generating" element={<ProofGenerationRouteScreen />} />
-            <Route path="/proving/result" element={<VerificationResultScreen />} />
+            <Route path="/proving/result" element={<DiscloseResultScreen />} />
             <Route path="/settings" element={<SettingsScreen />} />
             <Route path="/settings/security" element={<SecurityScreen />} />
             <Route path="/settings/notifications" element={<NotificationPreferencesScreen />} />
