@@ -84,6 +84,12 @@ export const TunnelProvingScreen: React.FC = () => {
   useEffect(() => {
     if (!currentState || !initDone) return;
 
+    if (currentState === 'account_recovery_choice') {
+      analytics.trackEvent('tunnel_recovery_required');
+      navigate('/tunnel/recovery-required', { replace: true });
+      return;
+    }
+
     const isError = ERROR_STATES.includes(currentState);
 
     if (isError) {

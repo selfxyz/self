@@ -4,7 +4,7 @@
 
 import type React from 'react';
 import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { LeftArrowIcon, SecretPhraseInputScreen as EuclidSecretPhraseInputScreen } from '@selfxyz/euclid';
 
@@ -18,8 +18,12 @@ const VALID_WORDS = new Set(bip39EnglishWordlist);
 const VALID_LENGTHS = new Set([12, 15, 18, 21, 24]);
 
 export const SecretPhraseInputScreen: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
+
+  const searchParams = new URLSearchParams(location.search);
+  const returnTo = searchParams.get('returnTo');
 
   const onBack = useCallback(() => {
     haptic.trigger('selection');
@@ -36,9 +40,9 @@ export const SecretPhraseInputScreen: React.FC = () => {
 
       haptic.trigger('success');
       analytics.trackEvent('recovery_phrase_submitted', { wordCount: words.length });
-      navigate('/recovery/success');
+      navigate(returnTo ? `/recovery/success?returnTo=${encodeURIComponent(returnTo)}` : '/recovery/success');
     },
-    [navigate, haptic, analytics],
+    [navigate, haptic, analytics, returnTo],
   );
 
   return (

@@ -57,6 +57,7 @@ import { TunnelKycSuccessScreen } from './screens/tunnel/TunnelKycSuccessScreen'
 import { TunnelKycWrapper } from './screens/tunnel/TunnelKycWrapper';
 import { TunnelProofReceiptScreen } from './screens/tunnel/TunnelProofReceiptScreen';
 import { TunnelProvingScreen } from './screens/tunnel/TunnelProvingScreen';
+import { TunnelRecoveryRequiredScreen } from './screens/tunnel/TunnelRecoveryRequiredScreen';
 import { TunnelResultScreen } from './screens/tunnel/TunnelResultScreen';
 
 export const App: React.FC = () => (
@@ -112,6 +113,7 @@ export const App: React.FC = () => (
             <Route path="/tunnel/registration/id-type" element={<TunnelIDTypeScreen />} />
             <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
             <Route path="/tunnel/proof/generating" element={<TunnelProvingScreen />} />
+            <Route path="/tunnel/recovery-required" element={<TunnelRecoveryRequiredScreen />} />
             <Route path="/tunnel/proof/disclose" element={<TunnelDiscloseScreen />} />
             <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
             <Route path="*" element={<Navigate to="/" replace />} />
