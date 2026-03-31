@@ -113,7 +113,8 @@ struct ContentView: View {
                         disclosures: disclosures.isEmpty ? nil : disclosures.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) },
                         appName: appName.isEmpty ? nil : appName,
                         appEndpoint: appEndpoint.isEmpty ? nil : appEndpoint,
-                        resultType: resultType.isEmpty ? nil : resultType
+                        resultType: resultType.isEmpty ? nil : resultType,
+                        secureStorageProvider: KeychainStorageProvider()
                     ),
                     onResult: { result in
                         resultText = result

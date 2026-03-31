@@ -54,7 +54,7 @@ final class SelfSdkViewController: UIViewController {
         let router = MessageRouter { [weak self] js in
             self?.webViewHost?.evaluateJs(js)
         }
-        router.register(handler: SecureStorageHandler())
+        router.register(handler: SecureStorageHandler(provider: config.secureStorageProvider))
         router.register(handler: CryptoHandler())
         router.register(handler: lifecycleHandler)
 

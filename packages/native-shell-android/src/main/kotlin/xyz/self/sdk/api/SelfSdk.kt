@@ -7,7 +7,12 @@ import android.content.Intent
 import xyz.self.sdk.webview.SelfVerificationActivity
 
 object SelfSdk {
-    fun launch(activity: Activity, config: SelfSdkConfig, requestCode: Int = REQUEST_CODE_VERIFICATION) {
+    internal var secureStorageProvider: SecureStorageProvider? = null
+        private set
+
+    fun launch(activity: Activity, launchConfig: SelfSdkLaunchConfig, requestCode: Int = REQUEST_CODE_VERIFICATION) {
+        secureStorageProvider = launchConfig.secureStorageProvider
+        val config = launchConfig.config
         val intent = Intent(activity, SelfVerificationActivity::class.java).apply {
             putExtra(SelfVerificationActivity.EXTRA_ENVIRONMENT, config.environment)
             putExtra(SelfVerificationActivity.EXTRA_VERIFICATION_ID, config.verificationId)

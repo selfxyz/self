@@ -1,7 +1,7 @@
 ## Delegate Keychain to SDK Consumers
 
 > Last updated: 2026-03-31
-> Status: Ready
+> Status: Done
 
 - Workstream: native-shells-lite
 - Backlog IDs: NSL-04
@@ -247,3 +247,4 @@ cd packages/sdk-test-app/ios && xcodegen generate && xcodebuild -project SelfTes
 ### Status Log
 
 - 2026-03-31: Plan created.
+- 2026-03-31: Implementation complete. All files created/modified per spec.
