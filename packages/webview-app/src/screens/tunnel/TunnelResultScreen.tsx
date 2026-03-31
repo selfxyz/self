@@ -6,7 +6,7 @@ import type React from 'react';
 import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { ProofSuccessScreen, SelfLogo, StatusState } from '@selfxyz/euclid';
+import { ProofFailureScreen, ProofSuccessScreen, SelfLogo } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
@@ -81,17 +81,18 @@ export const TunnelResultScreen: React.FC = () => {
   }
 
   return (
-    <StatusState
-      variant="fail"
-      title="Verification Failed"
-      description={error ?? 'Something went wrong during verification. Please try again.'}
-      animationSource="/animations/proof-progress.json"
-      animationSize={240}
-      loopAnimation={false}
-      buttonText="Try Again"
-      onButtonPress={onRetry}
-      secondaryButtonText="Cancel"
-      onSecondaryPress={onCancel}
+    <ProofFailureScreen
+      {...WEB_SAFE_AREA}
+      appIcon={<SelfLogo size={40} />}
+      appName={appName}
+      appEndpoint={appEndpoint}
+      documentType="passport"
+      timestamp={timestamp}
+      failureTitle="Verification Failed"
+      failureDescription={error ?? 'Something went wrong during verification. Please try again.'}
+      onRetry={onRetry}
+      onViewDetails={onViewDetails}
+      onClose={onCancel}
     />
   );
 };
