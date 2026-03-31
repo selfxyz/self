@@ -29,7 +29,6 @@ export const CIRCUIT_CONSTANTS = {
   VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX: 20,
 };
 
-
 export const CIRCUIT_TYPES = ['dsc', 'register', 'vc_and_disclose'];
 
 export const COMMITMENT_TREE_DEPTH = 33;

@@ -126,7 +126,6 @@ export {
   randomBytes,
 } from './src/polyfills/crypto.js';
 
-
 export { createSelector } from './src/utils/aadhaar/constants.js';
 
 // Hash utilities
@@ -137,7 +136,6 @@ export {
   hash,
   packBytesAndPoseidon,
 } from './src/utils/hash.js';
-
 
 export { deserializeApplicantInfo } from './src/utils/kyc/api.js';
 export { generateTestData, testCustomData } from './src/utils/aadhaar/utils.js';

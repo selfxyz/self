@@ -14,15 +14,12 @@ export function bigintTo64bitLimbs(x: bigint): bigint[] {
   return limbs;
 }
 
-
-
 export const generateRandomsg = (): number[] => {
   const randomNumbers: number[] = Array.from({ length: 298 }, () =>
     Math.floor(Math.random() * 128)
   );
   return randomNumbers;
 };
-
 
 /**
  * Compute the hash of a message using the ECDSA algorithm
@@ -33,7 +30,6 @@ export const getECDSAMessageHash = (msg: number[]): bigint => {
   const msgHash = BigInt(packBytesAndPoseidon(msg));
   return modulus(msgHash, subOrder);
 };
-
 
 export function getEffECDSAArgs(
   msg: number[],
@@ -49,7 +45,6 @@ export function getEffECDSAArgs(
   const U = mulPointEscalar(Base8, modulus(rInvNeg * msgHash, subOrder));
   return { T, U };
 }
-
 
 export function modInv(a: bigint, m: bigint): bigint {
   let m0 = m;
