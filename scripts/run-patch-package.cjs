@@ -7,6 +7,12 @@ const { spawnSync } = require('child_process');
 const repositoryRootPath = path.resolve(__dirname, '..');
 const patchesDirectoryPath = path.join(repositoryRootPath, 'patches');
 
+// Skip entirely on Vercel — all patches target React Native packages, none apply to web builds
+if (process.env.VERCEL === '1') {
+  console.log('patch-package: skipping on Vercel (patches are React Native only)');
+  process.exit(0);
+}
+
 // Detect CI environment
 const isCI = process.env.CI === 'true' ||
              process.env.GITHUB_ACTIONS === 'true' ||

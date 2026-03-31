@@ -38,31 +38,31 @@
 
 ## Dependencies
 
-| Depends On                       | Type       | Status | Notes                                                   |
-| -------------------------------- | ---------- | ------ | ------------------------------------------------------- |
-| Native Shells (Lite) — NSL-01    | Upstream   | Active | Android shell must exist before switching URL loading    |
-| Native Shells (Lite) — NSL-02    | Upstream   | Active | iOS shell must exist before switching URL loading        |
-| `packages/webview-app/`          | Upstream   | Active | Source of the hosted web app                             |
-| Build Pipeline                   | Sibling    | Active | Bundle script remains for local dev only after SD-03    |
+| Depends On                    | Type     | Status | Notes                                                 |
+| ----------------------------- | -------- | ------ | ----------------------------------------------------- |
+| Native Shells (Lite) — NSL-01 | Upstream | Active | Android shell must exist before switching URL loading |
+| Native Shells (Lite) — NSL-02 | Upstream | Active | iOS shell must exist before switching URL loading     |
+| `packages/webview-app/`       | Upstream | Active | Source of the hosted web app                          |
+| Build Pipeline                | Sibling  | Active | Bundle script remains for local dev only after SD-03  |
 
 ## Ownership Boundaries
 
-| Area                             | Owner            | Notes                                         |
-| -------------------------------- | ---------------- | --------------------------------------------- |
-| `packages/native-shell-android/` | SDK Distribution | Config + URL loading changes only              |
-| `packages/native-shell-ios/`     | SDK Distribution | Config + URL loading changes only              |
-| `packages/webview-app/`          | SDK Distribution | Hosting setup only (no source changes)         |
-| Bridge handlers                  | Native Shells    | Not modified by this workstream                |
+| Area                             | Owner            | Notes                                  |
+| -------------------------------- | ---------------- | -------------------------------------- |
+| `packages/native-shell-android/` | SDK Distribution | Config + URL loading changes only      |
+| `packages/native-shell-ios/`     | SDK Distribution | Config + URL loading changes only      |
+| `packages/webview-app/`          | SDK Distribution | Hosting setup only (no source changes) |
+| Bridge handlers                  | Native Shells    | Not modified by this workstream        |
 
 ## Backlog
 
-| ID    | Title                          | Status | Priority | Depends On | Plan                                                                         | PR  |
-| ----- | ------------------------------ | ------ | -------- | ---------- | ---------------------------------------------------------------------------- | --- |
-| SD-01 | Android hosted URL loading     | Ready  | High     | NSL-01     | [plans/SD-01-android-hosted-url.md](./plans/SD-01-android-hosted-url.md)     | —   |
-| SD-02 | iOS hosted URL loading         | Ready  | High     | NSL-02     | [plans/SD-02-ios-hosted-url.md](./plans/SD-02-ios-hosted-url.md)             | —   |
-| SD-03 | WebView app hosting setup      | Ready  | High     | —          | [plans/SD-03-hosting-setup.md](./plans/SD-03-hosting-setup.md)               | —   |
-| SD-04 | Android Maven publishing       | Ready  | Medium   | SD-01      | [plans/SD-04-android-maven-publishing.md](./plans/SD-04-android-maven-publishing.md) | —   |
-| SD-05 | iOS publishing (SPM + CocoaPods) | Ready  | Medium   | SD-02      | [plans/SD-05-ios-spm-publishing.md](./plans/SD-05-ios-spm-publishing.md)     | —   |
+| ID    | Title                            | Status | Priority | Depends On | Plan                                                                                 | PR  |
+| ----- | -------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------ | --- |
+| SD-01 | Android hosted URL loading       | Ready  | High     | NSL-01     | [plans/SD-01-android-hosted-url.md](./plans/SD-01-android-hosted-url.md)             | —   |
+| SD-02 | iOS hosted URL loading           | Ready  | High     | NSL-02     | [plans/SD-02-ios-hosted-url.md](./plans/SD-02-ios-hosted-url.md)                     | —   |
+| SD-03 | WebView app hosting setup        | Ready  | High     | —          | [plans/SD-03-hosting-setup.md](./plans/SD-03-hosting-setup.md)                       | —   |
+| SD-04 | Android Maven publishing         | Ready  | Medium   | SD-01      | [plans/SD-04-android-maven-publishing.md](./plans/SD-04-android-maven-publishing.md) | —   |
+| SD-05 | iOS publishing (SPM + CocoaPods) | Ready  | Medium   | SD-02      | [plans/SD-05-ios-spm-publishing.md](./plans/SD-05-ios-spm-publishing.md)             | —   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -74,13 +74,13 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan                                                                         | IDs   | Status |
-| ---------------------------------------------------------------------------- | ----- | ------ |
-| [plans/SD-01-android-hosted-url.md](./plans/SD-01-android-hosted-url.md)     | SD-01 | Ready  |
-| [plans/SD-02-ios-hosted-url.md](./plans/SD-02-ios-hosted-url.md)             | SD-02 | Ready  |
-| [plans/SD-03-hosting-setup.md](./plans/SD-03-hosting-setup.md)               | SD-03 | Ready  |
+| Plan                                                                                 | IDs   | Status |
+| ------------------------------------------------------------------------------------ | ----- | ------ |
+| [plans/SD-01-android-hosted-url.md](./plans/SD-01-android-hosted-url.md)             | SD-01 | Ready  |
+| [plans/SD-02-ios-hosted-url.md](./plans/SD-02-ios-hosted-url.md)                     | SD-02 | Ready  |
+| [plans/SD-03-hosting-setup.md](./plans/SD-03-hosting-setup.md)                       | SD-03 | Ready  |
 | [plans/SD-04-android-maven-publishing.md](./plans/SD-04-android-maven-publishing.md) | SD-04 | Ready  |
-| [plans/SD-05-ios-spm-publishing.md](./plans/SD-05-ios-spm-publishing.md)     | SD-05 | Ready  |
+| [plans/SD-05-ios-spm-publishing.md](./plans/SD-05-ios-spm-publishing.md)             | SD-05 | Ready  |
 
 ## Completion Checklist
 
@@ -91,20 +91,20 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Key Design Decisions
 
-| Decision             | Choice                                  | Rationale                                                       |
-| -------------------- | --------------------------------------- | --------------------------------------------------------------- |
-| Hosting domain       | `https://verify.self.xyz/v1/`           | User-facing, version-namespaced, HTTPS-only                     |
-| Versioning model     | Auto-update (hosted page updates independently) | `/v1/` path changes only for breaking changes to bridge protocol |
-| Config delivery      | `webAppUrl` field with default           | Simple, overridable, does not leak config into query params     |
-| Hosting              | Internal infrastructure                  | SD-03 describes requirements only                               |
-| Bundle script fate   | Retained for local dev                   | Developers need `devServerUrl` alternative for offline work     |
+| Decision           | Choice                                          | Rationale                                                        |
+| ------------------ | ----------------------------------------------- | ---------------------------------------------------------------- |
+| Hosting domain     | `https://verify.self.xyz/v1/`                   | User-facing, version-namespaced, HTTPS-only                      |
+| Versioning model   | Auto-update (hosted page updates independently) | `/v1/` path changes only for breaking changes to bridge protocol |
+| Config delivery    | `webAppUrl` field with default                  | Simple, overridable, does not leak config into query params      |
+| Hosting            | Internal infrastructure                         | SD-03 describes requirements only                                |
+| Bundle script fate | Retained for local dev                          | Developers need `devServerUrl` alternative for offline work      |
 
 ## Related Specs
 
-| Spec                                                       | Relationship                                              |
-| ---------------------------------------------------------- | --------------------------------------------------------- |
-| [SDK Overview](../../OVERVIEW.md)                          | Parent architecture                                       |
-| [Native Shells Lite](../native-shells-lite/SPEC.md)        | Upstream — shells must exist before distribution changes   |
-| [Build Pipeline](../build-pipeline/SPEC.md)                | Sibling — bundle script retained for local dev only       |
-| [WebView Spec](../webview/SPEC.md)                         | Upstream — produces the web app being hosted              |
-| [SDK Core Spec](../sdk-core/SPEC.md)                       | Sibling — engine consumed by hosted web app               |
+| Spec                                                | Relationship                                             |
+| --------------------------------------------------- | -------------------------------------------------------- |
+| [SDK Overview](../../OVERVIEW.md)                   | Parent architecture                                      |
+| [Native Shells Lite](../native-shells-lite/SPEC.md) | Upstream — shells must exist before distribution changes |
+| [Build Pipeline](../build-pipeline/SPEC.md)         | Sibling — bundle script retained for local dev only      |
+| [WebView Spec](../webview/SPEC.md)                  | Upstream — produces the web app being hosted             |
+| [SDK Core Spec](../sdk-core/SPEC.md)                | Sibling — engine consumed by hosted web app              |

@@ -68,10 +68,15 @@ fun TestAppScreen(
     resultText: String,
     onLaunch: (SelfSdkConfig) -> Unit
 ) {
-    var teeUrl by remember { mutableStateOf("https://kyc.self.xyz") }
+    var environment by remember { mutableStateOf("staging") }
     var verificationId by remember { mutableStateOf("test-verification-123") }
     var userId by remember { mutableStateOf("test-user-456") }
     var debugMode by remember { mutableStateOf(false) }
+    var scope by remember { mutableStateOf("") }
+    var disclosures by remember { mutableStateOf("full_name,dob") }
+    var appName by remember { mutableStateOf("Self Test App") }
+    var appEndpoint by remember { mutableStateOf("") }
+    var resultType by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -83,9 +88,9 @@ fun TestAppScreen(
         Text("Self SDK Test", style = MaterialTheme.typography.headlineMedium)
 
         OutlinedTextField(
-            value = teeUrl,
-            onValueChange = { teeUrl = it },
-            label = { Text("TEE URL") },
+            value = environment,
+            onValueChange = { environment = it },
+            label = { Text("Environment (prod / staging)") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -114,14 +119,61 @@ fun TestAppScreen(
             Text("Debug mode (localhost:5173)")
         }
 
+        Text("Verification Config", style = MaterialTheme.typography.titleSmall)
+
+        OutlinedTextField(
+            value = scope,
+            onValueChange = { scope = it },
+            label = { Text("Scope") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        OutlinedTextField(
+            value = disclosures,
+            onValueChange = { disclosures = it },
+            label = { Text("Disclosures (comma-separated)") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        OutlinedTextField(
+            value = appName,
+            onValueChange = { appName = it },
+            label = { Text("App Name") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        OutlinedTextField(
+            value = appEndpoint,
+            onValueChange = { appEndpoint = it },
+            label = { Text("App Endpoint") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        OutlinedTextField(
+            value = resultType,
+            onValueChange = { resultType = it },
+            label = { Text("Result Type") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
         Button(
             onClick = {
                 onLaunch(
                     SelfSdkConfig(
-                        teeUrl = teeUrl,
                         verificationId = verificationId,
                         userId = userId,
-                        isDebugMode = debugMode
+                        environment = environment,
+                        isDebugMode = debugMode,
+                        scope = scope.ifBlank { null },
+                        disclosures = disclosures.ifBlank { null }?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() },
+                        appName = appName.ifBlank { null },
+                        appEndpoint = appEndpoint.ifBlank { null },
+                        resultType = resultType.ifBlank { null },
                     )
                 )
             },

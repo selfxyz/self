@@ -12,6 +12,8 @@ export interface ParsedVerificationRequestContext {
   timestamp: number;
   requestType: string;
   verificationId?: string;
+  environment: 'prod' | 'stg';
+  version: number;
 }
 
 const ALLOWED_REQUEST_TYPES = new Set(['proofRequested', 'documentOwnershipConfirmed']);
@@ -19,6 +21,12 @@ const DEFAULT_REQUEST_TYPE = 'proofRequested';
 
 interface TargetOriginOptions {
   allowWildcard?: boolean;
+}
+
+export function hasDiscloseRequestContext(
+  context: Pick<ParsedVerificationRequestContext, 'request' | 'displayLabels'>,
+) {
+  return Boolean((context.displayLabels && context.displayLabels.length > 0) || context.request.disclosures?.length);
 }
 
 export function parseBrowserHostTargetOrigin(search: string, options: TargetOriginOptions = {}): string | undefined {
@@ -37,6 +45,13 @@ export function parseVerificationRequestContext(search: string): ParsedVerificat
   const queryTimestamp = params.get('timestamp');
   const parsedTimestamp = queryTimestamp ? Number(queryTimestamp) : Number.NaN;
 
+  const rawEnv = params.get('environment');
+  const environment: 'prod' | 'stg' = rawEnv === 'staging' || rawEnv === 'stg' ? 'stg' : 'prod';
+
+  const rawVersion = params.get('version');
+  const parsedVersion = rawVersion ? Number(rawVersion) : Number.NaN;
+  const version = Number.isFinite(parsedVersion) ? parsedVersion : 1;
+
   return {
     request,
     displayLabels: parseDisplayLabels(params),
@@ -45,6 +60,8 @@ export function parseVerificationRequestContext(search: string): ParsedVerificat
     timestamp: Number.isFinite(parsedTimestamp) ? parsedTimestamp : Date.now(),
     requestType: normalizeRequestType(params.get('resultType')),
     verificationId: params.get('verificationId') ?? undefined,
+    environment,
+    version,
   };
 }
 
