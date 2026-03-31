@@ -127,6 +127,22 @@ export const KeychainDebugScreen: React.FC = () => {
     }
   }, [documents, addLog]);
 
+  const handleDeleteCatalog = useCallback(async () => {
+    try {
+      const catalog = await documents.loadDocumentCatalog();
+      const docCount = catalog.documents.length;
+
+      for (const doc of catalog.documents) {
+        await documents.deleteDocument(doc.id);
+      }
+
+      await documents.saveDocumentCatalog({ documents: [], selectedDocumentId: undefined });
+      addLog(`DELETE CATALOG -> removed ${docCount} document(s) and cleared catalog`);
+    } catch (e) {
+      addLog(`DELETE CATALOG FAILED: ${e}`, true);
+    }
+  }, [documents, addLog]);
+
   const handleDeleteDoc = useCallback(async () => {
     try {
       await documents.deleteDocument(docId);
@@ -204,6 +220,9 @@ export const KeychainDebugScreen: React.FC = () => {
         <div style={styles.row}>
           <button style={styles.button} onClick={handleLoadCatalog}>
             Load Catalog
+          </button>
+          <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleDeleteCatalog}>
+            Delete Catalog
           </button>
         </div>
       </div>

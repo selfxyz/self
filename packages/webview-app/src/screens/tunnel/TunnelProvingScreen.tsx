@@ -9,20 +9,15 @@ import { useNavigate } from 'react-router-dom';
 import type { ProofGenerationStep } from '@selfxyz/euclid';
 import { ProofGenerationScreen } from '@selfxyz/euclid';
 import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
-import { useProvingStore } from '@selfxyz/mobile-sdk-alpha/browser';
+import { loadSelectedDocument, useProvingStore } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { getIdCardProps } from '../../utils/provingUtils';
 import { initSelfAppFromRequest } from '../../utils/selfAppContext';
 
-const MOCK_ID_CARD = {
-  variant: 'passport' as const,
-  title: 'Passport',
-  subtitle: 'Mock Passport',
-};
-
-type Phase = 'dsc' | 'disclose';
+type Phase = 'dsc' | 'register' | 'disclose';
 
 const MAX_DISCLOSE_RETRIES = 3;
 const DISCLOSE_RETRY_DELAY_MS = 3000;
@@ -59,6 +54,7 @@ export const TunnelProvingScreen: React.FC = () => {
   const errorCode = useProvingStore(s => s.error_code);
   const reason = useProvingStore(s => s.reason);
 
+  const passportData = useProvingStore(s => s.passportData);
   const [phase, setPhase] = useState<Phase>('dsc');
   const startedRef = useRef(false);
   const retryCountRef = useRef(0);
@@ -72,13 +68,20 @@ export const TunnelProvingScreen: React.FC = () => {
     [haptic, navigate],
   );
 
-  // TODO: replace with actual logic
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
     initSelfAppFromRequest(client, verificationCtx);
-    analytics.trackEvent('tunnel_proving_started', { phase: 'dsc' });
-    init(client, 'dsc', true);
+
+    const start = async () => {
+      const selectedDocument = await loadSelectedDocument(client);
+      const category = selectedDocument?.data?.documentCategory;
+      const initialPhase: Phase = category === 'aadhaar' || category === 'kyc' ? 'register' : 'dsc';
+      setPhase(initialPhase);
+      analytics.trackEvent('tunnel_proving_started', { phase: initialPhase });
+      init(client, initialPhase, true);
+    };
+    start();
   }, [client, init, analytics, verificationCtx]);
 
   useEffect(() => {
@@ -109,10 +112,14 @@ export const TunnelProvingScreen: React.FC = () => {
       return;
     }
 
-    if (currentState === 'completed' && phase === 'dsc') {
+    if (currentState === 'completed' && phase !== 'disclose') {
+      // For passports: provingmachine auto-chains dsc → register internally,
+      // then emits completed after register finishes.
+      // For kyc/aadhaar: register completes directly.
+      // In both cases, move to disclose.
       setPhase('disclose');
       retryCountRef.current = 0;
-      analytics.trackEvent('tunnel_proving_dsc_register_complete');
+      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: phase });
       init(client, 'disclose', true);
     } else if (currentState === 'completed' && phase === 'disclose') {
       analytics.trackEvent('tunnel_proving_disclose_complete');
@@ -131,7 +138,7 @@ export const TunnelProvingScreen: React.FC = () => {
     <ProofGenerationScreen
       {...WEB_SAFE_AREA}
       step={mapProvingStateToStep(currentState, phase)}
-      idCardProps={MOCK_ID_CARD}
+      idCardProps={getIdCardProps(passportData?.documentCategory)}
     />
   );
 };
