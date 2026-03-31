@@ -11,15 +11,8 @@ import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { titleCaseDisclosure } from '../../utils/provingUtils';
 import { hasDiscloseRequestContext } from '../../utils/verificationRequest';
-
-function titleCaseDisclosure(disclosure: string): string {
-  return disclosure
-    .replace(/[_-]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, match => match.toUpperCase());
-}
 
 export const ProvingScreen: React.FC = () => {
   const navigate = useNavigate();

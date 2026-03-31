@@ -6,63 +6,14 @@ import type React from 'react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import type { IDCardProps } from '@selfxyz/euclid';
 import { ProofGenerationScreen as EuclidProofGenerationScreen } from '@selfxyz/euclid';
 import { useProvingStore } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { getFailureState, getGenerationStep, getIdCardProps } from '../../utils/provingUtils';
 import { hasDiscloseRequestContext } from '../../utils/verificationRequest';
-
-type ProofGenerationFailureState = {
-  code: string;
-  message: string;
-};
-
-function getGenerationStep(currentState: string) {
-  switch (currentState) {
-    case 'parsing_id_document':
-    case 'fetching_data':
-      return 'readingRegistry' as const;
-    case 'validating_document':
-    case 'init_tee_connexion':
-    case 'ready_to_prove':
-    case 'proving':
-      return 'generatingProof' as const;
-    case 'listening_for_status':
-      return 'awaitingVerification' as const;
-    case 'post_proving':
-      return 'finishingUp' as const;
-    default:
-      return 'readingRegistry' as const;
-  }
-}
-
-function getFailureState(
-  currentState: string,
-  code: string | null,
-  reason: string | null,
-): ProofGenerationFailureState {
-  return {
-    code: code ?? currentState ?? 'proof_generation_failed',
-    message: reason ?? 'The proof request could not be completed.',
-  };
-}
-
-function getIdCardProps(documentCategory?: string): IDCardProps {
-  switch (documentCategory) {
-    case 'id_card':
-      return { variant: 'id-card', title: 'ID Card', subtitle: 'Verified ID' };
-    case 'aadhaar':
-      return { variant: 'aadhaar', title: 'Aadhaar', subtitle: 'Verified IN Aadhaar ID' };
-    case 'kyc':
-      return { variant: 'pending', title: 'KYC Record', subtitle: 'Verification document loaded' };
-    case 'passport':
-    default:
-      return { variant: 'passport', title: 'Passport', subtitle: 'Verified Passport' };
-  }
-}
 
 export const ProofGenerationRouteScreen: React.FC = () => {
   const navigate = useNavigate();

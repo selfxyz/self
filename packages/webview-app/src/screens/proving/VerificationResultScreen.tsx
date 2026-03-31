@@ -12,24 +12,12 @@ import type { BridgeError, VerificationResult } from '@selfxyz/webview-bridge';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { normalizeError } from '../../utils/provingUtils';
 
 interface VerificationResultLocationState {
   success?: boolean;
   error?: BridgeError | string;
   resultSent?: boolean;
-}
-
-function normalizeError(error: BridgeError | string | undefined): BridgeError | undefined {
-  if (!error) {
-    return undefined;
-  }
-  if (typeof error === 'string') {
-    return {
-      code: 'proof_generation_failed',
-      message: error,
-    };
-  }
-  return error;
 }
 
 export const VerificationResultScreen: React.FC = () => {
