@@ -72,6 +72,7 @@ export const TunnelProvingScreen: React.FC = () => {
     [haptic, navigate],
   );
 
+  // TODO: replace with actual logic
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;

@@ -7,12 +7,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button, colors, Description, spacing, Title } from '@selfxyz/euclid';
-import type { IDDocument } from '@selfxyz/mobile-sdk-alpha/browser';
 import { generateMockDocument, storePassportData } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
+import { buildKycDocument } from '../../utils/buildKycDocument';
 import { waitForAttestation } from '../../utils/diditAttestation';
 import { createDiditSession, launchDiditWebSdk } from '../../utils/diditProvider';
 
@@ -60,15 +60,8 @@ export const ProviderLaunchScreen: React.FC = () => {
 
         if (attestationResult.status === 'success' && attestationResult.attestation) {
           const attestation = attestationResult.attestation;
-          const kycDoc: IDDocument = {
-            documentType: (documentType || 'passport') as IDDocument['documentType'],
-            documentCategory: 'kyc',
-            mock: false,
-            serializedApplicantInfo: attestation.serializedApplicantInfo,
-            signature: attestation.signature,
-            pubkey: [...attestation.pubkey],
-          };
-          await storePassportData(client, kycDoc);
+          const kycDoc = buildKycDocument(attestation);
+          await storePassportData(client, kycDoc as any);
 
           navigate(defaultNextPath, {
             state: {

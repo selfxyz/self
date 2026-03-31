@@ -53,9 +53,12 @@ export const TunnelResultScreen: React.FC = () => {
     analytics.trackEvent('tunnel_result_failure', { error });
   }, [success, error, analytics]);
 
-  const onContinue = useCallback(() => {
-    navigate('/');
-  }, [navigate]);
+  const onContinue = useCallback(async () => {
+    const result: VerificationResult = success
+      ? { success: true, userId: request.userId, verificationId, claims: { resultType: 'proofRequested' } }
+      : { success: false, error: { code: 'DISCLOSURE_FAILED', message: error ?? 'Disclosure failed' } };
+    await lifecycle.setResult(result);
+  }, [error, lifecycle, request.userId, success, verificationId]);
 
   const onRetry = useCallback(() => {
     navigate('/tunnel/proof/generating');
