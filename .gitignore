@@ -57,3 +57,6 @@ contracts/broadcast/
 !packages/rn-sdk-test-app/react-native.config.cjs
 packages/native-shell-android/.gradle/
 packages/native-shell-android/build/
+
+app/build/*
+packages/mobile-sdk-alpha-source/android/.gradle/*
