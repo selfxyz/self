@@ -7,21 +7,20 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import type { ProofGenerationStep } from '@selfxyz/euclid';
-import { ProofGenerationScreen } from '@selfxyz/euclid';
+import { ProofProgressScreen, SelfLogo } from '@selfxyz/euclid';
 import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
-import { loadSelectedDocument, useProvingStore } from '@selfxyz/mobile-sdk-alpha/browser';
+import { useProvingStore } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-import { getIdCardProps } from '../../utils/provingUtils';
 import { initSelfAppFromRequest } from '../../utils/selfAppContext';
 
-type Phase = 'dsc' | 'register';
-
+const MAX_DISCLOSE_RETRIES = 3;
+const DISCLOSE_RETRY_DELAY_MS = 3000;
 const ERROR_STATES: ProvingStateType[] = ['error', 'failure', 'passport_not_supported', 'passport_data_not_found'];
 
-function mapProvingStateToStep(state: ProvingStateType | null, phase: Phase): ProofGenerationStep {
+function mapDiscloseStateToStep(state: ProvingStateType | null): ProofGenerationStep {
   if (!state) return 'readingRegistry';
 
   switch (state) {
@@ -33,27 +32,31 @@ function mapProvingStateToStep(state: ProvingStateType | null, phase: Phase): Pr
     case 'init_tee_connexion':
     case 'ready_to_prove':
     case 'proving':
-      return phase === 'dsc' ? 'readingRegistry' : 'generatingProof';
-    case 'post_proving':
-    case 'completed':
       return 'generatingProof';
+    case 'post_proving':
+      return 'awaitingVerification';
+    case 'completed':
+      return 'finishingUp';
     default:
-      return phase === 'dsc' ? 'readingRegistry' : 'generatingProof';
+      return 'readingRegistry';
   }
 }
 
-export const TunnelProvingScreen: React.FC = () => {
+export const TunnelDiscloseScreen: React.FC = () => {
   const navigate = useNavigate();
   const { client, analytics, haptic } = useSelfClient();
   const verificationCtx = useVerificationRequest();
+  const { appName, appEndpoint, timestamp } = verificationCtx;
   const currentState = useProvingStore(s => s.currentState);
   const init = useProvingStore(s => s.init);
   const errorCode = useProvingStore(s => s.error_code);
   const reason = useProvingStore(s => s.reason);
 
-  const passportData = useProvingStore(s => s.passportData);
-  const [phase, setPhase] = useState<Phase>('dsc');
   const startedRef = useRef(false);
+  const retryCountRef = useRef(0);
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [initDone, setInitDone] = useState(false);
+  const [hasCompleted, setHasCompleted] = useState(false);
 
   const navigateToError = useCallback(
     (error: string) => {
@@ -67,46 +70,63 @@ export const TunnelProvingScreen: React.FC = () => {
     if (startedRef.current) return;
     startedRef.current = true;
     initSelfAppFromRequest(client, verificationCtx);
-
-    const start = async () => {
-      const selectedDocument = await loadSelectedDocument(client);
-      const category = selectedDocument?.data?.documentCategory;
-      const initialPhase: Phase = category === 'aadhaar' || category === 'kyc' ? 'register' : 'dsc';
-      setPhase(initialPhase);
-      analytics.trackEvent('tunnel_proving_started', { phase: initialPhase });
-      init(client, initialPhase, true);
-    };
-    start();
+    analytics.trackEvent('tunnel_disclose_started');
+    init(client, 'disclose', true);
+    setInitDone(true);
   }, [client, init, analytics, verificationCtx]);
 
   useEffect(() => {
-    if (!currentState) return;
+    if (!currentState || hasCompleted || !initDone) return;
 
     const isError = ERROR_STATES.includes(currentState);
 
-    if (isError) {
-      analytics.trackEvent('tunnel_proving_failed', {
-        phase,
+    if (isError && currentState === 'passport_data_not_found' && retryCountRef.current < MAX_DISCLOSE_RETRIES) {
+      retryCountRef.current += 1;
+      analytics.trackEvent('tunnel_disclose_retry', { attempt: retryCountRef.current });
+      retryTimeoutRef.current = setTimeout(() => init(client, 'disclose', true), DISCLOSE_RETRY_DELAY_MS);
+    } else if (isError) {
+      analytics.trackEvent('tunnel_disclose_failed', {
         errorCode,
         reason,
         state: currentState,
       });
       navigateToError(reason ?? errorCode ?? currentState);
-    } else if (currentState === 'completed' && phase === 'dsc') {
-      setPhase('register');
-      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'dsc' });
-      init(client, 'register', true);
-    } else if (currentState === 'completed' && phase === 'register') {
-      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'register' });
-      navigate('/tunnel/proof/receipt', { replace: true });
+    } else if (currentState === 'completed') {
+      setHasCompleted(true);
+      analytics.trackEvent('tunnel_proving_disclose_complete');
+      haptic.trigger('success');
+      navigate('/tunnel/proof/result', { state: { success: true } });
     }
-  }, [currentState, phase, client, init, analytics, haptic, navigate, errorCode, reason, navigateToError]);
+
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
+    };
+  }, [
+    currentState,
+    hasCompleted,
+    initDone,
+    client,
+    init,
+    analytics,
+    haptic,
+    navigate,
+    errorCode,
+    reason,
+    navigateToError,
+  ]);
 
   return (
-    <ProofGenerationScreen
+    <ProofProgressScreen
       {...WEB_SAFE_AREA}
-      step={mapProvingStateToStep(currentState, phase)}
-      idCardProps={getIdCardProps(passportData?.documentCategory)}
+      appIcon={<SelfLogo size={40} />}
+      appName={appName}
+      appEndpoint={appEndpoint}
+      documentType="passport"
+      timestamp={timestamp}
+      step={mapDiscloseStateToStep(currentState)}
     />
   );
 };

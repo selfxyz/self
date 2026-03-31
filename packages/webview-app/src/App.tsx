@@ -51,7 +51,9 @@ import { RecoverySuccessScreen } from './screens/recovery/RecoverySuccessScreen'
 import { SecretPhraseInputScreen } from './screens/recovery/SecretPhraseInputScreen';
 import { TourScreen as TunnelTourScreen } from './screens/tunnel/TourScreen';
 import { TunnelCountryPickerScreen } from './screens/tunnel/TunnelCountryPickerScreen';
+import { TunnelDiscloseScreen } from './screens/tunnel/TunnelDiscloseScreen';
 import { TunnelIDTypeScreen } from './screens/tunnel/TunnelIDTypeScreen';
+import { TunnelKycSuccessScreen } from './screens/tunnel/TunnelKycSuccessScreen';
 import { TunnelKycWrapper } from './screens/tunnel/TunnelKycWrapper';
 import { TunnelProofReceiptScreen } from './screens/tunnel/TunnelProofReceiptScreen';
 import { TunnelProvingScreen } from './screens/tunnel/TunnelProvingScreen';
@@ -105,10 +107,12 @@ export const App: React.FC = () => (
             <Route path="/coming-soon" element={<ComingSoonScreen />} />
             <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
             <Route path="/tunnel/kyc" element={<TunnelKycWrapper />} />
+            <Route path="/tunnel/kyc-success" element={<TunnelKycSuccessScreen />} />
             <Route path="/tunnel/registration/country" element={<TunnelCountryPickerScreen />} />
             <Route path="/tunnel/registration/id-type" element={<TunnelIDTypeScreen />} />
             <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
             <Route path="/tunnel/proof/generating" element={<TunnelProvingScreen />} />
+            <Route path="/tunnel/proof/disclose" element={<TunnelDiscloseScreen />} />
             <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

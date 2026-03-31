@@ -6,11 +6,12 @@ import type React from 'react';
 import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { StatusState } from '@selfxyz/euclid';
+import { ProofSuccessScreen, SelfLogo, StatusState } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 interface TunnelResultState {
   success?: boolean;
@@ -21,7 +22,7 @@ export const TunnelResultScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, lifecycle } = useSelfClient();
-  const { verificationId, request } = useVerificationRequest();
+  const { verificationId, request, appName, appEndpoint, timestamp } = useVerificationRequest();
 
   const { success = false, error } = (location.state as TunnelResultState) ?? {};
 
@@ -59,15 +60,17 @@ export const TunnelResultScreen: React.FC = () => {
 
   if (success) {
     return (
-      <StatusState
-        variant="success"
-        title="Identity Verified"
-        description="Your identity has been verified. You can now use Self ID to prove your identity to participating partners."
-        animationSource="/animations/proof-success.json"
-        animationSize={240}
-        loopAnimation={false}
-        buttonText="Continue"
-        onButtonPress={onContinue}
+      <ProofSuccessScreen
+        {...WEB_SAFE_AREA}
+        appIcon={<SelfLogo size={40} />}
+        appName={appName}
+        appEndpoint={appEndpoint}
+        documentType="passport"
+        timestamp={timestamp}
+        successTitle="Identity Verified"
+        successDescription="Your identity has been verified. You can now use Self ID to prove your identity to participating partners."
+        onContinue={onContinue}
+        onViewDetails={() => {}}
       />
     );
   }

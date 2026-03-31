@@ -21,7 +21,7 @@ export const TunnelProofReceiptScreen: React.FC = () => {
   const onConfirm = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_proof_receipt_confirmed');
-    navigate('/tunnel/proof/generating');
+    navigate('/tunnel/proof/disclose');
   }, [navigate, haptic, analytics]);
 
   const proofItems = useMemo(() => {
