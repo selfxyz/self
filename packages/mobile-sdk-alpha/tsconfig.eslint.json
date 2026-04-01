@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@selfxyz/common": ["../../common/index.ts"],
+      "@selfxyz/common/constants": ["../../common/src/constants/index.ts"],
+      "@selfxyz/common/constants/countries": ["../../common/src/constants/countries.ts"],
+      "@selfxyz/common/types": ["../../common/src/types/index.ts"],
+      "@selfxyz/common/types/passport": ["../../common/src/types/passport.ts"],
+      "@selfxyz/common/utils": ["../../common/src/utils/index.ts"],
+      "@selfxyz/common/utils/attest": ["../../common/src/utils/attest.ts"],
+      "@selfxyz/common/utils/circuits/registerInputs": ["../../common/src/utils/circuits/registerInputs.ts"],
+      "@selfxyz/common/utils/csca": ["../../common/src/utils/csca.ts"],
+      "@selfxyz/common/utils/hash/sha": ["../../common/src/utils/hash/sha.ts"],
+      "@selfxyz/common/utils/passportFormat": ["../../common/src/utils/passports/format.ts"],
+      "@selfxyz/common/utils/passports": ["../../common/src/utils/passports/index.ts"],
+      "@selfxyz/common/utils/passports/validate": ["../../common/src/utils/passports/validate.ts"],
+      "@selfxyz/common/utils/proving": ["../../common/src/utils/proving.ts"],
+      "@selfxyz/common/utils/types": ["../../common/src/utils/types.ts"]
+    }
+  }
+}

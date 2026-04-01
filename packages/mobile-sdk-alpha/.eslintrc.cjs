@@ -28,7 +28,7 @@ module.exports = {
     'import/resolver': {
       typescript: {
         alwaysTryTypes: true,
-        project: './tsconfig.json',
+        project: './tsconfig.eslint.json',
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
       node: {

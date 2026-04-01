@@ -67,19 +67,23 @@ export const TunnelProvingScreen: React.FC = () => {
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    initSelfAppFromRequest(client, verificationCtx);
 
     const start = async () => {
+      initSelfAppFromRequest(client, verificationCtx);
       const selectedDocument = await loadSelectedDocument(client);
       const category = selectedDocument?.data?.documentCategory;
       const initialPhase: Phase = category === 'aadhaar' || category === 'kyc' ? 'register' : 'dsc';
       setPhase(initialPhase);
       analytics.trackEvent('tunnel_proving_started', { phase: initialPhase });
-      init(client, initialPhase, true);
+      await Promise.resolve(init(client, initialPhase, true));
       setInitDone(true);
     };
-    start();
-  }, [client, init, analytics, verificationCtx]);
+    start().catch(err => {
+      const message = err instanceof Error ? err.message : 'Proving init failed';
+      analytics.trackEvent('tunnel_proving_init_failed', { error: message });
+      navigateToError(message);
+    });
+  }, [client, init, analytics, verificationCtx, navigateToError]);
 
   useEffect(() => {
     if (!currentState || !initDone) return;
@@ -103,7 +107,11 @@ export const TunnelProvingScreen: React.FC = () => {
     } else if (currentState === 'completed' && phase === 'dsc') {
       setPhase('register');
       analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'dsc' });
-      init(client, 'register', true);
+      void Promise.resolve(init(client, 'register', true)).catch(err => {
+        const message = err instanceof Error ? err.message : 'Register init failed';
+        analytics.trackEvent('tunnel_proving_init_failed', { error: message, phase: 'register' });
+        navigateToError(message);
+      });
     } else if (currentState === 'completed' && phase === 'register') {
       analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'register' });
       navigate('/tunnel/proof/receipt', { replace: true });

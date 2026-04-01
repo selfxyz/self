@@ -8,6 +8,7 @@ import type React from 'react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { TunnelDiscloseScreen } from '../../../src/screens/tunnel/TunnelDiscloseScreen';
 import { TunnelProvingScreen } from '../../../src/screens/tunnel/TunnelProvingScreen';
 import { TunnelRecoveryRequiredScreen } from '../../../src/screens/tunnel/TunnelRecoveryRequiredScreen';
 import { TunnelResultScreen } from '../../../src/screens/tunnel/TunnelResultScreen';
@@ -82,6 +83,7 @@ vi.mock('@selfxyz/euclid', () => ({
   }),
   SelfLogo: () => null,
   ProofGenerationScreen: ({ step }: { step: string }) => <div>{`proof-generation:${step}`}</div>,
+  ProofProgressScreen: ({ step }: { step: string }) => <div>{`proof-progress:${step}`}</div>,
   ProofSuccessScreen: ({ onContinue, onViewDetails }: { onContinue: () => void; onViewDetails: () => void }) => (
     <div>
       <button onClick={onContinue} type="button">
@@ -164,6 +166,17 @@ const renderProvingRoute = () =>
         <Route path="/tunnel/proof/generating" element={<TunnelProvingScreen />} />
         <Route path="/tunnel/recovery-required" element={<LocationDisplay />} />
         <Route path="/tunnel/proof/receipt" element={<LocationDisplay />} />
+        <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+      </Routes>
+      <LocationDisplay />
+    </MemoryRouter>,
+  );
+
+const renderDiscloseRoute = () =>
+  render(
+    <MemoryRouter initialEntries={['/tunnel/proof/disclose']}>
+      <Routes>
+        <Route path="/tunnel/proof/disclose" element={<TunnelDiscloseScreen />} />
         <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
@@ -277,5 +290,35 @@ describe('tunnel flow screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /recover with phrase/i }));
 
     expectLocation('/recovery/phrase-input?returnTo=%2Ftunnel%2Fproof%2Fgenerating');
+  });
+
+  it('routes to error result when proving setup throws before init starts', async () => {
+    const { initSelfAppFromRequest } = await import('../../../src/utils/selfAppContext');
+    vi.mocked(initSelfAppFromRequest).mockImplementationOnce(() => {
+      throw new Error('bad request');
+    });
+
+    renderProvingRoute();
+
+    await waitFor(() => {
+      expectLocation('/tunnel/proof/result');
+    });
+
+    expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_proving_init_failed', { error: 'bad request' });
+  });
+
+  it('routes to error result when disclose setup throws before init starts', async () => {
+    const { initSelfAppFromRequest } = await import('../../../src/utils/selfAppContext');
+    vi.mocked(initSelfAppFromRequest).mockImplementationOnce(() => {
+      throw new Error('bad request');
+    });
+
+    renderDiscloseRoute();
+
+    await waitFor(() => {
+      expectLocation('/tunnel/proof/result');
+    });
+
+    expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_disclose_init_failed', { error: 'bad request' });
   });
 });

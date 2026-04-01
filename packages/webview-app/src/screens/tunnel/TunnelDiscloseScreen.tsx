@@ -72,11 +72,18 @@ export const TunnelDiscloseScreen: React.FC = () => {
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    initSelfAppFromRequest(client, verificationCtx);
-    analytics.trackEvent('tunnel_disclose_started');
-    init(client, 'disclose', true);
+    const start = async () => {
+      initSelfAppFromRequest(client, verificationCtx);
+      analytics.trackEvent('tunnel_disclose_started');
+      await init(client, 'disclose', true);
+    };
+    void start().catch(err => {
+      const message = err instanceof Error ? err.message : 'Disclose init failed';
+      analytics.trackEvent('tunnel_disclose_init_failed', { error: message });
+      navigateToError(message);
+    });
     setInitDone(true);
-  }, [client, init, analytics, verificationCtx]);
+  }, [client, init, analytics, verificationCtx, navigateToError]);
 
   useEffect(() => {
     if (!currentState || hasCompleted || !initDone) return;
@@ -86,7 +93,17 @@ export const TunnelDiscloseScreen: React.FC = () => {
     if (isError && currentState === 'passport_data_not_found' && retryCountRef.current < MAX_DISCLOSE_RETRIES) {
       retryCountRef.current += 1;
       analytics.trackEvent('tunnel_disclose_retry', { attempt: retryCountRef.current });
-      retryTimeoutRef.current = setTimeout(() => init(client, 'disclose', true), DISCLOSE_RETRY_DELAY_MS);
+      retryTimeoutRef.current = setTimeout(() => {
+        const retry = async () => {
+          initSelfAppFromRequest(client, verificationCtx);
+          await init(client, 'disclose', true);
+        };
+        void retry().catch(err => {
+          const message = err instanceof Error ? err.message : 'Disclose retry failed';
+          analytics.trackEvent('tunnel_disclose_retry_failed', { error: message });
+          navigateToError(message);
+        });
+      }, DISCLOSE_RETRY_DELAY_MS);
     } else if (isError) {
       analytics.trackEvent('tunnel_disclose_failed', {
         errorCode,
@@ -116,6 +133,7 @@ export const TunnelDiscloseScreen: React.FC = () => {
     analytics,
     haptic,
     navigate,
+    verificationCtx,
     errorCode,
     reason,
     navigateToError,

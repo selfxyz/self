@@ -6,7 +6,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { derivePrivateKey, restoreSecretFromMnemonic } from '../../src/utils/secretManager';
+import { derivePrivateKey, ensureSecret, restoreSecretFromMnemonic } from '../../src/utils/secretManager';
 
 type Deferred = {
   promise: Promise<void>;
@@ -68,5 +68,89 @@ describe('restoreSecretFromMnemonic', () => {
     expect(resultB.secret).toBe(derivePrivateKey(mnemonicB));
     expect(storageState.get('self_mnemonic')).toBe(mnemonicB);
     expect(storageState.get('self_private_key')).toBe(derivePrivateKey(mnemonicB));
+  });
+
+  it('ensureSecret and restoreSecretFromMnemonic share the same lock', async () => {
+    storageState.clear();
+
+    const ops: string[] = [];
+    const ensureSetDeferred = createDeferred();
+
+    const storage = {
+      get: async (key: string) => storageState.get(key) ?? null,
+      set: async (key: string, value: string) => {
+        ops.push(`set:${key}`);
+        storageState.set(key, value);
+        if (key === 'self_mnemonic' && ops.length === 1) {
+          await ensureSetDeferred.promise;
+        }
+      },
+      remove: async (key: string) => {
+        storageState.delete(key);
+      },
+    };
+
+    const mnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+
+    const ensurePromise = ensureSecret(storage);
+    const restorePromise = restoreSecretFromMnemonic(storage, mnemonic);
+
+    await Promise.resolve();
+    ensureSetDeferred.resolve();
+
+    await ensurePromise;
+    const result = await restorePromise;
+
+    expect(result.secret).toBe(derivePrivateKey(mnemonic));
+    expect(storageState.get('self_mnemonic')).toBe(mnemonic);
+    expect(storageState.get('self_private_key')).toBe(derivePrivateKey(mnemonic));
+  });
+});
+
+describe('ensureSecret', () => {
+  const storageState = new Map<string, string>();
+
+  beforeEach(() => {
+    storageState.clear();
+  });
+
+  it('repairs a stored mnemonic/private key mismatch', async () => {
+    const mnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+    storageState.set('self_mnemonic', mnemonic);
+    storageState.set('self_private_key', '0xdeadbeef');
+
+    const storage = {
+      get: async (key: string) => storageState.get(key) ?? null,
+      set: async (key: string, value: string) => {
+        storageState.set(key, value);
+      },
+      remove: async (key: string) => {
+        storageState.delete(key);
+      },
+    };
+
+    await ensureSecret(storage);
+
+    expect(storageState.get('self_mnemonic')).toBe(mnemonic);
+    expect(storageState.get('self_private_key')).toBe(derivePrivateKey(mnemonic));
+  });
+
+  it('preserves an existing private key when mnemonic is missing', async () => {
+    storageState.set('self_private_key', '0xexisting');
+
+    const storage = {
+      get: async (key: string) => storageState.get(key) ?? null,
+      set: async (key: string, value: string) => {
+        storageState.set(key, value);
+      },
+      remove: async (key: string) => {
+        storageState.delete(key);
+      },
+    };
+
+    await ensureSecret(storage);
+
+    expect(storageState.get('self_mnemonic')).toBeUndefined();
+    expect(storageState.get('self_private_key')).toBe('0xexisting');
   });
 });
