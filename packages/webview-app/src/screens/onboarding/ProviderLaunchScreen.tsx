@@ -6,7 +6,7 @@ import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { Button, colors, Description, spacing, Title } from '@selfxyz/euclid';
+import { Button, colors, Description, KycPendingScreen, spacing, Title } from '@selfxyz/euclid';
 import { generateMockDocument, storePassportData } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
@@ -291,7 +291,16 @@ export const ProviderLaunchScreen: React.FC = () => {
         backgroundColor: colors.white,
       }}
     >
-      {(phase === 'loading' || phase === 'waiting') && (
+      {phase === 'waiting' && (
+        <KycPendingScreen
+          insets={{ top: 0, bottom: 0 }}
+          onCheckBackLater={handleBack}
+          onReceiveLiveUpdates={() => {
+            // TODO: wire up push notifications
+          }}
+        />
+      )}
+      {phase === 'loading' && (
         <div
           style={{
             display: 'flex',
@@ -313,14 +322,7 @@ export const ProviderLaunchScreen: React.FC = () => {
             }}
           />
           <div style={{ marginTop: spacing.md }}>
-            <Title textAlign="center">
-              {phase === 'waiting' ? 'Processing verification...' : 'Loading verification...'}
-            </Title>
-            {phase === 'waiting' && (
-              <Description style={{ marginTop: 8 }}>
-                Your documents are being verified. This may take a moment.
-              </Description>
-            )}
+            <Title textAlign="center">Loading verification...</Title>
           </div>
         </div>
       )}
