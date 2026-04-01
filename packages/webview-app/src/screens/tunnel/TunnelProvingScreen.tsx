@@ -114,7 +114,7 @@ export const TunnelProvingScreen: React.FC = () => {
       });
     } else if (currentState === 'completed' && phase === 'register') {
       analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'register' });
-      navigate('/tunnel/proof/receipt', { replace: true });
+      navigate('/tunnel/proof/disclose', { replace: true });
     }
   }, [currentState, initDone, phase, client, init, analytics, haptic, navigate, errorCode, reason, navigateToError]);
 
