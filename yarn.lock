@@ -11288,7 +11288,6 @@ __metadata:
     "@didit-protocol/sdk-web": "npm:^0.1.8"
     "@scure/bip32": "npm:^2.0.1"
     "@scure/bip39": "npm:^1.6.0"
-    "@selfxyz/common": "workspace:^"
     "@selfxyz/euclid": "npm:1.3.0"
     "@selfxyz/euclid-core": "npm:1.3.0"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"

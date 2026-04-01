@@ -96,20 +96,20 @@ jobs:
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 10
+          timeout_minutes: 20
           max_attempts: 3
           retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+          command: yarn install --immutable
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 10
+          timeout_minutes: 20
           max_attempts: 3
           retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+          command: yarn install --immutable
 
       - name: Validate Maestro test file
         run: |
