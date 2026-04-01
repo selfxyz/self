@@ -14,6 +14,7 @@
 The KMP SDK Android target registers 5 handlers (NFC, Camera, Biometric, SecureStorage, Lifecycle) but is missing the `crypto` handler that native-shells-lite provides. The Android SecureStorage handler hardcodes `EncryptedSharedPreferences` instead of delegating to a consumer-provided provider (the iOS target already delegates via `SdkProviderRegistry`). There are also gaps in WebView capabilities (no WebChromeClient, no query params), an incorrect SecureStorage response shape, and no bridge protocol version validation.
 
 You are closing these gaps by:
+
 1. Moving provider interfaces to `commonMain` so both platforms share the same contract
 2. Making Android handlers delegate to providers (matching iOS pattern)
 3. Shipping default Android provider implementations consumers can use or replace
@@ -43,12 +44,14 @@ You are closing these gaps by:
 Currently `SecureStorageProvider` and `CryptoProvider` live in `iosMain/kotlin/xyz/self/sdk/providers/`. Move them to `commonMain` so both platforms share the same contract.
 
 **Move:**
+
 - `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/providers/SecureStorageProvider.kt` → `packages/kmp-sdk/shared/src/commonMain/kotlin/xyz/self/sdk/providers/SecureStorageProvider.kt`
 - `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/providers/CryptoProvider.kt` → `packages/kmp-sdk/shared/src/commonMain/kotlin/xyz/self/sdk/providers/CryptoProvider.kt`
 
 The interfaces remain identical — same package (`xyz.self.sdk.providers`), same methods. The iOS handlers that reference them will compile without changes since `commonMain` is visible to `iosMain`.
 
 **Current `SecureStorageProvider` interface (iosMain):**
+
 ```kotlin
 interface SecureStorageProvider {
     fun get(key: String): String?
@@ -59,6 +62,7 @@ interface SecureStorageProvider {
 ```
 
 **Current `CryptoProvider` interface (iosMain):**
+
 ```kotlin
 interface CryptoProvider {
     fun generateKey(keyRef: String)
@@ -79,6 +83,7 @@ No changes to the interfaces themselves — just the source set location.
 **Move to:** `packages/kmp-sdk/shared/src/commonMain/kotlin/xyz/self/sdk/providers/SdkProviderRegistry.kt`
 
 **Rewrite for 3-domain scope:**
+
 ```kotlin
 package xyz.self.sdk.providers
 
@@ -116,6 +121,7 @@ object SdkProviderRegistry {
 ```
 
 **Key changes:**
+
 - `isConfigured()` now checks only the 2 required providers (secureStorage, crypto) instead of all 8
 - Added `reset()` for clean teardown between sessions
 - Optional providers retained for future use but not required
@@ -301,6 +307,7 @@ class SecureStorageBridgeHandler : BridgeHandler {
 ```
 
 **Key changes from current:**
+
 - No longer takes `Context` parameter (no direct EncryptedSharedPreferences)
 - Delegates to `SdkProviderRegistry.secureStorage`
 - `get()` returns `buildJsonObject { put("value", ...) }` instead of bare `JsonPrimitive`/`JsonNull`
@@ -396,6 +403,7 @@ class CryptoBridgeHandler : BridgeHandler {
 If moved to `commonMain`, **delete** the existing `iosMain/.../handlers/CryptoBridgeHandler.kt` to avoid duplicate class definitions.
 
 Response shapes match `webview-bridge/src/adapters/crypto.ts`:
+
 - `generateKey` → `{ keyRef: string, success: true }`
 - `getPublicKey` → `{ publicKey: string }` (base64)
 - `sign` → `{ signature: string }` (base64)
@@ -405,6 +413,7 @@ Response shapes match `webview-bridge/src/adapters/crypto.ts`:
 **File:** `packages/kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/webview/SelfVerificationActivity.kt`
 
 **Current `registerHandlers()` (lines 88-103):**
+
 ```kotlin
 private fun registerHandlers() {
     router.register(NfcBridgeHandler(this, router))
@@ -416,6 +425,7 @@ private fun registerHandlers() {
 ```
 
 **Change to:**
+
 ```kotlin
 private fun registerHandlers() {
     router.register(SecureStorageBridgeHandler())   // no Context — delegates to provider
@@ -425,6 +435,7 @@ private fun registerHandlers() {
 ```
 
 **Also:**
+
 - Remove `requiredPermissions` array, `permissionLauncher`, and the permission-check block in `onCreate()` (lines 29-56). The 3-domain scope does not need CAMERA or NFC permissions at startup. The WebChromeClient (step 8) handles camera permissions on-demand.
 - Simplify `onCreate()` to call `initVerificationFlow()` directly.
 - Add provider initialization before handler registration:
@@ -457,6 +468,7 @@ This gives consumers the option to set their own providers before launching the 
 **Change to:** `fun createWebView(queryParams: String = ""): WebView`
 
 **Update loadUrl calls (lines 129-139):**
+
 ```kotlin
 // Before
 webView.loadUrl("https://appassets.androidplatform.net/index.html")
@@ -472,6 +484,7 @@ Apply the same pattern to the debug URL (`http://127.0.0.1:5173`).
 **Update caller in SelfVerificationActivity:** Build query params from intent extras (or `VerificationRequest` if available) and pass to `createWebView(queryParams)`. Reference `packages/native-shell-android/.../SelfVerificationActivity.kt:64-84` for the query string builder pattern using `buildString { }` with `Uri.encode()`.
 
 The native-shell-android extracts 14 intent extras and encodes them. KMP currently only extracts `EXTRA_DEBUG_MODE`, `EXTRA_VERIFICATION_REQUEST`, and `EXTRA_CONFIG`. You need to either:
+
 - Parse `EXTRA_VERIFICATION_REQUEST` JSON and build query params from it, or
 - Add the same 14 intent extras as native-shell-android
 
@@ -551,12 +564,14 @@ webChromeClient = object : WebChromeClient() {
 ```
 
 Add class-level fields:
+
 ```kotlin
 var pendingPermissionRequest: PermissionRequest? = null
 var fileUploadCallback: ValueCallback<Array<Uri>>? = null
 ```
 
 Add companion object constants:
+
 ```kotlin
 companion object {
     const val FILE_CHOOSER_REQUEST_CODE = 1001
@@ -565,6 +580,7 @@ companion object {
 ```
 
 **Also add permission result handling** to `SelfVerificationActivity`:
+
 ```kotlin
 override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -599,6 +615,7 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 **Current (lines 26-32):** After parsing the BridgeRequest, handler lookup proceeds immediately with no version check.
 
 **Add after parsing (line 32, before handler lookup):**
+
 ```kotlin
 val request = json.decodeFromString<BridgeRequest>(rawJson)
 
@@ -616,6 +633,7 @@ if (request.version != BRIDGE_PROTOCOL_VERSION) {
 ```
 
 Add companion object constant (matching `webview-bridge/src/types.ts:152`):
+
 ```kotlin
 companion object {
     const val BRIDGE_PROTOCOL_VERSION = 1
@@ -629,6 +647,7 @@ companion object {
 **File:** `packages/kmp-sdk/shared/build.gradle.kts`
 
 **Remove or comment out these androidMain dependencies:**
+
 ```kotlin
 // NFC/Passport — not needed for 3-domain scope
 // implementation("org.jmrtd:jmrtd:0.8.1")
@@ -647,6 +666,7 @@ companion object {
 ```
 
 **Keep:**
+
 - `androidx.webkit:webkit` — WebView
 - `androidx.security:security-crypto` — Default EncryptedSharedPreferencesProvider
 - `androidx.appcompat:appcompat` — Activity
@@ -657,33 +677,33 @@ companion object {
 
 ### Files Created
 
-| File | Purpose |
-|------|---------|
-| `shared/src/commonMain/.../providers/SecureStorageProvider.kt` | Moved from iosMain — shared interface |
-| `shared/src/commonMain/.../providers/CryptoProvider.kt` | Moved from iosMain — shared interface |
-| `shared/src/commonMain/.../providers/SdkProviderRegistry.kt` | Moved from iosMain — unified registry, 3-domain `isConfigured()` |
-| `shared/src/commonMain/.../handlers/CryptoBridgeHandler.kt` | Provider-delegated crypto handler (replaces iOS-only version) |
-| `shared/src/androidMain/.../providers/EncryptedSharedPreferencesProvider.kt` | Default Android SecureStorageProvider |
-| `shared/src/androidMain/.../providers/AndroidKeystoreCryptoProvider.kt` | Default Android CryptoProvider |
+| File                                                                         | Purpose                                                          |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `shared/src/commonMain/.../providers/SecureStorageProvider.kt`               | Moved from iosMain — shared interface                            |
+| `shared/src/commonMain/.../providers/CryptoProvider.kt`                      | Moved from iosMain — shared interface                            |
+| `shared/src/commonMain/.../providers/SdkProviderRegistry.kt`                 | Moved from iosMain — unified registry, 3-domain `isConfigured()` |
+| `shared/src/commonMain/.../handlers/CryptoBridgeHandler.kt`                  | Provider-delegated crypto handler (replaces iOS-only version)    |
+| `shared/src/androidMain/.../providers/EncryptedSharedPreferencesProvider.kt` | Default Android SecureStorageProvider                            |
+| `shared/src/androidMain/.../providers/AndroidKeystoreCryptoProvider.kt`      | Default Android CryptoProvider                                   |
 
 ### Files Modified
 
-| File | Change |
-|------|--------|
-| `shared/src/androidMain/.../handlers/SecureStorageBridgeHandler.kt` | Rewrite: delegate to provider, fix `get()` response shape |
-| `shared/src/androidMain/.../webview/SelfVerificationActivity.kt` | Register 3 handlers, default provider init, remove permission requests, add query params, add permission/file callbacks |
-| `shared/src/androidMain/.../webview/AndroidWebViewHost.kt` | Add WebChromeClient, query params, permission/file fields |
-| `shared/src/commonMain/.../bridge/MessageRouter.kt` | Add protocol version validation |
-| `shared/build.gradle.kts` | Remove NFC/camera/biometric dependencies |
+| File                                                                | Change                                                                                                                  |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `shared/src/androidMain/.../handlers/SecureStorageBridgeHandler.kt` | Rewrite: delegate to provider, fix `get()` response shape                                                               |
+| `shared/src/androidMain/.../webview/SelfVerificationActivity.kt`    | Register 3 handlers, default provider init, remove permission requests, add query params, add permission/file callbacks |
+| `shared/src/androidMain/.../webview/AndroidWebViewHost.kt`          | Add WebChromeClient, query params, permission/file fields                                                               |
+| `shared/src/commonMain/.../bridge/MessageRouter.kt`                 | Add protocol version validation                                                                                         |
+| `shared/build.gradle.kts`                                           | Remove NFC/camera/biometric dependencies                                                                                |
 
 ### Files Deleted
 
-| File | Reason |
-|------|--------|
-| `shared/src/iosMain/.../providers/SecureStorageProvider.kt` | Moved to commonMain |
-| `shared/src/iosMain/.../providers/CryptoProvider.kt` | Moved to commonMain |
-| `shared/src/iosMain/.../providers/SdkProviderRegistry.kt` | Moved to commonMain |
-| `shared/src/iosMain/.../handlers/CryptoBridgeHandler.kt` | Replaced by commonMain version |
+| File                                                        | Reason                         |
+| ----------------------------------------------------------- | ------------------------------ |
+| `shared/src/iosMain/.../providers/SecureStorageProvider.kt` | Moved to commonMain            |
+| `shared/src/iosMain/.../providers/CryptoProvider.kt`        | Moved to commonMain            |
+| `shared/src/iosMain/.../providers/SdkProviderRegistry.kt`   | Moved to commonMain            |
+| `shared/src/iosMain/.../handlers/CryptoBridgeHandler.kt`    | Replaced by commonMain version |
 
 ### Files NOT Modified
 

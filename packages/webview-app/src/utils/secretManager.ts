@@ -44,6 +44,15 @@ function withSecretLock<T>(fn: () => Promise<T>): Promise<T> {
   return next;
 }
 
+async function readStoredSecretSnapshotUnlocked(storage: BridgeStorageAdapter): Promise<StoredSecretSnapshot> {
+  const [mnemonic, secret] = await Promise.all([storage.get(MNEMONIC_KEY), storage.get(PRIVATE_KEY_KEY)]);
+
+  return {
+    mnemonic,
+    secret,
+  };
+}
+
 export function ensureSecret(storage: BridgeStorageAdapter): Promise<void> {
   return withSecretLock(async () => {
     const existing = await storage.get(PRIVATE_KEY_KEY);
@@ -72,12 +81,7 @@ export function ensureSecret(storage: BridgeStorageAdapter): Promise<void> {
 }
 
 export async function readStoredSecretSnapshot(storage: BridgeStorageAdapter): Promise<StoredSecretSnapshot> {
-  const [mnemonic, secret] = await Promise.all([storage.get(MNEMONIC_KEY), storage.get(PRIVATE_KEY_KEY)]);
-
-  return {
-    mnemonic,
-    secret,
-  };
+  return withSecretLock(() => readStoredSecretSnapshotUnlocked(storage));
 }
 
 export function restoreSecretFromMnemonic(
@@ -87,7 +91,7 @@ export function restoreSecretFromMnemonic(
   const secret = derivePrivateKey(mnemonic);
 
   return withSecretLock(async () => {
-    const previousSnapshot = await readStoredSecretSnapshot(storage);
+    const previousSnapshot = await readStoredSecretSnapshotUnlocked(storage);
 
     try {
       await storage.set(MNEMONIC_KEY, mnemonic);
@@ -105,7 +109,16 @@ export function restoreStoredSecretSnapshot(
   storage: BridgeStorageAdapter,
   snapshot: StoredSecretSnapshot,
 ): Promise<void> {
-  return withSecretLock(() => writeSnapshot(storage, snapshot));
+  return withSecretLock(async () => {
+    const previousSnapshot = await readStoredSecretSnapshotUnlocked(storage);
+
+    try {
+      await writeSnapshot(storage, snapshot);
+    } catch (error) {
+      await writeSnapshot(storage, previousSnapshot);
+      throw error;
+    }
+  });
 }
 
 async function writeSnapshot(storage: BridgeStorageAdapter, snapshot: StoredSecretSnapshot): Promise<void> {

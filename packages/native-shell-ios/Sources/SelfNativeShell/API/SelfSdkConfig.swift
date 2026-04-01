@@ -19,6 +19,8 @@ public struct SelfSdkConfig {
     public let chainID: Int?
     public let userDefinedData: String?
     public let selfDefinedData: String?
+    public let remoteWebAppBaseURL: URL?
+    public let remoteWebAppIntegritySha256: String?
     public let secureStorageProvider: SecureStorageProvider
 
     public init(
@@ -38,6 +40,8 @@ public struct SelfSdkConfig {
         chainID: Int? = nil,
         userDefinedData: String? = nil,
         selfDefinedData: String? = nil,
+        remoteWebAppBaseURL: URL? = nil,
+        remoteWebAppIntegritySha256: String? = nil,
         secureStorageProvider: SecureStorageProvider
     ) {
         self.verificationId = verificationId
@@ -56,6 +60,8 @@ public struct SelfSdkConfig {
         self.chainID = chainID
         self.userDefinedData = userDefinedData
         self.selfDefinedData = selfDefinedData
+        self.remoteWebAppBaseURL = remoteWebAppBaseURL
+        self.remoteWebAppIntegritySha256 = remoteWebAppIntegritySha256
         self.secureStorageProvider = secureStorageProvider
     }
 

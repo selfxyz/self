@@ -15,15 +15,15 @@
 
 ## Why Offer a KMP Option
 
-| Dimension | KMP SDK | Native Shells Lite |
-|-----------|---------|-------------------|
-| Target consumer | Apps using Kotlin Multiplatform | Pure Kotlin (Android) / pure Swift (iOS) apps |
-| Provider pattern | Built-in via `SdkProviderRegistry` (both platforms) | NSL-04 adds it (~500-700 LOC) |
-| Test coverage | ~10 test files | Zero tests (pending) |
-| Publishing setup | `maven-publish` configured | None yet |
-| Result types | Strongly-typed `VerificationResult` + `SelfSdkError` | Raw JSON string |
-| Config model | Separated `SelfSdkConfig` + `VerificationRequest` | Flat config with 15+ params |
-| Extra handlers | NFC, camera, biometrics available (not registered by default) | 3 domains only |
+| Dimension        | KMP SDK                                                       | Native Shells Lite                            |
+| ---------------- | ------------------------------------------------------------- | --------------------------------------------- |
+| Target consumer  | Apps using Kotlin Multiplatform                               | Pure Kotlin (Android) / pure Swift (iOS) apps |
+| Provider pattern | Built-in via `SdkProviderRegistry` (both platforms)           | NSL-04 adds it (~500-700 LOC)                 |
+| Test coverage    | ~10 test files                                                | Zero tests (pending)                          |
+| Publishing setup | `maven-publish` configured                                    | None yet                                      |
+| Result types     | Strongly-typed `VerificationResult` + `SelfSdkError`          | Raw JSON string                               |
+| Config model     | Separated `SelfSdkConfig` + `VerificationRequest`             | Flat config with 15+ params                   |
+| Extra handlers   | NFC, camera, biometrics available (not registered by default) | 3 domains only                                |
 
 Both options are valid. KMP has more infrastructure already built; native-shells-lite is simpler for non-KMP consumers.
 
@@ -54,19 +54,19 @@ Both options are valid. KMP has more infrastructure already built; native-shells
 
 ## Dependencies
 
-| Depends On | Type | Status | Notes |
-|---|---|---|---|
-| `packages/webview-bridge/` | Upstream (bridge protocol) | Done | Defines message shapes and transport names |
-| `packages/webview-app/` | Upstream (WebView bundle) | Active | KMP loads this bundle |
-| Build pipeline (BP-01) | Downstream | Done | Copies webview-app dist into native assets |
+| Depends On                 | Type                       | Status | Notes                                      |
+| -------------------------- | -------------------------- | ------ | ------------------------------------------ |
+| `packages/webview-bridge/` | Upstream (bridge protocol) | Done   | Defines message shapes and transport names |
+| `packages/webview-app/`    | Upstream (WebView bundle)  | Active | KMP loads this bundle                      |
+| Build pipeline (BP-01)     | Downstream                 | Done   | Copies webview-app dist into native assets |
 
 ## Backlog
 
-| ID | Title | Status | Priority | Depends On | Plan | Est. LOC |
-|---|---|---|---|---|---|---|
-| KR-01 | Scope KMP Android to 3-domain parity with provider delegation | Ready | High | - | [plans/KR-01-android-parity.md](./plans/KR-01-android-parity.md) | ~600-900 |
-| KR-02 | Scope KMP iOS to 3-domain native shell parity | Ready | High | - | [plans/KR-02-ios-parity.md](./plans/KR-02-ios-parity.md) | ~200-300 |
-| KR-03 | Validate build artifacts and test app | Ready | Medium | KR-01, KR-02 | [plans/KR-03-validate-and-publish.md](./plans/KR-03-validate-and-publish.md) | ~200 |
+| ID    | Title                                                         | Status | Priority | Depends On   | Plan                                                                         | Est. LOC |
+| ----- | ------------------------------------------------------------- | ------ | -------- | ------------ | ---------------------------------------------------------------------------- | -------- |
+| KR-01 | Scope KMP Android to 3-domain parity with provider delegation | Ready  | High     | -            | [plans/KR-01-android-parity.md](./plans/KR-01-android-parity.md)             | ~600-900 |
+| KR-02 | Scope KMP iOS to 3-domain native shell parity                 | Ready  | High     | -            | [plans/KR-02-ios-parity.md](./plans/KR-02-ios-parity.md)                     | ~200-300 |
+| KR-03 | Validate build artifacts and test app                         | Ready  | Medium   | KR-01, KR-02 | [plans/KR-03-validate-and-publish.md](./plans/KR-03-validate-and-publish.md) | ~200     |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -84,16 +84,16 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Reference Implementations
 
-| What | Source | Notes |
-|---|---|---|
-| Bridge protocol (message shapes) | `packages/webview-bridge/src/types.ts` | Canonical — native must match |
-| Storage adapter expectations | `packages/webview-bridge/src/adapters/storage.ts:15-18` | `get()` returns `{ value: string \| null }` |
-| Crypto adapter expectations | `packages/webview-bridge/src/adapters/crypto.ts` | Defines request params and response shapes |
-| CryptoHandler (Android ref) | `packages/native-shell-android/.../handlers/CryptoHandler.kt` | Reference for default `AndroidKeystoreCryptoProvider` — uses AndroidKeyStore, secp256r1, SHA256withECDSA |
-| SecureStorageHandler (Android ref) | `packages/native-shell-android/.../handlers/SecureStorageHandler.kt` | Reference for provider-delegated handler — wraps `get()` in `{ value: ... }` |
-| WebChromeClient | `packages/native-shell-android/.../webview/AndroidWebViewHost.kt:109-173` | Port permission + file upload handling |
-| iOS provider registry | `packages/kmp-sdk/.../iosMain/.../providers/SdkProviderRegistry.kt` | Current iOS-only registry — move to commonMain |
-| iOS CryptoBridgeHandler | `packages/kmp-sdk/.../iosMain/.../handlers/CryptoBridgeHandler.kt` | Provider-delegated crypto — reuse pattern for both platforms |
+| What                               | Source                                                                    | Notes                                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Bridge protocol (message shapes)   | `packages/webview-bridge/src/types.ts`                                    | Canonical — native must match                                                                            |
+| Storage adapter expectations       | `packages/webview-bridge/src/adapters/storage.ts:15-18`                   | `get()` returns `{ value: string \| null }`                                                              |
+| Crypto adapter expectations        | `packages/webview-bridge/src/adapters/crypto.ts`                          | Defines request params and response shapes                                                               |
+| CryptoHandler (Android ref)        | `packages/native-shell-android/.../handlers/CryptoHandler.kt`             | Reference for default `AndroidKeystoreCryptoProvider` — uses AndroidKeyStore, secp256r1, SHA256withECDSA |
+| SecureStorageHandler (Android ref) | `packages/native-shell-android/.../handlers/SecureStorageHandler.kt`      | Reference for provider-delegated handler — wraps `get()` in `{ value: ... }`                             |
+| WebChromeClient                    | `packages/native-shell-android/.../webview/AndroidWebViewHost.kt:109-173` | Port permission + file upload handling                                                                   |
+| iOS provider registry              | `packages/kmp-sdk/.../iosMain/.../providers/SdkProviderRegistry.kt`       | Current iOS-only registry — move to commonMain                                                           |
+| iOS CryptoBridgeHandler            | `packages/kmp-sdk/.../iosMain/.../handlers/CryptoBridgeHandler.kt`        | Provider-delegated crypto — reuse pattern for both platforms                                             |
 
 ## Bridge Domain Contract
 
@@ -101,35 +101,35 @@ Only 3 domains are registered by the scoped KMP:
 
 ### `secureStorage`
 
-| Method | Params | Response |
-|---|---|---|
-| `get` | `{ key: string }` | `{ value: string \| null }` |
-| `set` | `{ key: string, value: string }` | `null` |
-| `remove` | `{ key: string }` | `null` |
+| Method   | Params                           | Response                    |
+| -------- | -------------------------------- | --------------------------- |
+| `get`    | `{ key: string }`                | `{ value: string \| null }` |
+| `set`    | `{ key: string, value: string }` | `null`                      |
+| `remove` | `{ key: string }`                | `null`                      |
 
 ### `crypto`
 
-| Method | Params | Response |
-|---|---|---|
-| `generateKey` | `{ keyRef: string }` | `{ keyRef: string, success: true }` |
-| `getPublicKey` | `{ keyRef: string }` | `{ publicKey: string }` (base64) |
-| `sign` | `{ data: string, keyRef: string }` (data is base64) | `{ signature: string }` (base64) |
+| Method         | Params                                              | Response                            |
+| -------------- | --------------------------------------------------- | ----------------------------------- |
+| `generateKey`  | `{ keyRef: string }`                                | `{ keyRef: string, success: true }` |
+| `getPublicKey` | `{ keyRef: string }`                                | `{ publicKey: string }` (base64)    |
+| `sign`         | `{ data: string, keyRef: string }` (data is base64) | `{ signature: string }` (base64)    |
 
 ### `lifecycle`
 
-| Method | Params | Response |
-|---|---|---|
-| `ready` | `{}` | `null` (no-op) |
-| `dismiss` | `{ reason?: string }` | `null` (finishes Activity / dismisses VC) |
-| `setResult` | `{ success: bool, userId?, verificationId?, error? }` | `null` (forwards to host, then finishes) |
+| Method      | Params                                                | Response                                  |
+| ----------- | ----------------------------------------------------- | ----------------------------------------- |
+| `ready`     | `{}`                                                  | `null` (no-op)                            |
+| `dismiss`   | `{ reason?: string }`                                 | `null` (finishes Activity / dismisses VC) |
+| `setResult` | `{ success: bool, userId?, verificationId?, error? }` | `null` (forwards to host, then finishes)  |
 
 Any other domain request returns a `DOMAIN_NOT_FOUND` error response.
 
 ## Related Specs
 
-| Spec | Relationship |
-|---|---|
-| [SDK Overview](../../OVERVIEW.md) | Parent architecture |
-| [Native Shells Lite](../native-shells-lite/SPEC.md) | Sibling — serves non-KMP consumers |
-| [Paused Native Shells (KMP)](../../paused/native-shells/SPEC.md) | Historical KMP work — validated foundation |
-| [Build Pipeline](../build-pipeline/SPEC.md) | Downstream — bundles webview-app into native assets |
+| Spec                                                             | Relationship                                        |
+| ---------------------------------------------------------------- | --------------------------------------------------- |
+| [SDK Overview](../../OVERVIEW.md)                                | Parent architecture                                 |
+| [Native Shells Lite](../native-shells-lite/SPEC.md)              | Sibling — serves non-KMP consumers                  |
+| [Paused Native Shells (KMP)](../../paused/native-shells/SPEC.md) | Historical KMP work — validated foundation          |
+| [Build Pipeline](../build-pipeline/SPEC.md)                      | Downstream — bundles webview-app into native assets |

@@ -115,20 +115,20 @@ See [KMP Revival Spec](./workstreams/kmp-revival/SPEC.md) for details.
 
 ## Module Table
 
-| Module               | Location                                                          | Status     | Current Role                                                              | Action Needed                               |
-| -------------------- | ----------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------- | ------------------------------------------- |
-| WebView UI           | `packages/webview-app/`                                           | Active     | Primary product surface, route orchestration, mock-first screen migration | Finish remaining UI migration specs/routes  |
-| SDK Core             | `packages/mobile-sdk-alpha/`                                      | Active     | Shared engine for WebView/browser delivery                                | Keep browser entry clean and request-driven |
-| WebView Bridge       | `packages/webview-bridge/`                                        | Active     | Host callback surface for future lifecycle wiring                         | Stable for current UI pass                  |
-| Android Shell        | `packages/native-shell-android/`                                  | Deferred   | Future thin Kotlin shell: keychain/crypto + WebView host                  | Not required for current UI migration       |
-| iOS Shell            | `packages/native-shell-ios/`                                      | Deferred   | Future thin Swift shell: keychain/crypto + WebView host                   | Not required for current UI migration       |
-| Test App             | `packages/sdk-test-app/`                                          | Deferred   | Future native E2E harness                                                 | Not required for current UI migration       |
-| KMP Native Shell     | `packages/kmp-sdk/`                                               | Active     | Native shell for KMP consumers — 3-domain scope (secureStorage, crypto, lifecycle) | KR-01 (Android), KR-02 (iOS), KR-03 (validate) |
-| Swift Providers      | `packages/self-sdk-swift/`                                        | Active     | iOS keychain/crypto provider implementations for KMP SDK                  | Required by KR-02 (query param support)     |
-| RN SDK               | `packages/rn-sdk/`                                                | Paused     | Retained React Native shell work                                          | Do not advance unless scope reopens         |
-| Native Consolidation | `app/ios/`, `packages/mobile-sdk-alpha/ios/`, related native code | Paused     | Historical native cleanup and parity track                                | Keep as reference only for now              |
-| KMP Test App         | `packages/kmp-sdk-test-app/`                                      | Active     | E2E test harness for KMP SDK                                              | Scope to 3-domain in KR-03                  |
-| MiniPay Sample       | `packages/kmp-minipay-sample/`                                    | Paused     | Historical KMP integration example                                        | May resume now that KMP path is active      |
+| Module               | Location                                                          | Status   | Current Role                                                                       | Action Needed                                  |
+| -------------------- | ----------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------- | ---------------------------------------------- |
+| WebView UI           | `packages/webview-app/`                                           | Active   | Primary product surface, route orchestration, mock-first screen migration          | Finish remaining UI migration specs/routes     |
+| SDK Core             | `packages/mobile-sdk-alpha/`                                      | Active   | Shared engine for WebView/browser delivery                                         | Keep browser entry clean and request-driven    |
+| WebView Bridge       | `packages/webview-bridge/`                                        | Active   | Host callback surface for future lifecycle wiring                                  | Stable for current UI pass                     |
+| Android Shell        | `packages/native-shell-android/`                                  | Deferred | Future thin Kotlin shell: keychain/crypto + WebView host                           | Not required for current UI migration          |
+| iOS Shell            | `packages/native-shell-ios/`                                      | Deferred | Future thin Swift shell: keychain/crypto + WebView host                            | Not required for current UI migration          |
+| Test App             | `packages/sdk-test-app/`                                          | Deferred | Future native E2E harness                                                          | Not required for current UI migration          |
+| KMP Native Shell     | `packages/kmp-sdk/`                                               | Active   | Native shell for KMP consumers — 3-domain scope (secureStorage, crypto, lifecycle) | KR-01 (Android), KR-02 (iOS), KR-03 (validate) |
+| Swift Providers      | `packages/self-sdk-swift/`                                        | Active   | iOS keychain/crypto provider implementations for KMP SDK                           | Required by KR-02 (query param support)        |
+| RN SDK               | `packages/rn-sdk/`                                                | Paused   | Retained React Native shell work                                                   | Do not advance unless scope reopens            |
+| Native Consolidation | `app/ios/`, `packages/mobile-sdk-alpha/ios/`, related native code | Paused   | Historical native cleanup and parity track                                         | Keep as reference only for now                 |
+| KMP Test App         | `packages/kmp-sdk-test-app/`                                      | Active   | E2E test harness for KMP SDK                                                       | Scope to 3-domain in KR-03                     |
+| MiniPay Sample       | `packages/kmp-minipay-sample/`                                    | Paused   | Historical KMP integration example                                                 | May resume now that KMP path is active         |
 
 ## Scope Rules
 

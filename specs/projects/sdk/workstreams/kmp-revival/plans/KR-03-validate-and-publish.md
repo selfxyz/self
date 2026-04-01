@@ -69,6 +69,7 @@ ls -la shared/build/XCFrameworks/
 The test app currently exercises all KMP handlers including NFC and camera. Update it to only use the 3-domain scope.
 
 **Android (`packages/kmp-sdk-test-app/androidApp/`):**
+
 - Remove NFC and Camera permission requests from AndroidManifest.xml (if present)
 - The app should rely on default providers (Activity auto-initializes `EncryptedSharedPreferencesProvider` and `AndroidKeystoreCryptoProvider` if not set). Alternatively, demonstrate explicit provider registration before launch:
   ```kotlin
@@ -80,6 +81,7 @@ The test app currently exercises all KMP handlers including NFC and camera. Upda
 - Verify secure storage operations work (get, set, remove)
 
 **iOS (`packages/kmp-sdk-test-app/iosApp/`):**
+
 - Register only required providers: `secureStorage`, `crypto`, `webView`
 - Remove registration of NFC, Camera, Biometric, Haptic, Documents providers
 - Verify the app launches the SDK, loads the WebView, and handles lifecycle callbacks
@@ -103,18 +105,18 @@ Update the module table (around line 110) to reflect KMP revival:
 
 **Already done** — OVERVIEW.md module table was updated as part of the spec review on 2026-04-01. Verify it still reflects:
 
-| Module | Status | Notes |
-|--------|--------|-------|
-| KMP Native Shell (`packages/kmp-sdk/`) | Active (3-domain scope) | Serves KMP consumers, provider delegation on both platforms |
-| Swift Providers (`packages/self-sdk-swift/`) | Active | iOS providers for KMP |
-| KMP Test App (`packages/kmp-sdk-test-app/`) | Active | E2E harness |
+| Module                                       | Status                  | Notes                                                       |
+| -------------------------------------------- | ----------------------- | ----------------------------------------------------------- |
+| KMP Native Shell (`packages/kmp-sdk/`)       | Active (3-domain scope) | Serves KMP consumers, provider delegation on both platforms |
+| Swift Providers (`packages/self-sdk-swift/`) | Active                  | iOS providers for KMP                                       |
+| KMP Test App (`packages/kmp-sdk-test-app/`)  | Active                  | E2E harness                                                 |
 
 ### Files Modified
 
-| File | Change |
-|------|--------|
+| File                                          | Change                               |
+| --------------------------------------------- | ------------------------------------ |
 | `packages/kmp-sdk-test-app/` (multiple files) | Scope to 3-domain handlers/providers |
-| `specs/projects/sdk/OVERVIEW.md` | Update module table with KMP status |
+| `specs/projects/sdk/OVERVIEW.md`              | Update module table with KMP status  |
 
 ### Files NOT Modified
 

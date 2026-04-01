@@ -15,6 +15,7 @@ import type { KycProviderResult } from '../../types/kycProvider';
 import { buildKycDocument } from '../../utils/buildKycDocument';
 import { waitForAttestation } from '../../utils/diditAttestation';
 import { createDiditSession, launchDiditWebSdk } from '../../utils/diditProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const CONTAINER_ID = 'didit-sdk-container';
 
@@ -293,7 +294,7 @@ export const ProviderLaunchScreen: React.FC = () => {
     >
       {phase === 'waiting' && (
         <KycPendingScreen
-          insets={{ top: 0, bottom: 0 }}
+          {...WEB_SAFE_AREA}
           onCheckBackLater={handleBack}
           onReceiveLiveUpdates={() => {
             // TODO: wire up push notifications

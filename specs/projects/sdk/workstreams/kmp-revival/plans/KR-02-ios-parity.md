@@ -41,6 +41,7 @@ You are scoping KMP iOS to 3-domain parity with native-shell-ios.
 **Required:** The TypeScript adapter at `webview-bridge/src/adapters/storage.ts:16` does `result?.value ?? null` — expects `{ value: string | null }`.
 
 **Change:**
+
 ```kotlin
 // Before (line 44)
 return if (value != null) JsonPrimitive(value) else JsonNull
@@ -64,12 +65,14 @@ Add import: `import kotlinx.serialization.json.buildJsonObject`
 **Current:** `createWebView(onMessageReceived:isDebugMode:)` loads `Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "self-sdk-web")` without appending query params.
 
 **Required:** native-shell-ios passes verification config as query params via `URLComponents`:
+
 ```swift
 var components = URLComponents(url: fileURL, resolvingAgainstBaseURL: false)
 components?.query = queryParams
 ```
 
 **Change the method signature:**
+
 ```swift
 // Before
 @objc(createWebViewOnMessageReceived:isDebugMode:)
@@ -84,6 +87,7 @@ public func createWebView(onMessageReceived: @escaping (String) -> Void,
 ```
 
 **Update the URL loading logic** to append query params when provided:
+
 ```swift
 if let htmlURL = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "self-sdk-web") {
     var targetURL = htmlURL
@@ -105,6 +109,7 @@ Apply the same pattern to the debug URL (`http://localhost:5173`).
 **Current (lines 18-29):** `createWebView()` calls `provider.createWebView(onMessageReceived, isDebugMode)` with no query params.
 
 **Update `WebViewProvider` interface** (in `iosMain/kotlin/xyz/self/sdk/providers/WebViewProvider.kt` or wherever it's defined) to add the query param:
+
 ```kotlin
 interface WebViewProvider {
     fun createWebView(
@@ -116,6 +121,7 @@ interface WebViewProvider {
 ```
 
 **Update `IosWebViewHost`** to forward query params from the `VerificationRequest`:
+
 ```kotlin
 fun createWebView(queryParams: String? = null): UIView {
     val provider = SdkProviderRegistry.webView
@@ -133,6 +139,7 @@ fun createWebView(queryParams: String? = null): UIView {
 **File:** `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/api/SelfSdk.ios.kt`
 
 **Current (lines 145-158) registers 9 handlers:**
+
 ```kotlin
 router.register(BiometricBridgeHandler())
 router.register(SecureStorageBridgeHandler())
@@ -146,6 +153,7 @@ router.register(NfcBridgeHandler(router))
 ```
 
 **Change to 3 handlers:**
+
 ```kotlin
 router.register(SecureStorageBridgeHandler())
 router.register(CryptoBridgeHandler())  // now from commonMain after KR-01
@@ -171,13 +179,13 @@ Reference the native-shell-ios `SelfSdkConfig.toQueryParams()` pattern for the f
 
 ### Files Modified
 
-| File | Change |
-|------|--------|
-| `shared/src/iosMain/.../handlers/SecureStorageBridgeHandler.kt` | Fix `get()` response shape to `{ value: ... }` |
-| `packages/self-sdk-swift/.../WebViewProviderImpl.swift` | Add `queryParams` parameter, append to URL |
-| `shared/src/iosMain/.../webview/IosWebViewHost.kt` | Forward query params to provider |
-| `shared/src/iosMain/.../providers/WebViewProvider.kt` | Add `queryParams` to interface |
-| `shared/src/iosMain/.../api/SelfSdk.ios.kt` | Register only 3 handlers, build and pass query params |
+| File                                                            | Change                                                |
+| --------------------------------------------------------------- | ----------------------------------------------------- |
+| `shared/src/iosMain/.../handlers/SecureStorageBridgeHandler.kt` | Fix `get()` response shape to `{ value: ... }`        |
+| `packages/self-sdk-swift/.../WebViewProviderImpl.swift`         | Add `queryParams` parameter, append to URL            |
+| `shared/src/iosMain/.../webview/IosWebViewHost.kt`              | Forward query params to provider                      |
+| `shared/src/iosMain/.../providers/WebViewProvider.kt`           | Add `queryParams` to interface                        |
+| `shared/src/iosMain/.../api/SelfSdk.ios.kt`                     | Register only 3 handlers, build and pass query params |
 
 ### Files NOT Modified
 

@@ -22,6 +22,11 @@ let package = Package(
             resources: [
                 .copy("Resources/self-sdk-web")
             ]
+        ),
+        .testTarget(
+            name: "SelfNativeShellTests",
+            dependencies: ["SelfNativeShell"],
+            path: "Tests/SelfNativeShellTests"
         )
     ]
 )

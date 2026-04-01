@@ -5,7 +5,12 @@
 import type { DocumentCategory, IDDocument } from '@selfxyz/common';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 
-import { markCurrentDocumentAsRegistered, reStorePassportDataWithRightCSCA } from '../documents/utils';
+import {
+  markCurrentDocumentAsRegistered,
+  reStorePassportDataWithRightCSCA,
+  storePassportData,
+  updateDocumentRegistrationState,
+} from '../documents/utils';
 import { getCommitmentTree } from '../stores';
 import type { SelfClient } from '../types/public';
 
@@ -28,11 +33,26 @@ export async function finalizeRecoveredDocumentRegistration(
   document: IDDocument,
   csca?: string,
 ): Promise<void> {
-  if (csca) {
-    await reStorePassportDataWithRightCSCA(selfClient, document, csca);
-  }
+  const originalDocument = structuredClone(document);
+  const selectedDocumentId = (await selfClient.loadDocumentCatalog()).selectedDocumentId;
 
-  await markCurrentDocumentAsRegistered(selfClient);
+  try {
+    if (csca) {
+      await reStorePassportDataWithRightCSCA(selfClient, document, csca);
+    }
+
+    await markCurrentDocumentAsRegistered(selfClient);
+  } catch (error) {
+    if (csca) {
+      await storePassportData(selfClient, originalDocument);
+    }
+
+    if (selectedDocumentId) {
+      await updateDocumentRegistrationState(selfClient, selectedDocumentId, false);
+    }
+
+    throw error;
+  }
 }
 
 export async function validateRecoverySecretForDocument(
