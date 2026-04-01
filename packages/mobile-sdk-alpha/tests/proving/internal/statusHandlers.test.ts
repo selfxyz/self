@@ -89,6 +89,34 @@ describe('handleStatusCode', () => {
     });
   });
 
+  describe('registered commitment (status 5 + REGISTERED_COMMITMENT)', () => {
+    it('routes to PROVE_ALREADY_REGISTERED', () => {
+      const data: StatusMessage = {
+        status: 5,
+        error_code: 'REGISTERED_COMMITMENT',
+      };
+
+      const result = handleStatusCode(data, 'register');
+
+      expect(result.shouldDisconnect).toBe(true);
+      expect(result.actorEvent).toEqual({ type: 'PROVE_ALREADY_REGISTERED' });
+      expect(result.stateUpdate).toBeUndefined();
+    });
+
+    it('still returns PROVE_FAILURE for status 5 with other error_code', () => {
+      const data: StatusMessage = {
+        status: 5,
+        error_code: 'SOME_OTHER_ERROR',
+      };
+
+      const result = handleStatusCode(data, 'register');
+
+      expect(result.shouldDisconnect).toBe(true);
+      expect(result.actorEvent).toEqual({ type: 'PROVE_FAILURE' });
+      expect(result.stateUpdate?.error_code).toBe('SOME_OTHER_ERROR');
+    });
+  });
+
   describe('success status (4)', () => {
     it('handles success for register circuit', () => {
       const data: StatusMessage = { status: 4 };

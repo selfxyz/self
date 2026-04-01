@@ -319,6 +319,7 @@ const provingMachine = createMachine({
         PROVE_SUCCESS: 'post_proving',
         PROVE_ERROR: 'error',
         PROVE_FAILURE: 'failure',
+        PROVE_ALREADY_REGISTERED: 'account_recovery_choice',
       },
     },
     post_proving: {
