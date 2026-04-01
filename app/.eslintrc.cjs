@@ -27,6 +27,7 @@ module.exports = {
     'android/',
     'deployments/',
     'node_modules/',
+    'vendor/',
     'web/dist/',
     '.tamagui/*',
     '*.js.map',
