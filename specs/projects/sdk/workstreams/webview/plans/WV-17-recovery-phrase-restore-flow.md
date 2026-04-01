@@ -1,7 +1,7 @@
 # WV-17: Recovery Phrase Restore Flow for WebView and Tunnel
 
 > Last updated: 2026-04-01
-> Status: Ready
+> Status: In Progress
 > Priority: High
 > Depends on: WV-07 (Done), WV-08 (Ready)
 

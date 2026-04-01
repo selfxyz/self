@@ -46,6 +46,7 @@ import { SimpleDialogueScreen } from './screens/proving/SimpleDialogueScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
 import { BackupMethodPickerScreen } from './screens/recovery/BackupMethodPickerScreen';
 import { LaunchRecoveryScreen } from './screens/recovery/LaunchRecoveryScreen';
+import { RecoveryFailureScreen } from './screens/recovery/RecoveryFailureScreen';
 import { RecoveryPhraseScreen } from './screens/recovery/RecoveryPhraseScreen';
 import { RecoverySuccessScreen } from './screens/recovery/RecoverySuccessScreen';
 import { SecretPhraseInputScreen } from './screens/recovery/SecretPhraseInputScreen';
@@ -88,6 +89,7 @@ export const App: React.FC = () => (
             <Route path="/settings/recovery-phrase" element={<RecoveryPhraseScreen />} />
             <Route path="/recovery" element={<LaunchRecoveryScreen />} />
             <Route path="/recovery/phrase-input" element={<SecretPhraseInputScreen />} />
+            <Route path="/recovery/failure" element={<RecoveryFailureScreen />} />
             <Route path="/recovery/success" element={<RecoverySuccessScreen />} />
             <Route path="/onboarding/backup" element={<SocialSignOnMethodPickerScreen />} />
             <Route path="/onboarding/signin" element={<SocialSignOnPickerScreen />} />
