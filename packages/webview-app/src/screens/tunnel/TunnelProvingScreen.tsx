@@ -109,13 +109,13 @@ export const TunnelProvingScreen: React.FC = () => {
       setPhase('register');
       analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'dsc' });
       void Promise.resolve(init(client, 'register', true))
+        .then(() => {
+          setInitDone(true);
+        })
         .catch(err => {
           const message = err instanceof Error ? err.message : 'Register init failed';
           analytics.trackEvent('tunnel_proving_init_failed', { error: message, phase: 'register' });
           navigateToError(message);
-        })
-        .finally(() => {
-          setInitDone(true);
         });
     } else if (currentState === 'completed' && phase === 'register') {
       analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'register' });

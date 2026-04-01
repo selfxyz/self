@@ -97,7 +97,7 @@ export function restoreSecretFromMnemonic(
       await storage.set(MNEMONIC_KEY, mnemonic);
       await storage.set(PRIVATE_KEY_KEY, secret);
     } catch (error) {
-      await writeSnapshot(storage, previousSnapshot);
+      await restoreSnapshotBestEffort(storage, previousSnapshot, 'secret restore from mnemonic');
       throw error;
     }
 
@@ -115,22 +115,53 @@ export function restoreStoredSecretSnapshot(
     try {
       await writeSnapshot(storage, snapshot);
     } catch (error) {
-      await writeSnapshot(storage, previousSnapshot);
+      await restoreSnapshotBestEffort(storage, previousSnapshot, 'secret snapshot restore');
       throw error;
     }
   });
 }
 
-async function writeSnapshot(storage: BridgeStorageAdapter, snapshot: StoredSecretSnapshot): Promise<void> {
-  if (snapshot.mnemonic === null) {
-    await storage.remove(MNEMONIC_KEY);
-  } else {
-    await storage.set(MNEMONIC_KEY, snapshot.mnemonic);
+async function restoreSnapshotBestEffort(
+  storage: BridgeStorageAdapter,
+  snapshot: StoredSecretSnapshot,
+  context: string,
+): Promise<void> {
+  const rollbackFailures: Error[] = [];
+
+  try {
+    await writeMnemonic(storage, snapshot.mnemonic);
+  } catch (rollbackError) {
+    rollbackFailures.push(rollbackError instanceof Error ? rollbackError : new Error(String(rollbackError)));
   }
 
-  if (snapshot.secret === null) {
+  try {
+    await writeSecret(storage, snapshot.secret);
+  } catch (rollbackError) {
+    rollbackFailures.push(rollbackError instanceof Error ? rollbackError : new Error(String(rollbackError)));
+  }
+
+  if (rollbackFailures.length > 0) {
+    console.error(`Rollback failed during ${context}:`, rollbackFailures);
+  }
+}
+
+async function writeSnapshot(storage: BridgeStorageAdapter, snapshot: StoredSecretSnapshot): Promise<void> {
+  await writeMnemonic(storage, snapshot.mnemonic);
+  await writeSecret(storage, snapshot.secret);
+}
+
+async function writeMnemonic(storage: BridgeStorageAdapter, mnemonic: string | null): Promise<void> {
+  if (mnemonic === null) {
+    await storage.remove(MNEMONIC_KEY);
+  } else {
+    await storage.set(MNEMONIC_KEY, mnemonic);
+  }
+}
+
+async function writeSecret(storage: BridgeStorageAdapter, secret: string | null): Promise<void> {
+  if (secret === null) {
     await storage.remove(PRIVATE_KEY_KEY);
   } else {
-    await storage.set(PRIVATE_KEY_KEY, snapshot.secret);
+    await storage.set(PRIVATE_KEY_KEY, secret);
   }
 }

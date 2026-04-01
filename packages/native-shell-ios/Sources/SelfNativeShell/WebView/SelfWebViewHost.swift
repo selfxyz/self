@@ -106,17 +106,17 @@ final class SelfWebViewHost: NSObject {
 
         Task.detached { [weak self] in
             guard let self else { return }
-            guard await self.verifyRemoteEntry(url: remoteURL, expectedSha256: expectedSha256) else {
+            guard let verifiedHTML = await self.fetchAndVerifyRemoteEntry(url: remoteURL, expectedSha256: expectedSha256) else {
                 return
             }
 
             await MainActor.run {
-                self.webView?.load(URLRequest(url: remoteURL))
+                self.webView?.loadHTMLString(verifiedHTML, baseURL: remoteURL)
             }
         }
     }
 
-    private func verifyRemoteEntry(url: URL, expectedSha256: String) async -> Bool {
+    private func fetchAndVerifyRemoteEntry(url: URL, expectedSha256: String) async -> String? {
         do {
             let configuration = URLSessionConfiguration.ephemeral
             configuration.timeoutIntervalForRequest = 5
@@ -124,17 +124,20 @@ final class SelfWebViewHost: NSObject {
             let session = URLSession(configuration: configuration)
             let (data, response) = try await session.data(from: url)
             guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                return false
+                return nil
             }
             guard RemoteContentIntegrity.isAcceptableMimeType(response.mimeType) else {
-                return false
+                return nil
             }
 
             let digest = SHA256.hash(data: data)
             let actualHash = digest.map { String(format: "%02x", $0) }.joined()
-            return actualHash == normalizeSha256(expectedSha256)
+            guard actualHash == normalizeSha256(expectedSha256) else {
+                return nil
+            }
+            return String(data: data, encoding: .utf8)
         } catch {
-            return false
+            return nil
         }
     }
 

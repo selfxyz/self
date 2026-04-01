@@ -34,11 +34,14 @@ class AndroidWebViewHost(
     private val remoteWebAppIntegritySha256: String? = null,
 ) {
     private lateinit var webView: WebView
+    @Volatile
+    private var isDestroyed = false
     var fileUploadCallback: ValueCallback<Array<Uri>>? = null
     var pendingPermissionRequest: PermissionRequest? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     fun createWebView(queryParams: String): WebView {
+        isDestroyed = false
         val selfWalletHandler = WebViewAssetLoader.PathHandler { rawPath ->
             try {
                 val normalizedPath = rawPath.removePrefix("/")
@@ -104,10 +107,10 @@ class AndroidWebViewHost(
                             view: WebView?,
                             request: WebResourceRequest?,
                         ): Boolean {
-                            val url = request?.url?.toString() ?: return true
-                            if (url.startsWith(BUNDLED_ORIGIN)) return false
-                            if (isDebugMode && url.startsWith(DEBUG_ORIGIN)) return false
-                            if (isAllowedRemoteOrigin(url)) return false
+                            val url = request?.url ?: return true
+                            if (isBundledOrigin(url)) return false
+                            if (isDebugMode && isDebugOrigin(url)) return false
+                            if (isAllowedRemoteOrigin(url.toString())) return false
                             return true
                         }
 
@@ -125,12 +128,13 @@ class AndroidWebViewHost(
                         override fun onPermissionRequest(request: PermissionRequest?) {
                             request ?: return
 
-                            val origin = request.origin?.toString() ?: ""
+                            val originStr = request.origin?.toString() ?: ""
+                            val originUri = Uri.parse(originStr)
                             val isTrusted =
-                                origin.startsWith(BUNDLED_ORIGIN) ||
-                                    (isDebugMode && origin.startsWith(DEBUG_ORIGIN)) ||
-                                    origin.startsWith("https://verify.didit.me") ||
-                                    isAllowedRemoteOrigin(origin)
+                                isBundledOrigin(originUri) ||
+                                    (isDebugMode && isDebugOrigin(originUri)) ||
+                                    isMatchingOrigin(originUri, "https", "verify.didit.me", 443) ||
+                                    isAllowedRemoteOrigin(originStr)
                             if (!isTrusted) {
                                 request.deny()
                                 return
@@ -212,6 +216,7 @@ class AndroidWebViewHost(
 
     fun destroy() {
         if (!::webView.isInitialized) return
+        isDestroyed = true
         webView.destroy()
     }
 
@@ -234,20 +239,26 @@ class AndroidWebViewHost(
         val expectedSha256 = remoteWebAppIntegritySha256?.takeIf { it.isNotBlank() } ?: return
 
         Thread {
-            val isVerified = verifyRemoteEntry(remoteUrl, expectedSha256)
-            if (!isVerified || !::webView.isInitialized) {
+            val verifiedHtml = fetchAndVerifyRemoteEntry(remoteUrl, expectedSha256)
+            if (verifiedHtml == null || !::webView.isInitialized || isDestroyed) {
                 return@Thread
             }
 
             webView.post {
-                if (::webView.isInitialized) {
-                    webView.loadUrl(remoteUrl)
+                if (::webView.isInitialized && !isDestroyed) {
+                    webView.loadDataWithBaseURL(
+                        remoteUrl,
+                        verifiedHtml,
+                        "text/html",
+                        "UTF-8",
+                        null,
+                    )
                 }
             }
         }.start()
     }
 
-    private fun verifyRemoteEntry(remoteUrl: String, expectedSha256: String): Boolean {
+    private fun fetchAndVerifyRemoteEntry(remoteUrl: String, expectedSha256: String): String? {
         return try {
             val connection = URL(remoteUrl).openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
@@ -258,17 +269,22 @@ class AndroidWebViewHost(
 
             if (connection.responseCode !in 200..299) {
                 Log.w("WebViewHost", "Remote web app integrity check failed with HTTP ${connection.responseCode}")
-                false
+                null
             } else if (!RemoteContentIntegrity.isAcceptableContentType(connection.contentType)) {
                 Log.w("WebViewHost", "Remote web app integrity check failed due to unexpected content type ${connection.contentType}")
-                false
+                null
             } else {
                 val body = connection.inputStream.use { it.readBytes() }
-                sha256Hex(body) == normalizeSha256(expectedSha256)
+                if (sha256Hex(body) == normalizeSha256(expectedSha256)) {
+                    String(body, Charsets.UTF_8)
+                } else {
+                    Log.w("WebViewHost", "Remote web app integrity check failed: hash mismatch")
+                    null
+                }
             }
         } catch (error: Exception) {
             Log.w("WebViewHost", "Remote web app integrity check failed", error)
-            false
+            null
         }
     }
 
@@ -301,9 +317,18 @@ class AndroidWebViewHost(
         }
     }
 
+    private fun isBundledOrigin(uri: Uri): Boolean =
+        isMatchingOrigin(uri, "https", BUNDLED_HOST, 443)
+
+    private fun isDebugOrigin(uri: Uri): Boolean =
+        isMatchingOrigin(uri, "http", "127.0.0.1", 5173)
+
+    private fun isMatchingOrigin(uri: Uri, scheme: String, host: String, port: Int): Boolean =
+        uri.scheme == scheme && uri.host == host && resolvePort(uri) == port
+
     companion object {
         private const val BUNDLED_HOST = "appassets.androidplatform.net"
-        private const val BUNDLED_ORIGIN = "https://appassets.androidplatform.net"
+        private const val BUNDLED_ORIGIN = "https://$BUNDLED_HOST"
         private const val DEBUG_ORIGIN = "http://127.0.0.1:5173"
 
         const val FILE_CHOOSER_REQUEST_CODE = 1001

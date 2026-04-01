@@ -178,4 +178,16 @@ describe('finalizeRecoveredDocumentRegistration', () => {
     expect(storePassportDataMock).not.toHaveBeenCalled();
     expect(updateDocumentRegistrationStateMock).toHaveBeenCalledWith(expect.anything(), 'doc-1', false);
   });
+
+  it('still clears the registration flag when restoring the original document fails', async () => {
+    storePassportDataMock.mockRejectedValue(new Error('document rollback failed'));
+    markCurrentDocumentAsRegisteredMock.mockRejectedValue(new Error('catalog save failed'));
+
+    await expect(
+      finalizeRecoveredDocumentRegistration(createSelfClient(), documentFixture, 'new-csca'),
+    ).rejects.toThrow('catalog save failed');
+
+    expect(storePassportDataMock).toHaveBeenCalledTimes(1);
+    expect(updateDocumentRegistrationStateMock).toHaveBeenCalledWith(expect.anything(), 'doc-1', false);
+  });
 });

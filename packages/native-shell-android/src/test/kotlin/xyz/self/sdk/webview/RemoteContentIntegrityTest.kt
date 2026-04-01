@@ -86,8 +86,8 @@ class RemoteContentIntegrityTest {
     }
 
     @Test
-    fun `accepts empty content type`() {
-        assertTrue(RemoteContentIntegrity.isAcceptableContentType(""))
+    fun `rejects empty content type`() {
+        assertFalse(RemoteContentIntegrity.isAcceptableContentType(""))
     }
 
     @Test

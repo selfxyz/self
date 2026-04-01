@@ -4,7 +4,7 @@ package xyz.self.sdk.webview
 
 import java.security.MessageDigest
 
-// null/empty contentType is allowed — some CDNs omit Content-Type; the SHA-256 hash is the primary integrity gate.
+// null contentType is allowed — some CDNs omit Content-Type; the SHA-256 hash is the primary integrity gate.
 internal object RemoteContentIntegrity {
     fun normalizeSha256(value: String): String =
         value.lowercase().removePrefix("sha256-").removePrefix("0x")
@@ -16,6 +16,6 @@ internal object RemoteContentIntegrity {
 
     fun isAcceptableContentType(rawContentType: String?): Boolean {
         val normalized = rawContentType?.substringBefore(";")?.trim()?.lowercase()
-        return normalized in setOf("", "text/html", null)
+        return normalized == null || normalized == "text/html"
     }
 }

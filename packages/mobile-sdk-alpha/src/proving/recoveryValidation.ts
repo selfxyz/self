@@ -5,6 +5,7 @@
 import type { DocumentCategory, IDDocument } from '@selfxyz/common';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 
+import { cloneForStorage } from '../adapters/browser/documents';
 import {
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
@@ -33,7 +34,7 @@ export async function finalizeRecoveredDocumentRegistration(
   document: IDDocument,
   csca?: string,
 ): Promise<void> {
-  const originalDocument = structuredClone(document);
+  const originalDocument = cloneForStorage(document);
   const selectedDocumentId = (await selfClient.loadDocumentCatalog()).selectedDocumentId;
 
   try {
@@ -44,11 +45,19 @@ export async function finalizeRecoveredDocumentRegistration(
     await markCurrentDocumentAsRegistered(selfClient);
   } catch (error) {
     if (csca) {
-      await storePassportData(selfClient, originalDocument);
+      try {
+        await storePassportData(selfClient, originalDocument);
+      } catch (rollbackError) {
+        console.error('Rollback failed while restoring the original document during recovery:', rollbackError);
+      }
     }
 
     if (selectedDocumentId) {
-      await updateDocumentRegistrationState(selfClient, selectedDocumentId, false);
+      try {
+        await updateDocumentRegistrationState(selfClient, selectedDocumentId, false);
+      } catch (rollbackError) {
+        console.error('Rollback failed while clearing the registration flag during recovery:', rollbackError);
+      }
     }
 
     throw error;
