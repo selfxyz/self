@@ -66,7 +66,8 @@ vi.mock('../../../src/utils/insets', () => ({
   },
 }));
 
-const VALID_12_MNEMONIC = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+const VALID_12_MNEMONIC =
+  'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
 
 vi.mock('@selfxyz/euclid', () => ({
   Button: ({ text, onPress, disabled }: { text: string; onPress: () => void; disabled?: boolean }) => (
@@ -79,11 +80,7 @@ vi.mock('@selfxyz/euclid', () => ({
   fontWeight: { medium: 500 },
   spacing: { md: 12, mdLg: 16, lg: 20, xl: 24, xlLg: 32, sm: 8 },
   LeftArrowIcon: () => null,
-  SecretPhraseInput: ({
-    onWordChange,
-  }: {
-    onWordChange: (index: number, word: string) => void;
-  }) => {
+  SecretPhraseInput: ({ onWordChange }: { onWordChange: (index: number, word: string) => void }) => {
     useEffect(() => {
       VALID_12_MNEMONIC.split(' ').forEach((w, i) => onWordChange(i, w));
     }, []);
@@ -170,7 +167,10 @@ describe('SecretPhraseInputScreen', () => {
   it('does not navigate after unmount during async validation', async () => {
     let resolveDocument!: (value: unknown) => void;
     loadSelectedDocumentMock.mockImplementation(
-      () => new Promise(resolve => { resolveDocument = resolve; }),
+      () =>
+        new Promise(resolve => {
+          resolveDocument = resolve;
+        }),
     );
 
     const { unmount } = renderScreen();
