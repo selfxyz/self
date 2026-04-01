@@ -70,7 +70,7 @@ const VALID_12_MNEMONIC = 'abandon abandon abandon abandon abandon abandon aband
 
 vi.mock('@selfxyz/euclid', () => ({
   Button: ({ text, onPress, disabled }: { text: string; onPress: () => void; disabled?: boolean }) => (
-    <button onClick={onPress} disabled={disabled} type="button">
+    <button onClick={onPress} disabled={disabled ?? false} type="button">
       {text}
     </button>
   ),
@@ -111,6 +111,13 @@ const renderScreen = (initialEntry = '/recovery/phrase-input') =>
     </MemoryRouter>,
   );
 
+async function fillWordsAndSubmit() {
+  await act(async () => {
+    await new Promise(r => setTimeout(r, 0));
+  });
+  fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+}
+
 describe('SecretPhraseInputScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -132,12 +139,7 @@ describe('SecretPhraseInputScreen', () => {
     loadSelectedDocumentMock.mockResolvedValue(null);
 
     renderScreen();
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /continue/i })).not.toBeDisabled();
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    await fillWordsAndSubmit();
 
     await waitFor(() => {
       expectLocation('/recovery/failure');
@@ -156,12 +158,7 @@ describe('SecretPhraseInputScreen', () => {
     });
 
     renderScreen();
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /continue/i })).not.toBeDisabled();
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    await fillWordsAndSubmit();
 
     await waitFor(() => {
       expectLocation('/tunnel/kyc');
@@ -177,24 +174,15 @@ describe('SecretPhraseInputScreen', () => {
     );
 
     const { unmount } = renderScreen();
+    await fillWordsAndSubmit();
 
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /continue/i })).not.toBeDisabled();
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
-
-    // Unmount while loadSelectedDocument is still pending
     unmount();
 
-    // Now resolve — the navigate guard should prevent navigation
     await act(async () => {
       resolveDocument(null);
       await new Promise(r => setTimeout(r, 0));
     });
 
-    // If we got here without errors, the guard worked (navigate was not called
-    // after unmount, which would throw in react-router with no Router context)
     expect(haptic.trigger).toHaveBeenCalledWith('error');
   });
 
@@ -210,12 +198,7 @@ describe('SecretPhraseInputScreen', () => {
     restoreSecretFromMnemonicMock.mockRejectedValue(new Error('write failed'));
 
     renderScreen();
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /continue/i })).not.toBeDisabled();
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    await fillWordsAndSubmit();
 
     await waitFor(() => {
       expectLocation('/recovery/failure');
