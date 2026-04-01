@@ -14,6 +14,7 @@ import {
   calculateContentHash,
   inferDocumentCategory,
   isAadhaarDocument,
+  isKycDocument,
   isMRZDocument,
   parseCertificateSimple,
 } from '@selfxyz/common';
@@ -241,10 +242,15 @@ export async function storeDocumentWithDeduplication(
     id: contentHash,
     documentType: docType,
     documentCategory,
-    data: isMRZDocument(passportData) ? passportData.mrz : (passportData as AadhaarData).qrData || '',
+    data: isMRZDocument(passportData)
+      ? passportData.mrz
+      : isKycDocument(passportData)
+        ? passportData.serializedApplicantInfo
+        : (passportData as AadhaarData).qrData || '',
     mock: passportData.mock || false,
     isRegistered: false,
     hasExpirationDate: documentCategory === 'id_card' || documentCategory === 'passport',
+    ...(isKycDocument(passportData) ? { idType: passportData.documentType } : {}),
   };
 
   catalog.documents.push(metadata);
