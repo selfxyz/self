@@ -69,21 +69,33 @@ export async function restoreSecretFromMnemonic(
   storage: BridgeStorageAdapter,
   mnemonic: string,
 ): Promise<{ secret: string }> {
-  const previousSnapshot = await readStoredSecretSnapshot(storage);
   const secret = derivePrivateKey(mnemonic);
 
-  try {
-    await storage.set(MNEMONIC_KEY, mnemonic);
-    await storage.set(PRIVATE_KEY_KEY, secret);
-  } catch (error) {
-    await restoreStoredSecretSnapshot(storage, previousSnapshot);
-    throw error;
+  while (restoreSecretInFlight) {
+    await restoreSecretInFlight;
   }
+
+  restoreSecretInFlight = (async () => {
+    const previousSnapshot = await readStoredSecretSnapshot(storage);
+
+    try {
+      await storage.set(MNEMONIC_KEY, mnemonic);
+      await storage.set(PRIVATE_KEY_KEY, secret);
+    } catch (error) {
+      await restoreStoredSecretSnapshot(storage, previousSnapshot);
+      throw error;
+    }
+  })().finally(() => {
+    restoreSecretInFlight = null;
+  });
+
+  await restoreSecretInFlight;
 
   return { secret };
 }
 
 let ensureSecretInFlight: Promise<void> | null = null;
+let restoreSecretInFlight: Promise<void> | null = null;
 
 export async function restoreStoredSecretSnapshot(
   storage: BridgeStorageAdapter,
