@@ -245,9 +245,11 @@ export const SecretPhraseInputScreen: React.FC = () => {
       analytics.trackEvent('recovery_phrase_recovered', {
         documentCategory: selectedDocument.data.documentCategory,
       });
-      navigate(buildRecoveryTarget('/recovery/success', returnTo), {
-        state: returnTo ? { returnTo } : undefined,
-      });
+      if (returnTo) {
+        navigate(returnTo, { replace: true });
+      } else {
+        navigate('/recovery/success');
+      }
     } catch (error) {
       const reason = error instanceof RecoveryFlowError ? error.reason : 'unexpected_error';
 
