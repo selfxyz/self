@@ -180,57 +180,62 @@ export const SecretPhraseInputScreen: React.FC = () => {
       }
 
       const selectedDocument = await loadSelectedDocument(client);
-      if (!selectedDocument) {
-        haptic.trigger('error');
-        analytics.trackEvent('recovery_phrase_failed', {
-          reason: 'missing_selected_document',
-        });
-        navigate(buildRecoveryTarget('/recovery/failure', returnTo), {
-          replace: true,
-          state: returnTo ? { returnTo } : undefined,
-        });
-        return;
-      }
+      const hasRealDocument = selectedDocument && !selectedDocument.metadata.mock;
 
-      derivedSecret = derivePrivateKey(mnemonic);
-      const validationResult = await validateRecoverySecretForDocument(client, selectedDocument.data, derivedSecret);
-
-      if (!validationResult.isRegistered) {
-        const nextAttempts = mismatchAttempts + 1;
-        const nextLockedUntil = nextAttempts >= MAX_MISMATCH_ATTEMPTS ? Date.now() + LOCKOUT_MS : null;
+      if (!hasRealDocument) {
+        await restoreSecretFromMnemonic(storage, mnemonic);
 
         if (isMountedRef.current) {
-          setMismatchAttempts(nextAttempts);
-          setLockedUntil(nextLockedUntil);
-          setErrorMessage(
-            nextLockedUntil
-              ? `Too many recovery attempts. Try again in ${Math.ceil(LOCKOUT_MS / 1000)} seconds`
-              : 'Recovery phrase does not match this identity',
-          );
+          setErrorIndices([]);
+          setErrorMessage(null);
+          setWords([...EMPTY_WORDS]);
         }
 
-        haptic.trigger('error');
-        analytics.trackEvent('recovery_phrase_validation_failed', {
-          reason: 'secret_mismatch',
-          attemptsRemaining: Math.max(MAX_MISMATCH_ATTEMPTS - nextAttempts, 0),
-        });
+        haptic.trigger('success');
+        analytics.trackEvent('recovery_phrase_recovered', { documentCategory: 'none' });
+        navigate('/tunnel/kyc', { replace: true });
         return;
-      }
+      } else {
+        derivedSecret = derivePrivateKey(mnemonic);
+        const validationResult = await validateRecoverySecretForDocument(client, selectedDocument.data, derivedSecret);
 
-      const previousSnapshot = await readStoredSecretSnapshot(storage);
+        if (!validationResult.isRegistered) {
+          const nextAttempts = mismatchAttempts + 1;
+          const nextLockedUntil = nextAttempts >= MAX_MISMATCH_ATTEMPTS ? Date.now() + LOCKOUT_MS : null;
 
-      try {
-        await restoreSecretFromMnemonic(storage, mnemonic);
-      } catch {
-        await restoreStoredSecretSnapshot(storage, previousSnapshot);
-        throw new RecoveryFlowError('storage_write_failed');
-      }
+          if (isMountedRef.current) {
+            setMismatchAttempts(nextAttempts);
+            setLockedUntil(nextLockedUntil);
+            setErrorMessage(
+              nextLockedUntil
+                ? `Too many recovery attempts. Try again in ${Math.ceil(LOCKOUT_MS / 1000)} seconds`
+                : 'Recovery phrase does not match this identity',
+            );
+          }
 
-      try {
-        await finalizeRecoveredDocumentRegistration(client, selectedDocument.data, validationResult.csca);
-      } catch {
-        await restoreStoredSecretSnapshot(storage, previousSnapshot);
-        throw new RecoveryFlowError('document_finalization_failed');
+          haptic.trigger('error');
+          analytics.trackEvent('recovery_phrase_validation_failed', {
+            reason: 'secret_mismatch',
+            attemptsRemaining: Math.max(MAX_MISMATCH_ATTEMPTS - nextAttempts, 0),
+          });
+          return;
+        }
+
+        const previousSnapshot = await readStoredSecretSnapshot(storage);
+
+        try {
+          await restoreSecretFromMnemonic(storage, mnemonic);
+        } catch {
+          await restoreStoredSecretSnapshot(storage, previousSnapshot);
+          throw new RecoveryFlowError('storage_write_failed');
+        }
+
+        try {
+          await finalizeRecoveredDocumentRegistration(client, selectedDocument.data, validationResult.csca);
+        } catch {
+          await restoreStoredSecretSnapshot(storage, previousSnapshot);
+          throw new RecoveryFlowError('document_finalization_failed');
+        }
       }
 
       if (isMountedRef.current) {

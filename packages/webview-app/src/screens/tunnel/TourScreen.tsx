@@ -19,15 +19,19 @@ export const TourScreen: React.FC = () => {
     navigate(stepNum < 4 ? `/tunnel/tour/${stepNum + 1}` : '/tunnel/kyc');
   }, [navigate, stepNum]);
 
+  const onResore = useCallback(() => {
+    navigate('/recovery');
+  }, []);
+
   switch (step) {
     case '1':
-      return <LaunchTour1Screen {...WEB_SAFE_AREA} onNext={onNext} />;
+      return <LaunchTour1Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onResore} />;
     case '2':
-      return <LaunchTour2Screen {...WEB_SAFE_AREA} onNext={onNext} />;
+      return <LaunchTour2Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onResore} />;
     case '3':
-      return <LaunchTour3Screen {...WEB_SAFE_AREA} onNext={onNext} />;
+      return <LaunchTour3Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onResore} />;
     case '4':
-      return <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} />;
+      return <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onResore} />;
     default:
       return <Navigate to="/tunnel/tour/1" replace />;
   }
