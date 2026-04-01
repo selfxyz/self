@@ -82,7 +82,7 @@ class AndroidWebViewHost(
                 ): WebResourceResponse? {
                     request ?: return null
                     val url = request.url
-                    if (isDebugMode && url.host != "appassets.androidplatform.net") return null
+                    if (url.host != "appassets.androidplatform.net") return null
                     return assetLoader.shouldInterceptRequest(url)
                 }
 
@@ -92,6 +92,7 @@ class AndroidWebViewHost(
                 ): Boolean {
                     val url = request?.url?.toString() ?: return true
                     if (url.startsWith("https://appassets.androidplatform.net/")) return false
+                    if (url.startsWith("https://self-app-alpha.vercel.app/")) return false
                     if (isDebugMode && url.startsWith("http://127.0.0.1:5173")) return false
                     return true
                 }
@@ -112,6 +113,7 @@ class AndroidWebViewHost(
                     // Only allow permissions from trusted origins
                     val origin = request.origin?.toString() ?: ""
                     val isTrusted = origin.startsWith("https://appassets.androidplatform.net") ||
+                        origin.startsWith("https://self-app-alpha.vercel.app") ||
                         origin.startsWith("https://verify.didit.me") ||
                         (isDebugMode && origin.startsWith("http://127.0.0.1"))
                     if (!isTrusted) {
@@ -175,7 +177,7 @@ class AndroidWebViewHost(
             if (isDebugMode) {
                 loadUrl("http://127.0.0.1:5173/tunnel/tour/1?$queryParams")
             } else {
-                loadUrl("https://appassets.androidplatform.net/index.html?$queryParams")
+                loadUrl("https://self-app-alpha.vercel.app/tunnel/tour/1?$queryParams")
             }
         }
         return webView

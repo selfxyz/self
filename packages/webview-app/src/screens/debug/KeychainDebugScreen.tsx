@@ -143,6 +143,24 @@ export const KeychainDebugScreen: React.FC = () => {
     }
   }, [documents, addLog]);
 
+  const handleClearAll = useCallback(async () => {
+    const ALL_KEYS = ['self_document_catalog', 'self_mnemonic', 'self_private_key'];
+    try {
+      for (const k of ALL_KEYS) {
+        const existing = await storage.get(k);
+        if (existing !== null) {
+          await storage.remove(k);
+          addLog(`REMOVE "${k}" -> cleared (${existing.length} chars)`);
+        } else {
+          addLog(`SKIP "${k}" -> already empty`);
+        }
+      }
+      addLog('CLEAR ALL -> done');
+    } catch (e) {
+      addLog(`CLEAR ALL FAILED: ${e}`, true);
+    }
+  }, [storage, addLog]);
+
   const handleDeleteDoc = useCallback(async () => {
     try {
       await documents.deleteDocument(docId);
@@ -223,6 +241,15 @@ export const KeychainDebugScreen: React.FC = () => {
           </button>
           <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleDeleteCatalog}>
             Delete Catalog
+          </button>
+        </div>
+      </div>
+
+      <div style={styles.section}>
+        <h3 style={styles.sectionTitle}>Danger Zone</h3>
+        <div style={styles.row}>
+          <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleClearAll}>
+            Clear Entire Keychain
           </button>
         </div>
       </div>

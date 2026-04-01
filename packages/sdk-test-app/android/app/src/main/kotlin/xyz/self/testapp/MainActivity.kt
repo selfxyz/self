@@ -1,19 +1,24 @@
 // SPDX-License-Identifier: BUSL-1.1
 package xyz.self.testapp
 
-import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import xyz.self.sdk.api.SelfSdk
 import xyz.self.sdk.api.SelfSdkCallback
@@ -67,21 +72,38 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private const val PREFS_NAME = "self_test_app_prefs"
+private const val KEY_ENVIRONMENT = "environment"
+private const val KEY_VERIFICATION_ID = "verificationId"
+private const val KEY_USER_ID = "userId"
+private const val KEY_DEBUG_MODE = "debugMode"
+private const val KEY_SCOPE = "scope"
+private const val KEY_DISCLOSURES = "disclosures"
+private const val KEY_APP_NAME = "appName"
+private const val KEY_APP_ENDPOINT = "appEndpoint"
+private const val KEY_RESULT_TYPE = "resultType"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TestAppScreen(
     resultText: String,
     onLaunch: (SelfSdkConfig) -> Unit
 ) {
-    var environment by remember { mutableStateOf("staging") }
-    var verificationId by remember { mutableStateOf("test-verification-123") }
-    var userId by remember { mutableStateOf("0x0000000000000000000000000000000000000001") }
-    var debugMode by remember { mutableStateOf(false) }
-    var scope by remember { mutableStateOf("") }
-    var disclosures by remember { mutableStateOf("full_name,dob") }
-    var appName by remember { mutableStateOf("Self Test App") }
-    var appEndpoint by remember { mutableStateOf("") }
-    var resultType by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
+
+    val environmentOptions = listOf("staging", "prod")
+
+    var environment by remember { mutableStateOf(prefs.getString(KEY_ENVIRONMENT, "staging") ?: "staging") }
+    var verificationId by remember { mutableStateOf(prefs.getString(KEY_VERIFICATION_ID, "example-verification-id") ?: "") }
+    var userId by remember { mutableStateOf(prefs.getString(KEY_USER_ID, "0x0000000000000000000000000000000000000001") ?: "") }
+    var debugMode by remember { mutableStateOf(prefs.getBoolean(KEY_DEBUG_MODE, false)) }
+    var scope by remember { mutableStateOf(prefs.getString(KEY_SCOPE, "") ?: "") }
+    var disclosures by remember { mutableStateOf(prefs.getString(KEY_DISCLOSURES, "full_name,dob") ?: "") }
+    var appName by remember { mutableStateOf(prefs.getString(KEY_APP_NAME, "Self Test App") ?: "") }
+    var appEndpoint by remember { mutableStateOf(prefs.getString(KEY_APP_ENDPOINT, "") ?: "") }
+    var resultType by remember { mutableStateOf(prefs.getString(KEY_RESULT_TYPE, "") ?: "") }
+    var environmentExpanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -92,13 +114,33 @@ fun TestAppScreen(
     ) {
         Text("Self SDK Test", style = MaterialTheme.typography.headlineMedium)
 
-        OutlinedTextField(
-            value = environment,
-            onValueChange = { environment = it },
-            label = { Text("Environment (prod / staging)") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
+        ExposedDropdownMenuBox(
+            expanded = environmentExpanded,
+            onExpandedChange = { environmentExpanded = it }
+        ) {
+            OutlinedTextField(
+                value = environment,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Environment") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = environmentExpanded) },
+                modifier = Modifier.fillMaxWidth().menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = environmentExpanded,
+                onDismissRequest = { environmentExpanded = false }
+            ) {
+                environmentOptions.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            environment = option
+                            environmentExpanded = false
+                        }
+                    )
+                }
+            }
+        }
 
         OutlinedTextField(
             value = verificationId,
@@ -153,9 +195,10 @@ fun TestAppScreen(
         OutlinedTextField(
             value = appEndpoint,
             onValueChange = { appEndpoint = it },
-            label = { Text("App Endpoint") },
+            label = { Text("App Endpoint (required)") },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
+            isError = appEndpoint.isBlank()
         )
 
         OutlinedTextField(
@@ -168,6 +211,18 @@ fun TestAppScreen(
 
         Button(
             onClick = {
+                prefs.edit()
+                    .putString(KEY_ENVIRONMENT, environment)
+                    .putString(KEY_VERIFICATION_ID, verificationId)
+                    .putString(KEY_USER_ID, userId)
+                    .putBoolean(KEY_DEBUG_MODE, debugMode)
+                    .putString(KEY_SCOPE, scope)
+                    .putString(KEY_DISCLOSURES, disclosures)
+                    .putString(KEY_APP_NAME, appName)
+                    .putString(KEY_APP_ENDPOINT, appEndpoint)
+                    .putString(KEY_RESULT_TYPE, resultType)
+                    .apply()
+
                 onLaunch(
                     SelfSdkConfig(
                         verificationId = verificationId,
@@ -182,14 +237,33 @@ fun TestAppScreen(
                     )
                 )
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = appEndpoint.isNotBlank()
         ) {
             Text("Launch Verification")
         }
 
         Divider()
 
-        Text("Result:", style = MaterialTheme.typography.titleMedium)
-        Text(resultText, style = MaterialTheme.typography.bodyMedium)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Result:", style = MaterialTheme.typography.titleMedium)
+            TextButton(onClick = {
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("SDK Result", resultText))
+                Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+            }) {
+                Text("Copy")
+            }
+        }
+        SelectionContainer {
+            Text(
+                resultText,
+                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace)
+            )
+        }
     }
 }

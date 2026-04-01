@@ -37,7 +37,7 @@ public struct SelfSdkConfig {
         userIdType: String? = nil,
         chainID: Int? = nil,
         userDefinedData: String? = nil,
-        selfDefinedData: String? = nil
+        selfDefinedData: String? = nil,
         secureStorageProvider: SecureStorageProvider
     ) {
         self.verificationId = verificationId

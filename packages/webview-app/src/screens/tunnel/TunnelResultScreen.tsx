@@ -6,24 +6,26 @@ import type React from 'react';
 import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { StatusState } from '@selfxyz/euclid';
+import { ProofFailureScreen, ProofSuccessScreen, SelfLogo } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 interface TunnelResultState {
   success?: boolean;
   error?: string;
+  source?: 'proving' | 'disclose';
 }
 
 export const TunnelResultScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, lifecycle } = useSelfClient();
-  const { verificationId, request } = useVerificationRequest();
+  const { verificationId, request, appName, appEndpoint, timestamp } = useVerificationRequest();
 
-  const { success = false, error } = (location.state as TunnelResultState) ?? {};
+  const { success = false, error, source = 'proving' } = (location.state as TunnelResultState) ?? {};
 
   useEffect(() => {
     if (success || !error) return;
@@ -49,7 +51,11 @@ export const TunnelResultScreen: React.FC = () => {
   }, [request.userId, verificationId, lifecycle, analytics]);
 
   const onRetry = useCallback(() => {
-    navigate('/tunnel/proof/generating');
+    navigate(source === 'disclose' ? '/tunnel/proof/disclose' : '/tunnel/proof/generating');
+  }, [navigate, source]);
+
+  const onViewDetails = useCallback(() => {
+    navigate('/tunnel/proof/receipt');
   }, [navigate]);
 
   const onCancel = useCallback(() => {
@@ -59,31 +65,34 @@ export const TunnelResultScreen: React.FC = () => {
 
   if (success) {
     return (
-      <StatusState
-        variant="success"
-        title="Identity Verified"
-        description="Your identity has been verified. You can now use Self ID to prove your identity to participating partners."
-        animationSource="/animations/proof-success.json"
-        animationSize={240}
-        loopAnimation={false}
-        buttonText="Continue"
-        onButtonPress={onContinue}
+      <ProofSuccessScreen
+        {...WEB_SAFE_AREA}
+        appIcon={<SelfLogo size={40} />}
+        appName={appName}
+        appEndpoint={appEndpoint}
+        documentType="passport"
+        timestamp={timestamp}
+        successTitle="Identity Verified"
+        successDescription="Your identity has been verified. You can now use Self ID to prove your identity to participating partners."
+        onContinue={onContinue}
+        onViewDetails={onViewDetails}
       />
     );
   }
 
   return (
-    <StatusState
-      variant="fail"
-      title="Verification Failed"
-      description={error ?? 'Something went wrong during verification. Please try again.'}
-      animationSource="/animations/proof-success.json"
-      animationSize={240}
-      loopAnimation={false}
-      buttonText="Try Again"
-      onButtonPress={onRetry}
-      secondaryButtonText="Cancel"
-      onSecondaryPress={onCancel}
+    <ProofFailureScreen
+      {...WEB_SAFE_AREA}
+      appIcon={<SelfLogo size={40} />}
+      appName={appName}
+      appEndpoint={appEndpoint}
+      documentType="passport"
+      timestamp={timestamp}
+      failureTitle="Verification Failed"
+      failureDescription={error ?? 'Something went wrong during verification. Please try again.'}
+      onRetry={onRetry}
+      onViewDetails={onViewDetails}
+      onClose={onCancel}
     />
   );
 };

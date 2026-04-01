@@ -31,7 +31,7 @@ final class LifecycleHandler: BridgeHandler {
             return nil
 
         case "setResult":
-            let result = params?["result"]
+            let result: Any? = params
             await MainActor.run {
                 hasEmittedResult = true
                 onResult?(result)

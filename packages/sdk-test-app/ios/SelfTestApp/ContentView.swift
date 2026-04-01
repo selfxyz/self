@@ -20,27 +20,33 @@ class VerificationCallback: SelfSdkCallback {
 }
 
 struct ContentView: View {
-    @State private var environment = "staging"
-    @State private var verificationId = "test-verification-123"
-    @State private var userId = "test-user-456"
-    @State private var debugMode = false
-    @State private var scope = ""
-    @State private var disclosures = "full_name,dob"
-    @State private var appName = "Self Test App"
-    @State private var appEndpoint = ""
-    @State private var resultType = ""
+    @AppStorage("environment") private var environment = "staging"
+    @AppStorage("verificationId") private var verificationId = "example-verification-id"
+    @AppStorage("userId") private var userId = "test-user-456"
+    @AppStorage("debugMode") private var debugMode = false
+    @AppStorage("scope") private var scope = ""
+    @AppStorage("disclosures") private var disclosures = "full_name,dob"
+    @AppStorage("appName") private var appName = "Self Test App"
+    @AppStorage("appEndpoint") private var appEndpoint = ""
+    @AppStorage("resultType") private var resultType = ""
     @State private var resultText = "No result yet"
     @State private var showVerification = false
+
+    private let environmentOptions = ["staging", "prod"]
 
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     Group {
-                        Text("Environment (prod / staging)")
+                        Text("Environment")
                             .font(.caption)
-                        TextField("Environment", text: $environment)
-                            .textFieldStyle(.roundedBorder)
+                        Picker("Environment", selection: $environment) {
+                            ForEach(environmentOptions, id: \.self) { option in
+                                Text(option).tag(option)
+                            }
+                        }
+                        .pickerStyle(.segmented)
 
                         Text("Verification ID")
                             .font(.caption)
@@ -74,8 +80,9 @@ struct ContentView: View {
                         TextField("App Name", text: $appName)
                             .textFieldStyle(.roundedBorder)
 
-                        Text("App Endpoint")
+                        Text("App Endpoint (required)")
                             .font(.caption)
+                            .foregroundColor(appEndpoint.isEmpty ? .red : .secondary)
                         TextField("App Endpoint", text: $appEndpoint)
                             .textFieldStyle(.roundedBorder)
 
@@ -90,14 +97,24 @@ struct ContentView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .disabled(appEndpoint.trimmingCharacters(in: .whitespaces).isEmpty)
 
                     Divider()
 
-                    Text("Result:")
-                        .font(.headline)
+                    HStack {
+                        Text("Result:")
+                            .font(.headline)
+                        Spacer()
+                        Button("Copy") {
+                            UIPasteboard.general.string = resultText
+                        }
+                        .font(.caption)
+                    }
+
                     Text(resultText)
-                        .font(.body)
+                        .font(.system(.body, design: .monospaced))
                         .foregroundColor(.secondary)
+                        .textSelection(.enabled)
                 }
                 .padding(24)
             }

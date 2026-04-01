@@ -79,6 +79,8 @@ export async function launchDiditWebSdk(config: DiditLaunchConfig): Promise<() =
   const emitOnce = (result: KycProviderResult, isError: boolean) => {
     if (hasCompleted) return;
     hasCompleted = true;
+    // Close the Didit SDK modal immediately so our UI can take over
+    DiditSdk.shared.close();
     if (isError) {
       config.onError(result);
     } else {
