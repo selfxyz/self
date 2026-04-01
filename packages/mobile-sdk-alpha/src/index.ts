@@ -55,6 +55,7 @@ export type { MRZScanOptions } from './mrz';
 export type { PassportValidationCallbacks } from './validation/document';
 
 export type { ProvingStateType } from './proving/provingMachine';
+export type { RecoveryValidationResult } from './proving/recoveryValidation';
 
 export type { SDKEvent, SDKEventMap } from './types/events';
 
@@ -144,8 +145,9 @@ export { extractMRZInfo } from './mrz';
 export { extractNameFromDocument } from './documents/utils';
 export { extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
-export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 
+export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 export { isPassportDataValid } from './validation/document';
 
 export { mergeConfig } from './config/merge';

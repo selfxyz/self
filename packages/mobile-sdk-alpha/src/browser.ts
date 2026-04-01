@@ -40,6 +40,7 @@ export type { BaseContext, NFCScanContext, ProofContext } from './proving/intern
 export type { DG1, DG2, ParsedNFCResponse } from './nfc';
 export type { PassportValidationCallbacks } from './validation/document';
 export type { ProvingState, ProvingStateType, provingMachineCircuitType } from './proving/provingMachine';
+export type { RecoveryValidationResult } from './proving/recoveryValidation';
 export type { SDKEvent, SDKEventMap } from './types/events';
 
 export type { SdkErrorCategory } from './errors';
@@ -92,8 +93,9 @@ export { defaultConfig } from './config/defaults';
 
 export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
-export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 
+export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 export { getPostVerificationRoute, useProvingStore } from './proving/provingMachine';
 
 export { isPassportDataValid } from './validation/document';

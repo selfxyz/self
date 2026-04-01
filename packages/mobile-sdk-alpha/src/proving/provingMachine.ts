@@ -1013,6 +1013,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType,
         endpointType: null,
         env: null,
+        error_code: null,
+        reason: null,
       });
 
       actor = createActor(provingMachine);

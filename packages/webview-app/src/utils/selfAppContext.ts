@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { SelfApp, SelfAppDisclosureConfig, SelfClient } from '@selfxyz/mobile-sdk-alpha/browser';
+import type { SelfApp, SelfAppDisclosureConfig } from '@selfxyz/common/utils';
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import type { ParsedVerificationRequestContext } from './verificationRequest';
 

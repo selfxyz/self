@@ -12,6 +12,11 @@ const MNEMONIC_KEY = 'self_mnemonic';
 const PRIVATE_KEY_KEY = 'self_private_key';
 const DEFAULT_DERIVATION_PATH = "m/44'/60'/0'/0/0";
 
+export type StoredSecretSnapshot = {
+  mnemonic: string | null;
+  secret: string | null;
+};
+
 function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes)
     .map(b => b.toString(16).padStart(2, '0'))
@@ -25,8 +30,6 @@ export function derivePrivateKey(mnemonic: string, path = DEFAULT_DERIVATION_PAT
   if (!derived.privateKey) throw new Error('Failed to derive private key');
   return '0x' + bytesToHex(derived.privateKey);
 }
-
-let ensureSecretInFlight: Promise<void> | null = null;
 
 export async function ensureSecret(storage: BridgeStorageAdapter): Promise<void> {
   if (ensureSecretInFlight) {
@@ -51,4 +54,62 @@ export async function ensureSecret(storage: BridgeStorageAdapter): Promise<void>
   });
 
   return ensureSecretInFlight;
+}
+
+export async function readStoredSecretSnapshot(storage: BridgeStorageAdapter): Promise<StoredSecretSnapshot> {
+  const [mnemonic, secret] = await Promise.all([storage.get(MNEMONIC_KEY), storage.get(PRIVATE_KEY_KEY)]);
+
+  return {
+    mnemonic,
+    secret,
+  };
+}
+
+export async function restoreSecretFromMnemonic(
+  storage: BridgeStorageAdapter,
+  mnemonic: string,
+): Promise<{ secret: string }> {
+  const secret = derivePrivateKey(mnemonic);
+
+  while (restoreSecretInFlight) {
+    await restoreSecretInFlight;
+  }
+
+  restoreSecretInFlight = (async () => {
+    const previousSnapshot = await readStoredSecretSnapshot(storage);
+
+    try {
+      await storage.set(MNEMONIC_KEY, mnemonic);
+      await storage.set(PRIVATE_KEY_KEY, secret);
+    } catch (error) {
+      await restoreStoredSecretSnapshot(storage, previousSnapshot);
+      throw error;
+    }
+  })().finally(() => {
+    restoreSecretInFlight = null;
+  });
+
+  await restoreSecretInFlight;
+
+  return { secret };
+}
+
+let ensureSecretInFlight: Promise<void> | null = null;
+let restoreSecretInFlight: Promise<void> | null = null;
+
+export async function restoreStoredSecretSnapshot(
+  storage: BridgeStorageAdapter,
+  snapshot: StoredSecretSnapshot,
+): Promise<void> {
+  if (snapshot.mnemonic === null) {
+    await storage.remove(MNEMONIC_KEY);
+  } else {
+    await storage.set(MNEMONIC_KEY, snapshot.mnemonic);
+  }
+
+  if (snapshot.secret === null) {
+    await storage.remove(PRIVATE_KEY_KEY);
+  } else {
+    await storage.set(PRIVATE_KEY_KEY, snapshot.secret);
+  }
 }
