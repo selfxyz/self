@@ -43,7 +43,7 @@
     "lint:headers": "node scripts/check-duplicate-headers.cjs . && node scripts/check-license-headers.mjs . --check",
     "lint:headers:fix": "node scripts/check-duplicate-headers.cjs . && node scripts/check-license-headers.mjs . --fix",
     "prepare": "husky",
-    "reinstall-app": "yarn install && (cd app && yarn clean:watchman && yarn clean:build && yarn clean:ios && yarn clean:xcode && yarn clean:pod-cache && yarn clean:android-deps && rm -rf app/node_modules) && yarn install && yarn workspace @selfxyz/mobile-app run install-app",
+    "reinstall-app": "yarn install && (cd app && yarn clean:watchman && yarn clean:build && yarn clean:ios && yarn clean:xcode && yarn clean:pod-cache && yarn clean:android-deps && yarn clean:node && yarn clean:ruby) && yarn install && yarn workspace @selfxyz/mobile-app run install-app",
     "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
     "test": "yarn workspaces foreach --parallel -i --all run test",
     "test:license-headers": "cd scripts/tests && node check-license-headers.test.mjs",
