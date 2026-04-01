@@ -76,13 +76,13 @@ export const TunnelDiscloseScreen: React.FC = () => {
       initSelfAppFromRequest(client, verificationCtx);
       analytics.trackEvent('tunnel_disclose_started');
       await init(client, 'disclose', true);
+      setInitDone(true);
     };
     void start().catch(err => {
       const message = err instanceof Error ? err.message : 'Disclose init failed';
       analytics.trackEvent('tunnel_disclose_init_failed', { error: message });
       navigateToError(message);
     });
-    setInitDone(true);
   }, [client, init, analytics, verificationCtx, navigateToError]);
 
   useEffect(() => {
