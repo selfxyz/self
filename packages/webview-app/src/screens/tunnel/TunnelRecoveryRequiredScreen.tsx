@@ -12,7 +12,7 @@ import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const TUNNEL_RECOVERY_RETURN_PATH = '/tunnel/proof/generating';
-const TUNNEL_RECOVERY_BACK_PATH = '/tunnel/proof/generating';
+const TUNNEL_RECOVERY_BACK_PATH = '/tunnel/tour/4';
 
 export const TunnelRecoveryRequiredScreen: React.FC = () => {
   const navigate = useNavigate();

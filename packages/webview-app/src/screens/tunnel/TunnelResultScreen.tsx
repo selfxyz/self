@@ -67,8 +67,10 @@ export const TunnelResultScreen: React.FC = () => {
   }, [navigate, source]);
 
   const onViewDetails = useCallback(() => {
-    navigate('/tunnel/proof/receipt', { state: { backPath: location.pathname } });
-  }, [location.pathname, navigate]);
+    navigate('/tunnel/proof/receipt', {
+      state: { backPath: location.pathname, backState: location.state },
+    });
+  }, [location.pathname, location.state, navigate]);
 
   const onCancel = useCallback(() => {
     navigate(getTunnelBackPath(source), { replace: true });

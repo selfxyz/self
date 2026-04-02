@@ -53,8 +53,8 @@ import { SecretPhraseInputScreen } from './screens/recovery/SecretPhraseInputScr
 import { TourScreen as TunnelTourScreen } from './screens/tunnel/TourScreen';
 import { TunnelCountryPickerScreen } from './screens/tunnel/TunnelCountryPickerScreen';
 import { TunnelDiscloseScreen } from './screens/tunnel/TunnelDiscloseScreen';
-import { TunnelKycFailureScreen } from './screens/tunnel/TunnelKycFailureScreen';
 import { TunnelIDTypeScreen } from './screens/tunnel/TunnelIDTypeScreen';
+import { TunnelKycFailureScreen } from './screens/tunnel/TunnelKycFailureScreen';
 import { TunnelKycSuccessScreen } from './screens/tunnel/TunnelKycSuccessScreen';
 import { TunnelKycWrapper } from './screens/tunnel/TunnelKycWrapper';
 import { TunnelProofReceiptScreen } from './screens/tunnel/TunnelProofReceiptScreen';

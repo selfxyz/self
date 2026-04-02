@@ -18,7 +18,8 @@ export const TunnelProofReceiptScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
   const { displayLabels, request, appName, appEndpoint, timestamp } = useVerificationRequest();
-  const backPath = (location.state as { backPath?: string } | null)?.backPath ?? '/tunnel/proof/result';
+  const { backPath = '/tunnel/proof/result', backState } =
+    (location.state as { backPath?: string; backState?: unknown } | null) ?? {};
 
   const onConfirm = useCallback(() => {
     haptic.trigger('selection');
@@ -38,8 +39,8 @@ export const TunnelProofReceiptScreen: React.FC = () => {
   const onClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_proof_receipt_closed');
-    navigate(backPath, { replace: true });
-  }, [analytics, backPath, haptic, navigate]);
+    navigate(backPath, { replace: true, state: backState });
+  }, [analytics, backPath, backState, haptic, navigate]);
 
   return (
     <ProofRequestScreen

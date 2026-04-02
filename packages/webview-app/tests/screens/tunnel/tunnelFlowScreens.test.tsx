@@ -11,8 +11,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TunnelDiscloseScreen } from '../../../src/screens/tunnel/TunnelDiscloseScreen';
 import { TunnelKycFailureScreen } from '../../../src/screens/tunnel/TunnelKycFailureScreen';
 import { TunnelKycSuccessScreen } from '../../../src/screens/tunnel/TunnelKycSuccessScreen';
-import { TunnelProvingScreen } from '../../../src/screens/tunnel/TunnelProvingScreen';
 import { TunnelProofReceiptScreen } from '../../../src/screens/tunnel/TunnelProofReceiptScreen';
+import { TunnelProvingScreen } from '../../../src/screens/tunnel/TunnelProvingScreen';
 import { TunnelRecoveryRequiredScreen } from '../../../src/screens/tunnel/TunnelRecoveryRequiredScreen';
 import { TunnelResultScreen } from '../../../src/screens/tunnel/TunnelResultScreen';
 
@@ -166,6 +166,16 @@ const LocationDisplay: React.FC = () => {
   return <div data-testid="location">{`${location.pathname}${location.search}`}</div>;
 };
 
+const StateDisplay: React.FC = () => {
+  const location = useLocation();
+  return (
+    <>
+      <div data-testid="location">{`${location.pathname}${location.search}`}</div>
+      <div data-testid="location-state">{JSON.stringify(location.state)}</div>
+    </>
+  );
+};
+
 const renderResultRoute = (
   initialEntry:
     | string
@@ -245,6 +255,7 @@ const renderKycSuccessRoute = (
         <Route path="/tunnel/kyc-success" element={<TunnelKycSuccessScreen />} />
         <Route path="/tunnel/kyc" element={<LocationDisplay />} />
         <Route path="/tunnel/kyc-failure" element={<LocationDisplay />} />
+        <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
         <Route path="/tunnel/proof/generating" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
@@ -269,7 +280,7 @@ const renderRecoveryRequiredRoute = () =>
       <Routes>
         <Route path="/tunnel/recovery-required" element={<TunnelRecoveryRequiredScreen />} />
         <Route path="/recovery/phrase-input" element={<LocationDisplay />} />
-        <Route path="/tunnel/proof/generating" element={<LocationDisplay />} />
+        <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -410,7 +421,7 @@ describe('tunnel flow screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
-    expectLocation('/tunnel/proof/generating');
+    expectLocation('/tunnel/tour/4');
   });
 
   it('keeps receipt close on the provided tunnel back path', () => {
@@ -422,6 +433,30 @@ describe('tunnel flow screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /close receipt/i }));
 
     expectLocation('/tunnel/proof/result');
+  });
+
+  it('restores result state when closing receipt', () => {
+    const resultState = { success: true };
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/tunnel/proof/receipt',
+            state: { backPath: '/tunnel/proof/result', backState: resultState },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/result" element={<StateDisplay />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /close receipt/i }));
+
+    expect(screen.getByTestId('location-state').textContent).toBe(JSON.stringify(resultState));
   });
 
   it('keeps kyc cancel inside the tunnel flow', async () => {
@@ -436,7 +471,7 @@ describe('tunnel flow screens', () => {
     });
 
     await waitFor(() => {
-      expectLocation('/tunnel/kyc');
+      expectLocation('/tunnel/tour/4');
     });
   });
 
@@ -455,7 +490,7 @@ describe('tunnel flow screens', () => {
     expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_proving_init_failed', { error: 'bad request' });
   });
 
-  it('routes kyc error to the retry prompt', async () => {
+  it('routes retryable kyc error to the failure screen', async () => {
     renderKycSuccessRoute({
       pathname: '/tunnel/kyc-success',
       state: {
@@ -469,6 +504,23 @@ describe('tunnel flow screens', () => {
 
     await waitFor(() => {
       expectLocation('/tunnel/kyc-failure');
+    });
+  });
+
+  it('routes non-retryable kyc error back to the tour', async () => {
+    renderKycSuccessRoute({
+      pathname: '/tunnel/kyc-success',
+      state: {
+        providerResult: {
+          provider: 'didit',
+          status: 'error',
+          error: { code: 'provider_declined', message: 'Declined', retryable: false },
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expectLocation('/tunnel/tour/4');
     });
   });
 
