@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ProofFailureScreen, ProofSuccessScreen, SelfLogo } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
+import { useResolvedContractError } from '../../hooks/useResolvedContractError';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -26,6 +27,7 @@ export const TunnelResultScreen: React.FC = () => {
   const { verificationId, request, appName, appEndpoint, timestamp } = useVerificationRequest();
 
   const { success = false, error, source = 'proving' } = (location.state as TunnelResultState) ?? {};
+  const resolvedError = useResolvedContractError(error);
 
   useEffect(() => {
     if (success || !error) return;
@@ -89,7 +91,7 @@ export const TunnelResultScreen: React.FC = () => {
       documentType="passport"
       timestamp={timestamp}
       failureTitle="Verification Failed"
-      failureDescription={error ?? 'Something went wrong during verification. Please try again.'}
+      failureDescription={resolvedError ?? 'Something went wrong during verification. Please try again.'}
       onRetry={onRetry}
       onViewDetails={onViewDetails}
       onClose={onCancel}

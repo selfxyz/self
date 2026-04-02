@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { colors, StatusState, WarningOctagonIcon } from '@selfxyz/euclid';
 import type { BridgeError, VerificationResult } from '@selfxyz/webview-bridge';
 
+import { useResolvedContractError } from '../../hooks/useResolvedContractError';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -28,6 +29,7 @@ export const DiscloseResultScreen: React.FC = () => {
 
   const { success = true, error, resultSent = false } = (location.state as DiscloseResultLocationState | null) ?? {};
   const normalizedError = normalizeError(error);
+  const resolvedMessage = useResolvedContractError(normalizedError?.message);
   const result = useMemo<VerificationResult>(
     () =>
       success
@@ -97,7 +99,7 @@ export const DiscloseResultScreen: React.FC = () => {
         description={
           success
             ? 'Your identity was shared successfully for this request.'
-            : (normalizedError?.message ?? 'The proof request could not be completed. Please try again.')
+            : (resolvedMessage ?? 'The proof request could not be completed. Please try again.')
         }
         animationSource={success ? '/animations/proof-success.json' : undefined}
         animationSize={240}

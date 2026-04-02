@@ -13,6 +13,7 @@ import { useProvingStore } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
+import { humanizeError } from '../../utils/contractErrors';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 import { initSelfAppFromRequest } from '../../utils/selfAppContext';
 
@@ -63,7 +64,7 @@ export const TunnelDiscloseScreen: React.FC = () => {
       haptic.trigger('error');
       navigate('/tunnel/proof/result', {
         replace: true,
-        state: { success: false, error, source: 'disclose' as const },
+        state: { success: false, error: humanizeError(error), source: 'disclose' as const },
       });
     },
     [haptic, navigate],

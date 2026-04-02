@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { colors, StatusState, WarningOctagonIcon } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
+import { useResolvedContractError } from '../../hooks/useResolvedContractError';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
@@ -28,6 +29,7 @@ export const VerificationResultScreen: React.FC = () => {
     result?: VerificationResult;
     resultSent?: boolean;
   }) || {};
+  const resolvedError = useResolvedContractError(error);
 
   const onContinue = useCallback(async () => {
     haptic.trigger('selection');
@@ -62,7 +64,7 @@ export const VerificationResultScreen: React.FC = () => {
         description={
           success
             ? "Your document's information is now protected by Self ID. Just scan a participating partner's QR code to prove your identity."
-            : (error ?? 'Something went wrong during verification. Please try again.')
+            : (resolvedError ?? 'Something went wrong during verification. Please try again.')
         }
         animationSource={success ? '/animations/proof-success.json' : undefined}
         animationSize={240}

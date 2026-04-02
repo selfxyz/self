@@ -5,6 +5,8 @@
 import type { IDCardProps } from '@selfxyz/euclid';
 import type { BridgeError } from '@selfxyz/webview-bridge';
 
+import { humanizeError } from './contractErrors';
+
 export type GenerationStep = 'readingRegistry' | 'generatingProof' | 'awaitingVerification' | 'finishingUp';
 
 export function getFailureState(
@@ -14,7 +16,7 @@ export function getFailureState(
 ): { code: string; message: string } {
   return {
     code: code ?? currentState ?? 'proof_generation_failed',
-    message: reason ?? 'The proof request could not be completed.',
+    message: reason ? humanizeError(reason) : 'The proof request could not be completed.',
   };
 }
 
@@ -58,10 +60,13 @@ export function normalizeError(error: BridgeError | string | undefined): BridgeE
   if (typeof error === 'string') {
     return {
       code: 'proof_generation_failed',
-      message: error,
+      message: humanizeError(error),
     };
   }
-  return error;
+  return {
+    ...error,
+    message: humanizeError(error.message),
+  };
 }
 
 export function titleCaseDisclosure(disclosure: string): string {

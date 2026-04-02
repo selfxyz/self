@@ -69,6 +69,20 @@ describe('provingUtils', () => {
         message: 'The proof request could not be completed.',
       });
     });
+
+    it('should decode a hex error selector in the reason field', () => {
+      expect(getFailureState('error', 'contract_error', '0xda7bd3a6')).toEqual({
+        code: 'contract_error',
+        message: 'The verification and disclosure proof is invalid.',
+      });
+    });
+
+    it('should pass through unknown hex selectors unchanged', () => {
+      expect(getFailureState('error', 'contract_error', '0xdeadbeef')).toEqual({
+        code: 'contract_error',
+        message: '0xdeadbeef',
+      });
+    });
   });
 
   describe('getIdCardProps', () => {
@@ -148,12 +162,28 @@ describe('provingUtils', () => {
 
     it('should pass through a BridgeError object', () => {
       const err = { code: 'custom', message: 'msg' };
-      expect(normalizeError(err)).toBe(err);
+      expect(normalizeError(err)).toStrictEqual(err);
     });
 
     it('should preserve details on a BridgeError object', () => {
       const err = { code: 'custom', message: 'msg', details: { extra: true } };
-      expect(normalizeError(err)).toBe(err);
+      expect(normalizeError(err)).toStrictEqual(err);
+    });
+
+    it('should decode a hex error selector in a BridgeError message', () => {
+      const err = { code: 'contract_error', message: '0xda7bd3a6' };
+      const result = normalizeError(err);
+      expect(result).toStrictEqual({
+        code: 'contract_error',
+        message: 'The verification and disclosure proof is invalid.',
+      });
+    });
+
+    it('should decode a hex error selector passed as a string', () => {
+      expect(normalizeError('0x034acfcc')).toStrictEqual({
+        code: 'proof_generation_failed',
+        message: 'This identity has already been registered.',
+      });
     });
   });
 });

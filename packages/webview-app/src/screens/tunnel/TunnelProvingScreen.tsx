@@ -13,6 +13,7 @@ import { loadSelectedDocument, useProvingStore } from '@selfxyz/mobile-sdk-alpha
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
+import { humanizeError } from '../../utils/contractErrors';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 import { getIdCardProps } from '../../utils/provingUtils';
 import { initSelfAppFromRequest } from '../../utils/selfAppContext';
@@ -59,7 +60,10 @@ export const TunnelProvingScreen: React.FC = () => {
   const navigateToError = useCallback(
     (error: string) => {
       haptic.trigger('error');
-      navigate('/tunnel/proof/result', { replace: true, state: { success: false, error, source: 'proving' as const } });
+      navigate('/tunnel/proof/result', {
+        replace: true,
+        state: { success: false, error: humanizeError(error), source: 'proving' as const },
+      });
     },
     [haptic, navigate],
   );
