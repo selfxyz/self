@@ -2,6 +2,18 @@ plugins {
     id("com.android.library") version "8.2.2"
     id("org.jetbrains.kotlin.android") version "1.9.22"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+}
+
+ktlint {
+    version.set("1.5.0")
+    android.set(true)
+    outputToConsole.set(true)
+    ignoreFailures.set(false)
+    filter {
+        exclude("**/generated/**")
+        exclude("**/build/**")
+    }
 }
 
 group = "xyz.self.sdk"
@@ -21,7 +33,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -48,7 +60,7 @@ tasks.register("validateWebViewBundle") {
         if (!bundleDir.exists() || !indexFile.exists()) {
             throw GradleException(
                 "WebView bundle not found at src/main/assets/self-wallet/index.html. " +
-                "Run ./scripts/build-webview-bundle.sh from the repo root first."
+                    "Run ./scripts/build-webview-bundle.sh from the repo root first.",
             )
         }
     }

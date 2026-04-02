@@ -25,47 +25,54 @@ class CryptoHandler : BridgeHandler {
     override suspend fun handle(
         method: String,
         params: Map<String, JsonElement>,
-    ): JsonElement? = when (method) {
-        "generateKey" -> generateKey(params)
-        "getPublicKey" -> getPublicKey(params)
-        "sign" -> sign(params)
-        else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown crypto method: $method")
-    }
+    ): JsonElement? =
+        when (method) {
+            "generateKey" -> generateKey(params)
+            "getPublicKey" -> getPublicKey(params)
+            "sign" -> sign(params)
+            else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown crypto method: $method")
+        }
 
     private fun generateKey(params: Map<String, JsonElement>): JsonElement {
-        val keyRef = params["keyRef"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_PARAM", "keyRef parameter required")
+        val keyRef =
+            params["keyRef"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_PARAM", "keyRef parameter required")
 
         // Delete existing key if present
         if (keyStore.containsAlias(keyRef)) {
             keyStore.deleteEntry(keyRef)
         }
 
-        val spec = KeyGenParameterSpec.Builder(
-            keyRef,
-            KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY,
-        )
-            .setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
-            .setDigests(KeyProperties.DIGEST_SHA256)
-            .build()
+        val spec =
+            KeyGenParameterSpec
+                .Builder(
+                    keyRef,
+                    KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY,
+                ).setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
+                .setDigests(KeyProperties.DIGEST_SHA256)
+                .build()
 
         KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, "AndroidKeyStore").apply {
             initialize(spec)
             generateKeyPair()
         }
 
-        return JsonObject(mapOf(
-            "keyRef" to JsonPrimitive(keyRef),
-            "success" to JsonPrimitive(true),
-        ))
+        return JsonObject(
+            mapOf(
+                "keyRef" to JsonPrimitive(keyRef),
+                "success" to JsonPrimitive(true),
+            ),
+        )
     }
 
     private fun getPublicKey(params: Map<String, JsonElement>): JsonElement {
-        val keyRef = params["keyRef"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_PARAM", "keyRef parameter required")
+        val keyRef =
+            params["keyRef"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_PARAM", "keyRef parameter required")
 
-        val cert = keyStore.getCertificate(keyRef)
-            ?: throw BridgeHandlerException("KEY_NOT_FOUND", "Key not found: $keyRef")
+        val cert =
+            keyStore.getCertificate(keyRef)
+                ?: throw BridgeHandlerException("KEY_NOT_FOUND", "Key not found: $keyRef")
 
         val publicKeyBytes = cert.publicKey.encoded
         val publicKeyB64 = Base64.encodeToString(publicKeyBytes, Base64.NO_WRAP)
@@ -74,20 +81,26 @@ class CryptoHandler : BridgeHandler {
     }
 
     private fun sign(params: Map<String, JsonElement>): JsonElement {
-        val keyRef = params["keyRef"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_PARAM", "keyRef parameter required")
-        val dataB64 = params["data"]?.jsonPrimitive?.content
-            ?: throw BridgeHandlerException("MISSING_PARAM", "data parameter required")
+        val keyRef =
+            params["keyRef"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_PARAM", "keyRef parameter required")
+        val dataB64 =
+            params["data"]?.jsonPrimitive?.content
+                ?: throw BridgeHandlerException("MISSING_PARAM", "data parameter required")
 
-        val privateKey = keyStore.getKey(keyRef, null)
-            ?: throw BridgeHandlerException("KEY_NOT_FOUND", "Key not found: $keyRef")
+        val privateKey =
+            keyStore.getKey(keyRef, null)
+                ?: throw BridgeHandlerException("KEY_NOT_FOUND", "Key not found: $keyRef")
 
         val dataBytes = Base64.decode(dataB64, Base64.DEFAULT)
 
-        val signature = Signature.getInstance("SHA256withECDSA").apply {
-            initSign(privateKey as java.security.PrivateKey)
-            update(dataBytes)
-        }.sign()
+        val signature =
+            Signature
+                .getInstance("SHA256withECDSA")
+                .apply {
+                    initSign(privateKey as java.security.PrivateKey)
+                    update(dataBytes)
+                }.sign()
 
         val signatureB64 = Base64.encodeToString(signature, Base64.NO_WRAP)
 

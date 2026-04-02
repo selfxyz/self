@@ -2,20 +2,23 @@
 
 package xyz.self.sdk.handlers
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class LifecycleResultEnvelopeTest {
-
     @Test
     fun `extractPayload unwraps nested result object`() {
-        val inner = buildJsonObject { put("success", true); put("data", "value") }
+        val inner =
+            buildJsonObject {
+                put("success", true)
+                put("data", "value")
+            }
         val params = mapOf("result" to inner, "extra" to JsonPrimitive("ignored"))
 
         val payload = LifecycleResultEnvelope.extractPayload(params)

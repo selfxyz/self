@@ -37,11 +37,12 @@ class SelfVerificationActivity : AppCompatActivity() {
         val userDefinedData = intent.getStringExtra(EXTRA_USER_DEFINED_DATA)
         val selfDefinedData = intent.getStringExtra(EXTRA_SELF_DEFINED_DATA)
 
-        router = MessageRouter(
-            sendToWebView = { js ->
-                runOnUiThread { webViewHost.evaluateJs(js) }
-            },
-        )
+        router =
+            MessageRouter(
+                sendToWebView = { js ->
+                    runOnUiThread { webViewHost.evaluateJs(js) }
+                },
+            )
 
         val storageProvider = SelfSdk.secureStorageProvider
         if (storageProvider == null) {
@@ -61,33 +62,38 @@ class SelfVerificationActivity : AppCompatActivity() {
 
         webViewHost = AndroidWebViewHost(this, router, isDebugMode)
 
-        val queryParams = buildString {
-            append("environment=").append(Uri.encode(environment))
-            append("&verificationId=").append(Uri.encode(verificationId))
-            append("&userId=").append(Uri.encode(userId))
-            append("&version=").append(version)
-            scope?.let { append("&scope=").append(Uri.encode(it)) }
-            disclosures?.takeIf { it.isNotEmpty() }?.let {
-                append("&disclosures=").append(Uri.encode(it.joinToString(",")))
+        val queryParams =
+            buildString {
+                append("environment=").append(Uri.encode(environment))
+                append("&verificationId=").append(Uri.encode(verificationId))
+                append("&userId=").append(Uri.encode(userId))
+                append("&version=").append(version)
+                scope?.let { append("&scope=").append(Uri.encode(it)) }
+                disclosures?.takeIf { it.isNotEmpty() }?.let {
+                    append("&disclosures=").append(Uri.encode(it.joinToString(",")))
+                }
+                appName?.let { append("&appName=").append(Uri.encode(it)) }
+                appEndpoint?.let { append("&appEndpoint=").append(Uri.encode(it)) }
+                resultType?.let { append("&resultType=").append(Uri.encode(it)) }
+                excludedCountries?.takeIf { it.isNotEmpty() }?.let {
+                    append("&excludedCountries=").append(Uri.encode(it.joinToString(",")))
+                }
+                endpointType?.let { append("&endpointType=").append(Uri.encode(it)) }
+                userIdType?.let { append("&userIdType=").append(Uri.encode(it)) }
+                chainID?.let { append("&chainID=").append(it) }
+                userDefinedData?.let { append("&userDefinedData=").append(Uri.encode(it)) }
+                selfDefinedData?.let { append("&selfDefinedData=").append(Uri.encode(it)) }
             }
-            appName?.let { append("&appName=").append(Uri.encode(it)) }
-            appEndpoint?.let { append("&appEndpoint=").append(Uri.encode(it)) }
-            resultType?.let { append("&resultType=").append(Uri.encode(it)) }
-            excludedCountries?.takeIf { it.isNotEmpty() }?.let {
-                append("&excludedCountries=").append(Uri.encode(it.joinToString(",")))
-            }
-            endpointType?.let { append("&endpointType=").append(Uri.encode(it)) }
-            userIdType?.let { append("&userIdType=").append(Uri.encode(it)) }
-            chainID?.let { append("&chainID=").append(it) }
-            userDefinedData?.let { append("&userDefinedData=").append(Uri.encode(it)) }
-            selfDefinedData?.let { append("&selfDefinedData=").append(Uri.encode(it)) }
-        }
 
         val webView = webViewHost.createWebView(queryParams)
         setContentView(webView)
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == AndroidWebViewHost.CAMERA_PERMISSION_REQUEST_CODE) {
             val pending = webViewHost.pendingPermissionRequest
@@ -103,14 +109,19 @@ class SelfVerificationActivity : AppCompatActivity() {
     }
 
     @Deprecated("Use Activity Result API")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == AndroidWebViewHost.FILE_CHOOSER_REQUEST_CODE) {
-            val results = if (resultCode == RESULT_OK && data != null) {
-                WebChromeClient.FileChooserParams.parseResult(resultCode, data)
-            } else {
-                null
-            }
+            val results =
+                if (resultCode == RESULT_OK && data != null) {
+                    WebChromeClient.FileChooserParams.parseResult(resultCode, data)
+                } else {
+                    null
+                }
             webViewHost.fileUploadCallback?.onReceiveValue(results)
             webViewHost.fileUploadCallback = null
         }

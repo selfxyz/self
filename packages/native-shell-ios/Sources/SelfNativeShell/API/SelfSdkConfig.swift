@@ -65,7 +65,7 @@ public struct SelfSdkConfig {
             URLQueryItem(name: "environment", value: environment),
             URLQueryItem(name: "verificationId", value: verificationId),
             URLQueryItem(name: "userId", value: userId),
-            URLQueryItem(name: "version", value: String(version)),
+            URLQueryItem(name: "version", value: String(version))
         ]
         if let scope = scope {
             items.append(URLQueryItem(name: "scope", value: scope))

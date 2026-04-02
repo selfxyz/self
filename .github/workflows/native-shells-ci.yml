@@ -58,6 +58,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-disabled: true
+      - run: ./gradlew ktlintCheck
       - run: ./gradlew testDebugUnitTest
       - uses: actions/upload-artifact@v4
         if: always()
@@ -80,6 +81,10 @@ jobs:
       - name: Find iOS Simulator
         id: sim
         uses: ./.github/actions/find-ios-simulator
+      - name: Install SwiftLint
+        run: brew install swiftlint
+      - name: Run SwiftLint
+        run: swiftlint lint --strict
       - name: Run Swift package tests
         run: |
           xcodebuild \

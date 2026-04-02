@@ -21,10 +21,14 @@ data class SelfSdkConfig(
     val selfDefinedData: String? = null,
 )
 
-class SelfSdkException(message: String) : Exception(message)
+class SelfSdkException(
+    message: String,
+) : Exception(message)
 
 interface SelfSdkCallback {
     fun onSuccess(resultJson: String)
+
     fun onFailure(error: SelfSdkException)
+
     fun onCancelled()
 }

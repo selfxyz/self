@@ -2,12 +2,11 @@
 
 package xyz.self.sdk.handlers
 
+import xyz.self.sdk.bridge.BridgeDomain
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import xyz.self.sdk.bridge.BridgeDomain
 
 class CryptoHandlerTest {
-
     @Test
     fun `domain is CRYPTO`() {
         // CryptoHandler constructor initializes AndroidKeyStore which is unavailable
