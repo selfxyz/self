@@ -152,9 +152,33 @@ actual class SelfSdk private constructor(
 
     private fun buildQueryParams(request: VerificationRequest): String? {
         val parts = mutableListOf<String>()
-        config.endpoint.let { parts.add("endpoint=${encodeParam(it)}") }
-        request.scope?.let { parts.add("scope=${encodeParam(it)}") }
+
+        // Config params (always present)
+        parts.add("endpoint=${encodeParam(config.endpoint)}")
+        parts.add("appEndpoint=${encodeParam(config.appEndpoint ?: config.endpoint)}")
+        parts.add("environment=${encodeParam(config.environment.queryValue)}")
+        parts.add("version=${config.version}")
+
+        // Optional config params
+        config.appName?.let { parts.add("appName=${encodeParam(it)}") }
+        config.endpointType?.let { parts.add("endpointType=${encodeParam(it)}") }
+        config.chainID?.let { parts.add("chainID=$it") }
+
+        // Request params
+        request.verificationId?.let { parts.add("verificationId=${encodeParam(it)}") }
         request.userId?.let { parts.add("userId=${encodeParam(it)}") }
+        request.scope?.let { parts.add("scope=${encodeParam(it)}") }
+        if (request.disclosures.isNotEmpty()) {
+            parts.add("disclosures=${encodeParam(request.disclosures.joinToString(","))}")
+        }
+        request.resultType?.let { parts.add("resultType=${encodeParam(it)}") }
+        if (request.excludedCountries.isNotEmpty()) {
+            parts.add("excludedCountries=${encodeParam(request.excludedCountries.joinToString(","))}")
+        }
+        request.userIdType?.let { parts.add("userIdType=${encodeParam(it)}") }
+        request.userDefinedData?.let { parts.add("userDefinedData=${encodeParam(it)}") }
+        request.selfDefinedData?.let { parts.add("selfDefinedData=${encodeParam(it)}") }
+
         return parts.joinToString("&").ifEmpty { null }
     }
 

@@ -65,8 +65,10 @@ class SelfVerificationActivity : AppCompatActivity() {
 
     private fun buildQueryParams(): String {
         val requestJson = intent.getStringExtra(EXTRA_VERIFICATION_REQUEST) ?: return ""
+        val configJson = intent.getStringExtra(EXTRA_CONFIG) ?: "{}"
         return try {
             val json = org.json.JSONObject(requestJson)
+            val config = org.json.JSONObject(configJson)
             buildString {
                 var first = true
                 fun append(key: String, value: String?) {
@@ -75,9 +77,39 @@ class SelfVerificationActivity : AppCompatActivity() {
                     append("$key=${Uri.encode(value)}")
                     first = false
                 }
-                append("endpoint", json.optString("endpoint", null))
-                append("scope", json.optString("scope", null))
+
+                // Config params (always present)
+                val endpoint = config.optString("endpoint", "https://api.self.xyz")
+                append("endpoint", endpoint)
+                val appEndpoint = config.optString("appEndpoint", null)
+                append("appEndpoint", if (appEndpoint.isNullOrEmpty()) endpoint else appEndpoint)
+                append("environment", config.optString("environment", "prod"))
+                append("version", config.optInt("version", 1).toString())
+
+                // Optional config params
+                append("appName", config.optString("appName", null))
+                append("endpointType", config.optString("endpointType", null))
+                val chainID = config.optInt("chainID", 0)
+                if (chainID != 0) append("chainID", chainID.toString())
+
+                // Request params
+                append("verificationId", json.optString("verificationId", null))
                 append("userId", json.optString("userId", null))
+                append("scope", json.optString("scope", null))
+                val disclosures = json.optJSONArray("disclosures")
+                if (disclosures != null && disclosures.length() > 0) {
+                    val items = (0 until disclosures.length()).map { disclosures.getString(it) }
+                    append("disclosures", items.joinToString(","))
+                }
+                append("resultType", json.optString("resultType", null))
+                val excludedCountries = json.optJSONArray("excludedCountries")
+                if (excludedCountries != null && excludedCountries.length() > 0) {
+                    val items = (0 until excludedCountries.length()).map { excludedCountries.getString(it) }
+                    append("excludedCountries", items.joinToString(","))
+                }
+                append("userIdType", json.optString("userIdType", null))
+                append("userDefinedData", json.optString("userDefinedData", null))
+                append("selfDefinedData", json.optString("selfDefinedData", null))
             }
         } catch (_: Exception) {
             ""

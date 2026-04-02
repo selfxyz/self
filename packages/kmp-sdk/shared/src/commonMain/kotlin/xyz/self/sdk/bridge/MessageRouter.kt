@@ -17,7 +17,10 @@ class MessageRouter(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     private val handlers = mutableMapOf<BridgeDomain, BridgeHandler>()
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+    }
 
     fun register(handler: BridgeHandler) {
         handlers[handler.domain] = handler

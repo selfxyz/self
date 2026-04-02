@@ -40,19 +40,12 @@ final class SelfWebViewHost: NSObject {
     func loadContent(queryParams: String) {
         guard let webView = webView else { return }
 
-        if isDebugMode {
-            let urlString = "http://localhost:5173/tunnel/tour/1?\(queryParams)"
-            if let url = URL(string: urlString) {
-                webView.load(URLRequest(url: url))
-            }
-        } else {
-            var urlString = "https://self-app-alpha.vercel.app/tunnel/tour/1"
-            if !queryParams.isEmpty {
-                urlString += "?\(queryParams)"
-            }
-            if let url = URL(string: urlString) {
-                webView.load(URLRequest(url: url))
-            }
+        var urlString = "https://self-app-alpha.vercel.app/tunnel/tour/1"
+        if !queryParams.isEmpty {
+            urlString += "?\(queryParams)"
+        }
+        if let url = URL(string: urlString) {
+            webView.load(URLRequest(url: url))
         }
     }
 

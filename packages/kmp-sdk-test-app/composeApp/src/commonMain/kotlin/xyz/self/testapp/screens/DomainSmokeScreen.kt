@@ -16,7 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -120,7 +120,7 @@ private fun SmokeCard(domain: String, result: SmokeResult) {
             )
             CheckStatus.PENDING -> Triple(
                 MaterialTheme.colorScheme.surfaceVariant,
-                Icons.Default.HourglassEmpty,
+                Icons.Default.Refresh,
                 MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }

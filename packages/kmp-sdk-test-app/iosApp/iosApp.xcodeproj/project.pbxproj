@@ -131,7 +131,7 @@
 			);
 			mainGroup = B10000040000000000000001;
 			packageReferences = (
-				0979CBA62F44010F007B599C /* XCLocalSwiftPackageReference "self-sdk-swift" */,
+				0979CBA62F44010F007B599C /* XCLocalSwiftPackageReference "../../self-sdk-swift" */,
 			);
 			productRefGroup = B10000040000000000000003 /* Products */;
 			projectDirPath = "";
@@ -192,7 +192,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/..\"\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "export JAVA_HOME=$(/usr/libexec/java_home -v 17 2>/dev/null || echo /opt/homebrew/opt/openjdk@17)\nexport PATH=\"$JAVA_HOME/bin:$PATH\"\ncd \"$SRCROOT/..\"\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -269,7 +269,7 @@
 				CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5B29R5LYHQ;
+				DEVELOPMENT_TEAM = HU25D6ZXR2;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -278,9 +278,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Self Test";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs access to your camera to scan the MRZ code on your passport.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -293,7 +293,7 @@
 					"-framework",
 					ComposeApp,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.self.testapp;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.self.kmptestapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -309,7 +309,7 @@
 				CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5B29R5LYHQ;
+				DEVELOPMENT_TEAM = HU25D6ZXR2;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -318,9 +318,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Self Test";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs access to your camera to scan the MRZ code on your passport.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -333,7 +333,7 @@
 					"-framework",
 					ComposeApp,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.self.testapp;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.self.kmptestapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -365,7 +365,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		0979CBA62F44010F007B599C /* XCLocalSwiftPackageReference "self-sdk-swift" */ = {
+		0979CBA62F44010F007B599C /* XCLocalSwiftPackageReference "../../self-sdk-swift" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../../self-sdk-swift";
 		};

@@ -82,6 +82,17 @@ kotlin {
             implementation("androidx.appcompat:appcompat:1.7.0")
             implementation("androidx.activity:activity-ktx:1.9.3")
             implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+            // Retained handler dependencies (not registered in 3-domain scope, but kept for future use)
+            implementation("org.jmrtd:jmrtd:0.8.1")
+            implementation("net.sf.scuba:scuba-sc-android:0.0.18")
+            implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
+            implementation("commons-io:commons-io:2.14.0")
+            implementation("androidx.biometric:biometric:1.2.0-alpha05")
+            implementation("com.google.mlkit:text-recognition:16.0.1")
+            implementation("androidx.camera:camera-core:1.4.1")
+            implementation("androidx.camera:camera-camera2:1.4.1")
+            implementation("androidx.camera:camera-lifecycle:1.4.1")
+            implementation("androidx.camera:camera-view:1.4.1")
         }
     }
 }

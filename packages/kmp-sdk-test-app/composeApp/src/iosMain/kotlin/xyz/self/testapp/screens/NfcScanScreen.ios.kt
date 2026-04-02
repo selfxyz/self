@@ -17,15 +17,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import xyz.self.sdk.models.NfcScanState
-import xyz.self.sdk.providers.SdkProviderRegistry
 import xyz.self.testapp.components.NfcProgressIndicator
 import xyz.self.testapp.models.VerificationFlowState
 import xyz.self.testapp.utils.Logger
 import xyz.self.testapp.viewmodels.VerificationViewModel
-import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalMaterial3Api::class)
@@ -222,15 +219,17 @@ fun NfcScanScreen(
 
 /**
  * Checks if NFC is available on this device
+ * NOTE: Temporarily disabled — nfc provider moved out of 3-domain scope.
+ * Will be re-enabled when NFC provider is added back.
  */
 @OptIn(ExperimentalForeignApi::class)
 private fun isNfcAvailable(): Boolean {
-    val provider = SdkProviderRegistry.nfc ?: return false
-    return provider.isAvailable()
+    return false
 }
 
 /**
- * Scans passport using NFC via Swift helper (through SdkProviderRegistry)
+ * Scans passport using NFC via Swift helper
+ * NOTE: Temporarily disabled — nfc provider moved out of 3-domain scope.
  */
 private suspend fun scanPassportWithNfc(
     passportNumber: String,
@@ -239,51 +238,7 @@ private suspend fun scanPassportWithNfc(
     onProgress: (NfcScanState) -> Unit,
 ): JsonElement =
     suspendCancellableCoroutine { cont ->
-        val provider = SdkProviderRegistry.nfc
-        if (provider == null) {
-            cont.resumeWithException(
-                Exception("NFC provider not configured. Call SelfSdkSwift.configure() first."),
-            )
-            return@suspendCancellableCoroutine
-        }
-
-        provider.scanPassport(
-            passportNumber = passportNumber,
-            dateOfBirth = dateOfBirth,
-            dateOfExpiry = dateOfExpiry,
-            onProgress = { stateAny ->
-                try {
-                    val stateIndex =
-                        when (stateAny) {
-                            is Number -> stateAny.toInt()
-                            else -> 0
-                        }
-                    val state = NfcScanState.entries.getOrNull(stateIndex)
-                    if (state != null) {
-                        onProgress(state)
-                    }
-                } catch (e: Exception) {
-                    Logger.e("NfcScan", "Failed to convert progress state", e)
-                }
-            },
-            onComplete = { result ->
-                if (cont.isActive) {
-                    try {
-                        val jsonElement = Json.parseToJsonElement(result)
-                        cont.resume(jsonElement)
-                    } catch (e: Exception) {
-                        cont.resumeWithException(Exception("Failed to parse NFC result: ${e.message}"))
-                    }
-                }
-            },
-            onError = { error ->
-                if (cont.isActive) {
-                    cont.resumeWithException(Exception(error))
-                }
-            },
+        cont.resumeWithException(
+            Exception("NFC provider not configured. nfc provider is not in current scope."),
         )
-
-        cont.invokeOnCancellation {
-            provider.cancelScan()
-        }
     }

@@ -51,8 +51,9 @@ public class WebViewProviderImpl: NSObject {
 
         let wv = WKWebView(frame: .zero, configuration: config)
         wv.isOpaque = false
-        wv.backgroundColor = .white
+        wv.backgroundColor = .clear
         wv.scrollView.isScrollEnabled = true
+        wv.scrollView.bounces = false
 
         if #available(iOS 16.4, *), isDebugMode {
             wv.isInspectable = true
@@ -60,29 +61,12 @@ public class WebViewProviderImpl: NSObject {
 
         self.webView = wv
 
-        // Load the bundled HTML or localhost for debug
-        if isDebugMode {
-            var urlString = "http://localhost:5173"
-            if let params = queryParams, !params.isEmpty {
-                urlString += "?\(params)"
-            }
-            if let url = URL(string: urlString) {
-                wv.load(URLRequest(url: url))
-            }
-        } else {
-            // Load from app bundle
-            if let htmlURL = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "self-sdk-web") {
-                var targetURL = htmlURL
-                if let params = queryParams, !params.isEmpty {
-                    var components = URLComponents(url: htmlURL, resolvingAgainstBaseURL: false)
-                    components?.query = params
-                    targetURL = components?.url ?? htmlURL
-                }
-                wv.loadFileURL(targetURL, allowingReadAccessTo: htmlURL.deletingLastPathComponent())
-            } else {
-                NSLog("SelfSDK-WebView: ERROR - index.html not found in self-sdk-web bundle directory")
-                assertionFailure("SelfSDK: index.html not found in self-sdk-web bundle directory. Ensure the web assets are included in the app bundle.")
-            }
+        var urlString = "https://self-app-alpha.vercel.app/tunnel/tour/1"
+        if let params = queryParams, !params.isEmpty {
+            urlString += "?\(params)"
+        }
+        if let url = URL(string: urlString) {
+            wv.load(URLRequest(url: url))
         }
 
         return wv
@@ -106,12 +90,41 @@ public class WebViewProviderImpl: NSObject {
             return existingVC
         }
 
-        let vc = UIViewController()
-        if let wv = webView {
-            vc.view = wv
-        }
+        let vc = WebViewHostController(webView: webView)
         self.viewController = vc
         return vc
+    }
+}
+
+// MARK: - Host VC that embeds the WKWebView with proper Auto Layout
+
+private class WebViewHostController: UIViewController {
+    private let embeddedWebView: WKWebView?
+
+    init(webView: WKWebView?) {
+        self.embeddedWebView = webView
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .black
+
+        guard let wv = embeddedWebView else { return }
+        wv.translatesAutoresizingMaskIntoConstraints = false
+        wv.scrollView.contentInsetAdjustmentBehavior = .never
+        view.addSubview(wv)
+        NSLayoutConstraint.activate([
+            wv.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            wv.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            wv.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            wv.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
     }
 }
 

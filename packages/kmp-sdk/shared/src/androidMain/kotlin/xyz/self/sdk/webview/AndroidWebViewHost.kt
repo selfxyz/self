@@ -118,6 +118,8 @@ class AndroidWebViewHost(
                             val origin = request.origin?.toString() ?: ""
                             val isTrusted =
                                 origin.startsWith("https://appassets.androidplatform.net") ||
+                                    origin.startsWith("https://self-app-alpha.vercel.app") ||
+                                    origin.startsWith("https://verify.didit.me") ||
                                     (isDebugMode && origin.startsWith("http://127.0.0.1"))
                             if (!isTrusted) {
                                 request.deny()
@@ -180,12 +182,7 @@ class AndroidWebViewHost(
 
                 addJavascriptInterface(BridgeJsInterface(), "SelfNativeAndroid")
 
-                val baseUrl =
-                    if (isDebugMode) {
-                        "http://127.0.0.1:5173"
-                    } else {
-                        "https://appassets.androidplatform.net/index.html"
-                    }
+                val baseUrl = "https://self-app-alpha.vercel.app/tunnel/tour/1"
                 val url = if (queryParams.isNotEmpty()) "$baseUrl?$queryParams" else baseUrl
                 loadUrl(url)
             }
