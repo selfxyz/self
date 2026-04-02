@@ -231,6 +231,8 @@ class AndroidWebViewHost(
 
     private fun buildRemoteUrl(queryParams: String): String? {
         val baseUrl = remoteWebAppBaseUrl?.takeIf { it.isNotBlank() } ?: return null
+        val uri = Uri.parse(baseUrl)
+        if (uri.scheme != "https" || uri.host.isNullOrBlank()) return null
         return buildEntryUrl(baseUrl.trimEnd('/'), queryParams)
     }
 
@@ -296,6 +298,7 @@ class AndroidWebViewHost(
     private fun isAllowedRemoteOrigin(url: String): Boolean {
         val baseUrl = remoteWebAppBaseUrl?.takeIf { it.isNotBlank() } ?: return false
         val baseUri = Uri.parse(baseUrl)
+        if (baseUri.scheme != "https" || baseUri.host.isNullOrBlank()) return false
         val candidateUri = Uri.parse(url)
 
         return baseUri.scheme == candidateUri.scheme &&

@@ -99,9 +99,12 @@ final class SelfWebViewHost: NSObject {
     }
 
     private func loadVerifiedRemoteContent(queryParams: String) {
-        guard let expectedSha256 = remoteWebAppIntegritySha256?.trimmingCharacters(in: .whitespacesAndNewlines),
+        guard let baseURL = remoteWebAppBaseURL,
+              baseURL.scheme == "https",
+              baseURL.host != nil,
+              let expectedSha256 = remoteWebAppIntegritySha256?.trimmingCharacters(in: .whitespacesAndNewlines),
               !expectedSha256.isEmpty,
-              let remoteURL = makeEntryURL(baseURL: remoteWebAppBaseURL, queryParams: queryParams) else {
+              let remoteURL = makeEntryURL(baseURL: baseURL, queryParams: queryParams) else {
             return
         }
 
@@ -155,7 +158,9 @@ final class SelfWebViewHost: NSObject {
             return true
         }
 
-        guard let remoteWebAppBaseURL else {
+        guard let remoteWebAppBaseURL,
+              remoteWebAppBaseURL.scheme == "https",
+              remoteWebAppBaseURL.host != nil else {
             return false
         }
 
@@ -187,6 +192,11 @@ extension SelfWebViewHost: WKNavigationDelegate {
     ) {
         guard let url = navigationAction.request.url else {
             decisionHandler(.cancel)
+            return
+        }
+
+        if navigationAction.targetFrame != nil && !navigationAction.targetFrame!.isMainFrame {
+            decisionHandler(.allow)
             return
         }
 
@@ -241,7 +251,14 @@ private final class SelfBundledAssetSchemeHandler: NSObject, WKURLSchemeHandler 
         let rawPath = requestURL.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         let normalizedPath = rawPath.removingPercentEncoding ?? rawPath
         let relativePath = normalizedPath.isEmpty || !normalizedPath.contains(".") ? "index.html" : normalizedPath
-        return rootURL.appendingPathComponent(relativePath, isDirectory: false)
+        let fileURL = rootURL.appendingPathComponent(relativePath, isDirectory: false).standardized
+        let rootPath = rootURL.standardized.path.hasSuffix("/")
+            ? rootURL.standardized.path
+            : rootURL.standardized.path + "/"
+        guard fileURL.path.hasPrefix(rootPath) || fileURL.path == rootURL.standardized.path else {
+            return nil
+        }
+        return fileURL
     }
 
     private func mimeType(for pathExtension: String) -> String {
