@@ -62,13 +62,14 @@ class SelfVerificationActivity : AppCompatActivity() {
         router.register(CryptoHandler())
         router.register(LifecycleHandler(this))
 
-        webViewHost = AndroidWebViewHost(
-            context = this,
-            router = router,
-            isDebugMode = isDebugMode,
-            remoteWebAppBaseUrl = remoteWebAppBaseUrl,
-            remoteWebAppIntegritySha256 = remoteWebAppIntegritySha256,
-        )
+        webViewHost =
+            AndroidWebViewHost(
+                context = this,
+                router = router,
+                isDebugMode = isDebugMode,
+                remoteWebAppBaseUrl = remoteWebAppBaseUrl,
+                remoteWebAppIntegritySha256 = remoteWebAppIntegritySha256,
+            )
 
         val queryParams =
             buildString {

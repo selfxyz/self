@@ -22,9 +22,10 @@ import android.webkit.WebViewClient
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewAssetLoader
-import java.net.HttpURLConnection
-import java.net.URL
 import xyz.self.sdk.bridge.MessageRouter
+import java.net.HttpURLConnection
+import java.net.URI
+import java.net.URL
 
 class AndroidWebViewHost(
     private val context: Context,
@@ -34,6 +35,7 @@ class AndroidWebViewHost(
     private val remoteWebAppIntegritySha256: String? = null,
 ) {
     private lateinit var webView: WebView
+
     @Volatile
     private var isDestroyed = false
     var fileUploadCallback: ValueCallback<Array<Uri>>? = null
@@ -148,7 +150,6 @@ class AndroidWebViewHost(
                                     return
                                 }
 
-
                             val neededPermissions = mutableListOf<String>()
                             if (request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
                                 neededPermissions.add(Manifest.permission.CAMERA)
@@ -229,14 +230,12 @@ class AndroidWebViewHost(
 
     private fun buildDebugUrl(queryParams: String): String = buildEntryUrl(DEBUG_ORIGIN, queryParams)
 
-    private fun buildRemoteUrl(queryParams: String): String? {
-        val baseUrl = remoteWebAppBaseUrl?.takeIf { it.isNotBlank() } ?: return null
-        val uri = Uri.parse(baseUrl)
-        if (uri.scheme != "https" || uri.host.isNullOrBlank()) return null
-        return buildEntryUrl(baseUrl.trimEnd('/'), queryParams)
-    }
+    private fun buildRemoteUrl(queryParams: String): String? = RemoteNavigationPolicy.buildRemoteEntryUrl(remoteWebAppBaseUrl, queryParams)
 
-    private fun buildEntryUrl(baseUrl: String, queryParams: String): String {
+    private fun buildEntryUrl(
+        baseUrl: String,
+        queryParams: String,
+    ): String {
         val separator = if (queryParams.isEmpty()) "" else "?$queryParams"
         return "$baseUrl/tunnel/tour/1$separator"
     }
@@ -265,8 +264,11 @@ class AndroidWebViewHost(
         }.start()
     }
 
-    private fun fetchAndVerifyRemoteEntry(remoteUrl: String, expectedSha256: String): String? {
-        return try {
+    private fun fetchAndVerifyRemoteEntry(
+        remoteUrl: String,
+        expectedSha256: String,
+    ): String? =
+        try {
             val connection = URL(remoteUrl).openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
             connection.instanceFollowRedirects = false
@@ -281,20 +283,21 @@ class AndroidWebViewHost(
                 Log.w("WebViewHost", "Remote web app integrity check failed due to unexpected content type ${connection.contentType}")
                 null
             } else {
-                val body = connection.inputStream.use { stream ->
-                    val buffer = java.io.ByteArrayOutputStream()
-                    val chunk = ByteArray(8192)
-                    var totalRead = 0
-                    var bytesRead: Int
-                    while (stream.read(chunk).also { bytesRead = it } != -1) {
-                        totalRead += bytesRead
-                        if (totalRead > MAX_REMOTE_ENTRY_BYTES) {
-                            throw IllegalStateException("Remote entry response exceeded ${MAX_REMOTE_ENTRY_BYTES} bytes")
+                val body =
+                    connection.inputStream.use { stream ->
+                        val buffer = java.io.ByteArrayOutputStream()
+                        val chunk = ByteArray(8192)
+                        var totalRead = 0
+                        var bytesRead: Int
+                        while (stream.read(chunk).also { bytesRead = it } != -1) {
+                            totalRead += bytesRead
+                            if (totalRead > MAX_REMOTE_ENTRY_BYTES) {
+                                throw IllegalStateException("Remote entry response exceeded ${MAX_REMOTE_ENTRY_BYTES} bytes")
+                            }
+                            buffer.write(chunk, 0, bytesRead)
                         }
-                        buffer.write(chunk, 0, bytesRead)
+                        buffer.toByteArray()
                     }
-                    buffer.toByteArray()
-                }
                 if (sha256Hex(body) == normalizeSha256(expectedSha256)) {
                     String(body, Charsets.UTF_8)
                 } else {
@@ -306,26 +309,10 @@ class AndroidWebViewHost(
             Log.w("WebViewHost", "Remote web app integrity check failed", error)
             null
         }
-    }
 
-    private fun isAllowedRemoteOrigin(url: String): Boolean {
-        val baseUrl = remoteWebAppBaseUrl?.takeIf { it.isNotBlank() } ?: return false
-        val baseUri = Uri.parse(baseUrl)
-        if (baseUri.scheme != "https" || baseUri.host.isNullOrBlank()) return false
-        val candidateUri = Uri.parse(url)
+    private fun isAllowedRemoteOrigin(url: String): Boolean = RemoteNavigationPolicy.isAllowedRemoteOrigin(url, remoteWebAppBaseUrl)
 
-        return baseUri.scheme == candidateUri.scheme &&
-            baseUri.host == candidateUri.host &&
-            resolvePort(baseUri) == resolvePort(candidateUri)
-    }
-
-    private fun resolvePort(uri: Uri): Int =
-        when {
-            uri.port != -1 -> uri.port
-            uri.scheme == "https" -> 443
-            uri.scheme == "http" -> 80
-            else -> -1
-        }
+    private fun resolvePort(uri: Uri): Int = RemoteNavigationPolicy.resolvePort(URI(uri.toString()))
 
     private fun sha256Hex(bytes: ByteArray): String = RemoteContentIntegrity.sha256Hex(bytes)
 
@@ -338,14 +325,16 @@ class AndroidWebViewHost(
         }
     }
 
-    private fun isBundledOrigin(uri: Uri): Boolean =
-        isMatchingOrigin(uri, "https", BUNDLED_HOST, 443)
+    private fun isBundledOrigin(uri: Uri): Boolean = isMatchingOrigin(uri, "https", BUNDLED_HOST, 443)
 
-    private fun isDebugOrigin(uri: Uri): Boolean =
-        isMatchingOrigin(uri, "http", "127.0.0.1", 5173)
+    private fun isDebugOrigin(uri: Uri): Boolean = isMatchingOrigin(uri, "http", "127.0.0.1", 5173)
 
-    private fun isMatchingOrigin(uri: Uri, scheme: String, host: String, port: Int): Boolean =
-        uri.scheme == scheme && uri.host == host && resolvePort(uri) == port
+    private fun isMatchingOrigin(
+        uri: Uri,
+        scheme: String,
+        host: String,
+        port: Int,
+    ): Boolean = uri.scheme == scheme && uri.host == host && resolvePort(uri) == port
 
     companion object {
         private const val BUNDLED_HOST = "appassets.androidplatform.net"

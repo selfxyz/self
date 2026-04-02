@@ -9,7 +9,6 @@ final class SelfWebViewHost: NSObject {
     fileprivate static let bundledScheme = "self-sdk"
     fileprivate static let bundledHost = "app"
     fileprivate static let bundledRootFolder = "self-sdk-web"
-    private static let allowedSubframeHosts: Set<String> = ["verify.didit.me"]
 
     private var webView: WKWebView?
     private let router: MessageRouter
@@ -59,7 +58,8 @@ final class SelfWebViewHost: NSObject {
         guard let webView = webView else { return }
 
         if isDebugMode {
-            if let url = makeEntryURL(baseURL: URL(string: "http://localhost:5173"), queryParams: queryParams) {
+            let debugBase = URL(string: "http://localhost:5173")
+            if let url = RemoteNavigationPolicy.makeEntryURL(baseURL: debugBase, queryParams: queryParams) {
                 webView.load(URLRequest(url: url))
             }
             return
@@ -79,24 +79,10 @@ final class SelfWebViewHost: NSObject {
     }
 
     private func makeBundledEntryURL(queryParams: String) -> URL? {
-        var components = URLComponents()
-        components.scheme = SelfWebViewHost.bundledScheme
-        components.host = SelfWebViewHost.bundledHost
-        components.path = "/tunnel/tour/1"
-        components.percentEncodedQuery = queryParams.isEmpty ? nil : queryParams
-        return components.url
-    }
-
-    private func makeEntryURL(baseURL: URL?, queryParams: String) -> URL? {
-        guard let baseURL else { return nil }
-        guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
-            return nil
-        }
-
-        let basePath = components.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-        components.path = "/" + [basePath, "tunnel", "tour", "1"].filter { !$0.isEmpty }.joined(separator: "/")
-        components.percentEncodedQuery = queryParams.isEmpty ? nil : queryParams
-        return components.url
+        RemoteNavigationPolicy.makeEntryURL(
+            baseURL: URL(string: "\(SelfWebViewHost.bundledScheme)://\(SelfWebViewHost.bundledHost)"),
+            queryParams: queryParams
+        )
     }
 
     private func loadVerifiedRemoteContent(queryParams: String) {
@@ -105,13 +91,15 @@ final class SelfWebViewHost: NSObject {
               baseURL.host != nil,
               let expectedSha256 = remoteWebAppIntegritySha256?.trimmingCharacters(in: .whitespacesAndNewlines),
               !expectedSha256.isEmpty,
-              let remoteURL = makeEntryURL(baseURL: baseURL, queryParams: queryParams) else {
+              let remoteURL = RemoteNavigationPolicy.makeEntryURL(baseURL: baseURL, queryParams: queryParams) else {
             return
         }
 
         Task.detached { [weak self] in
             guard let self else { return }
-            guard let verifiedHTML = await self.fetchAndVerifyRemoteEntry(url: remoteURL, expectedSha256: expectedSha256) else {
+            guard let verifiedHTML = await self.fetchAndVerifyRemoteEntry(
+                url: remoteURL, expectedSha256: expectedSha256
+            ) else {
                 return
             }
 
@@ -156,47 +144,23 @@ final class SelfWebViewHost: NSObject {
     }
 
     private func isAllowedNavigation(url: URL) -> Bool {
-        if isDebugMode {
-            return url.absoluteString.hasPrefix("http://localhost:5173")
-        }
-
-        if url.scheme == SelfWebViewHost.bundledScheme, url.host == SelfWebViewHost.bundledHost {
-            return true
-        }
-
-        guard let remoteWebAppBaseURL,
-              remoteWebAppBaseURL.scheme == "https",
-              remoteWebAppBaseURL.host != nil else {
-            return false
-        }
-
-        return url.scheme == remoteWebAppBaseURL.scheme &&
-            url.host == remoteWebAppBaseURL.host &&
-            resolvedPort(for: url) == resolvedPort(for: remoteWebAppBaseURL)
+        RemoteNavigationPolicy.isAllowedMainFrameNavigation(
+            url: url,
+            remoteWebAppBaseURL: remoteWebAppBaseURL,
+            isDebugMode: isDebugMode
+        )
     }
 
     private func resolvedPort(for url: URL) -> Int {
-        if let port = url.port {
-            return port
-        }
-        switch url.scheme {
-        case "https":
-            return 443
-        case "http":
-            return 80
-        default:
-            return -1
-        }
+        RemoteNavigationPolicy.resolvedPort(for: url)
     }
 
     private func isAllowedSubframeNavigation(url: URL) -> Bool {
-        if isAllowedNavigation(url: url) {
-            return true
-        }
-        guard url.scheme == "https", let host = url.host else {
-            return false
-        }
-        return SelfWebViewHost.allowedSubframeHosts.contains(host)
+        RemoteNavigationPolicy.isAllowedSubframeNavigation(
+            url: url,
+            remoteWebAppBaseURL: remoteWebAppBaseURL,
+            isDebugMode: isDebugMode
+        )
     }
 }
 
@@ -264,17 +228,7 @@ private final class SelfBundledAssetSchemeHandler: NSObject, WKURLSchemeHandler 
     func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {}
 
     private func resolveFileURL(for requestURL: URL, rootURL: URL) -> URL? {
-        let rawPath = requestURL.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-        let normalizedPath = rawPath.removingPercentEncoding ?? rawPath
-        let relativePath = normalizedPath.isEmpty || !normalizedPath.contains(".") ? "index.html" : normalizedPath
-        let fileURL = rootURL.appendingPathComponent(relativePath, isDirectory: false).standardized
-        let rootPath = rootURL.standardized.path.hasSuffix("/")
-            ? rootURL.standardized.path
-            : rootURL.standardized.path + "/"
-        guard fileURL.path.hasPrefix(rootPath) || fileURL.path == rootURL.standardized.path else {
-            return nil
-        }
-        return fileURL
+        BundledAssetPathResolver.resolveFileURL(for: requestURL, rootURL: rootURL)
     }
 
     private func mimeType(for pathExtension: String) -> String {
