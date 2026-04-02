@@ -35,7 +35,17 @@ export async function finalizeRecoveredDocumentRegistration(
   csca?: string,
 ): Promise<void> {
   const originalDocument = cloneForStorage(document);
-  const selectedDocumentId = (await selfClient.loadDocumentCatalog()).selectedDocumentId;
+  const originalCatalog = await selfClient.loadDocumentCatalog();
+  const originalSelectedDocument = originalCatalog.selectedDocumentId
+    ? originalCatalog.documents.find(doc => doc.id === originalCatalog.selectedDocumentId)
+    : undefined;
+  const originalSelectedDocumentSnapshot = originalSelectedDocument
+    ? {
+        id: originalSelectedDocument.id,
+        isRegistered: originalSelectedDocument.isRegistered,
+        registeredAt: originalSelectedDocument.registeredAt,
+      }
+    : undefined;
 
   try {
     if (csca) {
@@ -52,11 +62,24 @@ export async function finalizeRecoveredDocumentRegistration(
       }
     }
 
-    if (selectedDocumentId) {
+    if (originalSelectedDocumentSnapshot) {
       try {
-        await updateDocumentRegistrationState(selfClient, selectedDocumentId, false);
+        const rollbackCatalog = await selfClient.loadDocumentCatalog();
+        const rollbackDocument = rollbackCatalog.documents.find(doc => doc.id === originalSelectedDocumentSnapshot.id);
+
+        if (rollbackDocument) {
+          rollbackDocument.isRegistered = originalSelectedDocumentSnapshot.isRegistered;
+          rollbackDocument.registeredAt = originalSelectedDocumentSnapshot.registeredAt;
+          await selfClient.saveDocumentCatalog(rollbackCatalog);
+        } else {
+          await updateDocumentRegistrationState(
+            selfClient,
+            originalSelectedDocumentSnapshot.id,
+            Boolean(originalSelectedDocumentSnapshot.isRegistered),
+          );
+        }
       } catch (rollbackError) {
-        console.error('Rollback failed while clearing the registration flag during recovery:', rollbackError);
+        console.error('Rollback failed while restoring the registration flag during recovery:', rollbackError);
       }
     }
 

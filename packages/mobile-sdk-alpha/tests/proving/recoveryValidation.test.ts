@@ -17,6 +17,7 @@ const markCurrentDocumentAsRegisteredMock = vi.fn();
 const restorePassportDataWithRightCSCAmock = vi.fn();
 const storePassportDataMock = vi.fn();
 const updateDocumentRegistrationStateMock = vi.fn();
+const saveDocumentCatalogMock = vi.fn();
 
 vi.mock('@selfxyz/common/utils/passports/validate', () => ({
   isUserRegisteredWithAlternativeCSCA: (...args: unknown[]) => isUserRegisteredWithAlternativeCSCAMock(...args),
@@ -34,12 +35,24 @@ const documentFixture = {
   documentType: 'passport',
 } as IDDocument;
 
-function createSelfClient() {
+function createSelfClient({
+  selectedDocumentId = 'doc-1',
+  documents = [],
+}: {
+  selectedDocumentId?: string | undefined;
+  documents?: Array<Record<string, unknown>>;
+} = {}) {
+  const catalog = {
+    selectedDocumentId,
+    documents: [...documents],
+  };
+
   return {
     loadDocumentCatalog: async () => ({
-      selectedDocumentId: 'doc-1',
-      documents: [],
+      ...catalog,
+      documents: catalog.documents.map(doc => ({ ...doc })),
     }),
+    saveDocumentCatalog: saveDocumentCatalogMock,
     getProtocolState: () => ({
       passport: {
         commitment_tree: 'passport-tree',
@@ -133,6 +146,7 @@ describe('validateRecoverySecretForDocument', () => {
 describe('finalizeRecoveredDocumentRegistration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    saveDocumentCatalogMock.mockReset();
   });
 
   it('rolls back document state when registration marking fails after a CSCA restore', async () => {
@@ -151,9 +165,21 @@ describe('finalizeRecoveredDocumentRegistration', () => {
       },
     } as IDDocument;
 
-    await expect(finalizeRecoveredDocumentRegistration(createSelfClient(), document, 'new-csca')).rejects.toThrow(
-      'catalog save failed',
-    );
+    await expect(
+      finalizeRecoveredDocumentRegistration(
+        createSelfClient({
+          documents: [
+            {
+              id: 'doc-1',
+              isRegistered: false,
+              registeredAt: undefined,
+            },
+          ],
+        }),
+        document,
+        'new-csca',
+      ),
+    ).rejects.toThrow('catalog save failed');
 
     expect(restorePassportDataWithRightCSCAmock).toHaveBeenCalledWith(expect.anything(), document, 'new-csca');
     expect(storePassportDataMock).toHaveBeenCalledWith(
@@ -164,30 +190,113 @@ describe('finalizeRecoveredDocumentRegistration', () => {
         }),
       }),
     );
-    expect(updateDocumentRegistrationStateMock).toHaveBeenCalledWith(expect.anything(), 'doc-1', false);
+    expect(saveDocumentCatalogMock).toHaveBeenCalledWith({
+      selectedDocumentId: 'doc-1',
+      documents: [
+        {
+          id: 'doc-1',
+          isRegistered: false,
+          registeredAt: undefined,
+        },
+      ],
+    });
+    expect(updateDocumentRegistrationStateMock).not.toHaveBeenCalled();
   });
 
   it('does not attempt document restore when mark fails without a CSCA override', async () => {
     markCurrentDocumentAsRegisteredMock.mockRejectedValue(new Error('catalog save failed'));
 
-    await expect(finalizeRecoveredDocumentRegistration(createSelfClient(), documentFixture)).rejects.toThrow(
-      'catalog save failed',
-    );
+    await expect(
+      finalizeRecoveredDocumentRegistration(
+        createSelfClient({
+          documents: [
+            {
+              id: 'doc-1',
+              isRegistered: false,
+              registeredAt: undefined,
+            },
+          ],
+        }),
+        documentFixture,
+      ),
+    ).rejects.toThrow('catalog save failed');
 
     expect(restorePassportDataWithRightCSCAmock).not.toHaveBeenCalled();
     expect(storePassportDataMock).not.toHaveBeenCalled();
-    expect(updateDocumentRegistrationStateMock).toHaveBeenCalledWith(expect.anything(), 'doc-1', false);
+    expect(saveDocumentCatalogMock).toHaveBeenCalledWith({
+      selectedDocumentId: 'doc-1',
+      documents: [
+        {
+          id: 'doc-1',
+          isRegistered: false,
+          registeredAt: undefined,
+        },
+      ],
+    });
+    expect(updateDocumentRegistrationStateMock).not.toHaveBeenCalled();
   });
 
-  it('still clears the registration flag when restoring the original document fails', async () => {
+  it('restores the original registration state when mark fails for a previously registered document', async () => {
+    markCurrentDocumentAsRegisteredMock.mockRejectedValue(new Error('catalog save failed'));
+
+    await expect(
+      finalizeRecoveredDocumentRegistration(
+        createSelfClient({
+          documents: [
+            {
+              id: 'doc-1',
+              isRegistered: true,
+              registeredAt: 1234,
+            },
+          ],
+        }),
+        documentFixture,
+      ),
+    ).rejects.toThrow('catalog save failed');
+
+    expect(saveDocumentCatalogMock).toHaveBeenCalledWith({
+      selectedDocumentId: 'doc-1',
+      documents: [
+        {
+          id: 'doc-1',
+          isRegistered: true,
+          registeredAt: 1234,
+        },
+      ],
+    });
+    expect(updateDocumentRegistrationStateMock).not.toHaveBeenCalled();
+  });
+
+  it('still restores the registration state when restoring the original document fails', async () => {
     storePassportDataMock.mockRejectedValue(new Error('document rollback failed'));
     markCurrentDocumentAsRegisteredMock.mockRejectedValue(new Error('catalog save failed'));
 
     await expect(
-      finalizeRecoveredDocumentRegistration(createSelfClient(), documentFixture, 'new-csca'),
+      finalizeRecoveredDocumentRegistration(
+        createSelfClient({
+          documents: [
+            {
+              id: 'doc-1',
+              isRegistered: false,
+              registeredAt: undefined,
+            },
+          ],
+        }),
+        documentFixture,
+        'new-csca',
+      ),
     ).rejects.toThrow('catalog save failed');
 
     expect(storePassportDataMock).toHaveBeenCalledTimes(1);
-    expect(updateDocumentRegistrationStateMock).toHaveBeenCalledWith(expect.anything(), 'doc-1', false);
+    expect(saveDocumentCatalogMock).toHaveBeenCalledWith({
+      selectedDocumentId: 'doc-1',
+      documents: [
+        {
+          id: 'doc-1',
+          isRegistered: false,
+          registeredAt: undefined,
+        },
+      ],
+    });
   });
 });
