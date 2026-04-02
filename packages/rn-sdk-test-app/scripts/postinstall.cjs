@@ -24,6 +24,15 @@ if (process.platform !== 'darwin' || isCi || process.env.SKIP_RN_SDK_TEST_APP_PO
   process.exit(0);
 }
 
+const rubyVersion = spawnSync('ruby', ['-e', 'puts RUBY_VERSION'], { encoding: 'utf8' });
+const version = (rubyVersion.stdout || '').trim();
+const [major, minor] = version.split('.').map(Number);
+
+if (!version || major < 3 || (major === 3 && minor < 2)) {
+  console.log(`[rn-sdk-test-app] Skipping iOS pod install: Ruby ${version || 'not found'} < 3.2 required. Install Ruby 3.2+ to enable.`);
+  process.exit(0);
+}
+
 const bundleCheck = spawnSync('bundle', ['check'], {
   cwd: iosDir,
   stdio: 'inherit',
