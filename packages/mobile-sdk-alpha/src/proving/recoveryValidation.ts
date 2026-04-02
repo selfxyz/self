@@ -65,6 +65,7 @@ export async function finalizeRecoveredDocumentRegistration(
     if (originalSelectedDocumentSnapshot) {
       try {
         const rollbackCatalog = await selfClient.loadDocumentCatalog();
+        rollbackCatalog.selectedDocumentId = originalCatalog.selectedDocumentId;
         const rollbackDocument = rollbackCatalog.documents.find(doc => doc.id === originalSelectedDocumentSnapshot.id);
 
         if (rollbackDocument) {
