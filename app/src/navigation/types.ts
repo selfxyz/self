@@ -153,7 +153,7 @@ export type OnboardingRoutesParamList = {
   Disclaimer: undefined;
   KycSuccess:
     | {
-        userId?: string;
+        sessionId?: string;
       }
     | undefined;
   KYCVerified:

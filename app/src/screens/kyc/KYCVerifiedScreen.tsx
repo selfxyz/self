@@ -75,7 +75,7 @@ const KYCVerifiedScreen: React.FC = () => {
       //TODO improvement: instead of removing it here, we could do it in provingMachine's final state(error/completed)
       //if we do that, the card will still be displayed in Homescreen as 'Pending' if user click back midway during provingMachine
       if (pendingVerification) {
-        removePendingVerification(pendingVerification.userId);
+        removePendingVerification(pendingVerification.sessionId);
       }
 
       const documentMetadata: {

@@ -12,9 +12,7 @@ export interface BridgeDocumentsAdapter {
   deleteDocument(id: string): Promise<void>;
 }
 
-export function bridgeDocumentsAdapter(
-  bridge: WebViewBridge,
-): BridgeDocumentsAdapter {
+export function bridgeDocumentsAdapter(bridge: WebViewBridge): BridgeDocumentsAdapter {
   return {
     loadDocumentCatalog(): Promise<unknown> {
       return bridge.request('documents', 'loadCatalog');

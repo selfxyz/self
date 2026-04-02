@@ -8,8 +8,8 @@ import { usePendingKycRecovery } from '@/hooks/usePendingKycRecovery';
 import { navigationRef } from '@/navigation';
 
 // Mock dependencies
-jest.mock('@/hooks/useSumsubWebSocket', () => ({
-  useSumsubWebSocket: jest.fn(() => ({
+jest.mock('@/hooks/useDiditWebSocket', () => ({
+  useDiditWebSocket: jest.fn(() => ({
     subscribe: jest.fn(),
     unsubscribeAll: jest.fn(),
   })),
@@ -39,10 +39,8 @@ describe('usePendingKycRecovery', () => {
     jest.useFakeTimers();
 
     // Setup default mocks
-    const { useSumsubWebSocket } = jest.requireMock(
-      '@/hooks/useSumsubWebSocket',
-    );
-    useSumsubWebSocket.mockReturnValue({
+    const { useDiditWebSocket } = jest.requireMock('@/hooks/useDiditWebSocket');
+    useDiditWebSocket.mockReturnValue({
       subscribe: mockSubscribe,
       unsubscribeAll: mockUnsubscribeAll,
     });
@@ -79,7 +77,7 @@ describe('usePendingKycRecovery', () => {
     usePendingKycStore.mockReturnValue({
       pendingVerifications: [
         {
-          userId: 'user-123',
+          sessionId: 'session-123',
           status: 'processing',
           documentId: 'doc-456',
           timeoutAt: Date.now() + 10000,
@@ -102,7 +100,7 @@ describe('usePendingKycRecovery', () => {
     usePendingKycStore.mockReturnValue({
       pendingVerifications: [
         {
-          userId: 'user-123',
+          sessionId: 'session-123',
           status: 'processing',
           documentId: 'doc-456',
           timeoutAt: Date.now() + 10000,
@@ -133,10 +131,10 @@ describe('usePendingKycRecovery', () => {
     });
   });
 
-  it('should not attempt recovery for same userId twice', () => {
+  it('should not attempt recovery for same sessionId twice', () => {
     const { usePendingKycStore } = jest.requireMock('@/stores/pendingKycStore');
     const verification = {
-      userId: 'user-123',
+      sessionId: 'session-123',
       status: 'processing' as const,
       documentId: 'doc-456',
       timeoutAt: Date.now() + 10000,
@@ -156,7 +154,7 @@ describe('usePendingKycRecovery', () => {
     // Rerender with same verification
     rerender();
 
-    // Should not navigate again for same userId
+    // Should not navigate again for same sessionId
     expect(mockNavigationRef.navigate).toHaveBeenCalledTimes(1);
   });
 
@@ -165,7 +163,7 @@ describe('usePendingKycRecovery', () => {
     usePendingKycStore.mockReturnValue({
       pendingVerifications: [
         {
-          userId: 'user-789',
+          sessionId: 'session-789',
           status: 'pending',
           timeoutAt: Date.now() + 10000,
         },
@@ -175,7 +173,25 @@ describe('usePendingKycRecovery', () => {
 
     renderHook(() => usePendingKycRecovery());
 
-    expect(mockSubscribe).toHaveBeenCalledWith('user-789');
+    expect(mockSubscribe).toHaveBeenCalledWith('session-789');
+  });
+
+  it('should recover legacy pending verification entries that only store userId', () => {
+    const { usePendingKycStore } = jest.requireMock('@/stores/pendingKycStore');
+    usePendingKycStore.mockReturnValue({
+      pendingVerifications: [
+        {
+          userId: 'legacy-session-123',
+          status: 'pending',
+          timeoutAt: Date.now() + 10000,
+        },
+      ],
+      removeExpiredVerifications: mockRemoveExpiredVerifications,
+    });
+
+    renderHook(() => usePendingKycRecovery());
+
+    expect(mockSubscribe).toHaveBeenCalledWith('legacy-session-123');
   });
 
   it('should skip expired verifications', () => {
@@ -183,7 +199,7 @@ describe('usePendingKycRecovery', () => {
     usePendingKycStore.mockReturnValue({
       pendingVerifications: [
         {
-          userId: 'user-expired',
+          sessionId: 'session-expired',
           status: 'pending',
           timeoutAt: Date.now() - 1000, // Expired
         },
@@ -202,7 +218,7 @@ describe('usePendingKycRecovery', () => {
     usePendingKycStore.mockReturnValue({
       pendingVerifications: [
         {
-          userId: 'user-123',
+          sessionId: 'session-123',
           status: 'processing',
           documentId: 'doc-456',
           timeoutAt: Date.now() + 10000,
@@ -233,12 +249,12 @@ describe('usePendingKycRecovery', () => {
     usePendingKycStore.mockReturnValue({
       pendingVerifications: [
         {
-          userId: 'user-pending',
+          sessionId: 'session-pending',
           status: 'pending',
           timeoutAt: Date.now() + 10000,
         },
         {
-          userId: 'user-processing',
+          sessionId: 'session-processing',
           status: 'processing',
           documentId: 'doc-789',
           timeoutAt: Date.now() + 10000,

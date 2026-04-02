@@ -51,7 +51,6 @@ describe('REGISTER KYC Circuit Tests', () => {
       KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH
     );
     const nullifierInputs = [
-      ...'sumsub'.split('').map((x) => x.charCodeAt(0)),
       ...idnumber,
       ...input.data_padded.slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH),
     ];

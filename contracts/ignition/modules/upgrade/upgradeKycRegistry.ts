@@ -14,20 +14,16 @@ export default buildModule("UpgradeKycRegistryModule", (m) => {
     throw new Error("KYC Registry proxy address not found in deployed_addresses.json");
   }
 
-  // Deploy PoseidonT3 library (required by KYC registry)
   const poseidonT3 = m.library("PoseidonT3");
 
-  // Deploy new KYC implementation with PoseidonT3 linked
   const newKycImpl = m.contract("IdentityRegistryKycImplV1", [], {
     libraries: { PoseidonT3: poseidonT3 },
   });
 
-  // Get proxy reference
   const kycProxy = m.contractAt("IdentityRegistryKycImplV1", kycProxyAddress, {
     id: "KycRegistryProxy",
   });
 
-  // Code-only upgrade — no new reinitializer needed
   m.call(kycProxy, "upgradeToAndCall", [newKycImpl, "0x"], {
     after: [newKycImpl],
   });

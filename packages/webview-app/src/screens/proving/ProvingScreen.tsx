@@ -2,95 +2,63 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useMemo, useState } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid-web';
-import type { VerificationResult } from '@selfxyz/webview-bridge';
+
+import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
-
-function titleCaseDisclosure(disclosure: string): string {
-  return disclosure
-    .replace(/[_-]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, (match) => match.toUpperCase());
-}
+import { WEB_SAFE_AREA } from '../../utils/insets';
+import { titleCaseDisclosure } from '../../utils/provingUtils';
+import { hasDiscloseRequestContext } from '../../utils/verificationRequest';
 
 export const ProvingScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic, lifecycle } = useSelfClient();
-  const {
-    request,
-    displayLabels,
-    requestType,
-    appName,
-    appEndpoint,
-    timestamp,
-    verificationId,
-  } = useVerificationRequest();
-  const [proving, setProving] = useState(false);
+  const { request, displayLabels, appName, appEndpoint, timestamp } = useVerificationRequest();
+  const hasValidRequestContext = hasDiscloseRequestContext({ request, displayLabels });
+
+  useEffect(() => {
+    if (!hasValidRequestContext) {
+      navigate('/', { replace: true });
+    }
+  }, [hasValidRequestContext, navigate]);
 
   const proofItems = useMemo(() => {
     if (displayLabels && displayLabels.length > 0) {
-      return displayLabels.map((label) => ({ label }));
+      return displayLabels.map(label => ({ label }));
     }
-    return (request.disclosures ?? []).map((key) => ({
+    return (request.disclosures ?? []).map(key => ({
       label: titleCaseDisclosure(key),
     }));
   }, [displayLabels, request.disclosures]);
 
-  const onVerify = useCallback(async () => {
-    const result: VerificationResult = {
-      success: true,
-      userId: request.userId,
-      verificationId,
-      claims: {
-        resultType: requestType,
-      },
-    };
-
+  const onVerify = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('prove_verify_pressed');
-    setProving(true);
+    navigate('/proving/generating', { replace: true });
+  }, [analytics, haptic, navigate]);
 
-    try {
-      await lifecycle.setResult(result);
-
-      navigate('/proving/result', {
-        state: { success: true, result, resultSent: true },
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Proving failed';
-      analytics.trackEvent('prove_verify_failed', { error: message });
-      navigate('/proving/result', {
-        state: { success: false, error: message, result, resultSent: false },
-      });
-    } finally {
-      setProving(false);
-    }
-  }, [
-    analytics,
-    haptic,
-    lifecycle,
-    navigate,
-    request.userId,
-    requestType,
-    verificationId,
-  ]);
-
-  const onCancel = useCallback(() => {
+  const onCancel = useCallback(async () => {
     haptic.trigger('selection');
     analytics.trackEvent('prove_verify_cancelled');
-    lifecycle.dismiss({ reason: 'user_cancel' });
-    navigate('/');
+    try {
+      await lifecycle.dismiss({ reason: 'user_cancel' });
+    } finally {
+      navigate('/', { replace: true });
+    }
   }, [analytics, haptic, lifecycle, navigate]);
+
+  if (!hasValidRequestContext) {
+    return null;
+  }
 
   return (
     <ProofRequestScreen
-      insets={{ top: 0, bottom: 0 }}
-      variant={proving ? 'loading' : 'default'}
+      {...WEB_SAFE_AREA}
+      variant="default"
       onClose={onCancel}
       onConfirm={onVerify}
       appIcon={<SelfLogo size={40} />}
@@ -98,6 +66,7 @@ export const ProvingScreen: React.FC = () => {
       appEndpoint={appEndpoint}
       timestamp={timestamp}
       items={proofItems}
+      documentType="passport"
     />
   );
 };

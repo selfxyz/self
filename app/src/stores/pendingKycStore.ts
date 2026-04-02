@@ -16,19 +16,19 @@ const VERIFICATION_TIMEOUT_MS = 48 * 60 * 60 * 1000; // 48 hours TODO seshanth
 interface PendingKycState {
   pendingVerifications: PendingKycVerification[];
 
-  addPendingVerification: (userId: string) => void;
+  addPendingVerification: (sessionId: string) => void;
   updateVerificationStatus: (
-    userId: string,
+    sessionId: string,
     status: PendingKycStatus,
     errorMessage?: string,
     documentId?: string,
   ) => void;
-  removePendingVerification: (userId: string) => void;
+  removePendingVerification: (sessionId: string) => void;
   removeExpiredVerifications: () => void;
   clearAllPendingVerifications: () => void;
   hasPendingVerification: () => boolean;
   getPendingVerification: (
-    userId: string,
+    sessionId: string,
   ) => PendingKycVerification | undefined;
 }
 
@@ -37,14 +37,16 @@ export const usePendingKycStore = create<PendingKycState>()(
     (set, get) => ({
       pendingVerifications: [],
 
-      addPendingVerification: (userId: string) => {
+      addPendingVerification: (sessionId: string) => {
         const now = Date.now();
         set(state => ({
           pendingVerifications: [
-            // Remove any existing entry for this userId
-            ...state.pendingVerifications.filter(v => v.userId !== userId),
+            // Remove any existing entry for this sessionId
+            ...state.pendingVerifications.filter(
+              v => v.sessionId !== sessionId,
+            ),
             {
-              userId,
+              sessionId,
               createdAt: now,
               status: 'pending',
               timeoutAt: now + VERIFICATION_TIMEOUT_MS,
@@ -54,14 +56,14 @@ export const usePendingKycStore = create<PendingKycState>()(
       },
 
       updateVerificationStatus: (
-        userId: string,
+        sessionId: string,
         status: PendingKycStatus,
         errorMessage?: string,
         documentId?: string,
       ) => {
         set(state => ({
           pendingVerifications: state.pendingVerifications.map(v =>
-            v.userId === userId
+            v.sessionId === sessionId
               ? {
                   ...v,
                   status,
@@ -73,10 +75,10 @@ export const usePendingKycStore = create<PendingKycState>()(
         }));
       },
 
-      removePendingVerification: (userId: string) => {
+      removePendingVerification: (sessionId: string) => {
         set(state => ({
           pendingVerifications: state.pendingVerifications.filter(
-            v => v.userId !== userId,
+            v => v.sessionId !== sessionId,
           ),
         }));
       },
@@ -97,11 +99,12 @@ export const usePendingKycStore = create<PendingKycState>()(
       hasPendingVerification: () =>
         get().pendingVerifications.some(v => v.status === 'pending'),
 
-      getPendingVerification: (userId: string) =>
-        get().pendingVerifications.find(v => v.userId === userId),
+      getPendingVerification: (sessionId: string) =>
+        get().pendingVerifications.find(v => v.sessionId === sessionId),
     }),
     {
       name: 'pending-kyc-storage',
+      version: 1,
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),

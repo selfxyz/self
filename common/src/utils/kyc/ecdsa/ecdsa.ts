@@ -1,8 +1,24 @@
 import { poseidon5 } from 'poseidon-lite';
+
+import { packBytesAndPoseidon } from '../../hash.js';
 import { modulus } from './utils.js';
+
 import { addPoint, Base8, mulPointEscalar, Point, subOrder } from '@zk-kit/baby-jubjub';
 import { EdDSAPoseidon, Signature } from '@zk-kit/eddsa-poseidon';
-import { packBytesAndPoseidon } from '../../hash.js';
+
+export function buffer2bits(buff) {
+  const res = [];
+  for (let i = 0; i < buff.length; i++) {
+    for (let j = 0; j < 8; j++) {
+      if ((buff[i] >> j) & 1) {
+        res.push(1n);
+      } else {
+        res.push(0n);
+      }
+    }
+  }
+  return res;
+}
 
 export function signEdDSA(key: bigint, msg: number[]): [Signature, Point<bigint>] {
   key = modulus(key, subOrder);
@@ -28,20 +44,6 @@ export const verifyEdDSAZkKit = (pubkey: Point<bigint>, sig: Signature, msgArr: 
   let final = mulPointEscalar(V_plus_minus_R_plus_c_Pk, 8n);
   return final[0] == 0n && final[1] == 1n;
 };
-
-export function buffer2bits(buff) {
-  const res = [];
-  for (let i = 0; i < buff.length; i++) {
-    for (let j = 0; j < 8; j++) {
-      if ((buff[i] >> j) & 1) {
-        res.push(1n);
-      } else {
-        res.push(0n);
-      }
-    }
-  }
-  return res;
-}
 
 //   export const verifyEdDSA = (pubkey: Point<bigint>, sig: Signature, msgStr: string) => {
 //     let msg = modulus(BigInt(packBytesAndPoseidon(msgStr.split('').map(c => c.charCodeAt(0)))), subOrder);

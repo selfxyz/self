@@ -1284,28 +1284,15 @@ jest.mock('react-native/Libraries/AppState/AppState', () => {
   };
 });
 
-// Mock @sumsub/react-native-mobilesdk-module
-jest.mock('@sumsub/react-native-mobilesdk-module', () => {
-  const createBuilder = () => ({
-    withHandlers: jest.fn().mockReturnThis(),
-    withDebug: jest.fn().mockReturnThis(),
-    withLocale: jest.fn().mockReturnThis(),
-    withAnalyticsEnabled: jest.fn().mockReturnThis(),
-    build: jest.fn().mockReturnValue({
-      launch: jest.fn().mockResolvedValue({ success: true }),
-    }),
-  });
-
-  const MockSNSMobileSDK = {
-    init: jest
-      .fn()
-      .mockImplementation((accessToken, tokenExpirationHandler) =>
-        createBuilder(),
-      ),
-  };
-
-  return {
-    __esModule: true,
-    default: MockSNSMobileSDK,
-  };
-});
+// Mock @didit-protocol/sdk-react-native
+jest.mock('@didit-protocol/sdk-react-native', () => ({
+  __esModule: true,
+  startVerification: jest.fn().mockResolvedValue({
+    type: 'completed',
+    session: { status: 'approved', sessionId: 'mock-session-id' },
+  }),
+  startVerificationWithWorkflow: jest.fn().mockResolvedValue({
+    type: 'completed',
+    session: { status: 'approved', sessionId: 'mock-session-id' },
+  }),
+}));

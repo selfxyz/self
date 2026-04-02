@@ -12,21 +12,35 @@ export interface ParsedVerificationRequestContext {
   timestamp: number;
   requestType: string;
   verificationId?: string;
+  environment: 'prod' | 'stg';
+  version: number;
+  excludedCountries: string[];
+  endpointType?: string;
+  userIdType?: string;
+  chainID?: number;
+  userDefinedData?: string;
+  selfDefinedData?: string;
 }
 
-const ALLOWED_REQUEST_TYPES = new Set([
-  'proofRequested',
-  'documentOwnershipConfirmed',
-]);
+const ALLOWED_REQUEST_TYPES = new Set(['proofRequested', 'documentOwnershipConfirmed']);
 const DEFAULT_REQUEST_TYPE = 'proofRequested';
 
 interface TargetOriginOptions {
   allowWildcard?: boolean;
 }
 
-export function parseVerificationRequestContext(
-  search: string,
-): ParsedVerificationRequestContext {
+export function hasDiscloseRequestContext(
+  context: Pick<ParsedVerificationRequestContext, 'request' | 'displayLabels'>,
+) {
+  return Boolean((context.displayLabels && context.displayLabels.length > 0) || context.request.disclosures?.length);
+}
+
+export function parseBrowserHostTargetOrigin(search: string, options: TargetOriginOptions = {}): string | undefined {
+  const params = new URLSearchParams(search);
+  return normalizeTargetOrigin(params.get('targetOrigin'), options);
+}
+
+export function parseVerificationRequestContext(search: string): ParsedVerificationRequestContext {
   const params = new URLSearchParams(search);
   const request: VerificationRequest = {
     userId: params.get('userId') ?? undefined,
@@ -37,23 +51,37 @@ export function parseVerificationRequestContext(
   const queryTimestamp = params.get('timestamp');
   const parsedTimestamp = queryTimestamp ? Number(queryTimestamp) : Number.NaN;
 
+  const rawEnv = params.get('environment');
+  const environment: 'prod' | 'stg' = rawEnv === 'staging' || rawEnv === 'stg' ? 'stg' : 'prod';
+
+  const rawVersion = params.get('version');
+  const parsedVersion = rawVersion ? Number(rawVersion) : Number.NaN;
+  const version = Number.isFinite(parsedVersion) ? parsedVersion : 1;
+
+  const endpointType = params.get('endpointType') ?? undefined;
+  const userIdType = params.get('userIdType') ?? undefined;
+  const rawChainID = params.get('chainID');
+  const chainID = rawChainID === '42220' || rawChainID === '11142220' ? Number(rawChainID) : undefined;
+  const userDefinedData = params.get('userDefinedData') ?? undefined;
+  const selfDefinedData = params.get('selfDefinedData') ?? undefined;
+
   return {
     request,
     displayLabels: parseDisplayLabels(params),
     appName: params.get('appName') ?? 'Verification',
-    appEndpoint: normalizeAppEndpoint(params.get('appEndpoint')),
+    appEndpoint: normalizeEndpoint(params.get('appEndpoint'), endpointType),
     timestamp: Number.isFinite(parsedTimestamp) ? parsedTimestamp : Date.now(),
     requestType: normalizeRequestType(params.get('resultType')),
     verificationId: params.get('verificationId') ?? undefined,
+    environment,
+    version,
+    excludedCountries: parseExcludedCountries(params),
+    endpointType,
+    userIdType,
+    chainID,
+    userDefinedData,
+    selfDefinedData,
   };
-}
-
-export function parseBrowserHostTargetOrigin(
-  search: string,
-  options: TargetOriginOptions = {},
-): string | undefined {
-  const params = new URLSearchParams(search);
-  return normalizeTargetOrigin(params.get('targetOrigin'), options);
 }
 
 function normalizeRequestType(value: string | null | undefined): string {
@@ -61,18 +89,26 @@ function normalizeRequestType(value: string | null | undefined): string {
   return ALLOWED_REQUEST_TYPES.has(value) ? value : DEFAULT_REQUEST_TYPE;
 }
 
-function normalizeAppEndpoint(value: string | null | undefined): string {
+function normalizeEndpoint(value: string | null | undefined, endpointType?: string): string {
   if (!value) return '';
+
+  const isContractType = endpointType === 'celo' || endpointType === 'staging_celo';
+  const isHttpType = endpointType === 'https' || endpointType === 'staging_https';
+
+  if (isContractType) {
+    return value.startsWith('0x') ? value : '';
+  }
+
   try {
     const endpoint = new URL(value);
     const isHttps = endpoint.protocol === 'https:';
     const isLocalHttp =
-      endpoint.protocol === 'http:' &&
-      (endpoint.hostname === 'localhost' || endpoint.hostname === '127.0.0.1');
+      endpoint.protocol === 'http:' && (endpoint.hostname === 'localhost' || endpoint.hostname === '127.0.0.1');
     if (!isHttps && !isLocalHttp) return '';
-    return endpoint.host;
+    const pathname = endpoint.pathname === '/' ? '' : endpoint.pathname;
+    return endpoint.origin + pathname;
   } catch {
-    return '';
+    return !isHttpType && value.startsWith('0x') ? value : '';
   }
 }
 
@@ -89,8 +125,7 @@ function normalizeTargetOrigin(
     const origin = new URL(value);
     const isHttps = origin.protocol === 'https:';
     const isLocalHttp =
-      origin.protocol === 'http:' &&
-      (origin.hostname === 'localhost' || origin.hostname === '127.0.0.1');
+      origin.protocol === 'http:' && (origin.hostname === 'localhost' || origin.hostname === '127.0.0.1');
     if (!isHttps && !isLocalHttp) {
       return undefined;
     }
@@ -101,7 +136,10 @@ function normalizeTargetOrigin(
 }
 
 function splitCSV(value: string): string[] {
-  return value.split(',').map((s) => s.trim()).filter(Boolean);
+  return value
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
 }
 
 function parseDisclosures(params: URLSearchParams): string[] | undefined {
@@ -109,6 +147,12 @@ function parseDisclosures(params: URLSearchParams): string[] | undefined {
   if (!raw) return undefined;
   const items = splitCSV(raw);
   return items.length > 0 ? items : undefined;
+}
+
+function parseExcludedCountries(params: URLSearchParams): string[] {
+  const raw = params.get('excludedCountries');
+  if (!raw) return [];
+  return splitCSV(raw);
 }
 
 function parseDisplayLabels(params: URLSearchParams): string[] | null {

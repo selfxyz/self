@@ -25,7 +25,7 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
 import { NavBar } from '@/components/navbar/BaseNavBar';
-import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
+import { useDiditLauncher } from '@/hooks/useDiditLauncher';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
@@ -66,19 +66,17 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
 
   const headerTitle = getHeaderTitle(documentType);
 
-  const { launchSumsubVerification, isLoading: isRetrying } = useSumsubLauncher(
-    {
-      countryCode,
-      errorSource: 'mrz_scan_failed',
-      onCancel: () => {
-        navigation.goBack();
-      },
-      onError: (_error, _result) => {
-        // Stay on this screen - user can try again
-        // Error is already logged in the hook
-      },
+  const { launchDiditVerification, isLoading: isRetrying } = useDiditLauncher({
+    countryCode,
+    errorSource: 'mrz_scan_failed',
+    onCancel: () => {
+      navigation.goBack();
     },
-  );
+    onError: (_error, _result) => {
+      // Stay on this screen - user can try again
+      // Error is already logged in the hook
+    },
+  });
 
   const handleClose = useCallback(() => {
     buttonTap();
@@ -89,8 +87,8 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
       errorSource: 'mrz_scan_failed',
     });
-    await launchSumsubVerification();
-  }, [launchSumsubVerification, trackEvent]);
+    await launchDiditVerification();
+  }, [launchDiditVerification, trackEvent]);
 
   const handleRetryOriginal = useCallback(() => {
     trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {

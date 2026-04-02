@@ -55,9 +55,8 @@ export function generateKycDiscloseInputs(
   secret: string,
   opts: KycDiscloseInputOpts,
 ): { inputs: KycDiscloseInput } {
-  const rawData = Buffer.from(serializedApplicantInfo, 'base64').toString('utf-8');
-  const serializedData = rawData.padEnd(KYC_MAX_LENGTH, '\0');
-  const msgPadded = Array.from(serializedData, x => x.charCodeAt(0));
+  const raw = Buffer.from(serializedApplicantInfo, 'base64');
+  const msgPadded = [...Array.from(raw, (b) => Number(b)), ...new Array(Math.max(0, KYC_MAX_LENGTH - raw.length)).fill(0)];
 
   const commitment = poseidon2([secret, packBytesAndPoseidon(msgPadded)]);
 
