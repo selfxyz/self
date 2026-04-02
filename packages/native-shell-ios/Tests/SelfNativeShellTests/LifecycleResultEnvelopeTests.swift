@@ -86,7 +86,7 @@ final class LifecycleResultEnvelopeTests: XCTestCase {
     func testResultErrorExtractsNestedErrorMessage() {
         let payload: [String: Any] = [
             "success": false,
-            "error": ["code": "TIMEOUT", "message": "Request timed out"],
+            "error": ["code": "TIMEOUT", "message": "Request timed out"]
         ]
         let error = SelfLifecycleResultError(payload: payload)
 

@@ -115,7 +115,7 @@ final class BridgeModelsTests: XCTestCase {
             ("analytics", .analytics),
             ("lifecycle", .lifecycle),
             ("documents", .documents),
-            ("navigation", .navigation),
+            ("navigation", .navigation)
         ]
 
         for (rawValue, expected) in domains {

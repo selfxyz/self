@@ -13,19 +13,22 @@ import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
 import xyz.self.sdk.webview.SelfVerificationActivity
 
-class LifecycleHandler(private val activity: Activity) : BridgeHandler {
+class LifecycleHandler(
+    private val activity: Activity,
+) : BridgeHandler {
     override val domain = BridgeDomain.LIFECYCLE
     internal val resultGate = LifecycleResultGate()
 
     override suspend fun handle(
         method: String,
         params: Map<String, JsonElement>,
-    ): JsonElement? = when (method) {
-        "ready" -> null
-        "dismiss" -> dismiss()
-        "setResult" -> setResult(params)
-        else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown lifecycle method: $method")
-    }
+    ): JsonElement? =
+        when (method) {
+            "ready" -> null
+            "dismiss" -> dismiss()
+            "setResult" -> setResult(params)
+            else -> throw BridgeHandlerException("METHOD_NOT_FOUND", "Unknown lifecycle method: $method")
+        }
 
     private fun dismiss(): JsonElement? {
         activity.runOnUiThread {
@@ -71,6 +74,5 @@ internal object LifecycleResultEnvelope {
             else -> JsonObject(params)
         }
 
-    fun extractSuccess(payload: JsonObject): Boolean =
-        payload["success"]?.jsonPrimitive?.booleanOrNull == true
+    fun extractSuccess(payload: JsonObject): Boolean = payload["success"]?.jsonPrimitive?.booleanOrNull == true
 }

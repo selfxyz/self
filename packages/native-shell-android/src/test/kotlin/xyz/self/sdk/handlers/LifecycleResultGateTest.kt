@@ -7,7 +7,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class LifecycleResultGateTest {
-
     @Test
     fun `first tryClaim succeeds`() {
         val gate = LifecycleResultGate()

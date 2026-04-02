@@ -2,21 +2,25 @@
 
 package xyz.self.sdk.bridge
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonPrimitive
 
 class BridgeModelsTest {
-
-    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
 
     @Test
     fun `BridgeRequest decodes from JSON`() {
-        val raw = """
+        val raw =
+            """
             {
                 "type": "request",
                 "version": 1,
@@ -26,7 +30,7 @@ class BridgeModelsTest {
                 "params": {"key": "token"},
                 "timestamp": 1000
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val req = json.decodeFromString<BridgeRequest>(raw)
 
@@ -41,7 +45,8 @@ class BridgeModelsTest {
 
     @Test
     fun `BridgeRequest decodes with empty params`() {
-        val raw = """
+        val raw =
+            """
             {
                 "type": "request",
                 "version": 1,
@@ -51,7 +56,7 @@ class BridgeModelsTest {
                 "params": {},
                 "timestamp": 2000
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val req = json.decodeFromString<BridgeRequest>(raw)
 
@@ -61,13 +66,14 @@ class BridgeModelsTest {
 
     @Test
     fun `BridgeResponse roundtrips through JSON`() {
-        val resp = BridgeResponse(
-            id = "resp-1",
-            domain = BridgeDomain.CRYPTO,
-            requestId = "req-1",
-            success = true,
-            data = JsonPrimitive("result-data"),
-        )
+        val resp =
+            BridgeResponse(
+                id = "resp-1",
+                domain = BridgeDomain.CRYPTO,
+                requestId = "req-1",
+                success = true,
+                data = JsonPrimitive("result-data"),
+            )
 
         val encoded = json.encodeToString(resp)
         val decoded = json.decodeFromString<BridgeResponse>(encoded)
@@ -84,13 +90,14 @@ class BridgeModelsTest {
 
     @Test
     fun `BridgeResponse with error roundtrips`() {
-        val resp = BridgeResponse(
-            id = "resp-2",
-            domain = BridgeDomain.SECURE_STORAGE,
-            requestId = "req-2",
-            success = false,
-            error = BridgeError(code = "MISSING_KEY", message = "Key required"),
-        )
+        val resp =
+            BridgeResponse(
+                id = "resp-2",
+                domain = BridgeDomain.SECURE_STORAGE,
+                requestId = "req-2",
+                success = false,
+                error = BridgeError(code = "MISSING_KEY", message = "Key required"),
+            )
 
         val encoded = json.encodeToString(resp)
         val decoded = json.decodeFromString<BridgeResponse>(encoded)
@@ -103,12 +110,13 @@ class BridgeModelsTest {
 
     @Test
     fun `BridgeEvent roundtrips through JSON`() {
-        val event = BridgeEvent(
-            id = "evt-1",
-            domain = BridgeDomain.NFC,
-            event = "tagDetected",
-            data = JsonPrimitive("tag-data"),
-        )
+        val event =
+            BridgeEvent(
+                id = "evt-1",
+                domain = BridgeDomain.NFC,
+                event = "tagDetected",
+                data = JsonPrimitive("tag-data"),
+            )
 
         val encoded = json.encodeToString(event)
         val decoded = json.decodeFromString<BridgeEvent>(encoded)

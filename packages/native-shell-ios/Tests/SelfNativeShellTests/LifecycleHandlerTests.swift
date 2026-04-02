@@ -26,6 +26,24 @@ private final class MockViewController: UIViewController {
 
 final class LifecycleHandlerTests: XCTestCase {
 
+    func testReadyReturnsNilWithoutSideEffects() async throws {
+        let viewController = MockViewController()
+        var dismissCallCount = 0
+
+        let handler = LifecycleHandler(
+            viewController: viewController,
+            onResult: nil,
+            onFailure: nil,
+            onDismiss: { dismissCallCount += 1 }
+        )
+
+        let result = try await handler.handle(method: "ready", params: nil)
+
+        XCTAssertNil(result)
+        XCTAssertEqual(viewController.dismissCallCount, 0)
+        XCTAssertEqual(dismissCallCount, 0)
+    }
+
     func testSetResultEmitsResultAndSuppressesDismissCallback() async throws {
         let viewController = MockViewController()
         var receivedResult: Any?
@@ -86,5 +104,23 @@ final class LifecycleHandlerTests: XCTestCase {
         _ = try await handler.handle(method: "dismiss", params: nil)
 
         XCTAssertEqual(dismissCallCount, 1)
+    }
+
+    func testUnknownMethodThrowsUnknownMethodError() async {
+        let handler = LifecycleHandler(
+            viewController: nil,
+            onResult: nil,
+            onFailure: nil,
+            onDismiss: nil
+        )
+
+        do {
+            _ = try await handler.handle(method: "notARealMethod", params: nil)
+            XCTFail("Expected unknownMethod error")
+        } catch let error as BridgeHandlerError {
+            XCTAssertEqual(error.code, "UNKNOWN_METHOD")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 }

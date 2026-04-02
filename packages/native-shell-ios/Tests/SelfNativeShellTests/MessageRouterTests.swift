@@ -170,6 +170,55 @@ final class MessageRouterTests: XCTestCase {
         XCTAssertTrue(sentJS!.contains("second"))
         XCTAssertFalse(sentJS!.contains("first"))
     }
+
+    func testPushEventSerializesEventPayload() throws {
+        var sentJS: String?
+
+        let router = MessageRouter { js in
+            sentJS = js
+        }
+
+        router.pushEvent(
+            domain: .lifecycle,
+            event: "verificationUpdated",
+            data: ["success": true, "verificationId": "ver_123"]
+        )
+
+        let event = try XCTUnwrap(parseEvent(from: try XCTUnwrap(sentJS)))
+
+        XCTAssertEqual(event["type"] as? String, "event")
+        XCTAssertEqual(event["domain"] as? String, "lifecycle")
+        XCTAssertEqual(event["event"] as? String, "verificationUpdated")
+        let data = try XCTUnwrap(event["data"] as? [String: Any])
+        XCTAssertEqual(data["success"] as? Bool, true)
+        XCTAssertEqual(data["verificationId"] as? String, "ver_123")
+    }
+
+    private func parseEvent(from js: String) -> [String: Any]? {
+        guard
+            js.hasPrefix("window.SelfNativeBridge._handleEvent('"),
+            js.hasSuffix("')")
+        else {
+            return nil
+        }
+
+        let startIndex = js.index(js.startIndex, offsetBy: "window.SelfNativeBridge._handleEvent('".count)
+        let endIndex = js.index(js.endIndex, offsetBy: -2)
+        let escaped = String(js[startIndex..<endIndex])
+        let jsonString = escaped
+            .replacingOccurrences(of: "\\u2028", with: "\u{2028}")
+            .replacingOccurrences(of: "\\u2029", with: "\u{2029}")
+            .replacingOccurrences(of: "\\r", with: "\r")
+            .replacingOccurrences(of: "\\n", with: "\n")
+            .replacingOccurrences(of: "\\'", with: "'")
+            .replacingOccurrences(of: "\\\\", with: "\\")
+
+        guard let data = jsonString.data(using: .utf8) else {
+            return nil
+        }
+
+        return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+    }
 }
 
 // MARK: - Test doubles
