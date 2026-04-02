@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
 
+import { normalizeDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
@@ -191,7 +192,9 @@ const ProofHistoryScreen: React.FC = () => {
       section: Section;
     }) => {
       try {
-        const disclosures = JSON.parse(item.disclosures);
+        const disclosures = normalizeDisclosureConfig(
+          JSON.parse(item.disclosures),
+        );
         const logoSource = item.logoBase64
           ? {
               uri:
