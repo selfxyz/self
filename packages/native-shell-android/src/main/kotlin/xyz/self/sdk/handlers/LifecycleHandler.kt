@@ -15,7 +15,7 @@ import xyz.self.sdk.webview.SelfVerificationActivity
 
 class LifecycleHandler(private val activity: Activity) : BridgeHandler {
     override val domain = BridgeDomain.LIFECYCLE
-    private var hasResult = false
+    internal val resultGate = LifecycleResultGate()
 
     override suspend fun handle(
         method: String,
@@ -29,7 +29,7 @@ class LifecycleHandler(private val activity: Activity) : BridgeHandler {
 
     private fun dismiss(): JsonElement? {
         activity.runOnUiThread {
-            if (!hasResult) {
+            if (resultGate.tryClaim()) {
                 activity.setResult(Activity.RESULT_CANCELED)
             }
             activity.finish()
@@ -39,15 +39,38 @@ class LifecycleHandler(private val activity: Activity) : BridgeHandler {
 
     private fun setResult(params: Map<String, JsonElement>): JsonElement? {
         activity.runOnUiThread {
-            hasResult = true
+            if (!resultGate.tryClaim()) return@runOnUiThread
             val intent = Intent()
-            val resultJson = JsonObject(params)
-            intent.putExtra(SelfVerificationActivity.EXTRA_RESULT_DATA, resultJson.toString())
-            val isSuccess = params["success"]?.jsonPrimitive?.booleanOrNull != false
+            val resultPayload = LifecycleResultEnvelope.extractPayload(params)
+            intent.putExtra(SelfVerificationActivity.EXTRA_RESULT_DATA, resultPayload.toString())
+            val isSuccess = LifecycleResultEnvelope.extractSuccess(resultPayload)
             val resultCode = if (isSuccess) Activity.RESULT_OK else Activity.RESULT_FIRST_USER
             activity.setResult(resultCode, intent)
             activity.finish()
         }
         return null
     }
+}
+
+internal class LifecycleResultGate {
+    private var claimed = false
+
+    fun tryClaim(): Boolean {
+        if (claimed) return false
+        claimed = true
+        return true
+    }
+
+    val isClaimed: Boolean get() = claimed
+}
+
+internal object LifecycleResultEnvelope {
+    fun extractPayload(params: Map<String, JsonElement>): JsonObject =
+        when (val nestedResult = params["result"]) {
+            is JsonObject -> nestedResult
+            else -> JsonObject(params)
+        }
+
+    fun extractSuccess(payload: JsonObject): Boolean =
+        payload["success"]?.jsonPrimitive?.booleanOrNull == true
 }
