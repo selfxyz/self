@@ -142,10 +142,10 @@ fun SdkLaunchScreen(navController: NavController) {
             }
 
             OutlinedButton(
-                onClick = { navController.navigate("passport_details") },
+                onClick = { navController.navigate("domain_smoke") },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Open Manual MRZ/NFC Flow")
+                Text("Run Domain Smoke Tests")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
