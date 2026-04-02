@@ -8,14 +8,14 @@ import { HDKey } from '@scure/bip32';
 import { generateMnemonic, mnemonicToSeedSync } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 
-const MNEMONIC_KEY = 'self_mnemonic';
-const PRIVATE_KEY_KEY = 'self_private_key';
-const DEFAULT_DERIVATION_PATH = "m/44'/60'/0'/0/0";
-
 export type StoredSecretSnapshot = {
   mnemonic: string | null;
   secret: string | null;
 };
+const PRIVATE_KEY_KEY = 'self_private_key';
+const DEFAULT_DERIVATION_PATH = "m/44'/60'/0'/0/0";
+
+export const MNEMONIC_KEY = 'self_mnemonic';
 
 function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes)

@@ -91,11 +91,12 @@ describe('RecoveryPhraseScreen', () => {
     await waitFor(() => {
       expect(screen.getByTestId('variant').textContent).toBe('revealed');
       expect(screen.getByTestId('words').textContent).toBe('');
+      expect(storageGet).toHaveBeenCalledWith('self_mnemonic');
     });
   });
 
   it('copies the resolved words to the clipboard', async () => {
-    storageGet.mockResolvedValue(JSON.stringify({ phrase: 'alpha beta gamma' }));
+    storageGet.mockResolvedValue('alpha beta gamma');
 
     render(
       <MemoryRouter>
@@ -117,8 +118,24 @@ describe('RecoveryPhraseScreen', () => {
     });
   });
 
-  it('does not switch to copied when clipboard write fails', async () => {
+  it('parses legacy json-wrapped mnemonic payloads', async () => {
     storageGet.mockResolvedValue(JSON.stringify({ phrase: 'alpha beta gamma' }));
+
+    render(
+      <MemoryRouter>
+        <RecoveryPhraseScreen />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /reveal phrase/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('words').textContent).toBe('alpha beta gamma');
+    });
+  });
+
+  it('does not switch to copied when clipboard write fails', async () => {
+    storageGet.mockResolvedValue('alpha beta gamma');
     Object.assign(navigator, {
       clipboard: {
         writeText: vi.fn().mockRejectedValue(new Error('denied')),

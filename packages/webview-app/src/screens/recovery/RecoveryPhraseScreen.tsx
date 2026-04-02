@@ -4,7 +4,7 @@
 
 import type React from 'react';
 import { useCallback, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { RecoveryPhraseVariant } from '@selfxyz/euclid';
 import { RecoveryPhraseScreen as EuclidRecoveryPhraseScreen } from '@selfxyz/euclid';
@@ -13,33 +13,49 @@ import { bridgeStorageAdapter } from '@selfxyz/webview-bridge/adapters';
 import { useBridge } from '../../providers/BridgeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-
-const MNEMONIC_KEY = 'secret';
+import { getPromptMockFromSearch, getPromptMockSearch, shouldUseHistoryBack } from '../../utils/mockOnboardingFlow';
+import { MNEMONIC_KEY } from '../../utils/secretManager';
 
 function parseMnemonicWords(raw: string | null): string[] | undefined {
   if (!raw) {
     return undefined;
   }
 
-  const parsed = JSON.parse(raw) as string | { phrase?: string };
-  const phrase = typeof parsed === 'string' ? parsed : parsed.phrase;
+  let phrase = raw;
+
+  try {
+    const parsed = JSON.parse(raw) as string | { phrase?: string };
+    phrase = typeof parsed === 'string' ? parsed : (parsed.phrase ?? raw);
+  } catch {
+    phrase = raw;
+  }
+
   const words = phrase?.trim().split(/\s+/).filter(Boolean);
 
   return words && words.length > 0 ? words : undefined;
 }
 
-export const RecoveryPhraseScreen: React.FC = () => {
-  const navigate = useNavigate();
+interface RecoveryPhraseScreenBaseProps {
+  onBack: () => void;
+  onAppleBackup: () => void;
+  onGoogleBackup: () => void;
+}
+
+const RecoveryPhraseScreenBase: React.FC<RecoveryPhraseScreenBaseProps> = ({
+  onBack,
+  onAppleBackup,
+  onGoogleBackup,
+}) => {
   const bridge = useBridge();
   const storage = useRef(bridgeStorageAdapter(bridge)).current;
   const { analytics, haptic } = useSelfClient();
   const [variant, setVariant] = useState<RecoveryPhraseVariant>('hidden');
   const [words, setWords] = useState<string[] | undefined>();
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
-    navigate(-1);
-  }, [navigate, haptic]);
+    onBack();
+  }, [haptic, onBack]);
 
   const onReveal = useCallback(async () => {
     haptic.trigger('selection');
@@ -78,9 +94,50 @@ export const RecoveryPhraseScreen: React.FC = () => {
       insets={WEB_SAFE_AREA.insets}
       words={words}
       variant={variant}
-      onBack={onBack}
+      onBack={handleBack}
       onReveal={onReveal}
       onCopy={onCopy}
+      onAppleBackup={onAppleBackup}
+      onGoogleBackup={onGoogleBackup}
+    />
+  );
+};
+
+export const OnboardingRecoveryPhraseScreen: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const mock = getPromptMockFromSearch(location.search);
+  const notificationsPath = `/onboarding/notifications${getPromptMockSearch(mock)}`;
+  const successPath = `/onboarding/success${getPromptMockSearch(mock)}`;
+
+  const onBack = useCallback(() => {
+    if (shouldUseHistoryBack()) {
+      navigate(-1);
+      return;
+    }
+
+    navigate(successPath);
+  }, [navigate, successPath]);
+
+  const advanceToNotifications = useCallback(() => {
+    navigate(notificationsPath);
+  }, [navigate, notificationsPath]);
+
+  return (
+    <RecoveryPhraseScreenBase
+      onBack={onBack}
+      onAppleBackup={advanceToNotifications}
+      onGoogleBackup={advanceToNotifications}
+    />
+  );
+};
+
+export const RecoveryPhraseScreen: React.FC = () => {
+  const navigate = useNavigate();
+
+  return (
+    <RecoveryPhraseScreenBase
+      onBack={() => navigate(-1)}
       onAppleBackup={() => navigate('/coming-soon')}
       onGoogleBackup={() => navigate('/coming-soon')}
     />

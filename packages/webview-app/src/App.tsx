@@ -47,7 +47,7 @@ import { VerificationResultScreen } from './screens/proving/VerificationResultSc
 import { BackupMethodPickerScreen } from './screens/recovery/BackupMethodPickerScreen';
 import { LaunchRecoveryScreen } from './screens/recovery/LaunchRecoveryScreen';
 import { RecoveryFailureScreen } from './screens/recovery/RecoveryFailureScreen';
-import { RecoveryPhraseScreen } from './screens/recovery/RecoveryPhraseScreen';
+import { OnboardingRecoveryPhraseScreen, RecoveryPhraseScreen } from './screens/recovery/RecoveryPhraseScreen';
 import { RecoverySuccessScreen } from './screens/recovery/RecoverySuccessScreen';
 import { SecretPhraseInputScreen } from './screens/recovery/SecretPhraseInputScreen';
 import { TourScreen as TunnelTourScreen } from './screens/tunnel/TourScreen';
@@ -75,6 +75,7 @@ export const App: React.FC = () => (
             <Route path="/onboarding/provider-result" element={<ProviderResultScreen />} />
             <Route path="/onboarding/confirm" element={<ConfirmIdentificationScreen />} />
             <Route path="/onboarding/success" element={<ScanSuccessScreen />} />
+            <Route path="/onboarding/recovery-phrase" element={<OnboardingRecoveryPhraseScreen />} />
             <Route path="/onboarding/failure" element={<RegistrationFailureScreen />} />
             <Route path="/onboarding/kyc-failure" element={<KycFailureScreen />} />
             <Route path="/proving" element={<ProvingScreen />} />

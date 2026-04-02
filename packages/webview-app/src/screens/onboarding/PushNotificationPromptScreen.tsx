@@ -39,7 +39,7 @@ export const PushNotificationPromptScreen: React.FC = () => {
       return;
     }
 
-    navigate(`/onboarding/backup${getPromptMockSearch(mock)}`);
+    navigate(`/onboarding/recovery-phrase${getPromptMockSearch(mock)}`);
   }, [mock, navigate, haptic, analytics]);
 
   return (
