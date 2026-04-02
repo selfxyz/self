@@ -5,7 +5,13 @@
 import type { DocumentCategory, IDDocument } from '@selfxyz/common';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 
-import { markCurrentDocumentAsRegistered, reStorePassportDataWithRightCSCA } from '../documents/utils';
+import { cloneForStorage } from '../adapters/browser/documents';
+import {
+  markCurrentDocumentAsRegistered,
+  reStorePassportDataWithRightCSCA,
+  storePassportData,
+  updateDocumentRegistrationState,
+} from '../documents/utils';
 import { getCommitmentTree } from '../stores';
 import type { SelfClient } from '../types/public';
 
@@ -28,11 +34,34 @@ export async function finalizeRecoveredDocumentRegistration(
   document: IDDocument,
   csca?: string,
 ): Promise<void> {
-  if (csca) {
-    await reStorePassportDataWithRightCSCA(selfClient, document, csca);
-  }
+  const originalDocument = cloneForStorage(document);
+  const selectedDocumentId = (await selfClient.loadDocumentCatalog()).selectedDocumentId;
 
-  await markCurrentDocumentAsRegistered(selfClient);
+  try {
+    if (csca) {
+      await reStorePassportDataWithRightCSCA(selfClient, document, csca);
+    }
+
+    await markCurrentDocumentAsRegistered(selfClient);
+  } catch (error) {
+    if (csca) {
+      try {
+        await storePassportData(selfClient, originalDocument);
+      } catch (rollbackError) {
+        console.error('Rollback failed while restoring the original document during recovery:', rollbackError);
+      }
+    }
+
+    if (selectedDocumentId) {
+      try {
+        await updateDocumentRegistrationState(selfClient, selectedDocumentId, false);
+      } catch (rollbackError) {
+        console.error('Rollback failed while clearing the registration flag during recovery:', rollbackError);
+      }
+    }
+
+    throw error;
+  }
 }
 
 export async function validateRecoverySecretForDocument(

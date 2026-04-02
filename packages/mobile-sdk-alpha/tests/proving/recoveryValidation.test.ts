@@ -6,13 +6,27 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { IDDocument } from '@selfxyz/common';
 
-import { validateRecoverySecretForDocument } from '../../src/proving/recoveryValidation';
+import {
+  finalizeRecoveredDocumentRegistration,
+  validateRecoverySecretForDocument,
+} from '../../src/proving/recoveryValidation';
 import type { SelfClient } from '../../src/types/public';
 
 const isUserRegisteredWithAlternativeCSCAMock = vi.fn();
+const markCurrentDocumentAsRegisteredMock = vi.fn();
+const restorePassportDataWithRightCSCAmock = vi.fn();
+const storePassportDataMock = vi.fn();
+const updateDocumentRegistrationStateMock = vi.fn();
 
 vi.mock('@selfxyz/common/utils/passports/validate', () => ({
   isUserRegisteredWithAlternativeCSCA: (...args: unknown[]) => isUserRegisteredWithAlternativeCSCAMock(...args),
+}));
+
+vi.mock('../../src/documents/utils', () => ({
+  markCurrentDocumentAsRegistered: (...args: unknown[]) => markCurrentDocumentAsRegisteredMock(...args),
+  reStorePassportDataWithRightCSCA: (...args: unknown[]) => restorePassportDataWithRightCSCAmock(...args),
+  storePassportData: (...args: unknown[]) => storePassportDataMock(...args),
+  updateDocumentRegistrationState: (...args: unknown[]) => updateDocumentRegistrationStateMock(...args),
 }));
 
 const documentFixture = {
@@ -22,6 +36,10 @@ const documentFixture = {
 
 function createSelfClient() {
   return {
+    loadDocumentCatalog: async () => ({
+      selectedDocumentId: 'doc-1',
+      documents: [],
+    }),
     getProtocolState: () => ({
       passport: {
         commitment_tree: 'passport-tree',
@@ -109,5 +127,67 @@ describe('validateRecoverySecretForDocument', () => {
     await validateRecoverySecretForDocument(createSelfClient(), documentFixture, 'matching-secret');
 
     expect(isUserRegisteredWithAlternativeCSCAMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('finalizeRecoveredDocumentRegistration', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('rolls back document state when registration marking fails after a CSCA restore', async () => {
+    restorePassportDataWithRightCSCAmock.mockImplementation(async (_client, document) => {
+      document.passportMetadata = {
+        ...(document.passportMetadata ?? {}),
+        csca: 'new-csca',
+      };
+    });
+    markCurrentDocumentAsRegisteredMock.mockRejectedValue(new Error('catalog save failed'));
+
+    const document = {
+      ...documentFixture,
+      passportMetadata: {
+        csca: 'old-csca',
+      },
+    } as IDDocument;
+
+    await expect(finalizeRecoveredDocumentRegistration(createSelfClient(), document, 'new-csca')).rejects.toThrow(
+      'catalog save failed',
+    );
+
+    expect(restorePassportDataWithRightCSCAmock).toHaveBeenCalledWith(expect.anything(), document, 'new-csca');
+    expect(storePassportDataMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        passportMetadata: expect.objectContaining({
+          csca: 'old-csca',
+        }),
+      }),
+    );
+    expect(updateDocumentRegistrationStateMock).toHaveBeenCalledWith(expect.anything(), 'doc-1', false);
+  });
+
+  it('does not attempt document restore when mark fails without a CSCA override', async () => {
+    markCurrentDocumentAsRegisteredMock.mockRejectedValue(new Error('catalog save failed'));
+
+    await expect(finalizeRecoveredDocumentRegistration(createSelfClient(), documentFixture)).rejects.toThrow(
+      'catalog save failed',
+    );
+
+    expect(restorePassportDataWithRightCSCAmock).not.toHaveBeenCalled();
+    expect(storePassportDataMock).not.toHaveBeenCalled();
+    expect(updateDocumentRegistrationStateMock).toHaveBeenCalledWith(expect.anything(), 'doc-1', false);
+  });
+
+  it('still clears the registration flag when restoring the original document fails', async () => {
+    storePassportDataMock.mockRejectedValue(new Error('document rollback failed'));
+    markCurrentDocumentAsRegisteredMock.mockRejectedValue(new Error('catalog save failed'));
+
+    await expect(
+      finalizeRecoveredDocumentRegistration(createSelfClient(), documentFixture, 'new-csca'),
+    ).rejects.toThrow('catalog save failed');
+
+    expect(storePassportDataMock).toHaveBeenCalledTimes(1);
+    expect(updateDocumentRegistrationStateMock).toHaveBeenCalledWith(expect.anything(), 'doc-1', false);
   });
 });
