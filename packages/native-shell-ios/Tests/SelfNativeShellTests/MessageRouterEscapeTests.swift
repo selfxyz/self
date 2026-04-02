@@ -14,7 +14,7 @@ final class MessageRouterEscapeTests: XCTestCase {
         router.pushEvent(domain: .lifecycle, event: "status", data: "path\\to'file\nnext\rline")
 
         let js = try! XCTUnwrap(sentJS)
-        XCTAssertTrue(js.contains("path\\\\\\\\to\\\\'file\\\\nnext\\\\rline"))
+        XCTAssertTrue(js.contains("path\\\\\\\\to\\'file\\\\nnext\\\\rline"))
     }
 
     func testPushEventEscapesUnicodeLineSeparators() {
@@ -26,7 +26,7 @@ final class MessageRouterEscapeTests: XCTestCase {
         router.pushEvent(domain: .lifecycle, event: "status", data: "before\u{2028}middle\u{2029}after")
 
         let js = try! XCTUnwrap(sentJS)
-        XCTAssertTrue(js.contains("before\\\\u2028middle\\\\u2029after"))
+        XCTAssertTrue(js.contains("before\\u2028middle\\u2029after"))
     }
 
     func testResponseEscapesPayloadForJavaScript() {
@@ -51,7 +51,7 @@ final class MessageRouterEscapeTests: XCTestCase {
         waitForExpectations(timeout: 2)
 
         let js = try! XCTUnwrap(sentJS)
-        XCTAssertTrue(js.contains("path\\\\\\\\to\\\\'file\\\\nbefore\\\\u2028after"))
+        XCTAssertTrue(js.contains("path\\\\\\\\to\\'file\\\\nbefore\\u2028after"))
     }
 }
 
