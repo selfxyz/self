@@ -14,14 +14,8 @@ import platform.UIKit.UIWindowScene
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import xyz.self.sdk.bridge.MessageRouter
-import xyz.self.sdk.handlers.AnalyticsBridgeHandler
-import xyz.self.sdk.handlers.BiometricBridgeHandler
-import xyz.self.sdk.handlers.CameraMrzBridgeHandler
 import xyz.self.sdk.handlers.CryptoBridgeHandler
-import xyz.self.sdk.handlers.DocumentsBridgeHandler
-import xyz.self.sdk.handlers.HapticBridgeHandler
 import xyz.self.sdk.handlers.LifecycleBridgeHandler
-import xyz.self.sdk.handlers.NfcBridgeHandler
 import xyz.self.sdk.handlers.SecureStorageBridgeHandler
 import xyz.self.sdk.providers.IosProviderRegistry
 import xyz.self.sdk.providers.SdkProviderRegistry
@@ -60,9 +54,10 @@ actual class SelfSdk private constructor(
         request: VerificationRequest,
         callback: SelfSdkCallback,
     ) {
-        check(IosProviderRegistry.isFullyConfigured()) {
-            "IosProviderRegistry is not configured. " +
-                "Call SelfSdkSwift.configure() from your iOS app before launching the SDK."
+        check(SdkProviderRegistry.isConfigured() && IosProviderRegistry.webView != null) {
+            "SDK providers not configured. " +
+                "Call SelfSdkSwift.configure() from your iOS app before launching the SDK. " +
+                "Required: secureStorage, crypto, and webView providers."
         }
 
         // Store callback for later
@@ -98,12 +93,15 @@ actual class SelfSdk private constructor(
             )
         }
 
-        // Register all iOS bridge handlers
+        // Register 3-domain bridge handlers
         registerHandlers(router!!, lifecycleHandler)
+
+        // Build query params from config + request
+        val queryParams = buildQueryParams(request)
 
         // Create WebView host and the web view
         webViewHost = IosWebViewHost(router!!, config.debug)
-        webViewHost!!.createWebView()
+        webViewHost!!.createWebView(queryParams)
 
         // Get the ViewController from the WebView provider and present it
         val sdkVC =
@@ -147,14 +145,24 @@ actual class SelfSdk private constructor(
         router: MessageRouter,
         lifecycleHandler: LifecycleBridgeHandler,
     ) {
-        router.register(BiometricBridgeHandler())
         router.register(SecureStorageBridgeHandler())
         router.register(CryptoBridgeHandler())
-        router.register(HapticBridgeHandler())
-        router.register(AnalyticsBridgeHandler())
         router.register(lifecycleHandler)
-        router.register(DocumentsBridgeHandler())
-        router.register(CameraMrzBridgeHandler())
-        router.register(NfcBridgeHandler(router))
     }
+
+    private fun buildQueryParams(request: VerificationRequest): String? {
+        val parts = mutableListOf<String>()
+        config.endpoint.let { parts.add("endpoint=${encodeParam(it)}") }
+        request.scope?.let { parts.add("scope=${encodeParam(it)}") }
+        request.userId?.let { parts.add("userId=${encodeParam(it)}") }
+        return parts.joinToString("&").ifEmpty { null }
+    }
+
+    private fun encodeParam(value: String): String =
+        value
+            .replace("%", "%25")
+            .replace("&", "%26")
+            .replace("=", "%3D")
+            .replace("+", "%2B")
+            .replace(" ", "%20")
 }

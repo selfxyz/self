@@ -21,8 +21,8 @@ public class WebViewProviderImpl: NSObject {
         super.init()
     }
 
-    @objc(createWebViewOnMessageReceived:isDebugMode:)
-    public func createWebView(onMessageReceived: @escaping (String) -> Void, isDebugMode: Bool) -> UIView {
+    @objc(createWebViewOnMessageReceived:isDebugMode:queryParams:)
+    public func createWebView(onMessageReceived: @escaping (String) -> Void, isDebugMode: Bool, queryParams: String? = nil) -> UIView {
         // Clean up existing webView and script handlers before creating new one
         if let existingWebView = webView {
             existingWebView.configuration.userContentController.removeScriptMessageHandler(forName: "SelfNativeIOS")
@@ -62,13 +62,23 @@ public class WebViewProviderImpl: NSObject {
 
         // Load the bundled HTML or localhost for debug
         if isDebugMode {
-            if let url = URL(string: "http://localhost:5173") {
+            var urlString = "http://localhost:5173"
+            if let params = queryParams, !params.isEmpty {
+                urlString += "?\(params)"
+            }
+            if let url = URL(string: urlString) {
                 wv.load(URLRequest(url: url))
             }
         } else {
             // Load from app bundle
             if let htmlURL = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "self-sdk-web") {
-                wv.loadFileURL(htmlURL, allowingReadAccessTo: htmlURL.deletingLastPathComponent())
+                var targetURL = htmlURL
+                if let params = queryParams, !params.isEmpty {
+                    var components = URLComponents(url: htmlURL, resolvingAgainstBaseURL: false)
+                    components?.query = params
+                    targetURL = components?.url ?? htmlURL
+                }
+                wv.loadFileURL(targetURL, allowingReadAccessTo: htmlURL.deletingLastPathComponent())
             } else {
                 NSLog("SelfSDK-WebView: ERROR - index.html not found in self-sdk-web bundle directory")
                 assertionFailure("SelfSDK: index.html not found in self-sdk-web bundle directory. Ensure the web assets are included in the app bundle.")

@@ -15,7 +15,7 @@ class IosWebViewHost(
     private val router: MessageRouter,
     private val isDebugMode: Boolean = false,
 ) {
-    fun createWebView(): UIView {
+    fun createWebView(queryParams: String? = null): UIView {
         val provider =
             IosProviderRegistry.webView
                 ?: throw IllegalStateException("WebView provider not configured")
@@ -25,6 +25,7 @@ class IosWebViewHost(
                 router.onMessageReceived(rawJson)
             },
             isDebugMode = isDebugMode,
+            queryParams = queryParams,
         )
     }
 
