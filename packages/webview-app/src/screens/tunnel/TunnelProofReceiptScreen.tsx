@@ -4,7 +4,7 @@
 
 import type React from 'react';
 import { useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid';
 
@@ -14,9 +14,11 @@ import { WEB_SAFE_AREA } from '../../utils/insets';
 import { titleCaseDisclosure } from '../../utils/provingUtils';
 
 export const TunnelProofReceiptScreen: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
   const { displayLabels, request, appName, appEndpoint, timestamp } = useVerificationRequest();
+  const backPath = (location.state as { backPath?: string } | null)?.backPath ?? '/tunnel/proof/result';
 
   const onConfirm = useCallback(() => {
     haptic.trigger('selection');
@@ -36,8 +38,8 @@ export const TunnelProofReceiptScreen: React.FC = () => {
   const onClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_proof_receipt_closed');
-    navigate(-1);
-  }, [navigate, haptic, analytics]);
+    navigate(backPath, { replace: true });
+  }, [analytics, backPath, haptic, navigate]);
 
   return (
     <ProofRequestScreen

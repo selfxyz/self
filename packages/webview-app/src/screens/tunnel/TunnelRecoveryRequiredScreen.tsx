@@ -12,10 +12,11 @@ import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const TUNNEL_RECOVERY_RETURN_PATH = '/tunnel/proof/generating';
+const TUNNEL_RECOVERY_BACK_PATH = '/tunnel/proof/generating';
 
 export const TunnelRecoveryRequiredScreen: React.FC = () => {
   const navigate = useNavigate();
-  const { analytics, haptic, lifecycle } = useSelfClient();
+  const { analytics, haptic } = useSelfClient();
 
   const onRecoverWithPhrase = useCallback(() => {
     haptic.trigger('selection');
@@ -26,9 +27,8 @@ export const TunnelRecoveryRequiredScreen: React.FC = () => {
   const onCancel = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_recovery_cancelled');
-    lifecycle.dismiss({ reason: 'back' });
-    navigate('/', { replace: true });
-  }, [analytics, haptic, lifecycle, navigate]);
+    navigate(TUNNEL_RECOVERY_BACK_PATH, { replace: true });
+  }, [analytics, haptic, navigate]);
 
   return (
     <EuclidConflictDetectedScreen

@@ -53,6 +53,7 @@ import { SecretPhraseInputScreen } from './screens/recovery/SecretPhraseInputScr
 import { TourScreen as TunnelTourScreen } from './screens/tunnel/TourScreen';
 import { TunnelCountryPickerScreen } from './screens/tunnel/TunnelCountryPickerScreen';
 import { TunnelDiscloseScreen } from './screens/tunnel/TunnelDiscloseScreen';
+import { TunnelKycFailureScreen } from './screens/tunnel/TunnelKycFailureScreen';
 import { TunnelIDTypeScreen } from './screens/tunnel/TunnelIDTypeScreen';
 import { TunnelKycSuccessScreen } from './screens/tunnel/TunnelKycSuccessScreen';
 import { TunnelKycWrapper } from './screens/tunnel/TunnelKycWrapper';
@@ -110,6 +111,7 @@ export const App: React.FC = () => (
             <Route path="/coming-soon" element={<ComingSoonScreen />} />
             <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
             <Route path="/tunnel/kyc" element={<TunnelKycWrapper />} />
+            <Route path="/tunnel/kyc-failure" element={<TunnelKycFailureScreen />} />
             <Route path="/tunnel/kyc-success" element={<TunnelKycSuccessScreen />} />
             <Route path="/tunnel/registration/country" element={<TunnelCountryPickerScreen />} />
             <Route path="/tunnel/registration/id-type" element={<TunnelIDTypeScreen />} />

@@ -21,6 +21,7 @@ const CONTAINER_ID = 'didit-sdk-container';
 type Phase = 'loading' | 'active' | 'waiting' | 'error';
 
 interface ProviderLaunchState {
+  backPath?: string;
   countryCode?: string;
   documentType?: string;
   nextPath?: string;
@@ -32,9 +33,10 @@ export const ProviderLaunchScreen: React.FC = () => {
   const { client, analytics, haptic, lifecycle } = useSelfClient();
   const { verificationId: ctxVerificationId, environment } = useVerificationRequest();
 
-  const { countryCode = '', documentType = '', nextPath } = (location.state as ProviderLaunchState) || {};
+  const { backPath, countryCode = '', documentType = '', nextPath } = (location.state as ProviderLaunchState) || {};
 
   const defaultNextPath = nextPath ?? '/onboarding/provider-result';
+  const isTunnelFlow = defaultNextPath.startsWith('/tunnel/') || backPath?.startsWith('/tunnel/') === true;
   const verificationId = ctxVerificationId ?? `didit-${Date.now()}`;
 
   const [phase, setPhase] = useState<Phase>('loading');
@@ -222,13 +224,20 @@ export const ProviderLaunchScreen: React.FC = () => {
       countryCode,
       documentType,
     });
+
+    if (isTunnelFlow) {
+      navigate(backPath ?? '/tunnel/tour/4', { replace: true });
+      return;
+    }
+
     lifecycle.dismiss({ reason: 'back' });
     if (window.history.length > 1) {
       navigate(-1);
-    } else {
-      navigate('/', { state: { skipOnboardingRedirect: true } });
+      return;
     }
-  }, [analytics, countryCode, documentType, haptic, lifecycle, navigate]);
+
+    navigate('/', { state: { skipOnboardingRedirect: true } });
+  }, [analytics, backPath, countryCode, documentType, haptic, isTunnelFlow, lifecycle, navigate]);
 
   const handleRetry = useCallback(() => {
     haptic.trigger('selection');
