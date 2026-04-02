@@ -12,6 +12,7 @@ import type { VerificationResult } from '@selfxyz/webview-bridge';
 import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const ConfirmIdentificationScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -56,7 +57,15 @@ export const ConfirmIdentificationScreen: React.FC = () => {
   }, [analytics, countryCode, documentType, haptic, lifecycle, navigate, nextPath, request.userId, verificationId]);
 
   return (
-    <>
+    <div
+      style={{
+        display: 'flex',
+        flex: 1,
+        minHeight: 0,
+        paddingTop: WEB_SAFE_AREA.insets.top,
+        paddingBottom: WEB_SAFE_AREA.insets.bottom,
+      }}
+    >
       <MockRegistrationFailureButton />
       <StatusState
         variant="success"
@@ -68,6 +77,6 @@ export const ConfirmIdentificationScreen: React.FC = () => {
         buttonText="Confirm"
         onButtonPress={onConfirm}
       />
-    </>
+    </div>
   );
 };
