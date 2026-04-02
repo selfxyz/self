@@ -71,7 +71,11 @@ class SelfVerificationActivity : AppCompatActivity() {
             val config = org.json.JSONObject(configJson)
             buildString {
                 var first = true
-                fun append(key: String, value: String?) {
+
+                fun append(
+                    key: String,
+                    value: String?,
+                ) {
                     if (value.isNullOrEmpty()) return
                     if (!first) append("&")
                     append("$key=${Uri.encode(value)}")
@@ -134,7 +138,11 @@ class SelfVerificationActivity : AppCompatActivity() {
     }
 
     @Deprecated("Use Activity Result API")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         @Suppress("DEPRECATION")
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == AndroidWebViewHost.FILE_CHOOSER_REQUEST_CODE) {

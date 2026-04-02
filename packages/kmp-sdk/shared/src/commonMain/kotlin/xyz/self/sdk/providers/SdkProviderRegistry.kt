@@ -13,8 +13,7 @@ object SdkProviderRegistry {
      * Only secureStorage and crypto are required — lifecycle is handler-only
      * with no consumer-provided provider.
      */
-    fun isConfigured(): Boolean =
-        secureStorage != null && crypto != null
+    fun isConfigured(): Boolean = secureStorage != null && crypto != null
 
     fun reset() {
         secureStorage = null

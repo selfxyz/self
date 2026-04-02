@@ -21,7 +21,6 @@ import kotlinx.serialization.json.JsonElement
 import xyz.self.sdk.models.NfcScanState
 import xyz.self.testapp.components.NfcProgressIndicator
 import xyz.self.testapp.models.VerificationFlowState
-import xyz.self.testapp.utils.Logger
 import xyz.self.testapp.viewmodels.VerificationViewModel
 import kotlin.coroutines.resumeWithException
 
@@ -223,9 +222,7 @@ fun NfcScanScreen(
  * Will be re-enabled when NFC provider is added back.
  */
 @OptIn(ExperimentalForeignApi::class)
-private fun isNfcAvailable(): Boolean {
-    return false
-}
+private fun isNfcAvailable(): Boolean = false
 
 /**
  * Scans passport using NFC via Swift helper

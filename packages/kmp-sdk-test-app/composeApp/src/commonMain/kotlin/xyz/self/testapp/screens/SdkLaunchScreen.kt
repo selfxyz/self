@@ -40,9 +40,9 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import xyz.self.sdk.api.SelfEnvironment
 import xyz.self.sdk.api.SelfSdk
 import xyz.self.sdk.api.SelfSdkCallback
-import xyz.self.sdk.api.SelfEnvironment
 import xyz.self.sdk.api.SelfSdkConfig
 import xyz.self.sdk.api.SelfSdkError
 import xyz.self.sdk.api.VerificationRequest
@@ -65,16 +65,17 @@ fun SdkLaunchScreen(navController: NavController) {
 
     val environment = if (useMockDocument) SelfEnvironment.STG else SelfEnvironment.PROD
     val coroutineScope = rememberCoroutineScope()
-    val sdk = remember(environment, appName, appEndpoint) {
-        SelfSdk.configure(
-            SelfSdkConfig(
-                environment = environment,
-                debug = true,
-                appName = appName.ifBlank { null },
-                appEndpoint = appEndpoint.ifBlank { null },
-            ),
-        )
-    }
+    val sdk =
+        remember(environment, appName, appEndpoint) {
+            SelfSdk.configure(
+                SelfSdkConfig(
+                    environment = environment,
+                    debug = true,
+                    appName = appName.ifBlank { null },
+                    appEndpoint = appEndpoint.ifBlank { null },
+                ),
+            )
+        }
     val json = remember { Json { prettyPrint = true } }
 
     Scaffold(

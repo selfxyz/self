@@ -38,14 +38,19 @@ class AndroidKeystoreCryptoProvider : CryptoProvider {
         return Base64.encodeToString(cert.publicKey.encoded, Base64.NO_WRAP)
     }
 
-    override fun sign(keyRef: String, data: String): String? {
+    override fun sign(
+        keyRef: String,
+        data: String,
+    ): String? {
         val privateKey = keyStore.getKey(keyRef, null) ?: return null
         val dataBytes = Base64.decode(data, Base64.DEFAULT)
         val signature =
-            Signature.getInstance("SHA256withECDSA").apply {
-                initSign(privateKey as java.security.PrivateKey)
-                update(dataBytes)
-            }.sign()
+            Signature
+                .getInstance("SHA256withECDSA")
+                .apply {
+                    initSign(privateKey as java.security.PrivateKey)
+                    update(dataBytes)
+                }.sign()
         return Base64.encodeToString(signature, Base64.NO_WRAP)
     }
 

@@ -9,7 +9,9 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 
-class EncryptedSharedPreferencesProvider(context: Context) : SecureStorageProvider {
+class EncryptedSharedPreferencesProvider(
+    context: Context,
+) : SecureStorageProvider {
     private val prefs: SharedPreferences
 
     init {
@@ -30,7 +32,10 @@ class EncryptedSharedPreferencesProvider(context: Context) : SecureStorageProvid
 
     override fun get(key: String): String? = prefs.getString(key, null)
 
-    override fun set(key: String, value: String) {
+    override fun set(
+        key: String,
+        value: String,
+    ) {
         prefs.edit().putString(key, value).apply()
     }
 

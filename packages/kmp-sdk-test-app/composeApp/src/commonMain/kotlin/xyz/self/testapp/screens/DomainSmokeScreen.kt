@@ -95,8 +95,9 @@ fun DomainSmokeScreen(navController: NavController) {
             SmokeCard("lifecycle", SmokeResult(CheckStatus.PASS, "ready/setResult validated via SDK launch flow"))
 
             Text(
-                text = "Lifecycle is validated end-to-end via the SDK Launch screen — " +
-                    "the WebView calls ready on load and setResult on completion.",
+                text =
+                    "Lifecycle is validated end-to-end via the SDK Launch screen — " +
+                        "the WebView calls ready on load and setResult on completion.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -105,24 +106,30 @@ fun DomainSmokeScreen(navController: NavController) {
 }
 
 @Composable
-private fun SmokeCard(domain: String, result: SmokeResult) {
+private fun SmokeCard(
+    domain: String,
+    result: SmokeResult,
+) {
     val (containerColor, icon, tint) =
         when (result.status) {
-            CheckStatus.PASS -> Triple(
-                MaterialTheme.colorScheme.primaryContainer,
-                Icons.Default.CheckCircle,
-                Color(0xFF4CAF50),
-            )
-            CheckStatus.FAIL -> Triple(
-                MaterialTheme.colorScheme.errorContainer,
-                Icons.Default.Close,
-                MaterialTheme.colorScheme.error,
-            )
-            CheckStatus.PENDING -> Triple(
-                MaterialTheme.colorScheme.surfaceVariant,
-                Icons.Default.Refresh,
-                MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            CheckStatus.PASS ->
+                Triple(
+                    MaterialTheme.colorScheme.primaryContainer,
+                    Icons.Default.CheckCircle,
+                    Color(0xFF4CAF50),
+                )
+            CheckStatus.FAIL ->
+                Triple(
+                    MaterialTheme.colorScheme.errorContainer,
+                    Icons.Default.Close,
+                    MaterialTheme.colorScheme.error,
+                )
+            CheckStatus.PENDING ->
+                Triple(
+                    MaterialTheme.colorScheme.surfaceVariant,
+                    Icons.Default.Refresh,
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+                )
         }
 
     Card(
@@ -155,8 +162,9 @@ private fun SmokeCard(domain: String, result: SmokeResult) {
 }
 
 private fun runStorageSmoke(): SmokeResult {
-    val provider = SdkProviderRegistry.secureStorage
-        ?: return SmokeResult(CheckStatus.FAIL, "Provider not configured")
+    val provider =
+        SdkProviderRegistry.secureStorage
+            ?: return SmokeResult(CheckStatus.FAIL, "Provider not configured")
     return try {
         val key = "smoke_test_key"
         val value = "smoke_test_value_${kotlin.random.Random.nextInt(100000)}"
@@ -180,8 +188,9 @@ private fun runStorageSmoke(): SmokeResult {
 }
 
 private fun runCryptoSmoke(): SmokeResult {
-    val provider = SdkProviderRegistry.crypto
-        ?: return SmokeResult(CheckStatus.FAIL, "Provider not configured")
+    val provider =
+        SdkProviderRegistry.crypto
+            ?: return SmokeResult(CheckStatus.FAIL, "Provider not configured")
     return try {
         val keyRef = "smoke_test_key_${kotlin.random.Random.nextInt(100000)}"
 

@@ -83,10 +83,11 @@ class AndroidWebViewHost(
                                 return
                             }
 
-                            val activity = context as? Activity ?: run {
-                                request.deny()
-                                return
-                            }
+                            val activity =
+                                context as? Activity ?: run {
+                                    request.deny()
+                                    return
+                                }
 
                             val neededPermissions = mutableListOf<String>()
                             if (request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
@@ -122,10 +123,11 @@ class AndroidWebViewHost(
                             fileUploadCallback?.onReceiveValue(null)
                             fileUploadCallback = filePathCallback
                             val intent = fileChooserParams?.createIntent() ?: return false
-                            val activity = context as? Activity ?: run {
-                                fileUploadCallback = null
-                                return false
-                            }
+                            val activity =
+                                context as? Activity ?: run {
+                                    fileUploadCallback = null
+                                    return false
+                                }
                             try {
                                 @Suppress("DEPRECATION")
                                 activity.startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
