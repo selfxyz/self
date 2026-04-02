@@ -4,42 +4,38 @@
 
 package xyz.self.sdk.webview
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.net.http.SslError
 import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
 import android.webkit.SslErrorHandler
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewAssetLoader
 import xyz.self.sdk.bridge.MessageRouter
 
-/**
- * Manages an Android WebView instance for hosting the Self verification UI.
- * Handles bidirectional communication between WebView JavaScript and native Kotlin code.
- *
- * Uses WebViewAssetLoader to serve bundled assets under https://appassets.androidplatform.net/
- * so the WebView has a proper origin for History API, CORS, and other web platform features.
- */
 class AndroidWebViewHost(
     private val context: Context,
     private val router: MessageRouter,
     private val isDebugMode: Boolean = false,
 ) {
     private lateinit var webView: WebView
+    var pendingPermissionRequest: PermissionRequest? = null
+    var fileUploadCallback: ValueCallback<Array<Uri>>? = null
 
-    /**
-     * Creates and configures the WebView with security settings and bridge communication.
-     */
     @SuppressLint("SetJavaScriptEnabled")
-    fun createWebView(): WebView {
-        // WebViewAssetLoader serves files from android_asset/ under a proper https:// domain,
-        // avoiding file:// origin issues with History API, CORS, etc.
-        // Custom PathHandler that serves from the self-wallet/ subdirectory of assets.
-        // This way, a request to /assets/foo.js resolves to self-wallet/assets/foo.js
-        // and /index.html resolves to self-wallet/index.html.
+    fun createWebView(queryParams: String = ""): WebView {
         val selfWalletHandler =
             WebViewAssetLoader.PathHandler { path ->
                 try {
@@ -74,18 +70,12 @@ class AndroidWebViewHost(
         webView =
             WebView(context).apply {
                 settings.apply {
-                    // Enable JavaScript for bridge communication
                     javaScriptEnabled = true
                     domStorageEnabled = true
-
-                    // File access not needed — assets served via WebViewAssetLoader
                     allowFileAccess = false
                     allowContentAccess = false
-
-                    // Media playback
                     mediaPlaybackRequiresUserGesture = false
 
-                    // Enable debugging in debug mode
                     if (isDebugMode) {
                         WebView.setWebContentsDebuggingEnabled(true)
                     }
@@ -109,7 +99,7 @@ class AndroidWebViewHost(
                             val assetHost = "https://appassets.androidplatform.net/"
                             if (url.startsWith(assetHost)) return false
                             if (isDebugMode && url.startsWith("http://127.0.0.1:5173")) return false
-                            return true // block everything else
+                            return true
                         }
 
                         override fun onReceivedSslError(
@@ -121,30 +111,87 @@ class AndroidWebViewHost(
                         }
                     }
 
-                // Register JS interface: WebView → Native communication
-                // JavaScript can call: window.SelfNativeAndroid.postMessage(json)
+                webChromeClient =
+                    object : WebChromeClient() {
+                        override fun onPermissionRequest(request: PermissionRequest?) {
+                            request ?: return
+                            val origin = request.origin?.toString() ?: ""
+                            val isTrusted =
+                                origin.startsWith("https://appassets.androidplatform.net") ||
+                                    (isDebugMode && origin.startsWith("http://127.0.0.1"))
+                            if (!isTrusted) {
+                                request.deny()
+                                return
+                            }
+
+                            val activity = context as? Activity ?: run {
+                                request.deny()
+                                return
+                            }
+
+                            val neededPermissions = mutableListOf<String>()
+                            if (request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+                                neededPermissions.add(Manifest.permission.CAMERA)
+                            }
+                            if (request.resources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
+                                neededPermissions.add(Manifest.permission.RECORD_AUDIO)
+                            }
+
+                            val missingPermissions =
+                                neededPermissions.filter {
+                                    ContextCompat.checkSelfPermission(activity, it) != PackageManager.PERMISSION_GRANTED
+                                }
+
+                            if (missingPermissions.isNotEmpty()) {
+                                pendingPermissionRequest = request
+                                ActivityCompat.requestPermissions(
+                                    activity,
+                                    missingPermissions.toTypedArray(),
+                                    CAMERA_PERMISSION_REQUEST_CODE,
+                                )
+                                return
+                            }
+
+                            request.grant(request.resources)
+                        }
+
+                        override fun onShowFileChooser(
+                            webView: WebView?,
+                            filePathCallback: ValueCallback<Array<Uri>>?,
+                            fileChooserParams: FileChooserParams?,
+                        ): Boolean {
+                            fileUploadCallback?.onReceiveValue(null)
+                            fileUploadCallback = filePathCallback
+                            val intent = fileChooserParams?.createIntent() ?: return false
+                            val activity = context as? Activity ?: run {
+                                fileUploadCallback = null
+                                return false
+                            }
+                            try {
+                                @Suppress("DEPRECATION")
+                                activity.startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
+                            } catch (e: Exception) {
+                                fileUploadCallback = null
+                                return false
+                            }
+                            return true
+                        }
+                    }
+
                 addJavascriptInterface(BridgeJsInterface(), "SelfNativeAndroid")
 
-                // Load appropriate URL based on mode
-                if (isDebugMode) {
-                    // Development mode: connect to Vite dev server
-                    // With adb reverse, Android devices can use localhost.
-                    loadUrl("http://127.0.0.1:5173")
-                } else {
-                    // Production mode: load via WebViewAssetLoader.
-                    // The custom PathHandler prepends self-wallet/ to all paths,
-                    // so /index.html → self-wallet/index.html in assets,
-                    // and /assets/foo.js → self-wallet/assets/foo.js in assets.
-                    loadUrl("https://appassets.androidplatform.net/index.html")
-                }
+                val baseUrl =
+                    if (isDebugMode) {
+                        "http://127.0.0.1:5173"
+                    } else {
+                        "https://appassets.androidplatform.net/index.html"
+                    }
+                val url = if (queryParams.isNotEmpty()) "$baseUrl?$queryParams" else baseUrl
+                loadUrl(url)
             }
         return webView
     }
 
-    /**
-     * Sends JavaScript code to the WebView for execution.
-     * Used for Native → WebView communication (responses and events).
-     */
     fun evaluateJs(js: String) {
         if (!::webView.isInitialized) return
         webView.evaluateJavascript(js, null)
@@ -155,19 +202,15 @@ class AndroidWebViewHost(
         webView.destroy()
     }
 
-    /**
-     * JavaScript interface exposed to WebView.
-     * Allows WebView to send bridge messages to native code.
-     */
     inner class BridgeJsInterface {
-        /**
-         * Called from JavaScript when a bridge request is sent.
-         * JavaScript usage: window.SelfNativeAndroid.postMessage(JSON.stringify(message))
-         */
         @JavascriptInterface
         fun postMessage(json: String) {
-            // Forward to MessageRouter for processing
             router.onMessageReceived(json)
         }
+    }
+
+    companion object {
+        const val FILE_CHOOSER_REQUEST_CODE = 1001
+        const val CAMERA_PERMISSION_REQUEST_CODE = 1002
     }
 }

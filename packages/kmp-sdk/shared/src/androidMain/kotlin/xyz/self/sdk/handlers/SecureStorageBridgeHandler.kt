@@ -4,47 +4,18 @@
 
 package xyz.self.sdk.handlers
 
-import android.content.Context
-import android.content.SharedPreferences
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
+import xyz.self.sdk.providers.SdkProviderRegistry
 
-/**
- * Android implementation of secure storage bridge handler.
- * Uses EncryptedSharedPreferences backed by Android Keystore for secure key-value storage.
- */
-class SecureStorageBridgeHandler(
-    context: Context,
-) : BridgeHandler {
+class SecureStorageBridgeHandler : BridgeHandler {
     override val domain = BridgeDomain.SECURE_STORAGE
-
-    private val prefs: SharedPreferences
-
-    init {
-        // Create master key for encryption
-        val masterKey =
-            MasterKey
-                .Builder(context)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build()
-
-        // Create encrypted shared preferences
-        prefs =
-            EncryptedSharedPreferences.create(
-                context,
-                "self_sdk_secure_prefs",
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-            )
-    }
 
     override suspend fun handle(
         method: String,
@@ -61,60 +32,49 @@ class SecureStorageBridgeHandler(
             )
         }
 
-    /**
-     * Retrieves a value from secure storage.
-     * Returns the value as a string, or null if the key doesn't exist.
-     */
     private fun get(params: Map<String, JsonElement>): JsonElement {
+        val provider =
+            SdkProviderRegistry.secureStorage
+                ?: throw BridgeHandlerException("NOT_CONFIGURED", "SecureStorage provider not configured")
         val key =
             params["key"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_KEY", "Key parameter required")
-
-        val value = prefs.getString(key, null)
-
-        return if (value != null) {
-            JsonPrimitive(value)
-        } else {
-            JsonNull
+        val value = provider.get(key)
+        return buildJsonObject {
+            put("value", if (value != null) JsonPrimitive(value) else JsonNull)
         }
     }
 
-    /**
-     * Stores a value in secure storage.
-     * The value is encrypted using Android Keystore.
-     */
     private fun set(params: Map<String, JsonElement>): JsonElement? {
+        val provider =
+            SdkProviderRegistry.secureStorage
+                ?: throw BridgeHandlerException("NOT_CONFIGURED", "SecureStorage provider not configured")
         val key =
             params["key"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_KEY", "Key parameter required")
-
         val value =
             params["value"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_VALUE", "Value parameter required")
-
-        prefs.edit().putString(key, value).apply()
-
-        return null // Success with no return value
+        provider.set(key, value)
+        return null
     }
 
-    /**
-     * Removes a value from secure storage.
-     */
     private fun remove(params: Map<String, JsonElement>): JsonElement? {
+        val provider =
+            SdkProviderRegistry.secureStorage
+                ?: throw BridgeHandlerException("NOT_CONFIGURED", "SecureStorage provider not configured")
         val key =
             params["key"]?.jsonPrimitive?.content
                 ?: throw BridgeHandlerException("MISSING_KEY", "Key parameter required")
-
-        prefs.edit().remove(key).apply()
-
-        return null // Success with no return value
+        provider.remove(key)
+        return null
     }
 
-    /**
-     * Clears all values from secure storage.
-     */
     private fun clear(): JsonElement? {
-        prefs.edit().clear().apply()
-        return null // Success with no return value
+        val provider =
+            SdkProviderRegistry.secureStorage
+                ?: throw BridgeHandlerException("NOT_CONFIGURED", "SecureStorage provider not configured")
+        provider.clear()
+        return null
     }
 }

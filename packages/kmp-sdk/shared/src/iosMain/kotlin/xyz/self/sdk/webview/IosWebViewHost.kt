@@ -8,7 +8,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIView
 import platform.UIKit.UIViewController
 import xyz.self.sdk.bridge.MessageRouter
-import xyz.self.sdk.providers.SdkProviderRegistry
+import xyz.self.sdk.providers.IosProviderRegistry
 
 @OptIn(ExperimentalForeignApi::class)
 class IosWebViewHost(
@@ -17,7 +17,7 @@ class IosWebViewHost(
 ) {
     fun createWebView(): UIView {
         val provider =
-            SdkProviderRegistry.webView
+            IosProviderRegistry.webView
                 ?: throw IllegalStateException("WebView provider not configured")
 
         return provider.createWebView(
@@ -30,14 +30,14 @@ class IosWebViewHost(
 
     fun evaluateJs(js: String) {
         val provider =
-            SdkProviderRegistry.webView
+            IosProviderRegistry.webView
                 ?: throw IllegalStateException("WebView provider not configured")
         provider.evaluateJs(js)
     }
 
     fun getViewController(): UIViewController {
         val provider =
-            SdkProviderRegistry.webView
+            IosProviderRegistry.webView
                 ?: throw IllegalStateException("WebView provider not configured")
         return provider.getViewController()
     }

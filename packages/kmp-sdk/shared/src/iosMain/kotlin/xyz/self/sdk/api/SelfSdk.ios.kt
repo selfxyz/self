@@ -23,6 +23,7 @@ import xyz.self.sdk.handlers.HapticBridgeHandler
 import xyz.self.sdk.handlers.LifecycleBridgeHandler
 import xyz.self.sdk.handlers.NfcBridgeHandler
 import xyz.self.sdk.handlers.SecureStorageBridgeHandler
+import xyz.self.sdk.providers.IosProviderRegistry
 import xyz.self.sdk.providers.SdkProviderRegistry
 import xyz.self.sdk.webview.IosWebViewHost
 
@@ -59,8 +60,8 @@ actual class SelfSdk private constructor(
         request: VerificationRequest,
         callback: SelfSdkCallback,
     ) {
-        check(SdkProviderRegistry.isConfigured()) {
-            "SdkProviderRegistry is not configured. " +
+        check(IosProviderRegistry.isFullyConfigured()) {
+            "IosProviderRegistry is not configured. " +
                 "Call SelfSdkSwift.configure() from your iOS app before launching the SDK."
         }
 
@@ -107,7 +108,7 @@ actual class SelfSdk private constructor(
         // Get the ViewController from the WebView provider and present it
         val sdkVC =
             (
-                SdkProviderRegistry.webView
+                IosProviderRegistry.webView
                     ?: throw IllegalStateException("WebView provider not configured. Call SelfSdkSwift.configure() first.")
             ).getViewController()
         sdkVC.setModalPresentationStyle(UIModalPresentationFullScreen)

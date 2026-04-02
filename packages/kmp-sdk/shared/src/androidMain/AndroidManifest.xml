@@ -1,24 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- NFC Permissions -->
-    <uses-permission android:name="android.permission.NFC" />
-
-    <!-- NFC Feature (required=false allows installation on devices without NFC) -->
-    <uses-feature
-        android:name="android.hardware.nfc"
-        android:required="false" />
-
-    <!-- Vibration for haptic feedback -->
-    <uses-permission android:name="android.permission.VIBRATE" />
-
-    <!-- Camera for MRZ scanning -->
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
-
-    <!-- Internet for API calls (if needed) -->
+    <!-- Internet for WebView content loading -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application>

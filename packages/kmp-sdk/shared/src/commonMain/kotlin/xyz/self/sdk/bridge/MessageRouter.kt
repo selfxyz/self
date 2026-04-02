@@ -31,6 +31,23 @@ class MessageRouter(
                 return // Malformed message — drop silently
             }
 
+        if (request.version != BRIDGE_PROTOCOL_VERSION) {
+            sendResponse(
+                BridgeResponse(
+                    id = generateUuid(),
+                    domain = request.domain,
+                    requestId = request.id,
+                    success = false,
+                    error =
+                        BridgeError(
+                            code = "UNSUPPORTED_VERSION",
+                            message = "Expected protocol version $BRIDGE_PROTOCOL_VERSION, got ${request.version}",
+                        ),
+                ),
+            )
+            return
+        }
+
         val handler = handlers[request.domain]
         if (handler == null) {
             sendResponse(

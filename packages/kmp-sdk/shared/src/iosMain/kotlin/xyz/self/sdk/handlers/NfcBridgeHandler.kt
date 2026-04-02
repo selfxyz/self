@@ -15,7 +15,7 @@ import xyz.self.sdk.bridge.BridgeHandlerException
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.models.NfcScanProgress
 import xyz.self.sdk.models.NfcScanState
-import xyz.self.sdk.providers.SdkProviderRegistry
+import xyz.self.sdk.providers.IosProviderRegistry
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -43,7 +43,7 @@ class NfcBridgeHandler(
     private suspend fun scan(params: Map<String, JsonElement>): JsonElement {
         NfcApduPolicy.requireSupportedParams(params)
         val provider =
-            SdkProviderRegistry.nfc
+            IosProviderRegistry.nfc
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "NFC provider not configured")
 
         val passportNumber =
@@ -103,12 +103,12 @@ class NfcBridgeHandler(
     }
 
     private fun cancelScan(): JsonElement? {
-        SdkProviderRegistry.nfc?.cancelScan()
+        IosProviderRegistry.nfc?.cancelScan()
         return null
     }
 
     private fun isSupported(): JsonElement {
-        val provider = SdkProviderRegistry.nfc ?: return JsonPrimitive(false)
+        val provider = IosProviderRegistry.nfc ?: return JsonPrimitive(false)
         return JsonPrimitive(provider.isAvailable())
     }
 }
