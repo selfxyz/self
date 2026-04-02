@@ -6,8 +6,8 @@ import UIKit
 import WebKit
 
 final class SelfWebViewHost: NSObject {
-    fileprivate static let bundledScheme = "self-sdk"
-    fileprivate static let bundledHost = "app"
+    static let bundledScheme = "self-sdk"
+    static let bundledHost = "app"
     fileprivate static let bundledRootFolder = "self-sdk-web"
 
     private var webView: WKWebView?
