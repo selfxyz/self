@@ -7,6 +7,7 @@ import { Linking, Platform } from 'react-native';
 
 import { countries } from '@selfxyz/common/constants/countries';
 import type { IdDocInput } from '@selfxyz/common/utils';
+import { normalizeDisclosureConfig } from '@selfxyz/common/utils/appType';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import type { RootStackParamList } from '@/navigation';
@@ -122,6 +123,11 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
   if (selfAppStr) {
     try {
       const selfAppJson = JSON.parse(selfAppStr);
+      if (selfAppJson.disclosures) {
+        selfAppJson.disclosures = normalizeDisclosureConfig(
+          selfAppJson.disclosures,
+        );
+      }
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
       selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 

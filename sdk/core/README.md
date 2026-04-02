@@ -216,8 +216,8 @@ const selfApp = new SelfAppBuilder({
     nationality: true,
     date_of_birth: true,
     passport_number: true,
-    minimumAge: 20,
-    excludedCountries: ['IRN', 'PRK'],
+    minimum_age: 20,
+    excluded_countries: ['IRN', 'PRK'],
     ofac: true,
   },
 }).build();

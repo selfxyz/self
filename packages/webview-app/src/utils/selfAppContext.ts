@@ -28,12 +28,12 @@ function parseDisclosureConfig(disclosures?: string[], excludedCountries?: strin
         config[d] = true;
       } else if (d.startsWith('minimumAge:')) {
         const age = parseInt(d.split(':')[1], 10);
-        if (!isNaN(age)) config.minimumAge = age;
+        if (!isNaN(age)) config.minimum_age = age;
       }
     }
   }
   if (excludedCountries && excludedCountries.length > 0) {
-    config.excludedCountries = excludedCountries;
+    config.excluded_countries = excludedCountries;
   }
   return config as SelfAppDisclosureConfig;
 }

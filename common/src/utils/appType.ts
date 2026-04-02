@@ -45,8 +45,23 @@ export interface SelfAppDisclosureConfig {
   expiry_date?: boolean;
   // custom checks
   ofac?: boolean;
-  excludedCountries?: Country3LetterCode[];
-  minimumAge?: number;
+  excluded_countries?: Country3LetterCode[];
+  minimum_age?: number;
+}
+
+export function normalizeDisclosureConfig(
+  raw: SelfAppDisclosureConfig & { excludedCountries?: Country3LetterCode[]; minimumAge?: number }
+): SelfAppDisclosureConfig {
+  const result = { ...raw } as Record<string, unknown>;
+  if ('excludedCountries' in result && !('excluded_countries' in result)) {
+    result.excluded_countries = result.excludedCountries;
+    delete result.excludedCountries;
+  }
+  if ('minimumAge' in result && !('minimum_age' in result)) {
+    result.minimum_age = result.minimumAge;
+    delete result.minimumAge;
+  }
+  return result as SelfAppDisclosureConfig;
 }
 
 export class SelfAppBuilder {

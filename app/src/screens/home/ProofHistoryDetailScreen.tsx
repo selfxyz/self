@@ -7,6 +7,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
 import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
 
+import { normalizeDisclosureConfig } from '@selfxyz/common/utils/appType';
 import {
   black,
   blue100,
@@ -47,8 +48,8 @@ enum DisclosureType {
   DATE_OF_BIRTH = 'date_of_birth',
   GENDER = 'gender',
   EXPIRY_DATE = 'expiry_date',
-  EXCLUDED_COUNTRIES = 'excludedCountries',
-  MINIMUM_AGE = 'minimumAge',
+  EXCLUDED_COUNTRIES = 'excluded_countries',
+  MINIMUM_AGE = 'minimum_age',
 }
 
 const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
@@ -56,7 +57,9 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
 }) => {
   const { data } = route.params;
   const disclosures = useMemo(() => {
-    const parsedDisclosures = JSON.parse(data.disclosures);
+    const parsedDisclosures = normalizeDisclosureConfig(
+      JSON.parse(data.disclosures),
+    );
     const result: string[] = [];
 
     Object.entries(parsedDisclosures).forEach(([key, value]) => {

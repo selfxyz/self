@@ -39,6 +39,6 @@ export interface SelfAppDisclosureConfig {
   gender?: boolean;
   expiry_date?: boolean;
   ofac?: boolean;
-  excludedCountries?: Country3LetterCode[];
-  minimumAge?: number;
+  excluded_countries?: Country3LetterCode[];
+  minimum_age?: number;
 }
