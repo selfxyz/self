@@ -60,10 +60,13 @@ final class LifecycleHandler: BridgeHandler {
     @MainActor
     private func dismiss() {
         if let vc = viewController {
+            guard !hasEmittedResult else {
+                vc.dismiss(animated: true)
+                return
+            }
+            hasEmittedResult = true
             vc.dismiss(animated: true) { [weak self] in
-                guard let self = self, !self.hasEmittedResult else { return }
-                self.hasEmittedResult = true
-                self.onDismiss?()
+                self?.onDismiss?()
             }
         } else {
             guard !hasEmittedResult else { return }

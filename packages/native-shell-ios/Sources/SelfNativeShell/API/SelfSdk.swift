@@ -46,6 +46,9 @@ final class SelfSdkViewController: UIViewController {
                     self?.callback?.onSuccess(result: [:])
                 }
             },
+            onFailure: { [weak self] error in
+                self?.callback?.onFailure(error: error)
+            },
             onDismiss: { [weak self] in
                 self?.callback?.onCancelled()
             }
