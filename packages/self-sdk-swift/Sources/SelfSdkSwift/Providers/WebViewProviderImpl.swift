@@ -31,7 +31,7 @@ public class WebViewProviderImpl: NSObject {
             self.webView = nil
             self.viewController = nil
         }
-
+        
         self.onMessageReceived = onMessageReceived
 
         // Create message proxy to avoid retain cycle
@@ -65,9 +65,11 @@ public class WebViewProviderImpl: NSObject {
         if let params = queryParams, !params.isEmpty {
             urlString += "?\(params)"
         }
-        if let url = URL(string: urlString) {
-            wv.load(URLRequest(url: url))
+        guard let url = URL(string: urlString) else {
+            NSLog("SelfSDK-WebView: Failed to construct URL from: %@", urlString)
+            return wv
         }
+        wv.load(URLRequest(url: url))
 
         return wv
     }

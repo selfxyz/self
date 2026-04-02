@@ -124,7 +124,7 @@ class SelfVerificationActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == AndroidWebViewHost.CAMERA_PERMISSION_REQUEST_CODE) {
             val pending = webViewHost.pendingPermissionRequest ?: return
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 pending.grant(pending.resources)
             } else {
                 pending.deny()

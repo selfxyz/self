@@ -17,12 +17,10 @@ import android.webkit.SslErrorHandler
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.webkit.WebViewAssetLoader
 import xyz.self.sdk.bridge.MessageRouter
 
 class AndroidWebViewHost(
@@ -36,37 +34,6 @@ class AndroidWebViewHost(
 
     @SuppressLint("SetJavaScriptEnabled")
     fun createWebView(queryParams: String = ""): WebView {
-        val selfWalletHandler =
-            WebViewAssetLoader.PathHandler { path ->
-                try {
-                    val assetPath = "self-wallet/$path"
-                    val inputStream = context.assets.open(assetPath)
-                    val mimeType =
-                        when {
-                            path.endsWith(".js") -> "application/javascript"
-                            path.endsWith(".css") -> "text/css"
-                            path.endsWith(".html") -> "text/html"
-                            path.endsWith(".json") -> "application/json"
-                            path.endsWith(".woff2") -> "font/woff2"
-                            path.endsWith(".woff") -> "font/woff"
-                            path.endsWith(".otf") -> "font/otf"
-                            path.endsWith(".ttf") -> "font/ttf"
-                            path.endsWith(".png") -> "image/png"
-                            path.endsWith(".svg") -> "image/svg+xml"
-                            else -> "application/octet-stream"
-                        }
-                    WebResourceResponse(mimeType, "UTF-8", inputStream)
-                } catch (e: Exception) {
-                    null
-                }
-            }
-
-        val assetLoader =
-            WebViewAssetLoader
-                .Builder()
-                .addPathHandler("/", selfWalletHandler)
-                .build()
-
         webView =
             WebView(context).apply {
                 settings.apply {
@@ -83,21 +50,12 @@ class AndroidWebViewHost(
 
                 webViewClient =
                     object : WebViewClient() {
-                        override fun shouldInterceptRequest(
-                            view: WebView?,
-                            request: WebResourceRequest?,
-                        ): WebResourceResponse? {
-                            request ?: return null
-                            return assetLoader.shouldInterceptRequest(request.url)
-                        }
-
                         override fun shouldOverrideUrlLoading(
                             view: WebView?,
                             request: WebResourceRequest?,
                         ): Boolean {
                             val url = request?.url?.toString() ?: return true
-                            val assetHost = "https://appassets.androidplatform.net/"
-                            if (url.startsWith(assetHost)) return false
+                            if (url.startsWith("https://self-app-alpha.vercel.app")) return false
                             if (isDebugMode && url.startsWith("http://127.0.0.1:5173")) return false
                             return true
                         }
@@ -117,8 +75,7 @@ class AndroidWebViewHost(
                             request ?: return
                             val origin = request.origin?.toString() ?: ""
                             val isTrusted =
-                                origin.startsWith("https://appassets.androidplatform.net") ||
-                                    origin.startsWith("https://self-app-alpha.vercel.app") ||
+                                origin.startsWith("https://self-app-alpha.vercel.app") ||
                                     origin.startsWith("https://verify.didit.me") ||
                                     (isDebugMode && origin.startsWith("http://127.0.0.1"))
                             if (!isTrusted) {

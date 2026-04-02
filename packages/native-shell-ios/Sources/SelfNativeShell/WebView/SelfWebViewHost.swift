@@ -44,9 +44,11 @@ final class SelfWebViewHost: NSObject {
         if !queryParams.isEmpty {
             urlString += "?\(queryParams)"
         }
-        if let url = URL(string: urlString) {
-            webView.load(URLRequest(url: url))
+        guard let url = URL(string: urlString) else {
+            NSLog("SelfWebViewHost: Failed to construct URL from: %@", urlString)
+            return
         }
+        webView.load(URLRequest(url: url))
     }
 
     func evaluateJs(_ js: String) {
