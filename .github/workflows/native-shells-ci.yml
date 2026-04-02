@@ -83,7 +83,7 @@ jobs:
       - name: Run Swift package tests
         run: |
           xcodebuild \
-            -scheme SelfNativeShell-Package \
+            -scheme SelfNativeShell \
             -destination "id=${{ steps.sim.outputs.id }}" \
             -resultBundlePath TestResults.xcresult \
             test

@@ -34,6 +34,7 @@ final class LifecycleHandlerTests: XCTestCase {
         let handler = LifecycleHandler(
             viewController: viewController,
             onResult: { receivedResult = $0 },
+            onFailure: nil,
             onDismiss: { dismissCallCount += 1 }
         )
 
@@ -58,6 +59,7 @@ final class LifecycleHandlerTests: XCTestCase {
         let handler = LifecycleHandler(
             viewController: viewController,
             onResult: nil,
+            onFailure: nil,
             onDismiss: { dismissCallCount += 1 }
         )
 
@@ -76,6 +78,7 @@ final class LifecycleHandlerTests: XCTestCase {
         let handler = LifecycleHandler(
             viewController: nil,
             onResult: nil,
+            onFailure: nil,
             onDismiss: { dismissCallCount += 1 }
         )
 
