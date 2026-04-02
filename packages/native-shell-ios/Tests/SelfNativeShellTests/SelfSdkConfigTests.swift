@@ -11,6 +11,20 @@ private final class MockSecureStorageProvider: SecureStorageProvider {
 
 final class SelfSdkConfigTests: XCTestCase {
 
+    func testDefaultsAreSetOnConstruction() {
+        let provider = MockSecureStorageProvider()
+        let config = SelfSdkConfig(
+            verificationId: "ver-123",
+            userId: "user-456",
+            secureStorageProvider: provider
+        )
+
+        XCTAssertEqual(config.environment, "prod")
+        XCTAssertEqual(config.isDebugMode, false)
+        XCTAssertEqual(config.version, 1)
+        XCTAssertTrue(config.secureStorageProvider as AnyObject === provider)
+    }
+
     func testToQueryParamsIncludesRequiredFields() {
         let config = SelfSdkConfig(
             verificationId: "ver-123",

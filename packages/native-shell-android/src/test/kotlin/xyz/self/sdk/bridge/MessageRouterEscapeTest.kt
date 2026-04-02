@@ -6,7 +6,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MessageRouterEscapeTest {
-
     @Test
     fun `escapeForJs escapes backslashes single quotes and line breaks`() {
         val raw = "path\\to'file\nnext\rline"
