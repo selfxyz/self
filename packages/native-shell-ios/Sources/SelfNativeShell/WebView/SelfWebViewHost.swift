@@ -9,6 +9,7 @@ final class SelfWebViewHost: NSObject {
     fileprivate static let bundledScheme = "self-sdk"
     fileprivate static let bundledHost = "app"
     fileprivate static let bundledRootFolder = "self-sdk-web"
+    private static let allowedSubframeHosts: Set<String> = ["verify.didit.me"]
 
     private var webView: WKWebView?
     private let router: MessageRouter
@@ -120,6 +121,8 @@ final class SelfWebViewHost: NSObject {
         }
     }
 
+    private static let maxRemoteEntryBytes = 5 * 1024 * 1024
+
     private func fetchAndVerifyRemoteEntry(url: URL, expectedSha256: String) async -> String? {
         do {
             let configuration = URLSessionConfiguration.ephemeral
@@ -131,6 +134,9 @@ final class SelfWebViewHost: NSObject {
                 return nil
             }
             guard RemoteContentIntegrity.isAcceptableMimeType(response.mimeType) else {
+                return nil
+            }
+            guard data.count <= SelfWebViewHost.maxRemoteEntryBytes else {
                 return nil
             }
 
@@ -182,6 +188,16 @@ final class SelfWebViewHost: NSObject {
             return -1
         }
     }
+
+    private func isAllowedSubframeNavigation(url: URL) -> Bool {
+        if isAllowedNavigation(url: url) {
+            return true
+        }
+        guard url.scheme == "https", let host = url.host else {
+            return false
+        }
+        return SelfWebViewHost.allowedSubframeHosts.contains(host)
+    }
 }
 
 extension SelfWebViewHost: WKNavigationDelegate {
@@ -195,8 +211,8 @@ extension SelfWebViewHost: WKNavigationDelegate {
             return
         }
 
-        if navigationAction.targetFrame != nil && !navigationAction.targetFrame!.isMainFrame {
-            decisionHandler(.allow)
+        if let targetFrame = navigationAction.targetFrame, !targetFrame.isMainFrame {
+            decisionHandler(isAllowedSubframeNavigation(url: url) ? .allow : .cancel)
             return
         }
 

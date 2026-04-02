@@ -281,7 +281,20 @@ class AndroidWebViewHost(
                 Log.w("WebViewHost", "Remote web app integrity check failed due to unexpected content type ${connection.contentType}")
                 null
             } else {
-                val body = connection.inputStream.use { it.readBytes() }
+                val body = connection.inputStream.use { stream ->
+                    val buffer = java.io.ByteArrayOutputStream()
+                    val chunk = ByteArray(8192)
+                    var totalRead = 0
+                    var bytesRead: Int
+                    while (stream.read(chunk).also { bytesRead = it } != -1) {
+                        totalRead += bytesRead
+                        if (totalRead > MAX_REMOTE_ENTRY_BYTES) {
+                            throw IllegalStateException("Remote entry response exceeded ${MAX_REMOTE_ENTRY_BYTES} bytes")
+                        }
+                        buffer.write(chunk, 0, bytesRead)
+                    }
+                    buffer.toByteArray()
+                }
                 if (sha256Hex(body) == normalizeSha256(expectedSha256)) {
                     String(body, Charsets.UTF_8)
                 } else {
@@ -341,5 +354,6 @@ class AndroidWebViewHost(
 
         const val FILE_CHOOSER_REQUEST_CODE = 1001
         const val CAMERA_PERMISSION_REQUEST_CODE = 1002
+        private const val MAX_REMOTE_ENTRY_BYTES = 5 * 1024 * 1024
     }
 }
