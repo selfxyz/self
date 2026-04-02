@@ -65,8 +65,8 @@ final class LifecycleHandler: BridgeHandler {
                 return
             }
             hasEmittedResult = true
-            vc.dismiss(animated: true) { [weak self] in
-                self?.onDismiss?()
+            vc.dismiss(animated: true) {
+                self.onDismiss?()
             }
         } else {
             guard !hasEmittedResult else { return }
