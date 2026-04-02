@@ -29,6 +29,7 @@ You are scoping KMP iOS to 3-domain parity with native-shell-ios.
 - `packages/webview-bridge/` — bridge protocol unchanged
 - `packages/webview-app/` — WebView code unchanged
 - NFC, Camera, Biometric provider code in self-sdk-swift — retain but do not require registration
+- Removing retained Swift-side NFC / biometrics code or dependencies from `packages/self-sdk-swift/` — the short-term strategy is "retain but do not register" to avoid broad Swift package churn during parity work
 
 ### Implementation Steps
 
@@ -41,6 +42,7 @@ You are scoping KMP iOS to 3-domain parity with native-shell-ios.
 **Required:** The TypeScript adapter at `webview-bridge/src/adapters/storage.ts:16` does `result?.value ?? null` — expects `{ value: string | null }`.
 
 **Change:**
+
 ```kotlin
 // Before (line 44)
 return if (value != null) JsonPrimitive(value) else JsonNull
@@ -64,12 +66,14 @@ Add import: `import kotlinx.serialization.json.buildJsonObject`
 **Current:** `createWebView(onMessageReceived:isDebugMode:)` loads `Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "self-sdk-web")` without appending query params.
 
 **Required:** native-shell-ios passes verification config as query params via `URLComponents`:
+
 ```swift
 var components = URLComponents(url: fileURL, resolvingAgainstBaseURL: false)
 components?.query = queryParams
 ```
 
 **Change the method signature:**
+
 ```swift
 // Before
 @objc(createWebViewOnMessageReceived:isDebugMode:)
@@ -84,6 +88,7 @@ public func createWebView(onMessageReceived: @escaping (String) -> Void,
 ```
 
 **Update the URL loading logic** to append query params when provided:
+
 ```swift
 if let htmlURL = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "self-sdk-web") {
     var targetURL = htmlURL
@@ -105,6 +110,7 @@ Apply the same pattern to the debug URL (`http://localhost:5173`).
 **Current (lines 18-29):** `createWebView()` calls `provider.createWebView(onMessageReceived, isDebugMode)` with no query params.
 
 **Update `WebViewProvider` interface** (in `iosMain/kotlin/xyz/self/sdk/providers/WebViewProvider.kt` or wherever it's defined) to add the query param:
+
 ```kotlin
 interface WebViewProvider {
     fun createWebView(
@@ -116,6 +122,7 @@ interface WebViewProvider {
 ```
 
 **Update `IosWebViewHost`** to forward query params from the `VerificationRequest`:
+
 ```kotlin
 fun createWebView(queryParams: String? = null): UIView {
     val provider = SdkProviderRegistry.webView
@@ -133,6 +140,7 @@ fun createWebView(queryParams: String? = null): UIView {
 **File:** `packages/kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/api/SelfSdk.ios.kt`
 
 **Current (lines 145-158) registers 9 handlers:**
+
 ```kotlin
 router.register(BiometricBridgeHandler())
 router.register(SecureStorageBridgeHandler())
@@ -146,6 +154,7 @@ router.register(NfcBridgeHandler(router))
 ```
 
 **Change to 3 handlers:**
+
 ```kotlin
 router.register(SecureStorageBridgeHandler())
 router.register(CryptoBridgeHandler())  // now from commonMain after KR-01
@@ -169,15 +178,23 @@ The launch flow receives a `VerificationRequest`. Build query params from it and
 
 Reference the native-shell-ios `SelfSdkConfig.toQueryParams()` pattern for the field list. The KMP already has structured types, so use those rather than raw string extras.
 
+#### 7. Preserve retained Swift providers without requiring them
+
+`packages/self-sdk-swift/` still contains provider implementations and dependencies for NFC, camera/MRZ, biometrics, haptics, and documents. KR-02 does not remove that code. The parity requirement is narrower:
+
+- Only `secureStorage`, `crypto`, and `webView` must be registered for the scoped KMP flow.
+- Retained Swift providers may continue to compile and ship, but they must not be required by KMP startup or `SdkProviderRegistry.isConfigured()`.
+- Document this explicitly in implementation notes so the temporary iOS package footprint is not mistaken for a spec bug.
+
 ### Files Modified
 
-| File | Change |
-|------|--------|
-| `shared/src/iosMain/.../handlers/SecureStorageBridgeHandler.kt` | Fix `get()` response shape to `{ value: ... }` |
-| `packages/self-sdk-swift/.../WebViewProviderImpl.swift` | Add `queryParams` parameter, append to URL |
-| `shared/src/iosMain/.../webview/IosWebViewHost.kt` | Forward query params to provider |
-| `shared/src/iosMain/.../providers/WebViewProvider.kt` | Add `queryParams` to interface |
-| `shared/src/iosMain/.../api/SelfSdk.ios.kt` | Register only 3 handlers, build and pass query params |
+| File                                                            | Change                                                |
+| --------------------------------------------------------------- | ----------------------------------------------------- |
+| `shared/src/iosMain/.../handlers/SecureStorageBridgeHandler.kt` | Fix `get()` response shape to `{ value: ... }`        |
+| `packages/self-sdk-swift/.../WebViewProviderImpl.swift`         | Add `queryParams` parameter, append to URL            |
+| `shared/src/iosMain/.../webview/IosWebViewHost.kt`              | Forward query params to provider                      |
+| `shared/src/iosMain/.../providers/WebViewProvider.kt`           | Add `queryParams` to interface                        |
+| `shared/src/iosMain/.../api/SelfSdk.ios.kt`                     | Register only 3 handlers, build and pass query params |
 
 ### Files NOT Modified
 
@@ -186,6 +203,7 @@ Reference the native-shell-ios `SelfSdkConfig.toQueryParams()` pattern for the f
 - `packages/webview-app/` — WebView code unchanged
 - Self-sdk-swift crypto/secureStorage providers — already match native-shell-ios functionality
 - `commonMain` files — already updated in KR-01
+- Removal of retained NFC / camera / biometric Swift provider code and dependencies — deferred follow-up, not part of KR-02
 
 ### Preconditions
 
@@ -219,6 +237,7 @@ cd packages/kmp-sdk && ./gradlew :shared:jvmTest
 - [ ] `WebViewProvider` interface includes `queryParams` parameter
 - [ ] Only 3 handlers registered on iOS (SecureStorage, Crypto, Lifecycle)
 - [ ] SDK does not crash if optional providers (NFC, Camera, etc.) are not registered
+- [ ] `self-sdk-swift` may retain optional provider code/dependencies, but KMP startup only requires `secureStorage`, `crypto`, and `webView`
 - [ ] Query params built from VerificationRequest and passed to WebView
 - [ ] XCFramework builds cleanly
 - [ ] self-sdk-swift builds cleanly
