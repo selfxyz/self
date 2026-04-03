@@ -160,10 +160,24 @@ async function findAllErrorSelectors(targetSelector?: string) {
     console.log(`${error.selector} → ${error.name} (${error.file}:${error.line})`);
   }
 
-  // Save results to JSON file for future reference
-  const outputFile = "error-selectors.json";
-  writeFileSync(outputFile, JSON.stringify(allErrors, null, 2));
-  console.log(`\n💾 Results saved to ${outputFile}`);
+  // Save detailed results (existing behaviour)
+  const detailedOutputFile = "error-selectors.json";
+  writeFileSync(detailedOutputFile, JSON.stringify(allErrors, null, 2));
+  console.log(`\n💾 Detailed results saved to ${detailedOutputFile}`);
+
+  // Save deduplicated selector → name map for use in new-common
+  const selectorMap: Record<string, string> = {};
+  for (const error of allErrors) {
+    if (!selectorMap[error.selector]) {
+      selectorMap[error.selector] = error.name;
+    }
+  }
+  const mapOutputFile = path.resolve(
+    path.dirname(new URL(import.meta.url).pathname),
+    "../../new-common/src/data/error-selector-map.json",
+  );
+  writeFileSync(mapOutputFile, JSON.stringify(selectorMap, null, 2));
+  console.log(`💾 Selector map saved to ${mapOutputFile}`);
 
   return allErrors;
 }
